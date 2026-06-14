@@ -260,6 +260,7 @@ main {
   width: 104px;
   height: 104px;
   place-items: center;
+  place-content: center;
   border: 2px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.62);
@@ -336,21 +337,6 @@ main {
   background: #facc15;
   font-size: 0.72rem;
   font-weight: 950;
-}
-
-.blend-tag {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  border: 1px solid rgba(250, 204, 21, 0.5);
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.12);
-  font-size: 0.68rem;
-  font-style: normal;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  vertical-align: middle;
 }
 
 .blend-note {

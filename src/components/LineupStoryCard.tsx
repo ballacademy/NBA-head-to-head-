@@ -52,11 +52,6 @@ export function LineupStoryCard({
               <span>
                 {player.position} - {player.team} -{" "}
                 {(player.trueShooting * 100).toFixed(1)}% TS
-                {player.blended ? (
-                  <em className="blend-tag" title="75% regular season / 25% postseason">
-                    RS+PS
-                  </em>
-                ) : null}
               </span>
             </div>
           </li>
@@ -70,8 +65,8 @@ export function LineupStoryCard({
         </button>
       </div>
       <p className="blend-note">
-        Stats blend 75% regular season / 25% postseason. RS+PS marks players with
-        2025-26 playoff games; others use the regular season only.
+        Stats blend 75% regular season / 25% postseason for players with 2025-26
+        playoff games; others use the regular season only.
       </p>
     </section>
   );
