@@ -36,15 +36,17 @@ export function LineupStoryCard({
       <ol className="story-lineup">
         {lineup.map((player, index) => (
           <li key={player.id}>
-            <span className="pick-number">{index + 1}</span>
-            <img
-              className="player-avatar"
-              src={avatarFor(player.id)}
-              alt=""
-              aria-hidden="true"
-              width={48}
-              height={48}
-            />
+            <div className="player-portrait">
+              <img
+                className="player-avatar"
+                src={avatarFor(player.id)}
+                alt=""
+                aria-hidden="true"
+                width={52}
+                height={52}
+              />
+              <span className="pick-number">{index + 1}</span>
+            </div>
             <div>
               <strong>{player.name}</strong>
               <span>

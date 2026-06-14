@@ -305,26 +305,37 @@ main {
   font-size: 0.9rem;
 }
 
-.pick-number {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
+.player-portrait {
+  position: relative;
   flex: 0 0 auto;
-  border-radius: 999px;
-  color: #111827;
-  background: #f8fafc;
-  font-weight: 950;
+  width: 52px;
+  height: 52px;
 }
 
 .player-avatar {
-  flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  display: block;
+  width: 52px;
+  height: 52px;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   background: rgba(15, 23, 42, 0.6);
   object-fit: cover;
+}
+
+.pick-number {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  border: 2px solid #111827;
+  color: #111827;
+  background: #facc15;
+  font-size: 0.72rem;
+  font-weight: 950;
 }
 
 .blend-tag {
