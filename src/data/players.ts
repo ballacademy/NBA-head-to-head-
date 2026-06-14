@@ -30,6 +30,7 @@ export const players: Player[] = [
   },
   {
     id: "giannis-antetokounmpo",
+    secondaryPositions: ["SF", "C"],
     postseason: {
       points: 28.9,
       rebounds: 12.3,
@@ -111,6 +112,7 @@ export const players: Player[] = [
   },
   {
     id: "jayson-tatum",
+    secondaryPositions: ["PF"],
     postseason: {
       points: 27.6,
       rebounds: 9.6,
@@ -154,6 +156,7 @@ export const players: Player[] = [
   },
   {
     id: "kevin-durant",
+    secondaryPositions: ["SF"],
     postseason: {
       points: 28.4,
       rebounds: 7.0,
@@ -181,6 +184,7 @@ export const players: Player[] = [
   },
   {
     id: "stephen-curry",
+    secondaryPositions: ["SG"],
     postseason: {
       points: 27.0,
       rebounds: 5.0,
@@ -208,6 +212,7 @@ export const players: Player[] = [
   },
   {
     id: "joel-embiid",
+    secondaryPositions: ["PF"],
     postseason: {
       points: 31.2,
       rebounds: 10.5,
@@ -235,6 +240,7 @@ export const players: Player[] = [
   },
   {
     id: "lebron-james",
+    secondaryPositions: ["PG", "PF"],
     postseason: {
       points: 26.8,
       rebounds: 8.0,
@@ -262,6 +268,7 @@ export const players: Player[] = [
   },
   {
     id: "anthony-davis",
+    secondaryPositions: ["PF"],
     name: "Anthony Davis",
     team: "LAL",
     position: "C",
@@ -278,6 +285,7 @@ export const players: Player[] = [
   },
   {
     id: "devin-booker",
+    secondaryPositions: ["PG"],
     name: "Devin Booker",
     team: "PHX",
     position: "SG",
@@ -337,6 +345,7 @@ export const players: Player[] = [
   },
   {
     id: "paul-george",
+    secondaryPositions: ["SG"],
     name: "Paul George",
     team: "LAC",
     position: "SF",
@@ -353,6 +362,7 @@ export const players: Player[] = [
   },
   {
     id: "jaylen-brown",
+    secondaryPositions: ["SF"],
     name: "Jaylen Brown",
     team: "BOS",
     position: "SG",
@@ -369,6 +379,7 @@ export const players: Player[] = [
   },
   {
     id: "tyrese-haliburton",
+    priorSeason: true,
     name: "Tyrese Haliburton",
     team: "IND",
     position: "PG",
@@ -385,6 +396,7 @@ export const players: Player[] = [
   },
   {
     id: "donovan-mitchell",
+    secondaryPositions: ["PG"],
     postseason: {
       points: 28.9,
       rebounds: 5.6,
@@ -487,6 +499,7 @@ export const players: Player[] = [
   },
   {
     id: "mikal-bridges",
+    secondaryPositions: ["SG"],
     name: "Mikal Bridges",
     team: "BKN",
     position: "SF",
@@ -519,6 +532,7 @@ export const players: Player[] = [
   },
   {
     id: "derrick-white",
+    secondaryPositions: ["PG"],
     name: "Derrick White",
     team: "BOS",
     position: "SG",
@@ -551,6 +565,7 @@ export const players: Player[] = [
   },
   {
     id: "domantas-sabonis",
+    secondaryPositions: ["PF"],
     name: "Domantas Sabonis",
     team: "SAC",
     position: "C",
@@ -567,6 +582,7 @@ export const players: Player[] = [
   },
   {
     id: "og-anunoby",
+    secondaryPositions: ["PF"],
     name: "OG Anunoby",
     team: "NYK",
     position: "SF",
@@ -583,6 +599,7 @@ export const players: Player[] = [
   },
   {
     id: "aaron-gordon",
+    secondaryPositions: ["SF"],
     name: "Aaron Gordon",
     team: "DEN",
     position: "PF",
@@ -599,6 +616,7 @@ export const players: Player[] = [
   },
   {
     id: "karl-anthony-towns",
+    secondaryPositions: ["C"],
     name: "Karl-Anthony Towns",
     team: "MIN",
     position: "PF",

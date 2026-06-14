@@ -1,5 +1,15 @@
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 
+export type Conference = "East" | "West";
+
+export type Division =
+  | "Atlantic"
+  | "Central"
+  | "Southeast"
+  | "Northwest"
+  | "Pacific"
+  | "Southwest";
+
 export type PlayStyle =
   | "engine"
   | "scorer"
@@ -26,11 +36,17 @@ export interface Player extends SeasonStats {
   name: string;
   team: string;
   position: Position;
+  // Additional positions the player can be drafted at (some players qualify at
+  // more than one slot). The primary `position` is always eligible too.
+  secondaryPositions?: Position[];
   styles: PlayStyle[];
   // Optional 2025-26 postseason per-game splits. When present, the player's
   // effective stats are a 75% regular-season / 25% postseason blend; when
   // absent (player missed the playoffs) only the regular season is used.
   postseason?: SeasonStats;
+  // True for players who were active but missed all of 2025-26 (e.g. injury),
+  // so the stats shown are their previous season instead.
+  priorSeason?: boolean;
 }
 
 // A player whose season/postseason splits have already been blended into the

@@ -34,7 +34,7 @@ export function LineupStoryCard({
       </div>
 
       <ol className="story-lineup">
-        {lineup.map((player, index) => (
+        {lineup.map((player) => (
           <li key={player.id}>
             <div className="player-portrait">
               <img
@@ -45,13 +45,18 @@ export function LineupStoryCard({
                 width={52}
                 height={52}
               />
-              <span className="pick-number">{index + 1}</span>
             </div>
             <div>
               <strong>{player.name}</strong>
               <span>
                 {player.position} - {player.team} -{" "}
                 {(player.trueShooting * 100).toFixed(1)}% TS
+                {player.priorSeason ? (
+                  <em className="prior-season" title="Out injured for 2025-26; previous season stats shown">
+                    {" "}
+                    ’24-25
+                  </em>
+                ) : null}
               </span>
             </div>
           </li>

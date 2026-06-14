@@ -211,6 +211,27 @@ main {
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
 }
 
+.builder-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.builder-controls .secondary-button {
+  padding: 14px 18px;
+  white-space: nowrap;
+}
+
+.slot-grant small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -267,7 +288,7 @@ main {
 }
 
 .score-orb span {
-  font-size: 2.25rem;
+  font-size: 1.7rem;
   font-weight: 950;
   line-height: 0.8;
 }
@@ -307,7 +328,6 @@ main {
 }
 
 .player-portrait {
-  position: relative;
   flex: 0 0 auto;
   width: 52px;
   height: 52px;
@@ -323,20 +343,11 @@ main {
   object-fit: cover;
 }
 
-.pick-number {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 999px;
-  border: 2px solid #111827;
-  color: #111827;
-  background: #facc15;
-  font-size: 0.72rem;
-  font-weight: 950;
+.prior-season {
+  color: #fbbf24;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.78rem;
 }
 
 .blend-note {
@@ -400,7 +411,7 @@ main {
 }
 
 .score-column__header > strong {
-  font-size: 3rem;
+  font-size: 2.2rem;
   color: #facc15;
 }
 

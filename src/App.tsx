@@ -4,45 +4,45 @@ import { LineupBuilder } from "./components/LineupBuilder";
 import { LineupStoryCard } from "./components/LineupStoryCard";
 import { ScoreBoard } from "./components/ScoreBoard";
 import { TournamentBracket } from "./components/TournamentBracket";
+import {
+  autofillFromBoard,
+  generateDraftBoard,
+  type SlotGrant,
+} from "./lib/draft";
 import { calculateLineupScore, getPlayersById } from "./lib/scoring";
 import { resolveRoster } from "./lib/stats";
 import { buildTournament } from "./lib/tournament";
-import type { Drafter, ResolvedPlayer } from "./lib/types";
+import type { Drafter } from "./lib/types";
 
-const balancedBlueprint = ["PG", "SG", "SF", "PF", "C"] as const;
+const resolvedPlayers = resolveRoster(players);
+const EMPTY_LINEUP = ["", "", "", "", ""];
 
-function pickBalancedLineup(pool: ResolvedPlayer[]) {
-  const chosen = new Set<string>();
+interface DraftState {
+  drafters: Drafter[];
+  boards: Record<string, SlotGrant[]>;
+}
 
-  return balancedBlueprint.map((position, index) => {
-    const candidates = pool
-      .filter((player) => player.position === position && !chosen.has(player.id))
-      .sort((a, b) => {
-        const roleFit =
-          Number(b.styles.includes(index === 4 ? "rim-protector" : "connector")) -
-          Number(a.styles.includes(index === 4 ? "rim-protector" : "connector"));
-        const spacingFit = b.threePoint - a.threePoint;
-        const defenseFit = b.defense - a.defense;
-        return roleFit || spacingFit || defenseFit;
-      });
-
-    const player = candidates[0] ?? pool.find((item) => !chosen.has(item.id));
-    if (!player) {
-      return "";
-    }
-
-    chosen.add(player.id);
-    return player.id;
+// Give every drafter a freshly randomized board and an auto-drafted lineup that
+// conforms to it, so the bracket starts fully populated.
+function buildInitialDraft(): DraftState {
+  const boards: Record<string, SlotGrant[]> = {};
+  const drafters = initialDrafters.map((drafter) => {
+    const board = generateDraftBoard();
+    boards[drafter.id] = board;
+    return { ...drafter, lineup: autofillFromBoard(board, resolvedPlayers) };
   });
+
+  return { drafters, boards };
 }
 
 function App() {
-  const [drafters, setDrafters] = useState<Drafter[]>(initialDrafters);
+  const [draft, setDraft] = useState<DraftState>(buildInitialDraft);
+  const { drafters, boards } = draft;
   const [activeDrafterId, setActiveDrafterId] = useState(initialDrafters[0].id);
   const [activeMatchupId, setActiveMatchupId] = useState("0-0");
   const [shareStatus, setShareStatus] = useState("");
 
-  const resolvedPlayers = useMemo(() => resolveRoster(players), []);
+  const activeBoard = boards[activeDrafterId] ?? [];
 
   const draftersById = useMemo(
     () => new Map(drafters.map((drafter) => [drafter.id, drafter])),
@@ -69,28 +69,54 @@ function App() {
 
   const updatePick = (slot: number, playerId: string) => {
     setShareStatus("");
-    setDrafters((current) =>
-      current.map((drafter) => {
+    setDraft((current) => ({
+      ...current,
+      drafters: current.drafters.map((drafter) => {
         if (drafter.id !== activeDrafterId) {
           return drafter;
         }
 
         const nextLineup = [...drafter.lineup];
+        while (nextLineup.length < EMPTY_LINEUP.length) {
+          nextLineup.push("");
+        }
         nextLineup[slot] = playerId;
-        return { ...drafter, lineup: nextLineup.filter(Boolean) };
+        return { ...drafter, lineup: nextLineup };
       }),
-    );
+    }));
   };
 
   const autoDraft = () => {
     setShareStatus("");
-    setDrafters((current) =>
-      current.map((drafter) =>
+    setDraft((current) => ({
+      ...current,
+      drafters: current.drafters.map((drafter) =>
         drafter.id === activeDrafterId
-          ? { ...drafter, lineup: pickBalancedLineup(resolvedPlayers) }
+          ? {
+              ...drafter,
+              lineup: autofillFromBoard(
+                current.boards[drafter.id] ?? [],
+                resolvedPlayers,
+              ),
+            }
           : drafter,
       ),
-    );
+    }));
+  };
+
+  const shuffleBoard = () => {
+    setShareStatus("");
+    setDraft((current) => ({
+      boards: {
+        ...current.boards,
+        [activeDrafterId]: generateDraftBoard(),
+      },
+      drafters: current.drafters.map((drafter) =>
+        drafter.id === activeDrafterId
+          ? { ...drafter, lineup: [...EMPTY_LINEUP] }
+          : drafter,
+      ),
+    }));
   };
 
   const shareLineup = async () => {
@@ -145,6 +171,7 @@ function App() {
         <LineupBuilder
           drafters={drafters}
           players={resolvedPlayers}
+          board={activeBoard}
           activeDrafterId={activeDrafter.id}
           onActiveDrafterChange={(drafterId) => {
             setShareStatus("");
@@ -152,6 +179,7 @@ function App() {
           }}
           onPick={updatePick}
           onAutoDraft={autoDraft}
+          onShuffleBoard={shuffleBoard}
         />
 
         <LineupStoryCard
