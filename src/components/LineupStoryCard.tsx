@@ -1,9 +1,10 @@
 import type { CSSProperties } from "react";
-import type { Drafter, LineupScore, Player } from "../lib/types";
+import { avatarFor } from "../lib/avatars";
+import type { Drafter, LineupScore, ResolvedPlayer } from "../lib/types";
 
 interface LineupStoryCardProps {
   drafter: Drafter;
-  lineup: Player[];
+  lineup: ResolvedPlayer[];
   score: LineupScore;
   onShare: () => void;
 }
@@ -36,11 +37,24 @@ export function LineupStoryCard({
         {lineup.map((player, index) => (
           <li key={player.id}>
             <span className="pick-number">{index + 1}</span>
+            <img
+              className="player-avatar"
+              src={avatarFor(player.id)}
+              alt=""
+              aria-hidden="true"
+              width={48}
+              height={48}
+            />
             <div>
               <strong>{player.name}</strong>
               <span>
                 {player.position} - {player.team} -{" "}
                 {(player.trueShooting * 100).toFixed(1)}% TS
+                {player.blended ? (
+                  <em className="blend-tag" title="75% regular season / 25% postseason">
+                    RS+PS
+                  </em>
+                ) : null}
               </span>
             </div>
           </li>
@@ -53,6 +67,10 @@ export function LineupStoryCard({
           Share lineup
         </button>
       </div>
+      <p className="blend-note">
+        Stats blend 75% regular season / 25% postseason. RS+PS marks players with
+        2025-26 playoff games; others use the regular season only.
+      </p>
     </section>
   );
 }

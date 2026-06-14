@@ -5,12 +5,13 @@ import { LineupStoryCard } from "./components/LineupStoryCard";
 import { ScoreBoard } from "./components/ScoreBoard";
 import { TournamentBracket } from "./components/TournamentBracket";
 import { calculateLineupScore, getPlayersById } from "./lib/scoring";
+import { resolveRoster } from "./lib/stats";
 import { buildTournament } from "./lib/tournament";
-import type { Drafter, Player } from "./lib/types";
+import type { Drafter, ResolvedPlayer } from "./lib/types";
 
 const balancedBlueprint = ["PG", "SG", "SF", "PF", "C"] as const;
 
-function pickBalancedLineup(pool: Player[]) {
+function pickBalancedLineup(pool: ResolvedPlayer[]) {
   const chosen = new Set<string>();
 
   return balancedBlueprint.map((position, index) => {
@@ -41,17 +42,22 @@ function App() {
   const [activeMatchupId, setActiveMatchupId] = useState("0-0");
   const [shareStatus, setShareStatus] = useState("");
 
+  const resolvedPlayers = useMemo(() => resolveRoster(players), []);
+
   const draftersById = useMemo(
     () => new Map(drafters.map((drafter) => [drafter.id, drafter])),
     [drafters],
   );
-  const rounds = useMemo(() => buildTournament(drafters, players), [drafters]);
+  const rounds = useMemo(
+    () => buildTournament(drafters, resolvedPlayers),
+    [drafters, resolvedPlayers],
+  );
   const matchups = rounds.flat();
   const activeMatchup = matchups.find(
     (matchup) => matchup.id === activeMatchupId,
   ) ?? matchups[0];
   const activeDrafter = draftersById.get(activeDrafterId) ?? drafters[0];
-  const activeLineup = getPlayersById(activeDrafter.lineup, players);
+  const activeLineup = getPlayersById(activeDrafter.lineup, resolvedPlayers);
   const activeScore = calculateLineupScore(activeLineup);
 
   const currentDrafterA = activeMatchup
@@ -81,7 +87,7 @@ function App() {
     setDrafters((current) =>
       current.map((drafter) =>
         drafter.id === activeDrafterId
-          ? { ...drafter, lineup: pickBalancedLineup(players) }
+          ? { ...drafter, lineup: pickBalancedLineup(resolvedPlayers) }
           : drafter,
       ),
     );
@@ -138,7 +144,7 @@ function App() {
       <div className="layout-grid" id="draft">
         <LineupBuilder
           drafters={drafters}
-          players={players}
+          players={resolvedPlayers}
           activeDrafterId={activeDrafter.id}
           onActiveDrafterChange={(drafterId) => {
             setShareStatus("");

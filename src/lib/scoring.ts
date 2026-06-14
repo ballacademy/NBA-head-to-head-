@@ -1,4 +1,4 @@
-import type { LineupScore, Player, ScoreCategory } from "./types";
+import type { LineupScore, ResolvedPlayer, ScoreCategory } from "./types";
 
 const round = (value: number, places = 1) => {
   const factor = 10 ** places;
@@ -8,12 +8,12 @@ const round = (value: number, places = 1) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-export const getPlayersById = (playerIds: string[], pool: Player[]) =>
+export const getPlayersById = (playerIds: string[], pool: ResolvedPlayer[]) =>
   playerIds
     .map((id) => pool.find((player) => player.id === id))
-    .filter((player): player is Player => Boolean(player));
+    .filter((player): player is ResolvedPlayer => Boolean(player));
 
-export const calculateLineupScore = (lineup: Player[]): LineupScore => {
+export const calculateLineupScore = (lineup: ResolvedPlayer[]): LineupScore => {
   if (lineup.length === 0) {
     return {
       total: 0,
@@ -24,7 +24,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   }
 
   const perPlayer = (metric: keyof Pick<
-    Player,
+    ResolvedPlayer,
     | "points"
     | "rebounds"
     | "assists"
@@ -161,7 +161,10 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   };
 };
 
-export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
+export const compareLineups = (
+  lineupA: ResolvedPlayer[],
+  lineupB: ResolvedPlayer[],
+) => {
   const scoreA = calculateLineupScore(lineupA);
   const scoreB = calculateLineupScore(lineupB);
 

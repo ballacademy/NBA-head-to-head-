@@ -9,11 +9,7 @@ export type PlayStyle =
   | "rim-protector"
   | "roll-man";
 
-export interface Player {
-  id: string;
-  name: string;
-  team: string;
-  position: Position;
+export interface SeasonStats {
   points: number;
   rebounds: number;
   assists: number;
@@ -23,8 +19,26 @@ export interface Player {
   threePoint: number;
   usage: number;
   defense: number;
-  styles: PlayStyle[];
 }
+
+export interface Player extends SeasonStats {
+  id: string;
+  name: string;
+  team: string;
+  position: Position;
+  styles: PlayStyle[];
+  // Optional 2025-26 postseason per-game splits. When present, the player's
+  // effective stats are a 75% regular-season / 25% postseason blend; when
+  // absent (player missed the playoffs) only the regular season is used.
+  postseason?: SeasonStats;
+}
+
+// A player whose season/postseason splits have already been blended into the
+// flat stat fields the scoring engine reads. `blended` records whether a
+// postseason split actually contributed to the numbers.
+export type ResolvedPlayer = Omit<Player, "postseason"> & {
+  blended?: boolean;
+};
 
 export interface Drafter {
   id: string;

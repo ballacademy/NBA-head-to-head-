@@ -1,8 +1,8 @@
-import type { Drafter, Player } from "../lib/types";
+import type { Drafter, ResolvedPlayer } from "../lib/types";
 
 interface LineupBuilderProps {
   drafters: Drafter[];
-  players: Player[];
+  players: ResolvedPlayer[];
   activeDrafterId: string;
   onActiveDrafterChange: (drafterId: string) => void;
   onPick: (slot: number, playerId: string) => void;

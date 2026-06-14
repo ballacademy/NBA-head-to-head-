@@ -1,11 +1,11 @@
-import type { Drafter, MatchupResult, Player } from "./types";
+import type { Drafter, MatchupResult, ResolvedPlayer } from "./types";
 import { calculateLineupScore, getPlayersById } from "./scoring";
 
 const roundNames = ["Quarterfinals", "Semifinals", "Final"];
 
 export const buildTournament = (
   drafters: Drafter[],
-  pool: Player[],
+  pool: ResolvedPlayer[],
 ): MatchupResult[][] => {
   const rounds: MatchupResult[][] = [];
   let contenders = [...drafters];
