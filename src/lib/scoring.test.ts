@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { players } from "../data/players";
+import { curatedPlayers as players } from "../data/roster.curated";
 import {
   calculateLineupScore,
   compareLineups,
