@@ -3,6 +3,7 @@ import {
   generateDraftSlots,
   pickBestForSlot,
 } from "./draft";
+import type { TeamProfile } from "./teamProfile";
 import type { Drafter } from "./types";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import type { Player } from "./types";
@@ -11,10 +12,10 @@ export const PICK_TIME_LIMIT_SECONDS = 20;
 export const OPPONENT_PICK_MIN_MS = 3000;
 export const OPPONENT_PICK_MAX_MS = 9000;
 
-export const createUserDrafter = (): Drafter => ({
+export const createUserDrafter = (team: TeamProfile): Drafter => ({
   id: "user",
-  name: "You",
-  city: "Your squad",
+  name: team.name,
+  city: team.city,
   accent: "#2563eb",
   draftSlots: generateDraftSlots(),
   lineup: [],

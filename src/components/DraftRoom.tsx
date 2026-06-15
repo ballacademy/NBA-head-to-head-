@@ -124,7 +124,9 @@ export function DraftRoom({
       aria-labelledby="draft-heading"
     >
       <div className="draft-page-header">
-        <p className="eyebrow">Pick {activeStep + 1} of {totalPicks}</p>
+        <p className="eyebrow">
+          {drafter.city} {drafter.name} • Pick {activeStep + 1} of {totalPicks}
+        </p>
         <h2 id="draft-heading">Draft player {activeStep + 1}</h2>
         <p className="draft-page-header__copy">
           Your next requirement is revealed only when you reach this pick.

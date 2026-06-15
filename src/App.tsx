@@ -13,6 +13,8 @@ import {
   sleep,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
+import { saveTeamProfile } from "./lib/teamProfile";
+import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
 
 type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats";
@@ -29,8 +31,9 @@ function App() {
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
   const userDraftComplete = draftStep >= 5;
 
-  const startMatch = () => {
-    setUser(createUserDrafter());
+  const startMatch = (team: TeamProfile) => {
+    saveTeamProfile(team);
+    setUser(createUserDrafter(team));
     setOpponent(createRandomOpponent());
     setDraftStep(0);
     setOpponentPickCount(0);
@@ -194,7 +197,10 @@ function App() {
       ) : null}
 
       {phase === "waiting" ? (
-        <WaitingRoom opponent={opponent} opponentPickCount={opponentPickCount} />
+        <WaitingRoom
+          opponentPickCount={opponentPickCount}
+          totalPicks={opponent.draftSlots.length}
+        />
       ) : null}
 
       {phase === "results" ? (
