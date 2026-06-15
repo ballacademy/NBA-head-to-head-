@@ -80,8 +80,9 @@ export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) 
         <h2 id="stats-heading">Browse the full player pool</h2>
         <p>
           These numbers power lineup scoring in the app. They come from Basketball
-          Reference ({statsFile.playerCount} players) and refresh when you rerun the
-          Python export script.
+          Reference ({statsFile.uniquePlayerCount ?? statsFile.playerCount} unique
+          players, {players.length} stat rows including team splits) and refresh
+          when you rerun the Python export script.
         </p>
       </div>
 

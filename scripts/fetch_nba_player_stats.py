@@ -263,13 +263,21 @@ def to_float(value: object, default: float = 0.0) -> float:
     return float(value)
 
 
+def make_entry_id(player_name: str, team: str, bbr_player_id: object) -> str:
+    team_slug = str(team or "UNK").lower()
+    if pd.notna(bbr_player_id) and bbr_player_id:
+        return f"{bbr_player_id}-{team_slug}"
+
+    return f"{slugify_player_name(player_name)}-{team_slug}"
+
+
 def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> dict:
     players = []
-    primary_rows = select_primary_player_rows(per_game)
 
-    for row in primary_rows.itertuples(index=False):
+    for row in per_game.itertuples(index=False):
         row_dict = row._asdict()
         player_name = str(row_dict["PLAYER_NAME"])
+        team = str(row_dict.get("TEAM_ABBREVIATION") or "UNK")
         fga = to_float(row_dict.get("FGA"))
         fta = to_float(row_dict.get("FTA"))
         pts = to_float(row_dict.get("PTS"))
@@ -279,14 +287,14 @@ def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> 
             true_shooting = round(pts / (2 * (fga + 0.44 * fta)), 3)
 
         bbr_player_id = row_dict.get("BBR_PLAYER_ID")
-        player_id = bbr_player_id or slugify_player_name(player_name)
+        player_id = make_entry_id(player_name, team, bbr_player_id)
 
         players.append(
             {
                 "id": player_id,
-                "bbrPlayerId": bbr_player_id,
+                "bbrPlayerId": bbr_player_id if pd.notna(bbr_player_id) else None,
                 "name": player_name,
-                "team": row_dict.get("TEAM_ABBREVIATION"),
+                "team": team,
                 "position": row_dict.get("POSITION"),
                 "age": to_int(row_dict.get("AGE"), default=0) if pd.notna(row_dict.get("AGE")) else None,
                 "gamesPlayed": to_int(row_dict.get("GP")),
@@ -315,12 +323,15 @@ def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> 
             }
         )
 
+    unique_players = per_game["PLAYER_NAME"].nunique()
+
     return {
         "season": season,
         "seasonType": season_type,
         "source": "basketball-reference",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "playerCount": len(players),
+        "uniquePlayerCount": int(unique_players),
         "players": players,
     }
 
@@ -360,6 +371,7 @@ def export_outputs(
                 {"key": "source", "value": "basketball-reference"},
                 {"key": "generatedAt", "value": payload["generatedAt"]},
                 {"key": "playerCount", "value": payload["playerCount"]},
+                {"key": "uniquePlayerCount", "value": payload["uniquePlayerCount"]},
             ]
         )
         metadata.to_excel(writer, sheet_name="Metadata", index=False)
@@ -416,8 +428,10 @@ def main() -> int:
         args.season_type,
     )
 
-    print(f"Exported {len(select_primary_player_rows(per_game))} primary player rows:")
-    print(f"  full per-game rows (includes team splits): {len(per_game)}")
+    print(
+        f"Exported {len(per_game)} stat rows "
+        f"({per_game['PLAYER_NAME'].nunique()} unique players):"
+    )
     for label, path in paths.items():
         print(f"  {label}: {path}")
 

@@ -12,11 +12,11 @@ describe("calculateLineupScore", () => {
   it("rewards a complete lineup with production, efficiency, shooting, and fit", () => {
     const score = calculateLineupScore(
       lineup([
-        "gilgesh01",
-        "whitede01",
-        "tatumja01",
-        "gordoaa01",
-        "jokicni01",
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
       ]),
     );
 
@@ -35,11 +35,11 @@ describe("calculateLineupScore", () => {
   it("flags high-usage lineups with fragile defensive fit", () => {
     const score = calculateLineupScore(
       lineup([
-        "doncilu01",
-        "curryst01",
-        "gilgesh01",
-        "brunsja01",
-        "bookede01",
+        "doncilu01-lal",
+        "curryst01-gsw",
+        "gilgesh01-okc",
+        "brunsja01-nyk",
+        "bookede01-pho",
       ]),
     );
 
@@ -56,11 +56,11 @@ describe("compareLineups", () => {
   it("selects the higher scoring lineup as the matchup winner", () => {
     const result = compareLineups(
       lineup([
-        "gilgesh01",
-        "whitede01",
-        "tatumja01",
-        "gordoaa01",
-        "jokicni01",
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
       ]),
       lineup([
         "doncilu01",

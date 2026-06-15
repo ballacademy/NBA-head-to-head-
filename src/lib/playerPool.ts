@@ -7,6 +7,7 @@ export interface SeasonStatsFile {
   source: string;
   generatedAt: string;
   playerCount: number;
+  uniquePlayerCount?: number;
   players: RawSeasonPlayer[];
 }
 
@@ -153,22 +154,53 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
 export const players: Player[] = statsFile.players
   .filter((player) => player.gamesPlayed > 0)
   .map(toPlayer)
-  .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  .sort(
+    (a, b) =>
+      b.points - a.points ||
+      a.name.localeCompare(b.name) ||
+      a.team.localeCompare(b.team),
+  );
 
 export const playersById = new Map(players.map((player) => [player.id, player]));
 
+const combinedTeamLabels = new Set(["TOT", "2TM", "3TM"]);
+
+export const pickPrimaryPlayer = (matches: Player[]) => {
+  if (matches.length === 0) {
+    return undefined;
+  }
+
+  const combined = matches.find((player) => combinedTeamLabels.has(player.team));
+  if (combined) {
+    return combined;
+  }
+
+  const singleTeam = matches.filter((player) => !player.team.includes("TM"));
+  const pool = singleTeam.length > 0 ? singleTeam : matches;
+
+  return [...pool].sort((a, b) => b.points - a.points)[0];
+};
+
 export const findPlayerId = (name: string) => {
   const normalized = normalizeName(name);
-  const exact = players.find((player) => normalizeName(player.name) === normalized);
-  if (exact) {
-    return exact.id;
+  const exactMatches = players.filter(
+    (player) => normalizeName(player.name) === normalized,
+  );
+
+  if (exactMatches.length > 0) {
+    return pickPrimaryPlayer(exactMatches)?.id;
   }
 
   const lastName = normalized.split(" ").at(-1) ?? normalized;
-  const partial = players.find((player) =>
+  const partialMatches = players.filter((player) =>
     normalizeName(player.name).includes(lastName),
   );
-  return partial?.id;
+
+  if (partialMatches.length === 1) {
+    return partialMatches[0].id;
+  }
+
+  return pickPrimaryPlayer(partialMatches)?.id;
 };
 
 export const resolveLineup = (preferredNames: readonly string[]) =>

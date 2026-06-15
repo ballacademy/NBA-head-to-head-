@@ -39,7 +39,7 @@ After a successful run, this folder contains:
 | `nba-player-stats-202526-regular-season.json` | Web apps and APIs |
 | `nba-player-stats-202526-regular-season.xlsx` | Excel / Google Sheets (Per Game, Totals, Per Player, Metadata sheets) |
 
-The CSV files include all team rows (for traded players). The JSON file uses one combined row per player when available.
+The CSV and JSON files include every stat row from Basketball Reference, including separate rows for traded players and combined `2TM`/`TOT` lines. The JSON currently has **733 rows** across **582 unique players**.
 
 ## JSON shape (for apps)
 

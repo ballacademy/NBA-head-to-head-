@@ -72,7 +72,7 @@ export function LineupBuilder({
                   key={player.id}
                   value={player.id}
                 >
-                  {player.name} ({player.position}, {player.team})
+                  {player.name} ({player.team}, {player.position})
                 </option>
               ))}
             </select>
