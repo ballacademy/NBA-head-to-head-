@@ -218,6 +218,10 @@ def fetch_player_stats(
 
     per_game = normalize_per_game(parse_bbr_table(per_game_html), player_ids)
     totals = normalize_totals(parse_bbr_table(totals_html), player_ids)
+
+    per_game = per_game[per_game["PLAYER_NAME"] != "League Average"].copy()
+    totals = totals[totals["PLAYER_NAME"] != "League Average"].copy()
+
     return per_game, totals
 
 

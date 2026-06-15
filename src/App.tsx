@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { initialDrafters, players } from "./data/players";
+import { initialDrafters, players, statsFile } from "./data/players";
 import { LineupBuilder } from "./components/LineupBuilder";
 import { LineupStoryCard } from "./components/LineupStoryCard";
+import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { ScoreBoard } from "./components/ScoreBoard";
 import { TournamentBracket } from "./components/TournamentBracket";
 import { calculateLineupScore, getPlayersById } from "./lib/scoring";
@@ -125,6 +126,9 @@ function App() {
             <a href="#bracket" className="ghost-link">
               View bracket
             </a>
+            <a href="#stats" className="ghost-link">
+              View stats
+            </a>
           </div>
         </div>
 
@@ -174,6 +178,10 @@ function App() {
           activeMatchupId={activeMatchup?.id ?? ""}
           onSelectMatchup={setActiveMatchupId}
         />
+      </div>
+
+      <div id="stats">
+        <PlayerStatsTable players={players} statsFile={statsFile} />
       </div>
     </main>
   );
