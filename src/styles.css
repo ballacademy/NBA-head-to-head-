@@ -232,6 +232,45 @@ main {
   letter-spacing: 0.02em;
 }
 
+.slot-step-index {
+  display: block;
+  margin-bottom: 2px;
+  color: #fb923c;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.draft-progress {
+  margin: 16px 0 10px;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.draft-steps {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.draft-step {
+  padding: 14px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.draft-step.active {
+  border-color: #fb923c;
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.draft-step select {
+  margin-top: 10px;
+}
+
 .slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

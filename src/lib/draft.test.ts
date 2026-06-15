@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { players } from "../data/players";
 import {
   autofillFromBoard,
   choosePosition,
+  DIVISIONS,
   eligiblePositions,
   generateDraftBoard,
   isEligibleForSlot,
@@ -49,7 +51,14 @@ describe("generateDraftBoard", () => {
     expect(board).toHaveLength(5);
     for (const grant of board) {
       expect(POSITIONS).toContain(grant.position);
-      expect(["East", "West"]).toContain(grant.conference);
+      expect([
+        "Atlantic",
+        "Central",
+        "Southeast",
+        "Northwest",
+        "Pacific",
+        "Southwest",
+      ]).toContain(grant.division);
     }
   });
 
@@ -81,20 +90,14 @@ describe("eligibility", () => {
     expect(eligiblePositions(lebron)).toEqual(["SF", "PG", "PF"]);
   });
 
-  it("matches a slot only within the same conference and an eligible position", () => {
-    const westPg: SlotGrant = {
-      division: "Pacific",
-      conference: "West",
-      position: "PG",
-    };
-    const eastSf: SlotGrant = {
-      division: "Atlantic",
-      conference: "East",
-      position: "SF",
-    };
+  it("matches a slot only within the same division and an eligible position", () => {
+    const pacificPg: SlotGrant = { division: "Pacific", position: "PG" };
+    const pacificC: SlotGrant = { division: "Pacific", position: "C" };
+    const atlanticSf: SlotGrant = { division: "Atlantic", position: "SF" };
 
-    expect(isEligibleForSlot(lebron, westPg)).toBe(true); // LAL is West, PG is secondary
-    expect(isEligibleForSlot(lebron, eastSf)).toBe(false); // wrong conference
+    expect(isEligibleForSlot(lebron, pacificPg)).toBe(true); // LAL is Pacific, PG is secondary
+    expect(isEligibleForSlot(lebron, pacificC)).toBe(false); // not a center
+    expect(isEligibleForSlot(lebron, atlanticSf)).toBe(false); // wrong division
   });
 });
 
@@ -106,9 +109,9 @@ describe("autofillFromBoard", () => {
       { id: "east-sf", team: "BOS", position: "SF" as Position, points: 27 },
     ];
     const board: SlotGrant[] = [
-      { division: "Pacific", conference: "West", position: "PG" },
-      { division: "Northwest", conference: "West", position: "C" },
-      { division: "Atlantic", conference: "East", position: "SF" },
+      { division: "Pacific", position: "PG" },
+      { division: "Northwest", position: "C" },
+      { division: "Atlantic", position: "SF" },
     ];
 
     expect(autofillFromBoard(board, pool)).toEqual([
@@ -116,5 +119,19 @@ describe("autofillFromBoard", () => {
       "west-c",
       "east-sf",
     ]);
+  });
+});
+
+describe("roster coverage", () => {
+  it("has at least one eligible player for every division and position", () => {
+    for (const division of DIVISIONS) {
+      for (const position of POSITIONS) {
+        const grant: SlotGrant = { division, position };
+        const count = players.filter((player) =>
+          isEligibleForSlot(player, grant),
+        ).length;
+        expect(count, `${division} - ${position}`).toBeGreaterThan(0);
+      }
+    }
   });
 });

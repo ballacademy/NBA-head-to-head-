@@ -1,19 +1,18 @@
-import { conferenceForTeam } from "./teams";
-import type { Conference, Division, Position } from "./types";
+import { divisionForTeam } from "./teams";
+import type { Division, Position } from "./types";
 
 export interface SlotGrant {
   division: Division;
-  conference: Conference;
   position: Position;
 }
 
-export const DIVISIONS: { division: Division; conference: Conference }[] = [
-  { division: "Atlantic", conference: "East" },
-  { division: "Central", conference: "East" },
-  { division: "Southeast", conference: "East" },
-  { division: "Northwest", conference: "West" },
-  { division: "Pacific", conference: "West" },
-  { division: "Southwest", conference: "West" },
+export const DIVISIONS: Division[] = [
+  "Atlantic",
+  "Central",
+  "Southeast",
+  "Northwest",
+  "Pacific",
+  "Southwest",
 ];
 
 export const POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];
@@ -77,10 +76,10 @@ export const generateDraftBoard = (
     const position = choosePosition(usedCounts, rng);
     usedCounts[position] += 1;
 
-    const { division, conference } =
+    const division =
       DIVISIONS[Math.floor(rng() * DIVISIONS.length)] ?? DIVISIONS[0];
 
-    board.push({ division, conference, position });
+    board.push({ division, position });
   }
 
   return board;
@@ -102,12 +101,12 @@ export const isEligibleForSlot = (
   player: DraftablePlayer,
   grant: SlotGrant,
 ): boolean =>
-  conferenceForTeam(player.team) === grant.conference &&
+  divisionForTeam(player.team) === grant.division &&
   eligiblePositions(player).includes(grant.position);
 
 // Fill a board with the strongest available player for each slot. Prefers an
-// exact division-conference + position match; if the granted pool is exhausted
-// it falls back to any unused player at that position so lineups stay full.
+// exact division + position match; if the granted pool is exhausted it falls
+// back to any unused player at that position so lineups stay full.
 export const autofillFromBoard = <T extends DraftablePlayer & { points: number }>(
   board: SlotGrant[],
   pool: T[],

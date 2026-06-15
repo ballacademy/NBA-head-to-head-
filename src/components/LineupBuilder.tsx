@@ -16,9 +16,6 @@ interface LineupBuilderProps {
   onShuffleBoard: () => void;
 }
 
-const conferenceName = (conference: SlotGrant["conference"]) =>
-  conference === "East" ? "Eastern" : "Western";
-
 export function LineupBuilder({
   drafters,
   players,
@@ -37,7 +34,14 @@ export function LineupBuilder({
     return null;
   }
 
-  const selected = new Set(activeDrafter.lineup.filter(Boolean));
+  const lineup = activeDrafter.lineup;
+  const selected = new Set(lineup.filter(Boolean));
+
+  // Reveal one slot at a time: show every filled slot plus the next empty one.
+  const firstEmpty = lineup.findIndex((id) => !id);
+  const filledCount = lineup.filter(Boolean).length;
+  const visibleCount = firstEmpty === -1 ? board.length : firstEmpty + 1;
+  const complete = filledCount === board.length;
 
   return (
     <section className="panel lineup-builder" aria-labelledby="draft-heading">
@@ -45,8 +49,8 @@ export function LineupBuilder({
         <p className="eyebrow">Create a lineup</p>
         <h2 id="draft-heading">Draft five players</h2>
         <p>
-          Each slot grants a random division and position. Pick any eligible
-          player from that conference — boards lean balanced, but repeats happen.
+          Each pick grants a random division and position. Choose a player, then
+          the next pick is revealed. Boards lean balanced, but repeats happen.
         </p>
       </div>
 
@@ -73,29 +77,37 @@ export function LineupBuilder({
         </button>
       </div>
 
-      <div className="slots">
-        {board.map((grant, index) => {
-          const currentId = activeDrafter.lineup[index] ?? "";
+      <p className="draft-progress">
+        {complete ? "Lineup complete" : `Pick ${visibleCount} of ${board.length}`}
+      </p>
+
+      <div className="draft-steps">
+        {board.slice(0, visibleCount).map((grant, index) => {
+          const currentId = lineup[index] ?? "";
           const options = players.filter(
             (player) =>
               isEligibleForSlot(player, grant) &&
               (!selected.has(player.id) || currentId === player.id),
           );
+          const isActive = index === firstEmpty;
 
           return (
-            <label className="field slot" key={`${grant.position}-${index}`}>
+            <label
+              className={`field draft-step ${isActive ? "active" : ""}`}
+              key={`${grant.division}-${grant.position}-${index}`}
+            >
               <span className="slot-grant">
+                <span className="slot-step-index">Pick {index + 1}</span>
                 {grant.division} Division
-                <small>
-                  {conferenceName(grant.conference)} Conference -{" "}
-                  {POSITION_NAMES[grant.position]}
-                </small>
+                <small>{POSITION_NAMES[grant.position]}</small>
               </span>
               <select
                 value={currentId}
                 onChange={(event) => onPick(index, event.target.value)}
               >
-                <option value="">Select {POSITION_NAMES[grant.position]}</option>
+                <option value="">
+                  Select a {POSITION_NAMES[grant.position].toLowerCase()}
+                </option>
                 {options.map((player) => (
                   <option key={player.id} value={player.id}>
                     {player.name} ({player.position}, {player.team})

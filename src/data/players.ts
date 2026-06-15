@@ -1,6 +1,8 @@
 import type { Drafter, Player } from "../lib/types";
+import { rotationPlayers } from "./rotation";
 
-export const players: Player[] = [
+// Detailed, hand-authored stat lines for the marquee players.
+const featuredPlayers: Player[] = [
   {
     id: "nikola-jokic",
     postseason: {
@@ -97,7 +99,7 @@ export const players: Player[] = [
       defense: 6.4,
     },
     name: "Luka Doncic",
-    team: "DAL",
+    team: "LAL",
     position: "PG",
     points: 33.9,
     rebounds: 9.2,
@@ -169,7 +171,7 @@ export const players: Player[] = [
       defense: 7.5,
     },
     name: "Kevin Durant",
-    team: "PHX",
+    team: "HOU",
     position: "PF",
     points: 27.1,
     rebounds: 6.6,
@@ -270,7 +272,7 @@ export const players: Player[] = [
     id: "anthony-davis",
     secondaryPositions: ["PF"],
     name: "Anthony Davis",
-    team: "LAL",
+    team: "DAL",
     position: "C",
     points: 24.7,
     rebounds: 12.6,
@@ -347,7 +349,7 @@ export const players: Player[] = [
     id: "paul-george",
     secondaryPositions: ["SG"],
     name: "Paul George",
-    team: "LAC",
+    team: "PHI",
     position: "SF",
     points: 22.6,
     rebounds: 5.2,
@@ -501,7 +503,7 @@ export const players: Player[] = [
     id: "mikal-bridges",
     secondaryPositions: ["SG"],
     name: "Mikal Bridges",
-    team: "BKN",
+    team: "NYK",
     position: "SF",
     points: 19.6,
     rebounds: 4.5,
@@ -517,7 +519,7 @@ export const players: Player[] = [
   {
     id: "jrue-holiday",
     name: "Jrue Holiday",
-    team: "BOS",
+    team: "POR",
     position: "PG",
     points: 12.5,
     rebounds: 5.4,
@@ -618,7 +620,7 @@ export const players: Player[] = [
     id: "karl-anthony-towns",
     secondaryPositions: ["C"],
     name: "Karl-Anthony Towns",
-    team: "MIN",
+    team: "NYK",
     position: "PF",
     points: 21.8,
     rebounds: 8.3,
@@ -650,7 +652,7 @@ export const players: Player[] = [
   {
     id: "desmond-bane",
     name: "Desmond Bane",
-    team: "MEM",
+    team: "ORL",
     position: "SG",
     points: 23.7,
     rebounds: 4.4,
@@ -664,6 +666,8 @@ export const players: Player[] = [
     styles: ["shooter", "connector"],
   },
 ];
+
+export const players: Player[] = [...featuredPlayers, ...rotationPlayers];
 
 export const initialDrafters: Drafter[] = [
   {
