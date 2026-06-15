@@ -1,5 +1,13 @@
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 
+export type Division =
+  | "Atlantic"
+  | "Central"
+  | "Southeast"
+  | "Northwest"
+  | "Pacific"
+  | "Southwest";
+
 export type PlayStyle =
   | "engine"
   | "scorer"
@@ -26,12 +34,18 @@ export interface Player {
   styles: PlayStyle[];
 }
 
+export interface DraftSlotConstraint {
+  position: Position;
+  division: Division;
+}
+
 export interface Drafter {
   id: string;
   name: string;
   city: string;
   accent: string;
   lineup: string[];
+  draftSlots: DraftSlotConstraint[];
 }
 
 export interface ScoreCategory {

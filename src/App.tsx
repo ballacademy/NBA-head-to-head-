@@ -5,42 +5,19 @@ import { LineupStoryCard } from "./components/LineupStoryCard";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { ScoreBoard } from "./components/ScoreBoard";
 import { TournamentBracket } from "./components/TournamentBracket";
+import { autoDraftLineup, generateDraftSlots } from "./lib/draft";
 import { calculateLineupScore, getPlayersById } from "./lib/scoring";
 import { buildTournament } from "./lib/tournament";
-import type { Drafter, Player } from "./lib/types";
-
-const balancedBlueprint = ["PG", "SG", "SF", "PF", "C"] as const;
-
-function pickBalancedLineup(pool: Player[]) {
-  const chosen = new Set<string>();
-
-  return balancedBlueprint.map((position, index) => {
-    const candidates = pool
-      .filter((player) => player.position === position && !chosen.has(player.id))
-      .sort((a, b) => {
-        const roleFit =
-          Number(b.styles.includes(index === 4 ? "rim-protector" : "connector")) -
-          Number(a.styles.includes(index === 4 ? "rim-protector" : "connector"));
-        const spacingFit = b.threePoint - a.threePoint;
-        const defenseFit = b.defense - a.defense;
-        return roleFit || spacingFit || defenseFit;
-      });
-
-    const player = candidates[0] ?? pool.find((item) => !chosen.has(item.id));
-    if (!player) {
-      return "";
-    }
-
-    chosen.add(player.id);
-    return player.id;
-  });
-}
+import type { Drafter } from "./lib/types";
 
 function App() {
   const [drafters, setDrafters] = useState<Drafter[]>(initialDrafters);
   const [activeDrafterId, setActiveDrafterId] = useState(initialDrafters[0].id);
   const [activeMatchupId, setActiveMatchupId] = useState("0-0");
   const [shareStatus, setShareStatus] = useState("");
+  const [draftSteps, setDraftSteps] = useState<Record<string, number>>(() =>
+    Object.fromEntries(initialDrafters.map((drafter) => [drafter.id, 0])),
+  );
 
   const draftersById = useMemo(
     () => new Map(drafters.map((drafter) => [drafter.id, drafter])),
@@ -54,6 +31,7 @@ function App() {
   const activeDrafter = draftersById.get(activeDrafterId) ?? drafters[0];
   const activeLineup = getPlayersById(activeDrafter.lineup, players);
   const activeScore = calculateLineupScore(activeLineup);
+  const activeStep = draftSteps[activeDrafter.id] ?? 0;
 
   const currentDrafterA = activeMatchup
     ? draftersById.get(activeMatchup.drafterA)
@@ -62,30 +40,56 @@ function App() {
     ? draftersById.get(activeMatchup.drafterB)
     : undefined;
 
+  const updateDrafter = (drafterId: string, updater: (drafter: Drafter) => Drafter) => {
+    setDrafters((current) =>
+      current.map((drafter) =>
+        drafter.id === drafterId ? updater(drafter) : drafter,
+      ),
+    );
+  };
+
   const updatePick = (slot: number, playerId: string) => {
     setShareStatus("");
-    setDrafters((current) =>
-      current.map((drafter) => {
-        if (drafter.id !== activeDrafterId) {
-          return drafter;
-        }
+    updateDrafter(activeDrafterId, (drafter) => {
+      const nextLineup = [...drafter.lineup];
+      nextLineup[slot] = playerId;
 
-        const nextLineup = [...drafter.lineup];
-        nextLineup[slot] = playerId;
-        return { ...drafter, lineup: nextLineup.filter(Boolean) };
-      }),
-    );
+      return {
+        ...drafter,
+        lineup: nextLineup.slice(0, slot + 1),
+      };
+    });
+
+    setDraftSteps((current) => ({
+      ...current,
+      [activeDrafterId]: Math.min(slot + 1, 4),
+    }));
   };
 
   const autoDraft = () => {
     setShareStatus("");
-    setDrafters((current) =>
-      current.map((drafter) =>
-        drafter.id === activeDrafterId
-          ? { ...drafter, lineup: pickBalancedLineup(players) }
-          : drafter,
-      ),
-    );
+    updateDrafter(activeDrafterId, (drafter) => ({
+      ...drafter,
+      lineup: autoDraftLineup(players, drafter.draftSlots),
+    }));
+    setDraftSteps((current) => ({
+      ...current,
+      [activeDrafterId]: 4,
+    }));
+  };
+
+  const startNewDraft = () => {
+    setShareStatus("");
+    const draftSlots = generateDraftSlots();
+    updateDrafter(activeDrafterId, (drafter) => ({
+      ...drafter,
+      draftSlots,
+      lineup: [],
+    }));
+    setDraftSteps((current) => ({
+      ...current,
+      [activeDrafterId]: 0,
+    }));
   };
 
   const shareLineup = async () => {
@@ -117,9 +121,9 @@ function App() {
           <p className="eyebrow">NBA Head-to-Head</p>
           <h1>Draft five. Win the matchup. Survive the bracket.</h1>
           <p>
-            Eight players from around the world build NBA lineups, face one
-            opponent at a time, and advance only when their five-man unit scores
-            higher across production, efficiency, defense, shooting, and fit.
+            Eight players from around the world build NBA lineups through a
+            five-step draft. Each pick is tied to a random position and division
+            before you choose your player.
           </p>
           <div className="hero-actions">
             <a href="#draft">Start drafting</a>
@@ -144,12 +148,20 @@ function App() {
           drafters={drafters}
           players={players}
           activeDrafterId={activeDrafter.id}
+          activeStep={activeStep}
           onActiveDrafterChange={(drafterId) => {
             setShareStatus("");
             setActiveDrafterId(drafterId);
           }}
           onPick={updatePick}
           onAutoDraft={autoDraft}
+          onNewDraft={startNewDraft}
+          onStepChange={(step) =>
+            setDraftSteps((current) => ({
+              ...current,
+              [activeDrafterId]: step,
+            }))
+          }
         />
 
         <LineupStoryCard
