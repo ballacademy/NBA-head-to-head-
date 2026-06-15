@@ -40,8 +40,15 @@ export interface ScoreCategory {
   note: string;
 }
 
+export interface ProjectedRecord {
+  wins: number;
+  losses: number;
+  formatted: string;
+}
+
 export interface LineupScore {
   total: number;
+  projectedRecord: ProjectedRecord;
   categories: ScoreCategory[];
   strengths: string[];
   warnings: string[];

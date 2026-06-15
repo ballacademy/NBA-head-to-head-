@@ -90,7 +90,7 @@ function App() {
 
   const shareLineup = async () => {
     const lineupNames = activeLineup.map((player) => player.name).join(", ");
-    const text = `${activeDrafter.name} from ${activeDrafter.city} drafted ${lineupNames}. Lineup score: ${activeScore.total}. #NBAHeadToHead`;
+    const text = `${activeDrafter.name} from ${activeDrafter.city} drafted ${lineupNames}. Lineup score: ${activeScore.total}. ${activeScore.projectedRecord.formatted}. #NBAHeadToHead`;
 
     if (navigator.share) {
       await navigator.share({

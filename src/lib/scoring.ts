@@ -1,4 +1,6 @@
-import type { LineupScore, Player, ScoreCategory } from "./types";
+import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
+
+export const SEASON_LENGTH = 82;
 
 const round = (value: number, places = 1) => {
   const factor = 10 ** places;
@@ -7,6 +9,18 @@ const round = (value: number, places = 1) => {
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
+
+export const projectRecord = (lineupTotal: number): ProjectedRecord => {
+  const winPct = clamp(0.61 + (lineupTotal - 155) * 0.00404, 0.22, 0.82);
+  const wins = Math.round(winPct * SEASON_LENGTH);
+  const losses = SEASON_LENGTH - wins;
+
+  return {
+    wins,
+    losses,
+    formatted: `Record: ${wins}-${losses}`,
+  };
+};
 
 export const getPlayersById = (playerIds: string[], pool: Player[]) =>
   playerIds
@@ -17,6 +31,11 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   if (lineup.length === 0) {
     return {
       total: 0,
+      projectedRecord: {
+        wins: 0,
+        losses: 0,
+        formatted: "Record: —",
+      },
       categories: [],
       strengths: [],
       warnings: ["Draft five players to unlock a matchup score."],
@@ -155,6 +174,9 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
 
   return {
     total: round(categories.reduce((sum, category) => sum + category.value, 0)),
+    projectedRecord: projectRecord(
+      round(categories.reduce((sum, category) => sum + category.value, 0)),
+    ),
     categories,
     strengths,
     warnings,

@@ -32,6 +32,8 @@ export function LineupStoryCard({
         </div>
       </div>
 
+      <p className="projected-record">{score.projectedRecord.formatted}</p>
+
       <ol className="story-lineup">
         {lineup.map((player, index) => (
           <li key={player.id}>

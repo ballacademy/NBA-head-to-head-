@@ -4,6 +4,8 @@ import {
   calculateLineupScore,
   compareLineups,
   getPlayersById,
+  projectRecord,
+  SEASON_LENGTH,
 } from "./scoring";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
@@ -21,6 +23,10 @@ describe("calculateLineupScore", () => {
     );
 
     expect(score.total).toBeGreaterThan(150);
+    expect(score.projectedRecord.formatted).toMatch(/^Record: \d+-\d+$/);
+    expect(score.projectedRecord.wins + score.projectedRecord.losses).toBe(
+      SEASON_LENGTH,
+    );
     expect(score.categories.map((category) => category.label)).toEqual([
       "Box score production",
       "True shooting and defense",
@@ -48,6 +54,16 @@ describe("calculateLineupScore", () => {
     );
     expect(score.warnings).toContain(
       "Positional overlap makes matchups harder to cover.",
+    );
+  });
+});
+
+describe("projectRecord", () => {
+  it("projects an 82-game record from lineup score", () => {
+    expect(projectRecord(200).formatted).toBe("Record: 65-17");
+    expect(projectRecord(155).formatted).toBe("Record: 50-32");
+    expect(projectRecord(200).wins + projectRecord(200).losses).toBe(
+      SEASON_LENGTH,
     );
   });
 });

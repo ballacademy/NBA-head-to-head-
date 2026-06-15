@@ -22,6 +22,7 @@ function ScoreColumn({
         <div>
           <p>{drafter.city}</p>
           <h3>{drafter.name}</h3>
+          <p className="projected-record">{score.projectedRecord.formatted}</p>
         </div>
         <strong>{score.total}</strong>
       </div>
