@@ -1,4 +1,5 @@
 import { ScoreBoard } from "./ScoreBoard";
+import { TeamLineupCard } from "./TeamLineupCard";
 import { calculateLineupScore } from "../lib/scoring";
 import type { Drafter, Player } from "../lib/types";
 
@@ -35,6 +36,21 @@ export function MatchResults({
         <button type="button" onClick={onPlayAgain}>
           Draft another team
         </button>
+      </div>
+
+      <div className="match-results__lineups">
+        <TeamLineupCard
+          drafter={user}
+          lineup={userLineup}
+          score={userScore}
+          isWinner={userWon}
+        />
+        <TeamLineupCard
+          drafter={opponent}
+          lineup={opponentLineup}
+          score={opponentScore}
+          isWinner={!userWon}
+        />
       </div>
 
       <ScoreBoard

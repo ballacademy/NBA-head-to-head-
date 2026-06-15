@@ -332,6 +332,103 @@ main {
   margin-top: 16px;
 }
 
+.match-results__lineups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.team-lineup-card {
+  border-top: 4px solid var(--accent, var(--orange));
+}
+
+.team-lineup-card.winner {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+}
+
+.team-lineup-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.team-lineup-card__players {
+  display: grid;
+  gap: 12px;
+}
+
+.player-stat-line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.player-stat-line__meta,
+.player-pick__team {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.player-stat-line__stats,
+.player-pick__stats {
+  display: block;
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.defense-grade {
+  min-width: 42px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.14);
+  font-weight: 800;
+  text-align: center;
+}
+
+.defense-grade--Aplus {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+.defense-grade--A,
+.defense-grade--Aminus {
+  background: rgba(74, 222, 128, 0.16);
+  color: #bbf7d0;
+}
+
+.defense-grade--Bplus,
+.defense-grade--B,
+.defense-grade--Bminus {
+  background: rgba(56, 189, 248, 0.16);
+  color: #bae6fd;
+}
+
+.defense-grade--Cplus,
+.defense-grade--C,
+.defense-grade--Cminus {
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde68a;
+}
+
+.defense-grade--Dplus,
+.defense-grade--D,
+.defense-grade--F {
+  background: rgba(248, 113, 113, 0.16);
+  color: #fecaca;
+}
+
 .stats-intro {
   margin-bottom: 16px;
 }
@@ -794,7 +891,8 @@ main {
   .hero,
   .layout-grid,
   .score-grid,
-  .bracket-grid {
+  .bracket-grid,
+  .match-results__lineups {
     grid-template-columns: 1fr;
   }
 

@@ -4,6 +4,7 @@ import {
   formatSlotConstraint,
   sortDraftCandidates,
 } from "../lib/draft";
+import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { playersById } from "../lib/playerPool";
 import type { Drafter, Player } from "../lib/types";
@@ -152,26 +153,34 @@ export function DraftRoom({
 
       <div className="player-pick-list" role="listbox" aria-label="Eligible players">
         {candidates.length > 0 ? (
-          candidates.map((player) => (
-            <button
-              type="button"
-              key={player.id}
-              className="player-pick"
-              onClick={() => {
-                onPick(activeStep, player.id);
-                setQuery("");
-              }}
-            >
-              <div>
-                <strong>{player.name}</strong>
-                <span>
-                  {player.team} • {player.points.toFixed(1)} PTS •{" "}
-                  {(player.trueShooting * 100).toFixed(1)}% TS
+          candidates.map((player) => {
+            const stats = formatPlayerDraftStats(player);
+
+            return (
+              <button
+                type="button"
+                key={player.id}
+                className="player-pick"
+                onClick={() => {
+                  onPick(activeStep, player.id);
+                  setQuery("");
+                }}
+              >
+                <div>
+                  <strong>{player.name}</strong>
+                  <span className="player-pick__team">
+                    {player.team} • {player.position}
+                  </span>
+                  <span className="player-pick__stats">{stats.summary}</span>
+                </div>
+                <span
+                  className={`defense-grade defense-grade--${stats.grade.replace("+", "plus").replace("-", "minus")}`}
+                >
+                  {stats.grade}
                 </span>
-              </div>
-              <span className="player-pick__cta">Draft</span>
-            </button>
-          ))
+              </button>
+            );
+          })
         ) : (
           <p className="draft-empty">
             No eligible players for this slot. Time will run out and the pick
