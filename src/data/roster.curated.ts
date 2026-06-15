@@ -272,7 +272,7 @@ const featuredPlayers: Player[] = [
     id: "anthony-davis",
     secondaryPositions: ["PF"],
     name: "Anthony Davis",
-    team: "DAL",
+    team: "WAS",
     position: "C",
     points: 24.7,
     rebounds: 12.6,

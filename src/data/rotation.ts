@@ -122,7 +122,7 @@ export const rotationPlayers: Player[] = [
   p("Dyson Daniels", "ATL", "SG", ["PG"]),
   p("Onyeka Okongwu", "ATL", "C", ["PF"]),
   p("Zaccharie Risacher", "ATL", "SF"),
-  p("Kristaps Porzingis", "ATL", "C", ["PF"]),
+  p("Kristaps Porzingis", "GSW", "C", ["PF"]),
   p("LaMelo Ball", "CHA", "PG"),
   p("Brandon Miller", "CHA", "SF", ["SG"]),
   p("Miles Bridges", "CHA", "PF", ["SF"]),
