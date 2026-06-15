@@ -309,6 +309,203 @@ def make_entry_id(player_name: str, team: str, bbr_player_id: object) -> str:
     return f"{slugify_player_name(player_name)}-{team_slug}"
 
 
+MULTI_TEAM_LABELS = {"TOT", "2TM", "3TM"}
+
+PER_GAME_WEIGHTED_KEYS = [
+    "MIN",
+    "PTS",
+    "REB",
+    "AST",
+    "STL",
+    "BLK",
+    "TOV",
+    "OREB",
+    "DREB",
+    "FGM",
+    "FGA",
+    "FG3M",
+    "FG3A",
+    "FTM",
+    "FTA",
+    "PF",
+    "GS",
+]
+
+
+def is_aggregate_team(team: str) -> bool:
+    return team in MULTI_TEAM_LABELS
+
+
+def load_current_team_overrides() -> dict[str, str]:
+    path = Path(__file__).resolve().parent.parent / "data" / "nba-current-teams.json"
+    if not path.exists():
+        return {}
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    overrides = payload.get("overrides", payload)
+    return {str(key): str(value) for key, value in overrides.items()}
+
+
+def weighted_average_rows(rows: list[dict]) -> dict:
+    total_gp = sum(to_int(row.get("GP")) for row in rows)
+    if total_gp <= 0:
+        return rows[0]
+
+    averaged = {
+        "PLAYER_NAME": rows[0]["PLAYER_NAME"],
+        "BBR_PLAYER_ID": rows[0]["BBR_PLAYER_ID"],
+        "GP": total_gp,
+        "POSITION": rows[-1].get("POSITION"),
+        "AGE": rows[-1].get("AGE"),
+    }
+
+    for key in PER_GAME_WEIGHTED_KEYS:
+        averaged[key] = sum(
+            to_float(row.get(key)) * to_int(row.get("GP")) for row in rows
+        ) / total_gp
+
+    if averaged["FGA"] > 0:
+        averaged["FG_PCT"] = averaged["FGM"] / averaged["FGA"]
+        averaged["EFG_PCT"] = (averaged["FGM"] + 0.5 * averaged["FG3M"]) / averaged["FGA"]
+    else:
+        averaged["FG_PCT"] = 0.0
+        averaged["EFG_PCT"] = 0.0
+
+    if averaged["FG3A"] > 0:
+        averaged["FG3_PCT"] = averaged["FG3M"] / averaged["FG3A"]
+    else:
+        averaged["FG3_PCT"] = 0.0
+
+    if averaged["FTA"] > 0:
+        averaged["FT_PCT"] = averaged["FTM"] / averaged["FTA"]
+    else:
+        averaged["FT_PCT"] = 0.0
+
+    return averaged
+
+
+def merge_advanced_stats(
+    player_name: str,
+    stats_row: dict,
+    team_rows: list[dict],
+    advanced_lookup: dict[tuple[str, str], dict[str, float | None]],
+) -> dict[str, float | None]:
+    aggregate_team = str(stats_row.get("TEAM_ABBREVIATION") or "")
+    if is_aggregate_team(aggregate_team):
+        return advanced_lookup.get((player_name, aggregate_team), {})
+
+    if not team_rows:
+        team = str(stats_row.get("TEAM_ABBREVIATION") or "UNK")
+        return advanced_lookup.get((player_name, team), {})
+
+    total_gp = sum(to_int(row.get("GP")) for row in team_rows)
+    if total_gp <= 0:
+        return {}
+
+    merged: dict[str, float | None] = {}
+    rate_keys = [
+        "defensiveBoxPlusMinus",
+        "defensiveReboundPct",
+        "stealPct",
+        "blockPct",
+    ]
+
+    for key in rate_keys:
+        weighted_total = 0.0
+        weight_sum = 0.0
+
+        for row in team_rows:
+            team = str(row.get("TEAM_ABBREVIATION") or "UNK")
+            adv = advanced_lookup.get((player_name, team), {})
+            value = adv.get(key)
+            gp = to_int(row.get("GP"))
+
+            if value is not None and pd.notna(value) and gp > 0:
+                weighted_total += float(value) * gp
+                weight_sum += gp
+
+        if weight_sum > 0:
+            merged[key] = weighted_total / weight_sum
+
+    dws_total = 0.0
+    has_dws = False
+
+    for row in team_rows:
+        team = str(row.get("TEAM_ABBREVIATION") or "UNK")
+        adv = advanced_lookup.get((player_name, team), {})
+        value = adv.get("defensiveWinShares")
+
+        if value is not None and pd.notna(value):
+            dws_total += float(value)
+            has_dws = True
+
+    if has_dws:
+        merged["defensiveWinShares"] = dws_total
+
+    return merged
+
+
+def optional_float(value: object) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return float(value)
+
+
+def row_dict_to_player_payload(
+    row_dict: dict,
+    team: str,
+    advanced_stats: dict[str, float | None],
+    bbr_player_id: str,
+) -> dict:
+    player_name = str(row_dict["PLAYER_NAME"])
+    fga = to_float(row_dict.get("FGA"))
+    fta = to_float(row_dict.get("FTA"))
+    pts = to_float(row_dict.get("PTS"))
+
+    true_shooting = None
+    if fga + 0.44 * fta > 0:
+        true_shooting = round(pts / (2 * (fga + 0.44 * fta)), 3)
+
+    player_id = make_entry_id(player_name, team, bbr_player_id)
+
+    return {
+        "id": player_id,
+        "bbrPlayerId": bbr_player_id,
+        "name": player_name,
+        "team": team,
+        "position": row_dict.get("POSITION"),
+        "age": to_int(row_dict.get("AGE"), default=0) if pd.notna(row_dict.get("AGE")) else None,
+        "gamesPlayed": to_int(row_dict.get("GP")),
+        "gamesStarted": to_int(row_dict.get("GS")),
+        "minutes": to_float(row_dict.get("MIN")),
+        "points": to_float(row_dict.get("PTS")),
+        "rebounds": to_float(row_dict.get("REB")),
+        "assists": to_float(row_dict.get("AST")),
+        "steals": to_float(row_dict.get("STL")),
+        "blocks": to_float(row_dict.get("BLK")),
+        "turnovers": to_float(row_dict.get("TOV")),
+        "fieldGoalsMade": to_float(row_dict.get("FGM")),
+        "fieldGoalsAttempted": fga,
+        "fieldGoalPct": to_float(row_dict.get("FG_PCT")),
+        "threePointersMade": to_float(row_dict.get("FG3M")),
+        "threePointersAttempted": to_float(row_dict.get("FG3A")),
+        "threePointPct": to_float(row_dict.get("FG3_PCT")),
+        "freeThrowsMade": to_float(row_dict.get("FTM")),
+        "freeThrowsAttempted": fta,
+        "freeThrowPct": to_float(row_dict.get("FT_PCT")),
+        "offensiveRebounds": to_float(row_dict.get("OREB")),
+        "defensiveRebounds": to_float(row_dict.get("DREB")),
+        "defensiveWinShares": optional_float(advanced_stats.get("defensiveWinShares")),
+        "defensiveBoxPlusMinus": optional_float(advanced_stats.get("defensiveBoxPlusMinus")),
+        "defensiveReboundPct": optional_float(advanced_stats.get("defensiveReboundPct")),
+        "stealPct": optional_float(advanced_stats.get("stealPct")),
+        "blockPct": optional_float(advanced_stats.get("blockPct")),
+        "personalFouls": to_float(row_dict.get("PF")),
+        "effectiveFieldGoalPct": to_float(row_dict.get("EFG_PCT")),
+        "trueShooting": true_shooting,
+    }
+
+
 def build_advanced_lookup(advanced: pd.DataFrame) -> dict[tuple[str, str], dict[str, float | None]]:
     lookup: dict[tuple[str, str], dict[str, float | None]] = {}
 
@@ -332,70 +529,75 @@ def build_app_payload(
     season: str,
     season_type: str,
 ) -> dict:
-    players = []
     advanced_lookup = build_advanced_lookup(advanced)
+    current_team_overrides = load_current_team_overrides()
+    grouped_rows: dict[str, list[dict]] = {}
 
     for row in per_game.itertuples(index=False):
         row_dict = row._asdict()
         player_name = str(row_dict["PLAYER_NAME"])
-        team = str(row_dict.get("TEAM_ABBREVIATION") or "UNK")
-        fga = to_float(row_dict.get("FGA"))
-        fta = to_float(row_dict.get("FTA"))
-        pts = to_float(row_dict.get("PTS"))
-
-        true_shooting = None
-        if fga + 0.44 * fta > 0:
-            true_shooting = round(pts / (2 * (fga + 0.44 * fta)), 3)
-
         bbr_player_id = row_dict.get("BBR_PLAYER_ID")
-        player_id = make_entry_id(player_name, team, bbr_player_id)
-        advanced_stats = advanced_lookup.get((player_name, team), {})
+        group_key = (
+            str(bbr_player_id)
+            if pd.notna(bbr_player_id) and bbr_player_id
+            else slugify_player_name(player_name)
+        )
+        grouped_rows.setdefault(group_key, []).append(row_dict)
 
-        def optional_float(value: object) -> float | None:
-            if value is None or pd.isna(value):
-                return None
-            return float(value)
+    players = []
 
-        players.append(
-            {
-                "id": player_id,
-                "bbrPlayerId": bbr_player_id if pd.notna(bbr_player_id) else None,
-                "name": player_name,
-                "team": team,
-                "position": row_dict.get("POSITION"),
-                "age": to_int(row_dict.get("AGE"), default=0) if pd.notna(row_dict.get("AGE")) else None,
-                "gamesPlayed": to_int(row_dict.get("GP")),
-                "gamesStarted": to_int(row_dict.get("GS")),
-                "minutes": to_float(row_dict.get("MIN")),
-                "points": to_float(row_dict.get("PTS")),
-                "rebounds": to_float(row_dict.get("REB")),
-                "assists": to_float(row_dict.get("AST")),
-                "steals": to_float(row_dict.get("STL")),
-                "blocks": to_float(row_dict.get("BLK")),
-                "turnovers": to_float(row_dict.get("TOV")),
-                "fieldGoalsMade": to_float(row_dict.get("FGM")),
-                "fieldGoalsAttempted": fga,
-                "fieldGoalPct": to_float(row_dict.get("FG_PCT")),
-                "threePointersMade": to_float(row_dict.get("FG3M")),
-                "threePointersAttempted": to_float(row_dict.get("FG3A")),
-                "threePointPct": to_float(row_dict.get("FG3_PCT")),
-                "freeThrowsMade": to_float(row_dict.get("FTM")),
-                "freeThrowsAttempted": fta,
-                "freeThrowPct": to_float(row_dict.get("FT_PCT")),
-                "offensiveRebounds": to_float(row_dict.get("OREB")),
-                "defensiveRebounds": to_float(row_dict.get("DREB")),
-                "defensiveWinShares": optional_float(advanced_stats.get("defensiveWinShares")),
-                "defensiveBoxPlusMinus": optional_float(advanced_stats.get("defensiveBoxPlusMinus")),
-                "defensiveReboundPct": optional_float(advanced_stats.get("defensiveReboundPct")),
-                "stealPct": optional_float(advanced_stats.get("stealPct")),
-                "blockPct": optional_float(advanced_stats.get("blockPct")),
-                "personalFouls": to_float(row_dict.get("PF")),
-                "effectiveFieldGoalPct": to_float(row_dict.get("EFG_PCT")),
-                "trueShooting": true_shooting,
-            }
+    for bbr_id, rows in grouped_rows.items():
+        player_name = str(rows[0]["PLAYER_NAME"])
+        aggregate_rows = [
+            row
+            for row in rows
+            if is_aggregate_team(str(row.get("TEAM_ABBREVIATION") or ""))
+        ]
+        team_rows = [
+            row
+            for row in rows
+            if not is_aggregate_team(str(row.get("TEAM_ABBREVIATION") or ""))
+        ]
+
+        if aggregate_rows:
+            stats_row = dict(aggregate_rows[0])
+        elif team_rows:
+            stats_row = weighted_average_rows(team_rows)
+        else:
+            continue
+
+        if bbr_id in current_team_overrides:
+            current_team = current_team_overrides[bbr_id]
+        elif team_rows:
+            current_team = str(team_rows[-1].get("TEAM_ABBREVIATION") or "UNK")
+        else:
+            current_team = str(stats_row.get("TEAM_ABBREVIATION") or "UNK")
+
+        advanced_stats = merge_advanced_stats(
+            player_name,
+            stats_row,
+            team_rows,
+            advanced_lookup,
         )
 
-    unique_players = per_game["PLAYER_NAME"].nunique()
+        if not advanced_stats and aggregate_rows:
+            advanced_stats = advanced_lookup.get(
+                (player_name, str(aggregate_rows[0].get("TEAM_ABBREVIATION"))),
+                {},
+            )
+
+        players.append(
+            row_dict_to_player_payload(
+                stats_row,
+                current_team,
+                advanced_stats,
+                bbr_id,
+            )
+        )
+
+    players.sort(
+        key=lambda player: (-player["points"], player["name"], player["team"]),
+    )
 
     return {
         "season": season,
@@ -403,7 +605,7 @@ def build_app_payload(
         "source": "basketball-reference",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "playerCount": len(players),
-        "uniquePlayerCount": int(unique_players),
+        "uniquePlayerCount": len(players),
         "players": players,
     }
 

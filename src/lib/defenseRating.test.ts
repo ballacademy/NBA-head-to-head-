@@ -3,6 +3,7 @@ import {
   buildDefensiveRatings,
   computeDefensivePercentile,
   gradeFromPercentile,
+  toDefensiveStatInput,
 } from "./defenseRating";
 
 describe("defenseRating", () => {
@@ -10,36 +11,39 @@ describe("defenseRating", () => {
     const players = [
       {
         id: "elite",
-        steals: 2.1,
-        blocks: 2.4,
-        defensiveRebounds: 9.5,
-        defensiveWinShares: 3.8,
-        defensiveBoxPlusMinus: 2.5,
-        defensiveReboundPct: 24,
-        stealPct: 2.8,
-        blockPct: 5.5,
-      },
-      {
-        id: "average",
-        steals: 1.0,
-        blocks: 0.6,
-        defensiveRebounds: 4.2,
-        defensiveWinShares: 1.4,
-        defensiveBoxPlusMinus: -0.2,
-        defensiveReboundPct: 14,
-        stealPct: 1.4,
-        blockPct: 1.1,
+        bbrPlayerId: "elite01",
+        ...toDefensiveStatInput({
+          minutes: 34,
+          gamesPlayed: 70,
+          points: 12,
+          steals: 1.4,
+          blocks: 2.4,
+          defensiveRebounds: 9.5,
+          rebounds: 11,
+          defensiveWinShares: 3.8,
+          defensiveBoxPlusMinus: 2.5,
+          defensiveReboundPct: 24,
+          stealPct: 2.0,
+          blockPct: 5.5,
+        }),
       },
       {
         id: "weak",
-        steals: 0.4,
-        blocks: 0.2,
-        defensiveRebounds: 1.8,
-        defensiveWinShares: 0.2,
-        defensiveBoxPlusMinus: -2.8,
-        defensiveReboundPct: 8,
-        stealPct: 0.7,
-        blockPct: 0.4,
+        bbrPlayerId: "weak01",
+        ...toDefensiveStatInput({
+          minutes: 30,
+          gamesPlayed: 70,
+          points: 8,
+          steals: 0.4,
+          blocks: 0.2,
+          defensiveRebounds: 1.8,
+          rebounds: 3,
+          defensiveWinShares: 0.2,
+          defensiveBoxPlusMinus: -2.8,
+          defensiveReboundPct: 8,
+          stealPct: 0.7,
+          blockPct: 0.4,
+        }),
       },
     ];
 
@@ -59,31 +63,36 @@ describe("defenseRating", () => {
     expect(gradeFromPercentile(10)).toBe("F");
   });
 
-  it("handles missing advanced stats by using available box score data", () => {
-    const players = [
-      {
-        id: "box-only",
-        steals: 1.8,
-        blocks: 1.1,
-        defensiveRebounds: 6.4,
-      },
-      {
-        id: "box-only-2",
-        steals: 0.5,
-        blocks: 0.3,
-        defensiveRebounds: 2.1,
-      },
-    ];
+  it("penalizes steal-heavy profiles without strong impact metrics", () => {
+    const gambleDefender = {
+      ...toDefensiveStatInput({
+        minutes: 36,
+        gamesPlayed: 70,
+        points: 32,
+        steals: 2.0,
+        blocks: 0.4,
+        defensiveRebounds: 4.0,
+        rebounds: 5,
+        defensiveWinShares: 2.5,
+        defensiveBoxPlusMinus: 0.4,
+        defensiveReboundPct: 12,
+        stealPct: 2.8,
+        blockPct: 0.8,
+      }),
+    };
 
-    const percentile = computeDefensivePercentile(
-      players[0],
-      new Map([
-        ["steals", [0.5, 1.8]],
-        ["blocks", [0.3, 1.1]],
-        ["defensiveRebounds", [2.1, 6.4]],
-      ]),
-    );
+    const tables = new Map<keyof import("./defenseRating").DefensiveStatInput, number[]>([
+      ["stealsPer36", [0.5, 1.0, 1.5, 2.0]],
+      ["defensiveBoxPlusMinus", [-1, 0, 0.4, 2.5]],
+      ["blocksPer36", [0.2, 0.4, 0.8, 2.0]],
+      ["defensiveWinSharesPerGame", [0.01, 0.02, 0.03, 0.05]],
+      ["defensiveReboundPct", [8, 10, 12, 20]],
+      ["stealPct", [0.8, 1.2, 2.0, 2.8]],
+      ["blockPct", [0.5, 0.8, 1.2, 4.0]],
+      ["defensiveReboundsPer36", [2, 3, 4, 8]],
+    ]);
 
-    expect(percentile).toBeGreaterThan(50);
+    const percentile = computeDefensivePercentile(gambleDefender, tables);
+    expect(percentile).toBeLessThan(40);
   });
 });

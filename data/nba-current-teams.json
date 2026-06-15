@@ -1,0 +1,7 @@
+{
+  "description": "Current NBA team overrides for players traded after the Basketball Reference export window.",
+  "overrides": {
+    "davisan02": "WAS",
+    "youngtr01": "WAS"
+  }
+}

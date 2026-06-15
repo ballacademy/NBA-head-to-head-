@@ -1,5 +1,8 @@
 import type { PlayStyle, Player, Position } from "./types";
-import { buildDefensiveRatings } from "./defenseRating";
+import {
+  buildDefensiveRatings,
+  toDefensiveStatInput,
+} from "./defenseRating";
 import seasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
 
 export interface SeasonStatsFile {
@@ -98,50 +101,13 @@ export const estimateDefense = (raw: RawSeasonPlayer) =>
     9.8,
   );
 
-const combinedTeamLabels = new Set(["TOT", "2TM", "3TM"]);
-
-export const pickPrimaryRawPlayer = (matches: RawSeasonPlayer[]) => {
-  if (matches.length === 0) {
-    return undefined;
-  }
-
-  const combined = matches.find((player) => combinedTeamLabels.has(player.team));
-  if (combined) {
-    return combined;
-  }
-
-  const singleTeam = matches.filter((player) => !player.team.includes("TM"));
-  const pool = singleTeam.length > 0 ? singleTeam : matches;
-
-  return [...pool].sort(
-    (left, right) =>
-      right.gamesPlayed - left.gamesPlayed || right.points - left.points,
-  )[0];
-};
-
-const primaryRawPlayers = Object.values(
-  statsFile.players
-    .filter((player) => player.gamesPlayed > 0)
-    .reduce<Record<string, RawSeasonPlayer[]>>((groups, player) => {
-      const key = player.bbrPlayerId ?? player.name;
-      groups[key] = [...(groups[key] ?? []), player];
-      return groups;
-    }, {}),
-)
-  .map((group) => pickPrimaryRawPlayer(group))
-  .filter((player): player is RawSeasonPlayer => Boolean(player));
-
-const defensiveRatingInputs = primaryRawPlayers.map((raw) => ({
-  id: raw.bbrPlayerId ?? raw.id,
-  steals: raw.steals,
-  blocks: raw.blocks,
-  defensiveRebounds: raw.defensiveRebounds ?? raw.rebounds * 0.72,
-  defensiveWinShares: raw.defensiveWinShares,
-  defensiveBoxPlusMinus: raw.defensiveBoxPlusMinus,
-  defensiveReboundPct: raw.defensiveReboundPct,
-  stealPct: raw.stealPct,
-  blockPct: raw.blockPct,
-}));
+const defensiveRatingInputs = statsFile.players
+  .filter((player) => player.gamesPlayed > 0)
+  .map((raw) => ({
+    id: raw.bbrPlayerId ?? raw.id,
+    bbrPlayerId: raw.bbrPlayerId,
+    ...toDefensiveStatInput(raw),
+  }));
 
 export const defensiveRatings = buildDefensiveRatings(defensiveRatingInputs);
 
@@ -220,30 +186,14 @@ export const players: Player[] = statsFile.players
 
 export const playersById = new Map(players.map((player) => [player.id, player]));
 
-export const pickPrimaryPlayer = (matches: Player[]) => {
-  if (matches.length === 0) {
-    return undefined;
-  }
-
-  const combined = matches.find((player) => combinedTeamLabels.has(player.team));
-  if (combined) {
-    return combined;
-  }
-
-  const singleTeam = matches.filter((player) => !player.team.includes("TM"));
-  const pool = singleTeam.length > 0 ? singleTeam : matches;
-
-  return [...pool].sort((a, b) => b.points - a.points)[0];
-};
-
 export const findPlayerId = (name: string) => {
   const normalized = normalizeName(name);
-  const exactMatches = players.filter(
+  const exactMatch = players.find(
     (player) => normalizeName(player.name) === normalized,
   );
 
-  if (exactMatches.length > 0) {
-    return pickPrimaryPlayer(exactMatches)?.id;
+  if (exactMatch) {
+    return exactMatch.id;
   }
 
   const lastName = normalized.split(" ").at(-1) ?? normalized;
@@ -255,7 +205,11 @@ export const findPlayerId = (name: string) => {
     return partialMatches[0].id;
   }
 
-  return pickPrimaryPlayer(partialMatches)?.id;
+  const sameLastName = partialMatches.filter((player) =>
+    normalizeName(player.name).endsWith(lastName),
+  );
+
+  return sameLastName[0]?.id ?? partialMatches[0]?.id;
 };
 
 export const resolveLineup = (preferredNames: readonly string[]) =>
