@@ -20,3 +20,16 @@ npm run dev
 npm run build
 npm test
 ```
+
+## NBA player stats export
+
+To compile traditional stats for every NBA player (for use in another site or spreadsheet), run the Python fetch script locally:
+
+```bash
+python3 -m pip install -r scripts/requirements.txt
+python3 scripts/fetch_nba_player_stats.py --season 2025-26
+```
+
+This writes CSV, JSON, and Excel files to `data/nba-stats/`. See `data/nba-stats/README.md` for file formats and usage.
+
+> **Note:** NBA.com often blocks cloud/datacenter IPs. If the script times out in CI or a remote environment, run it on your laptop and commit the generated files, or use the manual GitHub Actions workflow.
