@@ -53,3 +53,9 @@ export const autoDraftLineup = (
 
 export const formatSlotConstraint = (slot: DraftSlotConstraint) =>
   `${slot.position} from the ${slot.division}`;
+
+export const pickBestForSlot = (
+  players: Player[],
+  slot: DraftSlotConstraint,
+  pickedIds: Set<string>,
+) => sortDraftCandidates(filterPlayersForSlot(players, slot, pickedIds))[0]?.id;

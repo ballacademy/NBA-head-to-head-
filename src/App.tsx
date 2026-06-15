@@ -1,100 +1,168 @@
-import { useMemo, useState } from "react";
-import { initialDrafters, players, statsFile } from "./data/players";
-import { LineupBuilder } from "./components/LineupBuilder";
+import { useCallback, useEffect, useState } from "react";
+import { players, statsFile } from "./data/players";
+import { DraftRoom } from "./components/DraftRoom";
+import { LandingPage } from "./components/LandingPage";
 import { LineupStoryCard } from "./components/LineupStoryCard";
+import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
-import { ScoreBoard } from "./components/ScoreBoard";
-import { TournamentBracket } from "./components/TournamentBracket";
-import { autoDraftLineup, generateDraftSlots } from "./lib/draft";
+import { WaitingRoom } from "./components/WaitingRoom";
+import { pickBestForSlot } from "./lib/draft";
+import {
+  createRandomOpponent,
+  createUserDrafter,
+  getOpponentPickDelayMs,
+  sleep,
+} from "./lib/match";
 import { calculateLineupScore, getPlayersById } from "./lib/scoring";
-import { buildTournament } from "./lib/tournament";
 import type { Drafter } from "./lib/types";
 
+type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats";
+
 function App() {
-  const [drafters, setDrafters] = useState<Drafter[]>(initialDrafters);
-  const [activeDrafterId, setActiveDrafterId] = useState(initialDrafters[0].id);
-  const [activeMatchupId, setActiveMatchupId] = useState("0-0");
+  const [phase, setPhase] = useState<AppPhase>("landing");
+  const [user, setUser] = useState<Drafter | null>(null);
+  const [opponent, setOpponent] = useState<Drafter | null>(null);
+  const [draftStep, setDraftStep] = useState(0);
+  const [opponentPickCount, setOpponentPickCount] = useState(0);
+  const [opponentComplete, setOpponentComplete] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
-  const [draftSteps, setDraftSteps] = useState<Record<string, number>>(() =>
-    Object.fromEntries(initialDrafters.map((drafter) => [drafter.id, 0])),
-  );
 
-  const draftersById = useMemo(
-    () => new Map(drafters.map((drafter) => [drafter.id, drafter])),
-    [drafters],
-  );
-  const rounds = useMemo(() => buildTournament(drafters, players), [drafters]);
-  const matchups = rounds.flat();
-  const activeMatchup = matchups.find(
-    (matchup) => matchup.id === activeMatchupId,
-  ) ?? matchups[0];
-  const activeDrafter = draftersById.get(activeDrafterId) ?? drafters[0];
-  const activeLineup = getPlayersById(activeDrafter.lineup, players);
-  const activeScore = calculateLineupScore(activeLineup);
-  const activeStep = draftSteps[activeDrafter.id] ?? 0;
+  const userLineup = getPlayersById(user?.lineup ?? [], players);
+  const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
+  const userScore = calculateLineupScore(userLineup);
+  const userDraftComplete = draftStep >= 5;
 
-  const currentDrafterA = activeMatchup
-    ? draftersById.get(activeMatchup.drafterA)
-    : undefined;
-  const currentDrafterB = activeMatchup
-    ? draftersById.get(activeMatchup.drafterB)
-    : undefined;
-
-  const updateDrafter = (drafterId: string, updater: (drafter: Drafter) => Drafter) => {
-    setDrafters((current) =>
-      current.map((drafter) =>
-        drafter.id === drafterId ? updater(drafter) : drafter,
-      ),
-    );
+  const startMatch = () => {
+    setShareStatus("");
+    setUser(createUserDrafter());
+    setOpponent(createRandomOpponent());
+    setDraftStep(0);
+    setOpponentPickCount(0);
+    setOpponentComplete(false);
+    setPhase("drafting");
   };
 
-  const updatePick = (slot: number, playerId: string) => {
+  const resetToLanding = () => {
     setShareStatus("");
-    updateDrafter(activeDrafterId, (drafter) => {
-      const nextLineup = [...drafter.lineup];
+    setUser(null);
+    setOpponent(null);
+    setDraftStep(0);
+    setOpponentPickCount(0);
+    setOpponentComplete(false);
+    setPhase("landing");
+  };
+
+  const handlePick = useCallback((slot: number, playerId: string) => {
+    setUser((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextLineup = [...current.lineup];
       nextLineup[slot] = playerId;
 
       return {
-        ...drafter,
+        ...current,
         lineup: nextLineup.slice(0, slot + 1),
       };
     });
 
-    setDraftSteps((current) => ({
-      ...current,
-      [activeDrafterId]: Math.min(slot + 1, 4),
-    }));
-  };
+    setDraftStep((current) => Math.min(slot + 1, 5));
+  }, []);
 
-  const autoDraft = () => {
-    setShareStatus("");
-    updateDrafter(activeDrafterId, (drafter) => ({
-      ...drafter,
-      lineup: autoDraftLineup(players, drafter.draftSlots),
-    }));
-    setDraftSteps((current) => ({
-      ...current,
-      [activeDrafterId]: 4,
-    }));
-  };
+  const handleTimeout = useCallback((slot: number) => {
+    setUser((current) => {
+      if (!current || current.lineup[slot]) {
+        return current;
+      }
 
-  const startNewDraft = () => {
-    setShareStatus("");
-    const draftSlots = generateDraftSlots();
-    updateDrafter(activeDrafterId, (drafter) => ({
-      ...drafter,
-      draftSlots,
-      lineup: [],
-    }));
-    setDraftSteps((current) => ({
-      ...current,
-      [activeDrafterId]: 0,
-    }));
-  };
+      const pickedIds = new Set(current.lineup);
+      const slotConstraint = current.draftSlots[slot];
+      const bestPick = pickBestForSlot(players, slotConstraint, pickedIds);
+
+      if (!bestPick) {
+        return current;
+      }
+
+      const nextLineup = [...current.lineup];
+      nextLineup[slot] = bestPick;
+
+      return {
+        ...current,
+        lineup: nextLineup.slice(0, slot + 1),
+      };
+    });
+
+    setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+  }, []);
+
+  useEffect(() => {
+    if (!opponent) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const simulateOpponentDraft = async () => {
+      const pickedIds = new Set<string>();
+      const lineup: string[] = [];
+
+      for (const slot of opponent.draftSlots) {
+        await sleep(getOpponentPickDelayMs());
+        if (cancelled) {
+          return;
+        }
+
+        const selection = pickBestForSlot(players, slot, pickedIds);
+        if (selection) {
+          pickedIds.add(selection);
+          lineup.push(selection);
+        }
+
+        setOpponentPickCount(lineup.length);
+        setOpponent((current) =>
+          current
+            ? {
+                ...current,
+                lineup: [...lineup],
+              }
+            : current,
+        );
+      }
+
+      if (!cancelled) {
+        setOpponentComplete(true);
+      }
+    };
+
+    void simulateOpponentDraft();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [opponent?.id]);
+
+  useEffect(() => {
+    if (!userDraftComplete || phase !== "drafting") {
+      return;
+    }
+
+    setPhase(opponentComplete ? "results" : "waiting");
+  }, [userDraftComplete, opponentComplete, phase]);
+
+  useEffect(() => {
+    if (phase === "waiting" && opponentComplete) {
+      setPhase("results");
+    }
+  }, [phase, opponentComplete]);
 
   const shareLineup = async () => {
-    const lineupNames = activeLineup.map((player) => player.name).join(", ");
-    const text = `${activeDrafter.name} from ${activeDrafter.city} drafted ${lineupNames}. Lineup score: ${activeScore.total}. ${activeScore.projectedRecord.formatted}. #NBAHeadToHead`;
+    if (!user) {
+      return;
+    }
+
+    const lineupNames = userLineup.map((player) => player.name).join(", ");
+    const text = `I drafted ${lineupNames}. Lineup score: ${userScore.total}. ${userScore.projectedRecord.formatted}. #NBAHeadToHead`;
 
     if (navigator.share) {
       await navigator.share({
@@ -110,91 +178,69 @@ function App() {
     setShareStatus("Lineup copied for social sharing.");
   };
 
-  const champion = rounds.at(-1)?.[0]?.winnerId
-    ? draftersById.get(rounds.at(-1)?.[0]?.winnerId ?? "")
-    : undefined;
+  if (phase === "stats") {
+    return (
+      <main>
+        <section className="panel stats-intro">
+          <button type="button" className="secondary-button" onClick={resetToLanding}>
+            Back to home
+          </button>
+        </section>
+        <PlayerStatsTable players={players} statsFile={statsFile} />
+      </main>
+    );
+  }
+
+  if (phase === "landing") {
+    return (
+      <main className="landing-layout">
+        <LandingPage
+          onStartDraft={startMatch}
+          onViewStats={() => setPhase("stats")}
+        />
+      </main>
+    );
+  }
+
+  if (!user || !opponent) {
+    return null;
+  }
 
   return (
     <main>
-      <section className="hero">
-        <div>
-          <p className="eyebrow">NBA Head-to-Head</p>
-          <h1>Draft five. Win the matchup. Survive the bracket.</h1>
-          <p>
-            Eight players from around the world build NBA lineups through a
-            five-step draft. Each pick is tied to a random position and division
-            before you choose your player.
-          </p>
-          <div className="hero-actions">
-            <a href="#draft">Start drafting</a>
-            <a href="#bracket" className="ghost-link">
-              View bracket
-            </a>
-            <a href="#stats" className="ghost-link">
-              View stats
-            </a>
-          </div>
+      {phase === "drafting" && !userDraftComplete ? (
+        <div className="layout-grid">
+          <DraftRoom
+            drafter={user}
+            players={players}
+            activeStep={draftStep}
+            onPick={handlePick}
+            onTimeout={handleTimeout}
+          />
+          <LineupStoryCard
+            drafter={user}
+            lineup={userLineup}
+            score={userScore}
+            onShare={shareLineup}
+          />
         </div>
+      ) : null}
 
-        <div className="hero-card">
-          <span>Current champion</span>
-          <strong>{champion?.name ?? "TBD"}</strong>
-          <p>{champion?.city ?? "Complete the bracket"}</p>
-        </div>
-      </section>
+      {phase === "waiting" ? (
+        <WaitingRoom opponent={opponent} opponentPickCount={opponentPickCount} />
+      ) : null}
 
-      <div className="layout-grid" id="draft">
-        <LineupBuilder
-          drafters={drafters}
-          players={players}
-          activeDrafterId={activeDrafter.id}
-          activeStep={activeStep}
-          onActiveDrafterChange={(drafterId) => {
-            setShareStatus("");
-            setActiveDrafterId(drafterId);
-          }}
-          onPick={updatePick}
-          onAutoDraft={autoDraft}
-          onNewDraft={startNewDraft}
-          onStepChange={(step) =>
-            setDraftSteps((current) => ({
-              ...current,
-              [activeDrafterId]: step,
-            }))
-          }
-        />
-
-        <LineupStoryCard
-          drafter={activeDrafter}
-          lineup={activeLineup}
-          score={activeScore}
-          onShare={shareLineup}
-        />
-      </div>
-
-      {shareStatus ? <p className="toast">{shareStatus}</p> : null}
-
-      {activeMatchup && currentDrafterA && currentDrafterB ? (
-        <ScoreBoard
-          drafterA={currentDrafterA}
-          drafterB={currentDrafterB}
-          scoreA={activeMatchup.scoreA}
-          scoreB={activeMatchup.scoreB}
+      {phase === "results" ? (
+        <MatchResults
+          user={user}
+          opponent={opponent}
+          userLineup={userLineup}
+          opponentLineup={opponentLineup}
+          onPlayAgain={resetToLanding}
         />
       ) : null}
 
-      <div id="bracket">
-        <TournamentBracket
-          rounds={rounds}
-          draftersById={draftersById}
-          activeMatchupId={activeMatchup?.id ?? ""}
-          onSelectMatchup={setActiveMatchupId}
-        />
-      </div>
-
-      <div id="stats">
-        <PlayerStatsTable players={players} statsFile={statsFile} />
-      </div>
+      {shareStatus ? <p className="toast">{shareStatus}</p> : null}
     </main>
   );
 }

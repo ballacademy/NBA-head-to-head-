@@ -23,8 +23,8 @@ export function LineupStoryCard({
       <div className="story-card__top">
         <div>
           <p className="eyebrow">Story graphic</p>
-          <h2 id="story-heading">{drafter.name}'s five</h2>
-          <p>{drafter.city} challenger</p>
+          <h2 id="story-heading">Your five</h2>
+          <p>Your lineup</p>
         </div>
         <div className="score-orb">
           <span>{score.total}</span>
