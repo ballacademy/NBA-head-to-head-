@@ -1,13 +1,114 @@
 import { DIVISIONS, getDivisionForTeam, isDraftableTeam } from "./divisions";
 import type { DraftSlotConstraint, Player, Position } from "./types";
 
-const POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];
+const GUARD_POSITIONS: Position[] = ["PG", "SG"];
+const FORWARD_POSITIONS: Position[] = ["SF", "PF"];
+const BALANCED_COMPOSITION_CHANCE = 0.88;
+const MAX_SLOT_GENERATION_ATTEMPTS = 64;
 
-export const generateDraftSlots = (slotCount = 5): DraftSlotConstraint[] =>
-  Array.from({ length: slotCount }, () => ({
-    position: POSITIONS[Math.floor(Math.random() * POSITIONS.length)],
-    division: DIVISIONS[Math.floor(Math.random() * DIVISIONS.length)],
+type PositionBucket = "guard" | "forward" | "center";
+
+const shuffle = <T>(values: T[]) => {
+  const copy = [...values];
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+
+  return copy;
+};
+
+const pickRandom = <T>(values: readonly T[]) =>
+  values[Math.floor(Math.random() * values.length)];
+
+const bucketToPosition = (bucket: PositionBucket): Position => {
+  if (bucket === "guard") {
+    return pickRandom(GUARD_POSITIONS);
+  }
+
+  if (bucket === "forward") {
+    return pickRandom(FORWARD_POSITIONS);
+  }
+
+  return "C";
+};
+
+const createBalancedBuckets = (): PositionBucket[] =>
+  shuffle(["guard", "guard", "forward", "forward", "center"]);
+
+const createVariedBuckets = (): PositionBucket[] =>
+  shuffle(
+    Array.from({ length: 5 }, () => {
+      const roll = Math.random();
+
+      if (roll < 0.4) {
+        return "guard";
+      }
+
+      if (roll < 0.75) {
+        return "forward";
+      }
+
+      return "center";
+    }),
+  );
+
+export const isAllGuards = (positions: readonly Position[]) =>
+  positions.every((position) => position === "PG" || position === "SG");
+
+export const isAllCenters = (positions: readonly Position[]) =>
+  positions.every((position) => position === "C");
+
+export const isAllBigs = (positions: readonly Position[]) =>
+  positions.every((position) => position === "PF" || position === "C");
+
+export const isBalancedComposition = (positions: readonly Position[]) => {
+  const guards = positions.filter(
+    (position) => position === "PG" || position === "SG",
+  ).length;
+  const forwards = positions.filter(
+    (position) => position === "SF" || position === "PF",
+  ).length;
+  const centers = positions.filter((position) => position === "C").length;
+
+  return guards === 2 && forwards === 2 && centers === 1;
+};
+
+const isRejectedComposition = (positions: readonly Position[]) =>
+  isAllGuards(positions) || isAllCenters(positions) || isAllBigs(positions);
+
+const bucketsToPositions = (buckets: PositionBucket[]) =>
+  buckets.map(bucketToPosition);
+
+const createSlotConstraints = (positions: Position[]): DraftSlotConstraint[] =>
+  positions.map((position) => ({
+    position,
+    division: pickRandom(DIVISIONS),
   }));
+
+export const generateDraftSlots = (slotCount = 5): DraftSlotConstraint[] => {
+  if (slotCount !== 5) {
+    return Array.from({ length: slotCount }, () => ({
+      position: pickRandom([...GUARD_POSITIONS, ...FORWARD_POSITIONS, "C"]),
+      division: pickRandom(DIVISIONS),
+    }));
+  }
+
+  for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
+    const buckets =
+      Math.random() < BALANCED_COMPOSITION_CHANCE
+        ? createBalancedBuckets()
+        : createVariedBuckets();
+    const positions = bucketsToPositions(buckets);
+
+    if (!isRejectedComposition(positions)) {
+      return createSlotConstraints(positions);
+    }
+  }
+
+  return createSlotConstraints(bucketsToPositions(createBalancedBuckets()));
+};
 
 export const filterPlayersForSlot = (
   players: Player[],

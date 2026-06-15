@@ -4,6 +4,11 @@ import {
   autoDraftLineup,
   filterPlayersForSlot,
   formatSlotConstraint,
+  generateDraftSlots,
+  isAllBigs,
+  isAllCenters,
+  isAllGuards,
+  isBalancedComposition,
 } from "./draft";
 import { players } from "../data/players";
 
@@ -54,5 +59,38 @@ describe("draft constraints", () => {
     expect(
       formatSlotConstraint({ position: "C", division: "Central" }),
     ).toBe("C from the Central");
+  });
+
+  it("favors two guards, two forwards, and one center", () => {
+    const simulations = 5000;
+    let balancedCount = 0;
+    let allGuardsCount = 0;
+    let allCentersCount = 0;
+    let allBigsCount = 0;
+
+    for (let index = 0; index < simulations; index += 1) {
+      const positions = generateDraftSlots().map((slot) => slot.position);
+
+      if (isBalancedComposition(positions)) {
+        balancedCount += 1;
+      }
+
+      if (isAllGuards(positions)) {
+        allGuardsCount += 1;
+      }
+
+      if (isAllCenters(positions)) {
+        allCentersCount += 1;
+      }
+
+      if (isAllBigs(positions)) {
+        allBigsCount += 1;
+      }
+    }
+
+    expect(balancedCount / simulations).toBeGreaterThan(0.75);
+    expect(allGuardsCount / simulations).toBeLessThan(0.05);
+    expect(allCentersCount / simulations).toBeLessThan(0.05);
+    expect(allBigsCount / simulations).toBeLessThan(0.05);
   });
 });

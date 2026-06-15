@@ -10,7 +10,8 @@ export function LandingPage({ onStartDraft, onViewStats }: LandingPageProps) {
       <h1>Draft your five. Beat a random rival.</h1>
       <p>
         You will be matched with a random opponent, then draft one player at a
-        time under position and division rules. You have 20 seconds per pick.
+        time under position and division rules. Each pick gets its own screen.
+        You have 20 seconds per pick.
       </p>
 
       <div className="hero-actions">

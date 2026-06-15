@@ -29,6 +29,34 @@ export function DraftRoom({
 
   const currentSlot = drafter.draftSlots[activeStep];
   const pickedIds = useMemo(() => new Set(drafter.lineup), [drafter.lineup]);
+  const completedPicks = useMemo(
+    () =>
+      drafter.lineup
+        .map((playerId, index) => {
+          const player = playersById.get(playerId);
+          const slot = drafter.draftSlots[index];
+
+          if (!player || !slot) {
+            return undefined;
+          }
+
+          return {
+            index,
+            player,
+            slot,
+          };
+        })
+        .filter(
+          (
+            pick,
+          ): pick is {
+            index: number;
+            player: Player;
+            slot: (typeof drafter.draftSlots)[number];
+          } => Boolean(pick),
+        ),
+    [drafter.draftSlots, drafter.lineup],
+  );
 
   const candidates = useMemo(() => {
     if (!currentSlot) {
@@ -88,44 +116,64 @@ export function DraftRoom({
 
   const timerClass =
     secondsLeft <= 5 ? "draft-timer urgent" : "draft-timer";
+  const totalPicks = drafter.draftSlots.length;
 
   return (
-    <section className="panel draft-room" aria-labelledby="draft-heading">
-      <div className="section-heading">
-        <p className="eyebrow">Your draft</p>
-        <h2 id="draft-heading">Draft your players</h2>
-        <p>
-          Pick {activeStep + 1} of 5. Only you can see your board until the
-          matchup is ready.
+    <section
+      className="panel draft-room draft-room--focused"
+      aria-labelledby="draft-heading"
+    >
+      <div className="draft-page-header">
+        <p className="eyebrow">Pick {activeStep + 1} of {totalPicks}</p>
+        <h2 id="draft-heading">Draft player {activeStep + 1}</h2>
+        <p className="draft-page-header__copy">
+          Your next requirement is revealed only when you reach this pick.
         </p>
       </div>
 
-      <ol className="draft-steps" aria-label="Your draft progress">
-        {drafter.draftSlots.map((slot, index) => {
-          const player = drafter.lineup[index]
-            ? playersById.get(drafter.lineup[index])
-            : undefined;
-          const isActive = index === activeStep;
+      <div
+        className="draft-progress"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={totalPicks}
+        aria-valuenow={activeStep + 1}
+        aria-label={`Draft progress, pick ${activeStep + 1} of ${totalPicks}`}
+      >
+        {Array.from({ length: totalPicks }, (_, index) => {
+          const status =
+            index < activeStep
+              ? "complete"
+              : index === activeStep
+                ? "active"
+                : "upcoming";
 
           return (
-            <li key={`${slot.position}-${slot.division}-${index}`}>
-              <div
-                className={
-                  isActive
-                    ? "draft-step active"
-                    : player
-                      ? "draft-step complete"
-                      : "draft-step"
-                }
-              >
-                <span className="draft-step__label">Pick {index + 1}</span>
-                <strong>{formatSlotConstraint(slot)}</strong>
-                <small>{player ? player.name : "Open"}</small>
-              </div>
-            </li>
+            <span
+              key={`draft-progress-${index}`}
+              className={`draft-progress__step draft-progress__step--${status}`}
+            />
           );
         })}
-      </ol>
+      </div>
+
+      {completedPicks.length > 0 ? (
+        <section className="draft-picks-so-far" aria-label="Your picks so far">
+          <p className="eyebrow">Your picks so far</p>
+          <ol className="draft-picks-so-far__list">
+            {completedPicks.map(({ index, player, slot }) => (
+              <li key={player.id}>
+                <span className="pick-number">{index + 1}</span>
+                <div>
+                  <strong>{player.name}</strong>
+                  <span>
+                    {formatSlotConstraint(slot)} • {player.team}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       <div className="draft-prompt">
         <div className="draft-prompt__header">

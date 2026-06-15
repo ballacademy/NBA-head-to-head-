@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { players, statsFile } from "./data/players";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
-import { LineupStoryCard } from "./components/LineupStoryCard";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -13,7 +12,7 @@ import {
   getOpponentPickDelayMs,
   sleep,
 } from "./lib/match";
-import { calculateLineupScore, getPlayersById } from "./lib/scoring";
+import { getPlayersById } from "./lib/scoring";
 import type { Drafter } from "./lib/types";
 
 type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats";
@@ -25,15 +24,12 @@ function App() {
   const [draftStep, setDraftStep] = useState(0);
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
-  const [shareStatus, setShareStatus] = useState("");
 
   const userLineup = getPlayersById(user?.lineup ?? [], players);
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
-  const userScore = calculateLineupScore(userLineup);
   const userDraftComplete = draftStep >= 5;
 
   const startMatch = () => {
-    setShareStatus("");
     setUser(createUserDrafter());
     setOpponent(createRandomOpponent());
     setDraftStep(0);
@@ -43,7 +39,6 @@ function App() {
   };
 
   const resetToLanding = () => {
-    setShareStatus("");
     setUser(null);
     setOpponent(null);
     setDraftStep(0);
@@ -156,28 +151,6 @@ function App() {
     }
   }, [phase, opponentComplete]);
 
-  const shareLineup = async () => {
-    if (!user) {
-      return;
-    }
-
-    const lineupNames = userLineup.map((player) => player.name).join(", ");
-    const text = `I drafted ${lineupNames}. Lineup score: ${userScore.total}. ${userScore.projectedRecord.formatted}. #NBAHeadToHead`;
-
-    if (navigator.share) {
-      await navigator.share({
-        title: "NBA Head-to-Head lineup",
-        text,
-        url: window.location.href,
-      });
-      setShareStatus("Share sheet opened.");
-      return;
-    }
-
-    await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-    setShareStatus("Lineup copied for social sharing.");
-  };
-
   if (phase === "stats") {
     return (
       <main>
@@ -207,21 +180,15 @@ function App() {
   }
 
   return (
-    <main>
+    <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
       {phase === "drafting" && !userDraftComplete ? (
-        <div className="layout-grid">
+        <div className="draft-layout">
           <DraftRoom
             drafter={user}
             players={players}
             activeStep={draftStep}
             onPick={handlePick}
             onTimeout={handleTimeout}
-          />
-          <LineupStoryCard
-            drafter={user}
-            lineup={userLineup}
-            score={userScore}
-            onShare={shareLineup}
           />
         </div>
       ) : null}
@@ -239,8 +206,6 @@ function App() {
           onPlayAgain={resetToLanding}
         />
       ) : null}
-
-      {shareStatus ? <p className="toast">{shareStatus}</p> : null}
     </main>
   );
 }
