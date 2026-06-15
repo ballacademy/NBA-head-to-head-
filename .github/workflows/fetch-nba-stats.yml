@@ -15,7 +15,6 @@ on:
         options:
           - Regular Season
           - Playoffs
-          - Pre Season
 
 permissions:
   contents: write
@@ -37,8 +36,7 @@ jobs:
         run: |
           python scripts/fetch_nba_player_stats.py \
             --season "${{ inputs.season }}" \
-            --season-type "${{ inputs.season_type }}" \
-            --timeout 120
+            --season-type "${{ inputs.season_type }}"
 
       - name: Commit updated stats
         run: |

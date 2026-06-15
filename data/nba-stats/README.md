@@ -1,14 +1,21 @@
 # NBA Player Stats Export
 
-Traditional NBA player statistics fetched from the official NBA Stats API via [`nba_api`](https://github.com/swar/nba_api).
+Traditional NBA player statistics fetched from [Basketball Reference](https://www.basketball-reference.com/).
 
 ## Generate the files
 
-From the repo root, on a **local machine** (NBA.com blocks most cloud/VPN/datacenter IPs):
+From the repo root:
 
 ```bash
 python3 -m pip install -r scripts/requirements.txt
 python3 scripts/fetch_nba_player_stats.py --season 2025-26
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m pip install -r scripts/requirements.txt
+python scripts/fetch_nba_player_stats.py --season 2025-26
 ```
 
 Optional flags:
@@ -19,12 +26,7 @@ python3 scripts/fetch_nba_player_stats.py --season 2025-26 --season-type "Playof
 
 # Custom output folder
 python3 scripts/fetch_nba_player_stats.py --output-dir ./exports
-
-# If requests time out, try a proxy
-python3 scripts/fetch_nba_player_stats.py --proxy "http://user:pass@host:port"
 ```
-
-You can also trigger the GitHub Actions workflow **Fetch NBA Player Stats** manually from the Actions tab. If that run times out, run the script locally instead.
 
 ## Output files
 
@@ -35,7 +37,9 @@ After a successful run, this folder contains:
 | `nba-player-stats-202526-regular-season-per-game.csv` | Spreadsheet / data pipelines (per-game averages) |
 | `nba-player-stats-202526-regular-season-totals.csv` | Season totals |
 | `nba-player-stats-202526-regular-season.json` | Web apps and APIs |
-| `nba-player-stats-202526-regular-season.xlsx` | Excel / Google Sheets (Per Game, Totals, Metadata sheets) |
+| `nba-player-stats-202526-regular-season.xlsx` | Excel / Google Sheets (Per Game, Totals, Per Player, Metadata sheets) |
+
+The CSV files include all team rows (for traded players). The JSON file uses one combined row per player when available.
 
 ## JSON shape (for apps)
 
@@ -43,29 +47,27 @@ After a successful run, this folder contains:
 {
   "season": "2025-26",
   "seasonType": "Regular Season",
+  "source": "basketball-reference",
   "generatedAt": "2026-06-15T12:00:00+00:00",
-  "playerCount": 450,
+  "playerCount": 570,
   "players": [
     {
-      "id": "nikola-jokic",
-      "playerId": 203999,
-      "name": "Nikola Jokic",
-      "team": "DEN",
-      "points": 26.4,
-      "rebounds": 12.4,
-      "assists": 9.0,
-      "steals": 1.4,
-      "blocks": 0.9,
-      "trueShooting": 0.65
+      "id": "luka-doncic",
+      "bbrPlayerId": "doncilu01",
+      "name": "Luka Dončić",
+      "team": "LAL",
+      "position": "PG",
+      "points": 33.5,
+      "rebounds": 7.7,
+      "assists": 8.3,
+      "trueShooting": 0.612
     }
   ]
 }
 ```
 
-Each player entry includes traditional counting and shooting stats (per game), plus computed `trueShooting`.
-
 ## Traditional stat columns (CSV)
 
-Per-game CSV columns match NBA.com traditional stats:
+Per-game CSV columns:
 
-`PLAYER_ID`, `PLAYER_NAME`, `TEAM_ID`, `TEAM_ABBREVIATION`, `AGE`, `GP`, `W`, `L`, `W_PCT`, `MIN`, `FGM`, `FGA`, `FG_PCT`, `FG3M`, `FG3A`, `FG3_PCT`, `FTM`, `FTA`, `FT_PCT`, `OREB`, `DREB`, `REB`, `AST`, `TOV`, `STL`, `BLK`, `BLKA`, `PF`, `PFD`, `PTS`, `PLUS_MINUS`, `NBA_FANTASY_PTS`, `DD2`, `TD3`
+`PLAYER_NAME`, `BBR_PLAYER_ID`, `TEAM_ABBREVIATION`, `POSITION`, `AGE`, `GP`, `GS`, `MIN`, `FGM`, `FGA`, `FG_PCT`, `FG3M`, `FG3A`, `FG3_PCT`, `FTM`, `FTA`, `FT_PCT`, `OREB`, `DREB`, `REB`, `AST`, `STL`, `BLK`, `TOV`, `PF`, `PTS`, `EFG_PCT`
