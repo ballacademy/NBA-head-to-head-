@@ -21,6 +21,14 @@ npm run build
 npm test
 ```
 
+## Windows quick start
+
+Use one folder name every time:
+
+`Downloads\current-nba-head-to-head-folder`
+
+See [SETUP-WINDOWS.md](SETUP-WINDOWS.md) for clone, run, and update steps.
+
 ## NBA player stats export
 
 To compile traditional stats for every NBA player (for use in another site or spreadsheet), run the Python fetch script:
