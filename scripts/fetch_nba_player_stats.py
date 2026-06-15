@@ -76,6 +76,17 @@ TOTALS_COLUMNS = [
     "PTS",
 ]
 
+ADVANCED_COLUMNS = [
+    "PLAYER_NAME",
+    "BBR_PLAYER_ID",
+    "TEAM_ABBREVIATION",
+    "DWS",
+    "DBPM",
+    "DRB_PCT",
+    "STL_PCT",
+    "BLK_PCT",
+]
+
 
 def slugify_player_name(name: str) -> str:
     slug = name.lower()
@@ -170,6 +181,22 @@ def normalize_per_game(df: pd.DataFrame, player_ids: dict[str, str]) -> pd.DataF
     return normalized
 
 
+def normalize_advanced(df: pd.DataFrame, player_ids: dict[str, str]) -> pd.DataFrame:
+    normalized = pd.DataFrame(
+        {
+            "PLAYER_NAME": df["Player"],
+            "BBR_PLAYER_ID": df["Player"].map(player_ids),
+            "TEAM_ABBREVIATION": df["Team"],
+            "DWS": pd.to_numeric(df.get("DWS"), errors="coerce"),
+            "DBPM": pd.to_numeric(df.get("DBPM"), errors="coerce"),
+            "DRB_PCT": pd.to_numeric(df.get("DRB%"), errors="coerce"),
+            "STL_PCT": pd.to_numeric(df.get("STL%"), errors="coerce"),
+            "BLK_PCT": pd.to_numeric(df.get("BLK%"), errors="coerce"),
+        }
+    )
+    return normalized
+
+
 def normalize_totals(df: pd.DataFrame, player_ids: dict[str, str]) -> pd.DataFrame:
     normalized = pd.DataFrame(
         {
@@ -204,25 +231,31 @@ def fetch_player_stats(
     season_type: str = "Regular Season",
     max_retries: int = 3,
     retry_delay_seconds: float = 3.0,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     per_game_url = build_bbr_url(season, season_type, "per_game")
     totals_url = build_bbr_url(season, season_type, "totals")
+    advanced_url = build_bbr_url(season, season_type, "advanced")
 
     per_game_html = fetch_html(per_game_url, max_retries, retry_delay_seconds)
     time.sleep(2.0)
     totals_html = fetch_html(totals_url, max_retries, retry_delay_seconds)
+    time.sleep(2.0)
+    advanced_html = fetch_html(advanced_url, max_retries, retry_delay_seconds)
 
     per_game_ids = extract_bbr_player_ids(per_game_html)
     totals_ids = extract_bbr_player_ids(totals_html)
-    player_ids = {**totals_ids, **per_game_ids}
+    advanced_ids = extract_bbr_player_ids(advanced_html)
+    player_ids = {**totals_ids, **advanced_ids, **per_game_ids}
 
     per_game = normalize_per_game(parse_bbr_table(per_game_html), player_ids)
     totals = normalize_totals(parse_bbr_table(totals_html), player_ids)
+    advanced = normalize_advanced(parse_bbr_table(advanced_html), player_ids)
 
     per_game = per_game[per_game["PLAYER_NAME"] != "League Average"].copy()
     totals = totals[totals["PLAYER_NAME"] != "League Average"].copy()
+    advanced = advanced[advanced["PLAYER_NAME"] != "League Average"].copy()
 
-    return per_game, totals
+    return per_game, totals, advanced
 
 
 def select_primary_player_rows(df: pd.DataFrame) -> pd.DataFrame:
@@ -246,7 +279,12 @@ def select_primary_player_rows(df: pd.DataFrame) -> pd.DataFrame:
 def clean_frame(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     available = [column for column in columns if column in df.columns]
     cleaned = df[available].copy()
-    cleaned = cleaned.sort_values(["PTS", "GP"], ascending=[False, False], kind="stable")
+
+    if "PTS" in cleaned.columns and "GP" in cleaned.columns:
+        cleaned = cleaned.sort_values(["PTS", "GP"], ascending=[False, False], kind="stable")
+    elif "DWS" in cleaned.columns:
+        cleaned = cleaned.sort_values(["DWS", "DBPM"], ascending=[False, False], kind="stable")
+
     cleaned = cleaned.reset_index(drop=True)
     return cleaned
 
@@ -271,8 +309,31 @@ def make_entry_id(player_name: str, team: str, bbr_player_id: object) -> str:
     return f"{slugify_player_name(player_name)}-{team_slug}"
 
 
-def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> dict:
+def build_advanced_lookup(advanced: pd.DataFrame) -> dict[tuple[str, str], dict[str, float | None]]:
+    lookup: dict[tuple[str, str], dict[str, float | None]] = {}
+
+    for row in advanced.itertuples(index=False):
+        row_dict = row._asdict()
+        key = (str(row_dict["PLAYER_NAME"]), str(row_dict.get("TEAM_ABBREVIATION") or "UNK"))
+        lookup[key] = {
+            "defensiveWinShares": to_float(row_dict.get("DWS"), default=float("nan")),
+            "defensiveBoxPlusMinus": to_float(row_dict.get("DBPM"), default=float("nan")),
+            "defensiveReboundPct": to_float(row_dict.get("DRB_PCT"), default=float("nan")),
+            "stealPct": to_float(row_dict.get("STL_PCT"), default=float("nan")),
+            "blockPct": to_float(row_dict.get("BLK_PCT"), default=float("nan")),
+        }
+
+    return lookup
+
+
+def build_app_payload(
+    per_game: pd.DataFrame,
+    advanced: pd.DataFrame,
+    season: str,
+    season_type: str,
+) -> dict:
     players = []
+    advanced_lookup = build_advanced_lookup(advanced)
 
     for row in per_game.itertuples(index=False):
         row_dict = row._asdict()
@@ -288,6 +349,12 @@ def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> 
 
         bbr_player_id = row_dict.get("BBR_PLAYER_ID")
         player_id = make_entry_id(player_name, team, bbr_player_id)
+        advanced_stats = advanced_lookup.get((player_name, team), {})
+
+        def optional_float(value: object) -> float | None:
+            if value is None or pd.isna(value):
+                return None
+            return float(value)
 
         players.append(
             {
@@ -317,6 +384,11 @@ def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> 
                 "freeThrowPct": to_float(row_dict.get("FT_PCT")),
                 "offensiveRebounds": to_float(row_dict.get("OREB")),
                 "defensiveRebounds": to_float(row_dict.get("DREB")),
+                "defensiveWinShares": optional_float(advanced_stats.get("defensiveWinShares")),
+                "defensiveBoxPlusMinus": optional_float(advanced_stats.get("defensiveBoxPlusMinus")),
+                "defensiveReboundPct": optional_float(advanced_stats.get("defensiveReboundPct")),
+                "stealPct": optional_float(advanced_stats.get("stealPct")),
+                "blockPct": optional_float(advanced_stats.get("blockPct")),
                 "personalFouls": to_float(row_dict.get("PF")),
                 "effectiveFieldGoalPct": to_float(row_dict.get("EFG_PCT")),
                 "trueShooting": true_shooting,
@@ -339,6 +411,7 @@ def build_app_payload(per_game: pd.DataFrame, season: str, season_type: str) -> 
 def export_outputs(
     per_game: pd.DataFrame,
     totals: pd.DataFrame,
+    advanced: pd.DataFrame,
     output_dir: Path,
     season: str,
     season_type: str,
@@ -350,18 +423,21 @@ def export_outputs(
 
     per_game_path = output_dir / f"nba-player-stats-{season_slug}-{season_type_slug}-per-game.csv"
     totals_path = output_dir / f"nba-player-stats-{season_slug}-{season_type_slug}-totals.csv"
+    advanced_path = output_dir / f"nba-player-stats-{season_slug}-{season_type_slug}-advanced.csv"
     json_path = output_dir / f"nba-player-stats-{season_slug}-{season_type_slug}.json"
     spreadsheet_path = output_dir / f"nba-player-stats-{season_slug}-{season_type_slug}.xlsx"
 
     per_game.to_csv(per_game_path, index=False)
     totals.to_csv(totals_path, index=False)
+    advanced.to_csv(advanced_path, index=False)
 
-    payload = build_app_payload(per_game, season, season_type)
+    payload = build_app_payload(per_game, advanced, season, season_type)
     json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
     with pd.ExcelWriter(spreadsheet_path, engine="openpyxl") as writer:
         per_game.to_excel(writer, sheet_name="Per Game", index=False)
         totals.to_excel(writer, sheet_name="Totals", index=False)
+        advanced.to_excel(writer, sheet_name="Advanced", index=False)
         select_primary_player_rows(per_game).to_excel(writer, sheet_name="Per Player", index=False)
 
         metadata = pd.DataFrame(
@@ -379,6 +455,7 @@ def export_outputs(
     return {
         "per_game_csv": per_game_path,
         "totals_csv": totals_path,
+        "advanced_csv": advanced_path,
         "json": json_path,
         "spreadsheet": spreadsheet_path,
     }
@@ -415,14 +492,16 @@ def main() -> int:
         f"Fetching traditional player stats from Basketball Reference "
         f"for {args.season} ({args.season_type})..."
     )
-    per_game_raw, totals_raw = fetch_player_stats(args.season, args.season_type)
+    per_game_raw, totals_raw, advanced_raw = fetch_player_stats(args.season, args.season_type)
 
     per_game = clean_frame(per_game_raw, PER_GAME_COLUMNS)
     totals = clean_frame(totals_raw, TOTALS_COLUMNS)
+    advanced = clean_frame(advanced_raw, ADVANCED_COLUMNS)
 
     paths = export_outputs(
         per_game,
         totals,
+        advanced,
         args.output_dir,
         args.season,
         args.season_type,

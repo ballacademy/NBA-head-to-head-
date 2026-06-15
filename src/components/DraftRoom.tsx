@@ -173,11 +173,6 @@ export function DraftRoom({
                   </span>
                   <span className="player-pick__stats">{stats.summary}</span>
                 </div>
-                <span
-                  className={`defense-grade defense-grade--${stats.grade.replace("+", "plus").replace("-", "minus")}`}
-                >
-                  {stats.grade}
-                </span>
               </button>
             );
           })

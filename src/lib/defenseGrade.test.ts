@@ -2,11 +2,17 @@ import { describe, expect, it } from "vitest";
 import { formatPlayerDraftStats, getDefenseGrade } from "./defenseGrade";
 
 describe("getDefenseGrade", () => {
-  it("maps defense scores to letter grades", () => {
-    expect(getDefenseGrade(9.3)).toBe("A+");
-    expect(getDefenseGrade(8.5)).toBe("A-");
-    expect(getDefenseGrade(7.2)).toBe("B-");
-    expect(getDefenseGrade(5.8)).toBe("C-");
+  it("uses the stored grade when provided", () => {
+    expect(getDefenseGrade(6, "A")).toBe("A");
+  });
+
+  it("maps defense scores to letter grades when no stored grade exists", () => {
+    expect(getDefenseGrade(9.82)).toBe("A+");
+    expect(getDefenseGrade(9.3)).toBe("A-");
+    expect(getDefenseGrade(8.95)).toBe("B+");
+    expect(getDefenseGrade(8.5)).toBe("B");
+    expect(getDefenseGrade(7.48)).toBe("C+");
+    expect(getDefenseGrade(5.7)).toBe("D+");
     expect(getDefenseGrade(4.2)).toBe("F");
   });
 });
@@ -19,7 +25,8 @@ describe("formatPlayerDraftStats", () => {
       blocks: 1.2,
       steals: 1.4,
       trueShooting: 0.612,
-      defense: 8.5,
+      defense: 9.1,
+      defenseGrade: "A-",
     });
 
     expect(formatted.grade).toBe("A-");

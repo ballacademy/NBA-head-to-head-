@@ -1,3 +1,5 @@
+import type { DefenseGrade } from "./defenseRating";
+
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 
 export type Division =
@@ -31,6 +33,7 @@ export interface Player {
   threePoint: number;
   usage: number;
   defense: number;
+  defenseGrade?: DefenseGrade;
   styles: PlayStyle[];
 }
 

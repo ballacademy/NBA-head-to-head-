@@ -1,39 +1,18 @@
-export type DefenseGrade =
-  | "A+"
-  | "A"
-  | "A-"
-  | "B+"
-  | "B"
-  | "B-"
-  | "C+"
-  | "C"
-  | "C-"
-  | "D+"
-  | "D"
-  | "F";
+import type { DefenseGrade } from "./defenseRating";
+import { gradeFromPercentile } from "./defenseRating";
 
-const gradeThresholds: Array<{ min: number; grade: DefenseGrade }> = [
-  { min: 9.2, grade: "A+" },
-  { min: 8.8, grade: "A" },
-  { min: 8.4, grade: "A-" },
-  { min: 8.0, grade: "B+" },
-  { min: 7.5, grade: "B" },
-  { min: 7.0, grade: "B-" },
-  { min: 6.5, grade: "C+" },
-  { min: 6.0, grade: "C" },
-  { min: 5.5, grade: "C-" },
-  { min: 5.0, grade: "D+" },
-  { min: 4.5, grade: "D" },
-];
+export type { DefenseGrade } from "./defenseRating";
 
-export const getDefenseGrade = (defense: number): DefenseGrade => {
-  for (const threshold of gradeThresholds) {
-    if (defense >= threshold.min) {
-      return threshold.grade;
-    }
+export const getDefenseGrade = (
+  defense: number,
+  defenseGrade?: DefenseGrade,
+): DefenseGrade => {
+  if (defenseGrade) {
+    return defenseGrade;
   }
 
-  return "F";
+  const percentile = ((defense - 4) / 6) * 100;
+  return gradeFromPercentile(percentile);
 };
 
 export const formatPlayerDraftStats = (player: {
@@ -43,8 +22,9 @@ export const formatPlayerDraftStats = (player: {
   steals: number;
   trueShooting: number;
   defense: number;
+  defenseGrade?: DefenseGrade;
 }) => {
-  const grade = getDefenseGrade(player.defense);
+  const grade = getDefenseGrade(player.defense, player.defenseGrade);
 
   return {
     grade,

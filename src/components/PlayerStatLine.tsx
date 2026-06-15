@@ -19,9 +19,6 @@ export function PlayerStatLine({ player, pickNumber }: PlayerStatLineProps) {
         </span>
         <span className="player-stat-line__stats">{stats.summary}</span>
       </div>
-      <span className={`defense-grade defense-grade--${stats.grade.replace("+", "plus").replace("-", "minus")}`}>
-        {stats.grade}
-      </span>
     </div>
   );
 }
