@@ -63,15 +63,8 @@ export function PlayerStatsTable({
       : players;
 
     return [...matches].sort((a, b) => {
-      const leftMasked = isPlayerStatsMasked(a, collection);
-      const rightMasked = isPlayerStatsMasked(b, collection);
-
-      if (leftMasked !== rightMasked) {
-        return leftMasked ? 1 : -1;
-      }
-
-      const left = leftMasked ? "" : a[sortKey];
-      const right = rightMasked ? "" : b[sortKey];
+      const left = a[sortKey];
+      const right = b[sortKey];
 
       if (typeof left === "string" && typeof right === "string") {
         return sortDirection === "asc"
