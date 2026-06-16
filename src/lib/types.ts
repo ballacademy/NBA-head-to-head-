@@ -25,6 +25,7 @@ export interface Player {
   team: string;
   position: Position;
   positions: Position[];
+  jerseyNumber: number;
   points: number;
   rebounds: number;
   assists: number;

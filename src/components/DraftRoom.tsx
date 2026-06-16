@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   filterPlayersForSlot,
+  formatPickSlotSummary,
   formatSlotConstraint,
   sortDraftCandidates,
 } from "../lib/draft";
@@ -176,15 +177,14 @@ export function DraftRoom({
                 <PlayerTeamIcon
                   team={player.team}
                   position={player.position}
-                  playerId={player.id}
-                  playerName={player.name}
-                  showAvatar
+                  jerseyNumber={player.jerseyNumber}
+                  showJersey
                   label={`${player.name}, pick ${index + 1}`}
                 />
                 <div>
                   <strong>{player.name}</strong>
                   <span>
-                    {formatSlotConstraint(slot)} • {player.team}
+                    {formatPickSlotSummary(slot)} • {player.team}
                   </span>
                 </div>
               </li>
@@ -235,9 +235,8 @@ export function DraftRoom({
                 <PlayerTeamIcon
                   team={player.team}
                   position={player.position}
-                  playerId={player.id}
-                  playerName={player.name}
-                  showAvatar
+                  jerseyNumber={player.jerseyNumber}
+                  showJersey
                   label={player.name}
                 />
                 <div>

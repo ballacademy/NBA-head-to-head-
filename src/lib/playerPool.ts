@@ -4,6 +4,7 @@ import {
   formatPlayerPositions,
   normalizePosition,
 } from "./positions";
+import { lookupJerseyNumber } from "./jerseyNumbers";
 import {
   buildDefensiveRatings,
   toDefensiveStatInput,
@@ -137,8 +138,8 @@ export const deriveStyles = (
 };
 
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
+  const position = normalizePosition(raw.position);
   const positions = buildPlayerPositions(raw);
-  const position = positions[0] ?? normalizePosition(raw.position);
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);
 
@@ -148,6 +149,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     team: raw.team,
     position,
     positions,
+    jerseyNumber: lookupJerseyNumber(raw.bbrPlayerId, raw.id, raw.team),
     points: raw.points,
     rebounds: raw.rebounds,
     assists: raw.assists,
