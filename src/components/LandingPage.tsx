@@ -76,9 +76,7 @@ export function LandingPage({
           recent
         </p>
         <p className="collection-progress-card__meta">
-          Everyone else is always draftable. Win to unlock 2026 All-Stars and
-          recent All-Stars (2024–2025). Lose to unlock scrubs from the bottom
-          50.
+          Win to unlock more Stars, lose to unlock scrubs.
         </p>
       </div>
 
