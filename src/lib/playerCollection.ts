@@ -166,6 +166,12 @@ export const getDraftablePlayers = (
   );
 };
 
+export const isPlayerStatsMasked = (
+  player: Player,
+  collection = ensurePlayerCollection(),
+) =>
+  isCollectibleTierPlayer(player) && !collection.unlockedIds.includes(player.id);
+
 export const createWinUnlockOffer = (
   collection = ensurePlayerCollection(),
 ): UnlockOffer | null => {

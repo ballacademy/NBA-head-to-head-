@@ -1,10 +1,16 @@
 import { useMemo, useState } from "react";
+import {
+  ensurePlayerCollection,
+  isPlayerStatsMasked,
+  type PlayerCollection,
+} from "../lib/playerCollection";
 import type { Player } from "../lib/types";
 import type { SeasonStatsFile } from "../lib/playerPool";
 
 interface PlayerStatsTableProps {
   players: Player[];
   statsFile: SeasonStatsFile;
+  collection?: PlayerCollection;
 }
 
 type SortKey =
@@ -18,6 +24,8 @@ type SortKey =
   | "blocks"
   | "trueShooting";
 
+const MASKED_VALUE = "????";
+
 const columns: Array<{ key: SortKey; label: string }> = [
   { key: "name", label: "Player" },
   { key: "team", label: "Team" },
@@ -30,7 +38,11 @@ const columns: Array<{ key: SortKey; label: string }> = [
   { key: "trueShooting", label: "TS%" },
 ];
 
-export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) {
+export function PlayerStatsTable({
+  players,
+  statsFile,
+  collection = ensurePlayerCollection(),
+}: PlayerStatsTableProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("points");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -40,14 +52,26 @@ export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) 
 
     const matches = normalizedQuery
       ? players.filter((player) => {
-          const haystack = `${player.name} ${player.team} ${player.position}`.toLowerCase();
+          if (isPlayerStatsMasked(player, collection)) {
+            return false;
+          }
+
+          const haystack =
+            `${player.name} ${player.team} ${player.position}`.toLowerCase();
           return haystack.includes(normalizedQuery);
         })
       : players;
 
     return [...matches].sort((a, b) => {
-      const left = a[sortKey];
-      const right = b[sortKey];
+      const leftMasked = isPlayerStatsMasked(a, collection);
+      const rightMasked = isPlayerStatsMasked(b, collection);
+
+      if (leftMasked !== rightMasked) {
+        return leftMasked ? 1 : -1;
+      }
+
+      const left = leftMasked ? "" : a[sortKey];
+      const right = rightMasked ? "" : b[sortKey];
 
       if (typeof left === "string" && typeof right === "string") {
         return sortDirection === "asc"
@@ -61,7 +85,7 @@ export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) 
         ? numericLeft - numericRight
         : numericRight - numericLeft;
     });
-  }, [players, query, sortDirection, sortKey]);
+  }, [collection, players, query, sortDirection, sortKey]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -79,10 +103,8 @@ export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) 
         <p className="eyebrow">2025-26 season stats</p>
         <h2 id="stats-heading">Browse the full player pool</h2>
         <p>
-          These numbers power lineup scoring in the app. They come from Basketball
-          Reference ({statsFile.uniquePlayerCount ?? statsFile.playerCount} unique
-          players, {players.length} stat rows including team splits) and refresh
-          when you rerun the Python export script.
+          These numbers power lineup scoring in the app. Locked Stars and scrubs
+          stay hidden until you unlock them. Everyone else is visible here.
         </p>
       </div>
 
@@ -130,19 +152,28 @@ export function PlayerStatsTable({ players, statsFile }: PlayerStatsTableProps) 
             </tr>
           </thead>
           <tbody>
-            {filteredPlayers.map((player) => (
-              <tr key={player.id}>
-                <td>{player.name}</td>
-                <td>{player.team}</td>
-                <td>{player.position}</td>
-                <td>{player.points.toFixed(1)}</td>
-                <td>{player.rebounds.toFixed(1)}</td>
-                <td>{player.assists.toFixed(1)}</td>
-                <td>{player.steals.toFixed(1)}</td>
-                <td>{player.blocks.toFixed(1)}</td>
-                <td>{(player.trueShooting * 100).toFixed(1)}%</td>
-              </tr>
-            ))}
+            {filteredPlayers.map((player) => {
+              const masked = isPlayerStatsMasked(player, collection);
+
+              return (
+                <tr
+                  key={player.id}
+                  className={masked ? "stats-table__row--masked" : undefined}
+                >
+                  <td>{masked ? MASKED_VALUE : player.name}</td>
+                  <td>{masked ? MASKED_VALUE : player.team}</td>
+                  <td>{masked ? MASKED_VALUE : player.position}</td>
+                  <td>{masked ? MASKED_VALUE : player.points.toFixed(1)}</td>
+                  <td>{masked ? MASKED_VALUE : player.rebounds.toFixed(1)}</td>
+                  <td>{masked ? MASKED_VALUE : player.assists.toFixed(1)}</td>
+                  <td>{masked ? MASKED_VALUE : player.steals.toFixed(1)}</td>
+                  <td>{masked ? MASKED_VALUE : player.blocks.toFixed(1)}</td>
+                  <td>
+                    {masked ? MASKED_VALUE : `${(player.trueShooting * 100).toFixed(1)}%`}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

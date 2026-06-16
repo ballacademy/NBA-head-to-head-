@@ -19,6 +19,7 @@ import {
   getDraftablePlayers,
   grantLossUnlock,
   grantWinUnlock,
+  isPlayerStatsMasked,
   isRegularDraftPlayer,
   loadPlayerCollection,
 } from "./playerCollection";
@@ -161,6 +162,23 @@ describe("playerCollection", () => {
 
     expect(regularPlayer).toBeDefined();
     expect(draftableIds.has(regularPlayer!.id)).toBe(true);
+  });
+
+  it("masks locked collectible players in season stats", () => {
+    const collection = loadPlayerCollection();
+    const lockedAllStarId = getAllStarPlayerIds().find(
+      (playerId) => !collection.unlockedIds.includes(playerId),
+    );
+    const lockedPlayer = getPlayerById(lockedAllStarId!);
+    const unlockedPlayer = getPlayerById(collection.unlockedIds[0]!);
+    const regularPlayer = players.find((player) => isRegularDraftPlayer(player));
+
+    expect(lockedPlayer).toBeDefined();
+    expect(unlockedPlayer).toBeDefined();
+    expect(regularPlayer).toBeDefined();
+    expect(isPlayerStatsMasked(lockedPlayer!, collection)).toBe(true);
+    expect(isPlayerStatsMasked(unlockedPlayer!, collection)).toBe(false);
+    expect(isPlayerStatsMasked(regularPlayer!, collection)).toBe(false);
   });
 
   it("only rolls premium unlocks at the configured chance", () => {

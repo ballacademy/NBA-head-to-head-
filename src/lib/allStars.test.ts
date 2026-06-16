@@ -10,7 +10,7 @@ import {
 import { players, playersById } from "./playerPool";
 
 describe("allStars recent tier", () => {
-  it("defines recent all-stars from 2024 and 2025 who are not 2026 all-stars", () => {
+  it("defines recent all-stars from 2023 through 2025 who are not 2026 all-stars", () => {
     const recentIds = getRecentAllStarPlayerIds();
 
     expect(recentIds.length).toBeGreaterThan(0);

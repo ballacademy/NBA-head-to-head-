@@ -73,7 +73,7 @@ export function LandingPage({
         <p className="collection-progress-card__value">
           {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
           {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
-          recent
+          recent all-stars
         </p>
         <p className="collection-progress-card__meta">
           Win to unlock more Stars, lose to unlock scrubs.

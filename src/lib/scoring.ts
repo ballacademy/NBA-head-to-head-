@@ -1,7 +1,7 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 
 export const SEASON_LENGTH = 82;
-export const LINEUP_RAW_CEILING = 236;
+export const LINEUP_RAW_CEILING = 205;
 
 const round = (value: number, places = 1) => {
   const factor = 10 ** places;
@@ -135,16 +135,16 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     clamp((averageThreePoint - 0.335) * 150, 0, 16) +
     Math.min(shooters, 4) * 2.3;
 
-  let fit = 18;
-  fit += positions.size >= 4 ? 8 : positions.size === 3 ? 3 : -6;
-  fit += stoppers >= 2 ? 7 : stoppers === 1 ? 1 : -8;
-  fit += rimProtectors >= 1 ? 6 : -8;
-  fit += connectors >= 2 ? 6 : connectors === 1 ? 2 : -5;
-  fit += shooters >= 3 ? 6 : shooters === 2 ? 2 : -6;
-  fit += engines.length >= 1 ? 4 : -5;
-  fit += lowUsagePlayers >= 1 ? 3 : -4;
-  fit -= Math.max(0, highUsagePlayers - 2) * 7;
-  fit -= averageUsage > 31 ? (averageUsage - 31) * 1.5 : 0;
+  let fit = 22;
+  fit += positions.size >= 4 ? 8 : positions.size === 3 ? 4 : -4;
+  fit += stoppers >= 2 ? 7 : stoppers === 1 ? 2 : -6;
+  fit += rimProtectors >= 1 ? 6 : -6;
+  fit += connectors >= 2 ? 6 : connectors === 1 ? 3 : -4;
+  fit += shooters >= 3 ? 6 : shooters === 2 ? 3 : -4;
+  fit += engines.length >= 1 ? 4 : -3;
+  fit += lowUsagePlayers >= 1 ? 3 : -3;
+  fit -= Math.max(0, highUsagePlayers - 2) * 6;
+  fit -= averageUsage > 31 ? (averageUsage - 31) * 1.2 : 0;
   fit = clamp(fit, 0, 48);
 
   const categories: ScoreCategory[] = [

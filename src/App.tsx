@@ -209,7 +209,11 @@ function App() {
             Back to home
           </button>
         </section>
-        <PlayerStatsTable players={players} statsFile={statsFile} />
+        <PlayerStatsTable
+          players={players}
+          statsFile={statsFile}
+          collection={collection}
+        />
       </main>
     );
   }

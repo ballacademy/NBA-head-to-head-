@@ -1509,6 +1509,12 @@ main {
   background: rgba(148, 163, 184, 0.08);
 }
 
+.stats-table__row--masked td {
+  color: #94a3b8;
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
 .sort-button {
   border: 0;
   background: transparent;
