@@ -71,11 +71,14 @@ export function LandingPage({
       <div className="collection-progress-card">
         <p className="eyebrow">Your All-Star collection</p>
         <p className="collection-progress-card__value">
-          {collectionProgress.unlocked}/{collectionProgress.total} unlocked
+          {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
+          {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
+          recent
         </p>
         <p className="collection-progress-card__meta">
-          Everyone else is always draftable. Win to unlock more All-Stars, lose
-          to unlock scrubs from the bottom 50.
+          Everyone else is always draftable. Win to unlock 2026 All-Stars and
+          recent All-Stars (2024–2025). Lose to unlock scrubs from the bottom
+          50.
         </p>
       </div>
 

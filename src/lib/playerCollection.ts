@@ -2,9 +2,13 @@ import {
   ALL_STAR_COUNT,
   getAllStarPlayerIds,
   getPlayerById,
+  getRecentAllStarPlayerIds,
   getSuperstarPlayersInAllStarPool,
+  getWinUnlockPlayerIds,
   isAllStarPlayer,
+  isRecentAllStarPlayer,
   isSuperstarPlayer,
+  RECENT_ALL_STAR_COUNT,
   STARTING_COLLECTION_SIZE,
 } from "./allStars";
 import { readJson, writeJson } from "./browserStorage";
@@ -143,6 +147,7 @@ export const getUnlockedPlayerIds = (collection = ensurePlayerCollection()) =>
 
 export const isCollectibleTierPlayer = (player: Player) =>
   isAllStarPlayer(player) ||
+  isRecentAllStarPlayer(player) ||
   isSuperstarPlayer(player) ||
   isScrubPlayer(player) ||
   isSuperScrubPlayer(player);
@@ -165,7 +170,7 @@ export const createWinUnlockOffer = (
   collection = ensurePlayerCollection(),
 ): UnlockOffer | null => {
   const unlocked = new Set(collection.unlockedIds);
-  const available = getAllStarPlayerIds().filter((id) => !unlocked.has(id));
+  const available = getWinUnlockPlayerIds().filter((id) => !unlocked.has(id));
   const pair = createTieredUnlockPair(available, (playerId) => {
     const player = getPlayerById(playerId);
     return Boolean(player && isSuperstarPlayer(player));
@@ -301,6 +306,10 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     const player = getPlayerById(playerId);
     return Boolean(player && isAllStarPlayer(player));
   }).length;
+  const unlockedRecentAllStars = collection.unlockedIds.filter((playerId) => {
+    const player = getPlayerById(playerId);
+    return Boolean(player && isRecentAllStarPlayer(player));
+  }).length;
   const unlockedScrubs = collection.unlockedIds.filter((playerId) =>
     isScrubPlayer({ id: playerId }),
   ).length;
@@ -308,6 +317,8 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
   return {
     unlocked: unlockedAllStars,
     total: ALL_STAR_COUNT,
+    recentUnlocked: unlockedRecentAllStars,
+    recentTotal: RECENT_ALL_STAR_COUNT,
     scrubPool: SCRUB_POOL_SIZE,
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,

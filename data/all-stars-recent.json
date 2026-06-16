@@ -1,0 +1,22 @@
+{
+  "description": "Players who made the NBA All-Star Game in 2023-24 or 2024-25 but not the 2026 game",
+  "seasons": ["2023-24", "2024-25"],
+  "bbrPlayerIds": [
+    "adebaba01",
+    "banchpa01",
+    "davisan02",
+    "embiijo01",
+    "garlada01",
+    "georgpa01",
+    "halibty01",
+    "hardeja01",
+    "herroty01",
+    "jacksja02",
+    "lillada01",
+    "mobleev01",
+    "randlju01",
+    "tatumja01",
+    "willija06",
+    "youngtr01"
+  ]
+}

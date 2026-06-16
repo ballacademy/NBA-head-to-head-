@@ -3,7 +3,10 @@ import {
   ALL_STAR_COUNT,
   getAllStarPlayerIds,
   getPlayerById,
+  getRecentAllStarPlayerIds,
+  getWinUnlockPlayerIds,
   isAllStarPlayer,
+  isRecentAllStarPlayer,
   isSuperstarPlayer,
   STARTING_COLLECTION_SIZE,
 } from "./allStars";
@@ -77,7 +80,7 @@ describe("playerCollection", () => {
 
     options.forEach((playerId) => {
       expect(collection.unlockedIds).not.toContain(playerId);
-      expect(getAllStarPlayerIds()).toContain(playerId);
+      expect(getWinUnlockPlayerIds()).toContain(playerId);
     });
   });
 
@@ -146,6 +149,13 @@ describe("playerCollection", () => {
 
     expect(lockedAllStarId).toBeDefined();
     expect(draftableIds.has(lockedAllStarId!)).toBe(false);
+
+    const lockedRecentAllStarId = getRecentAllStarPlayerIds().find(
+      (playerId) => !collection.unlockedIds.includes(playerId),
+    );
+
+    expect(lockedRecentAllStarId).toBeDefined();
+    expect(draftableIds.has(lockedRecentAllStarId!)).toBe(false);
 
     const regularPlayer = players.find((player) => isRegularDraftPlayer(player));
 

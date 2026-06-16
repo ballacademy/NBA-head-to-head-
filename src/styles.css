@@ -711,6 +711,12 @@ main {
   color: #bfdbfe;
 }
 
+.player-rarity-badge--recent-all-star {
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  background: rgba(99, 102, 241, 0.18);
+  color: #c7d2fe;
+}
+
 .player-rarity-badge--superstar {
   border: 1px solid rgba(251, 191, 36, 0.55);
   background: rgba(245, 158, 11, 0.2);
