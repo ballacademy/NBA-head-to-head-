@@ -18,6 +18,7 @@ export const projectRecordAfterMatch = (
   wins: current.wins + (userWon ? 1 : 0),
   losses: current.losses + (userWon ? 0 : 1),
   winStreak: userWon ? current.winStreak + 1 : 0,
+  lossStreak: userWon ? 0 : current.lossStreak + 1,
 });
 
 export const persistMatchOutcome = (

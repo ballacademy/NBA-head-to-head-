@@ -74,7 +74,8 @@ export function LandingPage({
           {collectionProgress.unlocked}/{collectionProgress.total} unlocked
         </p>
         <p className="collection-progress-card__meta">
-          Win matchups to unlock more 2026 All-Stars for your draft pool.
+          Win matchups to unlock more 2026 All-Stars. Lose matchups to unlock
+          scrubs from the bottom 50.
         </p>
       </div>
 

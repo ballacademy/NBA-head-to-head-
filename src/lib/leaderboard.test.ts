@@ -17,6 +17,12 @@ const localStorageMock = {
   },
 };
 
+const baseEntry = {
+  city: "Chicago",
+  name: "Bulls",
+  lossStreak: 0,
+};
+
 describe("leaderboard", () => {
   beforeEach(() => {
     storage.clear();
@@ -30,8 +36,7 @@ describe("leaderboard", () => {
   it("sorts by wins and limits to the top entries", () => {
     upsertLeaderboardEntry({
       playerId: "a",
-      city: "Chicago",
-      name: "Bulls",
+      ...baseEntry,
       wins: 8,
       losses: 2,
     });
@@ -41,6 +46,7 @@ describe("leaderboard", () => {
       name: "Celtics",
       wins: 12,
       losses: 4,
+      lossStreak: 0,
     });
 
     expect(getTopLeaderboard("wins").map((entry) => entry.playerId)).toEqual([
@@ -52,8 +58,7 @@ describe("leaderboard", () => {
   it("hides win percentage until 20 games are played", () => {
     upsertLeaderboardEntry({
       playerId: "a",
-      city: "Chicago",
-      name: "Bulls",
+      ...baseEntry,
       wins: 18,
       losses: 1,
     });
@@ -66,11 +71,53 @@ describe("leaderboard", () => {
       name: "Celtics",
       wins: 16,
       losses: 4,
+      lossStreak: 0,
     });
 
     expect(getTopLeaderboard("winPct")[0]?.playerId).toBe("b");
     expect(formatLeaderboardWinPercentage({ wins: 16, losses: 4 })).toBe(
       "80.0%",
     );
+  });
+
+  it("sorts by lowest win percentage among qualified teams", () => {
+    upsertLeaderboardEntry({
+      playerId: "hot",
+      city: "Miami",
+      name: "Heat",
+      wins: 16,
+      losses: 4,
+      lossStreak: 0,
+    });
+    upsertLeaderboardEntry({
+      playerId: "cold",
+      city: "Detroit",
+      name: "Pistons",
+      wins: 8,
+      losses: 12,
+      lossStreak: 3,
+    });
+
+    expect(getTopLeaderboard("lowestWinPct")[0]?.playerId).toBe("cold");
+  });
+
+  it("sorts by active loss streak", () => {
+    upsertLeaderboardEntry({
+      playerId: "a",
+      ...baseEntry,
+      wins: 4,
+      losses: 8,
+      lossStreak: 2,
+    });
+    upsertLeaderboardEntry({
+      playerId: "b",
+      city: "Boston",
+      name: "Celtics",
+      wins: 3,
+      losses: 10,
+      lossStreak: 5,
+    });
+
+    expect(getTopLeaderboard("lossStreak")[0]?.playerId).toBe("b");
   });
 });

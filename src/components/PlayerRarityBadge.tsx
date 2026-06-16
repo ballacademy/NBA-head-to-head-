@@ -1,4 +1,5 @@
 import { isAllStarPlayer, isSuperstarPlayer } from "../lib/allStars";
+import { isScrubPlayer, isSuperScrubPlayer } from "../lib/playerTiers";
 import type { Player } from "../lib/types";
 
 interface PlayerRarityBadgeProps {
@@ -8,8 +9,10 @@ interface PlayerRarityBadgeProps {
 export function PlayerRarityBadge({ player }: PlayerRarityBadgeProps) {
   const superstar = isSuperstarPlayer(player);
   const allStar = isAllStarPlayer(player);
+  const superScrub = isSuperScrubPlayer(player);
+  const scrub = isScrubPlayer(player);
 
-  if (!allStar && !superstar) {
+  if (!allStar && !superstar && !scrub && !superScrub) {
     return null;
   }
 
@@ -23,6 +26,16 @@ export function PlayerRarityBadge({ player }: PlayerRarityBadgeProps) {
       {superstar ? (
         <span className="player-rarity-badge player-rarity-badge--superstar">
           Superstar
+        </span>
+      ) : null}
+      {scrub ? (
+        <span className="player-rarity-badge player-rarity-badge--scrub">
+          Scrub
+        </span>
+      ) : null}
+      {superScrub ? (
+        <span className="player-rarity-badge player-rarity-badge--super-scrub">
+          Super Scrub
         </span>
       ) : null}
     </span>

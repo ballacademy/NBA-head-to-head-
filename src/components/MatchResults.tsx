@@ -9,6 +9,7 @@ import {
 import {
   completeUnlock,
   ensurePlayerCollection,
+  grantLossUnlock,
   grantWinUnlock,
   type PlayerCollection,
 } from "../lib/playerCollection";
@@ -57,13 +58,21 @@ export function MatchResults({
 
     if (userWon) {
       onCollectionChange(grantWinUnlock(matchId, ensurePlayerCollection()));
+      return;
     }
+
+    onCollectionChange(grantLossUnlock(matchId, ensurePlayerCollection()));
   }, [matchId, onCollectionChange, user.city, user.name, userWon]);
 
   const handleUnlockSelect = (playerId: string) => {
     onCollectionChange(completeUnlock(playerId, collection));
     setShowUnlockModal(false);
   };
+
+  const unlockButtonLabel =
+    collection.pendingUnlock?.kind === "loss"
+      ? "New scrub unlocked — click to choose"
+      : "New player unlocked — click to choose";
 
   return (
     <section className="match-results">
@@ -87,13 +96,17 @@ export function MatchResults({
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
 
-        {userWon && collection.pendingUnlock ? (
+        {collection.pendingUnlock ? (
           <button
             type="button"
-            className="unlock-reward-button"
+            className={`unlock-reward-button${
+              collection.pendingUnlock.kind === "loss"
+                ? " unlock-reward-button--loss"
+                : ""
+            }`}
             onClick={() => setShowUnlockModal(true)}
           >
-            New player unlocked — click to choose
+            {unlockButtonLabel}
           </button>
         ) : null}
 

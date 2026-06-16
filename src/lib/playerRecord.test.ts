@@ -31,13 +31,16 @@ describe("playerRecord", () => {
     vi.unstubAllGlobals();
   });
 
-  it("tracks wins, losses, and win streak", () => {
+  it("tracks wins, losses, win streak, and loss streak", () => {
     recordMatchResult(true);
     recordMatchResult(true);
     const afterLoss = recordMatchResult(false);
+    const afterAnotherLoss = recordMatchResult(false);
 
     expect(formatPlayerRecord(afterLoss)).toBe("2-1");
     expect(afterLoss.winStreak).toBe(0);
+    expect(afterLoss.lossStreak).toBe(1);
+    expect(afterAnotherLoss.lossStreak).toBe(2);
   });
 
   it("shows fire streak at the configured threshold", () => {
@@ -54,6 +57,7 @@ describe("playerRecord", () => {
       losses: 7,
       playerId: getOrCreatePlayerId(),
       winStreak: 0,
+      lossStreak: 0,
     };
 
     expect(shouldShowWinPercentage(record)).toBe(false);

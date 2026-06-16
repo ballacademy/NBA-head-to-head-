@@ -1,18 +1,28 @@
 import {
   ALL_STAR_COUNT,
   getAllStarPlayerIds,
-  getAllStarPlayers,
   getPlayerById,
   getSuperstarPlayersInAllStarPool,
   isSuperstarPlayer,
   STARTING_COLLECTION_SIZE,
 } from "./allStars";
 import { readJson, writeJson } from "./browserStorage";
+import {
+  getScrubPlayerIds,
+  getSuperScrubPlayerIds,
+  isSuperScrubPlayer,
+  SCRUB_POOL_SIZE,
+} from "./playerTiers";
 
 const COLLECTION_KEY = "nba-head-to-head-player-collection";
 const LAST_UNLOCK_MATCH_KEY = "nba-head-to-head-last-unlock-match";
 
+export const PREMIUM_UNLOCK_CHANCE = 1 / 3;
+
+export type UnlockOfferKind = "win" | "loss";
+
 export interface UnlockOffer {
+  kind: UnlockOfferKind;
   optionA: string;
   optionB: string;
   createdAt: string;
@@ -37,6 +47,43 @@ const shuffle = <T>(values: T[]) => {
 
 const pickRandom = <T>(values: T[]) =>
   values[Math.floor(Math.random() * values.length)];
+
+export const createTieredUnlockPair = (
+  available: string[],
+  isPremium: (playerId: string) => boolean,
+  premiumChance = PREMIUM_UNLOCK_CHANCE,
+): [string, string] | null => {
+  if (available.length === 0) {
+    return null;
+  }
+
+  if (available.length === 1) {
+    return [available[0]!, available[0]!];
+  }
+
+  const premium = available.filter(isPremium);
+  const regular = available.filter((playerId) => !isPremium(playerId));
+
+  if (regular.length === 0) {
+    const options = shuffle(available).slice(0, 2);
+    return [options[0]!, options[1]!];
+  }
+
+  if (premium.length > 0 && Math.random() < premiumChance) {
+    const optionA = pickRandom(premium);
+    const rest = available.filter((playerId) => playerId !== optionA);
+    return [optionA, pickRandom(rest)];
+  }
+
+  const optionA = pickRandom(regular);
+  const regularRest = regular.filter((playerId) => playerId !== optionA);
+  const optionBPool =
+    regularRest.length > 0
+      ? regularRest
+      : available.filter((playerId) => playerId !== optionA);
+
+  return [optionA, pickRandom(optionBPool)];
+};
 
 export const createStarterCollection = (): string[] => {
   const superstarPool = getSuperstarPlayersInAllStarPool();
@@ -91,29 +138,45 @@ export const ensurePlayerCollection = (): PlayerCollection => {
 export const getUnlockedPlayerIds = (collection = ensurePlayerCollection()) =>
   collection.unlockedIds;
 
-export const createUnlockOffer = (
+export const createWinUnlockOffer = (
   collection = ensurePlayerCollection(),
 ): UnlockOffer | null => {
   const unlocked = new Set(collection.unlockedIds);
   const available = getAllStarPlayerIds().filter((id) => !unlocked.has(id));
+  const pair = createTieredUnlockPair(available, (playerId) => {
+    const player = getPlayerById(playerId);
+    return Boolean(player && isSuperstarPlayer(player));
+  });
 
-  if (available.length === 0) {
+  if (!pair) {
     return null;
   }
 
-  const options = shuffle(available).slice(0, Math.min(2, available.length));
+  return {
+    kind: "win",
+    optionA: pair[0],
+    optionB: pair[1],
+    createdAt: new Date().toISOString(),
+  };
+};
 
-  if (options.length === 1) {
-    return {
-      optionA: options[0]!,
-      optionB: options[0]!,
-      createdAt: new Date().toISOString(),
-    };
+export const createLossUnlockOffer = (
+  collection = ensurePlayerCollection(),
+): UnlockOffer | null => {
+  const unlocked = new Set(collection.unlockedIds);
+  const available = getScrubPlayerIds().filter((id) => !unlocked.has(id));
+  const pair = createTieredUnlockPair(available, (playerId) =>
+    isSuperScrubPlayer({ id: playerId }),
+  );
+
+  if (!pair) {
+    return null;
   }
 
   return {
-    optionA: options[0]!,
-    optionB: options[1]!,
+    kind: "loss",
+    optionA: pair[0],
+    optionB: pair[1],
     createdAt: new Date().toISOString(),
   };
 };
@@ -128,7 +191,34 @@ export const grantWinUnlock = (
     return collection;
   }
 
-  const offer = createUnlockOffer(collection);
+  const offer = createWinUnlockOffer(collection);
+
+  if (!offer) {
+    return collection;
+  }
+
+  const next = {
+    ...collection,
+    pendingUnlock: offer,
+  };
+
+  savePlayerCollection(next);
+  writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
+
+  return next;
+};
+
+export const grantLossUnlock = (
+  matchId: string,
+  collection = ensurePlayerCollection(),
+) => {
+  const lastUnlock = readJson<{ matchId: string }>(LAST_UNLOCK_MATCH_KEY);
+
+  if (lastUnlock?.matchId === matchId) {
+    return collection;
+  }
+
+  const offer = createLossUnlockOffer(collection);
 
   if (!offer) {
     return collection;
@@ -186,4 +276,6 @@ export const dismissPendingUnlock = (collection = ensurePlayerCollection()) => {
 export const getCollectionProgress = (collection = ensurePlayerCollection()) => ({
   unlocked: collection.unlockedIds.length,
   total: ALL_STAR_COUNT,
+  scrubPool: SCRUB_POOL_SIZE,
+  superScrubPool: getSuperScrubPlayerIds().length,
 });

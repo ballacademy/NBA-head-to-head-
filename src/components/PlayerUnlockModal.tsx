@@ -3,6 +3,7 @@ import { isSuperstarPlayer } from "../lib/allStars";
 import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { playersById } from "../lib/playerPool";
 import type { UnlockOffer } from "../lib/playerCollection";
+import { isSuperScrubPlayer } from "../lib/playerTiers";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 
@@ -20,26 +21,41 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
       .filter((player): player is NonNullable<typeof player> => Boolean(player));
   }, [offer.optionA, offer.optionB]);
 
+  const isWinOffer = offer.kind === "win";
+
   return (
     <div className="unlock-modal" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
       <div className="unlock-modal__panel panel">
         <p className="eyebrow">New player unlocked</p>
-        <h2 id="unlock-title">Choose one All-Star for your collection</h2>
+        <h2 id="unlock-title">
+          {isWinOffer
+            ? "Choose one All-Star for your collection"
+            : "Choose one Scrub for your collection"}
+        </h2>
         <p className="unlock-modal__copy">
-          Pick a player to add to your draft pool. Superstar cards are rare —
-          grab them when they appear.
+          {isWinOffer
+            ? "Pick a player to add to your draft pool. Superstar cards are extra rare — grab them when they appear."
+            : "Pick a player to add to your draft pool. Super Scrub cards are extra rare — embrace the chaos when they appear."}
         </p>
 
         <div className="unlock-modal__options">
           {options.map((player) => {
             const stats = formatPlayerDraftStats(player);
-            const superstar = isSuperstarPlayer(player);
+            const premium = isWinOffer
+              ? isSuperstarPlayer(player)
+              : isSuperScrubPlayer(player);
 
             return (
               <button
                 type="button"
                 key={player.id}
-                className={`unlock-option${superstar ? " unlock-option--superstar" : ""}`}
+                className={`unlock-option${
+                  premium
+                    ? isWinOffer
+                      ? " unlock-option--superstar"
+                      : " unlock-option--super-scrub"
+                    : ""
+                }`}
                 onClick={() => onSelect(player.id)}
               >
                 <PlayerTeamIcon
@@ -59,7 +75,7 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                   </span>
                   <span className="unlock-option__stats">{stats.summary}</span>
                 </div>
-                {superstar ? (
+                {premium ? (
                   <span className="unlock-option__glow" aria-hidden="true" />
                 ) : null}
               </button>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  formatLeaderboardLossStreak,
   formatLeaderboardRecord,
   formatLeaderboardTeam,
   formatLeaderboardWinPercentage,
@@ -17,6 +18,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [sort, setSort] = useState<LeaderboardSort>("wins");
   const currentPlayerId = getOrCreatePlayerId();
   const entries = useMemo(() => getTopLeaderboard(sort), [sort]);
+  const showLossStreak = sort === "lossStreak";
 
   return (
     <section className="leaderboard panel">
@@ -24,7 +26,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         <div>
           <p className="eyebrow">NBA Head-to-Head</p>
           <h1>Leaderboard</h1>
-          <p>Top {100} players by wins and win percentage.</p>
+          <p>Top players by wins, win percentage, loss streaks, and more.</p>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>
           Back to home
@@ -50,6 +52,24 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         >
           Highest win %
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={sort === "lowestWinPct"}
+          className={sort === "lowestWinPct" ? "is-active" : undefined}
+          onClick={() => setSort("lowestWinPct")}
+        >
+          Lowest win %
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={sort === "lossStreak"}
+          className={sort === "lossStreak" ? "is-active" : undefined}
+          onClick={() => setSort("lossStreak")}
+        >
+          Loss streak
+        </button>
       </div>
 
       <p className="leaderboard__note">{getLeaderboardFootnote(sort)}</p>
@@ -62,7 +82,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                 <th scope="col">Rank</th>
                 <th scope="col">Team</th>
                 <th scope="col">Record</th>
-                <th scope="col">Win %</th>
+                <th scope="col">{showLossStreak ? "Loss streak" : "Win %"}</th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +98,11 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   <td>{index + 1}</td>
                   <td>{formatLeaderboardTeam(entry)}</td>
                   <td>{formatLeaderboardRecord(entry)}</td>
-                  <td>{formatLeaderboardWinPercentage(entry)}</td>
+                  <td>
+                    {showLossStreak
+                      ? formatLeaderboardLossStreak(entry)
+                      : formatLeaderboardWinPercentage(entry)}
+                  </td>
                 </tr>
               ))}
             </tbody>

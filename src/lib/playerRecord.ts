@@ -11,6 +11,7 @@ export interface PlayerRecord {
   wins: number;
   losses: number;
   winStreak: number;
+  lossStreak: number;
 }
 
 const createPlayerId = () => {
@@ -47,6 +48,7 @@ export const loadPlayerRecord = (): PlayerRecord => {
     wins: saved?.wins ?? 0,
     losses: saved?.losses ?? 0,
     winStreak: saved?.winStreak ?? 0,
+    lossStreak: saved?.lossStreak ?? 0,
   };
 };
 
@@ -97,6 +99,7 @@ export const recordMatchResult = (userWon: boolean): PlayerRecord => {
     wins: current.wins + (userWon ? 1 : 0),
     losses: current.losses + (userWon ? 0 : 1),
     winStreak: userWon ? current.winStreak + 1 : 0,
+    lossStreak: userWon ? 0 : current.lossStreak + 1,
   };
 
   writeJson(PLAYER_RECORD_KEY, next);
@@ -113,4 +116,5 @@ export const buildLeaderboardIdentity = (
   name: team.name,
   wins: record.wins,
   losses: record.losses,
+  lossStreak: record.lossStreak,
 });
