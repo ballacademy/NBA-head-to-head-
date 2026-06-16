@@ -8,8 +8,10 @@ import {
 import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { formatPlayerPositions, playersById } from "../lib/playerPool";
+import { loadPlayerRecord } from "../lib/playerRecord";
 import type { Drafter, Player } from "../lib/types";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
+import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
 interface DraftRoomProps {
   drafter: Drafter;
@@ -30,6 +32,7 @@ export function DraftRoom({
   const [secondsLeft, setSecondsLeft] = useState(PICK_TIME_LIMIT_SECONDS);
 
   const currentSlot = drafter.draftSlots[activeStep];
+  const playerRecord = loadPlayerRecord();
   const pickedIds = useMemo(
     () =>
       new Set(
@@ -135,7 +138,12 @@ export function DraftRoom({
     >
       <div className="draft-page-header">
         <p className="eyebrow">
-          {drafter.city} {drafter.name} • Pick {activeStep + 1} of {totalPicks}
+          <TeamNameWithStreak
+            city={drafter.city}
+            name={drafter.name}
+            winStreak={playerRecord.winStreak}
+          />{" "}
+          • Pick {activeStep + 1} of {totalPicks}
         </p>
         <h2 id="draft-heading">Draft player {activeStep + 1}</h2>
         <p className="draft-page-header__copy">

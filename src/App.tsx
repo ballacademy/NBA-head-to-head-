@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { players, statsFile } from "./data/players";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
+import { LeaderboardPage } from "./components/LeaderboardPage";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -17,7 +18,7 @@ import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
 
-type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats";
+type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats" | "leaderboard";
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
@@ -26,6 +27,7 @@ function App() {
   const [draftStep, setDraftStep] = useState(0);
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
+  const [matchId, setMatchId] = useState<string | null>(null);
 
   const userLineup = getPlayersById(user?.lineup ?? [], players);
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
@@ -47,6 +49,7 @@ function App() {
     setDraftStep(0);
     setOpponentPickCount(0);
     setOpponentComplete(false);
+    setMatchId(null);
     setPhase("landing");
   };
 
@@ -99,6 +102,16 @@ function App() {
 
     setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
   }, []);
+
+  useEffect(() => {
+    if (phase === "results" && !matchId) {
+      setMatchId(
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `match-${Date.now()}`,
+      );
+    }
+  }, [matchId, phase]);
 
   useEffect(() => {
     if (!opponent) {
@@ -160,6 +173,14 @@ function App() {
     }
   }, [phase, opponentComplete]);
 
+  if (phase === "leaderboard") {
+    return (
+      <main className="landing-layout">
+        <LeaderboardPage onBack={resetToLanding} />
+      </main>
+    );
+  }
+
   if (phase === "stats") {
     return (
       <main>
@@ -179,6 +200,7 @@ function App() {
         <LandingPage
           onStartDraft={startMatch}
           onViewStats={() => setPhase("stats")}
+          onViewLeaderboard={() => setPhase("leaderboard")}
         />
       </main>
     );
@@ -209,12 +231,13 @@ function App() {
         />
       ) : null}
 
-      {phase === "results" ? (
+      {phase === "results" && matchId ? (
         <MatchResults
           user={user}
           opponent={opponent}
           userLineup={userLineup}
           opponentLineup={opponentLineup}
+          matchId={matchId}
           onPlayAgain={resetToLanding}
         />
       ) : null}

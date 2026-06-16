@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
 import {
+  formatPlayerRecord,
+  formatWinPercentage,
+  loadPlayerRecord,
+  shouldShowWinPercentage,
+} from "../lib/playerRecord";
+import {
   loadTeamProfile,
   normalizeTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
+import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
 interface LandingPageProps {
   onStartDraft: (team: TeamProfile) => void;
   onViewStats: () => void;
+  onViewLeaderboard: () => void;
 }
 
-export function LandingPage({ onStartDraft, onViewStats }: LandingPageProps) {
+export function LandingPage({
+  onStartDraft,
+  onViewStats,
+  onViewLeaderboard,
+}: LandingPageProps) {
   const [city, setCity] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [playerRecord, setPlayerRecord] = useState(loadPlayerRecord);
 
   useEffect(() => {
     const savedTeam = loadTeamProfile();
@@ -22,6 +35,8 @@ export function LandingPage({ onStartDraft, onViewStats }: LandingPageProps) {
       setCity(savedTeam.city);
       setName(savedTeam.name);
     }
+
+    setPlayerRecord(loadPlayerRecord());
   }, []);
 
   const handleSubmit = () => {
@@ -44,6 +59,18 @@ export function LandingPage({ onStartDraft, onViewStats }: LandingPageProps) {
         Name your squad, then draft one player at a time under position and
         division rules. Your opponent stays hidden until the final matchup.
       </p>
+
+      <div className="player-record-card">
+        <p className="eyebrow">Your head-to-head record</p>
+        <p className="player-record-card__value">
+          {formatPlayerRecord(playerRecord)}
+        </p>
+        <p className="player-record-card__meta">
+          {shouldShowWinPercentage(playerRecord)
+            ? `${formatWinPercentage(playerRecord)} win rate`
+            : `${playerRecord.wins + playerRecord.losses} games played`}
+        </p>
+      </div>
 
       <div className="landing-team-form">
         <label className="field">
@@ -87,6 +114,9 @@ export function LandingPage({ onStartDraft, onViewStats }: LandingPageProps) {
       <div className="hero-actions">
         <button type="button" onClick={handleSubmit}>
           Draft a team
+        </button>
+        <button type="button" className="ghost-link" onClick={onViewLeaderboard}>
+          Leaderboard
         </button>
         <button type="button" className="ghost-link" onClick={onViewStats}>
           View season stats

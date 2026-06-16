@@ -1,5 +1,11 @@
+import { useEffect, useMemo, useRef } from "react";
 import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
+import {
+  formatPlayerRecord,
+  loadPlayerRecord,
+} from "../lib/playerRecord";
+import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { calculateLineupScore } from "../lib/scoring";
 import type { Drafter, Player } from "../lib/types";
 
@@ -8,6 +14,7 @@ interface MatchResultsProps {
   opponent: Drafter;
   userLineup: Player[];
   opponentLineup: Player[];
+  matchId: string;
   onPlayAgain: () => void;
 }
 
@@ -16,11 +23,26 @@ export function MatchResults({
   opponent,
   userLineup,
   opponentLineup,
+  matchId,
   onPlayAgain,
 }: MatchResultsProps) {
+  const recordedRef = useRef(false);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.total >= opponentScore.total;
+  const updatedRecord = useMemo(
+    () => projectRecordAfterMatch(userWon, loadPlayerRecord()),
+    [userWon],
+  );
+
+  useEffect(() => {
+    if (recordedRef.current) {
+      return;
+    }
+
+    recordedRef.current = true;
+    persistMatchOutcome(userWon, { city: user.city, name: user.name }, matchId);
+  }, [matchId, user.city, user.name, userWon]);
 
   return (
     <section className="match-results">
@@ -33,6 +55,9 @@ export function MatchResults({
           Margin: {Math.abs(userScore.total - opponentScore.total).toFixed(1)}{" "}
           points
         </p>
+        <p className="player-record-summary">
+          Your head-to-head record: {formatPlayerRecord(updatedRecord)}
+        </p>
         <button type="button" onClick={onPlayAgain}>
           Draft another team
         </button>
@@ -44,6 +69,8 @@ export function MatchResults({
           lineup={userLineup}
           score={userScore}
           isWinner={userWon}
+          winStreak={updatedRecord.winStreak}
+          showStreak
         />
         <TeamLineupCard
           drafter={opponent}

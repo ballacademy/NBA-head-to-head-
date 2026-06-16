@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { PlayerStatLine } from "./PlayerStatLine";
+import { TeamNameWithStreak } from "./TeamNameWithStreak";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface TeamLineupCardProps {
@@ -8,6 +9,8 @@ interface TeamLineupCardProps {
   lineup: Player[];
   score: LineupScore;
   isWinner?: boolean;
+  winStreak?: number;
+  showStreak?: boolean;
 }
 
 export function TeamLineupCard({
@@ -15,6 +18,8 @@ export function TeamLineupCard({
   lineup,
   score,
   isWinner = false,
+  winStreak = 0,
+  showStreak = false,
 }: TeamLineupCardProps) {
   const orderedLineup = sortLineupByPosition(lineup);
 
@@ -26,7 +31,13 @@ export function TeamLineupCard({
       <div className="team-lineup-card__header">
         <div>
           <p className="eyebrow">{drafter.city}</p>
-          <h3>{drafter.name}</h3>
+          <h3>
+            {showStreak ? (
+              <TeamNameWithStreak name={drafter.name} winStreak={winStreak} />
+            ) : (
+              drafter.name
+            )}
+          </h3>
           <p className="projected-record">{score.projectedRecord.formatted}</p>
         </div>
         <div className="score-orb">
