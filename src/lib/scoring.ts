@@ -14,9 +14,28 @@ const clamp = (value: number, min: number, max: number) =>
 export const normalizeLineupTotal = (rawTotal: number) =>
   round(clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100));
 
+const PROJECTED_WINS_AT_ZERO = 18;
+const PROJECTED_WINS_AT_80 = 53;
+const PROJECTED_WINS_AT_100 = 82;
+
+export const projectedWinsFromOvr = (lineupTotal: number) => {
+  const total = clamp(lineupTotal, 0, 100);
+
+  if (total >= 80) {
+    return Math.round(
+      PROJECTED_WINS_AT_80 +
+        ((PROJECTED_WINS_AT_100 - PROJECTED_WINS_AT_80) / 20) * (total - 80),
+    );
+  }
+
+  return Math.round(
+    PROJECTED_WINS_AT_ZERO +
+      ((PROJECTED_WINS_AT_80 - PROJECTED_WINS_AT_ZERO) / 80) * total,
+  );
+};
+
 export const projectRecord = (lineupTotal: number): ProjectedRecord => {
-  const winPct = clamp(0.5 + lineupTotal * 0.0042, 0.35, 0.88);
-  const wins = Math.round(winPct * SEASON_LENGTH);
+  const wins = clamp(projectedWinsFromOvr(lineupTotal), 0, SEASON_LENGTH);
   const losses = SEASON_LENGTH - wins;
 
   return {

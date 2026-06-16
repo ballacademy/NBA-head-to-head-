@@ -6,6 +6,7 @@ import {
   getPlayersById,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
+  projectedWinsFromOvr,
   projectRecord,
   SEASON_LENGTH,
 } from "./scoring";
@@ -69,9 +70,12 @@ describe("normalizeLineupTotal", () => {
 });
 
 describe("projectRecord", () => {
-  it("projects a more generous 82-game record from scaled lineup score", () => {
-    expect(projectRecord(50).formatted).toBe("Record: 58-24");
-    expect(projectRecord(100).formatted).toBe("Record: 72-10");
+  it("anchors projected records to the requested OVR milestones", () => {
+    expect(projectRecord(100).formatted).toBe("Record: 82-0");
+    expect(projectRecord(80).formatted).toBe("Record: 53-29");
+    expect(projectedWinsFromOvr(90)).toBe(68);
+    expect(projectedWinsFromOvr(50)).toBe(40);
+    expect(projectedWinsFromOvr(0)).toBe(18);
     expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
       SEASON_LENGTH,
     );
