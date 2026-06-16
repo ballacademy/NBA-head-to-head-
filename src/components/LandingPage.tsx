@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import {
+  getCollectionProgress,
+  type PlayerCollection,
+} from "../lib/playerCollection";
+import {
   formatPlayerRecord,
   formatWinPercentage,
   loadPlayerRecord,
@@ -13,12 +17,14 @@ import {
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
 interface LandingPageProps {
+  collection: PlayerCollection;
   onStartDraft: (team: TeamProfile) => void;
   onViewStats: () => void;
   onViewLeaderboard: () => void;
 }
 
 export function LandingPage({
+  collection,
   onStartDraft,
   onViewStats,
   onViewLeaderboard,
@@ -38,6 +44,8 @@ export function LandingPage({
 
     setPlayerRecord(loadPlayerRecord());
   }, []);
+
+  const collectionProgress = getCollectionProgress(collection);
 
   const handleSubmit = () => {
     const team = normalizeTeamProfile(city, name);
@@ -59,6 +67,16 @@ export function LandingPage({
         Name your squad, then draft one player at a time under position and
         division rules. Your opponent stays hidden until the final matchup.
       </p>
+
+      <div className="collection-progress-card">
+        <p className="eyebrow">Your All-Star collection</p>
+        <p className="collection-progress-card__value">
+          {collectionProgress.unlocked}/{collectionProgress.total} unlocked
+        </p>
+        <p className="collection-progress-card__meta">
+          Win matchups to unlock more 2026 All-Stars for your draft pool.
+        </p>
+      </div>
 
       <div className="player-record-card">
         <p className="eyebrow">Your head-to-head record</p>

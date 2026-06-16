@@ -145,6 +145,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
 
   return {
     id: raw.id,
+    bbrPlayerId: raw.bbrPlayerId,
     name: raw.name,
     team: raw.team,
     position,

@@ -21,6 +21,7 @@ export type PlayStyle =
 
 export interface Player {
   id: string;
+  bbrPlayerId?: string;
   name: string;
   team: string;
   position: Position;

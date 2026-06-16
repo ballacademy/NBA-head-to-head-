@@ -10,6 +10,7 @@ import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { formatPlayerPositions, playersById } from "../lib/playerPool";
 import { loadPlayerRecord } from "../lib/playerRecord";
 import type { Drafter, Player } from "../lib/types";
+import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
@@ -190,7 +191,10 @@ export function DraftRoom({
                   label={`${player.name}, pick ${index + 1}`}
                 />
                 <div>
-                  <strong>{player.name}</strong>
+                  <div className="player-pick__title-row">
+                    <strong>{player.name}</strong>
+                    <PlayerRarityBadge player={player} />
+                  </div>
                   <span>
                     {formatPickSlotSummary(slot)} • {player.team}
                   </span>
@@ -248,7 +252,10 @@ export function DraftRoom({
                   label={player.name}
                 />
                 <div>
-                  <strong>{player.name}</strong>
+                  <div className="player-pick__title-row">
+                    <strong>{player.name}</strong>
+                    <PlayerRarityBadge player={player} />
+                  </div>
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
                   </span>

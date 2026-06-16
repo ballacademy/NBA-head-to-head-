@@ -1,10 +1,17 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
+import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import {
   formatPlayerRecord,
   loadPlayerRecord,
 } from "../lib/playerRecord";
+import {
+  completeUnlock,
+  ensurePlayerCollection,
+  grantWinUnlock,
+  type PlayerCollection,
+} from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { calculateLineupScore } from "../lib/scoring";
 import type { Drafter, Player } from "../lib/types";
@@ -15,6 +22,8 @@ interface MatchResultsProps {
   userLineup: Player[];
   opponentLineup: Player[];
   matchId: string;
+  collection: PlayerCollection;
+  onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
 }
 
@@ -24,9 +33,12 @@ export function MatchResults({
   userLineup,
   opponentLineup,
   matchId,
+  collection,
+  onCollectionChange,
   onPlayAgain,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.total >= opponentScore.total;
@@ -42,10 +54,26 @@ export function MatchResults({
 
     recordedRef.current = true;
     persistMatchOutcome(userWon, { city: user.city, name: user.name }, matchId);
-  }, [matchId, user.city, user.name, userWon]);
+
+    if (userWon) {
+      onCollectionChange(grantWinUnlock(matchId, ensurePlayerCollection()));
+    }
+  }, [matchId, onCollectionChange, user.city, user.name, userWon]);
+
+  const handleUnlockSelect = (playerId: string) => {
+    onCollectionChange(completeUnlock(playerId, collection));
+    setShowUnlockModal(false);
+  };
 
   return (
     <section className="match-results">
+      {showUnlockModal && collection.pendingUnlock ? (
+        <PlayerUnlockModal
+          offer={collection.pendingUnlock}
+          onSelect={handleUnlockSelect}
+        />
+      ) : null}
+
       <div className="panel match-results__header">
         <p className="eyebrow">Matchup results</p>
         <h2>
@@ -58,6 +86,17 @@ export function MatchResults({
         <p className="player-record-summary">
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
+
+        {userWon && collection.pendingUnlock ? (
+          <button
+            type="button"
+            className="unlock-reward-button"
+            onClick={() => setShowUnlockModal(true)}
+          >
+            New player unlocked — click to choose
+          </button>
+        ) : null}
+
         <button type="button" className="play-again-button" onClick={onPlayAgain}>
           Draft another team
         </button>

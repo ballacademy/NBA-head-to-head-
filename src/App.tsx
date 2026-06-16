@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { players, statsFile } from "./data/players";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
@@ -14,6 +14,7 @@ import {
   sleep,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
+import { ensurePlayerCollection, type PlayerCollection } from "./lib/playerCollection";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
@@ -28,6 +29,15 @@ function App() {
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [collection, setCollection] = useState<PlayerCollection>(() =>
+    ensurePlayerCollection(),
+  );
+
+  const draftablePlayers = useMemo(
+    () =>
+      players.filter((player) => collection.unlockedIds.includes(player.id)),
+    [collection.unlockedIds],
+  );
 
   const userLineup = getPlayersById(user?.lineup ?? [], players);
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
@@ -75,32 +85,43 @@ function App() {
     setDraftStep((current) => Math.min(slot + 1, 5));
   }, []);
 
-  const handleTimeout = useCallback((slot: number) => {
-    setUser((current) => {
-      if (!current || current.lineup[slot]) {
-        return current;
-      }
+  const handleTimeout = useCallback(
+    (slot: number) => {
+      setUser((current) => {
+        if (!current || current.lineup[slot]) {
+          return current;
+        }
 
-      const pickedIds = new Set(
-        current.lineup.filter((id): id is string => Boolean(id)),
-      );
-      const slotConstraint = current.draftSlots[slot];
-      const bestPick = pickBestForSlot(players, slotConstraint, pickedIds);
+        const pickedIds = new Set(
+          current.lineup.filter((id): id is string => Boolean(id)),
+        );
+        const slotConstraint = current.draftSlots[slot];
+        const bestPick = pickBestForSlot(
+          draftablePlayers,
+          slotConstraint,
+          pickedIds,
+        );
 
-      if (!bestPick) {
-        return current;
-      }
+        if (!bestPick) {
+          return current;
+        }
 
-      const nextLineup = [...current.lineup];
-      nextLineup[slot] = bestPick;
+        const nextLineup = [...current.lineup];
+        nextLineup[slot] = bestPick;
 
-      return {
-        ...current,
-        lineup: nextLineup.slice(0, slot + 1),
-      };
-    });
+        return {
+          ...current,
+          lineup: nextLineup.slice(0, slot + 1),
+        };
+      });
 
-    setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+      setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+    },
+    [draftablePlayers],
+  );
+
+  const handleCollectionChange = useCallback((next: PlayerCollection) => {
+    setCollection(next);
   }, []);
 
   useEffect(() => {
@@ -198,6 +219,7 @@ function App() {
     return (
       <main className="landing-layout">
         <LandingPage
+          collection={collection}
           onStartDraft={startMatch}
           onViewStats={() => setPhase("stats")}
           onViewLeaderboard={() => setPhase("leaderboard")}
@@ -216,7 +238,7 @@ function App() {
         <div className="draft-layout">
           <DraftRoom
             drafter={user}
-            players={players}
+            players={draftablePlayers}
             activeStep={draftStep}
             onPick={handlePick}
             onTimeout={handleTimeout}
@@ -238,6 +260,8 @@ function App() {
           userLineup={userLineup}
           opponentLineup={opponentLineup}
           matchId={matchId}
+          collection={collection}
+          onCollectionChange={handleCollectionChange}
           onPlayAgain={resetToLanding}
         />
       ) : null}
