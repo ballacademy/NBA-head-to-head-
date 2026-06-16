@@ -71,14 +71,16 @@ export function LandingPage({
 
       <div className="landing-cards">
         <div className="collection-progress-card landing-card">
-          <p className="eyebrow">Your All-Star collection</p>
+          <p className="eyebrow">Your stars &amp; scrubs</p>
           <p className="collection-progress-card__value">
             {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
             {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
-            Recent All-Stars
+            Recent All-Stars • {collectionProgress.superstarUnlocked}/
+            {collectionProgress.superstarTotal} Superstars
           </p>
           <p className="collection-progress-card__meta">
-            Win to unlock more Stars, lose to unlock scrubs.
+            {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool} Scrubs
+            unlocked • Win to unlock more Stars, lose to unlock scrubs.
           </p>
         </div>
 

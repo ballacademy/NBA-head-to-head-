@@ -34,6 +34,14 @@ describe("allStars recent tier", () => {
     expect(isAllStarPlayer(tatum!)).toBe(false);
   });
 
+  it("includes Kawhi Leonard as a superstar", () => {
+    const kawhi = players.find((player) => player.bbrPlayerId === "leonaka01");
+
+    expect(kawhi).toBeDefined();
+    expect(isSuperstarPlayer(kawhi!)).toBe(true);
+    expect(isAllStarPlayer(kawhi!)).toBe(true);
+  });
+
   it("expands win unlocks to include recent all-stars", () => {
     const unlockPool = getWinUnlockPlayerIds();
 

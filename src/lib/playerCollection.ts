@@ -10,6 +10,7 @@ import {
   isSuperstarPlayer,
   RECENT_ALL_STAR_COUNT,
   STARTING_COLLECTION_SIZE,
+  SUPERSTAR_COUNT,
 } from "./allStars";
 import { readJson, writeJson } from "./browserStorage";
 import {
@@ -348,12 +349,18 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
   const unlockedScrubs = collection.unlockedIds.filter((playerId) =>
     isScrubPlayer({ id: playerId }),
   ).length;
+  const unlockedSuperstars = collection.unlockedIds.filter((playerId) => {
+    const player = getPlayerById(playerId);
+    return Boolean(player && isSuperstarPlayer(player));
+  }).length;
 
   return {
     unlocked: unlockedAllStars,
     total: ALL_STAR_COUNT,
     recentUnlocked: unlockedRecentAllStars,
     recentTotal: RECENT_ALL_STAR_COUNT,
+    superstarUnlocked: unlockedSuperstars,
+    superstarTotal: SUPERSTAR_COUNT,
     scrubPool: SCRUB_POOL_SIZE,
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,

@@ -23,6 +23,7 @@ const recentAllStarIds = new Set(recentAllStarPlayers.map((player) => player.id)
 
 export const ALL_STAR_COUNT = allStarPlayers.length;
 export const RECENT_ALL_STAR_COUNT = recentAllStarPlayers.length;
+export const SUPERSTAR_COUNT = allStarData.superstarBbrPlayerIds.length;
 export const STARTING_COLLECTION_SIZE = 5;
 
 export const isSuperstarPlayer = (player: Pick<Player, "bbrPlayerId">) =>
