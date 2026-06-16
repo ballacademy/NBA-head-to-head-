@@ -14,7 +14,6 @@ import {
   normalizeTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
-import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
 interface LandingPageProps {
   collection: PlayerCollection;
@@ -60,39 +59,43 @@ export function LandingPage({
   };
 
   return (
-    <section className="landing panel">
-      <p className="eyebrow">NBA Head-to-Head</p>
+    <section className="landing panel landing--rich">
+      <div className="landing__glow" aria-hidden="true" />
+
+      <p className="eyebrow landing__eyebrow">NBA Head-to-Head</p>
       <h1>Draft your five. Beat a random rival.</h1>
-      <p>
-        Name your squad, then draft one player at a time under position and
-        division rules. Your opponent stays hidden until the final matchup.
+      <p className="landing__lede">
+        Name your squad, draft a five-player lineup, and compete against a random
+        rival from around the world.
       </p>
 
-      <div className="collection-progress-card">
-        <p className="eyebrow">Your All-Star collection</p>
-        <p className="collection-progress-card__value">
-          {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
-          {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
-          recent all-stars
-        </p>
-        <p className="collection-progress-card__meta">
-          Win to unlock more Stars, lose to unlock scrubs.
-        </p>
+      <div className="landing-cards">
+        <div className="collection-progress-card landing-card">
+          <p className="eyebrow">Your All-Star collection</p>
+          <p className="collection-progress-card__value">
+            {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
+            {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
+            Recent All-Stars
+          </p>
+          <p className="collection-progress-card__meta">
+            Win to unlock more Stars, lose to unlock scrubs.
+          </p>
+        </div>
+
+        <div className="player-record-card landing-card landing-card--record">
+          <p className="eyebrow">Your head-to-head record</p>
+          <p className="player-record-card__value">
+            {formatPlayerRecord(playerRecord)}
+          </p>
+          <p className="player-record-card__meta">
+            {shouldShowWinPercentage(playerRecord)
+              ? `${formatWinPercentage(playerRecord)} win rate`
+              : `${playerRecord.wins + playerRecord.losses} games played`}
+          </p>
+        </div>
       </div>
 
-      <div className="player-record-card">
-        <p className="eyebrow">Your head-to-head record</p>
-        <p className="player-record-card__value">
-          {formatPlayerRecord(playerRecord)}
-        </p>
-        <p className="player-record-card__meta">
-          {shouldShowWinPercentage(playerRecord)
-            ? `${formatWinPercentage(playerRecord)} win rate`
-            : `${playerRecord.wins + playerRecord.losses} games played`}
-        </p>
-      </div>
-
-      <div className="landing-team-form">
+      <div className="landing-team-form landing-card landing-card--form">
         <label className="field">
           <span>Team city</span>
           <input
@@ -131,8 +134,8 @@ export function LandingPage({
         {error ? <p className="form-error">{error}</p> : null}
       </div>
 
-      <div className="hero-actions">
-        <button type="button" onClick={handleSubmit}>
+      <div className="hero-actions landing__actions">
+        <button type="button" className="landing__primary-button" onClick={handleSubmit}>
           Draft a team
         </button>
         <button type="button" className="ghost-link" onClick={onViewLeaderboard}>
@@ -144,10 +147,12 @@ export function LandingPage({
       </div>
 
       <ol className="landing-steps">
-        <li>Name your team on the landing page</li>
-        <li>Draft five players one pick at a time</li>
-        <li>Reveal the hidden opponent in the final matchup</li>
+        <li>Name your team</li>
+        <li>Draft your five-player lineup</li>
+        <li>Face a random rival worldwide</li>
       </ol>
+
+      <p className="landing-credit">Created by BALLACADEMY</p>
     </section>
   );
 }
