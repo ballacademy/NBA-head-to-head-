@@ -14,6 +14,10 @@ import {
   normalizeTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
+import { LossStreakBadge } from "./LossStreakBadge";
+import { WinStreakBadge } from "./WinStreakBadge";
+import { hasLossStreakBadge } from "../lib/lossStreak";
+import { hasFireStreak } from "../lib/winStreak";
 
 interface LandingPageProps {
   collection: PlayerCollection;
@@ -88,6 +92,13 @@ export function LandingPage({
           <p className="eyebrow">Your head-to-head record</p>
           <p className="player-record-card__value">
             {formatPlayerRecord(playerRecord)}
+            {hasFireStreak(playerRecord.winStreak) ? (
+              <WinStreakBadge winStreak={playerRecord.winStreak} />
+            ) : null}
+            {!hasFireStreak(playerRecord.winStreak) &&
+            hasLossStreakBadge(playerRecord.lossStreak) ? (
+              <LossStreakBadge lossStreak={playerRecord.lossStreak} />
+            ) : null}
           </p>
           <p className="player-record-card__meta">
             {shouldShowWinPercentage(playerRecord)

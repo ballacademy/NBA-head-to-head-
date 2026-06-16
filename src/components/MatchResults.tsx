@@ -122,6 +122,7 @@ export function MatchResults({
           score={userScore}
           isWinner={userWon}
           winStreak={updatedRecord.winStreak}
+          lossStreak={updatedRecord.lossStreak}
           showStreak
         />
         <TeamLineupCard

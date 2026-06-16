@@ -10,6 +10,7 @@ interface TeamLineupCardProps {
   score: LineupScore;
   isWinner?: boolean;
   winStreak?: number;
+  lossStreak?: number;
   showStreak?: boolean;
 }
 
@@ -19,6 +20,7 @@ export function TeamLineupCard({
   score,
   isWinner = false,
   winStreak = 0,
+  lossStreak = 0,
   showStreak = false,
 }: TeamLineupCardProps) {
   const orderedLineup = sortLineupByPosition(lineup);
@@ -33,7 +35,11 @@ export function TeamLineupCard({
           <p className="eyebrow">{drafter.city}</p>
           <h3>
             {showStreak ? (
-              <TeamNameWithStreak name={drafter.name} winStreak={winStreak} />
+              <TeamNameWithStreak
+                name={drafter.name}
+                winStreak={winStreak}
+                lossStreak={lossStreak}
+              />
             ) : (
               drafter.name
             )}

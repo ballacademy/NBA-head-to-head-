@@ -51,6 +51,14 @@ describe("playerRecord", () => {
     expect(hasFireStreak(loadPlayerRecord().winStreak)).toBe(true);
   });
 
+  it("shows a losing streak badge after three losses", () => {
+    recordMatchResult(false);
+    recordMatchResult(false);
+    recordMatchResult(false);
+
+    expect(loadPlayerRecord().lossStreak).toBe(3);
+  });
+
   it("only shows win percentage after 20 games", () => {
     const record = {
       wins: 12,

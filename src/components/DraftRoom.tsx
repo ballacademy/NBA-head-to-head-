@@ -5,6 +5,7 @@ import {
   formatSlotConstraint,
   sortDraftCandidates,
 } from "../lib/draft";
+import { getPlayerPickShineClass } from "../lib/draftPickStyle";
 import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { formatPlayerPositions, playersById } from "../lib/playerPool";
@@ -143,6 +144,7 @@ export function DraftRoom({
             city={drafter.city}
             name={drafter.name}
             winStreak={playerRecord.winStreak}
+            lossStreak={playerRecord.lossStreak}
           />{" "}
           • Pick {activeStep + 1} of {totalPicks}
         </p>
@@ -233,12 +235,13 @@ export function DraftRoom({
         {candidates.length > 0 ? (
           candidates.map((player) => {
             const stats = formatPlayerDraftStats(player);
+            const shineClass = getPlayerPickShineClass(player);
 
             return (
               <button
                 type="button"
                 key={player.id}
-                className="player-pick"
+                className={`player-pick${shineClass ? ` ${shineClass}` : ""}`}
                 onClick={() => {
                   onPick(activeStep, player.id);
                   setQuery("");
