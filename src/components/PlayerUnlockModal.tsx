@@ -67,7 +67,7 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                 />
                 <div className="unlock-option__body">
                   <div className="unlock-option__title-row">
-                    <strong>{player.name}</strong>
+                    <strong className="unlock-option__name">{player.name}</strong>
                     <PlayerRarityBadge player={player} />
                   </div>
                   <span className="unlock-option__meta">

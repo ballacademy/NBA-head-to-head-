@@ -14,7 +14,7 @@ import {
   sleep,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
-import { ensurePlayerCollection, getDraftablePlayers, type PlayerCollection } from "./lib/playerCollection";
+import { ensurePlayerCollection, getDraftablePlayers, createOpponentCollection, type PlayerCollection } from "./lib/playerCollection";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
@@ -33,9 +33,21 @@ function App() {
     ensurePlayerCollection(),
   );
 
+  const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
+    null,
+  );
+
   const draftablePlayers = useMemo(
     () => getDraftablePlayers(players, collection),
     [collection],
+  );
+
+  const opponentDraftablePlayers = useMemo(
+    () =>
+      opponentCollection
+        ? getDraftablePlayers(players, opponentCollection)
+        : players,
+    [opponentCollection],
   );
 
   const userLineup = getPlayersById(user?.lineup ?? [], players);
@@ -46,6 +58,7 @@ function App() {
     saveTeamProfile(team);
     setUser(createUserDrafter(team));
     setOpponent(createRandomOpponent());
+    setOpponentCollection(createOpponentCollection(collection));
     setDraftStep(0);
     setOpponentPickCount(0);
     setOpponentComplete(false);
@@ -55,6 +68,7 @@ function App() {
   const resetToLanding = () => {
     setUser(null);
     setOpponent(null);
+    setOpponentCollection(null);
     setDraftStep(0);
     setOpponentPickCount(0);
     setOpponentComplete(false);
@@ -150,7 +164,7 @@ function App() {
           return;
         }
 
-        const selection = pickBestForSlot(players, slot, pickedIds);
+        const selection = pickBestForSlot(opponentDraftablePlayers, slot, pickedIds);
         if (selection) {
           pickedIds.add(selection);
           lineup.push(selection);
@@ -177,7 +191,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [opponent?.id]);
+  }, [opponent?.id, opponentDraftablePlayers]);
 
   useEffect(() => {
     if (!userDraftComplete || phase !== "drafting") {

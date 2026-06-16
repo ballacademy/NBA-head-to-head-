@@ -12,6 +12,7 @@ import {
 } from "./allStars";
 import {
   completeUnlock,
+  createOpponentCollection,
   createLossUnlockOffer,
   createStarterCollection,
   createTieredUnlockPair,
@@ -179,6 +180,25 @@ describe("playerCollection", () => {
     expect(isPlayerStatsMasked(lockedPlayer!, collection)).toBe(true);
     expect(isPlayerStatsMasked(unlockedPlayer!, collection)).toBe(false);
     expect(isPlayerStatsMasked(regularPlayer!, collection)).toBe(false);
+  });
+
+  it("caps opponent all-star unlocks to ten above the user", () => {
+    const collection = loadPlayerCollection();
+    const userAllStarCount = collection.unlockedIds.filter((playerId) => {
+      const player = getPlayerById(playerId);
+      return Boolean(player && isAllStarPlayer(player));
+    }).length;
+
+    for (let index = 0; index < 25; index += 1) {
+      const opponent = createOpponentCollection(collection);
+      const opponentAllStarCount = opponent.unlockedIds.filter((playerId) => {
+        const player = getPlayerById(playerId);
+        return Boolean(player && isAllStarPlayer(player));
+      }).length;
+
+      expect(opponentAllStarCount).toBeGreaterThanOrEqual(userAllStarCount);
+      expect(opponentAllStarCount).toBeLessThanOrEqual(userAllStarCount + 10);
+    }
   });
 
   it("only rolls premium unlocks at the configured chance", () => {

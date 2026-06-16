@@ -166,6 +166,35 @@ export const getDraftablePlayers = (
   );
 };
 
+export const MAX_OPPONENT_ALL_STAR_UNLOCK_GAP = 10;
+
+export const countUnlockedAllStars = (collection: PlayerCollection) =>
+  collection.unlockedIds.filter((playerId) => {
+    const player = getPlayerById(playerId);
+    return Boolean(player && isAllStarPlayer(player));
+  }).length;
+
+export const createOpponentCollection = (
+  userCollection: PlayerCollection,
+): PlayerCollection => {
+  const userAllStarCount = countUnlockedAllStars(userCollection);
+  const pool = getAllStarPlayerIds();
+  const maxCount = Math.min(
+    userAllStarCount + MAX_OPPONENT_ALL_STAR_UNLOCK_GAP,
+    pool.length,
+  );
+  const minCount = Math.min(userAllStarCount, maxCount);
+  const targetCount =
+    minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+  const unlockedIds = shuffle(pool).slice(0, targetCount);
+
+  return {
+    unlockedIds,
+    pendingUnlock: null,
+    initialized: true,
+  };
+};
+
 export const isPlayerStatsMasked = (
   player: Player,
   collection = ensurePlayerCollection(),
