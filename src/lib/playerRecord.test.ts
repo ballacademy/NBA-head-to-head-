@@ -3,12 +3,11 @@ import {
   formatPlayerRecord,
   formatWinPercentage,
   getOrCreatePlayerId,
-  hasFireStreak,
   loadPlayerRecord,
   recordMatchResult,
   shouldShowWinPercentage,
-  WIN_STREAK_FIRE_THRESHOLD,
 } from "./playerRecord";
+import { hasFireStreak, WIN_STREAK_FIRE_THRESHOLD } from "./winStreak";
 
 const storage = new Map<string, string>();
 

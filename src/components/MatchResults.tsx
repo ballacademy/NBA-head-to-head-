@@ -58,7 +58,7 @@ export function MatchResults({
         <p className="player-record-summary">
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
-        <button type="button" onClick={onPlayAgain}>
+        <button type="button" className="play-again-button" onClick={onPlayAgain}>
           Draft another team
         </button>
       </div>

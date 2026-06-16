@@ -4,7 +4,6 @@ import type { TeamProfile } from "./teamProfile";
 const PLAYER_ID_KEY = "nba-head-to-head-player-id";
 const PLAYER_RECORD_KEY = "nba-head-to-head-player-record";
 
-export const WIN_STREAK_FIRE_THRESHOLD = 3;
 export const MIN_GAMES_FOR_WIN_PCT = 20;
 
 export interface PlayerRecord {
@@ -90,9 +89,6 @@ export const formatWinPercentage = (
 
   return `${winPct.toFixed(1)}%`;
 };
-
-export const hasFireStreak = (winStreak: number) =>
-  winStreak >= WIN_STREAK_FIRE_THRESHOLD;
 
 export const recordMatchResult = (userWon: boolean): PlayerRecord => {
   const current = loadPlayerRecord();

@@ -369,7 +369,68 @@ main {
 }
 
 .win-streak-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+
+.win-streak-badge__icon {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.win-streak-badge--red .win-streak-badge__icon {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.win-streak-badge--blue .win-streak-badge__icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.45));
+}
+
+.win-streak-badge--purple .win-streak-badge__icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
+}
+
+.win-streak-badge--black .win-streak-badge__icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
+}
+
+.play-again-button {
+  margin-top: 16px;
+  padding: 15px 30px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: #ffffff;
+  font-size: 1.02rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  box-shadow: 0 16px 36px rgba(109, 40, 217, 0.38);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.play-again-button:hover {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  box-shadow: 0 18px 40px rgba(124, 58, 237, 0.45);
+  transform: translateY(-1px);
+}
+
+.play-again-button:active {
+  transform: translateY(0);
 }
 
 .leaderboard {
@@ -532,7 +593,7 @@ main {
   text-align: center;
 }
 
-.match-results__header button {
+.match-results__header button:not(.play-again-button) {
   margin-top: 16px;
 }
 
