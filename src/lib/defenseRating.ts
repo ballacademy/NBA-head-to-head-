@@ -47,18 +47,27 @@ const defensiveMetrics: WeightedMetric[] = [
 ];
 
 const gradeThresholds: Array<{ min: number; grade: DefenseGrade }> = [
-  { min: 97, grade: "A+" },
-  { min: 93, grade: "A" },
-  { min: 88, grade: "A-" },
-  { min: 82, grade: "B+" },
-  { min: 75, grade: "B" },
-  { min: 68, grade: "B-" },
-  { min: 58, grade: "C+" },
-  { min: 48, grade: "C" },
-  { min: 38, grade: "C-" },
-  { min: 28, grade: "D+" },
-  { min: 18, grade: "D" },
+  { min: 94, grade: "A+" },
+  { min: 88, grade: "A" },
+  { min: 76, grade: "A-" },
+  { min: 68, grade: "B+" },
+  { min: 58, grade: "B" },
+  { min: 48, grade: "B-" },
+  { min: 38, grade: "C+" },
+  { min: 28, grade: "C" },
+  { min: 20, grade: "C-" },
+  { min: 12, grade: "D+" },
+  { min: 5, grade: "D" },
 ];
+
+const DEFENSE_GRADE_OVERRIDES: Record<string, DefenseGrade> = {
+  holmgch01: "A",
+  antetgi01: "A-",
+  edwaran01: "B",
+};
+
+const GENEROSITY_BOOST = 6;
+const GENEROSITY_MULTIPLIER = 1.06;
 
 const gradeRank: Record<DefenseGrade, number> = {
   "A+": 12,
@@ -166,6 +175,17 @@ const applyAccoladeFloor = (
   return raiseGrade(grade, "A");
 };
 
+const applyGradeOverrides = (
+  grade: DefenseGrade,
+  bbrPlayerId?: string,
+): DefenseGrade => {
+  if (!bbrPlayerId) {
+    return grade;
+  }
+
+  return DEFENSE_GRADE_OVERRIDES[bbrPlayerId] ?? grade;
+};
+
 export const buildDefensivePercentileTables = (players: DefensiveStatInput[]) => {
   const tables = new Map<keyof DefensiveStatInput, number[]>();
 
@@ -218,18 +238,24 @@ export const computeDefensivePercentile = (
   );
 
   if (stealPercentile >= 75 && blockPercentile < 55) {
-    percentile -= blockPercentile < 40 ? 18 : 12;
+    percentile -= blockPercentile < 40 ? 12 : 8;
   }
 
   if ((player.points ?? 0) >= 28 && blockPercentile < 55) {
-    percentile -= 34;
+    percentile -= 20;
   }
 
   if ((player.points ?? 0) >= 30 && stealPercentile >= 75) {
-    percentile -= 8;
+    percentile -= 5;
   }
 
-  return clamp(percentile, 0, 100);
+  percentile = clamp(
+    percentile * GENEROSITY_MULTIPLIER + GENEROSITY_BOOST,
+    0,
+    100,
+  );
+
+  return percentile;
 };
 
 const gradeToMinPercentile = (grade: DefenseGrade) =>
@@ -251,8 +277,8 @@ export const buildDefensiveRatings = <T extends DefensiveStatInput & { id: strin
 
   for (const player of players) {
     const percentile = computeDefensivePercentile(player, tables);
-    const grade = applyAccoladeFloor(
-      gradeFromPercentile(percentile),
+    const grade = applyGradeOverrides(
+      applyAccoladeFloor(gradeFromPercentile(percentile), player.bbrPlayerId),
       player.bbrPlayerId,
     );
     const adjustedPercentile = Math.max(percentile, gradeToMinPercentile(grade));

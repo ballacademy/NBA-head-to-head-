@@ -8,6 +8,7 @@ import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { playersById } from "../lib/playerPool";
 import type { Drafter, Player } from "../lib/types";
+import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
 interface DraftRoomProps {
   drafter: Drafter;
@@ -164,7 +165,11 @@ export function DraftRoom({
           <ol className="draft-picks-so-far__list">
             {completedPicks.map(({ index, player, slot }) => (
               <li key={player.id}>
-                <span className="pick-number">{index + 1}</span>
+                <PlayerTeamIcon
+                  team={player.team}
+                  position={player.position}
+                  label={`${player.name}, pick ${index + 1}`}
+                />
                 <div>
                   <strong>{player.name}</strong>
                   <span>
@@ -216,6 +221,11 @@ export function DraftRoom({
                   setQuery("");
                 }}
               >
+                <PlayerTeamIcon
+                  team={player.team}
+                  position={player.position}
+                  label={player.name}
+                />
                 <div>
                   <strong>{player.name}</strong>
                   <span className="player-pick__team">

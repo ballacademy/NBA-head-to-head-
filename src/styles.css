@@ -470,13 +470,29 @@ main {
 
 .player-stat-line {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 12px;
   align-items: center;
   padding: 12px 14px;
   border: 1px solid var(--panel-border);
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.72);
+}
+
+.player-team-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 3px solid var(--team-secondary, #f8fafc);
+  border-radius: 999px;
+  background: var(--team-primary, #334155);
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .player-stat-line__meta,
@@ -604,8 +620,7 @@ main {
 .player-pick {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--panel-border);
@@ -682,24 +697,36 @@ main {
 }
 
 .score-orb {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 104px;
   height: 104px;
-  place-items: center;
+  flex: 0 0 auto;
   border: 2px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.62);
 }
 
+.score-orb__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+
 .score-orb span {
   font-size: 2.25rem;
   font-weight: 950;
-  line-height: 0.8;
+  line-height: 1;
 }
 
 .score-orb small {
   color: #cbd5e1;
   font-weight: 900;
+  line-height: 1;
 }
 
 .story-lineup {

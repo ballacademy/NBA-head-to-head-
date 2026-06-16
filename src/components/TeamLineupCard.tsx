@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { sortLineupByPosition } from "../lib/lineupOrder";
 import { PlayerStatLine } from "./PlayerStatLine";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
@@ -15,6 +16,8 @@ export function TeamLineupCard({
   score,
   isWinner = false,
 }: TeamLineupCardProps) {
+  const orderedLineup = sortLineupByPosition(lineup);
+
   return (
     <article
       className={`panel team-lineup-card ${isWinner ? "winner" : ""}`}
@@ -27,14 +30,16 @@ export function TeamLineupCard({
           <p className="projected-record">{score.projectedRecord.formatted}</p>
         </div>
         <div className="score-orb">
-          <span>{score.total}</span>
-          <small>OVR</small>
+          <div className="score-orb__content">
+            <span>{score.total}</span>
+            <small>OVR</small>
+          </div>
         </div>
       </div>
 
       <div className="team-lineup-card__players">
-        {lineup.length > 0 ? (
-          lineup.map((player, index) => (
+        {orderedLineup.length > 0 ? (
+          orderedLineup.map((player, index) => (
             <PlayerStatLine
               key={player.id}
               player={player}

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { players } from "../data/players";
 import {
   buildDefensiveRatings,
   computeDefensivePercentile,
@@ -50,7 +51,7 @@ describe("defenseRating", () => {
     const ratings = buildDefensiveRatings(players);
 
     expect(ratings.get("elite")?.grade).toMatch(/^[AB]/);
-    expect(ratings.get("weak")?.grade).toMatch(/^[CDF]/);
+    expect(ratings.get("weak")?.grade).toMatch(/^[BCD]/);
     expect(
       (ratings.get("elite")?.defense ?? 0) > (ratings.get("weak")?.defense ?? 0),
     ).toBe(true);
@@ -58,9 +59,9 @@ describe("defenseRating", () => {
 
   it("maps percentiles to letter grades", () => {
     expect(gradeFromPercentile(98)).toBe("A+");
-    expect(gradeFromPercentile(90)).toBe("A-");
-    expect(gradeFromPercentile(72)).toBe("B-");
-    expect(gradeFromPercentile(10)).toBe("F");
+    expect(gradeFromPercentile(90)).toBe("A");
+    expect(gradeFromPercentile(72)).toBe("B+");
+    expect(gradeFromPercentile(10)).toBe("D");
   });
 
   it("penalizes steal-heavy profiles without strong impact metrics", () => {
@@ -93,6 +94,24 @@ describe("defenseRating", () => {
     ]);
 
     const percentile = computeDefensivePercentile(gambleDefender, tables);
-    expect(percentile).toBeLessThan(40);
+    expect(percentile).toBeLessThan(65);
+  });
+
+  it("grades at least thirty defenders at A- or better", () => {
+    const eliteDefenders = players.filter((player) =>
+      ["A+", "A", "A-"].includes(player.defenseGrade ?? ""),
+    );
+
+    expect(eliteDefenders.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it("applies requested player overrides", () => {
+    const chet = players.find((player) => player.name === "Chet Holmgren");
+    const giannis = players.find((player) => player.name === "Giannis Antetokounmpo");
+    const edwards = players.find((player) => player.name === "Anthony Edwards");
+
+    expect(chet?.defenseGrade).toBe("A");
+    expect(giannis?.defenseGrade).toBe("A-");
+    expect(edwards?.defenseGrade).toBe("B");
   });
 });
