@@ -762,17 +762,19 @@ main {
   align-items: center;
   justify-content: center;
   gap: 2px;
+  width: 72%;
   text-align: center;
 }
 
 .score-orb span {
-  font-size: 1.91rem;
+  font-size: 1.5rem;
   font-weight: 950;
   line-height: 1;
 }
 
 .score-orb small {
   color: #cbd5e1;
+  font-size: 0.68rem;
   font-weight: 900;
   line-height: 1;
 }
