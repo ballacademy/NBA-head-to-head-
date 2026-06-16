@@ -7,6 +7,7 @@ describe("playerAvatar", () => {
     const second = getPlayerAvatarDataUri("lebron-james");
 
     expect(first).toMatch(/^data:image\/svg\+xml;charset=utf-8,/);
+    expect(first).toContain("svg");
     expect(second).toBe(first);
   });
 });
