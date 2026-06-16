@@ -14,23 +14,38 @@ const clamp = (value: number, min: number, max: number) =>
 export const normalizeLineupTotal = (rawTotal: number) =>
   round(clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100));
 
-const PROJECTED_WINS_AT_ZERO = 18;
 const PROJECTED_WINS_AT_80 = 53;
+const PROJECTED_WINS_AT_85 = 75;
+const PROJECTED_WINS_AT_95 = 79;
 const PROJECTED_WINS_AT_100 = 82;
+const LOW_OVR_CURVE_POWER = 1.35;
+
+const interpolate = (value: number, start: number, end: number, from: number, to: number) =>
+  from + ((to - from) * (value - start)) / (end - start);
 
 export const projectedWinsFromOvr = (lineupTotal: number) => {
   const total = clamp(lineupTotal, 0, 100);
 
+  if (total >= 95) {
+    return Math.round(
+      interpolate(total, 95, 100, PROJECTED_WINS_AT_95, PROJECTED_WINS_AT_100),
+    );
+  }
+
+  if (total >= 85) {
+    return Math.round(
+      interpolate(total, 85, 95, PROJECTED_WINS_AT_85, PROJECTED_WINS_AT_95),
+    );
+  }
+
   if (total >= 80) {
     return Math.round(
-      PROJECTED_WINS_AT_80 +
-        ((PROJECTED_WINS_AT_100 - PROJECTED_WINS_AT_80) / 20) * (total - 80),
+      interpolate(total, 80, 85, PROJECTED_WINS_AT_80, PROJECTED_WINS_AT_85),
     );
   }
 
   return Math.round(
-    PROJECTED_WINS_AT_ZERO +
-      ((PROJECTED_WINS_AT_80 - PROJECTED_WINS_AT_ZERO) / 80) * total,
+    PROJECTED_WINS_AT_80 * (total / 80) ** LOW_OVR_CURVE_POWER,
   );
 };
 
