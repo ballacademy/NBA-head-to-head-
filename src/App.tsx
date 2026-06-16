@@ -14,7 +14,7 @@ import {
   sleep,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
-import { ensurePlayerCollection, type PlayerCollection } from "./lib/playerCollection";
+import { ensurePlayerCollection, getDraftablePlayers, type PlayerCollection } from "./lib/playerCollection";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
@@ -34,9 +34,8 @@ function App() {
   );
 
   const draftablePlayers = useMemo(
-    () =>
-      players.filter((player) => collection.unlockedIds.includes(player.id)),
-    [collection.unlockedIds],
+    () => getDraftablePlayers(players, collection),
+    [collection],
   );
 
   const userLineup = getPlayersById(user?.lineup ?? [], players);

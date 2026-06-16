@@ -13,11 +13,14 @@ import {
   createStarterCollection,
   createTieredUnlockPair,
   createWinUnlockOffer,
+  getDraftablePlayers,
   grantLossUnlock,
   grantWinUnlock,
+  isRegularDraftPlayer,
   loadPlayerCollection,
 } from "./playerCollection";
 import { getScrubPlayerIds, isSuperScrubPlayer } from "./playerTiers";
+import { players } from "./playerPool";
 
 const storage = new Map<string, string>();
 
@@ -124,6 +127,30 @@ describe("playerCollection", () => {
 
     expect(collection.unlockedIds.length).toBe(STARTING_COLLECTION_SIZE);
     expect(ALL_STAR_COUNT).toBeGreaterThan(STARTING_COLLECTION_SIZE);
+  });
+
+  it("keeps regular players draftable while gating collectible tiers", () => {
+    const collection = loadPlayerCollection();
+    const draftable = getDraftablePlayers(players, collection);
+    const draftableIds = new Set(draftable.map((player) => player.id));
+
+    expect(draftable.length).toBeGreaterThan(STARTING_COLLECTION_SIZE);
+
+    collection.unlockedIds.forEach((playerId) => {
+      expect(draftableIds.has(playerId)).toBe(true);
+    });
+
+    const lockedAllStarId = getAllStarPlayerIds().find(
+      (playerId) => !collection.unlockedIds.includes(playerId),
+    );
+
+    expect(lockedAllStarId).toBeDefined();
+    expect(draftableIds.has(lockedAllStarId!)).toBe(false);
+
+    const regularPlayer = players.find((player) => isRegularDraftPlayer(player));
+
+    expect(regularPlayer).toBeDefined();
+    expect(draftableIds.has(regularPlayer!.id)).toBe(true);
   });
 
   it("only rolls premium unlocks at the configured chance", () => {

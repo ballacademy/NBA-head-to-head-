@@ -3,6 +3,7 @@ import {
   getAllStarPlayerIds,
   getPlayerById,
   getSuperstarPlayersInAllStarPool,
+  isAllStarPlayer,
   isSuperstarPlayer,
   STARTING_COLLECTION_SIZE,
 } from "./allStars";
@@ -10,9 +11,11 @@ import { readJson, writeJson } from "./browserStorage";
 import {
   getScrubPlayerIds,
   getSuperScrubPlayerIds,
+  isScrubPlayer,
   isSuperScrubPlayer,
   SCRUB_POOL_SIZE,
 } from "./playerTiers";
+import type { Player } from "./types";
 
 const COLLECTION_KEY = "nba-head-to-head-player-collection";
 const LAST_UNLOCK_MATCH_KEY = "nba-head-to-head-last-unlock-match";
@@ -137,6 +140,26 @@ export const ensurePlayerCollection = (): PlayerCollection => {
 
 export const getUnlockedPlayerIds = (collection = ensurePlayerCollection()) =>
   collection.unlockedIds;
+
+export const isCollectibleTierPlayer = (player: Player) =>
+  isAllStarPlayer(player) ||
+  isSuperstarPlayer(player) ||
+  isScrubPlayer(player) ||
+  isSuperScrubPlayer(player);
+
+export const isRegularDraftPlayer = (player: Player) =>
+  !isCollectibleTierPlayer(player);
+
+export const getDraftablePlayers = (
+  pool: Player[],
+  collection: PlayerCollection,
+) => {
+  const unlocked = new Set(collection.unlockedIds);
+
+  return pool.filter(
+    (player) => isRegularDraftPlayer(player) || unlocked.has(player.id),
+  );
+};
 
 export const createWinUnlockOffer = (
   collection = ensurePlayerCollection(),
@@ -273,9 +296,20 @@ export const dismissPendingUnlock = (collection = ensurePlayerCollection()) => {
   return next;
 };
 
-export const getCollectionProgress = (collection = ensurePlayerCollection()) => ({
-  unlocked: collection.unlockedIds.length,
-  total: ALL_STAR_COUNT,
-  scrubPool: SCRUB_POOL_SIZE,
-  superScrubPool: getSuperScrubPlayerIds().length,
-});
+export const getCollectionProgress = (collection = ensurePlayerCollection()) => {
+  const unlockedAllStars = collection.unlockedIds.filter((playerId) => {
+    const player = getPlayerById(playerId);
+    return Boolean(player && isAllStarPlayer(player));
+  }).length;
+  const unlockedScrubs = collection.unlockedIds.filter((playerId) =>
+    isScrubPlayer({ id: playerId }),
+  ).length;
+
+  return {
+    unlocked: unlockedAllStars,
+    total: ALL_STAR_COUNT,
+    scrubPool: SCRUB_POOL_SIZE,
+    superScrubPool: getSuperScrubPlayerIds().length,
+    unlockedScrubs,
+  };
+};
