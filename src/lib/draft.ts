@@ -154,7 +154,7 @@ export const autoDraftLineup = (
 };
 
 export const formatSlotConstraint = (slot: DraftSlotConstraint) =>
-  `Draft a player from the ${slot.division} division`;
+  `Draft a ${slot.position.toLowerCase()} from the ${slot.division} division`;
 
 export const formatPickSlotSummary = (slot: DraftSlotConstraint) =>
   `${slot.position} • ${slot.division} division`;

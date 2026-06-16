@@ -1,6 +1,7 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 
 export const SEASON_LENGTH = 82;
+export const LINEUP_RAW_CEILING = 236;
 
 const round = (value: number, places = 1) => {
   const factor = 10 ** places;
@@ -10,8 +11,11 @@ const round = (value: number, places = 1) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
+export const normalizeLineupTotal = (rawTotal: number) =>
+  round(clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100));
+
 export const projectRecord = (lineupTotal: number): ProjectedRecord => {
-  const winPct = clamp(0.61 + (lineupTotal - 155) * 0.00404, 0.22, 0.82);
+  const winPct = clamp(0.5 + lineupTotal * 0.0042, 0.35, 0.88);
   const wins = Math.round(winPct * SEASON_LENGTH);
   const losses = SEASON_LENGTH - wins;
 
@@ -172,11 +176,12 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     warnings.push("Positional overlap makes matchups harder to cover.");
   }
 
+  const rawTotal = round(categories.reduce((sum, category) => sum + category.value, 0));
+  const total = normalizeLineupTotal(rawTotal);
+
   return {
-    total: round(categories.reduce((sum, category) => sum + category.value, 0)),
-    projectedRecord: projectRecord(
-      round(categories.reduce((sum, category) => sum + category.value, 0)),
-    ),
+    total,
+    projectedRecord: projectRecord(total),
     categories,
     strengths,
     warnings,

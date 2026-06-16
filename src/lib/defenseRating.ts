@@ -47,17 +47,17 @@ const defensiveMetrics: WeightedMetric[] = [
 ];
 
 const gradeThresholds: Array<{ min: number; grade: DefenseGrade }> = [
-  { min: 94, grade: "A+" },
-  { min: 88, grade: "A" },
-  { min: 76, grade: "A-" },
-  { min: 68, grade: "B+" },
-  { min: 58, grade: "B" },
-  { min: 48, grade: "B-" },
-  { min: 38, grade: "C+" },
-  { min: 28, grade: "C" },
-  { min: 20, grade: "C-" },
-  { min: 12, grade: "D+" },
-  { min: 5, grade: "D" },
+  { min: 96, grade: "A+" },
+  { min: 91, grade: "A" },
+  { min: 82, grade: "A-" },
+  { min: 75, grade: "B+" },
+  { min: 67, grade: "B" },
+  { min: 58, grade: "B-" },
+  { min: 48, grade: "C+" },
+  { min: 38, grade: "C" },
+  { min: 29, grade: "C-" },
+  { min: 20, grade: "D+" },
+  { min: 12, grade: "D" },
 ];
 
 const DEFENSE_GRADE_OVERRIDES: Record<string, DefenseGrade> = {
@@ -66,8 +66,8 @@ const DEFENSE_GRADE_OVERRIDES: Record<string, DefenseGrade> = {
   edwaran01: "B",
 };
 
-const GENEROSITY_BOOST = 6;
-const GENEROSITY_MULTIPLIER = 1.06;
+const GENEROSITY_BOOST = 3;
+const GENEROSITY_MULTIPLIER = 1.03;
 
 const gradeRank: Record<DefenseGrade, number> = {
   "A+": 12,

@@ -59,9 +59,9 @@ describe("defenseRating", () => {
 
   it("maps percentiles to letter grades", () => {
     expect(gradeFromPercentile(98)).toBe("A+");
-    expect(gradeFromPercentile(90)).toBe("A");
-    expect(gradeFromPercentile(72)).toBe("B+");
-    expect(gradeFromPercentile(10)).toBe("D");
+    expect(gradeFromPercentile(92)).toBe("A");
+    expect(gradeFromPercentile(78)).toBe("B+");
+    expect(gradeFromPercentile(10)).toBe("F");
   });
 
   it("penalizes steal-heavy profiles without strong impact metrics", () => {
@@ -97,12 +97,12 @@ describe("defenseRating", () => {
     expect(percentile).toBeLessThan(65);
   });
 
-  it("grades at least thirty defenders at A- or better", () => {
+  it("grades at least twenty defenders at A- or better", () => {
     const eliteDefenders = players.filter((player) =>
       ["A+", "A", "A-"].includes(player.defenseGrade ?? ""),
     );
 
-    expect(eliteDefenders.length).toBeGreaterThanOrEqual(30);
+    expect(eliteDefenders.length).toBeGreaterThanOrEqual(20);
   });
 
   it("applies requested player overrides", () => {

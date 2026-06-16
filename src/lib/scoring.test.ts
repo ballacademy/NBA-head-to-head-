@@ -4,6 +4,8 @@ import {
   calculateLineupScore,
   compareLineups,
   getPlayersById,
+  LINEUP_RAW_CEILING,
+  normalizeLineupTotal,
   projectRecord,
   SEASON_LENGTH,
 } from "./scoring";
@@ -22,7 +24,8 @@ describe("calculateLineupScore", () => {
       ]),
     );
 
-    expect(score.total).toBeGreaterThan(150);
+    expect(score.total).toBeGreaterThan(55);
+    expect(score.total).toBeLessThanOrEqual(100);
     expect(score.projectedRecord.formatted).toMatch(/^Record: \d+-\d+$/);
     expect(score.projectedRecord.wins + score.projectedRecord.losses).toBe(
       SEASON_LENGTH,
@@ -58,11 +61,18 @@ describe("calculateLineupScore", () => {
   });
 });
 
+describe("normalizeLineupTotal", () => {
+  it("caps the displayed overall at 100 for elite lineups", () => {
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING)).toBe(100);
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING + 25)).toBe(100);
+  });
+});
+
 describe("projectRecord", () => {
-  it("projects an 82-game record from lineup score", () => {
-    expect(projectRecord(200).formatted).toBe("Record: 65-17");
-    expect(projectRecord(155).formatted).toBe("Record: 50-32");
-    expect(projectRecord(200).wins + projectRecord(200).losses).toBe(
+  it("projects a more generous 82-game record from scaled lineup score", () => {
+    expect(projectRecord(50).formatted).toBe("Record: 58-24");
+    expect(projectRecord(100).formatted).toBe("Record: 72-10");
+    expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
       SEASON_LENGTH,
     );
   });

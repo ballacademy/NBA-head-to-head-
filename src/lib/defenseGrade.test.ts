@@ -7,11 +7,11 @@ describe("getDefenseGrade", () => {
   });
 
   it("maps defense scores to letter grades when no stored grade exists", () => {
-    expect(getDefenseGrade(9.64)).toBe("A+");
-    expect(getDefenseGrade(9.3)).toBe("A");
-    expect(getDefenseGrade(8.56)).toBe("A-");
-    expect(getDefenseGrade(8.08)).toBe("B+");
-    expect(getDefenseGrade(7.48)).toBe("B");
+    expect(getDefenseGrade(9.64)).toBe("A");
+    expect(getDefenseGrade(9.3)).toBe("A-");
+    expect(getDefenseGrade(8.56)).toBe("B+");
+    expect(getDefenseGrade(8.08)).toBe("B");
+    expect(getDefenseGrade(7.48)).toBe("B-");
   });
 });
 
