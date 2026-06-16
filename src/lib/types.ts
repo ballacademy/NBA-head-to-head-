@@ -24,6 +24,7 @@ export interface Player {
   name: string;
   team: string;
   position: Position;
+  positions: Position[];
   points: number;
   rebounds: number;
   assists: number;

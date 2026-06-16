@@ -7,6 +7,7 @@ const makePlayer = (name: string, position: Player["position"]): Player => ({
   name,
   team: "LAL",
   position,
+  positions: [position],
   points: 20,
   rebounds: 5,
   assists: 3,

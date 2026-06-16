@@ -310,6 +310,79 @@ def make_entry_id(player_name: str, team: str, bbr_player_id: object) -> str:
 
 
 MULTI_TEAM_LABELS = {"TOT", "2TM", "3TM"}
+POSITION_ORDER = ["PG", "SG", "SF", "PF", "C"]
+
+
+def parse_position_string(position: object) -> list[str]:
+    if position is None or pd.isna(position):
+        return []
+
+    normalized = str(position).upper()
+    tokens = [token.strip() for token in re.split(r"[-/,]", normalized) if token.strip()]
+    found: set[str] = set()
+
+    for token in tokens or [normalized]:
+        if token in {"G", "GUARD"}:
+            found.update({"PG", "SG"})
+            continue
+        if token in {"F", "FORWARD"}:
+            found.update({"SF", "PF"})
+            continue
+        if "PG" in token:
+            found.add("PG")
+        if "SG" in token:
+            found.add("SG")
+        if "SF" in token:
+            found.add("SF")
+        if "PF" in token:
+            found.add("PF")
+        if "C" in token:
+            found.add("C")
+
+    return [position for position in POSITION_ORDER if position in found]
+
+
+def normalize_position(position: object) -> str:
+    parsed = parse_position_string(position)
+    if parsed:
+        return parsed[0]
+    return "SF"
+
+
+def infer_positions_from_stats(
+    positions: list[str],
+    assists: float,
+    rebounds: float,
+    blocks: float,
+) -> list[str]:
+    eligible = set(positions or ["SF"])
+    primary = positions[0] if positions else "SF"
+
+    if primary == "PG" or ("PG" in eligible and assists >= 3):
+        eligible.add("SG")
+    if primary == "SG" and assists >= 4.5:
+        eligible.add("PG")
+    if primary == "SF" and assists >= 4:
+        eligible.add("SG")
+    if primary == "SF" and (rebounds >= 5.5 or blocks >= 0.8):
+        eligible.add("PF")
+    if primary == "PF" and rebounds >= 5:
+        eligible.add("SF")
+    if primary == "PF" and (rebounds >= 8 or blocks >= 1):
+        eligible.add("C")
+    if primary == "C" and rebounds < 8.5:
+        eligible.add("PF")
+
+    return [position for position in POSITION_ORDER if position in eligible]
+
+
+def collect_positions_from_rows(rows: list[dict]) -> list[str]:
+    positions: set[str] = set()
+
+    for row in rows:
+        positions.update(parse_position_string(row.get("POSITION")))
+
+    return [position for position in POSITION_ORDER if position in positions]
 
 PER_GAME_WEIGHTED_KEYS = [
     "MIN",
@@ -456,6 +529,7 @@ def row_dict_to_player_payload(
     team: str,
     advanced_stats: dict[str, float | None],
     bbr_player_id: str,
+    positions: list[str] | None = None,
 ) -> dict:
     player_name = str(row_dict["PLAYER_NAME"])
     fga = to_float(row_dict.get("FGA"))
@@ -467,13 +541,20 @@ def row_dict_to_player_payload(
         true_shooting = round(pts / (2 * (fga + 0.44 * fta)), 3)
 
     player_id = make_entry_id(player_name, team, bbr_player_id)
+    resolved_positions = positions or infer_positions_from_stats(
+        parse_position_string(row_dict.get("POSITION")),
+        to_float(row_dict.get("AST")),
+        to_float(row_dict.get("REB")),
+        to_float(row_dict.get("BLK")),
+    )
 
     return {
         "id": player_id,
         "bbrPlayerId": bbr_player_id,
         "name": player_name,
         "team": team,
-        "position": row_dict.get("POSITION"),
+        "position": resolved_positions[0] if resolved_positions else normalize_position(row_dict.get("POSITION")),
+        "positions": resolved_positions,
         "age": to_int(row_dict.get("AGE"), default=0) if pd.notna(row_dict.get("AGE")) else None,
         "gamesPlayed": to_int(row_dict.get("GP")),
         "gamesStarted": to_int(row_dict.get("GS")),
@@ -586,12 +667,21 @@ def build_app_payload(
                 {},
             )
 
+        collected_positions = collect_positions_from_rows(rows)
+        resolved_positions = infer_positions_from_stats(
+            collected_positions or parse_position_string(stats_row.get("POSITION")),
+            to_float(stats_row.get("AST")),
+            to_float(stats_row.get("REB")),
+            to_float(stats_row.get("BLK")),
+        )
+
         players.append(
             row_dict_to_player_payload(
                 stats_row,
                 current_team,
                 advanced_stats,
                 bbr_id,
+                resolved_positions,
             )
         )
 

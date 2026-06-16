@@ -1,4 +1,5 @@
 import { DIVISIONS, getDivisionForTeam, isDraftableTeam } from "./divisions";
+import { playerMatchesPosition } from "./positions";
 import type { DraftSlotConstraint, Player, Position } from "./types";
 
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
@@ -117,7 +118,7 @@ export const filterPlayersForSlot = (
 ) =>
   players.filter(
     (player) =>
-      player.position === slot.position &&
+      playerMatchesPosition(player, slot.position) &&
       getDivisionForTeam(player.team) === slot.division &&
       isDraftableTeam(player.team) &&
       !pickedIds.has(player.id),

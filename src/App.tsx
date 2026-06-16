@@ -56,6 +56,10 @@ function App() {
         return current;
       }
 
+      if (current.lineup.includes(playerId)) {
+        return current;
+      }
+
       const nextLineup = [...current.lineup];
       nextLineup[slot] = playerId;
 
@@ -74,7 +78,9 @@ function App() {
         return current;
       }
 
-      const pickedIds = new Set(current.lineup);
+      const pickedIds = new Set(
+        current.lineup.filter((id): id is string => Boolean(id)),
+      );
       const slotConstraint = current.draftSlots[slot];
       const bestPick = pickBestForSlot(players, slotConstraint, pickedIds);
 

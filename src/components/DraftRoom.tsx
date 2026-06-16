@@ -6,7 +6,7 @@ import {
 } from "../lib/draft";
 import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
-import { playersById } from "../lib/playerPool";
+import { formatPlayerPositions, playersById } from "../lib/playerPool";
 import type { Drafter, Player } from "../lib/types";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
@@ -29,7 +29,15 @@ export function DraftRoom({
   const [secondsLeft, setSecondsLeft] = useState(PICK_TIME_LIMIT_SECONDS);
 
   const currentSlot = drafter.draftSlots[activeStep];
-  const pickedIds = useMemo(() => new Set(drafter.lineup), [drafter.lineup]);
+  const pickedIds = useMemo(
+    () =>
+      new Set(
+        drafter.lineup.filter((playerId): playerId is string =>
+          Boolean(playerId),
+        ),
+      ),
+    [drafter.lineup],
+  );
   const completedPicks = useMemo(
     () =>
       drafter.lineup
@@ -168,6 +176,9 @@ export function DraftRoom({
                 <PlayerTeamIcon
                   team={player.team}
                   position={player.position}
+                  playerId={player.id}
+                  playerName={player.name}
+                  showAvatar
                   label={`${player.name}, pick ${index + 1}`}
                 />
                 <div>
@@ -224,12 +235,15 @@ export function DraftRoom({
                 <PlayerTeamIcon
                   team={player.team}
                   position={player.position}
+                  playerId={player.id}
+                  playerName={player.name}
+                  showAvatar
                   label={player.name}
                 />
                 <div>
                   <strong>{player.name}</strong>
                   <span className="player-pick__team">
-                    {player.team} • {player.position}
+                    {player.team} • {formatPlayerPositions(player.positions)}
                   </span>
                   <span className="player-pick__stats">{stats.summary}</span>
                 </div>

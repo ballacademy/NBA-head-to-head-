@@ -35,7 +35,7 @@ describe("draft constraints", () => {
     const matches = filterPlayersForSlot(players, slot, new Set());
 
     expect(matches.length).toBeGreaterThan(0);
-    expect(matches.every((player) => player.position === "PG")).toBe(true);
+    expect(matches.every((player) => player.positions.includes("PG"))).toBe(true);
     expect(matches.every((player) => getDivisionForTeam(player.team) === "Pacific")).toBe(
       true,
     );
@@ -53,6 +53,21 @@ describe("draft constraints", () => {
     const lineup = autoDraftLineup(players, slots);
     expect(lineup.length).toBe(5);
     expect(new Set(lineup).size).toBe(5);
+  });
+
+  it("excludes already drafted players from later slots", () => {
+    const slot = { position: "SF" as const, division: "Pacific" as const };
+    const firstPick = filterPlayersForSlot(players, slot, new Set())[0];
+
+    expect(firstPick).toBeDefined();
+
+    const remaining = filterPlayersForSlot(
+      players,
+      slot,
+      new Set([firstPick!.id]),
+    );
+
+    expect(remaining.some((player) => player.id === firstPick!.id)).toBe(false);
   });
 
   it("formats slot prompts for the UI", () => {

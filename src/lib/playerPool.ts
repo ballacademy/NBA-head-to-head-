@@ -1,5 +1,10 @@
 import type { PlayStyle, Player, Position } from "./types";
 import {
+  buildPlayerPositions,
+  formatPlayerPositions,
+  normalizePosition,
+} from "./positions";
+import {
   buildDefensiveRatings,
   toDefensiveStatInput,
 } from "./defenseRating";
@@ -21,6 +26,7 @@ export interface RawSeasonPlayer {
   name: string;
   team: string;
   position?: string;
+  positions?: string[];
   age?: number;
   gamesPlayed: number;
   gamesStarted?: number;
@@ -55,27 +61,7 @@ const normalizeName = (name: string) =>
 
 export const statsFile = seasonStats as SeasonStatsFile;
 
-export const normalizePosition = (position?: string): Position => {
-  const value = (position ?? "SF").toUpperCase();
-
-  if (value.includes("PG") || value === "G") {
-    return "PG";
-  }
-  if (value.includes("SG")) {
-    return "SG";
-  }
-  if (value.includes("SF") || value === "F") {
-    return "SF";
-  }
-  if (value.includes("PF")) {
-    return "PF";
-  }
-  if (value.includes("C")) {
-    return "C";
-  }
-
-  return "SF";
-};
+export { formatPlayerPositions, normalizePosition } from "./positions";
 
 export const estimateUsage = (raw: RawSeasonPlayer) => {
   const possessions =
@@ -151,7 +137,8 @@ export const deriveStyles = (
 };
 
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
-  const position = normalizePosition(raw.position);
+  const positions = buildPlayerPositions(raw);
+  const position = positions[0] ?? normalizePosition(raw.position);
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);
 
@@ -160,6 +147,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     name: raw.name,
     team: raw.team,
     position,
+    positions,
     points: raw.points,
     rebounds: raw.rebounds,
     assists: raw.assists,
