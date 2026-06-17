@@ -34,8 +34,8 @@ export const formatPlayerDraftStats = (player: {
     `${player.steals.toFixed(1)} STL`,
     `${(player.threePoint * 100).toFixed(1)}% 3P`,
     `${(player.trueShooting * 100).toFixed(1)}% TS`,
-    `${grade} DEF`,
     `${player.turnovers.toFixed(1)} TOV`,
+    `${grade} DEF`,
   ];
 
   return {

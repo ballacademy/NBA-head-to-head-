@@ -37,8 +37,8 @@ describe("formatPlayerDraftStats", () => {
       "1.4 STL",
       "38.7% 3P",
       "61.2% TS",
-      "A- DEF",
       "2.8 TOV",
+      "A- DEF",
     ]);
     expect(formatted.summary).toContain("38.7% 3P");
     expect(formatted.summary).toContain("61.2% TS");
@@ -47,7 +47,7 @@ describe("formatPlayerDraftStats", () => {
     expect(formatted.summary.indexOf("% 3P")).toBeLessThan(
       formatted.summary.indexOf("% TS"),
     );
-    expect(formatted.summary.indexOf("TOV")).toBeGreaterThan(
+    expect(formatted.summary.indexOf("TOV")).toBeLessThan(
       formatted.summary.indexOf("DEF"),
     );
   });
