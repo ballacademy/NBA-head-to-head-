@@ -23,6 +23,7 @@ describe("formatPlayerDraftStats", () => {
       blocks: 1.2,
       steals: 1.4,
       trueShooting: 0.612,
+      threePoint: 0.387,
       defense: 9.1,
       defenseGrade: "A-",
     });
@@ -32,6 +33,7 @@ describe("formatPlayerDraftStats", () => {
     expect(formatted.summary).toContain("8.1 REB");
     expect(formatted.summary).toContain("1.2 BLK");
     expect(formatted.summary).toContain("1.4 STL");
+    expect(formatted.summary).toContain("38.7% 3P");
     expect(formatted.summary).toContain("61.2% TS");
     expect(formatted.summary).toContain("A- DEF");
   });

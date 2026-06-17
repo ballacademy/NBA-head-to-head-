@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { getDefenseGrade } from "../lib/defenseGrade";
 import {
   ensurePlayerCollection,
   isPlayerStatsMasked,
@@ -22,7 +23,9 @@ type SortKey =
   | "assists"
   | "steals"
   | "blocks"
-  | "trueShooting";
+  | "threePoint"
+  | "trueShooting"
+  | "defense";
 
 const MASKED_VALUE = "????";
 
@@ -35,7 +38,9 @@ const columns: Array<{ key: SortKey; label: string }> = [
   { key: "assists", label: "AST" },
   { key: "steals", label: "STL" },
   { key: "blocks", label: "BLK" },
+  { key: "threePoint", label: "3P%" },
   { key: "trueShooting", label: "TS%" },
+  { key: "defense", label: "DEF" },
 ];
 
 export function PlayerStatsTable({
@@ -162,7 +167,15 @@ export function PlayerStatsTable({
                   <td>{masked ? MASKED_VALUE : player.steals.toFixed(1)}</td>
                   <td>{masked ? MASKED_VALUE : player.blocks.toFixed(1)}</td>
                   <td>
+                    {masked ? MASKED_VALUE : `${(player.threePoint * 100).toFixed(1)}%`}
+                  </td>
+                  <td>
                     {masked ? MASKED_VALUE : `${(player.trueShooting * 100).toFixed(1)}%`}
+                  </td>
+                  <td>
+                    {masked
+                      ? MASKED_VALUE
+                      : getDefenseGrade(player.defense, player.defenseGrade)}
                   </td>
                 </tr>
               );
