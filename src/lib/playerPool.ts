@@ -161,6 +161,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     usage: estimateUsage(raw),
     defense: rating?.defense ?? estimateDefense(raw),
     defenseGrade: rating?.grade,
+    gamesPlayed: raw.gamesPlayed,
     styles: deriveStyles(raw, position),
   };
 };

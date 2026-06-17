@@ -37,6 +37,7 @@ export interface Player {
   usage: number;
   defense: number;
   defenseGrade?: DefenseGrade;
+  gamesPlayed: number;
   styles: PlayStyle[];
 }
 

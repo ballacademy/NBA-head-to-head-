@@ -1,5 +1,6 @@
 import { DIVISIONS, getDivisionForTeam, isDraftableTeam } from "./divisions";
 import { playerMatchesPosition } from "./positions";
+import { hasLimitedSampleSize } from "./sampleSize";
 import type { DraftSlotConstraint, Player, Position } from "./types";
 
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
@@ -125,9 +126,16 @@ export const filterPlayersForSlot = (
   );
 
 export const sortDraftCandidates = (players: Player[]) =>
-  [...players].sort(
-    (a, b) => b.points - a.points || a.name.localeCompare(b.name),
-  );
+  [...players].sort((a, b) => {
+    const aLimited = hasLimitedSampleSize(a);
+    const bLimited = hasLimitedSampleSize(b);
+
+    if (aLimited !== bLimited) {
+      return aLimited ? 1 : -1;
+    }
+
+    return b.points - a.points || a.name.localeCompare(b.name);
+  });
 
 export const autoDraftLineup = (
   players: Player[],

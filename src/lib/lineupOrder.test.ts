@@ -18,6 +18,7 @@ const makePlayer = (name: string, position: Player["position"]): Player => ({
   threePoint: 0.35,
   usage: 25,
   defense: 7,
+  gamesPlayed: 70,
   styles: ["connector"],
 });
 

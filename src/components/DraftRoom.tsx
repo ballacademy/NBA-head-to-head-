@@ -12,6 +12,7 @@ import { formatPlayerPositions, playersById } from "../lib/playerPool";
 import { loadPlayerRecord } from "../lib/playerRecord";
 import type { Drafter, Player } from "../lib/types";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
+import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
 
@@ -257,7 +258,10 @@ export function DraftRoom({
                 <div>
                   <div className="player-pick__title-row">
                     <strong>{player.name}</strong>
-                    <PlayerRarityBadge player={player} />
+                    <span className="player-pick__badges">
+                      <LimitedSampleBadge player={player} />
+                      <PlayerRarityBadge player={player} />
+                    </span>
                   </div>
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}

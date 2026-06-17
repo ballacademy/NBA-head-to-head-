@@ -9,7 +9,9 @@ import {
   isAllCenters,
   isAllGuards,
   isBalancedComposition,
+  sortDraftCandidates,
 } from "./draft";
+import type { Player } from "./types";
 import { players } from "../data/players";
 
 describe("divisions", () => {
@@ -74,6 +76,46 @@ describe("draft constraints", () => {
     expect(
       formatSlotConstraint({ position: "C", division: "Central" }),
     ).toBe("Draft a C from the Central division");
+  });
+
+  it("sorts limited-sample players below full-sample options", () => {
+    const makeCandidate = (
+      name: string,
+      points: number,
+      gamesPlayed: number,
+    ): Player => ({
+      id: name,
+      name,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG"],
+      jerseyNumber: 1,
+      points,
+      rebounds: 5,
+      assists: 3,
+      steals: 1,
+      blocks: 0.5,
+      trueShooting: 0.58,
+      threePoint: 0.36,
+      usage: 24,
+      defense: 7,
+      gamesPlayed,
+      styles: ["connector"],
+    });
+
+    const sorted = sortDraftCandidates([
+      makeCandidate("Low Sample Star", 30, 6),
+      makeCandidate("Reliable Starter", 18, 40),
+      makeCandidate("High Sample Star", 24, 55),
+      makeCandidate("Tiny Sample", 28, 3),
+    ]);
+
+    expect(sorted.map((player) => player.name)).toEqual([
+      "High Sample Star",
+      "Reliable Starter",
+      "Low Sample Star",
+      "Tiny Sample",
+    ]);
   });
 
   it("favors two guards, two forwards, and one center", () => {

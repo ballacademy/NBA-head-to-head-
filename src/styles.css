@@ -838,6 +838,30 @@ main {
   gap: 10px;
 }
 
+.player-pick__badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.player-caveat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.player-caveat-badge--limited-sample {
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fde68a;
+}
+
 .player-rarity-badges {
   display: inline-flex;
   flex-wrap: wrap;
