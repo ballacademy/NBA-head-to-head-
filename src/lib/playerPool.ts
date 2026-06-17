@@ -156,6 +156,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     assists: raw.assists,
     steals: raw.steals,
     blocks: raw.blocks,
+    turnovers: raw.turnovers ?? 0,
     trueShooting: raw.trueShooting ?? 0.54,
     threePoint: raw.threePointPct ?? 0,
     usage: estimateUsage(raw),

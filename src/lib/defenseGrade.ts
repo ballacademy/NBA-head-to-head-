@@ -20,8 +20,9 @@ export const formatPlayerDraftStats = (player: {
   rebounds: number;
   blocks: number;
   steals: number;
-  trueShooting: number;
   threePoint: number;
+  trueShooting: number;
+  turnovers: number;
   defense: number;
   defenseGrade?: DefenseGrade;
 }) => {
@@ -29,6 +30,6 @@ export const formatPlayerDraftStats = (player: {
 
   return {
     grade,
-    summary: `${player.points.toFixed(1)} PTS • ${player.rebounds.toFixed(1)} REB • ${player.blocks.toFixed(1)} BLK • ${player.steals.toFixed(1)} STL • ${(player.threePoint * 100).toFixed(1)}% 3P • ${(player.trueShooting * 100).toFixed(1)}% TS • ${grade} DEF`,
+    summary: `${player.points.toFixed(1)} PTS • ${player.rebounds.toFixed(1)} REB • ${player.blocks.toFixed(1)} BLK • ${player.steals.toFixed(1)} STL • ${(player.threePoint * 100).toFixed(1)}% 3P • ${(player.trueShooting * 100).toFixed(1)}% TS • ${grade} DEF • ${player.turnovers.toFixed(1)} TOV`,
   };
 };

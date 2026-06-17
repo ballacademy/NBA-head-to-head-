@@ -95,6 +95,7 @@ describe("draft constraints", () => {
       assists: 3,
       steals: 1,
       blocks: 0.5,
+      turnovers: 2,
       trueShooting: 0.58,
       threePoint: 0.36,
       usage: 24,

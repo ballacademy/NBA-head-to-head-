@@ -32,6 +32,7 @@ export interface Player {
   assists: number;
   steals: number;
   blocks: number;
+  turnovers: number;
   trueShooting: number;
   threePoint: number;
   usage: number;

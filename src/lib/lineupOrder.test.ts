@@ -14,6 +14,7 @@ const makePlayer = (name: string, position: Player["position"]): Player => ({
   assists: 3,
   steals: 1,
   blocks: 1,
+  turnovers: 2,
   trueShooting: 0.58,
   threePoint: 0.35,
   usage: 25,

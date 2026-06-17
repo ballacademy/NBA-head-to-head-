@@ -24,6 +24,7 @@ describe("formatPlayerDraftStats", () => {
       steals: 1.4,
       trueShooting: 0.612,
       threePoint: 0.387,
+      turnovers: 2.8,
       defense: 9.1,
       defenseGrade: "A-",
     });
@@ -36,5 +37,12 @@ describe("formatPlayerDraftStats", () => {
     expect(formatted.summary).toContain("38.7% 3P");
     expect(formatted.summary).toContain("61.2% TS");
     expect(formatted.summary).toContain("A- DEF");
+    expect(formatted.summary).toContain("2.8 TOV");
+    expect(formatted.summary.indexOf("% 3P")).toBeLessThan(
+      formatted.summary.indexOf("% TS"),
+    );
+    expect(formatted.summary.indexOf("TOV")).toBeGreaterThan(
+      formatted.summary.indexOf("DEF"),
+    );
   });
 });

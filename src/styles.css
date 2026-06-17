@@ -554,30 +554,30 @@ main {
 
 .win-streak-badge__icon {
   display: block;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .win-streak-badge--red .win-streak-badge__icon {
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.9rem;
+  height: 1.9rem;
 }
 
 .win-streak-badge--blue .win-streak-badge__icon {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 2.05rem;
+  height: 2.05rem;
   filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.45));
 }
 
 .win-streak-badge--purple .win-streak-badge__icon {
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 2.2rem;
+  height: 2.2rem;
   filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
 }
 
 .win-streak-badge--black .win-streak-badge__icon {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
   filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
 }
 
@@ -592,30 +592,30 @@ main {
 
 .loss-streak-badge__icon {
   display: block;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .loss-streak-badge--red .loss-streak-badge__icon {
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.9rem;
+  height: 1.9rem;
 }
 
 .loss-streak-badge--blue .loss-streak-badge__icon {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 2.05rem;
+  height: 2.05rem;
   filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.45));
 }
 
 .loss-streak-badge--purple .loss-streak-badge__icon {
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 2.2rem;
+  height: 2.2rem;
   filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
 }
 
 .loss-streak-badge--black .loss-streak-badge__icon {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
   filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
 }
 
