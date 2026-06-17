@@ -66,6 +66,10 @@ function App() {
   };
 
   const resetToLanding = () => {
+    if (collection.pendingUnlock) {
+      return;
+    }
+
     setUser(null);
     setOpponent(null);
     setOpponentCollection(null);

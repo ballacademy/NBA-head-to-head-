@@ -36,8 +36,8 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
         </h2>
         <p className="unlock-modal__copy">
           {isWinOffer
-            ? "Pick a 2026 All-Star or recent All-Star (2023–2025) to add to your draft pool. Superstar cards are extra rare — grab them when they appear."
-            : "Pick a player to add to your draft pool. Super Scrub cards are extra rare — embrace the chaos when they appear."}
+            ? "Pick a 2026 All-Star or recent All-Star (2023–2025) to add to your draft pool. Superstar cards are extra rare — grab them when they appear. You need to choose before drafting again."
+            : "Pick a player to add to your draft pool. Super Scrub cards are extra rare — embrace the chaos when they appear. You need to choose before drafting again."}
         </p>
 
         <div className="unlock-modal__options">

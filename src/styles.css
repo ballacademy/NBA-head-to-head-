@@ -646,6 +646,27 @@ main {
   transform: translateY(0);
 }
 
+.play-again-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.play-again-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.match-results__unlock-note {
+  margin: 10px 0 0;
+  color: #fde68a;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .unlock-reward-button {
   display: block;
   width: 100%;
