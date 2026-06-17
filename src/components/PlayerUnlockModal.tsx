@@ -26,7 +26,9 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
   return (
     <div className="unlock-modal" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
       <div className="unlock-modal__panel panel">
-        <p className="eyebrow">New player unlocked</p>
+        <p className="eyebrow">
+          {isWinOffer ? "New star unlocked" : "New scrub unlocked"}
+        </p>
         <h2 id="unlock-title">
           {isWinOffer
             ? "Choose one All-Star for your collection"

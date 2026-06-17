@@ -72,7 +72,7 @@ export function MatchResults({
   const unlockButtonLabel =
     collection.pendingUnlock?.kind === "loss"
       ? "New scrub unlocked — click to choose"
-      : "New player unlocked — click to choose";
+      : "New star unlocked — click to choose";
 
   return (
     <section className="match-results">
