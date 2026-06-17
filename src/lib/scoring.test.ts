@@ -13,6 +13,15 @@ import {
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
 
+/** Two regular all-stars plus three strong non-all-star starters. */
+const TWO_ALL_STARS_THREE_STARTERS = [
+  "brownja02-bos",
+  "maxeyty01-phi",
+  "embiijo01-phi",
+  "hardeja01-cle",
+  "markkla01-uta",
+];
+
 describe("calculateLineupScore", () => {
   it("rewards a complete lineup with production, efficiency, shooting, and fit", () => {
     const score = calculateLineupScore(
@@ -60,6 +69,13 @@ describe("calculateLineupScore", () => {
       "Positional overlap makes matchups harder to cover.",
     );
   });
+
+  it("projects two all-stars and three strong starters around 45-55 wins", () => {
+    const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
+
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(55);
+  });
 });
 
 describe("normalizeLineupTotal", () => {
@@ -72,11 +88,11 @@ describe("normalizeLineupTotal", () => {
 describe("projectRecord", () => {
   it("anchors projected records to the requested OVR milestones", () => {
     expect(projectRecord(100).formatted).toBe("Record: 82-0");
-    expect(projectRecord(80).formatted).toBe("Record: 53-29");
+    expect(projectRecord(80).formatted).toBe("Record: 52-30");
     expect(projectRecord(0).formatted).toBe("Record: 0-82");
-    expect(projectRecord(85).formatted).toBe("Record: 75-7");
-    expect(projectRecord(95).formatted).toBe("Record: 79-3");
-    expect(projectedWinsFromOvr(90)).toBe(77);
+    expect(projectRecord(85).formatted).toBe("Record: 57-25");
+    expect(projectRecord(95).formatted).toBe("Record: 71-11");
+    expect(projectedWinsFromOvr(90)).toBe(63);
     expect(projectedWinsFromOvr(50)).toBe(28);
     expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
       SEASON_LENGTH,

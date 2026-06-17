@@ -1,7 +1,7 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 
 export const SEASON_LENGTH = 82;
-export const LINEUP_RAW_CEILING = 205;
+export const LINEUP_RAW_CEILING = 232;
 
 const round = (value: number, places = 1) => {
   const factor = 10 ** places;
@@ -14,9 +14,10 @@ const clamp = (value: number, min: number, max: number) =>
 export const normalizeLineupTotal = (rawTotal: number) =>
   round(clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100));
 
-const PROJECTED_WINS_AT_80 = 53;
-const PROJECTED_WINS_AT_85 = 75;
-const PROJECTED_WINS_AT_95 = 79;
+const PROJECTED_WINS_AT_80 = 52;
+const PROJECTED_WINS_AT_85 = 57;
+const PROJECTED_WINS_AT_90 = 63;
+const PROJECTED_WINS_AT_95 = 71;
 const PROJECTED_WINS_AT_100 = 82;
 const LOW_OVR_CURVE_POWER = 1.35;
 
@@ -32,9 +33,15 @@ export const projectedWinsFromOvr = (lineupTotal: number) => {
     );
   }
 
+  if (total >= 90) {
+    return Math.round(
+      interpolate(total, 90, 95, PROJECTED_WINS_AT_90, PROJECTED_WINS_AT_95),
+    );
+  }
+
   if (total >= 85) {
     return Math.round(
-      interpolate(total, 85, 95, PROJECTED_WINS_AT_85, PROJECTED_WINS_AT_95),
+      interpolate(total, 85, 90, PROJECTED_WINS_AT_85, PROJECTED_WINS_AT_90),
     );
   }
 
