@@ -162,10 +162,10 @@ export const autoDraftLineup = (
 };
 
 export const formatSlotConstraint = (slot: DraftSlotConstraint) =>
-  `Draft a ${slot.position} from the ${slot.division} division`;
+  `Draft a ${slot.position} from the ${slot.division} Division`;
 
 export const formatPickSlotSummary = (slot: DraftSlotConstraint) =>
-  `${slot.position} • ${slot.division} division`;
+  `${slot.position} • ${slot.division} Division`;
 
 export const pickBestForSlot = (
   players: Player[],

@@ -75,7 +75,7 @@ describe("draft constraints", () => {
   it("formats slot prompts for the UI", () => {
     expect(
       formatSlotConstraint({ position: "C", division: "Central" }),
-    ).toBe("Draft a C from the Central division");
+    ).toBe("Draft a C from the Central Division");
   });
 
   it("sorts limited-sample players below full-sample options", () => {
