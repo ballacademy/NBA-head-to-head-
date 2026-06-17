@@ -14,7 +14,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
-import { calculateLineupScore, getMatchupEffectiveTotal } from "../lib/scoring";
+import { calculateLineupScore } from "../lib/scoring";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -42,9 +42,7 @@ export function MatchResults({
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
-  const userWon =
-    getMatchupEffectiveTotal(userLineup, userScore.total) >=
-    getMatchupEffectiveTotal(opponentLineup, opponentScore.total);
+  const userWon = userScore.total >= opponentScore.total;
   const updatedRecord = useMemo(
     () => projectRecordAfterMatch(userWon, loadPlayerRecord()),
     [userWon],
@@ -138,8 +136,6 @@ export function MatchResults({
       <ScoreBoard
         drafterA={user}
         drafterB={opponent}
-        lineupA={userLineup}
-        lineupB={opponentLineup}
         scoreA={userScore}
         scoreB={opponentScore}
       />

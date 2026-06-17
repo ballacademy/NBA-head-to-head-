@@ -1,5 +1,5 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
-import { getMatchupEffectiveTotal } from "./lineupMatchupBonus";
+import { getStarTierLineupBonus } from "./lineupMatchupBonus";
 import { getPlayerStatWeight } from "./sampleSize";
 
 export const SEASON_LENGTH = 82;
@@ -74,7 +74,7 @@ export const getPlayersById = (playerIds: string[], pool: Player[]) =>
     .map((id) => pool.find((player) => player.id === id))
     .filter((player): player is Player => Boolean(player));
 
-export { getMatchupEffectiveTotal, getStarTierMatchupBonus } from "./lineupMatchupBonus";
+export { getStarTierLineupBonus } from "./lineupMatchupBonus";
 
 const buildLineupWeights = (lineup: Player[]) => {
   const weights = lineup.map((player) => getPlayerStatWeight(player));
@@ -296,7 +296,10 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     warnings.push("Positional overlap makes matchups harder to cover.");
   }
 
-  const rawTotal = round(categories.reduce((sum, category) => sum + category.value, 0));
+  const statRawTotal = round(
+    categories.reduce((sum, category) => sum + category.value, 0),
+  );
+  const rawTotal = statRawTotal + getStarTierLineupBonus(lineup);
   const total = normalizeLineupTotal(rawTotal);
 
   return {
@@ -311,13 +314,11 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
 export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
   const scoreA = calculateLineupScore(lineupA);
   const scoreB = calculateLineupScore(lineupB);
-  const effectiveA = getMatchupEffectiveTotal(lineupA, scoreA.total);
-  const effectiveB = getMatchupEffectiveTotal(lineupB, scoreB.total);
 
   return {
     scoreA,
     scoreB,
-    winner: effectiveA >= effectiveB ? "A" : "B",
-    margin: round(Math.abs(effectiveA - effectiveB)),
+    winner: scoreA.total >= scoreB.total ? "A" : "B",
+    margin: round(Math.abs(scoreA.total - scoreB.total)),
   };
 };

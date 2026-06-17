@@ -3,7 +3,6 @@ import { players } from "../data/players";
 import {
   calculateLineupScore,
   compareLineups,
-  getMatchupEffectiveTotal,
   getPlayersById,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
@@ -110,7 +109,7 @@ describe("calculateLineupScore", () => {
     expect(limitedSample.total).toBeLessThan(fullSample.total);
   });
 
-  it("applies hidden star-tier bonuses only to matchup resolution", () => {
+  it("boosts OVR and projected wins for star tiers without a visible category", () => {
     const makeTieredPlayer = (
       id: string,
       bbrPlayerId?: string,
@@ -135,18 +134,24 @@ describe("calculateLineupScore", () => {
       styles: ["shooter", "connector"],
     });
 
-    const superstarLineup = [makeTieredPlayer("superstar", "jokicni01")];
-    const regularLineup = [makeTieredPlayer("regular")];
+    const superstarLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`superstar-${index}`, "jokicni01"),
+    );
+    const regularLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    );
     const superstarScore = calculateLineupScore(superstarLineup);
     const regularScore = calculateLineupScore(regularLineup);
-
-    expect(superstarScore.total).toBe(regularScore.total);
-    expect(getMatchupEffectiveTotal(superstarLineup, superstarScore.total)).toBe(
-      superstarScore.total + 2,
+    const categoryTotal = superstarScore.categories.reduce(
+      (sum, category) => sum + category.value,
+      0,
     );
-    expect(
-      getMatchupEffectiveTotal(superstarLineup, superstarScore.total),
-    ).toBeGreaterThan(getMatchupEffectiveTotal(regularLineup, regularScore.total));
+
+    expect(superstarScore.total).toBeGreaterThan(regularScore.total);
+    expect(superstarScore.projectedRecord.wins).toBeGreaterThan(
+      regularScore.projectedRecord.wins,
+    );
+    expect(normalizeLineupTotal(categoryTotal)).toBeLessThan(superstarScore.total);
   });
 });
 
