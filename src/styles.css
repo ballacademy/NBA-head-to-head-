@@ -1,6 +1,6 @@
 :root {
   color: #f8fafc;
-  background: #07111f;
+  background: #12061f;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -12,10 +12,16 @@
   --muted: #94a3b8;
   --orange: #f97316;
   --blue: #2563eb;
+  --lightsaber-purple: #b56cff;
+  --bg-deep: #12061f;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  background: var(--bg-deep);
 }
 
 body {
@@ -23,9 +29,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.26), transparent 34rem),
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.22), transparent 32rem),
-    linear-gradient(145deg, #07111f 0%, #0f172a 48%, #111827 100%);
+    radial-gradient(circle at 12% 8%, rgba(181, 108, 255, 0.2), transparent 34rem),
+    radial-gradient(circle at 88% 10%, rgba(147, 51, 234, 0.18), transparent 32rem),
+    radial-gradient(circle at 50% 100%, rgba(107, 33, 168, 0.28), transparent 38rem),
+    linear-gradient(160deg, #0d0418 0%, #1a0a2e 42%, #2d1248 100%);
 }
 
 button,
@@ -332,9 +339,9 @@ main {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 15% 20%, rgba(249, 115, 22, 0.18), transparent 28rem),
-    radial-gradient(circle at 85% 18%, rgba(59, 130, 246, 0.16), transparent 26rem),
-    radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.12), transparent 32rem);
+    radial-gradient(circle at 15% 20%, rgba(192, 132, 252, 0.16), transparent 28rem),
+    radial-gradient(circle at 85% 18%, rgba(168, 85, 247, 0.14), transparent 26rem),
+    radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.18), transparent 32rem);
   z-index: 0;
 }
 
@@ -749,56 +756,39 @@ main {
 }
 
 .unlock-option--superstar {
-  border-color: rgba(251, 191, 36, 0.75);
+  border-color: rgba(251, 191, 36, 0.45);
   background: linear-gradient(
     135deg,
-    rgba(251, 191, 36, 0.16) 0%,
+    rgba(251, 191, 36, 0.08) 0%,
     rgba(15, 23, 42, 0.92) 55%
   );
-  animation: superstar-card-glow 2.4s ease-in-out infinite;
 }
 
 .unlock-option--superstar:hover {
-  border-color: #fde68a;
-  box-shadow: 0 0 28px rgba(251, 191, 36, 0.35);
+  border-color: rgba(253, 224, 71, 0.65);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.16);
 }
 
 .unlock-option--super-scrub {
-  border-color: rgba(248, 113, 113, 0.75);
+  border-color: rgba(248, 113, 113, 0.45);
   background: linear-gradient(
     135deg,
-    rgba(248, 113, 113, 0.16) 0%,
+    rgba(248, 113, 113, 0.08) 0%,
     rgba(15, 23, 42, 0.92) 55%
   );
-  animation: super-scrub-card-glow 2.4s ease-in-out infinite;
 }
 
 .unlock-option--super-scrub:hover {
-  border-color: #fecaca;
-  box-shadow: 0 0 28px rgba(248, 113, 113, 0.35);
+  border-color: rgba(254, 202, 202, 0.65);
+  box-shadow: 0 0 14px rgba(248, 113, 113, 0.16);
 }
 
 .unlock-option--super-scrub .unlock-option__glow {
   background: radial-gradient(
     circle,
-    rgba(248, 113, 113, 0.28) 0%,
+    rgba(248, 113, 113, 0.1) 0%,
     rgba(248, 113, 113, 0) 70%
   );
-}
-
-@keyframes super-scrub-card-glow {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px rgba(248, 113, 113, 0.35),
-      0 12px 30px rgba(239, 68, 68, 0.2);
-  }
-
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(254, 202, 202, 0.65),
-      0 16px 36px rgba(239, 68, 68, 0.38);
-  }
 }
 
 .unlock-option__glow {
@@ -806,36 +796,11 @@ main {
   inset: -40%;
   background: radial-gradient(
     circle,
-    rgba(251, 191, 36, 0.28) 0%,
+    rgba(251, 191, 36, 0.1) 0%,
     rgba(251, 191, 36, 0) 70%
   );
   pointer-events: none;
-  animation: superstar-shimmer 3s linear infinite;
-}
-
-@keyframes superstar-card-glow {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px rgba(251, 191, 36, 0.35),
-      0 12px 30px rgba(245, 158, 11, 0.2);
-  }
-
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(253, 224, 71, 0.65),
-      0 16px 36px rgba(245, 158, 11, 0.38);
-  }
-}
-
-@keyframes superstar-shimmer {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  opacity: 0.65;
 }
 
 .unlock-option__body {
@@ -854,10 +819,7 @@ main {
 .unlock-option__name {
   color: #ffffff;
   font-weight: 900;
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.85),
-    0 0 22px rgba(255, 255, 255, 0.45),
-    0 0 36px rgba(191, 219, 254, 0.35);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
 }
 
 .unlock-option__meta,
@@ -1320,15 +1282,35 @@ main {
   gap: 12px;
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid var(--panel-border);
+  border: 1px solid rgba(248, 250, 252, 0.24);
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.82);
   color: inherit;
   text-align: left;
+  animation: player-pick-border-glow 3.2s ease-in-out infinite;
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
+}
+
+@keyframes player-pick-border-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 0 10px rgba(255, 255, 255, 0.06);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.16),
+      0 0 16px rgba(255, 255, 255, 0.12);
+  }
+}
+
+.player-pick:hover {
+  border-color: rgba(248, 250, 252, 0.38);
 }
 
 .player-pick--all-star {
