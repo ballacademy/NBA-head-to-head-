@@ -1,8 +1,11 @@
-import type { Drafter, LineupScore } from "../lib/types";
+import type { Drafter, LineupScore, Player } from "../lib/types";
+import { getMatchupEffectiveTotal } from "../lib/scoring";
 
 interface ScoreBoardProps {
   drafterA: Drafter;
   drafterB: Drafter;
+  lineupA: Player[];
+  lineupB: Player[];
   scoreA: LineupScore;
   scoreB: LineupScore;
 }
@@ -58,10 +61,14 @@ function ScoreColumn({
 export function ScoreBoard({
   drafterA,
   drafterB,
+  lineupA,
+  lineupB,
   scoreA,
   scoreB,
 }: ScoreBoardProps) {
-  const isAWinner = scoreA.total >= scoreB.total;
+  const isAWinner =
+    getMatchupEffectiveTotal(lineupA, scoreA.total) >=
+    getMatchupEffectiveTotal(lineupB, scoreB.total);
 
   return (
     <section className="panel score-board" aria-labelledby="score-heading">

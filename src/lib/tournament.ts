@@ -1,5 +1,5 @@
 import type { Drafter, MatchupResult, Player } from "./types";
-import { calculateLineupScore, getPlayersById } from "./scoring";
+import { calculateLineupScore, getMatchupEffectiveTotal, getPlayersById } from "./scoring";
 
 const roundNames = ["Quarterfinals", "Semifinals", "Final"];
 
@@ -22,7 +22,11 @@ export const buildTournament = (
       const scoreB = calculateLineupScore(
         getPlayersById(drafterB.lineup, pool),
       );
-      const winnerId = scoreA.total >= scoreB.total ? drafterA.id : drafterB.id;
+      const lineupA = getPlayersById(drafterA.lineup, pool);
+      const lineupB = getPlayersById(drafterB.lineup, pool);
+      const effectiveA = getMatchupEffectiveTotal(lineupA, scoreA.total);
+      const effectiveB = getMatchupEffectiveTotal(lineupB, scoreB.total);
+      const winnerId = effectiveA >= effectiveB ? drafterA.id : drafterB.id;
 
       results.push({
         id: `${roundIndex}-${index}`,
@@ -32,7 +36,7 @@ export const buildTournament = (
         scoreA,
         scoreB,
         winnerId,
-        margin: Math.abs(scoreA.total - scoreB.total),
+        margin: Math.abs(effectiveA - effectiveB),
       });
     }
 

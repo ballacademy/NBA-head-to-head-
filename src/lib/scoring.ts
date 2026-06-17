@@ -1,4 +1,6 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
+import { getMatchupEffectiveTotal } from "./lineupMatchupBonus";
+import { getPlayerStatWeight } from "./sampleSize";
 
 export const SEASON_LENGTH = 82;
 export const LINEUP_RAW_CEILING = 232;
@@ -72,6 +74,64 @@ export const getPlayersById = (playerIds: string[], pool: Player[]) =>
     .map((id) => pool.find((player) => player.id === id))
     .filter((player): player is Player => Boolean(player));
 
+export { getMatchupEffectiveTotal, getStarTierMatchupBonus } from "./lineupMatchupBonus";
+
+const buildLineupWeights = (lineup: Player[]) => {
+  const weights = lineup.map((player) => getPlayerStatWeight(player));
+  const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+
+  return { weights, weightSum };
+};
+
+const weightedTotal = (
+  lineup: Player[],
+  metric: keyof Pick<
+    Player,
+    | "points"
+    | "rebounds"
+    | "assists"
+    | "steals"
+    | "blocks"
+    | "trueShooting"
+    | "threePoint"
+    | "usage"
+    | "defense"
+  >,
+  weights: number[],
+) =>
+  lineup.reduce(
+    (sum, player, index) => sum + player[metric] * weights[index],
+    0,
+  );
+
+const weightedAverage = (
+  lineup: Player[],
+  metric: keyof Pick<
+    Player,
+    | "points"
+    | "rebounds"
+    | "assists"
+    | "steals"
+    | "blocks"
+    | "trueShooting"
+    | "threePoint"
+    | "usage"
+    | "defense"
+  >,
+  weights: number[],
+  weightSum: number,
+) => (weightSum > 0 ? weightedTotal(lineup, metric, weights) / weightSum : 0);
+
+const weightedCount = (
+  lineup: Player[],
+  weights: number[],
+  predicate: (player: Player) => boolean,
+) =>
+  lineup.reduce(
+    (sum, player, index) => sum + (predicate(player) ? weights[index] : 0),
+    0,
+  );
+
 export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   if (lineup.length === 0) {
     return {
@@ -87,44 +147,63 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     };
   }
 
-  const perPlayer = (metric: keyof Pick<
-    Player,
-    | "points"
-    | "rebounds"
-    | "assists"
-    | "steals"
-    | "blocks"
-    | "trueShooting"
-    | "threePoint"
-    | "usage"
-    | "defense"
-  >) => lineup.reduce((sum, player) => sum + player[metric], 0) / lineup.length;
+  const { weights, weightSum } = buildLineupWeights(lineup);
 
   const totals = {
-    points: lineup.reduce((sum, player) => sum + player.points, 0),
-    rebounds: lineup.reduce((sum, player) => sum + player.rebounds, 0),
-    assists: lineup.reduce((sum, player) => sum + player.assists, 0),
-    steals: lineup.reduce((sum, player) => sum + player.steals, 0),
-    blocks: lineup.reduce((sum, player) => sum + player.blocks, 0),
+    points: weightedTotal(lineup, "points", weights),
+    rebounds: weightedTotal(lineup, "rebounds", weights),
+    assists: weightedTotal(lineup, "assists", weights),
+    steals: weightedTotal(lineup, "steals", weights),
+    blocks: weightedTotal(lineup, "blocks", weights),
   };
 
-  const averageTrueShooting = perPlayer("trueShooting");
-  const averageThreePoint = perPlayer("threePoint");
-  const averageDefense = perPlayer("defense");
-  const averageUsage = perPlayer("usage");
+  const averageTrueShooting = weightedAverage(
+    lineup,
+    "trueShooting",
+    weights,
+    weightSum,
+  );
+  const averageThreePoint = weightedAverage(
+    lineup,
+    "threePoint",
+    weights,
+    weightSum,
+  );
+  const averageDefense = weightedAverage(lineup, "defense", weights, weightSum);
+  const averageUsage = weightedAverage(lineup, "usage", weights, weightSum);
 
-  const shooters = lineup.filter((player) => player.threePoint >= 0.375).length;
-  const stoppers = lineup.filter((player) => player.defense >= 8).length;
-  const rimProtectors = lineup.filter(
+  const shooters = weightedCount(
+    lineup,
+    weights,
+    (player) => player.threePoint >= 0.375,
+  );
+  const stoppers = weightedCount(
+    lineup,
+    weights,
+    (player) => player.defense >= 8,
+  );
+  const rimProtectors = weightedCount(
+    lineup,
+    weights,
     (player) =>
       player.blocks >= 1.2 || player.styles.includes("rim-protector"),
-  ).length;
-  const engines = lineup.filter((player) => player.styles.includes("engine"));
-  const connectors = lineup.filter((player) =>
+  );
+  const engines = weightedCount(lineup, weights, (player) =>
+    player.styles.includes("engine"),
+  );
+  const connectors = weightedCount(lineup, weights, (player) =>
     player.styles.includes("connector"),
-  ).length;
-  const highUsagePlayers = lineup.filter((player) => player.usage >= 30).length;
-  const lowUsagePlayers = lineup.filter((player) => player.usage <= 22).length;
+  );
+  const highUsagePlayers = weightedCount(
+    lineup,
+    weights,
+    (player) => player.usage >= 30,
+  );
+  const lowUsagePlayers = weightedCount(
+    lineup,
+    weights,
+    (player) => player.usage <= 22,
+  );
   const positions = new Set(lineup.map((player) => player.position));
 
   const production =
@@ -148,7 +227,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   fit += rimProtectors >= 1 ? 6 : -6;
   fit += connectors >= 2 ? 6 : connectors === 1 ? 3 : -4;
   fit += shooters >= 3 ? 6 : shooters === 2 ? 3 : -4;
-  fit += engines.length >= 1 ? 4 : -3;
+  fit += engines >= 1 ? 4 : -3;
   fit += lowUsagePlayers >= 1 ? 3 : -3;
   fit -= Math.max(0, highUsagePlayers - 2) * 6;
   fit -= averageUsage > 31 ? (averageUsage - 31) * 1.2 : 0;
@@ -203,7 +282,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     warnings.push("Not enough defenders to survive elite scorers.");
   }
 
-  if (connectors >= 2 || engines.length >= 1) {
+  if (connectors >= 2 || engines >= 1) {
     strengths.push("Creation and connective passing should travel well.");
   } else {
     warnings.push("The lineup lacks a reliable table-setter.");
@@ -232,11 +311,13 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
 export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
   const scoreA = calculateLineupScore(lineupA);
   const scoreB = calculateLineupScore(lineupB);
+  const effectiveA = getMatchupEffectiveTotal(lineupA, scoreA.total);
+  const effectiveB = getMatchupEffectiveTotal(lineupB, scoreB.total);
 
   return {
     scoreA,
     scoreB,
-    winner: scoreA.total >= scoreB.total ? "A" : "B",
-    margin: round(Math.abs(scoreA.total - scoreB.total)),
+    winner: effectiveA >= effectiveB ? "A" : "B",
+    margin: round(Math.abs(effectiveA - effectiveB)),
   };
 };

@@ -3,6 +3,7 @@ import { players } from "../data/players";
 import {
   calculateLineupScore,
   compareLineups,
+  getMatchupEffectiveTotal,
   getPlayersById,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
@@ -10,6 +11,7 @@ import {
   projectRecord,
   SEASON_LENGTH,
 } from "./scoring";
+import type { Player } from "./types";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
 
@@ -75,6 +77,76 @@ describe("calculateLineupScore", () => {
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
     expect(score.projectedRecord.wins).toBeLessThanOrEqual(55);
+  });
+
+  it("weighs limited-sample players less in lineup scoring", () => {
+    const makeStarter = (gamesPlayed: number): Player => ({
+      id: `starter-${gamesPlayed}`,
+      name: `Starter ${gamesPlayed}`,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed,
+      styles: ["shooter", "connector"],
+    });
+
+    const fullSample = calculateLineupScore(
+      Array.from({ length: 5 }, () => makeStarter(70)),
+    );
+    const limitedSample = calculateLineupScore(
+      Array.from({ length: 5 }, () => makeStarter(5)),
+    );
+
+    expect(limitedSample.total).toBeLessThan(fullSample.total);
+  });
+
+  it("applies hidden star-tier bonuses only to matchup resolution", () => {
+    const makeTieredPlayer = (
+      id: string,
+      bbrPlayerId?: string,
+    ): Player => ({
+      id,
+      bbrPlayerId,
+      name: id,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed: 70,
+      styles: ["shooter", "connector"],
+    });
+
+    const superstarLineup = [makeTieredPlayer("superstar", "jokicni01")];
+    const regularLineup = [makeTieredPlayer("regular")];
+    const superstarScore = calculateLineupScore(superstarLineup);
+    const regularScore = calculateLineupScore(regularLineup);
+
+    expect(superstarScore.total).toBe(regularScore.total);
+    expect(getMatchupEffectiveTotal(superstarLineup, superstarScore.total)).toBe(
+      superstarScore.total + 2,
+    );
+    expect(
+      getMatchupEffectiveTotal(superstarLineup, superstarScore.total),
+    ).toBeGreaterThan(getMatchupEffectiveTotal(regularLineup, regularScore.total));
   });
 });
 
