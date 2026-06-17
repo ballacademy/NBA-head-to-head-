@@ -30,10 +30,16 @@ describe("formatPlayerDraftStats", () => {
     });
 
     expect(formatted.grade).toBe("A-");
-    expect(formatted.summary).toContain("27.4 PTS");
-    expect(formatted.summary).toContain("8.1 REB");
-    expect(formatted.summary).toContain("1.2 BLK");
-    expect(formatted.summary).toContain("1.4 STL");
+    expect(formatted.parts).toEqual([
+      "27.4 PTS",
+      "8.1 REB",
+      "1.2 BLK",
+      "1.4 STL",
+      "38.7% 3P",
+      "61.2% TS",
+      "A- DEF",
+      "2.8 TOV",
+    ]);
     expect(formatted.summary).toContain("38.7% 3P");
     expect(formatted.summary).toContain("61.2% TS");
     expect(formatted.summary).toContain("A- DEF");

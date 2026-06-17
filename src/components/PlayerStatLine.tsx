@@ -1,4 +1,4 @@
-import { formatPlayerDraftStats } from "../lib/defenseGrade";
+import { PlayerDraftStats } from "./PlayerDraftStats";
 import type { Player } from "../lib/types";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
@@ -8,8 +8,6 @@ interface PlayerStatLineProps {
 }
 
 export function PlayerStatLine({ player, pickNumber }: PlayerStatLineProps) {
-  const stats = formatPlayerDraftStats(player);
-
   return (
     <div className="player-stat-line">
       <PlayerTeamIcon
@@ -25,7 +23,7 @@ export function PlayerStatLine({ player, pickNumber }: PlayerStatLineProps) {
           {player.position} • {player.team}
           {pickNumber ? ` • Pick ${pickNumber}` : ""}
         </span>
-        <span className="player-stat-line__stats">{stats.summary}</span>
+        <PlayerDraftStats player={player} />
       </div>
     </div>
   );

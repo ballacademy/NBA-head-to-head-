@@ -547,76 +547,76 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
+  margin-left: 8px;
   vertical-align: middle;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .win-streak-badge__icon {
   display: block;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .win-streak-badge--red .win-streak-badge__icon {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .win-streak-badge--blue .win-streak-badge__icon {
-  width: 2.05rem;
-  height: 2.05rem;
-  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.45));
+  width: 3rem;
+  height: 3rem;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
 }
 
 .win-streak-badge--purple .win-streak-badge__icon {
-  width: 2.2rem;
-  height: 2.2rem;
-  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
+  width: 3.25rem;
+  height: 3.25rem;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.55));
 }
 
 .win-streak-badge--black .win-streak-badge__icon {
-  width: 2.4rem;
-  height: 2.4rem;
-  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
+  width: 3.5rem;
+  height: 3.5rem;
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.4));
 }
 
 .loss-streak-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
+  margin-left: 8px;
   vertical-align: middle;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .loss-streak-badge__icon {
   display: block;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .loss-streak-badge--red .loss-streak-badge__icon {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .loss-streak-badge--blue .loss-streak-badge__icon {
-  width: 2.05rem;
-  height: 2.05rem;
-  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.45));
+  width: 3rem;
+  height: 3rem;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
 }
 
 .loss-streak-badge--purple .loss-streak-badge__icon {
-  width: 2.2rem;
-  height: 2.2rem;
-  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
+  width: 3.25rem;
+  height: 3.25rem;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.55));
 }
 
 .loss-streak-badge--black .loss-streak-badge__icon {
-  width: 2.4rem;
-  height: 2.4rem;
-  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
+  width: 3.5rem;
+  height: 3.5rem;
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.4));
 }
 
 .play-again-button {
@@ -1186,8 +1186,35 @@ main {
   font-size: 0.9rem;
 }
 
+.player-pick > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-draft-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.player-draft-stats__item {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .player-stat-line__stats,
-.player-pick__stats {
+.player-pick__stats,
+.unlock-option__stats {
   display: block;
   margin-top: 6px;
   color: #cbd5e1;

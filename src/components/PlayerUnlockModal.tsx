@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { PlayerDraftStats } from "./PlayerDraftStats";
 import { isSuperstarPlayer } from "../lib/allStars";
-import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { playersById } from "../lib/playerPool";
 import type { UnlockOffer } from "../lib/playerCollection";
 import { isSuperScrubPlayer } from "../lib/playerTiers";
@@ -42,7 +42,6 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
 
         <div className="unlock-modal__options">
           {options.map((player) => {
-            const stats = formatPlayerDraftStats(player);
             const premium = isWinOffer
               ? isSuperstarPlayer(player)
               : isSuperScrubPlayer(player);
@@ -75,7 +74,7 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                   <span className="unlock-option__meta">
                     {player.team} • {player.position}
                   </span>
-                  <span className="unlock-option__stats">{stats.summary}</span>
+                  <PlayerDraftStats player={player} />
                 </div>
                 {premium ? (
                   <span className="unlock-option__glow" aria-hidden="true" />

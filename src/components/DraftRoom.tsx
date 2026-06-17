@@ -5,8 +5,8 @@ import {
   formatSlotConstraint,
   sortDraftCandidates,
 } from "../lib/draft";
+import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
-import { formatPlayerDraftStats } from "../lib/defenseGrade";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { formatPlayerPositions, playersById } from "../lib/playerPool";
 import { loadPlayerRecord } from "../lib/playerRecord";
@@ -235,7 +235,6 @@ export function DraftRoom({
       <div className="player-pick-list" role="listbox" aria-label="Eligible players">
         {candidates.length > 0 ? (
           candidates.map((player) => {
-            const stats = formatPlayerDraftStats(player);
             const shineClass = getPlayerPickShineClass(player);
 
             return (
@@ -266,7 +265,7 @@ export function DraftRoom({
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
                   </span>
-                  <span className="player-pick__stats">{stats.summary}</span>
+                  <PlayerDraftStats player={player} />
                 </div>
               </button>
             );
