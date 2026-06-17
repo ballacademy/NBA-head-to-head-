@@ -10,6 +10,8 @@ import {
   projectRecord,
   SEASON_LENGTH,
 } from "./scoring";
+import { playersById } from "./playerPool";
+import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
 import type { Player } from "./types";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
@@ -152,6 +154,56 @@ describe("calculateLineupScore", () => {
       regularScore.projectedRecord.wins,
     );
     expect(normalizeLineupTotal(categoryTotal)).toBeLessThan(superstarScore.total);
+  });
+
+  it("reduces OVR and projected wins for scrub tiers without a visible category", () => {
+    const makeTieredPlayer = (id: string): Player => ({
+      id,
+      name: id,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed: 70,
+      styles: ["shooter", "connector"],
+    });
+
+    const superScrubIds = new Set(getSuperScrubPlayerIds());
+    const scrubOnlyId = getScrubPlayerIds().find((id) => !superScrubIds.has(id));
+    const scrub = scrubOnlyId ? playersById.get(scrubOnlyId) : undefined;
+    const superScrub = playersById.get(getSuperScrubPlayerIds()[0]!);
+
+    expect(scrub).toBeDefined();
+    expect(superScrub).toBeDefined();
+
+    const regularLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    );
+    const scrubLineup = Array.from({ length: 4 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    ).concat(scrub!);
+    const superScrubLineup = Array.from({ length: 4 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    ).concat(superScrub!);
+
+    const regularScore = calculateLineupScore(regularLineup);
+    const scrubScore = calculateLineupScore(scrubLineup);
+    const superScrubScore = calculateLineupScore(superScrubLineup);
+
+    expect(scrubScore.total).toBeLessThan(regularScore.total);
+    expect(superScrubScore.total).toBeLessThan(scrubScore.total);
+    expect(superScrubScore.projectedRecord.wins).toBeLessThanOrEqual(
+      scrubScore.projectedRecord.wins,
+    );
   });
 });
 

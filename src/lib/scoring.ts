@@ -1,5 +1,5 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
-import { getStarTierLineupBonus } from "./lineupMatchupBonus";
+import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import { getPlayerStatWeight } from "./sampleSize";
 
 export const SEASON_LENGTH = 82;
@@ -74,7 +74,11 @@ export const getPlayersById = (playerIds: string[], pool: Player[]) =>
     .map((id) => pool.find((player) => player.id === id))
     .filter((player): player is Player => Boolean(player));
 
-export { getStarTierLineupBonus } from "./lineupMatchupBonus";
+export {
+  getLineupTierAdjustment,
+  getScrubTierLineupPenalty,
+  getStarTierLineupBonus,
+} from "./lineupMatchupBonus";
 
 const buildLineupWeights = (lineup: Player[]) => {
   const weights = lineup.map((player) => getPlayerStatWeight(player));
@@ -132,21 +136,7 @@ const weightedCount = (
     0,
   );
 
-export const calculateLineupScore = (lineup: Player[]): LineupScore => {
-  if (lineup.length === 0) {
-    return {
-      total: 0,
-      projectedRecord: {
-        wins: 0,
-        losses: 0,
-        formatted: "Record: —",
-      },
-      categories: [],
-      strengths: [],
-      warnings: ["Draft five players to unlock a matchup score."],
-    };
-  }
-
+const buildLineupScoreBreakdown = (lineup: Player[]) => {
   const { weights, weightSum } = buildLineupWeights(lineup);
 
   const totals = {
@@ -299,7 +289,36 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   const statRawTotal = round(
     categories.reduce((sum, category) => sum + category.value, 0),
   );
-  const rawTotal = statRawTotal + getStarTierLineupBonus(lineup);
+
+  return { categories, strengths, warnings, statRawTotal };
+};
+
+export const calculateLineupStatRawTotal = (lineup: Player[]) => {
+  if (lineup.length === 0) {
+    return 0;
+  }
+
+  return buildLineupScoreBreakdown(lineup).statRawTotal;
+};
+
+export const calculateLineupScore = (lineup: Player[]): LineupScore => {
+  if (lineup.length === 0) {
+    return {
+      total: 0,
+      projectedRecord: {
+        wins: 0,
+        losses: 0,
+        formatted: "Record: —",
+      },
+      categories: [],
+      strengths: [],
+      warnings: ["Draft five players to unlock a matchup score."],
+    };
+  }
+
+  const { categories, strengths, warnings, statRawTotal } =
+    buildLineupScoreBreakdown(lineup);
+  const rawTotal = statRawTotal + getLineupTierAdjustment(lineup);
   const total = normalizeLineupTotal(rawTotal);
 
   return {

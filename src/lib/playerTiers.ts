@@ -1,38 +1,62 @@
+import { getStarTierLineupBonus } from "./lineupMatchupBonus";
 import { players } from "./playerPool";
-import { calculateLineupScore } from "./scoring";
+import { calculateLineupStatRawTotal, normalizeLineupTotal } from "./scoring";
 import type { Player } from "./types";
 
 export const SCRUB_POOL_SIZE = 50;
 export const SUPER_SCRUB_POOL_SIZE = 10;
 
-const rankedByOvr = [...players]
-  .map((player) => ({
-    player,
-    ovr: calculateLineupScore([player]).total,
-  }))
-  .sort(
-    (left, right) =>
-      left.ovr - right.ovr || left.player.name.localeCompare(right.player.name),
+let scrubIds: Set<string> | undefined;
+let superScrubIds: Set<string> | undefined;
+
+const ensureScrubPools = () => {
+  if (scrubIds && superScrubIds) {
+    return;
+  }
+
+  const rankedByOvr = [...players]
+    .map((player) => ({
+      player,
+      ovr: normalizeLineupTotal(
+        calculateLineupStatRawTotal([player]) +
+          getStarTierLineupBonus([player]),
+      ),
+    }))
+    .sort(
+      (left, right) =>
+        left.ovr - right.ovr ||
+        left.player.name.localeCompare(right.player.name),
+    );
+
+  scrubIds = new Set(
+    rankedByOvr.slice(0, SCRUB_POOL_SIZE).map((entry) => entry.player.id),
   );
+  superScrubIds = new Set(
+    rankedByOvr.slice(0, SUPER_SCRUB_POOL_SIZE).map((entry) => entry.player.id),
+  );
+};
 
-const scrubPlayers = rankedByOvr
-  .slice(0, SCRUB_POOL_SIZE)
-  .map((entry) => entry.player);
-const superScrubPlayers = rankedByOvr
-  .slice(0, SUPER_SCRUB_POOL_SIZE)
-  .map((entry) => entry.player);
+export const isScrubPlayer = (player: Pick<Player, "id">) => {
+  ensureScrubPools();
+  return scrubIds!.has(player.id);
+};
 
-const scrubIds = new Set(scrubPlayers.map((player) => player.id));
-const superScrubIds = new Set(superScrubPlayers.map((player) => player.id));
+export const isSuperScrubPlayer = (player: Pick<Player, "id">) => {
+  ensureScrubPools();
+  return superScrubIds!.has(player.id);
+};
 
-export const isScrubPlayer = (player: Pick<Player, "id">) =>
-  scrubIds.has(player.id);
+export const getScrubPlayers = () => {
+  ensureScrubPools();
+  return players.filter((player) => scrubIds!.has(player.id));
+};
 
-export const isSuperScrubPlayer = (player: Pick<Player, "id">) =>
-  superScrubIds.has(player.id);
+export const getScrubPlayerIds = () => {
+  ensureScrubPools();
+  return [...scrubIds!];
+};
 
-export const getScrubPlayers = () => [...scrubPlayers];
-
-export const getScrubPlayerIds = () => [...scrubIds];
-
-export const getSuperScrubPlayerIds = () => [...superScrubIds];
+export const getSuperScrubPlayerIds = () => {
+  ensureScrubPools();
+  return [...superScrubIds!];
+};
