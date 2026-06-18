@@ -509,7 +509,6 @@ main {
 }
 
 .collection-progress-card {
-  margin: 0;
   padding: 18px 20px;
   border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 18px;
