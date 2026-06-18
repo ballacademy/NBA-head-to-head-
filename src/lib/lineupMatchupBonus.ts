@@ -6,8 +6,8 @@ import {
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import type { Player } from "./types";
 
-export const SUPERSTAR_LINEUP_BONUS = 2;
-export const ALL_STAR_LINEUP_BONUS = 1.1;
+export const SUPERSTAR_LINEUP_BONUS = 2.5;
+export const ALL_STAR_LINEUP_BONUS = 1.4;
 export const RECENT_ALL_STAR_LINEUP_BONUS = 0.45;
 export const SCRUB_LINEUP_PENALTY = -1.1;
 export const SUPER_SCRUB_LINEUP_PENALTY = -2;

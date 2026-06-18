@@ -8,8 +8,7 @@ import {
 } from "../lib/playerRecord";
 import {
   completeUnlock,
-  grantLossUnlock,
-  grantWinUnlock,
+  processMatchUnlock,
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
@@ -56,11 +55,13 @@ export function MatchResults({
     }
 
     recordedRef.current = true;
-    persistMatchOutcome(userWon, { city: user.city, name: user.name }, matchId);
+    const record = persistMatchOutcome(
+      userWon,
+      { city: user.city, name: user.name },
+      matchId,
+    );
 
-    const next = userWon
-      ? grantWinUnlock(matchId, collection)
-      : grantLossUnlock(matchId, collection);
+    const next = processMatchUnlock(userWon, matchId, collection, record);
 
     setMatchCollection(next);
     onCollectionChange(next);

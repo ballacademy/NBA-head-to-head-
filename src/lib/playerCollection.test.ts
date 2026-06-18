@@ -26,6 +26,7 @@ import {
 } from "./playerCollection";
 import { getScrubPlayerIds, isSuperScrubPlayer } from "./playerTiers";
 import { players } from "./playerPool";
+import { resetUnlockProgress } from "./unlockProgress";
 
 const storage = new Map<string, string>();
 
@@ -42,6 +43,7 @@ const localStorageMock = {
 describe("playerCollection", () => {
   beforeEach(() => {
     storage.clear();
+    resetUnlockProgress();
     vi.stubGlobal("localStorage", localStorageMock);
   });
 
@@ -70,9 +72,12 @@ describe("playerCollection", () => {
     expect(superstarCount).toBe(1);
   });
 
-  it("offers two locked all-stars after a win", () => {
+  it("offers two locked all-stars after a win once unlock progress is met", () => {
     const collection = loadPlayerCollection();
-    const next = grantWinUnlock("match-1", collection);
+    const next = grantWinUnlock("match-1", collection, {
+      winStreak: 2,
+      lossStreak: 0,
+    });
 
     expect(next.pendingUnlock).not.toBeNull();
     expect(next.pendingUnlock?.kind).toBe("win");
@@ -86,9 +91,22 @@ describe("playerCollection", () => {
     });
   });
 
-  it("offers two locked scrubs after a loss", () => {
+  it("does not offer a win unlock before progress thresholds are met", () => {
     const collection = loadPlayerCollection();
-    const next = grantLossUnlock("match-loss-1", collection);
+    const next = grantWinUnlock("match-early", collection, {
+      winStreak: 1,
+      lossStreak: 0,
+    });
+
+    expect(next.pendingUnlock).toBeNull();
+  });
+
+  it("offers two locked scrubs after a loss once unlock progress is met", () => {
+    const collection = loadPlayerCollection();
+    const next = grantLossUnlock("match-loss-1", collection, {
+      winStreak: 0,
+      lossStreak: 2,
+    });
 
     expect(next.pendingUnlock).not.toBeNull();
     expect(next.pendingUnlock?.kind).toBe("loss");
@@ -104,8 +122,9 @@ describe("playerCollection", () => {
 
   it("does not grant duplicate unlocks for the same match", () => {
     const collection = loadPlayerCollection();
-    const first = grantWinUnlock("match-duplicate", collection);
-    const second = grantWinUnlock("match-duplicate", first);
+    const record = { winStreak: 2, lossStreak: 0 };
+    const first = grantWinUnlock("match-duplicate", collection, record);
+    const second = grantWinUnlock("match-duplicate", first, record);
 
     expect(second.pendingUnlock).toEqual(first.pendingUnlock);
   });
