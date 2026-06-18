@@ -1,4 +1,5 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
+import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import { getPlayerStatWeight } from "./sampleSize";
 
@@ -318,7 +319,10 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
 
   const { categories, strengths, warnings, statRawTotal } =
     buildLineupScoreBreakdown(lineup);
-  const rawTotal = statRawTotal + getLineupTierAdjustment(lineup);
+  const rawTotal =
+    statRawTotal +
+    getLineupTierAdjustment(lineup) +
+    getImpactRankingAdjustment(lineup);
   const total = normalizeLineupTotal(rawTotal);
 
   return {
