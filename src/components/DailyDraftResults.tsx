@@ -115,8 +115,8 @@ export function DailyDraftResults({
   }, [userLineup]);
 
   return (
-    <section className="match-results daily-draft-results">
-      <div className="panel daily-draft-results__header">
+    <section className="match-results daily-draft-results match-results--compact">
+      <div className="panel panel--compact daily-draft-results__header">
         <p className="eyebrow">Daily Draft complete</p>
         <h2>{dailyGoal.title}</h2>
         <p>{dailyGoal.description}</p>
@@ -134,7 +134,7 @@ export function DailyDraftResults({
 
       <AchievementToast achievementIds={newAchievementIds} />
 
-      <section className="panel daily-draft-results__lineup">
+      <section className="panel panel--compact daily-draft-results__lineup">
         <p className="eyebrow">{user.city}</p>
         <h3>{user.name}</h3>
         <div className="team-lineup-card__players">
@@ -144,7 +144,7 @@ export function DailyDraftResults({
         </div>
       </section>
 
-      <div className="panel daily-draft-results__share">
+      <div className="panel panel--compact daily-draft-results__share">
         <button
           type="button"
           className="landing__primary-button"
@@ -154,7 +154,7 @@ export function DailyDraftResults({
         </button>
       </div>
 
-      <div className="panel match-results__actions">
+      <div className="panel panel--compact match-results__actions">
         <button type="button" className="play-again-button" onClick={onPlayAgain}>
           Back to home
         </button>

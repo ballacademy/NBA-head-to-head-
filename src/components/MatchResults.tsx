@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
+import { OpponentScoreCard } from "./OpponentScoreCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
@@ -18,6 +18,7 @@ import {
   checkLineupAchievements,
   unlockAchievements,
 } from "../lib/achievements";
+import { saveLineupShareCard } from "../lib/lineupShareCard";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -93,6 +94,17 @@ export function MatchResults({
     setShowUnlockModal(false);
   };
 
+  const handleSaveLineupImage = async () => {
+    await saveLineupShareCard({
+      teamCity: user.city,
+      teamName: user.name,
+      accent: user.accent,
+      ovr: userScore.total,
+      record: formatPlayerRecord(updatedRecord),
+      lineup: userLineup,
+    });
+  };
+
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
 
   const unlockButtonLabel =
@@ -101,7 +113,7 @@ export function MatchResults({
       : "New star unlocked — click to choose";
 
   return (
-    <section className="match-results">
+    <section className="match-results match-results--compact">
       {showUnlockModal && matchCollection.pendingUnlock ? (
         <PlayerUnlockModal
           offer={matchCollection.pendingUnlock}
@@ -109,49 +121,55 @@ export function MatchResults({
         />
       ) : null}
 
-      <div className="panel match-results__header">
-        <p className="eyebrow">Matchup results</p>
-        <h2>
-          {userWon ? "You won the matchup" : `${opponent.name} won the matchup`}
-        </h2>
-        <p>
-          Margin: {Math.abs(userScore.total - opponentScore.total).toFixed(1)}{" "}
-          points
-        </p>
-        <p className="player-record-summary">
-          Your head-to-head record: {formatPlayerRecord(updatedRecord)}
-        </p>
-      </div>
-
       <AchievementToast achievementIds={newAchievementIds} />
 
-      <div className="match-results__lineups">
-        <TeamLineupCard
-          drafter={user}
-          lineup={userLineup}
-          score={userScore}
-          isWinner={userWon}
-          winStreak={updatedRecord.winStreak}
-          lossStreak={updatedRecord.lossStreak}
-          showStreak
-        />
-        <TeamLineupCard
-          drafter={opponent}
-          lineup={opponentLineup}
-          score={opponentScore}
-          isWinner={!userWon}
-        />
+      <div className="panel panel--compact matchup-panel">
+        <div className="matchup-panel__banner">
+          <div>
+            <p className="eyebrow">Matchup results</p>
+            <h2 className="matchup-panel__title">
+              {userWon ? "You won the matchup" : `${opponent.name} won the matchup`}
+            </h2>
+          </div>
+          <p className="matchup-panel__meta">
+            Margin {Math.abs(userScore.total - opponentScore.total).toFixed(1)} •{" "}
+            {userScore.total.toFixed(1)} vs {opponentScore.total.toFixed(1)} • Record{" "}
+            {formatPlayerRecord(updatedRecord)}
+          </p>
+        </div>
+
+        <div className="matchup-panel__grid">
+          <div className="matchup-panel__user">
+            <TeamLineupCard
+              drafter={user}
+              lineup={userLineup}
+              score={userScore}
+              isWinner={userWon}
+              winStreak={updatedRecord.winStreak}
+              lossStreak={updatedRecord.lossStreak}
+              showStreak
+              compact
+              showProjectedRecord={false}
+            />
+            <button
+              type="button"
+              className="secondary-button matchup-panel__share"
+              onClick={() => void handleSaveLineupImage()}
+            >
+              Save lineup image
+            </button>
+          </div>
+
+          <OpponentScoreCard
+            drafter={opponent}
+            score={opponentScore}
+            isWinner={!userWon}
+          />
+        </div>
       </div>
 
-      <ScoreBoard
-        drafterA={user}
-        drafterB={opponent}
-        scoreA={userScore}
-        scoreB={opponentScore}
-      />
-
       {actionsReady ? (
-        <div className="panel match-results__actions">
+        <div className="panel panel--compact match-results__actions">
           {hasPendingUnlock ? (
             <>
               <button
@@ -166,8 +184,7 @@ export function MatchResults({
                 {unlockButtonLabel}
               </button>
               <p className="match-results__unlock-note">
-                Review the matchup above, then choose your unlocked player before
-                drafting again.
+                Choose your unlocked player before drafting again.
               </p>
             </>
           ) : (

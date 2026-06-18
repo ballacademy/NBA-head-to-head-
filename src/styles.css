@@ -47,9 +47,9 @@ a {
 }
 
 main {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 40px 0 56px;
+  padding: 24px 0 32px;
 }
 
 .hero {
@@ -166,14 +166,14 @@ main {
 }
 
 .draft-layout-shell {
-  min-height: calc(100vh - 80px);
+  min-height: auto;
 }
 
 .draft-layout {
   display: grid;
   place-items: center;
-  min-height: calc(100vh - 80px);
-  margin-top: 24px;
+  min-height: auto;
+  margin-top: 12px;
 }
 
 .draft-room--focused {
@@ -187,8 +187,8 @@ main {
 .draft-progress {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 22px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .draft-progress__step {
@@ -207,10 +207,10 @@ main {
 }
 
 .draft-picks-so-far {
-  margin-bottom: 20px;
-  padding: 16px 18px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(15, 23, 42, 0.55);
 }
 
@@ -249,7 +249,12 @@ main {
 }
 
 .panel {
-  padding: 28px;
+  padding: 20px;
+}
+
+.panel--compact {
+  padding: 14px 16px;
+  border-radius: 18px;
 }
 
 .section-heading {
@@ -402,8 +407,8 @@ main {
 
 .landing-cards {
   display: grid;
-  gap: 14px;
-  margin-top: 24px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .landing-card {
@@ -424,8 +429,8 @@ main {
 }
 
 .landing-card--form {
-  margin: 20px 0 0;
-  padding: 20px;
+  margin: 14px 0 0;
+  padding: 14px 16px;
   border: 1px solid rgba(168, 85, 247, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1079,26 +1084,122 @@ main {
   }
 }
 
+.match-results--compact .match-results__header {
+  margin-bottom: 12px;
+}
+
 .match-results__header {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   text-align: center;
 }
 
 .match-results__actions {
-  margin-top: 20px;
+  margin-top: 12px;
   text-align: center;
+}
+
+.match-results__actions.panel--compact {
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 .match-results__actions button:not(.play-again-button),
 .match-results__header button:not(.play-again-button) {
-  margin-top: 16px;
+  margin-top: 10px;
+}
+
+.matchup-panel__banner {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.matchup-panel__title {
+  margin: 4px 0 0;
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  line-height: 1.05;
+}
+
+.matchup-panel__meta {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.matchup-panel__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.matchup-panel__user {
+  display: grid;
+  gap: 10px;
+}
+
+.matchup-panel__share {
+  justify-self: start;
+}
+
+.opponent-score-card {
+  border-top: 4px solid var(--accent, var(--blue));
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 12px 14px;
+}
+
+.opponent-score-card.winner {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+}
+
+.opponent-score-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.opponent-score-card__header h3 {
+  margin: 2px 0 0;
+  font-size: 1.2rem;
+}
+
+.category-list--compact {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.category--compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.category--compact small {
+  margin-top: 2px;
+  font-size: 0.78rem;
+}
+
+.fit-notes--compact {
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.fit-notes--compact p {
+  font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 .match-results__lineups {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .daily-draft-banner {
@@ -1124,8 +1225,8 @@ main {
 }
 
 .daily-draft-card {
-  margin-top: 24px;
-  padding: 20px;
+  margin-top: 14px;
+  padding: 14px 16px;
   border: 1px solid rgba(34, 197, 94, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1141,8 +1242,8 @@ main {
 
 .landing-game-modes {
   display: grid;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .landing-card--mode {
@@ -1151,7 +1252,7 @@ main {
 
 .head-to-head-card {
   margin-top: 0;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1162,18 +1263,18 @@ main {
 }
 
 .head-to-head-card__title {
-  margin: 8px 0;
-  font-size: 1.5rem;
+  margin: 6px 0;
+  font-size: 1.25rem;
 }
 
 .head-to-head-card__description {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #cbd5e1;
 }
 
 .era-progress-card {
-  margin-top: 16px;
-  padding: 20px;
+  margin-top: 12px;
+  padding: 14px 16px;
   border: 1px solid rgba(168, 85, 247, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1205,7 +1306,7 @@ main {
 
 .all-time-card {
   margin-top: 0;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid rgba(245, 158, 11, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1255,7 +1356,7 @@ main {
 
 .ranked-cap-card {
   margin-top: 0;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid rgba(59, 130, 246, 0.28);
   border-radius: 18px;
   background: linear-gradient(
@@ -1373,7 +1474,7 @@ main {
 }
 
 .achievement-toast {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   border: 1px solid rgba(250, 204, 21, 0.35);
   background: linear-gradient(
     135deg,
@@ -1423,19 +1524,19 @@ main {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .achievements-page__progress {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: #fde68a;
   font-weight: 800;
 }
 
 .achievements-page__list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1444,11 +1545,11 @@ main {
 .achievements-page__item {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  padding: 16px 18px;
+  padding: 12px 14px;
   border: 1px solid var(--panel-border);
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgba(15, 23, 42, 0.72);
   opacity: 0.72;
 }
@@ -1489,29 +1590,29 @@ main {
 }
 
 .daily-draft-results__stat {
-  margin: 16px 0 0;
-  font-size: 2rem;
+  margin: 10px 0 0;
+  font-size: 1.6rem;
   font-weight: 900;
   color: #fde68a;
 }
 
 .daily-draft-results__share {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .daily-draft-results__lineup h3 {
-  margin: 6px 0 16px;
+  margin: 4px 0 10px;
 }
 
 .daily-draft-results__header {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .daily-draft-results__percentile {
-  margin: 16px 0 0;
-  font-size: 1.35rem;
+  margin: 10px 0 0;
+  font-size: 1.15rem;
   font-weight: 900;
   color: #86efac;
 }
@@ -1528,32 +1629,68 @@ main {
   border-top: 4px solid var(--accent, var(--orange));
 }
 
+.team-lineup-card--compact {
+  padding: 0;
+  border: 0;
+  border-top: 4px solid var(--accent, var(--orange));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .team-lineup-card.winner {
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+}
+
+.team-lineup-card--compact.winner {
+  border-radius: 12px;
 }
 
 .team-lineup-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.team-lineup-card--compact .team-lineup-card__header h3 {
+  font-size: 1.15rem;
 }
 
 .team-lineup-card__players {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .player-stat-line {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--panel-border);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(15, 23, 42, 0.72);
+}
+
+.player-stat-line--compact {
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.player-stat-line--compact .player-team-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.player-stat-line--compact .player-draft-stats {
+  gap: 4px 8px;
+  margin-top: 4px;
+}
+
+.player-stat-line--compact .player-draft-stats__item {
+  font-size: 0.78rem;
 }
 
 .player-team-icon {
@@ -1778,18 +1915,18 @@ main {
 
 .player-pick-list {
   display: grid;
-  gap: 10px;
-  max-height: 360px;
+  gap: 8px;
+  max-height: 280px;
   overflow: auto;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .player-pick {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid rgba(248, 250, 252, 0.24);
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.82);
@@ -1990,6 +2127,15 @@ main {
   border: 2px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.62);
+}
+
+.score-orb--compact {
+  width: 64px;
+  height: 64px;
+}
+
+.score-orb--compact span {
+  font-size: 1.15rem;
 }
 
 .score-orb__content {
@@ -2319,7 +2465,8 @@ main {
   .layout-grid,
   .score-grid,
   .bracket-grid,
-  .match-results__lineups {
+  .match-results__lineups,
+  .matchup-panel__grid {
     grid-template-columns: 1fr;
   }
 

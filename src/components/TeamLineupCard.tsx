@@ -12,6 +12,8 @@ interface TeamLineupCardProps {
   winStreak?: number;
   lossStreak?: number;
   showStreak?: boolean;
+  compact?: boolean;
+  showProjectedRecord?: boolean;
 }
 
 export function TeamLineupCard({
@@ -22,12 +24,14 @@ export function TeamLineupCard({
   winStreak = 0,
   lossStreak = 0,
   showStreak = false,
+  compact = false,
+  showProjectedRecord = true,
 }: TeamLineupCardProps) {
   const orderedLineup = sortLineupByPosition(lineup);
 
   return (
     <article
-      className={`panel team-lineup-card ${isWinner ? "winner" : ""}`}
+      className={`team-lineup-card ${compact ? "team-lineup-card--compact" : "panel"} ${isWinner ? "winner" : ""}`}
       style={{ "--accent": drafter.accent } as CSSProperties}
     >
       <div className="team-lineup-card__header">
@@ -44,9 +48,11 @@ export function TeamLineupCard({
               drafter.name
             )}
           </h3>
-          <p className="projected-record">{score.projectedRecord.formatted}</p>
+          {showProjectedRecord ? (
+            <p className="projected-record">{score.projectedRecord.formatted}</p>
+          ) : null}
         </div>
-        <div className="score-orb">
+        <div className={`score-orb${compact ? " score-orb--compact" : ""}`}>
           <div className="score-orb__content">
             <span>{score.total}</span>
             <small>OVR</small>
@@ -61,6 +67,7 @@ export function TeamLineupCard({
               key={player.id}
               player={player}
               pickNumber={index + 1}
+              compact={compact}
             />
           ))
         ) : (

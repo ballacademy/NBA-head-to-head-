@@ -9,7 +9,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
   const progress = useMemo(() => getAchievementProgress(), []);
 
   return (
-    <section className="achievements-page panel">
+    <section className="achievements-page panel panel--compact">
       <div className="achievements-page__header">
         <div>
           <p className="eyebrow">NBA Head-to-Head</p>

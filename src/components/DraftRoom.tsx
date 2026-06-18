@@ -179,7 +179,7 @@ export function DraftRoom({
 
   return (
     <section
-      className="panel draft-room draft-room--focused"
+      className="panel panel--compact draft-room draft-room--focused"
       aria-labelledby="draft-heading"
     >
       {isDailyDraft && dailyChallengeTitle ? (

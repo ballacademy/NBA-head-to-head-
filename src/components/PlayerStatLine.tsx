@@ -5,11 +5,16 @@ import { PlayerTeamIcon } from "./PlayerTeamIcon";
 interface PlayerStatLineProps {
   player: Player;
   pickNumber?: number;
+  compact?: boolean;
 }
 
-export function PlayerStatLine({ player, pickNumber }: PlayerStatLineProps) {
+export function PlayerStatLine({
+  player,
+  pickNumber,
+  compact = false,
+}: PlayerStatLineProps) {
   return (
-    <div className="player-stat-line">
+    <div className={`player-stat-line${compact ? " player-stat-line--compact" : ""}`}>
       <PlayerTeamIcon
         team={player.team}
         position={player.position}
