@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { players } from "../data/players";
 import {
   getScrubPlayerIds,
   getSuperScrubPlayerIds,
@@ -8,6 +9,14 @@ import {
   SUPER_SCRUB_POOL_SIZE,
 } from "./playerTiers";
 import { playersById } from "./playerPool";
+import { getStarTierLineupBonus } from "./lineupMatchupBonus";
+import {
+  calculateLineupScore,
+  calculateLineupStatRawTotal,
+  normalizeLineupTotal,
+  projectRecord,
+  SEASON_LENGTH,
+} from "./scoring";
 
 describe("playerTiers", () => {
   it("defines 50 scrubs with the worst 10 marked as super scrubs", () => {
@@ -37,5 +46,46 @@ describe("playerTiers", () => {
     expect(isSuperScrubPlayer(scrub!)).toBe(
       getSuperScrubPlayerIds().includes(scrubId),
     );
+  });
+
+  it("excludes Bradley Beal from the scrub pool and backfills the next-worst player", () => {
+    const beal = players.find((player) => player.bbrPlayerId === "bealbr01");
+    const jackson = players.find(
+      (player) => player.name === "Andre Jackson Jr.",
+    );
+
+    expect(beal).toBeDefined();
+    expect(jackson).toBeDefined();
+    expect(isScrubPlayer(beal!)).toBe(false);
+    expect(isScrubPlayer(jackson!)).toBe(true);
+    expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
+  });
+
+  it("supports 0-82 and 82-0 projected records from real player pools", () => {
+    const ranked = [...players]
+      .map((player) => ({
+        player,
+        ovr: normalizeLineupTotal(
+          calculateLineupStatRawTotal([player]) +
+            getStarTierLineupBonus([player]),
+        ),
+      }))
+      .sort(
+        (left, right) =>
+          left.ovr - right.ovr ||
+          left.player.name.localeCompare(right.player.name),
+      );
+
+    const worstLineup = ranked.slice(0, 5).map((entry) => entry.player);
+    const bestLineup = ranked.slice(-5).map((entry) => entry.player);
+    const worstRecord = calculateLineupScore(worstLineup).projectedRecord;
+    const bestRecord = calculateLineupScore(bestLineup).projectedRecord;
+
+    expect(worstRecord.formatted).toBe("Record: 0-82");
+    expect(bestRecord.formatted).toBe("Record: 82-0");
+    expect(worstRecord.wins + worstRecord.losses).toBe(SEASON_LENGTH);
+    expect(bestRecord.wins + bestRecord.losses).toBe(SEASON_LENGTH);
+    expect(projectRecord(0).formatted).toBe("Record: 0-82");
+    expect(projectRecord(100).formatted).toBe("Record: 82-0");
   });
 });
