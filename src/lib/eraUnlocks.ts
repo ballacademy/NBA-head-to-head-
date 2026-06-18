@@ -57,3 +57,6 @@ export const getEraProgress = (record: Pick<PlayerRecord, "wins">) =>
   }));
 
 export const isEraPlayer = (player: Pick<Player, "era">) => Boolean(player.era);
+
+export const isAllTimeModeUnlocked = (record: Pick<PlayerRecord, "wins">) =>
+  record.wins >= ERA_2010S_WIN_THRESHOLD;

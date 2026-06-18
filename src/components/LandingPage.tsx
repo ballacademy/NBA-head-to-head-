@@ -3,7 +3,12 @@ import {
   getCollectionProgress,
   type PlayerCollection,
 } from "../lib/playerCollection";
-import { getEraProgress, getUnlockedEras } from "../lib/eraUnlocks";
+import {
+  ERA_2010S_WIN_THRESHOLD,
+  getEraProgress,
+  getUnlockedEras,
+  isAllTimeModeUnlocked,
+} from "../lib/eraUnlocks";
 import { getEraPlayerCount } from "../lib/eraPlayers";
 import {
   formatPlayerRecord,
@@ -59,6 +64,11 @@ export function LandingPage({
   const collectionProgress = getCollectionProgress(collection);
   const eraProgress = getEraProgress(playerRecord);
   const unlockedEraCount = getUnlockedEras(playerRecord).length;
+  const allTimeUnlocked = isAllTimeModeUnlocked(playerRecord);
+  const allTimeWinsRemaining = Math.max(
+    ERA_2010S_WIN_THRESHOLD - playerRecord.wins,
+    0,
+  );
 
   const handleStart = (options?: StartDraftOptions) => {
     const team = normalizeTeamProfile(city, name);
@@ -79,25 +89,9 @@ export function LandingPage({
       <p className="eyebrow landing__eyebrow">NBA Head-to-Head</p>
       <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
-        Chase today&apos;s stat challenge, build chemistry in ranked cap mode, or
-        draft head-to-head against a random rival.
+        Pick a mode below, name your team, and draft your five against the
+        competition.
       </p>
-
-      <div className="daily-draft-card landing-card landing-card--daily">
-        <p className="eyebrow">Daily Draft</p>
-        <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
-        <p className="daily-draft-card__description">{dailyChallenge.description}</p>
-        <p className="daily-draft-card__meta">
-          Same goal for everyone today. Player stats stay hidden while you draft.
-        </p>
-        <button
-          type="button"
-          className="daily-draft-card__button"
-          onClick={() => handleStart({ isDailyDraft: true })}
-        >
-          Play Today&apos;s Daily Draft
-        </button>
-      </div>
 
       <div className="landing-cards">
         <div className="collection-progress-card landing-card">
@@ -132,44 +126,6 @@ export function LandingPage({
               : `${playerRecord.wins + playerRecord.losses} games played`}
           </p>
         </div>
-      </div>
-
-      <div className="era-progress-card landing-card">
-        <p className="eyebrow">Eras &amp; Legends</p>
-        <ul className="era-progress-card__list">
-          {eraProgress.map((era) => (
-            <li key={era.id}>
-              <strong>{era.title}</strong>
-              <span>
-                {era.isUnlocked
-                  ? `${getEraPlayerCount(era.id)} legends unlocked`
-                  : `${era.winsRemaining} wins to unlock`}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="era-progress-card__meta">
-          Unlocked legends are only available in All-Time mode. Win head-to-head
-          games to expand the historical pool.
-        </p>
-      </div>
-
-      <div className="all-time-card landing-card">
-        <p className="eyebrow">All-Time</p>
-        <h2 className="all-time-card__title">All-Time Draft</h2>
-        <p className="all-time-card__description">
-          Draft from today&apos;s NBA plus any unlocked era legends in one pool.
-          {unlockedEraCount === 0
-            ? " Win 50 head-to-head games to unlock your first legends era."
-            : ` ${unlockedEraCount} era${unlockedEraCount === 1 ? "" : "s"} currently in the pool.`}
-        </p>
-        <button
-          type="button"
-          className="secondary-button all-time-card__button"
-          onClick={() => handleStart({ allTimeMode: true })}
-        >
-          Play All-Time Draft
-        </button>
       </div>
 
       <div className="landing-team-form landing-card landing-card--form">
@@ -211,36 +167,102 @@ export function LandingPage({
         {error ? <p className="form-error">{error}</p> : null}
       </div>
 
-      <div className="head-to-head-card landing-card">
-        <p className="eyebrow">Head-to-Head</p>
-        <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
-        <p className="head-to-head-card__description">
-          Draft a five-player lineup and face a random rival. Chemistry bonuses
-          reward real-world connections like college teammates and brothers.
-        </p>
-        <button
-          type="button"
-          className="landing__primary-button"
-          onClick={() => handleStart()}
-        >
-          Compete Head-to-Head
-        </button>
+      <div className="landing-game-modes">
+        <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
+          <p className="eyebrow">Daily Draft</p>
+          <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
+          <p className="daily-draft-card__description">{dailyChallenge.description}</p>
+          <p className="daily-draft-card__meta">
+            Same goal for everyone today. Player stats stay hidden while you draft.
+          </p>
+          <button
+            type="button"
+            className="daily-draft-card__button"
+            onClick={() => handleStart({ isDailyDraft: true })}
+          >
+            Play Today&apos;s Daily Draft
+          </button>
+        </div>
+
+        <div className="head-to-head-card landing-card landing-card--mode">
+          <p className="eyebrow">Head-to-Head</p>
+          <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
+          <p className="head-to-head-card__description">
+            Draft a five-player lineup and face a random rival. Chemistry bonuses
+            reward real-world connections like college teammates and brothers.
+          </p>
+          <button
+            type="button"
+            className="landing__primary-button"
+            onClick={() => handleStart()}
+          >
+            Compete Head-to-Head
+          </button>
+        </div>
+
+        <div className="ranked-cap-card landing-card landing-card--mode">
+          <p className="eyebrow">Ranked</p>
+          <h2 className="ranked-cap-card__title">Salary Cap Mode</h2>
+          <p className="ranked-cap-card__description">
+            Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with
+            real 2025-26 salaries. Stack stars and you&apos;ll need minimum deals
+            to finish your five.
+          </p>
+          <button
+            type="button"
+            className="secondary-button ranked-cap-card__button"
+            onClick={() => handleStart({ salaryCapMode: true })}
+          >
+            Play Ranked (Salary Cap)
+          </button>
+        </div>
+
+        <div className="all-time-card landing-card landing-card--mode">
+          <p className="eyebrow">All-Time</p>
+          <h2 className="all-time-card__title">All-Time Draft</h2>
+          <p className="all-time-card__description">
+            Draft from today&apos;s NBA plus any unlocked era legends in one pool.
+            {allTimeUnlocked
+              ? ` ${unlockedEraCount} era${unlockedEraCount === 1 ? "" : "s"} currently available.`
+              : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock.`}
+          </p>
+          {allTimeUnlocked ? (
+            <button
+              type="button"
+              className="secondary-button all-time-card__button"
+              onClick={() => handleStart({ allTimeMode: true })}
+            >
+              Play All-Time Draft
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="secondary-button all-time-card__button"
+              disabled
+            >
+              Achieve 50 wins to unlock all-time legend mode
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="ranked-cap-card landing-card">
-        <p className="eyebrow">Ranked</p>
-        <h2 className="ranked-cap-card__title">Salary Cap Mode</h2>
-        <p className="ranked-cap-card__description">
-          Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap. Stack
-          stars and you&apos;ll need minimum-contract scrubs to finish your five.
+      <div className="era-progress-card landing-card">
+        <p className="eyebrow">Eras &amp; Legends</p>
+        <ul className="era-progress-card__list">
+          {eraProgress.map((era) => (
+            <li key={era.id}>
+              <strong>{era.title}</strong>
+              <span>
+                {era.isUnlocked
+                  ? `${getEraPlayerCount(era.id)} legends unlocked`
+                  : `${era.winsRemaining} wins to unlock`}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="era-progress-card__meta">
+          Unlocked legends are only available in All-Time mode.
         </p>
-        <button
-          type="button"
-          className="secondary-button ranked-cap-card__button"
-          onClick={() => handleStart({ salaryCapMode: true })}
-        >
-          Play Ranked (Salary Cap)
-        </button>
       </div>
 
       <div className="hero-actions landing__actions landing__actions--secondary">
@@ -257,8 +279,8 @@ export function LandingPage({
 
       <ol className="landing-steps">
         <li>Name your team</li>
-        <li>Pick Daily Draft, Ranked, or Head-to-Head</li>
-        <li>Draft your five and stack chemistry bonuses</li>
+        <li>Pick a game mode</li>
+        <li>Draft your five and face your rival</li>
       </ol>
 
       <p className="landing-credit">Created by BALLACADEMY</p>

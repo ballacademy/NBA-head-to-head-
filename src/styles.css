@@ -1144,11 +1144,21 @@ main {
 }
 
 .landing-card--daily {
-  margin-bottom: 4px;
+  margin-bottom: 0;
+}
+
+.landing-game-modes {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.landing-card--mode {
+  margin-top: 0;
 }
 
 .head-to-head-card {
-  margin-top: 20px;
+  margin-top: 0;
   padding: 20px;
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: 18px;
@@ -1202,7 +1212,7 @@ main {
 }
 
 .all-time-card {
-  margin-top: 16px;
+  margin-top: 0;
   padding: 20px;
   border: 1px solid rgba(245, 158, 11, 0.28);
   border-radius: 18px;
@@ -1227,8 +1237,13 @@ main {
   width: 100%;
 }
 
+.all-time-card__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .ranked-cap-card {
-  margin-top: 16px;
+  margin-top: 0;
   padding: 20px;
   border: 1px solid rgba(59, 130, 246, 0.28);
   border-radius: 18px;

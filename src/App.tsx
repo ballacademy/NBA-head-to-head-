@@ -267,14 +267,20 @@ function App() {
       return;
     }
 
+    const { id: opponentId, draftSlots, salaryCapMode } = opponent;
+
+    if (draftSlots.length === 0) {
+      return;
+    }
+
     let cancelled = false;
 
     const simulateOpponentDraft = async () => {
       const pickedIds = new Set<string>();
       const lineup: string[] = [];
 
-      for (let index = 0; index < opponent.draftSlots.length; index += 1) {
-        const slot = opponent.draftSlots[index]!;
+      for (let index = 0; index < draftSlots.length; index += 1) {
+        const slot = draftSlots[index]!;
         await sleep(getOpponentPickDelayMs());
         if (cancelled) {
           return;
@@ -284,8 +290,8 @@ function App() {
           lineup,
           opponentDraftablePlayers,
           index,
-          opponent.draftSlots.length,
-          Boolean(opponent.salaryCapMode),
+          draftSlots.length,
+          Boolean(salaryCapMode),
         );
         const selection = pickBestForSlot(
           opponentDraftablePlayers,
@@ -298,9 +304,10 @@ function App() {
           lineup.push(selection);
         }
 
-        setOpponentPickCount(lineup.length);
+        const pickCount = lineup.length;
+        setOpponentPickCount(pickCount);
         setOpponent((current) =>
-          current
+          current?.id === opponentId
             ? {
                 ...current,
                 lineup: [...lineup],
@@ -319,7 +326,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [isDailyDraft, opponent, opponentDraftablePlayers]);
+  }, [isDailyDraft, opponent?.id, opponentDraftablePlayers]);
 
   useEffect(() => {
     if (!userDraftComplete || phase !== "drafting") {

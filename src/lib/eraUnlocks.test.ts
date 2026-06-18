@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getActivePlayerPool } from "./activePlayerPool";
-import { getUnlockedEras } from "./eraUnlocks";
+import { getUnlockedEras, isAllTimeModeUnlocked } from "./eraUnlocks";
 import { players } from "./playerPool";
 
 describe("active player pool", () => {
@@ -24,5 +24,10 @@ describe("active player pool", () => {
     expect(getUnlockedEras({ wins: 49 })).toEqual([]);
     expect(getUnlockedEras({ wins: 50 })).toEqual(["2010s"]);
     expect(getUnlockedEras({ wins: 100 })).toEqual(["2010s", "1990s"]);
+  });
+
+  it("unlocks all-time mode at 50 wins", () => {
+    expect(isAllTimeModeUnlocked({ wins: 49 })).toBe(false);
+    expect(isAllTimeModeUnlocked({ wins: 50 })).toBe(true);
   });
 });

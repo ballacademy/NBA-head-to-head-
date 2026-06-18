@@ -4,6 +4,7 @@ import {
   formatPlayerPositions,
   normalizePosition,
 } from "./positions";
+import { getPlayerSalary } from "./playerSalaries";
 import { lookupJerseyNumber } from "./jerseyNumbers";
 import {
   buildDefensiveRatings,
@@ -186,6 +187,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     gamesPlayed: raw.gamesPlayed,
     age: raw.age,
     styles: deriveStyles(raw, position),
+    salary: getPlayerSalary(raw.bbrPlayerId, raw.id),
   };
 };
 
