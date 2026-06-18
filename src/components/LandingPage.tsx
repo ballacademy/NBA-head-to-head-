@@ -18,16 +18,20 @@ import { LossStreakBadge } from "./LossStreakBadge";
 import { WinStreakBadge } from "./WinStreakBadge";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
+import type { DailyDraftChallenge } from "../lib/dailyDraft";
+import type { StartDraftOptions } from "../lib/match";
 
 interface LandingPageProps {
   collection: PlayerCollection;
-  onStartDraft: (team: TeamProfile) => void;
+  dailyChallenge: DailyDraftChallenge;
+  onStartDraft: (team: TeamProfile, options?: StartDraftOptions) => void;
   onViewStats: () => void;
   onViewLeaderboard: () => void;
 }
 
 export function LandingPage({
   collection,
+  dailyChallenge,
   onStartDraft,
   onViewStats,
   onViewLeaderboard,
@@ -50,7 +54,7 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
 
-  const handleSubmit = () => {
+  const handleStart = (options?: StartDraftOptions) => {
     const team = normalizeTeamProfile(city, name);
 
     if (!team) {
@@ -59,7 +63,7 @@ export function LandingPage({
     }
 
     setError("");
-    onStartDraft(team);
+    onStartDraft(team, options);
   };
 
   return (
@@ -147,8 +151,28 @@ export function LandingPage({
         {error ? <p className="form-error">{error}</p> : null}
       </div>
 
+      <div className="daily-draft-card landing-card">
+        <p className="eyebrow">Daily Draft</p>
+        <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
+        <p className="daily-draft-card__description">{dailyChallenge.description}</p>
+        <p className="daily-draft-card__meta">
+          Same challenge for everyone today. Share your emoji grid after the matchup.
+        </p>
+        <button
+          type="button"
+          className="daily-draft-card__button"
+          onClick={() => handleStart({ isDailyDraft: true })}
+        >
+          Play today&apos;s Daily Draft
+        </button>
+      </div>
+
       <div className="hero-actions landing__actions">
-        <button type="button" className="landing__primary-button" onClick={handleSubmit}>
+        <button
+          type="button"
+          className="landing__primary-button"
+          onClick={() => handleStart()}
+        >
           Draft a team
         </button>
         <button type="button" className="ghost-link" onClick={onViewLeaderboard}>

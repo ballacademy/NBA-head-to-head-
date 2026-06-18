@@ -39,6 +39,7 @@ export interface Player {
   defense: number;
   defenseGrade?: DefenseGrade;
   gamesPlayed: number;
+  age?: number;
   styles: PlayStyle[];
 }
 
@@ -54,6 +55,8 @@ export interface Drafter {
   accent: string;
   lineup: string[];
   draftSlots: DraftSlotConstraint[];
+  isDailyDraft?: boolean;
+  dailyChallengeTitle?: string;
 }
 
 export interface ScoreCategory {

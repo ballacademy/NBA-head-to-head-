@@ -2,6 +2,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
+import { RoastShareCard } from "./RoastShareCard";
+import { AchievementToast } from "./AchievementToast";
 import {
   formatPlayerRecord,
   loadPlayerRecord,
@@ -13,6 +15,15 @@ import {
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { calculateLineupScore } from "../lib/scoring";
+import {
+  buildDailyDraftShareText,
+  buildDraftGradeReport,
+} from "../lib/draftGrade";
+import {
+  checkLineupAchievements,
+  unlockAchievements,
+} from "../lib/achievements";
+import { shareLineupCard } from "../lib/shareCard";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -22,9 +33,28 @@ interface MatchResultsProps {
   opponentLineup: Player[];
   matchId: string;
   collection: PlayerCollection;
+  isDailyDraft?: boolean;
+  dailyDateKey?: string;
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
 }
+
+const copyText = async (text: string) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+};
 
 export function MatchResults({
   user,
@@ -33,14 +63,18 @@ export function MatchResults({
   opponentLineup,
   matchId,
   collection,
+  isDailyDraft = false,
+  dailyDateKey,
   onCollectionChange,
   onPlayAgain,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
+  const achievementsCheckedRef = useRef(false);
   const [matchCollection, setMatchCollection] =
     useState<PlayerCollection>(collection);
   const [actionsReady, setActionsReady] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.total >= opponentScore.total;
@@ -48,6 +82,22 @@ export function MatchResults({
     () => projectRecordAfterMatch(userWon, loadPlayerRecord()),
     [userWon],
   );
+  const draftReport = useMemo(
+    () => buildDraftGradeReport(userLineup, userScore),
+    [userLineup, userScore],
+  );
+  const dailyShareText = useMemo(() => {
+    if (!isDailyDraft || !dailyDateKey) {
+      return undefined;
+    }
+
+    return buildDailyDraftShareText(
+      userLineup,
+      userScore.projectedRecord.wins,
+      dailyDateKey,
+    );
+  }, [dailyDateKey, isDailyDraft, userLineup, userScore.projectedRecord.wins]);
+  const roastShareText = `${user.city} ${user.name} earned a ${draftReport.grade}. "${draftReport.roast}" OVR ${draftReport.ovr} • ${draftReport.projectedRecord}`;
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -68,11 +118,47 @@ export function MatchResults({
     setActionsReady(true);
   }, [collection, matchId, onCollectionChange, user.city, user.name, userWon]);
 
+  useLayoutEffect(() => {
+    if (achievementsCheckedRef.current || userLineup.length !== 5) {
+      return;
+    }
+
+    achievementsCheckedRef.current = true;
+    const earned = checkLineupAchievements(userLineup);
+    const { newlyUnlocked } = unlockAchievements(earned);
+    setNewAchievementIds(newlyUnlocked);
+  }, [userLineup]);
+
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, matchCollection);
     setMatchCollection(next);
     onCollectionChange(next);
     setShowUnlockModal(false);
+  };
+
+  const handleShareImage = async () => {
+    await shareLineupCard({
+      teamCity: user.city,
+      teamName: user.name,
+      grade: draftReport.grade,
+      roast: draftReport.roast,
+      ovr: draftReport.ovr,
+      projectedRecord: draftReport.projectedRecord,
+      lineup: userLineup,
+      accent: user.accent,
+    });
+  };
+
+  const handleCopyRoast = async () => {
+    await copyText(roastShareText);
+  };
+
+  const handleCopyDailyShare = async () => {
+    if (!dailyShareText) {
+      return;
+    }
+
+    await copyText(dailyShareText);
   };
 
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
@@ -104,6 +190,25 @@ export function MatchResults({
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
       </div>
+
+      <AchievementToast achievementIds={newAchievementIds} />
+
+      <RoastShareCard
+        teamCity={user.city}
+        teamName={user.name}
+        accent={user.accent}
+        grade={draftReport.grade}
+        roast={draftReport.roast}
+        ovr={draftReport.ovr}
+        projectedRecord={draftReport.projectedRecord}
+        lineup={userLineup}
+        onShareImage={() => void handleShareImage()}
+        onCopyText={() => void handleCopyRoast()}
+        dailyShareText={dailyShareText}
+        onCopyDailyShare={
+          dailyShareText ? () => void handleCopyDailyShare() : undefined
+        }
+      />
 
       <div className="match-results__lineups">
         <TeamLineupCard

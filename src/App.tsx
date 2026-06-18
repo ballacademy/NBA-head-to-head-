@@ -8,10 +8,17 @@ import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { pickBestForSlot } from "./lib/draft";
 import {
+  filterPlayersForDailyChallenge,
+  getDailyChallenge,
+  getDailyDateKey,
+  getDailyDraftSetup,
+} from "./lib/dailyDraft";
+import {
   createRandomOpponent,
   createUserDrafter,
   getOpponentPickDelayMs,
   sleep,
+  type StartDraftOptions,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
 import { ensurePlayerCollection, getDraftablePlayers, createOpponentCollection, type PlayerCollection } from "./lib/playerCollection";
@@ -29,6 +36,8 @@ function App() {
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [isDailyDraft, setIsDailyDraft] = useState(false);
+  const [dailyDateKey, setDailyDateKey] = useState(getDailyDateKey());
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
   );
@@ -37,10 +46,20 @@ function App() {
     null,
   );
 
-  const draftablePlayers = useMemo(
-    () => getDraftablePlayers(players, collection),
-    [collection],
+  const dailyChallenge = useMemo(
+    () => getDailyChallenge(dailyDateKey),
+    [dailyDateKey],
   );
+
+  const draftablePlayers = useMemo(() => {
+    const base = getDraftablePlayers(players, collection);
+
+    if (!isDailyDraft) {
+      return base;
+    }
+
+    return filterPlayersForDailyChallenge(base, dailyChallenge);
+  }, [collection, dailyChallenge, isDailyDraft]);
 
   const opponentDraftablePlayers = useMemo(
     () =>
@@ -54,9 +73,14 @@ function App() {
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
   const userDraftComplete = draftStep >= 5;
 
-  const startMatch = (team: TeamProfile) => {
+  const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
+    const daily = Boolean(options.isDailyDraft);
+    const dateKey = getDailyDateKey();
+
     saveTeamProfile(team);
-    setUser(createUserDrafter(team));
+    setIsDailyDraft(daily);
+    setDailyDateKey(dateKey);
+    setUser(createUserDrafter(team, { isDailyDraft: daily }));
     setOpponent(createRandomOpponent());
     setOpponentCollection(createOpponentCollection(collection));
     setDraftStep(0);
@@ -77,6 +101,7 @@ function App() {
     setOpponentPickCount(0);
     setOpponentComplete(false);
     setMatchId(null);
+    setIsDailyDraft(false);
     setPhase("landing");
   };
 
@@ -241,6 +266,7 @@ function App() {
       <main className="landing-layout">
         <LandingPage
           collection={collection}
+          dailyChallenge={dailyChallenge}
           onStartDraft={startMatch}
           onViewStats={() => setPhase("stats")}
           onViewLeaderboard={() => setPhase("leaderboard")}
@@ -253,6 +279,8 @@ function App() {
     return null;
   }
 
+  const dailySetup = isDailyDraft ? getDailyDraftSetup(dailyDateKey) : null;
+
   return (
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
       {phase === "drafting" && !userDraftComplete ? (
@@ -261,6 +289,9 @@ function App() {
             drafter={user}
             players={draftablePlayers}
             activeStep={draftStep}
+            dailyChallengeDescription={dailySetup?.challenge.description}
+            dailyChallengeTitle={dailySetup?.challenge.title}
+            isDailyDraft={isDailyDraft}
             onPick={handlePick}
             onTimeout={handleTimeout}
           />
@@ -282,6 +313,8 @@ function App() {
           opponentLineup={opponentLineup}
           matchId={matchId}
           collection={collection}
+          isDailyDraft={isDailyDraft}
+          dailyDateKey={dailyDateKey}
           onCollectionChange={handleCollectionChange}
           onPlayAgain={resetToLanding}
         />

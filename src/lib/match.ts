@@ -5,21 +5,35 @@ import {
 } from "./draft";
 import type { TeamProfile } from "./teamProfile";
 import type { Drafter } from "./types";
+import { getDailyDraftSetup } from "./dailyDraft";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import type { Player } from "./types";
+
+export interface StartDraftOptions {
+  isDailyDraft?: boolean;
+}
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
 export const OPPONENT_PICK_MIN_MS = 3000;
 export const OPPONENT_PICK_MAX_MS = 9000;
 
-export const createUserDrafter = (team: TeamProfile): Drafter => ({
-  id: "user",
-  name: team.name,
-  city: team.city,
-  accent: "#2563eb",
-  draftSlots: generateDraftSlots(),
-  lineup: [],
-});
+export const createUserDrafter = (
+  team: TeamProfile,
+  options: StartDraftOptions = {},
+): Drafter => {
+  const dailySetup = options.isDailyDraft ? getDailyDraftSetup() : null;
+
+  return {
+    id: "user",
+    name: team.name,
+    city: team.city,
+    accent: "#2563eb",
+    draftSlots: dailySetup?.slots ?? generateDraftSlots(),
+    lineup: [],
+    isDailyDraft: Boolean(options.isDailyDraft),
+    dailyChallengeTitle: dailySetup?.challenge.title,
+  };
+};
 
 export const createRandomOpponent = (): Drafter => {
   const blueprint =

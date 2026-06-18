@@ -20,6 +20,9 @@ interface DraftRoomProps {
   drafter: Drafter;
   players: Player[];
   activeStep: number;
+  isDailyDraft?: boolean;
+  dailyChallengeTitle?: string;
+  dailyChallengeDescription?: string;
   onPick: (slot: number, playerId: string) => void;
   onTimeout: (slot: number) => void;
 }
@@ -28,6 +31,9 @@ export function DraftRoom({
   drafter,
   players,
   activeStep,
+  isDailyDraft = false,
+  dailyChallengeTitle,
+  dailyChallengeDescription,
   onPick,
   onTimeout,
 }: DraftRoomProps) {
@@ -139,6 +145,16 @@ export function DraftRoom({
       className="panel draft-room draft-room--focused"
       aria-labelledby="draft-heading"
     >
+      {isDailyDraft && dailyChallengeTitle ? (
+        <div className="daily-draft-banner" role="status">
+          <p className="eyebrow">Daily Draft</p>
+          <h3>{dailyChallengeTitle}</h3>
+          {dailyChallengeDescription ? (
+            <p>{dailyChallengeDescription}</p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="draft-page-header">
         <p className="eyebrow">
           <TeamNameWithStreak
