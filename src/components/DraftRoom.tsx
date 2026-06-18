@@ -220,12 +220,7 @@ export function DraftRoom({
             name={drafter.name}
             winStreak={playerRecord.winStreak}
             lossStreak={playerRecord.lossStreak}
-          />{" "}
-          • Pick {activeStep + 1} of {totalPicks}
-        </p>
-        <h2 id="draft-heading">Draft player {activeStep + 1}</h2>
-        <p className="draft-page-header__copy">
-          Your next requirement is revealed only when you reach this pick.
+          />
         </p>
       </div>
 
@@ -286,14 +281,21 @@ export function DraftRoom({
         <div className="draft-prompt__header">
           <div>
             <p className="eyebrow">On the clock</p>
-            <h3>{formatSlotConstraint(currentSlot)}</h3>
+            <h3 id="draft-heading">
+              {formatSlotConstraint(currentSlot)}{" "}
+              <span className="draft-prompt__pick-count">
+                (Pick {activeStep + 1} of {totalPicks})
+              </span>
+            </h3>
           </div>
           <div className={timerClass} aria-live="polite">
             <span>{secondsLeft}s</span>
             <small>left</small>
           </div>
         </div>
-        <p>{candidates.length} eligible players available</p>
+        <p className="draft-prompt__meta">
+          {candidates.length} eligible players available
+        </p>
       </div>
 
       <label className="field stats-search">
