@@ -71,11 +71,27 @@ export function LandingPage({
       <div className="landing__glow" aria-hidden="true" />
 
       <p className="eyebrow landing__eyebrow">NBA Head-to-Head</p>
-      <h1>Draft your five. Beat a random rival.</h1>
+      <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
-        Name your squad, draft a five-player lineup, and compete against a random
+        Chase today&apos;s stat challenge or draft head-to-head against a random
         rival from around the world.
       </p>
+
+      <div className="daily-draft-card landing-card landing-card--daily">
+        <p className="eyebrow">Daily Draft</p>
+        <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
+        <p className="daily-draft-card__description">{dailyChallenge.description}</p>
+        <p className="daily-draft-card__meta">
+          Same goal for everyone today. Player stats stay hidden while you draft.
+        </p>
+        <button
+          type="button"
+          className="daily-draft-card__button"
+          onClick={() => handleStart({ isDailyDraft: true })}
+        >
+          Play Today&apos;s Daily Draft
+        </button>
+      </div>
 
       <div className="landing-cards">
         <div className="collection-progress-card landing-card">
@@ -151,30 +167,23 @@ export function LandingPage({
         {error ? <p className="form-error">{error}</p> : null}
       </div>
 
-      <div className="daily-draft-card landing-card">
-        <p className="eyebrow">Daily Draft</p>
-        <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
-        <p className="daily-draft-card__description">{dailyChallenge.description}</p>
-        <p className="daily-draft-card__meta">
-          Same goal for everyone today. Max the stat, then share your result.
+      <div className="head-to-head-card landing-card">
+        <p className="eyebrow">Head-to-Head</p>
+        <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
+        <p className="head-to-head-card__description">
+          Draft a five-player lineup and face a random rival. Your lineup is
+          graded on OVR and projected record, with unlocks after every matchup.
         </p>
-        <button
-          type="button"
-          className="daily-draft-card__button"
-          onClick={() => handleStart({ isDailyDraft: true })}
-        >
-          Play today&apos;s Daily Draft
-        </button>
-      </div>
-
-      <div className="hero-actions landing__actions">
         <button
           type="button"
           className="landing__primary-button"
           onClick={() => handleStart()}
         >
-          Draft a team
+          Compete Head-to-Head
         </button>
+      </div>
+
+      <div className="hero-actions landing__actions landing__actions--secondary">
         <button type="button" className="ghost-link" onClick={onViewLeaderboard}>
           Leaderboard
         </button>
@@ -185,8 +194,8 @@ export function LandingPage({
 
       <ol className="landing-steps">
         <li>Name your team</li>
-        <li>Draft your five-player lineup</li>
-        <li>Face a random rival worldwide</li>
+        <li>Pick Daily Draft or Head-to-Head</li>
+        <li>Draft your five and see how you stack up</li>
       </ol>
 
       <p className="landing-credit">Created by BALLACADEMY</p>

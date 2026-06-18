@@ -152,6 +152,9 @@ export function DraftRoom({
           {dailyChallengeDescription ? (
             <p>{dailyChallengeDescription}</p>
           ) : null}
+          <p className="daily-draft-banner__note">
+            Player stats are hidden. Draft from memory.
+          </p>
         </div>
       ) : null}
 
@@ -281,7 +284,7 @@ export function DraftRoom({
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
                   </span>
-                  <PlayerDraftStats player={player} />
+                  {!isDailyDraft ? <PlayerDraftStats player={player} /> : null}
                 </div>
               </button>
             );

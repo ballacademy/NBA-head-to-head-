@@ -1132,7 +1132,7 @@ main {
 }
 
 .daily-draft-card {
-  margin-top: 20px;
+  margin-top: 24px;
   padding: 20px;
   border: 1px solid rgba(34, 197, 94, 0.28);
   border-radius: 18px;
@@ -1141,6 +1141,43 @@ main {
     rgba(34, 197, 94, 0.12) 0%,
     rgba(15, 23, 42, 0.72) 100%
   );
+}
+
+.landing-card--daily {
+  margin-bottom: 4px;
+}
+
+.head-to-head-card {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.12) 0%,
+    rgba(15, 23, 42, 0.72) 100%
+  );
+}
+
+.head-to-head-card__title {
+  margin: 8px 0;
+  font-size: 1.5rem;
+}
+
+.head-to-head-card__description {
+  margin: 0 0 16px;
+  color: #cbd5e1;
+}
+
+.landing__actions--secondary {
+  margin-top: 16px;
+}
+
+.daily-draft-banner__note {
+  margin: 10px 0 0;
+  color: #86efac;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .daily-draft-card__title {
