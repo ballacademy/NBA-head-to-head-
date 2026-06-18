@@ -37,10 +37,18 @@ describe("draftGrade", () => {
 
   it("builds a spoiler-free daily share grid", () => {
     const lineup = players.slice(0, 5);
-    const shareText = buildDailyDraftShareText(lineup, 57, "2026-06-15");
+    const shareText = buildDailyDraftShareText(
+      "Splash Zone",
+      "42.3% from 3",
+      "2026-06-15",
+      lineup,
+      87,
+    );
 
     expect(shareText).toContain("H2H Daily Draft 2026-06-15");
-    expect(shareText).toContain("57 projected wins");
+    expect(shareText).toContain("Splash Zone");
+    expect(shareText).toContain("42.3% from 3");
+    expect(shareText).toContain("87th percentile");
     expect(shareText).not.toContain(lineup[0]!.name);
   });
 });

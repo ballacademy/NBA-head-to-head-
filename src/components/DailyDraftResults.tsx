@@ -1,12 +1,9 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { TeamLineupCard } from "./TeamLineupCard";
-import { RoastShareCard } from "./RoastShareCard";
+import { sortLineupByPosition } from "../lib/lineupOrder";
+import { PlayerStatLine } from "./PlayerStatLine";
 import { AchievementToast } from "./AchievementToast";
-import { calculateLineupScore } from "../lib/scoring";
-import {
-  buildDailyDraftShareText,
-  buildDraftGradeReport,
-} from "../lib/draftGrade";
+import { buildDailyDraftShareText } from "../lib/draftGrade";
+import { buildDailyGoalResult } from "../lib/dailyGoalScoring";
 import {
   checkLineupAchievements,
   unlockAchievements,
@@ -16,16 +13,15 @@ import {
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
-import { shareLineupCard } from "../lib/shareCard";
-import type { DailyDraftChallenge } from "../lib/dailyDraft";
+import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 
 interface DailyDraftResultsProps {
   user: Drafter;
   userLineup: Player[];
   dailyDateKey: string;
-  dailyChallenge: DailyDraftChallenge;
-  benchmarkOvrs: number[];
+  dailyGoal: DailyDraftGoal;
+  benchmarkValues: number[];
   onPlayAgain: () => void;
 }
 
@@ -50,8 +46,8 @@ export function DailyDraftResults({
   user,
   userLineup,
   dailyDateKey,
-  dailyChallenge,
-  benchmarkOvrs,
+  dailyGoal,
+  benchmarkValues,
   onPlayAgain,
 }: DailyDraftResultsProps) {
   const submittedRef = useRef(false);
@@ -59,27 +55,31 @@ export function DailyDraftResults({
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
-  const userScore = calculateLineupScore(userLineup);
-  const draftReport = useMemo(
-    () => buildDraftGradeReport(userLineup, userScore),
-    [userLineup, userScore],
+  const goalResult = useMemo(
+    () => buildDailyGoalResult(userLineup, dailyGoal),
+    [dailyGoal, userLineup],
   );
   const dailyShareText = useMemo(
     () =>
       buildDailyDraftShareText(
-        userLineup,
-        userScore.projectedRecord.wins,
+        dailyGoal.title,
+        goalResult.formatted,
         dailyDateKey,
+        userLineup,
         percentileResult?.percentile,
       ),
     [
       dailyDateKey,
+      dailyGoal.title,
+      goalResult.formatted,
       percentileResult?.percentile,
       userLineup,
-      userScore.projectedRecord.wins,
     ],
   );
-  const roastShareText = `${user.city} ${user.name} earned a ${draftReport.grade} on today's Daily Draft. ${formatDailyPercentile(percentileResult ?? { percentile: 50, totalDrafters: 1, sampleSize: 1 })}. "${draftReport.roast}" OVR ${draftReport.ovr} • ${draftReport.projectedRecord}`;
+  const orderedLineup = useMemo(
+    () => sortLineupByPosition(userLineup),
+    [userLineup],
+  );
 
   useLayoutEffect(() => {
     if (submittedRef.current) {
@@ -89,16 +89,18 @@ export function DailyDraftResults({
     submittedRef.current = true;
     const result = submitDailyDraftScore(
       dailyDateKey,
-      draftReport.ovr,
-      userScore.projectedRecord.wins,
-      benchmarkOvrs,
+      dailyGoal,
+      goalResult.value,
+      goalResult.formatted,
+      benchmarkValues,
     );
     setPercentileResult(result);
   }, [
-    benchmarkOvrs,
+    benchmarkValues,
     dailyDateKey,
-    draftReport.ovr,
-    userScore.projectedRecord.wins,
+    dailyGoal,
+    goalResult.formatted,
+    goalResult.value,
   ]);
 
   useLayoutEffect(() => {
@@ -112,39 +114,19 @@ export function DailyDraftResults({
     setNewAchievementIds(newlyUnlocked);
   }, [userLineup]);
 
-  const handleShareImage = async () => {
-    await shareLineupCard({
-      teamCity: user.city,
-      teamName: user.name,
-      grade: draftReport.grade,
-      roast: draftReport.roast,
-      ovr: draftReport.ovr,
-      projectedRecord: draftReport.projectedRecord,
-      lineup: userLineup,
-      accent: user.accent,
-    });
-  };
-
-  const handleCopyRoast = async () => {
-    await copyText(roastShareText);
-  };
-
-  const handleCopyDailyShare = async () => {
-    await copyText(dailyShareText);
-  };
-
   return (
     <section className="match-results daily-draft-results">
       <div className="panel daily-draft-results__header">
         <p className="eyebrow">Daily Draft complete</p>
-        <h2>{dailyChallenge.title}</h2>
-        <p>{dailyChallenge.description}</p>
+        <h2>{dailyGoal.title}</h2>
+        <p>{dailyGoal.description}</p>
+        <p className="daily-draft-results__stat">{goalResult.formatted}</p>
         {percentileResult ? (
           <p className="daily-draft-results__percentile">
             {formatDailyPercentile(percentileResult)}
             <span>
-              Based on {percentileResult.sampleSize.toLocaleString()} drafter
-              scores today
+              Compared to {percentileResult.sampleSize.toLocaleString()} scores
+              today
             </span>
           </p>
         ) : null}
@@ -152,27 +134,25 @@ export function DailyDraftResults({
 
       <AchievementToast achievementIds={newAchievementIds} />
 
-      <RoastShareCard
-        teamCity={user.city}
-        teamName={user.name}
-        accent={user.accent}
-        grade={draftReport.grade}
-        roast={draftReport.roast}
-        ovr={draftReport.ovr}
-        projectedRecord={draftReport.projectedRecord}
-        lineup={userLineup}
-        onShareImage={() => void handleShareImage()}
-        onCopyText={() => void handleCopyRoast()}
-        dailyShareText={dailyShareText}
-        onCopyDailyShare={() => void handleCopyDailyShare()}
-      />
+      <section className="panel daily-draft-results__lineup">
+        <p className="eyebrow">{user.city}</p>
+        <h3>{user.name}</h3>
+        <div className="team-lineup-card__players">
+          {orderedLineup.map((player, index) => (
+            <PlayerStatLine key={player.id} player={player} pickNumber={index + 1} />
+          ))}
+        </div>
+      </section>
 
-      <TeamLineupCard
-        drafter={user}
-        lineup={userLineup}
-        score={userScore}
-        isWinner
-      />
+      <div className="panel daily-draft-results__share">
+        <button
+          type="button"
+          className="landing__primary-button"
+          onClick={() => void copyText(dailyShareText)}
+        >
+          Copy daily share text
+        </button>
+      </div>
 
       <div className="panel match-results__actions">
         <button type="button" className="play-again-button" onClick={onPlayAgain}>

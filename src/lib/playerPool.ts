@@ -45,6 +45,8 @@ export interface RawSeasonPlayer {
   blockPct?: number | null;
   turnovers?: number;
   fieldGoalsAttempted?: number;
+  threePointersMade?: number;
+  threePointersAttempted?: number;
   freeThrowsAttempted?: number;
   fieldGoalPct?: number;
   threePointPct?: number;
@@ -137,6 +139,21 @@ export const deriveStyles = (
   return styles.slice(0, 2);
 };
 
+const POSITION_HEIGHT_INCHES: Record<Position, number> = {
+  PG: 74.5,
+  SG: 76.5,
+  SF: 79.5,
+  PF: 81.5,
+  C: 84,
+};
+
+const estimateHeightInches = (raw: RawSeasonPlayer, position: Position) => {
+  const base = POSITION_HEIGHT_INCHES[position];
+  const variance = (raw.id.length + (raw.bbrPlayerId?.length ?? 0)) % 3;
+
+  return base + variance - 1;
+};
+
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
   const position = normalizePosition(raw.position);
   const positions = buildPlayerPositions(raw);
@@ -159,6 +176,10 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     turnovers: raw.turnovers ?? 0,
     trueShooting: raw.trueShooting ?? 0.54,
     threePoint: raw.threePointPct ?? 0,
+    threePointersAttempted: raw.threePointersAttempted ?? 0,
+    fieldGoalsAttempted: raw.fieldGoalsAttempted ?? 0,
+    minutes: raw.minutes,
+    heightInches: estimateHeightInches(raw, position),
     usage: estimateUsage(raw),
     defense: rating?.defense ?? estimateDefense(raw),
     defenseGrade: rating?.grade,

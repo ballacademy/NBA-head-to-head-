@@ -35,6 +35,10 @@ export interface Player {
   turnovers: number;
   trueShooting: number;
   threePoint: number;
+  threePointersAttempted: number;
+  fieldGoalsAttempted: number;
+  minutes: number;
+  heightInches: number;
   usage: number;
   defense: number;
   defenseGrade?: DefenseGrade;

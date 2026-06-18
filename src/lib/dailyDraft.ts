@@ -1,32 +1,13 @@
-import dailyChallenges from "../../data/daily-draft-challenges.json";
-import { getDivisionForTeam } from "./divisions";
+import { generateFeasibleDraftSlots, validateDraftSlotsFeasible } from "./draft";
 import {
-  generateFeasibleDraftSlots,
-  validateDraftSlotsFeasible,
-} from "./draft";
-import type { Division, DraftSlotConstraint, Player } from "./types";
+  DAILY_DRAFT_GOALS,
+  DAILY_GOAL_REPEAT_WINDOW_DAYS,
+  getDailyGoalById,
+  type DailyDraftGoal,
+} from "./dailyDraftGoals";
+import type { DraftSlotConstraint, Player } from "./types";
 
-export interface DailyDraftFilter {
-  type:
-    | "bbrPlayerIds"
-    | "division"
-    | "minAge"
-    | "maxAge"
-    | "minThreePoint"
-    | "maxThreePoint";
-  ids?: string[];
-  division?: Division;
-  value?: number;
-}
-
-export interface DailyDraftChallenge {
-  id: string;
-  title: string;
-  description: string;
-  filter: DailyDraftFilter;
-}
-
-const challenges = dailyChallenges.challenges as DailyDraftChallenge[];
+const goalCache = new Map<string, DailyDraftGoal>();
 
 const createSeededRandom = (seed: number) => {
   let state = seed % 2147483647;
@@ -53,80 +34,96 @@ export const getDailySeed = (dateKey = getDailyDateKey()) => {
   return year * 10000 + month * 100 + day;
 };
 
-export const getDailyChallenge = (dateKey = getDailyDateKey()) => {
-  const seed = getDailySeed(dateKey);
-  const index = seed % challenges.length;
-  return challenges[index]!;
+export const subtractDaysFromDateKey = (dateKey: string, days: number) => {
+  const date = new Date(`${dateKey}T12:00:00`);
+  date.setDate(date.getDate() - days);
+  return getDailyDateKey(date);
 };
 
-export const playerMatchesDailyFilter = (
-  player: Player,
-  filter: DailyDraftFilter,
-) => {
-  switch (filter.type) {
-    case "bbrPlayerIds":
-      return Boolean(
-        player.bbrPlayerId && filter.ids?.includes(player.bbrPlayerId),
+const compareDateKeys = (left: string, right: string) =>
+  left < right ? -1 : left > right ? 1 : 0;
+
+const fillGoalsThrough = (dateKey: string) => {
+  if (goalCache.has(dateKey)) {
+    return;
+  }
+
+  const startKey = subtractDaysFromDateKey(
+    dateKey,
+    Math.max(DAILY_GOAL_REPEAT_WINDOW_DAYS * 2, 120),
+  );
+  let cursor = startKey;
+
+  while (compareDateKeys(cursor, dateKey) <= 0) {
+    if (!goalCache.has(cursor)) {
+      const recentGoalIds = new Set<string>();
+
+      for (let day = 1; day < DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
+        const pastKey = subtractDaysFromDateKey(cursor, day);
+        const pastGoal = goalCache.get(pastKey);
+
+        if (pastGoal) {
+          recentGoalIds.add(pastGoal.id);
+        }
+      }
+
+      const available = DAILY_DRAFT_GOALS.filter(
+        (goal) => !recentGoalIds.has(goal.id),
       );
-    case "division":
-      return getDivisionForTeam(player.team) === filter.division;
-    case "minAge":
-      return (player.age ?? 0) >= (filter.value ?? 0);
-    case "maxAge":
-      return (player.age ?? 99) <= (filter.value ?? 99);
-    case "minThreePoint":
-      return player.threePoint >= (filter.value ?? 0);
-    case "maxThreePoint":
-      return player.threePoint <= (filter.value ?? 1);
-    default:
-      return true;
+      const seed = getDailySeed(cursor);
+      const pool = available.length > 0 ? available : DAILY_DRAFT_GOALS;
+      const goal = pool[seed % pool.length]!;
+
+      goalCache.set(cursor, goal);
+    }
+
+    if (cursor === dateKey) {
+      break;
+    }
+
+    cursor = subtractDaysFromDateKey(cursor, -1);
   }
 };
 
-export const filterPlayersForDailyChallenge = (
-  players: Player[],
-  challenge: DailyDraftChallenge,
-) => players.filter((player) => playerMatchesDailyFilter(player, challenge.filter));
+export const getDailyGoal = (dateKey = getDailyDateKey()): DailyDraftGoal => {
+  fillGoalsThrough(dateKey);
 
-export const getDailyChallengeFixedDivision = (
-  challenge: DailyDraftChallenge,
-) => (challenge.filter.type === "division" ? challenge.filter.division : undefined);
+  return goalCache.get(dateKey) ?? DAILY_DRAFT_GOALS[0]!;
+};
+
+export type DailyDraftChallenge = DailyDraftGoal;
+
+export const getDailyChallenge = (dateKey = getDailyDateKey()) =>
+  getDailyGoal(dateKey);
 
 export const generateDailyDraftSlots = (
   players: Player[],
   dateKey = getDailyDateKey(),
-  challenge = getDailyChallenge(dateKey),
 ) => {
-  const eligible = filterPlayersForDailyChallenge(players, challenge);
   const random = createSeededRandom(getDailySeed(dateKey) + 17);
-  const fixedDivision = getDailyChallengeFixedDivision(challenge);
 
-  return generateFeasibleDraftSlots(eligible, 5, {
-    fixedDivision,
-    random,
-  });
+  return generateFeasibleDraftSlots(players, 5, { random });
 };
 
 export const getDailyDraftSetup = (
   players: Player[],
   dateKey = getDailyDateKey(),
 ) => {
-  const challenge = getDailyChallenge(dateKey);
-  const slots = generateDailyDraftSlots(players, dateKey, challenge);
+  const goal = getDailyGoal(dateKey);
+  const slots = generateDailyDraftSlots(players, dateKey);
 
   return {
     dateKey,
-    challenge,
+    goal,
+    challenge: goal,
     slots,
   };
 };
 
-export const formatDailyChallengeLabel = (challenge: DailyDraftChallenge) =>
-  challenge.title;
+export const formatDailyChallengeLabel = (goal: DailyDraftGoal) => goal.title;
 
-export const formatDailyChallengeDescription = (
-  challenge: DailyDraftChallenge,
-) => challenge.description;
+export const formatDailyChallengeDescription = (goal: DailyDraftGoal) =>
+  goal.description;
 
 export const isDailySlotConstraint = (
   slots: DraftSlotConstraint[],
@@ -142,7 +139,8 @@ export const assertDailyDraftFeasible = (
   dateKey = getDailyDateKey(),
 ) => {
   const setup = getDailyDraftSetup(players, dateKey);
-  const eligible = filterPlayersForDailyChallenge(players, setup.challenge);
 
-  return validateDraftSlotsFeasible(eligible, setup.slots);
+  return validateDraftSlotsFeasible(players, setup.slots);
 };
+
+export { getDailyGoalById };

@@ -203,16 +203,18 @@ export const getPickQualityEmoji = (player: Player) => {
 };
 
 export const buildDailyDraftShareText = (
-  lineup: Player[],
-  projectedWins: number,
+  goalTitle: string,
+  formattedResult: string,
   dateKey: string,
+  lineup: Player[],
   percentile?: number,
 ) => {
   const grid = lineup.map((player) => getPickQualityEmoji(player)).join("");
   const lines = [
     `H2H Daily Draft ${dateKey}`,
+    `🎯 ${goalTitle}`,
     grid,
-    `📊 ${projectedWins} projected wins`,
+    `📊 ${formattedResult}`,
   ];
 
   if (typeof percentile === "number") {

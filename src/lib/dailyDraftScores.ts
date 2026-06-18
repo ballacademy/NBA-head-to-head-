@@ -1,8 +1,10 @@
 import { readJson, writeJson } from "./browserStorage";
 import { autoDraftLineupWithVariance } from "./draft";
 import { getDailySeed } from "./dailyDraft";
+import { buildDailyGoalResult } from "./dailyGoalScoring";
+import type { DailyDraftGoal, DailyGoalDirection } from "./dailyDraftGoals";
 import { getOrCreatePlayerId } from "./playerRecord";
-import { calculateLineupScore, getPlayersById } from "./scoring";
+import { getPlayersById } from "./scoring";
 import type { DraftSlotConstraint, Player } from "./types";
 
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
@@ -10,8 +12,9 @@ const BENCHMARK_SAMPLES = 500;
 
 export interface DailyDraftScoreEntry {
   playerId: string;
-  ovr: number;
-  projectedWins: number;
+  goalId: string;
+  value: number;
+  formattedResult: string;
   submittedAt: string;
 }
 
@@ -34,20 +37,28 @@ const saveDailyScoreStore = (store: DailyScoreStore) => {
 export const loadDailyScoresForDate = (dateKey: string) =>
   loadDailyScoreStore()[dateKey] ?? [];
 
-export const computePercentile = (value: number, values: number[]) => {
+export const computePercentile = (
+  value: number,
+  values: number[],
+  direction: DailyGoalDirection = "higher",
+) => {
   if (values.length === 0) {
     return 50;
   }
 
-  const below = values.filter((candidate) => candidate < value).length;
+  const below =
+    direction === "higher"
+      ? values.filter((candidate) => candidate < value).length
+      : values.filter((candidate) => candidate > value).length;
   const equal = values.filter((candidate) => candidate === value).length;
 
   return Math.round(((below + equal * 0.5) / values.length) * 100);
 };
 
-export const simulateDailyBenchmarkOvrs = (
+export const simulateDailyBenchmarkValues = (
   players: Player[],
   slots: DraftSlotConstraint[],
+  goal: DailyDraftGoal,
   dateKey: string,
   samples = BENCHMARK_SAMPLES,
 ) => {
@@ -63,7 +74,7 @@ export const simulateDailyBenchmarkOvrs = (
     return (state - 1) / 2147483646;
   };
 
-  const ovrs: number[] = [];
+  const values: number[] = [];
 
   for (let index = 0; index < samples; index += 1) {
     const lineupIds = autoDraftLineupWithVariance(players, slots, random);
@@ -73,10 +84,10 @@ export const simulateDailyBenchmarkOvrs = (
     }
 
     const lineup = getPlayersById(lineupIds, players);
-    ovrs.push(calculateLineupScore(lineup).total);
+    values.push(buildDailyGoalResult(lineup, goal).value);
   }
 
-  return ovrs;
+  return values;
 };
 
 export interface DailyDraftPercentileResult {
@@ -87,18 +98,23 @@ export interface DailyDraftPercentileResult {
 
 export const getDailyDraftPercentile = (
   dateKey: string,
-  ovr: number,
-  benchmarkOvrs: number[],
+  value: number,
+  goal: DailyDraftGoal,
+  benchmarkValues: number[],
 ): DailyDraftPercentileResult => {
-  const submissions = loadDailyScoresForDate(dateKey).map((entry) => entry.ovr);
-  const combined = [...benchmarkOvrs, ...submissions, ovr];
+  const submissions = loadDailyScoresForDate(dateKey)
+    .filter((entry) => entry.goalId === goal.id)
+    .map((entry) => entry.value);
+  const combined = [...benchmarkValues, ...submissions, value];
   const uniqueDrafters = new Set([
-    ...loadDailyScoresForDate(dateKey).map((entry) => entry.playerId),
+    ...loadDailyScoresForDate(dateKey)
+      .filter((entry) => entry.goalId === goal.id)
+      .map((entry) => entry.playerId),
     getOrCreatePlayerId(),
   ]);
 
   return {
-    percentile: computePercentile(ovr, combined),
+    percentile: computePercentile(value, combined, goal.direction),
     totalDrafters: uniqueDrafters.size,
     sampleSize: combined.length,
   };
@@ -106,17 +122,19 @@ export const getDailyDraftPercentile = (
 
 export const submitDailyDraftScore = (
   dateKey: string,
-  ovr: number,
-  projectedWins: number,
-  benchmarkOvrs: number[],
+  goal: DailyDraftGoal,
+  value: number,
+  formattedResult: string,
+  benchmarkValues: number[],
 ): DailyDraftPercentileResult => {
   const playerId = getOrCreatePlayerId();
   const store = loadDailyScoreStore();
   const current = store[dateKey] ?? [];
   const nextEntry: DailyDraftScoreEntry = {
     playerId,
-    ovr,
-    projectedWins,
+    goalId: goal.id,
+    value,
+    formattedResult,
     submittedAt: new Date().toISOString(),
   };
   const withoutCurrent = current.filter((entry) => entry.playerId !== playerId);
@@ -124,12 +142,10 @@ export const submitDailyDraftScore = (
   store[dateKey] = [...withoutCurrent, nextEntry];
   saveDailyScoreStore(store);
 
-  return getDailyDraftPercentile(dateKey, ovr, benchmarkOvrs);
+  return getDailyDraftPercentile(dateKey, value, goal, benchmarkValues);
 };
 
-export const formatDailyPercentile = (
-  result: DailyDraftPercentileResult,
-) => {
+export const formatDailyPercentile = (result: DailyDraftPercentileResult) => {
   if (result.percentile >= 90) {
     return `Top ${100 - result.percentile}% today`;
   }
@@ -138,5 +154,15 @@ export const formatDailyPercentile = (
     return `Better than ${result.percentile}% of drafters today`;
   }
 
-  return `Bottom ${result.percentile}% today`;
+  return `Bottom ${100 - result.percentile}% today`;
 };
+
+export const getTopDailyScoresForDate = (
+  dateKey: string,
+  goalId: string,
+  limit = 10,
+) =>
+  loadDailyScoresForDate(dateKey)
+    .filter((entry) => entry.goalId === goalId)
+    .sort((left, right) => right.value - left.value)
+    .slice(0, limit);

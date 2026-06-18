@@ -156,7 +156,7 @@ export function LandingPage({
         <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
         <p className="daily-draft-card__description">{dailyChallenge.description}</p>
         <p className="daily-draft-card__meta">
-          Same challenge for everyone today. Share your emoji grid after the matchup.
+          Same goal for everyone today. Max the stat, then share your result.
         </p>
         <button
           type="button"
