@@ -116,22 +116,15 @@ export function MatchResults({
           >
             {unlockButtonLabel}
           </button>
-        ) : null}
-
-        <button
-          type="button"
-          className="play-again-button"
-          disabled={hasPendingUnlock}
-          aria-disabled={hasPendingUnlock}
-          title={
-            hasPendingUnlock
-              ? "Choose your unlocked player before drafting another team."
-              : undefined
-          }
-          onClick={onPlayAgain}
-        >
-          Draft another team
-        </button>
+        ) : (
+          <button
+            type="button"
+            className="play-again-button"
+            onClick={onPlayAgain}
+          >
+            Draft another team
+          </button>
+        )}
         {hasPendingUnlock ? (
           <p className="match-results__unlock-note">
             Choose your unlocked player before drafting again.

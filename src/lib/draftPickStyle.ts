@@ -6,8 +6,12 @@ export const getPlayerPickShineClass = (player: Player) => {
     return "player-pick--superstar";
   }
 
-  if (isAllStarPlayer(player) || isRecentAllStarPlayer(player)) {
+  if (isAllStarPlayer(player)) {
     return "player-pick--all-star";
+  }
+
+  if (isRecentAllStarPlayer(player)) {
+    return "player-pick--recent-all-star";
   }
 
   return "";

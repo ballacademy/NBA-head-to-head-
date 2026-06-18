@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import { getPlayerPickShineClass } from "./draftPickStyle";
-import { isAllStarPlayer, isSuperstarPlayer } from "./allStars";
+import { isAllStarPlayer, isRecentAllStarPlayer, isSuperstarPlayer } from "./allStars";
 
 describe("draftPickStyle", () => {
   it("applies superstar shine ahead of all-star shine", () => {
@@ -18,5 +18,19 @@ describe("draftPickStyle", () => {
 
     expect(allStar).toBeDefined();
     expect(getPlayerPickShineClass(allStar!)).toBe("player-pick--all-star");
+  });
+
+  it("applies recent all-star shine separately from current all-stars", () => {
+    const recentAllStar = players.find(
+      (player) =>
+        isRecentAllStarPlayer(player) &&
+        !isAllStarPlayer(player) &&
+        !isSuperstarPlayer(player),
+    );
+
+    expect(recentAllStar).toBeDefined();
+    expect(getPlayerPickShineClass(recentAllStar!)).toBe(
+      "player-pick--recent-all-star",
+    );
   });
 });

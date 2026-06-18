@@ -1401,6 +1401,21 @@ main {
   box-shadow: 0 0 22px rgba(239, 68, 68, 0.35);
 }
 
+.player-pick--recent-all-star {
+  border-color: rgba(96, 165, 250, 0.75);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2) 0%,
+    rgba(15, 23, 42, 0.9) 58%
+  );
+  animation: player-pick-recent-all-star-glow 2.6s ease-in-out infinite;
+}
+
+.player-pick--recent-all-star:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 0 22px rgba(59, 130, 246, 0.35);
+}
+
 .player-pick--superstar {
   border-color: rgba(192, 132, 252, 0.85);
   background: linear-gradient(
@@ -1431,6 +1446,21 @@ main {
     box-shadow:
       0 0 0 1px rgba(252, 165, 165, 0.55),
       0 10px 28px rgba(239, 68, 68, 0.32);
+  }
+}
+
+@keyframes player-pick-recent-all-star-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(96, 165, 250, 0.35),
+      0 8px 24px rgba(59, 130, 246, 0.18);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(147, 197, 253, 0.55),
+      0 10px 28px rgba(59, 130, 246, 0.32);
   }
 }
 
