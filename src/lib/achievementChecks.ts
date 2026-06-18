@@ -118,14 +118,14 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "retirement-home",
     title: "The Retirement Home",
-    description: "Draft a lineup with an average age over 34.",
+    description: "Draft a lineup with an average age over 35.",
     emoji: "🧓",
     check: (lineup) => {
       const ages = lineup
         .map((player) => player.age)
         .filter((age): age is number => typeof age === "number");
 
-      return ages.length === 5 && average(ages) > 34;
+      return ages.length === 5 && average(ages) > 35;
     },
   },
   {
@@ -171,9 +171,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "sniper-team",
     title: "Sniper Team",
-    description: "Draft a lineup averaging over 39% from three.",
+    description: "Draft a lineup averaging over 41% from three.",
     emoji: "🎯",
-    check: (lineup) => average(lineup.map((player) => player.threePoint)) > 0.39,
+    check: (lineup) => average(lineup.map((player) => player.threePoint)) > 0.41,
   },
   {
     id: "nepotism",
@@ -221,16 +221,16 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "turnover-terror",
     title: "Turnover Terror",
-    description: "Draft a lineup averaging 3.1+ turnovers.",
+    description: "Draft a lineup averaging 3.4+ turnovers.",
     emoji: "🎭",
-    check: (lineup) => average(lineup.map((player) => player.turnovers)) >= 3.1,
+    check: (lineup) => average(lineup.map((player) => player.turnovers)) >= 3.4,
   },
   {
     id: "carebear-offense",
     title: "Carebear Offense",
-    description: "Draft a lineup averaging 1.5 or fewer turnovers.",
+    description: "Draft five players with 1.5 or fewer turnovers each.",
     emoji: "🧸",
-    check: (lineup) => average(lineup.map((player) => player.turnovers)) <= 1.5,
+    check: (lineup) => lineup.every((player) => player.turnovers <= 1.5),
   },
   {
     id: "usage-vampire",
@@ -249,39 +249,40 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "block-party",
     title: "Block Party",
-    description: "Draft a lineup averaging 1.35+ blocks.",
+    description: "Draft five players with at least 1.0 blocks each.",
     emoji: "🚫",
-    check: (lineup) => average(lineup.map((player) => player.blocks)) >= 1.35,
+    check: (lineup) => lineup.every((player) => player.blocks >= 1.0),
   },
   {
     id: "steal-city",
     title: "Steal City",
-    description: "Draft a lineup averaging 1.35+ steals.",
+    description: "Draft five players with at least 1.2 steals each.",
     emoji: "🕵️",
-    check: (lineup) => average(lineup.map((player) => player.steals)) >= 1.35,
+    check: (lineup) => lineup.every((player) => player.steals >= 1.2),
   },
   {
     id: "stocks-and-bonds",
     title: "Stocks & Bonds",
-    description: "Draft a lineup averaging 2.4+ stocks (steals + blocks).",
+    description:
+      "Draft five players with at least 2.0 stocks (steals + blocks) each.",
     emoji: "📈",
     check: (lineup) =>
-      average(lineup.map((player) => player.steals + player.blocks)) > 2.4,
+      lineup.every((player) => player.steals + player.blocks >= 2.0),
   },
   {
     id: "defensive-fortress",
     title: "Defensive Fortress",
     description:
-      "Draft a lineup averaging 8.4+ defensive rating (out of 10).",
+      "Draft five players rated 8.0+ on defense (out of 10).",
     emoji: "🏰",
-    check: (lineup) => average(lineup.map((player) => player.defense)) >= 8.4,
+    check: (lineup) => lineup.every((player) => player.defense >= 8.0),
   },
   {
     id: "matador",
     title: "Matador Defense",
-    description: "Draft a lineup averaging under 5.6 on defense.",
+    description: "Draft five players rated 5.5 or below on defense.",
     emoji: "🐂",
-    check: (lineup) => average(lineup.map((player) => player.defense)) <= 5.6,
+    check: (lineup) => lineup.every((player) => player.defense <= 5.5),
   },
   {
     id: "free-agents",
@@ -376,46 +377,44 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "workhorses",
     title: "Workhorses",
-    description: "Draft a lineup averaging over 33 minutes.",
+    description: "Draft five players averaging at least 32 minutes each.",
     emoji: "🐴",
-    check: (lineup) => average(lineup.map((player) => player.minutes)) > 33,
+    check: (lineup) => lineup.every((player) => player.minutes >= 32),
   },
   {
     id: "true-god",
     title: "True God",
-    description: "Draft a lineup averaging over 61% true shooting.",
+    description: "Draft five players shooting at least 60% true shooting.",
     emoji: "✨",
-    check: (lineup) =>
-      average(lineup.map((player) => player.trueShooting)) > 0.61,
+    check: (lineup) => lineup.every((player) => player.trueShooting >= 0.6),
   },
   {
     id: "inefficient-inc",
     title: "Inefficient Inc.",
-    description: "Draft a lineup averaging under 52% true shooting.",
+    description: "Draft five players shooting below 54% true shooting.",
     emoji: "📉",
-    check: (lineup) =>
-      average(lineup.map((player) => player.trueShooting)) < 0.52,
+    check: (lineup) => lineup.every((player) => player.trueShooting < 0.54),
   },
   {
     id: "scoring-title",
     title: "Scoring Title",
-    description: "Draft a lineup averaging over 26 points.",
+    description: "Draft a lineup averaging over 28 points.",
     emoji: "🏆",
-    check: (lineup) => average(lineup.map((player) => player.points)) > 26,
+    check: (lineup) => average(lineup.map((player) => player.points)) > 28,
   },
   {
     id: "poverty-line",
     title: "Poverty Line",
-    description: "Draft a lineup averaging under 9 points.",
+    description: "Draft five players averaging under 10 points each.",
     emoji: "💸",
-    check: (lineup) => average(lineup.map((player) => player.points)) < 9,
+    check: (lineup) => lineup.every((player) => player.points < 10),
   },
   {
     id: "assist-avalanche",
     title: "Assist Avalanche",
-    description: "Draft a lineup averaging over 8 assists.",
+    description: "Draft a lineup averaging over 9 assists.",
     emoji: "🌨️",
-    check: (lineup) => average(lineup.map((player) => player.assists)) > 8,
+    check: (lineup) => average(lineup.map((player) => player.assists)) > 9,
   },
   {
     id: "point-center",
