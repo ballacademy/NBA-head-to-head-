@@ -65,10 +65,6 @@ export function MatchResults({
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-
-    if (next.pendingUnlock) {
-      setShowUnlockModal(true);
-    }
   }, [collection, matchId, onCollectionChange, user.city, user.name, userWon]);
 
   const handleUnlockSelect = (playerId: string) => {
@@ -106,35 +102,6 @@ export function MatchResults({
         <p className="player-record-summary">
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
-
-        {actionsReady ? (
-          hasPendingUnlock ? (
-            <>
-              <button
-                type="button"
-                className={`unlock-reward-button${
-                  matchCollection.pendingUnlock!.kind === "loss"
-                    ? " unlock-reward-button--loss"
-                    : ""
-                }`}
-                onClick={() => setShowUnlockModal(true)}
-              >
-                {unlockButtonLabel}
-              </button>
-              <p className="match-results__unlock-note">
-                Choose your unlocked player before drafting again.
-              </p>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="play-again-button"
-              onClick={onPlayAgain}
-            >
-              Draft another team
-            </button>
-          )
-        ) : null}
       </div>
 
       <div className="match-results__lineups">
@@ -161,6 +128,38 @@ export function MatchResults({
         scoreA={userScore}
         scoreB={opponentScore}
       />
+
+      {actionsReady ? (
+        <div className="panel match-results__actions">
+          {hasPendingUnlock ? (
+            <>
+              <button
+                type="button"
+                className={`unlock-reward-button${
+                  matchCollection.pendingUnlock!.kind === "loss"
+                    ? " unlock-reward-button--loss"
+                    : ""
+                }`}
+                onClick={() => setShowUnlockModal(true)}
+              >
+                {unlockButtonLabel}
+              </button>
+              <p className="match-results__unlock-note">
+                Review the matchup above, then choose your unlocked player before
+                drafting again.
+              </p>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="play-again-button"
+              onClick={onPlayAgain}
+            >
+              Draft another team
+            </button>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

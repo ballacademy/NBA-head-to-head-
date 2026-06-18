@@ -1092,6 +1092,12 @@ main {
   text-align: center;
 }
 
+.match-results__actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.match-results__actions button:not(.play-again-button),
 .match-results__header button:not(.play-again-button) {
   margin-top: 16px;
 }
