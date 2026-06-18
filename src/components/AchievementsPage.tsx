@@ -13,10 +13,10 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
       <div className="achievements-page__header">
         <div>
           <p className="eyebrow">NBA Head-to-Head</p>
-          <h1>Badges &amp; Achievements</h1>
+          <h1>Badges</h1>
           <p>
-            Funny drafting milestones you can unlock from head-to-head and daily
-            draft lineups.
+            Funny and difficult drafting milestones unlocked from head-to-head and
+            daily draft lineups.
           </p>
           <p className="achievements-page__progress">
             {progress.unlocked}/{progress.total} unlocked

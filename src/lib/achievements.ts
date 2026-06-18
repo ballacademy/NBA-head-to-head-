@@ -1,4 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
+import { ACHIEVEMENT_CHECKS } from "./achievementChecks";
 import type { Player } from "./types";
 
 const ACHIEVEMENTS_KEY = "nba-head-to-head-achievements";
@@ -10,76 +11,27 @@ export interface AchievementDefinition {
   emoji: string;
 }
 
-export const ACHIEVEMENTS: AchievementDefinition[] = [
-  {
-    id: "oops-all-centers",
-    title: "Oops, All Centers",
-    description: "Draft a lineup of five bigs.",
-    emoji: "🏗️",
-  },
-  {
-    id: "retirement-home",
-    title: "The Retirement Home",
-    description: "Draft a lineup with an average age over 34.",
-    emoji: "🧓",
-  },
-  {
-    id: "brick-city",
-    title: "Brick City",
-    description: "Draft a lineup with brutal three-point shooting.",
-    emoji: "🧱",
-  },
-  {
-    id: "nepotism",
-    title: "Nepotism",
-    description: "Draft Bronny James and Thanasis Antetokounmpo together.",
-    emoji: "👨‍👩‍👦",
-  },
-];
+export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_CHECKS.map(
+  ({ id, title, description, emoji }) => ({
+    id,
+    title,
+    description,
+    emoji,
+  }),
+);
 
-const BRONNY_BBR_ID = "jamesbr02";
-const THANASIS_BBR_ID = "antetth01";
-
-const average = (values: number[]) =>
-  values.length > 0
-    ? values.reduce((sum, value) => sum + value, 0) / values.length
-    : 0;
+const achievementChecksById = new Map(
+  ACHIEVEMENT_CHECKS.map((achievement) => [achievement.id, achievement.check]),
+);
 
 export const checkLineupAchievements = (lineup: Player[]) => {
-  const unlocked: string[] = [];
-
   if (lineup.length !== 5) {
-    return unlocked;
+    return [];
   }
 
-  const isBig = (player: Player) =>
-    player.position === "PF" || player.position === "C";
-
-  if (lineup.every(isBig)) {
-    unlocked.push("oops-all-centers");
-  }
-
-  const ages = lineup
-    .map((player) => player.age)
-    .filter((age): age is number => typeof age === "number");
-
-  if (ages.length === 5 && average(ages) > 34) {
-    unlocked.push("retirement-home");
-  }
-
-  const avgThreePoint = average(lineup.map((player) => player.threePoint));
-  const shooters = lineup.filter((player) => player.threePoint >= 0.34).length;
-
-  if (avgThreePoint < 0.33 && shooters <= 1) {
-    unlocked.push("brick-city");
-  }
-
-  const bbrIds = new Set(lineup.map((player) => player.bbrPlayerId));
-  if (bbrIds.has(BRONNY_BBR_ID) && bbrIds.has(THANASIS_BBR_ID)) {
-    unlocked.push("nepotism");
-  }
-
-  return unlocked;
+  return ACHIEVEMENT_CHECKS.filter((achievement) =>
+    achievement.check(lineup),
+  ).map((achievement) => achievement.id);
 };
 
 export interface AchievementState {
@@ -106,6 +58,10 @@ export const unlockAchievements = (
   const newlyUnlocked: string[] = [];
 
   for (const id of achievementIds) {
+    if (!achievementChecksById.has(id)) {
+      continue;
+    }
+
     if (!unlocked.has(id)) {
       unlocked.add(id);
       newlyUnlocked.push(id);

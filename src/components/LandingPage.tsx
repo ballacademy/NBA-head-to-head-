@@ -193,7 +193,7 @@ export function LandingPage({
           View season stats
         </button>
         <button type="button" className="ghost-link" onClick={onViewAchievements}>
-          Badges &amp; achievements
+          Badges
         </button>
       </div>
 

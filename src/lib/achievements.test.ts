@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { players } from "./playerPool";
+import { ACHIEVEMENT_CHECKS } from "./achievementChecks";
 import {
   ACHIEVEMENTS,
   checkLineupAchievements,
@@ -8,6 +9,14 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
+  it("defines 50 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(50);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(50);
+    expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
+      50,
+    );
+  });
+
   it("detects nepotism when Bronny and Thanasis are drafted together", () => {
     const bronny = players.find((player) => player.bbrPlayerId === "jamesbr02");
     const thanasis = players.find((player) => player.bbrPlayerId === "antetth01");
@@ -33,6 +42,29 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lowShooting)).toContain("brick-city");
   });
 
+  it("detects curry kitchen when both Currys are drafted", () => {
+    const steph = players.find((player) => player.bbrPlayerId === "curryst01");
+    const seth = players.find((player) => player.bbrPlayerId === "curryse01");
+    const fillers = players
+      .filter(
+        (player) =>
+          player.bbrPlayerId !== "curryst01" && player.bbrPlayerId !== "curryse01",
+      )
+      .slice(0, 3);
+
+    const lineup = [steph!, seth!, ...fillers];
+    expect(checkLineupAchievements(lineup)).toContain("curry-kitchen");
+  });
+
+  it("only returns known badge ids", () => {
+    const lineup = players.slice(0, 5);
+    const earned = checkLineupAchievements(lineup);
+
+    expect(earned.every((id) => ACHIEVEMENTS.some((badge) => badge.id === id))).toBe(
+      true,
+    );
+  });
+
   it("persists newly unlocked achievements", () => {
     const storage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -47,9 +79,6 @@ describe("achievements", () => {
 
     expect(newlyUnlocked).toEqual(["nepotism"]);
     expect(state.unlocked).toContain("nepotism");
-    expect(ACHIEVEMENTS.some((achievement) => achievement.id === "nepotism")).toBe(
-      true,
-    );
 
     vi.unstubAllGlobals();
   });
@@ -58,7 +87,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(ACHIEVEMENTS.length);
+    expect(progress.total).toBe(50);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
