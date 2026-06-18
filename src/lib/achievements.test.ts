@@ -9,11 +9,11 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
-  it("defines 49 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(49);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(49);
+  it("defines 52 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(52);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(52);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      49,
+      52,
     );
   });
 
@@ -52,14 +52,6 @@ describe("achievements", () => {
     expect(forwards.length).toBe(5);
     expect(checkLineupAchievements(centers)).toContain("five-true-centers");
     expect(checkLineupAchievements(forwards)).toContain("oops-all-forwards");
-  });
-
-  it("does not include removed redundant badges", () => {
-    const ids = ACHIEVEMENTS.map((achievement) => achievement.id);
-
-    expect(ids).not.toContain("zero-big");
-    expect(ids).not.toContain("midrange-museum");
-    expect(ids).not.toContain("scrub-life");
   });
 
   it("detects curry kitchen when both Currys are drafted", () => {
@@ -107,7 +99,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(49);
+    expect(progress.total).toBe(52);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
