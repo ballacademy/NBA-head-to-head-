@@ -4,7 +4,7 @@ import {
   isRecentAllStarPlayer,
   isSuperstarPlayer,
 } from "./allStars";
-import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
+import { isSuperScrubPlayer } from "./playerTiers";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { Player } from "./types";
 
@@ -73,6 +73,23 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
       ),
   },
   {
+    id: "five-true-centers",
+    title: "Five on the Floor",
+    description: "Draft five centers.",
+    emoji: "⭕",
+    check: (lineup) => lineup.every((player) => player.position === "C"),
+  },
+  {
+    id: "oops-all-forwards",
+    title: "Oops, All Forwards",
+    description: "Draft five small forwards or power forwards.",
+    emoji: "↔️",
+    check: (lineup) =>
+      lineup.every(
+        (player) => player.position === "SF" || player.position === "PF",
+      ),
+  },
+  {
     id: "position-perfect",
     title: "Position Perfect",
     description: "Draft exactly one of each position.",
@@ -83,19 +100,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
         positions.has(pos as Player["position"]),
       );
     },
-  },
-  {
-    id: "zero-big",
-    title: "No Bigs Allowed",
-    description: "Draft a lineup with no power forwards or centers.",
-    emoji: "🐜",
-    check: (lineup) =>
-      lineup.every(
-        (player) =>
-          player.position === "PG" ||
-          player.position === "SG" ||
-          player.position === "SF",
-      ),
   },
   {
     id: "twin-towers",
@@ -150,13 +154,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     description: "Draft five players shooting at least 37% from three.",
     emoji: "💦",
     check: (lineup) => lineup.every((player) => player.threePoint >= 0.37),
-  },
-  {
-    id: "midrange-museum",
-    title: "Midrange Museum",
-    description: "Draft five players shooting below 32% from three.",
-    emoji: "🖼️",
-    check: (lineup) => lineup.every((player) => player.threePoint < 0.32),
   },
   {
     id: "sniper-team",
@@ -313,13 +310,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     description: "Draft five recent All-Stars.",
     emoji: "🔥",
     check: (lineup) => lineup.every((player) => isRecentAllStarPlayer(player)),
-  },
-  {
-    id: "scrub-life",
-    title: "Scrub Life",
-    description: "Draft five players from the scrub pool.",
-    emoji: "🧹",
-    check: (lineup) => lineup.every((player) => isScrubPlayer(player)),
   },
   {
     id: "gutter-gang",

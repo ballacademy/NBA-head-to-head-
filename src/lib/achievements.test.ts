@@ -9,11 +9,11 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
-  it("defines 50 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(50);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(50);
+  it("defines 49 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(49);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(49);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      50,
+      49,
     );
   });
 
@@ -40,6 +40,26 @@ describe("achievements", () => {
       .slice(0, 5);
 
     expect(checkLineupAchievements(lowShooting)).toContain("brick-city");
+  });
+
+  it("detects five true centers and five forwards lineups", () => {
+    const centers = players.filter((player) => player.position === "C").slice(0, 5);
+    const forwards = players
+      .filter((player) => player.position === "SF" || player.position === "PF")
+      .slice(0, 5);
+
+    expect(centers.length).toBe(5);
+    expect(forwards.length).toBe(5);
+    expect(checkLineupAchievements(centers)).toContain("five-true-centers");
+    expect(checkLineupAchievements(forwards)).toContain("oops-all-forwards");
+  });
+
+  it("does not include removed redundant badges", () => {
+    const ids = ACHIEVEMENTS.map((achievement) => achievement.id);
+
+    expect(ids).not.toContain("zero-big");
+    expect(ids).not.toContain("midrange-museum");
+    expect(ids).not.toContain("scrub-life");
   });
 
   it("detects curry kitchen when both Currys are drafted", () => {
@@ -87,7 +107,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(50);
+    expect(progress.total).toBe(49);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
