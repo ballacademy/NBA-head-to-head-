@@ -194,7 +194,7 @@ export function LandingPage({
           </p>
           <button
             type="button"
-            className="secondary-button ranked-cap-card__button"
+            className="ranked-cap-card__button"
             onClick={() => handleStart({ salaryCapMode: true })}
           >
             Play Ranked (Salary Cap)
@@ -213,7 +213,7 @@ export function LandingPage({
           {allTimeUnlocked ? (
             <button
               type="button"
-              className="secondary-button all-time-card__button"
+              className="all-time-card__button"
               onClick={() => handleStart({ allTimeMode: true })}
             >
               Play All-Time Draft
@@ -221,7 +221,7 @@ export function LandingPage({
           ) : (
             <button
               type="button"
-              className="secondary-button all-time-card__button"
+              className="all-time-card__button all-time-card__button--locked"
               disabled
             >
               Achieve 50 wins to unlock all-time legend mode

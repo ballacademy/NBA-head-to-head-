@@ -271,9 +271,10 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "defensive-fortress",
     title: "Defensive Fortress",
-    description: "Draft a lineup averaging 7.8+ on defense.",
+    description:
+      "Draft a lineup averaging 8.4+ defensive rating (out of 10).",
     emoji: "🏰",
-    check: (lineup) => average(lineup.map((player) => player.defense)) >= 7.8,
+    check: (lineup) => average(lineup.map((player) => player.defense)) >= 8.4,
   },
   {
     id: "matador",
