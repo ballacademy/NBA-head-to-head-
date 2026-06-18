@@ -1,16 +1,16 @@
 import {
   autoDraftLineup,
-  generateDraftSlots,
+  generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
 import type { TeamProfile } from "./teamProfile";
-import type { Drafter } from "./types";
-import { getDailyDraftSetup } from "./dailyDraft";
+import type { Drafter, DraftSlotConstraint } from "./types";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import type { Player } from "./types";
 
 export interface StartDraftOptions {
   isDailyDraft?: boolean;
+  dailyChallengeTitle?: string;
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
@@ -19,28 +19,29 @@ export const OPPONENT_PICK_MAX_MS = 9000;
 
 export const createUserDrafter = (
   team: TeamProfile,
+  draftSlots: DraftSlotConstraint[],
   options: StartDraftOptions = {},
+): Drafter => ({
+  id: "user",
+  name: team.name,
+  city: team.city,
+  accent: "#2563eb",
+  draftSlots,
+  lineup: [],
+  isDailyDraft: Boolean(options.isDailyDraft),
+  dailyChallengeTitle: options.dailyChallengeTitle,
+});
+
+export const createOpponentDraftSlots = (players: Player[]) =>
+  generateFeasibleDraftSlots(players);
+
+export const createRandomOpponent = (
+  draftSlots: DraftSlotConstraint[],
 ): Drafter => {
-  const dailySetup = options.isDailyDraft ? getDailyDraftSetup() : null;
-
-  return {
-    id: "user",
-    name: team.name,
-    city: team.city,
-    accent: "#2563eb",
-    draftSlots: dailySetup?.slots ?? generateDraftSlots(),
-    lineup: [],
-    isDailyDraft: Boolean(options.isDailyDraft),
-    dailyChallengeTitle: dailySetup?.challenge.title,
-  };
-};
-
-export const createRandomOpponent = (): Drafter => {
   const blueprint =
     initialDrafterBlueprints[
       Math.floor(Math.random() * initialDrafterBlueprints.length)
     ];
-  const draftSlots = generateDraftSlots();
 
   return {
     id: `opponent-${blueprint.id}-${Date.now()}`,

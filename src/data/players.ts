@@ -1,5 +1,5 @@
 import type { Drafter } from "../lib/types";
-import { autoDraftLineup, generateDraftSlots } from "../lib/draft";
+import { autoDraftLineup, generateFeasibleDraftSlots } from "../lib/draft";
 import { initialDrafterBlueprints } from "./drafterBlueprints";
 import { players, statsFile } from "../lib/playerPool";
 
@@ -7,7 +7,7 @@ export { players, statsFile };
 
 export const initialDrafters: Drafter[] = initialDrafterBlueprints.map(
   (blueprint) => {
-    const draftSlots = generateDraftSlots();
+    const draftSlots = generateFeasibleDraftSlots(players);
 
     return {
       id: blueprint.id,

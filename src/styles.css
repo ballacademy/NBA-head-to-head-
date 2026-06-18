@@ -1293,6 +1293,26 @@ main {
   font-size: 0.92rem;
 }
 
+.daily-draft-results__header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.daily-draft-results__percentile {
+  margin: 16px 0 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #86efac;
+}
+
+.daily-draft-results__percentile span {
+  display: block;
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
 .team-lineup-card {
   border-top: 4px solid var(--accent, var(--orange));
 }

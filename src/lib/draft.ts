@@ -1,48 +1,57 @@
 import { DIVISIONS, getDivisionForTeam, isDraftableTeam } from "./divisions";
+import type { Division } from "./types";
 import { playerMatchesPosition } from "./positions";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { DraftSlotConstraint, Player, Position } from "./types";
 
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
 const FORWARD_POSITIONS: Position[] = ["SF", "PF"];
+const ALL_POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];
 const BALANCED_COMPOSITION_CHANCE = 0.88;
 const MAX_SLOT_GENERATION_ATTEMPTS = 64;
+const BALANCED_POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];
 
 type PositionBucket = "guard" | "forward" | "center";
+type RandomSource = () => number;
 
-const shuffle = <T>(values: T[]) => {
+const defaultRandom: RandomSource = () => Math.random();
+
+const shuffleWith = <T>(values: T[], random: RandomSource) => {
   const copy = [...values];
 
   for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const swapIndex = Math.floor(random() * (index + 1));
     [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
   }
 
   return copy;
 };
 
-const pickRandom = <T>(values: readonly T[]) =>
-  values[Math.floor(Math.random() * values.length)];
+const pickRandomWith = <T>(values: readonly T[], random: RandomSource) =>
+  values[Math.floor(random() * values.length)]!;
 
-const bucketToPosition = (bucket: PositionBucket): Position => {
+const bucketToPositionWith = (
+  bucket: PositionBucket,
+  random: RandomSource,
+): Position => {
   if (bucket === "guard") {
-    return pickRandom(GUARD_POSITIONS);
+    return pickRandomWith(GUARD_POSITIONS, random);
   }
 
   if (bucket === "forward") {
-    return pickRandom(FORWARD_POSITIONS);
+    return pickRandomWith(FORWARD_POSITIONS, random);
   }
 
   return "C";
 };
 
-const createBalancedBuckets = (): PositionBucket[] =>
-  shuffle(["guard", "guard", "forward", "forward", "center"]);
+const createBalancedBuckets = (random: RandomSource): PositionBucket[] =>
+  shuffleWith(["guard", "guard", "forward", "forward", "center"], random);
 
-const createVariedBuckets = (): PositionBucket[] =>
-  shuffle(
+const createVariedBuckets = (random: RandomSource): PositionBucket[] =>
+  shuffleWith(
     Array.from({ length: 5 }, () => {
-      const roll = Math.random();
+      const roll = random();
 
       if (roll < 0.4) {
         return "guard";
@@ -54,6 +63,7 @@ const createVariedBuckets = (): PositionBucket[] =>
 
       return "center";
     }),
+    random,
   );
 
 export const isAllGuards = (positions: readonly Position[]) =>
@@ -80,36 +90,192 @@ export const isBalancedComposition = (positions: readonly Position[]) => {
 const isRejectedComposition = (positions: readonly Position[]) =>
   isAllGuards(positions) || isAllCenters(positions) || isAllBigs(positions);
 
-const bucketsToPositions = (buckets: PositionBucket[]) =>
-  buckets.map(bucketToPosition);
+const bucketsToPositions = (buckets: PositionBucket[], random: RandomSource) =>
+  buckets.map((bucket) => bucketToPositionWith(bucket, random));
 
-const createSlotConstraints = (positions: Position[]): DraftSlotConstraint[] =>
+const createSlotConstraints = (
+  positions: Position[],
+  random: RandomSource,
+  fixedDivision?: Division,
+): DraftSlotConstraint[] =>
   positions.map((position) => ({
     position,
-    division: pickRandom(DIVISIONS),
+    division: fixedDivision ?? pickRandomWith(DIVISIONS, random),
   }));
+
+export const validateDraftSlotsFeasible = (
+  players: Player[],
+  slots: DraftSlotConstraint[],
+) => autoDraftLineup(players, slots).length === slots.length;
+
+export const buildGreedyFeasibleSlots = (
+  players: Player[],
+  positions: Position[],
+  fixedDivision?: Division,
+): DraftSlotConstraint[] => {
+  const pickedIds = new Set<string>();
+  const slots: DraftSlotConstraint[] = [];
+
+  for (const position of positions) {
+    const divisionOptions = fixedDivision ? [fixedDivision] : DIVISIONS;
+    let bestSlot: DraftSlotConstraint | null = null;
+    let bestCount = -1;
+
+    for (const division of divisionOptions) {
+      const slot = { position, division };
+      const count = filterPlayersForSlot(players, slot, pickedIds).length;
+
+      if (count > bestCount) {
+        bestCount = count;
+        bestSlot = slot;
+      }
+    }
+
+    if (!bestSlot) {
+      bestSlot = { position, division: divisionOptions[0]! };
+    }
+
+    slots.push(bestSlot);
+    const pick = pickBestForSlot(players, bestSlot, pickedIds);
+
+    if (pick) {
+      pickedIds.add(pick);
+    }
+  }
+
+  return slots;
+};
+
+const buildFallbackFeasibleSlots = (
+  players: Player[],
+  slotCount: number,
+  fixedDivision?: Division,
+): DraftSlotConstraint[] => {
+  const positions =
+    slotCount === 5 ? BALANCED_POSITIONS : ALL_POSITIONS.slice(0, slotCount);
+  const slots = buildGreedyFeasibleSlots(players, positions, fixedDivision);
+
+  if (validateDraftSlotsFeasible(players, slots)) {
+    return slots;
+  }
+
+  const pickedIds = new Set<string>();
+  const fallbackSlots: DraftSlotConstraint[] = [];
+
+  for (const position of positions) {
+    const candidates = sortDraftCandidates(
+      players.filter(
+        (player) =>
+          playerMatchesPosition(player, position) && !pickedIds.has(player.id),
+      ),
+    ).filter((player) => {
+      const division = getDivisionForTeam(player.team);
+      return (
+        Boolean(division) &&
+        (!fixedDivision || division === fixedDivision) &&
+        isDraftableTeam(player.team)
+      );
+    });
+
+    if (candidates.length === 0) {
+      continue;
+    }
+
+    const selection = candidates[0]!;
+    const division = fixedDivision ?? getDivisionForTeam(selection.team)!;
+
+    fallbackSlots.push({ position, division });
+    pickedIds.add(selection.id);
+  }
+
+  return fallbackSlots;
+};
+
+export interface GenerateFeasibleDraftSlotsOptions {
+  fixedDivision?: Division;
+  random?: RandomSource;
+}
+
+export const generateFeasibleDraftSlots = (
+  players: Player[],
+  slotCount = 5,
+  options: GenerateFeasibleDraftSlotsOptions = {},
+): DraftSlotConstraint[] => {
+  if (players.length === 0 || slotCount === 0) {
+    return [];
+  }
+
+  const random = options.random ?? defaultRandom;
+  const { fixedDivision } = options;
+
+  if (slotCount !== 5) {
+    const slots = Array.from({ length: slotCount }, () => ({
+      position: pickRandomWith(ALL_POSITIONS, random),
+      division: fixedDivision ?? pickRandomWith(DIVISIONS, random),
+    }));
+
+    if (validateDraftSlotsFeasible(players, slots)) {
+      return slots;
+    }
+
+    return buildFallbackFeasibleSlots(players, slotCount, fixedDivision);
+  }
+
+  for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
+    const buckets =
+      random() < BALANCED_COMPOSITION_CHANCE
+        ? createBalancedBuckets(random)
+        : createVariedBuckets(random);
+    const positions = bucketsToPositions(buckets, random);
+
+    if (isRejectedComposition(positions)) {
+      continue;
+    }
+
+    const slots = buildGreedyFeasibleSlots(players, positions, fixedDivision);
+
+    if (validateDraftSlotsFeasible(players, slots)) {
+      return slots;
+    }
+  }
+
+  const balancedSlots = buildGreedyFeasibleSlots(
+    players,
+    BALANCED_POSITIONS,
+    fixedDivision,
+  );
+
+  if (validateDraftSlotsFeasible(players, balancedSlots)) {
+    return balancedSlots;
+  }
+
+  return buildFallbackFeasibleSlots(players, slotCount, fixedDivision);
+};
 
 export const generateDraftSlots = (slotCount = 5): DraftSlotConstraint[] => {
   if (slotCount !== 5) {
     return Array.from({ length: slotCount }, () => ({
-      position: pickRandom([...GUARD_POSITIONS, ...FORWARD_POSITIONS, "C"]),
-      division: pickRandom(DIVISIONS),
+      position: pickRandomWith(ALL_POSITIONS, defaultRandom),
+      division: pickRandomWith(DIVISIONS, defaultRandom),
     }));
   }
 
   for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
     const buckets =
-      Math.random() < BALANCED_COMPOSITION_CHANCE
-        ? createBalancedBuckets()
-        : createVariedBuckets();
-    const positions = bucketsToPositions(buckets);
+      defaultRandom() < BALANCED_COMPOSITION_CHANCE
+        ? createBalancedBuckets(defaultRandom)
+        : createVariedBuckets(defaultRandom);
+    const positions = bucketsToPositions(buckets, defaultRandom);
 
     if (!isRejectedComposition(positions)) {
-      return createSlotConstraints(positions);
+      return createSlotConstraints(positions, defaultRandom);
     }
   }
 
-  return createSlotConstraints(bucketsToPositions(createBalancedBuckets()));
+  return createSlotConstraints(
+    bucketsToPositions(createBalancedBuckets(defaultRandom), defaultRandom),
+    defaultRandom,
+  );
 };
 
 export const filterPlayersForSlot = (
@@ -172,3 +338,31 @@ export const pickBestForSlot = (
   slot: DraftSlotConstraint,
   pickedIds: Set<string>,
 ) => sortDraftCandidates(filterPlayersForSlot(players, slot, pickedIds))[0]?.id;
+
+export const autoDraftLineupWithVariance = (
+  players: Player[],
+  draftSlots: DraftSlotConstraint[],
+  random: RandomSource = defaultRandom,
+  varianceDepth = 3,
+) => {
+  const lineup: string[] = [];
+  const pickedIds = new Set<string>();
+
+  for (const slot of draftSlots) {
+    const candidates = sortDraftCandidates(
+      filterPlayersForSlot(players, slot, pickedIds),
+    );
+    const poolSize = Math.min(varianceDepth, candidates.length);
+
+    if (poolSize === 0) {
+      break;
+    }
+
+    const selection = candidates[Math.floor(random() * poolSize)]!;
+
+    lineup.push(selection.id);
+    pickedIds.add(selection.id);
+  }
+
+  return lineup;
+};

@@ -1,6 +1,9 @@
 import dailyChallenges from "../../data/daily-draft-challenges.json";
 import { getDivisionForTeam } from "./divisions";
-import { generateDraftSlots } from "./draft";
+import {
+  generateFeasibleDraftSlots,
+  validateDraftSlotsFeasible,
+} from "./draft";
 import type { Division, DraftSlotConstraint, Player } from "./types";
 
 export interface DailyDraftFilter {
@@ -56,17 +59,6 @@ export const getDailyChallenge = (dateKey = getDailyDateKey()) => {
   return challenges[index]!;
 };
 
-export const generateDailyDraftSlots = (dateKey = getDailyDateKey()) => {
-  const random = createSeededRandom(getDailySeed(dateKey) + 17);
-  const originalRandom = Math.random;
-
-  Math.random = random;
-  const slots = generateDraftSlots();
-  Math.random = originalRandom;
-
-  return slots;
-};
-
 export const playerMatchesDailyFilter = (
   player: Player,
   filter: DailyDraftFilter,
@@ -96,9 +88,31 @@ export const filterPlayersForDailyChallenge = (
   challenge: DailyDraftChallenge,
 ) => players.filter((player) => playerMatchesDailyFilter(player, challenge.filter));
 
-export const getDailyDraftSetup = (dateKey = getDailyDateKey()) => {
+export const getDailyChallengeFixedDivision = (
+  challenge: DailyDraftChallenge,
+) => (challenge.filter.type === "division" ? challenge.filter.division : undefined);
+
+export const generateDailyDraftSlots = (
+  players: Player[],
+  dateKey = getDailyDateKey(),
+  challenge = getDailyChallenge(dateKey),
+) => {
+  const eligible = filterPlayersForDailyChallenge(players, challenge);
+  const random = createSeededRandom(getDailySeed(dateKey) + 17);
+  const fixedDivision = getDailyChallengeFixedDivision(challenge);
+
+  return generateFeasibleDraftSlots(eligible, 5, {
+    fixedDivision,
+    random,
+  });
+};
+
+export const getDailyDraftSetup = (
+  players: Player[],
+  dateKey = getDailyDateKey(),
+) => {
   const challenge = getDailyChallenge(dateKey);
-  const slots = generateDailyDraftSlots(dateKey);
+  const slots = generateDailyDraftSlots(players, dateKey, challenge);
 
   return {
     dateKey,
@@ -116,8 +130,19 @@ export const formatDailyChallengeDescription = (
 
 export const isDailySlotConstraint = (
   slots: DraftSlotConstraint[],
+  players: Player[],
   dateKey = getDailyDateKey(),
 ) => {
-  const expected = generateDailyDraftSlots(dateKey);
+  const expected = generateDailyDraftSlots(players, dateKey);
   return JSON.stringify(slots) === JSON.stringify(expected);
+};
+
+export const assertDailyDraftFeasible = (
+  players: Player[],
+  dateKey = getDailyDateKey(),
+) => {
+  const setup = getDailyDraftSetup(players, dateKey);
+  const eligible = filterPlayersForDailyChallenge(players, setup.challenge);
+
+  return validateDraftSlotsFeasible(eligible, setup.slots);
 };

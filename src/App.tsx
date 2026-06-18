@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { players, statsFile } from "./data/players";
+import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
-import { pickBestForSlot } from "./lib/draft";
+import { generateFeasibleDraftSlots, pickBestForSlot } from "./lib/draft";
 import {
   filterPlayersForDailyChallenge,
   getDailyChallenge,
   getDailyDateKey,
   getDailyDraftSetup,
 } from "./lib/dailyDraft";
+import { simulateDailyBenchmarkOvrs } from "./lib/dailyDraftScores";
 import {
+  createOpponentDraftSlots,
   createRandomOpponent,
   createUserDrafter,
   getOpponentPickDelayMs,
@@ -21,7 +24,12 @@ import {
   type StartDraftOptions,
 } from "./lib/match";
 import { getPlayersById } from "./lib/scoring";
-import { ensurePlayerCollection, getDraftablePlayers, createOpponentCollection, type PlayerCollection } from "./lib/playerCollection";
+import {
+  ensurePlayerCollection,
+  getDraftablePlayers,
+  createOpponentCollection,
+  type PlayerCollection,
+} from "./lib/playerCollection";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
@@ -51,15 +59,18 @@ function App() {
     [dailyDateKey],
   );
 
-  const draftablePlayers = useMemo(() => {
-    const base = getDraftablePlayers(players, collection);
+  const dailyEligiblePlayers = useMemo(
+    () => filterPlayersForDailyChallenge(players, dailyChallenge),
+    [dailyChallenge],
+  );
 
-    if (!isDailyDraft) {
-      return base;
+  const draftablePlayers = useMemo(() => {
+    if (isDailyDraft) {
+      return dailyEligiblePlayers;
     }
 
-    return filterPlayersForDailyChallenge(base, dailyChallenge);
-  }, [collection, dailyChallenge, isDailyDraft]);
+    return getDraftablePlayers(players, collection);
+  }, [collection, dailyEligiblePlayers, isDailyDraft]);
 
   const opponentDraftablePlayers = useMemo(
     () =>
@@ -69,6 +80,23 @@ function App() {
     [opponentCollection],
   );
 
+  const dailySetup = useMemo(
+    () => (isDailyDraft ? getDailyDraftSetup(players, dailyDateKey) : null),
+    [dailyDateKey, isDailyDraft],
+  );
+
+  const dailyBenchmarkOvrs = useMemo(() => {
+    if (!dailySetup) {
+      return [];
+    }
+
+    return simulateDailyBenchmarkOvrs(
+      dailyEligiblePlayers,
+      dailySetup.slots,
+      dailyDateKey,
+    );
+  }, [dailyDateKey, dailyEligiblePlayers, dailySetup]);
+
   const userLineup = getPlayersById(user?.lineup ?? [], players);
   const opponentLineup = getPlayersById(opponent?.lineup ?? [], players);
   const userDraftComplete = draftStep >= 5;
@@ -76,21 +104,37 @@ function App() {
   const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
     const daily = Boolean(options.isDailyDraft);
     const dateKey = getDailyDateKey();
+    const userPool = daily
+      ? filterPlayersForDailyChallenge(players, getDailyChallenge(dateKey))
+      : getDraftablePlayers(players, collection);
+    const nextOpponentCollection = daily ? null : createOpponentCollection(collection);
+    const opponentPool = nextOpponentCollection
+      ? getDraftablePlayers(players, nextOpponentCollection)
+      : players;
+    const setup = daily ? getDailyDraftSetup(players, dateKey) : null;
+    const userSlots = setup?.slots ?? generateFeasibleDraftSlots(userPool);
+    const opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
 
     saveTeamProfile(team);
     setIsDailyDraft(daily);
     setDailyDateKey(dateKey);
-    setUser(createUserDrafter(team, { isDailyDraft: daily }));
-    setOpponent(createRandomOpponent());
-    setOpponentCollection(createOpponentCollection(collection));
+    setUser(
+      createUserDrafter(team, userSlots, {
+        isDailyDraft: daily,
+        dailyChallengeTitle: setup?.challenge.title,
+      }),
+    );
+    setOpponent(opponentSlots ? createRandomOpponent(opponentSlots) : null);
+    setOpponentCollection(nextOpponentCollection);
     setDraftStep(0);
     setOpponentPickCount(0);
-    setOpponentComplete(false);
+    setOpponentComplete(daily);
+    setMatchId(null);
     setPhase("drafting");
   };
 
   const resetToLanding = () => {
-    if (collection.pendingUnlock) {
+    if (!isDailyDraft && collection.pendingUnlock) {
       return;
     }
 
@@ -167,17 +211,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (phase === "results" && !matchId) {
+    if (phase === "results" && !isDailyDraft && !matchId) {
       setMatchId(
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `match-${Date.now()}`,
       );
     }
-  }, [matchId, phase]);
+  }, [isDailyDraft, matchId, phase]);
 
   useEffect(() => {
-    if (!opponent) {
+    if (isDailyDraft || !opponent) {
       return;
     }
 
@@ -220,15 +264,20 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [opponent?.id, opponentDraftablePlayers]);
+  }, [isDailyDraft, opponent, opponentDraftablePlayers]);
 
   useEffect(() => {
     if (!userDraftComplete || phase !== "drafting") {
       return;
     }
 
+    if (isDailyDraft) {
+      setPhase("results");
+      return;
+    }
+
     setPhase(opponentComplete ? "results" : "waiting");
-  }, [userDraftComplete, opponentComplete, phase]);
+  }, [isDailyDraft, opponentComplete, phase, userDraftComplete]);
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
@@ -275,11 +324,13 @@ function App() {
     );
   }
 
-  if (!user || !opponent) {
+  if (!user) {
     return null;
   }
 
-  const dailySetup = isDailyDraft ? getDailyDraftSetup(dailyDateKey) : null;
+  if (!isDailyDraft && !opponent) {
+    return null;
+  }
 
   return (
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
@@ -298,14 +349,25 @@ function App() {
         </div>
       ) : null}
 
-      {phase === "waiting" ? (
+      {phase === "waiting" && opponent ? (
         <WaitingRoom
           opponentPickCount={opponentPickCount}
           totalPicks={opponent.draftSlots.length}
         />
       ) : null}
 
-      {phase === "results" && matchId ? (
+      {phase === "results" && isDailyDraft && dailySetup ? (
+        <DailyDraftResults
+          user={user}
+          userLineup={userLineup}
+          dailyDateKey={dailyDateKey}
+          dailyChallenge={dailySetup.challenge}
+          benchmarkOvrs={dailyBenchmarkOvrs}
+          onPlayAgain={resetToLanding}
+        />
+      ) : null}
+
+      {phase === "results" && !isDailyDraft && opponent && matchId ? (
         <MatchResults
           user={user}
           opponent={opponent}
@@ -313,8 +375,6 @@ function App() {
           opponentLineup={opponentLineup}
           matchId={matchId}
           collection={collection}
-          isDailyDraft={isDailyDraft}
-          dailyDateKey={dailyDateKey}
           onCollectionChange={handleCollectionChange}
           onPlayAgain={resetToLanding}
         />

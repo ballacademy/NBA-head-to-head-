@@ -15,10 +15,7 @@ import {
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { calculateLineupScore } from "../lib/scoring";
-import {
-  buildDailyDraftShareText,
-  buildDraftGradeReport,
-} from "../lib/draftGrade";
+import { buildDraftGradeReport } from "../lib/draftGrade";
 import {
   checkLineupAchievements,
   unlockAchievements,
@@ -33,8 +30,6 @@ interface MatchResultsProps {
   opponentLineup: Player[];
   matchId: string;
   collection: PlayerCollection;
-  isDailyDraft?: boolean;
-  dailyDateKey?: string;
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
 }
@@ -63,8 +58,6 @@ export function MatchResults({
   opponentLineup,
   matchId,
   collection,
-  isDailyDraft = false,
-  dailyDateKey,
   onCollectionChange,
   onPlayAgain,
 }: MatchResultsProps) {
@@ -86,17 +79,6 @@ export function MatchResults({
     () => buildDraftGradeReport(userLineup, userScore),
     [userLineup, userScore],
   );
-  const dailyShareText = useMemo(() => {
-    if (!isDailyDraft || !dailyDateKey) {
-      return undefined;
-    }
-
-    return buildDailyDraftShareText(
-      userLineup,
-      userScore.projectedRecord.wins,
-      dailyDateKey,
-    );
-  }, [dailyDateKey, isDailyDraft, userLineup, userScore.projectedRecord.wins]);
   const roastShareText = `${user.city} ${user.name} earned a ${draftReport.grade}. "${draftReport.roast}" OVR ${draftReport.ovr} • ${draftReport.projectedRecord}`;
 
   useLayoutEffect(() => {
@@ -153,14 +135,6 @@ export function MatchResults({
     await copyText(roastShareText);
   };
 
-  const handleCopyDailyShare = async () => {
-    if (!dailyShareText) {
-      return;
-    }
-
-    await copyText(dailyShareText);
-  };
-
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
 
   const unlockButtonLabel =
@@ -204,10 +178,6 @@ export function MatchResults({
         lineup={userLineup}
         onShareImage={() => void handleShareImage()}
         onCopyText={() => void handleCopyRoast()}
-        dailyShareText={dailyShareText}
-        onCopyDailyShare={
-          dailyShareText ? () => void handleCopyDailyShare() : undefined
-        }
       />
 
       <div className="match-results__lineups">

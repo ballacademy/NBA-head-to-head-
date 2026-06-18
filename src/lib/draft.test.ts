@@ -5,11 +5,13 @@ import {
   filterPlayersForSlot,
   formatSlotConstraint,
   generateDraftSlots,
+  generateFeasibleDraftSlots,
   isAllBigs,
   isAllCenters,
   isAllGuards,
   isBalancedComposition,
   sortDraftCandidates,
+  validateDraftSlotsFeasible,
 } from "./draft";
 import type { Player } from "./types";
 import { players } from "../data/players";
@@ -55,6 +57,28 @@ describe("draft constraints", () => {
     const lineup = autoDraftLineup(players, slots);
     expect(lineup.length).toBe(5);
     expect(new Set(lineup).size).toBe(5);
+  });
+
+  it("generates feasible slots for the full player pool", () => {
+    const slots = generateFeasibleDraftSlots(players);
+
+    expect(slots.length).toBe(5);
+    expect(validateDraftSlotsFeasible(players, slots)).toBe(true);
+  });
+
+  it("always leaves at least one eligible player for every generated slot", () => {
+    for (let index = 0; index < 100; index += 1) {
+      const slots = generateFeasibleDraftSlots(players);
+      const pickedIds = new Set<string>();
+
+      for (const slot of slots) {
+        const candidates = filterPlayersForSlot(players, slot, pickedIds);
+        expect(candidates.length).toBeGreaterThan(0);
+
+        const pick = candidates[0]!;
+        pickedIds.add(pick.id);
+      }
+    }
   });
 
   it("excludes already drafted players from later slots", () => {

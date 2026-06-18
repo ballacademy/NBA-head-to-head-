@@ -206,12 +206,20 @@ export const buildDailyDraftShareText = (
   lineup: Player[],
   projectedWins: number,
   dateKey: string,
+  percentile?: number,
 ) => {
   const grid = lineup.map((player) => getPickQualityEmoji(player)).join("");
-  return [
+  const lines = [
     `H2H Daily Draft ${dateKey}`,
     grid,
     `📊 ${projectedWins} projected wins`,
-    "#NBAHeadToHead",
-  ].join("\n");
+  ];
+
+  if (typeof percentile === "number") {
+    lines.push(`📈 ${percentile}th percentile`);
+  }
+
+  lines.push("#NBAHeadToHead");
+
+  return lines.join("\n");
 };
