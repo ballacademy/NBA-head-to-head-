@@ -2,7 +2,6 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
-import { RoastShareCard } from "./RoastShareCard";
 import { AchievementToast } from "./AchievementToast";
 import {
   formatPlayerRecord,
@@ -15,12 +14,10 @@ import {
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { calculateLineupScore } from "../lib/scoring";
-import { buildDraftGradeReport } from "../lib/draftGrade";
 import {
   checkLineupAchievements,
   unlockAchievements,
 } from "../lib/achievements";
-import { shareLineupCard } from "../lib/shareCard";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -33,23 +30,6 @@ interface MatchResultsProps {
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
 }
-
-const copyText = async (text: string) => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "absolute";
-  textarea.style.left = "-9999px";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
-};
 
 export function MatchResults({
   user,
@@ -75,11 +55,6 @@ export function MatchResults({
     () => projectRecordAfterMatch(userWon, loadPlayerRecord()),
     [userWon],
   );
-  const draftReport = useMemo(
-    () => buildDraftGradeReport(userLineup, userScore),
-    [userLineup, userScore],
-  );
-  const roastShareText = `${user.city} ${user.name} earned a ${draftReport.grade}. "${draftReport.roast}" OVR ${draftReport.ovr} • ${draftReport.projectedRecord}`;
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -118,23 +93,6 @@ export function MatchResults({
     setShowUnlockModal(false);
   };
 
-  const handleShareImage = async () => {
-    await shareLineupCard({
-      teamCity: user.city,
-      teamName: user.name,
-      grade: draftReport.grade,
-      roast: draftReport.roast,
-      ovr: draftReport.ovr,
-      projectedRecord: draftReport.projectedRecord,
-      lineup: userLineup,
-      accent: user.accent,
-    });
-  };
-
-  const handleCopyRoast = async () => {
-    await copyText(roastShareText);
-  };
-
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
 
   const unlockButtonLabel =
@@ -166,19 +124,6 @@ export function MatchResults({
       </div>
 
       <AchievementToast achievementIds={newAchievementIds} />
-
-      <RoastShareCard
-        teamCity={user.city}
-        teamName={user.name}
-        accent={user.accent}
-        grade={draftReport.grade}
-        roast={draftReport.roast}
-        ovr={draftReport.ovr}
-        projectedRecord={draftReport.projectedRecord}
-        lineup={userLineup}
-        onShareImage={() => void handleShareImage()}
-        onCopyText={() => void handleCopyRoast()}
-      />
 
       <div className="match-results__lineups">
         <TeamLineupCard

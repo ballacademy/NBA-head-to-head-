@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { players } from "./playerPool";
-import { calculateLineupScore } from "./scoring";
 import {
   buildDailyDraftShareText,
-  buildDraftGradeReport,
   gradeFromOvr,
 } from "./draftGrade";
 
@@ -13,26 +11,6 @@ describe("draftGrade", () => {
     expect(gradeFromOvr(92)).toBe("A");
     expect(gradeFromOvr(88)).toBe("A-");
     expect(gradeFromOvr(10)).toBe("F-");
-  });
-
-  it("builds a roast summary for a lineup", () => {
-    const lineup = players
-      .filter((player) => ["jokicni01", "curryst01", "duranke01"].includes(player.bbrPlayerId ?? ""))
-      .slice(0, 3);
-
-    expect(lineup.length).toBeGreaterThan(0);
-
-    const padded = [
-      ...lineup,
-      ...players.filter((player) => player.bbrPlayerId === "whitede01"),
-      ...players.filter((player) => player.bbrPlayerId === "carusal01"),
-    ].slice(0, 5);
-
-    const score = calculateLineupScore(padded);
-    const report = buildDraftGradeReport(padded, score);
-
-    expect(report.grade).toMatch(/^[A-F][+-]?$/);
-    expect(report.roast.length).toBeGreaterThan(20);
   });
 
   it("builds a spoiler-free daily share grid", () => {
