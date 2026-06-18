@@ -157,6 +157,15 @@ export const formatDailyPercentile = (result: DailyDraftPercentileResult) => {
   return `Bottom ${100 - result.percentile}% today`;
 };
 
+export const getPlayerDailyDraftEntry = (
+  dateKey: string,
+  goalId: string,
+  playerId = getOrCreatePlayerId(),
+) =>
+  loadDailyScoresForDate(dateKey).find(
+    (entry) => entry.playerId === playerId && entry.goalId === goalId,
+  );
+
 export const getTopDailyScoresForDate = (
   dateKey: string,
   goalId: string,

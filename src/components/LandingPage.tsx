@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getCollectionProgress,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { getDailyDateKey } from "../lib/dailyDraft";
+import { getPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
 import {
   ERA_2010S_WIN_THRESHOLD,
   getEraProgress,
@@ -39,6 +41,31 @@ interface LandingPageProps {
   onViewLeaderboard: () => void;
 }
 
+function MatchModeRecord({ record }: { record: PlayerRecord }) {
+  return (
+    <div className="landing-mode-card__record-block">
+      <p className="landing-mode-card__record">
+        <span className="landing-mode-card__record-label">Record</span>
+        <span className="landing-mode-card__record-value">
+          {formatPlayerRecord(record)}
+          {hasFireStreak(record.winStreak) ? (
+            <WinStreakBadge winStreak={record.winStreak} />
+          ) : null}
+          {!hasFireStreak(record.winStreak) &&
+          hasLossStreakBadge(record.lossStreak) ? (
+            <LossStreakBadge lossStreak={record.lossStreak} />
+          ) : null}
+        </span>
+      </p>
+      <p className="landing-mode-card__record-meta">
+        {shouldShowWinPercentage(record)
+          ? `${formatWinPercentage(record)} win rate`
+          : `${record.wins + record.losses} games played`}
+      </p>
+    </div>
+  );
+}
+
 export function LandingPage({
   collection,
   dailyChallenge,
@@ -68,6 +95,11 @@ export function LandingPage({
   const allTimeWinsRemaining = Math.max(
     ERA_2010S_WIN_THRESHOLD - playerRecord.wins,
     0,
+  );
+  const dailyDateKey = getDailyDateKey();
+  const dailyEntry = useMemo(
+    () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
+    [dailyChallenge.id, dailyDateKey],
   );
 
   const handleStart = (options?: StartDraftOptions) => {
@@ -140,6 +172,17 @@ export function LandingPage({
           <p className="daily-draft-card__meta">
             Same goal for everyone today. Player stats stay hidden while you draft.
           </p>
+          <div className="landing-mode-card__record-block">
+            <p className="landing-mode-card__record">
+              <span className="landing-mode-card__record-label">Today</span>
+              <span className="landing-mode-card__record-value landing-mode-card__record-value--daily">
+                {dailyEntry?.formattedResult ?? "—"}
+              </span>
+            </p>
+            <p className="landing-mode-card__record-meta">
+              {dailyEntry ? "Daily draft completed" : "Not played yet today"}
+            </p>
+          </div>
           <button
             type="button"
             className="daily-draft-card__button"
@@ -149,25 +192,6 @@ export function LandingPage({
           </button>
         </div>
 
-        <div className="player-record-card landing-card landing-card--record landing-card--mode">
-          <p className="eyebrow">Your head-to-head record</p>
-          <p className="player-record-card__value">
-            {formatPlayerRecord(playerRecord)}
-            {hasFireStreak(playerRecord.winStreak) ? (
-              <WinStreakBadge winStreak={playerRecord.winStreak} />
-            ) : null}
-            {!hasFireStreak(playerRecord.winStreak) &&
-            hasLossStreakBadge(playerRecord.lossStreak) ? (
-              <LossStreakBadge lossStreak={playerRecord.lossStreak} />
-            ) : null}
-          </p>
-          <p className="player-record-card__meta">
-            {shouldShowWinPercentage(playerRecord)
-              ? `${formatWinPercentage(playerRecord)} win rate`
-              : `${playerRecord.wins + playerRecord.losses} games played`}
-          </p>
-        </div>
-
         <div className="head-to-head-card landing-card landing-card--mode">
           <p className="eyebrow">Head-to-Head</p>
           <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
@@ -175,6 +199,7 @@ export function LandingPage({
             Draft a five-player lineup and face a random rival. Chemistry bonuses
             reward real-world connections like college teammates and brothers.
           </p>
+          <MatchModeRecord record={playerRecord} />
           <button
             type="button"
             className="landing__primary-button"
@@ -192,6 +217,7 @@ export function LandingPage({
             real 2025-26 salaries. Stack stars and you&apos;ll need minimum deals
             to finish your five.
           </p>
+          <MatchModeRecord record={playerRecord} />
           <button
             type="button"
             className="ranked-cap-card__button"
@@ -210,6 +236,7 @@ export function LandingPage({
               ? ` ${unlockedEraCount} era${unlockedEraCount === 1 ? "" : "s"} currently available.`
               : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock.`}
           </p>
+          <MatchModeRecord record={playerRecord} />
           {allTimeUnlocked ? (
             <button
               type="button"
