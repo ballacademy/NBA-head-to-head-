@@ -3,6 +3,7 @@ import { players } from "./playerPool";
 import {
   ACHIEVEMENTS,
   checkLineupAchievements,
+  getAchievementProgress,
   unlockAchievements,
 } from "./achievements";
 
@@ -51,5 +52,16 @@ describe("achievements", () => {
     );
 
     vi.unstubAllGlobals();
+  });
+
+  it("reports achievement progress", () => {
+    const progress = getAchievementProgress({ unlocked: ["nepotism"] });
+
+    expect(progress.unlocked).toBe(1);
+    expect(progress.total).toBe(ACHIEVEMENTS.length);
+    expect(
+      progress.achievements.find((achievement) => achievement.id === "nepotism")
+        ?.isUnlocked,
+    ).toBe(true);
   });
 });

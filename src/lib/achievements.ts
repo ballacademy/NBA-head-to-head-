@@ -123,3 +123,16 @@ export const unlockAchievements = (
 
 export const getAchievementById = (id: string) =>
   ACHIEVEMENTS.find((achievement) => achievement.id === id);
+
+export const getAchievementProgress = (state = loadAchievementState()) => {
+  const unlocked = new Set(state.unlocked);
+
+  return {
+    unlocked: state.unlocked.length,
+    total: ACHIEVEMENTS.length,
+    achievements: ACHIEVEMENTS.map((achievement) => ({
+      ...achievement,
+      isUnlocked: unlocked.has(achievement.id),
+    })),
+  };
+};

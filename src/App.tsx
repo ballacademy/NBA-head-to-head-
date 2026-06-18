@@ -4,6 +4,7 @@ import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
+import { AchievementsPage } from "./components/AchievementsPage";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -33,7 +34,14 @@ import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
 
-type AppPhase = "landing" | "drafting" | "waiting" | "results" | "stats" | "leaderboard";
+type AppPhase =
+  | "landing"
+  | "drafting"
+  | "waiting"
+  | "results"
+  | "stats"
+  | "leaderboard"
+  | "achievements";
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
@@ -286,6 +294,14 @@ function App() {
     );
   }
 
+  if (phase === "achievements") {
+    return (
+      <main className="landing-layout">
+        <AchievementsPage onBack={resetToLanding} />
+      </main>
+    );
+  }
+
   if (phase === "stats") {
     return (
       <main>
@@ -311,6 +327,7 @@ function App() {
           dailyChallenge={dailyChallenge}
           onStartDraft={startMatch}
           onViewStats={() => setPhase("stats")}
+          onViewAchievements={() => setPhase("achievements")}
           onViewLeaderboard={() => setPhase("leaderboard")}
         />
       </main>

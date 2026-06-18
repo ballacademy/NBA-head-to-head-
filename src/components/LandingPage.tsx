@@ -26,6 +26,7 @@ interface LandingPageProps {
   dailyChallenge: DailyDraftChallenge;
   onStartDraft: (team: TeamProfile, options?: StartDraftOptions) => void;
   onViewStats: () => void;
+  onViewAchievements: () => void;
   onViewLeaderboard: () => void;
 }
 
@@ -34,6 +35,7 @@ export function LandingPage({
   dailyChallenge,
   onStartDraft,
   onViewStats,
+  onViewAchievements,
   onViewLeaderboard,
 }: LandingPageProps) {
   const [city, setCity] = useState("");
@@ -189,6 +191,9 @@ export function LandingPage({
         </button>
         <button type="button" className="ghost-link" onClick={onViewStats}>
           View season stats
+        </button>
+        <button type="button" className="ghost-link" onClick={onViewAchievements}>
+          Badges &amp; achievements
         </button>
       </div>
 
