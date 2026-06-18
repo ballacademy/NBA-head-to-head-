@@ -512,6 +512,10 @@ main {
   color: var(--muted);
 }
 
+.landing-card--collection {
+  margin-top: 20px;
+}
+
 .collection-progress-card {
   margin: 0;
   padding: 18px 20px;

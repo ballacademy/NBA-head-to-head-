@@ -93,41 +93,6 @@ export function LandingPage({
         competition.
       </p>
 
-      <div className="landing-cards">
-        <div className="collection-progress-card landing-card">
-          <p className="eyebrow">Your stars &amp; scrubs</p>
-          <p className="collection-progress-card__value">
-            {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
-            {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
-            Recent All-Stars • {collectionProgress.superstarUnlocked}/
-            {collectionProgress.superstarTotal} Superstars
-          </p>
-          <p className="collection-progress-card__meta">
-            {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool} Scrubs
-            unlocked • Win to unlock more Stars, lose to unlock scrubs.
-          </p>
-        </div>
-
-        <div className="player-record-card landing-card landing-card--record">
-          <p className="eyebrow">Your head-to-head record</p>
-          <p className="player-record-card__value">
-            {formatPlayerRecord(playerRecord)}
-            {hasFireStreak(playerRecord.winStreak) ? (
-              <WinStreakBadge winStreak={playerRecord.winStreak} />
-            ) : null}
-            {!hasFireStreak(playerRecord.winStreak) &&
-            hasLossStreakBadge(playerRecord.lossStreak) ? (
-              <LossStreakBadge lossStreak={playerRecord.lossStreak} />
-            ) : null}
-          </p>
-          <p className="player-record-card__meta">
-            {shouldShowWinPercentage(playerRecord)
-              ? `${formatWinPercentage(playerRecord)} win rate`
-              : `${playerRecord.wins + playerRecord.losses} games played`}
-          </p>
-        </div>
-      </div>
-
       <div className="landing-team-form landing-card landing-card--form">
         <label className="field">
           <span>Team city</span>
@@ -182,6 +147,25 @@ export function LandingPage({
           >
             Play Today&apos;s Daily Draft
           </button>
+        </div>
+
+        <div className="player-record-card landing-card landing-card--record landing-card--mode">
+          <p className="eyebrow">Your head-to-head record</p>
+          <p className="player-record-card__value">
+            {formatPlayerRecord(playerRecord)}
+            {hasFireStreak(playerRecord.winStreak) ? (
+              <WinStreakBadge winStreak={playerRecord.winStreak} />
+            ) : null}
+            {!hasFireStreak(playerRecord.winStreak) &&
+            hasLossStreakBadge(playerRecord.lossStreak) ? (
+              <LossStreakBadge lossStreak={playerRecord.lossStreak} />
+            ) : null}
+          </p>
+          <p className="player-record-card__meta">
+            {shouldShowWinPercentage(playerRecord)
+              ? `${formatWinPercentage(playerRecord)} win rate`
+              : `${playerRecord.wins + playerRecord.losses} games played`}
+          </p>
         </div>
 
         <div className="head-to-head-card landing-card landing-card--mode">
@@ -282,6 +266,20 @@ export function LandingPage({
         <li>Pick a game mode</li>
         <li>Draft your five and face your rival</li>
       </ol>
+
+      <div className="collection-progress-card landing-card landing-card--collection">
+        <p className="eyebrow">Your stars &amp; scrubs</p>
+        <p className="collection-progress-card__value">
+          {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
+          {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
+          Recent All-Stars • {collectionProgress.superstarUnlocked}/
+          {collectionProgress.superstarTotal} Superstars
+        </p>
+        <p className="collection-progress-card__meta">
+          {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool} Scrubs
+          unlocked • Win to unlock more Stars, lose to unlock scrubs.
+        </p>
+      </div>
 
       <p className="landing-credit">Created by BALLACADEMY</p>
     </section>
