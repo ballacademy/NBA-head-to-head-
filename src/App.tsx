@@ -54,6 +54,7 @@ function App() {
   const [opponentComplete, setOpponentComplete] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isDailyDraft, setIsDailyDraft] = useState(false);
+  const [allTimeMode, setAllTimeMode] = useState(false);
   const [dailyDateKey, setDailyDateKey] = useState(getDailyDateKey());
   const [playerRecord, setPlayerRecord] = useState(loadPlayerRecord);
   const [collection, setCollection] = useState<PlayerCollection>(() =>
@@ -65,8 +66,8 @@ function App() {
   );
 
   const activePlayers = useMemo(
-    () => getActivePlayerPool(playerRecord),
-    [playerRecord],
+    () => getActivePlayerPool(playerRecord, { allTimeMode }),
+    [allTimeMode, playerRecord],
   );
 
   const dailyChallenge = useMemo(
@@ -108,19 +109,23 @@ function App() {
     );
   }, [dailyDateKey, dailySetup, draftablePlayers]);
 
-  const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], playerRecord);
+  const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], playerRecord, {
+    allTimeMode,
+  });
   const opponentLineup = getPlayersByIdFromActivePool(
     opponent?.lineup ?? [],
     playerRecord,
+    { allTimeMode },
   );
   const userDraftComplete = draftStep >= 5;
 
   const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
     const daily = Boolean(options.isDailyDraft);
     const salaryCapMode = Boolean(options.salaryCapMode);
+    const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
     const record = loadPlayerRecord();
-    const pool = getActivePlayerPool(record);
+    const pool = getActivePlayerPool(record, { allTimeMode: nextAllTimeMode });
     const userPool = getDraftablePlayers(pool, collection);
     const nextOpponentCollection = daily ? null : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
@@ -133,12 +138,14 @@ function App() {
     saveTeamProfile(team);
     setPlayerRecord(record);
     setIsDailyDraft(daily);
+    setAllTimeMode(nextAllTimeMode);
     setDailyDateKey(dateKey);
     setUser(
       createUserDrafter(team, userSlots, {
         isDailyDraft: daily,
         dailyChallengeTitle: setup?.challenge.title,
         salaryCapMode,
+        allTimeMode: nextAllTimeMode,
       }),
     );
     setOpponent(
@@ -146,6 +153,7 @@ function App() {
         ? {
             ...createRandomOpponent(opponentSlots),
             salaryCapMode,
+            allTimeMode: nextAllTimeMode,
           }
         : null,
     );
@@ -170,6 +178,7 @@ function App() {
     setOpponentComplete(false);
     setMatchId(null);
     setIsDailyDraft(false);
+    setAllTimeMode(false);
     setPlayerRecord(loadPlayerRecord());
     setPhase("landing");
   };

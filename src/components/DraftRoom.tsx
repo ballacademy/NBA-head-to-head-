@@ -206,6 +206,13 @@ export function DraftRoom({
         </div>
       ) : null}
 
+      {drafter.allTimeMode ? (
+        <div className="all-time-banner" role="status">
+          <p className="eyebrow">All-Time Draft</p>
+          <p>Today&apos;s NBA plus any unlocked era legends are in this draft pool.</p>
+        </div>
+      ) : null}
+
       <div className="draft-page-header">
         <p className="eyebrow">
           <TeamNameWithStreak

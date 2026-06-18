@@ -3,7 +3,7 @@ import {
   getCollectionProgress,
   type PlayerCollection,
 } from "../lib/playerCollection";
-import { getEraProgress } from "../lib/eraUnlocks";
+import { getEraProgress, getUnlockedEras } from "../lib/eraUnlocks";
 import { getEraPlayerCount } from "../lib/eraPlayers";
 import {
   formatPlayerRecord,
@@ -58,6 +58,7 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const eraProgress = getEraProgress(playerRecord);
+  const unlockedEraCount = getUnlockedEras(playerRecord).length;
 
   const handleStart = (options?: StartDraftOptions) => {
     const team = normalizeTeamProfile(city, name);
@@ -148,8 +149,27 @@ export function LandingPage({
           ))}
         </ul>
         <p className="era-progress-card__meta">
-          Win head-to-head games to unlock historical player pools for future drafts.
+          Unlocked legends are only available in All-Time mode. Win head-to-head
+          games to expand the historical pool.
         </p>
+      </div>
+
+      <div className="all-time-card landing-card">
+        <p className="eyebrow">All-Time</p>
+        <h2 className="all-time-card__title">All-Time Draft</h2>
+        <p className="all-time-card__description">
+          Draft from today&apos;s NBA plus any unlocked era legends in one pool.
+          {unlockedEraCount === 0
+            ? " Win 50 head-to-head games to unlock your first legends era."
+            : ` ${unlockedEraCount} era${unlockedEraCount === 1 ? "" : "s"} currently in the pool.`}
+        </p>
+        <button
+          type="button"
+          className="secondary-button all-time-card__button"
+          onClick={() => handleStart({ allTimeMode: true })}
+        >
+          Play All-Time Draft
+        </button>
       </div>
 
       <div className="landing-team-form landing-card landing-card--form">

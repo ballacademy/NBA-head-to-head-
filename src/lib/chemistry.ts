@@ -1,69 +1,34 @@
 import type { Player } from "./types";
+import collegeTeammatesData from "../../data/college-teammates.json";
+import chemistryFamiliesData from "../../data/chemistry-families.json";
 
-export const CHEMISTRY_BONUS_PER_GROUP = 10;
+export const BROTHER_CHEMISTRY_BONUS = 5;
+export const COUSIN_CHEMISTRY_BONUS = 4;
+export const COLLEGE_TEAMMATE_BONUS_TWO = 4;
+export const COLLEGE_TEAMMATE_BONUS_THREE_PLUS = 6;
 export const SAME_TEAM_CHEMISTRY_MIN = 3;
-export const SAME_TEAM_CHEMISTRY_BONUS = 8;
-export const FULL_ROSTER_TEAM_BONUS = 12;
+export const SAME_TEAM_CHEMISTRY_BONUS = 5;
+export const FULL_ROSTER_TEAM_BONUS = 8;
 
-export type ChemistryGroupKind = "college" | "brothers";
-
-export interface ChemistryGroup {
+interface FamilyGroup {
   id: string;
   title: string;
   description: string;
-  kind: ChemistryGroupKind;
   bbrPlayerIds: string[];
-  minCount: number;
-  bonus: number;
 }
 
-export const CHEMISTRY_GROUPS: ChemistryGroup[] = [
-  {
-    id: "nova-knicks",
-    title: "Nova Knicks",
-    description: "Villanova teammates now running New York.",
-    kind: "college",
-    bbrPlayerIds: ["brunsja01", "hartjo01", "divindo01"],
-    minCount: 3,
-    bonus: CHEMISTRY_BONUS_PER_GROUP,
-  },
-  {
-    id: "holiday-brothers",
-    title: "Holiday Brothers",
-    description: "Jrue and Aaron Holiday on the same roster.",
-    kind: "brothers",
-    bbrPlayerIds: ["holidjr01", "holidaa01"],
-    minCount: 2,
-    bonus: CHEMISTRY_BONUS_PER_GROUP,
-  },
-  {
-    id: "wagner-brothers",
-    title: "Wagner Brothers",
-    description: "Franz and Moritz Wagner together.",
-    kind: "brothers",
-    bbrPlayerIds: ["wagnefr01", "wagnemo01"],
-    minCount: 2,
-    bonus: CHEMISTRY_BONUS_PER_GROUP,
-  },
-  {
-    id: "curry-brothers",
-    title: "Curry Brothers",
-    description: "Stephen and Seth Curry together.",
-    kind: "brothers",
-    bbrPlayerIds: ["curryst01", "curryse01"],
-    minCount: 2,
-    bonus: CHEMISTRY_BONUS_PER_GROUP,
-  },
-  {
-    id: "antetokounmpo-brothers",
-    title: "Alphabet Bros",
-    description: "Two or more Antetokounmpo brothers.",
-    kind: "brothers",
-    bbrPlayerIds: ["antetgi01", "antetth01", "antetko01"],
-    minCount: 2,
-    bonus: CHEMISTRY_BONUS_PER_GROUP,
-  },
-];
+interface CollegeCohort {
+  id: string;
+  college: string;
+  bbrPlayerIds: string[];
+}
+
+const FAMILY_GROUPS = chemistryFamiliesData as {
+  brothers: FamilyGroup[];
+  cousins: FamilyGroup[];
+};
+
+const COLLEGE_COHORTS = collegeTeammatesData.cohorts as CollegeCohort[];
 
 export interface ActiveChemistryBonus {
   id: string;
@@ -73,12 +38,66 @@ export interface ActiveChemistryBonus {
   matchedCount: number;
 }
 
-const countGroupMatches = (lineup: Player[], bbrPlayerIds: string[]) => {
-  const ids = new Set(
+const getLineupBbrIds = (lineup: Player[]) =>
+  new Set(
     lineup.map((player) => player.bbrPlayerId).filter(Boolean) as string[],
   );
 
-  return bbrPlayerIds.filter((id) => ids.has(id)).length;
+const countGroupMatches = (lineupBbrIds: Set<string>, bbrPlayerIds: string[]) =>
+  bbrPlayerIds.filter((id) => lineupBbrIds.has(id)).length;
+
+const getFamilyBonuses = (
+  lineup: Player[],
+  groups: FamilyGroup[],
+  bonus: number,
+  kind: "brothers" | "cousins",
+): ActiveChemistryBonus[] =>
+  groups.flatMap((group) => {
+    const matchedCount = countGroupMatches(
+      getLineupBbrIds(lineup),
+      group.bbrPlayerIds,
+    );
+
+    if (matchedCount < 2) {
+      return [];
+    }
+
+    return [
+      {
+        id: `${kind}-${group.id}`,
+        title: group.title,
+        description: group.description,
+        bonus,
+        matchedCount,
+      },
+    ];
+  });
+
+const getCollegeTeammateBonuses = (lineup: Player[]): ActiveChemistryBonus[] => {
+  const lineupBbrIds = getLineupBbrIds(lineup);
+
+  return COLLEGE_COHORTS.flatMap((cohort) => {
+    const matchedCount = countGroupMatches(lineupBbrIds, cohort.bbrPlayerIds);
+
+    if (matchedCount < 2) {
+      return [];
+    }
+
+    const bonus =
+      matchedCount >= 3
+        ? COLLEGE_TEAMMATE_BONUS_THREE_PLUS
+        : COLLEGE_TEAMMATE_BONUS_TWO;
+
+    return [
+      {
+        id: `college-${cohort.id}`,
+        title: "College Teammates",
+        description: `${matchedCount} former ${cohort.college} teammates on the roster.`,
+        bonus,
+        matchedCount,
+      },
+    ];
+  });
 };
 
 const getSameTeamBonuses = (lineup: Player[]): ActiveChemistryBonus[] => {
@@ -123,25 +142,22 @@ export const getActiveChemistryBonuses = (
     return [];
   }
 
-  const groupBonuses = CHEMISTRY_GROUPS.flatMap((group) => {
-    const matchedCount = countGroupMatches(lineup, group.bbrPlayerIds);
-
-    if (matchedCount < group.minCount) {
-      return [];
-    }
-
-    return [
-      {
-        id: group.id,
-        title: group.title,
-        description: group.description,
-        bonus: group.bonus,
-        matchedCount,
-      },
-    ];
-  });
-
-  return [...groupBonuses, ...getSameTeamBonuses(lineup)];
+  return [
+    ...getFamilyBonuses(
+      lineup,
+      FAMILY_GROUPS.brothers,
+      BROTHER_CHEMISTRY_BONUS,
+      "brothers",
+    ),
+    ...getFamilyBonuses(
+      lineup,
+      FAMILY_GROUPS.cousins,
+      COUSIN_CHEMISTRY_BONUS,
+      "cousins",
+    ),
+    ...getCollegeTeammateBonuses(lineup),
+    ...getSameTeamBonuses(lineup),
+  ];
 };
 
 export const getChemistryAdjustment = (lineup: Player[]) =>

@@ -1,0 +1,102 @@
+{
+  "brothers": [
+    {
+      "id": "holiday-brothers",
+      "title": "Holiday Brothers",
+      "description": "Jrue and Aaron Holiday.",
+      "bbrPlayerIds": ["holidjr01", "holidaa01"]
+    },
+    {
+      "id": "wagner-brothers",
+      "title": "Wagner Brothers",
+      "description": "Franz and Moritz Wagner.",
+      "bbrPlayerIds": ["wagnefr01", "wagnemo01"]
+    },
+    {
+      "id": "curry-brothers",
+      "title": "Curry Brothers",
+      "description": "Stephen and Seth Curry.",
+      "bbrPlayerIds": ["curryst01", "curryse01"]
+    },
+    {
+      "id": "antetokounmpo-brothers",
+      "title": "Antetokounmpo Brothers",
+      "description": "Giannis, Thanasis, and Alex Antetokounmpo.",
+      "bbrPlayerIds": ["antetgi01", "antetth01", "antetal01"]
+    },
+    {
+      "id": "thompson-brothers",
+      "title": "Thompson Twins",
+      "description": "Amen and Ausar Thompson.",
+      "bbrPlayerIds": ["thompam01", "thompau01"]
+    },
+    {
+      "id": "murray-brothers",
+      "title": "Murray Twins",
+      "description": "Keegan and Kris Murray.",
+      "bbrPlayerIds": ["murrake02", "murrakr01"]
+    },
+    {
+      "id": "martin-brothers",
+      "title": "Martin Brothers",
+      "description": "Caleb and Cody Martin.",
+      "bbrPlayerIds": ["martica02", "martico01"]
+    },
+    {
+      "id": "jones-brothers",
+      "title": "Jones Brothers",
+      "description": "Tyus and Tre Jones.",
+      "bbrPlayerIds": ["jonesty01", "jonestr01"]
+    },
+    {
+      "id": "williams-brothers",
+      "title": "Williams Brothers",
+      "description": "Jalen and Cody Williams.",
+      "bbrPlayerIds": ["willija06", "willico04"]
+    },
+    {
+      "id": "ball-brothers",
+      "title": "Ball Brothers",
+      "description": "Lonzo and LaMelo Ball.",
+      "bbrPlayerIds": ["balllo01", "ballla01"]
+    },
+    {
+      "id": "harper-brothers",
+      "title": "Harper Brothers",
+      "description": "Ron Harper Jr. and Dylan Harper.",
+      "bbrPlayerIds": ["harpero02", "harpedy01"]
+    },
+    {
+      "id": "champagnie-brothers",
+      "title": "Champagnie Brothers",
+      "description": "Julian and Justin Champagnie.",
+      "bbrPlayerIds": ["champju02", "champju01"]
+    },
+    {
+      "id": "toppin-brothers",
+      "title": "Toppin Brothers",
+      "description": "Obi and Jacob Toppin.",
+      "bbrPlayerIds": ["toppiob01", "toppija01"]
+    },
+    {
+      "id": "wallace-brothers",
+      "title": "Wallace Brothers",
+      "description": "Cason and Keaton Wallace.",
+      "bbrPlayerIds": ["wallaca01", "wallake01"]
+    },
+    {
+      "id": "christie-brothers",
+      "title": "Christie Brothers",
+      "description": "Max and Cam Christie.",
+      "bbrPlayerIds": ["chrisma02", "chrisca02"]
+    }
+  ],
+  "cousins": [
+    {
+      "id": "sga-naw-cousins",
+      "title": "Canadian Cousins",
+      "description": "Shai Gilgeous-Alexander and Nickeil Alexander-Walker.",
+      "bbrPlayerIds": ["gilgesh01", "alexani01"]
+    }
+  ]
+}

@@ -4,9 +4,18 @@ import { players, playersById } from "./playerPool";
 import type { PlayerRecord } from "./playerRecord";
 import type { Player } from "./types";
 
+export interface PlayerPoolOptions {
+  allTimeMode?: boolean;
+}
+
 export const getActivePlayerPool = (
   record: Pick<PlayerRecord, "wins">,
+  options: PlayerPoolOptions = {},
 ): Player[] => {
+  if (!options.allTimeMode) {
+    return players;
+  }
+
   const eraPlayers = getEraPlayerPool(getUnlockedEras(record));
   const currentIds = new Set(players.map((player) => player.id));
   const uniqueEraPlayers = eraPlayers.filter((player) => !currentIds.has(player.id));
@@ -14,23 +23,28 @@ export const getActivePlayerPool = (
   return [...players, ...uniqueEraPlayers];
 };
 
-export const getActivePlayersById = (record: Pick<PlayerRecord, "wins">) => {
-  const pool = getActivePlayerPool(record);
+export const getActivePlayersById = (
+  record: Pick<PlayerRecord, "wins">,
+  options: PlayerPoolOptions = {},
+) => {
+  const pool = getActivePlayerPool(record, options);
   return new Map(pool.map((player) => [player.id, player]));
 };
 
 export const getPlayerFromActivePool = (
   playerId: string,
   record: Pick<PlayerRecord, "wins">,
+  options: PlayerPoolOptions = {},
 ) => {
-  const activeById = getActivePlayersById(record);
+  const activeById = getActivePlayersById(record, options);
   return activeById.get(playerId) ?? playersById.get(playerId);
 };
 
 export const getPlayersByIdFromActivePool = (
   playerIds: string[],
   record: Pick<PlayerRecord, "wins">,
+  options: PlayerPoolOptions = {},
 ) =>
   playerIds
-    .map((id) => getPlayerFromActivePool(id, record))
+    .map((id) => getPlayerFromActivePool(id, record, options))
     .filter((player): player is Player => Boolean(player));

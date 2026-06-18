@@ -1,0 +1,19 @@
+{
+  "cohorts": [
+    {
+      "id": "villanova-2015s",
+      "college": "Villanova",
+      "bbrPlayerIds": ["brunsja01", "hartjo01", "divindo01"]
+    },
+    {
+      "id": "duke-2018-19",
+      "college": "Duke",
+      "bbrPlayerIds": ["willizi01", "barrerj01"]
+    },
+    {
+      "id": "gonzaga-2020-21",
+      "college": "Gonzaga",
+      "bbrPlayerIds": ["suggsja01", "kispeco01", "holmgch01"]
+    }
+  ]
+}

@@ -64,6 +64,7 @@ export interface Drafter {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
+  allTimeMode?: boolean;
 }
 
 export interface ScoreCategory {

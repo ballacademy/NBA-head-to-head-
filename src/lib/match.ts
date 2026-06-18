@@ -12,6 +12,7 @@ export interface StartDraftOptions {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
+  allTimeMode?: boolean;
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
@@ -32,6 +33,7 @@ export const createUserDrafter = (
   isDailyDraft: Boolean(options.isDailyDraft),
   dailyChallengeTitle: options.dailyChallengeTitle,
   salaryCapMode: Boolean(options.salaryCapMode),
+  allTimeMode: Boolean(options.allTimeMode),
 });
 
 export const createOpponentDraftSlots = (players: Player[]) =>
