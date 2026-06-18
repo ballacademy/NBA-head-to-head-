@@ -61,7 +61,8 @@ describe("defenseRating", () => {
     expect(gradeFromPercentile(98)).toBe("A+");
     expect(gradeFromPercentile(92)).toBe("A");
     expect(gradeFromPercentile(78)).toBe("B+");
-    expect(gradeFromPercentile(10)).toBe("F");
+    expect(gradeFromPercentile(10)).toBe("D-");
+    expect(gradeFromPercentile(3)).toBe("F");
   });
 
   it("penalizes steal-heavy profiles without strong impact metrics", () => {
@@ -105,13 +106,15 @@ describe("defenseRating", () => {
     expect(eliteDefenders.length).toBeGreaterThanOrEqual(20);
   });
 
-  it("applies requested player overrides", () => {
+  it("applies user-provided defensive grade overrides", () => {
     const chet = players.find((player) => player.name === "Chet Holmgren");
     const giannis = players.find((player) => player.name === "Giannis Antetokounmpo");
     const edwards = players.find((player) => player.name === "Anthony Edwards");
+    const herbJones = players.find((player) => player.name === "Herbert Jones");
 
-    expect(chet?.defenseGrade).toBe("A");
-    expect(giannis?.defenseGrade).toBe("A-");
+    expect(chet?.defenseGrade).toBe("A+");
+    expect(giannis?.defenseGrade).toBe("A");
     expect(edwards?.defenseGrade).toBe("B");
+    expect(herbJones?.defenseGrade).toBe("A+");
   });
 });

@@ -1,3 +1,4 @@
+import defensiveGradeOverridesData from "../../data/defensive-grade-overrides.json";
 import {
   hasAllDefenseAccolade,
 } from "./allDefense";
@@ -14,6 +15,7 @@ export type DefenseGrade =
   | "C-"
   | "D+"
   | "D"
+  | "D-"
   | "F";
 
 export interface DefensiveStatInput {
@@ -58,13 +60,13 @@ const gradeThresholds: Array<{ min: number; grade: DefenseGrade }> = [
   { min: 29, grade: "C-" },
   { min: 20, grade: "D+" },
   { min: 12, grade: "D" },
+  { min: 6, grade: "D-" },
 ];
 
-const DEFENSE_GRADE_OVERRIDES: Record<string, DefenseGrade> = {
-  holmgch01: "A",
-  antetgi01: "A-",
-  edwaran01: "B",
-};
+const DEFENSE_GRADE_OVERRIDES = defensiveGradeOverridesData.overrides as Record<
+  string,
+  DefenseGrade
+>;
 
 const GENEROSITY_BOOST = 3;
 const GENEROSITY_MULTIPLIER = 1.03;
@@ -81,7 +83,8 @@ const gradeRank: Record<DefenseGrade, number> = {
   "C-": 4,
   "D+": 3,
   D: 2,
-  F: 1,
+  "D-": 1,
+  F: 0,
 };
 
 const clamp = (value: number, min: number, max: number) =>
