@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ScoreBoard } from "./ScoreBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
@@ -8,7 +8,6 @@ import {
 } from "../lib/playerRecord";
 import {
   completeUnlock,
-  ensurePlayerCollection,
   grantLossUnlock,
   grantWinUnlock,
   type PlayerCollection,
@@ -39,6 +38,9 @@ export function MatchResults({
   onPlayAgain,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
+  const [matchCollection, setMatchCollection] =
+    useState<PlayerCollection>(collection);
+  const [actionsReady, setActionsReady] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
@@ -48,7 +50,7 @@ export function MatchResults({
     [userWon],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (recordedRef.current) {
       return;
     }
@@ -56,37 +58,38 @@ export function MatchResults({
     recordedRef.current = true;
     persistMatchOutcome(userWon, { city: user.city, name: user.name }, matchId);
 
-    if (userWon) {
-      onCollectionChange(grantWinUnlock(matchId, ensurePlayerCollection()));
-      return;
-    }
+    const next = userWon
+      ? grantWinUnlock(matchId, collection)
+      : grantLossUnlock(matchId, collection);
 
-    onCollectionChange(grantLossUnlock(matchId, ensurePlayerCollection()));
-  }, [matchId, onCollectionChange, user.city, user.name, userWon]);
+    setMatchCollection(next);
+    onCollectionChange(next);
+    setActionsReady(true);
+
+    if (next.pendingUnlock) {
+      setShowUnlockModal(true);
+    }
+  }, [collection, matchId, onCollectionChange, user.city, user.name, userWon]);
 
   const handleUnlockSelect = (playerId: string) => {
-    onCollectionChange(completeUnlock(playerId, ensurePlayerCollection()));
+    const next = completeUnlock(playerId, matchCollection);
+    setMatchCollection(next);
+    onCollectionChange(next);
     setShowUnlockModal(false);
   };
 
-  const hasPendingUnlock = Boolean(collection.pendingUnlock);
-
-  useEffect(() => {
-    if (hasPendingUnlock) {
-      setShowUnlockModal(true);
-    }
-  }, [hasPendingUnlock]);
+  const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
 
   const unlockButtonLabel =
-    collection.pendingUnlock?.kind === "loss"
+    matchCollection.pendingUnlock?.kind === "loss"
       ? "New scrub unlocked — click to choose"
       : "New star unlocked — click to choose";
 
   return (
     <section className="match-results">
-      {showUnlockModal && collection.pendingUnlock ? (
+      {showUnlockModal && matchCollection.pendingUnlock ? (
         <PlayerUnlockModal
-          offer={collection.pendingUnlock}
+          offer={matchCollection.pendingUnlock}
           onSelect={handleUnlockSelect}
         />
       ) : null}
@@ -104,31 +107,33 @@ export function MatchResults({
           Your head-to-head record: {formatPlayerRecord(updatedRecord)}
         </p>
 
-        {hasPendingUnlock ? (
-          <button
-            type="button"
-            className={`unlock-reward-button${
-              collection.pendingUnlock!.kind === "loss"
-                ? " unlock-reward-button--loss"
-                : ""
-            }`}
-            onClick={() => setShowUnlockModal(true)}
-          >
-            {unlockButtonLabel}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="play-again-button"
-            onClick={onPlayAgain}
-          >
-            Draft another team
-          </button>
-        )}
-        {hasPendingUnlock ? (
-          <p className="match-results__unlock-note">
-            Choose your unlocked player before drafting again.
-          </p>
+        {actionsReady ? (
+          hasPendingUnlock ? (
+            <>
+              <button
+                type="button"
+                className={`unlock-reward-button${
+                  matchCollection.pendingUnlock!.kind === "loss"
+                    ? " unlock-reward-button--loss"
+                    : ""
+                }`}
+                onClick={() => setShowUnlockModal(true)}
+              >
+                {unlockButtonLabel}
+              </button>
+              <p className="match-results__unlock-note">
+                Choose your unlocked player before drafting again.
+              </p>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="play-again-button"
+              onClick={onPlayAgain}
+            >
+              Draft another team
+            </button>
+          )
         ) : null}
       </div>
 
