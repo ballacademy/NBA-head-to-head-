@@ -261,12 +261,6 @@ export function LandingPage({
         </button>
       </div>
 
-      <ol className="landing-steps">
-        <li>Name your team</li>
-        <li>Pick a game mode</li>
-        <li>Draft your five and face your rival</li>
-      </ol>
-
       <div className="collection-progress-card landing-card landing-card--collection">
         <p className="eyebrow">Your stars &amp; scrubs</p>
         <p className="collection-progress-card__value">
