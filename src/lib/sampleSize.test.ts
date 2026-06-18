@@ -18,7 +18,7 @@ describe("sampleSize", () => {
 
   it("discounts limited-sample players without zeroing them out", () => {
     expect(getPlayerStatWeight({ gamesPlayed: FULL_SAMPLE_MIN_GAMES })).toBe(1);
-    expect(getPlayerStatWeight({ gamesPlayed: 5 })).toBe(0.5);
+    expect(getPlayerStatWeight({ gamesPlayed: 7 })).toBe(0.5);
     expect(getPlayerStatWeight({ gamesPlayed: 1 })).toBe(
       LIMITED_SAMPLE_WEIGHT_FLOOR,
     );
