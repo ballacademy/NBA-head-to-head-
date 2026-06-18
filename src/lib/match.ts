@@ -11,6 +11,7 @@ import type { Player } from "./types";
 export interface StartDraftOptions {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
+  salaryCapMode?: boolean;
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
@@ -30,6 +31,7 @@ export const createUserDrafter = (
   lineup: [],
   isDailyDraft: Boolean(options.isDailyDraft),
   dailyChallengeTitle: options.dailyChallengeTitle,
+  salaryCapMode: Boolean(options.salaryCapMode),
 });
 
 export const createOpponentDraftSlots = (players: Player[]) =>

@@ -45,6 +45,8 @@ export interface Player {
   gamesPlayed: number;
   age?: number;
   styles: PlayStyle[];
+  era?: "2010s" | "1990s";
+  salary?: number;
 }
 
 export interface DraftSlotConstraint {
@@ -61,6 +63,7 @@ export interface Drafter {
   draftSlots: DraftSlotConstraint[];
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
+  salaryCapMode?: boolean;
 }
 
 export interface ScoreCategory {

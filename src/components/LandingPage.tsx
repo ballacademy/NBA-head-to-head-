@@ -3,12 +3,15 @@ import {
   getCollectionProgress,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { getEraProgress } from "../lib/eraUnlocks";
+import { getEraPlayerCount } from "../lib/eraPlayers";
 import {
   formatPlayerRecord,
   formatWinPercentage,
-  loadPlayerRecord,
   shouldShowWinPercentage,
+  type PlayerRecord,
 } from "../lib/playerRecord";
+import { RANKED_SALARY_CAP } from "../lib/salaryCap";
 import {
   loadTeamProfile,
   normalizeTeamProfile,
@@ -24,6 +27,7 @@ import type { StartDraftOptions } from "../lib/match";
 interface LandingPageProps {
   collection: PlayerCollection;
   dailyChallenge: DailyDraftChallenge;
+  playerRecord: PlayerRecord;
   onStartDraft: (team: TeamProfile, options?: StartDraftOptions) => void;
   onViewStats: () => void;
   onViewAchievements: () => void;
@@ -33,6 +37,7 @@ interface LandingPageProps {
 export function LandingPage({
   collection,
   dailyChallenge,
+  playerRecord,
   onStartDraft,
   onViewStats,
   onViewAchievements,
@@ -41,7 +46,6 @@ export function LandingPage({
   const [city, setCity] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [playerRecord, setPlayerRecord] = useState(loadPlayerRecord);
 
   useEffect(() => {
     const savedTeam = loadTeamProfile();
@@ -50,11 +54,10 @@ export function LandingPage({
       setCity(savedTeam.city);
       setName(savedTeam.name);
     }
-
-    setPlayerRecord(loadPlayerRecord());
   }, []);
 
   const collectionProgress = getCollectionProgress(collection);
+  const eraProgress = getEraProgress(playerRecord);
 
   const handleStart = (options?: StartDraftOptions) => {
     const team = normalizeTeamProfile(city, name);
@@ -75,8 +78,8 @@ export function LandingPage({
       <p className="eyebrow landing__eyebrow">NBA Head-to-Head</p>
       <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
-        Chase today&apos;s stat challenge or draft head-to-head against a random
-        rival from around the world.
+        Chase today&apos;s stat challenge, build chemistry in ranked cap mode, or
+        draft head-to-head against a random rival.
       </p>
 
       <div className="daily-draft-card landing-card landing-card--daily">
@@ -130,6 +133,25 @@ export function LandingPage({
         </div>
       </div>
 
+      <div className="era-progress-card landing-card">
+        <p className="eyebrow">Eras &amp; Legends</p>
+        <ul className="era-progress-card__list">
+          {eraProgress.map((era) => (
+            <li key={era.id}>
+              <strong>{era.title}</strong>
+              <span>
+                {era.isUnlocked
+                  ? `${getEraPlayerCount(era.id)} legends unlocked`
+                  : `${era.winsRemaining} wins to unlock`}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="era-progress-card__meta">
+          Win head-to-head games to unlock historical player pools for future drafts.
+        </p>
+      </div>
+
       <div className="landing-team-form landing-card landing-card--form">
         <label className="field">
           <span>Team city</span>
@@ -173,8 +195,8 @@ export function LandingPage({
         <p className="eyebrow">Head-to-Head</p>
         <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
         <p className="head-to-head-card__description">
-          Draft a five-player lineup and face a random rival. Your lineup is
-          graded on OVR and projected record, with unlocks after every matchup.
+          Draft a five-player lineup and face a random rival. Chemistry bonuses
+          reward real-world connections like college teammates and brothers.
         </p>
         <button
           type="button"
@@ -182,6 +204,22 @@ export function LandingPage({
           onClick={() => handleStart()}
         >
           Compete Head-to-Head
+        </button>
+      </div>
+
+      <div className="ranked-cap-card landing-card">
+        <p className="eyebrow">Ranked</p>
+        <h2 className="ranked-cap-card__title">Salary Cap Mode</h2>
+        <p className="ranked-cap-card__description">
+          Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap. Stack
+          stars and you&apos;ll need minimum-contract scrubs to finish your five.
+        </p>
+        <button
+          type="button"
+          className="secondary-button ranked-cap-card__button"
+          onClick={() => handleStart({ salaryCapMode: true })}
+        >
+          Play Ranked (Salary Cap)
         </button>
       </div>
 
@@ -199,8 +237,8 @@ export function LandingPage({
 
       <ol className="landing-steps">
         <li>Name your team</li>
-        <li>Pick Daily Draft or Head-to-Head</li>
-        <li>Draft your five and see how you stack up</li>
+        <li>Pick Daily Draft, Ranked, or Head-to-Head</li>
+        <li>Draft your five and stack chemistry bonuses</li>
       </ol>
 
       <p className="landing-credit">Created by BALLACADEMY</p>

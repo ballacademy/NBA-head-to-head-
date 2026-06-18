@@ -9,11 +9,11 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
-  it("defines 52 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(52);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(52);
+  it("defines 51 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(51);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(51);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      52,
+      51,
     );
   });
 
@@ -42,16 +42,22 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lowShooting)).toContain("brick-city");
   });
 
-  it("detects five true centers and five forwards lineups", () => {
-    const centers = players.filter((player) => player.position === "C").slice(0, 5);
+  it("detects oops all forwards lineups", () => {
     const forwards = players
       .filter((player) => player.position === "SF" || player.position === "PF")
       .slice(0, 5);
 
-    expect(centers.length).toBe(5);
     expect(forwards.length).toBe(5);
-    expect(checkLineupAchievements(centers)).toContain("five-true-centers");
     expect(checkLineupAchievements(forwards)).toContain("oops-all-forwards");
+  });
+
+  it("masks locked badge details", () => {
+    const progress = getAchievementProgress({ unlocked: [] });
+    const locked = progress.achievements[0];
+
+    expect(locked?.title).toBe("????");
+    expect(locked?.description).toBe("????");
+    expect(locked?.emoji).toBe("❓");
   });
 
   it("detects curry kitchen when both Currys are drafted", () => {
@@ -99,7 +105,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(52);
+    expect(progress.total).toBe(51);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

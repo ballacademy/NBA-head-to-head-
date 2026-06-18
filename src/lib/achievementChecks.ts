@@ -73,13 +73,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
       ),
   },
   {
-    id: "five-true-centers",
-    title: "Five on the Floor",
-    description: "Draft five centers.",
-    emoji: "⭕",
-    check: (lineup) => lineup.every((player) => player.position === "C"),
-  },
-  {
     id: "oops-all-forwards",
     title: "Oops, All Forwards",
     description: "Draft five small forwards or power forwards.",

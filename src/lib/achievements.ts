@@ -86,9 +86,16 @@ export const getAchievementProgress = (state = loadAchievementState()) => {
   return {
     unlocked: state.unlocked.length,
     total: ACHIEVEMENTS.length,
-    achievements: ACHIEVEMENTS.map((achievement) => ({
-      ...achievement,
-      isUnlocked: unlocked.has(achievement.id),
-    })),
+    achievements: ACHIEVEMENTS.map((achievement) => {
+      const isUnlocked = unlocked.has(achievement.id);
+
+      return {
+        ...achievement,
+        isUnlocked,
+        title: isUnlocked ? achievement.title : "????",
+        description: isUnlocked ? achievement.description : "????",
+        emoji: isUnlocked ? achievement.emoji : "❓",
+      };
+    }),
   };
 };

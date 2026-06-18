@@ -19,7 +19,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             daily draft lineups.
           </p>
           <p className="achievements-page__progress">
-            {progress.unlocked}/{progress.total} unlocked
+            {progress.unlocked}/{progress.total} unlocked • Locked badges show as ????
           </p>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>
@@ -33,7 +33,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             key={achievement.id}
             className={`achievements-page__item${
               achievement.isUnlocked ? " achievements-page__item--unlocked" : ""
-            }`}
+            }${achievement.isUnlocked ? "" : " achievements-page__item--masked"}`}
           >
             <span className="achievements-page__emoji" aria-hidden="true">
               {achievement.emoji}

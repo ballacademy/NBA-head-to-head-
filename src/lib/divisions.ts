@@ -4,7 +4,7 @@ const divisionTeams: Record<Division, readonly string[]> = {
   Atlantic: ["BOS", "BRK", "BKN", "NYK", "PHI", "TOR"],
   Central: ["CHI", "CLE", "DET", "IND", "MIL"],
   Southeast: ["ATL", "CHA", "CHO", "MIA", "ORL", "WAS"],
-  Northwest: ["DEN", "MIN", "OKC", "POR", "UTA"],
+  Northwest: ["DEN", "MIN", "OKC", "POR", "SEA", "UTA"],
   Pacific: ["GSW", "LAC", "LAL", "PHO", "PHX", "SAC"],
   Southwest: ["DAL", "HOU", "MEM", "NOP", "NO", "SAS", "SA"],
 };

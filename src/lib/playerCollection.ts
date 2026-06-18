@@ -22,6 +22,7 @@ import {
   isSuperScrubPlayer,
   SCRUB_POOL_SIZE,
 } from "./playerTiers";
+import { isEraPlayer } from "./eraUnlocks";
 import type { Player } from "./types";
 
 const COLLECTION_KEY = "nba-head-to-head-player-collection";
@@ -165,7 +166,10 @@ export const getDraftablePlayers = (
   const unlocked = new Set(collection.unlockedIds);
 
   return pool.filter(
-    (player) => isRegularDraftPlayer(player) || unlocked.has(player.id),
+    (player) =>
+      isEraPlayer(player) ||
+      isRegularDraftPlayer(player) ||
+      unlocked.has(player.id),
   );
 };
 

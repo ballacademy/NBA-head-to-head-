@@ -1,4 +1,5 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
+import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
 import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import { getPlayerStatWeight } from "./sampleSize";
@@ -80,6 +81,7 @@ export {
   getScrubTierLineupPenalty,
   getStarTierLineupBonus,
 } from "./lineupMatchupBonus";
+export { getActiveChemistryBonuses, getChemistryAdjustment } from "./chemistry";
 
 const buildLineupWeights = (lineup: Player[]) => {
   const weights = lineup.map((player) => getPlayerStatWeight(player));
@@ -287,6 +289,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     warnings.push("Positional overlap makes matchups harder to cover.");
   }
 
+  const chemistryBonuses = getActiveChemistryBonuses(lineup);
+
+  for (const bonus of chemistryBonuses) {
+    strengths.push(`${bonus.title}: ${bonus.description}`);
+  }
+
   const statRawTotal = round(
     categories.reduce((sum, category) => sum + category.value, 0),
   );
@@ -322,7 +330,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   const rawTotal =
     statRawTotal +
     getLineupTierAdjustment(lineup) +
-    getImpactRankingAdjustment(lineup);
+    getImpactRankingAdjustment(lineup) +
+    getChemistryAdjustment(lineup);
   const total = normalizeLineupTotal(rawTotal);
 
   return {

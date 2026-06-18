@@ -3,6 +3,11 @@ import type { Division } from "./types";
 import { playerMatchesPosition } from "./positions";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { DraftSlotConstraint, Player, Position } from "./types";
+import { estimatePlayerSalary } from "./salaryCap";
+
+export interface DraftFilterOptions {
+  maxAffordableSalary?: number;
+}
 
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
 const FORWARD_POSITIONS: Position[] = ["SF", "PF"];
@@ -282,13 +287,16 @@ export const filterPlayersForSlot = (
   players: Player[],
   slot: DraftSlotConstraint,
   pickedIds: Set<string>,
+  options: DraftFilterOptions = {},
 ) =>
   players.filter(
     (player) =>
       playerMatchesPosition(player, slot.position) &&
       getDivisionForTeam(player.team) === slot.division &&
       isDraftableTeam(player.team) &&
-      !pickedIds.has(player.id),
+      !pickedIds.has(player.id) &&
+      (options.maxAffordableSalary === undefined ||
+        estimatePlayerSalary(player) <= options.maxAffordableSalary),
   );
 
 export const sortDraftCandidates = (players: Player[]) =>
@@ -337,7 +345,11 @@ export const pickBestForSlot = (
   players: Player[],
   slot: DraftSlotConstraint,
   pickedIds: Set<string>,
-) => sortDraftCandidates(filterPlayersForSlot(players, slot, pickedIds))[0]?.id;
+  options: DraftFilterOptions = {},
+) =>
+  sortDraftCandidates(
+    filterPlayersForSlot(players, slot, pickedIds, options),
+  )[0]?.id;
 
 export const autoDraftLineupWithVariance = (
   players: Player[],

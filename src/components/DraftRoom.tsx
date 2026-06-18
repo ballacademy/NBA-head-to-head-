@@ -8,8 +8,16 @@ import {
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
-import { formatPlayerPositions, playersById } from "../lib/playerPool";
+import { formatPlayerPositions } from "../lib/playerPool";
 import { loadPlayerRecord } from "../lib/playerRecord";
+import {
+  estimatePlayerSalary,
+  formatSalary,
+  getLineupSalaryTotal,
+  getRemainingSalaryCap,
+  RANKED_SALARY_CAP,
+} from "../lib/salaryCap";
+import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
 import type { Drafter, Player } from "../lib/types";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
@@ -42,6 +50,35 @@ export function DraftRoom({
 
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord();
+  const playersById = useMemo(
+    () => new Map(players.map((player) => [player.id, player])),
+    [players],
+  );
+  const pickedLineup = useMemo(
+    () =>
+      drafter.lineup
+        .map((playerId) => (playerId ? playersById.get(playerId) : undefined))
+        .filter((player): player is Player => Boolean(player)),
+    [drafter.lineup, playersById],
+  );
+  const salaryCapMode = Boolean(drafter.salaryCapMode);
+  const salaryCapOptions = useMemo(
+    () =>
+      getSalaryCapDraftOptions(
+        drafter.lineup,
+        players,
+        activeStep,
+        drafter.draftSlots.length,
+        salaryCapMode,
+      ),
+    [
+      activeStep,
+      drafter.draftSlots.length,
+      drafter.lineup,
+      players,
+      salaryCapMode,
+    ],
+  );
   const pickedIds = useMemo(
     () =>
       new Set(
@@ -87,7 +124,7 @@ export function DraftRoom({
 
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = sortDraftCandidates(
-      filterPlayersForSlot(players, currentSlot, pickedIds),
+      filterPlayersForSlot(players, currentSlot, pickedIds, salaryCapOptions),
     );
 
     if (!normalizedQuery) {
@@ -97,7 +134,7 @@ export function DraftRoom({
     return filtered.filter((player) =>
       `${player.name} ${player.team}`.toLowerCase().includes(normalizedQuery),
     );
-  }, [currentSlot, pickedIds, players, query]);
+  }, [currentSlot, pickedIds, players, query, salaryCapOptions]);
 
   useEffect(() => {
     setQuery("");
@@ -154,6 +191,17 @@ export function DraftRoom({
           ) : null}
           <p className="daily-draft-banner__note">
             Player stats are hidden. Draft from memory.
+          </p>
+        </div>
+      ) : null}
+
+      {salaryCapMode ? (
+        <div className="salary-cap-banner" role="status">
+          <p className="eyebrow">Ranked Salary Cap</p>
+          <p>
+            {formatSalary(getLineupSalaryTotal(pickedLineup))} spent •{" "}
+            {formatSalary(getRemainingSalaryCap(pickedLineup))} remaining of{" "}
+            {formatSalary(RANKED_SALARY_CAP)}
           </p>
         </div>
       ) : null}
@@ -283,6 +331,9 @@ export function DraftRoom({
                   </div>
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
+                    {salaryCapMode
+                      ? ` • ${formatSalary(estimatePlayerSalary(player))}`
+                      : ""}
                   </span>
                   {!isDailyDraft ? <PlayerDraftStats player={player} /> : null}
                 </div>
