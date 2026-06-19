@@ -399,6 +399,9 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
   const unlockedScrubs = collection.unlockedIds.filter((playerId) =>
     isScrubPlayer({ id: playerId }),
   ).length;
+  const unlockedSuperScrubs = collection.unlockedIds.filter((playerId) =>
+    isSuperScrubPlayer({ id: playerId }),
+  ).length;
   const unlockedSuperstars = collection.unlockedIds.filter((playerId) => {
     const player = getPlayerById(playerId);
     return Boolean(player && isSuperstarPlayer(player));
@@ -421,5 +424,6 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     scrubPool: SCRUB_POOL_SIZE,
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,
+    unlockedSuperScrubs,
   };
 };

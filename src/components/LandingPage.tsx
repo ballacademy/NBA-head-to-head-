@@ -270,15 +270,33 @@ export function LandingPage({
         <p className="eyebrow">Your stars &amp; scrubs</p>
         <div className="collection-progress-card__split">
           <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">Stars</span>
+            <span className="collection-progress-card__label">All-Stars</span>
             <span className="collection-progress-card__value">
-              {collectionProgress.starsUnlocked}/{collectionProgress.starPool}
+              {collectionProgress.unlocked}/{collectionProgress.total}
             </span>
           </div>
-          <div className="collection-progress-card__column collection-progress-card__column--scrubs">
+          <div className="collection-progress-card__column">
+            <span className="collection-progress-card__label">Superstars</span>
+            <span className="collection-progress-card__value collection-progress-card__value--superstar">
+              {collectionProgress.superstarUnlocked}/{collectionProgress.superstarTotal}
+            </span>
+          </div>
+          <div className="collection-progress-card__column">
+            <span className="collection-progress-card__label">Recent All-Stars</span>
+            <span className="collection-progress-card__value collection-progress-card__value--recent">
+              {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}
+            </span>
+          </div>
+          <div className="collection-progress-card__column">
             <span className="collection-progress-card__label">Scrubs</span>
             <span className="collection-progress-card__value collection-progress-card__value--scrubs">
               {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
+            </span>
+          </div>
+          <div className="collection-progress-card__column">
+            <span className="collection-progress-card__label">Super Scrubs</span>
+            <span className="collection-progress-card__value collection-progress-card__value--super-scrubs">
+              {collectionProgress.unlockedSuperScrubs}/{collectionProgress.superScrubPool}
             </span>
           </div>
         </div>

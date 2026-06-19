@@ -549,38 +549,58 @@ main {
 
 .collection-progress-card__split {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 8px;
 }
 
 .collection-progress-card__column {
   display: grid;
   gap: 6px;
-}
-
-.collection-progress-card__column--scrubs {
-  text-align: right;
+  min-width: 0;
 }
 
 .collection-progress-card__label {
   color: #94a3b8;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  line-height: 1.25;
 }
 
 .collection-progress-card__value {
   margin: 0;
-  font-size: 2rem;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #fde68a;
 }
 
+.collection-progress-card__value--superstar {
+  color: #c4b5fd;
+}
+
+.collection-progress-card__value--recent {
+  color: #93c5fd;
+}
+
 .collection-progress-card__value--scrubs {
   color: #fca5a5;
+}
+
+.collection-progress-card__value--super-scrubs {
+  color: #f87171;
+}
+
+@media (max-width: 720px) {
+  .collection-progress-card__split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collection-progress-card__column:last-child {
+    grid-column: span 2;
+  }
 }
 
 .collection-progress-card__meta {
