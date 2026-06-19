@@ -421,11 +421,11 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "point-center",
     title: "Point Center",
-    description: "Draft a center averaging 4+ assists.",
+    description: "Draft a center averaging 8+ assists.",
     emoji: "🪄",
     check: (lineup) =>
       lineup.some(
-        (player) => player.position === "C" && player.assists >= 4,
+        (player) => player.position === "C" && player.assists >= 8,
       ),
   },
   {
