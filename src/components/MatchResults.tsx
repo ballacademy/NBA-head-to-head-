@@ -101,6 +101,7 @@ export function MatchResults({
       accent: user.accent,
       ovr: userScore.total,
       lineup: userLineup,
+      record: formatPlayerRecord(updatedRecord),
     });
   };
 

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
+import { copyToClipboard } from "../lib/copyToClipboard";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { AchievementToast } from "./AchievementToast";
 import { buildDailyDraftShareText } from "../lib/draftGrade";
@@ -25,23 +26,6 @@ interface DailyDraftResultsProps {
   onPlayAgain: () => void;
 }
 
-const copyText = async (text: string) => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "absolute";
-  textarea.style.left = "-9999px";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
-};
-
 export function DailyDraftResults({
   user,
   userLineup,
@@ -54,6 +38,7 @@ export function DailyDraftResults({
   const achievementsCheckedRef = useRef(false);
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const goalResult = useMemo(
     () => buildDailyGoalResult(userLineup, dailyGoal),
@@ -114,6 +99,22 @@ export function DailyDraftResults({
     setNewAchievementIds(newlyUnlocked);
   }, [userLineup]);
 
+  const handleCopyShareText = async () => {
+    const copied = await copyToClipboard(dailyShareText);
+    setCopyState(copied ? "copied" : "error");
+
+    window.setTimeout(() => {
+      setCopyState("idle");
+    }, 2200);
+  };
+
+  const copyButtonLabel =
+    copyState === "copied"
+      ? "Copied!"
+      : copyState === "error"
+        ? "Copy failed — try again"
+        : "Copy daily share text";
+
   return (
     <section className="match-results daily-draft-results match-results--compact">
       <div className="panel panel--compact daily-draft-results__header">
@@ -147,9 +148,9 @@ export function DailyDraftResults({
         <button
           type="button"
           className="landing__primary-button"
-          onClick={() => void copyText(dailyShareText)}
+          onClick={() => void handleCopyShareText()}
         >
-          Copy daily share text
+          {copyButtonLabel}
         </button>
       </div>
 

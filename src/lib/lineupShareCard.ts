@@ -7,6 +7,7 @@ export interface LineupShareCardInput {
   accent: string;
   ovr: number;
   lineup: Player[];
+  record?: string;
 }
 
 const CARD_WIDTH = 1080;
@@ -248,24 +249,35 @@ export const drawLineupShareCard = (
   context.font = "800 62px Arial, sans-serif";
   context.fillText(input.teamName, 88, 188);
 
+  if (input.record) {
+    context.fillStyle = "rgba(255,255,255,0.62)";
+    context.font = "600 34px Arial, sans-serif";
+    context.fillText(`Record ${input.record}`, 88, 236);
+  }
+
+  const ovrY = input.record ? 318 : 292;
+  const ovrLabelY = input.record ? 362 : 336;
+  const startingFiveY = input.record ? 418 : 392;
+  const firstPlayerY = input.record ? 456 : 430;
+
   context.save();
   context.shadowColor = rgbaFromHex(input.accent, 0.55);
   context.shadowBlur = 18;
   context.fillStyle = "#ffffff";
   context.font = "800 92px Arial, sans-serif";
-  context.fillText(String(input.ovr), 88, 292);
+  context.fillText(String(input.ovr), 88, ovrY);
   context.restore();
 
   context.fillStyle = "rgba(255,255,255,0.58)";
   context.font = "600 30px Arial, sans-serif";
-  context.fillText("OVR", 88, 336);
+  context.fillText("OVR", 88, ovrLabelY);
 
   context.fillStyle = "rgba(255,255,255,0.45)";
   context.font = "700 24px Arial, sans-serif";
-  context.fillText("STARTING FIVE", 88, 392);
+  context.fillText("STARTING FIVE", 88, startingFiveY);
 
   lineup.forEach((player, index) => {
-    drawPlayerRow(context, player, index, 430 + index * 118);
+    drawPlayerRow(context, player, index, firstPlayerY + index * 118);
   });
 
   const footerY = CARD_HEIGHT - 72;
