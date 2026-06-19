@@ -129,7 +129,7 @@ export function LandingPage({
     <section className="landing panel landing--rich">
       <div className="landing__glow" aria-hidden="true" />
 
-      <p className="eyebrow landing__eyebrow">NBA Head-to-Head</p>
+      <p className="eyebrow landing__eyebrow">Draft Day GM</p>
       <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
         Pick a mode below, name your team, and draft your five against the

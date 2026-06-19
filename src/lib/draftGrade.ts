@@ -83,7 +83,7 @@ export const buildDailyDraftShareText = (
     lines.push(`📈 ${percentile}th percentile`);
   }
 
-  lines.push("#NBAHeadToHead");
+  lines.push("#DraftDayGM");
 
   return lines.join("\n");
 };

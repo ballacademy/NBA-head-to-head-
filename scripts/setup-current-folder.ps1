@@ -6,7 +6,7 @@ $RepoUrl = "https://github.com/ballacademy/NBA-head-to-head-.git"
 $Branch = "cursor/nba-player-stats-4ebb"
 $NpmCmd = "C:\Program Files\nodejs\npm.cmd"
 
-Write-Host "NBA Head-to-Head setup"
+Write-Host "Draft Day GM setup"
 Write-Host "Target folder: $TargetPath"
 Write-Host ""
 

@@ -1,4 +1,4 @@
-# NBA Head-to-Head Draft
+# Draft Day GM
 
 An NBA-themed web app where eight global challengers draft five-man lineups,
 face one opponent at a time, and advance through a winner-take-all bracket.

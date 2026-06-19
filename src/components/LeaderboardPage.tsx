@@ -24,7 +24,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
     <section className="leaderboard panel">
       <div className="leaderboard__header">
         <div>
-          <p className="eyebrow">NBA Head-to-Head</p>
+          <p className="eyebrow">Draft Day GM</p>
           <h1>Leaderboard</h1>
           <p>Top players by wins, win percentage, loss streaks, and more.</p>
         </div>

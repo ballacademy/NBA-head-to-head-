@@ -60,7 +60,7 @@ export const drawLineupShareCard = (
 
   context.fillStyle = input.accent;
   context.font = "700 30px Arial, sans-serif";
-  context.fillText("NBA HEAD-TO-HEAD", 96, 110);
+  context.fillText("DRAFT DAY GM", 96, 110);
 
   context.fillStyle = "#f8fafc";
   context.font = "800 64px Arial, sans-serif";
@@ -116,9 +116,9 @@ export const drawLineupShareCard = (
   context.fillStyle = "#64748b";
   context.font = "600 24px Arial, sans-serif";
   context.textAlign = "left";
-  context.fillText("#NBAHeadToHead", 96, footerY);
+  context.fillText("#DraftDayGM", 96, footerY);
   context.textAlign = "right";
-  context.fillText("by ballacademy", CARD_WIDTH - 96, footerY);
+  context.fillText("produced by ballacademy", CARD_WIDTH - 96, footerY);
   context.textAlign = "left";
 };
 
@@ -149,13 +149,13 @@ const downloadBlob = (blob: Blob, filename: string) => {
 
 export const saveLineupShareCard = async (input: LineupShareCardInput) => {
   const blob = await createLineupShareCardBlob(input);
-  const filename = "nba-head-to-head-lineup.png";
+  const filename = "draft-day-gm-lineup.png";
   const file = new File([blob], filename, { type: "image/png" });
   const shareText = `${input.teamCity} ${input.teamName} • OVR ${input.ovr}`;
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({
-      title: "NBA Head-to-Head Lineup",
+      title: "Draft Day GM Lineup",
       text: shareText,
       files: [file],
     });

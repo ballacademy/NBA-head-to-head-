@@ -50,7 +50,7 @@ export function LineupStoryCard({
       </ol>
 
       <div className="story-footer">
-        <span>#NBAHeadToHead</span>
+        <span>#DraftDayGM</span>
         <button type="button" onClick={onShare}>
           Share lineup
         </button>

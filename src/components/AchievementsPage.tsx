@@ -12,7 +12,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
     <section className="achievements-page panel panel--compact">
       <div className="achievements-page__header">
         <div>
-          <p className="eyebrow">NBA Head-to-Head</p>
+          <p className="eyebrow">Draft Day GM</p>
           <h1>Badges</h1>
           <p>Badges unlock from all modes</p>
           <p className="achievements-page__progress">
