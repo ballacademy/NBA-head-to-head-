@@ -10,6 +10,7 @@ import {
   isAllStarTierPlayer,
   isSuperstarTierPlayer,
 } from "./starPedigree";
+import { meetsMinimumDefenseGrade } from "./defenseGrade";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { Player } from "./types";
 
@@ -269,18 +270,20 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     id: "stocks-and-bonds",
     title: "Stocks & Bonds",
     description:
-      "Draft five players with at least 2.2 stocks (steals + blocks) each.",
+      "Draft five players with at least 2.4 stocks (steals + blocks) each.",
     emoji: "📈",
     check: (lineup) =>
-      lineup.every((player) => player.steals + player.blocks >= 2.2),
+      lineup.every((player) => player.steals + player.blocks >= 2.4),
   },
   {
     id: "defensive-fortress",
     title: "Defensive Fortress",
-    description:
-      "Draft five players rated 8.0+ on defense (out of 10).",
+    description: "Draft five players graded B+ or better on defense.",
     emoji: "🏰",
-    check: (lineup) => lineup.every((player) => player.defense >= 8.0),
+    check: (lineup) =>
+      lineup.every((player) =>
+        meetsMinimumDefenseGrade(player.defense, player.defenseGrade, "B+"),
+      ),
   },
   {
     id: "matador",
@@ -362,9 +365,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "iron-men",
     title: "Iron Men",
-    description: "Draft five players with at least 55 games played.",
+    description: "Draft five players with at least 75 games played.",
     emoji: "⛓️",
-    check: (lineup) => lineup.every((player) => player.gamesPlayed >= 55),
+    check: (lineup) => lineup.every((player) => player.gamesPlayed >= 75),
   },
   {
     id: "bench-riders",

@@ -1,3 +1,4 @@
+import { isActiveStarPlayer } from "../lib/activeStars";
 import {
   isAllStarPlayer,
   isRecentAllStarPlayer,
@@ -9,15 +10,41 @@ import type { Player } from "../lib/types";
 
 interface PlayerRarityBadgeProps {
   player: Player;
+  allTimeMode?: boolean;
 }
 
-export function PlayerRarityBadge({ player }: PlayerRarityBadgeProps) {
+export function PlayerRarityBadge({
+  player,
+  allTimeMode = false,
+}: PlayerRarityBadgeProps) {
+  const era = isEraPlayer(player);
+  const activeStar = isActiveStarPlayer(player);
   const superstar = isSuperstarPlayer(player);
   const allStar = isAllStarPlayer(player);
   const recentAllStar = isRecentAllStarPlayer(player);
   const superScrub = isSuperScrubPlayer(player);
   const scrub = isScrubPlayer(player);
-  const era = isEraPlayer(player);
+
+  if (allTimeMode) {
+    if (!era && !activeStar) {
+      return null;
+    }
+
+    return (
+      <span className="player-rarity-badges">
+        {era ? (
+          <span className="player-rarity-badge player-rarity-badge--era">
+            Legend
+          </span>
+        ) : null}
+        {activeStar ? (
+          <span className="player-rarity-badge player-rarity-badge--all-star">
+            Active Star
+          </span>
+        ) : null}
+      </span>
+    );
+  }
 
   if (!allStar && !recentAllStar && !superstar && !scrub && !superScrub && !era) {
     return null;

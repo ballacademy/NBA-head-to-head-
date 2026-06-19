@@ -1,3 +1,4 @@
+import { getActiveStarPlayers } from "./activeStars";
 import { getEraPlayerPool } from "./eraPlayers";
 import { getUnlockedEras } from "./eraUnlocks";
 import { players, playersById } from "./playerPool";
@@ -38,10 +39,11 @@ export const getActivePlayerPool = (
   const eraPlayers = dedupeEraPlayersByFranchise(
     getEraPlayerPool(getUnlockedEras(record)),
   );
-  const currentIds = new Set(players.map((player) => player.id));
-  const uniqueEraPlayers = eraPlayers.filter((player) => !currentIds.has(player.id));
+  const activeStars = getActiveStarPlayers();
+  const eraIds = new Set(eraPlayers.map((player) => player.id));
+  const uniqueActiveStars = activeStars.filter((player) => !eraIds.has(player.id));
 
-  return [...players, ...uniqueEraPlayers];
+  return [...uniqueActiveStars, ...eraPlayers];
 };
 
 export const getActivePlayersById = (

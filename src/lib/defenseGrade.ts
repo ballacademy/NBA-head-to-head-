@@ -3,6 +3,28 @@ import { gradeFromPercentile } from "./defenseRating";
 
 export type { DefenseGrade } from "./defenseRating";
 
+const gradeRank: Record<DefenseGrade, number> = {
+  "A+": 12,
+  A: 11,
+  "A-": 10,
+  "B+": 9,
+  B: 8,
+  "B-": 7,
+  "C+": 6,
+  C: 5,
+  "C-": 4,
+  "D+": 3,
+  D: 2,
+  "D-": 1,
+  F: 0,
+};
+
+export const meetsMinimumDefenseGrade = (
+  defense: number,
+  defenseGrade: DefenseGrade | undefined,
+  minimum: DefenseGrade = "B+",
+) => gradeRank[getDefenseGrade(defense, defenseGrade)] >= gradeRank[minimum];
+
 export const getDefenseGrade = (
   defense: number,
   defenseGrade?: DefenseGrade,

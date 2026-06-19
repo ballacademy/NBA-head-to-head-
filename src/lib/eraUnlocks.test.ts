@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getActivePlayerPool } from "./activePlayerPool";
+import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
 import {
   ALL_ERA_IDS,
   ALL_TIME_LEGENDS_TESTING_UNLOCK,
@@ -19,17 +20,31 @@ describe("active player pool", () => {
     );
   });
 
-  it("adds all legend pools in all-time mode when unlocked", () => {
+  it("adds active stars and legend pools in all-time mode when unlocked", () => {
     const allTimePool = getActivePlayerPool({ wins: 0 }, { allTimeMode: true });
+    const activeStarIds = new Set(getActiveStarPlayerIds());
+    const nonStarCurrentPlayers = players.filter(
+      (player) => !activeStarIds.has(player.id),
+    );
 
-    expect(allTimePool.length).toBeGreaterThan(players.length);
+    expect(allTimePool.length).toBeLessThan(players.length);
     expect(allTimePool.some((player) => player.name === "Michael Jordan")).toBe(
       true,
     );
     expect(allTimePool.some((player) => player.name === "Kareem Abdul-Jabbar")).toBe(
       true,
     );
-    expect(allTimePool.length - players.length).toBe(getLegendPlayerCount());
+    expect(allTimePool.some((player) => player.name === "Kyle Lowry")).toBe(true);
+    expect(
+      allTimePool.some((player) =>
+        nonStarCurrentPlayers.some(
+          (currentPlayer) => currentPlayer.id === player.id,
+        ),
+      ),
+    ).toBe(false);
+    expect(allTimePool.length).toBeGreaterThanOrEqual(
+      ACTIVE_STAR_COUNT + getLegendPlayerCount() - 10,
+    );
   });
 
   it("unlocks every legend era together at the win threshold", () => {

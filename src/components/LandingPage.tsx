@@ -245,7 +245,7 @@ export function LandingPage({
           <p className="eyebrow">All-Time</p>
           <h2 className="all-time-card__title">All-Time Draft</h2>
           <p className="all-time-card__description">
-            Draft from today&apos;s NBA plus legendary All-Stars from every era.
+            Draft active stars at their peak seasons plus legendary All-Stars from every era.
             {allTimeUnlocked
               ? ` ${legendCount} legends available.`
               : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock legends.`}

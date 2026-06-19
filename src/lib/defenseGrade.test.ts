@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatPlayerDraftStats, getDefenseGrade } from "./defenseGrade";
+import {
+  formatPlayerDraftStats,
+  getDefenseGrade,
+  meetsMinimumDefenseGrade,
+} from "./defenseGrade";
 
 describe("getDefenseGrade", () => {
   it("uses the stored grade when provided", () => {
@@ -12,6 +16,14 @@ describe("getDefenseGrade", () => {
     expect(getDefenseGrade(8.56)).toBe("B+");
     expect(getDefenseGrade(8.08)).toBe("B");
     expect(getDefenseGrade(7.48)).toBe("B-");
+  });
+});
+
+describe("meetsMinimumDefenseGrade", () => {
+  it("honors stored grades over inflated numeric defense scores", () => {
+    expect(meetsMinimumDefenseGrade(9.4, "C+", "B+")).toBe(false);
+    expect(meetsMinimumDefenseGrade(9.4, "B+", "B+")).toBe(true);
+    expect(meetsMinimumDefenseGrade(8.56, undefined, "B+")).toBe(true);
   });
 });
 
