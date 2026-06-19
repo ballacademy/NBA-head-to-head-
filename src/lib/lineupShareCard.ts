@@ -2,7 +2,6 @@ import { getTeamColors } from "./teamColors";
 import type { Player } from "./types";
 
 export interface LineupShareCardInput {
-  teamCity: string;
   teamName: string;
   accent: string;
   ovr: number;
@@ -64,7 +63,7 @@ export const drawLineupShareCard = (
 
   context.fillStyle = "#f8fafc";
   context.font = "800 64px Arial, sans-serif";
-  context.fillText(`${input.teamCity} ${input.teamName}`, 96, 200);
+  context.fillText(input.teamName, 96, 200);
 
   context.fillStyle = "#fde68a";
   context.font = "800 96px Arial, sans-serif";
@@ -151,7 +150,7 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
   const blob = await createLineupShareCardBlob(input);
   const filename = "draft-day-gm-lineup.png";
   const file = new File([blob], filename, { type: "image/png" });
-  const shareText = `${input.teamCity} ${input.teamName} • OVR ${input.ovr}`;
+  const shareText = `${input.teamName} • OVR ${input.ovr}`;
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({

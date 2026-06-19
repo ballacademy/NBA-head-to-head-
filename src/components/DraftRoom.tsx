@@ -204,7 +204,6 @@ export function DraftRoom({
       <div className="draft-page-header">
         <p className="eyebrow">
           <TeamNameWithStreak
-            city={drafter.city}
             name={drafter.name}
             winStreak={playerRecord.winStreak}
             lossStreak={playerRecord.lossStreak}

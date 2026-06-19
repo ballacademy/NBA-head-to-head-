@@ -26,8 +26,8 @@ describe("matchOutcome", () => {
   });
 
   it("records a match only once per match id", () => {
-    persistMatchOutcome(true, { city: "Chicago", name: "Bulls" }, "match-1");
-    persistMatchOutcome(true, { city: "Chicago", name: "Bulls" }, "match-1");
+    persistMatchOutcome(true, { name: "Bulls" }, "match-1");
+    persistMatchOutcome(true, { name: "Bulls" }, "match-1");
 
     expect(loadPlayerRecord().wins).toBe(1);
     expect(getTopLeaderboard("wins")[0]?.wins).toBe(1);

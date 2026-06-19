@@ -135,7 +135,6 @@ export function DailyDraftResults({
       <AchievementToast achievementIds={newAchievementIds} />
 
       <section className="panel panel--compact daily-draft-results__lineup">
-        <p className="eyebrow">{user.city}</p>
         <h3>{user.name}</h3>
         <div className="team-lineup-card__players">
           {orderedLineup.map((player, index) => (

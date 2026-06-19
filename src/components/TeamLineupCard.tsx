@@ -36,7 +36,6 @@ export function TeamLineupCard({
     >
       <div className="team-lineup-card__header">
         <div>
-          <p className="eyebrow">{drafter.city}</p>
           <h3>
             {showStreak ? (
               <TeamNameWithStreak

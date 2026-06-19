@@ -18,7 +18,6 @@ const localStorageMock = {
 };
 
 const baseEntry = {
-  city: "Chicago",
   name: "Bulls",
   lossStreak: 0,
 };
@@ -42,7 +41,6 @@ describe("leaderboard", () => {
     });
     upsertLeaderboardEntry({
       playerId: "b",
-      city: "Boston",
       name: "Celtics",
       wins: 12,
       losses: 4,
@@ -67,7 +65,6 @@ describe("leaderboard", () => {
 
     upsertLeaderboardEntry({
       playerId: "b",
-      city: "Boston",
       name: "Celtics",
       wins: 16,
       losses: 4,
@@ -83,7 +80,6 @@ describe("leaderboard", () => {
   it("sorts by lowest win percentage among qualified teams", () => {
     upsertLeaderboardEntry({
       playerId: "hot",
-      city: "Miami",
       name: "Heat",
       wins: 16,
       losses: 4,
@@ -91,7 +87,6 @@ describe("leaderboard", () => {
     });
     upsertLeaderboardEntry({
       playerId: "cold",
-      city: "Detroit",
       name: "Pistons",
       wins: 8,
       losses: 12,
@@ -111,7 +106,6 @@ describe("leaderboard", () => {
     });
     upsertLeaderboardEntry({
       playerId: "b",
-      city: "Boston",
       name: "Celtics",
       wins: 3,
       losses: 10,

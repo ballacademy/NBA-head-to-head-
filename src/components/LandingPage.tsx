@@ -77,7 +77,6 @@ export function LandingPage({
   onViewAchievements,
   onViewLeaderboard,
 }: LandingPageProps) {
-  const [city, setCity] = useState(() => loadTeamProfile()?.city ?? "");
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
   const teamFormRef = useRef<HTMLDivElement>(null);
@@ -99,20 +98,19 @@ export function LandingPage({
       return;
     }
 
-    let team = normalizeTeamProfile(city, name);
+    let team = normalizeTeamProfile(name);
 
     if (!team) {
       const savedTeam = loadTeamProfile();
 
       if (savedTeam) {
-        setCity(savedTeam.city);
         setName(savedTeam.name);
         team = savedTeam;
       }
     }
 
     if (!team) {
-      setError("Enter both a city and team name to start drafting.");
+      setError("Enter a team name to start drafting.");
       teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -130,7 +128,9 @@ export function LandingPage({
       <div className="landing__glow" aria-hidden="true" />
 
       <p className="eyebrow landing__eyebrow">Draft Day GM</p>
-      <h1>Draft your five. Win your way.</h1>
+      <div className="landing__hero">
+        <h1>Draft your five. Win your way.</h1>
+      </div>
       <p className="landing__lede">
         Pick a mode below, name your team, and draft your five against the
         competition.
@@ -140,21 +140,6 @@ export function LandingPage({
         ref={teamFormRef}
         className="landing-team-form landing-card landing-card--form"
       >
-        <label className="field">
-          <span>Team city</span>
-          <input
-            type="text"
-            value={city}
-            placeholder="e.g. Chicago"
-            onChange={(event) => {
-              setCity(event.target.value);
-              if (error) {
-                setError("");
-              }
-            }}
-          />
-        </label>
-
         <label className="field">
           <span>Team name</span>
           <input

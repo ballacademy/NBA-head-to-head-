@@ -112,7 +112,6 @@ export const buildLeaderboardIdentity = (
   record: PlayerRecord,
 ) => ({
   playerId: record.playerId,
-  city: team.city,
   name: team.name,
   wins: record.wins,
   losses: record.losses,

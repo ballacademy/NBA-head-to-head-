@@ -57,7 +57,6 @@ export interface DraftSlotConstraint {
 export interface Drafter {
   id: string;
   name: string;
-  city: string;
   accent: string;
   lineup: string[];
   draftSlots: DraftSlotConstraint[];

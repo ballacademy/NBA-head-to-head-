@@ -1,23 +1,17 @@
 export interface TeamProfile {
-  city: string;
   name: string;
 }
 
 const STORAGE_KEY = "nba-head-to-head-team-profile";
 
-export const normalizeTeamProfile = (
-  city: string,
-  name: string,
-): TeamProfile | null => {
-  const trimmedCity = city.trim();
+export const normalizeTeamProfile = (name: string): TeamProfile | null => {
   const trimmedName = name.trim();
 
-  if (!trimmedCity || !trimmedName) {
+  if (!trimmedName) {
     return null;
   }
 
   return {
-    city: trimmedCity,
     name: trimmedName,
   };
 };
@@ -51,11 +45,11 @@ export const loadTeamProfile = (): TeamProfile | null => {
 
     const parsed = JSON.parse(raw) as Partial<TeamProfile>;
 
-    if (typeof parsed.city !== "string" || typeof parsed.name !== "string") {
-      return null;
+    if (typeof parsed.name === "string") {
+      return normalizeTeamProfile(parsed.name);
     }
 
-    return normalizeTeamProfile(parsed.city, parsed.name);
+    return null;
   } catch {
     return null;
   }

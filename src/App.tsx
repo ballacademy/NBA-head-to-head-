@@ -209,14 +209,14 @@ function App() {
     }
 
     if (isDailyDraft) {
-      const team = { city: user.city, name: user.name };
+      const team = { name: user.name };
       if (!startMatch(team, { isDailyDraft: true })) {
         resetToLanding();
       }
       return;
     }
 
-    const team = { city: user.city, name: user.name };
+    const team = { name: user.name };
     if (
       !startMatch(team, {
         salaryCapMode: Boolean(user.salaryCapMode),

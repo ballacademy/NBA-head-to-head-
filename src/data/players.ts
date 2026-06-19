@@ -12,7 +12,6 @@ export const initialDrafters: Drafter[] = initialDrafterBlueprints.map(
     return {
       id: blueprint.id,
       name: blueprint.name,
-      city: blueprint.city,
       accent: blueprint.accent,
       draftSlots,
       lineup: autoDraftLineup(players, draftSlots),

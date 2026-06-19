@@ -66,7 +66,7 @@ export function MatchResults({
     recordedRef.current = true;
     const record = persistMatchOutcome(
       userWon,
-      { city: user.city, name: user.name },
+      { name: user.name },
       matchId,
     );
 
@@ -75,7 +75,7 @@ export function MatchResults({
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, onCollectionChange, user.city, user.name, userWon]);
+  }, [collection, matchId, onCollectionChange, user.name, userWon]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {
@@ -97,7 +97,6 @@ export function MatchResults({
 
   const handleShareLineup = async () => {
     await saveLineupShareCard({
-      teamCity: user.city,
       teamName: user.name,
       accent: user.accent,
       ovr: userScore.total,

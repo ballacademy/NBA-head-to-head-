@@ -11,7 +11,6 @@ export const LEADERBOARD_LIMIT = 100;
 
 export interface LeaderboardEntry {
   playerId: string;
-  city: string;
   name: string;
   wins: number;
   losses: number;
@@ -23,7 +22,6 @@ export type LeaderboardSort = "wins" | "winPct" | "lowestWinPct" | "lossStreak";
 
 const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
   playerId: entry.playerId,
-  city: entry.city.trim(),
   name: entry.name.trim(),
   wins: Math.max(0, entry.wins),
   losses: Math.max(0, entry.losses),
@@ -31,8 +29,10 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
   updatedAt: entry.updatedAt,
 });
 
+type StoredLeaderboardEntry = LeaderboardEntry & { city?: string };
+
 export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
-  const entries = readJson<LeaderboardEntry[]>(LEADERBOARD_KEY);
+  const entries = readJson<StoredLeaderboardEntry[]>(LEADERBOARD_KEY);
 
   if (!Array.isArray(entries)) {
     return [];
@@ -42,12 +42,20 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
     .filter(
       (entry) =>
         typeof entry.playerId === "string" &&
-        typeof entry.city === "string" &&
-        typeof entry.name === "string" &&
+        (typeof entry.name === "string" || typeof entry.city === "string") &&
         typeof entry.wins === "number" &&
         typeof entry.losses === "number",
     )
-    .map(normalizeEntry);
+    .map((entry) =>
+      normalizeEntry({
+        playerId: entry.playerId,
+        name: entry.name?.trim() || entry.city?.trim() || "",
+        wins: entry.wins,
+        losses: entry.losses,
+        lossStreak: entry.lossStreak ?? 0,
+        updatedAt: entry.updatedAt ?? new Date().toISOString(),
+      }),
+    );
 };
 
 export const upsertLeaderboardEntry = (
@@ -65,8 +73,8 @@ export const upsertLeaderboardEntry = (
   writeJson(LEADERBOARD_KEY, [...withoutCurrent, nextEntry]);
 };
 
-export const formatLeaderboardTeam = (entry: Pick<LeaderboardEntry, "city" | "name">) =>
-  `${entry.city} ${entry.name}`;
+export const formatLeaderboardTeam = (entry: Pick<LeaderboardEntry, "name">) =>
+  entry.name;
 
 export const formatLeaderboardRecord = (
   entry: Pick<LeaderboardEntry, "wins" | "losses">,

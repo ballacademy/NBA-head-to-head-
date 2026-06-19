@@ -4,7 +4,6 @@ import { hasFireStreak } from "../lib/winStreak";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 
 interface TeamNameWithStreakProps {
-  city?: string;
   name: string;
   winStreak?: number;
   lossStreak?: number;
@@ -12,7 +11,6 @@ interface TeamNameWithStreakProps {
 }
 
 export function TeamNameWithStreak({
-  city,
   name,
   winStreak = 0,
   lossStreak = 0,
@@ -20,7 +18,6 @@ export function TeamNameWithStreak({
 }: TeamNameWithStreakProps) {
   return (
     <span className={className}>
-      {city ? `${city} ` : ""}
       {name}
       {hasFireStreak(winStreak) ? (
         <WinStreakBadge winStreak={winStreak} />

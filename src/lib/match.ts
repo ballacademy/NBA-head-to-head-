@@ -26,7 +26,6 @@ export const createUserDrafter = (
 ): Drafter => ({
   id: "user",
   name: team.name,
-  city: team.city,
   accent: "#2563eb",
   draftSlots,
   lineup: [],
@@ -50,7 +49,6 @@ export const createRandomOpponent = (
   return {
     id: `opponent-${blueprint.id}-${Date.now()}`,
     name: blueprint.name,
-    city: blueprint.city,
     accent: blueprint.accent,
     draftSlots,
     lineup: [],

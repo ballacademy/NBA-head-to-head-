@@ -28,18 +28,16 @@ describe("teamProfile", () => {
   });
 
   it("normalizes trimmed team names", () => {
-    expect(normalizeTeamProfile("  Chicago ", "  Bulls ")).toEqual({
-      city: "Chicago",
+    expect(normalizeTeamProfile("  Bulls ")).toEqual({
       name: "Bulls",
     });
-    expect(normalizeTeamProfile("Chicago", "")).toBeNull();
+    expect(normalizeTeamProfile("")).toBeNull();
   });
 
   it("persists and reloads the saved team profile", () => {
-    saveTeamProfile({ city: "Boston", name: "Celtics" });
+    saveTeamProfile({ name: "Celtics" });
 
     expect(loadTeamProfile()).toEqual({
-      city: "Boston",
       name: "Celtics",
     });
   });
