@@ -21,19 +21,20 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const showLossStreak = sort === "lossStreak";
 
   return (
-    <section className="leaderboard panel">
-      <div className="leaderboard__header">
-        <div>
-          <p className="eyebrow">Draft Day GM</p>
-          <h1>Leaderboard</h1>
-          <p>Top players by wins, win percentage, loss streaks, and more.</p>
+    <section className="leaderboard panel panel--compact">
+      <div className="leaderboard__top">
+        <div className="leaderboard__header">
+          <div>
+            <p className="eyebrow">Draft Day GM</p>
+            <h1>Leaderboard</h1>
+            <p className="leaderboard__subtitle">{getLeaderboardFootnote(sort)}</p>
+          </div>
+          <button type="button" className="secondary-button" onClick={onBack}>
+            Back to home
+          </button>
         </div>
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
-      </div>
 
-      <div className="leaderboard__tabs" role="tablist" aria-label="Leaderboard sort">
+        <div className="leaderboard__tabs" role="tablist" aria-label="Leaderboard sort">
         <button
           type="button"
           role="tab"
@@ -70,9 +71,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         >
           Loss streak
         </button>
+        </div>
       </div>
-
-      <p className="leaderboard__note">{getLeaderboardFootnote(sort)}</p>
 
       {entries.length > 0 ? (
         <div className="leaderboard-table-wrap">

@@ -208,6 +208,30 @@ export const isPlayerStatsMasked = (
 ) =>
   isCollectibleTierPlayer(player) && !collection.unlockedIds.includes(player.id);
 
+export const getUnlockedPlayerClassLabel = (player: Player): string => {
+  if (isSuperstarPlayer(player)) {
+    return "Superstar";
+  }
+
+  if (isAllStarPlayer(player)) {
+    return "All-Star";
+  }
+
+  if (isRecentAllStarPlayer(player)) {
+    return "Recent All-Star";
+  }
+
+  if (isSuperScrubPlayer(player)) {
+    return "Super Scrub";
+  }
+
+  if (isScrubPlayer(player)) {
+    return "Scrub";
+  }
+
+  return "n/a";
+};
+
 export const createWinUnlockOffer = (
   collection = ensurePlayerCollection(),
 ): UnlockOffer | null => {

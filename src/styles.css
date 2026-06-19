@@ -1007,19 +1007,41 @@ main {
   width: min(920px, 100%);
 }
 
+.leaderboard__top {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .leaderboard__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.leaderboard__header h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  line-height: 1;
+}
+
+.leaderboard__header .eyebrow {
+  margin: 0;
+}
+
+.leaderboard__subtitle {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
 }
 
 .leaderboard__tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .leaderboard__tabs button {
@@ -1034,11 +1056,6 @@ main {
 .leaderboard__tabs button.is-active {
   border-color: rgba(59, 130, 246, 0.65);
   background: rgba(37, 99, 235, 0.24);
-}
-
-.leaderboard__note {
-  margin: 0 0 16px;
-  color: var(--muted);
 }
 
 .leaderboard-table-wrap {
@@ -1643,7 +1660,7 @@ main {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 10px;
-  align-items: start;
+  align-items: center;
   padding: 10px 12px;
   border: 1px solid var(--panel-border);
   border-radius: 14px;
@@ -1662,6 +1679,10 @@ main {
 }
 
 .achievements-page__emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
   font-size: 1.5rem;
   line-height: 1;
 }
@@ -2562,6 +2583,21 @@ main {
 
 .stats-table tbody tr:hover {
   background: rgba(148, 163, 184, 0.08);
+}
+
+.stats-table__player {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stats-table__class--na {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .stats-table__row--masked td {

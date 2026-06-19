@@ -145,17 +145,8 @@ export const submitDailyDraftScore = (
   return getDailyDraftPercentile(dateKey, value, goal, benchmarkValues);
 };
 
-export const formatDailyPercentile = (result: DailyDraftPercentileResult) => {
-  if (result.percentile >= 90) {
-    return `Top ${100 - result.percentile}% today`;
-  }
-
-  if (result.percentile >= 50) {
-    return `Better than ${result.percentile}% of drafters today`;
-  }
-
-  return `Bottom ${100 - result.percentile}% today`;
-};
+export const formatDailyPercentile = (result: DailyDraftPercentileResult) =>
+  `Top ${100 - result.percentile}% Today`;
 
 export const getPlayerDailyDraftEntry = (
   dateKey: string,

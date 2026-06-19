@@ -18,13 +18,14 @@ import {
   createTieredUnlockPair,
   createWinUnlockOffer,
   getDraftablePlayers,
+  getUnlockedPlayerClassLabel,
   grantLossUnlock,
   grantWinUnlock,
   isPlayerStatsMasked,
   isRegularDraftPlayer,
   loadPlayerCollection,
 } from "./playerCollection";
-import { getScrubPlayerIds, isSuperScrubPlayer } from "./playerTiers";
+import { getScrubPlayerIds, isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { players } from "./playerPool";
 import { resetUnlockProgress } from "./unlockProgress";
 
@@ -247,6 +248,26 @@ describe("playerCollection", () => {
     expect(isPlayerStatsMasked(lockedPlayer!, collection)).toBe(true);
     expect(isPlayerStatsMasked(unlockedPlayer!, collection)).toBe(false);
     expect(isPlayerStatsMasked(regularPlayer!, collection)).toBe(false);
+  });
+
+  it("labels unlocked player collection classes for season stats", () => {
+    const collection = loadPlayerCollection();
+    const superstar = players.find((player) => isSuperstarPlayer(player));
+    const scrubId = getScrubPlayerIds().find(
+      (playerId) => isScrubPlayer({ id: playerId }) && !isSuperScrubPlayer({ id: playerId }),
+    );
+    const scrub = scrubId ? getPlayerById(scrubId) : undefined;
+
+    expect(superstar).toBeDefined();
+    expect(scrub).toBeDefined();
+    expect(getUnlockedPlayerClassLabel(superstar!)).toBe("Superstar");
+    expect(getUnlockedPlayerClassLabel(scrub!)).toBe("Scrub");
+    expect(
+      getUnlockedPlayerClassLabel(
+        players.find((player) => isRegularDraftPlayer(player))!,
+      ),
+    ).toBe("n/a");
+    expect(collection.unlockedIds.length).toBeGreaterThan(0);
   });
 
   it("caps opponent all-star unlocks to ten above the user", () => {

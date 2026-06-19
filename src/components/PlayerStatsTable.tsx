@@ -2,9 +2,16 @@ import { useMemo, useState } from "react";
 import { getDefenseGrade } from "../lib/defenseGrade";
 import {
   ensurePlayerCollection,
+  getUnlockedPlayerClassLabel,
   isPlayerStatsMasked,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import {
+  isAllStarPlayer,
+  isRecentAllStarPlayer,
+  isSuperstarPlayer,
+} from "../lib/allStars";
+import { isScrubPlayer, isSuperScrubPlayer } from "../lib/playerTiers";
 import type { Player } from "../lib/types";
 
 interface PlayerStatsTableProps {
@@ -27,6 +34,30 @@ type SortKey =
   | "defense";
 
 const MASKED_VALUE = "????";
+
+const getUnlockedPlayerClassBadgeClass = (player: Player) => {
+  if (isSuperstarPlayer(player)) {
+    return "player-rarity-badge player-rarity-badge--superstar";
+  }
+
+  if (isAllStarPlayer(player)) {
+    return "player-rarity-badge player-rarity-badge--all-star";
+  }
+
+  if (isRecentAllStarPlayer(player)) {
+    return "player-rarity-badge player-rarity-badge--recent-all-star";
+  }
+
+  if (isSuperScrubPlayer(player)) {
+    return "player-rarity-badge player-rarity-badge--super-scrub";
+  }
+
+  if (isScrubPlayer(player)) {
+    return "player-rarity-badge player-rarity-badge--scrub";
+  }
+
+  return "stats-table__class stats-table__class--na";
+};
 
 const columns: Array<{ key: SortKey; label: string }> = [
   { key: "name", label: "Player" },
@@ -148,7 +179,20 @@ export function PlayerStatsTable({
                   key={player.id}
                   className={masked ? "stats-table__row--masked" : undefined}
                 >
-                  <td>{masked ? MASKED_VALUE : player.name}</td>
+                  <td>
+                    {masked ? (
+                      MASKED_VALUE
+                    ) : (
+                      <span className="stats-table__player">
+                        <span>{player.name}</span>
+                        {collection.unlockedIds.includes(player.id) ? (
+                          <span className={getUnlockedPlayerClassBadgeClass(player)}>
+                            {getUnlockedPlayerClassLabel(player)}
+                          </span>
+                        ) : null}
+                      </span>
+                    )}
+                  </td>
                   <td>{masked ? MASKED_VALUE : player.team}</td>
                   <td>{masked ? MASKED_VALUE : player.position}</td>
                   <td>{masked ? MASKED_VALUE : player.points.toFixed(1)}</td>
