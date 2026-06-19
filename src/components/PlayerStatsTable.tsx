@@ -110,14 +110,6 @@ export function PlayerStatsTable({
         </button>
       </div>
 
-      <div className="stats-file-note">
-        <strong>Spreadsheet on your PC:</strong> after running the fetch script,
-        open{" "}
-        <code>data\nba-stats\nba-player-stats-202526-regular-season.xlsx</code>{" "}
-        in Excel. The in-app table below is the same data, searchable in your
-        browser.
-      </div>
-
       <label className="field stats-search">
         <span>Search players</span>
         <input
