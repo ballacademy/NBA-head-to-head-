@@ -362,6 +362,7 @@ main {
     0 32px 90px rgba(30, 16, 53, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
     inset 0 -24px 48px rgba(191, 219, 254, 0.28);
+  backdrop-filter: none;
 }
 
 .landing--rich::before {
@@ -476,11 +477,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(168, 85, 247, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(168, 85, 247, 0.1) 0%,
-    rgba(15, 23, 42, 0.55) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(168, 85, 247, 0.1) 0%,
+      rgba(15, 23, 42, 0.55) 100%
+    ),
+    #0f172a;
 }
 
 .landing__actions {
@@ -535,11 +538,13 @@ main {
   padding: 18px 20px;
   border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(251, 191, 36, 0.12) 0%,
-    rgba(15, 23, 42, 0.55) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(251, 191, 36, 0.12) 0%,
+      rgba(15, 23, 42, 0.55) 100%
+    ),
+    #0f172a;
 }
 
 .collection-progress-card__value {
@@ -1225,11 +1230,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(34, 197, 94, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(34, 197, 94, 0.12) 0%,
-    rgba(15, 23, 42, 0.72) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34, 197, 94, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
 }
 
 .landing-card--daily {
@@ -1251,11 +1258,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(249, 115, 22, 0.12) 0%,
-    rgba(15, 23, 42, 0.72) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(249, 115, 22, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
 }
 
 .head-to-head-card__title {
@@ -1273,11 +1282,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(168, 85, 247, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(168, 85, 247, 0.12) 0%,
-    rgba(15, 23, 42, 0.72) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(168, 85, 247, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
 }
 
 .era-progress-card__list {
@@ -1305,11 +1316,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(245, 158, 11, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(245, 158, 11, 0.12) 0%,
-    rgba(15, 23, 42, 0.72) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(245, 158, 11, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
 }
 
 .all-time-card__title {
@@ -1355,11 +1368,13 @@ main {
   padding: 14px 16px;
   border: 1px solid rgba(59, 130, 246, 0.28);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.12) 0%,
-    rgba(15, 23, 42, 0.72) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
 }
 
 .ranked-cap-card__title {
