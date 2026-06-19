@@ -14,8 +14,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
         <div>
           <p className="eyebrow">Draft Day GM</p>
           <h1>Badges</h1>
-          <p>Badges unlock from all modes</p>
-          <p className="achievements-page__progress">
+          <p className="achievements-page__subtitle">
             {progress.unlocked}/{progress.total} unlocked • Locked badges show as ????
           </p>
         </div>
@@ -35,13 +34,17 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             <span className="achievements-page__emoji" aria-hidden="true">
               {achievement.emoji}
             </span>
-            <div>
-              <strong>{achievement.title}</strong>
-              <span>{achievement.description}</span>
+            <div className="achievements-page__copy">
+              <div className="achievements-page__title-row">
+                <strong>{achievement.title}</strong>
+                <span className="achievements-page__status">
+                  {achievement.isUnlocked ? "Unlocked" : "Locked"}
+                </span>
+              </div>
+              <span className="achievements-page__description">
+                {achievement.description}
+              </span>
             </div>
-            <span className="achievements-page__status">
-              {achievement.isUnlocked ? "Unlocked" : "Locked"}
-            </span>
           </li>
         ))}
       </ul>
