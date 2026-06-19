@@ -6,7 +6,6 @@ export interface LineupShareCardInput {
   teamName: string;
   accent: string;
   ovr: number;
-  record: string;
   lineup: Player[];
 }
 
@@ -73,7 +72,7 @@ export const drawLineupShareCard = (
 
   context.fillStyle = "#cbd5e1";
   context.font = "600 34px Arial, sans-serif";
-  context.fillText(`OVR • Record ${input.record}`, 96, 360);
+  context.fillText("OVR", 96, 360);
 
   context.fillStyle = "#94a3b8";
   context.font = "700 28px Arial, sans-serif";
@@ -112,9 +111,15 @@ export const drawLineupShareCard = (
     );
   });
 
+  const footerY = CARD_HEIGHT - 84;
+
   context.fillStyle = "#64748b";
   context.font = "600 24px Arial, sans-serif";
-  context.fillText("#NBAHeadToHead", 96, CARD_HEIGHT - 84);
+  context.textAlign = "left";
+  context.fillText("#NBAHeadToHead", 96, footerY);
+  context.textAlign = "right";
+  context.fillText("by ballacademy", CARD_WIDTH - 96, footerY);
+  context.textAlign = "left";
 };
 
 export const createLineupShareCardBlob = async (input: LineupShareCardInput) => {
@@ -146,7 +151,7 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
   const blob = await createLineupShareCardBlob(input);
   const filename = "nba-head-to-head-lineup.png";
   const file = new File([blob], filename, { type: "image/png" });
-  const shareText = `${input.teamCity} ${input.teamName} • OVR ${input.ovr} • ${input.record}`;
+  const shareText = `${input.teamCity} ${input.teamName} • OVR ${input.ovr}`;
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({

@@ -1,6 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { TeamLineupCard } from "./TeamLineupCard";
-import { OpponentScoreCard } from "./OpponentScoreCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
@@ -94,13 +93,12 @@ export function MatchResults({
     setShowUnlockModal(false);
   };
 
-  const handleSaveLineupImage = async () => {
+  const handleShareLineup = async () => {
     await saveLineupShareCard({
       teamCity: user.city,
       teamName: user.name,
       accent: user.accent,
       ovr: userScore.total,
-      record: formatPlayerRecord(updatedRecord),
       lineup: userLineup,
     });
   };
@@ -139,7 +137,7 @@ export function MatchResults({
         </div>
 
         <div className="matchup-panel__grid">
-          <div className="matchup-panel__user">
+          <div className="matchup-panel__team">
             <TeamLineupCard
               drafter={user}
               lineup={userLineup}
@@ -151,20 +149,28 @@ export function MatchResults({
               compact
               showProjectedRecord={false}
             />
-            <button
-              type="button"
-              className="secondary-button matchup-panel__share"
-              onClick={() => void handleSaveLineupImage()}
-            >
-              Save lineup image
-            </button>
           </div>
 
-          <OpponentScoreCard
-            drafter={opponent}
-            score={opponentScore}
-            isWinner={!userWon}
-          />
+          <div className="matchup-panel__team">
+            <TeamLineupCard
+              drafter={opponent}
+              lineup={opponentLineup}
+              score={opponentScore}
+              isWinner={!userWon}
+              compact
+              showProjectedRecord={false}
+            />
+          </div>
+        </div>
+
+        <div className="matchup-panel__footer">
+          <button
+            type="button"
+            className="secondary-button matchup-panel__share"
+            onClick={() => void handleShareLineup()}
+          >
+            Share lineup
+          </button>
         </div>
       </div>
 

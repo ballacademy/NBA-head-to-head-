@@ -1117,6 +1117,8 @@ main {
   display: grid;
   gap: 6px;
   margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .matchup-panel__title {
@@ -1133,71 +1135,33 @@ main {
 
 .matchup-panel__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: start;
 }
 
-.matchup-panel__user {
-  display: grid;
-  gap: 10px;
+.matchup-panel__team {
+  min-width: 0;
+}
+
+.matchup-panel__team .team-lineup-card--compact {
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-top: 4px solid var(--accent, var(--orange));
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.matchup-panel__footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .matchup-panel__share {
-  justify-self: start;
-}
-
-.opponent-score-card {
-  border-top: 4px solid var(--accent, var(--blue));
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.55);
-  padding: 12px 14px;
-}
-
-.opponent-score-card.winner {
-  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
-}
-
-.opponent-score-card__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.opponent-score-card__header h3 {
-  margin: 2px 0 0;
-  font-size: 1.2rem;
-}
-
-.category-list--compact {
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.category--compact {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 12px;
-}
-
-.category--compact small {
-  margin-top: 2px;
-  font-size: 0.78rem;
-}
-
-.fit-notes--compact {
-  gap: 4px;
-  margin-top: 10px;
-}
-
-.fit-notes--compact p {
-  font-size: 0.88rem;
-  line-height: 1.35;
+  margin: 0;
 }
 
 .match-results__lineups {
