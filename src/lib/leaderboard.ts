@@ -14,17 +14,19 @@ export interface LeaderboardEntry {
   name: string;
   wins: number;
   losses: number;
+  winStreak: number;
   lossStreak: number;
   updatedAt: string;
 }
 
-export type LeaderboardSort = "wins" | "winPct" | "lowestWinPct" | "lossStreak";
+export type LeaderboardSort = "winStreak" | "winPct" | "lossStreak" | "lowestWinPct";
 
 const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
   playerId: entry.playerId,
   name: entry.name.trim(),
   wins: Math.max(0, entry.wins),
   losses: Math.max(0, entry.losses),
+  winStreak: Math.max(0, entry.winStreak ?? 0),
   lossStreak: Math.max(0, entry.lossStreak ?? 0),
   updatedAt: entry.updatedAt,
 });
@@ -52,6 +54,7 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
         name: entry.name?.trim() || entry.city?.trim() || "",
         wins: entry.wins,
         losses: entry.losses,
+        winStreak: entry.winStreak ?? 0,
         lossStreak: entry.lossStreak ?? 0,
         updatedAt: entry.updatedAt ?? new Date().toISOString(),
       }),
@@ -96,9 +99,13 @@ export const formatLeaderboardLossStreak = (
   entry: Pick<LeaderboardEntry, "lossStreak">,
 ) => (entry.lossStreak > 0 ? `${entry.lossStreak}` : "—");
 
-const compareByWins = (left: LeaderboardEntry, right: LeaderboardEntry) =>
+export const formatLeaderboardWinStreak = (
+  entry: Pick<LeaderboardEntry, "winStreak">,
+) => (entry.winStreak > 0 ? `${entry.winStreak}` : "—");
+
+const compareByWinStreak = (left: LeaderboardEntry, right: LeaderboardEntry) =>
+  right.winStreak - left.winStreak ||
   right.wins - left.wins ||
-  (getWinPercentage(right) ?? 0) - (getWinPercentage(left) ?? 0) ||
   left.name.localeCompare(right.name);
 
 const compareByWinPct = (left: LeaderboardEntry, right: LeaderboardEntry) => {
@@ -110,7 +117,7 @@ const compareByWinPct = (left: LeaderboardEntry, right: LeaderboardEntry) => {
   }
 
   if (!leftEligible || !rightEligible) {
-    return compareByWins(left, right);
+    return compareByWinStreak(left, right);
   }
 
   return (
@@ -129,7 +136,7 @@ const compareByLowestWinPct = (left: LeaderboardEntry, right: LeaderboardEntry) 
   }
 
   if (!leftEligible || !rightEligible) {
-    return compareByWins(right, left);
+    return compareByWinStreak(right, left);
   }
 
   return (
@@ -144,8 +151,8 @@ const compareByLossStreak = (left: LeaderboardEntry, right: LeaderboardEntry) =>
   right.losses - left.losses ||
   left.name.localeCompare(right.name);
 
-const leaderboardSorters: Record<LeaderboardSort, typeof compareByWins> = {
-  wins: compareByWins,
+const leaderboardSorters: Record<LeaderboardSort, typeof compareByWinStreak> = {
+  winStreak: compareByWinStreak,
   winPct: compareByWinPct,
   lowestWinPct: compareByLowestWinPct,
   lossStreak: compareByLossStreak,
@@ -169,6 +176,6 @@ export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
     case "lossStreak":
       return `Showing top ${LEADERBOARD_LIMIT} by active loss streak.`;
     default:
-      return `Showing top ${LEADERBOARD_LIMIT} by wins.`;
+      return `Showing top ${LEADERBOARD_LIMIT} by active win streak.`;
   }
 };

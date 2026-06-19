@@ -234,9 +234,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "carebear-offense",
     title: "Carebear Offense",
-    description: "Draft five players with 1.5 or fewer turnovers each.",
+    description: "Draft five players with 1.2 or fewer turnovers each.",
     emoji: "🧸",
-    check: (lineup) => lineup.every((player) => player.turnovers <= 1.5),
+    check: (lineup) => lineup.every((player) => player.turnovers <= 1.2),
   },
   {
     id: "usage-vampire",
@@ -248,9 +248,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "glue-guys",
     title: "Glue Guys",
-    description: "Draft five players with under 20% usage.",
+    description: "Draft five players with under 18% usage.",
     emoji: "🧴",
-    check: (lineup) => lineup.every((player) => player.usage < 20),
+    check: (lineup) => lineup.every((player) => player.usage < 18),
   },
   {
     id: "block-party",

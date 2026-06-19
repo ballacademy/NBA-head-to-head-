@@ -19,6 +19,7 @@ const localStorageMock = {
 
 const baseEntry = {
   name: "Bulls",
+  winStreak: 0,
   lossStreak: 0,
 };
 
@@ -32,22 +33,24 @@ describe("leaderboard", () => {
     vi.unstubAllGlobals();
   });
 
-  it("sorts by wins and limits to the top entries", () => {
+  it("sorts by active win streak and limits to the top entries", () => {
     upsertLeaderboardEntry({
       playerId: "a",
       ...baseEntry,
-      wins: 8,
+      wins: 12,
       losses: 2,
+      winStreak: 3,
     });
     upsertLeaderboardEntry({
       playerId: "b",
       name: "Celtics",
-      wins: 12,
+      wins: 8,
       losses: 4,
+      winStreak: 6,
       lossStreak: 0,
     });
 
-    expect(getTopLeaderboard("wins").map((entry) => entry.playerId)).toEqual([
+    expect(getTopLeaderboard("winStreak").map((entry) => entry.playerId)).toEqual([
       "b",
       "a",
     ]);
@@ -68,6 +71,7 @@ describe("leaderboard", () => {
       name: "Celtics",
       wins: 16,
       losses: 4,
+      winStreak: 0,
       lossStreak: 0,
     });
 
@@ -83,6 +87,7 @@ describe("leaderboard", () => {
       name: "Heat",
       wins: 16,
       losses: 4,
+      winStreak: 0,
       lossStreak: 0,
     });
     upsertLeaderboardEntry({
@@ -90,6 +95,7 @@ describe("leaderboard", () => {
       name: "Pistons",
       wins: 8,
       losses: 12,
+      winStreak: 0,
       lossStreak: 3,
     });
 
@@ -109,6 +115,7 @@ describe("leaderboard", () => {
       name: "Celtics",
       wins: 3,
       losses: 10,
+      winStreak: 0,
       lossStreak: 5,
     });
 

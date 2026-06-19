@@ -30,6 +30,6 @@ describe("matchOutcome", () => {
     persistMatchOutcome(true, { name: "Bulls" }, "match-1");
 
     expect(loadPlayerRecord().wins).toBe(1);
-    expect(getTopLeaderboard("wins")[0]?.wins).toBe(1);
+    expect(getTopLeaderboard("winStreak")[0]?.winStreak).toBe(1);
   });
 });

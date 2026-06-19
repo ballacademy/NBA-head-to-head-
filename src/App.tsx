@@ -387,6 +387,12 @@ function App() {
     }
   }, [phase, opponentComplete]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [phase]);
+
   if (phase === "leaderboard") {
     return (
       <main className="landing-layout">

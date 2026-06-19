@@ -326,7 +326,8 @@ main {
 
 .landing-layout {
   display: grid;
-  place-items: center;
+  place-items: start center;
+  align-content: start;
   min-height: calc(100vh - 80px);
   position: relative;
 }
@@ -2572,6 +2573,7 @@ main {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   text-align: left;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .stats-table th {
@@ -2588,8 +2590,20 @@ main {
 .stats-table__player {
   display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
+  min-height: 1.5rem;
+}
+
+.stats-table__player-name {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.stats-table__player .player-rarity-badge,
+.stats-table__player .stats-table__class--na {
+  align-self: center;
+  margin: 0;
 }
 
 .stats-table__class--na {

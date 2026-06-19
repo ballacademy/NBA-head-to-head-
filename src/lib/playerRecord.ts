@@ -115,5 +115,6 @@ export const buildLeaderboardIdentity = (
   name: team.name,
   wins: record.wins,
   losses: record.losses,
+  winStreak: record.winStreak,
   lossStreak: record.lossStreak,
 });

@@ -4,6 +4,7 @@ import {
   formatLeaderboardRecord,
   formatLeaderboardTeam,
   formatLeaderboardWinPercentage,
+  formatLeaderboardWinStreak,
   getLeaderboardFootnote,
   getTopLeaderboard,
   type LeaderboardSort,
@@ -15,10 +16,28 @@ interface LeaderboardPageProps {
 }
 
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
-  const [sort, setSort] = useState<LeaderboardSort>("wins");
+  const [sort, setSort] = useState<LeaderboardSort>("winStreak");
   const currentPlayerId = getOrCreatePlayerId();
   const entries = useMemo(() => getTopLeaderboard(sort), [sort]);
-  const showLossStreak = sort === "lossStreak";
+
+  const metricColumnLabel =
+    sort === "winStreak"
+      ? "Win streak"
+      : sort === "lossStreak"
+        ? "Loss streak"
+        : "Win %";
+
+  const formatMetricValue = (entry: (typeof entries)[number]) => {
+    if (sort === "winStreak") {
+      return formatLeaderboardWinStreak(entry);
+    }
+
+    if (sort === "lossStreak") {
+      return formatLeaderboardLossStreak(entry);
+    }
+
+    return formatLeaderboardWinPercentage(entry);
+  };
 
   return (
     <section className="leaderboard panel panel--compact">
@@ -35,42 +54,42 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         </div>
 
         <div className="leaderboard__tabs" role="tablist" aria-label="Leaderboard sort">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === "wins"}
-          className={sort === "wins" ? "is-active" : undefined}
-          onClick={() => setSort("wins")}
-        >
-          Most wins
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === "winPct"}
-          className={sort === "winPct" ? "is-active" : undefined}
-          onClick={() => setSort("winPct")}
-        >
-          Highest win %
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === "lowestWinPct"}
-          className={sort === "lowestWinPct" ? "is-active" : undefined}
-          onClick={() => setSort("lowestWinPct")}
-        >
-          Lowest win %
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === "lossStreak"}
-          className={sort === "lossStreak" ? "is-active" : undefined}
-          onClick={() => setSort("lossStreak")}
-        >
-          Loss streak
-        </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === "winStreak"}
+            className={sort === "winStreak" ? "is-active" : undefined}
+            onClick={() => setSort("winStreak")}
+          >
+            Win streak
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === "winPct"}
+            className={sort === "winPct" ? "is-active" : undefined}
+            onClick={() => setSort("winPct")}
+          >
+            Highest win %
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === "lossStreak"}
+            className={sort === "lossStreak" ? "is-active" : undefined}
+            onClick={() => setSort("lossStreak")}
+          >
+            Loss streak
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === "lowestWinPct"}
+            className={sort === "lowestWinPct" ? "is-active" : undefined}
+            onClick={() => setSort("lowestWinPct")}
+          >
+            Lowest win %
+          </button>
         </div>
       </div>
 
@@ -82,7 +101,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                 <th scope="col">Rank</th>
                 <th scope="col">Team</th>
                 <th scope="col">Record</th>
-                <th scope="col">{showLossStreak ? "Loss streak" : "Win %"}</th>
+                <th scope="col">{metricColumnLabel}</th>
               </tr>
             </thead>
             <tbody>
@@ -98,11 +117,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   <td>{index + 1}</td>
                   <td>{formatLeaderboardTeam(entry)}</td>
                   <td>{formatLeaderboardRecord(entry)}</td>
-                  <td>
-                    {showLossStreak
-                      ? formatLeaderboardLossStreak(entry)
-                      : formatLeaderboardWinPercentage(entry)}
-                  </td>
+                  <td>{formatMetricValue(entry)}</td>
                 </tr>
               ))}
             </tbody>
