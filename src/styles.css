@@ -355,22 +355,30 @@ main {
 .landing--rich {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background: linear-gradient(145deg, #fbcfe8 0%, #ffffff 44%, #dbeafe 100%);
+  box-shadow:
+    0 32px 90px rgba(30, 16, 53, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -24px 48px rgba(191, 219, 254, 0.28);
+}
+
+.landing--rich::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background:
     linear-gradient(
-      155deg,
-      rgba(30, 41, 59, 0.94) 0%,
-      rgba(15, 23, 42, 0.9) 52%,
-      rgba(17, 24, 39, 0.96) 100%
+      118deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.18) 24%,
+      transparent 48%
     ),
-    repeating-linear-gradient(
-      -14deg,
-      transparent 0 22px,
-      rgba(255, 255, 255, 0.018) 22px 23px
-    );
-  box-shadow:
-    0 32px 90px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.5), transparent 22%),
+    radial-gradient(circle at 8% 92%, rgba(251, 207, 232, 0.35), transparent 28%);
+  z-index: 0;
 }
 
 .landing__glow {
@@ -378,9 +386,14 @@ main {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 8% 0%, rgba(251, 191, 36, 0.2), transparent 38%),
-    radial-gradient(circle at 92% 8%, rgba(96, 165, 250, 0.18), transparent 34%),
-    radial-gradient(circle at 72% 100%, rgba(168, 85, 247, 0.14), transparent 42%);
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      transparent 18%,
+      transparent 82%,
+      rgba(219, 234, 254, 0.16) 100%
+    );
+  z-index: 0;
 }
 
 .landing--rich > :not(.landing__glow) {
@@ -389,20 +402,11 @@ main {
 }
 
 .landing__eyebrow {
-  color: #bfdbfe;
-}
-
-.landing__hero {
-  display: inline-block;
-  margin: 10px 0 16px;
-  padding: 0.18em 0.42em;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #fbcfe8 0%, #ffffff 48%, #dbeafe 100%);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  color: #7c3aed;
 }
 
 .landing h1 {
-  margin: 0;
+  margin: 10px 0 16px;
   font-size: clamp(2.4rem, 6vw, 4.5rem);
   line-height: 0.95;
   letter-spacing: -0.06em;
@@ -412,7 +416,7 @@ main {
 .landing__lede {
   max-width: 640px;
   margin: 0;
-  color: #cbd5e1;
+  color: #475569;
   font-size: 1.08rem;
   line-height: 1.7;
 }
@@ -504,8 +508,8 @@ main {
 .landing-credit {
   margin: 28px 0 0;
   padding-top: 20px;
-  border-top: 1px solid rgba(148, 163, 184, 0.2);
-  color: #94a3b8;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  color: #64748b;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -1021,7 +1025,7 @@ main {
 
 .form-error {
   margin: 0;
-  color: #fecaca;
+  color: #b91c1c;
   font-weight: 700;
 }
 
@@ -1035,9 +1039,9 @@ main {
 }
 
 .landing .hero-actions .ghost-link {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .draft-prompt__header {

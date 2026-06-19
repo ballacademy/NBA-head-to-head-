@@ -128,9 +128,7 @@ export function LandingPage({
       <div className="landing__glow" aria-hidden="true" />
 
       <p className="eyebrow landing__eyebrow">Draft Day GM</p>
-      <div className="landing__hero">
-        <h1>Draft your five. Win your way.</h1>
-      </div>
+      <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
         Pick a mode below, name your team, and draft your five against the
         competition.
