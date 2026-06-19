@@ -45,7 +45,7 @@ export interface Player {
   gamesPlayed: number;
   age?: number;
   styles: PlayStyle[];
-  era?: "2010s" | "1990s";
+  era?: "1970s" | "1980s" | "1990s" | "2000s" | "2010s";
   salary?: number;
 }
 

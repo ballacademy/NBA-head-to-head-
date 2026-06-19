@@ -6,12 +6,11 @@ import {
 import { getDailyDateKey } from "../lib/dailyDraft";
 import { getPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
 import {
-  ERA_2010S_WIN_THRESHOLD,
-  getEraProgress,
-  getUnlockedEras,
+  ALL_TIME_WIN_THRESHOLD,
+  getAllTimeWinsRemaining,
   isAllTimeModeUnlocked,
 } from "../lib/eraUnlocks";
-import { getEraPlayerCount } from "../lib/eraPlayers";
+import { getLegendPlayerCount } from "../lib/eraPlayers";
 import {
   formatPlayerRecord,
   formatWinPercentage,
@@ -89,13 +88,9 @@ export function LandingPage({
   }, []);
 
   const collectionProgress = getCollectionProgress(collection);
-  const eraProgress = getEraProgress(playerRecord);
-  const unlockedEraCount = getUnlockedEras(playerRecord).length;
   const allTimeUnlocked = isAllTimeModeUnlocked(playerRecord);
-  const allTimeWinsRemaining = Math.max(
-    ERA_2010S_WIN_THRESHOLD - playerRecord.wins,
-    0,
-  );
+  const allTimeWinsRemaining = getAllTimeWinsRemaining(playerRecord);
+  const legendCount = getLegendPlayerCount();
   const dailyDateKey = getDailyDateKey();
   const dailyEntry = useMemo(
     () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
@@ -231,10 +226,10 @@ export function LandingPage({
           <p className="eyebrow">All-Time</p>
           <h2 className="all-time-card__title">All-Time Draft</h2>
           <p className="all-time-card__description">
-            Draft from today&apos;s NBA plus any unlocked era legends in one pool.
+            Draft from today&apos;s NBA plus legendary All-Stars from every era.
             {allTimeUnlocked
-              ? ` ${unlockedEraCount} era${unlockedEraCount === 1 ? "" : "s"} currently available.`
-              : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock.`}
+              ? ` ${legendCount} legends available.`
+              : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock legends.`}
           </p>
           <MatchModeRecord record={playerRecord} />
           {allTimeUnlocked ? (
@@ -251,29 +246,10 @@ export function LandingPage({
               className="all-time-card__button all-time-card__button--locked"
               disabled
             >
-              Achieve 50 wins to unlock all-time legend mode
+              Achieve {ALL_TIME_WIN_THRESHOLD} wins to unlock all-time legend mode
             </button>
           )}
         </div>
-      </div>
-
-      <div className="era-progress-card landing-card">
-        <p className="eyebrow">Eras &amp; Legends</p>
-        <ul className="era-progress-card__list">
-          {eraProgress.map((era) => (
-            <li key={era.id}>
-              <strong>{era.title}</strong>
-              <span>
-                {era.isUnlocked
-                  ? `${getEraPlayerCount(era.id)} legends unlocked`
-                  : `${era.winsRemaining} wins to unlock`}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="era-progress-card__meta">
-          Unlocked legends are only available in All-Time mode.
-        </p>
       </div>
 
       <div className="hero-actions landing__actions landing__actions--secondary">

@@ -27,7 +27,7 @@ export function PlayerRarityBadge({ player }: PlayerRarityBadgeProps) {
     <span className="player-rarity-badges">
       {era ? (
         <span className="player-rarity-badge player-rarity-badge--era">
-          {player.era} Legend
+          Legend
         </span>
       ) : null}
       {allStar ? (

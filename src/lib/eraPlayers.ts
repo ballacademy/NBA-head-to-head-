@@ -3,8 +3,11 @@ import { deriveStyles, estimateDefense, estimateUsage } from "./playerPool";
 import { buildPlayerPositions, normalizePosition } from "./positions";
 import { lookupJerseyNumber } from "./jerseyNumbers";
 import type { Player } from "./types";
-import era2010sData from "../../data/era-players-2010s.json";
+import era1970sData from "../../data/era-players-1970s.json";
+import era1980sData from "../../data/era-players-1980s.json";
 import era1990sData from "../../data/era-players-1990s.json";
+import era2000sData from "../../data/era-players-2000s.json";
+import era2010sData from "../../data/era-players-2010s.json";
 
 interface EraPlayerRaw {
   id: string;
@@ -31,7 +34,13 @@ interface EraPlayersFile {
   players: EraPlayerRaw[];
 }
 
-const ERA_FILES = [era2010sData, era1990sData] as EraPlayersFile[];
+const ERA_FILES = [
+  era1970sData,
+  era1980sData,
+  era1990sData,
+  era2000sData,
+  era2010sData,
+] as EraPlayersFile[];
 
 const POSITION_HEIGHT_INCHES: Record<Player["position"], number> = {
   PG: 74.5,
@@ -119,5 +128,7 @@ export const getAllEraPlayers = () =>
 export const eraPlayersById = new Map(
   getAllEraPlayers().map((player) => [player.id, player]),
 );
+
+export const getLegendPlayerCount = () => getAllEraPlayers().length;
 
 export const getEraPlayerCount = (era: EraId) => getEraPlayers(era).length;

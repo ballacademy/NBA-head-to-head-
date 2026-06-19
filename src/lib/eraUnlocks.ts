@@ -1,62 +1,35 @@
 import type { Player } from "./types";
 import type { PlayerRecord } from "./playerRecord";
 
-export type EraId = "2010s" | "1990s";
+export type EraId = "1970s" | "1980s" | "1990s" | "2000s" | "2010s";
 
-export const ERA_2010S_WIN_THRESHOLD = 50;
-export const ERA_1990S_WIN_THRESHOLD = 100;
+export const ALL_TIME_WIN_THRESHOLD = 50;
 
-export interface EraDefinition {
-  id: EraId;
-  title: string;
-  description: string;
-  winThreshold: number;
-}
+/** Set to false before release to require 50 wins for legends. */
+export const ALL_TIME_LEGENDS_TESTING_UNLOCK = true;
 
-export const ERA_DEFINITIONS: EraDefinition[] = [
-  {
-    id: "2010s",
-    title: "2010s Legends",
-    description: "Unlock Prime Harden, Heat LeBron, and more after 50 wins.",
-    winThreshold: ERA_2010S_WIN_THRESHOLD,
-  },
-  {
-    id: "1990s",
-    title: "90s Legends",
-    description: "Unlock Jordan, Hakeem, Mailman, and more after 100 wins.",
-    winThreshold: ERA_1990S_WIN_THRESHOLD,
-  },
+export const ALL_ERA_IDS: EraId[] = [
+  "1970s",
+  "1980s",
+  "1990s",
+  "2000s",
+  "2010s",
 ];
+
+export const areLegendsUnlocked = (
+  record: Pick<PlayerRecord, "wins">,
+) =>
+  ALL_TIME_LEGENDS_TESTING_UNLOCK ||
+  record.wins >= ALL_TIME_WIN_THRESHOLD;
+
+export const isAllTimeModeUnlocked = areLegendsUnlocked;
 
 export const getUnlockedEras = (
   record: Pick<PlayerRecord, "wins">,
-): EraId[] => {
-  const unlocked: EraId[] = [];
+): EraId[] => (areLegendsUnlocked(record) ? ALL_ERA_IDS : []);
 
-  if (record.wins >= ERA_2010S_WIN_THRESHOLD) {
-    unlocked.push("2010s");
-  }
-
-  if (record.wins >= ERA_1990S_WIN_THRESHOLD) {
-    unlocked.push("1990s");
-  }
-
-  return unlocked;
-};
-
-export const isEraUnlocked = (
-  era: EraId,
+export const getAllTimeWinsRemaining = (
   record: Pick<PlayerRecord, "wins">,
-) => getUnlockedEras(record).includes(era);
-
-export const getEraProgress = (record: Pick<PlayerRecord, "wins">) =>
-  ERA_DEFINITIONS.map((era) => ({
-    ...era,
-    isUnlocked: record.wins >= era.winThreshold,
-    winsRemaining: Math.max(era.winThreshold - record.wins, 0),
-  }));
+) => Math.max(ALL_TIME_WIN_THRESHOLD - record.wins, 0);
 
 export const isEraPlayer = (player: Pick<Player, "era">) => Boolean(player.era);
-
-export const isAllTimeModeUnlocked = (record: Pick<PlayerRecord, "wins">) =>
-  record.wins >= ERA_2010S_WIN_THRESHOLD;
