@@ -800,7 +800,7 @@ main {
 .unlock-modal {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 100;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -808,10 +808,42 @@ main {
   backdrop-filter: blur(8px);
 }
 
+.unlock-modal--compact {
+  padding: 16px;
+  background: rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(4px);
+}
+
 .unlock-modal__panel {
   width: min(720px, 100%);
   max-height: calc(100vh - 48px);
   overflow: auto;
+}
+
+.unlock-modal__panel--compact {
+  width: min(420px, 100%);
+  max-height: min(520px, calc(100vh - 32px));
+  padding: 16px 18px;
+  border-radius: 20px;
+  box-shadow:
+    0 24px 60px rgba(2, 6, 23, 0.45),
+    0 0 0 1px rgba(148, 163, 184, 0.18);
+}
+
+.unlock-modal--compact .unlock-modal__copy {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.unlock-modal--compact h2 {
+  margin: 6px 0 8px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.unlock-modal--compact .eyebrow {
+  font-size: 0.7rem;
 }
 
 .unlock-modal__copy {
@@ -823,6 +855,10 @@ main {
 .unlock-modal__options {
   display: grid;
   gap: 14px;
+}
+
+.unlock-modal--compact .unlock-modal__options {
+  gap: 10px;
 }
 
 .unlock-option {
@@ -846,6 +882,20 @@ main {
 .unlock-option:hover {
   transform: translateY(-2px);
   border-color: rgba(148, 163, 184, 0.45);
+}
+
+.unlock-option--compact {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.unlock-option--compact .unlock-option__name {
+  font-size: 0.95rem;
+}
+
+.unlock-option--compact .unlock-option__meta {
+  font-size: 0.82rem;
 }
 
 .unlock-option--superstar {

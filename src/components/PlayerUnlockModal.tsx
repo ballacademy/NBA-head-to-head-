@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { createPortal } from "react-dom";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { isSuperstarPlayer } from "../lib/allStars";
 import { playersById } from "../lib/playerPool";
@@ -10,9 +11,14 @@ import { PlayerRarityBadge } from "./PlayerRarityBadge";
 interface PlayerUnlockModalProps {
   offer: UnlockOffer;
   onSelect: (playerId: string) => void;
+  variant?: "full" | "compact";
 }
 
-export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
+export function PlayerUnlockModal({
+  offer,
+  onSelect,
+  variant = "full",
+}: PlayerUnlockModalProps) {
   const options = useMemo(() => {
     const uniqueIds = [...new Set([offer.optionA, offer.optionB])];
 
@@ -22,22 +28,34 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
   }, [offer.optionA, offer.optionB]);
 
   const isWinOffer = offer.kind === "win";
+  const isCompact = variant === "compact";
 
-  return (
-    <div className="unlock-modal" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
-      <div className="unlock-modal__panel panel">
+  const modal = (
+    <div
+      className={`unlock-modal${isCompact ? " unlock-modal--compact" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="unlock-title"
+    >
+      <div className={`unlock-modal__panel panel${isCompact ? " unlock-modal__panel--compact" : ""}`}>
         <p className="eyebrow">
           {isWinOffer ? "New star unlocked" : "New scrub unlocked"}
         </p>
         <h2 id="unlock-title">
-          {isWinOffer
-            ? "Choose one All-Star for your collection"
-            : "Choose one Scrub for your collection"}
+          {isCompact
+            ? isWinOffer
+              ? "Choose your star"
+              : "Choose your scrub"
+            : isWinOffer
+              ? "Choose one All-Star for your collection"
+              : "Choose one Scrub for your collection"}
         </h2>
         <p className="unlock-modal__copy">
-          {isWinOffer
-            ? "Pick a 2026 All-Star or recent All-Star (2023–2025) to add to your draft pool. Superstar cards are extra rare — grab them when they appear. You need to choose before drafting again."
-            : "Pick a player to add to your draft pool. Super Scrub cards are extra rare — embrace the chaos when they appear. You need to choose before drafting again."}
+          {isCompact
+            ? "Pick one player to add to your collection before drafting again."
+            : isWinOffer
+              ? "Pick a 2026 All-Star or recent All-Star (2023–2025) to add to your draft pool. Superstar cards are extra rare — grab them when they appear. You need to choose before drafting again."
+              : "Pick a player to add to your draft pool. Super Scrub cards are extra rare — embrace the chaos when they appear. You need to choose before drafting again."}
         </p>
 
         <div className="unlock-modal__options">
@@ -51,6 +69,8 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                 type="button"
                 key={player.id}
                 className={`unlock-option${
+                  isCompact ? " unlock-option--compact" : ""
+                }${
                   premium
                     ? isWinOffer
                       ? " unlock-option--superstar"
@@ -63,7 +83,7 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                   team={player.team}
                   position={player.position}
                   jerseyNumber={player.jerseyNumber}
-                  showJersey
+                  showJersey={!isCompact}
                   label={player.name}
                 />
                 <div className="unlock-option__body">
@@ -74,7 +94,7 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
                   <span className="unlock-option__meta">
                     {player.team} • {player.position}
                   </span>
-                  <PlayerDraftStats player={player} />
+                  {isCompact ? null : <PlayerDraftStats player={player} />}
                 </div>
                 {premium ? (
                   <span className="unlock-option__glow" aria-hidden="true" />
@@ -86,4 +106,6 @@ export function PlayerUnlockModal({ offer, onSelect }: PlayerUnlockModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

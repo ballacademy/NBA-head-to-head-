@@ -147,6 +147,7 @@ export function LandingPage({
         <PlayerUnlockModal
           offer={collection.pendingUnlock}
           onSelect={handleUnlockSelect}
+          variant="compact"
         />
       ) : null}
 
