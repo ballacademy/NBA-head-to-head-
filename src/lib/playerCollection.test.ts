@@ -146,6 +146,54 @@ describe("playerCollection", () => {
     expect(next.unlockedIds.length).toBe(collection.unlockedIds.length + 1);
   });
 
+  it("rejects scrub selections for win unlock offers", () => {
+    const collection = loadPlayerCollection();
+    const scrubId = getScrubPlayerIds()[0]!;
+
+    const withInvalidOffer = {
+      ...collection,
+      pendingUnlock: {
+        kind: "win" as const,
+        optionA: scrubId,
+        optionB: scrubId,
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    const next = completeUnlock(scrubId, withInvalidOffer);
+
+    expect(next.unlockedIds).toEqual(collection.unlockedIds);
+    expect(next.pendingUnlock).toEqual(withInvalidOffer.pendingUnlock);
+  });
+
+  it("clears a stale loss unlock when a win reward has no stars left", () => {
+    const collection = loadPlayerCollection();
+    const scrubId = getScrubPlayerIds()[0]!;
+    const withLossPending = {
+      ...collection,
+      pendingUnlock: {
+        kind: "loss" as const,
+        optionA: scrubId,
+        optionB: scrubId,
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    const allStarIds = getWinUnlockPlayerIds();
+    const fullyUnlocked = {
+      ...withLossPending,
+      unlockedIds: [...new Set([...withLossPending.unlockedIds, ...allStarIds])],
+    };
+
+    const next = grantWinUnlock(
+      "match-clear-loss",
+      fullyUnlocked,
+      { winStreak: 2, lossStreak: 0 },
+    );
+
+    expect(next.pendingUnlock).toBeNull();
+  });
+
   it("tracks progress against the full 2026 all-star pool", () => {
     const collection = loadPlayerCollection();
 

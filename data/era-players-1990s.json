@@ -2,25 +2,6 @@
   "era": "1990s",
   "players": [
     {
-      "id": "era-1990s-jordami01-chi",
-      "bbrPlayerId": "jordami01",
-      "name": "Michael Jordan",
-      "team": "CHI",
-      "position": "SG",
-      "age": 29,
-      "gamesPlayed": 82,
-      "minutes": 38.8,
-      "points": 30.4,
-      "rebounds": 6.6,
-      "assists": 4.3,
-      "steals": 2.3,
-      "blocks": 0.8,
-      "turnovers": 2.9,
-      "threePointPct": 0.374,
-      "trueShooting": 0.605,
-      "salary": 33000000
-    },
-    {
       "id": "era-1990s-olajwh01-hou",
       "bbrPlayerId": "olajwh01",
       "name": "Hakeem Olajuwon",
@@ -57,25 +38,6 @@
       "threePointPct": 0.0,
       "trueShooting": 0.576,
       "salary": 17000000
-    },
-    {
-      "id": "era-1990s-malonka01-uta",
-      "bbrPlayerId": "malonka01",
-      "name": "Karl Malone",
-      "team": "UTA",
-      "position": "PF",
-      "age": 34,
-      "gamesPlayed": 82,
-      "minutes": 37.4,
-      "points": 25.5,
-      "rebounds": 9.4,
-      "assists": 4.1,
-      "steals": 1.2,
-      "blocks": 0.4,
-      "turnovers": 2.8,
-      "threePointPct": 0.0,
-      "trueShooting": 0.577,
-      "salary": 6000000
     },
     {
       "id": "era-1990s-stockjo01-uta",

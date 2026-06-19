@@ -123,6 +123,10 @@ function App() {
   const userDraftComplete = draftStep >= 5;
 
   const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
+    if (collection.pendingUnlock) {
+      return false;
+    }
+
     const daily = Boolean(options.isDailyDraft);
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
@@ -196,6 +200,31 @@ function App() {
     setAllTimeMode(false);
     setPlayerRecord(loadPlayerRecord());
     setPhase("landing");
+  };
+
+  const replayLastMode = () => {
+    if (!user) {
+      resetToLanding();
+      return;
+    }
+
+    if (isDailyDraft) {
+      const team = { city: user.city, name: user.name };
+      if (!startMatch(team, { isDailyDraft: true })) {
+        resetToLanding();
+      }
+      return;
+    }
+
+    const team = { city: user.city, name: user.name };
+    if (
+      !startMatch(team, {
+        salaryCapMode: Boolean(user.salaryCapMode),
+        allTimeMode: Boolean(user.allTimeMode),
+      })
+    ) {
+      resetToLanding();
+    }
   };
 
   const handlePick = useCallback((slot: number, playerId: string) => {
@@ -500,7 +529,8 @@ function App() {
           matchId={matchId}
           collection={collection}
           onCollectionChange={handleCollectionChange}
-          onPlayAgain={resetToLanding}
+          onPlayAgain={replayLastMode}
+          onReturnToMenu={resetToLanding}
         />
       ) : null}
     </main>

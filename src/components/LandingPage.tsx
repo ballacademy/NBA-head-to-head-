@@ -93,6 +93,12 @@ export function LandingPage({
   );
 
   const handleStart = (options?: StartDraftOptions) => {
+    if (collection.pendingUnlock) {
+      setError("Choose your unlocked player before starting a new draft.");
+      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     let team = normalizeTeamProfile(city, name);
 
     if (!team) {

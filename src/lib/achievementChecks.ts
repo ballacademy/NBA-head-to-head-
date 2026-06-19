@@ -5,6 +5,11 @@ import {
   isSuperstarPlayer,
 } from "./allStars";
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
+import {
+  hasStarPedigree,
+  isAllStarTierPlayer,
+  isSuperstarTierPlayer,
+} from "./starPedigree";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { Player } from "./types";
 
@@ -221,9 +226,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "turnover-terror",
     title: "Turnover Terror",
-    description: "Draft a lineup averaging 3.4+ turnovers.",
+    description: "Draft a lineup averaging 3.6+ turnovers.",
     emoji: "🎭",
-    check: (lineup) => average(lineup.map((player) => player.turnovers)) >= 3.4,
+    check: (lineup) => average(lineup.map((player) => player.turnovers)) >= 3.6,
   },
   {
     id: "carebear-offense",
@@ -264,10 +269,10 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     id: "stocks-and-bonds",
     title: "Stocks & Bonds",
     description:
-      "Draft five players with at least 2.0 stocks (steals + blocks) each.",
+      "Draft five players with at least 2.2 stocks (steals + blocks) each.",
     emoji: "📈",
     check: (lineup) =>
-      lineup.every((player) => player.steals + player.blocks >= 2.0),
+      lineup.every((player) => player.steals + player.blocks >= 2.2),
   },
   {
     id: "defensive-fortress",
@@ -310,14 +315,14 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     title: "Galaxy Brain",
     description: "Draft five superstars.",
     emoji: "🌌",
-    check: (lineup) => lineup.every((player) => isSuperstarPlayer(player)),
+    check: (lineup) => lineup.every((player) => isSuperstarTierPlayer(player)),
   },
   {
     id: "all-star-weekend",
     title: "All-Star Weekend",
     description: "Draft five current All-Stars.",
     emoji: "⭐️",
-    check: (lineup) => lineup.every((player) => isAllStarPlayer(player)),
+    check: (lineup) => lineup.every((player) => isAllStarTierPlayer(player)),
   },
   {
     id: "recent-heat",
@@ -345,13 +350,7 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     title: "No Votes",
     description: "Draft five players with zero star pedigree.",
     emoji: "🗳️",
-    check: (lineup) =>
-      lineup.every(
-        (player) =>
-          !isAllStarPlayer(player) &&
-          !isRecentAllStarPlayer(player) &&
-          !isSuperstarPlayer(player),
-      ),
+    check: (lineup) => lineup.every((player) => !hasStarPedigree(player)),
   },
   {
     id: "sample-size-syndrome",
@@ -377,9 +376,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "workhorses",
     title: "Workhorses",
-    description: "Draft five players averaging at least 32 minutes each.",
+    description: "Draft five players averaging at least 37 minutes each.",
     emoji: "🐴",
-    check: (lineup) => lineup.every((player) => player.minutes >= 32),
+    check: (lineup) => lineup.every((player) => player.minutes >= 37),
   },
   {
     id: "true-god",

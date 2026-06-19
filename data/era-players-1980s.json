@@ -173,25 +173,6 @@
       "salary": 900000
     },
     {
-      "id": "era-1980s-olajwh01-hou",
-      "bbrPlayerId": "olajwh01",
-      "name": "Hakeem Olajuwon",
-      "team": "HOU",
-      "position": "C",
-      "age": 26,
-      "gamesPlayed": 82,
-      "minutes": 36.8,
-      "points": 23.4,
-      "rebounds": 11.4,
-      "assists": 2.9,
-      "steals": 1.6,
-      "blocks": 3.4,
-      "turnovers": 3.2,
-      "threePointPct": 0.0,
-      "trueShooting": 0.564,
-      "salary": 1400000
-    },
-    {
       "id": "era-1980s-worthyja01-lal",
       "bbrPlayerId": "worthyja01",
       "name": "James Worthy",

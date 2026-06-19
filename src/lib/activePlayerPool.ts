@@ -8,6 +8,25 @@ export interface PlayerPoolOptions {
   allTimeMode?: boolean;
 }
 
+const dedupeEraPlayersByFranchise = (eraPlayers: Player[]) => {
+  const bestByFranchise = new Map<string, Player>();
+
+  for (const player of eraPlayers) {
+    const franchiseKey = `${player.bbrPlayerId ?? player.id}:${player.team}`;
+    const existing = bestByFranchise.get(franchiseKey);
+
+    if (
+      !existing ||
+      player.points > existing.points ||
+      (player.points === existing.points && player.minutes > existing.minutes)
+    ) {
+      bestByFranchise.set(franchiseKey, player);
+    }
+  }
+
+  return [...bestByFranchise.values()];
+};
+
 export const getActivePlayerPool = (
   record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
@@ -16,7 +35,9 @@ export const getActivePlayerPool = (
     return players;
   }
 
-  const eraPlayers = getEraPlayerPool(getUnlockedEras(record));
+  const eraPlayers = dedupeEraPlayersByFranchise(
+    getEraPlayerPool(getUnlockedEras(record)),
+  );
   const currentIds = new Set(players.map((player) => player.id));
   const uniqueEraPlayers = eraPlayers.filter((player) => !currentIds.has(player.id));
 

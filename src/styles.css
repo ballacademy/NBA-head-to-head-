@@ -1103,6 +1103,18 @@ main {
   text-align: center;
 }
 
+.match-results__action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.match-results__menu-button {
+  margin: 0;
+}
+
 .match-results__actions.panel--compact {
   padding-top: 12px;
   padding-bottom: 12px;

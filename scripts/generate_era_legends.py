@@ -132,8 +132,31 @@ def to_player(era: str, raw: dict) -> dict:
     }
 
 
-def main() -> None:
+def season_rank(raw: dict) -> tuple[float, float]:
+    return (raw["points"], raw["minutes"])
+
+
+def dedupe_best_seasons() -> dict[str, list[dict]]:
+    best_entries: dict[tuple[str, str], tuple[str, dict]] = {}
+
     for era, players in ERA_PLAYERS.items():
+        for player in players:
+            key = (player["bbr"], player["team"])
+            current = best_entries.get(key)
+            if current is None or season_rank(player) > season_rank(current[1]):
+                best_entries[key] = (era, player)
+
+    deduped: dict[str, list[dict]] = {era: [] for era in ERA_PLAYERS}
+    for era, player in best_entries.values():
+        deduped[era].append(player)
+
+    return deduped
+
+
+def main() -> None:
+    deduped_players = dedupe_best_seasons()
+
+    for era, players in deduped_players.items():
         payload = {
             "era": era,
             "players": [to_player(era, player) for player in players],

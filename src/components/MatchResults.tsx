@@ -29,6 +29,7 @@ interface MatchResultsProps {
   collection: PlayerCollection;
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
+  onReturnToMenu: () => void;
 }
 
 export function MatchResults({
@@ -40,6 +41,7 @@ export function MatchResults({
   collection,
   onCollectionChange,
   onPlayAgain,
+  onReturnToMenu,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
@@ -194,13 +196,22 @@ export function MatchResults({
               </p>
             </>
           ) : (
-            <button
-              type="button"
-              className="play-again-button"
-              onClick={onPlayAgain}
-            >
-              Draft another team
-            </button>
+            <div className="match-results__action-row">
+              <button
+                type="button"
+                className="play-again-button"
+                onClick={onPlayAgain}
+              >
+                Draft another team
+              </button>
+              <button
+                type="button"
+                className="secondary-button match-results__menu-button"
+                onClick={onReturnToMenu}
+              >
+                Main menu
+              </button>
+            </div>
           )}
         </div>
       ) : null}

@@ -272,9 +272,15 @@ export const grantWinUnlock = (
 
   const offer = createWinUnlockOffer(collection);
 
+  writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
+
   if (!offer) {
-    writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
-    return collection;
+    const next = {
+      ...collection,
+      pendingUnlock: null,
+    };
+    savePlayerCollection(next);
+    return next;
   }
 
   const next = {
@@ -283,7 +289,6 @@ export const grantWinUnlock = (
   };
 
   savePlayerCollection(next);
-  writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
 
   return next;
 };
@@ -346,6 +351,15 @@ export const completeUnlock = (
   }
 
   if (playerId !== offer.optionA && playerId !== offer.optionB) {
+    return collection;
+  }
+
+  const isValidSelection =
+    offer.kind === "win"
+      ? getWinUnlockPlayerIds().includes(playerId)
+      : getScrubPlayerIds().includes(playerId);
+
+  if (!isValidSelection) {
     return collection;
   }
 
