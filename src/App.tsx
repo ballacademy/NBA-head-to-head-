@@ -423,6 +423,7 @@ function App() {
           dailyChallenge={dailyChallenge}
           playerRecord={playerRecord}
           onStartDraft={startMatch}
+          onCollectionChange={setCollection}
           onViewStats={() => setPhase("stats")}
           onViewAchievements={() => setPhase("achievements")}
           onViewLeaderboard={() => setPhase("leaderboard")}

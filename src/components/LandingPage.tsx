@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  completeUnlock,
   getCollectionProgress,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey } from "../lib/dailyDraft";
 import { getPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
 import {
@@ -38,6 +40,7 @@ interface LandingPageProps {
     team: TeamProfile,
     options?: StartDraftOptions,
   ) => boolean;
+  onCollectionChange: (collection: PlayerCollection) => void;
   onViewStats: () => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
@@ -73,13 +76,23 @@ export function LandingPage({
   dailyChallenge,
   playerRecord,
   onStartDraft,
+  onCollectionChange,
   onViewStats,
   onViewAchievements,
   onViewLeaderboard,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
+  const [showUnlockModal, setShowUnlockModal] = useState(
+    () => Boolean(collection.pendingUnlock),
+  );
   const teamFormRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (collection.pendingUnlock) {
+      setShowUnlockModal(true);
+    }
+  }, [collection.pendingUnlock]);
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimeUnlocked = isAllTimeModeUnlocked(playerRecord);
@@ -91,10 +104,15 @@ export function LandingPage({
     [dailyChallenge.id, dailyDateKey],
   );
 
+  const handleUnlockSelect = (playerId: string) => {
+    const next = completeUnlock(playerId, collection);
+    onCollectionChange(next);
+    setShowUnlockModal(false);
+  };
+
   const handleStart = (options?: StartDraftOptions) => {
     if (collection.pendingUnlock) {
-      setError("Choose your unlocked player before starting a new draft.");
-      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setShowUnlockModal(true);
       return;
     }
 
@@ -125,6 +143,13 @@ export function LandingPage({
 
   return (
     <section className="landing panel landing--rich">
+      {showUnlockModal && collection.pendingUnlock ? (
+        <PlayerUnlockModal
+          offer={collection.pendingUnlock}
+          onSelect={handleUnlockSelect}
+        />
+      ) : null}
+
       <div className="landing__glow" aria-hidden="true" />
 
       <p className="eyebrow landing__eyebrow">Draft Day GM</p>
