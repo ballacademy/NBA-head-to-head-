@@ -404,6 +404,11 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     return Boolean(player && isSuperstarPlayer(player));
   }).length;
 
+  const winUnlockIds = new Set(getWinUnlockPlayerIds());
+  const starsUnlocked = collection.unlockedIds.filter((playerId) =>
+    winUnlockIds.has(playerId),
+  ).length;
+
   return {
     unlocked: unlockedAllStars,
     total: ALL_STAR_COUNT,
@@ -411,6 +416,8 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     recentTotal: RECENT_ALL_STAR_COUNT,
     superstarUnlocked: unlockedSuperstars,
     superstarTotal: SUPERSTAR_COUNT,
+    starsUnlocked,
+    starPool: winUnlockIds.size,
     scrubPool: SCRUB_POOL_SIZE,
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,

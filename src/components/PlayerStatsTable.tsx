@@ -6,12 +6,11 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import type { Player } from "../lib/types";
-import type { SeasonStatsFile } from "../lib/playerPool";
 
 interface PlayerStatsTableProps {
   players: Player[];
-  statsFile: SeasonStatsFile;
   collection?: PlayerCollection;
+  onBack: () => void;
 }
 
 type SortKey =
@@ -45,8 +44,8 @@ const columns: Array<{ key: SortKey; label: string }> = [
 
 export function PlayerStatsTable({
   players,
-  statsFile,
   collection = ensurePlayerCollection(),
+  onBack,
 }: PlayerStatsTableProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("points");
@@ -97,19 +96,18 @@ export function PlayerStatsTable({
 
   return (
     <section className="panel stats-panel" aria-labelledby="stats-heading">
-      <div className="section-heading">
-        <p className="eyebrow">2025-26 season stats</p>
-        <h2 id="stats-heading">Browse the full player pool</h2>
-        <p>
-          These numbers power lineup scoring in the app. Locked Stars and scrubs
-          stay hidden until you unlock them. Everyone else is visible here.
-        </p>
-      </div>
-
-      <div className="stats-meta">
-        <span>Season: {statsFile.season}</span>
-        <span>Updated: {new Date(statsFile.generatedAt).toLocaleString()}</span>
-        <span>Source: {statsFile.source}</span>
+      <div className="stats-panel__header">
+        <div className="section-heading">
+          <p className="eyebrow">2025-26 season stats</p>
+          <h2 id="stats-heading">Browse the full player pool</h2>
+          <p>
+            These numbers power lineup scoring in the app. Locked stars and scrubs
+            stay hidden until you unlock them. Everyone else is visible here.
+          </p>
+        </div>
+        <button type="button" className="secondary-button" onClick={onBack}>
+          Back to home
+        </button>
       </div>
 
       <div className="stats-file-note">

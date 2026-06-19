@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { players, statsFile } from "./data/players";
+import { players } from "./data/players";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
@@ -185,10 +185,6 @@ function App() {
   };
 
   const resetToLanding = () => {
-    if (!isDailyDraft && collection.pendingUnlock) {
-      return;
-    }
-
     setUser(null);
     setOpponent(null);
     setOpponentCollection(null);
@@ -409,16 +405,11 @@ function App() {
 
   if (phase === "stats") {
     return (
-      <main>
-        <section className="panel stats-intro">
-          <button type="button" className="secondary-button" onClick={resetToLanding}>
-            Back to home
-          </button>
-        </section>
+      <main className="landing-layout">
         <PlayerStatsTable
           players={activePlayers}
-          statsFile={statsFile}
           collection={collection}
+          onBack={resetToLanding}
         />
       </main>
     );

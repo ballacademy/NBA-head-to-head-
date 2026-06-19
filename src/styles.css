@@ -547,16 +547,44 @@ main {
     #0f172a;
 }
 
+.collection-progress-card__split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.collection-progress-card__column {
+  display: grid;
+  gap: 6px;
+}
+
+.collection-progress-card__column--scrubs {
+  text-align: right;
+}
+
+.collection-progress-card__label {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .collection-progress-card__value {
-  margin: 8px 0 4px;
+  margin: 0;
   font-size: 2rem;
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #fde68a;
 }
 
+.collection-progress-card__value--scrubs {
+  color: #fca5a5;
+}
+
 .collection-progress-card__meta {
-  margin: 0;
+  margin: 12px 0 0;
   color: var(--muted);
 }
 
@@ -1852,6 +1880,18 @@ main {
 .defense-grade--F {
   background: rgba(248, 113, 113, 0.16);
   color: #fecaca;
+}
+
+.stats-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stats-panel__header .section-heading {
+  margin-bottom: 0;
 }
 
 .stats-intro {

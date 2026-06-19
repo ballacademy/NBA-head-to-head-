@@ -268,15 +268,22 @@ export function LandingPage({
 
       <div className="collection-progress-card landing-card landing-card--collection">
         <p className="eyebrow">Your stars &amp; scrubs</p>
-        <p className="collection-progress-card__value">
-          {collectionProgress.unlocked}/{collectionProgress.total} All-Stars •{" "}
-          {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}{" "}
-          Recent All-Stars • {collectionProgress.superstarUnlocked}/
-          {collectionProgress.superstarTotal} Superstars
-        </p>
+        <div className="collection-progress-card__split">
+          <div className="collection-progress-card__column">
+            <span className="collection-progress-card__label">Stars</span>
+            <span className="collection-progress-card__value">
+              {collectionProgress.starsUnlocked}/{collectionProgress.starPool}
+            </span>
+          </div>
+          <div className="collection-progress-card__column collection-progress-card__column--scrubs">
+            <span className="collection-progress-card__label">Scrubs</span>
+            <span className="collection-progress-card__value collection-progress-card__value--scrubs">
+              {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
+            </span>
+          </div>
+        </div>
         <p className="collection-progress-card__meta">
-          {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool} Scrubs
-          unlocked • Win to unlock more Stars, lose to unlock scrubs.
+          Win to unlock more stars, lose to unlock scrubs.
         </p>
       </div>
 
