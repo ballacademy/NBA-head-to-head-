@@ -164,7 +164,7 @@ export function LandingPage({
         className="landing-team-form landing-card landing-card--form"
       >
         <label className="field">
-          <span>Team name</span>
+          <span>Team Name</span>
           <input
             type="text"
             value={name}
@@ -279,14 +279,26 @@ export function LandingPage({
         </div>
       </div>
 
-      <div className="hero-actions landing__actions landing__actions--secondary">
-        <button type="button" className="ghost-link" onClick={onViewLeaderboard}>
+      <div className="landing-nav-actions">
+        <button
+          type="button"
+          className="landing-nav-actions__button"
+          onClick={onViewLeaderboard}
+        >
           Leaderboard
         </button>
-        <button type="button" className="ghost-link" onClick={onViewStats}>
-          View season stats
+        <button
+          type="button"
+          className="landing-nav-actions__button"
+          onClick={onViewStats}
+        >
+          View Season Stats
         </button>
-        <button type="button" className="ghost-link" onClick={onViewAchievements}>
+        <button
+          type="button"
+          className="landing-nav-actions__button"
+          onClick={onViewAchievements}
+        >
           Badges
         </button>
       </div>
