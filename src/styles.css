@@ -1062,7 +1062,7 @@ main {
   font-weight: 700;
 }
 
-.landing .hero-actions button {
+.landing .hero-actions button:not(.ghost-link) {
   border: 0;
   border-radius: 999px;
   padding: 13px 18px;
@@ -1072,9 +1072,20 @@ main {
 }
 
 .landing .hero-actions .ghost-link {
-  color: #1e293b;
-  background: rgba(255, 255, 255, 0.58);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #1e1035;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid rgba(30, 16, 53, 0.34);
+  box-shadow: 0 6px 18px rgba(30, 16, 53, 0.1);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.landing .hero-actions .ghost-link:hover {
+  background: #ffffff;
+  border-color: rgba(30, 16, 53, 0.5);
+  box-shadow: 0 8px 22px rgba(30, 16, 53, 0.14);
 }
 
 .draft-prompt__header {
