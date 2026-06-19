@@ -8,28 +8,26 @@ import {
 } from "./salaryCap";
 
 describe("salary cap", () => {
-  it("forces cheap filler after expensive stars in ranked mode", () => {
-    const expensive = [...players]
-      .sort(
-        (left, right) => estimatePlayerSalary(right) - estimatePlayerSalary(left),
-      )
-      .slice(0, 2);
-    const spent = getLineupSalaryTotal(expensive);
-    const cheap = players
-      .filter((player) => !expensive.some((star) => star.id === player.id))
-      .sort(
-        (left, right) => estimatePlayerSalary(left) - estimatePlayerSalary(right),
-      )[0]!;
+  it("keeps ranked lineups under a $100M cap", () => {
+    expect(RANKED_SALARY_CAP).toBe(100_000_000);
 
-    expect(spent + estimatePlayerSalary(cheap)).toBeLessThanOrEqual(RANKED_SALARY_CAP);
+    const rankedBySalary = [...players].sort(
+      (left, right) => estimatePlayerSalary(right) - estimatePlayerSalary(left),
+    );
+    const mostExpensive = rankedBySalary[0]!;
+    const secondMostExpensive = rankedBySalary[1]!;
+    const cheapest = rankedBySalary.at(-1)!;
+
     expect(
-      canAffordPlayer(
-        expensive,
-        players.sort(
-          (left, right) => estimatePlayerSalary(right) - estimatePlayerSalary(left),
-        )[0]!,
-        3,
-      ),
-    ).toBe(false);
+      getLineupSalaryTotal([mostExpensive]) + estimatePlayerSalary(cheapest),
+    ).toBeLessThanOrEqual(RANKED_SALARY_CAP);
+
+    expect(
+      getLineupSalaryTotal([mostExpensive, secondMostExpensive]),
+    ).toBeGreaterThan(RANKED_SALARY_CAP);
+
+    expect(canAffordPlayer([mostExpensive], secondMostExpensive, 3)).toBe(
+      false,
+    );
   });
 });

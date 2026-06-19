@@ -389,7 +389,7 @@ main {
 }
 
 .landing__eyebrow {
-  color: #fdba74;
+  color: #bfdbfe;
 }
 
 .landing h1 {
@@ -397,7 +397,7 @@ main {
   font-size: clamp(2.4rem, 6vw, 4.5rem);
   line-height: 0.95;
   letter-spacing: -0.06em;
-  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 55%, #fde68a 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 48%, #fbcfe8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1162,6 +1162,11 @@ main {
   border-top: 4px solid var(--accent, var(--orange));
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.55);
+}
+
+.matchup-panel__team--opponent .team-lineup-card--compact {
+  --accent: #ef4444;
+  border-top-color: #ef4444;
 }
 
 .matchup-panel__footer {

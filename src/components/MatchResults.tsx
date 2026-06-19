@@ -153,7 +153,7 @@ export function MatchResults({
             />
           </div>
 
-          <div className="matchup-panel__team">
+          <div className="matchup-panel__team matchup-panel__team--opponent">
             <TeamLineupCard
               drafter={opponent}
               lineup={opponentLineup}
