@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   getCollectionProgress,
   type PlayerCollection,
@@ -34,7 +34,10 @@ interface LandingPageProps {
   collection: PlayerCollection;
   dailyChallenge: DailyDraftChallenge;
   playerRecord: PlayerRecord;
-  onStartDraft: (team: TeamProfile, options?: StartDraftOptions) => void;
+  onStartDraft: (
+    team: TeamProfile,
+    options?: StartDraftOptions,
+  ) => boolean;
   onViewStats: () => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
@@ -74,18 +77,10 @@ export function LandingPage({
   onViewAchievements,
   onViewLeaderboard,
 }: LandingPageProps) {
-  const [city, setCity] = useState("");
-  const [name, setName] = useState("");
+  const [city, setCity] = useState(() => loadTeamProfile()?.city ?? "");
+  const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const savedTeam = loadTeamProfile();
-
-    if (savedTeam) {
-      setCity(savedTeam.city);
-      setName(savedTeam.name);
-    }
-  }, []);
+  const teamFormRef = useRef<HTMLDivElement>(null);
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimeUnlocked = isAllTimeModeUnlocked(playerRecord);
@@ -98,15 +93,30 @@ export function LandingPage({
   );
 
   const handleStart = (options?: StartDraftOptions) => {
-    const team = normalizeTeamProfile(city, name);
+    let team = normalizeTeamProfile(city, name);
+
+    if (!team) {
+      const savedTeam = loadTeamProfile();
+
+      if (savedTeam) {
+        setCity(savedTeam.city);
+        setName(savedTeam.name);
+        team = savedTeam;
+      }
+    }
 
     if (!team) {
       setError("Enter both a city and team name to start drafting.");
+      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     setError("");
-    onStartDraft(team, options);
+    const started = onStartDraft(team, options);
+
+    if (!started) {
+      setError("Couldn't start this draft. Refresh the page and try again.");
+    }
   };
 
   return (
@@ -120,7 +130,10 @@ export function LandingPage({
         competition.
       </p>
 
-      <div className="landing-team-form landing-card landing-card--form">
+      <div
+        ref={teamFormRef}
+        className="landing-team-form landing-card landing-card--form"
+      >
         <label className="field">
           <span>Team city</span>
           <input

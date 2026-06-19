@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { players, statsFile } from "./data/players";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftRoom } from "./components/DraftRoom";
@@ -9,7 +9,7 @@ import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool } from "./lib/activePlayerPool";
-import { generateFeasibleDraftSlots, pickBestForSlot } from "./lib/draft";
+import { generateFeasibleDraftSlots, pickBestForSlot, validateDraftSlotsFeasible } from "./lib/draft";
 import {
   getDailyChallenge,
   getDailyDateKey,
@@ -87,6 +87,9 @@ function App() {
         : activePlayers,
     [activePlayers, opponentCollection],
   );
+  const opponentDraftablePlayersRef = useRef(opponentDraftablePlayers);
+
+  opponentDraftablePlayersRef.current = opponentDraftablePlayers;
 
   const dailySetup = useMemo(
     () =>
@@ -135,6 +138,17 @@ function App() {
     const userSlots = setup?.slots ?? generateFeasibleDraftSlots(userPool);
     const opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
 
+    if (
+      userSlots.length === 0 ||
+      !validateDraftSlotsFeasible(userPool, userSlots) ||
+      (!daily &&
+        (!opponentSlots ||
+          opponentSlots.length === 0 ||
+          !validateDraftSlotsFeasible(opponentPool, opponentSlots)))
+    ) {
+      return false;
+    }
+
     saveTeamProfile(team);
     setPlayerRecord(record);
     setIsDailyDraft(daily);
@@ -163,6 +177,7 @@ function App() {
     setOpponentComplete(daily);
     setMatchId(null);
     setPhase("drafting");
+    return true;
   };
 
   const resetToLanding = () => {
@@ -288,13 +303,13 @@ function App() {
 
         const salaryOptions = getSalaryCapDraftOptions(
           lineup,
-          opponentDraftablePlayers,
+          opponentDraftablePlayersRef.current,
           index,
           draftSlots.length,
           Boolean(salaryCapMode),
         );
         const selection = pickBestForSlot(
-          opponentDraftablePlayers,
+          opponentDraftablePlayersRef.current,
           slot,
           pickedIds,
           salaryOptions,
@@ -326,7 +341,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [isDailyDraft, opponent?.id, opponentDraftablePlayers]);
+  }, [isDailyDraft, opponent?.id]);
 
   useEffect(() => {
     if (!userDraftComplete || phase !== "drafting") {
@@ -397,16 +412,44 @@ function App() {
   }
 
   if (!user) {
-    return null;
+    return (
+      <main className="landing-layout">
+        <section className="panel landing">
+          <p className="eyebrow">Draft unavailable</p>
+          <h2>We couldn&apos;t load your draft.</h2>
+          <p>Return home and try starting again.</p>
+          <button type="button" className="secondary-button" onClick={resetToLanding}>
+            Back to home
+          </button>
+        </section>
+      </main>
+    );
   }
 
   if (!isDailyDraft && !opponent) {
-    return null;
+    return (
+      <main className="landing-layout">
+        <section className="panel landing">
+          <p className="eyebrow">Draft unavailable</p>
+          <h2>We couldn&apos;t set up this matchup.</h2>
+          <p>Return home and try starting again.</p>
+          <button type="button" className="secondary-button" onClick={resetToLanding}>
+            Back to home
+          </button>
+        </section>
+      </main>
+    );
   }
+
+  const canRenderDraftRoom =
+    phase === "drafting" &&
+    !userDraftComplete &&
+    user.draftSlots.length > 0 &&
+    user.draftSlots[draftStep];
 
   return (
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
-      {phase === "drafting" && !userDraftComplete ? (
+      {canRenderDraftRoom ? (
         <div className="draft-layout">
           <DraftRoom
             drafter={user}
@@ -419,6 +462,15 @@ function App() {
             onTimeout={handleTimeout}
           />
         </div>
+      ) : phase === "drafting" && !userDraftComplete ? (
+        <section className="panel landing">
+          <p className="eyebrow">Draft unavailable</p>
+          <h2>We couldn&apos;t load this draft board.</h2>
+          <p>Return home and try starting again.</p>
+          <button type="button" className="secondary-button" onClick={resetToLanding}>
+            Back to home
+          </button>
+        </section>
       ) : null}
 
       {phase === "waiting" && opponent ? (
