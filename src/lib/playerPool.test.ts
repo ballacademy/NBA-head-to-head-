@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { players, statsFile } from "./playerPool";
+import { formatCompactPlayerName, players, statsFile } from "./playerPool";
 
 describe("playerPool", () => {
+  it("formats compact player names with first initial and last name", () => {
+    expect(formatCompactPlayerName("Cade Cunningham")).toBe("C. Cunningham");
+    expect(formatCompactPlayerName("Kareem Abdul-Jabbar")).toBe(
+      "K. Abdul-Jabbar",
+    );
+    expect(formatCompactPlayerName("Nene")).toBe("Nene");
+  });
   it("exposes one draftable row per player", () => {
     const ids = statsFile.players.map((player) => player.bbrPlayerId ?? player.id);
 

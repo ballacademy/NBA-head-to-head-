@@ -67,6 +67,19 @@ export const statsFile = seasonStats as SeasonStatsFile;
 
 export { formatPlayerPositions, normalizePosition } from "./positions";
 
+export const formatCompactPlayerName = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+
+  if (parts.length < 2) {
+    return name;
+  }
+
+  const firstInitial = parts[0]![0]?.toUpperCase() ?? "";
+  const lastName = parts.slice(1).join(" ");
+
+  return `${firstInitial}. ${lastName}`;
+};
+
 export const estimateUsage = (raw: RawSeasonPlayer) => {
   const possessions =
     (raw.fieldGoalsAttempted ?? 0) +

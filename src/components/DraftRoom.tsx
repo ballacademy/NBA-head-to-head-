@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   filterPlayersForSlot,
-  formatPickSlotSummary,
   formatSlotConstraint,
   sortDraftCandidates,
 } from "../lib/draft";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
-import { formatPlayerPositions } from "../lib/playerPool";
+import { formatCompactPlayerName, formatPlayerPositions } from "../lib/playerPool";
 import { loadPlayerRecord } from "../lib/playerRecord";
 import {
   estimatePlayerSalary,
@@ -88,34 +87,23 @@ export function DraftRoom({
       ),
     [drafter.lineup],
   );
-  const completedPicks = useMemo(
-    () =>
-      drafter.lineup
-        .map((playerId, index) => {
-          const player = playersById.get(playerId);
-          const slot = drafter.draftSlots[index];
+  const picksByIndex = useMemo(() => {
+    const picks = new Map<number, Player>();
 
-          if (!player || !slot) {
-            return undefined;
-          }
+    drafter.lineup.forEach((playerId, index) => {
+      if (!playerId) {
+        return;
+      }
 
-          return {
-            index,
-            player,
-            slot,
-          };
-        })
-        .filter(
-          (
-            pick,
-          ): pick is {
-            index: number;
-            player: Player;
-            slot: (typeof drafter.draftSlots)[number];
-          } => Boolean(pick),
-        ),
-    [drafter.draftSlots, drafter.lineup],
-  );
+      const player = playersById.get(playerId);
+
+      if (player) {
+        picks.set(index, player);
+      }
+    });
+
+    return picks;
+  }, [drafter.lineup, playersById]);
 
   const candidates = useMemo(() => {
     if (!currentSlot) {
@@ -233,6 +221,8 @@ export function DraftRoom({
         aria-label={`Draft progress, pick ${activeStep + 1} of ${totalPicks}`}
       >
         {Array.from({ length: totalPicks }, (_, index) => {
+          const player = picksByIndex.get(index);
+          const slot = drafter.draftSlots[index];
           const status =
             index < activeStep
               ? "complete"
@@ -241,41 +231,33 @@ export function DraftRoom({
                 : "upcoming";
 
           return (
-            <span
+            <div
               key={`draft-progress-${index}`}
-              className={`draft-progress__step draft-progress__step--${status}`}
-            />
+              className={`draft-progress__slot draft-progress__slot--${status}`}
+              aria-label={
+                player
+                  ? `Pick ${index + 1}: ${player.name}, ${player.position}`
+                  : `Pick ${index + 1}: ${slot?.position ?? "upcoming"}`
+              }
+            >
+              {player ? (
+                <>
+                  <span className="draft-progress__name">
+                    {formatCompactPlayerName(player.name)}
+                  </span>
+                  <span className="draft-progress__position">
+                    {player.position}
+                  </span>
+                </>
+              ) : (
+                <span className="draft-progress__slot-label">
+                  {slot?.position ?? index + 1}
+                </span>
+              )}
+            </div>
           );
         })}
       </div>
-
-      {completedPicks.length > 0 ? (
-        <section className="draft-picks-so-far" aria-label="Your picks so far">
-          <p className="eyebrow">Your picks so far</p>
-          <ol className="draft-picks-so-far__list">
-            {completedPicks.map(({ index, player, slot }) => (
-              <li key={player.id}>
-                <PlayerTeamIcon
-                  team={player.team}
-                  position={player.position}
-                  jerseyNumber={player.jerseyNumber}
-                  showJersey
-                  label={`${player.name}, pick ${index + 1}`}
-                />
-                <div>
-                  <div className="player-pick__title-row">
-                    <strong>{player.name}</strong>
-                    <PlayerRarityBadge player={player} />
-                  </div>
-                  <span>
-                    {formatPickSlotSummary(slot)} • {player.team}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ) : null}
 
       <div className="draft-prompt">
         <div className="draft-prompt__header">
