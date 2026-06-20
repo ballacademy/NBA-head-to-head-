@@ -4,6 +4,7 @@ import {
   buildLeaderboardIdentity,
   loadPlayerRecord,
   recordMatchResult,
+  type MatchRecordMode,
   type PlayerRecord,
 } from "./playerRecord";
 import type { TeamProfile } from "./teamProfile";
@@ -12,7 +13,8 @@ const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 
 export const projectRecordAfterMatch = (
   userWon: boolean,
-  current = loadPlayerRecord(),
+  mode: MatchRecordMode = "headToHead",
+  current = loadPlayerRecord(mode),
 ): PlayerRecord => ({
   ...current,
   wins: current.wins + (userWon ? 1 : 0),
@@ -25,15 +27,20 @@ export const persistMatchOutcome = (
   userWon: boolean,
   team: TeamProfile,
   matchId: string,
+  mode: MatchRecordMode = "headToHead",
 ) => {
   const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
 
   if (lastRecorded?.matchId === matchId) {
-    return loadPlayerRecord();
+    return loadPlayerRecord(mode);
   }
 
-  const record = recordMatchResult(userWon);
-  upsertLeaderboardEntry(buildLeaderboardIdentity(team, record));
+  const record = recordMatchResult(userWon, mode);
+
+  if (mode === "headToHead") {
+    upsertLeaderboardEntry(buildLeaderboardIdentity(team, record));
+  }
+
   writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
 
   return record;

@@ -17,6 +17,7 @@ import {
   formatPlayerRecord,
   formatWinPercentage,
   shouldShowWinPercentage,
+  type ModePlayerRecords,
   type PlayerRecord,
 } from "../lib/playerRecord";
 import { RANKED_SALARY_CAP } from "../lib/salaryCap";
@@ -35,7 +36,7 @@ import type { StartDraftOptions } from "../lib/match";
 interface LandingPageProps {
   collection: PlayerCollection;
   dailyChallenge: DailyDraftChallenge;
-  playerRecord: PlayerRecord;
+  modeRecords: ModePlayerRecords;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
@@ -74,7 +75,7 @@ function MatchModeRecord({ record }: { record: PlayerRecord }) {
 export function LandingPage({
   collection,
   dailyChallenge,
-  playerRecord,
+  modeRecords,
   onStartDraft,
   onCollectionChange,
   onViewStats,
@@ -95,8 +96,8 @@ export function LandingPage({
   }, [collection.pendingUnlock]);
 
   const collectionProgress = getCollectionProgress(collection);
-  const allTimeUnlocked = isAllTimeModeUnlocked(playerRecord);
-  const allTimeWinsRemaining = getAllTimeWinsRemaining(playerRecord);
+  const allTimeUnlocked = isAllTimeModeUnlocked(modeRecords.allTime);
+  const allTimeWinsRemaining = getAllTimeWinsRemaining(modeRecords.allTime);
   const legendCount = getLegendPlayerCount();
   const dailyDateKey = getDailyDateKey();
   const dailyEntry = useMemo(
@@ -222,7 +223,7 @@ export function LandingPage({
             Draft a five-player lineup and face a random rival. Chemistry bonuses
             reward real-world connections like college teammates and brothers.
           </p>
-          <MatchModeRecord record={playerRecord} />
+          <MatchModeRecord record={modeRecords.headToHead} />
           <button
             type="button"
             className="landing__primary-button"
@@ -240,7 +241,7 @@ export function LandingPage({
             real 2025-26 salaries. Stack stars and you&apos;ll need minimum deals
             to finish your five.
           </p>
-          <MatchModeRecord record={playerRecord} />
+          <MatchModeRecord record={modeRecords.ranked} />
           <button
             type="button"
             className="ranked-cap-card__button"
@@ -259,7 +260,7 @@ export function LandingPage({
               ? ` ${legendCount} legends available.`
               : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock legends.`}
           </p>
-          <MatchModeRecord record={playerRecord} />
+          <MatchModeRecord record={modeRecords.allTime} />
           {allTimeUnlocked ? (
             <button
               type="button"

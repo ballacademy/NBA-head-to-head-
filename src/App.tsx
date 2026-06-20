@@ -30,7 +30,7 @@ import {
   createOpponentCollection,
   type PlayerCollection,
 } from "./lib/playerCollection";
-import { loadPlayerRecord } from "./lib/playerRecord";
+import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
@@ -56,7 +56,7 @@ function App() {
   const [isDailyDraft, setIsDailyDraft] = useState(false);
   const [allTimeMode, setAllTimeMode] = useState(false);
   const [dailyDateKey, setDailyDateKey] = useState(getDailyDateKey());
-  const [playerRecord, setPlayerRecord] = useState(loadPlayerRecord);
+  const [modeRecords, setModeRecords] = useState(loadAllModeRecords);
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
   );
@@ -66,8 +66,8 @@ function App() {
   );
 
   const activePlayers = useMemo(
-    () => getActivePlayerPool(playerRecord, { allTimeMode }),
-    [allTimeMode, playerRecord],
+    () => getActivePlayerPool(modeRecords.allTime, { allTimeMode }),
+    [allTimeMode, modeRecords.allTime],
   );
 
   const dailyChallenge = useMemo(
@@ -112,12 +112,12 @@ function App() {
     );
   }, [dailyDateKey, dailySetup, draftablePlayers]);
 
-  const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], playerRecord, {
+  const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
     allTimeMode,
   });
   const opponentLineup = getPlayersByIdFromActivePool(
     opponent?.lineup ?? [],
-    playerRecord,
+    modeRecords.allTime,
     { allTimeMode },
   );
   const userDraftComplete = draftStep >= 5;
@@ -131,8 +131,7 @@ function App() {
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
-    const record = loadPlayerRecord();
-    const pool = getActivePlayerPool(record, { allTimeMode: nextAllTimeMode });
+    const pool = getActivePlayerPool(loadPlayerRecord("allTime"), { allTimeMode: nextAllTimeMode });
     const userPool = getDraftablePlayers(pool, collection);
     const nextOpponentCollection = daily ? null : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
@@ -154,7 +153,7 @@ function App() {
     }
 
     saveTeamProfile(team);
-    setPlayerRecord(record);
+    setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
     setAllTimeMode(nextAllTimeMode);
     setDailyDateKey(dateKey);
@@ -194,7 +193,7 @@ function App() {
     setMatchId(null);
     setIsDailyDraft(false);
     setAllTimeMode(false);
-    setPlayerRecord(loadPlayerRecord());
+    setModeRecords(loadAllModeRecords());
     setPhase("landing");
   };
 
@@ -427,7 +426,7 @@ function App() {
         <LandingPage
           collection={collection}
           dailyChallenge={dailyChallenge}
-          playerRecord={playerRecord}
+          modeRecords={modeRecords}
           onStartDraft={startMatch}
           onCollectionChange={setCollection}
           onViewStats={() => setPhase("stats")}

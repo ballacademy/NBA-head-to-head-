@@ -4,6 +4,7 @@ import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
   formatPlayerRecord,
+  getMatchRecordMode,
   loadPlayerRecord,
 } from "../lib/playerRecord";
 import {
@@ -53,9 +54,10 @@ export function MatchResults({
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.total >= opponentScore.total;
+  const matchRecordMode = getMatchRecordMode(user);
   const updatedRecord = useMemo(
-    () => projectRecordAfterMatch(userWon, loadPlayerRecord()),
-    [userWon],
+    () => projectRecordAfterMatch(userWon, matchRecordMode, loadPlayerRecord(matchRecordMode)),
+    [matchRecordMode, userWon],
   );
 
   useLayoutEffect(() => {
@@ -68,14 +70,15 @@ export function MatchResults({
       userWon,
       { name: user.name },
       matchId,
+      matchRecordMode,
     );
 
-    const next = processMatchUnlock(userWon, matchId, collection, record);
+    const next = processMatchUnlock(userWon, matchId, collection);
 
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, onCollectionChange, user.name, userWon]);
+  }, [collection, matchId, matchRecordMode, onCollectionChange, user.name, userWon]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {

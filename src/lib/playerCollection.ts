@@ -13,7 +13,6 @@ import {
   SUPERSTAR_COUNT,
 } from "./allStars";
 import { readJson, writeJson } from "./browserStorage";
-import type { PlayerRecord } from "./playerRecord";
 import { advanceUnlockProgress } from "./unlockProgress";
 import {
   getScrubPlayerIds,
@@ -278,7 +277,6 @@ export const createLossUnlockOffer = (
 export const grantWinUnlock = (
   matchId: string,
   collection = ensurePlayerCollection(),
-  record?: Pick<PlayerRecord, "winStreak" | "lossStreak">,
 ) => {
   const lastUnlock = readJson<{ matchId: string }>(LAST_UNLOCK_MATCH_KEY);
 
@@ -286,12 +284,11 @@ export const grantWinUnlock = (
     return collection;
   }
 
-  if (record) {
-    const unlockKind = advanceUnlockProgress(true, record);
-    if (unlockKind !== "win") {
-      writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
-      return collection;
-    }
+  const unlockKind = advanceUnlockProgress(true);
+
+  if (unlockKind !== "win") {
+    writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
+    return collection;
   }
 
   const offer = createWinUnlockOffer(collection);
@@ -320,7 +317,6 @@ export const grantWinUnlock = (
 export const grantLossUnlock = (
   matchId: string,
   collection = ensurePlayerCollection(),
-  record?: Pick<PlayerRecord, "winStreak" | "lossStreak">,
 ) => {
   const lastUnlock = readJson<{ matchId: string }>(LAST_UNLOCK_MATCH_KEY);
 
@@ -328,12 +324,11 @@ export const grantLossUnlock = (
     return collection;
   }
 
-  if (record) {
-    const unlockKind = advanceUnlockProgress(false, record);
-    if (unlockKind !== "loss") {
-      writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
-      return collection;
-    }
+  const unlockKind = advanceUnlockProgress(false);
+
+  if (unlockKind !== "loss") {
+    writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
+    return collection;
   }
 
   const offer = createLossUnlockOffer(collection);
@@ -358,11 +353,10 @@ export const processMatchUnlock = (
   userWon: boolean,
   matchId: string,
   collection = ensurePlayerCollection(),
-  record: Pick<PlayerRecord, "winStreak" | "lossStreak">,
 ) =>
   userWon
-    ? grantWinUnlock(matchId, collection, record)
-    : grantLossUnlock(matchId, collection, record);
+    ? grantWinUnlock(matchId, collection)
+    : grantLossUnlock(matchId, collection);
 
 export const completeUnlock = (
   playerId: string,

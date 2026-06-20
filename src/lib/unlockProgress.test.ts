@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   advanceUnlockProgress,
   createUnlockProgress,
+  loadUnlockProgress,
+  resetUnlockProgress,
+  saveUnlockProgress,
   shouldGrantLossUnlock,
   shouldGrantWinUnlock,
   UNLOCK_CONSECUTIVE_LOSSES,
@@ -10,89 +13,97 @@ import {
   UNLOCK_EVERY_WINS,
 } from "./unlockProgress";
 
-describe("unlockProgress", () => {
-  it("grants a win unlock every three total wins", () => {
-    let progress = createUnlockProgress();
+const storage = new Map<string, string>();
 
-    expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBeNull();
-    progress = { winsSinceUnlock: 1, lossesSinceUnlock: 0 };
-    expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBeNull();
-    progress = { winsSinceUnlock: 2, lossesSinceUnlock: 0 };
-    expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBe("win");
+const localStorageMock = {
+  getItem: (key: string) => storage.get(key) ?? null,
+  setItem: (key: string, value: string) => {
+    storage.set(key, value);
+  },
+  clear: () => {
+    storage.clear();
+  },
+};
+
+describe("unlockProgress", () => {
+  beforeEach(() => {
+    storage.clear();
+    vi.stubGlobal("localStorage", localStorageMock);
+    resetUnlockProgress();
   });
 
-  it("grants a win unlock after three consecutive wins", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+  it("grants a win unlock every three total wins", () => {
+    expect(advanceUnlockProgress(true)).toBeNull();
+    expect(advanceUnlockProgress(false)).toBeNull();
+    expect(advanceUnlockProgress(true)).toBeNull();
+    expect(advanceUnlockProgress(false)).toBeNull();
+    expect(advanceUnlockProgress(true)).toBe("win");
+  });
+
+  it("grants a win unlock after two consecutive wins", () => {
     const progress = createUnlockProgress();
 
-    expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBeNull();
-    expect(
-      advanceUnlockProgress(
-        true,
-        { winStreak: 2, lossStreak: 0 },
-        { winsSinceUnlock: 1, lossesSinceUnlock: 0 },
-      ),
-    ).toBeNull();
-    expect(
-      advanceUnlockProgress(
-        true,
-        { winStreak: UNLOCK_CONSECUTIVE_WINS, lossStreak: 0 },
-        { winsSinceUnlock: 2, lossesSinceUnlock: 0 },
-      ),
-    ).toBe("win");
+    expect(advanceUnlockProgress(true, progress)).toBeNull();
+    expect(advanceUnlockProgress(true, loadUnlockProgress())).toBe("win");
   });
 
   it("grants a loss unlock every three total losses", () => {
-    let progress = createUnlockProgress();
-
-    expect(advanceUnlockProgress(false, { winStreak: 0, lossStreak: 1 }, progress)).toBeNull();
-    progress = { winsSinceUnlock: 0, lossesSinceUnlock: 1 };
-    expect(advanceUnlockProgress(false, { winStreak: 0, lossStreak: 1 }, progress)).toBeNull();
-    progress = { winsSinceUnlock: 0, lossesSinceUnlock: 2 };
-    expect(advanceUnlockProgress(false, { winStreak: 0, lossStreak: 1 }, progress)).toBe("loss");
+    expect(advanceUnlockProgress(false)).toBeNull();
+    expect(advanceUnlockProgress(true)).toBeNull();
+    expect(advanceUnlockProgress(false)).toBeNull();
+    expect(advanceUnlockProgress(true)).toBeNull();
+    expect(advanceUnlockProgress(false)).toBe("loss");
   });
 
-  it("grants a loss unlock after three consecutive losses", () => {
-    expect(
-      advanceUnlockProgress(
-        false,
-        { winStreak: 0, lossStreak: 2 },
-        { winsSinceUnlock: 0, lossesSinceUnlock: 1 },
-      ),
-    ).toBeNull();
-    expect(
-      advanceUnlockProgress(
-        false,
-        { winStreak: 0, lossStreak: UNLOCK_CONSECUTIVE_LOSSES },
-        { winsSinceUnlock: 0, lossesSinceUnlock: 2 },
-      ),
-    ).toBe("loss");
+  it("grants a loss unlock after two consecutive losses", () => {
+    expect(advanceUnlockProgress(false, createUnlockProgress())).toBeNull();
+    expect(advanceUnlockProgress(false, loadUnlockProgress())).toBe("loss");
   });
 
-  it("resets both win and loss progress when an unlock is granted", () => {
-    advanceUnlockProgress(
-      true,
-      { winStreak: UNLOCK_CONSECUTIVE_WINS, lossStreak: 0 },
-      { winsSinceUnlock: 2, lossesSinceUnlock: 2 },
-    );
+  it("resets all unlock progress when an unlock is granted", () => {
+    saveUnlockProgress({
+      winsSinceUnlock: 2,
+      lossesSinceUnlock: 2,
+      winStreak: UNLOCK_CONSECUTIVE_WINS,
+      lossStreak: 1,
+    });
 
-    expect(
-      advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, createUnlockProgress()),
-    ).toBeNull();
+    expect(advanceUnlockProgress(true)).toBe("win");
+    expect(loadUnlockProgress()).toEqual(createUnlockProgress());
+    expect(advanceUnlockProgress(true, createUnlockProgress())).toBeNull();
   });
 
   it("evaluates unlock thresholds before advancing counters", () => {
-    expect(shouldGrantWinUnlock({ winsSinceUnlock: 2, lossesSinceUnlock: 0 }, { winStreak: 1 })).toBe(
-      true,
-    );
     expect(
-      shouldGrantLossUnlock({ winsSinceUnlock: 0, lossesSinceUnlock: 2 }, { lossStreak: 1 }),
+      shouldGrantWinUnlock(
+        { winsSinceUnlock: 2, lossesSinceUnlock: 0, winStreak: 0, lossStreak: 0 },
+        true,
+      ),
     ).toBe(true);
-    expect(shouldGrantWinUnlock({ winsSinceUnlock: 0, lossesSinceUnlock: 0 }, { winStreak: 1 })).toBe(
-      false,
-    );
+    expect(
+      shouldGrantWinUnlock(
+        { winsSinceUnlock: 0, lossesSinceUnlock: 0, winStreak: 1, lossStreak: 0 },
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      shouldGrantLossUnlock(
+        { winsSinceUnlock: 0, lossesSinceUnlock: 2, lossStreak: 0, winStreak: 0 },
+        false,
+      ),
+    ).toBe(true);
+    expect(
+      shouldGrantWinUnlock(
+        { winsSinceUnlock: 0, lossesSinceUnlock: 0, winStreak: 0, lossStreak: 0 },
+        true,
+      ),
+    ).toBe(false);
     expect(UNLOCK_EVERY_WINS).toBe(3);
     expect(UNLOCK_EVERY_LOSSES).toBe(3);
-    expect(UNLOCK_CONSECUTIVE_WINS).toBe(3);
-    expect(UNLOCK_CONSECUTIVE_LOSSES).toBe(3);
+    expect(UNLOCK_CONSECUTIVE_WINS).toBe(2);
+    expect(UNLOCK_CONSECUTIVE_LOSSES).toBe(2);
   });
 });

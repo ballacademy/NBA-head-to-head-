@@ -8,7 +8,7 @@ import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
 import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import { formatCompactPlayerName, formatPlayerPositions } from "../lib/playerPool";
-import { loadPlayerRecord } from "../lib/playerRecord";
+import { getMatchRecordMode, loadPlayerRecord } from "../lib/playerRecord";
 import {
   estimatePlayerSalary,
   formatSalary,
@@ -48,7 +48,7 @@ export function DraftRoom({
   const [secondsLeft, setSecondsLeft] = useState(PICK_TIME_LIMIT_SECONDS);
 
   const currentSlot = drafter.draftSlots[activeStep];
-  const playerRecord = loadPlayerRecord();
+  const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
     [players],

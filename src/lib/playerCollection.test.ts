@@ -27,7 +27,7 @@ import {
 } from "./playerCollection";
 import { getScrubPlayerIds, isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { players } from "./playerPool";
-import { resetUnlockProgress } from "./unlockProgress";
+import { resetUnlockProgress, saveUnlockProgress } from "./unlockProgress";
 
 const storage = new Map<string, string>();
 
@@ -75,10 +75,13 @@ describe("playerCollection", () => {
 
   it("offers two locked all-stars after a win once unlock progress is met", () => {
     const collection = loadPlayerCollection();
-    const next = grantWinUnlock("match-1", collection, {
-      winStreak: 3,
+    saveUnlockProgress({
+      winsSinceUnlock: 2,
+      lossesSinceUnlock: 0,
+      winStreak: 1,
       lossStreak: 0,
     });
+    const next = grantWinUnlock("match-1", collection);
 
     expect(next.pendingUnlock).not.toBeNull();
     expect(next.pendingUnlock?.kind).toBe("win");
@@ -94,20 +97,21 @@ describe("playerCollection", () => {
 
   it("does not offer a win unlock before progress thresholds are met", () => {
     const collection = loadPlayerCollection();
-    const next = grantWinUnlock("match-early", collection, {
-      winStreak: 1,
-      lossStreak: 0,
-    });
+    resetUnlockProgress();
+    const next = grantWinUnlock("match-early", collection);
 
     expect(next.pendingUnlock).toBeNull();
   });
 
   it("offers two locked scrubs after a loss once unlock progress is met", () => {
     const collection = loadPlayerCollection();
-    const next = grantLossUnlock("match-loss-1", collection, {
+    saveUnlockProgress({
+      winsSinceUnlock: 0,
+      lossesSinceUnlock: 2,
       winStreak: 0,
-      lossStreak: 3,
+      lossStreak: 1,
     });
+    const next = grantLossUnlock("match-loss-1", collection);
 
     expect(next.pendingUnlock).not.toBeNull();
     expect(next.pendingUnlock?.kind).toBe("loss");
@@ -123,9 +127,14 @@ describe("playerCollection", () => {
 
   it("does not grant duplicate unlocks for the same match", () => {
     const collection = loadPlayerCollection();
-    const record = { winStreak: 3, lossStreak: 0 };
-    const first = grantWinUnlock("match-duplicate", collection, record);
-    const second = grantWinUnlock("match-duplicate", first, record);
+    saveUnlockProgress({
+      winsSinceUnlock: 2,
+      lossesSinceUnlock: 0,
+      winStreak: 1,
+      lossStreak: 0,
+    });
+    const first = grantWinUnlock("match-duplicate", collection);
+    const second = grantWinUnlock("match-duplicate", first);
 
     expect(second.pendingUnlock).toEqual(first.pendingUnlock);
   });
@@ -186,11 +195,14 @@ describe("playerCollection", () => {
       unlockedIds: [...new Set([...withLossPending.unlockedIds, ...allStarIds])],
     };
 
-    const next = grantWinUnlock(
-      "match-clear-loss",
-      fullyUnlocked,
-      { winStreak: 3, lossStreak: 0 },
-    );
+    saveUnlockProgress({
+      winsSinceUnlock: 2,
+      lossesSinceUnlock: 0,
+      winStreak: 1,
+      lossStreak: 0,
+    });
+
+    const next = grantWinUnlock("match-clear-loss", fullyUnlocked);
 
     expect(next.pendingUnlock).toBeNull();
   });
