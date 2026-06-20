@@ -21,15 +21,22 @@ describe("unlockProgress", () => {
     expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBe("win");
   });
 
-  it("grants a win unlock after two consecutive wins", () => {
+  it("grants a win unlock after three consecutive wins", () => {
     const progress = createUnlockProgress();
 
     expect(advanceUnlockProgress(true, { winStreak: 1, lossStreak: 0 }, progress)).toBeNull();
     expect(
       advanceUnlockProgress(
         true,
-        { winStreak: UNLOCK_CONSECUTIVE_WINS, lossStreak: 0 },
+        { winStreak: 2, lossStreak: 0 },
         { winsSinceUnlock: 1, lossesSinceUnlock: 0 },
+      ),
+    ).toBeNull();
+    expect(
+      advanceUnlockProgress(
+        true,
+        { winStreak: UNLOCK_CONSECUTIVE_WINS, lossStreak: 0 },
+        { winsSinceUnlock: 2, lossesSinceUnlock: 0 },
       ),
     ).toBe("win");
   });
@@ -44,12 +51,19 @@ describe("unlockProgress", () => {
     expect(advanceUnlockProgress(false, { winStreak: 0, lossStreak: 1 }, progress)).toBe("loss");
   });
 
-  it("grants a loss unlock after two consecutive losses", () => {
+  it("grants a loss unlock after three consecutive losses", () => {
+    expect(
+      advanceUnlockProgress(
+        false,
+        { winStreak: 0, lossStreak: 2 },
+        { winsSinceUnlock: 0, lossesSinceUnlock: 1 },
+      ),
+    ).toBeNull();
     expect(
       advanceUnlockProgress(
         false,
         { winStreak: 0, lossStreak: UNLOCK_CONSECUTIVE_LOSSES },
-        { winsSinceUnlock: 0, lossesSinceUnlock: 1 },
+        { winsSinceUnlock: 0, lossesSinceUnlock: 2 },
       ),
     ).toBe("loss");
   });
@@ -78,5 +92,7 @@ describe("unlockProgress", () => {
     );
     expect(UNLOCK_EVERY_WINS).toBe(3);
     expect(UNLOCK_EVERY_LOSSES).toBe(3);
+    expect(UNLOCK_CONSECUTIVE_WINS).toBe(3);
+    expect(UNLOCK_CONSECUTIVE_LOSSES).toBe(3);
   });
 });

@@ -5,8 +5,8 @@ const UNLOCK_PROGRESS_KEY = "nba-head-to-head-unlock-progress";
 
 export const UNLOCK_EVERY_WINS = 3;
 export const UNLOCK_EVERY_LOSSES = 3;
-export const UNLOCK_CONSECUTIVE_WINS = 2;
-export const UNLOCK_CONSECUTIVE_LOSSES = 2;
+export const UNLOCK_CONSECUTIVE_WINS = 3;
+export const UNLOCK_CONSECUTIVE_LOSSES = 3;
 
 export interface UnlockProgress {
   winsSinceUnlock: number;

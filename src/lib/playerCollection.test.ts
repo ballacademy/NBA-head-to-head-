@@ -76,7 +76,7 @@ describe("playerCollection", () => {
   it("offers two locked all-stars after a win once unlock progress is met", () => {
     const collection = loadPlayerCollection();
     const next = grantWinUnlock("match-1", collection, {
-      winStreak: 2,
+      winStreak: 3,
       lossStreak: 0,
     });
 
@@ -106,7 +106,7 @@ describe("playerCollection", () => {
     const collection = loadPlayerCollection();
     const next = grantLossUnlock("match-loss-1", collection, {
       winStreak: 0,
-      lossStreak: 2,
+      lossStreak: 3,
     });
 
     expect(next.pendingUnlock).not.toBeNull();
@@ -123,7 +123,7 @@ describe("playerCollection", () => {
 
   it("does not grant duplicate unlocks for the same match", () => {
     const collection = loadPlayerCollection();
-    const record = { winStreak: 2, lossStreak: 0 };
+    const record = { winStreak: 3, lossStreak: 0 };
     const first = grantWinUnlock("match-duplicate", collection, record);
     const second = grantWinUnlock("match-duplicate", first, record);
 
@@ -189,7 +189,7 @@ describe("playerCollection", () => {
     const next = grantWinUnlock(
       "match-clear-loss",
       fullyUnlocked,
-      { winStreak: 2, lossStreak: 0 },
+      { winStreak: 3, lossStreak: 0 },
     );
 
     expect(next.pendingUnlock).toBeNull();
