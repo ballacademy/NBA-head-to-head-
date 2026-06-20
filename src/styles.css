@@ -457,9 +457,11 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  overflow: visible;
   color: #f8fafc;
   font-size: 1.3rem;
   font-weight: 900;
+  line-height: 1;
 }
 
 .landing-mode-card__record-value--daily {
@@ -619,15 +621,23 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   margin-left: 8px;
   vertical-align: middle;
-  transform: translateY(-2px);
+  overflow: visible;
+}
+
+.win-streak-badge__emoji {
+  display: block;
+  font-size: 1.45rem;
+  line-height: 1;
 }
 
 .win-streak-badge__icon {
   display: block;
   width: 2.5rem;
   height: 2.5rem;
+  overflow: visible;
 }
 
 .win-streak-badge--red .win-streak-badge__icon {
@@ -657,9 +667,10 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   margin-left: 8px;
   vertical-align: middle;
-  transform: translateY(-2px);
+  overflow: visible;
 }
 
 .loss-streak-badge__icon {
@@ -2670,17 +2681,13 @@ main {
   letter-spacing: 0.04em;
 }
 
-.sort-button {
+.sort-button,
+.sort-button.active {
   border: 0;
   background: transparent;
   color: inherit;
   padding: 0;
   font-weight: 600;
-}
-
-.sort-button.active {
-  color: inherit;
-  font-weight: 800;
 }
 
 .stats-footnote {

@@ -165,13 +165,19 @@ export function WinStreakBadge({ winStreak }: WinStreakBadgeProps) {
       aria-label={`${winStreak} game ${tier.label.toLowerCase()}`}
       title={`${winStreak} game ${tier.label.toLowerCase()}`}
     >
-      <svg
-        className="win-streak-badge__icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        {renderTierIcon(tier.id)}
-      </svg>
+      {tier.id === "orange" ? (
+        <span className="win-streak-badge__emoji" aria-hidden="true">
+          🔥
+        </span>
+      ) : (
+        <svg
+          className="win-streak-badge__icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          {renderTierIcon(tier.id)}
+        </svg>
+      )}
     </span>
   );
 }
