@@ -2679,7 +2679,8 @@ main {
 }
 
 .sort-button.active {
-  color: #fb923c;
+  color: inherit;
+  font-weight: 800;
 }
 
 .stats-footnote {
