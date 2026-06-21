@@ -137,7 +137,7 @@ export const DAILY_DRAFT_GOALS: DailyDraftGoal[] = [
   {
     id: "defensive-fortress",
     title: "Defensive Fortress",
-    description: "Draft the lineup with the highest average defense rating.",
+    description: "Draft the lineup with the highest average defensive grade.",
     direction: "higher",
     aggregation: "average",
     stat: "defense",
@@ -249,7 +249,7 @@ export const DAILY_DRAFT_GOALS: DailyDraftGoal[] = [
   {
     id: "defensive-liability",
     title: "Defensive Liability",
-    description: "Draft the lineup with the lowest average defense rating.",
+    description: "Draft the lineup with the lowest average defensive grade.",
     direction: "lower",
     aggregation: "average",
     stat: "defense",

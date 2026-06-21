@@ -1,4 +1,8 @@
 import type { DailyDraftGoal } from "./dailyDraftGoals";
+import {
+  formatAverageDefenseGrade,
+  getPlayerDefenseGradeRank,
+} from "./defenseGrade";
 import type { Player } from "./types";
 
 const average = (values: number[]) =>
@@ -52,7 +56,7 @@ const getStatValue = (player: Player, stat: DailyDraftGoal["stat"]) => {
     case "usage":
       return player.usage;
     case "defense":
-      return player.defense;
+      return getPlayerDefenseGradeRank(player);
     case "fieldGoalsAttempted":
       return player.fieldGoalsAttempted;
     case "threePointersAttempted":
@@ -122,7 +126,7 @@ export const formatGoalResult = (value: number, goal: DailyDraftGoal) => {
     case "usage":
       return `${value.toFixed(1)} avg usage`;
     case "defense":
-      return `${value.toFixed(1)} avg defense`;
+      return formatAverageDefenseGrade(value);
     case "fieldGoalsAttempted":
       return `${value.toFixed(1)} FGA`;
     case "threePointersAttempted":

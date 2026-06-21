@@ -37,4 +37,16 @@ describe("dailyGoalScoring", () => {
     expect(result.formatted).toMatch(/RPG$/);
     expect(result.value).toBeGreaterThan(0);
   });
+
+  it("scores defensive fortress by average letter grade rank", () => {
+    const goal = getDailyGoalById("defensive-fortress")!;
+    const lineup = players
+      .filter((player) => player.defenseGrade === "A+")
+      .slice(0, 5);
+
+    const result = buildDailyGoalResult(lineup, goal);
+
+    expect(result.value).toBeCloseTo(12, 5);
+    expect(result.formatted).toMatch(/A\+ avg DEF$/);
+  });
 });

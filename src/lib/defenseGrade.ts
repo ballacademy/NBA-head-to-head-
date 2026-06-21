@@ -19,6 +19,38 @@ const gradeRank: Record<DefenseGrade, number> = {
   F: 0,
 };
 
+const gradesByRank: DefenseGrade[] = [
+  "F",
+  "D-",
+  "D",
+  "D+",
+  "C-",
+  "C",
+  "C+",
+  "B-",
+  "B",
+  "B+",
+  "A-",
+  "A",
+  "A+",
+];
+
+export const defenseGradeToRank = (grade: DefenseGrade) => gradeRank[grade];
+
+export const rankToDefenseGrade = (rank: number): DefenseGrade => {
+  const index = Math.round(Math.min(12, Math.max(0, rank)));
+
+  return gradesByRank[index] ?? "F";
+};
+
+export const getPlayerDefenseGradeRank = (player: {
+  defense: number;
+  defenseGrade?: DefenseGrade;
+}) => defenseGradeToRank(getDefenseGrade(player.defense, player.defenseGrade));
+
+export const formatAverageDefenseGrade = (averageRank: number) =>
+  `${rankToDefenseGrade(averageRank)} avg DEF`;
+
 export const meetsMinimumDefenseGrade = (
   defense: number,
   defenseGrade: DefenseGrade | undefined,
