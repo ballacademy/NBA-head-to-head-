@@ -1,14 +1,22 @@
+import type { MatchModeTheme } from "../lib/matchModeTheme";
+import { matchModeThemeClass } from "../lib/matchModeTheme";
+
 interface WaitingRoomProps {
   opponentPickCount: number;
   totalPicks: number;
+  theme: MatchModeTheme;
 }
 
 export function WaitingRoom({
   opponentPickCount,
   totalPicks,
+  theme,
 }: WaitingRoomProps) {
   return (
-    <section className="panel waiting-room" aria-live="polite">
+    <section
+      className={`panel waiting-room ${matchModeThemeClass(theme)}`}
+      aria-live="polite"
+    >
       <p className="eyebrow">Draft complete</p>
       <h2>Waiting for your opponent</h2>
       <p>

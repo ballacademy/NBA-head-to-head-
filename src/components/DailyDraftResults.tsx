@@ -14,6 +14,7 @@ import {
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
+import { matchModeThemeClass } from "../lib/matchModeTheme";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 
@@ -116,7 +117,9 @@ export function DailyDraftResults({
         : "Copy daily share text";
 
   return (
-    <section className="match-results daily-draft-results match-results--compact">
+    <section
+      className={`match-results daily-draft-results match-results--compact ${matchModeThemeClass("daily")}`}
+    >
       <div className="panel panel--compact daily-draft-results__header">
         <p className="eyebrow">Daily Draft complete</p>
         <h2>{dailyGoal.title}</h2>

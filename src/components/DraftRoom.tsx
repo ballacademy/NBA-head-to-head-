@@ -18,6 +18,7 @@ import {
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
 import type { Drafter, Player } from "../lib/types";
+import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
@@ -164,10 +165,15 @@ export function DraftRoom({
   const timerClass =
     secondsLeft <= 5 ? "draft-timer urgent" : "draft-timer";
   const totalPicks = drafter.draftSlots.length;
+  const modeTheme = getMatchModeTheme({
+    isDailyDraft,
+    salaryCapMode,
+    allTimeMode: drafter.allTimeMode,
+  });
 
   return (
     <section
-      className="panel panel--compact draft-room draft-room--focused"
+      className={`panel panel--compact draft-room draft-room--focused ${matchModeThemeClass(modeTheme)}`}
       aria-labelledby="draft-heading"
     >
       {isDailyDraft && dailyChallengeTitle ? (

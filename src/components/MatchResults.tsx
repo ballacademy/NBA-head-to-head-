@@ -19,6 +19,7 @@ import {
   unlockAchievements,
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
+import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -55,6 +56,7 @@ export function MatchResults({
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.total >= opponentScore.total;
   const matchRecordMode = getMatchRecordMode(user);
+  const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(
     () => projectRecordAfterMatch(userWon, matchRecordMode, loadPlayerRecord(matchRecordMode)),
     [matchRecordMode, userWon],
@@ -116,7 +118,9 @@ export function MatchResults({
       : "New star unlocked — click to choose";
 
   return (
-    <section className="match-results match-results--compact">
+    <section
+      className={`match-results match-results--compact ${matchModeThemeClass(modeTheme)}`}
+    >
       {showUnlockModal && matchCollection.pendingUnlock ? (
         <PlayerUnlockModal
           offer={matchCollection.pendingUnlock}

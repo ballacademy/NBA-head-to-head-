@@ -15,6 +15,7 @@ import {
   getDailyDateKey,
   getDailyDraftSetup,
 } from "./lib/dailyDraft";
+import { getMatchModeTheme } from "./lib/matchModeTheme";
 import { simulateDailyBenchmarkValues } from "./lib/dailyDraftScores";
 import {
   createOpponentDraftSlots,
@@ -500,6 +501,7 @@ function App() {
         <WaitingRoom
           opponentPickCount={opponentPickCount}
           totalPicks={opponent.draftSlots.length}
+          theme={getMatchModeTheme(user)}
         />
       ) : null}
 
