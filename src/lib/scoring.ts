@@ -15,8 +15,16 @@ const round = (value: number, places = 1) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
+export const preciseLineupOvr = (rawTotal: number) =>
+  clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100);
+
+export const displayLineupOvr = (preciseOvr: number) => Math.round(preciseOvr);
+
 export const normalizeLineupTotal = (rawTotal: number) =>
-  round(clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100));
+  displayLineupOvr(preciseLineupOvr(rawTotal));
+
+export const formatProjectedSeasonRecord = (record: ProjectedRecord) =>
+  `${record.wins}-${record.losses}`;
 
 const PROJECTED_WINS_AT_80 = 52;
 const PROJECTED_WINS_AT_85 = 57;
@@ -314,6 +322,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   if (lineup.length === 0) {
     return {
       total: 0,
+      preciseTotal: 0,
       projectedRecord: {
         wins: 0,
         losses: 0,
@@ -332,11 +341,13 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getLineupTierAdjustment(lineup) +
     getImpactRankingAdjustment(lineup) +
     getChemistryAdjustment(lineup);
-  const total = normalizeLineupTotal(rawTotal);
+  const preciseTotal = preciseLineupOvr(rawTotal);
+  const total = displayLineupOvr(preciseTotal);
 
   return {
     total,
-    projectedRecord: projectRecord(total),
+    preciseTotal,
+    projectedRecord: projectRecord(preciseTotal),
     categories,
     strengths,
     warnings,
@@ -350,7 +361,7 @@ export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
   return {
     scoreA,
     scoreB,
-    winner: scoreA.total >= scoreB.total ? "A" : "B",
-    margin: round(Math.abs(scoreA.total - scoreB.total)),
+    winner: scoreA.preciseTotal >= scoreB.preciseTotal ? "A" : "B",
+    margin: round(Math.abs(scoreA.preciseTotal - scoreB.preciseTotal)),
   };
 };

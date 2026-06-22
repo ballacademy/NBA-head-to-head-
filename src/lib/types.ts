@@ -80,6 +80,7 @@ export interface ProjectedRecord {
 
 export interface LineupScore {
   total: number;
+  preciseTotal: number;
   projectedRecord: ProjectedRecord;
   categories: ScoreCategory[];
   strengths: string[];

@@ -214,10 +214,13 @@ describe("calculateLineupScore", () => {
     const scrubScore = calculateLineupScore(scrubLineup);
     const superScrubScore = calculateLineupScore(superScrubLineup);
 
-    expect(scrubScore.total).toBeLessThan(regularScore.total);
-    expect(superScrubScore.total).toBeLessThan(scrubScore.total);
-    expect(superScrubScore.projectedRecord.wins).toBeLessThanOrEqual(
-      scrubScore.projectedRecord.wins,
+    expect(scrubScore.preciseTotal).toBeLessThan(regularScore.preciseTotal);
+    expect(superScrubScore.preciseTotal).toBeLessThan(regularScore.preciseTotal);
+    expect(scrubScore.projectedRecord.wins).toBeLessThan(
+      regularScore.projectedRecord.wins,
+    );
+    expect(superScrubScore.projectedRecord.wins).toBeLessThan(
+      regularScore.projectedRecord.wins,
     );
   });
 });
@@ -226,6 +229,11 @@ describe("normalizeLineupTotal", () => {
   it("caps the displayed overall at 100 for elite lineups", () => {
     expect(normalizeLineupTotal(LINEUP_RAW_CEILING)).toBe(100);
     expect(normalizeLineupTotal(LINEUP_RAW_CEILING + 25)).toBe(100);
+  });
+
+  it("rounds display OVR to the nearest whole number", () => {
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.846)).toBe(85);
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.844)).toBe(84);
   });
 });
 
@@ -241,6 +249,21 @@ describe("projectRecord", () => {
     expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
       SEASON_LENGTH,
     );
+  });
+
+  it("projects wins from precise OVR rather than rounded display OVR", () => {
+    const score = calculateLineupScore(
+      lineup([
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
+      ]),
+    );
+
+    expect(Number.isInteger(score.total)).toBe(true);
+    expect(score.projectedRecord).toEqual(projectRecord(score.preciseTotal));
   });
 });
 

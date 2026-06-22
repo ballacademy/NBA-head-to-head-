@@ -12,6 +12,8 @@ export interface LineupShareCardInput {
 
 const CARD_WIDTH = 1080;
 const CARD_HEIGHT = 1280;
+const FONT_STACK =
+  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const JERSEY_POINTS: Array<[number, number]> = [
   [11, 9],
@@ -24,6 +26,8 @@ const JERSEY_POINTS: Array<[number, number]> = [
   [7, 43],
   [7, 19],
 ];
+
+let fontsReady: Promise<void> | null = null;
 
 const roundRect = (
   context: CanvasRenderingContext2D,
@@ -63,6 +67,23 @@ const hexToRgb = (hex: string) => {
 const rgbaFromHex = (hex: string, alpha: number) => {
   const { r, g, b } = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+export const ensureShareCardFonts = () => {
+  if (typeof document === "undefined") {
+    return Promise.resolve();
+  }
+
+  fontsReady ??= Promise.all([
+    document.fonts.load(`500 24px ${FONT_STACK}`),
+    document.fonts.load(`600 24px ${FONT_STACK}`),
+    document.fonts.load(`700 30px ${FONT_STACK}`),
+    document.fonts.load(`800 54px ${FONT_STACK}`),
+    document.fonts.load(`900 22px ${FONT_STACK}`),
+    document.fonts.load(`900 88px ${FONT_STACK}`),
+  ]).then(() => undefined);
+
+  return fontsReady;
 };
 
 const traceJerseyPath = (context: CanvasRenderingContext2D) => {
@@ -152,7 +173,7 @@ const drawJerseyBadge = (
   context.lineWidth = 1.5;
   context.stroke();
 
-  context.font = "900 11px Arial, sans-serif";
+  context.font = `900 11px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.lineWidth = 1.2;
@@ -203,19 +224,68 @@ const drawPlayerRow = (
 
   drawJerseyBadge(context, rowX + 18, y + 16, 72, jerseyNumber, colors);
 
-  context.fillStyle = "#ffffff";
-  context.font = "700 34px Arial, sans-serif";
+  context.fillStyle = "#f8fafc";
+  context.font = `700 30px ${FONT_STACK}`;
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
   context.fillText(player.name, 210, y + 46);
 
-  context.fillStyle = "rgba(228,228,231,0.82)";
-  context.font = "500 24px Arial, sans-serif";
+  context.fillStyle = "#94a3b8";
+  context.font = `500 22px ${FONT_STACK}`;
   context.fillText(
     `${player.position} • ${player.team} • ${player.points.toFixed(1)} PTS`,
     210,
     y + 78,
   );
+};
+
+const drawShareCardHeader = (
+  context: CanvasRenderingContext2D,
+  input: LineupShareCardInput,
+) => {
+  const headerX = 88;
+
+  context.textAlign = "left";
+  context.textBaseline = "alphabetic";
+
+  context.font = `900 22px ${FONT_STACK}`;
+  context.fillStyle = "#fb923c";
+  context.letterSpacing = "3.6px";
+  context.fillText("DRAFT DAY GM", headerX, 98);
+  context.letterSpacing = "0px";
+
+  context.font = `800 54px ${FONT_STACK}`;
+  context.fillStyle = "#f8fafc";
+  context.fillText(input.teamName, headerX, 168);
+
+  let ovrTop = 252;
+
+  if (input.record) {
+    context.font = `600 24px ${FONT_STACK}`;
+    context.fillStyle = "#94a3b8";
+    context.fillText(`Projected ${input.record}`, headerX, 212);
+    ovrTop = 292;
+  }
+
+  context.save();
+  context.shadowColor = rgbaFromHex(input.accent, 0.45);
+  context.shadowBlur = 16;
+  context.font = `900 88px ${FONT_STACK}`;
+  context.fillStyle = "#ffffff";
+  context.fillText(String(input.ovr), headerX, ovrTop);
+  context.restore();
+
+  context.font = `700 22px ${FONT_STACK}`;
+  context.fillStyle = "#94a3b8";
+  context.fillText("OVR", headerX, ovrTop + 34);
+
+  context.font = `900 20px ${FONT_STACK}`;
+  context.fillStyle = "rgba(148, 163, 184, 0.92)";
+  context.letterSpacing = "2.8px";
+  context.fillText("STARTING FIVE", headerX, ovrTop + 84);
+  context.letterSpacing = "0px";
+
+  return ovrTop + 118;
 };
 
 export const drawLineupShareCard = (
@@ -240,41 +310,7 @@ export const drawLineupShareCard = (
   roundRect(context, 40, 40, CARD_WIDTH - 80, CARD_HEIGHT - 80, 32);
   context.stroke();
 
-  context.fillStyle = "rgba(255,255,255,0.72)";
-  context.font = "700 28px Arial, sans-serif";
-  context.textAlign = "left";
-  context.fillText("DRAFT DAY GM", 88, 104);
-
-  context.fillStyle = "#ffffff";
-  context.font = "800 62px Arial, sans-serif";
-  context.fillText(input.teamName, 88, 188);
-
-  if (input.record) {
-    context.fillStyle = "rgba(255,255,255,0.62)";
-    context.font = "600 34px Arial, sans-serif";
-    context.fillText(`Record ${input.record}`, 88, 236);
-  }
-
-  const ovrY = input.record ? 318 : 292;
-  const ovrLabelY = input.record ? 362 : 336;
-  const startingFiveY = input.record ? 418 : 392;
-  const firstPlayerY = input.record ? 456 : 430;
-
-  context.save();
-  context.shadowColor = rgbaFromHex(input.accent, 0.55);
-  context.shadowBlur = 18;
-  context.fillStyle = "#ffffff";
-  context.font = "800 92px Arial, sans-serif";
-  context.fillText(String(input.ovr), 88, ovrY);
-  context.restore();
-
-  context.fillStyle = "rgba(255,255,255,0.58)";
-  context.font = "600 30px Arial, sans-serif";
-  context.fillText("OVR", 88, ovrLabelY);
-
-  context.fillStyle = "rgba(255,255,255,0.45)";
-  context.font = "700 24px Arial, sans-serif";
-  context.fillText("STARTING FIVE", 88, startingFiveY);
+  const firstPlayerY = drawShareCardHeader(context, input);
 
   lineup.forEach((player, index) => {
     drawPlayerRow(context, player, index, firstPlayerY + index * 118);
@@ -282,8 +318,8 @@ export const drawLineupShareCard = (
 
   const footerY = CARD_HEIGHT - 72;
 
-  context.fillStyle = "rgba(255,255,255,0.42)";
-  context.font = "600 22px Arial, sans-serif";
+  context.fillStyle = "#94a3b8";
+  context.font = `600 20px ${FONT_STACK}`;
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
@@ -292,6 +328,8 @@ export const drawLineupShareCard = (
 };
 
 export const createLineupShareCardBlob = async (input: LineupShareCardInput) => {
+  await ensureShareCardFonts();
+
   const canvas = document.createElement("canvas");
   drawLineupShareCard(canvas, input);
 

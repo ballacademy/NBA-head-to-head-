@@ -22,7 +22,8 @@ export const buildTournament = (
       const scoreB = calculateLineupScore(
         getPlayersById(drafterB.lineup, pool),
       );
-      const winnerId = scoreA.total >= scoreB.total ? drafterA.id : drafterB.id;
+      const winnerId =
+        scoreA.preciseTotal >= scoreB.preciseTotal ? drafterA.id : drafterB.id;
 
       results.push({
         id: `${roundIndex}-${index}`,

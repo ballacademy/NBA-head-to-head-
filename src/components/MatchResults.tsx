@@ -3,7 +3,6 @@ import { TeamLineupCard } from "./TeamLineupCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
-  formatPlayerRecord,
   getMatchRecordMode,
   loadPlayerRecord,
 } from "../lib/playerRecord";
@@ -13,7 +12,10 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
-import { calculateLineupScore } from "../lib/scoring";
+import {
+  calculateLineupScore,
+  formatProjectedSeasonRecord,
+} from "../lib/scoring";
 import {
   checkLineupAchievements,
   unlockAchievements,
@@ -54,7 +56,7 @@ export function MatchResults({
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
-  const userWon = userScore.total >= opponentScore.total;
+  const userWon = userScore.preciseTotal >= opponentScore.preciseTotal;
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(
@@ -106,7 +108,7 @@ export function MatchResults({
       accent: user.accent,
       ovr: userScore.total,
       lineup: userLineup,
-      record: formatPlayerRecord(updatedRecord),
+      record: formatProjectedSeasonRecord(userScore.projectedRecord),
     });
   };
 
@@ -139,9 +141,8 @@ export function MatchResults({
             </h2>
           </div>
           <p className="matchup-panel__meta">
-            Margin {Math.abs(userScore.total - opponentScore.total).toFixed(1)} •{" "}
-            {userScore.total.toFixed(1)} vs {opponentScore.total.toFixed(1)} • Record{" "}
-            {formatPlayerRecord(updatedRecord)}
+            Margin {Math.abs(userScore.total - opponentScore.total)} • OVR{" "}
+            {userScore.total} vs {opponentScore.total}
           </p>
         </div>
 
@@ -156,7 +157,6 @@ export function MatchResults({
               lossStreak={updatedRecord.lossStreak}
               showStreak
               compact
-              showProjectedRecord={false}
             />
           </div>
 
@@ -167,7 +167,6 @@ export function MatchResults({
               score={opponentScore}
               isWinner={!userWon}
               compact
-              showProjectedRecord={false}
             />
           </div>
         </div>
