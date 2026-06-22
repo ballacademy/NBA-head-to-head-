@@ -9,7 +9,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
   const progress = useMemo(() => getAchievementProgress(), []);
 
   return (
-    <section className="achievements-page panel panel--compact">
+    <section className="achievements-page panel panel--compact feature-page feature-page--badges">
       <div className="achievements-page__header">
         <div>
           <p className="eyebrow">Draft Day GM</p>

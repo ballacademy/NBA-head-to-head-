@@ -1069,6 +1069,85 @@ main {
   width: min(920px, 100%);
 }
 
+.feature-page {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.feature-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feature-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-page--leaderboard {
+  border-color: rgba(124, 58, 237, 0.38);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(124, 58, 237, 0.18) 0%,
+      rgba(15, 23, 42, 0.84) 38%,
+      rgba(15, 23, 42, 0.78) 100%
+    );
+  box-shadow:
+    0 22px 60px rgba(30, 16, 53, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.feature-page--leaderboard::before {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(192, 132, 252, 0.2), transparent 24%),
+    radial-gradient(circle at 8% 92%, rgba(124, 58, 237, 0.14), transparent 28%);
+}
+
+.feature-page--stats {
+  border-color: rgba(59, 130, 246, 0.38);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(59, 130, 246, 0.16) 0%,
+      rgba(15, 23, 42, 0.84) 38%,
+      rgba(15, 23, 42, 0.78) 100%
+    );
+  box-shadow:
+    0 22px 60px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.feature-page--stats::before {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(147, 197, 253, 0.18), transparent 24%),
+    radial-gradient(circle at 10% 90%, rgba(59, 130, 246, 0.12), transparent 28%);
+}
+
+.feature-page--badges {
+  border-color: rgba(245, 158, 11, 0.38);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(245, 158, 11, 0.14) 0%,
+      rgba(15, 23, 42, 0.84) 38%,
+      rgba(15, 23, 42, 0.78) 100%
+    );
+  box-shadow:
+    0 22px 60px rgba(30, 16, 53, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.feature-page--badges::before {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(253, 224, 71, 0.16), transparent 24%),
+    radial-gradient(circle at 8% 92%, rgba(249, 115, 22, 0.1), transparent 28%);
+}
+
 .leaderboard__top {
   display: grid;
   gap: 12px;
@@ -1091,6 +1170,7 @@ main {
 
 .leaderboard__header .eyebrow {
   margin: 0;
+  color: #c4b5fd;
 }
 
 .leaderboard__subtitle {
@@ -1116,8 +1196,9 @@ main {
 }
 
 .leaderboard__tabs button.is-active {
-  border-color: rgba(59, 130, 246, 0.65);
-  background: rgba(37, 99, 235, 0.24);
+  border-color: rgba(167, 139, 250, 0.7);
+  background: rgba(124, 58, 237, 0.24);
+  color: #ede9fe;
 }
 
 .leaderboard-table-wrap {
@@ -1145,7 +1226,7 @@ main {
 }
 
 .leaderboard-table__row--you {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(124, 58, 237, 0.14);
 }
 
 .landing-team-form__note {
@@ -1701,6 +1782,7 @@ main {
 
 .achievements-page__header .eyebrow {
   margin: 0;
+  color: #fcd34d;
 }
 
 .achievements-page__subtitle {
@@ -1724,9 +1806,9 @@ main {
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
-  border: 1px solid var(--panel-border);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.62);
   opacity: 0.72;
 }
 
@@ -1799,9 +1881,22 @@ main {
   color: #fde68a;
 }
 
-.daily-draft-results__share {
-  margin-bottom: 12px;
-  text-align: center;
+.daily-draft-results__actions .landing__primary-button,
+.daily-draft-results__actions .play-again-button {
+  margin-top: 0;
+  flex: 1 1 0;
+  min-width: min(100%, 220px);
+}
+
+@media (max-width: 640px) {
+  .daily-draft-results__actions {
+    flex-direction: column;
+  }
+
+  .daily-draft-results__actions .landing__primary-button,
+  .daily-draft-results__actions .play-again-button {
+    width: 100%;
+  }
 }
 
 .daily-draft-results__lineup h3 {
@@ -2056,6 +2151,27 @@ main {
 
 .stats-panel__header .section-heading {
   margin-bottom: 0;
+}
+
+.feature-page--stats .section-heading .eyebrow {
+  color: #93c5fd;
+}
+
+.feature-page--stats .stats-search {
+  color: #bfdbfe;
+}
+
+.feature-page--stats .stats-table-wrap {
+  border-color: rgba(59, 130, 246, 0.28);
+}
+
+.feature-page--stats .stats-table th {
+  background: rgba(15, 23, 42, 0.94);
+}
+
+.feature-page--stats .sort-button.active {
+  color: #93c5fd;
+  font-weight: 800;
 }
 
 .stats-intro {
@@ -2580,6 +2696,7 @@ main {
 }
 
 .stats-panel {
+  width: min(920px, 100%);
   margin-top: 28px;
 }
 

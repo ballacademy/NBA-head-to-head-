@@ -126,7 +126,7 @@ export function PlayerStatsTable({
   };
 
   return (
-    <section className="panel stats-panel" aria-labelledby="stats-heading">
+    <section className="panel stats-panel feature-page feature-page--stats" aria-labelledby="stats-heading">
       <div className="stats-panel__header">
         <div className="section-heading">
           <p className="eyebrow">2025-26 season stats</p>

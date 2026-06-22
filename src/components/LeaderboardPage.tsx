@@ -40,7 +40,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   };
 
   return (
-    <section className="leaderboard panel panel--compact">
+    <section className="leaderboard panel panel--compact feature-page feature-page--leaderboard">
       <div className="leaderboard__top">
         <div className="leaderboard__header">
           <div>
