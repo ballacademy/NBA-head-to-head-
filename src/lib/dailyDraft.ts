@@ -1,13 +1,23 @@
-import { generateFeasibleDraftSlots, validateDraftSlotsFeasible } from "./draft";
+import {
+  generateBalancedSeededSlotConstraints,
+  generateSeededSlotConstraints,
+  validateDraftSlotsFeasible,
+} from "./draft";
 import {
   DAILY_DRAFT_GOALS,
   DAILY_GOAL_REPEAT_WINDOW_DAYS,
   getDailyGoalById,
   type DailyDraftGoal,
 } from "./dailyDraftGoals";
-import type { DraftSlotConstraint, Player } from "./types";
+import { players as canonicalPlayers } from "./playerPool";
+import type { DraftSlotConstraint } from "./types";
 
 const goalCache = new Map<string, DailyDraftGoal>();
+const slotCache = new Map<string, DraftSlotConstraint[]>();
+
+const DAILY_SLOT_ATTEMPTS = 64;
+const DAILY_SLOT_SEED_OFFSET = 17;
+const DAILY_SLOT_ATTEMPT_STEP = 7919;
 
 const createSeededRandom = (seed: number) => {
   let state = seed % 2147483647;
@@ -97,20 +107,43 @@ export const getDailyChallenge = (dateKey = getDailyDateKey()) =>
   getDailyGoal(dateKey);
 
 export const generateDailyDraftSlots = (
-  players: Player[],
   dateKey = getDailyDateKey(),
-) => {
-  const random = createSeededRandom(getDailySeed(dateKey) + 17);
+): DraftSlotConstraint[] => {
+  const cached = slotCache.get(dateKey);
 
-  return generateFeasibleDraftSlots(players, 5, { random });
+  if (cached) {
+    return cached.map((slot) => ({ ...slot }));
+  }
+
+  const baseSeed = getDailySeed(dateKey) + DAILY_SLOT_SEED_OFFSET;
+
+  for (let attempt = 0; attempt < DAILY_SLOT_ATTEMPTS; attempt += 1) {
+    const random = createSeededRandom(baseSeed + attempt * DAILY_SLOT_ATTEMPT_STEP);
+    const slots = generateSeededSlotConstraints(random, 5);
+
+    if (slots && validateDraftSlotsFeasible(canonicalPlayers, slots)) {
+      slotCache.set(dateKey, slots.map((slot) => ({ ...slot })));
+      return slots;
+    }
+  }
+
+  const fallbackRandom = createSeededRandom(baseSeed);
+  const fallbackSlots =
+    generateBalancedSeededSlotConstraints(fallbackRandom) ??
+    generateSeededSlotConstraints(fallbackRandom, 5) ??
+    [];
+
+  slotCache.set(
+    dateKey,
+    fallbackSlots.map((slot) => ({ ...slot })),
+  );
+
+  return fallbackSlots.map((slot) => ({ ...slot }));
 };
 
-export const getDailyDraftSetup = (
-  players: Player[],
-  dateKey = getDailyDateKey(),
-) => {
+export const getDailyDraftSetup = (dateKey = getDailyDateKey()) => {
   const goal = getDailyGoal(dateKey);
-  const slots = generateDailyDraftSlots(players, dateKey);
+  const slots = generateDailyDraftSlots(dateKey);
 
   return {
     dateKey,
@@ -127,20 +160,16 @@ export const formatDailyChallengeDescription = (goal: DailyDraftGoal) =>
 
 export const isDailySlotConstraint = (
   slots: DraftSlotConstraint[],
-  players: Player[],
   dateKey = getDailyDateKey(),
 ) => {
-  const expected = generateDailyDraftSlots(players, dateKey);
+  const expected = generateDailyDraftSlots(dateKey);
   return JSON.stringify(slots) === JSON.stringify(expected);
 };
 
-export const assertDailyDraftFeasible = (
-  players: Player[],
-  dateKey = getDailyDateKey(),
-) => {
-  const setup = getDailyDraftSetup(players, dateKey);
+export const assertDailyDraftFeasible = (dateKey = getDailyDateKey()) => {
+  const slots = generateDailyDraftSlots(dateKey);
 
-  return validateDraftSlotsFeasible(players, setup.slots);
+  return validateDraftSlotsFeasible(canonicalPlayers, slots);
 };
 
 export { getDailyGoalById };

@@ -92,11 +92,8 @@ function App() {
   opponentDraftablePlayersRef.current = opponentDraftablePlayers;
 
   const dailySetup = useMemo(
-    () =>
-      isDailyDraft
-        ? getDailyDraftSetup(getDraftablePlayers(activePlayers, collection), dailyDateKey)
-        : null,
-    [activePlayers, collection, dailyDateKey, isDailyDraft],
+    () => (isDailyDraft ? getDailyDraftSetup(dailyDateKey) : null),
+    [dailyDateKey, isDailyDraft],
   );
 
   const dailyBenchmarkValues = useMemo(() => {
@@ -137,7 +134,7 @@ function App() {
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
-    const setup = daily ? getDailyDraftSetup(userPool, dateKey) : null;
+    const setup = daily ? getDailyDraftSetup(dateKey) : null;
     const userSlots = setup?.slots ?? generateFeasibleDraftSlots(userPool);
     const opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
 

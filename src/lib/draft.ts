@@ -201,6 +201,51 @@ export interface GenerateFeasibleDraftSlotsOptions {
   random?: RandomSource;
 }
 
+const generatePositionsForFiveSlots = (
+  random: RandomSource,
+): Position[] | null => {
+  const buckets =
+    random() < BALANCED_COMPOSITION_CHANCE
+      ? createBalancedBuckets(random)
+      : createVariedBuckets(random);
+  const positions = bucketsToPositions(buckets, random);
+
+  if (isRejectedComposition(positions)) {
+    return null;
+  }
+
+  return positions;
+};
+
+export const generateSeededSlotConstraints = (
+  random: RandomSource,
+  slotCount = 5,
+  options: Pick<GenerateFeasibleDraftSlotsOptions, "fixedDivision"> = {},
+): DraftSlotConstraint[] | null => {
+  const { fixedDivision } = options;
+
+  if (slotCount !== 5) {
+    const positions = Array.from({ length: slotCount }, () =>
+      pickRandomWith(ALL_POSITIONS, random),
+    );
+
+    return createSlotConstraints(positions, random, fixedDivision);
+  }
+
+  const positions = generatePositionsForFiveSlots(random);
+
+  if (!positions) {
+    return null;
+  }
+
+  return createSlotConstraints(positions, random, fixedDivision);
+};
+
+export const generateBalancedSeededSlotConstraints = (
+  random: RandomSource,
+  options: Pick<GenerateFeasibleDraftSlotsOptions, "fixedDivision"> = {},
+) => createSlotConstraints(BALANCED_POSITIONS, random, options.fixedDivision);
+
 export const generateFeasibleDraftSlots = (
   players: Player[],
   slotCount = 5,
