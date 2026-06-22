@@ -208,29 +208,32 @@ const drawPlayerRow = (
 
   roundRect(context, rowX, y, rowWidth, rowHeight, 20);
   const rowGradient = context.createLinearGradient(rowX, y, rowX + rowWidth, y + rowHeight);
-  rowGradient.addColorStop(0, rgbaFromHex(colors.primary, 0.28));
-  rowGradient.addColorStop(0.45, "rgba(12,12,14,0.92)");
-  rowGradient.addColorStop(1, "rgba(8,8,10,0.96)");
+  rowGradient.addColorStop(0, colors.primary);
+  rowGradient.addColorStop(0.55, rgbaFromHex(colors.primary, 0.92));
+  rowGradient.addColorStop(1, colors.secondary);
   context.fillStyle = rowGradient;
   context.fill();
 
   context.save();
   context.shadowColor = rgbaFromHex(colors.secondary, 0.45);
   context.shadowBlur = 10;
-  context.strokeStyle = rgbaFromHex(colors.secondary, 0.55);
-  context.lineWidth = 1;
+  context.strokeStyle = rgbaFromHex(colors.secondary, 0.85);
+  context.lineWidth = 2;
   context.stroke();
   context.restore();
 
   drawJerseyBadge(context, rowX + 18, y + 16, 72, jerseyNumber, colors);
 
-  context.fillStyle = "#f8fafc";
+  context.fillStyle = "#ffffff";
   context.font = `700 30px ${FONT_STACK}`;
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
+  context.shadowColor = "rgba(0, 0, 0, 0.45)";
+  context.shadowBlur = 8;
   context.fillText(player.name, 210, y + 46);
+  context.shadowBlur = 0;
 
-  context.fillStyle = "#94a3b8";
+  context.fillStyle = "rgba(255, 255, 255, 0.88)";
   context.font = `500 22px ${FONT_STACK}`;
   context.fillText(
     `${player.position} • ${player.team} • ${player.points.toFixed(1)} PTS`,

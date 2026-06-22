@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPlayerPositions,
   capPositions,
+  comparePositions,
   formatPlayerPositions,
   MAX_PLAYER_POSITIONS,
   parsePositionString,
@@ -60,5 +61,13 @@ describe("positions", () => {
     expect(
       playerMatchesPosition({ positions: ["SF", "PF"] }, "C"),
     ).toBe(false);
+  });
+
+  it("orders positions from point guard to center", () => {
+    expect(comparePositions("PG", "SG")).toBeLessThan(0);
+    expect(comparePositions("C", "PF")).toBeGreaterThan(0);
+    expect(
+      ["C", "PG", "SF", "SG", "PF"].sort(comparePositions),
+    ).toEqual(["PG", "SG", "SF", "PF", "C"]);
   });
 });

@@ -8,10 +8,11 @@ const POSITION_RANK = Object.fromEntries(
 
 export const MAX_PLAYER_POSITIONS = 2;
 
+export const comparePositions = (left: Position, right: Position) =>
+  POSITION_RANK[left] - POSITION_RANK[right];
+
 export const sortPositions = (positions: Iterable<Position>) =>
-  [...new Set(positions)].sort(
-    (left, right) => POSITION_RANK[left] - POSITION_RANK[right],
-  );
+  [...new Set(positions)].sort(comparePositions);
 
 export const capPositions = (positions: Iterable<Position>) =>
   sortPositions(positions).slice(0, MAX_PLAYER_POSITIONS);
