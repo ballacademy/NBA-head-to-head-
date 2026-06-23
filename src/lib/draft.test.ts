@@ -66,6 +66,17 @@ describe("draft constraints", () => {
     expect(validateDraftSlotsFeasible(players, slots)).toBe(true);
   });
 
+  it("randomizes divisions across generated drafts", () => {
+    const divisionSets = new Set<string>();
+
+    for (let index = 0; index < 40; index += 1) {
+      const slots = generateFeasibleDraftSlots(players);
+      divisionSets.add(slots.map((slot) => slot.division).join(","));
+    }
+
+    expect(divisionSets.size).toBeGreaterThan(1);
+  });
+
   it("always leaves at least one eligible player for every generated slot", () => {
     for (let index = 0; index < 100; index += 1) {
       const slots = generateFeasibleDraftSlots(players);

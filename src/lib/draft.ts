@@ -113,35 +113,50 @@ export const validateDraftSlotsFeasible = (
   slots: DraftSlotConstraint[],
 ) => autoDraftLineup(players, slots).length === slots.length;
 
+const pickRandomFeasibleDivision = (
+  players: Player[],
+  position: Position,
+  pickedIds: Set<string>,
+  random: RandomSource,
+  fixedDivision?: Division,
+): Division | null => {
+  const divisionOptions = fixedDivision
+    ? [fixedDivision]
+    : shuffleWith([...DIVISIONS], random);
+  const feasibleDivisions = divisionOptions.filter(
+    (division) =>
+      filterPlayersForSlot(players, { position, division }, pickedIds).length > 0,
+  );
+
+  if (feasibleDivisions.length === 0) {
+    return fixedDivision ?? divisionOptions[0] ?? null;
+  }
+
+  return pickRandomWith(feasibleDivisions, random);
+};
+
 export const buildGreedyFeasibleSlots = (
   players: Player[],
   positions: Position[],
   fixedDivision?: Division,
+  random: RandomSource = defaultRandom,
 ): DraftSlotConstraint[] => {
   const pickedIds = new Set<string>();
   const slots: DraftSlotConstraint[] = [];
 
   for (const position of positions) {
-    const divisionOptions = fixedDivision ? [fixedDivision] : DIVISIONS;
-    let bestSlot: DraftSlotConstraint | null = null;
-    let bestCount = -1;
+    const division =
+      pickRandomFeasibleDivision(
+        players,
+        position,
+        pickedIds,
+        random,
+        fixedDivision,
+      ) ?? (fixedDivision ?? DIVISIONS[0]!);
+    const slot = { position, division };
 
-    for (const division of divisionOptions) {
-      const slot = { position, division };
-      const count = filterPlayersForSlot(players, slot, pickedIds).length;
-
-      if (count > bestCount) {
-        bestCount = count;
-        bestSlot = slot;
-      }
-    }
-
-    if (!bestSlot) {
-      bestSlot = { position, division: divisionOptions[0]! };
-    }
-
-    slots.push(bestSlot);
-    const pick = pickBestForSlot(players, bestSlot, pickedIds);
+    slots.push(slot);
+    const pick = pickBestForSlot(players, slot, pickedIds);
 
     if (pick) {
       pickedIds.add(pick);
@@ -158,7 +173,12 @@ const buildFallbackFeasibleSlots = (
 ): DraftSlotConstraint[] => {
   const positions =
     slotCount === 5 ? BALANCED_POSITIONS : ALL_POSITIONS.slice(0, slotCount);
-  const slots = buildGreedyFeasibleSlots(players, positions, fixedDivision);
+  const slots = buildGreedyFeasibleSlots(
+    players,
+    positions,
+    fixedDivision,
+    defaultRandom,
+  );
 
   if (validateDraftSlotsFeasible(players, slots)) {
     return slots;
@@ -187,7 +207,14 @@ const buildFallbackFeasibleSlots = (
     }
 
     const selection = candidates[0]!;
-    const division = fixedDivision ?? getDivisionForTeam(selection.team)!;
+    const division =
+      pickRandomFeasibleDivision(
+        players,
+        position,
+        pickedIds,
+        defaultRandom,
+        fixedDivision,
+      ) ?? getDivisionForTeam(selection.team)!;
 
     fallbackSlots.push({ position, division });
     pickedIds.add(selection.id);
@@ -282,7 +309,12 @@ export const generateFeasibleDraftSlots = (
       continue;
     }
 
-    const slots = buildGreedyFeasibleSlots(players, positions, fixedDivision);
+    const slots = buildGreedyFeasibleSlots(
+      players,
+      positions,
+      fixedDivision,
+      random,
+    );
 
     if (validateDraftSlotsFeasible(players, slots)) {
       return slots;
@@ -293,6 +325,7 @@ export const generateFeasibleDraftSlots = (
     players,
     BALANCED_POSITIONS,
     fixedDivision,
+    random,
   );
 
   if (validateDraftSlotsFeasible(players, balancedSlots)) {
