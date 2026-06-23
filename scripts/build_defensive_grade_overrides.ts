@@ -15,15 +15,15 @@ Allen, Jarrett	B+
 Alvarado, Jose	B+
 Anderson, Kyle	B
 Antetokounmpo, Giannis	A
-Antetokounmpo, Thanasis	C-
+Antetokounmpo, Thanasis	C+
 Anunoby, OG	A+
-Avdija, Deni	B
-Ayton, Deandre	B-
+Avdija, Deni	C+
+Ayton, Deandre	C+
 Bagley, Marvin III	D-
 Bailey, Ace	B-
 Baldwin, Patrick Jr.	C-
 Ball, LaMelo	D
-Ball, Lonzo	B
+Ball, Lonzo	B+
 Banchero, Paolo	B-
 Bane, Desmond	B
 Banton, Dalano	C+
@@ -39,7 +39,7 @@ Beal, Bradley	C
 Beauchamp, MarJon	C
 Beringer, Joan	B-
 Bey, Saddiq	C
-Bitadze, Goga	B+
+Bitadze, Goga	B
 Biyombo, Bismack	B-
 Black, Anthony	B
 Black, Leaky	B-
@@ -67,7 +67,7 @@ Brown, Kobe	C
 Brown, Moses	C-
 Bryant, Thomas	D
 Bryant, Carter	B+
-Brunson, Jalen	C+
+Brunson, Jalen	C-
 Bufkin, Kobe	C
 Bullock, Reggie	C-
 Burks, Alec	D
@@ -83,7 +83,7 @@ Caruso, Alex	A+
 Castle, Stephon	A-
 Castleton, Colin	C-
 Champagnie, Julian	B-
-Champagnie, Justin	C
+Champagnie, Justin	B-
 Chandler, Kennedy	C
 Christopher, Josh	C
 Clark, Jaylen	B
@@ -93,7 +93,7 @@ Claxton, Nic	B+
 Clingan, Donovan	B+
 Clowney, Noah	B-
 Coffey, Amir	B-
-Collins, John	D+
+Collins, John	C
 Collins, Zach	C+
 Comanche, Javan	C-
 Conley, Mike	C+
@@ -102,11 +102,11 @@ Cook, Xavier	C
 Coulibaly, Bilal	B+
 Coward, Cedric	C+
 Covington, Robert	B
-Craig, Torrey	B-
+Craig, Torrey	B
 Cripsin, Jeev	C
 Cunningham, Cade	C+
 Curry, Seth	F
-Curry, Stephen	C
+Curry, Stephen	C-
 Daniels, Dyson	B+
 Davis, Anthony	A
 Davis, Johnny	C
@@ -150,7 +150,7 @@ Finney-Smith, Dorian	B+
 Flagg, Cooper	B+
 Flynn, Malachi	D
 Fontecchio, Simone	C-
-Forbes, Bryn	F
+Forbes, Bryn	D
 Ford, Jordan	C-
 Foster, Michael Jr.	C-
 Fox, De'Aaron	B-
@@ -177,7 +177,7 @@ Gordon, Aaron	B+
 Gordon, Eric	D
 Gortman, Jazian	C
 Graham, Devonte'	D
-Grant, Jerami	C
+Grant, Jerami	C+
 Gray, RaiQuan	C-
 Green, AJ	C-
 Green, Danny	C+
@@ -246,7 +246,7 @@ Johnson, Keon	C
 Johnson, Keshad	B-
 Jones, Carlik	C
 Jones, Colby	C+
-Jones, Herb	A+
+Jones, Herb	A
 Jones, Kai	C+
 Jones, Tre	C
 Jones, Tyus	D+
@@ -258,13 +258,13 @@ Kawamura, Yuki	C-
 Knecht, Dalton	C-
 Knueppel, Kon	C-
 Kornet, Luke	B-
-Kuzma, Kyle	D+
-Landale, Jock	B-
-LaRavia, Jake	B-
+Kuzma, Kyle	C
+Landale, Jock	C+
+LaRavia, Jake	C+
 Lardy, Kevin	C
-Leonard, Kawhi	B+
+Leonard, Kawhi	A-
 Liddell, E.J.	C
-Lillard, Damian	C-
+Lillard, Damian	D
 Little, Nassir	C+
 Lively, Dereck II	B+
 Looney, Kevon	B-
@@ -417,13 +417,6 @@ Simmons, Ben	B+
 Siakam, Pascal	B
 Sims, Jericho	B-
 Slawson, Jalen	C
-Smart, Marcus	A-
-Smith, Dennis Jr.	B+
-Smith, Jabari Jr.	B
-Smith, Jalen	C-
-Smith, Nick Jr.	D
-Snaer, Michael	C
-Sochan, Jeremy	B
 Spar, Tyler	C
 Spencer, Cam	C-
 Spring, Marcus	C
@@ -439,8 +432,8 @@ Temple, Garrett	C+
 Terry, Dalen	B-
 Theis, Daniel	B-
 Thomas, Cam	F
-Thompson, Amen	A-
-Thompson, Ausar	A-
+Thompson, Amen	A
+Thompson, Ausar	A
 Thompson, Klay	C
 Timme, Drew	C-
 Tomlin, Nae'Qwan	C
@@ -472,7 +465,7 @@ Warren, T.J.	C-
 Washington, PJ	B
 Washington, TyTy Jr.	C-
 Watanabe, Yuta	C
-Watson, Peyton	A-
+Watson, Peyton	B+
 Watford, Trendon	C
 Weaver, Jared	C
 Weems, Romeo	C

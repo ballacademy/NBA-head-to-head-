@@ -115,6 +115,6 @@ describe("defenseRating", () => {
     expect(chet?.defenseGrade).toBe("A+");
     expect(giannis?.defenseGrade).toBe("A");
     expect(edwards?.defenseGrade).toBe("B");
-    expect(herbJones?.defenseGrade).toBe("A+");
+    expect(herbJones?.defenseGrade).toBe("A");
   });
 });
