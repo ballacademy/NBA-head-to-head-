@@ -138,8 +138,8 @@ export function PlayerStatsTable({
           <p className="eyebrow">2025-26 season stats</p>
           <h2 id="stats-heading">Browse the full player pool</h2>
           <p>
-            These numbers power lineup scoring in the app. Locked stars and scrubs
-            stay hidden until you unlock them. Everyone else is visible here.
+            Locked stars and scrubs stay hidden until you unlock them. Everyone
+            else is visible here.
           </p>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>
