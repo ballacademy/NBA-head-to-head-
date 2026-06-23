@@ -2591,12 +2591,26 @@ main {
 }
 
 .player-pick--compact .player-pick__title-row {
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 6px;
 }
 
 .player-pick--compact .player-pick__title-row strong {
+  min-width: 0;
+  flex: 1 1 auto;
   font-size: 0.94rem;
   line-height: 1.2;
+}
+
+.player-pick--compact .player-pick__badges {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.player-pick--compact .player-rarity-badges {
+  flex-wrap: nowrap;
 }
 
 .player-pick--compact .player-pick__team {

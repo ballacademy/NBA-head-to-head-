@@ -344,7 +344,7 @@ export function LandingPage({
         </p>
       </div>
 
-      <p className="landing-credit">Created by BALLACADEMY</p>
+      <p className="landing-credit">Powered by BALLACADEMY</p>
     </section>
   );
 }

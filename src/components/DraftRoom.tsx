@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   filterPlayersForSlot,
   formatSlotConstraint,
@@ -47,6 +47,7 @@ export function DraftRoom({
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(PICK_TIME_LIMIT_SECONDS);
+  const countdownActiveRef = useRef(false);
 
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
@@ -128,6 +129,7 @@ export function DraftRoom({
   useEffect(() => {
     setQuery("");
     setSecondsLeft(PICK_TIME_LIMIT_SECONDS);
+    countdownActiveRef.current = false;
   }, [activeStep, currentSlot?.division, currentSlot?.position]);
 
   useEffect(() => {
@@ -140,9 +142,14 @@ export function DraftRoom({
     }
 
     if (secondsLeft <= 0) {
-      onTimeout(activeStep);
+      if (countdownActiveRef.current) {
+        countdownActiveRef.current = false;
+        onTimeout(activeStep);
+      }
       return;
     }
+
+    countdownActiveRef.current = true;
 
     const timer = window.setTimeout(() => {
       setSecondsLeft((current) => current - 1);
