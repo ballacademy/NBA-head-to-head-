@@ -1509,12 +1509,13 @@ main {
 .match-results__action-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 18px;
   justify-content: center;
   align-items: center;
 }
 
-.match-results__menu-button {
+.match-results__menu-button,
+.match-results__share-button {
   margin: 0;
 }
 
@@ -1523,11 +1524,12 @@ main {
   padding-bottom: 8px;
 }
 
-.match-results__actions .play-again-button {
+.match-results__actions .play-again-button,
+.match-results__actions .secondary-button {
   margin-top: 0;
 }
 
-.match-results__actions button:not(.play-again-button),
+.match-results__actions button:not(.play-again-button):not(.secondary-button),
 .match-results__header button:not(.play-again-button) {
   margin-top: 10px;
 }

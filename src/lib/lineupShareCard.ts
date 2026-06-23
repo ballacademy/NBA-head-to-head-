@@ -83,7 +83,7 @@ export const ensureShareCardFonts = () => {
     document.fonts.load(`700 30px ${FONT_STACK}`),
     document.fonts.load(`800 54px ${FONT_STACK}`),
     document.fonts.load(`900 22px ${FONT_STACK}`),
-    document.fonts.load(`900 88px ${FONT_STACK}`),
+    document.fonts.load(`900 72px ${FONT_STACK}`),
   ]).then(() => undefined);
 
   return fontsReady;
@@ -253,10 +253,12 @@ const drawShareCardHeader = (
   input: LineupShareCardInput,
 ) => {
   const headerX = 88;
+  const headerRightX = CARD_WIDTH - 88;
+  const startingFiveY = 220;
 
-  context.textAlign = "left";
   context.textBaseline = "alphabetic";
 
+  context.textAlign = "left";
   context.font = `900 22px ${FONT_STACK}`;
   context.fillStyle = "#fb923c";
   context.letterSpacing = "3.6px";
@@ -267,45 +269,40 @@ const drawShareCardHeader = (
   context.fillStyle = "#f8fafc";
   context.fillText(input.teamName, headerX, 168);
 
-  let ovrTop = 252;
+  context.font = `900 20px ${FONT_STACK}`;
+  context.fillStyle = "rgba(148, 163, 184, 0.92)";
+  context.letterSpacing = "2.8px";
+  context.fillText("STARTING FIVE", headerX, startingFiveY);
+  context.letterSpacing = "0px";
+
+  context.textAlign = "right";
+  let ovrY = 168;
 
   if (input.record) {
-    context.font = `600 24px ${FONT_STACK}`;
+    context.font = `600 22px ${FONT_STACK}`;
     context.fillStyle = "#94a3b8";
-    context.fillText(`Projected ${input.record}`, headerX, 212);
-    ovrTop = 292;
+    context.fillText(`Projected ${input.record}`, headerRightX, 126);
+    ovrY = 178;
   }
 
   context.save();
   context.shadowColor = rgbaFromHex(input.accent, 0.45);
   context.shadowBlur = 16;
-  context.font = `900 88px ${FONT_STACK}`;
+  context.font = `900 72px ${FONT_STACK}`;
   context.fillStyle = "#ffffff";
-  context.fillText(String(input.ovr), headerX, ovrTop);
+  context.fillText(String(input.ovr), headerRightX, ovrY);
   context.restore();
 
   context.font = `700 22px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
-  context.fillText("OVR", headerX, ovrTop + 34);
+  context.fillText("OVR", headerRightX, ovrY + 30);
 
-  context.font = `900 20px ${FONT_STACK}`;
-  context.fillStyle = "rgba(148, 163, 184, 0.92)";
-  context.letterSpacing = "2.8px";
-  context.fillText("STARTING FIVE", headerX, ovrTop + 84);
-  context.letterSpacing = "0px";
+  context.textAlign = "left";
 
-  return ovrTop + 118;
+  return startingFiveY + 48;
 };
 
-const drawShareCardHeaderBottom = (input: LineupShareCardInput) => {
-  let ovrTop = 252;
-
-  if (input.record) {
-    ovrTop = 292;
-  }
-
-  return ovrTop + 118;
-};
+const drawShareCardHeaderBottom = (_input: LineupShareCardInput) => 268;
 
 const computeShareCardLayout = (input: LineupShareCardInput, lineupLength: number) => {
   const firstPlayerY = drawShareCardHeaderBottom(input);

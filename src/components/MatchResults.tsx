@@ -170,16 +170,6 @@ export function MatchResults({
             />
           </div>
         </div>
-
-        <div className="matchup-panel__footer">
-          <button
-            type="button"
-            className="secondary-button matchup-panel__share"
-            onClick={() => void handleShareLineup()}
-          >
-            Share lineup
-          </button>
-        </div>
       </div>
 
       {actionsReady ? (
@@ -205,6 +195,13 @@ export function MatchResults({
             <div className="match-results__action-row">
               <button
                 type="button"
+                className="secondary-button match-results__share-button"
+                onClick={() => void handleShareLineup()}
+              >
+                Share lineup
+              </button>
+              <button
+                type="button"
                 className="play-again-button"
                 onClick={onPlayAgain}
               >
@@ -212,7 +209,7 @@ export function MatchResults({
               </button>
               <button
                 type="button"
-                className="secondary-button match-results__menu-button"
+                className="play-again-button match-results__menu-button"
                 onClick={onReturnToMenu}
               >
                 Main menu
