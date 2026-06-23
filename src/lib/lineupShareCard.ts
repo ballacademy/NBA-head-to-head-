@@ -14,7 +14,7 @@ const CARD_WIDTH = 1080;
 const ROW_STEP = 118;
 const ROW_HEIGHT = 104;
 const FOOTER_GAP = 36;
-const FOOTER_BOTTOM = 44;
+const FOOTER_BOTTOM = 64;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
