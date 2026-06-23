@@ -264,14 +264,19 @@ export function DraftRoom({
         })}
       </div>
 
-      <div className="draft-prompt">
+      <div className="draft-prompt draft-prompt--compact">
         <div className="draft-prompt__header">
-          <div>
-            <p className="eyebrow">On the clock</p>
-            <h3 id="draft-heading">
+          <div className="draft-prompt__copy">
+            <div className="draft-prompt__topline">
+              <p className="draft-prompt__eyebrow">On the clock</p>
+              <p className="draft-prompt__eligible">
+                {candidates.length} eligible
+              </p>
+            </div>
+            <h3 id="draft-heading" className="draft-prompt__title">
               {formatSlotConstraint(currentSlot)}{" "}
               <span className="draft-prompt__pick-count">
-                (Pick {activeStep + 1} of {totalPicks})
+                Pick {activeStep + 1}/{totalPicks}
               </span>
             </h3>
           </div>
@@ -280,9 +285,6 @@ export function DraftRoom({
             <small>left</small>
           </div>
         </div>
-        <p className="draft-prompt__meta">
-          {candidates.length} eligible players available
-        </p>
       </div>
 
       <label className="field stats-search">
@@ -304,7 +306,7 @@ export function DraftRoom({
               <button
                 type="button"
                 key={player.id}
-                className={`player-pick${shineClass ? ` ${shineClass}` : ""}`}
+                className={`player-pick player-pick--compact${shineClass ? ` ${shineClass}` : ""}`}
                 onClick={() => {
                   onPick(activeStep, player.id);
                   setQuery("");
@@ -334,7 +336,9 @@ export function DraftRoom({
                       ? ` • ${formatSalary(estimatePlayerSalary(player))}`
                       : ""}
                   </span>
-                  {!isDailyDraft ? <PlayerDraftStats player={player} /> : null}
+                  {!isDailyDraft ? (
+                    <PlayerDraftStats player={player} variant="inline" />
+                  ) : null}
                 </div>
               </button>
             );
