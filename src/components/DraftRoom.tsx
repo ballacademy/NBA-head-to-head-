@@ -269,20 +269,18 @@ export function DraftRoom({
           <div className="draft-prompt__copy">
             <div className="draft-prompt__topline">
               <p className="draft-prompt__eyebrow">On the clock</p>
-              <p className="draft-prompt__eligible">
-                {candidates.length} eligible
-              </p>
+              <div className={timerClass} aria-live="polite">
+                <span>{secondsLeft}s</span>
+                <small>left</small>
+              </div>
             </div>
             <h3 id="draft-heading" className="draft-prompt__title">
-              {formatSlotConstraint(currentSlot)}{" "}
-              <span className="draft-prompt__pick-count">
-                Pick {activeStep + 1}/{totalPicks}
-              </span>
+              {formatSlotConstraint(currentSlot)}
             </h3>
-          </div>
-          <div className={timerClass} aria-live="polite">
-            <span>{secondsLeft}s</span>
-            <small>left</small>
+            <p className="draft-prompt__eligible">
+              {candidates.length}{" "}
+              {candidates.length === 1 ? "player" : "players"} available
+            </p>
           </div>
         </div>
       </div>
