@@ -11,7 +11,10 @@ export interface LineupShareCardInput {
 }
 
 const CARD_WIDTH = 1080;
-const CARD_HEIGHT = 1280;
+const ROW_STEP = 118;
+const ROW_HEIGHT = 104;
+const FOOTER_GAP = 36;
+const FOOTER_BOTTOM = 44;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -98,27 +101,30 @@ const traceJerseyPath = (context: CanvasRenderingContext2D) => {
   context.closePath();
 };
 
-const drawTexturedBackground = (context: CanvasRenderingContext2D) => {
-  const baseGradient = context.createLinearGradient(0, 0, CARD_WIDTH, CARD_HEIGHT);
+const drawTexturedBackground = (
+  context: CanvasRenderingContext2D,
+  cardHeight: number,
+) => {
+  const baseGradient = context.createLinearGradient(0, 0, CARD_WIDTH, cardHeight);
   baseGradient.addColorStop(0, "#0b0b0d");
   baseGradient.addColorStop(0.55, "#08080a");
   baseGradient.addColorStop(1, "#111114");
   context.fillStyle = baseGradient;
-  context.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
+  context.fillRect(0, 0, CARD_WIDTH, cardHeight);
 
   context.strokeStyle = "rgba(255,255,255,0.018)";
   context.lineWidth = 1;
 
-  for (let offset = -CARD_HEIGHT; offset < CARD_WIDTH + CARD_HEIGHT; offset += 28) {
+  for (let offset = -cardHeight; offset < CARD_WIDTH + cardHeight; offset += 28) {
     context.beginPath();
     context.moveTo(offset, 0);
-    context.lineTo(offset + CARD_HEIGHT, CARD_HEIGHT);
+    context.lineTo(offset + cardHeight, cardHeight);
     context.stroke();
   }
 
   for (let index = 0; index < 5200; index += 1) {
     const x = Math.random() * CARD_WIDTH;
-    const y = Math.random() * CARD_HEIGHT;
+    const y = Math.random() * cardHeight;
     const alpha = Math.random() * 0.05;
     context.fillStyle = `rgba(255,255,255,${alpha})`;
     context.fillRect(x, y, 1, 1);
@@ -126,16 +132,16 @@ const drawTexturedBackground = (context: CanvasRenderingContext2D) => {
 
   const vignette = context.createRadialGradient(
     CARD_WIDTH / 2,
-    CARD_HEIGHT * 0.42,
+    cardHeight * 0.42,
     120,
     CARD_WIDTH / 2,
-    CARD_HEIGHT * 0.42,
+    cardHeight * 0.42,
     CARD_WIDTH * 0.78,
   );
   vignette.addColorStop(0, "rgba(255,255,255,0.03)");
   vignette.addColorStop(1, "rgba(0,0,0,0.55)");
   context.fillStyle = vignette;
-  context.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
+  context.fillRect(0, 0, CARD_WIDTH, cardHeight);
 };
 
 const drawJerseyBadge = (
@@ -291,6 +297,29 @@ const drawShareCardHeader = (
   return ovrTop + 118;
 };
 
+const drawShareCardHeaderBottom = (input: LineupShareCardInput) => {
+  let ovrTop = 252;
+
+  if (input.record) {
+    ovrTop = 292;
+  }
+
+  return ovrTop + 118;
+};
+
+const computeShareCardLayout = (input: LineupShareCardInput, lineupLength: number) => {
+  const firstPlayerY = drawShareCardHeaderBottom(input);
+  const lastPlayerBottom =
+    firstPlayerY + Math.max(0, lineupLength - 1) * ROW_STEP + ROW_HEIGHT;
+  const footerY = lastPlayerBottom + FOOTER_GAP;
+
+  return {
+    cardHeight: footerY + FOOTER_BOTTOM,
+    firstPlayerY,
+    footerY,
+  };
+};
+
 export const drawLineupShareCard = (
   canvas: HTMLCanvasElement,
   input: LineupShareCardInput,
@@ -301,32 +330,34 @@ export const drawLineupShareCard = (
     throw new Error("Could not create share card canvas context.");
   }
 
-  canvas.width = CARD_WIDTH;
-  canvas.height = CARD_HEIGHT;
-
   const lineup = sortLineupByPosition(input.lineup);
+  const { cardHeight, firstPlayerY, footerY } = computeShareCardLayout(
+    input,
+    lineup.length,
+  );
 
-  drawTexturedBackground(context);
+  canvas.width = CARD_WIDTH;
+  canvas.height = cardHeight;
+
+  drawTexturedBackground(context, cardHeight);
 
   context.strokeStyle = "rgba(255,255,255,0.08)";
   context.lineWidth = 2;
-  roundRect(context, 40, 40, CARD_WIDTH - 80, CARD_HEIGHT - 80, 32);
+  roundRect(context, 40, 40, CARD_WIDTH - 80, cardHeight - 80, 32);
   context.stroke();
 
-  const firstPlayerY = drawShareCardHeader(context, input);
+  drawShareCardHeader(context, input);
 
   lineup.forEach((player, index) => {
-    drawPlayerRow(context, player, index, firstPlayerY + index * 118);
+    drawPlayerRow(context, player, index, firstPlayerY + index * ROW_STEP);
   });
-
-  const footerY = CARD_HEIGHT - 72;
 
   context.fillStyle = "#94a3b8";
   context.font = `600 20px ${FONT_STACK}`;
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
-  context.fillText("produced by ballacademy", CARD_WIDTH - 88, footerY);
+  context.fillText("Powered by BALLACADEMY", CARD_WIDTH - 88, footerY);
   context.textAlign = "left";
 };
 
