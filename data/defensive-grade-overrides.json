@@ -1,7 +1,7 @@
 {
   "source": "user-provided defensive rankings",
-  "generatedAt": "2026-06-23T02:25:20.530Z",
-  "matchedCount": 349,
+  "generatedAt": "2026-06-23T02:31:37.892Z",
+  "matchedCount": 350,
   "overrides": {
     "achiupr01": "B",
     "adamsst01": "B-",
@@ -171,6 +171,7 @@
     "jackstr02": "B",
     "jamesle01": "B",
     "jamesbr02": "C+",
+    "jaqueja01": "B",
     "jenkida01": "C",
     "joeis01": "C",
     "johnsca02": "C+",

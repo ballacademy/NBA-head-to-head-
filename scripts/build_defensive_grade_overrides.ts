@@ -236,6 +236,7 @@ Jackson, Reggie	D-
 Jackson-Davis, Trayce	B
 James, LeBron	B
 James, Bronny	C+
+Jaquez Jr., Jaime	B
 Jenkins, Dan	C
 Jiri, Jan	C
 Joe, Isaiah	C
