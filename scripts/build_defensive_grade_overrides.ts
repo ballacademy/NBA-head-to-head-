@@ -105,6 +105,7 @@ Covington, Robert	B
 Craig, Torrey	B
 Cripsin, Jeev	C
 Cunningham, Cade	C+
+Camara, Toumani	A-
 Curry, Seth	F
 Curry, Stephen	C-
 Daniels, Dyson	B+
@@ -185,6 +186,7 @@ Green, Draymond	A-
 Green, Jalen	C
 Green, Jeff	C-
 Green, Josh	B
+Green, Javonte	B-
 Grimes, Quentin	B
 Gueye, Mouhamed	C
 Gueye, Mouhamadou	C+
@@ -221,6 +223,7 @@ Horford, Al	B
 Horton-Tucker, Talen	D+
 House, Danuel Jr.	C+
 Houston, Caleb	C
+Huerter, Kevin	C+
 Howard, Jett	C-
 Huff, Jay	B-
 Hukporti, Ariel	B-
@@ -259,6 +262,7 @@ Kawamura, Yuki	C-
 Knecht, Dalton	C-
 Knueppel, Kon	C-
 Kornet, Luke	B-
+Konchar, John	B-
 Kuzma, Kyle	C
 Landale, Jock	C+
 LaRavia, Jake	C+
@@ -267,7 +271,7 @@ Leonard, Kawhi	A-
 Liddell, E.J.	C
 Lillard, Damian	D
 Little, Nassir	C+
-Lively, Dereck II	B+
+Lively II, Dereck	B+
 Looney, Kevon	B-
 Lopez, Brook	B-
 Love, Kevin	C-
@@ -277,6 +281,7 @@ Manek, Brady	D
 Mañon, Cesar	C-
 Markkanen, Lauri	C-
 Marshall, Naji	B
+Mamukelashvili, Sandro	C
 Martin, Caleb	B
 Martin, Cody	B
 Martin, Kenyon Jr.	C
@@ -317,7 +322,7 @@ Morant, Ja	C
 Morris, Monte	C
 Morris, Markieff	D
 Morris, Marcus Sr.	C-
-Murphy, Trey III	B
+Murphy III, Trey	B-
 Murray, Dejounte	B
 Murray, Jamal	C-
 Murray, Keegan	B
@@ -382,6 +387,7 @@ Reed, Paul	B
 Reid, Naz	C+
 Reath, Duop	C
 Reynolds, Jared	C
+Richmond, Kadary	B-
 Rice, Sir'Jabari	C-
 Richards, Nick	B-
 Richardson, Jase	C+
@@ -417,6 +423,7 @@ Simons, Anfernee	F
 Simmons, Ben	B+
 Siakam, Pascal	B
 Sims, Jericho	B-
+Smart, Marcus	B+
 Slawson, Jalen	C
 Spar, Tyler	C
 Spencer, Cam	C-
@@ -502,6 +509,7 @@ Yabusele, Guerschon	C+
 Young, Thaddeus	B-
 Young, Trae	D+
 Yurseven, Omer	C-
+Zikarsky, Rocco	B
 Zeller, Cody	C-
 Zubac, Ivica	B+
 `.trim();
