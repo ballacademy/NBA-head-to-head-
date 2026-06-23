@@ -1016,6 +1016,38 @@ main {
   color: #fde68a;
 }
 
+.lineup-chemistry-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.lineup-chemistry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.lineup-chemistry-badge strong {
+  color: #6ee7b7;
+  font-weight: 900;
+}
+
+.matchup-panel__team .lineup-chemistry-badges {
+  margin: 0 0 8px;
+}
+
 .player-rarity-badges {
   display: inline-flex;
   flex-wrap: wrap;

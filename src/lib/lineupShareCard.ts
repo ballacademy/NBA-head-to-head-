@@ -1,3 +1,4 @@
+import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
 import { sortLineupByPosition } from "./lineupOrder";
 import { getTeamColors, type TeamColors } from "./teamColors";
 import type { Player } from "./types";
@@ -17,6 +18,12 @@ const FOOTER_GAP = 36;
 const FOOTER_BOTTOM = 64;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+const STARTING_FIVE_Y = 220;
+const HEADER_TO_PLAYERS_GAP = 40;
+const CHEMISTRY_PILL_HEIGHT = 26;
+const CHEMISTRY_ROW_GAP = 8;
+const CHEMISTRY_BLOCK_GAP = 12;
+const CHEMISTRY_FONT = `700 14px ${FONT_STACK}`;
 
 const JERSEY_POINTS: Array<[number, number]> = [
   [11, 9],
@@ -83,6 +90,7 @@ export const ensureShareCardFonts = () => {
     document.fonts.load(`700 30px ${FONT_STACK}`),
     document.fonts.load(`800 54px ${FONT_STACK}`),
     document.fonts.load(`900 22px ${FONT_STACK}`),
+    document.fonts.load(`700 14px ${FONT_STACK}`),
     document.fonts.load(`900 72px ${FONT_STACK}`),
   ]).then(() => undefined);
 
@@ -248,13 +256,117 @@ const drawPlayerRow = (
   );
 };
 
+const getChemistryPillLabel = (bonus: ActiveChemistryBonus) =>
+  `${bonus.title} +${bonus.bonus}`;
+
+const layoutChemistryPillRows = (
+  context: CanvasRenderingContext2D,
+  bonuses: ActiveChemistryBonus[],
+  maxWidth: number,
+) => {
+  if (bonuses.length === 0) {
+    return [] as string[][];
+  }
+
+  context.font = CHEMISTRY_FONT;
+  const rows: string[][] = [[]];
+  let rowWidth = 0;
+
+  for (const bonus of bonuses) {
+    const label = getChemistryPillLabel(bonus);
+    const pillWidth = context.measureText(label).width + 20;
+
+    if (rowWidth > 0 && rowWidth + pillWidth > maxWidth) {
+      rows.push([]);
+      rowWidth = 0;
+    }
+
+    rows[rows.length - 1].push(label);
+    rowWidth += pillWidth + CHEMISTRY_ROW_GAP;
+  }
+
+  return rows;
+};
+
+const getShareCardHeaderLayout = (
+  context: CanvasRenderingContext2D,
+  input: LineupShareCardInput,
+  lineup: Player[],
+) => {
+  const bonuses = getActiveChemistryBonuses(lineup);
+  const ovrY = 168;
+  const ovrLabelY = ovrY + 30;
+  const recordY = input.record ? ovrLabelY + 30 : null;
+  const rightBottom = recordY ? recordY + 10 : ovrLabelY + 10;
+  const leftBottom = STARTING_FIVE_Y + 12;
+  const chemistryRows = layoutChemistryPillRows(
+    context,
+    bonuses,
+    CARD_WIDTH - 176,
+  );
+  const chemistryHeight =
+    chemistryRows.length > 0
+      ? CHEMISTRY_BLOCK_GAP +
+        chemistryRows.length * CHEMISTRY_PILL_HEIGHT +
+        Math.max(0, chemistryRows.length - 1) * CHEMISTRY_ROW_GAP
+      : 0;
+  const chemistryRowY = STARTING_FIVE_Y + CHEMISTRY_BLOCK_GAP;
+  const headerBottom = Math.max(leftBottom, rightBottom, chemistryRowY + chemistryHeight);
+  const firstPlayerY = headerBottom + HEADER_TO_PLAYERS_GAP;
+
+  return {
+    bonuses,
+    chemistryRowY,
+    chemistryRows,
+    firstPlayerY,
+    ovrLabelY,
+    ovrY,
+    recordY,
+  };
+};
+
+const drawChemistryBonusRow = (
+  context: CanvasRenderingContext2D,
+  labels: string[],
+  y: number,
+  accent: string,
+) => {
+  let x = 88;
+  const maxX = CARD_WIDTH - 88;
+
+  context.font = CHEMISTRY_FONT;
+  context.textBaseline = "middle";
+
+  for (const label of labels) {
+    const textWidth = context.measureText(label).width;
+    const pillWidth = textWidth + 20;
+
+    if (x + pillWidth > maxX && x > 88) {
+      break;
+    }
+
+    roundRect(context, x, y, pillWidth, CHEMISTRY_PILL_HEIGHT, 13);
+    context.fillStyle = rgbaFromHex(accent, 0.14);
+    context.fill();
+    context.strokeStyle = rgbaFromHex(accent, 0.34);
+    context.lineWidth = 1;
+    context.stroke();
+
+    context.fillStyle = "#d1fae5";
+    context.textAlign = "left";
+    context.fillText(label, x + 10, y + CHEMISTRY_PILL_HEIGHT / 2);
+
+    x += pillWidth + CHEMISTRY_ROW_GAP;
+  }
+};
+
 const drawShareCardHeader = (
   context: CanvasRenderingContext2D,
   input: LineupShareCardInput,
+  layout: ReturnType<typeof getShareCardHeaderLayout>,
 ) => {
   const headerX = 88;
   const headerRightX = CARD_WIDTH - 88;
-  const startingFiveY = 220;
 
   context.textBaseline = "alphabetic";
 
@@ -272,48 +384,60 @@ const drawShareCardHeader = (
   context.font = `900 20px ${FONT_STACK}`;
   context.fillStyle = "rgba(148, 163, 184, 0.92)";
   context.letterSpacing = "2.8px";
-  context.fillText("STARTING FIVE", headerX, startingFiveY);
+  context.fillText("STARTING FIVE", headerX, STARTING_FIVE_Y);
   context.letterSpacing = "0px";
 
   context.textAlign = "right";
-  let ovrY = 168;
-
-  if (input.record) {
-    context.font = `600 22px ${FONT_STACK}`;
-    context.fillStyle = "#94a3b8";
-    context.fillText(`Projected ${input.record}`, headerRightX, 126);
-    ovrY = 178;
-  }
 
   context.save();
   context.shadowColor = rgbaFromHex(input.accent, 0.45);
   context.shadowBlur = 16;
   context.font = `900 72px ${FONT_STACK}`;
   context.fillStyle = "#ffffff";
-  context.fillText(String(input.ovr), headerRightX, ovrY);
+  context.fillText(String(input.ovr), headerRightX, layout.ovrY);
   context.restore();
 
   context.font = `700 22px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
-  context.fillText("OVR", headerRightX, ovrY + 30);
+  context.fillText("OVR", headerRightX, layout.ovrLabelY);
+
+  if (input.record && layout.recordY) {
+    context.font = `600 20px ${FONT_STACK}`;
+    context.fillStyle = "#94a3b8";
+    context.fillText(`Projected ${input.record}`, headerRightX, layout.recordY);
+  }
+
+  if (layout.chemistryRows.length > 0) {
+    layout.chemistryRows.forEach((row, index) => {
+      drawChemistryBonusRow(
+        context,
+        row,
+        layout.chemistryRowY +
+          index * (CHEMISTRY_PILL_HEIGHT + CHEMISTRY_ROW_GAP),
+        input.accent,
+      );
+    });
+  }
 
   context.textAlign = "left";
-
-  return startingFiveY + 48;
 };
 
-const drawShareCardHeaderBottom = (_input: LineupShareCardInput) => 268;
-
-const computeShareCardLayout = (input: LineupShareCardInput, lineupLength: number) => {
-  const firstPlayerY = drawShareCardHeaderBottom(input);
+const computeShareCardLayout = (
+  context: CanvasRenderingContext2D,
+  input: LineupShareCardInput,
+  lineup: Player[],
+) => {
+  const headerLayout = getShareCardHeaderLayout(context, input, lineup);
   const lastPlayerBottom =
-    firstPlayerY + Math.max(0, lineupLength - 1) * ROW_STEP + ROW_HEIGHT;
+    headerLayout.firstPlayerY +
+    Math.max(0, lineup.length - 1) * ROW_STEP +
+    ROW_HEIGHT;
   const footerY = lastPlayerBottom + FOOTER_GAP;
 
   return {
     cardHeight: footerY + FOOTER_BOTTOM,
-    firstPlayerY,
     footerY,
+    headerLayout,
   };
 };
 
@@ -328,9 +452,10 @@ export const drawLineupShareCard = (
   }
 
   const lineup = sortLineupByPosition(input.lineup);
-  const { cardHeight, firstPlayerY, footerY } = computeShareCardLayout(
+  const { cardHeight, footerY, headerLayout } = computeShareCardLayout(
+    context,
     input,
-    lineup.length,
+    lineup,
   );
 
   canvas.width = CARD_WIDTH;
@@ -343,10 +468,10 @@ export const drawLineupShareCard = (
   roundRect(context, 40, 40, CARD_WIDTH - 80, cardHeight - 80, 32);
   context.stroke();
 
-  drawShareCardHeader(context, input);
+  drawShareCardHeader(context, input, headerLayout);
 
   lineup.forEach((player, index) => {
-    drawPlayerRow(context, player, index, firstPlayerY + index * ROW_STEP);
+    drawPlayerRow(context, player, index, headerLayout.firstPlayerY + index * ROW_STEP);
   });
 
   context.fillStyle = "#94a3b8";

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { PlayerStatLine } from "./PlayerStatLine";
+import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
@@ -58,6 +59,8 @@ export function TeamLineupCard({
           </div>
         </div>
       </div>
+
+      <LineupChemistryBadges lineup={lineup} />
 
       <div className="team-lineup-card__players">
         {orderedLineup.length > 0 ? (
