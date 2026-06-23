@@ -9,11 +9,11 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
-  it("defines 49 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(49);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(49);
+  it("defines 50 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(50);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(50);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      49,
+      50,
     );
   });
 
@@ -74,6 +74,20 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lineup)).toContain("curry-kitchen");
   });
 
+  it("detects chemistry class when a chemistry bonus is active", () => {
+    const steph = players.find((player) => player.bbrPlayerId === "curryst01");
+    const seth = players.find((player) => player.bbrPlayerId === "curryse01");
+    const fillers = players
+      .filter(
+        (player) =>
+          player.bbrPlayerId !== "curryst01" && player.bbrPlayerId !== "curryse01",
+      )
+      .slice(0, 3);
+
+    const lineup = [steph!, seth!, ...fillers];
+    expect(checkLineupAchievements(lineup)).toContain("chemistry-class");
+  });
+
   it("only returns known badge ids", () => {
     const lineup = players.slice(0, 5);
     const earned = checkLineupAchievements(lineup);
@@ -105,7 +119,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(49);
+    expect(progress.total).toBe(50);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

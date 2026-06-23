@@ -1,3 +1,4 @@
+import { getActiveChemistryBonuses } from "./chemistry";
 import { getDivisionForTeam } from "./divisions";
 import {
   isAllStarPlayer,
@@ -449,5 +450,12 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (lineup) =>
       lineup.filter((player) => player.styles.includes("rim-protector"))
         .length >= 3,
+  },
+  {
+    id: "chemistry-class",
+    title: "Chemistry Class",
+    description: "Draft a lineup that unlocks a chemistry bonus.",
+    emoji: "🧪",
+    check: (lineup) => getActiveChemistryBonuses(lineup).length > 0,
   },
 ];
