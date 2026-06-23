@@ -9,11 +9,11 @@ import {
 } from "./achievements";
 
 describe("achievements", () => {
-  it("defines 51 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(51);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(51);
+  it("defines 49 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(49);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(49);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      51,
+      49,
     );
   });
 
@@ -105,7 +105,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(51);
+    expect(progress.total).toBe(49);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

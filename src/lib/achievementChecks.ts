@@ -30,9 +30,6 @@ const hasBbrIds = (lineup: Player[], ids: string[]) => {
 const countBbrPrefix = (lineup: Player[], prefix: string) =>
   lineup.filter((player) => player.bbrPlayerId?.startsWith(prefix)).length;
 
-const includesBbr = (lineup: Player[], id: string) =>
-  lineup.some((player) => player.bbrPlayerId === id);
-
 const allSameTeam = (lineup: Player[]) => {
   const teams = new Set(lineup.map((player) => player.team));
   return teams.size === 1;
@@ -452,19 +449,5 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (lineup) =>
       lineup.filter((player) => player.styles.includes("rim-protector"))
         .length >= 3,
-  },
-  {
-    id: "joker-wild",
-    title: "Joker Wild",
-    description: "Draft Nikola Jokić.",
-    emoji: "🃏",
-    check: (lineup) => includesBbr(lineup, "jokicni01"),
-  },
-  {
-    id: "slim-reaper",
-    title: "Slim Reaper",
-    description: "Draft Kevin Durant.",
-    emoji: "🦂",
-    check: (lineup) => includesBbr(lineup, "duranke01"),
   },
 ];
