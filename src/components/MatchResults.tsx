@@ -195,7 +195,7 @@ export function MatchResults({
             <div className="match-results__action-row">
               <button
                 type="button"
-                className="secondary-button match-results__share-button"
+                className="play-again-button match-results__share-button"
                 onClick={() => void handleShareLineup()}
               >
                 Share lineup
