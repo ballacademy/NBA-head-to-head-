@@ -479,7 +479,7 @@ export const drawLineupShareCard = (
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
-  context.fillText("Powered by BALLACADEMY", CARD_WIDTH - 88, footerY);
+  context.fillText("POWERED BY BALLACADEMY", CARD_WIDTH - 88, footerY);
   context.textAlign = "left";
 };
 
