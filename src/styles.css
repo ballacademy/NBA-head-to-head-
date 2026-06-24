@@ -2114,7 +2114,6 @@ main {
   color: #fde68a;
 }
 
-.daily-draft-results__actions .landing__primary-button,
 .daily-draft-results__actions .play-again-button {
   margin-top: 0;
   flex: 1 1 0;
@@ -2122,13 +2121,9 @@ main {
 }
 
 @media (max-width: 640px) {
-  .daily-draft-results__actions {
-    flex-direction: column;
-  }
-
-  .daily-draft-results__actions .landing__primary-button,
   .daily-draft-results__actions .play-again-button {
-    width: 100%;
+    flex: 1 1 calc(50% - 9px);
+    min-width: 0;
   }
 }
 

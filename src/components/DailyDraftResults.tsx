@@ -151,7 +151,7 @@ export function DailyDraftResults({
         <div className="match-results__action-row daily-draft-results__actions">
           <button
             type="button"
-            className="landing__primary-button"
+            className="play-again-button match-results__share-button"
             onClick={() => void handleCopyShareText()}
           >
             {copyButtonLabel}
