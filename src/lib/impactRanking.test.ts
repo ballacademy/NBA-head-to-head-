@@ -11,16 +11,15 @@ import {
 import { calculateLineupScore } from "./scoring";
 
 describe("impactRanking", () => {
-  it("nudges highly ranked players upward when stats underrate them", () => {
+  it("blends user impact ranks against stat-derived ranks", () => {
     const jokic = players.find((player) => player.name === "Nikola Jokić");
-    const giannis = players.find(
-      (player) => player.name === "Giannis Antetokounmpo",
-    );
+    const brunson = players.find((player) => player.name === "Jalen Brunson");
 
     expect(jokic).toBeDefined();
-    expect(giannis).toBeDefined();
-    expect(getPlayerImpactAdjustment(jokic!)).toBeGreaterThanOrEqual(0);
-    expect(getPlayerImpactAdjustment(giannis!)).toBeGreaterThanOrEqual(0);
+    expect(brunson).toBeDefined();
+    expect(getPlayerImpactAdjustment(jokic!)).toBeGreaterThanOrEqual(-2);
+    expect(getPlayerImpactAdjustment(jokic!)).toBeLessThanOrEqual(2);
+    expect(getPlayerImpactAdjustment(brunson!)).toBeGreaterThan(0);
   });
 
   it("applies impact adjustments in lineup scoring without a visible category", () => {
