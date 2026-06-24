@@ -20,6 +20,7 @@ import { simulateDailyBenchmarkValues } from "./lib/dailyDraftScores";
 import {
   createOpponentDraftSlots,
   createRandomOpponent,
+  createRankedOpponent,
   createUserDrafter,
   getOpponentPickDelayMs,
   sleep,
@@ -32,6 +33,8 @@ import {
   type PlayerCollection,
 } from "./lib/playerCollection";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
+import { ensureRankedLeaderboard } from "./lib/rankedLeaderboard";
+import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
@@ -61,6 +64,11 @@ function App() {
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
   );
+
+  useEffect(() => {
+    ensureCurrentRankedSeason();
+    ensureRankedLeaderboard();
+  }, []);
 
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
@@ -165,11 +173,13 @@ function App() {
     );
     setOpponent(
       opponentSlots
-        ? {
-            ...createRandomOpponent(opponentSlots),
-            salaryCapMode,
-            allTimeMode: nextAllTimeMode,
-          }
+        ? salaryCapMode
+          ? createRankedOpponent(opponentSlots)
+          : {
+              ...createRandomOpponent(opponentSlots),
+              salaryCapMode,
+              allTimeMode: nextAllTimeMode,
+            }
         : null,
     );
     setOpponentCollection(nextOpponentCollection);

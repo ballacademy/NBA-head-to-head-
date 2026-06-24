@@ -17,6 +17,7 @@ import {
   RANKED_SALARY_CAP,
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
+import { getRankedProfileView } from "../lib/rankedProfile";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
@@ -63,6 +64,7 @@ export function DraftRoom({
     [drafter.lineup, playersById],
   );
   const salaryCapMode = Boolean(drafter.salaryCapMode);
+  const rankedProfile = salaryCapMode ? getRankedProfileView() : null;
   const salaryCapOptions = useMemo(
     () =>
       getSalaryCapDraftOptions(
@@ -198,8 +200,9 @@ export function DraftRoom({
 
       {salaryCapMode ? (
         <div className="salary-cap-banner" role="status">
-          <p className="eyebrow">Ranked Salary Cap</p>
+          <p className="eyebrow">Ranked • {rankedProfile?.tier.label}</p>
           <p>
+            {rankedProfile ? `${rankedProfile.elo} Elo • ` : ""}
             {formatSalary(getLineupSalaryTotal(pickedLineup))} spent •{" "}
             {formatSalary(getRemainingSalaryCap(pickedLineup))} remaining of{" "}
             {formatSalary(RANKED_SALARY_CAP)}

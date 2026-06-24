@@ -26,9 +26,10 @@ describe("matchOutcome", () => {
   });
 
   it("records a match only once per match id", () => {
-    persistMatchOutcome(true, { name: "Bulls" }, "match-1", "headToHead");
+    const first = persistMatchOutcome(true, { name: "Bulls" }, "match-1", "headToHead");
     persistMatchOutcome(true, { name: "Bulls" }, "match-1", "headToHead");
 
+    expect(first.record.wins).toBe(1);
     expect(loadPlayerRecord("headToHead").wins).toBe(1);
     expect(getTopLeaderboard("winStreak")[0]?.winStreak).toBe(1);
   });

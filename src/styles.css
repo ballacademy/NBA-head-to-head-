@@ -1832,6 +1832,81 @@ main {
   box-shadow: 0 18px 40px rgba(37, 99, 235, 0.42);
 }
 
+.leaderboard__tabs--secondary {
+  margin-top: -4px;
+}
+
+.ranked-mode-summary__tier {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ranked-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.ranked-tier-badge--compact {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.ranked-tier-badge__elo {
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.ranked-tier-badge--two-way {
+  color: #e2e8f0;
+  background: rgba(100, 116, 139, 0.28);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.ranked-tier-badge--gleague {
+  color: #fef3c7;
+  background: rgba(180, 83, 9, 0.28);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.ranked-tier-badge--nba-gm {
+  color: #dbeafe;
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.ranked-tier-badge--top-gm {
+  color: #ede9fe;
+  background: rgba(109, 40, 217, 0.3);
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+.ranked-tier-badge--generational {
+  color: #fce7f3;
+  background: rgba(190, 24, 93, 0.3);
+  border-color: rgba(244, 114, 182, 0.35);
+}
+
+.matchup-panel__ranked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.matchup-panel__ranked-note {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
 .salary-cap-banner {
   margin-bottom: 16px;
   padding: 14px 16px;

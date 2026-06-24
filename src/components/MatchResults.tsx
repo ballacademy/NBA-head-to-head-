@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { TeamLineupCard } from "./TeamLineupCard";
+import { RankedTierBadge } from "./RankedTierBadge";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
@@ -12,6 +12,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
+import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
   formatProjectedSeasonRecord,
@@ -54,6 +55,7 @@ export function MatchResults({
   const [actionsReady, setActionsReady] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
+  const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.preciseTotal >= opponentScore.preciseTotal;
@@ -70,19 +72,24 @@ export function MatchResults({
     }
 
     recordedRef.current = true;
-    const record = persistMatchOutcome(
+    const outcome = persistMatchOutcome(
       userWon,
       { name: user.name },
       matchId,
       matchRecordMode,
+      { opponentElo: opponent.rankedOpponentElo },
     );
+
+    if (outcome.ranked) {
+      setRankedOutcome(outcome.ranked);
+    }
 
     const next = processMatchUnlock(userWon, matchId, collection);
 
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, matchRecordMode, onCollectionChange, user.name, userWon]);
+  }, [collection, matchId, matchRecordMode, onCollectionChange, opponent.rankedOpponentElo, user.name, userWon]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {
@@ -143,7 +150,25 @@ export function MatchResults({
           <p className="matchup-panel__meta">
             Margin {Math.abs(userScore.total - opponentScore.total)} • OVR{" "}
             {userScore.total} vs {opponentScore.total}
+            {matchRecordMode === "ranked" && rankedOutcome ? (
+              <>
+                {" "}
+                • Elo {rankedOutcome.delta >= 0 ? "+" : ""}
+                {rankedOutcome.delta} ({rankedOutcome.elo})
+              </>
+            ) : null}
           </p>
+          {matchRecordMode === "ranked" && rankedOutcome ? (
+            <div className="matchup-panel__ranked">
+              <RankedTierBadge
+                tierLabel={rankedOutcome.tierLabel}
+                elo={rankedOutcome.elo}
+              />
+              <p className="matchup-panel__ranked-note">
+                Matched vs {rankedOutcome.opponentElo} Elo opponent
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className="matchup-panel__grid">

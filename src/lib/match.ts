@@ -3,6 +3,12 @@ import {
   generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
+import { pickOpponentElo } from "./rankedElo";
+import {
+  ensureRankedLeaderboard,
+  findRankedOpponentFromLeaderboard,
+} from "./rankedLeaderboard";
+import { ensureCurrentRankedSeason } from "./rankedProfile";
 import type { TeamProfile } from "./teamProfile";
 import type { Drafter, DraftSlotConstraint } from "./types";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
@@ -52,6 +58,30 @@ export const createRandomOpponent = (
     accent: blueprint.accent,
     draftSlots,
     lineup: [],
+  };
+};
+
+export const createRankedOpponent = (
+  draftSlots: DraftSlotConstraint[],
+): Drafter => {
+  ensureRankedLeaderboard();
+  const playerElo = ensureCurrentRankedSeason().elo;
+  const targetElo = pickOpponentElo(playerElo);
+  const matchedNpc = findRankedOpponentFromLeaderboard(targetElo);
+  const blueprint =
+    initialDrafterBlueprints[
+      Math.floor(Math.random() * initialDrafterBlueprints.length)
+    ];
+  const opponentElo = matchedNpc?.elo ?? targetElo;
+
+  return {
+    id: matchedNpc?.playerId ?? `opponent-${blueprint.id}-${Date.now()}`,
+    name: matchedNpc?.name ?? blueprint.name,
+    accent: blueprint.accent,
+    draftSlots,
+    lineup: [],
+    salaryCapMode: true,
+    rankedOpponentElo: opponentElo,
   };
 };
 

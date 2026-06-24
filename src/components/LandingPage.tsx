@@ -26,6 +26,7 @@ import {
   normalizeTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
+import { RankedModeSummary } from "./RankedModeSummary";
 import { LossStreakBadge } from "./LossStreakBadge";
 import { WinStreakBadge } from "./WinStreakBadge";
 import { hasLossStreakBadge } from "../lib/lossStreak";
@@ -217,11 +218,11 @@ export function LandingPage({
         </div>
 
         <div className="head-to-head-card landing-card landing-card--mode">
-          <p className="eyebrow">Head-to-Head</p>
-          <h2 className="head-to-head-card__title">Compete Head-to-Head</h2>
+          <p className="eyebrow">Classic Head to Head</p>
+          <h2 className="head-to-head-card__title">Classic Head to Head</h2>
           <p className="head-to-head-card__description">
-            Draft a five-player lineup and face a random rival. Chemistry bonuses
-            reward real-world connections like college teammates and brothers.
+            Draft a five-player lineup and face a random rival. No salary cap,
+            no rating pressure — just lineup building and chemistry bonuses.
           </p>
           <MatchModeRecord record={modeRecords.headToHead} />
           <button
@@ -229,25 +230,25 @@ export function LandingPage({
             className="landing__primary-button"
             onClick={() => handleStart()}
           >
-            Compete Head-to-Head
+            Play Classic Head to Head
           </button>
         </div>
 
         <div className="ranked-cap-card landing-card landing-card--mode">
           <p className="eyebrow">Ranked</p>
-          <h2 className="ranked-cap-card__title">Salary Cap Mode</h2>
+          <h2 className="ranked-cap-card__title">Salary Cap Ladder</h2>
           <p className="ranked-cap-card__description">
             Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with
-            real 2025-26 salaries. Stack stars and you&apos;ll need minimum deals
-            to finish your five.
+            real 2025-26 salaries. Elo matchmaking pairs you with similarly
+            rated front offices, and monthly seasons reset the global Top 500.
           </p>
-          <MatchModeRecord record={modeRecords.ranked} />
+          <RankedModeSummary record={modeRecords.ranked} />
           <button
             type="button"
             className="ranked-cap-card__button"
             onClick={() => handleStart({ salaryCapMode: true })}
           >
-            Play Ranked (Salary Cap)
+            Play Ranked
           </button>
         </div>
 
