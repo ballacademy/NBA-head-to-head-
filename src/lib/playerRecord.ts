@@ -1,7 +1,7 @@
 import { readJson, writeJson } from "./browserStorage";
+import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import type { TeamProfile } from "./teamProfile";
 
-const PLAYER_ID_KEY = "nba-head-to-head-player-id";
 const PLAYER_RECORDS_KEY = "nba-head-to-head-player-records-by-mode";
 const LEGACY_PLAYER_RECORD_KEY = "nba-head-to-head-player-record";
 
@@ -37,18 +37,6 @@ interface StoredModeRecords {
   allTime?: Partial<ModeRecordStats>;
 }
 
-const createPlayerId = () => {
-  const cryptoApi = (globalThis as typeof globalThis & {
-    crypto?: { randomUUID: () => string };
-  }).crypto;
-
-  if (cryptoApi?.randomUUID) {
-    return cryptoApi.randomUUID();
-  }
-
-  return `player-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-};
-
 const emptyModeStats = (): ModeRecordStats => ({
   wins: 0,
   losses: 0,
@@ -63,18 +51,7 @@ const normalizeModeStats = (saved?: Partial<ModeRecordStats>): ModeRecordStats =
   lossStreak: saved?.lossStreak ?? 0,
 });
 
-export const getOrCreatePlayerId = () => {
-  const storage = readJson<{ playerId: string }>(PLAYER_ID_KEY);
-
-  if (storage?.playerId) {
-    return storage.playerId;
-  }
-
-  const playerId = createPlayerId();
-  writeJson(PLAYER_ID_KEY, { playerId });
-
-  return playerId;
-};
+export { getOrCreatePlayerId } from "./playerIdentity";
 
 const loadStoredModeRecords = (): StoredModeRecords => {
   const saved = readJson<StoredModeRecords>(PLAYER_RECORDS_KEY);
@@ -125,7 +102,7 @@ export const getMatchRecordMode = (options: {
 export const loadPlayerRecord = (
   mode: MatchRecordMode = "headToHead",
 ): PlayerRecord => {
-  const playerId = getOrCreatePlayerId();
+  const playerId = getOrCreatePlayerIdentity().playerId;
   const saved = loadStoredModeRecords();
   const stats = normalizeModeStats(saved[mode]);
 
@@ -204,11 +181,16 @@ export const recordMatchResult = (
 export const buildLeaderboardIdentity = (
   team: TeamProfile,
   record: PlayerRecord,
-) => ({
-  playerId: record.playerId,
-  name: team.name,
-  wins: record.wins,
-  losses: record.losses,
-  winStreak: record.winStreak,
-  lossStreak: record.lossStreak,
-});
+) => {
+  const { publicTag } = getOrCreatePlayerIdentity();
+
+  return {
+    playerId: record.playerId,
+    name: team.name,
+    publicTag,
+    wins: record.wins,
+    losses: record.losses,
+    winStreak: record.winStreak,
+    lossStreak: record.lossStreak,
+  };
+};

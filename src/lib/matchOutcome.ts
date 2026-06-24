@@ -2,6 +2,7 @@ import { readJson, writeJson } from "./browserStorage";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
 import { applyRankedMatchResult } from "./rankedProfile";
+import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import {
   buildLeaderboardIdentity,
   loadPlayerRecord,
@@ -64,6 +65,7 @@ export const persistMatchOutcome = (
     upsertRankedLeaderboardEntry({
       playerId: record.playerId,
       name: team.name,
+      publicTag: getOrCreatePlayerIdentity().publicTag,
       elo: rankedResult.profile.elo,
       wins: record.wins,
       losses: record.losses,

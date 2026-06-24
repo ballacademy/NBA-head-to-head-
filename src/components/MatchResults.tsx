@@ -1,5 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { TeamLineupCard } from "./TeamLineupCard";
+import { GmIdentityBadge } from "./GmIdentityBadge";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
@@ -23,6 +25,7 @@ import {
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
+import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -125,6 +128,7 @@ export function MatchResults({
     matchCollection.pendingUnlock?.kind === "loss"
       ? "New scrub unlocked — click to choose"
       : "New star unlocked — click to choose";
+  const playerIdentity = getOrCreatePlayerIdentity();
 
   return (
     <section
@@ -169,6 +173,14 @@ export function MatchResults({
               </p>
             </div>
           ) : null}
+          <p className="matchup-panel__identity">
+            Listed as{" "}
+            <GmIdentityBadge
+              name={user.name}
+              publicTag={playerIdentity.publicTag}
+              playerId={playerIdentity.playerId}
+            />
+          </p>
         </div>
 
         <div className="matchup-panel__grid">

@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
+import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
 import { formatRankedElo, getTierForElo } from "./rankedElo";
 import { getCurrentSeasonId } from "./rankedSeason";
 
@@ -11,6 +12,7 @@ const NPC_POOL_SIZE = RANKED_LEADERBOARD_LIMIT - 1;
 export interface RankedLeaderboardEntry {
   playerId: string;
   name: string;
+  publicTag: string;
   elo: number;
   tierLabel: string;
   wins: number;
@@ -145,6 +147,7 @@ export const seedNpcLeaderboardEntries = (
     return {
       playerId: `npc-${seasonId}-${index}`,
       name: buildNpcName(index, random),
+      publicTag: derivePublicTag(`npc-${seasonId}-${index}`),
       elo,
       tierLabel: tier.label,
       wins,
@@ -161,6 +164,7 @@ const normalizeEntry = (entry: RankedLeaderboardEntry): RankedLeaderboardEntry =
   return {
     playerId: entry.playerId,
     name: entry.name.trim(),
+    publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     elo,
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),
@@ -215,7 +219,9 @@ export const getTopRankedLeaderboard = (
   [...ensureRankedLeaderboard()].sort(compareByElo).slice(0, limit);
 
 export const upsertRankedLeaderboardEntry = (
-  entry: Omit<RankedLeaderboardEntry, "tierLabel" | "updatedAt">,
+  entry: Omit<RankedLeaderboardEntry, "tierLabel" | "updatedAt" | "publicTag"> & {
+    publicTag?: string;
+  },
 ) => {
   const seasonId = getCurrentSeasonId();
   const current = ensureRankedLeaderboard().filter(
@@ -223,6 +229,7 @@ export const upsertRankedLeaderboardEntry = (
   );
   const nextEntry = normalizeEntry({
     ...entry,
+    publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     tierLabel: getTierForElo(entry.elo).label,
     updatedAt: new Date().toISOString(),
   });

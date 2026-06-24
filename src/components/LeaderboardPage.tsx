@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import {
   formatLeaderboardLossStreak,
   formatLeaderboardRecord,
-  formatLeaderboardTeam,
   formatLeaderboardWinPercentage,
   formatLeaderboardWinStreak,
   getLeaderboardFootnote,
@@ -17,6 +16,7 @@ import {
 } from "../lib/rankedLeaderboard";
 import { getCurrentSeasonId, formatSeasonLabel } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
+import { GmIdentityBadge } from "./GmIdentityBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
 
 interface LeaderboardPageProps {
@@ -161,7 +161,17 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                     }
                   >
                     <td>{index + 1}</td>
-                    <td>{entry.name}</td>
+                    <td>
+                      {entry.isNpc ? (
+                        entry.name
+                      ) : (
+                        <GmIdentityBadge
+                          name={entry.name}
+                          publicTag={entry.publicTag}
+                          playerId={entry.playerId}
+                        />
+                      )}
+                    </td>
                     <td>
                       <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
                     </td>
@@ -199,7 +209,13 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   }
                 >
                   <td>{index + 1}</td>
-                  <td>{formatLeaderboardTeam(entry)}</td>
+                  <td>
+                    <GmIdentityBadge
+                      name={entry.name}
+                      publicTag={entry.publicTag}
+                      playerId={entry.playerId}
+                    />
+                  </td>
                   <td>{formatLeaderboardRecord(entry)}</td>
                   <td>{formatMetricValue(entry)}</td>
                 </tr>

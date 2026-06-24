@@ -22,6 +22,9 @@ describe("playerRecord", () => {
   beforeEach(() => {
     storage.clear();
     vi.stubGlobal("localStorage", localStorageMock);
+    vi.stubGlobal("crypto", {
+      randomUUID: () => "player-test-1",
+    });
   });
 
   afterEach(() => {

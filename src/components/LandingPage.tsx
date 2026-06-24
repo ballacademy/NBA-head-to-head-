@@ -27,10 +27,12 @@ import {
   type TeamProfile,
 } from "../lib/teamProfile";
 import { RankedModeSummary } from "./RankedModeSummary";
+import { GmIdentityBadge } from "./GmIdentityBadge";
 import { LossStreakBadge } from "./LossStreakBadge";
 import { WinStreakBadge } from "./WinStreakBadge";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
+import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { DailyDraftChallenge } from "../lib/dailyDraft";
 import type { StartDraftOptions } from "../lib/match";
 
@@ -105,6 +107,7 @@ export function LandingPage({
     () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
     [dailyChallenge.id, dailyDateKey],
   );
+  const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
 
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, collection);
@@ -184,6 +187,19 @@ export function LandingPage({
         <p className="landing-team-form__note">
           Your team name is saved for future drafts. You can change it here
           anytime before you start.
+        </p>
+
+        <p className="landing-team-form__identity">
+          <GmIdentityBadge
+            publicTag={playerIdentity.publicTag}
+            playerId={playerIdentity.playerId}
+            showName={false}
+          />
+          <span className="landing-team-form__identity-note">
+            {" "}
+            identifies your account on leaderboards. Tap to verify or copy your
+            full ID.
+          </span>
         </p>
 
         {error ? <p className="form-error">{error}</p> : null}

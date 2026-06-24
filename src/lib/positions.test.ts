@@ -7,6 +7,7 @@ import {
   MAX_PLAYER_POSITIONS,
   parsePositionString,
   playerMatchesPosition,
+  sortPositions,
 } from "./positions";
 
 describe("positions", () => {
@@ -67,7 +68,7 @@ describe("positions", () => {
     expect(comparePositions("PG", "SG")).toBeLessThan(0);
     expect(comparePositions("C", "PF")).toBeGreaterThan(0);
     expect(
-      ["C", "PG", "SF", "SG", "PF"].sort(comparePositions),
+      sortPositions(["C", "PG", "SF", "SG", "PF"]),
     ).toEqual(["PG", "SG", "SF", "PF", "C"]);
   });
 });

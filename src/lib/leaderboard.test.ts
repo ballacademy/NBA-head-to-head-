@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  formatLeaderboardTeam,
   formatLeaderboardWinPercentage,
   getTopLeaderboard,
   upsertLeaderboardEntry,
@@ -27,6 +28,9 @@ describe("leaderboard", () => {
   beforeEach(() => {
     storage.clear();
     vi.stubGlobal("localStorage", localStorageMock);
+    vi.stubGlobal("crypto", {
+      randomUUID: () => "player-test-1",
+    });
   });
 
   afterEach(() => {
@@ -120,5 +124,24 @@ describe("leaderboard", () => {
     });
 
     expect(getTopLeaderboard("lossStreak")[0]?.playerId).toBe("b");
+  });
+
+  it("stores a public tag and formats team names with it", () => {
+    upsertLeaderboardEntry({
+      playerId: "hoopers-1",
+      name: "hoopers",
+      wins: 4,
+      losses: 1,
+      winStreak: 2,
+      lossStreak: 0,
+      publicTag: "7F3A",
+    });
+
+    const entry = getTopLeaderboard("winStreak").find(
+      (candidate) => candidate.playerId === "hoopers-1",
+    );
+
+    expect(entry?.publicTag).toBe("7F3A");
+    expect(formatLeaderboardTeam(entry!)).toBe("hoopers · #7F3A");
   });
 });

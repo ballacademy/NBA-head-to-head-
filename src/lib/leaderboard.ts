@@ -1,4 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
+import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
 import {
   MIN_GAMES_FOR_WIN_PCT,
   getWinPercentage,
@@ -12,6 +13,7 @@ export const LEADERBOARD_LIMIT = 100;
 export interface LeaderboardEntry {
   playerId: string;
   name: string;
+  publicTag: string;
   wins: number;
   losses: number;
   winStreak: number;
@@ -24,6 +26,7 @@ export type LeaderboardSort = "winStreak" | "winPct" | "lossStreak" | "lowestWin
 const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
   playerId: entry.playerId,
   name: entry.name.trim(),
+  publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
   wins: Math.max(0, entry.wins),
   losses: Math.max(0, entry.losses),
   winStreak: Math.max(0, entry.winStreak ?? 0),
@@ -31,7 +34,10 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
   updatedAt: entry.updatedAt,
 });
 
-type StoredLeaderboardEntry = LeaderboardEntry & { city?: string };
+type StoredLeaderboardEntry = Omit<LeaderboardEntry, "publicTag"> & {
+  city?: string;
+  publicTag?: string;
+};
 
 export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
   const entries = readJson<StoredLeaderboardEntry[]>(LEADERBOARD_KEY);
@@ -52,6 +58,7 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
       normalizeEntry({
         playerId: entry.playerId,
         name: entry.name?.trim() || entry.city?.trim() || "",
+        publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
         wins: entry.wins,
         losses: entry.losses,
         winStreak: entry.winStreak ?? 0,
@@ -62,11 +69,14 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
 };
 
 export const upsertLeaderboardEntry = (
-  entry: Omit<LeaderboardEntry, "updatedAt">,
+  entry: Omit<LeaderboardEntry, "updatedAt" | "publicTag"> & {
+    publicTag?: string;
+  },
 ) => {
   const current = loadLeaderboardEntries();
   const nextEntry = normalizeEntry({
     ...entry,
+    publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     updatedAt: new Date().toISOString(),
   });
   const withoutCurrent = current.filter(
@@ -76,8 +86,9 @@ export const upsertLeaderboardEntry = (
   writeJson(LEADERBOARD_KEY, [...withoutCurrent, nextEntry]);
 };
 
-export const formatLeaderboardTeam = (entry: Pick<LeaderboardEntry, "name">) =>
-  entry.name;
+export const formatLeaderboardTeam = (
+  entry: Pick<LeaderboardEntry, "name" | "publicTag">,
+) => formatGmDisplayName(entry.name, entry.publicTag);
 
 export const formatLeaderboardRecord = (
   entry: Pick<LeaderboardEntry, "wins" | "losses">,

@@ -1452,6 +1452,78 @@ main {
   background: rgba(124, 58, 237, 0.14);
 }
 
+.gm-identity {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.gm-identity__trigger {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline dotted rgba(148, 163, 184, 0.7);
+  text-underline-offset: 0.18em;
+}
+
+.gm-identity__trigger:hover {
+  color: #ede9fe;
+}
+
+.gm-identity__details {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.gm-identity__id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  word-break: break-all;
+}
+
+.gm-identity__copy {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.45);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gm-identity__copy:hover {
+  border-color: rgba(167, 139, 250, 0.55);
+}
+
+.landing-team-form__identity {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.landing-team-form__identity-note {
+  color: var(--muted);
+}
+
+.matchup-panel__identity {
+  margin: 8px 0 0;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+}
+
 .landing-team-form__note {
   margin: 0;
   color: var(--muted);
