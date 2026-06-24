@@ -4,7 +4,7 @@
   "generatedAt": "2026-06-18T21:38:28.810446+00:00",
   "matchedFromContracts": 472,
   "minimumSalaryAssigned": 110,
-  "playerCount": 582,
+  "playerCount": 586,
   "salaries": {
     "doncilu01": 45999660,
     "gilgesh01": 38333050,
@@ -587,6 +587,10 @@
     "hepbuch01": 1209240,
     "brownda04": 1209240,
     "essenno01": 5429520,
-    "evbuoto01": 1209240
+    "evbuoto01": 1209240,
+    "halibty01": 42176400,
+    "irvinky01": 41000000,
+    "lillada01": 48787676,
+    "vanvlfr01": 42846615
   }
 }

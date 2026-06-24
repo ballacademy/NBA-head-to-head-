@@ -2,7 +2,7 @@
   "season": "2025-26",
   "source": "basketball-reference",
   "generatedAt": "2026-06-16T02:09:40.722214+00:00",
-  "playerCount": 517,
+  "playerCount": 521,
   "byPlayerId": {
     "alexani01": {
       "jerseyNumber": 7,
@@ -2071,6 +2071,22 @@
     "youngtr01": {
       "jerseyNumber": 3,
       "team": "WAS"
+    },
+    "halibty01": {
+      "jerseyNumber": 0,
+      "team": "IND"
+    },
+    "irvinky01": {
+      "jerseyNumber": 2,
+      "team": "DAL"
+    },
+    "lillada01": {
+      "jerseyNumber": 0,
+      "team": "MIL"
+    },
+    "vanvlfr01": {
+      "jerseyNumber": 5,
+      "team": "HOU"
     }
   },
   "players": [

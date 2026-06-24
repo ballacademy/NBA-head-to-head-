@@ -42,6 +42,19 @@ describe("allStars recent tier", () => {
     expect(isAllStarPlayer(kawhi!)).toBe(true);
   });
 
+  it("includes manually added recent all-stars in the active pool", () => {
+    const haliburton = players.find((player) => player.bbrPlayerId === "halibty01");
+    const kyrie = players.find((player) => player.bbrPlayerId === "irvinky01");
+    const lillard = players.find((player) => player.bbrPlayerId === "lillada01");
+    const vanvleet = players.find((player) => player.bbrPlayerId === "vanvlfr01");
+
+    expect(haliburton && kyrie && lillard && vanvleet).toBeTruthy();
+    expect(isRecentAllStarPlayer(haliburton!)).toBe(true);
+    expect(isRecentAllStarPlayer(kyrie!)).toBe(true);
+    expect(isRecentAllStarPlayer(lillard!)).toBe(true);
+    expect(isRecentAllStarPlayer(vanvleet!)).toBe(false);
+  });
+
   it("expands win unlocks to include recent all-stars", () => {
     const unlockPool = getWinUnlockPlayerIds();
 
