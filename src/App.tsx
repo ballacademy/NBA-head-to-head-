@@ -49,6 +49,14 @@ type AppPhase =
   | "leaderboard"
   | "achievements";
 
+function createMatchId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `match-${Date.now()}`;
+}
+
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
   const [user, setUser] = useState<Drafter | null>(null);
@@ -300,16 +308,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (phase === "results" && !isDailyDraft && !matchId) {
-      setMatchId(
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `match-${Date.now()}`,
-      );
-    }
-  }, [isDailyDraft, matchId, phase]);
-
-  useEffect(() => {
     if (isDailyDraft || !opponent) {
       return;
     }
@@ -385,11 +383,18 @@ function App() {
       return;
     }
 
-    setPhase(opponentComplete ? "results" : "waiting");
+    if (opponentComplete) {
+      setMatchId(createMatchId());
+      setPhase("results");
+      return;
+    }
+
+    setPhase("waiting");
   }, [isDailyDraft, opponentComplete, phase, userDraftComplete]);
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
+      setMatchId(createMatchId());
       setPhase("results");
     }
   }, [phase, opponentComplete]);
@@ -526,18 +531,25 @@ function App() {
         />
       ) : null}
 
-      {phase === "results" && !isDailyDraft && opponent && matchId ? (
-        <MatchResults
-          user={user}
-          opponent={opponent}
-          userLineup={userLineup}
-          opponentLineup={opponentLineup}
-          matchId={matchId}
-          collection={collection}
-          onCollectionChange={handleCollectionChange}
-          onPlayAgain={replayLastMode}
-          onReturnToMenu={resetToLanding}
-        />
+      {phase === "results" && !isDailyDraft && opponent ? (
+        matchId ? (
+          <MatchResults
+            user={user}
+            opponent={opponent}
+            userLineup={userLineup}
+            opponentLineup={opponentLineup}
+            matchId={matchId}
+            collection={collection}
+            onCollectionChange={handleCollectionChange}
+            onPlayAgain={replayLastMode}
+            onReturnToMenu={resetToLanding}
+          />
+        ) : (
+          <section className="panel landing">
+            <p className="eyebrow">Finalizing matchup</p>
+            <h2>Loading results…</h2>
+          </section>
+        )
       ) : null}
     </main>
   );

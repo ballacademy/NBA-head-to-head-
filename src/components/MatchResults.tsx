@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { TeamLineupCard } from "./TeamLineupCard";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
