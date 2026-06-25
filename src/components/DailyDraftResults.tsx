@@ -114,7 +114,7 @@ export function DailyDraftResults({
       ? "Copied!"
       : copyState === "error"
         ? "Copy failed — try again"
-        : "Copy daily share text";
+        : "Copy share text";
 
   return (
     <section

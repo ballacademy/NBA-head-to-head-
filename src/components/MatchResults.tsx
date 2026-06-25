@@ -174,7 +174,7 @@ export function MatchResults({
             </div>
           ) : null}
           <p className="matchup-panel__identity">
-            Listed as{" "}
+            <span className="matchup-panel__identity-label">Listed as</span>
             <GmIdentityBadge
               name={user.name}
               publicTag={playerIdentity.publicTag}
@@ -249,7 +249,7 @@ export function MatchResults({
                 className="play-again-button match-results__menu-button"
                 onClick={onReturnToMenu}
               >
-                Main menu
+                Back to home
               </button>
             </div>
           )}

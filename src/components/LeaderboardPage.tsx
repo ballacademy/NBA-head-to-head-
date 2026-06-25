@@ -14,7 +14,7 @@ import {
   getRankedLeaderboardFootnote,
   getTopRankedLeaderboard,
 } from "../lib/rankedLeaderboard";
-import { getCurrentSeasonId, formatSeasonLabel } from "../lib/rankedSeason";
+import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -61,7 +61,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             <h1>Leaderboards</h1>
             <p className="leaderboard__subtitle">
               {view === "ranked"
-                ? `${getRankedLeaderboardFootnote(seasonId)} Season: ${formatSeasonLabel(seasonId)}.`
+                ? getRankedLeaderboardFootnote(seasonId)
                 : getLeaderboardFootnote(sort)}
             </p>
           </div>
@@ -144,7 +144,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               <thead>
                 <tr>
                   <th scope="col">Rank</th>
-                  <th scope="col">Front office</th>
+                  <th scope="col">Front Office</th>
                   <th scope="col">Tier</th>
                   <th scope="col">Elo</th>
                   <th scope="col">Record</th>

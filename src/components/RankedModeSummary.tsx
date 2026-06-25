@@ -15,7 +15,7 @@ export function RankedModeSummary({ record }: RankedModeSummaryProps) {
   return (
     <div className="landing-mode-card__record-block ranked-mode-summary">
       <p className="landing-mode-card__record">
-        <span className="landing-mode-card__record-label">Front office</span>
+        <span className="landing-mode-card__record-label">Front Office</span>
         <span className="landing-mode-card__record-value ranked-mode-summary__tier">
           <RankedTierBadge tier={ranked.tier} elo={ranked.elo} compact />
         </span>
@@ -23,7 +23,7 @@ export function RankedModeSummary({ record }: RankedModeSummaryProps) {
       <p className="landing-mode-card__record-meta">
         Record {formatPlayerRecord(record)}
         {placementRemaining > 0
-          ? ` • Placement: ${placementRemaining} high-value game${
+          ? ` • Placement: ${placementRemaining} game${
               placementRemaining === 1 ? "" : "s"
             } left`
           : ""}

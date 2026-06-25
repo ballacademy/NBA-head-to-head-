@@ -2,7 +2,7 @@ import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
 import { formatRankedElo, getTierForElo } from "./rankedElo";
-import { getCurrentSeasonId } from "./rankedSeason";
+import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
 
 const RANKED_LEADERBOARD_KEY = "nba-head-to-head-ranked-leaderboard";
 
@@ -246,7 +246,7 @@ export const formatRankedLeaderboardRecord = (
 ) => `${entry.wins}-${entry.losses}`;
 
 export const getRankedLeaderboardFootnote = (seasonId = getCurrentSeasonId()) =>
-  `Global Top ${RANKED_LEADERBOARD_LIMIT} for ${seasonId}. Ratings reset at the start of each calendar month.`;
+  `Global Top ${RANKED_LEADERBOARD_LIMIT} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
 
 export const findRankedOpponentFromLeaderboard = (
   targetElo: number,

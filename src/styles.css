@@ -506,6 +506,11 @@ main {
     box-shadow 140ms ease;
 }
 
+.landing__primary-button,
+.head-to-head-card .landing__primary-button {
+  margin-top: 8px;
+}
+
 .landing__primary-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 40px rgba(249, 115, 22, 0.42);
@@ -1448,6 +1453,18 @@ main {
   letter-spacing: 0.06em;
 }
 
+.leaderboard__header .secondary-button,
+.achievements-page__header .secondary-button,
+.stats-panel__header .secondary-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.leaderboard-table td .gm-identity {
+  display: inline-flex;
+  max-width: 100%;
+}
+
 .leaderboard-table__row--you {
   background: rgba(124, 58, 237, 0.14);
 }
@@ -1508,20 +1525,46 @@ main {
 }
 
 .landing-team-form__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.5;
 }
 
+.landing-team-form__identity-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
 .landing-team-form__identity-note {
+  flex: 1 1 220px;
+  margin: 0;
   color: var(--muted);
 }
 
 .matchup-panel__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   margin: 8px 0 0;
   color: #cbd5e1;
   font-size: 0.92rem;
+}
+
+.matchup-panel__identity-label {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .landing-team-form__note {
@@ -1613,7 +1656,7 @@ main {
 .match-results__action-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: 12px;
   justify-content: center;
   align-items: center;
 }
@@ -1747,8 +1790,8 @@ main {
   margin-top: 14px;
 }
 
-.landing-card--mode {
-  margin-top: 0;
+.landing-card--mode > .eyebrow {
+  margin-bottom: 6px;
 }
 
 .head-to-head-card {
@@ -1765,13 +1808,12 @@ main {
     #0f172a;
 }
 
-.head-to-head-card__title {
-  margin: 6px 0;
-  font-size: 1.25rem;
+.head-to-head-card .eyebrow {
+  margin-bottom: 6px;
 }
 
 .head-to-head-card__description {
-  margin: 0 0 12px;
+  margin: 6px 0 12px;
   color: #cbd5e1;
 }
 
@@ -1823,13 +1865,8 @@ main {
     #0f172a;
 }
 
-.all-time-card__title {
-  margin: 8px 0;
-  font-size: 1.5rem;
-}
-
 .all-time-card__description {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #cbd5e1;
 }
 
@@ -1875,13 +1912,8 @@ main {
     #0f172a;
 }
 
-.ranked-cap-card__title {
-  margin: 8px 0;
-  font-size: 1.5rem;
-}
-
 .ranked-cap-card__description {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #cbd5e1;
 }
 
@@ -2069,9 +2101,12 @@ main {
   font-weight: 700;
 }
 
-.daily-draft-card__title {
-  margin: 8px 0;
-  font-size: 1.5rem;
+.daily-draft-card__title,
+.ranked-cap-card__title,
+.all-time-card__title {
+  margin: 6px 0;
+  font-size: 1.35rem;
+  line-height: 1.15;
 }
 
 .daily-draft-card__description,
@@ -2148,9 +2183,9 @@ main {
 
 .achievements-page__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 10px;
 }
 

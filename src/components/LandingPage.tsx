@@ -190,15 +190,14 @@ export function LandingPage({
         </p>
 
         <p className="landing-team-form__identity">
+          <span className="landing-team-form__identity-label">GM code</span>
           <GmIdentityBadge
             publicTag={playerIdentity.publicTag}
             playerId={playerIdentity.playerId}
             showName={false}
           />
           <span className="landing-team-form__identity-note">
-            {" "}
-            identifies your account on leaderboards. Tap to verify or copy your
-            full ID.
+            Shown on leaderboards. Tap to verify or copy your full ID.
           </span>
         </p>
 
@@ -235,7 +234,6 @@ export function LandingPage({
 
         <div className="head-to-head-card landing-card landing-card--mode">
           <p className="eyebrow">Classic Head to Head</p>
-          <h2 className="head-to-head-card__title">Classic Head to Head</h2>
           <p className="head-to-head-card__description">
             Draft a five-player lineup and face a random rival. No salary cap,
             no rating pressure — just lineup building and chemistry bonuses.
@@ -270,7 +268,7 @@ export function LandingPage({
 
         <div className="all-time-card landing-card landing-card--mode">
           <p className="eyebrow">All-Time</p>
-          <h2 className="all-time-card__title">All-Time Draft</h2>
+          <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
           <p className="all-time-card__description">
             Draft active stars at their peak seasons plus legendary All-Stars from every era.
             {allTimeUnlocked
@@ -292,7 +290,7 @@ export function LandingPage({
               className="all-time-card__button all-time-card__button--locked"
               disabled
             >
-              Achieve {ALL_TIME_WIN_THRESHOLD} wins to unlock all-time legend mode
+              Achieve {ALL_TIME_WIN_THRESHOLD} wins to unlock All-Time mode
             </button>
           )}
         </div>
@@ -311,7 +309,7 @@ export function LandingPage({
           className="landing-nav-actions__button"
           onClick={onViewStats}
         >
-          View Season Stats
+          Season stats
         </button>
         <button
           type="button"

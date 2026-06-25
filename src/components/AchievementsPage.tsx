@@ -15,7 +15,8 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
           <p className="eyebrow">Draft Day GM</p>
           <h1>Badges</h1>
           <p className="achievements-page__subtitle">
-            {progress.unlocked}/{progress.total} unlocked • Locked badges show as ????
+            {progress.unlocked}/{progress.total} unlocked · Locked badges stay
+            hidden until earned
           </p>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>

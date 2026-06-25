@@ -27,7 +27,7 @@ export function GmIdentityBadge({
   );
   const label = showName && name?.trim()
     ? formatGmDisplayName(name, publicTag)
-    : `GM code ${formatPublicTag(publicTag)}`;
+    : formatPublicTag(publicTag);
 
   const handleCopy = async () => {
     const copied = await copyToClipboard(playerId);
@@ -61,7 +61,7 @@ export function GmIdentityBadge({
               ? "Copied"
               : copyState === "failed"
                 ? "Copy failed"
-                : "Copy full ID"}
+                : "Copy ID"}
           </button>
         </span>
       ) : null}
