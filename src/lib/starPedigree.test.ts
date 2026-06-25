@@ -18,7 +18,6 @@ describe("starPedigree", () => {
 
     expect(lineup).toHaveLength(5);
     expect(checkLineupAchievements(lineup)).not.toContain("no-votes");
-    expect(checkLineupAchievements(lineup)).toContain("all-star-weekend");
     expect(checkLineupAchievements(lineup)).toContain("five-superstars");
   });
 });

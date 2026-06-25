@@ -113,7 +113,7 @@ const getSameTeamBonuses = (lineup: Player[]): ActiveChemistryBonus[] => {
     if (count === lineup.length) {
       bonuses.push({
         id: `same-team-${team}`,
-        title: "Same Jersey Club",
+        title: `All ${team}`,
         description: `All five players from ${team}.`,
         bonus: FULL_ROSTER_TEAM_BONUS,
         matchedCount: count,
@@ -164,4 +164,22 @@ export const getChemistryAdjustment = (lineup: Player[]) =>
   getActiveChemistryBonuses(lineup).reduce(
     (total, bonus) => total + bonus.bonus,
     0,
+  );
+
+export const hasFamilyChemistryBonus = (lineup: Player[]) =>
+  getActiveChemistryBonuses(lineup).some(
+    (bonus) =>
+      bonus.id.startsWith("brothers-") || bonus.id.startsWith("cousins-"),
+  );
+
+export const hasCollegeChemistryBonus = (lineup: Player[]) =>
+  getActiveChemistryBonuses(lineup).some((bonus) =>
+    bonus.id.startsWith("college-"),
+  );
+
+export const hasTeamCoreChemistryBonus = (lineup: Player[]) =>
+  getActiveChemistryBonuses(lineup).some(
+    (bonus) =>
+      bonus.id.startsWith("same-team-") &&
+      bonus.matchedCount >= SAME_TEAM_CHEMISTRY_MIN,
   );

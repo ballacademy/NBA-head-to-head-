@@ -4,6 +4,48 @@ import type { Player } from "./types";
 
 const ACHIEVEMENTS_KEY = "nba-head-to-head-achievements";
 
+const REMOVED_ACHIEVEMENT_IDS = new Set([
+  "zero-big",
+  "twin-towers",
+  "midrange-museum",
+  "alphabet-bros",
+  "curry-kitchen",
+  "holiday-hoopers",
+  "all-star-weekend",
+  "chemistry-class",
+]);
+
+const LEGACY_ACHIEVEMENT_MIGRATIONS: Record<string, string> = {
+  "alphabet-bros": "family-ties",
+  "chemistry-class": "family-ties",
+  "curry-kitchen": "family-ties",
+  "holiday-hoopers": "family-ties",
+  "midrange-museum": "brick-city",
+};
+
+const normalizeUnlockedAchievements = (unlocked: string[]) => {
+  const validIds = new Set(ACHIEVEMENT_CHECKS.map((achievement) => achievement.id));
+  const next = new Set<string>();
+
+  for (const id of unlocked) {
+    if (REMOVED_ACHIEVEMENT_IDS.has(id)) {
+      const migrated = LEGACY_ACHIEVEMENT_MIGRATIONS[id];
+
+      if (migrated && validIds.has(migrated)) {
+        next.add(migrated);
+      }
+
+      continue;
+    }
+
+    if (validIds.has(id)) {
+      next.add(id);
+    }
+  }
+
+  return [...next];
+};
+
 export interface AchievementDefinition {
   id: string;
   title: string;
@@ -40,9 +82,15 @@ export interface AchievementState {
 
 export const loadAchievementState = (): AchievementState => {
   const saved = readJson<Partial<AchievementState>>(ACHIEVEMENTS_KEY);
+  const unlocked = Array.isArray(saved?.unlocked) ? saved.unlocked : [];
+  const normalized = normalizeUnlockedAchievements(unlocked);
+
+  if (normalized.length !== unlocked.length || normalized.some((id, index) => id !== unlocked[index])) {
+    saveAchievementState({ unlocked: normalized });
+  }
 
   return {
-    unlocked: Array.isArray(saved?.unlocked) ? saved.unlocked : [],
+    unlocked: normalized,
   };
 };
 

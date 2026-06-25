@@ -5,15 +5,17 @@ import {
   ACHIEVEMENTS,
   checkLineupAchievements,
   getAchievementProgress,
+  loadAchievementState,
   unlockAchievements,
 } from "./achievements";
+import { isSuperstarTierPlayer } from "./starPedigree";
 
 describe("achievements", () => {
-  it("defines 50 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(50);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(50);
+  it("defines 45 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(45);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(45);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      50,
+      45,
     );
   });
 
@@ -42,6 +44,15 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lowShooting)).toContain("brick-city");
   });
 
+  it("detects brick city for all sub-32% shooters", () => {
+    const midrangeMuseum = players
+      .filter((player) => player.threePoint < 0.32)
+      .slice(0, 5);
+
+    expect(midrangeMuseum).toHaveLength(5);
+    expect(checkLineupAchievements(midrangeMuseum)).toContain("brick-city");
+  });
+
   it("detects oops all forwards lineups", () => {
     const forwards = players
       .filter((player) => player.position === "SF" || player.position === "PF")
@@ -60,7 +71,7 @@ describe("achievements", () => {
     expect(locked?.emoji).toBe("❓");
   });
 
-  it("detects curry kitchen when both Currys are drafted", () => {
+  it("detects family ties when brother chemistry is active", () => {
     const steph = players.find((player) => player.bbrPlayerId === "curryst01");
     const seth = players.find((player) => player.bbrPlayerId === "curryse01");
     const fillers = players
@@ -71,21 +82,36 @@ describe("achievements", () => {
       .slice(0, 3);
 
     const lineup = [steph!, seth!, ...fillers];
-    expect(checkLineupAchievements(lineup)).toContain("curry-kitchen");
+    expect(checkLineupAchievements(lineup)).toContain("family-ties");
+    expect(checkLineupAchievements(lineup)).not.toContain("curry-kitchen");
   });
 
-  it("detects chemistry class when a chemistry bonus is active", () => {
-    const steph = players.find((player) => player.bbrPlayerId === "curryst01");
-    const seth = players.find((player) => player.bbrPlayerId === "curryse01");
+  it("detects college roommates when college chemistry is active", () => {
+    const brunson = players.find((player) => player.bbrPlayerId === "brunsja01");
+    const hart = players.find((player) => player.bbrPlayerId === "hartjo01");
     const fillers = players
       .filter(
         (player) =>
-          player.bbrPlayerId !== "curryst01" && player.bbrPlayerId !== "curryse01",
+          !["brunsja01", "hartjo01"].includes(player.bbrPlayerId ?? ""),
       )
       .slice(0, 3);
 
-    const lineup = [steph!, seth!, ...fillers];
-    expect(checkLineupAchievements(lineup)).toContain("chemistry-class");
+    const lineup = [brunson!, hart!, ...fillers];
+    expect(checkLineupAchievements(lineup)).toContain("college-roommates");
+  });
+
+  it("detects superstar core with three superstars", () => {
+    const superstars = players.filter((player) => isSuperstarTierPlayer(player)).slice(0, 3);
+    const fillers = players
+      .filter((player) => !isSuperstarTierPlayer(player))
+      .slice(0, 2);
+
+    if (superstars.length < 3) {
+      return;
+    }
+
+    const lineup = [...superstars, ...fillers];
+    expect(checkLineupAchievements(lineup)).toContain("five-superstars");
   });
 
   it("only returns known badge ids", () => {
@@ -119,10 +145,33 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(50);
+    expect(progress.total).toBe(45);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
     ).toBe(true);
+  });
+
+  it("migrates removed achievement ids when loading saved progress", () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      clear: () => storage.clear(),
+    });
+
+    storage.set(
+      "nba-head-to-head-achievements",
+      JSON.stringify({ unlocked: ["curry-kitchen", "midrange-museum", "zero-big"] }),
+    );
+
+    const state = loadAchievementState();
+
+    expect(state.unlocked).toContain("family-ties");
+    expect(state.unlocked).toContain("brick-city");
+    expect(state.unlocked).not.toContain("curry-kitchen");
+    expect(state.unlocked).not.toContain("zero-big");
+
+    vi.unstubAllGlobals();
   });
 });

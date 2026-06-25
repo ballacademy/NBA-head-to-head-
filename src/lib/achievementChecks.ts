@@ -1,16 +1,12 @@
-import { getActiveChemistryBonuses } from "./chemistry";
+import {
+  hasCollegeChemistryBonus,
+  hasFamilyChemistryBonus,
+  hasTeamCoreChemistryBonus,
+} from "./chemistry";
 import { getDivisionForTeam } from "./divisions";
-import {
-  isAllStarPlayer,
-  isRecentAllStarPlayer,
-  isSuperstarPlayer,
-} from "./allStars";
+import { isRecentAllStarPlayer } from "./allStars";
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
-import {
-  hasStarPedigree,
-  isAllStarTierPlayer,
-  isSuperstarTierPlayer,
-} from "./starPedigree";
+import { hasStarPedigree, isSuperstarTierPlayer } from "./starPedigree";
 import { meetsMinimumDefenseGrade } from "./defenseGrade";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { Player } from "./types";
@@ -27,9 +23,6 @@ const hasBbrIds = (lineup: Player[], ids: string[]) => {
 
   return ids.every((id) => bbrIds.has(id));
 };
-
-const countBbrPrefix = (lineup: Player[], prefix: string) =>
-  lineup.filter((player) => player.bbrPlayerId?.startsWith(prefix)).length;
 
 const allSameTeam = (lineup: Player[]) => {
   const teams = new Set(lineup.map((player) => player.team));
@@ -99,27 +92,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     },
   },
   {
-    id: "zero-big",
-    title: "No Bigs Allowed",
-    description: "Draft a lineup with no power forwards or centers.",
-    emoji: "🐜",
-    check: (lineup) =>
-      lineup.every(
-        (player) =>
-          player.position === "PG" ||
-          player.position === "SG" ||
-          player.position === "SF",
-      ),
-  },
-  {
-    id: "twin-towers",
-    title: "Twin Towers",
-    description: "Draft at least two centers.",
-    emoji: "🗼",
-    check: (lineup) =>
-      lineup.filter((player) => player.position === "C").length >= 2,
-  },
-  {
     id: "retirement-home",
     title: "The Retirement Home",
     description: "Draft a lineup with an average age over 35.",
@@ -148,14 +120,17 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "brick-city",
     title: "Brick City",
-    description: "Draft a lineup with brutal three-point shooting.",
+    description:
+      "Draft a lineup with brutal three-point shooting—no spacing or all sub-32% shooters.",
     emoji: "🧱",
     check: (lineup) => {
       const avgThreePoint = average(lineup.map((player) => player.threePoint));
       const shooters = lineup.filter((player) => player.threePoint >= 0.34)
         .length;
+      const brutalLineup = avgThreePoint < 0.33 && shooters <= 1;
+      const midrangeLineup = lineup.every((player) => player.threePoint < 0.32);
 
-      return avgThreePoint < 0.33 && shooters <= 1;
+      return brutalLineup || midrangeLineup;
     },
   },
   {
@@ -164,13 +139,6 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     description: "Draft five players shooting at least 37% from three.",
     emoji: "💦",
     check: (lineup) => lineup.every((player) => player.threePoint >= 0.37),
-  },
-  {
-    id: "midrange-museum",
-    title: "Midrange Museum",
-    description: "Draft five players shooting below 32% from three.",
-    emoji: "🖼️",
-    check: (lineup) => lineup.every((player) => player.threePoint < 0.32),
   },
   {
     id: "sniper-team",
@@ -187,25 +155,25 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (lineup) => hasBbrIds(lineup, ["jamesbr02", "antetth01"]),
   },
   {
-    id: "alphabet-bros",
-    title: "Alphabet Bros",
-    description: "Draft two or more Antetokounmpo brothers.",
-    emoji: "🇬🇷",
-    check: (lineup) => countBbrPrefix(lineup, "antet") >= 2,
+    id: "family-ties",
+    title: "Family Ties",
+    description: "Draft a lineup with brother or cousin chemistry.",
+    emoji: "👨‍👩‍👧‍👦",
+    check: hasFamilyChemistryBonus,
   },
   {
-    id: "curry-kitchen",
-    title: "Curry Kitchen",
-    description: "Draft Stephen Curry and Seth Curry together.",
-    emoji: "🍛",
-    check: (lineup) => hasBbrIds(lineup, ["curryst01", "curryse01"]),
+    id: "college-roommates",
+    title: "College Roommates",
+    description: "Draft a lineup with college teammate chemistry.",
+    emoji: "🎓",
+    check: hasCollegeChemistryBonus,
   },
   {
-    id: "holiday-hoopers",
-    title: "Holiday Hoopers",
-    description: "Draft Jrue Holiday and Aaron Holiday together.",
-    emoji: "🎄",
-    check: (lineup) => hasBbrIds(lineup, ["holidjr01", "holidaa01"]),
+    id: "team-core",
+    title: "Team Core",
+    description: "Draft a lineup with three or more players from one team.",
+    emoji: "🤝",
+    check: hasTeamCoreChemistryBonus,
   },
   {
     id: "small-ball",
@@ -313,17 +281,11 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   },
   {
     id: "five-superstars",
-    title: "Galaxy Brain",
-    description: "Draft five superstars.",
+    title: "Superstar Core",
+    description: "Draft at least three superstars.",
     emoji: "🌌",
-    check: (lineup) => lineup.every((player) => isSuperstarTierPlayer(player)),
-  },
-  {
-    id: "all-star-weekend",
-    title: "All-Star Weekend",
-    description: "Draft five current All-Stars.",
-    emoji: "⭐️",
-    check: (lineup) => lineup.every((player) => isAllStarTierPlayer(player)),
+    check: (lineup) =>
+      lineup.filter((player) => isSuperstarTierPlayer(player)).length >= 3,
   },
   {
     id: "recent-heat",
@@ -450,12 +412,5 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (lineup) =>
       lineup.filter((player) => player.styles.includes("rim-protector"))
         .length >= 3,
-  },
-  {
-    id: "chemistry-class",
-    title: "Chemistry Class",
-    description: "Draft a lineup that unlocks a chemistry bonus.",
-    emoji: "🧪",
-    check: (lineup) => getActiveChemistryBonuses(lineup).length > 0,
   },
 ];

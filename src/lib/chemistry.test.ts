@@ -92,5 +92,6 @@ describe("chemistry", () => {
     const sameTeamBonus = bonuses.find((bonus) => bonus.id === `same-team-${team}`);
 
     expect(sameTeamBonus?.bonus).toBe(FULL_ROSTER_TEAM_BONUS);
+    expect(sameTeamBonus?.title).toBe(`All ${team}`);
   });
 });
