@@ -20,7 +20,7 @@ import {
   type ModePlayerRecords,
   type PlayerRecord,
 } from "../lib/playerRecord";
-import { RANKED_SALARY_CAP } from "../lib/salaryCap";
+import { RANKED_SALARY_CAP, CLASSIC_HEAD_TO_HEAD_SALARY_CAP } from "../lib/salaryCap";
 import {
   loadTeamProfile,
   normalizeTeamProfile,
@@ -235,8 +235,10 @@ export function LandingPage({
         <div className="head-to-head-card landing-card landing-card--mode">
           <p className="eyebrow">Classic Head to Head</p>
           <p className="head-to-head-card__description">
-            Draft a five-player lineup and face a random rival. No salary cap,
-            no rating pressure — just lineup building and chemistry bonuses.
+            Draft a five-player lineup under a $
+            {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap and
+            face a similarly rated rival. Elo tracks your standing on classic
+            leaderboards.
           </p>
           <MatchModeRecord record={modeRecords.headToHead} />
           <button

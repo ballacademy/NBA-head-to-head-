@@ -14,9 +14,9 @@ import {
   formatSalary,
   getLineupSalaryTotal,
   getRemainingSalaryCap,
-  RANKED_SALARY_CAP,
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
+import { getClassicProfileView } from "../lib/classicProfile";
 import { getRankedProfileView } from "../lib/rankedProfile";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
@@ -63,8 +63,10 @@ export function DraftRoom({
         .filter((player): player is Player => Boolean(player)),
     [drafter.lineup, playersById],
   );
-  const salaryCapMode = Boolean(drafter.salaryCapMode);
-  const rankedProfile = salaryCapMode ? getRankedProfileView() : null;
+  const salaryCapLimit = drafter.salaryCapLimit;
+  const hasSalaryCap = salaryCapLimit != null;
+  const rankedProfile = drafter.salaryCapMode ? getRankedProfileView() : null;
+  const classicProfile = hasSalaryCap && !drafter.salaryCapMode ? getClassicProfileView() : null;
   const salaryCapOptions = useMemo(
     () =>
       getSalaryCapDraftOptions(
@@ -72,14 +74,14 @@ export function DraftRoom({
         players,
         activeStep,
         drafter.draftSlots.length,
-        salaryCapMode,
+        salaryCapLimit,
       ),
     [
       activeStep,
       drafter.draftSlots.length,
       drafter.lineup,
       players,
-      salaryCapMode,
+      salaryCapLimit,
     ],
   );
   const pickedIds = useMemo(
@@ -176,7 +178,7 @@ export function DraftRoom({
   const totalPicks = drafter.draftSlots.length;
   const modeTheme = getMatchModeTheme({
     isDailyDraft,
-    salaryCapMode,
+    salaryCapMode: drafter.salaryCapMode,
     allTimeMode: drafter.allTimeMode,
   });
 
@@ -198,14 +200,22 @@ export function DraftRoom({
         </div>
       ) : null}
 
-      {salaryCapMode ? (
+      {hasSalaryCap ? (
         <div className="salary-cap-banner" role="status">
-          <p className="eyebrow">Ranked • {rankedProfile?.tier.label}</p>
+          <p className="eyebrow">
+            {drafter.salaryCapMode
+              ? `Ranked • ${rankedProfile?.tier.label}`
+              : `Classic Head to Head • ${classicProfile?.tier.label}`}
+          </p>
           <p>
-            {rankedProfile ? `${rankedProfile.elo} Elo • ` : ""}
+            {rankedProfile
+              ? `${rankedProfile.elo} Elo • `
+              : classicProfile
+                ? `${classicProfile.elo} Elo • `
+                : ""}
             {formatSalary(getLineupSalaryTotal(pickedLineup))} spent •{" "}
-            {formatSalary(getRemainingSalaryCap(pickedLineup))} remaining of{" "}
-            {formatSalary(RANKED_SALARY_CAP)}
+            {formatSalary(getRemainingSalaryCap(pickedLineup, salaryCapLimit))} remaining of{" "}
+            {formatSalary(salaryCapLimit)}
           </p>
         </div>
       ) : null}
@@ -340,7 +350,7 @@ export function DraftRoom({
                   </div>
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
-                    {salaryCapMode
+                    {hasSalaryCap
                       ? ` • ${formatSalary(estimatePlayerSalary(player))}`
                       : ""}
                   </span>

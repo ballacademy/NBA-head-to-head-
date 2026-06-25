@@ -1,7 +1,9 @@
 import { readJson, writeJson } from "./browserStorage";
+import { applyClassicMatchResult } from "./classicProfile";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
 import { applyRankedMatchResult } from "./rankedProfile";
+import { RANKED_STARTING_ELO } from "./rankedElo";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import {
   buildLeaderboardIdentity,
@@ -13,6 +15,13 @@ import {
 import type { TeamProfile } from "./teamProfile";
 
 export interface RankedMatchOutcome {
+  delta: number;
+  elo: number;
+  tierLabel: string;
+  opponentElo: number;
+}
+
+export interface ClassicMatchOutcome {
   delta: number;
   elo: number;
   tierLabel: string;
@@ -39,7 +48,7 @@ export const persistMatchOutcome = (
   matchId: string,
   mode: MatchRecordMode = "headToHead",
   options: { opponentElo?: number } = {},
-): { record: PlayerRecord; ranked?: RankedMatchOutcome } => {
+): { record: PlayerRecord; ranked?: RankedMatchOutcome; classic?: ClassicMatchOutcome } => {
   const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
 
   if (lastRecorded?.matchId === matchId) {
@@ -48,13 +57,32 @@ export const persistMatchOutcome = (
 
   const record = recordMatchResult(userWon, mode);
   let ranked: RankedMatchOutcome | undefined;
+  let classic: ClassicMatchOutcome | undefined;
 
   if (mode === "headToHead") {
-    upsertLeaderboardEntry(buildLeaderboardIdentity(team, record));
+    const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
+    const classicResult = applyClassicMatchResult({
+      won: userWon,
+      opponentElo,
+      winStreak: record.winStreak,
+      lossStreak: record.lossStreak,
+    });
+
+    upsertLeaderboardEntry({
+      ...buildLeaderboardIdentity(team, record),
+      elo: classicResult.profile.elo,
+    });
+
+    classic = {
+      delta: classicResult.delta,
+      elo: classicResult.profile.elo,
+      tierLabel: classicResult.profile.tier.label,
+      opponentElo: classicResult.opponentElo,
+    };
   }
 
   if (mode === "ranked") {
-    const opponentElo = options.opponentElo ?? 500;
+    const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
     const rankedResult = applyRankedMatchResult({
       won: userWon,
       opponentElo,
@@ -69,6 +97,8 @@ export const persistMatchOutcome = (
       elo: rankedResult.profile.elo,
       wins: record.wins,
       losses: record.losses,
+      winStreak: record.winStreak,
+      lossStreak: record.lossStreak,
       isNpc: false,
     });
 
@@ -82,5 +112,5 @@ export const persistMatchOutcome = (
 
   writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
 
-  return { record, ranked };
+  return { record, ranked, classic };
 };

@@ -14,7 +14,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
-import type { RankedMatchOutcome } from "../lib/matchOutcome";
+import type { ClassicMatchOutcome, RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
   formatProjectedSeasonRecord,
@@ -59,6 +59,7 @@ export function MatchResults({
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
+  const [classicOutcome, setClassicOutcome] = useState<ClassicMatchOutcome | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const userWon = userScore.preciseTotal >= opponentScore.preciseTotal;
@@ -75,16 +76,21 @@ export function MatchResults({
     }
 
     recordedRef.current = true;
+    const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
     const outcome = persistMatchOutcome(
       userWon,
       { name: user.name },
       matchId,
       matchRecordMode,
-      { opponentElo: opponent.rankedOpponentElo },
+      { opponentElo },
     );
 
     if (outcome.ranked) {
       setRankedOutcome(outcome.ranked);
+    }
+
+    if (outcome.classic) {
+      setClassicOutcome(outcome.classic);
     }
 
     const next = processMatchUnlock(userWon, matchId, collection);
@@ -92,7 +98,7 @@ export function MatchResults({
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, matchRecordMode, onCollectionChange, opponent.rankedOpponentElo, user.name, userWon]);
+  }, [collection, matchId, matchRecordMode, onCollectionChange, opponent.classicOpponentElo, opponent.rankedOpponentElo, user.name, userWon]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {
@@ -161,6 +167,13 @@ export function MatchResults({
                 {rankedOutcome.delta} ({rankedOutcome.elo})
               </>
             ) : null}
+            {matchRecordMode === "headToHead" && classicOutcome ? (
+              <>
+                {" "}
+                • Elo {classicOutcome.delta >= 0 ? "+" : ""}
+                {classicOutcome.delta} ({classicOutcome.elo})
+              </>
+            ) : null}
           </p>
           {matchRecordMode === "ranked" && rankedOutcome ? (
             <div className="matchup-panel__ranked">
@@ -170,6 +183,17 @@ export function MatchResults({
               />
               <p className="matchup-panel__ranked-note">
                 Matched vs {rankedOutcome.opponentElo} Elo opponent
+              </p>
+            </div>
+          ) : null}
+          {matchRecordMode === "headToHead" && classicOutcome ? (
+            <div className="matchup-panel__ranked">
+              <RankedTierBadge
+                tierLabel={classicOutcome.tierLabel}
+                elo={classicOutcome.elo}
+              />
+              <p className="matchup-panel__ranked-note">
+                Matched vs {classicOutcome.opponentElo} Elo opponent
               </p>
             </div>
           ) : null}

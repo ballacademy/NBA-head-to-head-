@@ -20,6 +20,7 @@ import { simulateDailyBenchmarkValues } from "./lib/dailyDraftScores";
 import {
   createOpponentDraftSlots,
   createRandomOpponent,
+  createClassicOpponent,
   createRankedOpponent,
   createUserDrafter,
   getOpponentPickDelayMs,
@@ -175,11 +176,9 @@ function App() {
       opponentSlots
         ? salaryCapMode
           ? createRankedOpponent(opponentSlots)
-          : {
-              ...createRandomOpponent(opponentSlots),
-              salaryCapMode,
-              allTimeMode: nextAllTimeMode,
-            }
+          : nextAllTimeMode
+            ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+            : createClassicOpponent(opponentSlots)
         : null,
     );
     setOpponentCollection(nextOpponentCollection);
@@ -268,7 +267,7 @@ function App() {
           draftablePlayers,
           slot,
           current.draftSlots.length,
-          Boolean(current.salaryCapMode),
+          current.salaryCapLimit,
         );
         const bestPick = pickBestForSlot(
           draftablePlayers,
@@ -314,7 +313,7 @@ function App() {
       return;
     }
 
-    const { id: opponentId, draftSlots, salaryCapMode } = opponent;
+    const { id: opponentId, draftSlots, salaryCapLimit } = opponent;
 
     if (draftSlots.length === 0) {
       return;
@@ -338,7 +337,7 @@ function App() {
           opponentDraftablePlayersRef.current,
           index,
           draftSlots.length,
-          Boolean(salaryCapMode),
+          salaryCapLimit,
         );
         const selection = pickBestForSlot(
           opponentDraftablePlayersRef.current,

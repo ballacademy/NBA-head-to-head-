@@ -17,9 +17,13 @@ export interface RankedLeaderboardEntry {
   tierLabel: string;
   wins: number;
   losses: number;
+  winStreak: number;
+  lossStreak: number;
   isNpc?: boolean;
   updatedAt: string;
 }
+
+export type RankedLeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
 interface StoredRankedLeaderboard {
   seasonId: string;
@@ -143,6 +147,10 @@ export const seedNpcLeaderboardEntries = (
     const winRate = 0.35 + random() * 0.35;
     const wins = Math.round(games * winRate);
     const losses = Math.max(0, games - wins);
+    const onWinStreak = random() > 0.45;
+    const streakLength = onWinStreak
+      ? Math.floor(random() * 8)
+      : Math.floor(random() * 6);
 
     return {
       playerId: `npc-${seasonId}-${index}`,
@@ -152,6 +160,8 @@ export const seedNpcLeaderboardEntries = (
       tierLabel: tier.label,
       wins,
       losses,
+      winStreak: onWinStreak ? streakLength : 0,
+      lossStreak: onWinStreak ? 0 : streakLength,
       isNpc: true,
       updatedAt: timestamp,
     };
@@ -169,6 +179,8 @@ const normalizeEntry = (entry: RankedLeaderboardEntry): RankedLeaderboardEntry =
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),
     losses: Math.max(0, entry.losses),
+    winStreak: Math.max(0, entry.winStreak ?? 0),
+    lossStreak: Math.max(0, entry.lossStreak ?? 0),
     isNpc: entry.isNpc ?? false,
     updatedAt: entry.updatedAt,
   };
@@ -213,10 +225,38 @@ const compareByElo = (
   right.wins - left.wins ||
   left.name.localeCompare(right.name);
 
+const compareByWinStreak = (
+  left: RankedLeaderboardEntry,
+  right: RankedLeaderboardEntry,
+) =>
+  right.winStreak - left.winStreak ||
+  right.wins - left.wins ||
+  left.name.localeCompare(right.name);
+
+const compareByLossStreak = (
+  left: RankedLeaderboardEntry,
+  right: RankedLeaderboardEntry,
+) =>
+  right.lossStreak - left.lossStreak ||
+  right.losses - left.losses ||
+  left.name.localeCompare(right.name);
+
+const rankedLeaderboardSorters: Record<
+  RankedLeaderboardSort,
+  typeof compareByElo
+> = {
+  elo: compareByElo,
+  winStreak: compareByWinStreak,
+  lossStreak: compareByLossStreak,
+};
+
 export const getTopRankedLeaderboard = (
+  sort: RankedLeaderboardSort = "elo",
   limit = RANKED_LEADERBOARD_LIMIT,
 ): RankedLeaderboardEntry[] =>
-  [...ensureRankedLeaderboard()].sort(compareByElo).slice(0, limit);
+  [...ensureRankedLeaderboard()]
+    .sort(rankedLeaderboardSorters[sort])
+    .slice(0, limit);
 
 export const upsertRankedLeaderboardEntry = (
   entry: Omit<RankedLeaderboardEntry, "tierLabel" | "updatedAt" | "publicTag"> & {
@@ -245,8 +285,29 @@ export const formatRankedLeaderboardRecord = (
   entry: Pick<RankedLeaderboardEntry, "wins" | "losses">,
 ) => `${entry.wins}-${entry.losses}`;
 
-export const getRankedLeaderboardFootnote = (seasonId = getCurrentSeasonId()) =>
-  `Global Top ${RANKED_LEADERBOARD_LIMIT} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
+export const formatRankedLeaderboardWinStreak = (
+  entry: Pick<RankedLeaderboardEntry, "winStreak">,
+) => (entry.winStreak > 0 ? `${entry.winStreak}` : "—");
+
+export const formatRankedLeaderboardLossStreak = (
+  entry: Pick<RankedLeaderboardEntry, "lossStreak">,
+) => (entry.lossStreak > 0 ? `${entry.lossStreak}` : "—");
+
+export const getRankedLeaderboardFootnote = (
+  sort: RankedLeaderboardSort = "elo",
+  seasonId = getCurrentSeasonId(),
+) => {
+  const seasonNote = `Global Top ${RANKED_LEADERBOARD_LIMIT} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
+
+  switch (sort) {
+    case "winStreak":
+      return `${seasonNote} Sorted by active win streak.`;
+    case "lossStreak":
+      return `${seasonNote} Sorted by active loss streak.`;
+    default:
+      return `${seasonNote} Sorted by Elo rating.`;
+  }
+};
 
 export const findRankedOpponentFromLeaderboard = (
   targetElo: number,

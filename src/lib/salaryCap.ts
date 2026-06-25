@@ -7,6 +7,7 @@ import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import type { Player } from "./types";
 
 export const RANKED_SALARY_CAP = 100_000_000;
+export const CLASSIC_HEAD_TO_HEAD_SALARY_CAP = 150_000_000;
 export const MINIMUM_PLAYER_SALARY = 1_209_240;
 
 const clamp = (value: number, min: number, max: number) =>

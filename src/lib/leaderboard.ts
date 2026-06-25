@@ -1,10 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
-import {
-  MIN_GAMES_FOR_WIN_PCT,
-  getWinPercentage,
-  shouldShowWinPercentage,
-} from "./playerRecord";
+import { RANKED_STARTING_ELO, formatRankedElo, getTierForElo } from "./rankedElo";
 
 const LEADERBOARD_KEY = "nba-head-to-head-leaderboard";
 
@@ -14,6 +10,8 @@ export interface LeaderboardEntry {
   playerId: string;
   name: string;
   publicTag: string;
+  elo: number;
+  tierLabel: string;
   wins: number;
   losses: number;
   winStreak: number;
@@ -21,22 +19,30 @@ export interface LeaderboardEntry {
   updatedAt: string;
 }
 
-export type LeaderboardSort = "winStreak" | "winPct" | "lossStreak" | "lowestWinPct";
+export type LeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
-const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
-  playerId: entry.playerId,
-  name: entry.name.trim(),
-  publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
-  wins: Math.max(0, entry.wins),
-  losses: Math.max(0, entry.losses),
-  winStreak: Math.max(0, entry.winStreak ?? 0),
-  lossStreak: Math.max(0, entry.lossStreak ?? 0),
-  updatedAt: entry.updatedAt,
-});
+const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
+  const elo = Math.max(0, Math.round(entry.elo ?? RANKED_STARTING_ELO));
 
-type StoredLeaderboardEntry = Omit<LeaderboardEntry, "publicTag"> & {
+  return {
+    playerId: entry.playerId,
+    name: entry.name.trim(),
+    publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+    elo,
+    tierLabel: getTierForElo(elo).label,
+    wins: Math.max(0, entry.wins),
+    losses: Math.max(0, entry.losses),
+    winStreak: Math.max(0, entry.winStreak ?? 0),
+    lossStreak: Math.max(0, entry.lossStreak ?? 0),
+    updatedAt: entry.updatedAt,
+  };
+};
+
+type StoredLeaderboardEntry = Omit<LeaderboardEntry, "publicTag" | "elo" | "tierLabel"> & {
   city?: string;
   publicTag?: string;
+  elo?: number;
+  tierLabel?: string;
 };
 
 export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
@@ -59,6 +65,8 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
         playerId: entry.playerId,
         name: entry.name?.trim() || entry.city?.trim() || "",
         publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+        elo: entry.elo ?? RANKED_STARTING_ELO,
+        tierLabel: entry.tierLabel ?? getTierForElo(entry.elo ?? RANKED_STARTING_ELO).label,
         wins: entry.wins,
         losses: entry.losses,
         winStreak: entry.winStreak ?? 0,
@@ -69,14 +77,16 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
 };
 
 export const upsertLeaderboardEntry = (
-  entry: Omit<LeaderboardEntry, "updatedAt" | "publicTag"> & {
+  entry: Omit<LeaderboardEntry, "updatedAt" | "publicTag" | "tierLabel"> & {
     publicTag?: string;
+    tierLabel?: string;
   },
 ) => {
   const current = loadLeaderboardEntries();
   const nextEntry = normalizeEntry({
     ...entry,
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+    tierLabel: entry.tierLabel ?? getTierForElo(entry.elo).label,
     updatedAt: new Date().toISOString(),
   });
   const withoutCurrent = current.filter(
@@ -94,17 +104,8 @@ export const formatLeaderboardRecord = (
   entry: Pick<LeaderboardEntry, "wins" | "losses">,
 ) => `${entry.wins}-${entry.losses}`;
 
-export const formatLeaderboardWinPercentage = (
-  entry: Pick<LeaderboardEntry, "wins" | "losses">,
-) => {
-  if (!shouldShowWinPercentage(entry)) {
-    return "—";
-  }
-
-  const winPct = getWinPercentage(entry);
-
-  return winPct === null ? "—" : `${winPct.toFixed(1)}%`;
-};
+export const formatLeaderboardElo = (entry: Pick<LeaderboardEntry, "elo">) =>
+  formatRankedElo(entry.elo);
 
 export const formatLeaderboardLossStreak = (
   entry: Pick<LeaderboardEntry, "lossStreak">,
@@ -114,58 +115,24 @@ export const formatLeaderboardWinStreak = (
   entry: Pick<LeaderboardEntry, "winStreak">,
 ) => (entry.winStreak > 0 ? `${entry.winStreak}` : "—");
 
+const compareByElo = (left: LeaderboardEntry, right: LeaderboardEntry) =>
+  right.elo - left.elo ||
+  right.wins - left.wins ||
+  left.name.localeCompare(right.name);
+
 const compareByWinStreak = (left: LeaderboardEntry, right: LeaderboardEntry) =>
   right.winStreak - left.winStreak ||
   right.wins - left.wins ||
   left.name.localeCompare(right.name);
-
-const compareByWinPct = (left: LeaderboardEntry, right: LeaderboardEntry) => {
-  const leftEligible = shouldShowWinPercentage(left);
-  const rightEligible = shouldShowWinPercentage(right);
-
-  if (leftEligible !== rightEligible) {
-    return leftEligible ? -1 : 1;
-  }
-
-  if (!leftEligible || !rightEligible) {
-    return compareByWinStreak(left, right);
-  }
-
-  return (
-    (getWinPercentage(right) ?? 0) - (getWinPercentage(left) ?? 0) ||
-    right.wins - left.wins ||
-    left.name.localeCompare(right.name)
-  );
-};
-
-const compareByLowestWinPct = (left: LeaderboardEntry, right: LeaderboardEntry) => {
-  const leftEligible = shouldShowWinPercentage(left);
-  const rightEligible = shouldShowWinPercentage(right);
-
-  if (leftEligible !== rightEligible) {
-    return leftEligible ? -1 : 1;
-  }
-
-  if (!leftEligible || !rightEligible) {
-    return compareByWinStreak(right, left);
-  }
-
-  return (
-    (getWinPercentage(left) ?? 0) - (getWinPercentage(right) ?? 0) ||
-    left.wins - right.wins ||
-    left.name.localeCompare(right.name)
-  );
-};
 
 const compareByLossStreak = (left: LeaderboardEntry, right: LeaderboardEntry) =>
   right.lossStreak - left.lossStreak ||
   right.losses - left.losses ||
   left.name.localeCompare(right.name);
 
-const leaderboardSorters: Record<LeaderboardSort, typeof compareByWinStreak> = {
+const leaderboardSorters: Record<LeaderboardSort, typeof compareByElo> = {
+  elo: compareByElo,
   winStreak: compareByWinStreak,
-  winPct: compareByWinPct,
-  lowestWinPct: compareByLowestWinPct,
   lossStreak: compareByLossStreak,
 };
 
@@ -180,10 +147,8 @@ export const getTopLeaderboard = (
 
 export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
   switch (sort) {
-    case "winPct":
-      return `Win % appears after ${MIN_GAMES_FOR_WIN_PCT} games played. Showing top ${LEADERBOARD_LIMIT}.`;
-    case "lowestWinPct":
-      return `Win % appears after ${MIN_GAMES_FOR_WIN_PCT} games played. Showing bottom ${LEADERBOARD_LIMIT}.`;
+    case "elo":
+      return `Showing top ${LEADERBOARD_LIMIT} by Elo rating.`;
     case "lossStreak":
       return `Showing top ${LEADERBOARD_LIMIT} by active loss streak.`;
     default:

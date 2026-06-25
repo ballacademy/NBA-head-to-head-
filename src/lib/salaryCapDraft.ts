@@ -7,9 +7,9 @@ export const getSalaryCapDraftOptions = (
   pool: Player[],
   activeStep: number,
   totalPicks: number,
-  salaryCapMode: boolean,
+  salaryCapLimit?: number,
 ): DraftFilterOptions => {
-  if (!salaryCapMode) {
+  if (salaryCapLimit == null) {
     return {};
   }
 
@@ -20,6 +20,10 @@ export const getSalaryCapDraftOptions = (
   const picksRemaining = totalPicks - activeStep;
 
   return {
-    maxAffordableSalary: getMaxAffordableSalary(lineup, picksRemaining),
+    maxAffordableSalary: getMaxAffordableSalary(
+      lineup,
+      picksRemaining,
+      salaryCapLimit,
+    ),
   };
 };

@@ -46,6 +46,8 @@ describe("ranked profile and leaderboard", () => {
       elo: result.profile.elo,
       wins: 1,
       losses: 0,
+      winStreak: 1,
+      lossStreak: 0,
       isNpc: false,
     });
 

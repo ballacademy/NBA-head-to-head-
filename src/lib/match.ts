@@ -3,6 +3,7 @@ import {
   generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
+import { ensureClassicProfile } from "./classicProfile";
 import { pickOpponentElo } from "./rankedElo";
 import {
   ensureRankedLeaderboard,
@@ -10,6 +11,10 @@ import {
 } from "./rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
 import type { TeamProfile } from "./teamProfile";
+import {
+  CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+  RANKED_SALARY_CAP,
+} from "./salaryCap";
 import type { Drafter, DraftSlotConstraint } from "./types";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import type { Player } from "./types";
@@ -18,6 +23,7 @@ export interface StartDraftOptions {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
+  salaryCapLimit?: number;
   allTimeMode?: boolean;
 }
 
@@ -29,17 +35,31 @@ export const createUserDrafter = (
   team: TeamProfile,
   draftSlots: DraftSlotConstraint[],
   options: StartDraftOptions = {},
-): Drafter => ({
-  id: "user",
-  name: team.name,
-  accent: "#2563eb",
-  draftSlots,
-  lineup: [],
-  isDailyDraft: Boolean(options.isDailyDraft),
-  dailyChallengeTitle: options.dailyChallengeTitle,
-  salaryCapMode: Boolean(options.salaryCapMode),
-  allTimeMode: Boolean(options.allTimeMode),
-});
+): Drafter => {
+  const salaryCapMode = Boolean(options.salaryCapMode);
+  const allTimeMode = Boolean(options.allTimeMode);
+  const isDailyDraft = Boolean(options.isDailyDraft);
+  const salaryCapLimit =
+    options.salaryCapLimit ??
+    (isDailyDraft || allTimeMode
+      ? undefined
+      : salaryCapMode
+        ? RANKED_SALARY_CAP
+        : CLASSIC_HEAD_TO_HEAD_SALARY_CAP);
+
+  return {
+    id: "user",
+    name: team.name,
+    accent: "#2563eb",
+    draftSlots,
+    lineup: [],
+    isDailyDraft,
+    dailyChallengeTitle: options.dailyChallengeTitle,
+    salaryCapMode,
+    salaryCapLimit,
+    allTimeMode,
+  };
+};
 
 export const createOpponentDraftSlots = (players: Player[]) =>
   generateFeasibleDraftSlots(players);
@@ -58,6 +78,27 @@ export const createRandomOpponent = (
     accent: blueprint.accent,
     draftSlots,
     lineup: [],
+  };
+};
+
+export const createClassicOpponent = (
+  draftSlots: DraftSlotConstraint[],
+): Drafter => {
+  const playerElo = ensureClassicProfile().elo;
+  const opponentElo = pickOpponentElo(playerElo);
+  const blueprint =
+    initialDrafterBlueprints[
+      Math.floor(Math.random() * initialDrafterBlueprints.length)
+    ];
+
+  return {
+    id: `opponent-${blueprint.id}-${Date.now()}`,
+    name: blueprint.name,
+    accent: blueprint.accent,
+    draftSlots,
+    lineup: [],
+    salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+    classicOpponentElo: opponentElo,
   };
 };
 
@@ -81,6 +122,7 @@ export const createRankedOpponent = (
     draftSlots,
     lineup: [],
     salaryCapMode: true,
+    salaryCapLimit: RANKED_SALARY_CAP,
     rankedOpponentElo: opponentElo,
   };
 };

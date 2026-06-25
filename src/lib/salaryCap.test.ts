@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { players } from "./playerPool";
 import {
   canAffordPlayer,
+  CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
   estimatePlayerSalary,
   getLineupSalaryTotal,
   RANKED_SALARY_CAP,
@@ -10,6 +11,7 @@ import {
 describe("salary cap", () => {
   it("keeps ranked lineups under a $100M cap", () => {
     expect(RANKED_SALARY_CAP).toBe(100_000_000);
+    expect(CLASSIC_HEAD_TO_HEAD_SALARY_CAP).toBe(150_000_000);
 
     const rankedBySalary = [...players].sort(
       (left, right) => estimatePlayerSalary(right) - estimatePlayerSalary(left),

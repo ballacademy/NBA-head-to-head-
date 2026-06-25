@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import {
+  formatLeaderboardElo,
   formatLeaderboardLossStreak,
   formatLeaderboardRecord,
-  formatLeaderboardWinPercentage,
   formatLeaderboardWinStreak,
   getLeaderboardFootnote,
   getTopLeaderboard,
@@ -10,9 +10,12 @@ import {
 } from "../lib/leaderboard";
 import {
   formatRankedLeaderboardElo,
+  formatRankedLeaderboardLossStreak,
   formatRankedLeaderboardRecord,
+  formatRankedLeaderboardWinStreak,
   getRankedLeaderboardFootnote,
   getTopRankedLeaderboard,
+  type RankedLeaderboardSort,
 } from "../lib/rankedLeaderboard";
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
@@ -24,23 +27,36 @@ interface LeaderboardPageProps {
 }
 
 type LeaderboardView = "classic" | "ranked";
+type BoardSort = LeaderboardSort | RankedLeaderboardSort;
+
+const SORT_TABS: { id: BoardSort; label: string }[] = [
+  { id: "elo", label: "Highest Elo" },
+  { id: "winStreak", label: "Win streak" },
+  { id: "lossStreak", label: "Loss streak" },
+];
 
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
-  const [sort, setSort] = useState<LeaderboardSort>("winStreak");
+  const [sort, setSort] = useState<BoardSort>("elo");
   const currentPlayerId = getOrCreatePlayerId();
   const seasonId = getCurrentSeasonId();
-  const classicEntries = useMemo(() => getTopLeaderboard(sort), [sort]);
-  const rankedEntries = useMemo(() => getTopRankedLeaderboard(), []);
+  const classicEntries = useMemo(
+    () => getTopLeaderboard(sort as LeaderboardSort),
+    [sort],
+  );
+  const rankedEntries = useMemo(
+    () => getTopRankedLeaderboard(sort as RankedLeaderboardSort),
+    [sort],
+  );
 
   const metricColumnLabel =
     sort === "winStreak"
       ? "Win streak"
       : sort === "lossStreak"
         ? "Loss streak"
-        : "Win %";
+        : "Elo";
 
-  const formatMetricValue = (entry: (typeof classicEntries)[number]) => {
+  const formatClassicMetric = (entry: (typeof classicEntries)[number]) => {
     if (sort === "winStreak") {
       return formatLeaderboardWinStreak(entry);
     }
@@ -49,7 +65,19 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       return formatLeaderboardLossStreak(entry);
     }
 
-    return formatLeaderboardWinPercentage(entry);
+    return formatLeaderboardElo(entry);
+  };
+
+  const formatRankedMetric = (entry: (typeof rankedEntries)[number]) => {
+    if (sort === "winStreak") {
+      return formatRankedLeaderboardWinStreak(entry);
+    }
+
+    if (sort === "lossStreak") {
+      return formatRankedLeaderboardLossStreak(entry);
+    }
+
+    return formatRankedLeaderboardElo(entry);
   };
 
   return (
@@ -61,8 +89,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             <h1>Leaderboards</h1>
             <p className="leaderboard__subtitle">
               {view === "ranked"
-                ? getRankedLeaderboardFootnote(seasonId)
-                : getLeaderboardFootnote(sort)}
+                ? getRankedLeaderboardFootnote(sort as RankedLeaderboardSort, seasonId)
+                : getLeaderboardFootnote(sort as LeaderboardSort)}
             </p>
           </div>
           <button type="button" className="secondary-button" onClick={onBack}>
@@ -91,50 +119,24 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           </button>
         </div>
 
-        {view === "classic" ? (
-          <div
-            className="leaderboard__tabs leaderboard__tabs--secondary"
-            role="tablist"
-            aria-label="Classic leaderboard sort"
-          >
+        <div
+          className="leaderboard__tabs leaderboard__tabs--secondary"
+          role="tablist"
+          aria-label="Leaderboard sort"
+        >
+          {SORT_TABS.map((tab) => (
             <button
+              key={tab.id}
               type="button"
               role="tab"
-              aria-selected={sort === "winStreak"}
-              className={sort === "winStreak" ? "is-active" : undefined}
-              onClick={() => setSort("winStreak")}
+              aria-selected={sort === tab.id}
+              className={sort === tab.id ? "is-active" : undefined}
+              onClick={() => setSort(tab.id)}
             >
-              Win streak
+              {tab.label}
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={sort === "winPct"}
-              className={sort === "winPct" ? "is-active" : undefined}
-              onClick={() => setSort("winPct")}
-            >
-              Highest win %
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={sort === "lossStreak"}
-              className={sort === "lossStreak" ? "is-active" : undefined}
-              onClick={() => setSort("lossStreak")}
-            >
-              Loss streak
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={sort === "lowestWinPct"}
-              className={sort === "lowestWinPct" ? "is-active" : undefined}
-              onClick={() => setSort("lowestWinPct")}
-            >
-              Lowest win %
-            </button>
-          </div>
-        ) : null}
+          ))}
+        </div>
       </div>
 
       {view === "ranked" ? (
@@ -146,8 +148,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   <th scope="col">Rank</th>
                   <th scope="col">Front Office</th>
                   <th scope="col">Tier</th>
-                  <th scope="col">Elo</th>
                   <th scope="col">Record</th>
+                  <th scope="col">{metricColumnLabel}</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,8 +177,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                     <td>
                       <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
                     </td>
-                    <td>{formatRankedLeaderboardElo(entry)}</td>
                     <td>{formatRankedLeaderboardRecord(entry)}</td>
+                    <td>{formatRankedMetric(entry)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -194,6 +196,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               <tr>
                 <th scope="col">Rank</th>
                 <th scope="col">Team</th>
+                <th scope="col">Tier</th>
                 <th scope="col">Record</th>
                 <th scope="col">{metricColumnLabel}</th>
               </tr>
@@ -216,8 +219,11 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                       playerId={entry.playerId}
                     />
                   </td>
+                  <td>
+                    <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
+                  </td>
                   <td>{formatLeaderboardRecord(entry)}</td>
-                  <td>{formatMetricValue(entry)}</td>
+                  <td>{formatClassicMetric(entry)}</td>
                 </tr>
               ))}
             </tbody>

@@ -63,8 +63,10 @@ export interface Drafter {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
+  salaryCapLimit?: number;
   allTimeMode?: boolean;
   rankedOpponentElo?: number;
+  classicOpponentElo?: number;
 }
 
 export interface ScoreCategory {
