@@ -3,7 +3,7 @@ import type { Division } from "./types";
 import { playerMatchesPosition } from "./positions";
 import { hasLimitedSampleSize } from "./sampleSize";
 import type { DraftSlotConstraint, Player, Position } from "./types";
-import { estimatePlayerSalary } from "./salaryCap";
+import { estimatePlayerSalary, getMaxAffordableSalary } from "./salaryCap";
 
 export interface DraftFilterOptions {
   maxAffordableSalary?: number;
@@ -112,6 +112,83 @@ export const validateDraftSlotsFeasible = (
   players: Player[],
   slots: DraftSlotConstraint[],
 ) => autoDraftLineup(players, slots).length === slots.length;
+
+export const autoDraftLineupUnderSalaryCap = (
+  players: Player[],
+  draftSlots: DraftSlotConstraint[],
+  salaryCapLimit: number,
+) => {
+  const lineup: string[] = [];
+  const pickedIds = new Set<string>();
+  const poolById = new Map(players.map((player) => [player.id, player]));
+
+  for (let index = 0; index < draftSlots.length; index += 1) {
+    const slot = draftSlots[index]!;
+    const lineupPlayers = lineup
+      .map((playerId) => poolById.get(playerId))
+      .filter((player): player is Player => Boolean(player));
+    const picksRemaining = draftSlots.length - index;
+    const selection = pickBestForSlot(players, slot, pickedIds, {
+      maxAffordableSalary: getMaxAffordableSalary(
+        lineupPlayers,
+        picksRemaining,
+        salaryCapLimit,
+      ),
+    });
+
+    if (!selection) {
+      break;
+    }
+
+    lineup.push(selection);
+    pickedIds.add(selection);
+  }
+
+  return lineup;
+};
+
+export const validateDraftSlotsFeasibleUnderSalaryCap = (
+  players: Player[],
+  slots: DraftSlotConstraint[],
+  salaryCapLimit: number,
+) =>
+  autoDraftLineupUnderSalaryCap(players, slots, salaryCapLimit).length ===
+  slots.length;
+
+export const generateFeasibleDraftSlotsUnderSalaryCap = (
+  players: Player[],
+  salaryCapLimit: number,
+  slotCount = 5,
+  options: GenerateFeasibleDraftSlotsOptions = {},
+): DraftSlotConstraint[] => {
+  for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
+    const slots = generateFeasibleDraftSlots(players, slotCount, options);
+
+    if (validateDraftSlotsFeasibleUnderSalaryCap(players, slots, salaryCapLimit)) {
+      return slots;
+    }
+  }
+
+  const random = options.random ?? defaultRandom;
+  const balancedSlots = buildGreedyFeasibleSlots(
+    players,
+    BALANCED_POSITIONS,
+    options.fixedDivision,
+    random,
+  );
+
+  if (
+    validateDraftSlotsFeasibleUnderSalaryCap(
+      players,
+      balancedSlots,
+      salaryCapLimit,
+    )
+  ) {
+    return balancedSlots;
+  }
+
+  return generateFeasibleDraftSlots(players, slotCount, options);
+};
 
 const pickRandomFeasibleDivision = (
   players: Player[],

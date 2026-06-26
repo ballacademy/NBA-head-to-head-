@@ -22,7 +22,7 @@ const getActiveStreakForElo = (
     return lossStreak;
   }
 
-  return Math.max(winStreak, lossStreak);
+  return 0;
 };
 
 const RANKED_PROFILE_KEY = "nba-head-to-head-ranked-profile";

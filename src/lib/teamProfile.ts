@@ -2,10 +2,12 @@ export interface TeamProfile {
   name: string;
 }
 
+export const MAX_TEAM_NAME_LENGTH = 32;
+
 const STORAGE_KEY = "nba-head-to-head-team-profile";
 
 export const normalizeTeamProfile = (name: string): TeamProfile | null => {
-  const trimmedName = name.trim();
+  const trimmedName = name.trim().slice(0, MAX_TEAM_NAME_LENGTH);
 
   if (!trimmedName) {
     return null;

@@ -105,7 +105,7 @@ export const getDailyDraftPercentile = (
   const submissions = loadDailyScoresForDate(dateKey)
     .filter((entry) => entry.goalId === goal.id)
     .map((entry) => entry.value);
-  const combined = [...benchmarkValues, ...submissions, value];
+  const combined = [...benchmarkValues, ...submissions];
   const uniqueDrafters = new Set([
     ...loadDailyScoresForDate(dateKey)
       .filter((entry) => entry.goalId === goal.id)

@@ -6,13 +6,16 @@ import {
   formatSlotConstraint,
   generateDraftSlots,
   generateFeasibleDraftSlots,
+  generateFeasibleDraftSlotsUnderSalaryCap,
   isAllBigs,
   isAllCenters,
   isAllGuards,
   isBalancedComposition,
   sortDraftCandidates,
   validateDraftSlotsFeasible,
+  validateDraftSlotsFeasibleUnderSalaryCap,
 } from "./draft";
+import { CLASSIC_HEAD_TO_HEAD_SALARY_CAP, RANKED_SALARY_CAP } from "./salaryCap";
 import type { Player } from "./types";
 import { players } from "../data/players";
 
@@ -64,6 +67,32 @@ describe("draft constraints", () => {
 
     expect(slots.length).toBe(5);
     expect(validateDraftSlotsFeasible(players, slots)).toBe(true);
+  });
+
+  it("generates salary-cap feasible slots for classic and ranked caps", () => {
+    const classicSlots = generateFeasibleDraftSlotsUnderSalaryCap(
+      players,
+      CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+    );
+    const rankedSlots = generateFeasibleDraftSlotsUnderSalaryCap(
+      players,
+      RANKED_SALARY_CAP,
+    );
+
+    expect(
+      validateDraftSlotsFeasibleUnderSalaryCap(
+        players,
+        classicSlots,
+        CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+      ),
+    ).toBe(true);
+    expect(
+      validateDraftSlotsFeasibleUnderSalaryCap(
+        players,
+        rankedSlots,
+        RANKED_SALARY_CAP,
+      ),
+    ).toBe(true);
   });
 
   it("randomizes divisions across generated drafts", () => {

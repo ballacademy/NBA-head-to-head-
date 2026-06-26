@@ -46,4 +46,39 @@ describe("classic profile", () => {
     expect(result.delta).toBeGreaterThan(0);
     expect(loadClassicProfile().elo).toBeGreaterThan(RANKED_STARTING_ELO);
   });
+
+  it("does not apply win-streak bonus on ties", () => {
+    const baseProfile = {
+      playerId: "player-test-1",
+      elo: 500,
+      peakElo: 500,
+      classicGamesPlayed: 10,
+    };
+
+    storage.set(
+      "nba-head-to-head-classic-profile",
+      JSON.stringify(baseProfile),
+    );
+
+    const withoutStreak = applyClassicMatchResult({
+      result: "tie",
+      opponentElo: 700,
+      winStreak: 0,
+      lossStreak: 0,
+    });
+
+    storage.set(
+      "nba-head-to-head-classic-profile",
+      JSON.stringify(baseProfile),
+    );
+
+    const withStreak = applyClassicMatchResult({
+      result: "tie",
+      opponentElo: 700,
+      winStreak: 5,
+      lossStreak: 0,
+    });
+
+    expect(withStreak.delta).toBe(withoutStreak.delta);
+  });
 });

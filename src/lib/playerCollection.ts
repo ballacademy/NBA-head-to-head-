@@ -115,11 +115,11 @@ export const loadPlayerCollection = (): PlayerCollection => {
   const saved = readJson<Partial<PlayerCollection>>(COLLECTION_KEY);
 
   if (saved?.initialized && Array.isArray(saved.unlockedIds)) {
-    return {
+    return sanitizePlayerCollection({
       unlockedIds: saved.unlockedIds,
       pendingUnlock: saved.pendingUnlock ?? null,
       initialized: true,
-    };
+    });
   }
 
   const unlockedIds = createStarterCollection();
@@ -131,14 +131,50 @@ export const loadPlayerCollection = (): PlayerCollection => {
   };
 };
 
+const isValidUnlockOffer = (offer: UnlockOffer | null | undefined) => {
+  if (!offer) {
+    return false;
+  }
+
+  const validIds =
+    offer.kind === "win" ? getWinUnlockPlayerIds() : getScrubPlayerIds();
+
+  return (
+    validIds.includes(offer.optionA) &&
+    validIds.includes(offer.optionB) &&
+    typeof offer.createdAt === "string"
+  );
+};
+
+export const sanitizePlayerCollection = (
+  collection: PlayerCollection,
+): PlayerCollection => {
+  if (!isValidUnlockOffer(collection.pendingUnlock)) {
+    if (collection.pendingUnlock) {
+      return {
+        ...collection,
+        pendingUnlock: null,
+      };
+    }
+  }
+
+  return collection;
+};
+
 export const savePlayerCollection = (collection: PlayerCollection) => {
   writeJson(COLLECTION_KEY, collection);
 };
 
 export const ensurePlayerCollection = (): PlayerCollection => {
-  const collection = loadPlayerCollection();
+  const saved = readJson<Partial<PlayerCollection>>(COLLECTION_KEY);
+  const collection = sanitizePlayerCollection(loadPlayerCollection());
 
-  if (!readJson(COLLECTION_KEY)) {
+  if (!saved) {
+    savePlayerCollection(collection);
+    return collection;
+  }
+
+  if (saved.pendingUnlock && !collection.pendingUnlock) {
     savePlayerCollection(collection);
   }
 
@@ -281,7 +317,7 @@ export const grantWinUnlock = (
   const lastUnlock = readJson<{ matchId: string }>(LAST_UNLOCK_MATCH_KEY);
 
   if (lastUnlock?.matchId === matchId) {
-    return collection;
+    return loadPlayerCollection();
   }
 
   const unlockKind = advanceUnlockProgress(true);
@@ -321,7 +357,7 @@ export const grantLossUnlock = (
   const lastUnlock = readJson<{ matchId: string }>(LAST_UNLOCK_MATCH_KEY);
 
   if (lastUnlock?.matchId === matchId) {
-    return collection;
+    return loadPlayerCollection();
   }
 
   const unlockKind = advanceUnlockProgress(false);

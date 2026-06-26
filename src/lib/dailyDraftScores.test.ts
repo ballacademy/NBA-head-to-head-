@@ -1,5 +1,11 @@
-import { describe, expect, it } from "vitest";
-import { computePercentile, formatDailyPercentile } from "./dailyDraftScores";
+import { describe, expect, it, vi } from "vitest";
+import {
+  computePercentile,
+  formatDailyPercentile,
+  getDailyDraftPercentile,
+  submitDailyDraftScore,
+} from "./dailyDraftScores";
+import { DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
 
 describe("dailyDraftScores", () => {
   it("computes percentile rank for higher-is-better goals", () => {
@@ -25,5 +31,37 @@ describe("dailyDraftScores", () => {
     expect(
       formatDailyPercentile({ percentile: 20, totalDrafters: 10, sampleSize: 510 }),
     ).toBe("Top 80% Today");
+  });
+
+  it("does not double-count the submitting score in percentile math", () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        storage.set(key, value);
+      },
+      clear: () => {
+        storage.clear();
+      },
+    });
+    storage.set(
+      "nba-head-to-head-player-identity",
+      JSON.stringify({ playerId: "player-test-1" }),
+    );
+
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    const benchmarks = [10, 20, 30, 40, 50];
+    const result = submitDailyDraftScore(
+      "2099-01-01",
+      goal,
+      40,
+      "40.0",
+      benchmarks,
+    );
+
+    expect(result.sampleSize).toBe(benchmarks.length + 1);
+    expect(result.percentile).toBe(
+      getDailyDraftPercentile("2099-01-01", 40, goal, benchmarks).percentile,
+    );
   });
 });

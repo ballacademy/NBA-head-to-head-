@@ -21,7 +21,7 @@ const getActiveStreakForElo = (
     return lossStreak;
   }
 
-  return Math.max(winStreak, lossStreak);
+  return 0;
 };
 
 const CLASSIC_PROFILE_KEY = "nba-head-to-head-classic-profile";

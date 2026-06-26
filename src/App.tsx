@@ -9,7 +9,13 @@ import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool } from "./lib/activePlayerPool";
-import { generateFeasibleDraftSlots, pickBestForSlot, validateDraftSlotsFeasible } from "./lib/draft";
+import {
+  generateFeasibleDraftSlots,
+  generateFeasibleDraftSlotsUnderSalaryCap,
+  pickBestForSlot,
+  validateDraftSlotsFeasible,
+  validateDraftSlotsFeasibleUnderSalaryCap,
+} from "./lib/draft";
 import {
   getDailyChallenge,
   getDailyDateKey,
@@ -38,6 +44,10 @@ import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureRankedLeaderboard } from "./lib/rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
+import {
+  CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+  RANKED_SALARY_CAP,
+} from "./lib/salaryCap";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import type { Drafter } from "./lib/types";
@@ -87,8 +97,11 @@ function App() {
   );
 
   const draftablePlayers = useMemo(
-    () => getDraftablePlayers(activePlayers, collection),
-    [activePlayers, collection],
+    () =>
+      isDailyDraft
+        ? activePlayers
+        : getDraftablePlayers(activePlayers, collection),
+    [activePlayers, collection, isDailyDraft],
   );
 
   const opponentDraftablePlayers = useMemo(
@@ -113,12 +126,12 @@ function App() {
     }
 
     return simulateDailyBenchmarkValues(
-      draftablePlayers,
+      activePlayers,
       dailySetup.slots,
       dailySetup.goal,
       dailyDateKey,
     );
-  }, [dailyDateKey, dailySetup, draftablePlayers]);
+  }, [activePlayers, dailyDateKey, dailySetup]);
 
   const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
     allTimeMode,
@@ -143,23 +156,63 @@ function App() {
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
-    const pool = getActivePlayerPool(loadPlayerRecord("allTime"), { allTimeMode: nextAllTimeMode });
-    const userPool = getDraftablePlayers(pool, collection);
+    const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
+      allTimeMode: nextAllTimeMode,
+    });
+    const salaryCapLimit =
+      daily || nextAllTimeMode
+        ? undefined
+        : salaryCapMode
+          ? RANKED_SALARY_CAP
+          : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+    const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
     const nextOpponentCollection = daily ? null : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
     const setup = daily ? getDailyDraftSetup(dateKey) : null;
-    const userSlots = setup?.slots ?? generateFeasibleDraftSlots(userPool);
-    const opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
+    const slotsAreFeasible = (
+      players: typeof draftPool,
+      slots: ReturnType<typeof generateFeasibleDraftSlots>,
+    ) =>
+      salaryCapLimit != null
+        ? validateDraftSlotsFeasibleUnderSalaryCap(
+            players,
+            slots,
+            salaryCapLimit,
+          )
+        : validateDraftSlotsFeasible(players, slots);
+
+    let userSlots = setup?.slots ?? generateFeasibleDraftSlots(draftPool);
+    if (
+      salaryCapLimit != null &&
+      !slotsAreFeasible(draftPool, userSlots)
+    ) {
+      userSlots = generateFeasibleDraftSlotsUnderSalaryCap(
+        draftPool,
+        salaryCapLimit,
+      );
+    }
+
+    let opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
+    if (
+      opponentSlots &&
+      salaryCapLimit != null &&
+      !slotsAreFeasible(opponentPool, opponentSlots)
+    ) {
+      opponentSlots = generateFeasibleDraftSlotsUnderSalaryCap(
+        opponentPool,
+        salaryCapLimit,
+      );
+    }
 
     if (
       userSlots.length === 0 ||
-      !validateDraftSlotsFeasible(userPool, userSlots) ||
+      !slotsAreFeasible(draftPool, userSlots) ||
       (!daily &&
         (!opponentSlots ||
           opponentSlots.length === 0 ||
-          !validateDraftSlotsFeasible(opponentPool, opponentSlots)))
+          !slotsAreFeasible(opponentPool, opponentSlots)))
     ) {
       return false;
     }
@@ -224,10 +277,13 @@ function App() {
     }
 
     const team = { name: user.name };
+    const replayAllTime =
+      Boolean(user.allTimeMode) && isAllTimeModePlayable();
+
     if (
       !startMatch(team, {
         salaryCapMode: Boolean(user.salaryCapMode),
-        allTimeMode: Boolean(user.allTimeMode),
+        allTimeMode: replayAllTime,
       })
     ) {
       resetToLanding();
@@ -258,6 +314,8 @@ function App() {
 
   const handleTimeout = useCallback(
     (slot: number) => {
+      let picked = false;
+
       setUser((current) => {
         if (!current || current.lineup[slot]) {
           return current;
@@ -285,6 +343,7 @@ function App() {
           return current;
         }
 
+        picked = true;
         const nextLineup = [...current.lineup];
         nextLineup[slot] = bestPick;
 
@@ -294,7 +353,9 @@ function App() {
         };
       });
 
-      setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+      if (picked) {
+        setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+      }
     },
     [draftablePlayers],
   );
@@ -367,7 +428,7 @@ function App() {
         );
       }
 
-      if (!cancelled) {
+      if (!cancelled && lineup.length === draftSlots.length) {
         setOpponentComplete(true);
       }
     };

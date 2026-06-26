@@ -133,10 +133,12 @@ export const generateDailyDraftSlots = (
     generateSeededSlotConstraints(fallbackRandom, 5) ??
     [];
 
-  slotCache.set(
-    dateKey,
-    fallbackSlots.map((slot) => ({ ...slot })),
-  );
+  if (validateDraftSlotsFeasible(canonicalPlayers, fallbackSlots)) {
+    slotCache.set(
+      dateKey,
+      fallbackSlots.map((slot) => ({ ...slot })),
+    );
+  }
 
   return fallbackSlots.map((slot) => ({ ...slot }));
 };

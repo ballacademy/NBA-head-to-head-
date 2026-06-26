@@ -31,6 +31,13 @@ export interface ClassicMatchOutcome {
 }
 
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
+const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
+
+interface CachedMatchOutcome {
+  matchId: string;
+  ranked?: RankedMatchOutcome;
+  classic?: ClassicMatchOutcome;
+}
 
 export const projectRecordAfterMatch = (
   result: HeadToHeadResult,
@@ -51,7 +58,13 @@ export const persistMatchOutcome = (
   const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
 
   if (lastRecorded?.matchId === matchId) {
-    return { record: loadPlayerRecord(mode) };
+    const cached = readJson<CachedMatchOutcome>(LAST_MATCH_OUTCOME_KEY);
+
+    return {
+      record: loadPlayerRecord(mode),
+      ranked: cached?.matchId === matchId ? cached.ranked : undefined,
+      classic: cached?.matchId === matchId ? cached.classic : undefined,
+    };
   }
 
   const record = recordMatchResult(result, mode);
@@ -110,6 +123,7 @@ export const persistMatchOutcome = (
   }
 
   writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
+  writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic });
 
   return { record, ranked, classic };
 };

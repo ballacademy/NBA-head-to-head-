@@ -24,8 +24,10 @@ import {
   isPlayerStatsMasked,
   isRegularDraftPlayer,
   loadPlayerCollection,
+  sanitizePlayerCollection,
 } from "./playerCollection";
 import { getScrubPlayerIds, isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
+import { writeJson } from "./browserStorage";
 import { players } from "./playerPool";
 import { resetUnlockProgress, saveUnlockProgress } from "./unlockProgress";
 
@@ -134,9 +136,29 @@ describe("playerCollection", () => {
       lossStreak: 0,
     });
     const first = grantWinUnlock("match-duplicate", collection);
-    const second = grantWinUnlock("match-duplicate", first);
+    const second = grantWinUnlock("match-duplicate", {
+      ...collection,
+      pendingUnlock: null,
+    });
 
     expect(second.pendingUnlock).toEqual(first.pendingUnlock);
+  });
+
+  it("clears invalid pending unlock offers on load", () => {
+    const collection = loadPlayerCollection();
+    const scrubId = getScrubPlayerIds()[0]!;
+
+    writeJson("nba-head-to-head-player-collection", {
+      ...collection,
+      pendingUnlock: {
+        kind: "win",
+        optionA: scrubId,
+        optionB: scrubId,
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    expect(sanitizePlayerCollection(loadPlayerCollection()).pendingUnlock).toBeNull();
   });
 
   it("adds the selected player and clears the pending unlock", () => {

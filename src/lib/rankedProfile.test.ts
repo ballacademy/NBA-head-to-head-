@@ -56,4 +56,40 @@ describe("ranked profile and leaderboard", () => {
       true,
     );
   });
+
+  it("does not apply win-streak bonus on ties", () => {
+    const baseProfile = {
+      playerId: "player-test-1",
+      seasonId: ensureCurrentRankedSeason().seasonId,
+      elo: 500,
+      peakElo: 500,
+      rankedGamesPlayed: 10,
+    };
+
+    storage.set(
+      "nba-head-to-head-ranked-profile",
+      JSON.stringify(baseProfile),
+    );
+
+    const withoutStreak = applyRankedMatchResult({
+      result: "tie",
+      opponentElo: 700,
+      winStreak: 0,
+      lossStreak: 0,
+    });
+
+    storage.set(
+      "nba-head-to-head-ranked-profile",
+      JSON.stringify(baseProfile),
+    );
+
+    const withStreak = applyRankedMatchResult({
+      result: "tie",
+      opponentElo: 700,
+      winStreak: 5,
+      lossStreak: 0,
+    });
+
+    expect(withStreak.delta).toBe(withoutStreak.delta);
+  });
 });
