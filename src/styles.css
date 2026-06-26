@@ -2289,24 +2289,25 @@ main {
   }
 }
 
+.daily-draft-results__footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+.daily-draft-results__footer .play-again-button {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+
 .daily-draft-results__stat {
   margin: 10px 0 0;
   font-size: 1.6rem;
   font-weight: 900;
   color: #fde68a;
-}
-
-.daily-draft-results__actions .play-again-button {
-  margin-top: 0;
-  flex: 1 1 0;
-  min-width: min(100%, 220px);
-}
-
-@media (max-width: 640px) {
-  .daily-draft-results__actions .play-again-button {
-    flex: 1 1 calc(50% - 9px);
-    min-width: 0;
-  }
 }
 
 .daily-draft-results__lineup h3 {

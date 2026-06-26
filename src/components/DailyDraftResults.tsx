@@ -147,23 +147,21 @@ export function DailyDraftResults({
         </div>
       </section>
 
-      <div className="panel panel--compact match-results__actions">
-        <div className="match-results__action-row daily-draft-results__actions">
-          <button
-            type="button"
-            className="play-again-button match-results__share-button"
-            onClick={() => void handleCopyShareText()}
-          >
-            {copyButtonLabel}
-          </button>
-          <button
-            type="button"
-            className="play-again-button match-results__menu-button"
-            onClick={onPlayAgain}
-          >
-            Back to home
-          </button>
-        </div>
+      <div className="panel panel--compact daily-draft-results__footer">
+        <button
+          type="button"
+          className="play-again-button match-results__share-button"
+          onClick={() => void handleCopyShareText()}
+        >
+          {copyButtonLabel}
+        </button>
+        <button
+          type="button"
+          className="play-again-button match-results__menu-button"
+          onClick={onPlayAgain}
+        >
+          Back to home
+        </button>
       </div>
     </section>
   );
