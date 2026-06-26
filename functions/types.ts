@@ -1,0 +1,15 @@
+export interface Env {
+  DB: D1Database;
+}
+
+export type MatchmakingMode = "classic" | "ranked";
+
+export interface StoredLineupRow {
+  id: string;
+  mode: string;
+  player_id: string;
+  team_name: string;
+  lineup_json: string;
+  elo: number;
+  created_at: string;
+}

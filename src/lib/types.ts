@@ -67,6 +67,7 @@ export interface Drafter {
   allTimeMode?: boolean;
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
+  isGhostOpponent?: boolean;
 }
 
 export interface ScoreCategory {

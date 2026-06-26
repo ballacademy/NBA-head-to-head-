@@ -2092,6 +2092,102 @@ main {
   .landing-nav-actions {
     grid-template-columns: 1fr;
   }
+
+  .landing-mode-card__record-block {
+    margin-top: 8px;
+    margin-bottom: 18px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+  }
+
+  .ranked-mode-summary .landing-mode-card__record + .landing-mode-card__record {
+    margin-top: 12px;
+  }
+
+  .landing-mode-card__record {
+    align-items: flex-start;
+    gap: 8px 10px;
+  }
+
+  .landing-mode-card__record-label {
+    flex: 0 0 100%;
+    margin-bottom: 2px;
+  }
+
+  .landing-mode-card__record-value {
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  .landing-mode-card__record-meta {
+    margin-top: 8px;
+    line-height: 1.45;
+  }
+
+  .ranked-tier-badge--compact {
+    padding: 3px 8px;
+    font-size: 0.68rem;
+    gap: 6px;
+  }
+
+  .ranked-tier-badge--compact .ranked-tier-badge__elo {
+    font-size: 0.68rem;
+  }
+
+  .landing-card--mode .daily-draft-card__button,
+  .landing-card--mode .landing__primary-button,
+  .landing-card--mode .ranked-cap-card__button,
+  .landing-card--mode .all-time-card__button {
+    margin-top: 12px;
+  }
+
+  .player-pick-list {
+    max-height: min(54vh, 440px);
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .player-pick--compact {
+    align-items: flex-start;
+    padding: 6px 8px;
+    gap: 7px;
+  }
+
+  .player-pick--compact .player-team-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.58rem;
+  }
+
+  .player-pick--compact .player-pick__title-row strong {
+    font-size: 0.88rem;
+  }
+
+  .player-pick--compact .player-pick__team {
+    font-size: 0.72rem;
+    line-height: 1.25;
+  }
+
+  .player-pick--compact .player-caveat-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .player-pick--compact .player-draft-stats {
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .player-pick--compact .player-draft-stats__item {
+    padding: 2px 6px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .queued-draft-results__footer {
+    grid-template-columns: 1fr;
+  }
 }
 
 .daily-draft-banner__note {
