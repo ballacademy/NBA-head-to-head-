@@ -21,6 +21,10 @@ npm run build
 npm test
 ```
 
+## Cloudflare Pages
+
+See [DEPLOY-CLOUDFLARE.md](DEPLOY-CLOUDFLARE.md) for one-time Cloudflare + GitHub Actions setup. Production deploys run on push to `main`.
+
 ## Windows quick start
 
 Use one folder name every time:
