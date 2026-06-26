@@ -6,7 +6,10 @@ import {
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey } from "../lib/dailyDraft";
-import { getPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
+import {
+  formatPlayerDailyDraftPercentile,
+  getPlayerDailyDraftEntry,
+} from "../lib/dailyDraftScores";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   formatPlayerRecord,
@@ -106,6 +109,7 @@ export function LandingPage({
     () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
     [dailyChallenge.id, dailyDateKey],
   );
+  const dailyCompleted = Boolean(dailyEntry);
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
 
   const handleUnlockSelect = (playerId: string) => {
@@ -141,6 +145,11 @@ export function LandingPage({
     const started = onStartDraft(team, options);
 
     if (!started) {
+      if (options?.isDailyDraft && dailyCompleted) {
+        setError("You've already completed today's Daily Draft. Come back tomorrow.");
+        return;
+      }
+
       setError("Couldn't start this draft. Refresh the page and try again.");
     }
   };
@@ -210,6 +219,7 @@ export function LandingPage({
           <p className="daily-draft-card__description">{dailyChallenge.description}</p>
           <p className="daily-draft-card__meta">
             Same goal for everyone today. Player stats stay hidden while you draft.
+            One attempt per day.
           </p>
           <div className="landing-mode-card__record-block">
             <p className="landing-mode-card__record">
@@ -219,15 +229,18 @@ export function LandingPage({
               </span>
             </p>
             <p className="landing-mode-card__record-meta">
-              {dailyEntry ? "Daily draft completed" : "Not played yet today"}
+              {dailyEntry
+                ? `${formatPlayerDailyDraftPercentile(dailyEntry)} · Daily draft complete`
+                : "Not played yet today"}
             </p>
           </div>
           <button
             type="button"
             className="daily-draft-card__button"
+            disabled={dailyCompleted}
             onClick={() => handleStart({ isDailyDraft: true })}
           >
-            Play Today&apos;s Daily Draft
+            {dailyCompleted ? "Completed for today" : "Play Today's Daily Draft"}
           </button>
         </div>
 

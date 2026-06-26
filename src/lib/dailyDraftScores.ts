@@ -15,6 +15,7 @@ export interface DailyDraftScoreEntry {
   goalId: string;
   value: number;
   formattedResult: string;
+  percentile?: number;
   submittedAt: string;
 }
 
@@ -101,17 +102,24 @@ export const getDailyDraftPercentile = (
   value: number,
   goal: DailyDraftGoal,
   benchmarkValues: number[],
+  excludePlayerId?: string,
 ): DailyDraftPercentileResult => {
-  const submissions = loadDailyScoresForDate(dateKey)
-    .filter((entry) => entry.goalId === goal.id)
-    .map((entry) => entry.value);
-  const combined = [...benchmarkValues, ...submissions];
-  const uniqueDrafters = new Set([
-    ...loadDailyScoresForDate(dateKey)
-      .filter((entry) => entry.goalId === goal.id)
-      .map((entry) => entry.playerId),
-    getOrCreatePlayerId(),
-  ]);
+  const entries = loadDailyScoresForDate(dateKey).filter(
+    (entry) => entry.goalId === goal.id,
+  );
+  const otherEntries = excludePlayerId
+    ? entries.filter((entry) => entry.playerId !== excludePlayerId)
+    : entries;
+  const submissionValues = otherEntries.map((entry) => entry.value);
+  const combined =
+    excludePlayerId != null
+      ? [...benchmarkValues, ...submissionValues, value]
+      : [...benchmarkValues, ...submissionValues];
+  const uniqueDrafters = new Set(otherEntries.map((entry) => entry.playerId));
+
+  if (excludePlayerId) {
+    uniqueDrafters.add(excludePlayerId);
+  }
 
   return {
     percentile: computePercentile(value, combined, goal.direction),
@@ -130,11 +138,19 @@ export const submitDailyDraftScore = (
   const playerId = getOrCreatePlayerId();
   const store = loadDailyScoreStore();
   const current = store[dateKey] ?? [];
+  const percentileResult = getDailyDraftPercentile(
+    dateKey,
+    value,
+    goal,
+    benchmarkValues,
+    playerId,
+  );
   const nextEntry: DailyDraftScoreEntry = {
     playerId,
     goalId: goal.id,
     value,
     formattedResult,
+    percentile: percentileResult.percentile,
     submittedAt: new Date().toISOString(),
   };
   const withoutCurrent = current.filter((entry) => entry.playerId !== playerId);
@@ -142,7 +158,28 @@ export const submitDailyDraftScore = (
   store[dateKey] = [...withoutCurrent, nextEntry];
   saveDailyScoreStore(store);
 
-  return getDailyDraftPercentile(dateKey, value, goal, benchmarkValues);
+  return percentileResult;
+};
+
+export const hasCompletedDailyDraft = (
+  dateKey: string,
+  goalId: string,
+  playerId = getOrCreatePlayerId(),
+) =>
+  Boolean(getPlayerDailyDraftEntry(dateKey, goalId, playerId));
+
+export const formatPlayerDailyDraftPercentile = (
+  entry: DailyDraftScoreEntry,
+) => {
+  if (typeof entry.percentile !== "number") {
+    return "Daily draft complete";
+  }
+
+  return formatDailyPercentile({
+    percentile: entry.percentile,
+    totalDrafters: 1,
+    sampleSize: 1,
+  });
 };
 
 export const formatDailyPercentile = (result: DailyDraftPercentileResult) =>

@@ -23,7 +23,10 @@ import {
   getDailyDraftSetup,
 } from "./lib/dailyDraft";
 import { getMatchModeTheme } from "./lib/matchModeTheme";
-import { simulateDailyBenchmarkValues } from "./lib/dailyDraftScores";
+import {
+  hasCompletedDailyDraft,
+  simulateDailyBenchmarkValues,
+} from "./lib/dailyDraftScores";
 import {
   createOpponentDraftSlots,
   createRandomOpponent,
@@ -157,6 +160,16 @@ function App() {
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
+    const setup = daily ? getDailyDraftSetup(dateKey) : null;
+
+    if (
+      daily &&
+      setup &&
+      hasCompletedDailyDraft(dateKey, setup.goal.id)
+    ) {
+      return false;
+    }
+
     const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
       allTimeMode: nextAllTimeMode,
     });
@@ -171,7 +184,7 @@ function App() {
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
-    const setup = daily ? getDailyDraftSetup(dateKey) : null;
+    const setupSlots = setup?.slots;
     const slotsAreFeasible = (
       players: typeof draftPool,
       slots: ReturnType<typeof generateFeasibleDraftSlots>,
@@ -184,7 +197,7 @@ function App() {
           )
         : validateDraftSlotsFeasible(players, slots);
 
-    let userSlots = setup?.slots ?? generateFeasibleDraftSlots(draftPool);
+    let userSlots = setupSlots ?? generateFeasibleDraftSlots(draftPool);
     if (
       salaryCapLimit != null &&
       !slotsAreFeasible(draftPool, userSlots)

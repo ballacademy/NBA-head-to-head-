@@ -2,10 +2,31 @@ import { describe, expect, it, vi } from "vitest";
 import {
   computePercentile,
   formatDailyPercentile,
+  formatPlayerDailyDraftPercentile,
   getDailyDraftPercentile,
+  hasCompletedDailyDraft,
   submitDailyDraftScore,
 } from "./dailyDraftScores";
 import { DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
+
+const stubPlayerStorage = (playerId = "player-test-1") => {
+  const storage = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      storage.set(key, value);
+    },
+    clear: () => {
+      storage.clear();
+    },
+  });
+  storage.set(
+    "nba-head-to-head-player-identity",
+    JSON.stringify({ playerId }),
+  );
+
+  return storage;
+};
 
 describe("dailyDraftScores", () => {
   it("computes percentile rank for higher-is-better goals", () => {
@@ -34,21 +55,7 @@ describe("dailyDraftScores", () => {
   });
 
   it("does not double-count the submitting score in percentile math", () => {
-    const storage = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        storage.set(key, value);
-      },
-      clear: () => {
-        storage.clear();
-      },
-    });
-    storage.set(
-      "nba-head-to-head-player-identity",
-      JSON.stringify({ playerId: "player-test-1" }),
-    );
-
+    stubPlayerStorage();
     const goal = DAILY_DRAFT_GOALS[0]!;
     const benchmarks = [10, 20, 30, 40, 50];
     const result = submitDailyDraftScore(
@@ -63,5 +70,37 @@ describe("dailyDraftScores", () => {
     expect(result.percentile).toBe(
       getDailyDraftPercentile("2099-01-01", 40, goal, benchmarks).percentile,
     );
+  });
+
+  it("stores percentile with the daily submission", () => {
+    const storage = stubPlayerStorage();
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    const result = submitDailyDraftScore(
+      "2099-01-02",
+      goal,
+      40,
+      "40.0",
+      [10, 20, 30, 50],
+    );
+
+    const saved = JSON.parse(
+      storage.get("nba-head-to-head-daily-scores") ?? "{}",
+    )["2099-01-02"][0];
+
+    expect(saved.percentile).toBe(result.percentile);
+    expect(hasCompletedDailyDraft("2099-01-02", goal.id)).toBe(true);
+  });
+
+  it("formats stored percentile copy for the landing page", () => {
+    expect(
+      formatPlayerDailyDraftPercentile({
+        playerId: "player-test-1",
+        goalId: "points",
+        value: 120,
+        formattedResult: "120.0 PTS",
+        percentile: 92,
+        submittedAt: "2026-06-26T00:00:00.000Z",
+      }),
+    ).toBe("Top 8% Today");
   });
 });
