@@ -17,6 +17,7 @@ import {
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
 import { getClassicProfileView } from "../lib/classicProfile";
+import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 import { getRankedProfileView } from "../lib/rankedProfile";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
@@ -204,8 +205,8 @@ export function DraftRoom({
         <div className="salary-cap-banner" role="status">
           <p className="eyebrow">
             {drafter.salaryCapMode
-              ? `Ranked • ${rankedProfile?.tier.label}`
-              : `Classic Head to Head • ${classicProfile?.tier.label}`}
+              ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label}`
+              : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label}`}
           </p>
           <p>
             {rankedProfile

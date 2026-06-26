@@ -2,7 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-15T22:05:24.576624+00:00",
+  "generatedAt": "2026-06-25T12:00:00.000000+00:00",
+  "rosterAsOf": "2026-06-25",
   "playerCount": 586,
   "uniquePlayerCount": 586,
   "players": [
@@ -12,6 +13,10 @@
       "name": "Luka Dončić",
       "team": "LAL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 64,
       "gamesStarted": 64,
@@ -48,6 +53,10 @@
       "name": "Shai Gilgeous-Alexander",
       "team": "OKC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 68,
       "gamesStarted": 68,
@@ -84,6 +93,9 @@
       "name": "Anthony Edwards",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 61,
       "gamesStarted": 60,
@@ -119,7 +131,12 @@
       "bbrPlayerId": "brownja02",
       "name": "Jaylen Brown",
       "team": "BOS",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 71,
       "gamesStarted": 71,
@@ -156,6 +173,10 @@
       "name": "Tyrese Maxey",
       "team": "PHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -191,7 +212,11 @@
       "bbrPlayerId": "mitchdo01",
       "name": "Donovan Mitchell",
       "team": "CLE",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -228,6 +253,10 @@
       "name": "Kawhi Leonard",
       "team": "LAC",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 34,
       "gamesPlayed": 65,
       "gamesStarted": 65,
@@ -264,6 +293,9 @@
       "name": "Nikola Jokić",
       "team": "DEN",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 65,
       "gamesStarted": 65,
@@ -299,7 +331,12 @@
       "bbrPlayerId": "antetgi01",
       "name": "Giannis Antetokounmpo",
       "team": "MIL",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 31,
       "gamesPlayed": 36,
       "gamesStarted": 36,
@@ -335,7 +372,11 @@
       "bbrPlayerId": "embiijo01",
       "name": "Joel Embiid",
       "team": "PHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 31,
       "gamesPlayed": 38,
       "gamesStarted": 38,
@@ -371,7 +412,11 @@
       "bbrPlayerId": "markkla01",
       "name": "Lauri Markkanen",
       "team": "UTA",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 42,
       "gamesStarted": 42,
@@ -408,6 +453,10 @@
       "name": "Stephen Curry",
       "team": "GSW",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 37,
       "gamesPlayed": 43,
       "gamesStarted": 41,
@@ -443,7 +492,11 @@
       "bbrPlayerId": "bookede01",
       "name": "Devin Booker",
       "team": "PHO",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 64,
       "gamesStarted": 64,
@@ -480,6 +533,10 @@
       "name": "Jalen Brunson",
       "team": "NYK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 74,
       "gamesStarted": 74,
@@ -515,7 +572,12 @@
       "bbrPlayerId": "duranke01",
       "name": "Kevin Durant",
       "team": "HOU",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 37,
       "gamesPlayed": 78,
       "gamesStarted": 78,
@@ -552,6 +614,10 @@
       "name": "Jamal Murray",
       "team": "DEN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 75,
       "gamesStarted": 75,
@@ -588,6 +654,9 @@
       "name": "Victor Wembanyama",
       "team": "SAS",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 64,
       "gamesStarted": 55,
@@ -695,7 +764,12 @@
       "bbrPlayerId": "avdijde01",
       "name": "Deni Avdija",
       "team": "POR",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 66,
       "gamesStarted": 66,
@@ -732,6 +806,10 @@
       "name": "Michael Porter Jr.",
       "team": "BRK",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 52,
       "gamesStarted": 52,
@@ -767,7 +845,11 @@
       "bbrPlayerId": "siakapa01",
       "name": "Pascal Siakam",
       "team": "IND",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 31,
       "gamesPlayed": 62,
       "gamesStarted": 62,
@@ -804,6 +886,10 @@
       "name": "Cade Cunningham",
       "team": "DET",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 64,
       "gamesStarted": 64,
@@ -840,6 +926,10 @@
       "name": "James Harden",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 36,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -876,6 +966,10 @@
       "name": "Keyonte George",
       "team": "UTA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 54,
       "gamesStarted": 54,
@@ -911,7 +1005,11 @@
       "bbrPlayerId": "reaveau01",
       "name": "Austin Reaves",
       "team": "LAL",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 51,
       "gamesStarted": 45,
@@ -947,7 +1045,12 @@
       "bbrPlayerId": "johnsja05",
       "name": "Jalen Johnson",
       "team": "ATL",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 72,
       "gamesStarted": 72,
@@ -983,7 +1086,12 @@
       "bbrPlayerId": "banchpa01",
       "name": "Paolo Banchero",
       "team": "ORL",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 72,
       "gamesStarted": 72,
@@ -1019,7 +1127,12 @@
       "bbrPlayerId": "tatumja01",
       "name": "Jayson Tatum",
       "team": "BOS",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 16,
       "gamesStarted": 16,
@@ -1056,6 +1169,9 @@
       "name": "Norman Powell",
       "team": "MIA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 32,
       "gamesPlayed": 58,
       "gamesStarted": 52,
@@ -1092,6 +1208,10 @@
       "name": "Brandon Ingram",
       "team": "TOR",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -1128,6 +1248,10 @@
       "name": "Trey Murphy III",
       "team": "NOP",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 66,
       "gamesStarted": 66,
@@ -1163,7 +1287,11 @@
       "bbrPlayerId": "randlju01",
       "name": "Julius Randle",
       "team": "MIN",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 31,
       "gamesPlayed": 79,
       "gamesStarted": 79,
@@ -1199,7 +1327,12 @@
       "bbrPlayerId": "flaggco01",
       "name": "Cooper Flagg",
       "team": "DAL",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 19,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -1235,7 +1368,11 @@
       "bbrPlayerId": "willizi01",
       "name": "Zion Williamson",
       "team": "NOP",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 62,
       "gamesStarted": 55,
@@ -1271,7 +1408,12 @@
       "bbrPlayerId": "jamesle01",
       "name": "LeBron James",
       "team": "LAL",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 41,
       "gamesPlayed": 60,
       "gamesStarted": 60,
@@ -1308,6 +1450,9 @@
       "name": "Nickeil Alexander-Walker",
       "team": "ATL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 78,
       "gamesStarted": 71,
@@ -1344,6 +1489,9 @@
       "name": "Shaedon Sharpe",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 50,
       "gamesStarted": 42,
@@ -1380,6 +1528,9 @@
       "name": "Franz Wagner",
       "team": "ORL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 34,
       "gamesStarted": 32,
@@ -1416,6 +1567,9 @@
       "name": "Tyler Herro",
       "team": "MIA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 33,
       "gamesStarted": 28,
@@ -1452,6 +1606,9 @@
       "name": "Alperen Şengün",
       "team": "HOU",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 72,
       "gamesStarted": 72,
@@ -1487,7 +1644,12 @@
       "bbrPlayerId": "davisan02",
       "name": "Anthony Davis",
       "team": "WAS",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 32,
       "gamesPlayed": 20,
       "gamesStarted": 20,
@@ -1524,6 +1686,9 @@
       "name": "Brandon Miller",
       "team": "CHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 65,
       "gamesStarted": 65,
@@ -1560,6 +1725,9 @@
       "name": "Dillon Brooks",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 56,
       "gamesStarted": 56,
@@ -1596,6 +1764,9 @@
       "name": "Bam Adebayo",
       "team": "MIA",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 73,
       "gamesStarted": 73,
@@ -1632,6 +1803,9 @@
       "name": "Desmond Bane",
       "team": "ORL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 82,
       "gamesStarted": 82,
@@ -1668,6 +1842,9 @@
       "name": "Karl-Anthony Towns",
       "team": "NYK",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 75,
       "gamesStarted": 75,
@@ -1704,6 +1881,10 @@
       "name": "LaMelo Ball",
       "team": "CHO",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 72,
       "gamesStarted": 69,
@@ -1739,7 +1920,12 @@
       "bbrPlayerId": "butleji01",
       "name": "Jimmy Butler",
       "team": "GSW",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 36,
       "gamesPlayed": 38,
       "gamesStarted": 38,
@@ -1775,7 +1961,11 @@
       "bbrPlayerId": "jeromty01",
       "name": "Ty Jerome",
       "team": "MEM",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 15,
       "gamesStarted": 15,
@@ -1812,6 +2002,10 @@
       "name": "Ja Morant",
       "team": "MEM",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 20,
       "gamesStarted": 20,
@@ -1848,6 +2042,9 @@
       "name": "Jalen Duren",
       "team": "DET",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -1883,7 +2080,11 @@
       "bbrPlayerId": "jacksja02",
       "name": "Jaren Jackson Jr.",
       "team": "MEM",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 48,
       "gamesStarted": 48,
@@ -1920,6 +2121,9 @@
       "name": "RJ Barrett",
       "team": "TOR",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 57,
       "gamesStarted": 57,
@@ -1956,6 +2160,9 @@
       "name": "Zach LaVine",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 30,
       "gamesPlayed": 39,
       "gamesStarted": 37,
@@ -1992,6 +2199,10 @@
       "name": "Darius Garland",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 45,
       "gamesStarted": 43,
@@ -2028,6 +2239,10 @@
       "name": "CJ McCollum",
       "team": "ATL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 34,
       "gamesPlayed": 76,
       "gamesStarted": 60,
@@ -2064,6 +2279,10 @@
       "name": "De'Aaron Fox",
       "team": "SAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 72,
       "gamesStarted": 72,
@@ -2100,6 +2319,9 @@
       "name": "Jerami Grant",
       "team": "POR",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 31,
       "gamesPlayed": 57,
       "gamesStarted": 38,
@@ -2172,6 +2394,9 @@
       "name": "Kon Knueppel",
       "team": "CHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 81,
       "gamesStarted": 80,
@@ -2208,6 +2433,9 @@
       "name": "DeMar DeRozan",
       "team": "SAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 36,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -2244,6 +2472,10 @@
       "name": "Amen Thompson",
       "team": "HOU",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 79,
       "gamesStarted": 79,
@@ -2279,7 +2511,12 @@
       "bbrPlayerId": "mobleev01",
       "name": "Evan Mobley",
       "team": "CLE",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 65,
       "gamesStarted": 63,
@@ -2315,7 +2552,12 @@
       "bbrPlayerId": "barnesc01",
       "name": "Scottie Barnes",
       "team": "TOR",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 80,
       "gamesStarted": 80,
@@ -2352,6 +2594,10 @@
       "name": "Trae Young",
       "team": "WAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 15,
       "gamesStarted": 15,
@@ -2388,6 +2634,9 @@
       "name": "Jalen Green",
       "team": "PHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 32,
       "gamesStarted": 27,
@@ -2424,6 +2673,10 @@
       "name": "Saddiq Bey",
       "team": "NOP",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 72,
       "gamesStarted": 64,
@@ -2460,6 +2713,9 @@
       "name": "Bennedict Mathurin",
       "team": "LAC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 54,
       "gamesStarted": 25,
@@ -2496,6 +2752,9 @@
       "name": "Coby White",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 50,
       "gamesStarted": 26,
@@ -2532,6 +2791,10 @@
       "name": "Kevin Porter Jr.",
       "team": "MIL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 38,
       "gamesStarted": 36,
@@ -2567,7 +2830,11 @@
       "bbrPlayerId": "georgpa01",
       "name": "Paul George",
       "team": "PHI",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 35,
       "gamesPlayed": 37,
       "gamesStarted": 37,
@@ -2604,6 +2871,10 @@
       "name": "Ryan Rollins",
       "team": "MIL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 74,
       "gamesStarted": 67,
@@ -2639,7 +2910,12 @@
       "bbrPlayerId": "holmgch01",
       "name": "Chet Holmgren",
       "team": "OKC",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 69,
       "gamesStarted": 69,
@@ -2675,7 +2951,11 @@
       "bbrPlayerId": "willija06",
       "name": "Jalen Williams",
       "team": "OKC",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 33,
       "gamesStarted": 33,
@@ -2711,7 +2991,11 @@
       "bbrPlayerId": "bridgmi02",
       "name": "Miles Bridges",
       "team": "CHO",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -2748,6 +3032,10 @@
       "name": "Josh Giddey",
       "team": "CHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 54,
       "gamesStarted": 51,
@@ -2784,6 +3072,10 @@
       "name": "Payton Pritchard",
       "team": "BOS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 79,
       "gamesStarted": 50,
@@ -2820,6 +3112,10 @@
       "name": "Andrew Nembhard",
       "team": "IND",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 57,
       "gamesStarted": 57,
@@ -2856,6 +3152,10 @@
       "name": "Dejounte Murray",
       "team": "NOP",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 14,
       "gamesStarted": 14,
@@ -2891,7 +3191,11 @@
       "bbrPlayerId": "porzikr01",
       "name": "Kristaps Porziņģis",
       "team": "GSW",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 32,
       "gamesStarted": 23,
@@ -2927,7 +3231,11 @@
       "bbrPlayerId": "anunoog01",
       "name": "OG Anunoby",
       "team": "NYK",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 67,
       "gamesStarted": 67,
@@ -2964,6 +3272,10 @@
       "name": "Stephon Castle",
       "team": "SAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 68,
       "gamesStarted": 67,
@@ -2999,7 +3311,11 @@
       "bbrPlayerId": "whitede01",
       "name": "Derrick White",
       "team": "BOS",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -3036,6 +3352,9 @@
       "name": "Grayson Allen",
       "team": "PHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 30,
       "gamesPlayed": 51,
       "gamesStarted": 27,
@@ -3072,6 +3391,10 @@
       "name": "Immanuel Quickley",
       "team": "TOR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -3107,7 +3430,11 @@
       "bbrPlayerId": "sarral01",
       "name": "Alex Sarr",
       "team": "WAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 20,
       "gamesPlayed": 48,
       "gamesStarted": 48,
@@ -3144,6 +3471,9 @@
       "name": "Dariq Whitehead",
       "team": "MEM",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 21,
       "gamesPlayed": 6,
       "gamesStarted": 2,
@@ -3180,6 +3510,10 @@
       "name": "Jrue Holiday",
       "team": "POR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 35,
       "gamesPlayed": 53,
       "gamesStarted": 51,
@@ -3215,7 +3549,12 @@
       "bbrPlayerId": "buzelma01",
       "name": "Matas Buzelis",
       "team": "CHI",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -3251,7 +3590,11 @@
       "bbrPlayerId": "gordoaa01",
       "name": "Aaron Gordon",
       "team": "DEN",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 30,
       "gamesPlayed": 36,
       "gamesStarted": 33,
@@ -3288,6 +3631,9 @@
       "name": "VJ Edgecombe",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 75,
       "gamesStarted": 75,
@@ -3323,7 +3669,11 @@
       "bbrPlayerId": "smithja05",
       "name": "Jabari Smith Jr.",
       "team": "HOU",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -3360,6 +3710,9 @@
       "name": "Domantas Sabonis",
       "team": "SAC",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 29,
       "gamesPlayed": 19,
       "gamesStarted": 15,
@@ -3396,6 +3749,10 @@
       "name": "Andrew Wiggins",
       "team": "MIA",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 30,
       "gamesPlayed": 68,
       "gamesStarted": 68,
@@ -3432,6 +3789,9 @@
       "name": "Collin Sexton",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 68,
       "gamesStarted": 22,
@@ -3467,7 +3827,11 @@
       "bbrPlayerId": "jaqueja01",
       "name": "Jaime Jaquez Jr.",
       "team": "MIA",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 75,
       "gamesStarted": 1,
@@ -3504,6 +3868,9 @@
       "name": "Jarrett Allen",
       "team": "CLE",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 56,
       "gamesStarted": 56,
@@ -3540,6 +3907,9 @@
       "name": "Naji Marshall",
       "team": "DAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 28,
       "gamesPlayed": 74,
       "gamesStarted": 47,
@@ -3575,7 +3945,11 @@
       "bbrPlayerId": "okongon01",
       "name": "Onyeka Okongwu",
       "team": "ATL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 74,
       "gamesStarted": 63,
@@ -3611,7 +3985,11 @@
       "bbrPlayerId": "westbru01",
       "name": "Russell Westbrook",
       "team": "SAC",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
       "age": 37,
       "gamesPlayed": 64,
       "gamesStarted": 58,
@@ -3647,7 +4025,11 @@
       "bbrPlayerId": "vucevni01",
       "name": "Nikola Vučević",
       "team": "BOS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 35,
       "gamesPlayed": 64,
       "gamesStarted": 49,
@@ -3684,6 +4066,10 @@
       "name": "Anthony Black",
       "team": "ORL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 64,
       "gamesStarted": 40,
@@ -3720,6 +4106,10 @@
       "name": "Kennedy Chandler",
       "team": "UTA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 11,
       "gamesStarted": 2,
@@ -3756,6 +4146,9 @@
       "name": "Brice Sensabaugh",
       "team": "UTA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 75,
       "gamesStarted": 22,
@@ -3791,7 +4184,12 @@
       "bbrPlayerId": "georgky01",
       "name": "Kyshawn George",
       "team": "WAS",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 48,
       "gamesStarted": 48,
@@ -3828,6 +4226,9 @@
       "name": "Ayo Dosunmu",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 69,
       "gamesStarted": 19,
@@ -3864,6 +4265,10 @@
       "name": "Jaden McDaniels",
       "team": "MIN",
       "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 73,
       "gamesStarted": 73,
@@ -3900,6 +4305,10 @@
       "name": "Peyton Watson",
       "team": "DEN",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 54,
       "gamesStarted": 40,
@@ -3936,6 +4345,9 @@
       "name": "Walker Kessler",
       "team": "UTA",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 5,
       "gamesStarted": 5,
@@ -3972,6 +4384,10 @@
       "name": "Mikal Bridges",
       "team": "NYK",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 82,
       "gamesStarted": 82,
@@ -4008,6 +4424,10 @@
       "name": "Jeremiah Fears",
       "team": "NOP",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 82,
       "gamesStarted": 49,
@@ -4044,6 +4464,9 @@
       "name": "Anfernee Simons",
       "team": "BOS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 55,
       "gamesStarted": 5,
@@ -4080,6 +4503,9 @@
       "name": "Cormac Ryan",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 11,
       "gamesStarted": 2,
@@ -4115,7 +4541,12 @@
       "bbrPlayerId": "washipj01",
       "name": "P.J. Washington",
       "team": "DAL",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 56,
       "gamesStarted": 53,
@@ -4152,6 +4583,10 @@
       "name": "Scoot Henderson",
       "team": "POR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 30,
       "gamesStarted": 10,
@@ -4224,6 +4659,9 @@
       "name": "Ivica Zubac",
       "team": "IND",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 48,
       "gamesStarted": 47,
@@ -4260,6 +4698,9 @@
       "name": "Kelly Oubre Jr.",
       "team": "PHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 50,
       "gamesStarted": 41,
@@ -4296,6 +4737,10 @@
       "name": "Tre Jones",
       "team": "CHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 65,
       "gamesStarted": 41,
@@ -4331,7 +4776,12 @@
       "bbrPlayerId": "murrake02",
       "name": "Keegan Murray",
       "team": "SAC",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 23,
       "gamesStarted": 22,
@@ -4367,7 +4817,11 @@
       "bbrPlayerId": "aldamsa01",
       "name": "Santi Aldama",
       "team": "MEM",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 43,
       "gamesStarted": 11,
@@ -4404,6 +4858,9 @@
       "name": "Devin Vassell",
       "team": "SAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 67,
       "gamesStarted": 65,
@@ -4440,6 +4897,9 @@
       "name": "Brandin Podziemski",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 82,
       "gamesStarted": 43,
@@ -4476,6 +4936,9 @@
       "name": "Aaron Nesmith",
       "team": "IND",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 45,
       "gamesStarted": 42,
@@ -4512,6 +4975,9 @@
       "name": "Ace Bailey",
       "team": "UTA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 19,
       "gamesPlayed": 72,
       "gamesStarted": 61,
@@ -4548,6 +5014,10 @@
       "name": "Jalen Suggs",
       "team": "ORL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 57,
       "gamesStarted": 56,
@@ -4583,7 +5053,11 @@
       "bbrPlayerId": "portibo01",
       "name": "Bobby Portis",
       "team": "MIL",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 30,
       "gamesPlayed": 67,
       "gamesStarted": 9,
@@ -4620,6 +5094,9 @@
       "name": "De'Andre Hunter",
       "team": "SAC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 28,
       "gamesPlayed": 45,
       "gamesStarted": 25,
@@ -4655,7 +5132,11 @@
       "bbrPlayerId": "reidna01",
       "name": "Naz Reid",
       "team": "MIN",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 77,
       "gamesStarted": 3,
@@ -4692,6 +5173,9 @@
       "name": "Ajay Mitchell",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 57,
       "gamesStarted": 16,
@@ -4728,6 +5212,9 @@
       "name": "Cedric Coward",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 62,
       "gamesStarted": 47,
@@ -4763,7 +5250,11 @@
       "bbrPlayerId": "collijo01",
       "name": "John Collins",
       "team": "LAC",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 69,
       "gamesStarted": 56,
@@ -4800,6 +5291,9 @@
       "name": "Zach Edey",
       "team": "MEM",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 11,
       "gamesStarted": 11,
@@ -4836,6 +5330,9 @@
       "name": "Cam Thomas",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 42,
       "gamesStarted": 8,
@@ -4872,6 +5369,9 @@
       "name": "Reed Sheppard",
       "team": "HOU",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 82,
       "gamesStarted": 21,
@@ -4908,6 +5408,9 @@
       "name": "Tim Hardaway Jr.",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 80,
       "gamesStarted": 6,
@@ -4944,6 +5447,10 @@
       "name": "Jordan Poole",
       "team": "NOP",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 39,
       "gamesStarted": 8,
@@ -4980,6 +5487,9 @@
       "name": "Quentin Grimes",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 75,
       "gamesStarted": 19,
@@ -5015,7 +5525,11 @@
       "bbrPlayerId": "camarto01",
       "name": "Toumani Camara",
       "team": "POR",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 82,
       "gamesStarted": 82,
@@ -5051,7 +5565,11 @@
       "bbrPlayerId": "harrito02",
       "name": "Tobias Harris",
       "team": "DET",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 33,
       "gamesPlayed": 63,
       "gamesStarted": 63,
@@ -5088,6 +5606,9 @@
       "name": "Jaylon Tyson",
       "team": "CLE",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 66,
       "gamesStarted": 42,
@@ -5124,6 +5645,9 @@
       "name": "Keldon Johnson",
       "team": "SAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 82,
       "gamesStarted": 0,
@@ -5160,6 +5684,10 @@
       "name": "Brandon Williams",
       "team": "DAL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 66,
       "gamesStarted": 15,
@@ -5196,6 +5724,9 @@
       "name": "Kyle Kuzma",
       "team": "MIL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 30,
       "gamesPlayed": 69,
       "gamesStarted": 43,
@@ -5232,6 +5763,9 @@
       "name": "Sam Merrill",
       "team": "CLE",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 52,
       "gamesStarted": 38,
@@ -5268,6 +5802,10 @@
       "name": "Collin Gillespie",
       "team": "PHO",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 80,
       "gamesStarted": 58,
@@ -5303,7 +5841,11 @@
       "bbrPlayerId": "aytonde01",
       "name": "Deandre Ayton",
       "team": "LAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 72,
       "gamesStarted": 72,
@@ -5340,6 +5882,9 @@
       "name": "GG Jackson II",
       "team": "MEM",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 55,
       "gamesStarted": 28,
@@ -5376,6 +5921,9 @@
       "name": "Jaylen Wells",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 69,
       "gamesStarted": 69,
@@ -5412,6 +5960,9 @@
       "name": "Malik Monk",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 62,
       "gamesStarted": 3,
@@ -5447,7 +5998,11 @@
       "bbrPlayerId": "raynama01",
       "name": "Maxime Raynaud",
       "team": "SAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 74,
       "gamesStarted": 56,
@@ -5484,6 +6039,10 @@
       "name": "De'Anthony Melton",
       "team": "GSW",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 49,
       "gamesStarted": 24,
@@ -5520,6 +6079,9 @@
       "name": "Max Christie",
       "team": "DAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 77,
       "gamesStarted": 68,
@@ -5556,6 +6118,9 @@
       "name": "Noah Clowney",
       "team": "BRK",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 66,
       "gamesStarted": 60,
@@ -5592,6 +6157,9 @@
       "name": "Cameron Johnson",
       "team": "DEN",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 29,
       "gamesPlayed": 54,
       "gamesStarted": 54,
@@ -5628,6 +6196,9 @@
       "name": "Donte DiVincenzo",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 82,
       "gamesStarted": 82,
@@ -5664,6 +6235,9 @@
       "name": "Duncan Robinson",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -5699,7 +6273,11 @@
       "bbrPlayerId": "kuminjo01",
       "name": "Jonathan Kuminga",
       "team": "GSW",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 36,
       "gamesStarted": 14,
@@ -5736,6 +6314,9 @@
       "name": "Tre Johnson",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 60,
       "gamesStarted": 42,
@@ -5772,6 +6353,9 @@
       "name": "Donovan Clingan",
       "team": "POR",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 77,
       "gamesStarted": 77,
@@ -5808,6 +6392,9 @@
       "name": "Moses Moody",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 60,
       "gamesStarted": 49,
@@ -5844,6 +6431,9 @@
       "name": "Christian Braun",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 44,
       "gamesStarted": 44,
@@ -5879,7 +6469,12 @@
       "bbrPlayerId": "hartjo01",
       "name": "Josh Hart",
       "team": "NYK",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF",
+        "PF"
+      ],
       "age": 30,
       "gamesPlayed": 66,
       "gamesStarted": 52,
@@ -5916,6 +6511,9 @@
       "name": "Miles McBride",
       "team": "NYK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 41,
       "gamesStarted": 15,
@@ -5952,6 +6550,9 @@
       "name": "Tristen Newton",
       "team": "HOU",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 1,
       "gamesStarted": 0,
@@ -5988,6 +6589,9 @@
       "name": "Blake Hinson",
       "team": "UTA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 14,
       "gamesStarted": 3,
@@ -6023,7 +6627,11 @@
       "bbrPlayerId": "daniedy01",
       "name": "Dyson Daniels",
       "team": "ATL",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 76,
       "gamesStarted": 76,
@@ -6059,7 +6667,11 @@
       "bbrPlayerId": "turnemy01",
       "name": "Myles Turner",
       "team": "MIL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 29,
       "gamesPlayed": 71,
       "gamesStarted": 71,
@@ -6096,6 +6708,9 @@
       "name": "Dylan Harper",
       "team": "SAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 69,
       "gamesStarted": 4,
@@ -6131,7 +6746,12 @@
       "bbrPlayerId": "reeseju01",
       "name": "Julian Reese",
       "team": "WAS",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 13,
       "gamesStarted": 10,
@@ -6167,7 +6787,11 @@
       "bbrPlayerId": "cartewe01",
       "name": "Wendell Carter Jr.",
       "team": "ORL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 78,
       "gamesStarted": 78,
@@ -6204,6 +6828,9 @@
       "name": "Bilal Coulibaly",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 56,
       "gamesStarted": 56,
@@ -6239,7 +6866,11 @@
       "bbrPlayerId": "queende01",
       "name": "Derik Queen",
       "team": "NOP",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 81,
       "gamesStarted": 48,
@@ -6276,6 +6907,10 @@
       "name": "Isaiah Collier",
       "team": "UTA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 59,
       "gamesStarted": 19,
@@ -6312,6 +6947,9 @@
       "name": "Klay Thompson",
       "team": "DAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 35,
       "gamesPlayed": 69,
       "gamesStarted": 8,
@@ -6347,7 +6985,11 @@
       "bbrPlayerId": "willima07",
       "name": "Mark Williams",
       "team": "PHO",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 60,
       "gamesStarted": 55,
@@ -6383,7 +7025,11 @@
       "bbrPlayerId": "claxtni01",
       "name": "Nic Claxton",
       "team": "BRK",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 69,
       "gamesStarted": 68,
@@ -6419,7 +7065,11 @@
       "bbrPlayerId": "walkeja02",
       "name": "Jarace Walker",
       "team": "IND",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 76,
       "gamesStarted": 41,
@@ -6456,6 +7106,9 @@
       "name": "Obi Toppin",
       "team": "IND",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 24,
       "gamesStarted": 3,
@@ -6492,6 +7145,9 @@
       "name": "Rui Hachimura",
       "team": "LAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 68,
       "gamesStarted": 41,
@@ -6527,7 +7183,11 @@
       "bbrPlayerId": "filipky01",
       "name": "Kyle Filipowski",
       "team": "UTA",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 77,
       "gamesStarted": 41,
@@ -6564,6 +7224,9 @@
       "name": "Pelle Larsson",
       "team": "MIA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 70,
       "gamesStarted": 54,
@@ -6600,6 +7263,10 @@
       "name": "Scotty Pippen Jr.",
       "team": "MEM",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 10,
       "gamesStarted": 6,
@@ -6635,7 +7302,11 @@
       "bbrPlayerId": "mamuksa01",
       "name": "Sandro Mamukelashvili",
       "team": "TOR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 80,
       "gamesStarted": 13,
@@ -6672,6 +7343,9 @@
       "name": "Max Strus",
       "team": "CLE",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 29,
       "gamesPlayed": 12,
       "gamesStarted": 5,
@@ -6707,7 +7381,11 @@
       "bbrPlayerId": "spencca01",
       "name": "Cam Spencer",
       "team": "MEM",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 72,
       "gamesStarted": 20,
@@ -6744,6 +7422,9 @@
       "name": "Isaiah Joe",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 71,
       "gamesStarted": 9,
@@ -6780,6 +7461,10 @@
       "name": "Julian Champagnie",
       "team": "SAS",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 82,
       "gamesStarted": 68,
@@ -6816,6 +7501,9 @@
       "name": "Kel'el Ware",
       "team": "MIA",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 77,
       "gamesStarted": 34,
@@ -6852,6 +7540,9 @@
       "name": "Alondes Williams",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -6888,6 +7579,9 @@
       "name": "Jusuf Nurkić",
       "team": "UTA",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 31,
       "gamesPlayed": 41,
       "gamesStarted": 36,
@@ -6924,6 +7618,9 @@
       "name": "Rudy Gobert",
       "team": "MIN",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 33,
       "gamesPlayed": 76,
       "gamesStarted": 76,
@@ -6960,6 +7657,9 @@
       "name": "Tyler Burton",
       "team": "MEM",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 12,
       "gamesStarted": 0,
@@ -6996,6 +7696,9 @@
       "name": "Daeqwon Plowden",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 32,
       "gamesStarted": 7,
@@ -7032,6 +7735,10 @@
       "name": "Dennis Schröder",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 32,
       "gamesPlayed": 70,
       "gamesStarted": 17,
@@ -7068,6 +7775,10 @@
       "name": "Bub Carrington",
       "team": "WAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 82,
       "gamesStarted": 48,
@@ -7103,7 +7814,11 @@
       "bbrPlayerId": "poeltja01",
       "name": "Jakob Poeltl",
       "team": "TOR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 46,
       "gamesStarted": 44,
@@ -7139,7 +7854,11 @@
       "bbrPlayerId": "landajo01",
       "name": "Jock Landale",
       "team": "ATL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 68,
       "gamesStarted": 27,
@@ -7175,7 +7894,11 @@
       "bbrPlayerId": "baglema01",
       "name": "Marvin Bagley III",
       "team": "WAS",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 60,
       "gamesStarted": 12,
@@ -7211,7 +7934,11 @@
       "bbrPlayerId": "easonta01",
       "name": "Tari Eason",
       "team": "HOU",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 60,
       "gamesStarted": 34,
@@ -7248,6 +7975,9 @@
       "name": "A.J. Green",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 78,
       "gamesStarted": 68,
@@ -7284,6 +8014,9 @@
       "name": "Adama-Alpha Bal",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 8,
       "gamesStarted": 1,
@@ -7320,6 +8053,9 @@
       "name": "Caleb Love",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 49,
       "gamesStarted": 1,
@@ -7356,6 +8092,9 @@
       "name": "Lucas Williamson",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 7,
       "gamesStarted": 2,
@@ -7392,6 +8131,9 @@
       "name": "DaQuan Jeffries",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 3,
       "gamesStarted": 0,
@@ -7428,6 +8170,10 @@
       "name": "Egor Dёmin",
       "team": "BRK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 52,
       "gamesStarted": 45,
@@ -7464,6 +8210,9 @@
       "name": "Will Riley",
       "team": "WAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 19,
       "gamesPlayed": 74,
       "gamesStarted": 18,
@@ -7500,6 +8249,10 @@
       "name": "D'Angelo Russell",
       "team": "DAL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 26,
       "gamesStarted": 3,
@@ -7536,6 +8289,9 @@
       "name": "Khris Middleton",
       "team": "DAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 34,
       "gamesPlayed": 63,
       "gamesStarted": 50,
@@ -7571,7 +8327,11 @@
       "bbrPlayerId": "quetane01",
       "name": "Neemias Queta",
       "team": "BOS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 76,
       "gamesStarted": 75,
@@ -7608,6 +8368,9 @@
       "name": "Ziaire Williams",
       "team": "BRK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 56,
       "gamesStarted": 13,
@@ -7643,7 +8406,11 @@
       "bbrPlayerId": "smithja04",
       "name": "Jalen Smith",
       "team": "CHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 53,
       "gamesStarted": 21,
@@ -7680,6 +8447,10 @@
       "name": "Derrick Jones Jr.",
       "team": "LAC",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 50,
       "gamesStarted": 45,
@@ -7715,7 +8486,11 @@
       "bbrPlayerId": "achiupr01",
       "name": "Precious Achiuwa",
       "team": "SAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 73,
       "gamesStarted": 57,
@@ -7751,7 +8526,11 @@
       "bbrPlayerId": "stewais01",
       "name": "Isaiah Stewart",
       "team": "DET",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 58,
       "gamesStarted": 13,
@@ -7788,6 +8567,9 @@
       "name": "Jordan Miller",
       "team": "LAC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 60,
       "gamesStarted": 1,
@@ -7823,7 +8605,11 @@
       "bbrPlayerId": "huertke01",
       "name": "Kevin Huerter",
       "team": "DET",
-      "position": "SF",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
       "age": 27,
       "gamesPlayed": 69,
       "gamesStarted": 14,
@@ -7860,6 +8646,9 @@
       "name": "Olivier-Maxence Prosper",
       "team": "MEM",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 53,
       "gamesStarted": 24,
@@ -7896,6 +8685,9 @@
       "name": "Toby Okani",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 6,
       "gamesStarted": 4,
@@ -7932,6 +8724,10 @@
       "name": "Ausar Thompson",
       "team": "DET",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 73,
       "gamesStarted": 72,
@@ -7968,6 +8764,9 @@
       "name": "Harrison Barnes",
       "team": "SAS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 33,
       "gamesPlayed": 77,
       "gamesStarted": 52,
@@ -8004,6 +8803,9 @@
       "name": "Tristan Da Silva",
       "team": "ORL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 77,
       "gamesStarted": 34,
@@ -8040,6 +8842,9 @@
       "name": "Royce O'Neale",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 32,
       "gamesPlayed": 78,
       "gamesStarted": 67,
@@ -8076,6 +8881,10 @@
       "name": "Javon Small",
       "team": "MEM",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 41,
       "gamesStarted": 12,
@@ -8111,7 +8920,11 @@
       "bbrPlayerId": "pottemi01",
       "name": "Micah Potter",
       "team": "IND",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 47,
       "gamesStarted": 7,
@@ -8147,7 +8960,11 @@
       "bbrPlayerId": "colliza01",
       "name": "Zach Collins",
       "team": "CHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 10,
       "gamesStarted": 0,
@@ -8184,6 +9001,9 @@
       "name": "Zaccharie Risacher",
       "team": "ATL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 67,
       "gamesStarted": 46,
@@ -8219,7 +9039,11 @@
       "bbrPlayerId": "gaffoda01",
       "name": "Daniel Gafford",
       "team": "DAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 55,
       "gamesStarted": 44,
@@ -8255,7 +9079,11 @@
       "bbrPlayerId": "huffja01",
       "name": "Jay Huff",
       "team": "IND",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 82,
       "gamesStarted": 47,
@@ -8292,6 +9120,9 @@
       "name": "Aaron Wiggins",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 65,
       "gamesStarted": 21,
@@ -8328,6 +9159,9 @@
       "name": "Svi Mykhailiuk",
       "team": "UTA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 28,
       "gamesPlayed": 50,
       "gamesStarted": 41,
@@ -8364,6 +9198,10 @@
       "name": "T.J. McConnell",
       "team": "IND",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 56,
       "gamesStarted": 4,
@@ -8400,6 +9238,10 @@
       "name": "Daniss Jenkins",
       "team": "DET",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 72,
       "gamesStarted": 19,
@@ -8436,6 +9278,10 @@
       "name": "Davion Mitchell",
       "team": "MIA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 70,
       "gamesStarted": 70,
@@ -8472,6 +9318,9 @@
       "name": "Isaac Okoro",
       "team": "CHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 63,
       "gamesStarted": 62,
@@ -8508,6 +9357,9 @@
       "name": "Landry Shamet",
       "team": "NYK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 51,
       "gamesStarted": 12,
@@ -8544,6 +9396,9 @@
       "name": "Marcus Smart",
       "team": "LAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 62,
       "gamesStarted": 54,
@@ -8580,6 +9435,9 @@
       "name": "Cam Whitmore",
       "team": "WAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 21,
       "gamesPlayed": 21,
       "gamesStarted": 0,
@@ -8616,6 +9474,9 @@
       "name": "Corey Kispert",
       "team": "WAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 58,
       "gamesStarted": 10,
@@ -8652,6 +9513,9 @@
       "name": "Gui Santos",
       "team": "GSW",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 68,
       "gamesStarted": 30,
@@ -8688,6 +9552,9 @@
       "name": "Isaiah Hartenstein",
       "team": "OKC",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 47,
       "gamesStarted": 46,
@@ -8724,6 +9591,9 @@
       "name": "Jaden Hardy",
       "team": "DAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 57,
       "gamesStarted": 4,
@@ -8760,6 +9630,9 @@
       "name": "Sam Hauser",
       "team": "BOS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 78,
       "gamesStarted": 49,
@@ -8796,6 +9669,9 @@
       "name": "Taurean Prince",
       "team": "MIL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 31,
       "gamesPlayed": 26,
       "gamesStarted": 7,
@@ -8832,6 +9708,10 @@
       "name": "Quenton Jackson",
       "team": "IND",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 49,
       "gamesStarted": 19,
@@ -8867,7 +9747,11 @@
       "bbrPlayerId": "vukcetr01",
       "name": "Tristan Vukcevic",
       "team": "WAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 49,
       "gamesStarted": 12,
@@ -8904,6 +9788,9 @@
       "name": "Danny Wolf",
       "team": "BRK",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 57,
       "gamesStarted": 15,
@@ -8940,6 +9827,10 @@
       "name": "Devin Carter",
       "team": "SAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 38,
       "gamesStarted": 12,
@@ -8976,6 +9867,9 @@
       "name": "Herbert Jones",
       "team": "NOP",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 27,
       "gamesPlayed": 56,
       "gamesStarted": 56,
@@ -9012,6 +9906,10 @@
       "name": "Nolan Traoré",
       "team": "BRK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 56,
       "gamesStarted": 31,
@@ -9048,6 +9946,9 @@
       "name": "Cody Williams",
       "team": "UTA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 67,
       "gamesStarted": 41,
@@ -9084,6 +9985,9 @@
       "name": "John Poulakidas",
       "team": "DAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 13,
       "gamesStarted": 0,
@@ -9120,6 +10024,9 @@
       "name": "Payton Sandfort",
       "team": "OKC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -9155,7 +10062,11 @@
       "bbrPlayerId": "sharpda01",
       "name": "Day'Ron Sharpe",
       "team": "BRK",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 62,
       "gamesStarted": 7,
@@ -9191,7 +10102,11 @@
       "bbrPlayerId": "valanjo01",
       "name": "Jonas Valančiūnas",
       "team": "DEN",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 33,
       "gamesPlayed": 65,
       "gamesStarted": 6,
@@ -9228,6 +10143,10 @@
       "name": "Jordan Goodwin",
       "team": "PHO",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 70,
       "gamesStarted": 10,
@@ -9264,6 +10183,10 @@
       "name": "Justin Champagnie",
       "team": "WAS",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 69,
       "gamesStarted": 19,
@@ -9300,6 +10223,9 @@
       "name": "Cason Wallace",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 77,
       "gamesStarted": 58,
@@ -9336,6 +10262,9 @@
       "name": "Jordan Clarkson",
       "team": "NYK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 72,
       "gamesStarted": 1,
@@ -9372,6 +10301,9 @@
       "name": "Nique Clifford",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 75,
       "gamesStarted": 28,
@@ -9408,6 +10340,10 @@
       "name": "Bones Hyland",
       "team": "MIN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 71,
       "gamesStarted": 3,
@@ -9443,7 +10379,11 @@
       "bbrPlayerId": "lopezbr01",
       "name": "Brook Lopez",
       "team": "LAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 37,
       "gamesPlayed": 75,
       "gamesStarted": 40,
@@ -9479,7 +10419,11 @@
       "bbrPlayerId": "murraco01",
       "name": "Collin Murray-Boyles",
       "team": "TOR",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 20,
       "gamesPlayed": 57,
       "gamesStarted": 22,
@@ -9516,6 +10460,9 @@
       "name": "Jaden Ivey",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 37,
       "gamesStarted": 5,
@@ -9552,6 +10499,9 @@
       "name": "Simone Fontecchio",
       "team": "MIA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 70,
       "gamesStarted": 9,
@@ -9588,6 +10538,10 @@
       "name": "Vít Krejčí",
       "team": "POR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 65,
       "gamesStarted": 8,
@@ -9623,7 +10577,11 @@
       "bbrPlayerId": "greendr01",
       "name": "Draymond Green",
       "team": "GSW",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 35,
       "gamesPlayed": 68,
       "gamesStarted": 68,
@@ -9660,6 +10618,9 @@
       "name": "Kentavious Caldwell-Pope",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 32,
       "gamesPlayed": 51,
       "gamesStarted": 14,
@@ -9696,6 +10657,9 @@
       "name": "Luke Kennard",
       "team": "ATL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 78,
       "gamesStarted": 6,
@@ -9731,7 +10695,11 @@
       "bbrPlayerId": "horfoal01",
       "name": "Al Horford",
       "team": "GSW",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 39,
       "gamesPlayed": 45,
       "gamesStarted": 13,
@@ -9768,6 +10736,9 @@
       "name": "Jared McCain",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 67,
       "gamesStarted": 3,
@@ -9803,7 +10774,11 @@
       "bbrPlayerId": "odurojo01",
       "name": "Josh Oduro",
       "team": "NOP",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 3,
       "gamesStarted": 1,
@@ -9840,6 +10815,9 @@
       "name": "Kadary Richmond",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 3,
       "gamesStarted": 0,
@@ -9876,6 +10854,9 @@
       "name": "Luguentz Dort",
       "team": "OKC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 69,
       "gamesStarted": 69,
@@ -9912,6 +10893,9 @@
       "name": "Malachi Smith",
       "team": "BRK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 15,
       "gamesStarted": 4,
@@ -9948,6 +10932,9 @@
       "name": "Bradley Beal",
       "team": "LAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 32,
       "gamesPlayed": 6,
       "gamesStarted": 6,
@@ -9984,6 +10971,9 @@
       "name": "Chaney Johnson",
       "team": "BRK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 17,
       "gamesStarted": 1,
@@ -10020,6 +11010,9 @@
       "name": "Jake LaRavia",
       "team": "LAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 82,
       "gamesStarted": 43,
@@ -10056,6 +11049,10 @@
       "name": "LJ Cryer",
       "team": "GSW",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 18,
       "gamesStarted": 1,
@@ -10092,6 +11089,9 @@
       "name": "Ron Holland",
       "team": "DET",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 78,
       "gamesStarted": 5,
@@ -10128,6 +11128,9 @@
       "name": "Bez Mbeng",
       "team": "UTA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 15,
       "gamesStarted": 5,
@@ -10164,6 +11167,9 @@
       "name": "Bryce McGowens",
       "team": "NOP",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 42,
       "gamesStarted": 13,
@@ -10189,7 +11195,7 @@
       "defensiveBoxPlusMinus": -0.9000000000000001,
       "defensiveReboundPct": 9.4,
       "stealPct": 1.5,
-      "blockPct": 1,
+      "blockPct": 0.9000000000000001,
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.5625000000000001,
       "trueShooting": 0.613
@@ -10200,6 +11206,9 @@
       "name": "Gary Trent Jr.",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 65,
       "gamesStarted": 21,
@@ -10235,7 +11244,11 @@
       "bbrPlayerId": "garzalu01",
       "name": "Luka Garza",
       "team": "BOS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 69,
       "gamesStarted": 6,
@@ -10272,6 +11285,10 @@
       "name": "Sharife Cooper",
       "team": "WAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 41,
       "gamesStarted": 1,
@@ -10308,6 +11325,9 @@
       "name": "David Roddy",
       "team": "DEN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -10344,6 +11364,9 @@
       "name": "DeJon Jarreau",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 11,
       "gamesStarted": 0,
@@ -10380,6 +11403,9 @@
       "name": "Mouhamadou Gueye",
       "team": "CHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 2,
       "gamesStarted": 0,
@@ -10416,6 +11442,9 @@
       "name": "Nate Williams",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 14,
       "gamesStarted": 2,
@@ -10451,7 +11480,11 @@
       "bbrPlayerId": "scotttr01",
       "name": "Tre Scott",
       "team": "BRK",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 6,
       "gamesStarted": 4,
@@ -10488,6 +11521,9 @@
       "name": "Bruce Brown",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 82,
       "gamesStarted": 4,
@@ -10524,6 +11560,10 @@
       "name": "Tyson Etienne",
       "team": "BRK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 24,
       "gamesStarted": 2,
@@ -10560,6 +11600,9 @@
       "name": "Moussa Diabaté",
       "team": "CHO",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 73,
       "gamesStarted": 47,
@@ -10596,6 +11639,9 @@
       "name": "Leonard Miller",
       "team": "MIN",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 46,
       "gamesStarted": 12,
@@ -10631,7 +11677,11 @@
       "bbrPlayerId": "tshieos01",
       "name": "Oscar Tshiebwe",
       "team": "UTA",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 27,
       "gamesStarted": 6,
@@ -10667,7 +11717,11 @@
       "bbrPlayerId": "reedpa01",
       "name": "Paul Reed",
       "team": "DET",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 65,
       "gamesStarted": 11,
@@ -10704,6 +11758,10 @@
       "name": "Walter Clayton",
       "team": "UTA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 69,
       "gamesStarted": 6,
@@ -10740,6 +11798,9 @@
       "name": "Dominick Barlow",
       "team": "PHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 71,
       "gamesStarted": 59,
@@ -10776,6 +11837,9 @@
       "name": "Quinten Post",
       "team": "GSW",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 67,
       "gamesStarted": 35,
@@ -10812,6 +11876,9 @@
       "name": "Buddy Hield",
       "team": "ATL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 51,
       "gamesStarted": 3,
@@ -10847,7 +11914,11 @@
       "bbrPlayerId": "diengou01",
       "name": "Ousmane Dieng",
       "team": "OKC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 57,
       "gamesStarted": 20,
@@ -10883,7 +11954,11 @@
       "bbrPlayerId": "kalkbry01",
       "name": "Ryan Kalkbrenner",
       "team": "CHO",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 69,
       "gamesStarted": 31,
@@ -10920,6 +11995,9 @@
       "name": "Ben Saraf",
       "team": "BRK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 44,
       "gamesStarted": 11,
@@ -10956,6 +12034,9 @@
       "name": "Gary Payton II",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 73,
       "gamesStarted": 1,
@@ -10992,6 +12073,9 @@
       "name": "Ja'Kobe Walter",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 72,
       "gamesStarted": 19,
@@ -11027,7 +12111,11 @@
       "bbrPlayerId": "hayesja02",
       "name": "Jaxson Hayes",
       "team": "LAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 66,
       "gamesStarted": 9,
@@ -11063,7 +12151,11 @@
       "bbrPlayerId": "willivi01",
       "name": "Vince Williams Jr.",
       "team": "UTA",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 40,
       "gamesStarted": 12,
@@ -11100,6 +12192,9 @@
       "name": "Bogdan Bogdanović",
       "team": "LAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 23,
       "gamesStarted": 3,
@@ -11136,6 +12231,10 @@
       "name": "Cameron Payne",
       "team": "PHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 22,
       "gamesStarted": 1,
@@ -11172,6 +12271,9 @@
       "name": "Caris LeVert",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 60,
       "gamesStarted": 0,
@@ -11208,6 +12310,9 @@
       "name": "Jamir Watkins",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 50,
       "gamesStarted": 7,
@@ -11244,6 +12349,10 @@
       "name": "Jose Alvarado",
       "team": "NYK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 69,
       "gamesStarted": 3,
@@ -11279,7 +12388,11 @@
       "bbrPlayerId": "minotjo01",
       "name": "Josh Minott",
       "team": "BOS",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 49,
       "gamesStarted": 11,
@@ -11316,6 +12429,9 @@
       "name": "Taylor Hendricks",
       "team": "UTA",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 59,
       "gamesStarted": 17,
@@ -11352,6 +12468,10 @@
       "name": "Kris Dunn",
       "team": "LAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 82,
       "gamesStarted": 68,
@@ -11388,6 +12508,9 @@
       "name": "Kobe Sanders",
       "team": "LAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 68,
       "gamesStarted": 16,
@@ -11424,6 +12547,10 @@
       "name": "Jalen Slawson",
       "team": "IND",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 13,
       "gamesStarted": 6,
@@ -11460,6 +12587,9 @@
       "name": "Nikola Jović",
       "team": "MIA",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 47,
       "gamesStarted": 1,
@@ -11495,7 +12625,11 @@
       "bbrPlayerId": "willija07",
       "name": "Jaylin Williams",
       "team": "OKC",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 65,
       "gamesStarted": 11,
@@ -11532,6 +12666,9 @@
       "name": "Julian Strawther",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 57,
       "gamesStarted": 14,
@@ -11568,6 +12705,10 @@
       "name": "Pat Spencer",
       "team": "GSW",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 66,
       "gamesStarted": 14,
@@ -11604,6 +12745,9 @@
       "name": "Terance Mann",
       "team": "BRK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 63,
       "gamesStarted": 51,
@@ -11640,6 +12784,9 @@
       "name": "Ben Sheppard",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 65,
       "gamesStarted": 20,
@@ -11676,6 +12823,9 @@
       "name": "Leaky Black",
       "team": "WAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 15,
       "gamesStarted": 9,
@@ -11712,6 +12862,9 @@
       "name": "Seth Curry",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 35,
       "gamesPlayed": 10,
       "gamesStarted": 0,
@@ -11748,6 +12901,9 @@
       "name": "Ethan Thompson",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 32,
       "gamesStarted": 13,
@@ -11784,6 +12940,9 @@
       "name": "Grant Williams",
       "team": "CHO",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 36,
       "gamesStarted": 3,
@@ -11819,7 +12978,11 @@
       "bbrPlayerId": "loverla01",
       "name": "Lawson Lovering",
       "team": "MEM",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 2,
       "gamesStarted": 1,
@@ -11856,6 +13019,9 @@
       "name": "Patrick Williams",
       "team": "CHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 72,
       "gamesStarted": 6,
@@ -11892,6 +13058,9 @@
       "name": "Javonte Green",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 32,
       "gamesPlayed": 82,
       "gamesStarted": 6,
@@ -11927,7 +13096,11 @@
       "bbrPlayerId": "wagnemo01",
       "name": "Moritz Wagner",
       "team": "ORL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 36,
       "gamesStarted": 0,
@@ -11964,6 +13137,9 @@
       "name": "MarJon Beauchamp",
       "team": "PHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 14,
       "gamesStarted": 1,
@@ -12000,6 +13176,9 @@
       "name": "Elijah Harkless",
       "team": "UTA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 26,
       "gamesStarted": 9,
@@ -12036,6 +13215,10 @@
       "name": "Cole Anthony",
       "team": "MIL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 35,
       "gamesStarted": 0,
@@ -12071,7 +13254,11 @@
       "bbrPlayerId": "jacksis01",
       "name": "Isaiah Jackson",
       "team": "IND",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 55,
       "gamesStarted": 14,
@@ -12108,6 +13295,9 @@
       "name": "Keon Ellis",
       "team": "SAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 72,
       "gamesStarted": 11,
@@ -12143,7 +13333,11 @@
       "bbrPlayerId": "loveke01",
       "name": "Kevin Love",
       "team": "UTA",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 37,
       "gamesPlayed": 37,
       "gamesStarted": 5,
@@ -12179,7 +13373,11 @@
       "bbrPlayerId": "williro04",
       "name": "Robert Williams",
       "team": "POR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 59,
       "gamesStarted": 1,
@@ -12216,6 +13414,10 @@
       "name": "Ryan Nembhard",
       "team": "DAL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 60,
       "gamesStarted": 27,
@@ -12252,6 +13454,10 @@
       "name": "Jamal Shead",
       "team": "TOR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 82,
       "gamesStarted": 12,
@@ -12288,6 +13494,9 @@
       "name": "Drake Powell",
       "team": "BRK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 63,
       "gamesStarted": 24,
@@ -12324,6 +13533,9 @@
       "name": "Kenrich Williams",
       "team": "OKC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 31,
       "gamesPlayed": 56,
       "gamesStarted": 2,
@@ -12359,7 +13571,11 @@
       "bbrPlayerId": "kornelu01",
       "name": "Luke Kornet",
       "team": "SAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 68,
       "gamesStarted": 25,
@@ -12395,7 +13611,11 @@
       "bbrPlayerId": "ighodos01",
       "name": "Oso Ighodaro",
       "team": "PHO",
-      "position": "PF",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 82,
       "gamesStarted": 24,
@@ -12432,6 +13652,9 @@
       "name": "Trendon Watford",
       "team": "PHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 53,
       "gamesStarted": 7,
@@ -12467,7 +13690,11 @@
       "bbrPlayerId": "drumman01",
       "name": "Andre Drummond",
       "team": "PHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 32,
       "gamesPlayed": 63,
       "gamesStarted": 25,
@@ -12504,6 +13731,9 @@
       "name": "Jalen Wilson",
       "team": "BRK",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 54,
       "gamesStarted": 2,
@@ -12540,6 +13770,10 @@
       "name": "Jevon Carter",
       "team": "CHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 30,
       "gamesPlayed": 53,
       "gamesStarted": 1,
@@ -12576,6 +13810,9 @@
       "name": "Will Richard",
       "team": "GSW",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 69,
       "gamesStarted": 21,
@@ -12612,6 +13849,10 @@
       "name": "Rob Dillingham",
       "team": "MIN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 65,
       "gamesStarted": 0,
@@ -12648,6 +13889,9 @@
       "name": "Tyrese Martin",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 46,
       "gamesStarted": 6,
@@ -12684,6 +13928,9 @@
       "name": "Alex Caruso",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 56,
       "gamesStarted": 0,
@@ -12720,6 +13967,9 @@
       "name": "Jahmai Mashack",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 31,
       "gamesStarted": 7,
@@ -12756,6 +14006,10 @@
       "name": "Kasparas Jakučionis",
       "team": "MIA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 19,
       "gamesPlayed": 53,
       "gamesStarted": 12,
@@ -12792,6 +14046,9 @@
       "name": "Kyle Anderson",
       "team": "MIN",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 32,
       "gamesPlayed": 43,
       "gamesStarted": 5,
@@ -12828,6 +14085,9 @@
       "name": "Nick Smith Jr.",
       "team": "LAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 30,
       "gamesStarted": 1,
@@ -12863,7 +14123,11 @@
       "bbrPlayerId": "bryanth01",
       "name": "Thomas Bryant",
       "team": "CLE",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 60,
       "gamesStarted": 1,
@@ -12900,6 +14164,9 @@
       "name": "Mac McClung",
       "team": "CHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 11,
       "gamesStarted": 0,
@@ -12936,6 +14203,9 @@
       "name": "Gradey Dick",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 76,
       "gamesStarted": 1,
@@ -12972,6 +14242,9 @@
       "name": "Hayden Gray",
       "team": "UTA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 1,
       "gamesStarted": 0,
@@ -13008,6 +14281,9 @@
       "name": "Justin Edwards",
       "team": "PHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 64,
       "gamesStarted": 12,
@@ -13044,6 +14320,9 @@
       "name": "Tidjane Salaün",
       "team": "CHO",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 20,
       "gamesPlayed": 37,
       "gamesStarted": 0,
@@ -13079,7 +14358,11 @@
       "bbrPlayerId": "bitadgo01",
       "name": "Goga Bitadze",
       "team": "ORL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 64,
       "gamesStarted": 3,
@@ -13115,7 +14398,11 @@
       "bbrPlayerId": "bassech01",
       "name": "Charles Bassey",
       "team": "PHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 26,
       "gamesStarted": 0,
@@ -13152,6 +14439,9 @@
       "name": "Anthony Gill",
       "team": "WAS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 33,
       "gamesPlayed": 55,
       "gamesStarted": 8,
@@ -13187,7 +14477,11 @@
       "bbrPlayerId": "carlsbr01",
       "name": "Branden Carlson",
       "team": "OKC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 42,
       "gamesStarted": 4,
@@ -13224,6 +14518,9 @@
       "name": "Dean Wade",
       "team": "CLE",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 59,
       "gamesStarted": 38,
@@ -13260,6 +14557,9 @@
       "name": "Kobe Brown",
       "team": "LAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 61,
       "gamesStarted": 10,
@@ -13296,6 +14596,9 @@
       "name": "Kris Murray",
       "team": "POR",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 57,
       "gamesStarted": 15,
@@ -13332,6 +14635,9 @@
       "name": "Matisse Thybulle",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 30,
       "gamesStarted": 0,
@@ -13368,6 +14674,9 @@
       "name": "Nae'Qwan Tomlin",
       "team": "CLE",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 64,
       "gamesStarted": 3,
@@ -13403,7 +14712,11 @@
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
       "team": "PHO",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 48,
       "gamesStarted": 6,
@@ -13440,6 +14753,9 @@
       "name": "Ryan Dunn",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 70,
       "gamesStarted": 16,
@@ -13476,6 +14792,9 @@
       "name": "Steven Adams",
       "team": "HOU",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 32,
       "gamesPlayed": 32,
       "gamesStarted": 11,
@@ -13512,6 +14831,9 @@
       "name": "E.J. Liddell",
       "team": "BRK",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 26,
       "gamesStarted": 5,
@@ -13548,6 +14870,9 @@
       "name": "Doug McDermott",
       "team": "SAC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 34,
       "gamesPlayed": 29,
       "gamesStarted": 0,
@@ -13584,6 +14909,10 @@
       "name": "Jamaree Bouyea",
       "team": "PHO",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 46,
       "gamesStarted": 1,
@@ -13620,6 +14949,9 @@
       "name": "Karlo Matković",
       "team": "NOP",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 62,
       "gamesStarted": 2,
@@ -13656,6 +14988,9 @@
       "name": "Mitchell Robinson",
       "team": "NYK",
       "position": "C",
+      "positions": [
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 60,
       "gamesStarted": 16,
@@ -13691,7 +15026,11 @@
       "bbrPlayerId": "missiyv01",
       "name": "Yves Missi",
       "team": "NOP",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 66,
       "gamesStarted": 14,
@@ -13728,6 +15067,9 @@
       "name": "Dru Smith",
       "team": "MIA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 70,
       "gamesStarted": 1,
@@ -13763,7 +15105,11 @@
       "bbrPlayerId": "yabusgu01",
       "name": "Guerschon Yabusele",
       "team": "NYK",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 30,
       "gamesPlayed": 67,
       "gamesStarted": 19,
@@ -13800,6 +15146,9 @@
       "name": "Terrence Shannon Jr.",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 43,
       "gamesStarted": 2,
@@ -13836,6 +15185,10 @@
       "name": "Aaron Holiday",
       "team": "HOU",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 57,
       "gamesStarted": 1,
@@ -13872,6 +15225,9 @@
       "name": "Baylor Scheierman",
       "team": "BOS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 77,
       "gamesStarted": 20,
@@ -13908,6 +15264,9 @@
       "name": "Eric Gordon",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 37,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -13944,6 +15303,9 @@
       "name": "Jett Howard",
       "team": "ORL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 55,
       "gamesStarted": 0,
@@ -13980,6 +15342,10 @@
       "name": "Killian Hayes",
       "team": "SAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 23,
       "gamesStarted": 3,
@@ -14016,6 +15382,9 @@
       "name": "Spencer Jones",
       "team": "DEN",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 64,
       "gamesStarted": 37,
@@ -14052,6 +15421,10 @@
       "name": "Tre Mann",
       "team": "CHO",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 53,
       "gamesStarted": 1,
@@ -14087,7 +15460,11 @@
       "bbrPlayerId": "cardwdy01",
       "name": "Dylan Cardwell",
       "team": "SAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 44,
       "gamesStarted": 1,
@@ -14124,6 +15501,9 @@
       "name": "Haywood Highsmith",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 29,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -14160,6 +15540,9 @@
       "name": "Jamal Cain",
       "team": "ORL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 40,
       "gamesStarted": 1,
@@ -14196,6 +15579,9 @@
       "name": "Jordan Walsh",
       "team": "BOS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 68,
       "gamesStarted": 25,
@@ -14232,6 +15618,9 @@
       "name": "Pete Nance",
       "team": "MIL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 47,
       "gamesStarted": 6,
@@ -14268,6 +15657,9 @@
       "name": "Sion James",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 82,
       "gamesStarted": 19,
@@ -14304,6 +15696,10 @@
       "name": "Tyrese Proctor",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 50,
       "gamesStarted": 1,
@@ -14340,6 +15736,10 @@
       "name": "Andersson Garcia",
       "team": "UTA",
       "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 5,
       "gamesStarted": 2,
@@ -14376,6 +15776,9 @@
       "name": "Asa Newell",
       "team": "ATL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 20,
       "gamesPlayed": 44,
       "gamesStarted": 2,
@@ -14411,7 +15814,11 @@
       "bbrPlayerId": "eubandr01",
       "name": "Drew Eubanks",
       "team": "SAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 42,
       "gamesStarted": 11,
@@ -14448,6 +15855,9 @@
       "name": "Garrison Mathews",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 15,
       "gamesStarted": 1,
@@ -14484,6 +15894,9 @@
       "name": "Jalen Pickett",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 50,
       "gamesStarted": 18,
@@ -14520,6 +15933,10 @@
       "name": "Marcus Sasser",
       "team": "DET",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 38,
       "gamesStarted": 5,
@@ -14556,6 +15973,10 @@
       "name": "Nikola Topić",
       "team": "OKC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 10,
       "gamesStarted": 2,
@@ -14592,6 +16013,9 @@
       "name": "Rayan Rupert",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 64,
       "gamesStarted": 8,
@@ -14628,6 +16052,9 @@
       "name": "Trey Alexander",
       "team": "NOP",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -14664,6 +16091,9 @@
       "name": "Johnny Furphy",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 35,
       "gamesStarted": 21,
@@ -14700,6 +16130,9 @@
       "name": "Jordan Hawkins",
       "team": "NOP",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 51,
       "gamesStarted": 1,
@@ -14736,6 +16169,9 @@
       "name": "Ochai Agbaji",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 62,
       "gamesStarted": 13,
@@ -14772,6 +16208,9 @@
       "name": "Sidy Cissoko",
       "team": "POR",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 21,
       "gamesPlayed": 75,
       "gamesStarted": 26,
@@ -14807,7 +16246,11 @@
       "bbrPlayerId": "simsje01",
       "name": "Jericho Sims",
       "team": "MIL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 67,
       "gamesStarted": 19,
@@ -14843,7 +16286,11 @@
       "bbrPlayerId": "bonaad01",
       "name": "Adem Bona",
       "team": "PHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 71,
       "gamesStarted": 18,
@@ -14880,6 +16327,9 @@
       "name": "Blake Wesley",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 31,
       "gamesStarted": 0,
@@ -14916,6 +16366,9 @@
       "name": "Tyler Smith",
       "team": "DAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 12,
       "gamesStarted": 0,
@@ -14952,6 +16405,9 @@
       "name": "Jeremiah Robinson-Earl",
       "team": "DAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 22,
       "gamesStarted": 3,
@@ -14988,6 +16444,10 @@
       "name": "KJ Simpson",
       "team": "DEN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 20,
       "gamesStarted": 2,
@@ -15024,6 +16484,10 @@
       "name": "Lonzo Ball",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 35,
       "gamesStarted": 3,
@@ -15060,6 +16524,9 @@
       "name": "Malaki Branham",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 28,
       "gamesStarted": 0,
@@ -15096,6 +16563,9 @@
       "name": "Zyon Pullin",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -15132,6 +16602,10 @@
       "name": "Craig Porter Jr.",
       "team": "CLE",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 64,
       "gamesStarted": 3,
@@ -15168,6 +16642,9 @@
       "name": "Josh Okogie",
       "team": "HOU",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 78,
       "gamesStarted": 32,
@@ -15204,6 +16681,10 @@
       "name": "Mike Conley",
       "team": "MIN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 38,
       "gamesPlayed": 54,
       "gamesStarted": 15,
@@ -15239,7 +16720,11 @@
       "bbrPlayerId": "cissemo01",
       "name": "Moussa Cisse",
       "team": "DAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 38,
       "gamesStarted": 1,
@@ -15275,7 +16760,11 @@
       "bbrPlayerId": "hallpj01",
       "name": "PJ Hall",
       "team": "MEM",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 19,
       "gamesStarted": 2,
@@ -15312,6 +16801,9 @@
       "name": "Taelon Peter",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 38,
       "gamesStarted": 0,
@@ -15347,7 +16839,11 @@
       "bbrPlayerId": "jordade01",
       "name": "DeAndre Jordan",
       "team": "NOP",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 37,
       "gamesPlayed": 12,
       "gamesStarted": 7,
@@ -15384,6 +16880,10 @@
       "name": "Gabe Vincent",
       "team": "ATL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 53,
       "gamesStarted": 7,
@@ -15420,6 +16920,9 @@
       "name": "Jarred Vanderbilt",
       "team": "LAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 65,
       "gamesStarted": 3,
@@ -15456,6 +16959,9 @@
       "name": "Jase Richardson",
       "team": "ORL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 54,
       "gamesStarted": 0,
@@ -15492,6 +16998,9 @@
       "name": "John Konchar",
       "team": "MEM",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 56,
       "gamesStarted": 8,
@@ -15528,6 +17037,9 @@
       "name": "Kam Jones",
       "team": "IND",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 37,
       "gamesStarted": 7,
@@ -15564,6 +17076,9 @@
       "name": "Mouhamed Gueye",
       "team": "ATL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 77,
       "gamesStarted": 8,
@@ -15600,6 +17115,10 @@
       "name": "RayJ Dennis",
       "team": "LAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 17,
       "gamesStarted": 0,
@@ -15636,6 +17155,10 @@
       "name": "Tyler Kolek",
       "team": "NYK",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 62,
       "gamesStarted": 1,
@@ -15671,7 +17194,11 @@
       "bbrPlayerId": "livelde01",
       "name": "Dereck Lively II",
       "team": "DAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 21,
       "gamesPlayed": 7,
       "gamesStarted": 4,
@@ -15708,6 +17235,10 @@
       "name": "Grant Nelson",
       "team": "BRK",
       "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -15744,6 +17275,9 @@
       "name": "Jabari Walker",
       "team": "PHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 64,
       "gamesStarted": 6,
@@ -15780,6 +17314,9 @@
       "name": "Josh Green",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 58,
       "gamesStarted": 0,
@@ -15816,6 +17353,9 @@
       "name": "Keshad Johnson",
       "team": "MIA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 32,
       "gamesStarted": 0,
@@ -15851,7 +17391,11 @@
       "bbrPlayerId": "gilbeke01",
       "name": "Keshon Gilbert",
       "team": "WAS",
-      "position": "SG",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -15888,6 +17432,9 @@
       "name": "Liam McNeeley",
       "team": "CHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 31,
       "gamesStarted": 0,
@@ -15924,6 +17471,9 @@
       "name": "Micah Peavy",
       "team": "NOP",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 61,
       "gamesStarted": 4,
@@ -15960,6 +17510,9 @@
       "name": "Rasheer Fleming",
       "team": "PHO",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 21,
       "gamesPlayed": 55,
       "gamesStarted": 1,
@@ -15996,6 +17549,9 @@
       "name": "Skal Labissière",
       "team": "WAS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 3,
       "gamesStarted": 0,
@@ -16031,7 +17587,11 @@
       "bbrPlayerId": "konanya01",
       "name": "Yanic Konan Niederhäuser",
       "team": "LAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 41,
       "gamesStarted": 0,
@@ -16068,6 +17628,9 @@
       "name": "A.J. Lawson",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 24,
       "gamesStarted": 0,
@@ -16104,6 +17667,9 @@
       "name": "Carter Bryant",
       "team": "SAS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 20,
       "gamesPlayed": 71,
       "gamesStarted": 0,
@@ -16140,6 +17706,9 @@
       "name": "Dalton Knecht",
       "team": "LAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 54,
       "gamesStarted": 1,
@@ -16176,6 +17745,9 @@
       "name": "Ron Harper Jr.",
       "team": "BOS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 29,
       "gamesStarted": 3,
@@ -16212,6 +17784,9 @@
       "name": "Tristan Enaruna",
       "team": "CLE",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -16248,6 +17823,9 @@
       "name": "Brandon Clarke",
       "team": "MEM",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 29,
       "gamesPlayed": 2,
       "gamesStarted": 2,
@@ -16284,6 +17862,9 @@
       "name": "Jaylen Clark",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 68,
       "gamesStarted": 1,
@@ -16320,6 +17901,9 @@
       "name": "Nicolas Batum",
       "team": "LAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 37,
       "gamesPlayed": 74,
       "gamesStarted": 6,
@@ -16355,7 +17939,11 @@
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
       "team": "ATL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 28,
       "gamesPlayed": 41,
       "gamesStarted": 4,
@@ -16392,6 +17980,9 @@
       "name": "Caleb Martin",
       "team": "DAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 58,
       "gamesStarted": 12,
@@ -16428,6 +18019,9 @@
       "name": "Joan Beringer",
       "team": "MIN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 19,
       "gamesPlayed": 40,
       "gamesStarted": 3,
@@ -16464,6 +18058,9 @@
       "name": "Riley Minix",
       "team": "SAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -16500,6 +18097,9 @@
       "name": "Hugo González",
       "team": "BOS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 19,
       "gamesPlayed": 74,
       "gamesStarted": 3,
@@ -16535,7 +18135,11 @@
       "bbrPlayerId": "capelca01",
       "name": "Clint Capela",
       "team": "HOU",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 31,
       "gamesPlayed": 75,
       "gamesStarted": 3,
@@ -16572,6 +18176,9 @@
       "name": "Noah Penda",
       "team": "ORL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 21,
       "gamesPlayed": 59,
       "gamesStarted": 2,
@@ -16608,6 +18215,9 @@
       "name": "Koby Brea",
       "team": "PHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 12,
       "gamesStarted": 0,
@@ -16643,7 +18253,11 @@
       "bbrPlayerId": "yurtsom01",
       "name": "Omer Yurtseven",
       "team": "GSW",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -16680,6 +18294,9 @@
       "name": "Dalen Terry",
       "team": "CHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 48,
       "gamesStarted": 0,
@@ -16716,6 +18333,9 @@
       "name": "DaRon Holmes",
       "team": "DEN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 23,
       "gamesPlayed": 25,
       "gamesStarted": 6,
@@ -16752,6 +18372,9 @@
       "name": "Larry Nance Jr.",
       "team": "CLE",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 33,
       "gamesPlayed": 35,
       "gamesStarted": 3,
@@ -16788,6 +18411,9 @@
       "name": "Patrick Baldwin Jr.",
       "team": "PHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 9,
       "gamesStarted": 1,
@@ -16824,6 +18450,9 @@
       "name": "Tolu Smith",
       "team": "DET",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 15,
       "gamesStarted": 0,
@@ -16860,6 +18489,9 @@
       "name": "Zeke Nnaji",
       "team": "DEN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 52,
       "gamesStarted": 4,
@@ -16896,6 +18528,9 @@
       "name": "Jeremy Sochan",
       "team": "NYK",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 22,
       "gamesPlayed": 44,
       "gamesStarted": 0,
@@ -16932,6 +18567,9 @@
       "name": "Mohamed Diawara",
       "team": "NYK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 69,
       "gamesStarted": 7,
@@ -16968,6 +18606,9 @@
       "name": "Myron Gardner",
       "team": "MIA",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 45,
       "gamesStarted": 7,
@@ -17004,6 +18645,10 @@
       "name": "Keaton Wallace",
       "team": "ATL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 53,
       "gamesStarted": 3,
@@ -17039,7 +18684,11 @@
       "bbrPlayerId": "sarrol01",
       "name": "Olivier Sarr",
       "team": "CLE",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -17076,6 +18725,9 @@
       "name": "Drew Timme",
       "team": "LAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 27,
       "gamesStarted": 1,
@@ -17111,7 +18763,11 @@
       "bbrPlayerId": "gibsota01",
       "name": "Taj Gibson",
       "team": "MEM",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 40,
       "gamesPlayed": 10,
       "gamesStarted": 1,
@@ -17147,7 +18803,11 @@
       "bbrPlayerId": "jackstr02",
       "name": "Trayce Jackson-Davis",
       "team": "TOR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 53,
       "gamesStarted": 1,
@@ -17184,6 +18844,10 @@
       "name": "Yuki Kawamura",
       "team": "CHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 18,
       "gamesStarted": 0,
@@ -17220,6 +18884,9 @@
       "name": "AJ Johnson",
       "team": "WAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 48,
       "gamesStarted": 0,
@@ -17256,6 +18923,9 @@
       "name": "Dorian Finney-Smith",
       "team": "HOU",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 32,
       "gamesPlayed": 37,
       "gamesStarted": 1,
@@ -17291,7 +18961,11 @@
       "bbrPlayerId": "poweldw01",
       "name": "Dwight Powell",
       "team": "DAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 34,
       "gamesPlayed": 63,
       "gamesStarted": 12,
@@ -17328,6 +19002,9 @@
       "name": "Enrique Freeman",
       "team": "MIN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -17363,7 +19040,11 @@
       "bbrPlayerId": "wisemja01",
       "name": "James Wiseman",
       "team": "IND",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 4,
       "gamesStarted": 1,
@@ -17400,6 +19081,9 @@
       "name": "Malevy Leons",
       "team": "GSW",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 25,
       "gamesStarted": 2,
@@ -17436,6 +19120,10 @@
       "name": "Isaiah Stevens",
       "team": "SAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 3,
       "gamesStarted": 0,
@@ -17472,6 +19160,9 @@
       "name": "Alex Antetokounmpo",
       "team": "MIL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -17508,6 +19199,9 @@
       "name": "Amir Coffey",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 46,
       "gamesStarted": 3,
@@ -17543,7 +19237,11 @@
       "bbrPlayerId": "olynyke01",
       "name": "Kelly Olynyk",
       "team": "SAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 34,
       "gamesPlayed": 42,
       "gamesStarted": 0,
@@ -17580,6 +19278,9 @@
       "name": "Jamison Battle",
       "team": "TOR",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 61,
       "gamesStarted": 2,
@@ -17616,6 +19317,10 @@
       "name": "Mark Sears",
       "team": "MIL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -17652,6 +19357,10 @@
       "name": "Miles Kelly",
       "team": "DAL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 14,
       "gamesStarted": 0,
@@ -17688,6 +19397,9 @@
       "name": "Chris Livingston",
       "team": "CLE",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 3,
       "gamesStarted": 0,
@@ -17724,6 +19436,9 @@
       "name": "CJ Huntley",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -17760,6 +19475,9 @@
       "name": "Emanuel Miller",
       "team": "CHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -17795,7 +19513,11 @@
       "bbrPlayerId": "maluakh01",
       "name": "Khaman Maluach",
       "team": "PHO",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 19,
       "gamesPlayed": 46,
       "gamesStarted": 1,
@@ -17832,6 +19554,10 @@
       "name": "Monte Morris",
       "team": "IND",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 30,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -17868,6 +19594,10 @@
       "name": "Tyus Jones",
       "team": "DEN",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 67,
       "gamesStarted": 12,
@@ -17904,6 +19634,9 @@
       "name": "Bronny James",
       "team": "LAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 21,
       "gamesPlayed": 42,
       "gamesStarted": 1,
@@ -17940,6 +19673,10 @@
       "name": "Chris Paul",
       "team": "LAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 40,
       "gamesPlayed": 16,
       "gamesStarted": 0,
@@ -17976,6 +19713,9 @@
       "name": "Curtis Jones",
       "team": "DEN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 10,
       "gamesStarted": 0,
@@ -18012,6 +19752,9 @@
       "name": "David Jones García",
       "team": "SAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 11,
       "gamesStarted": 0,
@@ -18047,7 +19790,11 @@
       "bbrPlayerId": "reathdu01",
       "name": "Duop Reath",
       "team": "POR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 29,
       "gamesPlayed": 32,
       "gamesStarted": 0,
@@ -18084,6 +19831,9 @@
       "name": "Julian Phillips",
       "team": "CHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 48,
       "gamesStarted": 2,
@@ -18120,6 +19870,9 @@
       "name": "Kobe Bufkin",
       "team": "LAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 16,
       "gamesStarted": 1,
@@ -18156,6 +19909,9 @@
       "name": "Cam Christie",
       "team": "LAC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 55,
       "gamesStarted": 0,
@@ -18192,6 +19948,9 @@
       "name": "Jae'Sean Tate",
       "team": "HOU",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 46,
       "gamesStarted": 1,
@@ -18227,7 +19986,11 @@
       "bbrPlayerId": "looneke01",
       "name": "Kevon Looney",
       "team": "NOP",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 29,
       "gamesPlayed": 21,
       "gamesStarted": 8,
@@ -18263,7 +20026,11 @@
       "bbrPlayerId": "zikarro01",
       "name": "Rocco Zikarsky",
       "team": "MIN",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 19,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -18300,6 +20067,9 @@
       "name": "Norchad Omier",
       "team": "LAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -18336,6 +20106,9 @@
       "name": "Gary Harris",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 31,
       "gamesPlayed": 48,
       "gamesStarted": 2,
@@ -18372,6 +20145,9 @@
       "name": "Antonio Reeves",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 10,
       "gamesStarted": 0,
@@ -18407,7 +20183,11 @@
       "bbrPlayerId": "kolokch01",
       "name": "Christian Koloko",
       "team": "LAL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 27,
       "gamesStarted": 4,
@@ -18444,6 +20224,9 @@
       "name": "Jonathan Isaac",
       "team": "ORL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 28,
       "gamesPlayed": 52,
       "gamesStarted": 0,
@@ -18480,6 +20263,9 @@
       "name": "Pat Connaughton",
       "team": "CHO",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 33,
       "gamesPlayed": 42,
       "gamesStarted": 0,
@@ -18516,6 +20302,10 @@
       "name": "JD Davison",
       "team": "HOU",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 28,
       "gamesStarted": 0,
@@ -18552,6 +20342,9 @@
       "name": "John Tonje",
       "team": "BOS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -18587,7 +20380,11 @@
       "bbrPlayerId": "bambamo01",
       "name": "Mo Bamba",
       "team": "TOR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -18624,6 +20421,9 @@
       "name": "Andre Jackson Jr.",
       "team": "MIL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 48,
       "gamesStarted": 1,
@@ -18660,6 +20460,9 @@
       "name": "Chaz Lanier",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 34,
       "gamesStarted": 0,
@@ -18695,7 +20498,11 @@
       "bbrPlayerId": "dickihu01",
       "name": "Hunter Dickinson",
       "team": "NOP",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -18732,6 +20539,9 @@
       "name": "Kevin McCullar Jr.",
       "team": "NYK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 21,
       "gamesStarted": 0,
@@ -18767,7 +20577,11 @@
       "bbrPlayerId": "olbrila01",
       "name": "Lachlan Olbrich",
       "team": "CHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 22,
       "gamesPlayed": 37,
       "gamesStarted": 2,
@@ -18804,6 +20618,9 @@
       "name": "Lindy Waters III",
       "team": "SAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 40,
       "gamesStarted": 0,
@@ -18840,6 +20657,9 @@
       "name": "Caleb Houstan",
       "team": "ATL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 18,
       "gamesStarted": 0,
@@ -18876,6 +20696,9 @@
       "name": "Chris Boucher",
       "team": "BOS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 33,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -18912,6 +20735,9 @@
       "name": "Luke Travers",
       "team": "CLE",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 12,
       "gamesStarted": 0,
@@ -18948,6 +20774,9 @@
       "name": "Alijah Martin",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 23,
       "gamesStarted": 0,
@@ -18983,7 +20812,11 @@
       "bbrPlayerId": "hukpoar01",
       "name": "Ariel Hukporti",
       "team": "NYK",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 54,
       "gamesStarted": 5,
@@ -19020,6 +20853,9 @@
       "name": "Hunter Tyson",
       "team": "DEN",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 21,
       "gamesStarted": 2,
@@ -19056,6 +20892,9 @@
       "name": "Jeff Green",
       "team": "HOU",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 39,
       "gamesPlayed": 30,
       "gamesStarted": 0,
@@ -19091,7 +20930,11 @@
       "bbrPlayerId": "yangha01",
       "name": "Yang Hansen",
       "team": "POR",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 20,
       "gamesPlayed": 43,
       "gamesStarted": 1,
@@ -19128,6 +20971,9 @@
       "name": "Chris Youngblood",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 34,
       "gamesStarted": 0,
@@ -19164,6 +21010,10 @@
       "name": "Alex Morales",
       "team": "ORL",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 28,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -19200,6 +21050,9 @@
       "name": "Colby Jones",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 1,
       "gamesStarted": 0,
@@ -19236,6 +21089,10 @@
       "name": "Dalano Banton",
       "team": "BOS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -19272,6 +21129,9 @@
       "name": "Isaiah Crawford",
       "team": "HOU",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 14,
       "gamesStarted": 0,
@@ -19308,6 +21168,9 @@
       "name": "Jayson Kent",
       "team": "POR",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -19344,6 +21207,9 @@
       "name": "Johnny Juzang",
       "team": "MIN",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 21,
       "gamesStarted": 0,
@@ -19380,6 +21246,10 @@
       "name": "Jordan McLaughlin",
       "team": "SAS",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 29,
       "gamesPlayed": 44,
       "gamesStarted": 0,
@@ -19416,6 +21286,9 @@
       "name": "Maxi Kleber",
       "team": "LAL",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 34,
       "gamesPlayed": 43,
       "gamesStarted": 1,
@@ -19452,6 +21325,9 @@
       "name": "Trentyn Flowers",
       "team": "CHI",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 20,
       "gamesPlayed": 2,
       "gamesStarted": 0,
@@ -19488,6 +21364,9 @@
       "name": "Adou Thiero",
       "team": "LAL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 21,
       "gamesPlayed": 25,
       "gamesStarted": 0,
@@ -19524,6 +21403,10 @@
       "name": "Sean Pedulla",
       "team": "LAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -19560,6 +21443,9 @@
       "name": "Bobi Klintman",
       "team": "DET",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 22,
       "gamesPlayed": 12,
       "gamesStarted": 0,
@@ -19596,6 +21482,9 @@
       "name": "Cody Martin",
       "team": "IND",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 30,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -19632,6 +21521,10 @@
       "name": "Jahmir Young",
       "team": "MIA",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 25,
       "gamesPlayed": 14,
       "gamesStarted": 0,
@@ -19667,7 +21560,11 @@
       "bbrPlayerId": "robinor01",
       "name": "Orlando Robinson",
       "team": "ORL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 4,
       "gamesStarted": 1,
@@ -19704,6 +21601,9 @@
       "name": "Isaiah Livers",
       "team": "PHO",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 27,
       "gamesPlayed": 36,
       "gamesStarted": 0,
@@ -19740,6 +21640,9 @@
       "name": "Brooks Barnhizer",
       "team": "OKC",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 40,
       "gamesStarted": 0,
@@ -19776,6 +21679,9 @@
       "name": "Pacôme Dadiet",
       "team": "NYK",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 20,
       "gamesPlayed": 29,
       "gamesStarted": 0,
@@ -19812,6 +21718,9 @@
       "name": "Wendell Moore Jr.",
       "team": "DET",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -19848,6 +21757,9 @@
       "name": "Harrison Ingram",
       "team": "SAS",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 23,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -19884,6 +21796,9 @@
       "name": "Jacob Toppin",
       "team": "ATL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 25,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -19919,7 +21834,11 @@
       "bbrPlayerId": "plumlma01",
       "name": "Mason Plumlee",
       "team": "SAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 35,
       "gamesPlayed": 20,
       "gamesStarted": 3,
@@ -19956,6 +21875,9 @@
       "name": "Buddy Boeheim",
       "team": "OKC",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 26,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -19992,6 +21914,9 @@
       "name": "Joe Ingles",
       "team": "MIN",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 38,
       "gamesPlayed": 27,
       "gamesStarted": 2,
@@ -20028,6 +21953,9 @@
       "name": "Jonathan Mogbo",
       "team": "TOR",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 40,
       "gamesStarted": 0,
@@ -20063,7 +21991,11 @@
       "bbrPlayerId": "tillmxa01",
       "name": "Xavier Tillman Sr.",
       "team": "CHO",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 27,
       "gamesPlayed": 30,
       "gamesStarted": 1,
@@ -20100,6 +22032,9 @@
       "name": "Amari Williams",
       "team": "BOS",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 22,
       "gamesStarted": 2,
@@ -20136,6 +22071,9 @@
       "name": "Thanasis Antetokounmpo",
       "team": "MIL",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 33,
       "gamesPlayed": 34,
       "gamesStarted": 0,
@@ -20171,7 +22109,11 @@
       "bbrPlayerId": "castlco01",
       "name": "Colin Castleton",
       "team": "ORL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 25,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -20208,6 +22150,9 @@
       "name": "Dillon Jones",
       "team": "NYK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -20244,6 +22189,9 @@
       "name": "Isaac Jones",
       "team": "SAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 25,
       "gamesPlayed": 7,
       "gamesStarted": 1,
@@ -20280,6 +22228,9 @@
       "name": "Nigel Hayes-Davis",
       "team": "PHO",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 31,
       "gamesPlayed": 27,
       "gamesStarted": 0,
@@ -20316,6 +22267,10 @@
       "name": "TyTy Washington Jr.",
       "team": "LAC",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 16,
       "gamesStarted": 0,
@@ -20352,6 +22307,9 @@
       "name": "Javonte Cooke",
       "team": "POR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 19,
       "gamesStarted": 0,
@@ -20388,6 +22346,10 @@
       "name": "Kyle Lowry",
       "team": "PHI",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 39,
       "gamesPlayed": 14,
       "gamesStarted": 0,
@@ -20423,7 +22385,11 @@
       "bbrPlayerId": "saricda01",
       "name": "Dario Šarić",
       "team": "SAC",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 31,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -20460,6 +22426,9 @@
       "name": "Hunter Sallis",
       "team": "PHI",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 7,
       "gamesStarted": 0,
@@ -20496,6 +22465,9 @@
       "name": "Stanley Umude",
       "team": "SAS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 2,
       "gamesStarted": 0,
@@ -20532,6 +22504,9 @@
       "name": "Trevor Keels",
       "team": "MIA",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 8,
       "gamesStarted": 0,
@@ -20567,7 +22542,11 @@
       "bbrPlayerId": "jemistr01",
       "name": "Trey Jemison",
       "team": "NYK",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 26,
       "gamesPlayed": 13,
       "gamesStarted": 0,
@@ -20603,7 +22582,11 @@
       "bbrPlayerId": "biyombi01",
       "name": "Bismack Biyombo",
       "team": "SAS",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 33,
       "gamesPlayed": 25,
       "gamesStarted": 1,
@@ -20639,7 +22622,11 @@
       "bbrPlayerId": "broomjo01",
       "name": "Johni Broome",
       "team": "PHI",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 23,
       "gamesPlayed": 11,
       "gamesStarted": 0,
@@ -20676,6 +22663,9 @@
       "name": "Drew Peterson",
       "team": "CHO",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 26,
       "gamesPlayed": 6,
       "gamesStarted": 0,
@@ -20712,6 +22702,9 @@
       "name": "Chris Mañon",
       "team": "LAL",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 24,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -20748,6 +22741,9 @@
       "name": "Garrett Temple",
       "team": "TOR",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 39,
       "gamesPlayed": 22,
       "gamesStarted": 0,
@@ -20784,6 +22780,10 @@
       "name": "Markelle Fultz",
       "team": "TOR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 27,
       "gamesPlayed": 5,
       "gamesStarted": 0,
@@ -20819,7 +22819,11 @@
       "bbrPlayerId": "nfalyda01",
       "name": "N'Faly Dante",
       "team": "ATL",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 4,
       "gamesStarted": 0,
@@ -20855,7 +22859,11 @@
       "bbrPlayerId": "goldivl01",
       "name": "Vladislav Goldin",
       "team": "MIA",
-      "position": "C",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
       "age": 24,
       "gamesPlayed": 9,
       "gamesStarted": 0,
@@ -20892,6 +22900,9 @@
       "name": "Max Shulga",
       "team": "BOS",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 23,
       "gamesPlayed": 11,
       "gamesStarted": 1,
@@ -20928,6 +22939,9 @@
       "name": "Jahmyl Telfort",
       "team": "LAC",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 24,
       "gamesPlayed": 8,
       "gamesStarted": 0,
@@ -20964,6 +22978,10 @@
       "name": "Chucky Hepburn",
       "team": "TOR",
       "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
       "age": 22,
       "gamesPlayed": 2,
       "gamesStarted": 0,
@@ -21000,6 +23018,9 @@
       "name": "Darius Brown II",
       "team": "CLE",
       "position": "SG",
+      "positions": [
+        "SG"
+      ],
       "age": 26,
       "gamesPlayed": 1,
       "gamesStarted": 0,
@@ -21036,6 +23057,9 @@
       "name": "Noa Essengue",
       "team": "CHI",
       "position": "PF",
+      "positions": [
+        "PF"
+      ],
       "age": 19,
       "gamesPlayed": 2,
       "gamesStarted": 0,
@@ -21072,6 +23096,9 @@
       "name": "Tosan Evbuomwan",
       "team": "NYK",
       "position": "SF",
+      "positions": [
+        "SF"
+      ],
       "age": 24,
       "gamesPlayed": 5,
       "gamesStarted": 0,

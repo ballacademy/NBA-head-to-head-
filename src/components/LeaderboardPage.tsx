@@ -19,6 +19,12 @@ import {
 } from "../lib/rankedLeaderboard";
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
+import {
+  CLASSIC_LEADERBOARD_LABEL,
+  CLASSIC_HEAD_TO_HEAD_LABEL,
+  PRO_HEAD_TO_HEAD_LABEL,
+  PRO_LEADERBOARD_LABEL,
+} from "../lib/modeLabels";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -106,7 +112,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             className={view === "ranked" ? "is-active" : undefined}
             onClick={() => setView("ranked")}
           >
-            Ranked Top 500
+            {PRO_LEADERBOARD_LABEL}
           </button>
           <button
             type="button"
@@ -115,7 +121,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             className={view === "classic" ? "is-active" : undefined}
             onClick={() => setView("classic")}
           >
-            Classic Head to Head
+            {CLASSIC_LEADERBOARD_LABEL}
           </button>
         </div>
 
@@ -186,7 +192,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           </div>
         ) : (
           <p className="draft-empty">
-            No ranked entries yet. Play a ranked matchup to join the ladder.
+            No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the ladder.
           </p>
         )
       ) : classicEntries.length > 0 ? (
@@ -231,7 +237,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         </div>
       ) : (
         <p className="draft-empty">
-          No classic entries yet. Play Classic Head to Head to claim the first spot.
+          No classic entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the first spot.
         </p>
       )}
     </section>

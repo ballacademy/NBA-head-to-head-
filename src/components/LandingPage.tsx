@@ -20,12 +20,17 @@ import {
   type ModePlayerRecords,
   type PlayerRecord,
 } from "../lib/playerRecord";
-import { RANKED_SALARY_CAP, CLASSIC_HEAD_TO_HEAD_SALARY_CAP } from "../lib/salaryCap";
+import {
+  CLASSIC_HEAD_TO_HEAD_LABEL,
+  PRO_HEAD_TO_HEAD_LABEL,
+} from "../lib/modeLabels";
+import { RANKED_SALARY_CAP } from "../lib/salaryCap";
 import {
   loadTeamProfile,
   normalizeTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
+import { ClassicModeSummary } from "./ClassicModeSummary";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { LossStreakBadge } from "./LossStreakBadge";
@@ -233,26 +238,24 @@ export function LandingPage({
         </div>
 
         <div className="head-to-head-card landing-card landing-card--mode">
-          <p className="eyebrow">Classic Head to Head</p>
+          <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
           <p className="head-to-head-card__description">
-            Draft a five-player lineup under a $
-            {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap and
-            face a similarly rated rival. Elo tracks your standing on classic
-            leaderboards.
+            Build under a $150M cap with real 2025-26 salaries. Elo matchmaking
+            pairs you with similarly rated front offices, and monthly seasons
+            reset the global Top 500.
           </p>
-          <MatchModeRecord record={modeRecords.headToHead} />
+          <ClassicModeSummary record={modeRecords.headToHead} />
           <button
             type="button"
             className="landing__primary-button"
             onClick={() => handleStart()}
           >
-            Play Classic Head to Head
+            Play {CLASSIC_HEAD_TO_HEAD_LABEL}
           </button>
         </div>
 
         <div className="ranked-cap-card landing-card landing-card--mode">
-          <p className="eyebrow">Ranked</p>
-          <h2 className="ranked-cap-card__title">Salary Cap Ladder</h2>
+          <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
           <p className="ranked-cap-card__description">
             Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with
             real 2025-26 salaries. Elo matchmaking pairs you with similarly
@@ -264,7 +267,7 @@ export function LandingPage({
             className="ranked-cap-card__button"
             onClick={() => handleStart({ salaryCapMode: true })}
           >
-            Play Ranked
+            Play {PRO_HEAD_TO_HEAD_LABEL}
           </button>
         </div>
 

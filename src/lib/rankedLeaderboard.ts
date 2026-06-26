@@ -2,6 +2,7 @@ import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
 import { formatRankedElo, getTierForElo } from "./rankedElo";
+import { PRO_LEADERBOARD_LABEL } from "./modeLabels";
 import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
 
 const RANKED_LEADERBOARD_KEY = "nba-head-to-head-ranked-leaderboard";
@@ -297,7 +298,7 @@ export const getRankedLeaderboardFootnote = (
   sort: RankedLeaderboardSort = "elo",
   seasonId = getCurrentSeasonId(),
 ) => {
-  const seasonNote = `Global Top ${RANKED_LEADERBOARD_LIMIT} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
+  const seasonNote = `${PRO_LEADERBOARD_LABEL} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
 
   switch (sort) {
     case "winStreak":

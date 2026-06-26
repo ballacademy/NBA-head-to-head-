@@ -1,27 +1,30 @@
 import { useMemo } from "react";
-import { getRankedProfileView } from "../lib/rankedProfile";
+import { getClassicProfileView } from "../lib/classicProfile";
 import { RankedTierBadge } from "./RankedTierBadge";
-import { formatPlayerRecord, type PlayerRecord } from "../lib/playerRecord";
-import { PLACEMENT_GAMES } from "../lib/rankedElo";
 import { LossStreakBadge } from "./LossStreakBadge";
 import { WinStreakBadge } from "./WinStreakBadge";
+import { formatPlayerRecord, type PlayerRecord } from "../lib/playerRecord";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
+import { PLACEMENT_GAMES } from "../lib/rankedElo";
 
-interface RankedModeSummaryProps {
+interface ClassicModeSummaryProps {
   record: PlayerRecord;
 }
 
-export function RankedModeSummary({ record }: RankedModeSummaryProps) {
-  const ranked = useMemo(() => getRankedProfileView(), [record.wins, record.losses]);
-  const placementRemaining = Math.max(0, PLACEMENT_GAMES - ranked.rankedGamesPlayed);
+export function ClassicModeSummary({ record }: ClassicModeSummaryProps) {
+  const classic = useMemo(
+    () => getClassicProfileView(),
+    [record.wins, record.losses],
+  );
+  const placementRemaining = Math.max(0, PLACEMENT_GAMES - classic.classicGamesPlayed);
 
   return (
     <div className="landing-mode-card__record-block ranked-mode-summary">
       <p className="landing-mode-card__record">
         <span className="landing-mode-card__record-label">Front Office</span>
         <span className="landing-mode-card__record-value ranked-mode-summary__tier">
-          <RankedTierBadge tier={ranked.tier} elo={ranked.elo} compact />
+          <RankedTierBadge tier={classic.tier} elo={classic.elo} compact />
         </span>
       </p>
       <p className="landing-mode-card__record">

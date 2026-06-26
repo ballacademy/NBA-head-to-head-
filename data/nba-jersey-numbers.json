@@ -1,8 +1,9 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-16T02:09:40.722214+00:00",
-  "playerCount": 521,
+  "generatedAt": "2026-06-25T12:00:00.000000+00:00",
+  "rosterAsOf": "2026-06-25",
+  "playerCount": 520,
   "byPlayerId": {
     "alexani01": {
       "jerseyNumber": 7,
@@ -798,10 +799,6 @@
     },
     "peterta01": {
       "jerseyNumber": 4,
-      "team": "IND"
-    },
-    "joneska03": {
-      "jerseyNumber": 7,
       "team": "IND"
     },
     "furphjo01": {
@@ -3481,13 +3478,6 @@
       "name": "Taelon Peter",
       "team": "IND",
       "jerseyNumber": 4,
-      "position": "SG"
-    },
-    {
-      "bbrPlayerId": "joneska03",
-      "name": "Kam Jones",
-      "team": "IND",
-      "jerseyNumber": 7,
       "position": "SG"
     },
     {
