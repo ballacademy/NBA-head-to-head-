@@ -34,6 +34,11 @@ describe("divisions", () => {
     expect(isDraftableTeam("2TM")).toBe(false);
     expect(isDraftableTeam("LAL")).toBe(true);
   });
+
+  it("excludes free agents from drafting", () => {
+    expect(isDraftableTeam("FA")).toBe(false);
+    expect(getDivisionForTeam("FA")).toBeUndefined();
+  });
 });
 
 describe("draft constraints", () => {

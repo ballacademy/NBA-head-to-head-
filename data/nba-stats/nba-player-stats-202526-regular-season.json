@@ -4,13 +4,13 @@
   "source": "basketball-reference",
   "generatedAt": "2026-06-26T02:48:59.826236+00:00",
   "rosterAsOf": "2026-06-26",
-  "playerCount": 586,
-  "uniquePlayerCount": 586,
+  "playerCount": 603,
+  "uniquePlayerCount": 603,
   "players": [
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Dončić",
+      "name": "Luka Don\u010di\u0107",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -290,7 +290,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Jokić",
+      "name": "Nikola Joki\u0107",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1603,7 +1603,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen Şengün",
+      "name": "Alperen \u015eeng\u00fcn",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -3189,7 +3189,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porziņģis",
+      "name": "Kristaps Porzi\u0146\u0123is",
       "team": "GSW",
       "position": "PF",
       "positions": [
@@ -3543,6 +3543,45 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.5447761194029851,
       "trueShooting": 0.571
+    },
+    {
+      "id": "beaslma01-fa",
+      "bbrPlayerId": "beaslma01",
+      "name": "Malik Beasley",
+      "team": "FA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 28,
+      "gamesPlayed": 82,
+      "gamesStarted": 18,
+      "minutes": 27.799999999999997,
+      "points": 16.3,
+      "rebounds": 2.6,
+      "assists": 1.7000000000000002,
+      "steals": 0.8999999999999999,
+      "blocks": 0.10000000000000002,
+      "turnovers": 1.0,
+      "fieldGoalsMade": 5.6,
+      "fieldGoalsAttempted": 13.100000000000001,
+      "fieldGoalPct": 0.4274809160305343,
+      "threePointersMade": 3.9000000000000004,
+      "threePointersAttempted": 9.3,
+      "threePointPct": 0.41935483870967744,
+      "freeThrowsMade": 1.2,
+      "freeThrowsAttempted": 1.7000000000000002,
+      "freeThrowPct": 0.7058823529411764,
+      "offensiveRebounds": 0.6,
+      "defensiveRebounds": 2.0,
+      "defensiveWinShares": 1.8,
+      "defensiveBoxPlusMinus": -1.2,
+      "defensiveReboundPct": 8.0,
+      "stealPct": 1.5,
+      "blockPct": 0.20000000000000004,
+      "personalFouls": 1.5,
+      "effectiveFieldGoalPct": 0.5763358778625953,
+      "trueShooting": 0.589
     },
     {
       "id": "buzelma01-chi",
@@ -4023,7 +4062,7 @@
     {
       "id": "vucevni01-bos",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vučević",
+      "name": "Nikola Vu\u010devi\u0107",
       "team": "BOS",
       "position": "PF",
       "positions": [
@@ -5325,10 +5364,10 @@
       "trueShooting": 0.668
     },
     {
-      "id": "thomaca02-mil",
+      "id": "thomaca02-fa",
       "bbrPlayerId": "thomaca02",
       "name": "Cam Thomas",
-      "team": "MIL",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -6032,6 +6071,45 @@
       "personalFouls": 2.3,
       "effectiveFieldGoalPct": 0.587912087912088,
       "trueShooting": 0.618
+    },
+    {
+      "id": "walkelo01-fa",
+      "bbrPlayerId": "walkelo01",
+      "name": "Lonnie Walker IV",
+      "team": "FA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 26,
+      "gamesPlayed": 20,
+      "gamesStarted": 7,
+      "minutes": 23.9,
+      "points": 12.4,
+      "rebounds": 3.2,
+      "assists": 2.5,
+      "steals": 0.5,
+      "blocks": 0.3,
+      "turnovers": 1.3,
+      "fieldGoalsMade": 4.5,
+      "fieldGoalsAttempted": 10.6,
+      "fieldGoalPct": 0.42452830188679247,
+      "threePointersMade": 2.3,
+      "threePointersAttempted": 6.4,
+      "threePointPct": 0.35937499999999994,
+      "freeThrowsMade": 1.2,
+      "freeThrowsAttempted": 1.5,
+      "freeThrowPct": 0.7999999999999999,
+      "offensiveRebounds": 0.3,
+      "defensiveRebounds": 2.9,
+      "defensiveWinShares": 0.1,
+      "defensiveBoxPlusMinus": -2.4,
+      "defensiveReboundPct": 14.1,
+      "stealPct": 1.0,
+      "blockPct": 1.0,
+      "personalFouls": 1.4,
+      "effectiveFieldGoalPct": 0.5330188679245284,
+      "trueShooting": 0.551
     },
     {
       "id": "meltode01-gsw",
@@ -7535,10 +7613,10 @@
       "trueShooting": 0.622
     },
     {
-      "id": "willial06-was",
+      "id": "willial06-fa",
       "bbrPlayerId": "willial06",
       "name": "Alondes Williams",
-      "team": "WAS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -7576,7 +7654,7 @@
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurkić",
+      "name": "Jusuf Nurki\u0107",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -7652,10 +7730,10 @@
       "trueShooting": 0.66
     },
     {
-      "id": "burtoty01-mem",
+      "id": "burtoty01-fa",
       "bbrPlayerId": "burtoty01",
       "name": "Tyler Burton",
-      "team": "MEM",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -7732,7 +7810,7 @@
     {
       "id": "schrode01-cle",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schröder",
+      "name": "Dennis Schr\u00f6der",
       "team": "CLE",
       "position": "PG",
       "positions": [
@@ -8009,10 +8087,10 @@
       "trueShooting": 0.63
     },
     {
-      "id": "balad01-mem",
+      "id": "balad01-fa",
       "bbrPlayerId": "balad01",
       "name": "Adama-Alpha Bal",
-      "team": "MEM",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -8126,10 +8204,10 @@
       "trueShooting": 0.465
     },
     {
-      "id": "jeffrda01-sac",
+      "id": "jeffrda01-fa",
       "bbrPlayerId": "jeffrda01",
       "name": "DaQuan Jeffries",
-      "team": "SAC",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -8167,7 +8245,7 @@
     {
       "id": "demineg01-brk",
       "bbrPlayerId": "demineg01",
-      "name": "Egor Dёmin",
+      "name": "Egor Demin",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -8757,6 +8835,45 @@
       "personalFouls": 2.7,
       "effectiveFieldGoalPct": 0.5379746835443038,
       "trueShooting": 0.547
+    },
+    {
+      "id": "niangge01-fa",
+      "bbrPlayerId": "niangge01",
+      "name": "Georges Niang",
+      "team": "FA",
+      "position": "PF",
+      "positions": [
+        "PF"
+      ],
+      "age": 31,
+      "gamesPlayed": 79,
+      "gamesStarted": 3,
+      "minutes": 21.5,
+      "points": 9.9,
+      "rebounds": 3.4,
+      "assists": 1.4,
+      "steals": 0.4,
+      "blocks": 0.2,
+      "turnovers": 1.0,
+      "fieldGoalsMade": 3.6,
+      "fieldGoalsAttempted": 7.8,
+      "fieldGoalPct": 0.461,
+      "threePointersMade": 2.1,
+      "threePointersAttempted": 5.2,
+      "threePointPct": 0.406,
+      "freeThrowsMade": 0.6,
+      "freeThrowsAttempted": 0.7,
+      "freeThrowPct": 0.793,
+      "offensiveRebounds": 0.6,
+      "defensiveRebounds": 2.8,
+      "defensiveWinShares": 1.4,
+      "defensiveBoxPlusMinus": -1.2,
+      "defensiveReboundPct": 14.3,
+      "stealPct": 0.8,
+      "blockPct": 0.8,
+      "personalFouls": 2.5,
+      "effectiveFieldGoalPct": 0.595,
+      "trueShooting": 0.611
     },
     {
       "id": "barneha02-sas",
@@ -9903,7 +10020,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traoré",
+      "name": "Nolan Traor\u00e9",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10100,7 +10217,7 @@
     {
       "id": "valanjo01-den",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valančiūnas",
+      "name": "Jonas Valan\u010di\u016bnas",
       "team": "DEN",
       "position": "PF",
       "positions": [
@@ -10455,10 +10572,10 @@
       "trueShooting": 0.622
     },
     {
-      "id": "iveyja01-det",
+      "id": "iveyja01-fa",
       "bbrPlayerId": "iveyja01",
       "name": "Jaden Ivey",
-      "team": "DET",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -10535,7 +10652,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "Vít Krejčí",
+      "name": "V\u00edt Krej\u010d\u00ed",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -10810,10 +10927,10 @@
       "trueShooting": 0.631
     },
     {
-      "id": "richmka01-was",
+      "id": "richmka01-fa",
       "bbrPlayerId": "richmka01",
       "name": "Kadary Richmond",
-      "team": "WAS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -10925,6 +11042,45 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5833333333333334,
       "trueShooting": 0.609
+    },
+    {
+      "id": "rosste01-fa",
+      "bbrPlayerId": "rosste01",
+      "name": "Terrence Ross",
+      "team": "FA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 31,
+      "gamesPlayed": 63,
+      "gamesStarted": 9,
+      "minutes": 21.1,
+      "points": 8.3,
+      "rebounds": 2.4,
+      "assists": 1.5,
+      "steals": 0.6,
+      "blocks": 0.2,
+      "turnovers": 0.7,
+      "fieldGoalsMade": 3.2,
+      "fieldGoalsAttempted": 7.4,
+      "fieldGoalPct": 0.43,
+      "threePointersMade": 1.5,
+      "threePointersAttempted": 4.1,
+      "threePointPct": 0.368,
+      "freeThrowsMade": 0.4,
+      "freeThrowsAttempted": 0.5,
+      "freeThrowPct": 0.794,
+      "offensiveRebounds": 0.3,
+      "defensiveRebounds": 2.1,
+      "defensiveWinShares": 1.2,
+      "defensiveBoxPlusMinus": -0.3,
+      "defensiveReboundPct": 11.2,
+      "stealPct": 1.3,
+      "blockPct": 0.7,
+      "personalFouls": 1.5,
+      "effectiveFieldGoalPct": 0.532,
+      "trueShooting": 0.545
     },
     {
       "id": "bealbr01-lac",
@@ -11086,7 +11242,7 @@
     {
       "id": "hollaro01-det",
       "bbrPlayerId": "hollaro01",
-      "name": "Ron Holland",
+      "name": "Ronald Holland II",
       "team": "DET",
       "position": "SF",
       "positions": [
@@ -11359,10 +11515,10 @@
       "trueShooting": 0.605
     },
     {
-      "id": "jarrede01-mem",
+      "id": "jarrede01-fa",
       "bbrPlayerId": "jarrede01",
       "name": "DeJon Jarreau",
-      "team": "MEM",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -11478,7 +11634,7 @@
     {
       "id": "scotttr01-brk",
       "bbrPlayerId": "scotttr01",
-      "name": "Tre Scott",
+      "name": "Trevon Scott",
       "team": "BRK",
       "position": "SF",
       "positions": [
@@ -11597,7 +11753,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabaté",
+      "name": "Moussa Diabat\u00e9",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12147,10 +12303,10 @@
       "trueShooting": 0.748
     },
     {
-      "id": "willivi01-uta",
+      "id": "willivi01-fa",
       "bbrPlayerId": "willivi01",
       "name": "Vince Williams Jr.",
-      "team": "UTA",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -12189,7 +12345,7 @@
     {
       "id": "bogdabo01-lac",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanović",
+      "name": "Bogdan Bogdanovi\u0107",
       "team": "LAC",
       "position": "SG",
       "positions": [
@@ -12226,10 +12382,10 @@
       "trueShooting": 0.522
     },
     {
-      "id": "payneca01-phi",
+      "id": "payneca01-fa",
       "bbrPlayerId": "payneca01",
       "name": "Cameron Payne",
-      "team": "PHI",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -12503,6 +12659,45 @@
       "trueShooting": 0.585
     },
     {
+      "id": "burksal01-fa",
+      "bbrPlayerId": "burksal01",
+      "name": "Alec Burks",
+      "team": "FA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 33,
+      "gamesPlayed": 49,
+      "gamesStarted": 14,
+      "minutes": 17.6,
+      "points": 7.3,
+      "rebounds": 2.5,
+      "assists": 1.1,
+      "steals": 0.6,
+      "blocks": 0.1,
+      "turnovers": 0.6,
+      "fieldGoalsMade": 2.3,
+      "fieldGoalsAttempted": 5.5,
+      "fieldGoalPct": 0.41818181818181815,
+      "threePointersMade": 1.8,
+      "threePointersAttempted": 4.2,
+      "threePointPct": 0.42857142857142855,
+      "freeThrowsMade": 0.8,
+      "freeThrowsAttempted": 1.0,
+      "freeThrowPct": 0.8,
+      "offensiveRebounds": 0.3,
+      "defensiveRebounds": 2.2,
+      "defensiveWinShares": 0.9,
+      "defensiveBoxPlusMinus": 0.3,
+      "defensiveReboundPct": 13.8,
+      "stealPct": 1.6,
+      "blockPct": 0.8,
+      "personalFouls": 0.8,
+      "effectiveFieldGoalPct": 0.5818181818181818,
+      "trueShooting": 0.614
+    },
+    {
       "id": "sandeko01-lac",
       "bbrPlayerId": "sandeko01",
       "name": "Kobe Sanders",
@@ -12584,7 +12779,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jović",
+      "name": "Nikola Jovi\u0107",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -12974,10 +13169,10 @@
       "trueShooting": 0.608
     },
     {
-      "id": "loverla01-mem",
+      "id": "loverla01-fa",
       "bbrPlayerId": "loverla01",
       "name": "Lawson Lovering",
-      "team": "MEM",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -13132,6 +13327,45 @@
       "trueShooting": 0.549
     },
     {
+      "id": "bolbo01-fa",
+      "bbrPlayerId": "bolbo01",
+      "name": "Bol Bol",
+      "team": "FA",
+      "position": "PF",
+      "positions": [
+        "PF"
+      ],
+      "age": 25,
+      "gamesPlayed": 36,
+      "gamesStarted": 10,
+      "minutes": 12.4,
+      "points": 6.8,
+      "rebounds": 2.9,
+      "assists": 0.6,
+      "steals": 0.3,
+      "blocks": 0.7,
+      "turnovers": 0.6,
+      "fieldGoalsMade": 2.7,
+      "fieldGoalsAttempted": 5.1,
+      "fieldGoalPct": 0.5294117647058825,
+      "threePointersMade": 0.8999999999999999,
+      "threePointersAttempted": 2.6,
+      "threePointPct": 0.3461538461538461,
+      "freeThrowsMade": 0.6,
+      "freeThrowsAttempted": 0.7,
+      "freeThrowPct": 0.8571428571428572,
+      "offensiveRebounds": 0.6,
+      "defensiveRebounds": 2.3,
+      "defensiveWinShares": 0.3,
+      "defensiveBoxPlusMinus": -0.8999999999999999,
+      "defensiveReboundPct": 20.4,
+      "stealPct": 1.0,
+      "blockPct": 5.2,
+      "personalFouls": 0.6,
+      "effectiveFieldGoalPct": 0.6176470588235295,
+      "trueShooting": 0.629
+    },
+    {
       "id": "beaucma01-phi",
       "bbrPlayerId": "beaucma01",
       "name": "MarJon Beauchamp",
@@ -13210,10 +13444,10 @@
       "trueShooting": 0.466
     },
     {
-      "id": "anthoco01-mil",
+      "id": "anthoco01-fa",
       "bbrPlayerId": "anthoco01",
       "name": "Cole Anthony",
-      "team": "MIL",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -13407,6 +13641,46 @@
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.7380952380952381,
       "trueShooting": 0.722
+    },
+    {
+      "id": "smithde03-fa",
+      "bbrPlayerId": "smithde03",
+      "name": "Dennis Smith Jr.",
+      "team": "FA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 26,
+      "gamesPlayed": 56,
+      "gamesStarted": 2,
+      "minutes": 18.9,
+      "points": 6.6,
+      "rebounds": 2.9,
+      "assists": 3.6,
+      "steals": 1.2,
+      "blocks": 0.2,
+      "turnovers": 1.2,
+      "fieldGoalsMade": 2.6,
+      "fieldGoalsAttempted": 6.0,
+      "fieldGoalPct": 0.43333333333333335,
+      "threePointersMade": 0.6,
+      "threePointersAttempted": 1.9,
+      "threePointPct": 0.3157894736842105,
+      "freeThrowsMade": 0.8,
+      "freeThrowsAttempted": 1.0,
+      "freeThrowPct": 0.8,
+      "offensiveRebounds": 0.9,
+      "defensiveRebounds": 2.0,
+      "defensiveWinShares": 1.3,
+      "defensiveBoxPlusMinus": 1.8,
+      "defensiveReboundPct": 12.1,
+      "stealPct": 3.2,
+      "blockPct": 1.0,
+      "personalFouls": 2.2,
+      "effectiveFieldGoalPct": 0.48333333333333334,
+      "trueShooting": 0.512
     },
     {
       "id": "nembhry01-dal",
@@ -14003,7 +14277,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jakučionis",
+      "name": "Kasparas Jaku\u010dionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -14317,7 +14591,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Salaün",
+      "name": "Tidjane Sala\u00fcn",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -14946,7 +15220,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matković",
+      "name": "Karlo Matkovi\u0107",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -15259,10 +15533,10 @@
       "trueShooting": 0.614
     },
     {
-      "id": "gordoer01-phi",
+      "id": "gordoer01-fa",
       "bbrPlayerId": "gordoer01",
       "name": "Eric Gordon",
-      "team": "PHI",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -15731,10 +16005,10 @@
       "trueShooting": 0.551
     },
     {
-      "id": "garcian01-uta",
+      "id": "garcian01-fa",
       "bbrPlayerId": "garcian01",
       "name": "Andersson Garcia",
-      "team": "UTA",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF",
@@ -15850,10 +16124,10 @@
       "trueShooting": 0.602
     },
     {
-      "id": "mathega01-ind",
+      "id": "mathega01-fa",
       "bbrPlayerId": "mathega01",
       "name": "Garrison Mathews",
-      "team": "IND",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -15970,7 +16244,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topić",
+      "name": "Nikola Topi\u0107",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -16242,6 +16516,46 @@
       "trueShooting": 0.507
     },
     {
+      "id": "simmobe01-fa",
+      "bbrPlayerId": "simmobe01",
+      "name": "Ben Simmons",
+      "team": "FA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 28,
+      "gamesPlayed": 51,
+      "gamesStarted": 24,
+      "minutes": 22.0,
+      "points": 5.0,
+      "rebounds": 4.7,
+      "assists": 5.6,
+      "steals": 0.7,
+      "blocks": 0.5,
+      "turnovers": 2.0,
+      "fieldGoalsMade": 2.3,
+      "fieldGoalsAttempted": 4.4,
+      "fieldGoalPct": 0.52,
+      "threePointersMade": 0.0,
+      "threePointersAttempted": 0.0,
+      "threePointPct": 0.0,
+      "freeThrowsMade": 0.5,
+      "freeThrowsAttempted": 0.6,
+      "freeThrowPct": 0.727,
+      "offensiveRebounds": 0.9,
+      "defensiveRebounds": 3.8,
+      "defensiveWinShares": 1.3,
+      "defensiveBoxPlusMinus": 1.8,
+      "defensiveReboundPct": 20.3,
+      "stealPct": 1.7,
+      "blockPct": 2.0,
+      "personalFouls": 2.1,
+      "effectiveFieldGoalPct": 0.52,
+      "trueShooting": 0.536
+    },
+    {
       "id": "simsje01-mil",
       "bbrPlayerId": "simsje01",
       "name": "Jericho Sims",
@@ -16400,10 +16714,10 @@
       "trueShooting": 0.532
     },
     {
-      "id": "robinje02-dal",
+      "id": "robinje02-fa",
       "bbrPlayerId": "robinje02",
       "name": "Jeremiah Robinson-Earl",
-      "team": "DAL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -16479,10 +16793,10 @@
       "trueShooting": 0.426
     },
     {
-      "id": "balllo01-cle",
+      "id": "balllo01-fa",
       "bbrPlayerId": "balllo01",
       "name": "Lonzo Ball",
-      "team": "CLE",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -16519,10 +16833,10 @@
       "trueShooting": 0.437
     },
     {
-      "id": "branhma01-was",
+      "id": "branhma01-fa",
       "bbrPlayerId": "branhma01",
       "name": "Malaki Branham",
-      "team": "WAS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -17150,6 +17464,46 @@
       "trueShooting": 0.43
     },
     {
+      "id": "jacksre01-fa",
+      "bbrPlayerId": "jacksre01",
+      "name": "Reggie Jackson",
+      "team": "FA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 34,
+      "gamesPlayed": 31,
+      "gamesStarted": 1,
+      "minutes": 12.4,
+      "points": 4.4,
+      "rebounds": 1.4,
+      "assists": 1.5,
+      "steals": 0.5,
+      "blocks": 0.1,
+      "turnovers": 0.5,
+      "fieldGoalsMade": 1.7,
+      "fieldGoalsAttempted": 4.3,
+      "fieldGoalPct": 0.3953488372093023,
+      "threePointersMade": 0.8,
+      "threePointersAttempted": 2.4,
+      "threePointPct": 0.33333333333333337,
+      "freeThrowsMade": 0.2,
+      "freeThrowsAttempted": 0.3,
+      "freeThrowPct": 0.6666666666666667,
+      "offensiveRebounds": 0.3,
+      "defensiveRebounds": 1.1,
+      "defensiveWinShares": 0.2,
+      "defensiveBoxPlusMinus": -0.8,
+      "defensiveReboundPct": 10.4,
+      "stealPct": 2.1,
+      "blockPct": 0.8,
+      "personalFouls": 1.1,
+      "effectiveFieldGoalPct": 0.48837209302325585,
+      "trueShooting": 0.496
+    },
+    {
       "id": "kolekty01-nyk",
       "bbrPlayerId": "kolekty01",
       "name": "Tyler Kolek",
@@ -17230,10 +17584,10 @@
       "trueShooting": 0.669
     },
     {
-      "id": "nelsogr02-brk",
+      "id": "nelsogr02-fa",
       "bbrPlayerId": "nelsogr02",
       "name": "Grant Nelson",
-      "team": "BRK",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -17544,10 +17898,10 @@
       "trueShooting": 0.516
     },
     {
-      "id": "labissk01-was",
+      "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissière",
-      "team": "WAS",
+      "name": "Skal Labissi\u00e8re",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -17585,7 +17939,7 @@
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederhäuser",
+      "name": "Yanic Konan Niederh\u00e4user",
       "team": "LAC",
       "position": "PF",
       "positions": [
@@ -17779,6 +18133,45 @@
       "trueShooting": 0.546
     },
     {
+      "id": "craigto01-fa",
+      "bbrPlayerId": "craigto01",
+      "name": "Torrey Craig",
+      "team": "FA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 34,
+      "gamesPlayed": 26,
+      "gamesStarted": 4,
+      "minutes": 12.1,
+      "points": 4.2,
+      "rebounds": 2.8,
+      "assists": 0.7,
+      "steals": 0.3,
+      "blocks": 0.5,
+      "turnovers": 0.3,
+      "fieldGoalsMade": 1.5,
+      "fieldGoalsAttempted": 3.5,
+      "fieldGoalPct": 0.422,
+      "threePointersMade": 0.9,
+      "threePointersAttempted": 2.5,
+      "threePointPct": 0.364,
+      "freeThrowsMade": 0.3,
+      "freeThrowsAttempted": 0.5,
+      "freeThrowPct": 0.667,
+      "offensiveRebounds": 1.0,
+      "defensiveRebounds": 1.8,
+      "defensiveWinShares": 0.4,
+      "defensiveBoxPlusMinus": 0.1,
+      "defensiveReboundPct": 15.6,
+      "stealPct": 1.3,
+      "blockPct": 3.5,
+      "personalFouls": 1.3,
+      "effectiveFieldGoalPct": 0.556,
+      "trueShooting": 0.565
+    },
+    {
       "id": "enarutr01-cle",
       "bbrPlayerId": "enarutr01",
       "name": "Tristan Enaruna",
@@ -17818,10 +18211,10 @@
       "trueShooting": 0.586
     },
     {
-      "id": "clarkbr01-mem",
+      "id": "clarkbr01-fa",
       "bbrPlayerId": "clarkbr01",
       "name": "Brandon Clarke",
-      "team": "MEM",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -17894,6 +18287,45 @@
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5147058823529412,
       "trueShooting": 0.521
+    },
+    {
+      "id": "richajo01-fa",
+      "bbrPlayerId": "richajo01",
+      "name": "Josh Richardson",
+      "team": "FA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 31,
+      "gamesPlayed": 8,
+      "gamesStarted": 0,
+      "minutes": 18.8,
+      "points": 4.0,
+      "rebounds": 1.5,
+      "assists": 1.5,
+      "steals": 1.0,
+      "blocks": 0.1,
+      "turnovers": 1.0,
+      "fieldGoalsMade": 1.4,
+      "fieldGoalsAttempted": 4.8,
+      "fieldGoalPct": 0.2916666666666667,
+      "threePointersMade": 0.8,
+      "threePointersAttempted": 2.8,
+      "threePointPct": 0.28571428571428575,
+      "freeThrowsMade": 0.5,
+      "freeThrowsAttempted": 0.5,
+      "freeThrowPct": 1.0,
+      "offensiveRebounds": 0.8,
+      "defensiveRebounds": 0.8,
+      "defensiveWinShares": 0.2,
+      "defensiveBoxPlusMinus": 0.6,
+      "defensiveReboundPct": 4.4,
+      "stealPct": 2.7,
+      "blockPct": 0.6,
+      "personalFouls": 2.1,
+      "effectiveFieldGoalPct": 0.375,
+      "trueShooting": 0.398
     },
     {
       "id": "batumni01-lac",
@@ -18094,7 +18526,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo González",
+      "name": "Hugo Gonz\u00e1lez",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -18210,6 +18642,46 @@
       "trueShooting": 0.506
     },
     {
+      "id": "millspa02-fa",
+      "bbrPlayerId": "millspa02",
+      "name": "Patty Mills",
+      "team": "FA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 36,
+      "gamesPlayed": 29,
+      "gamesStarted": 0,
+      "minutes": 11.1,
+      "points": 3.8,
+      "rebounds": 0.8,
+      "assists": 0.9,
+      "steals": 0.4,
+      "blocks": 0.1,
+      "turnovers": 0.6,
+      "fieldGoalsMade": 1.2,
+      "fieldGoalsAttempted": 3.3,
+      "fieldGoalPct": 0.375,
+      "threePointersMade": 0.9,
+      "threePointersAttempted": 2.6,
+      "threePointPct": 0.347,
+      "freeThrowsMade": 0.4,
+      "freeThrowsAttempted": 0.5,
+      "freeThrowPct": 0.929,
+      "offensiveRebounds": 0.1,
+      "defensiveRebounds": 0.6,
+      "defensiveWinShares": 0.1,
+      "defensiveBoxPlusMinus": 0.0,
+      "defensiveReboundPct": 6.0,
+      "stealPct": 1.9,
+      "blockPct": 0.9,
+      "personalFouls": 0.8,
+      "effectiveFieldGoalPct": 0.51,
+      "trueShooting": 0.54
+    },
+    {
       "id": "breako01-pho",
       "bbrPlayerId": "breako01",
       "name": "Koby Brea",
@@ -18289,45 +18761,6 @@
       "trueShooting": 0.503
     },
     {
-      "id": "terryda01-phi",
-      "bbrPlayerId": "terryda01",
-      "name": "Dalen Terry",
-      "team": "PHI",
-      "position": "SG",
-      "positions": [
-        "SG"
-      ],
-      "age": 23,
-      "gamesPlayed": 48,
-      "gamesStarted": 0,
-      "minutes": 11.5,
-      "points": 3.7,
-      "rebounds": 1.8,
-      "assists": 1.4,
-      "steals": 0.6,
-      "blocks": 0.3,
-      "turnovers": 0.5,
-      "fieldGoalsMade": 1.4,
-      "fieldGoalsAttempted": 3.2,
-      "fieldGoalPct": 0.439,
-      "threePointersMade": 0.5,
-      "threePointersAttempted": 1.4,
-      "threePointPct": 0.364,
-      "freeThrowsMade": 0.3,
-      "freeThrowsAttempted": 0.6,
-      "freeThrowPct": 0.533,
-      "offensiveRebounds": 0.5,
-      "defensiveRebounds": 1.3,
-      "defensiveWinShares": 0.6,
-      "defensiveBoxPlusMinus": 0.8,
-      "defensiveReboundPct": 11.6,
-      "stealPct": 2.5,
-      "blockPct": 2.4,
-      "personalFouls": 1,
-      "effectiveFieldGoalPct": 0.516,
-      "trueShooting": 0.534
-    },
-    {
       "id": "holmeda01-den",
       "bbrPlayerId": "holmeda01",
       "name": "DaRon Holmes",
@@ -18365,6 +18798,45 @@
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.6666666666666667,
       "trueShooting": 0.694
+    },
+    {
+      "id": "terryda01-phi",
+      "bbrPlayerId": "terryda01",
+      "name": "Dalen Terry",
+      "team": "PHI",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 23,
+      "gamesPlayed": 48,
+      "gamesStarted": 0,
+      "minutes": 11.5,
+      "points": 3.7,
+      "rebounds": 1.8,
+      "assists": 1.4,
+      "steals": 0.6,
+      "blocks": 0.3,
+      "turnovers": 0.5,
+      "fieldGoalsMade": 1.4,
+      "fieldGoalsAttempted": 3.2,
+      "fieldGoalPct": 0.439,
+      "threePointersMade": 0.5,
+      "threePointersAttempted": 1.4,
+      "threePointPct": 0.364,
+      "freeThrowsMade": 0.3,
+      "freeThrowsAttempted": 0.6,
+      "freeThrowPct": 0.533,
+      "offensiveRebounds": 0.5,
+      "defensiveRebounds": 1.3,
+      "defensiveWinShares": 0.6,
+      "defensiveBoxPlusMinus": 0.8,
+      "defensiveReboundPct": 11.6,
+      "stealPct": 2.5,
+      "blockPct": 2.4,
+      "personalFouls": 1,
+      "effectiveFieldGoalPct": 0.516,
+      "trueShooting": 0.534
     },
     {
       "id": "nancela02-cle",
@@ -19036,10 +19508,10 @@
       "trueShooting": 0.676
     },
     {
-      "id": "wisemja01-ind",
+      "id": "wisemja01-fa",
       "bbrPlayerId": "wisemja01",
       "name": "James Wiseman",
-      "team": "IND",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -19233,6 +19705,45 @@
       "trueShooting": 0.579
     },
     {
+      "id": "reddica01-fa",
+      "bbrPlayerId": "reddica01",
+      "name": "Cam Reddish",
+      "team": "FA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 25,
+      "gamesPlayed": 33,
+      "gamesStarted": 8,
+      "minutes": 17.8,
+      "points": 3.2,
+      "rebounds": 2.0,
+      "assists": 0.7,
+      "steals": 1.0,
+      "blocks": 0.3,
+      "turnovers": 0.4,
+      "fieldGoalsMade": 1.2,
+      "fieldGoalsAttempted": 2.8,
+      "fieldGoalPct": 0.4285714285714286,
+      "threePointersMade": 0.4,
+      "threePointersAttempted": 1.4,
+      "threePointPct": 0.28571428571428575,
+      "freeThrowsMade": 0.5,
+      "freeThrowsAttempted": 0.8,
+      "freeThrowPct": 0.625,
+      "offensiveRebounds": 0.5,
+      "defensiveRebounds": 1.5,
+      "defensiveWinShares": 0.6,
+      "defensiveBoxPlusMinus": 1.6,
+      "defensiveReboundPct": 9.1,
+      "stealPct": 2.8,
+      "blockPct": 1.6,
+      "personalFouls": 1.3,
+      "effectiveFieldGoalPct": 0.5,
+      "trueShooting": 0.508
+    },
+    {
       "id": "olynyke01-sas",
       "bbrPlayerId": "olynyke01",
       "name": "Kelly Olynyk",
@@ -19271,6 +19782,46 @@
       "personalFouls": 0.9000000000000001,
       "effectiveFieldGoalPct": 0.5434782608695653,
       "trueShooting": 0.593
+    },
+    {
+      "id": "wrighde01-fa",
+      "bbrPlayerId": "wrighde01",
+      "name": "Delon Wright",
+      "team": "FA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 32,
+      "gamesPlayed": 40,
+      "gamesStarted": 7,
+      "minutes": 15.9,
+      "points": 3.1,
+      "rebounds": 1.7,
+      "assists": 1.9,
+      "steals": 0.9,
+      "blocks": 0.3,
+      "turnovers": 0.6,
+      "fieldGoalsMade": 1.1,
+      "fieldGoalsAttempted": 3.3,
+      "fieldGoalPct": 0.344,
+      "threePointersMade": 0.5,
+      "threePointersAttempted": 1.8,
+      "threePointPct": 0.274,
+      "freeThrowsMade": 0.4,
+      "freeThrowsAttempted": 0.6,
+      "freeThrowPct": 0.6,
+      "offensiveRebounds": 0.7,
+      "defensiveRebounds": 1.0,
+      "defensiveWinShares": 0.7,
+      "defensiveBoxPlusMinus": 1.4,
+      "defensiveReboundPct": 6.5,
+      "stealPct": 2.7,
+      "blockPct": 1.8,
+      "personalFouls": 0.6,
+      "effectiveFieldGoalPct": 0.42,
+      "trueShooting": 0.435
     },
     {
       "id": "battlja01-tor",
@@ -19312,10 +19863,10 @@
       "trueShooting": 0.623
     },
     {
-      "id": "searsma01-mil",
+      "id": "searsma01-fa",
       "bbrPlayerId": "searsma01",
       "name": "Mark Sears",
-      "team": "MIL",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -19352,10 +19903,10 @@
       "trueShooting": 0.65
     },
     {
-      "id": "kellymi02-dal",
+      "id": "kellymi02-fa",
       "bbrPlayerId": "kellymi02",
       "name": "Miles Kelly",
-      "team": "DAL",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -19390,45 +19941,6 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.467741935483871,
       "trueShooting": 0.493
-    },
-    {
-      "id": "livinch01-cle",
-      "bbrPlayerId": "livinch01",
-      "name": "Chris Livingston",
-      "team": "CLE",
-      "position": "SF",
-      "positions": [
-        "SF"
-      ],
-      "age": 22,
-      "gamesPlayed": 3,
-      "gamesStarted": 0,
-      "minutes": 5.7,
-      "points": 3,
-      "rebounds": 1,
-      "assists": 0.3,
-      "steals": 0.3,
-      "blocks": 0,
-      "turnovers": 0,
-      "fieldGoalsMade": 1.3,
-      "fieldGoalsAttempted": 2.3,
-      "fieldGoalPct": 0.5652173913043479,
-      "threePointersMade": 0,
-      "threePointersAttempted": 1,
-      "threePointPct": 0,
-      "freeThrowsMade": 0.3,
-      "freeThrowsAttempted": 0.3,
-      "freeThrowPct": 1,
-      "offensiveRebounds": 0,
-      "defensiveRebounds": 1,
-      "defensiveWinShares": 0,
-      "defensiveBoxPlusMinus": 2.1,
-      "defensiveReboundPct": 19.3,
-      "stealPct": 2.7999999999999994,
-      "blockPct": 0,
-      "personalFouls": 1.3,
-      "effectiveFieldGoalPct": 0.5652173913043479,
-      "trueShooting": 0.617
     },
     {
       "id": "huntlcj01-pho",
@@ -19468,6 +19980,45 @@
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.5357142857142857,
       "trueShooting": 0.536
+    },
+    {
+      "id": "livinch01-fa",
+      "bbrPlayerId": "livinch01",
+      "name": "Chris Livingston",
+      "team": "FA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 22,
+      "gamesPlayed": 3,
+      "gamesStarted": 0,
+      "minutes": 5.7,
+      "points": 3,
+      "rebounds": 1,
+      "assists": 0.3,
+      "steals": 0.3,
+      "blocks": 0,
+      "turnovers": 0,
+      "fieldGoalsMade": 1.3,
+      "fieldGoalsAttempted": 2.3,
+      "fieldGoalPct": 0.5652173913043479,
+      "threePointersMade": 0,
+      "threePointersAttempted": 1,
+      "threePointPct": 0,
+      "freeThrowsMade": 0.3,
+      "freeThrowsAttempted": 0.3,
+      "freeThrowPct": 1,
+      "offensiveRebounds": 0,
+      "defensiveRebounds": 1,
+      "defensiveWinShares": 0,
+      "defensiveBoxPlusMinus": 2.1,
+      "defensiveReboundPct": 19.3,
+      "stealPct": 2.7999999999999994,
+      "blockPct": 0,
+      "personalFouls": 1.3,
+      "effectiveFieldGoalPct": 0.5652173913043479,
+      "trueShooting": 0.617
     },
     {
       "id": "milleem01-sas",
@@ -19549,10 +20100,10 @@
       "trueShooting": 0.575
     },
     {
-      "id": "morrimo01-ind",
+      "id": "morrimo01-fa",
       "bbrPlayerId": "morrimo01",
       "name": "Monte Morris",
-      "team": "IND",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -19668,10 +20219,10 @@
       "trueShooting": 0.52
     },
     {
-      "id": "paulch01-lac",
+      "id": "paulch01-fa",
       "bbrPlayerId": "paulch01",
       "name": "Chris Paul",
-      "team": "LAC",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -19749,7 +20300,7 @@
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones García",
+      "name": "David Jones Garc\u00eda",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -19786,10 +20337,10 @@
       "trueShooting": 0.575
     },
     {
-      "id": "reathdu01-por",
+      "id": "reathdu01-fa",
       "bbrPlayerId": "reathdu01",
       "name": "Duop Reath",
-      "team": "POR",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -19865,10 +20416,10 @@
       "trueShooting": 0.533
     },
     {
-      "id": "bufkiko01-lal",
+      "id": "bufkiko01-fa",
       "bbrPlayerId": "bufkiko01",
       "name": "Kobe Bufkin",
-      "team": "LAL",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -20258,6 +20809,84 @@
       "trueShooting": 0.503
     },
     {
+      "id": "crowdja01-fa",
+      "bbrPlayerId": "crowdja01",
+      "name": "Jae Crowder",
+      "team": "FA",
+      "position": "PF",
+      "positions": [
+        "PF"
+      ],
+      "age": 34,
+      "gamesPlayed": 9,
+      "gamesStarted": 2,
+      "minutes": 11.4,
+      "points": 2.6,
+      "rebounds": 2.2,
+      "assists": 0.7,
+      "steals": 0.3,
+      "blocks": 0.0,
+      "turnovers": 0.4,
+      "fieldGoalsMade": 0.8,
+      "fieldGoalsAttempted": 2.4,
+      "fieldGoalPct": 0.33333333333333337,
+      "threePointersMade": 0.4,
+      "threePointersAttempted": 1.7,
+      "threePointPct": 0.23529411764705885,
+      "freeThrowsMade": 0.6,
+      "freeThrowsAttempted": 0.7,
+      "freeThrowPct": 0.8571428571428572,
+      "offensiveRebounds": 0.7,
+      "defensiveRebounds": 1.6,
+      "defensiveWinShares": 0.1,
+      "defensiveBoxPlusMinus": -0.5,
+      "defensiveReboundPct": 15.300000000000002,
+      "stealPct": 1.4,
+      "blockPct": 0.0,
+      "personalFouls": 1.1,
+      "effectiveFieldGoalPct": 0.4166666666666667,
+      "trueShooting": 0.48
+    },
+    {
+      "id": "porteot01-fa",
+      "bbrPlayerId": "porteot01",
+      "name": "Otto Porter Jr.",
+      "team": "FA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 30,
+      "gamesPlayed": 15,
+      "gamesStarted": 1,
+      "minutes": 11.6,
+      "points": 2.6,
+      "rebounds": 1.9,
+      "assists": 0.5,
+      "steals": 0.3,
+      "blocks": 0.3,
+      "turnovers": 0.1,
+      "fieldGoalsMade": 0.9,
+      "fieldGoalsAttempted": 2.2,
+      "fieldGoalPct": 0.40909090909090906,
+      "threePointersMade": 0.5,
+      "threePointersAttempted": 1.5,
+      "threePointPct": 0.3333333333333333,
+      "freeThrowsMade": 0.2,
+      "freeThrowsAttempted": 0.2,
+      "freeThrowPct": 1.0,
+      "offensiveRebounds": 0.4,
+      "defensiveRebounds": 1.5,
+      "defensiveWinShares": 0.1,
+      "defensiveBoxPlusMinus": 0.3,
+      "defensiveReboundPct": 14.8,
+      "stealPct": 1.4,
+      "blockPct": 2.5,
+      "personalFouls": 1.3,
+      "effectiveFieldGoalPct": 0.5227272727272726,
+      "trueShooting": 0.568
+    },
+    {
       "id": "connapa01-cho",
       "bbrPlayerId": "connapa01",
       "name": "Pat Connaughton",
@@ -20376,10 +21005,10 @@
       "trueShooting": 0.479
     },
     {
-      "id": "bambamo01-tor",
+      "id": "bambamo01-fa",
       "bbrPlayerId": "bambamo01",
       "name": "Mo Bamba",
-      "team": "TOR",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -20691,10 +21320,10 @@
       "trueShooting": 0.773
     },
     {
-      "id": "bouchch01-bos",
+      "id": "bouchch01-fa",
       "bbrPlayerId": "bouchch01",
       "name": "Chris Boucher",
-      "team": "BOS",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -20730,10 +21359,10 @@
       "trueShooting": 0.386
     },
     {
-      "id": "travelu01-cle",
+      "id": "travelu01-fa",
       "bbrPlayerId": "travelu01",
       "name": "Luke Travers",
-      "team": "CLE",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -20848,10 +21477,10 @@
       "trueShooting": 0.624
     },
     {
-      "id": "tysonhu01-den",
+      "id": "tysonhu01-fa",
       "bbrPlayerId": "tysonhu01",
       "name": "Hunter Tyson",
-      "team": "DEN",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -21045,10 +21674,10 @@
       "trueShooting": 0.495
     },
     {
-      "id": "jonesco02-det",
+      "id": "jonesco02-fa",
       "bbrPlayerId": "jonesco02",
       "name": "Colby Jones",
-      "team": "DET",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -21202,10 +21831,10 @@
       "trueShooting": 0.672
     },
     {
-      "id": "juzanjo01-min",
+      "id": "juzanjo01-fa",
       "bbrPlayerId": "juzanjo01",
       "name": "Johnny Juzang",
-      "team": "MIN",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -21320,10 +21949,10 @@
       "trueShooting": 0.509
     },
     {
-      "id": "flowetr01-chi",
+      "id": "flowetr01-fa",
       "bbrPlayerId": "flowetr01",
       "name": "Trentyn Flowers",
-      "team": "CHI",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -21438,10 +22067,10 @@
       "trueShooting": 0.452
     },
     {
-      "id": "klintbo01-det",
+      "id": "klintbo01-fa",
       "bbrPlayerId": "klintbo01",
       "name": "Bobi Klintman",
-      "team": "DET",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -21477,10 +22106,10 @@
       "trueShooting": 0.37
     },
     {
-      "id": "martico01-ind",
+      "id": "martico01-fa",
       "bbrPlayerId": "martico01",
       "name": "Cody Martin",
-      "team": "IND",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -21556,10 +22185,10 @@
       "trueShooting": 0.488
     },
     {
-      "id": "robinor01-orl",
+      "id": "robinor01-fa",
       "bbrPlayerId": "robinor01",
       "name": "Orlando Robinson",
-      "team": "ORL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -21676,7 +22305,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pacôme Dadiet",
+      "name": "Pac\u00f4me Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -21711,6 +22340,46 @@
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.4117647058823529,
       "trueShooting": 0.453
+    },
+    {
+      "id": "thomptr01-fa",
+      "bbrPlayerId": "thomptr01",
+      "name": "Tristan Thompson",
+      "team": "FA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 33,
+      "gamesPlayed": 40,
+      "gamesStarted": 0,
+      "minutes": 8.2,
+      "points": 1.7,
+      "rebounds": 3.4,
+      "assists": 0.6,
+      "steals": 0.1,
+      "blocks": 0.3,
+      "turnovers": 0.4,
+      "fieldGoalsMade": 0.8,
+      "fieldGoalsAttempted": 1.8,
+      "fieldGoalPct": 0.4444444444444445,
+      "threePointersMade": 0.0,
+      "threePointersAttempted": 0.1,
+      "threePointPct": 0.0,
+      "freeThrowsMade": 0.2,
+      "freeThrowsAttempted": 0.8,
+      "freeThrowPct": 0.25,
+      "offensiveRebounds": 0.8,
+      "defensiveRebounds": 2.6,
+      "defensiveWinShares": 0.5,
+      "defensiveBoxPlusMinus": 0.3,
+      "defensiveReboundPct": 32.7,
+      "stealPct": 0.3,
+      "blockPct": 3.0,
+      "personalFouls": 0.9,
+      "effectiveFieldGoalPct": 0.4444444444444445,
+      "trueShooting": 0.395
     },
     {
       "id": "moorewe01-det",
@@ -21791,10 +22460,10 @@
       "trueShooting": 0.889
     },
     {
-      "id": "toppija01-atl",
+      "id": "toppija01-fa",
       "bbrPlayerId": "toppija01",
       "name": "Jacob Toppin",
-      "team": "ATL",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -21870,10 +22539,10 @@
       "trueShooting": 0.794
     },
     {
-      "id": "boehebu01-okc",
+      "id": "boehebu01-fa",
       "bbrPlayerId": "boehebu01",
       "name": "Buddy Boeheim",
-      "team": "OKC",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -22223,10 +22892,10 @@
       "trueShooting": 0.514
     },
     {
-      "id": "hayesni01-pho",
+      "id": "hayesni01-fa",
       "bbrPlayerId": "hayesni01",
       "name": "Nigel Hayes-Davis",
-      "team": "PHO",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -22302,10 +22971,10 @@
       "trueShooting": 0.542
     },
     {
-      "id": "cookeja01-por",
+      "id": "cookeja01-fa",
       "bbrPlayerId": "cookeja01",
       "name": "Javonte Cooke",
-      "team": "POR",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -22381,10 +23050,10 @@
       "trueShooting": 0.304
     },
     {
-      "id": "saricda01-sac",
+      "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario Šarić",
-      "team": "SAC",
+      "name": "Dario \u0160ari\u0107",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -22421,10 +23090,10 @@
       "trueShooting": 0.363
     },
     {
-      "id": "sallihu01-phi",
+      "id": "sallihu01-fa",
       "bbrPlayerId": "sallihu01",
       "name": "Hunter Sallis",
-      "team": "PHI",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -22460,10 +23129,10 @@
       "trueShooting": 0.601
     },
     {
-      "id": "umudest01-sas",
+      "id": "umudest01-fa",
       "bbrPlayerId": "umudest01",
       "name": "Stanley Umude",
-      "team": "SAS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -22658,10 +23327,10 @@
       "trueShooting": 0.186
     },
     {
-      "id": "peterdr01-cho",
+      "id": "peterdr01-fa",
       "bbrPlayerId": "peterdr01",
       "name": "Drew Peterson",
-      "team": "CHO",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -22699,7 +23368,7 @@
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Mañon",
+      "name": "Chris Ma\u00f1on",
       "team": "LAL",
       "position": "SG",
       "positions": [
@@ -22775,10 +23444,10 @@
       "trueShooting": 0.457
     },
     {
-      "id": "fultzma01-tor",
+      "id": "fultzma01-fa",
       "bbrPlayerId": "fultzma01",
       "name": "Markelle Fultz",
-      "team": "TOR",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -22815,10 +23484,10 @@
       "trueShooting": 0.182
     },
     {
-      "id": "nfalyda01-atl",
+      "id": "nfalyda01-fa",
       "bbrPlayerId": "nfalyda01",
       "name": "N'Faly Dante",
-      "team": "ATL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF",
@@ -22934,10 +23603,10 @@
       "trueShooting": 0.381
     },
     {
-      "id": "telfoja01-lac",
+      "id": "telfoja01-fa",
       "bbrPlayerId": "telfoja01",
       "name": "Jahmyl Telfort",
-      "team": "LAC",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -23013,10 +23682,10 @@
       "trueShooting": 0
     },
     {
-      "id": "brownda04-cle",
+      "id": "brownda04-fa",
       "bbrPlayerId": "brownda04",
       "name": "Darius Brown II",
-      "team": "CLE",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -23136,5 +23805,7 @@
     "Damian Lillard",
     "Fred VanVleet"
   ],
-  "rosterSource": "espn-roster-api"
+  "rosterSource": "espn-roster-api",
+  "freeAgentCount": 68,
+  "freeAgentSyncedAt": "2026-06-26T20:45:46.972874+00:00"
 }

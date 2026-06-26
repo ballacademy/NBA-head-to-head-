@@ -9,6 +9,7 @@ import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool } from "./lib/activePlayerPool";
+import { databasePlayers } from "./lib/playerPool";
 import {
   generateFeasibleDraftSlots,
   generateFeasibleDraftSlotsUnderSalaryCap,
@@ -485,7 +486,7 @@ function App() {
     return (
       <main className="landing-layout">
         <PlayerStatsTable
-          players={activePlayers}
+          players={databasePlayers}
           collection={collection}
           onBack={resetToLanding}
         />

@@ -11,6 +11,7 @@ import {
   buildDefensiveRatings,
   toDefensiveStatInput,
 } from "./defenseRating";
+import { isFreeAgentTeam } from "./freeAgents";
 import seasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
 
 export interface SeasonStatsFile {
@@ -212,17 +213,32 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
   };
 };
 
-export const players: Player[] = statsFile.players
-  .filter((player) => player.gamesPlayed > 0)
-  .map(toPlayer)
-  .sort(
-    (a, b) =>
-      b.points - a.points ||
-      a.name.localeCompare(b.name) ||
-      a.team.localeCompare(b.team),
-  );
+const mapStatsToPlayers = (rawPlayers: RawSeasonPlayer[]) =>
+  rawPlayers
+    .filter((player) => player.gamesPlayed > 0)
+    .map(toPlayer)
+    .sort(
+      (a, b) =>
+        b.points - a.points ||
+        a.name.localeCompare(b.name) ||
+        a.team.localeCompare(b.team),
+    );
+
+export const databasePlayers: Player[] = mapStatsToPlayers(statsFile.players);
+
+export const players: Player[] = databasePlayers.filter(
+  (player) => !isFreeAgentTeam(player.team),
+);
+
+export const freeAgentPlayers: Player[] = databasePlayers.filter((player) =>
+  isFreeAgentTeam(player.team),
+);
 
 export const playersById = new Map(players.map((player) => [player.id, player]));
+
+export const databasePlayersById = new Map(
+  databasePlayers.map((player) => [player.id, player]),
+);
 
 export const findPlayerId = (name: string) => {
   const normalized = normalizeName(name);

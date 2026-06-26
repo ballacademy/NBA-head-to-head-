@@ -1,4 +1,5 @@
 import type { Division } from "./types";
+import { FREE_AGENT_TEAM } from "./freeAgents";
 
 const divisionTeams: Record<Division, readonly string[]> = {
   Atlantic: ["BOS", "BRK", "BKN", "NYK", "PHI", "TOR"],
@@ -21,7 +22,8 @@ for (const [division, teams] of Object.entries(divisionTeams) as Array<
 
 const multiTeamPattern = /^\dTM$/;
 
-export const isDraftableTeam = (team: string) => !multiTeamPattern.test(team);
+export const isDraftableTeam = (team: string) =>
+  !multiTeamPattern.test(team) && team !== FREE_AGENT_TEAM;
 
 export const getDivisionForTeam = (team: string): Division | undefined => {
   if (!isDraftableTeam(team)) {
