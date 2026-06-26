@@ -1,7 +1,7 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-25T12:00:00.000000+00:00",
+  "generatedAt": "2026-06-26T02:48:59.843643+00:00",
   "rosterAsOf": "2026-06-25",
   "playerCount": 520,
   "byPlayerId": {
@@ -139,7 +139,7 @@
     },
     "claxtni01": {
       "jerseyNumber": 33,
-      "team": "BRK"
+      "team": "CHI"
     },
     "clownno01": {
       "jerseyNumber": 21,
@@ -295,7 +295,7 @@
     },
     "ballla01": {
       "jerseyNumber": 1,
-      "team": "CHO"
+      "team": "MIN"
     },
     "kalkbry01": {
       "jerseyNumber": 11,
@@ -307,7 +307,7 @@
     },
     "greenjo02": {
       "jerseyNumber": 10,
-      "team": "CHO"
+      "team": "MIN"
     },
     "manntr01": {
       "jerseyNumber": 23,
@@ -599,7 +599,7 @@
     },
     "stewais01": {
       "jerseyNumber": 28,
-      "team": "DET"
+      "team": "MEM"
     },
     "sassema01": {
       "jerseyNumber": 25,
@@ -1035,11 +1035,11 @@
     },
     "wareke01": {
       "jerseyNumber": 7,
-      "team": "MIA"
+      "team": "MIL"
     },
     "jaqueja01": {
       "jerseyNumber": 11,
-      "team": "MIA"
+      "team": "MIL"
     },
     "adebaba01": {
       "jerseyNumber": 13,
@@ -1071,7 +1071,7 @@
     },
     "jakucka01": {
       "jerseyNumber": 25,
-      "team": "MIA"
+      "team": "MIL"
     },
     "jovicni01": {
       "jerseyNumber": 5,
@@ -1083,7 +1083,7 @@
     },
     "herroty01": {
       "jerseyNumber": 14,
-      "team": "MIA"
+      "team": "MIL"
     },
     "johnske10": {
       "jerseyNumber": 16,
@@ -1119,7 +1119,7 @@
     },
     "portibo01": {
       "jerseyNumber": 9,
-      "team": "MIL"
+      "team": "MIA"
     },
     "simsje01": {
       "jerseyNumber": 0,
@@ -1147,7 +1147,7 @@
     },
     "antetgi01": {
       "jerseyNumber": 34,
-      "team": "MIL"
+      "team": "MIA"
     },
     "antetth01": {
       "jerseyNumber": 43,
@@ -1175,11 +1175,11 @@
     },
     "randlju01": {
       "jerseyNumber": 30,
-      "team": "MIN"
+      "team": "BRK"
     },
     "reidna01": {
       "jerseyNumber": 11,
-      "team": "MIN"
+      "team": "CHO"
     },
     "goberru01": {
       "jerseyNumber": 27,
@@ -2079,7 +2079,7 @@
     },
     "lillada01": {
       "jerseyNumber": 0,
-      "team": "MIL"
+      "team": "POR"
     },
     "vanvlfr01": {
       "jerseyNumber": 5,
@@ -2321,7 +2321,7 @@
     {
       "bbrPlayerId": "claxtni01",
       "name": "Nic Claxton",
-      "team": "BRK",
+      "team": "CHI",
       "jerseyNumber": 33,
       "position": "C"
     },
@@ -2594,7 +2594,7 @@
     {
       "bbrPlayerId": "ballla01",
       "name": "LaMelo Ball",
-      "team": "CHO",
+      "team": "MIN",
       "jerseyNumber": 1,
       "position": "PG"
     },
@@ -2615,7 +2615,7 @@
     {
       "bbrPlayerId": "greenjo02",
       "name": "Josh Green",
-      "team": "CHO",
+      "team": "MIN",
       "jerseyNumber": 10,
       "position": "SG"
     },
@@ -3126,7 +3126,7 @@
     {
       "bbrPlayerId": "stewais01",
       "name": "Isaiah Stewart",
-      "team": "DET",
+      "team": "MEM",
       "jerseyNumber": 28,
       "position": "C"
     },
@@ -3889,14 +3889,14 @@
     {
       "bbrPlayerId": "wareke01",
       "name": "Kel'el Ware",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 7,
       "position": "C"
     },
     {
       "bbrPlayerId": "jaqueja01",
       "name": "Jaime Jaquez Jr.",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 11,
       "position": "SF"
     },
@@ -3952,7 +3952,7 @@
     {
       "bbrPlayerId": "jakucka01",
       "name": "Kasparas JakuÄionis",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 25,
       "position": "PG"
     },
@@ -3973,7 +3973,7 @@
     {
       "bbrPlayerId": "herroty01",
       "name": "Tyler Herro",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 14,
       "position": "SG"
     },
@@ -4036,7 +4036,7 @@
     {
       "bbrPlayerId": "portibo01",
       "name": "Bobby Portis",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 9,
       "position": "PF"
     },
@@ -4085,7 +4085,7 @@
     {
       "bbrPlayerId": "antetgi01",
       "name": "Giannis Antetokounmpo",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 34,
       "position": "PF"
     },
@@ -4134,14 +4134,14 @@
     {
       "bbrPlayerId": "randlju01",
       "name": "Julius Randle",
-      "team": "MIN",
+      "team": "BRK",
       "jerseyNumber": 30,
       "position": "PF"
     },
     {
       "bbrPlayerId": "reidna01",
       "name": "Naz Reid",
-      "team": "MIN",
+      "team": "CHO",
       "jerseyNumber": 11,
       "position": "C"
     },
@@ -5699,5 +5699,6 @@
       "jerseyNumber": 3,
       "position": "PG"
     }
-  ]
+  ],
+  "rosterSource": "espn"
 }

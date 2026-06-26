@@ -15,11 +15,10 @@ import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
 
 describe("getStarTierLineupBonus", () => {
   it("applies the highest tier bonus once per player", () => {
-    const byId = new Map(players.map((player) => [player.id, player]));
     const lineup = [
-      byId.get("jokicni01-den"),
-      byId.get("bookede01-pho"),
-      byId.get("garlada01-cle"),
+      playersById.get("jokicni01-den"),
+      playersById.get("bookede01-pho"),
+      [...playersById.values()].find((player) => player.bbrPlayerId === "garlada01"),
     ].filter((player): player is NonNullable<typeof player> => Boolean(player));
 
     expect(lineup).toHaveLength(3);

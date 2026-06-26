@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-25T12:00:00.000000+00:00",
-  "rosterAsOf": "2026-06-25",
+  "generatedAt": "2026-06-26T02:48:59.826236+00:00",
+  "rosterAsOf": "2026-06-26",
   "playerCount": 586,
   "uniquePlayerCount": 586,
   "players": [
@@ -327,10 +327,10 @@
       "trueShooting": 0.671
     },
     {
-      "id": "antetgi01-mil",
+      "id": "antetgi01-mia",
       "bbrPlayerId": "antetgi01",
       "name": "Giannis Antetokounmpo",
-      "team": "MIL",
+      "team": "MIA",
       "position": "SF",
       "positions": [
         "SF",
@@ -688,10 +688,10 @@
       "trueShooting": 0.626
     },
     {
-      "id": "lillada01-mil",
+      "id": "lillada01-por",
       "bbrPlayerId": "lillada01",
       "name": "Damian Lillard",
-      "team": "MIL",
+      "team": "POR",
       "position": "PG",
       "age": 35,
       "gamesPlayed": 58,
@@ -1283,10 +1283,10 @@
       "trueShooting": 0.613
     },
     {
-      "id": "randlju01-min",
+      "id": "randlju01-brk",
       "bbrPlayerId": "randlju01",
       "name": "Julius Randle",
-      "team": "MIN",
+      "team": "BRK",
       "position": "SF",
       "positions": [
         "SF",
@@ -1562,10 +1562,10 @@
       "trueShooting": 0.59
     },
     {
-      "id": "herroty01-mia",
+      "id": "herroty01-mil",
       "bbrPlayerId": "herroty01",
       "name": "Tyler Herro",
-      "team": "MIA",
+      "team": "MIL",
       "position": "SG",
       "positions": [
         "SG"
@@ -1876,10 +1876,10 @@
       "trueShooting": 0.62
     },
     {
-      "id": "ballla01-cho",
+      "id": "ballla01-min",
       "bbrPlayerId": "ballla01",
       "name": "LaMelo Ball",
-      "team": "CHO",
+      "team": "MIN",
       "position": "PG",
       "positions": [
         "PG",
@@ -2076,10 +2076,10 @@
       "trueShooting": 0.687
     },
     {
-      "id": "jacksja02-mem",
+      "id": "jacksja02-uta",
       "bbrPlayerId": "jacksja02",
       "name": "Jaren Jackson Jr.",
-      "team": "MEM",
+      "team": "UTA",
       "position": "PF",
       "positions": [
         "PF",
@@ -2194,10 +2194,10 @@
       "trueShooting": 0.616
     },
     {
-      "id": "garlada01-cle",
+      "id": "garlada01-lac",
       "bbrPlayerId": "garlada01",
       "name": "Darius Garland",
-      "team": "CLE",
+      "team": "LAC",
       "position": "PG",
       "positions": [
         "PG",
@@ -3784,10 +3784,10 @@
       "trueShooting": 0.585
     },
     {
-      "id": "sextoco01-cho",
+      "id": "sextoco01-chi",
       "bbrPlayerId": "sextoco01",
       "name": "Collin Sexton",
-      "team": "CHO",
+      "team": "CHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -3823,10 +3823,10 @@
       "trueShooting": 0.612
     },
     {
-      "id": "jaqueja01-mia",
+      "id": "jaqueja01-mil",
       "bbrPlayerId": "jaqueja01",
       "name": "Jaime Jaquez Jr.",
-      "team": "MIA",
+      "team": "MIL",
       "position": "SG",
       "positions": [
         "SG",
@@ -4459,10 +4459,10 @@
       "trueShooting": 0.525
     },
     {
-      "id": "simonan01-bos",
+      "id": "simonan01-chi",
       "bbrPlayerId": "simonan01",
       "name": "Anfernee Simons",
-      "team": "BOS",
+      "team": "CHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -5049,10 +5049,10 @@
       "trueShooting": 0.56
     },
     {
-      "id": "portibo01-mil",
+      "id": "portibo01-mia",
       "bbrPlayerId": "portibo01",
       "name": "Bobby Portis",
-      "team": "MIL",
+      "team": "MIA",
       "position": "SF",
       "positions": [
         "SF",
@@ -5128,10 +5128,10 @@
       "trueShooting": 0.548
     },
     {
-      "id": "reidna01-min",
+      "id": "reidna01-cho",
       "bbrPlayerId": "reidna01",
       "name": "Naz Reid",
-      "team": "MIN",
+      "team": "CHO",
       "position": "PF",
       "positions": [
         "PF",
@@ -6269,10 +6269,10 @@
       "trueShooting": 0.628
     },
     {
-      "id": "kuminjo01-gsw",
+      "id": "kuminjo01-atl",
       "bbrPlayerId": "kuminjo01",
       "name": "Jonathan Kuminga",
-      "team": "GSW",
+      "team": "ATL",
       "position": "SF",
       "positions": [
         "SF",
@@ -7021,10 +7021,10 @@
       "trueShooting": 0.682
     },
     {
-      "id": "claxtni01-brk",
+      "id": "claxtni01-chi",
       "bbrPlayerId": "claxtni01",
       "name": "Nic Claxton",
-      "team": "BRK",
+      "team": "CHI",
       "position": "PF",
       "positions": [
         "PF",
@@ -7496,10 +7496,10 @@
       "trueShooting": 0.61
     },
     {
-      "id": "wareke01-mia",
+      "id": "wareke01-mil",
       "bbrPlayerId": "wareke01",
       "name": "Kel'el Ware",
-      "team": "MIA",
+      "team": "MIL",
       "position": "C",
       "positions": [
         "C"
@@ -7890,10 +7890,10 @@
       "trueShooting": 0.593
     },
     {
-      "id": "baglema01-was",
+      "id": "baglema01-dal",
       "bbrPlayerId": "baglema01",
       "name": "Marvin Bagley III",
-      "team": "WAS",
+      "team": "DAL",
       "position": "SF",
       "positions": [
         "SF",
@@ -8244,10 +8244,10 @@
       "trueShooting": 0.545
     },
     {
-      "id": "russeda01-dal",
+      "id": "russeda01-was",
       "bbrPlayerId": "russeda01",
       "name": "D'Angelo Russell",
-      "team": "DAL",
+      "team": "WAS",
       "position": "PG",
       "positions": [
         "PG",
@@ -8522,10 +8522,10 @@
       "trueShooting": 0.559
     },
     {
-      "id": "stewais01-det",
+      "id": "stewais01-mem",
       "bbrPlayerId": "stewais01",
       "name": "Isaiah Stewart",
-      "team": "DET",
+      "team": "MEM",
       "position": "PF",
       "positions": [
         "PF",
@@ -9469,10 +9469,10 @@
       "trueShooting": 0.531
     },
     {
-      "id": "kispeco01-was",
+      "id": "kispeco01-atl",
       "bbrPlayerId": "kispeco01",
       "name": "Corey Kispert",
-      "team": "WAS",
+      "team": "ATL",
       "position": "SF",
       "positions": [
         "SF"
@@ -9586,10 +9586,10 @@
       "trueShooting": 0.633
     },
     {
-      "id": "hardyja02-dal",
+      "id": "hardyja02-was",
       "bbrPlayerId": "hardyja02",
       "name": "Jaden Hardy",
-      "team": "DAL",
+      "team": "WAS",
       "position": "SG",
       "positions": [
         "SG"
@@ -10652,10 +10652,10 @@
       "trueShooting": 0.531
     },
     {
-      "id": "kennalu01-atl",
+      "id": "kennalu01-lal",
       "bbrPlayerId": "kennalu01",
       "name": "Luke Kennard",
-      "team": "ATL",
+      "team": "LAL",
       "position": "SG",
       "positions": [
         "SG"
@@ -10731,10 +10731,10 @@
       "trueShooting": 0.556
     },
     {
-      "id": "mccaija01-phi",
+      "id": "mccaija01-okc",
       "bbrPlayerId": "mccaija01",
       "name": "Jared McCain",
-      "team": "PHI",
+      "team": "OKC",
       "position": "SG",
       "positions": [
         "SG"
@@ -11634,10 +11634,10 @@
       "trueShooting": 0.652
     },
     {
-      "id": "millele01-min",
+      "id": "millele01-chi",
       "bbrPlayerId": "millele01",
       "name": "Leonard Miller",
-      "team": "MIN",
+      "team": "CHI",
       "position": "SF",
       "positions": [
         "SF"
@@ -11753,10 +11753,10 @@
       "trueShooting": 0.656
     },
     {
-      "id": "claytwa01-uta",
+      "id": "claytwa01-mem",
       "bbrPlayerId": "claytwa01",
       "name": "Walter Clayton",
-      "team": "UTA",
+      "team": "MEM",
       "position": "PG",
       "positions": [
         "PG",
@@ -11910,10 +11910,10 @@
       "trueShooting": 0.566
     },
     {
-      "id": "diengou01-okc",
+      "id": "diengou01-mil",
       "bbrPlayerId": "diengou01",
       "name": "Ousmane Dieng",
-      "team": "OKC",
+      "team": "MIL",
       "position": "PF",
       "positions": [
         "PF",
@@ -12384,10 +12384,10 @@
       "trueShooting": 0.543
     },
     {
-      "id": "minotjo01-bos",
+      "id": "minotjo01-brk",
       "bbrPlayerId": "minotjo01",
       "name": "Josh Minott",
-      "team": "BOS",
+      "team": "BRK",
       "position": "SF",
       "positions": [
         "SF",
@@ -12424,10 +12424,10 @@
       "trueShooting": 0.657
     },
     {
-      "id": "hendrta01-uta",
+      "id": "hendrta01-mem",
       "bbrPlayerId": "hendrta01",
       "name": "Taylor Hendricks",
-      "team": "UTA",
+      "team": "MEM",
       "position": "PF",
       "positions": [
         "PF"
@@ -13250,10 +13250,10 @@
       "trueShooting": 0.485
     },
     {
-      "id": "jacksis01-ind",
+      "id": "jacksis01-lac",
       "bbrPlayerId": "jacksis01",
       "name": "Isaiah Jackson",
-      "team": "IND",
+      "team": "LAC",
       "position": "PF",
       "positions": [
         "PF",
@@ -13290,10 +13290,10 @@
       "trueShooting": 0.652
     },
     {
-      "id": "elliske01-sac",
+      "id": "elliske01-cle",
       "bbrPlayerId": "elliske01",
       "name": "Keon Ellis",
-      "team": "SAC",
+      "team": "CLE",
       "position": "SG",
       "positions": [
         "SG"
@@ -13765,10 +13765,10 @@
       "trueShooting": 0.543
     },
     {
-      "id": "carteje01-chi",
+      "id": "carteje01-orl",
       "bbrPlayerId": "carteje01",
       "name": "Jevon Carter",
-      "team": "CHI",
+      "team": "ORL",
       "position": "PG",
       "positions": [
         "PG",
@@ -13844,10 +13844,10 @@
       "trueShooting": 0.598
     },
     {
-      "id": "dilliro01-min",
+      "id": "dilliro01-chi",
       "bbrPlayerId": "dilliro01",
       "name": "Rob Dillingham",
-      "team": "MIN",
+      "team": "CHI",
       "position": "PG",
       "positions": [
         "PG",
@@ -14001,10 +14001,10 @@
       "trueShooting": 0.457
     },
     {
-      "id": "jakucka01-mia",
+      "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
       "name": "Kasparas Jakučionis",
-      "team": "MIA",
+      "team": "MIL",
       "position": "PG",
       "positions": [
         "PG",
@@ -14394,10 +14394,10 @@
       "trueShooting": 0.709
     },
     {
-      "id": "bassech01-phi",
+      "id": "bassech01-gsw",
       "bbrPlayerId": "bassech01",
       "name": "Charles Bassey",
-      "team": "PHI",
+      "team": "GSW",
       "position": "PF",
       "positions": [
         "PF",
@@ -14552,10 +14552,10 @@
       "trueShooting": 0.584
     },
     {
-      "id": "brownko01-lac",
+      "id": "brownko01-ind",
       "bbrPlayerId": "brownko01",
       "name": "Kobe Brown",
-      "team": "LAC",
+      "team": "IND",
       "position": "PF",
       "positions": [
         "PF"
@@ -14708,10 +14708,10 @@
       "trueShooting": 0.543
     },
     {
-      "id": "richani01-pho",
+      "id": "richani01-chi",
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
-      "team": "PHO",
+      "team": "CHI",
       "position": "PF",
       "positions": [
         "PF",
@@ -15101,10 +15101,10 @@
       "trueShooting": 0.532
     },
     {
-      "id": "yabusgu01-nyk",
+      "id": "yabusgu01-chi",
       "bbrPlayerId": "yabusgu01",
       "name": "Guerschon Yabusele",
-      "team": "NYK",
+      "team": "CHI",
       "position": "PF",
       "positions": [
         "PF",
@@ -16008,10 +16008,10 @@
       "trueShooting": 0.489
     },
     {
-      "id": "ruperra01-por",
+      "id": "ruperra01-mem",
       "bbrPlayerId": "ruperra01",
       "name": "Rayan Rupert",
-      "team": "POR",
+      "team": "MEM",
       "position": "SG",
       "positions": [
         "SG"
@@ -16164,10 +16164,10 @@
       "trueShooting": 0.489
     },
     {
-      "id": "agbajoc01-tor",
+      "id": "agbajoc01-brk",
       "bbrPlayerId": "agbajoc01",
       "name": "Ochai Agbaji",
-      "team": "TOR",
+      "team": "BRK",
       "position": "SG",
       "positions": [
         "SG"
@@ -16756,10 +16756,10 @@
       "trueShooting": 0.573
     },
     {
-      "id": "hallpj01-mem",
+      "id": "hallpj01-cho",
       "bbrPlayerId": "hallpj01",
       "name": "PJ Hall",
-      "team": "MEM",
+      "team": "CHO",
       "position": "PF",
       "positions": [
         "PF",
@@ -16993,10 +16993,10 @@
       "trueShooting": 0.565
     },
     {
-      "id": "konchjo01-mem",
+      "id": "konchjo01-uta",
       "bbrPlayerId": "konchjo01",
       "name": "John Konchar",
-      "team": "MEM",
+      "team": "UTA",
       "position": "SG",
       "positions": [
         "SG"
@@ -17032,10 +17032,10 @@
       "trueShooting": 0.557
     },
     {
-      "id": "joneska03-ind",
+      "id": "joneska03-chi",
       "bbrPlayerId": "joneska03",
       "name": "Kam Jones",
-      "team": "IND",
+      "team": "CHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -17110,10 +17110,10 @@
       "trueShooting": 0.53
     },
     {
-      "id": "dennira01-lac",
+      "id": "dennira01-atl",
       "bbrPlayerId": "dennira01",
       "name": "RayJ Dennis",
-      "team": "LAC",
+      "team": "ATL",
       "position": "PG",
       "positions": [
         "PG",
@@ -17309,10 +17309,10 @@
       "trueShooting": 0.568
     },
     {
-      "id": "greenjo02-cho",
+      "id": "greenjo02-min",
       "bbrPlayerId": "greenjo02",
       "name": "Josh Green",
-      "team": "CHO",
+      "team": "MIN",
       "position": "SG",
       "positions": [
         "SG"
@@ -17387,10 +17387,10 @@
       "trueShooting": 0.582
     },
     {
-      "id": "gilbeke01-was",
+      "id": "gilbeke01-atl",
       "bbrPlayerId": "gilbeke01",
       "name": "Keshon Gilbert",
-      "team": "WAS",
+      "team": "ATL",
       "position": "PG",
       "positions": [
         "PG",
@@ -18053,10 +18053,10 @@
       "trueShooting": 0.673
     },
     {
-      "id": "minixri01-sas",
+      "id": "minixri01-cle",
       "bbrPlayerId": "minixri01",
       "name": "Riley Minix",
-      "team": "SAS",
+      "team": "CLE",
       "position": "SF",
       "positions": [
         "SF"
@@ -18289,10 +18289,10 @@
       "trueShooting": 0.503
     },
     {
-      "id": "terryda01-chi",
+      "id": "terryda01-phi",
       "bbrPlayerId": "terryda01",
       "name": "Dalen Terry",
-      "team": "CHI",
+      "team": "PHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -18406,10 +18406,10 @@
       "trueShooting": 0.503
     },
     {
-      "id": "baldwpa01-phi",
+      "id": "baldwpa01-sac",
       "bbrPlayerId": "baldwpa01",
       "name": "Patrick Baldwin Jr.",
-      "team": "PHI",
+      "team": "SAC",
       "position": "SF",
       "positions": [
         "SF"
@@ -18879,10 +18879,10 @@
       "trueShooting": 0.502
     },
     {
-      "id": "johnsaj01-was",
+      "id": "johnsaj01-dal",
       "bbrPlayerId": "johnsaj01",
       "name": "AJ Johnson",
-      "team": "WAS",
+      "team": "DAL",
       "position": "SG",
       "positions": [
         "SG"
@@ -19194,10 +19194,10 @@
       "trueShooting": 0.667
     },
     {
-      "id": "coffeam01-mil",
+      "id": "coffeam01-pho",
       "bbrPlayerId": "coffeam01",
       "name": "Amir Coffey",
-      "team": "MIL",
+      "team": "PHO",
       "position": "SG",
       "positions": [
         "SG"
@@ -19470,10 +19470,10 @@
       "trueShooting": 0.536
     },
     {
-      "id": "milleem01-chi",
+      "id": "milleem01-sas",
       "bbrPlayerId": "milleem01",
       "name": "Emanuel Miller",
-      "team": "CHI",
+      "team": "SAS",
       "position": "PF",
       "positions": [
         "PF"
@@ -19826,10 +19826,10 @@
       "trueShooting": 0.607
     },
     {
-      "id": "phillju01-chi",
+      "id": "phillju01-min",
       "bbrPlayerId": "phillju01",
       "name": "Julian Phillips",
-      "team": "CHI",
+      "team": "MIN",
       "position": "SF",
       "positions": [
         "SF"
@@ -20179,10 +20179,10 @@
       "trueShooting": 0.675
     },
     {
-      "id": "kolokch01-lal",
+      "id": "kolokch01-atl",
       "bbrPlayerId": "kolokch01",
       "name": "Christian Koloko",
-      "team": "LAL",
+      "team": "ATL",
       "position": "PF",
       "positions": [
         "PF",
@@ -20966,10 +20966,10 @@
       "trueShooting": 0.415
     },
     {
-      "id": "youngch01-okc",
+      "id": "youngch01-por",
       "bbrPlayerId": "youngch01",
       "name": "Chris Youngblood",
-      "team": "OKC",
+      "team": "POR",
       "position": "SG",
       "positions": [
         "SG"
@@ -22184,10 +22184,10 @@
       "trueShooting": 0.416
     },
     {
-      "id": "jonesis01-sac",
+      "id": "jonesis01-det",
       "bbrPlayerId": "jonesis01",
       "name": "Isaac Jones",
-      "team": "SAC",
+      "team": "DET",
       "position": "PF",
       "positions": [
         "PF"
@@ -23091,10 +23091,10 @@
       "trueShooting": 0
     },
     {
-      "id": "evbuoto01-nyk",
+      "id": "evbuoto01-cho",
       "bbrPlayerId": "evbuoto01",
       "name": "Tosan Evbuomwan",
-      "team": "NYK",
+      "team": "CHO",
       "position": "SF",
       "positions": [
         "SF"
@@ -23135,5 +23135,6 @@
     "Kyrie Irving",
     "Damian Lillard",
     "Fred VanVleet"
-  ]
+  ],
+  "rosterSource": "espn-roster-api"
 }
