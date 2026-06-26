@@ -33,6 +33,7 @@ import {
   createOpponentCollection,
   type PlayerCollection,
 } from "./lib/playerCollection";
+import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureRankedLeaderboard } from "./lib/rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
@@ -131,6 +132,10 @@ function App() {
 
   const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
     if (collection.pendingUnlock) {
+      return false;
+    }
+
+    if (options.allTimeMode && !isAllTimeModePlayable()) {
       return false;
     }
 

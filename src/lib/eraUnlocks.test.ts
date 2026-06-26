@@ -4,13 +4,22 @@ import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
 import {
   ALL_ERA_IDS,
   ALL_TIME_LEGENDS_TESTING_UNLOCK,
+  ALL_TIME_MODE_PLAYABLE,
   ALL_TIME_WIN_THRESHOLD,
   getAllTimeWinsRemaining,
   getUnlockedEras,
+  isAllTimeModePlayable,
   isAllTimeModeUnlocked,
 } from "./eraUnlocks";
 import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
+
+describe("all-time mode availability", () => {
+  it("keeps all-time mode disabled on the home screen until launch", () => {
+    expect(ALL_TIME_MODE_PLAYABLE).toBe(false);
+    expect(isAllTimeModePlayable()).toBe(false);
+  });
+});
 
 describe("active player pool", () => {
   it("uses only current players outside all-time mode", () => {

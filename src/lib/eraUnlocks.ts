@@ -5,8 +5,13 @@ export type EraId = "1970s" | "1980s" | "1990s" | "2000s" | "2010s";
 
 export const ALL_TIME_WIN_THRESHOLD = 50;
 
+/** Set to true to show and launch All-Time mode from the home screen. */
+export const ALL_TIME_MODE_PLAYABLE = false;
+
 /** Set to false before release to require 50 wins for legends. */
 export const ALL_TIME_LEGENDS_TESTING_UNLOCK = true;
+
+export const isAllTimeModePlayable = () => ALL_TIME_MODE_PLAYABLE;
 
 export const ALL_ERA_IDS: EraId[] = [
   "1970s",

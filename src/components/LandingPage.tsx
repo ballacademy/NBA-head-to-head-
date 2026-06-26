@@ -7,12 +7,7 @@ import {
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey } from "../lib/dailyDraft";
 import { getPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
-import {
-  ALL_TIME_WIN_THRESHOLD,
-  getAllTimeWinsRemaining,
-  isAllTimeModeUnlocked,
-} from "../lib/eraUnlocks";
-import { getLegendPlayerCount } from "../lib/eraPlayers";
+import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   formatPlayerRecord,
   formatWinPercentage,
@@ -21,6 +16,7 @@ import {
   type PlayerRecord,
 } from "../lib/playerRecord";
 import {
+  ALL_TIME_LABEL,
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
@@ -104,9 +100,7 @@ export function LandingPage({
   }, [collection.pendingUnlock]);
 
   const collectionProgress = getCollectionProgress(collection);
-  const allTimeUnlocked = isAllTimeModeUnlocked(modeRecords.allTime);
-  const allTimeWinsRemaining = getAllTimeWinsRemaining(modeRecords.allTime);
-  const legendCount = getLegendPlayerCount();
+  const allTimePlayable = isAllTimeModePlayable();
   const dailyDateKey = getDailyDateKey();
   const dailyEntry = useMemo(
     () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
@@ -272,30 +266,33 @@ export function LandingPage({
         </div>
 
         <div className="all-time-card landing-card landing-card--mode">
-          <p className="eyebrow">All-Time</p>
+          <p className="eyebrow">{ALL_TIME_LABEL}</p>
           <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
           <p className="all-time-card__description">
-            Draft active stars at their peak seasons plus legendary All-Stars from every era.
-            {allTimeUnlocked
-              ? ` ${legendCount} legends available.`
-              : ` ${allTimeWinsRemaining} more win${allTimeWinsRemaining === 1 ? "" : "s"} to unlock legends.`}
+            Draft active stars at their peak seasons plus legendary All-Stars from
+            every era.
+            {allTimePlayable
+              ? ""
+              : " This mode is in development and will launch soon."}
           </p>
-          <MatchModeRecord record={modeRecords.allTime} />
-          {allTimeUnlocked ? (
-            <button
-              type="button"
-              className="all-time-card__button"
-              onClick={() => handleStart({ allTimeMode: true })}
-            >
-              Play All-Time Draft
-            </button>
+          {allTimePlayable ? (
+            <>
+              <MatchModeRecord record={modeRecords.allTime} />
+              <button
+                type="button"
+                className="all-time-card__button"
+                onClick={() => handleStart({ allTimeMode: true })}
+              >
+                Play All-Time Draft
+              </button>
+            </>
           ) : (
             <button
               type="button"
               className="all-time-card__button all-time-card__button--locked"
               disabled
             >
-              Achieve {ALL_TIME_WIN_THRESHOLD} wins to unlock All-Time mode
+              Coming soon
             </button>
           )}
         </div>
