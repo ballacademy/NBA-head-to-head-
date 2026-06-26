@@ -23,14 +23,16 @@ export function LineupStoryCard({
       <div className="story-card__top">
         <div>
           <p className="eyebrow">Story graphic</p>
-          <h2 id="story-heading">{drafter.name}'s five</h2>
-          <p>{drafter.city} challenger</p>
+          <h2 id="story-heading">Your five</h2>
+          <p>Your lineup</p>
         </div>
         <div className="score-orb">
           <span>{score.total}</span>
           <small>OVR</small>
         </div>
       </div>
+
+      <p className="projected-record">{score.projectedRecord.formatted}</p>
 
       <ol className="story-lineup">
         {lineup.map((player, index) => (
@@ -48,7 +50,7 @@ export function LineupStoryCard({
       </ol>
 
       <div className="story-footer">
-        <span>#NBAHeadToHead</span>
+        <span>#DraftDayGM</span>
         <button type="button" onClick={onShare}>
           Share lineup
         </button>

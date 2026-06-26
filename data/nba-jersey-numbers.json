@@ -1,0 +1,6040 @@
+{
+  "season": "2025-26",
+  "source": "basketball-reference",
+  "generatedAt": "2026-06-26T02:48:59.843643+00:00",
+  "rosterAsOf": "2026-06-25",
+  "playerCount": 587,
+  "byPlayerId": {
+    "alexani01": {
+      "jerseyNumber": 7,
+      "team": "ATL"
+    },
+    "gueyemo02": {
+      "jerseyNumber": 18,
+      "team": "ATL"
+    },
+    "daniedy01": {
+      "jerseyNumber": 5,
+      "team": "ATL"
+    },
+    "okongon01": {
+      "jerseyNumber": 17,
+      "team": "ATL"
+    },
+    "johnsja05": {
+      "jerseyNumber": 1,
+      "team": "ATL"
+    },
+    "risacza01": {
+      "jerseyNumber": 10,
+      "team": "ATL"
+    },
+    "wallake01": {
+      "jerseyNumber": 2,
+      "team": "ATL"
+    },
+    "newelas01": {
+      "jerseyNumber": 14,
+      "team": "ATL"
+    },
+    "mccolcj01": {
+      "jerseyNumber": 3,
+      "team": "ATL"
+    },
+    "kispeco01": {
+      "jerseyNumber": 24,
+      "team": "ATL"
+    },
+    "vincega01": {
+      "jerseyNumber": 4,
+      "team": "ATL"
+    },
+    "landajo01": {
+      "jerseyNumber": 31,
+      "team": "ATL"
+    },
+    "kuminjo01": {
+      "jerseyNumber": 0,
+      "team": "ATL"
+    },
+    "kolokch01": {
+      "jerseyNumber": 35,
+      "team": "ATL"
+    },
+    "hieldbu01": {
+      "jerseyNumber": 8,
+      "team": "ATL"
+    },
+    "bradlto01": {
+      "jerseyNumber": 13,
+      "team": "ATL"
+    },
+    "gilbeke01": {
+      "jerseyNumber": 51,
+      "team": "ATL"
+    },
+    "pritcpa01": {
+      "jerseyNumber": 11,
+      "team": "BOS"
+    },
+    "hausesa01": {
+      "jerseyNumber": 30,
+      "team": "BOS"
+    },
+    "whitede01": {
+      "jerseyNumber": 9,
+      "team": "BOS"
+    },
+    "scheiba01": {
+      "jerseyNumber": 55,
+      "team": "BOS"
+    },
+    "quetane01": {
+      "jerseyNumber": 88,
+      "team": "BOS"
+    },
+    "gonzahu01": {
+      "jerseyNumber": 28,
+      "team": "BOS"
+    },
+    "brownja02": {
+      "jerseyNumber": 7,
+      "team": "BOS"
+    },
+    "garzalu01": {
+      "jerseyNumber": 52,
+      "team": "BOS"
+    },
+    "walshjo01": {
+      "jerseyNumber": 27,
+      "team": "BOS"
+    },
+    "harpero02": {
+      "jerseyNumber": 13,
+      "team": "BOS"
+    },
+    "william01": {
+      "jerseyNumber": 77,
+      "team": "BOS"
+    },
+    "tatumja01": {
+      "jerseyNumber": 0,
+      "team": "BOS"
+    },
+    "vucevni01": {
+      "jerseyNumber": 4,
+      "team": "BOS"
+    },
+    "shulgma01": {
+      "jerseyNumber": 44,
+      "team": "BOS"
+    },
+    "tonjejo01": {
+      "jerseyNumber": 8,
+      "team": "BOS"
+    },
+    "bantoda01": {
+      "jerseyNumber": 45,
+      "team": "BOS"
+    },
+    "claxtni01": {
+      "jerseyNumber": 33,
+      "team": "CHI"
+    },
+    "clownno01": {
+      "jerseyNumber": 21,
+      "team": "BRK"
+    },
+    "mannte01": {
+      "jerseyNumber": 14,
+      "team": "BRK"
+    },
+    "poweldr01": {
+      "jerseyNumber": 4,
+      "team": "BRK"
+    },
+    "sharpda01": {
+      "jerseyNumber": 20,
+      "team": "BRK"
+    },
+    "wolfda01": {
+      "jerseyNumber": 2,
+      "team": "BRK"
+    },
+    "willizi02": {
+      "jerseyNumber": 1,
+      "team": "BRK"
+    },
+    "traorno01": {
+      "jerseyNumber": 88,
+      "team": "BRK"
+    },
+    "wilsoja03": {
+      "jerseyNumber": 22,
+      "team": "BRK"
+    },
+    "portemi01": {
+      "jerseyNumber": 17,
+      "team": "BRK"
+    },
+    "demineg01": {
+      "jerseyNumber": 8,
+      "team": "BRK"
+    },
+    "sarafbe01": {
+      "jerseyNumber": 77,
+      "team": "BRK"
+    },
+    "liddeej01": {
+      "jerseyNumber": 9,
+      "team": "BRK"
+    },
+    "etienty01": {
+      "jerseyNumber": 10,
+      "team": "BRK"
+    },
+    "agbajoc01": {
+      "jerseyNumber": 30,
+      "team": "BRK"
+    },
+    "johnsch06": {
+      "jerseyNumber": 31,
+      "team": "BRK"
+    },
+    "minotjo01": {
+      "jerseyNumber": 0,
+      "team": "BRK"
+    },
+    "smithma02": {
+      "jerseyNumber": 18,
+      "team": "BRK"
+    },
+    "buzelma01": {
+      "jerseyNumber": 14,
+      "team": "CHI"
+    },
+    "willipa01": {
+      "jerseyNumber": 44,
+      "team": "CHI"
+    },
+    "jonestr01": {
+      "jerseyNumber": 30,
+      "team": "CHI"
+    },
+    "okorois01": {
+      "jerseyNumber": 35,
+      "team": "CHI"
+    },
+    "giddejo01": {
+      "jerseyNumber": 3,
+      "team": "CHI"
+    },
+    "smithja04": {
+      "jerseyNumber": 25,
+      "team": "CHI"
+    },
+    "olbrila01": {
+      "jerseyNumber": 47,
+      "team": "CHI"
+    },
+    "dilliro01": {
+      "jerseyNumber": 7,
+      "team": "CHI"
+    },
+    "millele01": {
+      "jerseyNumber": 11,
+      "team": "CHI"
+    },
+    "sextoco01": {
+      "jerseyNumber": 2,
+      "team": "CHI"
+    },
+    "yabusgu01": {
+      "jerseyNumber": 28,
+      "team": "CHI"
+    },
+    "richani01": {
+      "jerseyNumber": 13,
+      "team": "CHI"
+    },
+    "kawamyu01": {
+      "jerseyNumber": 8,
+      "team": "CHI"
+    },
+    "colliza01": {
+      "jerseyNumber": 12,
+      "team": "CHI"
+    },
+    "mccluma01": {
+      "jerseyNumber": 5,
+      "team": "CHI"
+    },
+    "gueyemo01": {
+      "jerseyNumber": 16,
+      "team": "CHI"
+    },
+    "essenno01": {
+      "jerseyNumber": 24,
+      "team": "CHI"
+    },
+    "jamessi01": {
+      "jerseyNumber": 4,
+      "team": "CHO"
+    },
+    "knuepko01": {
+      "jerseyNumber": 7,
+      "team": "CHO"
+    },
+    "bridgmi02": {
+      "jerseyNumber": 0,
+      "team": "CHO"
+    },
+    "diabamo01": {
+      "jerseyNumber": 14,
+      "team": "CHO"
+    },
+    "ballla01": {
+      "jerseyNumber": 1,
+      "team": "MIN"
+    },
+    "kalkbry01": {
+      "jerseyNumber": 11,
+      "team": "CHO"
+    },
+    "millebr02": {
+      "jerseyNumber": 24,
+      "team": "CHO"
+    },
+    "greenjo02": {
+      "jerseyNumber": 10,
+      "team": "MIN"
+    },
+    "manntr01": {
+      "jerseyNumber": 23,
+      "team": "CHO"
+    },
+    "connapa01": {
+      "jerseyNumber": 21,
+      "team": "CHO"
+    },
+    "salauti01": {
+      "jerseyNumber": 31,
+      "team": "CHO"
+    },
+    "willigr01": {
+      "jerseyNumber": 2,
+      "team": "CHO"
+    },
+    "mcneeli01": {
+      "jerseyNumber": 33,
+      "team": "CHO"
+    },
+    "whiteco01": {
+      "jerseyNumber": 3,
+      "team": "CHO"
+    },
+    "tillmxa01": {
+      "jerseyNumber": 26,
+      "team": "CHO"
+    },
+    "hallpj01": {
+      "jerseyNumber": 16,
+      "team": "CHO"
+    },
+    "reevean01": {
+      "jerseyNumber": 12,
+      "team": "CHO"
+    },
+    "mitchdo01": {
+      "jerseyNumber": 45,
+      "team": "CLE"
+    },
+    "tysonja01": {
+      "jerseyNumber": 20,
+      "team": "CLE"
+    },
+    "mobleev01": {
+      "jerseyNumber": 4,
+      "team": "CLE"
+    },
+    "tomlina01": {
+      "jerseyNumber": 35,
+      "team": "CLE"
+    },
+    "portecr01": {
+      "jerseyNumber": 9,
+      "team": "CLE"
+    },
+    "bryanth01": {
+      "jerseyNumber": 3,
+      "team": "CLE"
+    },
+    "wadede01": {
+      "jerseyNumber": 32,
+      "team": "CLE"
+    },
+    "allenja01": {
+      "jerseyNumber": 31,
+      "team": "CLE"
+    },
+    "merrisa01": {
+      "jerseyNumber": 5,
+      "team": "CLE"
+    },
+    "proctty01": {
+      "jerseyNumber": 24,
+      "team": "CLE"
+    },
+    "nancela02": {
+      "jerseyNumber": 22,
+      "team": "CLE"
+    },
+    "schrode01": {
+      "jerseyNumber": 8,
+      "team": "CLE"
+    },
+    "elliske01": {
+      "jerseyNumber": 14,
+      "team": "CLE"
+    },
+    "hardeja01": {
+      "jerseyNumber": 1,
+      "team": "CLE"
+    },
+    "strusma01": {
+      "jerseyNumber": 2,
+      "team": "CLE"
+    },
+    "enarutr01": {
+      "jerseyNumber": 21,
+      "team": "CLE"
+    },
+    "minixri01": {
+      "jerseyNumber": 12,
+      "team": "CLE"
+    },
+    "sarrol01": {
+      "jerseyNumber": 33,
+      "team": "CLE"
+    },
+    "chrisma02": {
+      "jerseyNumber": 0,
+      "team": "DAL"
+    },
+    "marshna01": {
+      "jerseyNumber": 13,
+      "team": "DAL"
+    },
+    "flaggco01": {
+      "jerseyNumber": 32,
+      "team": "DAL"
+    },
+    "thompkl01": {
+      "jerseyNumber": 31,
+      "team": "DAL"
+    },
+    "willibr03": {
+      "jerseyNumber": 10,
+      "team": "DAL"
+    },
+    "poweldw01": {
+      "jerseyNumber": 7,
+      "team": "DAL"
+    },
+    "nembhry01": {
+      "jerseyNumber": 9,
+      "team": "DAL"
+    },
+    "martica02": {
+      "jerseyNumber": 16,
+      "team": "DAL"
+    },
+    "washipj01": {
+      "jerseyNumber": 25,
+      "team": "DAL"
+    },
+    "gaffoda01": {
+      "jerseyNumber": 21,
+      "team": "DAL"
+    },
+    "cissemo01": {
+      "jerseyNumber": 30,
+      "team": "DAL"
+    },
+    "middlkh01": {
+      "jerseyNumber": 20,
+      "team": "DAL"
+    },
+    "johnsaj01": {
+      "jerseyNumber": 8,
+      "team": "DAL"
+    },
+    "baglema01": {
+      "jerseyNumber": 35,
+      "team": "DAL"
+    },
+    "poulajo01": {
+      "jerseyNumber": 1,
+      "team": "DAL"
+    },
+    "smithty02": {
+      "jerseyNumber": 23,
+      "team": "DAL"
+    },
+    "livelde01": {
+      "jerseyNumber": 2,
+      "team": "DAL"
+    },
+    "brownbr01": {
+      "jerseyNumber": 11,
+      "team": "DEN"
+    },
+    "hardati02": {
+      "jerseyNumber": 10,
+      "team": "DEN"
+    },
+    "murraja01": {
+      "jerseyNumber": 27,
+      "team": "DEN"
+    },
+    "jokicni01": {
+      "jerseyNumber": 15,
+      "team": "DEN"
+    },
+    "valanjo01": {
+      "jerseyNumber": 17,
+      "team": "DEN"
+    },
+    "jonessp01": {
+      "jerseyNumber": 21,
+      "team": "DEN"
+    },
+    "strawju01": {
+      "jerseyNumber": 3,
+      "team": "DEN"
+    },
+    "watsope01": {
+      "jerseyNumber": 8,
+      "team": "DEN"
+    },
+    "johnsca02": {
+      "jerseyNumber": 23,
+      "team": "DEN"
+    },
+    "nnajize01": {
+      "jerseyNumber": 22,
+      "team": "DEN"
+    },
+    "pickeja02": {
+      "jerseyNumber": 24,
+      "team": "DEN"
+    },
+    "braunch01": {
+      "jerseyNumber": 0,
+      "team": "DEN"
+    },
+    "gordoaa01": {
+      "jerseyNumber": 32,
+      "team": "DEN"
+    },
+    "holmeda01": {
+      "jerseyNumber": 14,
+      "team": "DEN"
+    },
+    "jonesty01": {
+      "jerseyNumber": 5,
+      "team": "DEN"
+    },
+    "jonescu01": {
+      "jerseyNumber": 1,
+      "team": "DEN"
+    },
+    "simpskj01": {
+      "jerseyNumber": 25,
+      "team": "DEN"
+    },
+    "roddyda01": {
+      "jerseyNumber": 45,
+      "team": "DEN"
+    },
+    "greenja02": {
+      "jerseyNumber": 31,
+      "team": "DET"
+    },
+    "hollaro01": {
+      "jerseyNumber": 5,
+      "team": "DET"
+    },
+    "robindu01": {
+      "jerseyNumber": 55,
+      "team": "DET"
+    },
+    "thompau01": {
+      "jerseyNumber": 9,
+      "team": "DET"
+    },
+    "jenkida01": {
+      "jerseyNumber": 24,
+      "team": "DET"
+    },
+    "durenja01": {
+      "jerseyNumber": 0,
+      "team": "DET"
+    },
+    "reedpa01": {
+      "jerseyNumber": 7,
+      "team": "DET"
+    },
+    "cunnica01": {
+      "jerseyNumber": 2,
+      "team": "DET"
+    },
+    "harrito02": {
+      "jerseyNumber": 12,
+      "team": "DET"
+    },
+    "leverca01": {
+      "jerseyNumber": 8,
+      "team": "DET"
+    },
+    "stewais01": {
+      "jerseyNumber": 28,
+      "team": "MEM"
+    },
+    "sassema01": {
+      "jerseyNumber": 25,
+      "team": "DET"
+    },
+    "laniech01": {
+      "jerseyNumber": 20,
+      "team": "DET"
+    },
+    "huertke01": {
+      "jerseyNumber": 27,
+      "team": "DET"
+    },
+    "smithto05": {
+      "jerseyNumber": 35,
+      "team": "DET"
+    },
+    "moorewe01": {
+      "jerseyNumber": 14,
+      "team": "DET"
+    },
+    "jonesis01": {
+      "jerseyNumber": 13,
+      "team": "DET"
+    },
+    "podzibr01": {
+      "jerseyNumber": 2,
+      "team": "GSW"
+    },
+    "paytoga02": {
+      "jerseyNumber": 0,
+      "team": "GSW"
+    },
+    "richawi02": {
+      "jerseyNumber": 3,
+      "team": "GSW"
+    },
+    "santogu01": {
+      "jerseyNumber": 15,
+      "team": "GSW"
+    },
+    "greendr01": {
+      "jerseyNumber": 23,
+      "team": "GSW"
+    },
+    "postqu01": {
+      "jerseyNumber": 21,
+      "team": "GSW"
+    },
+    "spencpa01": {
+      "jerseyNumber": 61,
+      "team": "GSW"
+    },
+    "moodymo01": {
+      "jerseyNumber": 4,
+      "team": "GSW"
+    },
+    "meltode01": {
+      "jerseyNumber": 8,
+      "team": "GSW"
+    },
+    "horfoal01": {
+      "jerseyNumber": 20,
+      "team": "GSW"
+    },
+    "curryst01": {
+      "jerseyNumber": 30,
+      "team": "GSW"
+    },
+    "butleji01": {
+      "jerseyNumber": 10,
+      "team": "GSW"
+    },
+    "leonsma01": {
+      "jerseyNumber": 33,
+      "team": "GSW"
+    },
+    "cryerlj01": {
+      "jerseyNumber": 18,
+      "team": "GSW"
+    },
+    "porzikr01": {
+      "jerseyNumber": 7,
+      "team": "GSW"
+    },
+    "willije02": {
+      "jerseyNumber": 19,
+      "team": "GSW"
+    },
+    "curryse01": {
+      "jerseyNumber": 31,
+      "team": "GSW"
+    },
+    "bassech01": {
+      "jerseyNumber": 28,
+      "team": "GSW"
+    },
+    "sheppre01": {
+      "jerseyNumber": 15,
+      "team": "HOU"
+    },
+    "thompam01": {
+      "jerseyNumber": 1,
+      "team": "HOU"
+    },
+    "duranke01": {
+      "jerseyNumber": 7,
+      "team": "HOU"
+    },
+    "okogijo01": {
+      "jerseyNumber": 20,
+      "team": "HOU"
+    },
+    "smithja05": {
+      "jerseyNumber": 10,
+      "team": "HOU"
+    },
+    "capelca01": {
+      "jerseyNumber": 30,
+      "team": "HOU"
+    },
+    "sengual01": {
+      "jerseyNumber": 28,
+      "team": "HOU"
+    },
+    "easonta01": {
+      "jerseyNumber": 17,
+      "team": "HOU"
+    },
+    "holidaa01": {
+      "jerseyNumber": 0,
+      "team": "HOU"
+    },
+    "tateja01": {
+      "jerseyNumber": 8,
+      "team": "HOU"
+    },
+    "finnedo01": {
+      "jerseyNumber": 2,
+      "team": "HOU"
+    },
+    "adamsst01": {
+      "jerseyNumber": 12,
+      "team": "HOU"
+    },
+    "greenje02": {
+      "jerseyNumber": 32,
+      "team": "HOU"
+    },
+    "davisjd01": {
+      "jerseyNumber": 4,
+      "team": "HOU"
+    },
+    "crawfis01": {
+      "jerseyNumber": 27,
+      "team": "HOU"
+    },
+    "newtotr01": {
+      "jerseyNumber": 0,
+      "team": "HOU"
+    },
+    "huffja01": {
+      "jerseyNumber": 32,
+      "team": "IND"
+    },
+    "walkeja02": {
+      "jerseyNumber": 5,
+      "team": "IND"
+    },
+    "sheppbe01": {
+      "jerseyNumber": 26,
+      "team": "IND"
+    },
+    "siakapa01": {
+      "jerseyNumber": 43,
+      "team": "IND"
+    },
+    "nembhan01": {
+      "jerseyNumber": 2,
+      "team": "IND"
+    },
+    "mccontj01": {
+      "jerseyNumber": 9,
+      "team": "IND"
+    },
+    "jacksqu01": {
+      "jerseyNumber": 29,
+      "team": "IND"
+    },
+    "pottemi01": {
+      "jerseyNumber": 11,
+      "team": "IND"
+    },
+    "nesmiaa01": {
+      "jerseyNumber": 23,
+      "team": "IND"
+    },
+    "peterta01": {
+      "jerseyNumber": 4,
+      "team": "IND"
+    },
+    "furphjo01": {
+      "jerseyNumber": 12,
+      "team": "IND"
+    },
+    "thompet01": {
+      "jerseyNumber": 55,
+      "team": "IND"
+    },
+    "brownko01": {
+      "jerseyNumber": 24,
+      "team": "IND"
+    },
+    "toppiob01": {
+      "jerseyNumber": 1,
+      "team": "IND"
+    },
+    "slawsja01": {
+      "jerseyNumber": 18,
+      "team": "IND"
+    },
+    "zubaciv01": {
+      "jerseyNumber": 40,
+      "team": "IND"
+    },
+    "dunnkr01": {
+      "jerseyNumber": 8,
+      "team": "LAC"
+    },
+    "lopezbr01": {
+      "jerseyNumber": 11,
+      "team": "LAC"
+    },
+    "batumni01": {
+      "jerseyNumber": 33,
+      "team": "LAC"
+    },
+    "collijo01": {
+      "jerseyNumber": 20,
+      "team": "LAC"
+    },
+    "sandeko01": {
+      "jerseyNumber": 4,
+      "team": "LAC"
+    },
+    "leonaka01": {
+      "jerseyNumber": 2,
+      "team": "LAC"
+    },
+    "millejo02": {
+      "jerseyNumber": 22,
+      "team": "LAC"
+    },
+    "chrisca02": {
+      "jerseyNumber": 12,
+      "team": "LAC"
+    },
+    "jonesde02": {
+      "jerseyNumber": 5,
+      "team": "LAC"
+    },
+    "konanya01": {
+      "jerseyNumber": 14,
+      "team": "LAC"
+    },
+    "mathube01": {
+      "jerseyNumber": 9,
+      "team": "LAC"
+    },
+    "garlada01": {
+      "jerseyNumber": 10,
+      "team": "LAC"
+    },
+    "jacksis01": {
+      "jerseyNumber": 23,
+      "team": "LAC"
+    },
+    "washity02": {
+      "jerseyNumber": 15,
+      "team": "LAC"
+    },
+    "pedulse01": {
+      "jerseyNumber": 0,
+      "team": "LAC"
+    },
+    "bealbr01": {
+      "jerseyNumber": 0,
+      "team": "LAC"
+    },
+    "omierno01": {
+      "jerseyNumber": 55,
+      "team": "LAC"
+    },
+    "laravja01": {
+      "jerseyNumber": 12,
+      "team": "LAL"
+    },
+    "aytonde01": {
+      "jerseyNumber": 5,
+      "team": "LAL"
+    },
+    "hachiru01": {
+      "jerseyNumber": 28,
+      "team": "LAL"
+    },
+    "hayesja02": {
+      "jerseyNumber": 11,
+      "team": "LAL"
+    },
+    "vandeja01": {
+      "jerseyNumber": 2,
+      "team": "LAL"
+    },
+    "doncilu01": {
+      "jerseyNumber": 77,
+      "team": "LAL"
+    },
+    "smartma01": {
+      "jerseyNumber": 36,
+      "team": "LAL"
+    },
+    "jamesle01": {
+      "jerseyNumber": 23,
+      "team": "LAL"
+    },
+    "knechda01": {
+      "jerseyNumber": 4,
+      "team": "LAL"
+    },
+    "reaveau01": {
+      "jerseyNumber": 15,
+      "team": "LAL"
+    },
+    "klebima01": {
+      "jerseyNumber": 14,
+      "team": "LAL"
+    },
+    "jamesbr02": {
+      "jerseyNumber": 9,
+      "team": "LAL"
+    },
+    "kennalu01": {
+      "jerseyNumber": 10,
+      "team": "LAL"
+    },
+    "smithni01": {
+      "jerseyNumber": 20,
+      "team": "LAL"
+    },
+    "timmedr01": {
+      "jerseyNumber": 17,
+      "team": "LAL"
+    },
+    "thierad01": {
+      "jerseyNumber": 1,
+      "team": "LAL"
+    },
+    "manonch01": {
+      "jerseyNumber": 30,
+      "team": "LAL"
+    },
+    "spencca01": {
+      "jerseyNumber": 24,
+      "team": "MEM"
+    },
+    "wellsja01": {
+      "jerseyNumber": 0,
+      "team": "MEM"
+    },
+    "cowarce01": {
+      "jerseyNumber": 23,
+      "team": "MEM"
+    },
+    "jacksgg01": {
+      "jerseyNumber": 45,
+      "team": "MEM"
+    },
+    "prospol01": {
+      "jerseyNumber": 18,
+      "team": "MEM"
+    },
+    "caldwke01": {
+      "jerseyNumber": 3,
+      "team": "MEM"
+    },
+    "aldamsa01": {
+      "jerseyNumber": 7,
+      "team": "MEM"
+    },
+    "smallja01": {
+      "jerseyNumber": 10,
+      "team": "MEM"
+    },
+    "mashaja01": {
+      "jerseyNumber": 21,
+      "team": "MEM"
+    },
+    "hendrta01": {
+      "jerseyNumber": 22,
+      "team": "MEM"
+    },
+    "claytwa01": {
+      "jerseyNumber": 4,
+      "team": "MEM"
+    },
+    "moranja01": {
+      "jerseyNumber": 12,
+      "team": "MEM"
+    },
+    "ruperra01": {
+      "jerseyNumber": 32,
+      "team": "MEM"
+    },
+    "jeromty01": {
+      "jerseyNumber": 2,
+      "team": "MEM"
+    },
+    "edeyza01": {
+      "jerseyNumber": 14,
+      "team": "MEM"
+    },
+    "pippesc02": {
+      "jerseyNumber": 1,
+      "team": "MEM"
+    },
+    "gibsota01": {
+      "jerseyNumber": 67,
+      "team": "MEM"
+    },
+    "clarkbr01": {
+      "jerseyNumber": 15,
+      "team": "FA",
+      "name": "Brandon Clarke"
+    },
+    "wareke01": {
+      "jerseyNumber": 7,
+      "team": "MIL"
+    },
+    "jaqueja01": {
+      "jerseyNumber": 11,
+      "team": "MIL"
+    },
+    "adebaba01": {
+      "jerseyNumber": 13,
+      "team": "MIA"
+    },
+    "larsspe01": {
+      "jerseyNumber": 9,
+      "team": "MIA"
+    },
+    "mitchda01": {
+      "jerseyNumber": 45,
+      "team": "MIA"
+    },
+    "fontesi01": {
+      "jerseyNumber": 0,
+      "team": "MIA"
+    },
+    "smithdr01": {
+      "jerseyNumber": 12,
+      "team": "MIA"
+    },
+    "wiggian01": {
+      "jerseyNumber": 22,
+      "team": "MIA"
+    },
+    "powelno01": {
+      "jerseyNumber": 24,
+      "team": "MIA"
+    },
+    "jakucka01": {
+      "jerseyNumber": 25,
+      "team": "MIL"
+    },
+    "jovicni01": {
+      "jerseyNumber": 5,
+      "team": "MIA"
+    },
+    "gardnmy01": {
+      "jerseyNumber": 15,
+      "team": "MIA"
+    },
+    "herroty01": {
+      "jerseyNumber": 14,
+      "team": "MIL"
+    },
+    "johnske10": {
+      "jerseyNumber": 16,
+      "team": "MIA"
+    },
+    "youngja05": {
+      "jerseyNumber": 17,
+      "team": "MIA"
+    },
+    "goldivl01": {
+      "jerseyNumber": 50,
+      "team": "MIA"
+    },
+    "keelstr01": {
+      "jerseyNumber": 8,
+      "team": "MIA"
+    },
+    "greenaj01": {
+      "jerseyNumber": 20,
+      "team": "MIL"
+    },
+    "rolliry01": {
+      "jerseyNumber": 13,
+      "team": "MIL"
+    },
+    "turnemy01": {
+      "jerseyNumber": 3,
+      "team": "MIL"
+    },
+    "kuzmaky01": {
+      "jerseyNumber": 18,
+      "team": "MIL"
+    },
+    "portibo01": {
+      "jerseyNumber": 9,
+      "team": "MIA"
+    },
+    "simsje01": {
+      "jerseyNumber": 0,
+      "team": "MIL"
+    },
+    "trentga02": {
+      "jerseyNumber": 5,
+      "team": "MIL"
+    },
+    "harriga01": {
+      "jerseyNumber": 11,
+      "team": "MIL"
+    },
+    "jacksan01": {
+      "jerseyNumber": 44,
+      "team": "MIL"
+    },
+    "nancepe01": {
+      "jerseyNumber": 35,
+      "team": "MIL"
+    },
+    "porteke02": {
+      "jerseyNumber": 7,
+      "team": "MIL"
+    },
+    "antetgi01": {
+      "jerseyNumber": 34,
+      "team": "MIA"
+    },
+    "antetth01": {
+      "jerseyNumber": 43,
+      "team": "MIL"
+    },
+    "diengou01": {
+      "jerseyNumber": 21,
+      "team": "MIL"
+    },
+    "princta02": {
+      "jerseyNumber": 12,
+      "team": "MIL"
+    },
+    "ryanco01": {
+      "jerseyNumber": 30,
+      "team": "MIL"
+    },
+    "antetal01": {
+      "jerseyNumber": 29,
+      "team": "MIL"
+    },
+    "divindo01": {
+      "jerseyNumber": 0,
+      "team": "MIN"
+    },
+    "randlju01": {
+      "jerseyNumber": 30,
+      "team": "BRK"
+    },
+    "reidna01": {
+      "jerseyNumber": 11,
+      "team": "CHO"
+    },
+    "goberru01": {
+      "jerseyNumber": 27,
+      "team": "MIN"
+    },
+    "mcdanja02": {
+      "jerseyNumber": 3,
+      "team": "MIN"
+    },
+    "hylanbo01": {
+      "jerseyNumber": 8,
+      "team": "MIN"
+    },
+    "clarkja02": {
+      "jerseyNumber": 22,
+      "team": "MIN"
+    },
+    "edwaran01": {
+      "jerseyNumber": 5,
+      "team": "MIN"
+    },
+    "conlemi01": {
+      "jerseyNumber": 10,
+      "team": "MIN"
+    },
+    "shannte01": {
+      "jerseyNumber": 1,
+      "team": "MIN"
+    },
+    "berinjo01": {
+      "jerseyNumber": 19,
+      "team": "MIN"
+    },
+    "inglejo01": {
+      "jerseyNumber": 7,
+      "team": "MIN"
+    },
+    "dosunay01": {
+      "jerseyNumber": 13,
+      "team": "MIN"
+    },
+    "anderky01": {
+      "jerseyNumber": 12,
+      "team": "MIN"
+    },
+    "phillju01": {
+      "jerseyNumber": 4,
+      "team": "MIN"
+    },
+    "pullizy01": {
+      "jerseyNumber": 15,
+      "team": "MIN"
+    },
+    "zikarro01": {
+      "jerseyNumber": 44,
+      "team": "MIN"
+    },
+    "freemen01": {
+      "jerseyNumber": 25,
+      "team": "MIN"
+    },
+    "fearsje01": {
+      "jerseyNumber": 0,
+      "team": "NOP"
+    },
+    "queende01": {
+      "jerseyNumber": 22,
+      "team": "NOP"
+    },
+    "beysa01": {
+      "jerseyNumber": 41,
+      "team": "NOP"
+    },
+    "murphtr02": {
+      "jerseyNumber": 25,
+      "team": "NOP"
+    },
+    "missiyv01": {
+      "jerseyNumber": 21,
+      "team": "NOP"
+    },
+    "willizi01": {
+      "jerseyNumber": 1,
+      "team": "NOP"
+    },
+    "matkoka01": {
+      "jerseyNumber": 17,
+      "team": "NOP"
+    },
+    "peavymi01": {
+      "jerseyNumber": 14,
+      "team": "NOP"
+    },
+    "joneshe01": {
+      "jerseyNumber": 2,
+      "team": "NOP"
+    },
+    "hawkijo01": {
+      "jerseyNumber": 24,
+      "team": "NOP"
+    },
+    "mcgowbr01": {
+      "jerseyNumber": 11,
+      "team": "NOP"
+    },
+    "poolejo01": {
+      "jerseyNumber": 3,
+      "team": "NOP"
+    },
+    "looneke01": {
+      "jerseyNumber": 55,
+      "team": "NOP"
+    },
+    "murrade01": {
+      "jerseyNumber": 5,
+      "team": "NOP"
+    },
+    "alexatr01": {
+      "jerseyNumber": 23,
+      "team": "NOP"
+    },
+    "dickihu01": {
+      "jerseyNumber": 4,
+      "team": "NOP"
+    },
+    "odurojo01": {
+      "jerseyNumber": 13,
+      "team": "NOP"
+    },
+    "bridgmi01": {
+      "jerseyNumber": 25,
+      "team": "NYK"
+    },
+    "townska01": {
+      "jerseyNumber": 32,
+      "team": "NYK"
+    },
+    "brunsja01": {
+      "jerseyNumber": 11,
+      "team": "NYK"
+    },
+    "clarkjo01": {
+      "jerseyNumber": 0,
+      "team": "NYK"
+    },
+    "diawamo01": {
+      "jerseyNumber": 51,
+      "team": "NYK"
+    },
+    "anunoog01": {
+      "jerseyNumber": 8,
+      "team": "NYK"
+    },
+    "hartjo01": {
+      "jerseyNumber": 3,
+      "team": "NYK"
+    },
+    "kolekty01": {
+      "jerseyNumber": 13,
+      "team": "NYK"
+    },
+    "robinmi01": {
+      "jerseyNumber": 23,
+      "team": "NYK"
+    },
+    "hukpoar01": {
+      "jerseyNumber": 55,
+      "team": "NYK"
+    },
+    "shamela01": {
+      "jerseyNumber": 44,
+      "team": "NYK"
+    },
+    "mcbrimi01": {
+      "jerseyNumber": 2,
+      "team": "NYK"
+    },
+    "dadiepa01": {
+      "jerseyNumber": 4,
+      "team": "NYK"
+    },
+    "alvarjo01": {
+      "jerseyNumber": 5,
+      "team": "NYK"
+    },
+    "mcculke01": {
+      "jerseyNumber": 9,
+      "team": "NYK"
+    },
+    "sochaje01": {
+      "jerseyNumber": 20,
+      "team": "NYK"
+    },
+    "jemistr01": {
+      "jerseyNumber": 50,
+      "team": "NYK"
+    },
+    "jonesdi01": {
+      "jerseyNumber": 1,
+      "team": "NYK"
+    },
+    "wallaca01": {
+      "jerseyNumber": 22,
+      "team": "OKC"
+    },
+    "joeis01": {
+      "jerseyNumber": 11,
+      "team": "OKC"
+    },
+    "holmgch01": {
+      "jerseyNumber": 7,
+      "team": "OKC"
+    },
+    "dortlu01": {
+      "jerseyNumber": 5,
+      "team": "OKC"
+    },
+    "gilgesh01": {
+      "jerseyNumber": 2,
+      "team": "OKC"
+    },
+    "wiggiaa01": {
+      "jerseyNumber": 21,
+      "team": "OKC"
+    },
+    "willija07": {
+      "jerseyNumber": 6,
+      "team": "OKC"
+    },
+    "mitchaj01": {
+      "jerseyNumber": 25,
+      "team": "OKC"
+    },
+    "willike04": {
+      "jerseyNumber": 34,
+      "team": "OKC"
+    },
+    "carusal01": {
+      "jerseyNumber": 9,
+      "team": "OKC"
+    },
+    "harteis01": {
+      "jerseyNumber": 55,
+      "team": "OKC"
+    },
+    "carlsbr01": {
+      "jerseyNumber": 15,
+      "team": "OKC"
+    },
+    "barnhbr01": {
+      "jerseyNumber": 23,
+      "team": "OKC"
+    },
+    "willija06": {
+      "jerseyNumber": 8,
+      "team": "OKC"
+    },
+    "mccaija01": {
+      "jerseyNumber": 3,
+      "team": "OKC"
+    },
+    "topicni01": {
+      "jerseyNumber": 44,
+      "team": "OKC"
+    },
+    "sandfpa01": {
+      "jerseyNumber": 14,
+      "team": "OKC"
+    },
+    "banede01": {
+      "jerseyNumber": 3,
+      "team": "ORL"
+    },
+    "cartewe01": {
+      "jerseyNumber": 34,
+      "team": "ORL"
+    },
+    "dasiltr01": {
+      "jerseyNumber": 23,
+      "team": "ORL"
+    },
+    "banchpa01": {
+      "jerseyNumber": 5,
+      "team": "ORL"
+    },
+    "blackan01": {
+      "jerseyNumber": 0,
+      "team": "ORL"
+    },
+    "bitadgo01": {
+      "jerseyNumber": 35,
+      "team": "ORL"
+    },
+    "pendano01": {
+      "jerseyNumber": 93,
+      "team": "ORL"
+    },
+    "suggsja01": {
+      "jerseyNumber": 4,
+      "team": "ORL"
+    },
+    "howarje01": {
+      "jerseyNumber": 13,
+      "team": "ORL"
+    },
+    "richaja02": {
+      "jerseyNumber": 11,
+      "team": "ORL"
+    },
+    "isaacjo01": {
+      "jerseyNumber": 1,
+      "team": "ORL"
+    },
+    "cainja01": {
+      "jerseyNumber": 8,
+      "team": "ORL"
+    },
+    "wagnemo01": {
+      "jerseyNumber": 21,
+      "team": "ORL"
+    },
+    "wagnefr01": {
+      "jerseyNumber": 22,
+      "team": "ORL"
+    },
+    "carteje01": {
+      "jerseyNumber": 2,
+      "team": "ORL"
+    },
+    "moralal01": {
+      "jerseyNumber": 30,
+      "team": "ORL"
+    },
+    "castlco01": {
+      "jerseyNumber": 14,
+      "team": "ORL"
+    },
+    "edgecvj01": {
+      "jerseyNumber": 77,
+      "team": "PHI"
+    },
+    "grimequ01": {
+      "jerseyNumber": 5,
+      "team": "PHI"
+    },
+    "barlodo01": {
+      "jerseyNumber": 25,
+      "team": "PHI"
+    },
+    "bonaad01": {
+      "jerseyNumber": 30,
+      "team": "PHI"
+    },
+    "maxeyty01": {
+      "jerseyNumber": 0,
+      "team": "PHI"
+    },
+    "edwarju01": {
+      "jerseyNumber": 11,
+      "team": "PHI"
+    },
+    "walkeja01": {
+      "jerseyNumber": 33,
+      "team": "PHI"
+    },
+    "drumman01": {
+      "jerseyNumber": 1,
+      "team": "PHI"
+    },
+    "watfotr01": {
+      "jerseyNumber": 12,
+      "team": "PHI"
+    },
+    "oubreke01": {
+      "jerseyNumber": 9,
+      "team": "PHI"
+    },
+    "embiijo01": {
+      "jerseyNumber": 21,
+      "team": "PHI"
+    },
+    "georgpa01": {
+      "jerseyNumber": 8,
+      "team": "PHI"
+    },
+    "beaucma01": {
+      "jerseyNumber": 16,
+      "team": "PHI"
+    },
+    "terryda01": {
+      "jerseyNumber": 14,
+      "team": "PHI"
+    },
+    "lowryky01": {
+      "jerseyNumber": 7,
+      "team": "PHI"
+    },
+    "broomjo01": {
+      "jerseyNumber": 22,
+      "team": "PHI"
+    },
+    "martity01": {
+      "jerseyNumber": 23,
+      "team": "PHI"
+    },
+    "ighodos01": {
+      "jerseyNumber": 11,
+      "team": "PHO"
+    },
+    "gilleco01": {
+      "jerseyNumber": 12,
+      "team": "PHO"
+    },
+    "onealro01": {
+      "jerseyNumber": 0,
+      "team": "PHO"
+    },
+    "goodwjo01": {
+      "jerseyNumber": 23,
+      "team": "PHO"
+    },
+    "dunnry01": {
+      "jerseyNumber": 0,
+      "team": "PHO"
+    },
+    "bookede01": {
+      "jerseyNumber": 1,
+      "team": "PHO"
+    },
+    "willima07": {
+      "jerseyNumber": 15,
+      "team": "PHO"
+    },
+    "brookdi01": {
+      "jerseyNumber": 3,
+      "team": "PHO"
+    },
+    "flemira01": {
+      "jerseyNumber": 20,
+      "team": "PHO"
+    },
+    "allengr01": {
+      "jerseyNumber": 8,
+      "team": "PHO"
+    },
+    "bouyeja01": {
+      "jerseyNumber": 17,
+      "team": "PHO"
+    },
+    "maluakh01": {
+      "jerseyNumber": 10,
+      "team": "PHO"
+    },
+    "liveris01": {
+      "jerseyNumber": 18,
+      "team": "PHO"
+    },
+    "greenja05": {
+      "jerseyNumber": 4,
+      "team": "PHO"
+    },
+    "coffeam01": {
+      "jerseyNumber": 2,
+      "team": "PHO"
+    },
+    "breako01": {
+      "jerseyNumber": 14,
+      "team": "PHO"
+    },
+    "highsha01": {
+      "jerseyNumber": 19,
+      "team": "PHO"
+    },
+    "huntlcj01": {
+      "jerseyNumber": 22,
+      "team": "PHO"
+    },
+    "camarto01": {
+      "jerseyNumber": 33,
+      "team": "POR"
+    },
+    "clingdo01": {
+      "jerseyNumber": 23,
+      "team": "POR"
+    },
+    "cissosi01": {
+      "jerseyNumber": 91,
+      "team": "POR"
+    },
+    "avdijde01": {
+      "jerseyNumber": 8,
+      "team": "POR"
+    },
+    "williro04": {
+      "jerseyNumber": 35,
+      "team": "POR"
+    },
+    "grantje01": {
+      "jerseyNumber": 9,
+      "team": "POR"
+    },
+    "murrakr01": {
+      "jerseyNumber": 24,
+      "team": "POR"
+    },
+    "holidjr01": {
+      "jerseyNumber": 5,
+      "team": "POR"
+    },
+    "sharpsh01": {
+      "jerseyNumber": 17,
+      "team": "POR"
+    },
+    "loveca01": {
+      "jerseyNumber": 2,
+      "team": "POR"
+    },
+    "yangha01": {
+      "jerseyNumber": 16,
+      "team": "POR"
+    },
+    "weslebl01": {
+      "jerseyNumber": 1,
+      "team": "POR"
+    },
+    "hendesc01": {
+      "jerseyNumber": 0,
+      "team": "POR"
+    },
+    "thybuma01": {
+      "jerseyNumber": 4,
+      "team": "POR"
+    },
+    "krejcvi01": {
+      "jerseyNumber": 27,
+      "team": "POR"
+    },
+    "kentja01": {
+      "jerseyNumber": 29,
+      "team": "POR"
+    },
+    "youngch01": {
+      "jerseyNumber": 11,
+      "team": "POR"
+    },
+    "derozde01": {
+      "jerseyNumber": 10,
+      "team": "SAC"
+    },
+    "cliffni01": {
+      "jerseyNumber": 5,
+      "team": "SAC"
+    },
+    "raynama01": {
+      "jerseyNumber": 42,
+      "team": "SAC"
+    },
+    "achiupr01": {
+      "jerseyNumber": 9,
+      "team": "SAC"
+    },
+    "westbru01": {
+      "jerseyNumber": 18,
+      "team": "SAC"
+    },
+    "monkma01": {
+      "jerseyNumber": 0,
+      "team": "SAC"
+    },
+    "cardwdy01": {
+      "jerseyNumber": 32,
+      "team": "SAC"
+    },
+    "eubandr01": {
+      "jerseyNumber": 19,
+      "team": "SAC"
+    },
+    "lavinza01": {
+      "jerseyNumber": 8,
+      "team": "SAC"
+    },
+    "cartede02": {
+      "jerseyNumber": 22,
+      "team": "SAC"
+    },
+    "plowdda01": {
+      "jerseyNumber": 29,
+      "team": "SAC"
+    },
+    "mcderdo01": {
+      "jerseyNumber": 7,
+      "team": "SAC"
+    },
+    "murrake02": {
+      "jerseyNumber": 13,
+      "team": "SAC"
+    },
+    "hayeski01": {
+      "jerseyNumber": 3,
+      "team": "SAC"
+    },
+    "sabondo01": {
+      "jerseyNumber": 11,
+      "team": "SAC"
+    },
+    "baldwpa01": {
+      "jerseyNumber": 23,
+      "team": "SAC"
+    },
+    "steveis01": {
+      "jerseyNumber": 24,
+      "team": "SAC"
+    },
+    "huntede01": {
+      "jerseyNumber": 15,
+      "team": "SAC"
+    },
+    "johnske04": {
+      "jerseyNumber": 3,
+      "team": "SAS"
+    },
+    "champju02": {
+      "jerseyNumber": 30,
+      "team": "SAS"
+    },
+    "barneha02": {
+      "jerseyNumber": 40,
+      "team": "SAS"
+    },
+    "foxde01": {
+      "jerseyNumber": 4,
+      "team": "SAS"
+    },
+    "bryanca01": {
+      "jerseyNumber": 11,
+      "team": "SAS"
+    },
+    "harpedy01": {
+      "jerseyNumber": 2,
+      "team": "SAS"
+    },
+    "castlst01": {
+      "jerseyNumber": 5,
+      "team": "SAS"
+    },
+    "kornelu01": {
+      "jerseyNumber": 7,
+      "team": "SAS"
+    },
+    "vassede01": {
+      "jerseyNumber": 24,
+      "team": "SAS"
+    },
+    "wembavi01": {
+      "jerseyNumber": 1,
+      "team": "SAS"
+    },
+    "mclaujo01": {
+      "jerseyNumber": 0,
+      "team": "SAS"
+    },
+    "olynyke01": {
+      "jerseyNumber": 8,
+      "team": "SAS"
+    },
+    "waterli01": {
+      "jerseyNumber": 43,
+      "team": "SAS"
+    },
+    "biyombi01": {
+      "jerseyNumber": 18,
+      "team": "SAS"
+    },
+    "jonesda06": {
+      "jerseyNumber": 25,
+      "team": "SAS"
+    },
+    "ingraha01": {
+      "jerseyNumber": 55,
+      "team": "SAS"
+    },
+    "plumlma01": {
+      "jerseyNumber": 45,
+      "team": "SAS"
+    },
+    "sheadja01": {
+      "jerseyNumber": 23,
+      "team": "TOR"
+    },
+    "barnesc01": {
+      "jerseyNumber": 4,
+      "team": "TOR"
+    },
+    "mamuksa01": {
+      "jerseyNumber": 54,
+      "team": "TOR"
+    },
+    "ingrabr01": {
+      "jerseyNumber": 3,
+      "team": "TOR"
+    },
+    "dickgr01": {
+      "jerseyNumber": 1,
+      "team": "TOR"
+    },
+    "walteja01": {
+      "jerseyNumber": 14,
+      "team": "TOR"
+    },
+    "quickim01": {
+      "jerseyNumber": 5,
+      "team": "TOR"
+    },
+    "battlja01": {
+      "jerseyNumber": 77,
+      "team": "TOR"
+    },
+    "barrerj01": {
+      "jerseyNumber": 9,
+      "team": "TOR"
+    },
+    "murraco01": {
+      "jerseyNumber": 12,
+      "team": "TOR"
+    },
+    "poeltja01": {
+      "jerseyNumber": 19,
+      "team": "TOR"
+    },
+    "mogbojo01": {
+      "jerseyNumber": 2,
+      "team": "TOR"
+    },
+    "lawsoaj01": {
+      "jerseyNumber": 0,
+      "team": "TOR"
+    },
+    "martial01": {
+      "jerseyNumber": 55,
+      "team": "TOR"
+    },
+    "templga01": {
+      "jerseyNumber": 17,
+      "team": "TOR"
+    },
+    "jackstr02": {
+      "jerseyNumber": 32,
+      "team": "TOR"
+    },
+    "hepbuch01": {
+      "jerseyNumber": 24,
+      "team": "TOR"
+    },
+    "filipky01": {
+      "jerseyNumber": 22,
+      "team": "UTA"
+    },
+    "sensabr01": {
+      "jerseyNumber": 28,
+      "team": "UTA"
+    },
+    "baileac01": {
+      "jerseyNumber": 19,
+      "team": "UTA"
+    },
+    "willico04": {
+      "jerseyNumber": 5,
+      "team": "UTA"
+    },
+    "colliis01": {
+      "jerseyNumber": 8,
+      "team": "UTA"
+    },
+    "georgke01": {
+      "jerseyNumber": 3,
+      "team": "UTA"
+    },
+    "mykhasv01": {
+      "jerseyNumber": 10,
+      "team": "UTA"
+    },
+    "markkla01": {
+      "jerseyNumber": 23,
+      "team": "UTA"
+    },
+    "nurkiju01": {
+      "jerseyNumber": 30,
+      "team": "UTA"
+    },
+    "loveke01": {
+      "jerseyNumber": 42,
+      "team": "UTA"
+    },
+    "tshieos01": {
+      "jerseyNumber": 34,
+      "team": "UTA"
+    },
+    "harklej01": {
+      "jerseyNumber": 16,
+      "team": "UTA"
+    },
+    "konchjo01": {
+      "jerseyNumber": 55,
+      "team": "UTA"
+    },
+    "mbengbe01": {
+      "jerseyNumber": 21,
+      "team": "UTA"
+    },
+    "hinsobl01": {
+      "jerseyNumber": 2,
+      "team": "UTA"
+    },
+    "kesslwa01": {
+      "jerseyNumber": 24,
+      "team": "UTA"
+    },
+    "jacksja02": {
+      "jerseyNumber": 20,
+      "team": "UTA"
+    },
+    "grayha01": {
+      "jerseyNumber": 33,
+      "team": "UTA"
+    },
+    "carrica01": {
+      "jerseyNumber": 7,
+      "team": "WAS"
+    },
+    "rileywi01": {
+      "jerseyNumber": 27,
+      "team": "WAS"
+    },
+    "champju01": {
+      "jerseyNumber": 9,
+      "team": "WAS"
+    },
+    "johnstr03": {
+      "jerseyNumber": 12,
+      "team": "WAS"
+    },
+    "coulibi01": {
+      "jerseyNumber": 0,
+      "team": "WAS"
+    },
+    "gillan01": {
+      "jerseyNumber": 16,
+      "team": "WAS"
+    },
+    "watkija01": {
+      "jerseyNumber": 5,
+      "team": "WAS"
+    },
+    "vukcetr01": {
+      "jerseyNumber": 0,
+      "team": "WAS"
+    },
+    "sarral01": {
+      "jerseyNumber": 20,
+      "team": "WAS"
+    },
+    "georgky01": {
+      "jerseyNumber": 18,
+      "team": "WAS"
+    },
+    "coopesh01": {
+      "jerseyNumber": 13,
+      "team": "WAS"
+    },
+    "hardyja02": {
+      "jerseyNumber": 8,
+      "team": "WAS"
+    },
+    "whitmca01": {
+      "jerseyNumber": 1,
+      "team": "WAS"
+    },
+    "blackle01": {
+      "jerseyNumber": 14,
+      "team": "WAS"
+    },
+    "reeseju01": {
+      "jerseyNumber": 15,
+      "team": "WAS"
+    },
+    "youngtr01": {
+      "jerseyNumber": 3,
+      "team": "WAS"
+    },
+    "halibty01": {
+      "jerseyNumber": 0,
+      "team": "IND"
+    },
+    "irvinky01": {
+      "jerseyNumber": 2,
+      "team": "DAL"
+    },
+    "lillada01": {
+      "jerseyNumber": 0,
+      "team": "POR"
+    },
+    "vanvlfr01": {
+      "jerseyNumber": 5,
+      "team": "HOU"
+    },
+    "toppija01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jacob Toppin"
+    },
+    "millspa02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Patty Mills"
+    },
+    "paulch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Paul"
+    },
+    "wrighde01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Delon Wright"
+    },
+    "balllo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Lonzo Ball"
+    },
+    "jarrede01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "DeJon Jarreau"
+    },
+    "iveyja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jaden Ivey"
+    },
+    "crowdja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jae Crowder"
+    },
+    "willivi01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Vince Williams Jr."
+    },
+    "hayesni01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Nigel Hayes-Davis"
+    },
+    "cookeja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Javonte Cooke"
+    },
+    "kellymi02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Miles Kelly"
+    },
+    "burtoty01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Tyler Burton"
+    },
+    "juzanjo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Johnny Juzang"
+    },
+    "klintbo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Bobi Klintman"
+    },
+    "jacksre01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Reggie Jackson"
+    },
+    "mathega01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Garrison Mathews"
+    },
+    "reddica01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cam Reddish"
+    },
+    "jeffrda01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "DaQuan Jeffries"
+    },
+    "nfalyda01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "N'Faly Dante"
+    },
+    "reathdu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Duop Reath"
+    },
+    "thomptr01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Tristan Thompson"
+    },
+    "rosste01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Terrence Ross"
+    },
+    "morrimo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Monte Morris"
+    },
+    "robinje02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jeremiah Robinson-Earl"
+    },
+    "brownda04": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Darius Brown II"
+    },
+    "bolbo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Bol Bol"
+    },
+    "richajo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Josh Richardson"
+    },
+    "sallihu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Hunter Sallis"
+    },
+    "smithde03": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Dennis Smith Jr."
+    },
+    "willial06": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Alondes Williams"
+    },
+    "wisemja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "James Wiseman"
+    },
+    "bouchch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Boucher"
+    },
+    "travelu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Luke Travers"
+    },
+    "garcian01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Andersson Garcia"
+    },
+    "bambamo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Mo Bamba"
+    },
+    "tysonhu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Hunter Tyson"
+    },
+    "boehebu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Buddy Boeheim"
+    },
+    "fultzma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Markelle Fultz"
+    },
+    "branhma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Malaki Branham"
+    },
+    "craigto01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Torrey Craig"
+    },
+    "umudest01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Stanley Umude"
+    },
+    "burksal01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Alec Burks"
+    },
+    "loverla01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Lawson Lovering"
+    },
+    "jonesco02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Colby Jones"
+    },
+    "flowetr01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Trentyn Flowers"
+    },
+    "niangge01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Georges Niang"
+    },
+    "searsma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Mark Sears"
+    },
+    "porteot01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Otto Porter Jr."
+    },
+    "richmka01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Kadary Richmond"
+    },
+    "beaslma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Malik Beasley"
+    },
+    "bufkiko01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Kobe Bufkin"
+    },
+    "thomaca02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cam Thomas"
+    },
+    "nelsogr02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Grant Nelson"
+    },
+    "labissk01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Skal Labissi\u00e8re"
+    },
+    "martico01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cody Martin"
+    },
+    "robinor01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Orlando Robinson"
+    },
+    "walkelo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Lonnie Walker IV"
+    },
+    "telfoja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jahmyl Telfort"
+    },
+    "anthoco01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cole Anthony"
+    },
+    "saricda01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Dario \u0160ari\u0107"
+    },
+    "gordoer01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Eric Gordon"
+    },
+    "simmobe01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Ben Simmons"
+    },
+    "payneca01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cameron Payne"
+    },
+    "peterdr01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Drew Peterson"
+    },
+    "livinch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Livingston"
+    },
+    "balad01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Adama-Alpha Bal"
+    }
+  },
+  "players": [
+    {
+      "bbrPlayerId": "alexani01",
+      "name": "Nickeil Alexander-Walker",
+      "team": "ATL",
+      "jerseyNumber": 7,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "gueyemo02",
+      "name": "Mouhamed Gueye",
+      "team": "ATL",
+      "jerseyNumber": 18,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "daniedy01",
+      "name": "Dyson Daniels",
+      "team": "ATL",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "okongon01",
+      "name": "Onyeka Okongwu",
+      "team": "ATL",
+      "jerseyNumber": 17,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "johnsja05",
+      "name": "Jalen Johnson",
+      "team": "ATL",
+      "jerseyNumber": 1,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "risacza01",
+      "name": "Zaccharie Risacher",
+      "team": "ATL",
+      "jerseyNumber": 10,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "wallake01",
+      "name": "Keaton Wallace",
+      "team": "ATL",
+      "jerseyNumber": 2,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "newelas01",
+      "name": "Asa Newell",
+      "team": "ATL",
+      "jerseyNumber": 14,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "mccolcj01",
+      "name": "CJ McCollum",
+      "team": "ATL",
+      "jerseyNumber": 3,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "kispeco01",
+      "name": "Corey Kispert",
+      "team": "ATL",
+      "jerseyNumber": 24,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "vincega01",
+      "name": "Gabe Vincent",
+      "team": "ATL",
+      "jerseyNumber": 4,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "landajo01",
+      "name": "Jock Landale",
+      "team": "ATL",
+      "jerseyNumber": 31,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "kuminjo01",
+      "name": "Jonathan Kuminga",
+      "team": "ATL",
+      "jerseyNumber": 0,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "kolokch01",
+      "name": "Christian Koloko",
+      "team": "ATL",
+      "jerseyNumber": 35,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "hieldbu01",
+      "name": "Buddy Hield",
+      "team": "ATL",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "bradlto01",
+      "name": "Tony Bradley",
+      "team": "ATL",
+      "jerseyNumber": 13,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "gilbeke01",
+      "name": "Keshon Gilbert",
+      "team": "ATL",
+      "jerseyNumber": 51,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "pritcpa01",
+      "name": "Payton Pritchard",
+      "team": "BOS",
+      "jerseyNumber": 11,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "hausesa01",
+      "name": "Sam Hauser",
+      "team": "BOS",
+      "jerseyNumber": 30,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "whitede01",
+      "name": "Derrick White",
+      "team": "BOS",
+      "jerseyNumber": 9,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "scheiba01",
+      "name": "Baylor Scheierman",
+      "team": "BOS",
+      "jerseyNumber": 55,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "quetane01",
+      "name": "Neemias Queta",
+      "team": "BOS",
+      "jerseyNumber": 88,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "gonzahu01",
+      "name": "Hugo Gonz\u00c3\u00a1lez",
+      "team": "BOS",
+      "jerseyNumber": 28,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "brownja02",
+      "name": "Jaylen Brown",
+      "team": "BOS",
+      "jerseyNumber": 7,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "garzalu01",
+      "name": "Luka Garza",
+      "team": "BOS",
+      "jerseyNumber": 52,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "walshjo01",
+      "name": "Jordan Walsh",
+      "team": "BOS",
+      "jerseyNumber": 27,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "harpero02",
+      "name": "Ron Harper Jr.",
+      "team": "BOS",
+      "jerseyNumber": 13,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "william01",
+      "name": "Amari Williams",
+      "team": "BOS",
+      "jerseyNumber": 77,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "tatumja01",
+      "name": "Jayson Tatum",
+      "team": "BOS",
+      "jerseyNumber": 0,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "vucevni01",
+      "name": "Nikola Vu\u00c4\u008devi\u00c4\u0087",
+      "team": "BOS",
+      "jerseyNumber": 4,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "shulgma01",
+      "name": "Max Shulga",
+      "team": "BOS",
+      "jerseyNumber": 44,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "tonjejo01",
+      "name": "John Tonje",
+      "team": "BOS",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "bantoda01",
+      "name": "Dalano Banton",
+      "team": "BOS",
+      "jerseyNumber": 45,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "claxtni01",
+      "name": "Nic Claxton",
+      "team": "CHI",
+      "jerseyNumber": 33,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "clownno01",
+      "name": "Noah Clowney",
+      "team": "BRK",
+      "jerseyNumber": 21,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "mannte01",
+      "name": "Terance Mann",
+      "team": "BRK",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "poweldr01",
+      "name": "Drake Powell",
+      "team": "BRK",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "sharpda01",
+      "name": "Day'Ron Sharpe",
+      "team": "BRK",
+      "jerseyNumber": 20,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "wolfda01",
+      "name": "Danny Wolf",
+      "team": "BRK",
+      "jerseyNumber": 2,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "willizi02",
+      "name": "Ziaire Williams",
+      "team": "BRK",
+      "jerseyNumber": 1,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "traorno01",
+      "name": "Nolan Traor\u00c3\u00a9",
+      "team": "BRK",
+      "jerseyNumber": 88,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "wilsoja03",
+      "name": "Jalen Wilson",
+      "team": "BRK",
+      "jerseyNumber": 22,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "portemi01",
+      "name": "Michael Porter Jr.",
+      "team": "BRK",
+      "jerseyNumber": 17,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "demineg01",
+      "name": "Egor D\u00d1\u0091min",
+      "team": "BRK",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "sarafbe01",
+      "name": "Ben Saraf",
+      "team": "BRK",
+      "jerseyNumber": 77,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "liddeej01",
+      "name": "E.J. Liddell",
+      "team": "BRK",
+      "jerseyNumber": 9,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "etienty01",
+      "name": "Tyson Etienne",
+      "team": "BRK",
+      "jerseyNumber": 10,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "agbajoc01",
+      "name": "Ochai Agbaji",
+      "team": "BRK",
+      "jerseyNumber": 30,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "johnsch06",
+      "name": "Chaney Johnson",
+      "team": "BRK",
+      "jerseyNumber": 31,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "minotjo01",
+      "name": "Josh Minott",
+      "team": "BRK",
+      "jerseyNumber": 0,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "smithma02",
+      "name": "Malachi Smith",
+      "team": "BRK",
+      "jerseyNumber": 18,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "buzelma01",
+      "name": "Matas Buzelis",
+      "team": "CHI",
+      "jerseyNumber": 14,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "willipa01",
+      "name": "Patrick Williams",
+      "team": "CHI",
+      "jerseyNumber": 44,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "jonestr01",
+      "name": "Tre Jones",
+      "team": "CHI",
+      "jerseyNumber": 30,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "okorois01",
+      "name": "Isaac Okoro",
+      "team": "CHI",
+      "jerseyNumber": 35,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "giddejo01",
+      "name": "Josh Giddey",
+      "team": "CHI",
+      "jerseyNumber": 3,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "smithja04",
+      "name": "Jalen Smith",
+      "team": "CHI",
+      "jerseyNumber": 25,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "olbrila01",
+      "name": "Lachlan Olbrich",
+      "team": "CHI",
+      "jerseyNumber": 47,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "dilliro01",
+      "name": "Rob Dillingham",
+      "team": "CHI",
+      "jerseyNumber": 7,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "millele01",
+      "name": "Leonard Miller",
+      "team": "CHI",
+      "jerseyNumber": 11,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "sextoco01",
+      "name": "Collin Sexton",
+      "team": "CHI",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "yabusgu01",
+      "name": "Guerschon Yabusele",
+      "team": "CHI",
+      "jerseyNumber": 28,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "richani01",
+      "name": "Nick Richards",
+      "team": "CHI",
+      "jerseyNumber": 13,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "kawamyu01",
+      "name": "Yuki Kawamura",
+      "team": "CHI",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "colliza01",
+      "name": "Zach Collins",
+      "team": "CHI",
+      "jerseyNumber": 12,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "mccluma01",
+      "name": "Mac McClung",
+      "team": "CHI",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "gueyemo01",
+      "name": "Mouhamadou Gueye",
+      "team": "CHI",
+      "jerseyNumber": 16,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "essenno01",
+      "name": "Noa Essengue",
+      "team": "CHI",
+      "jerseyNumber": 24,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "jamessi01",
+      "name": "Sion James",
+      "team": "CHO",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "knuepko01",
+      "name": "Kon Knueppel",
+      "team": "CHO",
+      "jerseyNumber": 7,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "bridgmi02",
+      "name": "Miles Bridges",
+      "team": "CHO",
+      "jerseyNumber": 0,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "diabamo01",
+      "name": "Moussa Diabat\u00c3\u00a9",
+      "team": "CHO",
+      "jerseyNumber": 14,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "ballla01",
+      "name": "LaMelo Ball",
+      "team": "MIN",
+      "jerseyNumber": 1,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "kalkbry01",
+      "name": "Ryan Kalkbrenner",
+      "team": "CHO",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "millebr02",
+      "name": "Brandon Miller",
+      "team": "CHO",
+      "jerseyNumber": 24,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "greenjo02",
+      "name": "Josh Green",
+      "team": "MIN",
+      "jerseyNumber": 10,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "manntr01",
+      "name": "Tre Mann",
+      "team": "CHO",
+      "jerseyNumber": 23,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "connapa01",
+      "name": "Pat Connaughton",
+      "team": "CHO",
+      "jerseyNumber": 21,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "salauti01",
+      "name": "Tidjane Sala\u00c3\u00bcn",
+      "team": "CHO",
+      "jerseyNumber": 31,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "willigr01",
+      "name": "Grant Williams",
+      "team": "CHO",
+      "jerseyNumber": 2,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "mcneeli01",
+      "name": "Liam McNeeley",
+      "team": "CHO",
+      "jerseyNumber": 33,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "whiteco01",
+      "name": "Coby White",
+      "team": "CHO",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "tillmxa01",
+      "name": "Xavier Tillman Sr.",
+      "team": "CHO",
+      "jerseyNumber": 26,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "hallpj01",
+      "name": "PJ Hall",
+      "team": "CHO",
+      "jerseyNumber": 16,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "reevean01",
+      "name": "Antonio Reeves",
+      "team": "CHO",
+      "jerseyNumber": 12,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mitchdo01",
+      "name": "Donovan Mitchell",
+      "team": "CLE",
+      "jerseyNumber": 45,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "tysonja01",
+      "name": "Jaylon Tyson",
+      "team": "CLE",
+      "jerseyNumber": 20,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mobleev01",
+      "name": "Evan Mobley",
+      "team": "CLE",
+      "jerseyNumber": 4,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "tomlina01",
+      "name": "Nae'Qwan Tomlin",
+      "team": "CLE",
+      "jerseyNumber": 35,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "portecr01",
+      "name": "Craig Porter Jr.",
+      "team": "CLE",
+      "jerseyNumber": 9,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "bryanth01",
+      "name": "Thomas Bryant",
+      "team": "CLE",
+      "jerseyNumber": 3,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "wadede01",
+      "name": "Dean Wade",
+      "team": "CLE",
+      "jerseyNumber": 32,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "allenja01",
+      "name": "Jarrett Allen",
+      "team": "CLE",
+      "jerseyNumber": 31,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "merrisa01",
+      "name": "Sam Merrill",
+      "team": "CLE",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "proctty01",
+      "name": "Tyrese Proctor",
+      "team": "CLE",
+      "jerseyNumber": 24,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "nancela02",
+      "name": "Larry Nance Jr.",
+      "team": "CLE",
+      "jerseyNumber": 22,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "schrode01",
+      "name": "Dennis Schr\u00c3\u00b6der",
+      "team": "CLE",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "elliske01",
+      "name": "Keon Ellis",
+      "team": "CLE",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hardeja01",
+      "name": "James Harden",
+      "team": "CLE",
+      "jerseyNumber": 1,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "strusma01",
+      "name": "Max Strus",
+      "team": "CLE",
+      "jerseyNumber": 2,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "enarutr01",
+      "name": "Tristan Enaruna",
+      "team": "CLE",
+      "jerseyNumber": 21,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "minixri01",
+      "name": "Riley Minix",
+      "team": "CLE",
+      "jerseyNumber": 12,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "sarrol01",
+      "name": "Olivier Sarr",
+      "team": "CLE",
+      "jerseyNumber": 33,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "chrisma02",
+      "name": "Max Christie",
+      "team": "DAL",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "marshna01",
+      "name": "Naji Marshall",
+      "team": "DAL",
+      "jerseyNumber": 13,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "flaggco01",
+      "name": "Cooper Flagg",
+      "team": "DAL",
+      "jerseyNumber": 32,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "thompkl01",
+      "name": "Klay Thompson",
+      "team": "DAL",
+      "jerseyNumber": 31,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "willibr03",
+      "name": "Brandon Williams",
+      "team": "DAL",
+      "jerseyNumber": 10,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "poweldw01",
+      "name": "Dwight Powell",
+      "team": "DAL",
+      "jerseyNumber": 7,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "nembhry01",
+      "name": "Ryan Nembhard",
+      "team": "DAL",
+      "jerseyNumber": 9,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "martica02",
+      "name": "Caleb Martin",
+      "team": "DAL",
+      "jerseyNumber": 16,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "washipj01",
+      "name": "P.J. Washington",
+      "team": "DAL",
+      "jerseyNumber": 25,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "gaffoda01",
+      "name": "Daniel Gafford",
+      "team": "DAL",
+      "jerseyNumber": 21,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "cissemo01",
+      "name": "Moussa Cisse",
+      "team": "DAL",
+      "jerseyNumber": 30,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "middlkh01",
+      "name": "Khris Middleton",
+      "team": "DAL",
+      "jerseyNumber": 20,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "johnsaj01",
+      "name": "AJ Johnson",
+      "team": "DAL",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "baglema01",
+      "name": "Marvin Bagley III",
+      "team": "DAL",
+      "jerseyNumber": 35,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "poulajo01",
+      "name": "John Poulakidas",
+      "team": "DAL",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "smithty02",
+      "name": "Tyler Smith",
+      "team": "DAL",
+      "jerseyNumber": 23,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "livelde01",
+      "name": "Dereck Lively II",
+      "team": "DAL",
+      "jerseyNumber": 2,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "brownbr01",
+      "name": "Bruce Brown",
+      "team": "DEN",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hardati02",
+      "name": "Tim Hardaway Jr.",
+      "team": "DEN",
+      "jerseyNumber": 10,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "murraja01",
+      "name": "Jamal Murray",
+      "team": "DEN",
+      "jerseyNumber": 27,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "jokicni01",
+      "name": "Nikola Joki\u00c4\u0087",
+      "team": "DEN",
+      "jerseyNumber": 15,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "valanjo01",
+      "name": "Jonas Valan\u00c4\u008di\u00c5\u00abnas",
+      "team": "DEN",
+      "jerseyNumber": 17,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "jonessp01",
+      "name": "Spencer Jones",
+      "team": "DEN",
+      "jerseyNumber": 21,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "strawju01",
+      "name": "Julian Strawther",
+      "team": "DEN",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "watsope01",
+      "name": "Peyton Watson",
+      "team": "DEN",
+      "jerseyNumber": 8,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "johnsca02",
+      "name": "Cameron Johnson",
+      "team": "DEN",
+      "jerseyNumber": 23,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "nnajize01",
+      "name": "Zeke Nnaji",
+      "team": "DEN",
+      "jerseyNumber": 22,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "pickeja02",
+      "name": "Jalen Pickett",
+      "team": "DEN",
+      "jerseyNumber": 24,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "braunch01",
+      "name": "Christian Braun",
+      "team": "DEN",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "gordoaa01",
+      "name": "Aaron Gordon",
+      "team": "DEN",
+      "jerseyNumber": 32,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "holmeda01",
+      "name": "DaRon Holmes",
+      "team": "DEN",
+      "jerseyNumber": 14,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "jonesty01",
+      "name": "Tyus Jones",
+      "team": "DEN",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "jonescu01",
+      "name": "Curtis Jones",
+      "team": "DEN",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "simpskj01",
+      "name": "KJ Simpson",
+      "team": "DEN",
+      "jerseyNumber": 25,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "roddyda01",
+      "name": "David Roddy",
+      "team": "DEN",
+      "jerseyNumber": 45,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "greenja02",
+      "name": "Javonte Green",
+      "team": "DET",
+      "jerseyNumber": 31,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hollaro01",
+      "name": "Ron Holland",
+      "team": "DET",
+      "jerseyNumber": 5,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "robindu01",
+      "name": "Duncan Robinson",
+      "team": "DET",
+      "jerseyNumber": 55,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "thompau01",
+      "name": "Ausar Thompson",
+      "team": "DET",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "jenkida01",
+      "name": "Daniss Jenkins",
+      "team": "DET",
+      "jerseyNumber": 24,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "durenja01",
+      "name": "Jalen Duren",
+      "team": "DET",
+      "jerseyNumber": 0,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "reedpa01",
+      "name": "Paul Reed",
+      "team": "DET",
+      "jerseyNumber": 7,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "cunnica01",
+      "name": "Cade Cunningham",
+      "team": "DET",
+      "jerseyNumber": 2,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "harrito02",
+      "name": "Tobias Harris",
+      "team": "DET",
+      "jerseyNumber": 12,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "leverca01",
+      "name": "Caris LeVert",
+      "team": "DET",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "stewais01",
+      "name": "Isaiah Stewart",
+      "team": "MEM",
+      "jerseyNumber": 28,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sassema01",
+      "name": "Marcus Sasser",
+      "team": "DET",
+      "jerseyNumber": 25,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "laniech01",
+      "name": "Chaz Lanier",
+      "team": "DET",
+      "jerseyNumber": 20,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "huertke01",
+      "name": "Kevin Huerter",
+      "team": "DET",
+      "jerseyNumber": 27,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "smithto05",
+      "name": "Tolu Smith",
+      "team": "DET",
+      "jerseyNumber": 35,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "moorewe01",
+      "name": "Wendell Moore Jr.",
+      "team": "DET",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jonesis01",
+      "name": "Isaac Jones",
+      "team": "DET",
+      "jerseyNumber": 13,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "podzibr01",
+      "name": "Brandin Podziemski",
+      "team": "GSW",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "paytoga02",
+      "name": "Gary Payton II",
+      "team": "GSW",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "richawi02",
+      "name": "Will Richard",
+      "team": "GSW",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "santogu01",
+      "name": "Gui Santos",
+      "team": "GSW",
+      "jerseyNumber": 15,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "greendr01",
+      "name": "Draymond Green",
+      "team": "GSW",
+      "jerseyNumber": 23,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "postqu01",
+      "name": "Quinten Post",
+      "team": "GSW",
+      "jerseyNumber": 21,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "spencpa01",
+      "name": "Pat Spencer",
+      "team": "GSW",
+      "jerseyNumber": 61,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "moodymo01",
+      "name": "Moses Moody",
+      "team": "GSW",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "meltode01",
+      "name": "De'Anthony Melton",
+      "team": "GSW",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "horfoal01",
+      "name": "Al Horford",
+      "team": "GSW",
+      "jerseyNumber": 20,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "curryst01",
+      "name": "Stephen Curry",
+      "team": "GSW",
+      "jerseyNumber": 30,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "butleji01",
+      "name": "Jimmy Butler",
+      "team": "GSW",
+      "jerseyNumber": 10,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "leonsma01",
+      "name": "Malevy Leons",
+      "team": "GSW",
+      "jerseyNumber": 33,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "cryerlj01",
+      "name": "LJ Cryer",
+      "team": "GSW",
+      "jerseyNumber": 18,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "porzikr01",
+      "name": "Kristaps Porzi\u00c5\u0086\u00c4\u00a3is",
+      "team": "GSW",
+      "jerseyNumber": 7,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "willije02",
+      "name": "Nate Williams",
+      "team": "GSW",
+      "jerseyNumber": 19,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "curryse01",
+      "name": "Seth Curry",
+      "team": "GSW",
+      "jerseyNumber": 31,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "bassech01",
+      "name": "Charles Bassey",
+      "team": "GSW",
+      "jerseyNumber": 28,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sheppre01",
+      "name": "Reed Sheppard",
+      "team": "HOU",
+      "jerseyNumber": 15,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "thompam01",
+      "name": "Amen Thompson",
+      "team": "HOU",
+      "jerseyNumber": 1,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "duranke01",
+      "name": "Kevin Durant",
+      "team": "HOU",
+      "jerseyNumber": 7,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "okogijo01",
+      "name": "Josh Okogie",
+      "team": "HOU",
+      "jerseyNumber": 20,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "smithja05",
+      "name": "Jabari Smith Jr.",
+      "team": "HOU",
+      "jerseyNumber": 10,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "capelca01",
+      "name": "Clint Capela",
+      "team": "HOU",
+      "jerseyNumber": 30,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sengual01",
+      "name": "Alperen \u00c5\u009eeng\u00c3\u00bcn",
+      "team": "HOU",
+      "jerseyNumber": 28,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "easonta01",
+      "name": "Tari Eason",
+      "team": "HOU",
+      "jerseyNumber": 17,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "holidaa01",
+      "name": "Aaron Holiday",
+      "team": "HOU",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "tateja01",
+      "name": "Jae'Sean Tate",
+      "team": "HOU",
+      "jerseyNumber": 8,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "finnedo01",
+      "name": "Dorian Finney-Smith",
+      "team": "HOU",
+      "jerseyNumber": 2,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "adamsst01",
+      "name": "Steven Adams",
+      "team": "HOU",
+      "jerseyNumber": 12,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "greenje02",
+      "name": "Jeff Green",
+      "team": "HOU",
+      "jerseyNumber": 32,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "davisjd01",
+      "name": "JD Davison",
+      "team": "HOU",
+      "jerseyNumber": 4,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "crawfis01",
+      "name": "Isaiah Crawford",
+      "team": "HOU",
+      "jerseyNumber": 27,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "newtotr01",
+      "name": "Tristen Newton",
+      "team": "HOU",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "huffja01",
+      "name": "Jay Huff",
+      "team": "IND",
+      "jerseyNumber": 32,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "walkeja02",
+      "name": "Jarace Walker",
+      "team": "IND",
+      "jerseyNumber": 5,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "sheppbe01",
+      "name": "Ben Sheppard",
+      "team": "IND",
+      "jerseyNumber": 26,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "siakapa01",
+      "name": "Pascal Siakam",
+      "team": "IND",
+      "jerseyNumber": 43,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "nembhan01",
+      "name": "Andrew Nembhard",
+      "team": "IND",
+      "jerseyNumber": 2,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "mccontj01",
+      "name": "T.J. McConnell",
+      "team": "IND",
+      "jerseyNumber": 9,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "jacksqu01",
+      "name": "Quenton Jackson",
+      "team": "IND",
+      "jerseyNumber": 29,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "pottemi01",
+      "name": "Micah Potter",
+      "team": "IND",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "nesmiaa01",
+      "name": "Aaron Nesmith",
+      "team": "IND",
+      "jerseyNumber": 23,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "peterta01",
+      "name": "Taelon Peter",
+      "team": "IND",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "furphjo01",
+      "name": "Johnny Furphy",
+      "team": "IND",
+      "jerseyNumber": 12,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "thompet01",
+      "name": "Ethan Thompson",
+      "team": "IND",
+      "jerseyNumber": 55,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "brownko01",
+      "name": "Kobe Brown",
+      "team": "IND",
+      "jerseyNumber": 24,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "toppiob01",
+      "name": "Obi Toppin",
+      "team": "IND",
+      "jerseyNumber": 1,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "slawsja01",
+      "name": "Jalen Slawson",
+      "team": "IND",
+      "jerseyNumber": 18,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "zubaciv01",
+      "name": "Ivica Zubac",
+      "team": "IND",
+      "jerseyNumber": 40,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "dunnkr01",
+      "name": "Kris Dunn",
+      "team": "LAC",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "lopezbr01",
+      "name": "Brook Lopez",
+      "team": "LAC",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "batumni01",
+      "name": "Nicolas Batum",
+      "team": "LAC",
+      "jerseyNumber": 33,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "collijo01",
+      "name": "John Collins",
+      "team": "LAC",
+      "jerseyNumber": 20,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "sandeko01",
+      "name": "Kobe Sanders",
+      "team": "LAC",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "leonaka01",
+      "name": "Kawhi Leonard",
+      "team": "LAC",
+      "jerseyNumber": 2,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "millejo02",
+      "name": "Jordan Miller",
+      "team": "LAC",
+      "jerseyNumber": 22,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "chrisca02",
+      "name": "Cam Christie",
+      "team": "LAC",
+      "jerseyNumber": 12,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jonesde02",
+      "name": "Derrick Jones Jr.",
+      "team": "LAC",
+      "jerseyNumber": 5,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "konanya01",
+      "name": "Yanic Konan Niederh\u00c3\u00a4user",
+      "team": "LAC",
+      "jerseyNumber": 14,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "mathube01",
+      "name": "Bennedict Mathurin",
+      "team": "LAC",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "garlada01",
+      "name": "Darius Garland",
+      "team": "LAC",
+      "jerseyNumber": 10,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "jacksis01",
+      "name": "Isaiah Jackson",
+      "team": "LAC",
+      "jerseyNumber": 23,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "washity02",
+      "name": "TyTy Washington Jr.",
+      "team": "LAC",
+      "jerseyNumber": 15,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "pedulse01",
+      "name": "Sean Pedulla",
+      "team": "LAC",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "bealbr01",
+      "name": "Bradley Beal",
+      "team": "LAC",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "omierno01",
+      "name": "Norchad Omier",
+      "team": "LAC",
+      "jerseyNumber": 55,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "laravja01",
+      "name": "Jake LaRavia",
+      "team": "LAL",
+      "jerseyNumber": 12,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "aytonde01",
+      "name": "Deandre Ayton",
+      "team": "LAL",
+      "jerseyNumber": 5,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "hachiru01",
+      "name": "Rui Hachimura",
+      "team": "LAL",
+      "jerseyNumber": 28,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "hayesja02",
+      "name": "Jaxson Hayes",
+      "team": "LAL",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "vandeja01",
+      "name": "Jarred Vanderbilt",
+      "team": "LAL",
+      "jerseyNumber": 2,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "doncilu01",
+      "name": "Luka Don\u00c4\u008di\u00c4\u0087",
+      "team": "LAL",
+      "jerseyNumber": 77,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "smartma01",
+      "name": "Marcus Smart",
+      "team": "LAL",
+      "jerseyNumber": 36,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jamesle01",
+      "name": "LeBron James",
+      "team": "LAL",
+      "jerseyNumber": 23,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "knechda01",
+      "name": "Dalton Knecht",
+      "team": "LAL",
+      "jerseyNumber": 4,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "reaveau01",
+      "name": "Austin Reaves",
+      "team": "LAL",
+      "jerseyNumber": 15,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "klebima01",
+      "name": "Maxi Kleber",
+      "team": "LAL",
+      "jerseyNumber": 14,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "jamesbr02",
+      "name": "Bronny James",
+      "team": "LAL",
+      "jerseyNumber": 9,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "kennalu01",
+      "name": "Luke Kennard",
+      "team": "LAL",
+      "jerseyNumber": 10,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "smithni01",
+      "name": "Nick Smith Jr.",
+      "team": "LAL",
+      "jerseyNumber": 20,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "timmedr01",
+      "name": "Drew Timme",
+      "team": "LAL",
+      "jerseyNumber": 17,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "thierad01",
+      "name": "Adou Thiero",
+      "team": "LAL",
+      "jerseyNumber": 1,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "manonch01",
+      "name": "Chris Ma\u00c3\u00b1on",
+      "team": "LAL",
+      "jerseyNumber": 30,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "spencca01",
+      "name": "Cam Spencer",
+      "team": "MEM",
+      "jerseyNumber": 24,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "wellsja01",
+      "name": "Jaylen Wells",
+      "team": "MEM",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "cowarce01",
+      "name": "Cedric Coward",
+      "team": "MEM",
+      "jerseyNumber": 23,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jacksgg01",
+      "name": "GG Jackson II",
+      "team": "MEM",
+      "jerseyNumber": 45,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "prospol01",
+      "name": "Olivier-Maxence Prosper",
+      "team": "MEM",
+      "jerseyNumber": 18,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "caldwke01",
+      "name": "Kentavious Caldwell-Pope",
+      "team": "MEM",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "aldamsa01",
+      "name": "Santi Aldama",
+      "team": "MEM",
+      "jerseyNumber": 7,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "smallja01",
+      "name": "Javon Small",
+      "team": "MEM",
+      "jerseyNumber": 10,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "mashaja01",
+      "name": "Jahmai Mashack",
+      "team": "MEM",
+      "jerseyNumber": 21,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hendrta01",
+      "name": "Taylor Hendricks",
+      "team": "MEM",
+      "jerseyNumber": 22,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "claytwa01",
+      "name": "Walter Clayton",
+      "team": "MEM",
+      "jerseyNumber": 4,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "moranja01",
+      "name": "Ja Morant",
+      "team": "MEM",
+      "jerseyNumber": 12,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "ruperra01",
+      "name": "Rayan Rupert",
+      "team": "MEM",
+      "jerseyNumber": 32,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jeromty01",
+      "name": "Ty Jerome",
+      "team": "MEM",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "edeyza01",
+      "name": "Zach Edey",
+      "team": "MEM",
+      "jerseyNumber": 14,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "pippesc02",
+      "name": "Scotty Pippen Jr.",
+      "team": "MEM",
+      "jerseyNumber": 1,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "gibsota01",
+      "name": "Taj Gibson",
+      "team": "MEM",
+      "jerseyNumber": 67,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "clarkbr01",
+      "name": "Brandon Clarke",
+      "team": "MEM",
+      "jerseyNumber": 15,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "wareke01",
+      "name": "Kel'el Ware",
+      "team": "MIL",
+      "jerseyNumber": 7,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "jaqueja01",
+      "name": "Jaime Jaquez Jr.",
+      "team": "MIL",
+      "jerseyNumber": 11,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "adebaba01",
+      "name": "Bam Adebayo",
+      "team": "MIA",
+      "jerseyNumber": 13,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "larsspe01",
+      "name": "Pelle Larsson",
+      "team": "MIA",
+      "jerseyNumber": 9,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mitchda01",
+      "name": "Davion Mitchell",
+      "team": "MIA",
+      "jerseyNumber": 45,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "fontesi01",
+      "name": "Simone Fontecchio",
+      "team": "MIA",
+      "jerseyNumber": 0,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "smithdr01",
+      "name": "Dru Smith",
+      "team": "MIA",
+      "jerseyNumber": 12,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "wiggian01",
+      "name": "Andrew Wiggins",
+      "team": "MIA",
+      "jerseyNumber": 22,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "powelno01",
+      "name": "Norman Powell",
+      "team": "MIA",
+      "jerseyNumber": 24,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jakucka01",
+      "name": "Kasparas Jaku\u00c4\u008dionis",
+      "team": "MIL",
+      "jerseyNumber": 25,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "jovicni01",
+      "name": "Nikola Jovi\u00c4\u0087",
+      "team": "MIA",
+      "jerseyNumber": 5,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "gardnmy01",
+      "name": "Myron Gardner",
+      "team": "MIA",
+      "jerseyNumber": 15,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "herroty01",
+      "name": "Tyler Herro",
+      "team": "MIL",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "johnske10",
+      "name": "Keshad Johnson",
+      "team": "MIA",
+      "jerseyNumber": 16,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "youngja05",
+      "name": "Jahmir Young",
+      "team": "MIA",
+      "jerseyNumber": 17,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "goldivl01",
+      "name": "Vladislav Goldin",
+      "team": "MIA",
+      "jerseyNumber": 50,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "keelstr01",
+      "name": "Trevor Keels",
+      "team": "MIA",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "greenaj01",
+      "name": "A.J. Green",
+      "team": "MIL",
+      "jerseyNumber": 20,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "rolliry01",
+      "name": "Ryan Rollins",
+      "team": "MIL",
+      "jerseyNumber": 13,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "turnemy01",
+      "name": "Myles Turner",
+      "team": "MIL",
+      "jerseyNumber": 3,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "kuzmaky01",
+      "name": "Kyle Kuzma",
+      "team": "MIL",
+      "jerseyNumber": 18,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "portibo01",
+      "name": "Bobby Portis",
+      "team": "MIA",
+      "jerseyNumber": 9,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "simsje01",
+      "name": "Jericho Sims",
+      "team": "MIL",
+      "jerseyNumber": 0,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "trentga02",
+      "name": "Gary Trent Jr.",
+      "team": "MIL",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "harriga01",
+      "name": "Gary Harris",
+      "team": "MIL",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jacksan01",
+      "name": "Andre Jackson Jr.",
+      "team": "MIL",
+      "jerseyNumber": 44,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "nancepe01",
+      "name": "Pete Nance",
+      "team": "MIL",
+      "jerseyNumber": 35,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "porteke02",
+      "name": "Kevin Porter Jr.",
+      "team": "MIL",
+      "jerseyNumber": 7,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "antetgi01",
+      "name": "Giannis Antetokounmpo",
+      "team": "MIA",
+      "jerseyNumber": 34,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "antetth01",
+      "name": "Thanasis Antetokounmpo",
+      "team": "MIL",
+      "jerseyNumber": 43,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "diengou01",
+      "name": "Ousmane Dieng",
+      "team": "MIL",
+      "jerseyNumber": 21,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "princta02",
+      "name": "Taurean Prince",
+      "team": "MIL",
+      "jerseyNumber": 12,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "ryanco01",
+      "name": "Cormac Ryan",
+      "team": "MIL",
+      "jerseyNumber": 30,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "antetal01",
+      "name": "Alex Antetokounmpo",
+      "team": "MIL",
+      "jerseyNumber": 29,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "divindo01",
+      "name": "Donte DiVincenzo",
+      "team": "MIN",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "randlju01",
+      "name": "Julius Randle",
+      "team": "BRK",
+      "jerseyNumber": 30,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "reidna01",
+      "name": "Naz Reid",
+      "team": "CHO",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "goberru01",
+      "name": "Rudy Gobert",
+      "team": "MIN",
+      "jerseyNumber": 27,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "mcdanja02",
+      "name": "Jaden McDaniels",
+      "team": "MIN",
+      "jerseyNumber": 3,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "hylanbo01",
+      "name": "Bones Hyland",
+      "team": "MIN",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "clarkja02",
+      "name": "Jaylen Clark",
+      "team": "MIN",
+      "jerseyNumber": 22,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "edwaran01",
+      "name": "Anthony Edwards",
+      "team": "MIN",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "conlemi01",
+      "name": "Mike Conley",
+      "team": "MIN",
+      "jerseyNumber": 10,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "shannte01",
+      "name": "Terrence Shannon Jr.",
+      "team": "MIN",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "berinjo01",
+      "name": "Joan Beringer",
+      "team": "MIN",
+      "jerseyNumber": 19,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "inglejo01",
+      "name": "Joe Ingles",
+      "team": "MIN",
+      "jerseyNumber": 7,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "dosunay01",
+      "name": "Ayo Dosunmu",
+      "team": "MIN",
+      "jerseyNumber": 13,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "anderky01",
+      "name": "Kyle Anderson",
+      "team": "MIN",
+      "jerseyNumber": 12,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "phillju01",
+      "name": "Julian Phillips",
+      "team": "MIN",
+      "jerseyNumber": 4,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "pullizy01",
+      "name": "Zyon Pullin",
+      "team": "MIN",
+      "jerseyNumber": 15,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "zikarro01",
+      "name": "Rocco Zikarsky",
+      "team": "MIN",
+      "jerseyNumber": 44,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "freemen01",
+      "name": "Enrique Freeman",
+      "team": "MIN",
+      "jerseyNumber": 25,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "fearsje01",
+      "name": "Jeremiah Fears",
+      "team": "NOP",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "queende01",
+      "name": "Derik Queen",
+      "team": "NOP",
+      "jerseyNumber": 22,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "beysa01",
+      "name": "Saddiq Bey",
+      "team": "NOP",
+      "jerseyNumber": 41,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "murphtr02",
+      "name": "Trey Murphy III",
+      "team": "NOP",
+      "jerseyNumber": 25,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "missiyv01",
+      "name": "Yves Missi",
+      "team": "NOP",
+      "jerseyNumber": 21,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "willizi01",
+      "name": "Zion Williamson",
+      "team": "NOP",
+      "jerseyNumber": 1,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "matkoka01",
+      "name": "Karlo Matkovi\u00c4\u0087",
+      "team": "NOP",
+      "jerseyNumber": 17,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "peavymi01",
+      "name": "Micah Peavy",
+      "team": "NOP",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "joneshe01",
+      "name": "Herbert Jones",
+      "team": "NOP",
+      "jerseyNumber": 2,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "hawkijo01",
+      "name": "Jordan Hawkins",
+      "team": "NOP",
+      "jerseyNumber": 24,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mcgowbr01",
+      "name": "Bryce McGowens",
+      "team": "NOP",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "poolejo01",
+      "name": "Jordan Poole",
+      "team": "NOP",
+      "jerseyNumber": 3,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "looneke01",
+      "name": "Kevon Looney",
+      "team": "NOP",
+      "jerseyNumber": 55,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "murrade01",
+      "name": "Dejounte Murray",
+      "team": "NOP",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "alexatr01",
+      "name": "Trey Alexander",
+      "team": "NOP",
+      "jerseyNumber": 23,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "dickihu01",
+      "name": "Hunter Dickinson",
+      "team": "NOP",
+      "jerseyNumber": 4,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "odurojo01",
+      "name": "Josh Oduro",
+      "team": "NOP",
+      "jerseyNumber": 13,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "bridgmi01",
+      "name": "Mikal Bridges",
+      "team": "NYK",
+      "jerseyNumber": 25,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "townska01",
+      "name": "Karl-Anthony Towns",
+      "team": "NYK",
+      "jerseyNumber": 32,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "brunsja01",
+      "name": "Jalen Brunson",
+      "team": "NYK",
+      "jerseyNumber": 11,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "clarkjo01",
+      "name": "Jordan Clarkson",
+      "team": "NYK",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "diawamo01",
+      "name": "Mohamed Diawara",
+      "team": "NYK",
+      "jerseyNumber": 51,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "anunoog01",
+      "name": "OG Anunoby",
+      "team": "NYK",
+      "jerseyNumber": 8,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "hartjo01",
+      "name": "Josh Hart",
+      "team": "NYK",
+      "jerseyNumber": 3,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "kolekty01",
+      "name": "Tyler Kolek",
+      "team": "NYK",
+      "jerseyNumber": 13,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "robinmi01",
+      "name": "Mitchell Robinson",
+      "team": "NYK",
+      "jerseyNumber": 23,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "hukpoar01",
+      "name": "Ariel Hukporti",
+      "team": "NYK",
+      "jerseyNumber": 55,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "shamela01",
+      "name": "Landry Shamet",
+      "team": "NYK",
+      "jerseyNumber": 44,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mcbrimi01",
+      "name": "Miles McBride",
+      "team": "NYK",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "dadiepa01",
+      "name": "Pac\u00c3\u00b4me Dadiet",
+      "team": "NYK",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "alvarjo01",
+      "name": "Jose Alvarado",
+      "team": "NYK",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "mcculke01",
+      "name": "Kevin McCullar Jr.",
+      "team": "NYK",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "sochaje01",
+      "name": "Jeremy Sochan",
+      "team": "NYK",
+      "jerseyNumber": 20,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "jemistr01",
+      "name": "Trey Jemison",
+      "team": "NYK",
+      "jerseyNumber": 50,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "jonesdi01",
+      "name": "Dillon Jones",
+      "team": "NYK",
+      "jerseyNumber": 1,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "wallaca01",
+      "name": "Cason Wallace",
+      "team": "OKC",
+      "jerseyNumber": 22,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "joeis01",
+      "name": "Isaiah Joe",
+      "team": "OKC",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "holmgch01",
+      "name": "Chet Holmgren",
+      "team": "OKC",
+      "jerseyNumber": 7,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "dortlu01",
+      "name": "Luguentz Dort",
+      "team": "OKC",
+      "jerseyNumber": 5,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "gilgesh01",
+      "name": "Shai Gilgeous-Alexander",
+      "team": "OKC",
+      "jerseyNumber": 2,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "wiggiaa01",
+      "name": "Aaron Wiggins",
+      "team": "OKC",
+      "jerseyNumber": 21,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "willija07",
+      "name": "Jaylin Williams",
+      "team": "OKC",
+      "jerseyNumber": 6,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "mitchaj01",
+      "name": "Ajay Mitchell",
+      "team": "OKC",
+      "jerseyNumber": 25,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "willike04",
+      "name": "Kenrich Williams",
+      "team": "OKC",
+      "jerseyNumber": 34,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "carusal01",
+      "name": "Alex Caruso",
+      "team": "OKC",
+      "jerseyNumber": 9,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "harteis01",
+      "name": "Isaiah Hartenstein",
+      "team": "OKC",
+      "jerseyNumber": 55,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "carlsbr01",
+      "name": "Branden Carlson",
+      "team": "OKC",
+      "jerseyNumber": 15,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "barnhbr01",
+      "name": "Brooks Barnhizer",
+      "team": "OKC",
+      "jerseyNumber": 23,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "willija06",
+      "name": "Jalen Williams",
+      "team": "OKC",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mccaija01",
+      "name": "Jared McCain",
+      "team": "OKC",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "topicni01",
+      "name": "Nikola Topi\u00c4\u0087",
+      "team": "OKC",
+      "jerseyNumber": 44,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "sandfpa01",
+      "name": "Payton Sandfort",
+      "team": "OKC",
+      "jerseyNumber": 14,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "banede01",
+      "name": "Desmond Bane",
+      "team": "ORL",
+      "jerseyNumber": 3,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "cartewe01",
+      "name": "Wendell Carter Jr.",
+      "team": "ORL",
+      "jerseyNumber": 34,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "dasiltr01",
+      "name": "Tristan Da Silva",
+      "team": "ORL",
+      "jerseyNumber": 23,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "banchpa01",
+      "name": "Paolo Banchero",
+      "team": "ORL",
+      "jerseyNumber": 5,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "blackan01",
+      "name": "Anthony Black",
+      "team": "ORL",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "bitadgo01",
+      "name": "Goga Bitadze",
+      "team": "ORL",
+      "jerseyNumber": 35,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "pendano01",
+      "name": "Noah Penda",
+      "team": "ORL",
+      "jerseyNumber": 93,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "suggsja01",
+      "name": "Jalen Suggs",
+      "team": "ORL",
+      "jerseyNumber": 4,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "howarje01",
+      "name": "Jett Howard",
+      "team": "ORL",
+      "jerseyNumber": 13,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "richaja02",
+      "name": "Jase Richardson",
+      "team": "ORL",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "isaacjo01",
+      "name": "Jonathan Isaac",
+      "team": "ORL",
+      "jerseyNumber": 1,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "cainja01",
+      "name": "Jamal Cain",
+      "team": "ORL",
+      "jerseyNumber": 8,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "wagnemo01",
+      "name": "Moritz Wagner",
+      "team": "ORL",
+      "jerseyNumber": 21,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "wagnefr01",
+      "name": "Franz Wagner",
+      "team": "ORL",
+      "jerseyNumber": 22,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "carteje01",
+      "name": "Jevon Carter",
+      "team": "ORL",
+      "jerseyNumber": 2,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "moralal01",
+      "name": "Alex Morales",
+      "team": "ORL",
+      "jerseyNumber": 30,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "castlco01",
+      "name": "Colin Castleton",
+      "team": "ORL",
+      "jerseyNumber": 14,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "edgecvj01",
+      "name": "VJ Edgecombe",
+      "team": "PHI",
+      "jerseyNumber": 77,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "grimequ01",
+      "name": "Quentin Grimes",
+      "team": "PHI",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "barlodo01",
+      "name": "Dominick Barlow",
+      "team": "PHI",
+      "jerseyNumber": 25,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "bonaad01",
+      "name": "Adem Bona",
+      "team": "PHI",
+      "jerseyNumber": 30,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "maxeyty01",
+      "name": "Tyrese Maxey",
+      "team": "PHI",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "edwarju01",
+      "name": "Justin Edwards",
+      "team": "PHI",
+      "jerseyNumber": 11,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "walkeja01",
+      "name": "Jabari Walker",
+      "team": "PHI",
+      "jerseyNumber": 33,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "drumman01",
+      "name": "Andre Drummond",
+      "team": "PHI",
+      "jerseyNumber": 1,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "watfotr01",
+      "name": "Trendon Watford",
+      "team": "PHI",
+      "jerseyNumber": 12,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "oubreke01",
+      "name": "Kelly Oubre Jr.",
+      "team": "PHI",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "embiijo01",
+      "name": "Joel Embiid",
+      "team": "PHI",
+      "jerseyNumber": 21,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "georgpa01",
+      "name": "Paul George",
+      "team": "PHI",
+      "jerseyNumber": 8,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "beaucma01",
+      "name": "MarJon Beauchamp",
+      "team": "PHI",
+      "jerseyNumber": 16,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "terryda01",
+      "name": "Dalen Terry",
+      "team": "PHI",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "lowryky01",
+      "name": "Kyle Lowry",
+      "team": "PHI",
+      "jerseyNumber": 7,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "broomjo01",
+      "name": "Johni Broome",
+      "team": "PHI",
+      "jerseyNumber": 22,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "martity01",
+      "name": "Tyrese Martin",
+      "team": "PHI",
+      "jerseyNumber": 23,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "ighodos01",
+      "name": "Oso Ighodaro",
+      "team": "PHO",
+      "jerseyNumber": 11,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "gilleco01",
+      "name": "Collin Gillespie",
+      "team": "PHO",
+      "jerseyNumber": 12,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "onealro01",
+      "name": "Royce O'Neale",
+      "team": "PHO",
+      "jerseyNumber": 0,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "goodwjo01",
+      "name": "Jordan Goodwin",
+      "team": "PHO",
+      "jerseyNumber": 23,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "dunnry01",
+      "name": "Ryan Dunn",
+      "team": "PHO",
+      "jerseyNumber": 0,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "bookede01",
+      "name": "Devin Booker",
+      "team": "PHO",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "willima07",
+      "name": "Mark Williams",
+      "team": "PHO",
+      "jerseyNumber": 15,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "brookdi01",
+      "name": "Dillon Brooks",
+      "team": "PHO",
+      "jerseyNumber": 3,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "flemira01",
+      "name": "Rasheer Fleming",
+      "team": "PHO",
+      "jerseyNumber": 20,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "allengr01",
+      "name": "Grayson Allen",
+      "team": "PHO",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "bouyeja01",
+      "name": "Jamaree Bouyea",
+      "team": "PHO",
+      "jerseyNumber": 17,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "maluakh01",
+      "name": "Khaman Maluach",
+      "team": "PHO",
+      "jerseyNumber": 10,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "liveris01",
+      "name": "Isaiah Livers",
+      "team": "PHO",
+      "jerseyNumber": 18,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "greenja05",
+      "name": "Jalen Green",
+      "team": "PHO",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "coffeam01",
+      "name": "Amir Coffey",
+      "team": "PHO",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "breako01",
+      "name": "Koby Brea",
+      "team": "PHO",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "highsha01",
+      "name": "Haywood Highsmith",
+      "team": "PHO",
+      "jerseyNumber": 19,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "huntlcj01",
+      "name": "CJ Huntley",
+      "team": "PHO",
+      "jerseyNumber": 22,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "camarto01",
+      "name": "Toumani Camara",
+      "team": "POR",
+      "jerseyNumber": 33,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "clingdo01",
+      "name": "Donovan Clingan",
+      "team": "POR",
+      "jerseyNumber": 23,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "cissosi01",
+      "name": "Sidy Cissoko",
+      "team": "POR",
+      "jerseyNumber": 91,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "avdijde01",
+      "name": "Deni Avdija",
+      "team": "POR",
+      "jerseyNumber": 8,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "williro04",
+      "name": "Robert Williams",
+      "team": "POR",
+      "jerseyNumber": 35,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "grantje01",
+      "name": "Jerami Grant",
+      "team": "POR",
+      "jerseyNumber": 9,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "murrakr01",
+      "name": "Kris Murray",
+      "team": "POR",
+      "jerseyNumber": 24,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "holidjr01",
+      "name": "Jrue Holiday",
+      "team": "POR",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "sharpsh01",
+      "name": "Shaedon Sharpe",
+      "team": "POR",
+      "jerseyNumber": 17,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "loveca01",
+      "name": "Caleb Love",
+      "team": "POR",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "yangha01",
+      "name": "Yang Hansen",
+      "team": "POR",
+      "jerseyNumber": 16,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "weslebl01",
+      "name": "Blake Wesley",
+      "team": "POR",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hendesc01",
+      "name": "Scoot Henderson",
+      "team": "POR",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "thybuma01",
+      "name": "Matisse Thybulle",
+      "team": "POR",
+      "jerseyNumber": 4,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "krejcvi01",
+      "name": "V\u00c3\u00adt Krej\u00c4\u008d\u00c3\u00ad",
+      "team": "POR",
+      "jerseyNumber": 27,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "kentja01",
+      "name": "Jayson Kent",
+      "team": "POR",
+      "jerseyNumber": 29,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "youngch01",
+      "name": "Chris Youngblood",
+      "team": "POR",
+      "jerseyNumber": 11,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "derozde01",
+      "name": "DeMar DeRozan",
+      "team": "SAC",
+      "jerseyNumber": 10,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "cliffni01",
+      "name": "Nique Clifford",
+      "team": "SAC",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "raynama01",
+      "name": "Maxime Raynaud",
+      "team": "SAC",
+      "jerseyNumber": 42,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "achiupr01",
+      "name": "Precious Achiuwa",
+      "team": "SAC",
+      "jerseyNumber": 9,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "westbru01",
+      "name": "Russell Westbrook",
+      "team": "SAC",
+      "jerseyNumber": 18,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "monkma01",
+      "name": "Malik Monk",
+      "team": "SAC",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "cardwdy01",
+      "name": "Dylan Cardwell",
+      "team": "SAC",
+      "jerseyNumber": 32,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "eubandr01",
+      "name": "Drew Eubanks",
+      "team": "SAC",
+      "jerseyNumber": 19,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "lavinza01",
+      "name": "Zach LaVine",
+      "team": "SAC",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "cartede02",
+      "name": "Devin Carter",
+      "team": "SAC",
+      "jerseyNumber": 22,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "plowdda01",
+      "name": "Daeqwon Plowden",
+      "team": "SAC",
+      "jerseyNumber": 29,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mcderdo01",
+      "name": "Doug McDermott",
+      "team": "SAC",
+      "jerseyNumber": 7,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "murrake02",
+      "name": "Keegan Murray",
+      "team": "SAC",
+      "jerseyNumber": 13,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "hayeski01",
+      "name": "Killian Hayes",
+      "team": "SAC",
+      "jerseyNumber": 3,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "sabondo01",
+      "name": "Domantas Sabonis",
+      "team": "SAC",
+      "jerseyNumber": 11,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "baldwpa01",
+      "name": "Patrick Baldwin Jr.",
+      "team": "SAC",
+      "jerseyNumber": 23,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "steveis01",
+      "name": "Isaiah Stevens",
+      "team": "SAC",
+      "jerseyNumber": 24,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "huntede01",
+      "name": "De'Andre Hunter",
+      "team": "SAC",
+      "jerseyNumber": 15,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "johnske04",
+      "name": "Keldon Johnson",
+      "team": "SAS",
+      "jerseyNumber": 3,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "champju02",
+      "name": "Julian Champagnie",
+      "team": "SAS",
+      "jerseyNumber": 30,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "barneha02",
+      "name": "Harrison Barnes",
+      "team": "SAS",
+      "jerseyNumber": 40,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "foxde01",
+      "name": "De'Aaron Fox",
+      "team": "SAS",
+      "jerseyNumber": 4,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "bryanca01",
+      "name": "Carter Bryant",
+      "team": "SAS",
+      "jerseyNumber": 11,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "harpedy01",
+      "name": "Dylan Harper",
+      "team": "SAS",
+      "jerseyNumber": 2,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "castlst01",
+      "name": "Stephon Castle",
+      "team": "SAS",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "kornelu01",
+      "name": "Luke Kornet",
+      "team": "SAS",
+      "jerseyNumber": 7,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "vassede01",
+      "name": "Devin Vassell",
+      "team": "SAS",
+      "jerseyNumber": 24,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "wembavi01",
+      "name": "Victor Wembanyama",
+      "team": "SAS",
+      "jerseyNumber": 1,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "mclaujo01",
+      "name": "Jordan McLaughlin",
+      "team": "SAS",
+      "jerseyNumber": 0,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "olynyke01",
+      "name": "Kelly Olynyk",
+      "team": "SAS",
+      "jerseyNumber": 8,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "waterli01",
+      "name": "Lindy Waters III",
+      "team": "SAS",
+      "jerseyNumber": 43,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "biyombi01",
+      "name": "Bismack Biyombo",
+      "team": "SAS",
+      "jerseyNumber": 18,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "jonesda06",
+      "name": "David Jones Garc\u00c3\u00ada",
+      "team": "SAS",
+      "jerseyNumber": 25,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "ingraha01",
+      "name": "Harrison Ingram",
+      "team": "SAS",
+      "jerseyNumber": 55,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "plumlma01",
+      "name": "Mason Plumlee",
+      "team": "SAS",
+      "jerseyNumber": 45,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sheadja01",
+      "name": "Jamal Shead",
+      "team": "TOR",
+      "jerseyNumber": 23,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "barnesc01",
+      "name": "Scottie Barnes",
+      "team": "TOR",
+      "jerseyNumber": 4,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "mamuksa01",
+      "name": "Sandro Mamukelashvili",
+      "team": "TOR",
+      "jerseyNumber": 54,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "ingrabr01",
+      "name": "Brandon Ingram",
+      "team": "TOR",
+      "jerseyNumber": 3,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "dickgr01",
+      "name": "Gradey Dick",
+      "team": "TOR",
+      "jerseyNumber": 1,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "walteja01",
+      "name": "Ja'Kobe Walter",
+      "team": "TOR",
+      "jerseyNumber": 14,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "quickim01",
+      "name": "Immanuel Quickley",
+      "team": "TOR",
+      "jerseyNumber": 5,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "battlja01",
+      "name": "Jamison Battle",
+      "team": "TOR",
+      "jerseyNumber": 77,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "barrerj01",
+      "name": "RJ Barrett",
+      "team": "TOR",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "murraco01",
+      "name": "Collin Murray-Boyles",
+      "team": "TOR",
+      "jerseyNumber": 12,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "poeltja01",
+      "name": "Jakob Poeltl",
+      "team": "TOR",
+      "jerseyNumber": 19,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "mogbojo01",
+      "name": "Jonathan Mogbo",
+      "team": "TOR",
+      "jerseyNumber": 2,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "lawsoaj01",
+      "name": "A.J. Lawson",
+      "team": "TOR",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "martial01",
+      "name": "Alijah Martin",
+      "team": "TOR",
+      "jerseyNumber": 55,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "templga01",
+      "name": "Garrett Temple",
+      "team": "TOR",
+      "jerseyNumber": 17,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "jackstr02",
+      "name": "Trayce Jackson-Davis",
+      "team": "TOR",
+      "jerseyNumber": 32,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "hepbuch01",
+      "name": "Chucky Hepburn",
+      "team": "TOR",
+      "jerseyNumber": 24,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "filipky01",
+      "name": "Kyle Filipowski",
+      "team": "UTA",
+      "jerseyNumber": 22,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sensabr01",
+      "name": "Brice Sensabaugh",
+      "team": "UTA",
+      "jerseyNumber": 28,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "baileac01",
+      "name": "Ace Bailey",
+      "team": "UTA",
+      "jerseyNumber": 19,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "willico04",
+      "name": "Cody Williams",
+      "team": "UTA",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "colliis01",
+      "name": "Isaiah Collier",
+      "team": "UTA",
+      "jerseyNumber": 8,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "georgke01",
+      "name": "Keyonte George",
+      "team": "UTA",
+      "jerseyNumber": 3,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "mykhasv01",
+      "name": "Svi Mykhailiuk",
+      "team": "UTA",
+      "jerseyNumber": 10,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "markkla01",
+      "name": "Lauri Markkanen",
+      "team": "UTA",
+      "jerseyNumber": 23,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "nurkiju01",
+      "name": "Jusuf Nurki\u00c4\u0087",
+      "team": "UTA",
+      "jerseyNumber": 30,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "loveke01",
+      "name": "Kevin Love",
+      "team": "UTA",
+      "jerseyNumber": 42,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "tshieos01",
+      "name": "Oscar Tshiebwe",
+      "team": "UTA",
+      "jerseyNumber": 34,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "harklej01",
+      "name": "Elijah Harkless",
+      "team": "UTA",
+      "jerseyNumber": 16,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "konchjo01",
+      "name": "John Konchar",
+      "team": "UTA",
+      "jerseyNumber": 55,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "mbengbe01",
+      "name": "Bez Mbeng",
+      "team": "UTA",
+      "jerseyNumber": 21,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "hinsobl01",
+      "name": "Blake Hinson",
+      "team": "UTA",
+      "jerseyNumber": 2,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "kesslwa01",
+      "name": "Walker Kessler",
+      "team": "UTA",
+      "jerseyNumber": 24,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "jacksja02",
+      "name": "Jaren Jackson Jr.",
+      "team": "UTA",
+      "jerseyNumber": 20,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "grayha01",
+      "name": "Hayden Gray",
+      "team": "UTA",
+      "jerseyNumber": 33,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "carrica01",
+      "name": "Bub Carrington",
+      "team": "WAS",
+      "jerseyNumber": 7,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "rileywi01",
+      "name": "Will Riley",
+      "team": "WAS",
+      "jerseyNumber": 27,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "champju01",
+      "name": "Justin Champagnie",
+      "team": "WAS",
+      "jerseyNumber": 9,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "johnstr03",
+      "name": "Tre Johnson",
+      "team": "WAS",
+      "jerseyNumber": 12,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "coulibi01",
+      "name": "Bilal Coulibaly",
+      "team": "WAS",
+      "jerseyNumber": 0,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "gillan01",
+      "name": "Anthony Gill",
+      "team": "WAS",
+      "jerseyNumber": 16,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "watkija01",
+      "name": "Jamir Watkins",
+      "team": "WAS",
+      "jerseyNumber": 5,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "vukcetr01",
+      "name": "Tristan Vukcevic",
+      "team": "WAS",
+      "jerseyNumber": 0,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "sarral01",
+      "name": "Alex Sarr",
+      "team": "WAS",
+      "jerseyNumber": 20,
+      "position": "C"
+    },
+    {
+      "bbrPlayerId": "georgky01",
+      "name": "Kyshawn George",
+      "team": "WAS",
+      "jerseyNumber": 18,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "coopesh01",
+      "name": "Sharife Cooper",
+      "team": "WAS",
+      "jerseyNumber": 13,
+      "position": "PG"
+    },
+    {
+      "bbrPlayerId": "hardyja02",
+      "name": "Jaden Hardy",
+      "team": "WAS",
+      "jerseyNumber": 8,
+      "position": "SG"
+    },
+    {
+      "bbrPlayerId": "whitmca01",
+      "name": "Cam Whitmore",
+      "team": "WAS",
+      "jerseyNumber": 1,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "blackle01",
+      "name": "Leaky Black",
+      "team": "WAS",
+      "jerseyNumber": 14,
+      "position": "SF"
+    },
+    {
+      "bbrPlayerId": "reeseju01",
+      "name": "Julian Reese",
+      "team": "WAS",
+      "jerseyNumber": 15,
+      "position": "PF"
+    },
+    {
+      "bbrPlayerId": "youngtr01",
+      "name": "Trae Young",
+      "team": "WAS",
+      "jerseyNumber": 3,
+      "position": "PG"
+    }
+  ],
+  "rosterSource": "espn"
+}

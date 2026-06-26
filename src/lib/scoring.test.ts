@@ -4,23 +4,46 @@ import {
   calculateLineupScore,
   compareLineups,
   getPlayersById,
+  LINEUP_RAW_CEILING,
+  normalizeLineupTotal,
+  projectedWinsFromOvr,
+  projectRecord,
+  resolveHeadToHeadResult,
+  SEASON_LENGTH,
 } from "./scoring";
+import { playersById } from "./playerPool";
+import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
+import type { Player } from "./types";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
+
+/** Two regular all-stars plus three strong non-all-star starters. */
+const TWO_ALL_STARS_THREE_STARTERS = [
+  "brownja02-bos",
+  "maxeyty01-phi",
+  "embiijo01-phi",
+  "hardeja01-cle",
+  "markkla01-uta",
+];
 
 describe("calculateLineupScore", () => {
   it("rewards a complete lineup with production, efficiency, shooting, and fit", () => {
     const score = calculateLineupScore(
       lineup([
-        "shai-gilgeous-alexander",
-        "derrick-white",
-        "jayson-tatum",
-        "aaron-gordon",
-        "nikola-jokic",
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
       ]),
     );
 
-    expect(score.total).toBeGreaterThan(150);
+    expect(score.total).toBeGreaterThan(55);
+    expect(score.total).toBeLessThanOrEqual(100);
+    expect(score.projectedRecord.formatted).toMatch(/^Record: \d+-\d+$/);
+    expect(score.projectedRecord.wins + score.projectedRecord.losses).toBe(
+      SEASON_LENGTH,
+    );
     expect(score.categories.map((category) => category.label)).toEqual([
       "Box score production",
       "True shooting and defense",
@@ -35,11 +58,11 @@ describe("calculateLineupScore", () => {
   it("flags high-usage lineups with fragile defensive fit", () => {
     const score = calculateLineupScore(
       lineup([
-        "luka-doncic",
-        "stephen-curry",
-        "devin-booker",
-        "jalen-brunson",
-        "kyrie-irving",
+        "doncilu01-lal",
+        "curryst01-gsw",
+        "gilgesh01-okc",
+        "brunsja01-nyk",
+        "bookede01-pho",
       ]),
     );
 
@@ -47,11 +70,201 @@ describe("calculateLineupScore", () => {
       "Ball-dominant stars may fight for the same touches.",
     );
     expect(score.warnings).toContain(
-      "Not enough defenders to survive elite scorers.",
-    );
-    expect(score.warnings).toContain(
       "Positional overlap makes matchups harder to cover.",
     );
+  });
+
+  it("projects two all-stars and three strong starters around 45-55 wins", () => {
+    const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
+
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(55);
+  });
+
+  it("weighs limited-sample players less in lineup scoring", () => {
+    const makeStarter = (gamesPlayed: number): Player => ({
+      id: `starter-${gamesPlayed}`,
+      name: `Starter ${gamesPlayed}`,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      turnovers: 2,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      threePointersAttempted: 7,
+      fieldGoalsAttempted: 15,
+      minutes: 34,
+      heightInches: 77,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed,
+      styles: ["shooter", "connector"],
+    });
+
+    const fullSample = calculateLineupScore(
+      Array.from({ length: 5 }, () => makeStarter(70)),
+    );
+    const limitedSample = calculateLineupScore(
+      Array.from({ length: 5 }, () => makeStarter(5)),
+    );
+
+    expect(limitedSample.total).toBeLessThan(fullSample.total);
+  });
+
+  it("boosts OVR and projected wins for star tiers without a visible category", () => {
+    const makeTieredPlayer = (
+      id: string,
+      bbrPlayerId?: string,
+    ): Player => ({
+      id,
+      bbrPlayerId,
+      name: id,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      turnovers: 2,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      threePointersAttempted: 7,
+      fieldGoalsAttempted: 15,
+      minutes: 34,
+      heightInches: 77,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed: 70,
+      styles: ["shooter", "connector"],
+    });
+
+    const superstarLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`superstar-${index}`, "jokicni01"),
+    );
+    const regularLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    );
+    const superstarScore = calculateLineupScore(superstarLineup);
+    const regularScore = calculateLineupScore(regularLineup);
+    const categoryTotal = superstarScore.categories.reduce(
+      (sum, category) => sum + category.value,
+      0,
+    );
+
+    expect(superstarScore.total).toBeGreaterThan(regularScore.total);
+    expect(superstarScore.projectedRecord.wins).toBeGreaterThan(
+      regularScore.projectedRecord.wins,
+    );
+    expect(normalizeLineupTotal(categoryTotal)).toBeLessThan(superstarScore.total);
+  });
+
+  it("reduces OVR and projected wins for scrub tiers without a visible category", () => {
+    const makeTieredPlayer = (id: string): Player => ({
+      id,
+      name: id,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG", "SF"],
+      jerseyNumber: 1,
+      points: 24,
+      rebounds: 6,
+      assists: 4,
+      steals: 1.2,
+      blocks: 0.6,
+      turnovers: 2,
+      trueShooting: 0.6,
+      threePoint: 0.38,
+      threePointersAttempted: 7,
+      fieldGoalsAttempted: 15,
+      minutes: 34,
+      heightInches: 77,
+      usage: 26,
+      defense: 7.5,
+      gamesPlayed: 70,
+      styles: ["shooter", "connector"],
+    });
+
+    const superScrubIds = new Set(getSuperScrubPlayerIds());
+    const scrubOnlyId = getScrubPlayerIds().find((id) => !superScrubIds.has(id));
+    const scrub = scrubOnlyId ? playersById.get(scrubOnlyId) : undefined;
+    const superScrub = playersById.get(getSuperScrubPlayerIds()[0]!);
+
+    expect(scrub).toBeDefined();
+    expect(superScrub).toBeDefined();
+
+    const regularLineup = Array.from({ length: 5 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    );
+    const scrubLineup = Array.from({ length: 4 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    ).concat(scrub!);
+    const superScrubLineup = Array.from({ length: 4 }, (_, index) =>
+      makeTieredPlayer(`regular-${index}`),
+    ).concat(superScrub!);
+
+    const regularScore = calculateLineupScore(regularLineup);
+    const scrubScore = calculateLineupScore(scrubLineup);
+    const superScrubScore = calculateLineupScore(superScrubLineup);
+
+    expect(scrubScore.preciseTotal).toBeLessThan(regularScore.preciseTotal);
+    expect(superScrubScore.preciseTotal).toBeLessThan(regularScore.preciseTotal);
+    expect(scrubScore.projectedRecord.wins).toBeLessThan(
+      regularScore.projectedRecord.wins,
+    );
+    expect(superScrubScore.projectedRecord.wins).toBeLessThan(
+      regularScore.projectedRecord.wins,
+    );
+  });
+});
+
+describe("normalizeLineupTotal", () => {
+  it("caps the displayed overall at 100 for elite lineups", () => {
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING)).toBe(100);
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING + 25)).toBe(100);
+  });
+
+  it("rounds display OVR to the nearest whole number", () => {
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.846)).toBe(85);
+    expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.844)).toBe(84);
+  });
+});
+
+describe("projectRecord", () => {
+  it("anchors projected records to the requested OVR milestones", () => {
+    expect(projectRecord(100).formatted).toBe("Record: 82-0");
+    expect(projectRecord(80).formatted).toBe("Record: 52-30");
+    expect(projectRecord(0).formatted).toBe("Record: 0-82");
+    expect(projectRecord(85).formatted).toBe("Record: 57-25");
+    expect(projectRecord(95).formatted).toBe("Record: 71-11");
+    expect(projectedWinsFromOvr(90)).toBe(63);
+    expect(projectedWinsFromOvr(50)).toBe(28);
+    expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
+      SEASON_LENGTH,
+    );
+  });
+
+  it("projects wins from precise OVR rather than rounded display OVR", () => {
+    const score = calculateLineupScore(
+      lineup([
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
+      ]),
+    );
+
+    expect(Number.isInteger(score.total)).toBe(true);
+    expect(score.projectedRecord).toEqual(projectRecord(score.preciseTotal));
   });
 });
 
@@ -59,22 +272,40 @@ describe("compareLineups", () => {
   it("selects the higher scoring lineup as the matchup winner", () => {
     const result = compareLineups(
       lineup([
-        "shai-gilgeous-alexander",
-        "derrick-white",
-        "jayson-tatum",
-        "aaron-gordon",
-        "nikola-jokic",
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
       ]),
       lineup([
-        "luka-doncic",
-        "stephen-curry",
-        "devin-booker",
-        "jalen-brunson",
-        "kyrie-irving",
+        "doncilu01",
+        "curryst01",
+        "bookede01",
+        "brunsja01",
+        "garlada01",
       ]),
     );
 
     expect(result.winner).toBe("A");
     expect(result.margin).toBeGreaterThan(0);
+  });
+
+  it("reports a tie when precise totals match", () => {
+    const lineupA = lineup([
+      "gilgesh01-okc",
+      "whitede01-bos",
+      "tatumja01-bos",
+      "gordoaa01-den",
+      "jokicni01-den",
+    ]);
+    const score = calculateLineupScore(lineupA);
+
+    expect(resolveHeadToHeadResult(score.preciseTotal, score.preciseTotal)).toBe(
+      "tie",
+    );
+    expect(
+      compareLineups(lineupA, lineupA).result,
+    ).toBe("tie");
   });
 });

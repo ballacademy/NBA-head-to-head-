@@ -1,5 +1,5 @@
 import type { Drafter, MatchupResult, Player } from "./types";
-import { calculateLineupScore, getPlayersById } from "./scoring";
+import { calculateLineupScore, getPlayersById, resolveHeadToHeadResult } from "./scoring";
 
 const roundNames = ["Quarterfinals", "Semifinals", "Final"];
 
@@ -22,7 +22,10 @@ export const buildTournament = (
       const scoreB = calculateLineupScore(
         getPlayersById(drafterB.lineup, pool),
       );
-      const winnerId = scoreA.total >= scoreB.total ? drafterA.id : drafterB.id;
+      const winnerId =
+        resolveHeadToHeadResult(scoreA.preciseTotal, scoreB.preciseTotal) === "win"
+          ? drafterA.id
+          : drafterB.id;
 
       results.push({
         id: `${roundIndex}-${index}`,

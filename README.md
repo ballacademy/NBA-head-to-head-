@@ -1,4 +1,4 @@
-# NBA Head-to-Head Draft
+# Draft Day GM
 
 An NBA-themed web app where eight global challengers draft five-man lineups,
 face one opponent at a time, and advance through a winner-take-all bracket.
@@ -20,3 +20,33 @@ npm run dev
 npm run build
 npm test
 ```
+
+## Cloudflare Pages
+
+See [DEPLOY-CLOUDFLARE.md](DEPLOY-CLOUDFLARE.md) for one-time Cloudflare + GitHub Actions setup. Production deploys run on push to `main`.
+
+## Windows quick start
+
+Use one folder name every time:
+
+`Downloads\current-nba-head-to-head-folder`
+
+See [SETUP-WINDOWS.md](SETUP-WINDOWS.md) for clone, run, and update steps.
+
+## NBA player stats export
+
+To compile traditional stats for every NBA player (for use in another site or spreadsheet), run the Python fetch script:
+
+```bash
+python3 -m pip install -r scripts/requirements.txt
+python3 scripts/fetch_nba_player_stats.py --season 2025-26
+```
+
+On Windows:
+
+```powershell
+python -m pip install -r scripts/requirements.txt
+python scripts/fetch_nba_player_stats.py --season 2025-26
+```
+
+This pulls data from Basketball Reference and writes CSV, JSON, and Excel files to `data/nba-stats/`. See `data/nba-stats/README.md` for file formats and usage.
