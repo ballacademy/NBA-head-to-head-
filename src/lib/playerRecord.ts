@@ -15,10 +15,13 @@ export const MATCH_RECORD_MODES: MatchRecordMode[] = [
   "allTime",
 ];
 
+export type HeadToHeadResult = "win" | "loss" | "tie";
+
 export interface PlayerRecord {
   playerId: string;
   wins: number;
   losses: number;
+  ties: number;
   winStreak: number;
   lossStreak: number;
 }
@@ -40,6 +43,7 @@ interface StoredModeRecords {
 const emptyModeStats = (): ModeRecordStats => ({
   wins: 0,
   losses: 0,
+  ties: 0,
   winStreak: 0,
   lossStreak: 0,
 });
@@ -47,8 +51,30 @@ const emptyModeStats = (): ModeRecordStats => ({
 const normalizeModeStats = (saved?: Partial<ModeRecordStats>): ModeRecordStats => ({
   wins: saved?.wins ?? 0,
   losses: saved?.losses ?? 0,
+  ties: saved?.ties ?? 0,
   winStreak: saved?.winStreak ?? 0,
   lossStreak: saved?.lossStreak ?? 0,
+});
+
+export const applyHeadToHeadResultToStats = (
+  current: ModeRecordStats,
+  result: HeadToHeadResult,
+): ModeRecordStats => ({
+  wins: current.wins + (result === "win" ? 1 : 0),
+  losses: current.losses + (result === "loss" ? 1 : 0),
+  ties: current.ties + (result === "tie" ? 1 : 0),
+  winStreak:
+    result === "win"
+      ? current.winStreak + 1
+      : result === "loss"
+        ? 0
+        : current.winStreak,
+  lossStreak:
+    result === "loss"
+      ? current.lossStreak + 1
+      : result === "win"
+        ? 0
+        : current.lossStreak,
 });
 
 export { getOrCreatePlayerId } from "./playerIdentity";
@@ -118,11 +144,19 @@ export const loadAllModeRecords = (): ModePlayerRecords => ({
   allTime: loadPlayerRecord("allTime"),
 });
 
-export const formatPlayerRecord = (record: Pick<PlayerRecord, "wins" | "losses">) =>
-  `${record.wins}-${record.losses}`;
+export const formatPlayerRecord = (
+  record: Pick<PlayerRecord, "wins" | "losses"> & { ties?: number },
+) => {
+  const ties = record.ties ?? 0;
 
-export const getGamesPlayed = (record: Pick<PlayerRecord, "wins" | "losses">) =>
-  record.wins + record.losses;
+  return ties > 0
+    ? `${record.wins}-${record.losses}-${ties}`
+    : `${record.wins}-${record.losses}`;
+};
+
+export const getGamesPlayed = (
+  record: Pick<PlayerRecord, "wins" | "losses"> & { ties?: number },
+) => record.wins + record.losses + (record.ties ?? 0);
 
 export const getWinPercentage = (
   record: Pick<PlayerRecord, "wins" | "losses">,
@@ -159,16 +193,11 @@ export const formatWinPercentage = (
 };
 
 export const recordMatchResult = (
-  userWon: boolean,
+  result: HeadToHeadResult,
   mode: MatchRecordMode = "headToHead",
 ): PlayerRecord => {
   const current = loadPlayerRecord(mode);
-  const nextStats: ModeRecordStats = {
-    wins: current.wins + (userWon ? 1 : 0),
-    losses: current.losses + (userWon ? 0 : 1),
-    winStreak: userWon ? current.winStreak + 1 : 0,
-    lossStreak: userWon ? 0 : current.lossStreak + 1,
-  };
+  const nextStats = applyHeadToHeadResultToStats(current, result);
 
   saveModeStats(mode, nextStats);
 

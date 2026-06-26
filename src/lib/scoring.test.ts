@@ -8,6 +8,7 @@ import {
   normalizeLineupTotal,
   projectedWinsFromOvr,
   projectRecord,
+  resolveHeadToHeadResult,
   SEASON_LENGTH,
 } from "./scoring";
 import { playersById } from "./playerPool";
@@ -288,5 +289,23 @@ describe("compareLineups", () => {
 
     expect(result.winner).toBe("A");
     expect(result.margin).toBeGreaterThan(0);
+  });
+
+  it("reports a tie when precise totals match", () => {
+    const lineupA = lineup([
+      "gilgesh01-okc",
+      "whitede01-bos",
+      "tatumja01-bos",
+      "gordoaa01-den",
+      "jokicni01-den",
+    ]);
+    const score = calculateLineupScore(lineupA);
+
+    expect(resolveHeadToHeadResult(score.preciseTotal, score.preciseTotal)).toBe(
+      "tie",
+    );
+    expect(
+      compareLineups(lineupA, lineupA).result,
+    ).toBe("tie");
   });
 });

@@ -350,13 +350,19 @@ export const grantLossUnlock = (
 };
 
 export const processMatchUnlock = (
-  userWon: boolean,
+  result: import("./playerRecord").HeadToHeadResult,
   matchId: string,
   collection = ensurePlayerCollection(),
-) =>
-  userWon
+) => {
+  if (result === "tie") {
+    writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
+    return collection;
+  }
+
+  return result === "win"
     ? grantWinUnlock(matchId, collection)
     : grantLossUnlock(matchId, collection);
+};
 
 export const completeUnlock = (
   playerId: string,

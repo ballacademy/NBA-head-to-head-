@@ -34,7 +34,7 @@ describe("ranked profile and leaderboard", () => {
 
   it("updates elo after ranked matches and surfaces the player on the leaderboard", () => {
     const result = applyRankedMatchResult({
-      won: true,
+      result: "win",
       opponentElo: 500,
       winStreak: 1,
       lossStreak: 0,

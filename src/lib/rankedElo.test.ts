@@ -21,21 +21,21 @@ describe("rankedElo", () => {
     const settled = calculateEloChange({
       playerElo: RANKED_STARTING_ELO,
       opponentElo: RANKED_STARTING_ELO,
-      won: true,
+      result: "win",
       rankedGamesPlayed: 10,
       activeStreak: 2,
     });
     const placement = calculateEloChange({
       playerElo: RANKED_STARTING_ELO,
       opponentElo: RANKED_STARTING_ELO,
-      won: true,
+      result: "win",
       rankedGamesPlayed: 0,
       activeStreak: 2,
     });
     const streak = calculateEloChange({
       playerElo: RANKED_STARTING_ELO,
       opponentElo: RANKED_STARTING_ELO,
-      won: true,
+      result: "win",
       rankedGamesPlayed: 10,
       activeStreak: 5,
     });
@@ -44,5 +44,18 @@ describe("rankedElo", () => {
     expect(streak.delta).toBeGreaterThan(settled.delta);
     expect(getPlacementMultiplier(0)).toBeGreaterThan(getPlacementMultiplier(9));
     expect(getStreakMultiplier(5)).toBeGreaterThan(getStreakMultiplier(2));
+  });
+
+  it("treats equal precise totals as a tie", () => {
+    const result = calculateEloChange({
+      playerElo: RANKED_STARTING_ELO,
+      opponentElo: RANKED_STARTING_ELO,
+      result: "tie",
+      rankedGamesPlayed: 10,
+      activeStreak: 4,
+    });
+
+    expect(result.delta).toBe(0);
+    expect(result.nextElo).toBe(RANKED_STARTING_ELO);
   });
 });

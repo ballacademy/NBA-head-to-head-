@@ -7,6 +7,23 @@ import {
   type RankedTier,
 } from "./rankedElo";
 import { getCurrentSeasonId } from "./rankedSeason";
+import type { HeadToHeadResult } from "./playerRecord";
+
+const getActiveStreakForElo = (
+  result: HeadToHeadResult,
+  winStreak: number,
+  lossStreak: number,
+) => {
+  if (result === "win") {
+    return winStreak;
+  }
+
+  if (result === "loss") {
+    return lossStreak;
+  }
+
+  return Math.max(winStreak, lossStreak);
+};
 
 const RANKED_PROFILE_KEY = "nba-head-to-head-ranked-profile";
 
@@ -98,7 +115,7 @@ export const getRankedProfileView = (): RankedProfileView => {
 };
 
 export interface ApplyRankedMatchInput {
-  won: boolean;
+  result: HeadToHeadResult;
   opponentElo: number;
   winStreak: number;
   lossStreak: number;
@@ -111,17 +128,17 @@ export interface ApplyRankedMatchResult {
 }
 
 export const applyRankedMatchResult = ({
-  won,
+  result,
   opponentElo,
   winStreak,
   lossStreak,
 }: ApplyRankedMatchInput): ApplyRankedMatchResult => {
   const current = ensureCurrentRankedSeason();
-  const activeStreak = won ? winStreak : lossStreak;
+  const activeStreak = getActiveStreakForElo(result, winStreak, lossStreak);
   const { delta, nextElo } = calculateEloChange({
     playerElo: current.elo,
     opponentElo,
-    won,
+    result,
     rankedGamesPlayed: current.rankedGamesPlayed,
     activeStreak,
   });

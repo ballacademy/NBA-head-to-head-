@@ -1,3 +1,5 @@
+import type { HeadToHeadResult } from "./playerRecord";
+
 export const RANKED_STARTING_ELO = 500;
 export const PLACEMENT_GAMES = 10;
 export const BASE_K_FACTOR = 32;
@@ -63,14 +65,6 @@ export const getStreakMultiplier = (streak: number) => {
 const getExpectedScore = (playerElo: number, opponentElo: number) =>
   1 / (1 + 10 ** ((opponentElo - playerElo) / 400));
 
-export interface EloChangeInput {
-  playerElo: number;
-  opponentElo: number;
-  won: boolean;
-  rankedGamesPlayed: number;
-  activeStreak: number;
-}
-
 export interface EloChangeResult {
   delta: number;
   nextElo: number;
@@ -78,15 +72,35 @@ export interface EloChangeResult {
   streakMultiplier: number;
 }
 
+export interface EloChangeInput {
+  playerElo: number;
+  opponentElo: number;
+  result: HeadToHeadResult;
+  rankedGamesPlayed: number;
+  activeStreak: number;
+}
+
+const getActualScore = (result: HeadToHeadResult) => {
+  if (result === "win") {
+    return 1;
+  }
+
+  if (result === "loss") {
+    return 0;
+  }
+
+  return 0.5;
+};
+
 export const calculateEloChange = ({
   playerElo,
   opponentElo,
-  won,
+  result,
   rankedGamesPlayed,
   activeStreak,
 }: EloChangeInput): EloChangeResult => {
   const expected = getExpectedScore(playerElo, opponentElo);
-  const actual = won ? 1 : 0;
+  const actual = getActualScore(result);
   const placementMultiplier = getPlacementMultiplier(rankedGamesPlayed);
   const streakMultiplier = getStreakMultiplier(activeStreak);
   const kFactor = BASE_K_FACTOR * placementMultiplier * streakMultiplier;

@@ -37,7 +37,7 @@ describe("classic profile", () => {
 
   it("updates elo after classic matches", () => {
     const result = applyClassicMatchResult({
-      won: true,
+      result: "win",
       opponentElo: 500,
       winStreak: 1,
       lossStreak: 0,

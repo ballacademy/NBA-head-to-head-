@@ -18,6 +18,7 @@ import type { ClassicMatchOutcome, RankedMatchOutcome } from "../lib/matchOutcom
 import {
   calculateLineupScore,
   formatProjectedSeasonRecord,
+  resolveHeadToHeadResult,
 } from "../lib/scoring";
 import {
   checkLineupAchievements,
@@ -62,12 +63,17 @@ export function MatchResults({
   const [classicOutcome, setClassicOutcome] = useState<ClassicMatchOutcome | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
-  const userWon = userScore.preciseTotal >= opponentScore.preciseTotal;
+  const matchResult = resolveHeadToHeadResult(
+    userScore.preciseTotal,
+    opponentScore.preciseTotal,
+  );
+  const isTie = matchResult === "tie";
+  const userWon = matchResult === "win";
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(
-    () => projectRecordAfterMatch(userWon, matchRecordMode, loadPlayerRecord(matchRecordMode)),
-    [matchRecordMode, userWon],
+    () => projectRecordAfterMatch(matchResult, matchRecordMode, loadPlayerRecord(matchRecordMode)),
+    [matchRecordMode, matchResult],
   );
 
   useLayoutEffect(() => {
@@ -78,7 +84,7 @@ export function MatchResults({
     recordedRef.current = true;
     const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
     const outcome = persistMatchOutcome(
-      userWon,
+      matchResult,
       { name: user.name },
       matchId,
       matchRecordMode,
@@ -93,12 +99,12 @@ export function MatchResults({
       setClassicOutcome(outcome.classic);
     }
 
-    const next = processMatchUnlock(userWon, matchId, collection);
+    const next = processMatchUnlock(matchResult, matchId, collection);
 
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, matchRecordMode, onCollectionChange, opponent.classicOpponentElo, opponent.rankedOpponentElo, user.name, userWon]);
+  }, [collection, matchId, matchRecordMode, matchResult, onCollectionChange, opponent.classicOpponentElo, opponent.rankedOpponentElo, user.name]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {
@@ -154,7 +160,11 @@ export function MatchResults({
           <div>
             <p className="eyebrow">Matchup results</p>
             <h2 className="matchup-panel__title">
-              {userWon ? "You won the matchup" : `${opponent.name} won the matchup`}
+              {isTie
+                ? "Match ended in a tie"
+                : userWon
+                  ? "You won the matchup"
+                  : `${opponent.name} won the matchup`}
             </h2>
           </div>
           <p className="matchup-panel__meta">
@@ -226,7 +236,7 @@ export function MatchResults({
               drafter={opponent}
               lineup={opponentLineup}
               score={opponentScore}
-              isWinner={!userWon}
+              isWinner={matchResult === "loss"}
               compact
             />
           </div>

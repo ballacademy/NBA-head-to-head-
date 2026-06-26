@@ -6,6 +6,23 @@ import {
   getTierForElo,
   type RankedTier,
 } from "./rankedElo";
+import type { HeadToHeadResult } from "./playerRecord";
+
+const getActiveStreakForElo = (
+  result: HeadToHeadResult,
+  winStreak: number,
+  lossStreak: number,
+) => {
+  if (result === "win") {
+    return winStreak;
+  }
+
+  if (result === "loss") {
+    return lossStreak;
+  }
+
+  return Math.max(winStreak, lossStreak);
+};
 
 const CLASSIC_PROFILE_KEY = "nba-head-to-head-classic-profile";
 
@@ -69,7 +86,7 @@ export const getClassicProfileView = (): ClassicProfileView => {
 };
 
 export interface ApplyClassicMatchInput {
-  won: boolean;
+  result: HeadToHeadResult;
   opponentElo: number;
   winStreak: number;
   lossStreak: number;
@@ -82,17 +99,17 @@ export interface ApplyClassicMatchResult {
 }
 
 export const applyClassicMatchResult = ({
-  won,
+  result,
   opponentElo,
   winStreak,
   lossStreak,
 }: ApplyClassicMatchInput): ApplyClassicMatchResult => {
   const current = ensureClassicProfile();
-  const activeStreak = won ? winStreak : lossStreak;
+  const activeStreak = getActiveStreakForElo(result, winStreak, lossStreak);
   const { delta, nextElo } = calculateEloChange({
     playerElo: current.elo,
     opponentElo,
-    won,
+    result,
     rankedGamesPlayed: current.classicGamesPlayed,
     activeStreak,
   });

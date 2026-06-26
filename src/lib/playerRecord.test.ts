@@ -32,10 +32,10 @@ describe("playerRecord", () => {
   });
 
   it("tracks wins, losses, win streak, and loss streak per mode", () => {
-    recordMatchResult(true, "headToHead");
-    recordMatchResult(true, "headToHead");
-    const afterLoss = recordMatchResult(false, "headToHead");
-    recordMatchResult(true, "ranked");
+    recordMatchResult("win", "headToHead");
+    recordMatchResult("win", "headToHead");
+    const afterLoss = recordMatchResult("loss", "headToHead");
+    recordMatchResult("win", "ranked");
 
     expect(formatPlayerRecord(afterLoss)).toBe("2-1");
     expect(afterLoss.winStreak).toBe(0);
@@ -45,15 +45,25 @@ describe("playerRecord", () => {
   });
 
   it("keeps separate records for each competitive mode", () => {
-    recordMatchResult(true, "headToHead");
-    recordMatchResult(false, "ranked");
-    recordMatchResult(true, "allTime");
-    recordMatchResult(true, "allTime");
+    recordMatchResult("win", "headToHead");
+    recordMatchResult("loss", "ranked");
+    recordMatchResult("win", "allTime");
+    recordMatchResult("win", "allTime");
 
     const records = loadAllModeRecords();
 
     expect(formatPlayerRecord(records.headToHead)).toBe("1-0");
     expect(formatPlayerRecord(records.ranked)).toBe("0-1");
     expect(formatPlayerRecord(records.allTime)).toBe("2-0");
+  });
+
+  it("records a tie without changing streaks", () => {
+    recordMatchResult("win", "headToHead");
+    recordMatchResult("win", "headToHead");
+    const tied = recordMatchResult("tie", "headToHead");
+
+    expect(formatPlayerRecord(tied)).toBe("2-0-1");
+    expect(tied.winStreak).toBe(2);
+    expect(tied.lossStreak).toBe(0);
   });
 });

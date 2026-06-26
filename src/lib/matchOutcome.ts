@@ -6,9 +6,11 @@ import { applyRankedMatchResult } from "./rankedProfile";
 import { RANKED_STARTING_ELO } from "./rankedElo";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import {
+  applyHeadToHeadResultToStats,
   buildLeaderboardIdentity,
   loadPlayerRecord,
   recordMatchResult,
+  type HeadToHeadResult,
   type MatchRecordMode,
   type PlayerRecord,
 } from "./playerRecord";
@@ -31,19 +33,16 @@ export interface ClassicMatchOutcome {
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 
 export const projectRecordAfterMatch = (
-  userWon: boolean,
+  result: HeadToHeadResult,
   mode: MatchRecordMode = "headToHead",
   current = loadPlayerRecord(mode),
 ): PlayerRecord => ({
   ...current,
-  wins: current.wins + (userWon ? 1 : 0),
-  losses: current.losses + (userWon ? 0 : 1),
-  winStreak: userWon ? current.winStreak + 1 : 0,
-  lossStreak: userWon ? 0 : current.lossStreak + 1,
+  ...applyHeadToHeadResultToStats(current, result),
 });
 
 export const persistMatchOutcome = (
-  userWon: boolean,
+  result: HeadToHeadResult,
   team: TeamProfile,
   matchId: string,
   mode: MatchRecordMode = "headToHead",
@@ -55,14 +54,14 @@ export const persistMatchOutcome = (
     return { record: loadPlayerRecord(mode) };
   }
 
-  const record = recordMatchResult(userWon, mode);
+  const record = recordMatchResult(result, mode);
   let ranked: RankedMatchOutcome | undefined;
   let classic: ClassicMatchOutcome | undefined;
 
   if (mode === "headToHead") {
     const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
     const classicResult = applyClassicMatchResult({
-      won: userWon,
+      result,
       opponentElo,
       winStreak: record.winStreak,
       lossStreak: record.lossStreak,
@@ -84,7 +83,7 @@ export const persistMatchOutcome = (
   if (mode === "ranked") {
     const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
     const rankedResult = applyRankedMatchResult({
-      won: userWon,
+      result,
       opponentElo,
       winStreak: record.winStreak,
       lossStreak: record.lossStreak,

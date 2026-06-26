@@ -2,6 +2,7 @@ import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./type
 import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
 import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
+import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
 
 export const SEASON_LENGTH = 82;
@@ -354,14 +355,28 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   };
 };
 
+export const resolveHeadToHeadResult = (
+  userPreciseTotal: number,
+  opponentPreciseTotal: number,
+): HeadToHeadResult => {
+  if (userPreciseTotal === opponentPreciseTotal) {
+    return "tie";
+  }
+
+  return userPreciseTotal > opponentPreciseTotal ? "win" : "loss";
+};
+
 export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
   const scoreA = calculateLineupScore(lineupA);
   const scoreB = calculateLineupScore(lineupB);
+  const result = resolveHeadToHeadResult(scoreA.preciseTotal, scoreB.preciseTotal);
 
   return {
     scoreA,
     scoreB,
-    winner: scoreA.preciseTotal >= scoreB.preciseTotal ? "A" : "B",
+    result,
+    winner:
+      result === "tie" ? "tie" : result === "win" ? "A" : "B",
     margin: round(Math.abs(scoreA.preciseTotal - scoreB.preciseTotal)),
   };
 };
