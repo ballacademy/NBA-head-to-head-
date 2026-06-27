@@ -29,6 +29,10 @@ export interface StartDraftOptions {
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
+export const DAILY_PICK_TIME_LIMIT_SECONDS = 30;
+
+export const getPickTimeLimitSeconds = (isDailyDraft = false) =>
+  isDailyDraft ? DAILY_PICK_TIME_LIMIT_SECONDS : PICK_TIME_LIMIT_SECONDS;
 export const OPPONENT_PICK_MIN_MS = 3000;
 export const OPPONENT_PICK_MAX_MS = 9000;
 
