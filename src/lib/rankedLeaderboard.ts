@@ -1,11 +1,16 @@
 import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
+import {
+  getCachedRemoteLeaderboard,
+  syncLeaderboardEntryToApi,
+} from "./leaderboardRemote";
 import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
 import { RATING_LABEL, formatRankedElo, getTierForElo } from "./rankedElo";
 import { PRO_LEADERBOARD_LABEL } from "./modeLabels";
 import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
 
 const RANKED_LEADERBOARD_KEY = "nba-head-to-head-ranked-leaderboard";
+const NPC_OPPONENT_POOL_KEY = "nba-head-to-head-ranked-npc-pool";
 
 export const RANKED_LEADERBOARD_LIMIT = 500;
 const NPC_POOL_SIZE = RANKED_LEADERBOARD_LIMIT - 1;
@@ -27,6 +32,11 @@ export interface RankedLeaderboardEntry {
 export type RankedLeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
 interface StoredRankedLeaderboard {
+  seasonId: string;
+  entries: RankedLeaderboardEntry[];
+}
+
+interface StoredNpcOpponentPool {
   seasonId: string;
   entries: RankedLeaderboardEntry[];
 }
@@ -194,17 +204,41 @@ const loadStoredLeaderboard = (): StoredRankedLeaderboard | null => {
     return null;
   }
 
+  return {
+    seasonId: stored.seasonId,
+    entries: stored.entries
+      .filter((entry) => !entry.isNpc)
+      .map(normalizeEntry),
+  };
+};
+
+const loadStoredNpcPool = (): StoredNpcOpponentPool | null => {
+  const stored = readJson<StoredNpcOpponentPool>(NPC_OPPONENT_POOL_KEY);
+
+  if (!stored || typeof stored.seasonId !== "string" || !Array.isArray(stored.entries)) {
+    return null;
+  }
+
   return stored;
 };
 
 const saveLeaderboard = (seasonId: string, entries: RankedLeaderboardEntry[]) => {
   writeJson(RANKED_LEADERBOARD_KEY, {
     seasonId,
-    entries: entries.map(normalizeEntry),
+    entries: entries
+      .filter((entry) => !entry.isNpc)
+      .map(normalizeEntry),
   } satisfies StoredRankedLeaderboard);
 };
 
-export const ensureRankedLeaderboard = (): RankedLeaderboardEntry[] => {
+const saveNpcPool = (seasonId: string, entries: RankedLeaderboardEntry[]) => {
+  writeJson(NPC_OPPONENT_POOL_KEY, {
+    seasonId,
+    entries: entries.map(normalizeEntry),
+  } satisfies StoredNpcOpponentPool);
+};
+
+export const loadRankedLeaderboardEntries = (): RankedLeaderboardEntry[] => {
   const seasonId = getCurrentSeasonId();
   const stored = loadStoredLeaderboard();
 
@@ -212,11 +246,27 @@ export const ensureRankedLeaderboard = (): RankedLeaderboardEntry[] => {
     return stored.entries.map(normalizeEntry);
   }
 
+  saveLeaderboard(seasonId, []);
+  return [];
+};
+
+export const ensureNpcOpponentPool = (): RankedLeaderboardEntry[] => {
+  const seasonId = getCurrentSeasonId();
+  const stored = loadStoredNpcPool();
+
+  if (stored?.seasonId === seasonId) {
+    return stored.entries.map(normalizeEntry);
+  }
+
   const entries = seedNpcLeaderboardEntries(seasonId);
-  saveLeaderboard(seasonId, entries);
+  saveNpcPool(seasonId, entries);
 
   return entries;
 };
+
+/** @deprecated Use loadRankedLeaderboardEntries for display or ensureNpcOpponentPool for NPC matching. */
+export const ensureRankedLeaderboard = (): RankedLeaderboardEntry[] =>
+  loadRankedLeaderboardEntries();
 
 const compareByElo = (
   left: RankedLeaderboardEntry,
@@ -254,10 +304,26 @@ const rankedLeaderboardSorters: Record<
 export const getTopRankedLeaderboard = (
   sort: RankedLeaderboardSort = "elo",
   limit = RANKED_LEADERBOARD_LIMIT,
-): RankedLeaderboardEntry[] =>
-  [...ensureRankedLeaderboard()]
+): RankedLeaderboardEntry[] => {
+  const seasonId = getCurrentSeasonId();
+  const remoteEntries = getCachedRemoteLeaderboard("ranked", sort, seasonId);
+
+  if (remoteEntries && remoteEntries.length > 0) {
+    return remoteEntries
+      .map((entry) =>
+        normalizeEntry({
+          ...entry,
+          tierLabel: getTierForElo(entry.elo).label,
+          isNpc: false,
+        }),
+      )
+      .slice(0, limit);
+  }
+
+  return [...loadRankedLeaderboardEntries()]
     .sort(rankedLeaderboardSorters[sort])
     .slice(0, limit);
+};
 
 export const upsertRankedLeaderboardEntry = (
   entry: Omit<RankedLeaderboardEntry, "tierLabel" | "updatedAt" | "publicTag"> & {
@@ -265,7 +331,7 @@ export const upsertRankedLeaderboardEntry = (
   },
 ) => {
   const seasonId = getCurrentSeasonId();
-  const current = ensureRankedLeaderboard().filter(
+  const current = loadRankedLeaderboardEntries().filter(
     (candidate) => candidate.playerId !== entry.playerId,
   );
   const nextEntry = normalizeEntry({
@@ -273,10 +339,23 @@ export const upsertRankedLeaderboardEntry = (
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     tierLabel: getTierForElo(entry.elo).label,
     updatedAt: new Date().toISOString(),
+    isNpc: false,
   });
 
   const merged = [...current, nextEntry].sort(compareByElo);
   saveLeaderboard(seasonId, merged.slice(0, RANKED_LEADERBOARD_LIMIT));
+  syncLeaderboardEntryToApi({
+    mode: "ranked",
+    seasonId,
+    playerId: nextEntry.playerId,
+    teamName: nextEntry.name,
+    publicTag: nextEntry.publicTag,
+    elo: nextEntry.elo,
+    wins: nextEntry.wins,
+    losses: nextEntry.losses,
+    winStreak: nextEntry.winStreak,
+    lossStreak: nextEntry.lossStreak,
+  });
 };
 
 export const formatRankedLeaderboardElo = (entry: Pick<RankedLeaderboardEntry, "elo">) =>
@@ -298,7 +377,7 @@ export const getRankedLeaderboardFootnote = (
   sort: RankedLeaderboardSort = "elo",
   seasonId = getCurrentSeasonId(),
 ) => {
-  const seasonNote = `${PRO_LEADERBOARD_LABEL} for ${formatSeasonLabel(seasonId)}. Ratings reset at the start of each calendar month.`;
+  const seasonNote = `${PRO_LEADERBOARD_LABEL} for ${formatSeasonLabel(seasonId)}. Real front offices only — ratings reset at the start of each calendar month.`;
 
   switch (sort) {
     case "winStreak":
@@ -313,7 +392,7 @@ export const getRankedLeaderboardFootnote = (
 export const findRankedOpponentFromLeaderboard = (
   targetElo: number,
 ): RankedLeaderboardEntry | null => {
-  const entries = ensureRankedLeaderboard().filter((entry) => entry.isNpc);
+  const entries = ensureNpcOpponentPool();
 
   if (entries.length === 0) {
     return null;

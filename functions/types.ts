@@ -26,3 +26,17 @@ export interface DailyDraftScoreRow {
   lineup_json: string;
   submitted_at: string;
 }
+
+export interface LeaderboardEntryRow {
+  mode: string;
+  season_id: string;
+  player_id: string;
+  team_name: string;
+  public_tag: string;
+  elo: number;
+  wins: number;
+  losses: number;
+  win_streak: number;
+  loss_streak: number;
+  updated_at: string;
+}
