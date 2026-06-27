@@ -9,13 +9,16 @@ import {
   unlockAchievements,
 } from "./achievements";
 import { isSuperstarTierPlayer } from "./starPedigree";
+import { getSuperScrubPlayerIds } from "./playerTiers";
+import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
+import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 45 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(45);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(45);
+  it("defines 46 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(46);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(46);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      45,
+      46,
     );
   });
 
@@ -123,6 +126,20 @@ describe("achievements", () => {
     );
   });
 
+  it("detects ballin on a budget for salary-cap rosters under $50M", () => {
+    const lineup = getSuperScrubPlayerIds()
+      .slice(0, 5)
+      .map((id) => playersById.get(id))
+      .filter((player): player is NonNullable<typeof player> => Boolean(player));
+
+    expect(lineup).toHaveLength(5);
+    expect(getLineupSalaryTotal(lineup)).toBeLessThan(BUDGET_BADGE_SALARY_MAX);
+    expect(checkLineupAchievements(lineup, { hasSalaryCap: true })).toContain(
+      "ballin-on-budget",
+    );
+    expect(checkLineupAchievements(lineup)).not.toContain("ballin-on-budget");
+  });
+
   it("persists newly unlocked achievements", () => {
     const storage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -145,7 +162,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(45);
+    expect(progress.total).toBe(46);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

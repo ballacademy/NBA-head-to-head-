@@ -142,7 +142,9 @@ export function MatchResults({
     }
 
     achievementsCheckedRef.current = true;
-    const earned = checkLineupAchievements(userLineup);
+    const earned = checkLineupAchievements(userLineup, {
+      hasSalaryCap: user.salaryCapLimit != null,
+    });
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
   }, [userLineup]);

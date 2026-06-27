@@ -23,7 +23,11 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
-import { RANKED_SALARY_CAP } from "../lib/salaryCap";
+import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
+import {
+  CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+  RANKED_SALARY_CAP,
+} from "../lib/salaryCap";
 import {
   loadTeamProfile,
   normalizeTeamProfile,
@@ -173,8 +177,8 @@ export function LandingPage({
       <p className="eyebrow landing__eyebrow">Draft Day GM</p>
       <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
-        Pick a mode below, name your team, and draft your five against the
-        competition.
+        Pick a mode below, name your team, and draft a five-player lineup. You
+        get {PICK_TIME_LIMIT_SECONDS} seconds per pick.
       </p>
 
       <div
@@ -222,8 +226,9 @@ export function LandingPage({
           <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
           <p className="daily-draft-card__description">{dailyChallenge.description}</p>
           <p className="daily-draft-card__meta">
-            Same goal for everyone today. Player stats stay hidden while you draft.
-            One attempt per day.
+            Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS} seconds per
+            pick. Stats stay hidden. Same goal for everyone today — one attempt
+            per day.
           </p>
           <div className="landing-mode-card__record-block">
             <p className="landing-mode-card__record">
@@ -255,9 +260,11 @@ export function LandingPage({
         <div className="head-to-head-card landing-card landing-card--mode">
           <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
           <p className="head-to-head-card__description">
-            Build under a $150M cap with real 2025-26 salaries. Banner matchmaking
-            pairs you with similarly rated front offices, and monthly seasons
-            reset the global Top 500.
+            Draft a five-player lineup under a $
+            {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2025-26 salaries.
+            Banner matchmaking pairs similar front offices; monthly seasons reset
+            the Top 500.
           </p>
           <ClassicModeSummary record={modeRecords.headToHead} />
           <button
@@ -273,9 +280,11 @@ export function LandingPage({
         <div className="ranked-cap-card landing-card landing-card--mode">
           <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
           <p className="ranked-cap-card__description">
-            Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with
-            real 2025-26 salaries. Banner matchmaking pairs you with similarly
-            rated front offices, and monthly seasons reset the global Top 500.
+            Draft a five-player lineup under a $
+            {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2025-26 salaries.
+            Banner matchmaking pairs similar front offices; monthly seasons reset
+            the Top 500.
           </p>
           <RankedModeSummary record={modeRecords.ranked} />
           <button
@@ -292,7 +301,8 @@ export function LandingPage({
           <p className="eyebrow">{ALL_TIME_LABEL}</p>
           <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
           <p className="all-time-card__description">
-            Draft active stars at their peak seasons plus legendary All-Stars from
+            Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS} seconds per
+            pick from active stars at peak seasons plus legendary All-Stars from
             every era.
             {allTimePlayable
               ? ""

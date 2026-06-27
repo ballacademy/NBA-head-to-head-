@@ -9,6 +9,7 @@ import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { hasStarPedigree, isSuperstarTierPlayer } from "./starPedigree";
 import { meetsMinimumDefenseGrade } from "./defenseGrade";
 import { hasLimitedSampleSize } from "./sampleSize";
+import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import type { Player } from "./types";
 
 const average = (values: number[]) =>
@@ -40,12 +41,16 @@ const allSameDivision = (lineup: Player[], division: string) =>
 const primaryPositions = (lineup: Player[]) =>
   lineup.map((player) => player.position);
 
+export interface AchievementCheckContext {
+  hasSalaryCap?: boolean;
+}
+
 export interface AchievementCheckDefinition {
   id: string;
   title: string;
   description: string;
   emoji: string;
-  check: (lineup: Player[]) => boolean;
+  check: (lineup: Player[], context?: AchievementCheckContext) => boolean;
 }
 
 export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
@@ -370,6 +375,15 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     description: "Draft five players averaging under 10 points each.",
     emoji: "💸",
     check: (lineup) => lineup.every((player) => player.points < 10),
+  },
+  {
+    id: "ballin-on-budget",
+    title: "Ballin' on a Budget",
+    description: "Spend under $50M on a salary-cap roster.",
+    emoji: "🤑",
+    check: (lineup, context) =>
+      Boolean(context?.hasSalaryCap) &&
+      getLineupSalaryTotal(lineup) < BUDGET_BADGE_SALARY_MAX,
   },
   {
     id: "assist-avalanche",
