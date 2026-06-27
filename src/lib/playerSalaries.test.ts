@@ -19,8 +19,11 @@ describe("player salaries", () => {
   it("attaches salaries to the player pool", () => {
     const curry = players.find((player) => player.bbrPlayerId === "curryst01");
     const shai = players.find((player) => player.bbrPlayerId === "gilgesh01");
+    const lavine = players.find((player) => player.bbrPlayerId === "lavinza01");
 
     expect(curry?.salary).toBe(62_587_158);
     expect(shai?.salary).toBe(40_806_150);
+    expect(lavine?.salary).toBe(48_967_380);
+    expect(lavine?.team).toBe("SAC");
   });
 });

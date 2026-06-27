@@ -1,11 +1,14 @@
 {
   "season": "2026-27",
   "source": "https://www.basketball-reference.com/contracts/players.html",
+  "optionSource": "https://www.spotrac.com/nba/option/_/year/2026",
   "salaryColumn": "y2",
-  "generatedAt": "2026-06-27T20:24:50.702337+00:00",
+  "generatedAt": "2026-06-27T22:29:18.685821+00:00",
   "matchedFromContracts": 332,
+  "matchedFromOptions": 15,
+  "skippedOptions": 9,
   "unmatchedPlayers": 271,
-  "playerCount": 332,
+  "playerCount": 347,
   "salaries": {
     "doncilu01": 49800000,
     "gilgesh01": 40806150,
@@ -338,6 +341,21 @@
     "mogbojo01": 2296271,
     "william01": 2150917,
     "broomjo01": 2150917,
-    "essenno01": 5701200
+    "essenno01": 5701200,
+    "hayeski01": 3018158,
+    "bantoda01": 2801346,
+    "davisjd01": 2584539,
+    "cainja01": 2584539,
+    "terryda01": 2584539,
+    "bouyeja01": 2584539,
+    "smithni01": 2497812,
+    "youngja05": 2411090,
+    "gueyemo01": 2411090,
+    "smithma02": 2150917,
+    "shulgma01": 2150917,
+    "nembhry01": 2150917,
+    "grayha01": 2150917,
+    "mbengbe01": 2150917,
+    "watkija01": 2150917
   }
 }

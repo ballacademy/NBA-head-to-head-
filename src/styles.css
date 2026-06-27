@@ -1249,6 +1249,20 @@ main {
   --mode-glow-b: rgba(59, 130, 246, 0.1);
 }
 
+.mode-theme--practice {
+  --mode-accent: #14b8a6;
+  --mode-accent-bright: #2dd4bf;
+  --mode-accent-soft: rgba(20, 184, 166, 0.16);
+  --mode-accent-strong: rgba(20, 184, 166, 0.24);
+  --mode-accent-border: rgba(20, 184, 166, 0.42);
+  --mode-surface-tint: rgba(20, 184, 166, 0.14);
+  --mode-eyebrow: #5eead4;
+  --mode-prompt-bg: rgba(19, 78, 74, 0.24);
+  --mode-prompt-border: rgba(20, 184, 166, 0.28);
+  --mode-glow-a: rgba(45, 212, 191, 0.18);
+  --mode-glow-b: rgba(20, 184, 166, 0.1);
+}
+
 .mode-theme--all-time {
   --mode-accent: #f59e0b;
   --mode-accent-bright: #fbbf24;
@@ -1964,6 +1978,45 @@ main {
 .ranked-cap-card__button:hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 40px rgba(37, 99, 235, 0.42);
+}
+
+.practice-card {
+  margin-top: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(20, 184, 166, 0.28);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 184, 166, 0.12) 0%,
+      rgba(15, 23, 42, 0.72) 100%
+    ),
+    #0f172a;
+}
+
+.practice-card__description {
+  margin: 0 0 12px;
+  color: #cbd5e1;
+}
+
+.practice-card__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.practice-card__button {
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 22px;
+  color: #042f2e;
+  font-weight: 900;
+  background: linear-gradient(135deg, #5eead4 0%, #14b8a6 100%);
+  box-shadow: 0 14px 34px rgba(20, 184, 166, 0.28);
+}
+
+.practice-card__button--classic {
+  color: #0f172a;
+  background: linear-gradient(135deg, #99f6e4 0%, #2dd4bf 100%);
 }
 
 .leaderboard__tabs--secondary {

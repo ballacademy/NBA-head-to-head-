@@ -345,6 +345,42 @@ export function LandingPage({
           </button>
         </div>
 
+        <div className="practice-card landing-card landing-card--mode">
+          <p className="eyebrow">Practice</p>
+          <p className="practice-card__description">
+            Draft against a bot with real 2026-27 salaries. Ratings, streaks, and
+            leaderboards do not change. Badges can still unlock.
+          </p>
+          <div className="practice-card__actions">
+            <button
+              type="button"
+              className="practice-card__button"
+              disabled={isMatchmaking}
+              onClick={() =>
+                void handleStart({
+                  practiceMode: true,
+                  salaryCapLimit: RANKED_SALARY_CAP,
+                })
+              }
+            >
+              Practice ($100M cap)
+            </button>
+            <button
+              type="button"
+              className="practice-card__button practice-card__button--classic"
+              disabled={isMatchmaking}
+              onClick={() =>
+                void handleStart({
+                  practiceMode: true,
+                  salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+                })
+              }
+            >
+              Practice ($150M cap)
+            </button>
+          </div>
+        </div>
+
         <div className="all-time-card landing-card landing-card--mode">
           <p className="eyebrow">{ALL_TIME_LABEL}</p>
           <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>

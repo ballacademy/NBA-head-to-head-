@@ -65,6 +65,7 @@ export interface Drafter {
   salaryCapMode?: boolean;
   salaryCapLimit?: number;
   allTimeMode?: boolean;
+  practiceMode?: boolean;
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
   isGhostOpponent?: boolean;

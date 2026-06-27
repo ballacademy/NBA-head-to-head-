@@ -5,6 +5,7 @@ import {
 } from "./positions";
 import { getPlayerSalary } from "./playerSalaries";
 import { applyCurrentTeamOverride } from "./currentTeamOverrides";
+import { applyOptionTeamOverride } from "./optionTeamOverrides";
 import { applyPositionOverride } from "./positionOverrides";
 import { lookupJerseyNumber } from "./jerseyNumbers";
 import {
@@ -181,7 +182,10 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
   const position = positions[0];
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);
-  const team = applyCurrentTeamOverride(raw.bbrPlayerId, raw.team);
+  const team = applyOptionTeamOverride(
+    raw.bbrPlayerId,
+    applyCurrentTeamOverride(raw.bbrPlayerId, raw.team),
+  );
   const playerId = raw.bbrPlayerId
     ? `${raw.bbrPlayerId}-${team.toLowerCase()}`
     : raw.id;

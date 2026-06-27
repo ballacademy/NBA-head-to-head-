@@ -27,6 +27,7 @@ export interface StartDraftOptions {
   salaryCapMode?: boolean;
   salaryCapLimit?: number;
   allTimeMode?: boolean;
+  practiceMode?: boolean;
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
@@ -44,6 +45,7 @@ export const createUserDrafter = (
 ): Drafter => {
   const salaryCapMode = Boolean(options.salaryCapMode);
   const allTimeMode = Boolean(options.allTimeMode);
+  const practiceMode = Boolean(options.practiceMode);
   const isDailyDraft = Boolean(options.isDailyDraft);
   const salaryCapLimit =
     options.salaryCapLimit ??
@@ -64,6 +66,7 @@ export const createUserDrafter = (
     salaryCapMode,
     salaryCapLimit,
     allTimeMode,
+    practiceMode,
   };
 };
 
@@ -89,6 +92,7 @@ export const createRandomOpponent = (
 
 export const createClassicOpponent = (
   draftSlots: DraftSlotConstraint[],
+  options: { salaryCapLimit?: number } = {},
 ): Drafter => {
   const playerElo = ensureClassicProfile().elo;
   const opponentElo = pickOpponentElo(playerElo);
@@ -103,7 +107,8 @@ export const createClassicOpponent = (
     accent: blueprint.accent,
     draftSlots,
     lineup: [],
-    salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+    salaryCapLimit:
+      options.salaryCapLimit ?? CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
     classicOpponentElo: opponentElo,
   };
 };
