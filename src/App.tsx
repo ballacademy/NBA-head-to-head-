@@ -5,7 +5,8 @@ import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
-import { QueuedDraftResults } from "./components/QueuedDraftResults";
+import { PendingQueueResults } from "./components/PendingQueueResults";
+import { PendingOwnerResults } from "./components/PendingOwnerResults";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -40,8 +41,18 @@ import {
   sleep,
   type StartDraftOptions,
 } from "./lib/match";
-import { fetchGhostOpponent } from "./lib/ghostMatchmaking";
+import {
+  getStartMatchErrorMessage,
+  planHeadToHeadMatchmaking,
+  type StartMatchError,
+} from "./lib/matchmaking";
+import {
+  fetchDeliverableOwnerResult,
+  finalizeDeliveredOwnerResult,
+  type DeliveredOwnerResult,
+} from "./lib/pendingOwnerResults";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
+import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import { ensureClassicProfile } from "./lib/classicProfile";
 import {
   ensurePlayerCollection,
@@ -87,17 +98,52 @@ function App() {
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
   );
+  const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
+  const [isMatchmaking, setIsMatchmaking] = useState(false);
+  const [startMatchError, setStartMatchError] = useState<string | null>(null);
+  const [deliveredOwnerResult, setDeliveredOwnerResult] =
+    useState<DeliveredOwnerResult | null>(null);
+  const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
+    null,
+  );
 
   useEffect(() => {
     ensureCurrentRankedSeason();
     ensureRankedLeaderboard();
   }, []);
 
-  const [isQueueOnlyMatch, setIsQueueOnlyMatch] = useState(false);
-  const [isMatchmaking, setIsMatchmaking] = useState(false);
-  const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
-    null,
-  );
+  useEffect(() => {
+    if (phase !== "landing" || deliveredOwnerResult) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      const playerId = getOrCreatePlayerIdentity().playerId;
+
+      for (const mode of ["classic", "ranked"] as const) {
+        const delivery = await fetchDeliverableOwnerResult(mode, playerId);
+
+        if (!delivery || cancelled) {
+          continue;
+        }
+
+        await finalizeDeliveredOwnerResult(delivery, playerId);
+
+        if (!cancelled) {
+          setDeliveredOwnerResult(delivery);
+          setModeRecords(loadAllModeRecords());
+        }
+
+        break;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deliveredOwnerResult, phase]);
 
   const activePlayers = useMemo(
     () => getActivePlayerPool(modeRecords.allTime, { allTimeMode }),
@@ -164,6 +210,8 @@ function App() {
       return false;
     }
 
+    setStartMatchError(null);
+
     if (options.allTimeMode && !isAllTimeModePlayable()) {
       return false;
     }
@@ -192,8 +240,8 @@ function App() {
           ? RANKED_SALARY_CAP
           : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
     const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
-    let ghostOpponent = null;
-    let queueOnly = false;
+    let ghostOpponent: GhostOpponentSnapshot | null = null;
+    let isPendingQueue = false;
 
     if (!daily && !nextAllTimeMode) {
       setIsMatchmaking(true);
@@ -202,18 +250,28 @@ function App() {
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
         : ensureClassicProfile().elo;
-
-      ghostOpponent = await fetchGhostOpponent({
+      const resolution = await planHeadToHeadMatchmaking({
         mode: matchmakingMode,
         playerId,
-        elo,
+        playerElo: elo,
       });
-      queueOnly = !ghostOpponent;
+
       setIsMatchmaking(false);
+
+      if (!resolution.ok) {
+        setStartMatchError(getStartMatchErrorMessage(resolution.error));
+        return false;
+      }
+
+      if (resolution.plan.kind === "ghost") {
+        ghostOpponent = resolution.plan.ghost;
+      } else if (resolution.plan.kind === "queue_for_live") {
+        isPendingQueue = true;
+      }
     }
 
     const nextOpponentCollection =
-      daily || queueOnly ? null : createOpponentCollection(collection);
+      daily || isPendingQueue ? null : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
@@ -242,7 +300,7 @@ function App() {
     }
 
     let opponentSlots =
-      daily || queueOnly ? null : createOpponentDraftSlots(opponentPool);
+      daily || isPendingQueue ? null : createOpponentDraftSlots(opponentPool);
     if (
       opponentSlots &&
       salaryCapLimit != null &&
@@ -258,12 +316,13 @@ function App() {
       userSlots.length === 0 ||
       !slotsAreFeasible(draftPool, userSlots) ||
       (!daily &&
-        !queueOnly &&
+        !isPendingQueue &&
         !nextAllTimeMode &&
         (!opponentSlots ||
           opponentSlots.length === 0 ||
           !slotsAreFeasible(opponentPool, opponentSlots)))
     ) {
+      setStartMatchError(getStartMatchErrorMessage("setup_failed"));
       return false;
     }
 
@@ -271,7 +330,7 @@ function App() {
     setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
     setAllTimeMode(nextAllTimeMode);
-    setIsQueueOnlyMatch(queueOnly);
+    setIsPendingQueueMatch(isPendingQueue);
     setDailyDateKey(dateKey);
     setUser(
       createUserDrafter(team, userSlots, {
@@ -282,7 +341,7 @@ function App() {
       }),
     );
     setOpponent(
-      queueOnly
+      isPendingQueue
         ? null
         : ghostOpponent && opponentSlots
           ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
@@ -297,7 +356,7 @@ function App() {
     setOpponentCollection(nextOpponentCollection);
     setDraftStep(0);
     setOpponentPickCount(0);
-    setOpponentComplete(daily || queueOnly);
+    setOpponentComplete(daily || isPendingQueue);
     setMatchId(null);
     setDraftSessionKey(
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -317,7 +376,7 @@ function App() {
     setOpponentComplete(false);
     setMatchId(null);
     setDraftSessionKey(null);
-    setIsQueueOnlyMatch(false);
+    setIsPendingQueueMatch(false);
     setIsMatchmaking(false);
     setIsDailyDraft(false);
     setAllTimeMode(false);
@@ -428,14 +487,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (phase === "results" && !isDailyDraft && !isQueueOnlyMatch && !matchId) {
+    if (phase === "results" && !isDailyDraft && !isPendingQueueMatch && !matchId) {
       setMatchId(
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `match-${Date.now()}`,
       );
     }
-  }, [isDailyDraft, isQueueOnlyMatch, matchId, phase]);
+  }, [isDailyDraft, isPendingQueueMatch, matchId, phase]);
 
   useEffect(() => {
     if (isDailyDraft || !opponent) {
@@ -555,13 +614,13 @@ function App() {
       return;
     }
 
-    if (isQueueOnlyMatch) {
+    if (isPendingQueueMatch) {
       setPhase("results");
       return;
     }
 
     setPhase(opponentComplete ? "results" : "waiting");
-  }, [isDailyDraft, isQueueOnlyMatch, opponentComplete, phase, userDraftComplete]);
+  }, [isDailyDraft, isPendingQueueMatch, opponentComplete, phase, userDraftComplete]);
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
@@ -603,6 +662,18 @@ function App() {
     );
   }
 
+  if (phase === "landing" && deliveredOwnerResult) {
+    return (
+      <main className="landing-layout">
+        <PendingOwnerResults
+          delivery={deliveredOwnerResult}
+          modeRecords={modeRecords}
+          onDone={() => setDeliveredOwnerResult(null)}
+        />
+      </main>
+    );
+  }
+
   if (phase === "landing") {
     return (
       <main className="landing-layout">
@@ -611,6 +682,7 @@ function App() {
           dailyChallenge={dailyChallenge}
           modeRecords={modeRecords}
           isMatchmaking={isMatchmaking}
+          startMatchError={startMatchError}
           onStartDraft={startMatch}
           onCollectionChange={setCollection}
           onViewStats={() => setPhase("stats")}
@@ -636,7 +708,7 @@ function App() {
     );
   }
 
-  if (!isDailyDraft && !opponent && !isQueueOnlyMatch) {
+  if (!isDailyDraft && !opponent && !isPendingQueueMatch) {
     return (
       <main className="landing-layout">
         <section className="panel landing">
@@ -692,8 +764,8 @@ function App() {
         />
       ) : null}
 
-      {phase === "results" && isQueueOnlyMatch && user ? (
-        <QueuedDraftResults
+      {phase === "results" && isPendingQueueMatch && user ? (
+        <PendingQueueResults
           user={user}
           userLineup={userLineup}
           onDone={resetToLanding}
@@ -713,7 +785,7 @@ function App() {
 
       {phase === "results" &&
       !isDailyDraft &&
-      !isQueueOnlyMatch &&
+      !isPendingQueueMatch &&
       opponent &&
       matchId ? (
         <MatchResults

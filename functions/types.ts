@@ -12,4 +12,6 @@ export interface StoredLineupRow {
   lineup_json: string;
   elo: number;
   created_at: string;
+  consumed_at?: string | null;
+  consumed_by?: string | null;
 }
