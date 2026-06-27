@@ -451,8 +451,7 @@
       "team": "GSW",
       "position": "PG",
       "positions": [
-        "PG",
-        "SG"
+        "PG"
       ],
       "age": 37,
       "gamesPlayed": 43,
@@ -531,8 +530,7 @@
       "team": "NYK",
       "position": "PG",
       "positions": [
-        "PG",
-        "SG"
+        "PG"
       ],
       "age": 29,
       "gamesPlayed": 74,
@@ -1761,7 +1759,8 @@
       "team": "MIA",
       "position": "C",
       "positions": [
-        "C"
+        "C",
+        "PF"
       ],
       "age": 28,
       "gamesPlayed": 73,
@@ -2233,10 +2232,10 @@
       "bbrPlayerId": "mccolcj01",
       "name": "CJ McCollum",
       "team": "ATL",
-      "position": "PG",
+      "position": "SG",
       "positions": [
-        "PG",
-        "SG"
+        "SG",
+        "PG"
       ],
       "age": 34,
       "gamesPlayed": 76,
@@ -2473,7 +2472,8 @@
       "position": "PG",
       "positions": [
         "PG",
-        "SG"
+        "SG",
+        "SF"
       ],
       "age": 23,
       "gamesPlayed": 79,
@@ -2512,8 +2512,7 @@
       "team": "CLE",
       "position": "PF",
       "positions": [
-        "PF",
-        "SF"
+        "PF"
       ],
       "age": 24,
       "gamesPlayed": 65,
@@ -2592,8 +2591,7 @@
       "team": "WAS",
       "position": "PG",
       "positions": [
-        "PG",
-        "SG"
+        "PG"
       ],
       "age": 27,
       "gamesPlayed": 15,
@@ -2909,7 +2907,7 @@
       "position": "PF",
       "positions": [
         "PF",
-        "SF"
+        "C"
       ],
       "age": 23,
       "gamesPlayed": 69,
@@ -3187,7 +3185,8 @@
       "team": "GSW",
       "position": "C",
       "positions": [
-        "C"
+        "C",
+        "PF"
       ],
       "age": 30,
       "gamesPlayed": 32,
@@ -4291,8 +4290,9 @@
       "bbrPlayerId": "mcdanja02",
       "name": "Jaden McDaniels",
       "team": "MIN",
-      "position": "PF",
+      "position": "SF",
       "positions": [
+        "SF",
         "PF"
       ],
       "age": 25,
@@ -5158,7 +5158,8 @@
       "team": "CHO",
       "position": "C",
       "positions": [
-        "C"
+        "C",
+        "PF"
       ],
       "age": 26,
       "gamesPlayed": 77,
@@ -6099,7 +6100,8 @@
       "team": "GSW",
       "position": "PG",
       "positions": [
-        "PG"
+        "PG",
+        "SG"
       ],
       "age": 27,
       "gamesPlayed": 49,

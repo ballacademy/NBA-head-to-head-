@@ -479,6 +479,24 @@ def load_current_team_overrides() -> dict[str, str]:
     return {str(key): str(value) for key, value in overrides.items()}
 
 
+def load_player_position_overrides() -> dict[str, list[str]]:
+    path = Path(__file__).resolve().parent.parent / "data" / "player-position-overrides.json"
+    if not path.exists():
+        return {}
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    overrides = payload.get("overrides", payload)
+    return {
+        str(key): [str(position) for position in value]
+        for key, value in overrides.items()
+    }
+
+
+def apply_position_override(bbr_player_id: str, positions: list[str]) -> list[str]:
+    override = load_player_position_overrides().get(bbr_player_id)
+    return list(override) if override else positions
+
+
 def weighted_average_rows(rows: list[dict]) -> dict:
     total_gp = sum(to_int(row.get("GP")) for row in rows)
     if total_gp <= 0:
@@ -613,6 +631,8 @@ def row_dict_to_player_payload(
             to_float(row_dict.get("REB")),
             to_float(row_dict.get("BLK")),
         )
+
+    resolved_positions = apply_position_override(bbr_player_id, resolved_positions)
 
     return {
         "id": player_id,

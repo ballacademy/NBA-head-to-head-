@@ -5,6 +5,7 @@ import {
 } from "./positions";
 import { getPlayerSalary } from "./playerSalaries";
 import { applyCurrentTeamOverride } from "./currentTeamOverrides";
+import { applyPositionOverride } from "./positionOverrides";
 import { lookupJerseyNumber } from "./jerseyNumbers";
 import {
   buildDefensiveRatings,
@@ -173,7 +174,10 @@ const estimateHeightInches = (raw: RawSeasonPlayer, position: Position) => {
 };
 
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
-  const positions = buildPlayerPositions(raw);
+  const positions = applyPositionOverride(
+    raw.bbrPlayerId,
+    buildPlayerPositions(raw),
+  );
   const position = positions[0];
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);

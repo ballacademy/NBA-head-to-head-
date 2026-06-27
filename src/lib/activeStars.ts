@@ -12,6 +12,7 @@ import {
   type RawSeasonPlayer,
 } from "./playerPool";
 import { buildPlayerPositions } from "./positions";
+import { applyPositionOverride } from "./positionOverrides";
 import type { Player } from "./types";
 
 interface ActiveStarBestSeasonRaw {
@@ -75,7 +76,10 @@ const toActiveStarPlayer = (
   rating?: { defense: number; grade: Player["defenseGrade"] },
 ): Player => {
   const statInput = toRawSeasonPlayer(raw);
-  const positions = buildPlayerPositions(statInput);
+  const positions = applyPositionOverride(
+    raw.bbrPlayerId,
+    buildPlayerPositions(statInput),
+  );
   const position = positions[0];
 
   return {
