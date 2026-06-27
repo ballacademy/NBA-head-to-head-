@@ -39,6 +39,50 @@ export const normalizePosition = (position?: string): Position => {
   return "SF";
 };
 
+export const parsePrimaryPosition = (position?: string): Position => {
+  if (!position?.trim()) {
+    return "SF";
+  }
+
+  const firstToken = position
+    .toUpperCase()
+    .split(/[-/,]/)[0]
+    ?.trim();
+
+  if (firstToken) {
+    const fromToken = parsePositionString(firstToken);
+    if (fromToken.length > 0) {
+      return fromToken[0];
+    }
+  }
+
+  return normalizePosition(position);
+};
+
+const finalizePositions = (
+  primary: Position,
+  eligible: Iterable<Position>,
+): Position[] => {
+  const unique = new Set(eligible);
+  unique.add(primary);
+
+  const resolved = [primary];
+
+  for (const position of POSITION_ORDER) {
+    if (position === primary || !unique.has(position)) {
+      continue;
+    }
+
+    resolved.push(position);
+
+    if (resolved.length >= MAX_PLAYER_POSITIONS) {
+      break;
+    }
+  }
+
+  return resolved;
+};
+
 export const parsePositionString = (position?: string): Position[] => {
   if (!position?.trim()) {
     return [];
@@ -161,26 +205,25 @@ export const buildPlayerPositions = ({
   rebounds,
   blocks,
 }: PositionStatInput): Position[] => {
+  const primary = parsePrimaryPosition(position);
   const parsed = sortPositions([
     ...parsePositionString(position),
     ...(positions ?? []).flatMap((value) => parsePositionString(value)),
   ]);
+  const listed = parsed.length > 0 ? parsed : [primary];
 
-  const base = parsed.length > 0 ? parsed : [normalizePosition(position)];
-
-  if (base.length >= MAX_PLAYER_POSITIONS) {
-    return capPositions(base);
+  if (listed.length >= MAX_PLAYER_POSITIONS && listed.includes(primary)) {
+    return finalizePositions(primary, listed);
   }
 
-  const primary = base[0];
   const secondary = pickStatSecondary(primary, { assists, rebounds, blocks });
-  const eligible = new Set(base);
+  const eligible = new Set(listed);
 
   if (secondary) {
     eligible.add(secondary);
   }
 
-  return capPositions(eligible);
+  return finalizePositions(primary, eligible);
 };
 
 export const formatPlayerPositions = (positions: readonly Position[]) =>

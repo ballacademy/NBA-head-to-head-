@@ -1,6 +1,6 @@
 import type { EraId } from "./eraUnlocks";
 import { deriveStyles, estimateDefense, estimateUsage } from "./playerPool";
-import { buildPlayerPositions, normalizePosition } from "./positions";
+import { buildPlayerPositions } from "./positions";
 import { lookupJerseyNumber } from "./jerseyNumbers";
 import type { Player } from "./types";
 import era1970sData from "../../data/era-players-1970s.json";
@@ -51,7 +51,6 @@ const POSITION_HEIGHT_INCHES: Record<Player["position"], number> = {
 };
 
 const toEraPlayer = (raw: EraPlayerRaw, era: EraId): Player => {
-  const position = normalizePosition(raw.position);
   const positions = buildPlayerPositions({
     position: raw.position,
     positions: raw.position ? [raw.position] : undefined,
@@ -59,6 +58,7 @@ const toEraPlayer = (raw: EraPlayerRaw, era: EraId): Player => {
     rebounds: raw.rebounds,
     blocks: raw.blocks,
   });
+  const position = positions[0];
   const statInput = {
     id: raw.id,
     bbrPlayerId: raw.bbrPlayerId,

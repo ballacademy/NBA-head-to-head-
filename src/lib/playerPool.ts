@@ -2,7 +2,6 @@ import type { PlayStyle, Player, Position } from "./types";
 import {
   buildPlayerPositions,
   formatPlayerPositions,
-  normalizePosition,
 } from "./positions";
 import { getPlayerSalary } from "./playerSalaries";
 import { applyCurrentTeamOverride } from "./currentTeamOverrides";
@@ -174,8 +173,8 @@ const estimateHeightInches = (raw: RawSeasonPlayer, position: Position) => {
 };
 
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
-  const position = normalizePosition(raw.position);
   const positions = buildPlayerPositions(raw);
+  const position = positions[0];
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);
   const team = applyCurrentTeamOverride(raw.bbrPlayerId, raw.team);

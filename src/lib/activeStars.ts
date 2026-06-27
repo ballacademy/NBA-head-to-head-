@@ -11,7 +11,7 @@ import {
   estimateUsage,
   type RawSeasonPlayer,
 } from "./playerPool";
-import { buildPlayerPositions, normalizePosition } from "./positions";
+import { buildPlayerPositions } from "./positions";
 import type { Player } from "./types";
 
 interface ActiveStarBestSeasonRaw {
@@ -75,8 +75,8 @@ const toActiveStarPlayer = (
   rating?: { defense: number; grade: Player["defenseGrade"] },
 ): Player => {
   const statInput = toRawSeasonPlayer(raw);
-  const position = normalizePosition(raw.position);
   const positions = buildPlayerPositions(statInput);
+  const position = positions[0];
 
   return {
     id: statInput.id,

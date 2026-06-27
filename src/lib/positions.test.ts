@@ -23,6 +23,35 @@ describe("positions", () => {
     expect(MAX_PLAYER_POSITIONS).toBe(2);
   });
 
+  it("keeps the listed primary position ahead of stat-inferred slots", () => {
+    const jaylenBrown = buildPlayerPositions({
+      position: "SF",
+      assists: 5.1,
+      rebounds: 6.9,
+      blocks: 0.4,
+    });
+    const devinBooker = buildPlayerPositions({
+      position: "SG",
+      assists: 6.0,
+      rebounds: 3.9,
+      blocks: 0.3,
+    });
+
+    expect(jaylenBrown[0]).toBe("SF");
+    expect(jaylenBrown).toContain("SG");
+    expect(devinBooker[0]).toBe("SG");
+    expect(devinBooker).toContain("PG");
+  });
+
+  it("uses the first token as the primary for hyphenated labels", () => {
+    expect(buildPlayerPositions({
+      position: "PF-C",
+      assists: 2,
+      rebounds: 11,
+      blocks: 1.7,
+    })[0]).toBe("PF");
+  });
+
   it("builds at most two eligible positions from stats", () => {
     const positions = buildPlayerPositions({
       position: "SF",
