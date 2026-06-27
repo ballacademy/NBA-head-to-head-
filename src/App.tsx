@@ -106,7 +106,9 @@ function App() {
     ensurePlayerCollection(),
   );
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
-  const [isMatchmaking, setIsMatchmaking] = useState(false);
+  const [matchmakingMode, setMatchmakingMode] = useState<
+    "classic" | "ranked" | null
+  >(null);
   const [matchmakingStartedAt, setMatchmakingStartedAt] = useState<number | null>(
     null,
   );
@@ -124,7 +126,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isMatchmaking || matchmakingStartedAt == null) {
+    if (!matchmakingMode || matchmakingStartedAt == null) {
       setMatchmakingElapsedSeconds(0);
       return;
     }
@@ -141,7 +143,7 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isMatchmaking, matchmakingStartedAt]);
+  }, [matchmakingMode, matchmakingStartedAt]);
 
   useEffect(() => {
     if (phase !== "landing") {
@@ -349,20 +351,20 @@ function App() {
     let isPendingQueue = false;
 
     if (!daily && !nextAllTimeMode) {
+      const nextMatchmakingMode = salaryCapMode ? "ranked" : "classic";
       setMatchmakingStartedAt(Date.now());
-      setIsMatchmaking(true);
-      const matchmakingMode = salaryCapMode ? "ranked" : "classic";
+      setMatchmakingMode(nextMatchmakingMode);
       const playerId = getOrCreatePlayerIdentity().playerId;
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
         : ensureClassicProfile().elo;
       const resolution = await planHeadToHeadMatchmaking({
-        mode: matchmakingMode,
+        mode: nextMatchmakingMode,
         playerId,
         playerElo: elo,
       });
 
-      setIsMatchmaking(false);
+      setMatchmakingMode(null);
       setMatchmakingStartedAt(null);
 
       if (!resolution.ok) {
@@ -831,7 +833,7 @@ function App() {
           collection={collection}
           dailyChallenge={dailyChallenge}
           modeRecords={modeRecords}
-          isMatchmaking={isMatchmaking}
+          matchmakingMode={matchmakingMode}
           matchmakingElapsedSeconds={matchmakingElapsedSeconds}
           dailyPercentileLabel={landingDailyPercentileLabel}
           canViewDailyLineup={canViewDailyLineup}
