@@ -41,13 +41,14 @@ import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { DailyDraftChallenge } from "../lib/dailyDraft";
+import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions } from "../lib/match";
 
 interface LandingPageProps {
   collection: PlayerCollection;
   dailyChallenge: DailyDraftChallenge;
   modeRecords: ModePlayerRecords;
-  isMatchmaking?: boolean;
+  matchmakingMode?: GhostMatchmakingMode | null;
   matchmakingElapsedSeconds?: number;
   startMatchError?: string | null;
   onStartDraft: (
@@ -92,7 +93,7 @@ export function LandingPage({
   collection,
   dailyChallenge,
   modeRecords,
-  isMatchmaking = false,
+  matchmakingMode = null,
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
   onStartDraft,
@@ -126,6 +127,7 @@ export function LandingPage({
   );
   const dailyCompleted = Boolean(dailyEntry);
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
+  const isMatchmaking = matchmakingMode != null;
   const matchmakingLabel =
     matchmakingElapsedSeconds > 0
       ? `Finding opponent… ${matchmakingElapsedSeconds}s`
@@ -290,11 +292,9 @@ export function LandingPage({
             disabled={isMatchmaking || (dailyCompleted && !canViewDailyLineup)}
             onClick={() => void handleDailyAction()}
           >
-            {isMatchmaking
-              ? matchmakingLabel
-              : dailyCompleted
-                ? "View my lineup"
-                : "Play Today's Daily Draft"}
+            {dailyCompleted
+              ? "View my lineup"
+              : "Play Today's Daily Draft"}
           </button>
         </div>
 
@@ -314,7 +314,9 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart()}
           >
-            {isMatchmaking ? matchmakingLabel : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+            {matchmakingMode === "classic"
+              ? matchmakingLabel
+              : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
@@ -334,7 +336,9 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart({ salaryCapMode: true })}
           >
-            {isMatchmaking ? matchmakingLabel : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+            {matchmakingMode === "ranked"
+              ? matchmakingLabel
+              : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
