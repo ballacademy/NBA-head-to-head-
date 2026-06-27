@@ -1,9 +1,27 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
+import { meetsMinimumDefenseGrade } from "./defenseGrade";
 import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
+
+export const LOW_SCORING_PPG_THRESHOLD = 6;
+export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
+export const LOW_SCORING_LINEUP_PENALTY = -7;
+
+export const isLowScoringNonEliteDefender = (player: Player) =>
+  player.points < LOW_SCORING_PPG_THRESHOLD &&
+  !meetsMinimumDefenseGrade(player.defense, player.defenseGrade, "B+");
+
+export const getLowScoringLineupPenalty = (lineup: Player[]) =>
+  lineup.reduce(
+    (penalty, player) =>
+      isLowScoringNonEliteDefender(player)
+        ? penalty + LOW_SCORING_LINEUP_PENALTY
+        : penalty,
+    0,
+  );
 
 export const SEASON_LENGTH = 82;
 export const LINEUP_RAW_CEILING = 232;
@@ -92,8 +110,18 @@ export {
 } from "./lineupMatchupBonus";
 export { getActiveChemistryBonuses, getChemistryAdjustment } from "./chemistry";
 
+const getPlayerLineupWeight = (player: Player) => {
+  const sampleWeight = getPlayerStatWeight(player);
+
+  if (isLowScoringNonEliteDefender(player)) {
+    return sampleWeight * LOW_SCORING_IMPACT_WEIGHT;
+  }
+
+  return sampleWeight;
+};
+
 const buildLineupWeights = (lineup: Player[]) => {
-  const weights = lineup.map((player) => getPlayerStatWeight(player));
+  const weights = lineup.map((player) => getPlayerLineupWeight(player));
   const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
 
   return { weights, weightSum };
@@ -341,7 +369,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     statRawTotal +
     getLineupTierAdjustment(lineup) +
     getImpactRankingAdjustment(lineup) +
-    getChemistryAdjustment(lineup);
+    getChemistryAdjustment(lineup) +
+    getLowScoringLineupPenalty(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 
