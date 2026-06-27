@@ -54,11 +54,27 @@ describe("dailyDraftScores", () => {
     ).toBe("Top 80% Today");
   });
 
-  it("does not double-count the submitting score in percentile math", () => {
+  it("does not double-count the submitting score in percentile math", async () => {
     stubPlayerStorage();
     const goal = DAILY_DRAFT_GOALS[0]!;
     const benchmarks = [10, 20, 30, 40, 50];
-    const result = submitDailyDraftScore(
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ entry: {} }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            dateKey: "2099-01-01",
+            goalId: goal.id,
+            values: [],
+            totalDrafters: 1,
+            entry: null,
+          }),
+        }),
+    );
+    const result = await submitDailyDraftScore(
       "2099-01-01",
       goal,
       40,
@@ -70,14 +86,36 @@ describe("dailyDraftScores", () => {
 
     expect(result.sampleSize).toBe(benchmarks.length + 1);
     expect(result.percentile).toBe(
-      getDailyDraftPercentile("2099-01-01", 40, goal, benchmarks).percentile,
+      getDailyDraftPercentile(
+        "2099-01-01",
+        40,
+        goal,
+        benchmarks,
+        "player-test-1",
+      ).percentile,
     );
   });
 
-  it("stores percentile with the daily submission", () => {
+  it("stores percentile with the daily submission", async () => {
     const storage = stubPlayerStorage();
     const goal = DAILY_DRAFT_GOALS[0]!;
-    const result = submitDailyDraftScore(
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ entry: {} }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            dateKey: "2099-01-02",
+            goalId: goal.id,
+            values: [],
+            totalDrafters: 1,
+            entry: null,
+          }),
+        }),
+    );
+    const result = await submitDailyDraftScore(
       "2099-01-02",
       goal,
       40,

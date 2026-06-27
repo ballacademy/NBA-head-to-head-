@@ -15,3 +15,14 @@ export interface StoredLineupRow {
   consumed_at?: string | null;
   consumed_by?: string | null;
 }
+
+export interface DailyDraftScoreRow {
+  date_key: string;
+  goal_id: string;
+  player_id: string;
+  team_name: string;
+  value: number;
+  formatted_result: string;
+  lineup_json: string;
+  submitted_at: string;
+}

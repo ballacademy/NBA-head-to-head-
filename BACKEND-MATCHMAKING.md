@@ -17,6 +17,8 @@ Classic and Pro Head to Head search for a stored human lineup for up to **20 sec
 | `GET` | `/api/pending?mode=...&playerId=...` | Check queued lineup lock / pending owner results |
 | `POST` | `/api/pending` | Acknowledge a delivered owner result |
 | `POST` | `/api/match-results` | Score a ghost-owner when someone beats their saved lineup |
+| `GET` | `/api/daily-scores?dateKey=YYYY-MM-DD&goalId=...&playerId=...` | Fetch today's Daily Draft scores (other players' values + your entry) |
+| `POST` | `/api/daily-scores` | Submit or update your Daily Draft score for today |
 
 ## Flow
 
@@ -27,7 +29,7 @@ Classic and Pro Head to Head search for a stored human lineup for up to **20 sec
 5. If none exists and the player is **1500+ Banners**: draft once, queue the lineup, and block new drafts until that lineup receives a score from a live opponent.
 6. When a challenger beats a saved ghost lineup, `/api/match-results` records the owner’s win/loss and Banner change for delivery on next visit.
 
-All-Time mode still uses the local opponent simulator. Daily Draft is unchanged.
+All-Time mode still uses the local opponent simulator. Daily Draft submissions sync to D1 for shared percentiles.
 
 ## One-time Cloudflare setup
 
@@ -40,6 +42,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft is unchanged.
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
+   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles.
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

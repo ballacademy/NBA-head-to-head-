@@ -31,6 +31,7 @@ import {
   getPlayerDailyDraftEntry,
   hasCompletedDailyDraft,
   resolvePlayerDailyDraftPercentile,
+  refreshDailyDraftScoresFromApi,
   simulateDailyBenchmarkValues,
 } from "./lib/dailyDraftScores";
 import {
@@ -147,14 +148,25 @@ function App() {
       return;
     }
 
-    const intervalId = window.setInterval(() => {
+    const refreshDailyScores = async () => {
+      const setup = getDailyDraftSetup(dailyDateKey);
+      await refreshDailyDraftScoresFromApi(
+        dailyDateKey,
+        setup.goal.id,
+        getOrCreatePlayerIdentity().playerId,
+      );
       setDailyScoresRefreshTick((current) => current + 1);
+    };
+
+    void refreshDailyScores();
+    const intervalId = window.setInterval(() => {
+      void refreshDailyScores();
     }, 15_000);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [phase]);
+  }, [dailyDateKey, phase]);
 
   useEffect(() => {
     if (phase !== "landing" || deliveredOwnerResult) {
