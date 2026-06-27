@@ -3,7 +3,9 @@ import { players } from "../data/players";
 import {
   calculateLineupScore,
   compareLineups,
+  getLowScoringLineupPenalty,
   getPlayersById,
+  isLowScoringNonEliteDefender,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
   projectedWinsFromOvr,
@@ -165,6 +167,49 @@ describe("calculateLineupScore", () => {
       regularScore.projectedRecord.wins,
     );
     expect(normalizeLineupTotal(categoryTotal)).toBeLessThan(superstarScore.total);
+  });
+
+  it("dampens record impact for sub-6 scorers without elite defense", () => {
+    const eliteDefender: Player = {
+      id: "elite-defender",
+      name: "Elite Defender",
+      team: "LAL",
+      position: "SG",
+      positions: ["SG"],
+      jerseyNumber: 1,
+      points: 5,
+      rebounds: 4,
+      assists: 2,
+      steals: 1.5,
+      blocks: 0.4,
+      turnovers: 1,
+      trueShooting: 0.58,
+      threePoint: 0.36,
+      threePointersAttempted: 4,
+      fieldGoalsAttempted: 8,
+      minutes: 24,
+      heightInches: 78,
+      usage: 14,
+      defense: 8.5,
+      defenseGrade: "A-",
+      gamesPlayed: 70,
+      styles: ["stopper"],
+    };
+    const lowScorer: Player = {
+      ...eliteDefender,
+      id: "low-scorer",
+      name: "Low Scorer",
+      defense: 5.5,
+      defenseGrade: "D",
+    };
+
+    const eliteScore = calculateLineupScore([eliteDefender]);
+    const lowScore = calculateLineupScore([lowScorer]);
+
+    expect(isLowScoringNonEliteDefender(lowScorer)).toBe(true);
+    expect(isLowScoringNonEliteDefender(eliteDefender)).toBe(false);
+    expect(getLowScoringLineupPenalty([lowScorer])).toBe(-7);
+    expect(lowScore.preciseTotal).toBeLessThan(eliteScore.preciseTotal);
   });
 
   it("reduces OVR and projected wins for scrub tiers without a visible category", () => {
