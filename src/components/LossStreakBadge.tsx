@@ -6,111 +6,145 @@ interface LossStreakBadgeProps {
   lossStreak: number;
 }
 
-const trashCanBody = (
-  <>
-    <path d="M8.5 8.5h7l-.6 10.2c-.1 1.2-1.1 2.1-2.3 2.1h-1.2c-1.2 0-2.2-.9-2.3-2.1L8.5 8.5Z" />
-    <path d="M7 8.5h10l.5-2.2H6.5l.5 2.2Z" />
-    <path d="M9.5 6.8h5l.4-1.5H9.1l.4 1.5Z" />
-    <path d="M10.2 11.2v5.2M12 11.2v5.2M13.8 11.2v5.2" strokeWidth="0.9" />
-  </>
-);
+const FLAME_COLORS: Record<
+  LossStreakTierId,
+  { primary: string; secondary: string; accent: string; glow: string }
+> = {
+  orange: {
+    primary: "rgba(251, 146, 60, 0.82)",
+    secondary: "rgba(253, 186, 116, 0.72)",
+    accent: "rgba(254, 215, 170, 0.65)",
+    glow: "rgba(251, 146, 60, 0.42)",
+  },
+  red: {
+    primary: "rgba(239, 68, 68, 0.84)",
+    secondary: "rgba(248, 113, 113, 0.74)",
+    accent: "rgba(254, 202, 202, 0.68)",
+    glow: "rgba(239, 68, 68, 0.45)",
+  },
+  blue: {
+    primary: "rgba(59, 130, 246, 0.82)",
+    secondary: "rgba(96, 165, 250, 0.72)",
+    accent: "rgba(191, 219, 254, 0.68)",
+    glow: "rgba(59, 130, 246, 0.45)",
+  },
+  purple: {
+    primary: "rgba(168, 85, 247, 0.84)",
+    secondary: "rgba(192, 132, 252, 0.74)",
+    accent: "rgba(233, 213, 255, 0.68)",
+    glow: "rgba(168, 85, 247, 0.48)",
+  },
+  black: {
+    primary: "rgba(248, 250, 252, 0.78)",
+    secondary: "rgba(250, 204, 21, 0.72)",
+    accent: "rgba(254, 240, 138, 0.66)",
+    glow: "rgba(250, 204, 21, 0.38)",
+  },
+};
+
+const renderFlames = (tier: LossStreakTierId): ReactNode => {
+  const colors = FLAME_COLORS[tier];
+
+  return (
+    <g className="loss-streak-badge__flames">
+      <path
+        d="M6.5 11.5c1.2-2.4 2.8-3.4 2.8-5.2 0 .8-.4 1.5-1 2 .7-.2 1.3-.8 1.5-1.5.2 1 1 1.8 2 2.1-1.2.6-2.6.6-3.8 0Z"
+        fill={colors.secondary}
+      />
+      <path
+        d="M17.5 12c1-2.2 2.4-3.1 2.4-4.8 0 .7-.3 1.3-.8 1.7.6-.2 1.1-.7 1.3-1.3.2.9 1 1.6 1.9 1.9-1.1.6-2.4.6-3.5 0Z"
+        fill={colors.secondary}
+      />
+      <path
+        d="M9.5 8.5c.8-1.8 2-2.8 2-4.2 0 .7-.3 1.2-.8 1.6.6-.1 1.1-.6 1.3-1.2.2.9.9 1.6 1.8 1.9-1 .6-2.2.6-3.2 0Z"
+        fill={colors.primary}
+      />
+      <path
+        d="M12 6.8c1 2.1 2.8 3.4 2.8 5.8 0 1.3-.6 2.4-1.5 3 .9-.2 1.7-.9 2-1.8.2 1.2 1.1 2.2 2.3 2.6-1.3.7-2.8.7-4.1 0-1.4-.8-2.3-2.4-2.3-4 0-1.7 1-2.9 1.7-3.6Z"
+        fill={colors.primary}
+      />
+      <path
+        d="M14.5 8.8c.7-1.6 1.8-2.5 1.8-3.8 0 .6-.3 1.1-.7 1.4.5-.1 1-.5 1.2-1 .2.8.8 1.4 1.6 1.7-.9.5-2 .5-2.9 0Z"
+        fill={colors.primary}
+      />
+      <path
+        d="M11 9.8c.5 1.1 1.1 1.9 1.1 3.1 0 .9-.4 1.6-1 2 .7-.2 1.3-.7 1.5-1.4.2.9.9 1.7 1.9 2-1.1.6-2.4.6-3.5 0-1.2-.7-2-1.9-2-3.1 0-1.3.8-2.2 1.5-2.6Z"
+        fill={colors.accent}
+      />
+    </g>
+  );
+};
+
+const renderTrashCan = (tier: LossStreakTierId): ReactNode => {
+  const bodyFill =
+    tier === "black"
+      ? "rgba(15, 23, 42, 0.82)"
+      : "rgba(100, 116, 139, 0.72)";
+  const bodyStroke =
+    tier === "black" ? "rgba(248, 250, 252, 0.72)" : "rgba(71, 85, 105, 0.82)";
+  const lidFill =
+    tier === "black"
+      ? "rgba(30, 41, 59, 0.84)"
+      : "rgba(148, 163, 184, 0.78)";
+
+  return (
+    <g className="loss-streak-badge__can">
+      <rect
+        x="7.2"
+        y="12.8"
+        width="9.6"
+        height="1.8"
+        rx="0.5"
+        fill={lidFill}
+        stroke={bodyStroke}
+        strokeWidth="0.55"
+      />
+      <path
+        d="M10.2 12.8V10.8M13.8 12.8V10.8M10.2 10.8H13.8"
+        stroke={bodyStroke}
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8.4 14.6h7.2l-.75 7.8c-.08.95-.95 1.7-2 1.7h-1.7c-1.05 0-1.92-.75-2-1.7L8.4 14.6Z"
+        fill={bodyFill}
+        stroke={bodyStroke}
+        strokeWidth="0.7"
+      />
+      <path
+        d="M10.3 16.2v5.2M12 16.2v5.2M13.7 16.2v5.2"
+        stroke={bodyStroke}
+        strokeWidth="0.75"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      <ellipse
+        cx="12"
+        cy="14.7"
+        rx="4.1"
+        ry="0.55"
+        fill="rgba(15, 23, 42, 0.35)"
+      />
+    </g>
+  );
+};
 
 const renderTierIcon = (tier: LossStreakTierId): ReactNode => {
-  switch (tier) {
-    case "orange":
-      return (
-        <>
-          <path
-            d="M11.2 2.8c.5 1.1 1.4 1.8 1.4 3.1 0 .7-.3 1.3-.8 1.7.6-.1 1.1-.6 1.3-1.2.2.9 1 1.7 2 2-1.1.6-2.4.6-3.5 0-1.2-.7-2-2-2-3.3 0-1.4.9-2.4 1.6-2.3Z"
-            fill="#fb923c"
-          />
-          <g fill="#94a3b8" stroke="#64748b" strokeWidth="0.7">
-            {trashCanBody}
-          </g>
-        </>
-      );
-    case "red":
-      return (
-        <>
-          <path
-            d="M6.2 3.2c.7 1.6 2 2.7 2 4.7 0 1-.5 1.9-1.2 2.4.9-.2 1.6-.9 1.9-1.8.2 1.1 1.1 2 2.2 2.4-1.3.7-2.8.7-4.1 0-1.4-.8-2.3-2.4-2.3-4 0-1.8 1.1-3 1.6-3.1Z"
-            fill="#ef4444"
-          />
-          <path
-            d="M16.2 3.8c.6 1.4 1.7 2.3 1.7 4.1 0 .9-.4 1.7-1 2.1.8-.2 1.5-.8 1.8-1.6.2 1 1 1.8 2 2.1-1.2.7-2.6.7-3.8 0-1.3-.8-2.1-2.2-2.1-3.8 0-1.7 1-2.8 1.4-2.9Z"
-            fill="#f87171"
-          />
-          <g fill="#9ca3af" stroke="#6b7280" strokeWidth="0.7">
-            {trashCanBody}
-          </g>
-        </>
-      );
-    case "blue":
-      return (
-        <>
-          <circle cx="12" cy="12" r="10" fill="rgba(59,130,246,0.16)" />
-          <path
-            d="M12 2.4c1.1 2.2 3.2 3.7 3.2 6.5 0 1.5-.7 2.8-1.8 3.5 1.3-.3 2.4-1.3 2.9-2.6.3 2 1.8 3.7 3.7 4.3-2.2 1.2-4.8 1.2-7 0-2.4-1.4-3.9-4-3.9-6.8 0-3.1 2-5.3 2.4-5.4Z"
-            fill="#3b82f6"
-          />
-          <path
-            d="M12 8.8c.8 1.2 1.4 2.1 1.4 3.5 0 1-.5 1.9-1.2 2.4.8-.2 1.5-.8 1.8-1.6.2 1.1 1 2 2.1 2.4-1.2.6-2.6.6-3.8 0-1.3-.7-2.1-2.1-2.1-3.5 0-1.5.9-2.6 1.7-3.2Z"
-            fill="#93c5fd"
-          />
-          <g fill="#cbd5e1" stroke="#64748b" strokeWidth="0.7">
-            {trashCanBody}
-          </g>
-        </>
-      );
-    case "purple":
-      return (
-        <>
-          <circle cx="12" cy="12" r="10.5" fill="rgba(168,85,247,0.16)" />
-          <path
-            d="M5.2 5.8c.8 2 2.2 3.3 2.2 5.6 0 1.2-.6 2.3-1.4 2.9 1-.2 1.8-1 2.1-2 .2 1.4 1.2 2.6 2.5 3.1-1.4.8-3 .8-4.4 0-1.5-.9-2.5-2.5-2.5-4.2 0-2.3 1.4-4.1 1.6-4.1Z"
-            fill="#a855f7"
-          />
-          <path
-            d="M18.2 6.4c.7 1.8 2 3 2 5.1 0 1.1-.5 2.1-1.2 2.6.8-.2 1.6-.9 1.9-1.8.2 1.3 1.1 2.3 2.2 2.8-1.2.7-2.7.7-3.9 0-1.4-.8-2.2-2.3-2.2-3.9 0-2.1 1.3-3.7 1.5-3.8Z"
-            fill="#c084fc"
-          />
-          <path
-            d="M12 3c1.3 2.6 3.7 4.3 3.7 7.6 0 1.7-.8 3.2-2.1 4 1.5-.3 2.8-1.5 3.4-3 .3 2.3 1.9 4.3 4.1 5.1-2.4 1.3-5.2 1.3-7.6 0-2.6-1.5-4.2-4.3-4.2-7.5 0-3.5 2.3-5.9 2.7-6.2Z"
-            fill="#9333ea"
-          />
-          <g fill="#e9d5ff" stroke="#7c3aed" strokeWidth="0.7">
-            {trashCanBody}
-          </g>
-        </>
-      );
-    case "black":
-      return (
-        <>
-          <circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.04)" />
-          <path
-            d="M4.6 6.2c1 2.4 2.8 4 2.8 6.8 0 1.5-.8 2.9-1.9 3.6 1.3-.3 2.4-1.3 2.9-2.6.3 2 1.7 3.7 3.5 4.4-2 1.1-4.4 1.1-6.4 0-2.2-1.3-3.6-3.7-3.6-6.5 0-3.1 2-5.4 2.4-5.7Z"
-            fill="#111827"
-            stroke="#6b7280"
-            strokeWidth="0.6"
-          />
-          <path
-            d="M19 6.8c.8 2.1 2.4 3.5 2.4 6 0 1.3-.7 2.5-1.6 3.1 1-.2 1.9-1.1 2.2-2.2.2 1.5 1.4 2.9 2.9 3.4-1.7.9-3.8.9-5.5 0-1.9-1.1-3.1-3.2-3.1-5.7 0-2.7 1.6-4.7 1.9-4.8Z"
-            fill="#1f2937"
-            stroke="#9ca3af"
-            strokeWidth="0.6"
-          />
-          <path
-            d="M12 2.2c1.5 3 4.2 5 4.2 8.8 0 2-.9 3.7-2.4 4.6 1.7-.3 3.1-1.7 3.8-3.4.4 2.6 2.2 4.8 4.6 5.7-2.7 1.5-5.8 1.5-8.5 0-2.9-1.7-4.7-4.8-4.7-8.4 0-4 2.7-6.7 3.2-7.3Z"
-            fill="#030712"
-            stroke="#facc15"
-            strokeWidth="0.75"
-          />
-          <g fill="#1f2937" stroke="#f8fafc" strokeWidth="0.65">
-            {trashCanBody}
-          </g>
-        </>
-      );
-  }
+  const colors = FLAME_COLORS[tier];
+
+  return (
+    <>
+      <circle
+        cx="12"
+        cy="13"
+        r="10"
+        fill={colors.glow}
+        opacity="0.35"
+      />
+      {renderFlames(tier)}
+      {renderTrashCan(tier)}
+    </>
+  );
 };
 
 export function LossStreakBadge({ lossStreak }: LossStreakBadgeProps) {

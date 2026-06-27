@@ -8,6 +8,7 @@ describe("player salaries", () => {
     expect(getPlayerSalary("curryst01")).toBe(62_587_158);
     expect(getPlayerSalary("gilgesh01")).toBe(40_806_150);
     expect(getPlayerSalary("jokicni01")).toBe(59_033_114);
+    expect(getPlayerSalary("vassede01")).toBe(27_000_000);
   });
 
   it("attaches salaries to the player pool", () => {

@@ -30,12 +30,28 @@ def normalize_name(name: str) -> str:
 def fetch_contract_rows(salary_column: str = SALARY_COLUMN) -> list[tuple[str, str, int]]:
     response = requests.get(CONTRACTS_URL, headers=REQUEST_HEADERS, timeout=90)
     response.raise_for_status()
-    pattern = re.compile(
-        rf'data-stat="player"[^>]*>.*?/players/[a-z]/([a-z0-9]+)\.html[^>]*>([^<]+)</a>.*?'
-        rf'data-stat="{salary_column}"[^>]*csk="(\d+)"',
-        re.DOTALL,
-    )
-    return [(bbr_id, name.strip(), int(salary)) for bbr_id, name, salary in pattern.findall(response.text)]
+    html = response.text
+    rows: list[tuple[str, str, int]] = []
+
+    for row_html in re.findall(r"<tr[^>]*>.*?</tr>", html, re.DOTALL):
+        player_match = re.search(r'data-append-csv="([a-z0-9]+)"', row_html)
+        salary_match = re.search(
+            rf'data-stat="{salary_column}"[^>]*csk="(\d+)"',
+            row_html,
+        )
+
+        if not player_match or not salary_match:
+            continue
+
+        name_match = re.search(
+            r'data-stat="player"[^>]*>.*?>([^<]+)</a>',
+            row_html,
+            re.DOTALL,
+        )
+        name = name_match.group(1).strip() if name_match else player_match.group(1)
+        rows.append((player_match.group(1), name, int(salary_match.group(1))))
+
+    return rows
 
 
 def main() -> None:
