@@ -506,6 +506,26 @@ export const pickBestForSlot = (
     filterPlayersForSlot(players, slot, pickedIds, options),
   )[0]?.id;
 
+export const pickRandomTopCandidateForSlot = (
+  players: Player[],
+  slot: DraftSlotConstraint,
+  pickedIds: Set<string>,
+  options: DraftFilterOptions = {},
+  topCount = 5,
+  random: RandomSource = defaultRandom,
+) => {
+  const candidates = sortDraftCandidates(
+    filterPlayersForSlot(players, slot, pickedIds, options),
+  );
+  const poolSize = Math.min(topCount, candidates.length);
+
+  if (poolSize === 0) {
+    return undefined;
+  }
+
+  return candidates[Math.floor(random() * poolSize)]!.id;
+};
+
 export const autoDraftLineupWithVariance = (
   players: Player[],
   draftSlots: DraftSlotConstraint[],

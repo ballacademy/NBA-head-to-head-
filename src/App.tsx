@@ -15,6 +15,7 @@ import {
   generateFeasibleDraftSlots,
   generateFeasibleDraftSlotsUnderSalaryCap,
   pickBestForSlot,
+  pickRandomTopCandidateForSlot,
   validateDraftSlotsFeasible,
   validateDraftSlotsFeasibleUnderSalaryCap,
 } from "./lib/draft";
@@ -78,6 +79,7 @@ function App() {
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [draftSessionKey, setDraftSessionKey] = useState<string | null>(null);
   const [isDailyDraft, setIsDailyDraft] = useState(false);
   const [allTimeMode, setAllTimeMode] = useState(false);
   const [dailyDateKey, setDailyDateKey] = useState(getDailyDateKey());
@@ -297,6 +299,11 @@ function App() {
     setOpponentPickCount(0);
     setOpponentComplete(daily || queueOnly);
     setMatchId(null);
+    setDraftSessionKey(
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `draft-${Date.now()}`,
+    );
     setPhase("drafting");
     return true;
   };
@@ -309,6 +316,7 @@ function App() {
     setOpponentPickCount(0);
     setOpponentComplete(false);
     setMatchId(null);
+    setDraftSessionKey(null);
     setIsQueueOnlyMatch(false);
     setIsMatchmaking(false);
     setIsDailyDraft(false);
@@ -387,20 +395,20 @@ function App() {
           current.draftSlots.length,
           current.salaryCapLimit,
         );
-        const bestPick = pickBestForSlot(
+        const autoPick = pickRandomTopCandidateForSlot(
           draftablePlayers,
           slotConstraint,
           pickedIds,
           salaryOptions,
         );
 
-        if (!bestPick) {
+        if (!autoPick) {
           return current;
         }
 
         picked = true;
         const nextLineup = [...current.lineup];
-        nextLineup[slot] = bestPick;
+        nextLineup[slot] = autoPick;
 
         return {
           ...current,
@@ -657,6 +665,7 @@ function App() {
             drafter={user}
             players={draftablePlayers}
             activeStep={draftStep}
+            draftSessionKey={draftSessionKey}
             dailyChallengeDescription={dailySetup?.challenge.description}
             dailyChallengeTitle={dailySetup?.challenge.title}
             isDailyDraft={isDailyDraft}

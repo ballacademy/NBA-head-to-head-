@@ -1,1033 +1,1288 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-26T02:48:59.843643+00:00",
-  "rosterAsOf": "2026-06-25",
-  "playerCount": 587,
+  "generatedAt": "2026-06-27T00:32:11.475876+00:00",
+  "playerCount": 603,
   "byPlayerId": {
     "alexani01": {
       "jerseyNumber": 7,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Nickeil Alexander-Walker"
     },
     "gueyemo02": {
       "jerseyNumber": 18,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Mouhamed Gueye"
     },
     "daniedy01": {
       "jerseyNumber": 5,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Dyson Daniels"
     },
     "okongon01": {
       "jerseyNumber": 17,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Onyeka Okongwu"
     },
     "johnsja05": {
       "jerseyNumber": 1,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Jalen Johnson"
     },
     "risacza01": {
       "jerseyNumber": 10,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Zaccharie Risacher"
     },
     "wallake01": {
       "jerseyNumber": 2,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Keaton Wallace"
     },
     "newelas01": {
       "jerseyNumber": 14,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Asa Newell"
     },
     "mccolcj01": {
       "jerseyNumber": 3,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "CJ McCollum"
     },
     "kispeco01": {
       "jerseyNumber": 24,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Corey Kispert"
     },
     "vincega01": {
       "jerseyNumber": 4,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Gabe Vincent"
     },
     "landajo01": {
       "jerseyNumber": 31,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Jock Landale"
     },
     "kuminjo01": {
       "jerseyNumber": 0,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Jonathan Kuminga"
     },
     "kolokch01": {
       "jerseyNumber": 35,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Christian Koloko"
     },
     "hieldbu01": {
       "jerseyNumber": 8,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Buddy Hield"
     },
     "bradlto01": {
       "jerseyNumber": 13,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Tony Bradley"
     },
     "gilbeke01": {
       "jerseyNumber": 51,
-      "team": "ATL"
+      "team": "ATL",
+      "name": "Keshon Gilbert"
     },
     "pritcpa01": {
       "jerseyNumber": 11,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Payton Pritchard"
     },
     "hausesa01": {
       "jerseyNumber": 30,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Sam Hauser"
     },
     "whitede01": {
       "jerseyNumber": 9,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Derrick White"
     },
     "scheiba01": {
       "jerseyNumber": 55,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Baylor Scheierman"
     },
     "quetane01": {
       "jerseyNumber": 88,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Neemias Queta"
     },
     "gonzahu01": {
       "jerseyNumber": 28,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Hugo Gonz\u00e1lez"
     },
     "brownja02": {
       "jerseyNumber": 7,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Jaylen Brown"
     },
     "garzalu01": {
       "jerseyNumber": 52,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Luka Garza"
     },
     "walshjo01": {
       "jerseyNumber": 27,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Jordan Walsh"
     },
     "harpero02": {
       "jerseyNumber": 13,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Ron Harper Jr."
     },
     "william01": {
       "jerseyNumber": 77,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Amari Williams"
     },
     "tatumja01": {
       "jerseyNumber": 0,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Jayson Tatum"
     },
     "vucevni01": {
       "jerseyNumber": 4,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Nikola Vu\u010devi\u0107"
     },
     "shulgma01": {
       "jerseyNumber": 44,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Max Shulga"
     },
     "tonjejo01": {
       "jerseyNumber": 8,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "John Tonje"
     },
     "bantoda01": {
       "jerseyNumber": 45,
-      "team": "BOS"
+      "team": "BOS",
+      "name": "Dalano Banton"
     },
     "claxtni01": {
       "jerseyNumber": 33,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Nic Claxton"
     },
     "clownno01": {
       "jerseyNumber": 21,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Noah Clowney"
     },
     "mannte01": {
       "jerseyNumber": 14,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Terance Mann"
     },
     "poweldr01": {
       "jerseyNumber": 4,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Drake Powell"
     },
     "sharpda01": {
       "jerseyNumber": 20,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Day'Ron Sharpe"
     },
     "wolfda01": {
       "jerseyNumber": 2,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Danny Wolf"
     },
     "willizi02": {
       "jerseyNumber": 1,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Ziaire Williams"
     },
     "traorno01": {
       "jerseyNumber": 88,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Nolan Traor\u00e9"
     },
     "wilsoja03": {
       "jerseyNumber": 22,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Jalen Wilson"
     },
     "portemi01": {
       "jerseyNumber": 17,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Michael Porter Jr."
     },
     "demineg01": {
       "jerseyNumber": 8,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Egor Demin"
     },
     "sarafbe01": {
       "jerseyNumber": 77,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Ben Saraf"
     },
     "liddeej01": {
       "jerseyNumber": 9,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "E.J. Liddell"
     },
     "etienty01": {
       "jerseyNumber": 10,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Tyson Etienne"
     },
     "agbajoc01": {
       "jerseyNumber": 30,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Ochai Agbaji"
     },
     "johnsch06": {
       "jerseyNumber": 31,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Chaney Johnson"
     },
     "minotjo01": {
       "jerseyNumber": 0,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Josh Minott"
     },
     "smithma02": {
       "jerseyNumber": 18,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Malachi Smith"
     },
     "buzelma01": {
       "jerseyNumber": 14,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Matas Buzelis"
     },
     "willipa01": {
       "jerseyNumber": 44,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Patrick Williams"
     },
     "jonestr01": {
       "jerseyNumber": 30,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Tre Jones"
     },
     "okorois01": {
       "jerseyNumber": 35,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Isaac Okoro"
     },
     "giddejo01": {
       "jerseyNumber": 3,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Josh Giddey"
     },
     "smithja04": {
       "jerseyNumber": 25,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Jalen Smith"
     },
     "olbrila01": {
       "jerseyNumber": 47,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Lachlan Olbrich"
     },
     "dilliro01": {
       "jerseyNumber": 7,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Rob Dillingham"
     },
     "millele01": {
       "jerseyNumber": 11,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Leonard Miller"
     },
     "sextoco01": {
       "jerseyNumber": 2,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Collin Sexton"
     },
     "yabusgu01": {
       "jerseyNumber": 28,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Guerschon Yabusele"
     },
     "richani01": {
       "jerseyNumber": 13,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Nick Richards"
     },
     "kawamyu01": {
       "jerseyNumber": 8,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Yuki Kawamura"
     },
     "colliza01": {
       "jerseyNumber": 12,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Zach Collins"
     },
     "mccluma01": {
       "jerseyNumber": 5,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Mac McClung"
     },
     "gueyemo01": {
       "jerseyNumber": 16,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Mouhamadou Gueye"
     },
     "essenno01": {
       "jerseyNumber": 24,
-      "team": "CHI"
+      "team": "CHI",
+      "name": "Noa Essengue"
     },
     "jamessi01": {
       "jerseyNumber": 4,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Sion James"
     },
     "knuepko01": {
       "jerseyNumber": 7,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Kon Knueppel"
     },
     "bridgmi02": {
       "jerseyNumber": 0,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Miles Bridges"
     },
     "diabamo01": {
       "jerseyNumber": 14,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Moussa Diabat\u00e9"
     },
     "ballla01": {
       "jerseyNumber": 1,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "LaMelo Ball"
     },
     "kalkbry01": {
       "jerseyNumber": 11,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Ryan Kalkbrenner"
     },
     "millebr02": {
       "jerseyNumber": 24,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Brandon Miller"
     },
     "greenjo02": {
       "jerseyNumber": 10,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Josh Green"
     },
     "manntr01": {
       "jerseyNumber": 23,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Tre Mann"
     },
     "connapa01": {
       "jerseyNumber": 21,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Pat Connaughton"
     },
     "salauti01": {
       "jerseyNumber": 31,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Tidjane Sala\u00fcn"
     },
     "willigr01": {
       "jerseyNumber": 2,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Grant Williams"
     },
     "mcneeli01": {
       "jerseyNumber": 33,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Liam McNeeley"
     },
     "whiteco01": {
       "jerseyNumber": 3,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Coby White"
     },
     "tillmxa01": {
       "jerseyNumber": 26,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Xavier Tillman Sr."
     },
     "hallpj01": {
       "jerseyNumber": 16,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "PJ Hall"
     },
     "reevean01": {
       "jerseyNumber": 12,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Antonio Reeves"
     },
     "mitchdo01": {
       "jerseyNumber": 45,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Donovan Mitchell"
     },
     "tysonja01": {
       "jerseyNumber": 20,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Jaylon Tyson"
     },
     "mobleev01": {
       "jerseyNumber": 4,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Evan Mobley"
     },
     "tomlina01": {
       "jerseyNumber": 35,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Nae'Qwan Tomlin"
     },
     "portecr01": {
       "jerseyNumber": 9,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Craig Porter Jr."
     },
     "bryanth01": {
       "jerseyNumber": 3,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Thomas Bryant"
     },
     "wadede01": {
       "jerseyNumber": 32,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Dean Wade"
     },
     "allenja01": {
       "jerseyNumber": 31,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Jarrett Allen"
     },
     "merrisa01": {
       "jerseyNumber": 5,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Sam Merrill"
     },
     "proctty01": {
       "jerseyNumber": 24,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Tyrese Proctor"
     },
     "nancela02": {
       "jerseyNumber": 22,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Larry Nance Jr."
     },
     "schrode01": {
       "jerseyNumber": 8,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Dennis Schr\u00f6der"
     },
     "elliske01": {
       "jerseyNumber": 14,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Keon Ellis"
     },
     "hardeja01": {
       "jerseyNumber": 1,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "James Harden"
     },
     "strusma01": {
       "jerseyNumber": 2,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Max Strus"
     },
     "enarutr01": {
       "jerseyNumber": 21,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Tristan Enaruna"
     },
     "minixri01": {
       "jerseyNumber": 12,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Riley Minix"
     },
     "sarrol01": {
       "jerseyNumber": 33,
-      "team": "CLE"
+      "team": "CLE",
+      "name": "Olivier Sarr"
     },
     "chrisma02": {
       "jerseyNumber": 0,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Max Christie"
     },
     "marshna01": {
       "jerseyNumber": 13,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Naji Marshall"
     },
     "flaggco01": {
       "jerseyNumber": 32,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Cooper Flagg"
     },
     "thompkl01": {
       "jerseyNumber": 31,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Klay Thompson"
     },
     "willibr03": {
       "jerseyNumber": 10,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Brandon Williams"
     },
     "poweldw01": {
       "jerseyNumber": 7,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Dwight Powell"
     },
     "nembhry01": {
       "jerseyNumber": 9,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Ryan Nembhard"
     },
     "martica02": {
       "jerseyNumber": 16,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Caleb Martin"
     },
     "washipj01": {
       "jerseyNumber": 25,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "P.J. Washington"
     },
     "gaffoda01": {
       "jerseyNumber": 21,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Daniel Gafford"
     },
     "cissemo01": {
       "jerseyNumber": 30,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Moussa Cisse"
     },
     "middlkh01": {
       "jerseyNumber": 20,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Khris Middleton"
     },
     "johnsaj01": {
       "jerseyNumber": 8,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "AJ Johnson"
     },
     "baglema01": {
       "jerseyNumber": 35,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Marvin Bagley III"
     },
     "poulajo01": {
       "jerseyNumber": 1,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "John Poulakidas"
     },
     "smithty02": {
       "jerseyNumber": 23,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Tyler Smith"
     },
     "livelde01": {
       "jerseyNumber": 2,
-      "team": "DAL"
+      "team": "DAL",
+      "name": "Dereck Lively II"
     },
     "brownbr01": {
       "jerseyNumber": 11,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Bruce Brown"
     },
     "hardati02": {
       "jerseyNumber": 10,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Tim Hardaway Jr."
     },
     "murraja01": {
       "jerseyNumber": 27,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Jamal Murray"
     },
     "jokicni01": {
       "jerseyNumber": 15,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Nikola Joki\u0107"
     },
     "valanjo01": {
       "jerseyNumber": 17,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Jonas Valan\u010di\u016bnas"
     },
     "jonessp01": {
       "jerseyNumber": 21,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Spencer Jones"
     },
     "strawju01": {
       "jerseyNumber": 3,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Julian Strawther"
     },
     "watsope01": {
       "jerseyNumber": 8,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Peyton Watson"
     },
     "johnsca02": {
       "jerseyNumber": 23,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Cameron Johnson"
     },
     "nnajize01": {
       "jerseyNumber": 22,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Zeke Nnaji"
     },
     "pickeja02": {
       "jerseyNumber": 24,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Jalen Pickett"
     },
     "braunch01": {
       "jerseyNumber": 0,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Christian Braun"
     },
     "gordoaa01": {
       "jerseyNumber": 32,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Aaron Gordon"
     },
     "holmeda01": {
       "jerseyNumber": 14,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "DaRon Holmes"
     },
     "jonesty01": {
       "jerseyNumber": 5,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Tyus Jones"
     },
     "jonescu01": {
       "jerseyNumber": 1,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "Curtis Jones"
     },
     "simpskj01": {
       "jerseyNumber": 25,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "KJ Simpson"
     },
     "roddyda01": {
       "jerseyNumber": 45,
-      "team": "DEN"
+      "team": "DEN",
+      "name": "David Roddy"
     },
     "greenja02": {
       "jerseyNumber": 31,
-      "team": "DET"
+      "team": "DET",
+      "name": "Javonte Green"
     },
     "hollaro01": {
       "jerseyNumber": 5,
-      "team": "DET"
+      "team": "DET",
+      "name": "Ronald Holland II"
     },
     "robindu01": {
       "jerseyNumber": 55,
-      "team": "DET"
+      "team": "DET",
+      "name": "Duncan Robinson"
     },
     "thompau01": {
       "jerseyNumber": 9,
-      "team": "DET"
+      "team": "DET",
+      "name": "Ausar Thompson"
     },
     "jenkida01": {
       "jerseyNumber": 24,
-      "team": "DET"
+      "team": "DET",
+      "name": "Daniss Jenkins"
     },
     "durenja01": {
       "jerseyNumber": 0,
-      "team": "DET"
+      "team": "DET",
+      "name": "Jalen Duren"
     },
     "reedpa01": {
       "jerseyNumber": 7,
-      "team": "DET"
+      "team": "DET",
+      "name": "Paul Reed"
     },
     "cunnica01": {
       "jerseyNumber": 2,
-      "team": "DET"
+      "team": "DET",
+      "name": "Cade Cunningham"
     },
     "harrito02": {
       "jerseyNumber": 12,
-      "team": "DET"
+      "team": "DET",
+      "name": "Tobias Harris"
     },
     "leverca01": {
       "jerseyNumber": 8,
-      "team": "DET"
+      "team": "DET",
+      "name": "Caris LeVert"
     },
     "stewais01": {
       "jerseyNumber": 28,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Isaiah Stewart"
     },
     "sassema01": {
       "jerseyNumber": 25,
-      "team": "DET"
+      "team": "DET",
+      "name": "Marcus Sasser"
     },
     "laniech01": {
       "jerseyNumber": 20,
-      "team": "DET"
+      "team": "DET",
+      "name": "Chaz Lanier"
     },
     "huertke01": {
       "jerseyNumber": 27,
-      "team": "DET"
+      "team": "DET",
+      "name": "Kevin Huerter"
     },
     "smithto05": {
       "jerseyNumber": 35,
-      "team": "DET"
+      "team": "DET",
+      "name": "Tolu Smith"
     },
     "moorewe01": {
       "jerseyNumber": 14,
-      "team": "DET"
+      "team": "DET",
+      "name": "Wendell Moore Jr."
     },
     "jonesis01": {
       "jerseyNumber": 13,
-      "team": "DET"
+      "team": "DET",
+      "name": "Isaac Jones"
     },
     "podzibr01": {
       "jerseyNumber": 2,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Brandin Podziemski"
     },
     "paytoga02": {
       "jerseyNumber": 0,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Gary Payton II"
     },
     "richawi02": {
       "jerseyNumber": 3,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Will Richard"
     },
     "santogu01": {
       "jerseyNumber": 15,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Gui Santos"
     },
     "greendr01": {
       "jerseyNumber": 23,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Draymond Green"
     },
     "postqu01": {
       "jerseyNumber": 21,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Quinten Post"
     },
     "spencpa01": {
       "jerseyNumber": 61,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Pat Spencer"
     },
     "moodymo01": {
       "jerseyNumber": 4,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Moses Moody"
     },
     "meltode01": {
       "jerseyNumber": 8,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "De'Anthony Melton"
     },
     "horfoal01": {
       "jerseyNumber": 20,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Al Horford"
     },
     "curryst01": {
       "jerseyNumber": 30,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Stephen Curry"
     },
     "butleji01": {
       "jerseyNumber": 10,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Jimmy Butler"
     },
     "leonsma01": {
       "jerseyNumber": 33,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Malevy Leons"
     },
     "cryerlj01": {
       "jerseyNumber": 18,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "LJ Cryer"
     },
     "porzikr01": {
       "jerseyNumber": 7,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Kristaps Porzi\u0146\u0123is"
     },
     "willije02": {
       "jerseyNumber": 19,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Nate Williams"
     },
     "curryse01": {
       "jerseyNumber": 31,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Seth Curry"
     },
     "bassech01": {
       "jerseyNumber": 28,
-      "team": "GSW"
+      "team": "GSW",
+      "name": "Charles Bassey"
     },
     "sheppre01": {
       "jerseyNumber": 15,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Reed Sheppard"
     },
     "thompam01": {
       "jerseyNumber": 1,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Amen Thompson"
     },
     "duranke01": {
       "jerseyNumber": 7,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Kevin Durant"
     },
     "okogijo01": {
       "jerseyNumber": 20,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Josh Okogie"
     },
     "smithja05": {
       "jerseyNumber": 10,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Jabari Smith Jr."
     },
     "capelca01": {
       "jerseyNumber": 30,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Clint Capela"
     },
     "sengual01": {
       "jerseyNumber": 28,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Alperen \u015eeng\u00fcn"
     },
     "easonta01": {
       "jerseyNumber": 17,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Tari Eason"
     },
     "holidaa01": {
       "jerseyNumber": 0,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Aaron Holiday"
     },
     "tateja01": {
       "jerseyNumber": 8,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Jae'Sean Tate"
     },
     "finnedo01": {
       "jerseyNumber": 2,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Dorian Finney-Smith"
     },
     "adamsst01": {
       "jerseyNumber": 12,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Steven Adams"
     },
     "greenje02": {
       "jerseyNumber": 32,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Jeff Green"
     },
     "davisjd01": {
       "jerseyNumber": 4,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "JD Davison"
     },
     "crawfis01": {
       "jerseyNumber": 27,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Isaiah Crawford"
     },
     "newtotr01": {
       "jerseyNumber": 0,
-      "team": "HOU"
+      "team": "HOU",
+      "name": "Tristen Newton"
     },
     "huffja01": {
       "jerseyNumber": 32,
-      "team": "IND"
+      "team": "IND",
+      "name": "Jay Huff"
     },
     "walkeja02": {
       "jerseyNumber": 5,
-      "team": "IND"
+      "team": "IND",
+      "name": "Jarace Walker"
     },
     "sheppbe01": {
       "jerseyNumber": 26,
-      "team": "IND"
+      "team": "IND",
+      "name": "Ben Sheppard"
     },
     "siakapa01": {
       "jerseyNumber": 43,
-      "team": "IND"
+      "team": "IND",
+      "name": "Pascal Siakam"
     },
     "nembhan01": {
       "jerseyNumber": 2,
-      "team": "IND"
+      "team": "IND",
+      "name": "Andrew Nembhard"
     },
     "mccontj01": {
       "jerseyNumber": 9,
-      "team": "IND"
+      "team": "IND",
+      "name": "T.J. McConnell"
     },
     "jacksqu01": {
       "jerseyNumber": 29,
-      "team": "IND"
+      "team": "IND",
+      "name": "Quenton Jackson"
     },
     "pottemi01": {
       "jerseyNumber": 11,
-      "team": "IND"
+      "team": "IND",
+      "name": "Micah Potter"
     },
     "nesmiaa01": {
       "jerseyNumber": 23,
-      "team": "IND"
+      "team": "IND",
+      "name": "Aaron Nesmith"
     },
     "peterta01": {
       "jerseyNumber": 4,
-      "team": "IND"
+      "team": "IND",
+      "name": "Taelon Peter"
     },
     "furphjo01": {
       "jerseyNumber": 12,
-      "team": "IND"
+      "team": "IND",
+      "name": "Johnny Furphy"
     },
     "thompet01": {
       "jerseyNumber": 55,
-      "team": "IND"
+      "team": "IND",
+      "name": "Ethan Thompson"
     },
     "brownko01": {
       "jerseyNumber": 24,
-      "team": "IND"
+      "team": "IND",
+      "name": "Kobe Brown"
     },
     "toppiob01": {
       "jerseyNumber": 1,
-      "team": "IND"
+      "team": "IND",
+      "name": "Obi Toppin"
     },
     "slawsja01": {
       "jerseyNumber": 18,
-      "team": "IND"
+      "team": "IND",
+      "name": "Jalen Slawson"
     },
     "zubaciv01": {
       "jerseyNumber": 40,
-      "team": "IND"
+      "team": "IND",
+      "name": "Ivica Zubac"
     },
     "dunnkr01": {
       "jerseyNumber": 8,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Kris Dunn"
     },
     "lopezbr01": {
       "jerseyNumber": 11,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Brook Lopez"
     },
     "batumni01": {
       "jerseyNumber": 33,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Nicolas Batum"
     },
     "collijo01": {
       "jerseyNumber": 20,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "John Collins"
     },
     "sandeko01": {
       "jerseyNumber": 4,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Kobe Sanders"
     },
     "leonaka01": {
       "jerseyNumber": 2,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Kawhi Leonard"
     },
     "millejo02": {
       "jerseyNumber": 22,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Jordan Miller"
     },
     "chrisca02": {
       "jerseyNumber": 12,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Cam Christie"
     },
     "jonesde02": {
       "jerseyNumber": 5,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Derrick Jones Jr."
     },
     "konanya01": {
       "jerseyNumber": 14,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Yanic Konan Niederh\u00e4user"
     },
     "mathube01": {
       "jerseyNumber": 9,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Bennedict Mathurin"
     },
     "garlada01": {
       "jerseyNumber": 10,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Darius Garland"
     },
     "jacksis01": {
       "jerseyNumber": 23,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Isaiah Jackson"
     },
     "washity02": {
       "jerseyNumber": 15,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "TyTy Washington Jr."
     },
     "pedulse01": {
       "jerseyNumber": 0,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Sean Pedulla"
     },
     "bealbr01": {
       "jerseyNumber": 0,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Bradley Beal"
     },
     "omierno01": {
       "jerseyNumber": 55,
-      "team": "LAC"
+      "team": "LAC",
+      "name": "Norchad Omier"
     },
     "laravja01": {
       "jerseyNumber": 12,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Jake LaRavia"
     },
     "aytonde01": {
       "jerseyNumber": 5,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Deandre Ayton"
     },
     "hachiru01": {
       "jerseyNumber": 28,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Rui Hachimura"
     },
     "hayesja02": {
       "jerseyNumber": 11,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Jaxson Hayes"
     },
     "vandeja01": {
       "jerseyNumber": 2,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Jarred Vanderbilt"
     },
     "doncilu01": {
       "jerseyNumber": 77,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Luka Don\u010di\u0107"
     },
     "smartma01": {
       "jerseyNumber": 36,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Marcus Smart"
     },
     "jamesle01": {
       "jerseyNumber": 23,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "LeBron James"
     },
     "knechda01": {
       "jerseyNumber": 4,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Dalton Knecht"
     },
     "reaveau01": {
       "jerseyNumber": 15,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Austin Reaves"
     },
     "klebima01": {
       "jerseyNumber": 14,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Maxi Kleber"
     },
     "jamesbr02": {
       "jerseyNumber": 9,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Bronny James"
     },
     "kennalu01": {
       "jerseyNumber": 10,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Luke Kennard"
     },
     "smithni01": {
       "jerseyNumber": 20,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Nick Smith Jr."
     },
     "timmedr01": {
       "jerseyNumber": 17,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Drew Timme"
     },
     "thierad01": {
       "jerseyNumber": 1,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Adou Thiero"
     },
     "manonch01": {
       "jerseyNumber": 30,
-      "team": "LAL"
+      "team": "LAL",
+      "name": "Chris Ma\u00f1on"
     },
     "spencca01": {
       "jerseyNumber": 24,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Cam Spencer"
     },
     "wellsja01": {
       "jerseyNumber": 0,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Jaylen Wells"
     },
     "cowarce01": {
       "jerseyNumber": 23,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Cedric Coward"
     },
     "jacksgg01": {
       "jerseyNumber": 45,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "GG Jackson II"
     },
     "prospol01": {
       "jerseyNumber": 18,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Olivier-Maxence Prosper"
     },
     "caldwke01": {
       "jerseyNumber": 3,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Kentavious Caldwell-Pope"
     },
     "aldamsa01": {
       "jerseyNumber": 7,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Santi Aldama"
     },
     "smallja01": {
       "jerseyNumber": 10,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Javon Small"
     },
     "mashaja01": {
       "jerseyNumber": 21,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Jahmai Mashack"
     },
     "hendrta01": {
       "jerseyNumber": 22,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Taylor Hendricks"
     },
     "claytwa01": {
       "jerseyNumber": 4,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Walter Clayton"
     },
     "moranja01": {
       "jerseyNumber": 12,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Ja Morant"
     },
     "ruperra01": {
       "jerseyNumber": 32,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Rayan Rupert"
     },
     "jeromty01": {
       "jerseyNumber": 2,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Ty Jerome"
     },
     "edeyza01": {
       "jerseyNumber": 14,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Zach Edey"
     },
     "pippesc02": {
       "jerseyNumber": 1,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Scotty Pippen Jr."
     },
     "gibsota01": {
       "jerseyNumber": 67,
-      "team": "MEM"
+      "team": "MEM",
+      "name": "Taj Gibson"
     },
     "clarkbr01": {
       "jerseyNumber": 15,
@@ -1036,1265 +1291,1433 @@
     },
     "wareke01": {
       "jerseyNumber": 7,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Kel'el Ware"
     },
     "jaqueja01": {
       "jerseyNumber": 11,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Jaime Jaquez Jr."
     },
     "adebaba01": {
       "jerseyNumber": 13,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Bam Adebayo"
     },
     "larsspe01": {
       "jerseyNumber": 9,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Pelle Larsson"
     },
     "mitchda01": {
       "jerseyNumber": 45,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Davion Mitchell"
     },
     "fontesi01": {
       "jerseyNumber": 0,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Simone Fontecchio"
     },
     "smithdr01": {
       "jerseyNumber": 12,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Dru Smith"
     },
     "wiggian01": {
       "jerseyNumber": 22,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Andrew Wiggins"
     },
     "powelno01": {
       "jerseyNumber": 24,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Norman Powell"
     },
     "jakucka01": {
       "jerseyNumber": 25,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Kasparas Jaku\u010dionis"
     },
     "jovicni01": {
       "jerseyNumber": 5,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Nikola Jovi\u0107"
     },
     "gardnmy01": {
       "jerseyNumber": 15,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Myron Gardner"
     },
     "herroty01": {
       "jerseyNumber": 14,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Tyler Herro"
     },
     "johnske10": {
       "jerseyNumber": 16,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Keshad Johnson"
     },
     "youngja05": {
       "jerseyNumber": 17,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Jahmir Young"
     },
     "goldivl01": {
       "jerseyNumber": 50,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Vladislav Goldin"
     },
     "keelstr01": {
       "jerseyNumber": 8,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Trevor Keels"
     },
     "greenaj01": {
       "jerseyNumber": 20,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "A.J. Green"
     },
     "rolliry01": {
       "jerseyNumber": 13,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Ryan Rollins"
     },
     "turnemy01": {
       "jerseyNumber": 3,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Myles Turner"
     },
     "kuzmaky01": {
       "jerseyNumber": 18,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Kyle Kuzma"
     },
     "portibo01": {
       "jerseyNumber": 9,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Bobby Portis"
     },
     "simsje01": {
       "jerseyNumber": 0,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Jericho Sims"
     },
     "trentga02": {
       "jerseyNumber": 5,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Gary Trent Jr."
     },
     "harriga01": {
       "jerseyNumber": 11,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Gary Harris"
     },
     "jacksan01": {
       "jerseyNumber": 44,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Andre Jackson Jr."
     },
     "nancepe01": {
       "jerseyNumber": 35,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Pete Nance"
     },
     "porteke02": {
       "jerseyNumber": 7,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Kevin Porter Jr."
     },
     "antetgi01": {
       "jerseyNumber": 34,
-      "team": "MIA"
+      "team": "MIA",
+      "name": "Giannis Antetokounmpo"
     },
     "antetth01": {
       "jerseyNumber": 43,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Thanasis Antetokounmpo"
     },
     "diengou01": {
       "jerseyNumber": 21,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Ousmane Dieng"
     },
     "princta02": {
       "jerseyNumber": 12,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Taurean Prince"
     },
     "ryanco01": {
       "jerseyNumber": 30,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Cormac Ryan"
     },
     "antetal01": {
       "jerseyNumber": 29,
-      "team": "MIL"
+      "team": "MIL",
+      "name": "Alex Antetokounmpo"
     },
     "divindo01": {
       "jerseyNumber": 0,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Donte DiVincenzo"
     },
     "randlju01": {
       "jerseyNumber": 30,
-      "team": "BRK"
+      "team": "BRK",
+      "name": "Julius Randle"
     },
     "reidna01": {
       "jerseyNumber": 11,
-      "team": "CHO"
+      "team": "CHO",
+      "name": "Naz Reid"
     },
     "goberru01": {
       "jerseyNumber": 27,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Rudy Gobert"
     },
     "mcdanja02": {
       "jerseyNumber": 3,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Jaden McDaniels"
     },
     "hylanbo01": {
       "jerseyNumber": 8,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Bones Hyland"
     },
     "clarkja02": {
       "jerseyNumber": 22,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Jaylen Clark"
     },
     "edwaran01": {
       "jerseyNumber": 5,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Anthony Edwards"
     },
     "conlemi01": {
       "jerseyNumber": 10,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Mike Conley"
     },
     "shannte01": {
       "jerseyNumber": 1,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Terrence Shannon Jr."
     },
     "berinjo01": {
       "jerseyNumber": 19,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Joan Beringer"
     },
     "inglejo01": {
       "jerseyNumber": 7,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Joe Ingles"
     },
     "dosunay01": {
       "jerseyNumber": 13,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Ayo Dosunmu"
     },
     "anderky01": {
       "jerseyNumber": 12,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Kyle Anderson"
     },
     "phillju01": {
       "jerseyNumber": 4,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Julian Phillips"
     },
     "pullizy01": {
       "jerseyNumber": 15,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Zyon Pullin"
     },
     "zikarro01": {
       "jerseyNumber": 44,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Rocco Zikarsky"
     },
     "freemen01": {
       "jerseyNumber": 25,
-      "team": "MIN"
+      "team": "MIN",
+      "name": "Enrique Freeman"
     },
     "fearsje01": {
       "jerseyNumber": 0,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Jeremiah Fears"
     },
     "queende01": {
       "jerseyNumber": 22,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Derik Queen"
     },
     "beysa01": {
       "jerseyNumber": 41,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Saddiq Bey"
     },
     "murphtr02": {
       "jerseyNumber": 25,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Trey Murphy III"
     },
     "missiyv01": {
       "jerseyNumber": 21,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Yves Missi"
     },
     "willizi01": {
       "jerseyNumber": 1,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Zion Williamson"
     },
     "matkoka01": {
       "jerseyNumber": 17,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Karlo Matkovi\u0107"
     },
     "peavymi01": {
       "jerseyNumber": 14,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Micah Peavy"
     },
     "joneshe01": {
       "jerseyNumber": 2,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Herbert Jones"
     },
     "hawkijo01": {
       "jerseyNumber": 24,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Jordan Hawkins"
     },
     "mcgowbr01": {
       "jerseyNumber": 11,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Bryce McGowens"
     },
     "poolejo01": {
       "jerseyNumber": 3,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Jordan Poole"
     },
     "looneke01": {
       "jerseyNumber": 55,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Kevon Looney"
     },
     "murrade01": {
       "jerseyNumber": 5,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Dejounte Murray"
     },
     "alexatr01": {
       "jerseyNumber": 23,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Trey Alexander"
     },
     "dickihu01": {
       "jerseyNumber": 4,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Hunter Dickinson"
     },
     "odurojo01": {
       "jerseyNumber": 13,
-      "team": "NOP"
+      "team": "NOP",
+      "name": "Josh Oduro"
     },
     "bridgmi01": {
       "jerseyNumber": 25,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Mikal Bridges"
     },
     "townska01": {
       "jerseyNumber": 32,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Karl-Anthony Towns"
     },
     "brunsja01": {
       "jerseyNumber": 11,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Jalen Brunson"
     },
     "clarkjo01": {
       "jerseyNumber": 0,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Jordan Clarkson"
     },
     "diawamo01": {
       "jerseyNumber": 51,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Mohamed Diawara"
     },
     "anunoog01": {
       "jerseyNumber": 8,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "OG Anunoby"
     },
     "hartjo01": {
       "jerseyNumber": 3,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Josh Hart"
     },
     "kolekty01": {
       "jerseyNumber": 13,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Tyler Kolek"
     },
     "robinmi01": {
       "jerseyNumber": 23,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Mitchell Robinson"
     },
     "hukpoar01": {
       "jerseyNumber": 55,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Ariel Hukporti"
     },
     "shamela01": {
       "jerseyNumber": 44,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Landry Shamet"
     },
     "mcbrimi01": {
       "jerseyNumber": 2,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Miles McBride"
     },
     "dadiepa01": {
       "jerseyNumber": 4,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Pac\u00f4me Dadiet"
     },
     "alvarjo01": {
       "jerseyNumber": 5,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Jose Alvarado"
     },
     "mcculke01": {
       "jerseyNumber": 9,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Kevin McCullar Jr."
     },
     "sochaje01": {
       "jerseyNumber": 20,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Jeremy Sochan"
     },
     "jemistr01": {
       "jerseyNumber": 50,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Trey Jemison"
     },
     "jonesdi01": {
       "jerseyNumber": 1,
-      "team": "NYK"
+      "team": "NYK",
+      "name": "Dillon Jones"
     },
     "wallaca01": {
       "jerseyNumber": 22,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Cason Wallace"
     },
     "joeis01": {
       "jerseyNumber": 11,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Isaiah Joe"
     },
     "holmgch01": {
       "jerseyNumber": 7,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Chet Holmgren"
     },
     "dortlu01": {
       "jerseyNumber": 5,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Luguentz Dort"
     },
     "gilgesh01": {
       "jerseyNumber": 2,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Shai Gilgeous-Alexander"
     },
     "wiggiaa01": {
       "jerseyNumber": 21,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Aaron Wiggins"
     },
     "willija07": {
       "jerseyNumber": 6,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Jaylin Williams"
     },
     "mitchaj01": {
       "jerseyNumber": 25,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Ajay Mitchell"
     },
     "willike04": {
       "jerseyNumber": 34,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Kenrich Williams"
     },
     "carusal01": {
       "jerseyNumber": 9,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Alex Caruso"
     },
     "harteis01": {
       "jerseyNumber": 55,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Isaiah Hartenstein"
     },
     "carlsbr01": {
       "jerseyNumber": 15,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Branden Carlson"
     },
     "barnhbr01": {
       "jerseyNumber": 23,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Brooks Barnhizer"
     },
     "willija06": {
       "jerseyNumber": 8,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Jalen Williams"
     },
     "mccaija01": {
       "jerseyNumber": 3,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Jared McCain"
     },
     "topicni01": {
       "jerseyNumber": 44,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Nikola Topi\u0107"
     },
     "sandfpa01": {
       "jerseyNumber": 14,
-      "team": "OKC"
+      "team": "OKC",
+      "name": "Payton Sandfort"
     },
     "banede01": {
       "jerseyNumber": 3,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Desmond Bane"
     },
     "cartewe01": {
       "jerseyNumber": 34,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Wendell Carter Jr."
     },
     "dasiltr01": {
       "jerseyNumber": 23,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Tristan Da Silva"
     },
     "banchpa01": {
       "jerseyNumber": 5,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Paolo Banchero"
     },
     "blackan01": {
       "jerseyNumber": 0,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Anthony Black"
     },
     "bitadgo01": {
       "jerseyNumber": 35,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Goga Bitadze"
     },
     "pendano01": {
       "jerseyNumber": 93,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Noah Penda"
     },
     "suggsja01": {
       "jerseyNumber": 4,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jalen Suggs"
     },
     "howarje01": {
       "jerseyNumber": 13,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jett Howard"
     },
     "richaja02": {
       "jerseyNumber": 11,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jase Richardson"
     },
     "isaacjo01": {
       "jerseyNumber": 1,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jonathan Isaac"
     },
     "cainja01": {
       "jerseyNumber": 8,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jamal Cain"
     },
     "wagnemo01": {
       "jerseyNumber": 21,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Moritz Wagner"
     },
     "wagnefr01": {
       "jerseyNumber": 22,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Franz Wagner"
     },
     "carteje01": {
       "jerseyNumber": 2,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Jevon Carter"
     },
     "moralal01": {
       "jerseyNumber": 30,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Alex Morales"
     },
     "castlco01": {
       "jerseyNumber": 14,
-      "team": "ORL"
+      "team": "ORL",
+      "name": "Colin Castleton"
     },
     "edgecvj01": {
       "jerseyNumber": 77,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "VJ Edgecombe"
     },
     "grimequ01": {
       "jerseyNumber": 5,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Quentin Grimes"
     },
     "barlodo01": {
       "jerseyNumber": 25,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Dominick Barlow"
     },
     "bonaad01": {
       "jerseyNumber": 30,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Adem Bona"
     },
     "maxeyty01": {
       "jerseyNumber": 0,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Tyrese Maxey"
     },
     "edwarju01": {
       "jerseyNumber": 11,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Justin Edwards"
     },
     "walkeja01": {
       "jerseyNumber": 33,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Jabari Walker"
     },
     "drumman01": {
       "jerseyNumber": 1,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Andre Drummond"
     },
     "watfotr01": {
       "jerseyNumber": 12,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Trendon Watford"
     },
     "oubreke01": {
       "jerseyNumber": 9,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Kelly Oubre Jr."
     },
     "embiijo01": {
       "jerseyNumber": 21,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Joel Embiid"
     },
     "georgpa01": {
       "jerseyNumber": 8,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Paul George"
     },
     "beaucma01": {
       "jerseyNumber": 16,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "MarJon Beauchamp"
     },
     "terryda01": {
       "jerseyNumber": 14,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Dalen Terry"
     },
     "lowryky01": {
       "jerseyNumber": 7,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Kyle Lowry"
     },
     "broomjo01": {
       "jerseyNumber": 22,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Johni Broome"
     },
     "martity01": {
       "jerseyNumber": 23,
-      "team": "PHI"
+      "team": "PHI",
+      "name": "Tyrese Martin"
     },
     "ighodos01": {
       "jerseyNumber": 11,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Oso Ighodaro"
     },
     "gilleco01": {
       "jerseyNumber": 12,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Collin Gillespie"
     },
     "onealro01": {
       "jerseyNumber": 0,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Royce O'Neale"
     },
     "goodwjo01": {
       "jerseyNumber": 23,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Jordan Goodwin"
     },
     "dunnry01": {
       "jerseyNumber": 0,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Ryan Dunn"
     },
     "bookede01": {
       "jerseyNumber": 1,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Devin Booker"
     },
     "willima07": {
       "jerseyNumber": 15,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Mark Williams"
     },
     "brookdi01": {
       "jerseyNumber": 3,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Dillon Brooks"
     },
     "flemira01": {
       "jerseyNumber": 20,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Rasheer Fleming"
     },
     "allengr01": {
       "jerseyNumber": 8,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Grayson Allen"
     },
     "bouyeja01": {
       "jerseyNumber": 17,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Jamaree Bouyea"
     },
     "maluakh01": {
       "jerseyNumber": 10,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Khaman Maluach"
     },
     "liveris01": {
       "jerseyNumber": 18,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Isaiah Livers"
     },
     "greenja05": {
       "jerseyNumber": 4,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Jalen Green"
     },
     "coffeam01": {
       "jerseyNumber": 2,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Amir Coffey"
     },
     "breako01": {
       "jerseyNumber": 14,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Koby Brea"
     },
     "highsha01": {
       "jerseyNumber": 19,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "Haywood Highsmith"
     },
     "huntlcj01": {
       "jerseyNumber": 22,
-      "team": "PHO"
+      "team": "PHO",
+      "name": "CJ Huntley"
     },
     "camarto01": {
       "jerseyNumber": 33,
-      "team": "POR"
+      "team": "POR",
+      "name": "Toumani Camara"
     },
     "clingdo01": {
       "jerseyNumber": 23,
-      "team": "POR"
+      "team": "POR",
+      "name": "Donovan Clingan"
     },
     "cissosi01": {
       "jerseyNumber": 91,
-      "team": "POR"
+      "team": "POR",
+      "name": "Sidy Cissoko"
     },
     "avdijde01": {
       "jerseyNumber": 8,
-      "team": "POR"
+      "team": "POR",
+      "name": "Deni Avdija"
     },
     "williro04": {
       "jerseyNumber": 35,
-      "team": "POR"
+      "team": "POR",
+      "name": "Robert Williams"
     },
     "grantje01": {
       "jerseyNumber": 9,
-      "team": "POR"
+      "team": "POR",
+      "name": "Jerami Grant"
     },
     "murrakr01": {
       "jerseyNumber": 24,
-      "team": "POR"
+      "team": "POR",
+      "name": "Kris Murray"
     },
     "holidjr01": {
       "jerseyNumber": 5,
-      "team": "POR"
+      "team": "POR",
+      "name": "Jrue Holiday"
     },
     "sharpsh01": {
       "jerseyNumber": 17,
-      "team": "POR"
+      "team": "POR",
+      "name": "Shaedon Sharpe"
     },
     "loveca01": {
       "jerseyNumber": 2,
-      "team": "POR"
+      "team": "POR",
+      "name": "Caleb Love"
     },
     "yangha01": {
       "jerseyNumber": 16,
-      "team": "POR"
+      "team": "POR",
+      "name": "Yang Hansen"
     },
     "weslebl01": {
       "jerseyNumber": 1,
-      "team": "POR"
+      "team": "POR",
+      "name": "Blake Wesley"
     },
     "hendesc01": {
       "jerseyNumber": 0,
-      "team": "POR"
+      "team": "POR",
+      "name": "Scoot Henderson"
     },
     "thybuma01": {
       "jerseyNumber": 4,
-      "team": "POR"
+      "team": "POR",
+      "name": "Matisse Thybulle"
     },
     "krejcvi01": {
       "jerseyNumber": 27,
-      "team": "POR"
+      "team": "POR",
+      "name": "V\u00edt Krej\u010d\u00ed"
     },
     "kentja01": {
       "jerseyNumber": 29,
-      "team": "POR"
+      "team": "POR",
+      "name": "Jayson Kent"
     },
     "youngch01": {
       "jerseyNumber": 11,
-      "team": "POR"
+      "team": "POR",
+      "name": "Chris Youngblood"
     },
     "derozde01": {
       "jerseyNumber": 10,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "DeMar DeRozan"
     },
     "cliffni01": {
       "jerseyNumber": 5,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Nique Clifford"
     },
     "raynama01": {
       "jerseyNumber": 42,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Maxime Raynaud"
     },
     "achiupr01": {
       "jerseyNumber": 9,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Precious Achiuwa"
     },
     "westbru01": {
       "jerseyNumber": 18,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Russell Westbrook"
     },
     "monkma01": {
       "jerseyNumber": 0,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Malik Monk"
     },
     "cardwdy01": {
       "jerseyNumber": 32,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Dylan Cardwell"
     },
     "eubandr01": {
       "jerseyNumber": 19,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Drew Eubanks"
     },
     "lavinza01": {
       "jerseyNumber": 8,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Zach LaVine"
     },
     "cartede02": {
       "jerseyNumber": 22,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Devin Carter"
     },
     "plowdda01": {
       "jerseyNumber": 29,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Daeqwon Plowden"
     },
     "mcderdo01": {
       "jerseyNumber": 7,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Doug McDermott"
     },
     "murrake02": {
       "jerseyNumber": 13,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Keegan Murray"
     },
     "hayeski01": {
       "jerseyNumber": 3,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Killian Hayes"
     },
     "sabondo01": {
       "jerseyNumber": 11,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Domantas Sabonis"
     },
     "baldwpa01": {
       "jerseyNumber": 23,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Patrick Baldwin Jr."
     },
     "steveis01": {
       "jerseyNumber": 24,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "Isaiah Stevens"
     },
     "huntede01": {
       "jerseyNumber": 15,
-      "team": "SAC"
+      "team": "SAC",
+      "name": "De'Andre Hunter"
     },
     "johnske04": {
       "jerseyNumber": 3,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Keldon Johnson"
     },
     "champju02": {
       "jerseyNumber": 30,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Julian Champagnie"
     },
     "barneha02": {
       "jerseyNumber": 40,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Harrison Barnes"
     },
     "foxde01": {
       "jerseyNumber": 4,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "De'Aaron Fox"
     },
     "bryanca01": {
       "jerseyNumber": 11,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Carter Bryant"
     },
     "harpedy01": {
       "jerseyNumber": 2,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Dylan Harper"
     },
     "castlst01": {
       "jerseyNumber": 5,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Stephon Castle"
     },
     "kornelu01": {
       "jerseyNumber": 7,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Luke Kornet"
     },
     "vassede01": {
       "jerseyNumber": 24,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Devin Vassell"
     },
     "wembavi01": {
       "jerseyNumber": 1,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Victor Wembanyama"
     },
     "mclaujo01": {
       "jerseyNumber": 0,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Jordan McLaughlin"
     },
     "olynyke01": {
       "jerseyNumber": 8,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Kelly Olynyk"
     },
     "waterli01": {
       "jerseyNumber": 43,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Lindy Waters III"
     },
     "biyombi01": {
       "jerseyNumber": 18,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Bismack Biyombo"
     },
     "jonesda06": {
       "jerseyNumber": 25,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "David Jones Garc\u00eda"
     },
     "ingraha01": {
       "jerseyNumber": 55,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Harrison Ingram"
     },
     "plumlma01": {
       "jerseyNumber": 45,
-      "team": "SAS"
+      "team": "SAS",
+      "name": "Mason Plumlee"
     },
     "sheadja01": {
       "jerseyNumber": 23,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Jamal Shead"
     },
     "barnesc01": {
       "jerseyNumber": 4,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Scottie Barnes"
     },
     "mamuksa01": {
       "jerseyNumber": 54,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Sandro Mamukelashvili"
     },
     "ingrabr01": {
       "jerseyNumber": 3,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Brandon Ingram"
     },
     "dickgr01": {
       "jerseyNumber": 1,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Gradey Dick"
     },
     "walteja01": {
       "jerseyNumber": 14,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Ja'Kobe Walter"
     },
     "quickim01": {
       "jerseyNumber": 5,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Immanuel Quickley"
     },
     "battlja01": {
       "jerseyNumber": 77,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Jamison Battle"
     },
     "barrerj01": {
       "jerseyNumber": 9,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "RJ Barrett"
     },
     "murraco01": {
       "jerseyNumber": 12,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Collin Murray-Boyles"
     },
     "poeltja01": {
       "jerseyNumber": 19,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Jakob Poeltl"
     },
     "mogbojo01": {
       "jerseyNumber": 2,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Jonathan Mogbo"
     },
     "lawsoaj01": {
       "jerseyNumber": 0,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "A.J. Lawson"
     },
     "martial01": {
       "jerseyNumber": 55,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Alijah Martin"
     },
     "templga01": {
       "jerseyNumber": 17,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Garrett Temple"
     },
     "jackstr02": {
       "jerseyNumber": 32,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Trayce Jackson-Davis"
     },
     "hepbuch01": {
       "jerseyNumber": 24,
-      "team": "TOR"
+      "team": "TOR",
+      "name": "Chucky Hepburn"
     },
     "filipky01": {
       "jerseyNumber": 22,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Kyle Filipowski"
     },
     "sensabr01": {
       "jerseyNumber": 28,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Brice Sensabaugh"
     },
     "baileac01": {
       "jerseyNumber": 19,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Ace Bailey"
     },
     "willico04": {
       "jerseyNumber": 5,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Cody Williams"
     },
     "colliis01": {
       "jerseyNumber": 8,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Isaiah Collier"
     },
     "georgke01": {
       "jerseyNumber": 3,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Keyonte George"
     },
     "mykhasv01": {
       "jerseyNumber": 10,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Svi Mykhailiuk"
     },
     "markkla01": {
       "jerseyNumber": 23,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Lauri Markkanen"
     },
     "nurkiju01": {
       "jerseyNumber": 30,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Jusuf Nurki\u0107"
     },
     "loveke01": {
       "jerseyNumber": 42,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Kevin Love"
     },
     "tshieos01": {
       "jerseyNumber": 34,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Oscar Tshiebwe"
     },
     "harklej01": {
       "jerseyNumber": 16,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Elijah Harkless"
     },
     "konchjo01": {
       "jerseyNumber": 55,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "John Konchar"
     },
     "mbengbe01": {
       "jerseyNumber": 21,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Bez Mbeng"
     },
     "hinsobl01": {
       "jerseyNumber": 2,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Blake Hinson"
     },
     "kesslwa01": {
       "jerseyNumber": 24,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Walker Kessler"
     },
     "jacksja02": {
       "jerseyNumber": 20,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Jaren Jackson Jr."
     },
     "grayha01": {
       "jerseyNumber": 33,
-      "team": "UTA"
+      "team": "UTA",
+      "name": "Hayden Gray"
     },
     "carrica01": {
       "jerseyNumber": 7,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Bub Carrington"
     },
     "rileywi01": {
       "jerseyNumber": 27,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Will Riley"
     },
     "champju01": {
       "jerseyNumber": 9,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Justin Champagnie"
     },
     "johnstr03": {
       "jerseyNumber": 12,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Tre Johnson"
     },
     "coulibi01": {
       "jerseyNumber": 0,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Bilal Coulibaly"
     },
     "gillan01": {
       "jerseyNumber": 16,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Anthony Gill"
     },
     "watkija01": {
       "jerseyNumber": 5,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Jamir Watkins"
     },
     "vukcetr01": {
       "jerseyNumber": 0,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Tristan Vukcevic"
     },
     "sarral01": {
       "jerseyNumber": 20,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Alex Sarr"
     },
     "georgky01": {
       "jerseyNumber": 18,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Kyshawn George"
     },
     "coopesh01": {
       "jerseyNumber": 13,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Sharife Cooper"
     },
     "hardyja02": {
       "jerseyNumber": 8,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Jaden Hardy"
     },
     "whitmca01": {
       "jerseyNumber": 1,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Cam Whitmore"
     },
     "blackle01": {
       "jerseyNumber": 14,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Leaky Black"
     },
     "reeseju01": {
       "jerseyNumber": 15,
-      "team": "WAS"
+      "team": "WAS",
+      "name": "Julian Reese"
     },
     "youngtr01": {
       "jerseyNumber": 3,
-      "team": "WAS"
-    },
-    "halibty01": {
-      "jerseyNumber": 0,
-      "team": "IND"
-    },
-    "irvinky01": {
-      "jerseyNumber": 2,
-      "team": "DAL"
+      "team": "WAS",
+      "name": "Trae Young"
     },
     "lillada01": {
       "jerseyNumber": 0,
-      "team": "POR"
+      "team": "POR",
+      "name": "Damian Lillard"
+    },
+    "irvinky01": {
+      "jerseyNumber": 0,
+      "team": "DAL",
+      "name": "Kyrie Irving"
+    },
+    "davisan02": {
+      "jerseyNumber": 0,
+      "team": "WAS",
+      "name": "Anthony Davis"
+    },
+    "halibty01": {
+      "jerseyNumber": 0,
+      "team": "IND",
+      "name": "Tyrese Haliburton"
+    },
+    "whiteda01": {
+      "jerseyNumber": 0,
+      "team": "MEM",
+      "name": "Dariq Whitehead"
+    },
+    "beaslma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Malik Beasley"
+    },
+    "chandke01": {
+      "jerseyNumber": 0,
+      "team": "UTA",
+      "name": "Kennedy Chandler"
+    },
+    "simonan01": {
+      "jerseyNumber": 0,
+      "team": "CHI",
+      "name": "Anfernee Simons"
     },
     "vanvlfr01": {
-      "jerseyNumber": 5,
-      "team": "HOU"
+      "jerseyNumber": 0,
+      "team": "HOU",
+      "name": "Fred VanVleet"
     },
-    "toppija01": {
+    "thomaca02": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Jacob Toppin"
+      "name": "Cam Thomas"
     },
-    "millspa02": {
+    "walkelo01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Patty Mills"
-    },
-    "paulch01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Chris Paul"
-    },
-    "wrighde01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Delon Wright"
-    },
-    "balllo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Lonzo Ball"
-    },
-    "jarrede01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "DeJon Jarreau"
-    },
-    "iveyja01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Jaden Ivey"
-    },
-    "crowdja01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Jae Crowder"
-    },
-    "willivi01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Vince Williams Jr."
-    },
-    "hayesni01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Nigel Hayes-Davis"
-    },
-    "cookeja01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Javonte Cooke"
-    },
-    "kellymi02": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Miles Kelly"
-    },
-    "burtoty01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Tyler Burton"
-    },
-    "juzanjo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Johnny Juzang"
-    },
-    "klintbo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Bobi Klintman"
-    },
-    "jacksre01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Reggie Jackson"
-    },
-    "mathega01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Garrison Mathews"
-    },
-    "reddica01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Cam Reddish"
-    },
-    "jeffrda01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "DaQuan Jeffries"
-    },
-    "nfalyda01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "N'Faly Dante"
-    },
-    "reathdu01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Duop Reath"
-    },
-    "thomptr01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Tristan Thompson"
-    },
-    "rosste01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Terrence Ross"
-    },
-    "morrimo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Monte Morris"
-    },
-    "robinje02": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Jeremiah Robinson-Earl"
-    },
-    "brownda04": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Darius Brown II"
-    },
-    "bolbo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Bol Bol"
-    },
-    "richajo01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Josh Richardson"
-    },
-    "sallihu01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Hunter Sallis"
-    },
-    "smithde03": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Dennis Smith Jr."
+      "name": "Lonnie Walker IV"
     },
     "willial06": {
       "jerseyNumber": 0,
       "team": "FA",
       "name": "Alondes Williams"
     },
-    "wisemja01": {
+    "burtoty01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "James Wiseman"
+      "name": "Tyler Burton"
     },
-    "bouchch01": {
+    "balad01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Chris Boucher"
+      "name": "Adama-Alpha Bal"
     },
-    "travelu01": {
+    "willilu01": {
       "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Luke Travers"
+      "team": "MEM",
+      "name": "Lucas Williamson"
     },
-    "garcian01": {
+    "jeffrda01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Andersson Garcia"
+      "name": "DaQuan Jeffries"
     },
-    "bambamo01": {
+    "russeda01": {
       "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Mo Bamba"
+      "team": "WAS",
+      "name": "D'Angelo Russell"
     },
-    "tysonhu01": {
+    "okanito01": {
       "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Hunter Tyson"
+      "team": "MEM",
+      "name": "Toby Okani"
     },
-    "boehebu01": {
+    "niangge01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Buddy Boeheim"
+      "name": "Georges Niang"
     },
-    "fultzma01": {
+    "iveyja01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Markelle Fultz"
+      "name": "Jaden Ivey"
     },
-    "branhma01": {
+    "richmka01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Malaki Branham"
+      "name": "Kadary Richmond"
     },
-    "craigto01": {
+    "rosste01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Torrey Craig"
+      "name": "Terrence Ross"
     },
-    "umudest01": {
+    "jarrede01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Stanley Umude"
+      "name": "DeJon Jarreau"
+    },
+    "scotttr01": {
+      "jerseyNumber": 0,
+      "team": "BRK",
+      "name": "Trevon Scott"
+    },
+    "willivi01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Vince Williams Jr."
+    },
+    "bogdabo01": {
+      "jerseyNumber": 0,
+      "team": "LAC",
+      "name": "Bogdan Bogdanovi\u0107"
+    },
+    "payneca01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cameron Payne"
     },
     "burksal01": {
       "jerseyNumber": 0,
@@ -2306,50 +2729,75 @@
       "team": "FA",
       "name": "Lawson Lovering"
     },
-    "jonesco02": {
+    "bolbo01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Colby Jones"
+      "name": "Bol Bol"
     },
-    "flowetr01": {
+    "anthoco01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Trentyn Flowers"
+      "name": "Cole Anthony"
     },
-    "niangge01": {
+    "smithde03": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Georges Niang"
+      "name": "Dennis Smith Jr."
     },
-    "searsma01": {
+    "gordoer01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Mark Sears"
+      "name": "Eric Gordon"
     },
-    "porteot01": {
+    "garcian01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Otto Porter Jr."
+      "name": "Andersson Garcia"
     },
-    "richmka01": {
+    "mathega01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Kadary Richmond"
+      "name": "Garrison Mathews"
     },
-    "beaslma01": {
+    "simmobe01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Malik Beasley"
+      "name": "Ben Simmons"
     },
-    "bufkiko01": {
+    "robinje02": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Kobe Bufkin"
+      "name": "Jeremiah Robinson-Earl"
     },
-    "thomaca02": {
+    "balllo01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Cam Thomas"
+      "name": "Lonzo Ball"
+    },
+    "branhma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Malaki Branham"
+    },
+    "jordade01": {
+      "jerseyNumber": 0,
+      "team": "NOP",
+      "name": "DeAndre Jordan"
+    },
+    "joneska03": {
+      "jerseyNumber": 0,
+      "team": "CHI",
+      "name": "Kam Jones"
+    },
+    "dennira01": {
+      "jerseyNumber": 0,
+      "team": "ATL",
+      "name": "RayJ Dennis"
+    },
+    "jacksre01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Reggie Jackson"
     },
     "nelsogr02": {
       "jerseyNumber": 0,
@@ -2361,6 +2809,136 @@
       "team": "FA",
       "name": "Skal Labissi\u00e8re"
     },
+    "craigto01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Torrey Craig"
+    },
+    "richajo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Josh Richardson"
+    },
+    "millspa02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Patty Mills"
+    },
+    "yurtsom01": {
+      "jerseyNumber": 0,
+      "team": "GSW",
+      "name": "Omer Yurtseven"
+    },
+    "wisemja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "James Wiseman"
+    },
+    "reddica01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Cam Reddish"
+    },
+    "wrighde01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Delon Wright"
+    },
+    "searsma01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Mark Sears"
+    },
+    "kellymi02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Miles Kelly"
+    },
+    "livinch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Livingston"
+    },
+    "milleem01": {
+      "jerseyNumber": 0,
+      "team": "SAS",
+      "name": "Emanuel Miller"
+    },
+    "morrimo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Monte Morris"
+    },
+    "paulch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Paul"
+    },
+    "reathdu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Duop Reath"
+    },
+    "bufkiko01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Kobe Bufkin"
+    },
+    "crowdja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jae Crowder"
+    },
+    "porteot01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Otto Porter Jr."
+    },
+    "bambamo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Mo Bamba"
+    },
+    "houstca01": {
+      "jerseyNumber": 0,
+      "team": "ATL",
+      "name": "Caleb Houstan"
+    },
+    "bouchch01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Chris Boucher"
+    },
+    "travelu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Luke Travers"
+    },
+    "tysonhu01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Hunter Tyson"
+    },
+    "jonesco02": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Colby Jones"
+    },
+    "juzanjo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Johnny Juzang"
+    },
+    "flowetr01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Trentyn Flowers"
+    },
+    "klintbo01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Bobi Klintman"
+    },
     "martico01": {
       "jerseyNumber": 0,
       "team": "FA",
@@ -2371,55 +2949,75 @@
       "team": "FA",
       "name": "Orlando Robinson"
     },
-    "walkelo01": {
+    "thomptr01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Lonnie Walker IV"
+      "name": "Tristan Thompson"
     },
-    "telfoja01": {
+    "toppija01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Jahmyl Telfort"
+      "name": "Jacob Toppin"
     },
-    "anthoco01": {
+    "boehebu01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Cole Anthony"
+      "name": "Buddy Boeheim"
+    },
+    "hayesni01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Nigel Hayes-Davis"
+    },
+    "cookeja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Javonte Cooke"
     },
     "saricda01": {
       "jerseyNumber": 0,
       "team": "FA",
       "name": "Dario \u0160ari\u0107"
     },
-    "gordoer01": {
+    "sallihu01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Eric Gordon"
+      "name": "Hunter Sallis"
     },
-    "simmobe01": {
+    "umudest01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Ben Simmons"
-    },
-    "payneca01": {
-      "jerseyNumber": 0,
-      "team": "FA",
-      "name": "Cameron Payne"
+      "name": "Stanley Umude"
     },
     "peterdr01": {
       "jerseyNumber": 0,
       "team": "FA",
       "name": "Drew Peterson"
     },
-    "livinch01": {
+    "fultzma01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Chris Livingston"
+      "name": "Markelle Fultz"
     },
-    "balad01": {
+    "nfalyda01": {
       "jerseyNumber": 0,
       "team": "FA",
-      "name": "Adama-Alpha Bal"
+      "name": "N'Faly Dante"
+    },
+    "telfoja01": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Jahmyl Telfort"
+    },
+    "brownda04": {
+      "jerseyNumber": 0,
+      "team": "FA",
+      "name": "Darius Brown II"
+    },
+    "evbuoto01": {
+      "jerseyNumber": 0,
+      "team": "CHO",
+      "name": "Tosan Evbuomwan"
     }
   },
   "players": [
@@ -2657,7 +3255,7 @@
     {
       "bbrPlayerId": "claxtni01",
       "name": "Nic Claxton",
-      "team": "CHI",
+      "team": "BRK",
       "jerseyNumber": 33,
       "position": "C"
     },
@@ -2930,7 +3528,7 @@
     {
       "bbrPlayerId": "ballla01",
       "name": "LaMelo Ball",
-      "team": "MIN",
+      "team": "CHO",
       "jerseyNumber": 1,
       "position": "PG"
     },
@@ -2951,7 +3549,7 @@
     {
       "bbrPlayerId": "greenjo02",
       "name": "Josh Green",
-      "team": "MIN",
+      "team": "CHO",
       "jerseyNumber": 10,
       "position": "SG"
     },
@@ -3462,7 +4060,7 @@
     {
       "bbrPlayerId": "stewais01",
       "name": "Isaiah Stewart",
-      "team": "MEM",
+      "team": "DET",
       "jerseyNumber": 28,
       "position": "C"
     },
@@ -4225,14 +4823,14 @@
     {
       "bbrPlayerId": "wareke01",
       "name": "Kel'el Ware",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 7,
       "position": "C"
     },
     {
       "bbrPlayerId": "jaqueja01",
       "name": "Jaime Jaquez Jr.",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 11,
       "position": "SF"
     },
@@ -4288,7 +4886,7 @@
     {
       "bbrPlayerId": "jakucka01",
       "name": "Kasparas Jaku\u00c4\u008dionis",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 25,
       "position": "PG"
     },
@@ -4309,7 +4907,7 @@
     {
       "bbrPlayerId": "herroty01",
       "name": "Tyler Herro",
-      "team": "MIL",
+      "team": "MIA",
       "jerseyNumber": 14,
       "position": "SG"
     },
@@ -4372,7 +4970,7 @@
     {
       "bbrPlayerId": "portibo01",
       "name": "Bobby Portis",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 9,
       "position": "PF"
     },
@@ -4421,7 +5019,7 @@
     {
       "bbrPlayerId": "antetgi01",
       "name": "Giannis Antetokounmpo",
-      "team": "MIA",
+      "team": "MIL",
       "jerseyNumber": 34,
       "position": "PF"
     },
@@ -4470,14 +5068,14 @@
     {
       "bbrPlayerId": "randlju01",
       "name": "Julius Randle",
-      "team": "BRK",
+      "team": "MIN",
       "jerseyNumber": 30,
       "position": "PF"
     },
     {
       "bbrPlayerId": "reidna01",
       "name": "Naz Reid",
-      "team": "CHO",
+      "team": "MIN",
       "jerseyNumber": 11,
       "position": "C"
     },
@@ -6036,5 +6634,5 @@
       "position": "PG"
     }
   ],
-  "rosterSource": "espn"
+  "updatedAt": "2026-06-27T00:32:11.528583+00:00"
 }
