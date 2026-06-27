@@ -44,10 +44,11 @@ interface LandingPageProps {
   collection: PlayerCollection;
   dailyChallenge: DailyDraftChallenge;
   modeRecords: ModePlayerRecords;
+  isMatchmaking?: boolean;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
-  ) => boolean;
+  ) => Promise<boolean>;
   onCollectionChange: (collection: PlayerCollection) => void;
   onViewStats: () => void;
   onViewAchievements: () => void;
@@ -83,6 +84,7 @@ export function LandingPage({
   collection,
   dailyChallenge,
   modeRecords,
+  isMatchmaking = false,
   onStartDraft,
   onCollectionChange,
   onViewStats,
@@ -118,9 +120,11 @@ export function LandingPage({
     setShowUnlockModal(false);
   };
 
-  const handleStart = (options?: StartDraftOptions) => {
-    if (collection.pendingUnlock) {
-      setShowUnlockModal(true);
+  const handleStart = async (options?: StartDraftOptions) => {
+    if (collection.pendingUnlock || isMatchmaking) {
+      if (collection.pendingUnlock) {
+        setShowUnlockModal(true);
+      }
       return;
     }
 
@@ -142,7 +146,7 @@ export function LandingPage({
     }
 
     setError("");
-    const started = onStartDraft(team, options);
+    const started = await onStartDraft(team, options);
 
     if (!started) {
       if (options?.isDailyDraft && dailyCompleted) {
@@ -237,10 +241,14 @@ export function LandingPage({
           <button
             type="button"
             className="daily-draft-card__button"
-            disabled={dailyCompleted}
-            onClick={() => handleStart({ isDailyDraft: true })}
+            disabled={dailyCompleted || isMatchmaking}
+            onClick={() => void handleStart({ isDailyDraft: true })}
           >
-            {dailyCompleted ? "Completed for today" : "Play Today's Daily Draft"}
+            {isMatchmaking
+              ? "Finding opponent..."
+              : dailyCompleted
+                ? "Completed for today"
+                : "Play Today's Daily Draft"}
           </button>
         </div>
 
@@ -255,9 +263,10 @@ export function LandingPage({
           <button
             type="button"
             className="landing__primary-button"
-            onClick={() => handleStart()}
+            disabled={isMatchmaking}
+            onClick={() => void handleStart()}
           >
-            Play {CLASSIC_HEAD_TO_HEAD_LABEL}
+            {isMatchmaking ? "Finding opponent..." : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
@@ -272,9 +281,10 @@ export function LandingPage({
           <button
             type="button"
             className="ranked-cap-card__button"
-            onClick={() => handleStart({ salaryCapMode: true })}
+            disabled={isMatchmaking}
+            onClick={() => void handleStart({ salaryCapMode: true })}
           >
-            Play {PRO_HEAD_TO_HEAD_LABEL}
+            {isMatchmaking ? "Finding opponent..." : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
@@ -294,7 +304,8 @@ export function LandingPage({
               <button
                 type="button"
                 className="all-time-card__button"
-                onClick={() => handleStart({ allTimeMode: true })}
+                disabled={isMatchmaking}
+                onClick={() => void handleStart({ allTimeMode: true })}
               >
                 Play All-Time Draft
               </button>

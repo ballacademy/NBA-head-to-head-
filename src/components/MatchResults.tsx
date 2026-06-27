@@ -14,6 +14,10 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
+import { submitStoredLineup } from "../lib/ghostMatchmaking";
+import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
+import { ensureClassicProfile } from "../lib/classicProfile";
+import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import type { ClassicMatchOutcome, RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -26,7 +30,6 @@ import {
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
-import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { Drafter, Player } from "../lib/types";
 
 interface MatchResultsProps {
@@ -104,7 +107,33 @@ export function MatchResults({
     setMatchCollection(next);
     onCollectionChange(next);
     setActionsReady(true);
-  }, [collection, matchId, matchRecordMode, matchResult, onCollectionChange, opponent.classicOpponentElo, opponent.rankedOpponentElo, user.name]);
+
+    if (!user.allTimeMode && userLineup.length === 5) {
+      const mode = user.salaryCapMode ? "ranked" : "classic";
+      void submitStoredLineup({
+        mode,
+        playerId: getOrCreatePlayerIdentity().playerId,
+        teamName: user.name,
+        lineup: user.lineup.filter((id): id is string => Boolean(id)),
+        elo: user.salaryCapMode
+          ? ensureCurrentRankedSeason().elo
+          : ensureClassicProfile().elo,
+      });
+    }
+  }, [
+    collection,
+    matchId,
+    matchRecordMode,
+    matchResult,
+    onCollectionChange,
+    opponent.classicOpponentElo,
+    opponent.rankedOpponentElo,
+    user.allTimeMode,
+    user.lineup,
+    user.name,
+    user.salaryCapMode,
+    userLineup.length,
+  ]);
 
   useLayoutEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {

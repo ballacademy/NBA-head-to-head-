@@ -10,6 +10,7 @@ import {
   findRankedOpponentFromLeaderboard,
 } from "./rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
+import type { GhostOpponentSnapshot } from "./ghostMatchmaking";
 import type { TeamProfile } from "./teamProfile";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -124,6 +125,32 @@ export const createRankedOpponent = (
     salaryCapMode: true,
     salaryCapLimit: RANKED_SALARY_CAP,
     rankedOpponentElo: opponentElo,
+  };
+};
+
+export const createGhostOpponent = (
+  draftSlots: DraftSlotConstraint[],
+  ghost: GhostOpponentSnapshot,
+  options: { salaryCapMode?: boolean } = {},
+): Drafter => {
+  const blueprint =
+    initialDrafterBlueprints[
+      Math.abs(ghost.teamName.length) % initialDrafterBlueprints.length
+    ]!;
+
+  return {
+    id: `ghost-${ghost.id}`,
+    name: ghost.teamName,
+    accent: blueprint.accent,
+    draftSlots,
+    lineup: ghost.lineup,
+    salaryCapMode: options.salaryCapMode,
+    salaryCapLimit: options.salaryCapMode
+      ? RANKED_SALARY_CAP
+      : CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+    rankedOpponentElo: options.salaryCapMode ? ghost.elo : undefined,
+    classicOpponentElo: options.salaryCapMode ? undefined : ghost.elo,
+    isGhostOpponent: true,
   };
 };
 

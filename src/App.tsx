@@ -5,6 +5,7 @@ import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
+import { QueuedDraftResults } from "./components/QueuedDraftResults";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -32,11 +33,15 @@ import {
   createRandomOpponent,
   createClassicOpponent,
   createRankedOpponent,
+  createGhostOpponent,
   createUserDrafter,
   getOpponentPickDelayMs,
   sleep,
   type StartDraftOptions,
 } from "./lib/match";
+import { fetchGhostOpponent } from "./lib/ghostMatchmaking";
+import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
+import { ensureClassicProfile } from "./lib/classicProfile";
 import {
   ensurePlayerCollection,
   getDraftablePlayers,
@@ -86,6 +91,8 @@ function App() {
     ensureRankedLeaderboard();
   }, []);
 
+  const [isQueueOnlyMatch, setIsQueueOnlyMatch] = useState(false);
+  const [isMatchmaking, setIsMatchmaking] = useState(false);
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
   );
@@ -147,7 +154,10 @@ function App() {
   );
   const userDraftComplete = draftStep >= 5;
 
-  const startMatch = (team: TeamProfile, options: StartDraftOptions = {}) => {
+  const startMatch = async (
+    team: TeamProfile,
+    options: StartDraftOptions = {},
+  ): Promise<boolean> => {
     if (collection.pendingUnlock) {
       return false;
     }
@@ -180,7 +190,28 @@ function App() {
           ? RANKED_SALARY_CAP
           : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
     const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
-    const nextOpponentCollection = daily ? null : createOpponentCollection(collection);
+    let ghostOpponent = null;
+    let queueOnly = false;
+
+    if (!daily && !nextAllTimeMode) {
+      setIsMatchmaking(true);
+      const matchmakingMode = salaryCapMode ? "ranked" : "classic";
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      const elo = salaryCapMode
+        ? ensureCurrentRankedSeason().elo
+        : ensureClassicProfile().elo;
+
+      ghostOpponent = await fetchGhostOpponent({
+        mode: matchmakingMode,
+        playerId,
+        elo,
+      });
+      queueOnly = !ghostOpponent;
+      setIsMatchmaking(false);
+    }
+
+    const nextOpponentCollection =
+      daily || queueOnly ? null : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
@@ -208,7 +239,8 @@ function App() {
       );
     }
 
-    let opponentSlots = daily ? null : createOpponentDraftSlots(opponentPool);
+    let opponentSlots =
+      daily || queueOnly ? null : createOpponentDraftSlots(opponentPool);
     if (
       opponentSlots &&
       salaryCapLimit != null &&
@@ -224,6 +256,8 @@ function App() {
       userSlots.length === 0 ||
       !slotsAreFeasible(draftPool, userSlots) ||
       (!daily &&
+        !queueOnly &&
+        !nextAllTimeMode &&
         (!opponentSlots ||
           opponentSlots.length === 0 ||
           !slotsAreFeasible(opponentPool, opponentSlots)))
@@ -235,6 +269,7 @@ function App() {
     setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
     setAllTimeMode(nextAllTimeMode);
+    setIsQueueOnlyMatch(queueOnly);
     setDailyDateKey(dateKey);
     setUser(
       createUserDrafter(team, userSlots, {
@@ -245,18 +280,22 @@ function App() {
       }),
     );
     setOpponent(
-      opponentSlots
-        ? salaryCapMode
-          ? createRankedOpponent(opponentSlots)
-          : nextAllTimeMode
-            ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
-            : createClassicOpponent(opponentSlots)
-        : null,
+      queueOnly
+        ? null
+        : ghostOpponent && opponentSlots
+          ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
+          : opponentSlots
+            ? salaryCapMode
+              ? createRankedOpponent(opponentSlots)
+              : nextAllTimeMode
+                ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                : createClassicOpponent(opponentSlots)
+            : null,
     );
     setOpponentCollection(nextOpponentCollection);
     setDraftStep(0);
     setOpponentPickCount(0);
-    setOpponentComplete(daily);
+    setOpponentComplete(daily || queueOnly);
     setMatchId(null);
     setPhase("drafting");
     return true;
@@ -270,13 +309,15 @@ function App() {
     setOpponentPickCount(0);
     setOpponentComplete(false);
     setMatchId(null);
+    setIsQueueOnlyMatch(false);
+    setIsMatchmaking(false);
     setIsDailyDraft(false);
     setAllTimeMode(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
   };
 
-  const replayLastMode = () => {
+  const replayLastMode = async () => {
     if (!user) {
       resetToLanding();
       return;
@@ -284,7 +325,7 @@ function App() {
 
     if (isDailyDraft) {
       const team = { name: user.name };
-      if (!startMatch(team, { isDailyDraft: true })) {
+      if (!(await startMatch(team, { isDailyDraft: true }))) {
         resetToLanding();
       }
       return;
@@ -295,10 +336,10 @@ function App() {
       Boolean(user.allTimeMode) && isAllTimeModePlayable();
 
     if (
-      !startMatch(team, {
+      !(await startMatch(team, {
         salaryCapMode: Boolean(user.salaryCapMode),
         allTimeMode: replayAllTime,
-      })
+      }))
     ) {
       resetToLanding();
     }
@@ -379,21 +420,27 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (phase === "results" && !isDailyDraft && !matchId) {
+    if (phase === "results" && !isDailyDraft && !isQueueOnlyMatch && !matchId) {
       setMatchId(
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `match-${Date.now()}`,
       );
     }
-  }, [isDailyDraft, matchId, phase]);
+  }, [isDailyDraft, isQueueOnlyMatch, matchId, phase]);
 
   useEffect(() => {
     if (isDailyDraft || !opponent) {
       return;
     }
 
-    const { id: opponentId, draftSlots, salaryCapLimit } = opponent;
+    const {
+      id: opponentId,
+      draftSlots,
+      salaryCapLimit,
+      isGhostOpponent,
+      lineup,
+    } = opponent;
 
     if (draftSlots.length === 0) {
       return;
@@ -402,8 +449,44 @@ function App() {
     let cancelled = false;
 
     const simulateOpponentDraft = async () => {
+      if (isGhostOpponent) {
+        const storedLineup = lineup.filter((playerId): playerId is string =>
+          Boolean(playerId),
+        );
+        const revealCount = Math.min(storedLineup.length, draftSlots.length);
+
+        for (let index = 0; index < revealCount; index += 1) {
+          await sleep(getOpponentPickDelayMs());
+          if (cancelled) {
+            return;
+          }
+
+          const pickCount = index + 1;
+          setOpponentPickCount(pickCount);
+          setOpponent((current) =>
+            current?.id === opponentId
+              ? {
+                  ...current,
+                  lineup: storedLineup.slice(0, pickCount),
+                }
+              : current,
+          );
+        }
+
+        if (!cancelled) {
+          setOpponent((current) =>
+            current?.id === opponentId
+              ? { ...current, lineup: storedLineup }
+              : current,
+          );
+          setOpponentComplete(true);
+        }
+
+        return;
+      }
+
       const pickedIds = new Set<string>();
-      const lineup: string[] = [];
+      const nextLineup: string[] = [];
 
       for (let index = 0; index < draftSlots.length; index += 1) {
         const slot = draftSlots[index]!;
@@ -427,22 +510,22 @@ function App() {
         );
         if (selection) {
           pickedIds.add(selection);
-          lineup.push(selection);
+          nextLineup.push(selection);
         }
 
-        const pickCount = lineup.length;
+        const pickCount = nextLineup.length;
         setOpponentPickCount(pickCount);
         setOpponent((current) =>
           current?.id === opponentId
             ? {
                 ...current,
-                lineup: [...lineup],
+                lineup: [...nextLineup],
               }
             : current,
         );
       }
 
-      if (!cancelled && lineup.length === draftSlots.length) {
+      if (!cancelled && nextLineup.length === draftSlots.length) {
         setOpponentComplete(true);
       }
     };
@@ -464,8 +547,13 @@ function App() {
       return;
     }
 
+    if (isQueueOnlyMatch) {
+      setPhase("results");
+      return;
+    }
+
     setPhase(opponentComplete ? "results" : "waiting");
-  }, [isDailyDraft, opponentComplete, phase, userDraftComplete]);
+  }, [isDailyDraft, isQueueOnlyMatch, opponentComplete, phase, userDraftComplete]);
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
@@ -514,6 +602,7 @@ function App() {
           collection={collection}
           dailyChallenge={dailyChallenge}
           modeRecords={modeRecords}
+          isMatchmaking={isMatchmaking}
           onStartDraft={startMatch}
           onCollectionChange={setCollection}
           onViewStats={() => setPhase("stats")}
@@ -539,7 +628,7 @@ function App() {
     );
   }
 
-  if (!isDailyDraft && !opponent) {
+  if (!isDailyDraft && !opponent && !isQueueOnlyMatch) {
     return (
       <main className="landing-layout">
         <section className="panel landing">
@@ -594,6 +683,14 @@ function App() {
         />
       ) : null}
 
+      {phase === "results" && isQueueOnlyMatch && user ? (
+        <QueuedDraftResults
+          user={user}
+          userLineup={userLineup}
+          onDone={resetToLanding}
+        />
+      ) : null}
+
       {phase === "results" && isDailyDraft && dailySetup ? (
         <DailyDraftResults
           user={user}
@@ -605,7 +702,11 @@ function App() {
         />
       ) : null}
 
-      {phase === "results" && !isDailyDraft && opponent && matchId ? (
+      {phase === "results" &&
+      !isDailyDraft &&
+      !isQueueOnlyMatch &&
+      opponent &&
+      matchId ? (
         <MatchResults
           user={user}
           opponent={opponent}
