@@ -14,6 +14,7 @@ import {
   sortDraftCandidates,
   validateDraftSlotsFeasible,
   validateDraftSlotsFeasibleUnderSalaryCap,
+  pickRandomTopCandidateForSlot,
 } from "./draft";
 import { CLASSIC_HEAD_TO_HEAD_SALARY_CAP, RANKED_SALARY_CAP } from "./salaryCap";
 import type { Player } from "./types";
@@ -223,5 +224,28 @@ describe("draft constraints", () => {
     expect(allGuardsCount / simulations).toBeLessThan(0.05);
     expect(allCentersCount / simulations).toBeLessThan(0.05);
     expect(allBigsCount / simulations).toBeLessThan(0.05);
+  });
+
+  it("autopicks randomly from the top five eligible candidates", () => {
+    const slot = { position: "PG" as const, division: "Pacific" as const };
+    const pickedIds = new Set<string>();
+    const picks = new Set<string>();
+
+    for (let index = 0; index < 40; index += 1) {
+      const selection = pickRandomTopCandidateForSlot(
+        players,
+        slot,
+        pickedIds,
+        {},
+        5,
+        () => index / 40,
+      );
+
+      if (selection) {
+        picks.add(selection);
+      }
+    }
+
+    expect(picks.size).toBeGreaterThan(1);
   });
 });
