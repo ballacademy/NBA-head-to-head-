@@ -7,6 +7,7 @@ import {
   isPlayerStatsMasked,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { getPlayerTeamLabel } from "../lib/freeAgents";
 import {
   isAllStarPlayer,
   isRecentAllStarPlayer,
@@ -93,7 +94,7 @@ export function PlayerStatsTable({
           }
 
           const haystack =
-            `${player.name} ${player.team} ${player.position}`.toLowerCase();
+            `${player.name} ${getPlayerTeamLabel(player)} ${player.position}`.toLowerCase();
           return haystack.includes(normalizedQuery);
         })
       : players;
@@ -199,7 +200,7 @@ export function PlayerStatsTable({
                       </span>
                     )}
                   </td>
-                  <td>{masked ? MASKED_VALUE : player.team}</td>
+                  <td>{masked ? MASKED_VALUE : getPlayerTeamLabel(player)}</td>
                   <td>{masked ? MASKED_VALUE : player.position}</td>
                   <td>{masked ? MASKED_VALUE : player.points.toFixed(1)}</td>
                   <td>{masked ? MASKED_VALUE : player.rebounds.toFixed(1)}</td>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { players } from "./playerPool";
-import { getPlayerSalary, PLAYER_SALARY_SEASON } from "./playerSalaries";
+import { getPlayerSalary, hasPlayerContractSalary, PLAYER_SALARY_SEASON } from "./playerSalaries";
 
 describe("player salaries", () => {
   it("loads 2026-27 contract salaries for star players", () => {
@@ -9,6 +9,11 @@ describe("player salaries", () => {
     expect(getPlayerSalary("gilgesh01")).toBe(40_806_150);
     expect(getPlayerSalary("jokicni01")).toBe(59_033_114);
     expect(getPlayerSalary("vassede01")).toBe(27_000_000);
+  });
+
+  it("does not invent a minimum salary for players without contracts", () => {
+    expect(hasPlayerContractSalary("curryst01")).toBe(true);
+    expect(getPlayerSalary("not-a-real-player")).toBeUndefined();
   });
 
   it("attaches salaries to the player pool", () => {

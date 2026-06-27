@@ -6,7 +6,7 @@ import {
   freeAgentPlayers,
   players,
 } from "./playerPool";
-import { isFreeAgentTeam } from "./freeAgents";
+import { isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
 
 describe("playerPool roster metadata", () => {
   it("tracks the active roster as-of date", () => {
@@ -18,10 +18,13 @@ describe("playerPool roster metadata", () => {
 describe("playerPool free agents", () => {
   it("includes free agents in the database pool but not draftable rosters", () => {
     expect(freeAgentPlayers.length).toBeGreaterThan(0);
-    expect(freeAgentPlayers.every((player) => isFreeAgentTeam(player.team))).toBe(
+    expect(freeAgentPlayers.every((player) => isStatsFreeAgent(player))).toBe(
       true,
     );
-    expect(players.every((player) => !isFreeAgentTeam(player.team))).toBe(true);
+    expect(players.every((player) => isDraftEligiblePlayer(player))).toBe(true);
+    expect(players.every((player) => typeof player.salary === "number")).toBe(
+      true,
+    );
     expect(databasePlayers.length).toBe(players.length + freeAgentPlayers.length);
   });
 
