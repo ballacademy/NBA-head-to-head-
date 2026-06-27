@@ -527,7 +527,7 @@ function App() {
     setMatchId(null);
     setDraftSessionKey(null);
     setIsPendingQueueMatch(false);
-    setIsMatchmaking(false);
+    setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
     setIsDailyDraft(false);
     setIsDailyReview(false);
