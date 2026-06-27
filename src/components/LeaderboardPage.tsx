@@ -17,6 +17,7 @@ import {
   getTopRankedLeaderboard,
   type RankedLeaderboardSort,
 } from "../lib/rankedLeaderboard";
+import { RATING_LABEL } from "../lib/rankedElo";
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import {
@@ -36,7 +37,7 @@ type LeaderboardView = "classic" | "ranked";
 type BoardSort = LeaderboardSort | RankedLeaderboardSort;
 
 const SORT_TABS: { id: BoardSort; label: string }[] = [
-  { id: "elo", label: "Highest Elo" },
+  { id: "elo", label: `Most ${RATING_LABEL}` },
   { id: "winStreak", label: "Win streak" },
   { id: "lossStreak", label: "Loss streak" },
 ];
@@ -60,7 +61,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       ? "Win streak"
       : sort === "lossStreak"
         ? "Loss streak"
-        : "Elo";
+        : RATING_LABEL;
 
   const formatClassicMetric = (entry: (typeof classicEntries)[number]) => {
     if (sort === "winStreak") {

@@ -37,7 +37,15 @@ export const getTierForElo = (elo: number): RankedTier => {
   return RANKED_TIERS[0]!;
 };
 
+export const RATING_LABEL = "Banners";
+
 export const formatRankedElo = (elo: number) => Math.max(0, Math.round(elo)).toString();
+
+export const formatRatingPoints = (rating: number) =>
+  `${formatRankedElo(rating)} ${RATING_LABEL}`;
+
+export const formatRatingDelta = (delta: number) =>
+  `${delta >= 0 ? "+" : ""}${delta} ${RATING_LABEL}`;
 
 export const getPlacementMultiplier = (gamesPlayedBeforeMatch: number) => {
   if (gamesPlayedBeforeMatch >= PLACEMENT_GAMES) {

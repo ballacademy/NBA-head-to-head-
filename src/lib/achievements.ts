@@ -1,5 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
-import { ACHIEVEMENT_CHECKS } from "./achievementChecks";
+import { ACHIEVEMENT_CHECKS, type AchievementCheckContext } from "./achievementChecks";
 import type { Player } from "./types";
 
 const ACHIEVEMENTS_KEY = "nba-head-to-head-achievements";
@@ -66,13 +66,16 @@ const achievementChecksById = new Map(
   ACHIEVEMENT_CHECKS.map((achievement) => [achievement.id, achievement.check]),
 );
 
-export const checkLineupAchievements = (lineup: Player[]) => {
+export const checkLineupAchievements = (
+  lineup: Player[],
+  context: AchievementCheckContext = {},
+) => {
   if (lineup.length !== 5) {
     return [];
   }
 
   return ACHIEVEMENT_CHECKS.filter((achievement) =>
-    achievement.check(lineup),
+    achievement.check(lineup, context),
   ).map((achievement) => achievement.id);
 };
 

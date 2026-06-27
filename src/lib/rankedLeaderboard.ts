@@ -1,7 +1,7 @@
 import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
-import { formatRankedElo, getTierForElo } from "./rankedElo";
+import { RATING_LABEL, formatRankedElo, getTierForElo } from "./rankedElo";
 import { PRO_LEADERBOARD_LABEL } from "./modeLabels";
 import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
 
@@ -306,7 +306,7 @@ export const getRankedLeaderboardFootnote = (
     case "lossStreak":
       return `${seasonNote} Sorted by active loss streak.`;
     default:
-      return `${seasonNote} Sorted by Elo rating.`;
+      return `${seasonNote} Sorted by ${RATING_LABEL}.`;
   }
 };
 
