@@ -331,6 +331,7 @@ function App() {
     }
 
     const daily = Boolean(options.isDailyDraft);
+    const practiceMode = Boolean(options.practiceMode);
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
@@ -348,17 +349,19 @@ function App() {
       allTimeMode: nextAllTimeMode,
     });
     const salaryCapLimit =
-      daily || nextAllTimeMode
-        ? undefined
-        : salaryCapMode
-          ? RANKED_SALARY_CAP
-          : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+      practiceMode
+        ? options.salaryCapLimit ?? RANKED_SALARY_CAP
+        : daily || nextAllTimeMode
+          ? undefined
+          : salaryCapMode
+            ? RANKED_SALARY_CAP
+            : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
     const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
     let ghostOpponent: GhostOpponentSnapshot | null = null;
     let liveOpponent: LiveOpponentSnapshot | null = null;
     let isPendingQueue = false;
 
-    if (!daily && !nextAllTimeMode) {
+    if (!daily && !nextAllTimeMode && !practiceMode) {
       const nextMatchmakingMode = salaryCapMode ? "ranked" : "classic";
       setMatchmakingStartedAt(Date.now());
       setMatchmakingMode(nextMatchmakingMode);
@@ -391,7 +394,9 @@ function App() {
     }
 
     const nextOpponentCollection =
-      daily || isPendingQueue ? null : createOpponentCollection(collection);
+      daily || isPendingQueue || practiceMode
+        ? null
+        : createOpponentCollection(collection);
     const opponentPool = nextOpponentCollection
       ? getDraftablePlayers(pool, nextOpponentCollection)
       : pool;
@@ -420,7 +425,9 @@ function App() {
     }
 
     let opponentSlots =
-      daily || isPendingQueue ? null : createOpponentDraftSlots(opponentPool);
+      daily || isPendingQueue
+        ? null
+        : createOpponentDraftSlots(practiceMode ? draftPool : opponentPool);
     if (
       opponentSlots &&
       salaryCapLimit != null &&
@@ -438,9 +445,20 @@ function App() {
       (!daily &&
         !isPendingQueue &&
         !nextAllTimeMode &&
+        !practiceMode &&
         (!opponentSlots ||
           opponentSlots.length === 0 ||
           !slotsAreFeasible(opponentPool, opponentSlots)))
+    ) {
+      setStartMatchError(getStartMatchErrorMessage("setup_failed"));
+      return false;
+    }
+
+    if (
+      practiceMode &&
+      (!opponentSlots ||
+        opponentSlots.length === 0 ||
+        !slotsAreFeasible(draftPool, opponentSlots))
     ) {
       setStartMatchError(getStartMatchErrorMessage("setup_failed"));
       return false;
@@ -458,7 +476,9 @@ function App() {
         isDailyDraft: daily,
         dailyChallengeTitle: setup?.challenge.title,
         salaryCapMode,
+        salaryCapLimit,
         allTimeMode: nextAllTimeMode,
+        practiceMode,
       }),
     );
     setOpponent(
@@ -469,11 +489,16 @@ function App() {
           : ghostOpponent && opponentSlots
             ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
             : opponentSlots
-              ? salaryCapMode
-                ? createRankedOpponent(opponentSlots)
-                : nextAllTimeMode
-                  ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
-                  : createClassicOpponent(opponentSlots)
+              ? practiceMode
+                ? {
+                    ...createClassicOpponent(opponentSlots, { salaryCapLimit }),
+                    practiceMode: true,
+                  }
+                : salaryCapMode
+                  ? createRankedOpponent(opponentSlots)
+                  : nextAllTimeMode
+                    ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                    : createClassicOpponent(opponentSlots)
               : null,
     );
     setOpponentCollection(nextOpponentCollection);

@@ -311,16 +311,35 @@ export function LandingPage({
             the Top 500.
           </p>
           <ClassicModeSummary record={modeRecords.headToHead} />
-          <button
-            type="button"
-            className="landing__primary-button"
-            disabled={isMatchmaking}
-            onClick={() => void handleStart()}
-          >
-            {matchmakingMode === "classic"
-              ? matchmakingLabel
-              : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
-          </button>
+          <div className="mode-card__actions">
+            <button
+              type="button"
+              className="landing__primary-button"
+              disabled={isMatchmaking}
+              onClick={() => void handleStart()}
+            >
+              {matchmakingMode === "classic"
+                ? matchmakingLabel
+                : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+            </button>
+            <button
+              type="button"
+              className="head-to-head-card__practice-button"
+              disabled={isMatchmaking}
+              onClick={() =>
+                void handleStart({
+                  practiceMode: true,
+                  salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+                })
+              }
+            >
+              Practice
+            </button>
+          </div>
+          <p className="mode-card__practice-note">
+            Practice uses the same ${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
+            opponent. Banners and streaks do not change; badges can still unlock.
+          </p>
         </div>
 
         <div className="ranked-cap-card landing-card landing-card--mode">
@@ -333,16 +352,36 @@ export function LandingPage({
             the Top 500.
           </p>
           <RankedModeSummary record={modeRecords.ranked} />
-          <button
-            type="button"
-            className="ranked-cap-card__button"
-            disabled={isMatchmaking}
-            onClick={() => void handleStart({ salaryCapMode: true })}
-          >
-            {matchmakingMode === "ranked"
-              ? matchmakingLabel
-              : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
-          </button>
+          <div className="mode-card__actions">
+            <button
+              type="button"
+              className="ranked-cap-card__button"
+              disabled={isMatchmaking}
+              onClick={() => void handleStart({ salaryCapMode: true })}
+            >
+              {matchmakingMode === "ranked"
+                ? matchmakingLabel
+                : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+            </button>
+            <button
+              type="button"
+              className="ranked-cap-card__practice-button"
+              disabled={isMatchmaking}
+              onClick={() =>
+                void handleStart({
+                  practiceMode: true,
+                  salaryCapMode: true,
+                  salaryCapLimit: RANKED_SALARY_CAP,
+                })
+              }
+            >
+              Practice
+            </button>
+          </div>
+          <p className="mode-card__practice-note">
+            Practice uses the same ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot opponent.
+            Banners and streaks do not change; badges can still unlock.
+          </p>
         </div>
 
         <div className="all-time-card landing-card landing-card--mode">

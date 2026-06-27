@@ -113,7 +113,12 @@ const saveModeStats = (mode: MatchRecordMode, stats: ModeRecordStats) => {
 export const getMatchRecordMode = (options: {
   allTimeMode?: boolean;
   salaryCapMode?: boolean;
+  practiceMode?: boolean;
 }): MatchRecordMode => {
+  if (options.practiceMode) {
+    return "headToHead";
+  }
+
   if (options.allTimeMode) {
     return "allTime";
   }

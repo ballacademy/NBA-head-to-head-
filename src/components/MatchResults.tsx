@@ -90,35 +90,41 @@ export function MatchResults({
     }
 
     recordedRef.current = true;
-    const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
-    const challengerEloBefore = user.salaryCapMode
-      ? ensureCurrentRankedSeason().elo
-      : ensureClassicProfile().elo;
-    const outcome = persistMatchOutcome(
-      matchResult,
-      { name: user.name },
-      matchId,
-      matchRecordMode,
-      { opponentElo },
-    );
 
-    if (outcome.ranked) {
-      setRankedOutcome(outcome.ranked);
+    if (!user.practiceMode) {
+      const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
+      const challengerEloBefore = user.salaryCapMode
+        ? ensureCurrentRankedSeason().elo
+        : ensureClassicProfile().elo;
+      const outcome = persistMatchOutcome(
+        matchResult,
+        { name: user.name },
+        matchId,
+        matchRecordMode,
+        { opponentElo },
+      );
+
+      if (outcome.ranked) {
+        setRankedOutcome(outcome.ranked);
+      }
+
+      if (outcome.classic) {
+        setClassicOutcome(outcome.classic);
+      }
+
+      const next = processMatchUnlock(matchResult, matchId, collection);
+      setMatchCollection(next);
+      onCollectionChange(next);
     }
 
-    if (outcome.classic) {
-      setClassicOutcome(outcome.classic);
-    }
-
-    const next = processMatchUnlock(matchResult, matchId, collection);
-
-    setMatchCollection(next);
-    onCollectionChange(next);
     setActionsReady(true);
 
-    if (!user.allTimeMode && userLineup.length === 5) {
+    if (!user.allTimeMode && !user.practiceMode && userLineup.length === 5) {
       const mode = user.salaryCapMode ? "ranked" : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
+      const challengerEloBefore = user.salaryCapMode
+        ? ensureCurrentRankedSeason().elo
+        : ensureClassicProfile().elo;
       const storedLineupId = opponent.isGhostOpponent
         ? extractGhostStoredLineupId(opponent.id)
         : null;
@@ -160,6 +166,7 @@ export function MatchResults({
     user.allTimeMode,
     user.lineup,
     user.name,
+    user.practiceMode,
     user.salaryCapMode,
     userLineup.length,
     userScore.total,
@@ -220,7 +227,9 @@ export function MatchResults({
       <div className="panel panel--compact matchup-panel">
         <div className="matchup-panel__banner">
           <div>
-            <p className="eyebrow">Matchup results</p>
+            <p className="eyebrow">
+              {user.practiceMode ? "Practice results" : "Matchup results"}
+            </p>
             <h2 className="matchup-panel__title">
               {isTie
                 ? "Match ended in a tie"
@@ -232,14 +241,14 @@ export function MatchResults({
           <p className="matchup-panel__meta">
             Margin {Math.abs(userScore.total - opponentScore.total)} • OVR{" "}
             {userScore.total} vs {opponentScore.total}
-            {matchRecordMode === "ranked" && rankedOutcome ? (
+            {matchRecordMode === "ranked" && rankedOutcome && !user.practiceMode ? (
               <>
                 {" "}
                 • {formatRatingDelta(rankedOutcome.delta)} (
                 {formatRatingPoints(rankedOutcome.elo)})
               </>
             ) : null}
-            {matchRecordMode === "headToHead" && classicOutcome ? (
+            {matchRecordMode === "headToHead" && classicOutcome && !user.practiceMode ? (
               <>
                 {" "}
                 • {formatRatingDelta(classicOutcome.delta)} (
@@ -247,7 +256,7 @@ export function MatchResults({
               </>
             ) : null}
           </p>
-          {matchRecordMode === "ranked" && rankedOutcome ? (
+          {matchRecordMode === "ranked" && rankedOutcome && !user.practiceMode ? (
             <div className="matchup-panel__ranked">
               <RankedTierBadge
                 tierLabel={rankedOutcome.tierLabel}
@@ -258,7 +267,7 @@ export function MatchResults({
               </p>
             </div>
           ) : null}
-          {matchRecordMode === "headToHead" && classicOutcome ? (
+          {matchRecordMode === "headToHead" && classicOutcome && !user.practiceMode ? (
             <div className="matchup-panel__ranked">
               <RankedTierBadge
                 tierLabel={classicOutcome.tierLabel}

@@ -65,6 +65,7 @@ export function DraftRoom({
 
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
+  const isPracticeMode = Boolean(drafter.practiceMode);
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
     [players],
@@ -78,8 +79,12 @@ export function DraftRoom({
   );
   const salaryCapLimit = drafter.salaryCapLimit;
   const hasSalaryCap = salaryCapLimit != null;
-  const rankedProfile = drafter.salaryCapMode ? getRankedProfileView() : null;
-  const classicProfile = hasSalaryCap && !drafter.salaryCapMode ? getClassicProfileView() : null;
+  const rankedProfile =
+    !isPracticeMode && drafter.salaryCapMode ? getRankedProfileView() : null;
+  const classicProfile =
+    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode
+      ? getClassicProfileView()
+      : null;
   const salaryCapOptions = useMemo(
     () =>
       getSalaryCapDraftOptions(
@@ -215,6 +220,7 @@ export function DraftRoom({
     isDailyDraft,
     salaryCapMode: drafter.salaryCapMode,
     allTimeMode: drafter.allTimeMode,
+    practiceMode: drafter.practiceMode,
   });
 
   return (
@@ -238,11 +244,17 @@ export function DraftRoom({
       {hasSalaryCap ? (
         <div className="salary-cap-banner" role="status">
           <p className="eyebrow">
-            {drafter.salaryCapMode
-              ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label}`
-              : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label}`}
+            {isPracticeMode
+              ? "Practice mode"
+              : drafter.salaryCapMode
+                ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label}`
+                : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label}`}
           </p>
-          {rankedProfile || classicProfile ? (
+          {isPracticeMode ? (
+            <p className="salary-cap-banner__rating">
+              Bot opponent • ratings do not change
+            </p>
+          ) : rankedProfile || classicProfile ? (
             <p className="salary-cap-banner__rating">
               {formatRatingPoints((rankedProfile ?? classicProfile)!.elo)}
             </p>
@@ -271,8 +283,8 @@ export function DraftRoom({
         <p className="eyebrow">
           <TeamNameWithStreak
             name={drafter.name}
-            winStreak={playerRecord.winStreak}
-            lossStreak={playerRecord.lossStreak}
+            winStreak={isPracticeMode ? 0 : playerRecord.winStreak}
+            lossStreak={isPracticeMode ? 0 : playerRecord.lossStreak}
           />
         </p>
       </div>

@@ -5,6 +5,7 @@ describe("matchModeTheme", () => {
   it("maps draft modes to theme classes", () => {
     expect(getMatchModeTheme({ isDailyDraft: true })).toBe("daily");
     expect(getMatchModeTheme({ allTimeMode: true })).toBe("all-time");
+    expect(getMatchModeTheme({ practiceMode: true })).toBe("practice");
     expect(getMatchModeTheme({ salaryCapMode: true })).toBe("ranked");
     expect(getMatchModeTheme({})).toBe("head-to-head");
   });

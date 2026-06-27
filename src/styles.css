@@ -1249,6 +1249,20 @@ main {
   --mode-glow-b: rgba(59, 130, 246, 0.1);
 }
 
+.mode-theme--practice {
+  --mode-accent: #14b8a6;
+  --mode-accent-bright: #2dd4bf;
+  --mode-accent-soft: rgba(20, 184, 166, 0.16);
+  --mode-accent-strong: rgba(20, 184, 166, 0.24);
+  --mode-accent-border: rgba(20, 184, 166, 0.42);
+  --mode-surface-tint: rgba(20, 184, 166, 0.14);
+  --mode-eyebrow: #5eead4;
+  --mode-prompt-bg: rgba(19, 78, 74, 0.24);
+  --mode-prompt-border: rgba(20, 184, 166, 0.28);
+  --mode-glow-a: rgba(45, 212, 191, 0.18);
+  --mode-glow-b: rgba(20, 184, 166, 0.1);
+}
+
 .mode-theme--all-time {
   --mode-accent: #f59e0b;
   --mode-accent-bright: #fbbf24;
@@ -1847,6 +1861,31 @@ main {
   color: #cbd5e1;
 }
 
+.mode-card__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.mode-card__practice-note {
+  margin: 10px 0 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.head-to-head-card__practice-button {
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  border-radius: 999px;
+  padding: 12px 22px;
+  color: #fdba74;
+  font-weight: 800;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.head-to-head-card__practice-button:hover:not(:disabled) {
+  background: rgba(249, 115, 22, 0.18);
+}
+
 .era-progress-card {
   margin-top: 12px;
   padding: 14px 16px;
@@ -1964,6 +2003,19 @@ main {
 .ranked-cap-card__button:hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 40px rgba(37, 99, 235, 0.42);
+}
+
+.ranked-cap-card__practice-button {
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 999px;
+  padding: 12px 22px;
+  color: #93c5fd;
+  font-weight: 800;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.ranked-cap-card__practice-button:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.18);
 }
 
 .leaderboard__tabs--secondary {
@@ -2188,6 +2240,8 @@ main {
   .landing-card--mode .daily-draft-card__button,
   .landing-card--mode .landing__primary-button,
   .landing-card--mode .ranked-cap-card__button,
+  .landing-card--mode .head-to-head-card__practice-button,
+  .landing-card--mode .ranked-cap-card__practice-button,
   .landing-card--mode .all-time-card__button {
     margin-top: 12px;
   }
