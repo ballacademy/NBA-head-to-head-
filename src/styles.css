@@ -403,6 +403,19 @@ main {
   z-index: 1;
 }
 
+.landing__brand {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px;
+}
+
+.landing__logo {
+  display: block;
+  width: min(148px, 36vw);
+  height: auto;
+  filter: drop-shadow(0 10px 28px rgba(124, 58, 237, 0.28));
+}
+
 .landing__eyebrow {
   color: #7c3aed;
 }
@@ -1412,6 +1425,19 @@ main {
 .leaderboard__header .eyebrow {
   margin: 0;
   color: #c4b5fd;
+}
+
+.leaderboard__brand {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.leaderboard__logo {
+  display: block;
+  width: min(108px, 28vw);
+  height: auto;
+  filter: drop-shadow(0 8px 20px rgba(124, 58, 237, 0.22));
 }
 
 .leaderboard__subtitle {
