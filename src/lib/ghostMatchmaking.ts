@@ -1,3 +1,5 @@
+import type { HeadToHeadResult } from "./playerRecord";
+
 export type GhostMatchmakingMode = "classic" | "ranked";
 
 export interface GhostOpponentSnapshot {
@@ -16,6 +18,38 @@ export interface StoredLineupSubmission {
   elo: number;
 }
 
+export interface PendingMatchmakingStatus {
+  queuedLineup: { id: string; createdAt: string } | null;
+  pendingResult: PendingOwnerResult | null;
+}
+
+export interface PendingOwnerResult {
+  id: string;
+  lineupId: string;
+  mode: GhostMatchmakingMode;
+  ownerResult: HeadToHeadResult;
+  opponentTeamName: string;
+  opponentElo: number;
+  ownerLineup: string[];
+  ownerScore: number;
+  opponentScore: number;
+  createdAt: string;
+}
+
+export interface GhostMatchOutcomeSubmission {
+  storedLineupId: string;
+  mode: GhostMatchmakingMode;
+  challengerPlayerId: string;
+  challengerTeamName: string;
+  challengerWon: boolean;
+  challengerElo: number;
+  userScore: number;
+  opponentScore: number;
+}
+
+export const MATCHMAKING_SEARCH_MS = 20_000;
+export const MATCHMAKING_POLL_INTERVAL_MS = 2_000;
+
 const API_BASE = "";
 
 const buildUrl = (path: string) => `${API_BASE}${path}`;
@@ -33,6 +67,21 @@ const buildOpponentPath = (params: {
 
   return `${buildUrl("/api/opponent")}?${search.toString()}`;
 };
+
+const buildPendingPath = (params: {
+  mode: GhostMatchmakingMode;
+  playerId: string;
+}) => {
+  const search = new URLSearchParams({
+    mode: params.mode,
+    playerId: params.playerId,
+  });
+
+  return `${buildUrl("/api/pending")}?${search.toString()}`;
+};
+
+export const extractGhostStoredLineupId = (opponentId: string) =>
+  opponentId.startsWith("ghost-") ? opponentId.slice("ghost-".length) : null;
 
 export const fetchGhostOpponent = async (params: {
   mode: GhostMatchmakingMode;
@@ -58,9 +107,84 @@ export const fetchGhostOpponent = async (params: {
   }
 };
 
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+export const searchGhostOpponent = async (
+  params: {
+    mode: GhostMatchmakingMode;
+    playerId: string;
+    elo: number;
+  },
+  options: {
+    searchMs?: number;
+    pollIntervalMs?: number;
+  } = {},
+): Promise<GhostOpponentSnapshot | null> => {
+  const searchMs = options.searchMs ?? MATCHMAKING_SEARCH_MS;
+  const pollIntervalMs = options.pollIntervalMs ?? MATCHMAKING_POLL_INTERVAL_MS;
+  const deadline = Date.now() + searchMs;
+
+  while (Date.now() < deadline) {
+    const opponent = await fetchGhostOpponent(params);
+
+    if (opponent) {
+      return opponent;
+    }
+
+    const remaining = deadline - Date.now();
+
+    if (remaining <= 0) {
+      break;
+    }
+
+    await sleep(Math.min(pollIntervalMs, remaining));
+  }
+
+  return null;
+};
+
+export const fetchPendingMatchmakingStatus = async (params: {
+  mode: GhostMatchmakingMode;
+  playerId: string;
+}): Promise<PendingMatchmakingStatus | null> => {
+  try {
+    const response = await fetch(buildPendingPath(params), {
+      headers: { accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as PendingMatchmakingStatus;
+  } catch {
+    return null;
+  }
+};
+
+export const acknowledgePendingOwnerResult = async (resultId: string) => {
+  try {
+    const response = await fetch(buildUrl("/api/pending"), {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ resultId }),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
 export const submitStoredLineup = async (
   submission: StoredLineupSubmission,
-): Promise<boolean> => {
+): Promise<{ id: string; createdAt: string } | null> => {
   try {
     const response = await fetch(buildUrl("/api/lineups"), {
       method: "POST",
@@ -69,6 +193,38 @@ export const submitStoredLineup = async (
         "content-type": "application/json",
       },
       body: JSON.stringify(submission),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as { id: string; createdAt: string };
+  } catch {
+    return null;
+  }
+};
+
+export const submitGhostMatchOutcome = async (
+  submission: GhostMatchOutcomeSubmission,
+): Promise<boolean> => {
+  try {
+    const response = await fetch(buildUrl("/api/match-results"), {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        storedLineupId: submission.storedLineupId,
+        mode: submission.mode,
+        challengerPlayerId: submission.challengerPlayerId,
+        challengerTeamName: submission.challengerTeamName,
+        challengerWon: submission.challengerWon,
+        challengerElo: submission.challengerElo,
+        userScore: submission.userScore,
+        opponentScore: submission.opponentScore,
+      }),
     });
 
     return response.ok;

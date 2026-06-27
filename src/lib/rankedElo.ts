@@ -39,6 +39,11 @@ export const getTierForElo = (elo: number): RankedTier => {
 
 export const RATING_LABEL = "Banners";
 
+export const LIVE_OPPONENT_ONLY_MIN_ELO = 1500;
+
+export const requiresLiveOpponentOnly = (rating: number) =>
+  Math.max(0, Math.round(rating)) >= LIVE_OPPONENT_ONLY_MIN_ELO;
+
 export const formatRankedElo = (elo: number) => Math.max(0, Math.round(elo)).toString();
 
 export const formatRatingPoints = (rating: number) =>

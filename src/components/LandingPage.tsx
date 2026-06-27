@@ -49,6 +49,7 @@ interface LandingPageProps {
   dailyChallenge: DailyDraftChallenge;
   modeRecords: ModePlayerRecords;
   isMatchmaking?: boolean;
+  startMatchError?: string | null;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
@@ -89,6 +90,7 @@ export function LandingPage({
   dailyChallenge,
   modeRecords,
   isMatchmaking = false,
+  startMatchError = null,
   onStartDraft,
   onCollectionChange,
   onViewStats,
@@ -217,7 +219,9 @@ export function LandingPage({
           </span>
         </p>
 
-        {error ? <p className="form-error">{error}</p> : null}
+        {error || startMatchError ? (
+          <p className="form-error">{error || startMatchError}</p>
+        ) : null}
       </div>
 
       <div className="landing-game-modes">
@@ -250,7 +254,7 @@ export function LandingPage({
             onClick={() => void handleStart({ isDailyDraft: true })}
           >
             {isMatchmaking
-              ? "Finding opponent..."
+              ? "Finding opponent (up to 20s)..."
               : dailyCompleted
                 ? "Completed for today"
                 : "Play Today's Daily Draft"}
@@ -273,7 +277,9 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart()}
           >
-            {isMatchmaking ? "Finding opponent..." : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+            {isMatchmaking
+              ? "Finding opponent (up to 20s)..."
+              : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
@@ -293,7 +299,9 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart({ salaryCapMode: true })}
           >
-            {isMatchmaking ? "Finding opponent..." : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+            {isMatchmaking
+              ? "Finding opponent (up to 20s)..."
+              : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 

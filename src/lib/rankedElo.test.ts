@@ -6,8 +6,10 @@ import {
   getPlacementMultiplier,
   getStreakMultiplier,
   getTierForElo,
+  LIVE_OPPONENT_ONLY_MIN_ELO,
   RANKED_STARTING_ELO,
   RATING_LABEL,
+  requiresLiveOpponentOnly,
 } from "./rankedElo";
 
 describe("rankedElo", () => {
@@ -25,6 +27,7 @@ describe("rankedElo", () => {
     expect(formatRatingDelta(12)).toBe("+12 Banners");
     expect(formatRatingDelta(-8)).toBe("-8 Banners");
     expect(RATING_LABEL).toBe("Banners");
+    expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO)).toBe(true);
   });
 
   it("gives larger swings during placement and on streaks", () => {

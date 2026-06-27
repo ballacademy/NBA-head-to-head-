@@ -45,6 +45,7 @@ const findOpponent = async (
        FROM stored_lineups
        WHERE mode = ?
          AND player_id != ?
+         AND consumed_at IS NULL
          AND elo BETWEEN ? AND ?
          AND created_at >= ?
        ORDER BY RANDOM()

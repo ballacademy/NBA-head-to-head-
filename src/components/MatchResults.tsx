@@ -14,7 +14,11 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
-import { submitStoredLineup } from "../lib/ghostMatchmaking";
+import {
+  extractGhostStoredLineupId,
+  submitGhostMatchOutcome,
+  submitStoredLineup,
+} from "../lib/ghostMatchmaking";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
@@ -87,6 +91,9 @@ export function MatchResults({
 
     recordedRef.current = true;
     const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
+    const challengerEloBefore = user.salaryCapMode
+      ? ensureCurrentRankedSeason().elo
+      : ensureClassicProfile().elo;
     const outcome = persistMatchOutcome(
       matchResult,
       { name: user.name },
@@ -111,9 +118,27 @@ export function MatchResults({
 
     if (!user.allTimeMode && userLineup.length === 5) {
       const mode = user.salaryCapMode ? "ranked" : "classic";
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      const storedLineupId = opponent.isGhostOpponent
+        ? extractGhostStoredLineupId(opponent.id)
+        : null;
+
+      if (storedLineupId) {
+        void submitGhostMatchOutcome({
+          storedLineupId,
+          mode,
+          challengerPlayerId: playerId,
+          challengerTeamName: user.name,
+          challengerWon: userWon,
+          challengerElo: challengerEloBefore,
+          userScore: userScore.total,
+          opponentScore: opponentScore.total,
+        });
+      }
+
       void submitStoredLineup({
         mode,
-        playerId: getOrCreatePlayerIdentity().playerId,
+        playerId,
         teamName: user.name,
         lineup: user.lineup.filter((id): id is string => Boolean(id)),
         elo: user.salaryCapMode
@@ -128,12 +153,17 @@ export function MatchResults({
     matchResult,
     onCollectionChange,
     opponent.classicOpponentElo,
+    opponent.id,
+    opponent.isGhostOpponent,
     opponent.rankedOpponentElo,
+    opponentScore.total,
     user.allTimeMode,
     user.lineup,
     user.name,
     user.salaryCapMode,
     userLineup.length,
+    userScore.total,
+    userWon,
   ]);
 
   useLayoutEffect(() => {
