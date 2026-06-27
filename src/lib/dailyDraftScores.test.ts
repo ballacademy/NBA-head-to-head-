@@ -64,6 +64,8 @@ describe("dailyDraftScores", () => {
       40,
       "40.0",
       benchmarks,
+      ["a", "b", "c", "d", "e"],
+      "Test Team",
     );
 
     expect(result.sampleSize).toBe(benchmarks.length + 1);
@@ -81,6 +83,8 @@ describe("dailyDraftScores", () => {
       40,
       "40.0",
       [10, 20, 30, 50],
+      ["a", "b", "c", "d", "e"],
+      "Test Team",
     );
 
     const saved = JSON.parse(
@@ -94,12 +98,9 @@ describe("dailyDraftScores", () => {
   it("formats stored percentile copy for the landing page", () => {
     expect(
       formatPlayerDailyDraftPercentile({
-        playerId: "player-test-1",
-        goalId: "points",
-        value: 120,
-        formattedResult: "120.0 PTS",
         percentile: 92,
-        submittedAt: "2026-06-26T00:00:00.000Z",
+        totalDrafters: 10,
+        sampleSize: 510,
       }),
     ).toBe("Top 8% Today");
   });

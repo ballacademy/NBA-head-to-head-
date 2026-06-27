@@ -1,5 +1,6 @@
 import { calculateLineupStatRawTotal, normalizeLineupTotal } from "./scoring";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
+import { formatOrdinal } from "./ordinal";
 import type { Player } from "./types";
 
 export type DraftLetterGrade =
@@ -68,19 +69,16 @@ export const buildDailyDraftShareText = (
   goalTitle: string,
   formattedResult: string,
   dateKey: string,
-  lineup: Player[],
   percentile?: number,
 ) => {
-  const grid = lineup.map((player) => getPickQualityEmoji(player)).join("");
   const lines = [
     `H2H Daily Draft ${dateKey}`,
     `🎯 ${goalTitle}`,
-    grid,
     `📊 ${formattedResult}`,
   ];
 
   if (typeof percentile === "number") {
-    lines.push(`📈 ${percentile}th percentile`);
+    lines.push(`📈 ${formatOrdinal(percentile)} percentile`);
   }
 
   lines.push("#DraftDayGM");

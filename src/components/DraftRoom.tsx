@@ -6,7 +6,7 @@ import {
 } from "../lib/draft";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
-import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
+import { getPickTimeLimitSeconds } from "../lib/match";
 import {
   clearDraftDeadline,
   getSecondsUntilDeadline,
@@ -57,7 +57,10 @@ export function DraftRoom({
   onTimeout,
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
-  const [secondsLeft, setSecondsLeft] = useState(PICK_TIME_LIMIT_SECONDS);
+  const [secondsLeft, setSecondsLeft] = useState(() =>
+    getPickTimeLimitSeconds(isDailyDraft),
+  );
+  const pickTimeLimitSeconds = getPickTimeLimitSeconds(isDailyDraft);
   const timeoutFiredRef = useRef(false);
 
   const currentSlot = drafter.draftSlots[activeStep];
@@ -142,9 +145,9 @@ export function DraftRoom({
 
   useEffect(() => {
     setQuery("");
-    setSecondsLeft(PICK_TIME_LIMIT_SECONDS);
+    setSecondsLeft(pickTimeLimitSeconds);
     timeoutFiredRef.current = false;
-  }, [activeStep, currentSlot?.division, currentSlot?.position]);
+  }, [activeStep, currentSlot?.division, currentSlot?.position, pickTimeLimitSeconds]);
 
   useEffect(() => {
     if (!currentSlot || drafter.lineup.length >= drafter.draftSlots.length) {
@@ -162,7 +165,7 @@ export function DraftRoom({
     let deadlineMs = loadDraftDeadline(draftSessionKey, activeStep);
 
     if (deadlineMs == null) {
-      deadlineMs = Date.now() + PICK_TIME_LIMIT_SECONDS * 1000;
+      deadlineMs = Date.now() + pickTimeLimitSeconds * 1000;
       saveDraftDeadline(draftSessionKey, activeStep, deadlineMs);
     }
 
@@ -198,6 +201,7 @@ export function DraftRoom({
     drafter.draftSlots.length,
     drafter.lineup,
     onTimeout,
+    pickTimeLimitSeconds,
   ]);
 
   if (!currentSlot) {

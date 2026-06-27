@@ -27,7 +27,10 @@ import {
 } from "./lib/dailyDraft";
 import { getMatchModeTheme } from "./lib/matchModeTheme";
 import {
+  formatPlayerDailyDraftPercentile,
+  getPlayerDailyDraftEntry,
   hasCompletedDailyDraft,
+  resolvePlayerDailyDraftPercentile,
   simulateDailyBenchmarkValues,
 } from "./lib/dailyDraftScores";
 import {
@@ -69,7 +72,7 @@ import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
   RANKED_SALARY_CAP,
 } from "./lib/salaryCap";
-import { saveTeamProfile } from "./lib/teamProfile";
+import { saveTeamProfile, loadTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
 import { getMatchmakingElapsedSeconds } from "./lib/matchmakingTiming";
 import type { Drafter } from "./lib/types";
@@ -93,8 +96,10 @@ function App() {
   const [matchId, setMatchId] = useState<string | null>(null);
   const [draftSessionKey, setDraftSessionKey] = useState<string | null>(null);
   const [isDailyDraft, setIsDailyDraft] = useState(false);
+  const [isDailyReview, setIsDailyReview] = useState(false);
   const [allTimeMode, setAllTimeMode] = useState(false);
   const [dailyDateKey, setDailyDateKey] = useState(getDailyDateKey());
+  const [dailyScoresRefreshTick, setDailyScoresRefreshTick] = useState(0);
   const [modeRecords, setModeRecords] = useState(loadAllModeRecords);
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
@@ -136,6 +141,20 @@ function App() {
       window.clearInterval(intervalId);
     };
   }, [isMatchmaking, matchmakingStartedAt]);
+
+  useEffect(() => {
+    if (phase !== "landing") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setDailyScoresRefreshTick((current) => current + 1);
+    }, 15_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "landing" || deliveredOwnerResult) {
@@ -202,6 +221,55 @@ function App() {
   const dailySetup = useMemo(
     () => (isDailyDraft ? getDailyDraftSetup(dailyDateKey) : null),
     [dailyDateKey, isDailyDraft],
+  );
+
+  const landingDailySetup = useMemo(
+    () => getDailyDraftSetup(dailyDateKey),
+    [dailyDateKey],
+  );
+
+  const landingDailyEntry = useMemo(
+    () =>
+      getPlayerDailyDraftEntry(
+        dailyDateKey,
+        landingDailySetup.goal.id,
+      ),
+    [dailyDateKey, dailyScoresRefreshTick, landingDailySetup.goal.id],
+  );
+
+  const landingDailyBenchmarkValues = useMemo(
+    () =>
+      simulateDailyBenchmarkValues(
+        activePlayers,
+        landingDailySetup.slots,
+        landingDailySetup.goal,
+        dailyDateKey,
+      ),
+    [activePlayers, dailyDateKey, landingDailySetup.goal, landingDailySetup.slots],
+  );
+
+  const landingDailyPercentileLabel = useMemo(() => {
+    if (!landingDailyEntry) {
+      return null;
+    }
+
+    return formatPlayerDailyDraftPercentile(
+      resolvePlayerDailyDraftPercentile(
+        dailyDateKey,
+        landingDailyEntry,
+        landingDailySetup.goal,
+        landingDailyBenchmarkValues,
+      ),
+    );
+  }, [
+    dailyDateKey,
+    landingDailyBenchmarkValues,
+    landingDailyEntry,
+    landingDailySetup.goal,
+  ]);
+
+  const canViewDailyLineup = Boolean(
+    landingDailyEntry?.lineup && landingDailyEntry.lineup.length >= 5,
   );
 
   const dailyBenchmarkValues = useMemo(() => {
@@ -356,6 +424,7 @@ function App() {
     saveTeamProfile(team);
     setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
+    setIsDailyReview(false);
     setAllTimeMode(nextAllTimeMode);
     setIsPendingQueueMatch(isPendingQueue);
     setDailyDateKey(dateKey);
@@ -394,6 +463,46 @@ function App() {
     return true;
   };
 
+  const viewDailyLineup = useCallback((): boolean => {
+    const dateKey = getDailyDateKey();
+    const setup = getDailyDraftSetup(dateKey);
+    const entry = getPlayerDailyDraftEntry(dateKey, setup.goal.id);
+
+    if (!entry?.lineup || entry.lineup.length < 5) {
+      return false;
+    }
+
+    const team =
+      loadTeamProfile() ??
+      (entry.teamName ? { name: entry.teamName } : null);
+
+    if (!team) {
+      return false;
+    }
+
+    saveTeamProfile(team);
+    setIsDailyDraft(true);
+    setIsDailyReview(true);
+    setDailyDateKey(dateKey);
+    setUser({
+      ...createUserDrafter(team, setup.slots, {
+        isDailyDraft: true,
+        dailyChallengeTitle: setup.challenge.title,
+      }),
+      lineup: entry.lineup,
+    });
+    setOpponent(null);
+    setOpponentCollection(null);
+    setDraftStep(5);
+    setOpponentPickCount(0);
+    setOpponentComplete(true);
+    setMatchId(null);
+    setDraftSessionKey(null);
+    setIsPendingQueueMatch(false);
+    setPhase("results");
+    return true;
+  }, []);
+
   const resetToLanding = () => {
     setUser(null);
     setOpponent(null);
@@ -407,6 +516,7 @@ function App() {
     setIsMatchmaking(false);
     setMatchmakingStartedAt(null);
     setIsDailyDraft(false);
+    setIsDailyReview(false);
     setAllTimeMode(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
@@ -711,8 +821,11 @@ function App() {
           modeRecords={modeRecords}
           isMatchmaking={isMatchmaking}
           matchmakingElapsedSeconds={matchmakingElapsedSeconds}
+          dailyPercentileLabel={landingDailyPercentileLabel}
+          canViewDailyLineup={canViewDailyLineup}
           startMatchError={startMatchError}
           onStartDraft={startMatch}
+          onViewDailyLineup={viewDailyLineup}
           onCollectionChange={setCollection}
           onViewStats={() => setPhase("stats")}
           onViewAchievements={() => setPhase("achievements")}
@@ -808,6 +921,7 @@ function App() {
           dailyDateKey={dailyDateKey}
           dailyGoal={dailySetup.goal}
           benchmarkValues={dailyBenchmarkValues}
+          reviewOnly={isDailyReview}
           onPlayAgain={resetToLanding}
         />
       ) : null}

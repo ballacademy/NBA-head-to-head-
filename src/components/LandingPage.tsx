@@ -7,7 +7,6 @@ import {
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey } from "../lib/dailyDraft";
 import {
-  formatPlayerDailyDraftPercentile,
   getPlayerDailyDraftEntry,
 } from "../lib/dailyDraftScores";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
@@ -23,7 +22,7 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
-import { PICK_TIME_LIMIT_SECONDS } from "../lib/match";
+import { PICK_TIME_LIMIT_SECONDS, DAILY_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
   RANKED_SALARY_CAP,
@@ -55,6 +54,9 @@ interface LandingPageProps {
     team: TeamProfile,
     options?: StartDraftOptions,
   ) => Promise<boolean>;
+  onViewDailyLineup?: () => Promise<boolean> | boolean;
+  dailyPercentileLabel?: string | null;
+  canViewDailyLineup?: boolean;
   onCollectionChange: (collection: PlayerCollection) => void;
   onViewStats: () => void;
   onViewAchievements: () => void;
@@ -94,6 +96,9 @@ export function LandingPage({
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
   onStartDraft,
+  onViewDailyLineup,
+  dailyPercentileLabel = null,
+  canViewDailyLineup = false,
   onCollectionChange,
   onViewStats,
   onViewAchievements,
@@ -170,6 +175,32 @@ export function LandingPage({
     }
   };
 
+  const handleDailyAction = async () => {
+    if (collection.pendingUnlock || isMatchmaking) {
+      if (collection.pendingUnlock) {
+        setShowUnlockModal(true);
+      }
+      return;
+    }
+
+    if (dailyCompleted) {
+      if (!canViewDailyLineup || !onViewDailyLineup) {
+        return;
+      }
+
+      setError("");
+      const opened = await onViewDailyLineup();
+
+      if (!opened) {
+        setError("Couldn't load today's lineup. Try again in a moment.");
+      }
+
+      return;
+    }
+
+    await handleStart({ isDailyDraft: true });
+  };
+
   return (
     <section className="landing panel landing--rich">
       {showUnlockModal && collection.pendingUnlock ? (
@@ -236,8 +267,8 @@ export function LandingPage({
           <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
           <p className="daily-draft-card__description">{dailyChallenge.description}</p>
           <p className="daily-draft-card__meta">
-            Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS} seconds per
-            pick. Stats stay hidden. Same goal for everyone today — one attempt
+            Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS} seconds
+            per pick. Stats stay hidden. Same goal for everyone today — one attempt
             per day.
           </p>
           <div className="landing-mode-card__record-block">
@@ -249,18 +280,20 @@ export function LandingPage({
             </p>
             <p className="landing-mode-card__record-meta">
               {dailyEntry
-                ? `${formatPlayerDailyDraftPercentile(dailyEntry)} · Daily draft complete`
+                ? `${dailyPercentileLabel ?? "Daily draft complete"} · Daily draft complete`
                 : "Not played yet today"}
             </p>
           </div>
           <button
             type="button"
-            className="daily-draft-card__button"
-            disabled={dailyCompleted || isMatchmaking}
-            onClick={() => void handleStart({ isDailyDraft: true })}
+            className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
+            disabled={isMatchmaking || (dailyCompleted && !canViewDailyLineup)}
+            onClick={() => void handleDailyAction()}
           >
-            {isMatchmaking ? matchmakingLabel : dailyCompleted
-                ? "Completed for today"
+            {isMatchmaking
+              ? matchmakingLabel
+              : dailyCompleted
+                ? "View my lineup"
                 : "Play Today's Daily Draft"}
           </button>
         </div>

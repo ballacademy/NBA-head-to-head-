@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { PlayerStatLine } from "./PlayerStatLine";
@@ -11,12 +11,16 @@ import {
 } from "../lib/achievements";
 import {
   formatDailyPercentile,
+  getDailyDraftPercentile,
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
+import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
+
+const LIVE_PERCENTILE_REFRESH_MS = 15_000;
 
 interface DailyDraftResultsProps {
   user: Drafter;
@@ -24,6 +28,7 @@ interface DailyDraftResultsProps {
   dailyDateKey: string;
   dailyGoal: DailyDraftGoal;
   benchmarkValues: number[];
+  reviewOnly?: boolean;
   onPlayAgain: () => void;
 }
 
@@ -33,9 +38,10 @@ export function DailyDraftResults({
   dailyDateKey,
   dailyGoal,
   benchmarkValues,
+  reviewOnly = false,
   onPlayAgain,
 }: DailyDraftResultsProps) {
-  const submittedRef = useRef(false);
+  const submittedRef = useRef(reviewOnly);
   const achievementsCheckedRef = useRef(false);
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
@@ -51,7 +57,6 @@ export function DailyDraftResults({
         dailyGoal.title,
         goalResult.formatted,
         dailyDateKey,
-        userLineup,
         percentileResult?.percentile,
       ),
     [
@@ -59,7 +64,6 @@ export function DailyDraftResults({
       dailyGoal.title,
       goalResult.formatted,
       percentileResult?.percentile,
-      userLineup,
     ],
   );
   const orderedLineup = useMemo(
@@ -73,24 +77,56 @@ export function DailyDraftResults({
     }
 
     submittedRef.current = true;
-    const result = submitDailyDraftScore(
+    submitDailyDraftScore(
       dailyDateKey,
       dailyGoal,
       goalResult.value,
       goalResult.formatted,
       benchmarkValues,
+      userLineup.map((player) => player.id),
+      user.name,
     );
-    setPercentileResult(result);
   }, [
     benchmarkValues,
     dailyDateKey,
     dailyGoal,
     goalResult.formatted,
     goalResult.value,
+    user.name,
+    userLineup,
+  ]);
+
+  useEffect(() => {
+    const refreshPercentile = () => {
+      setPercentileResult(
+        getDailyDraftPercentile(
+          dailyDateKey,
+          goalResult.value,
+          dailyGoal,
+          benchmarkValues,
+          getOrCreatePlayerId(),
+        ),
+      );
+    };
+
+    refreshPercentile();
+    const intervalId = window.setInterval(
+      refreshPercentile,
+      LIVE_PERCENTILE_REFRESH_MS,
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [
+    benchmarkValues,
+    dailyDateKey,
+    dailyGoal,
+    goalResult.value,
   ]);
 
   useLayoutEffect(() => {
-    if (achievementsCheckedRef.current || userLineup.length !== 5) {
+    if (reviewOnly || achievementsCheckedRef.current || userLineup.length !== 5) {
       return;
     }
 
@@ -98,7 +134,7 @@ export function DailyDraftResults({
     const earned = checkLineupAchievements(userLineup);
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
-  }, [userLineup]);
+  }, [reviewOnly, userLineup]);
 
   const handleCopyShareText = async () => {
     const copied = await copyToClipboard(dailyShareText);
