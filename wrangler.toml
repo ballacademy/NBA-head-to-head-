@@ -5,5 +5,5 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "draft-day-gm"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "9563fd5c-3092-4201-b606-fe9ce6270849"
 migrations_dir = "migrations"
