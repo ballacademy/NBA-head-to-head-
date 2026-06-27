@@ -40,7 +40,9 @@ import {
   createClassicOpponent,
   createRankedOpponent,
   createGhostOpponent,
+  createLiveOpponent,
   createUserDrafter,
+  finalizeOpponentLineup,
   getOpponentPickDelayMs,
   sleep,
   type StartDraftOptions,
@@ -57,6 +59,11 @@ import {
 } from "./lib/pendingOwnerResults";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
+import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
+import {
+  submitLiveMatchLineup,
+  waitForLiveOpponentLineup,
+} from "./lib/liveMatchmaking";
 import { ensureClassicProfile } from "./lib/classicProfile";
 import {
   ensurePlayerCollection,
@@ -348,6 +355,7 @@ function App() {
           : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
     const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
     let ghostOpponent: GhostOpponentSnapshot | null = null;
+    let liveOpponent: LiveOpponentSnapshot | null = null;
     let isPendingQueue = false;
 
     if (!daily && !nextAllTimeMode) {
@@ -362,6 +370,7 @@ function App() {
         mode: nextMatchmakingMode,
         playerId,
         playerElo: elo,
+        teamName: team.name,
       });
 
       setMatchmakingMode(null);
@@ -372,7 +381,9 @@ function App() {
         return false;
       }
 
-      if (resolution.plan.kind === "ghost") {
+      if (resolution.plan.kind === "live") {
+        liveOpponent = resolution.plan.live;
+      } else if (resolution.plan.kind === "ghost") {
         ghostOpponent = resolution.plan.ghost;
       } else if (resolution.plan.kind === "queue_for_live") {
         isPendingQueue = true;
@@ -453,20 +464,22 @@ function App() {
     setOpponent(
       isPendingQueue
         ? null
-        : ghostOpponent && opponentSlots
-          ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
-          : opponentSlots
-            ? salaryCapMode
-              ? createRankedOpponent(opponentSlots)
-              : nextAllTimeMode
-                ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
-                : createClassicOpponent(opponentSlots)
-            : null,
+        : liveOpponent && opponentSlots
+          ? createLiveOpponent(opponentSlots, liveOpponent, { salaryCapMode })
+          : ghostOpponent && opponentSlots
+            ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
+            : opponentSlots
+              ? salaryCapMode
+                ? createRankedOpponent(opponentSlots)
+                : nextAllTimeMode
+                  ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                  : createClassicOpponent(opponentSlots)
+              : null,
     );
     setOpponentCollection(nextOpponentCollection);
     setDraftStep(0);
-    setOpponentPickCount(0);
-    setOpponentComplete(daily || isPendingQueue);
+    setOpponentPickCount(ghostOpponent ? ghostOpponent.lineup.length : 0);
+    setOpponentComplete(daily || isPendingQueue || Boolean(ghostOpponent));
     setMatchId(null);
     setDraftSessionKey(
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -658,10 +671,10 @@ function App() {
       draftSlots,
       salaryCapLimit,
       isGhostOpponent,
-      lineup,
+      isLiveOpponent,
     } = opponent;
 
-    if (draftSlots.length === 0) {
+    if (draftSlots.length === 0 || isGhostOpponent || isLiveOpponent) {
       return;
     }
 
@@ -669,38 +682,10 @@ function App() {
 
     const simulateOpponentDraft = async () => {
       if (isGhostOpponent) {
-        const storedLineup = lineup.filter((playerId): playerId is string =>
-          Boolean(playerId),
-        );
-        const revealCount = Math.min(storedLineup.length, draftSlots.length);
+        return;
+      }
 
-        for (let index = 0; index < revealCount; index += 1) {
-          await sleep(getOpponentPickDelayMs());
-          if (cancelled) {
-            return;
-          }
-
-          const pickCount = index + 1;
-          setOpponentPickCount(pickCount);
-          setOpponent((current) =>
-            current?.id === opponentId
-              ? {
-                  ...current,
-                  lineup: storedLineup.slice(0, pickCount),
-                }
-              : current,
-          );
-        }
-
-        if (!cancelled) {
-          setOpponent((current) =>
-            current?.id === opponentId
-              ? { ...current, lineup: storedLineup }
-              : current,
-          );
-          setOpponentComplete(true);
-        }
-
+      if (isLiveOpponent) {
         return;
       }
 
@@ -715,7 +700,7 @@ function App() {
         }
 
         const salaryOptions = getSalaryCapDraftOptions(
-          lineup,
+          nextLineup,
           opponentDraftablePlayersRef.current,
           index,
           draftSlots.length,
@@ -757,6 +742,65 @@ function App() {
   }, [isDailyDraft, opponent?.id]);
 
   useEffect(() => {
+    if (
+      !userDraftComplete ||
+      phase !== "waiting" ||
+      !opponent?.isLiveOpponent ||
+      !opponent.liveMatchId ||
+      !user ||
+      opponentComplete
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    const playerId = getOrCreatePlayerIdentity().playerId;
+    const liveMatchId = opponent.liveMatchId;
+    const lineup = user.lineup.filter((id): id is string => Boolean(id));
+
+    if (lineup.length !== 5) {
+      return;
+    }
+
+    void (async () => {
+      await submitLiveMatchLineup({
+        matchId: liveMatchId,
+        playerId,
+        lineup,
+      });
+
+      const opponentLineup = await waitForLiveOpponentLineup({
+        matchId: liveMatchId,
+        playerId,
+      });
+
+      if (cancelled || !opponentLineup) {
+        return;
+      }
+
+      setOpponent((current) =>
+        current?.liveMatchId === liveMatchId
+          ? { ...current, lineup: opponentLineup }
+          : current,
+      );
+      setOpponentPickCount(opponentLineup.length);
+      setOpponentComplete(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    opponent?.id,
+    opponent?.isLiveOpponent,
+    opponent?.liveMatchId,
+    opponentComplete,
+    phase,
+    user,
+    userDraftComplete,
+  ]);
+
+  useEffect(() => {
     if (!userDraftComplete || phase !== "drafting") {
       return;
     }
@@ -771,8 +815,30 @@ function App() {
       return;
     }
 
-    setPhase(opponentComplete ? "results" : "waiting");
-  }, [isDailyDraft, isPendingQueueMatch, opponentComplete, phase, userDraftComplete]);
+    if (opponent?.isLiveOpponent) {
+      setPhase(opponentComplete ? "results" : "waiting");
+      return;
+    }
+
+    if (opponent && !opponent.isGhostOpponent) {
+      const finalized = finalizeOpponentLineup(
+        opponentDraftablePlayersRef.current,
+        opponent,
+      );
+      setOpponent(finalized);
+      setOpponentPickCount(finalized.lineup.length);
+      setOpponentComplete(true);
+    }
+
+    setPhase("results");
+  }, [
+    isDailyDraft,
+    isPendingQueueMatch,
+    opponent,
+    opponentComplete,
+    phase,
+    userDraftComplete,
+  ]);
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
@@ -912,7 +978,7 @@ function App() {
         </section>
       ) : null}
 
-      {phase === "waiting" && opponent ? (
+      {phase === "waiting" && opponent?.isLiveOpponent ? (
         <WaitingRoom
           opponentPickCount={opponentPickCount}
           totalPicks={opponent.draftSlots.length}

@@ -7,7 +7,7 @@ import {
 } from "./matchmakingTiming";
 
 describe("matchmakingTiming", () => {
-  it("picks a search window between 17 and 20 seconds", () => {
+  it("picks a search window between 7 and 10 seconds", () => {
     expect(resolveMatchmakingSearchMs(() => 0)).toBe(
       MATCHMAKING_SEARCH_MIN_SECONDS * 1000,
     );
