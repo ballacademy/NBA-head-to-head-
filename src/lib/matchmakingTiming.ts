@@ -1,5 +1,5 @@
-export const MATCHMAKING_SEARCH_MIN_SECONDS = 17;
-export const MATCHMAKING_SEARCH_MAX_SECONDS = 20;
+export const MATCHMAKING_SEARCH_MIN_SECONDS = 7;
+export const MATCHMAKING_SEARCH_MAX_SECONDS = 10;
 
 export const resolveMatchmakingSearchMs = (
   random: () => number = Math.random,

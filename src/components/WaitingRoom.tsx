@@ -20,8 +20,8 @@ export function WaitingRoom({
       <p className="eyebrow">Draft complete</p>
       <h2>Waiting for your opponent</h2>
       <p>
-        Your lineup is locked in. Your opponent is still drafting in the
-        background and will be revealed once both teams are ready.
+        Your lineup is locked in. Your opponent is drafting live and will be
+        revealed once both teams are ready.
       </p>
 
       <div className="waiting-indicator">

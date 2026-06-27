@@ -443,6 +443,13 @@ export function LandingPage({
         </p>
       </div>
 
+      <p className="landing-disclaimer">
+        Draft Day GM is an independent fan project. It is not affiliated with,
+        endorsed by, or connected to the NBA, its teams, players, or partners.
+        Team names, player names, and statistics are used for informational
+        purposes only.
+      </p>
+
       <p className="landing-credit">Powered by BALLACADEMY</p>
     </section>
   );

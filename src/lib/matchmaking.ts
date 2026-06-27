@@ -1,9 +1,13 @@
 import {
+  fetchGhostOpponent,
   fetchPendingMatchmakingStatus,
-  searchGhostOpponent,
   type GhostMatchmakingMode,
   type GhostOpponentSnapshot,
 } from "./ghostMatchmaking";
+import {
+  searchLiveOpponent,
+  type LiveOpponentSnapshot,
+} from "./liveMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import {
   clearPendingLineupState,
@@ -23,6 +27,10 @@ export type StartMatchError =
   | "setup_failed";
 
 export type HeadToHeadMatchmakingPlan =
+  | {
+      kind: "live";
+      live: LiveOpponentSnapshot;
+    }
   | {
       kind: "ghost";
       ghost: GhostOpponentSnapshot;
@@ -77,6 +85,7 @@ export const planHeadToHeadMatchmaking = async (params: {
   mode: GhostMatchmakingMode;
   playerId: string;
   playerElo: number;
+  teamName: string;
 }): Promise<
   | { ok: true; plan: HeadToHeadMatchmakingPlan }
   | { ok: false; error: StartMatchError }
@@ -85,16 +94,27 @@ export const planHeadToHeadMatchmaking = async (params: {
     return { ok: false, error: "pending_lineup_locked" };
   }
 
-  const ghost = await searchGhostOpponent(
+  const searchMs = resolveMatchmakingSearchMs();
+
+  const live = await searchLiveOpponent(
     {
       mode: params.mode,
       playerId: params.playerId,
+      teamName: params.teamName,
       elo: params.playerElo,
     },
-    {
-      searchMs: resolveMatchmakingSearchMs(),
-    },
+    { searchMs },
   );
+
+  if (live) {
+    return { ok: true, plan: { kind: "live", live } };
+  }
+
+  const ghost = await fetchGhostOpponent({
+    mode: params.mode,
+    playerId: params.playerId,
+    elo: params.playerElo,
+  });
 
   if (ghost) {
     return { ok: true, plan: { kind: "ghost", ghost } };

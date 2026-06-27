@@ -11,6 +11,7 @@ import {
 } from "./rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
 import type { GhostOpponentSnapshot } from "./ghostMatchmaking";
+import type { LiveOpponentSnapshot } from "./liveMatchmaking";
 import type { TeamProfile } from "./teamProfile";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -141,13 +142,16 @@ export const createGhostOpponent = (
     initialDrafterBlueprints[
       Math.abs(ghost.teamName.length) % initialDrafterBlueprints.length
     ]!;
+  const storedLineup = ghost.lineup.filter((playerId): playerId is string =>
+    Boolean(playerId),
+  );
 
   return {
     id: `ghost-${ghost.id}`,
     name: ghost.teamName,
     accent: blueprint.accent,
     draftSlots,
-    lineup: ghost.lineup,
+    lineup: storedLineup,
     salaryCapMode: options.salaryCapMode,
     salaryCapLimit: options.salaryCapMode
       ? RANKED_SALARY_CAP
@@ -155,6 +159,33 @@ export const createGhostOpponent = (
     rankedOpponentElo: options.salaryCapMode ? ghost.elo : undefined,
     classicOpponentElo: options.salaryCapMode ? undefined : ghost.elo,
     isGhostOpponent: true,
+  };
+};
+
+export const createLiveOpponent = (
+  draftSlots: DraftSlotConstraint[],
+  live: LiveOpponentSnapshot,
+  options: { salaryCapMode?: boolean } = {},
+): Drafter => {
+  const blueprint =
+    initialDrafterBlueprints[
+      Math.abs(live.teamName.length) % initialDrafterBlueprints.length
+    ]!;
+
+  return {
+    id: `live-${live.matchId}`,
+    name: live.teamName,
+    accent: blueprint.accent,
+    draftSlots,
+    lineup: [],
+    isLiveOpponent: true,
+    liveMatchId: live.matchId,
+    salaryCapMode: options.salaryCapMode,
+    salaryCapLimit: options.salaryCapMode
+      ? RANKED_SALARY_CAP
+      : CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+    rankedOpponentElo: options.salaryCapMode ? live.elo : undefined,
+    classicOpponentElo: options.salaryCapMode ? undefined : live.elo,
   };
 };
 

@@ -68,6 +68,8 @@ export interface Drafter {
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
   isGhostOpponent?: boolean;
+  isLiveOpponent?: boolean;
+  liveMatchId?: string;
 }
 
 export interface ScoreCategory {
