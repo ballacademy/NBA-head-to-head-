@@ -187,7 +187,12 @@ export function DailyDraftResults({
         <h3>{user.name}</h3>
         <div className="team-lineup-card__players">
           {orderedLineup.map((player, index) => (
-            <PlayerStatLine key={player.id} player={player} pickNumber={index + 1} />
+            <PlayerStatLine
+              key={player.id}
+              player={player}
+              pickNumber={index + 1}
+              dailyGoal={dailyGoal}
+            />
           ))}
         </div>
       </section>

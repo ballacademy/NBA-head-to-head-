@@ -2653,6 +2653,13 @@ main {
   font-size: 0.9rem;
 }
 
+.player-stat-line__goal-stat {
+  color: var(--accent, #7dd3fc);
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .player-pick > div {
   flex: 1;
   min-width: 0;
