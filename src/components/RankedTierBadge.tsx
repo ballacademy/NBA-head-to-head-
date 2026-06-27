@@ -1,4 +1,4 @@
-import { getTierForElo, type RankedTier } from "../lib/rankedElo";
+import { formatRatingPoints, getTierForElo, type RankedTier } from "../lib/rankedElo";
 
 interface RankedTierBadgeProps {
   tier?: RankedTier;
@@ -32,7 +32,7 @@ export function RankedTierBadge({
     >
       {tierLabel ?? tierMeta.label}
       {typeof elo === "number" ? (
-        <span className="ranked-tier-badge__elo">{Math.round(elo)} Elo</span>
+        <span className="ranked-tier-badge__rating">{formatRatingPoints(elo)}</span>
       ) : null}
     </span>
   );

@@ -25,6 +25,7 @@ import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
 import { getClassicProfileView } from "../lib/classicProfile";
 import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 import { getRankedProfileView } from "../lib/rankedProfile";
+import { formatRatingPoints } from "../lib/rankedElo";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
@@ -237,15 +238,20 @@ export function DraftRoom({
               ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label}`
               : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label}`}
           </p>
-          <p>
-            {rankedProfile
-              ? `${rankedProfile.elo} Elo • `
-              : classicProfile
-                ? `${classicProfile.elo} Elo • `
-                : ""}
-            {formatSalary(getLineupSalaryTotal(pickedLineup))} spent •{" "}
-            {formatSalary(getRemainingSalaryCap(pickedLineup, salaryCapLimit))} remaining of{" "}
-            {formatSalary(salaryCapLimit)}
+          {rankedProfile || classicProfile ? (
+            <p className="salary-cap-banner__rating">
+              {formatRatingPoints((rankedProfile ?? classicProfile)!.elo)}
+            </p>
+          ) : null}
+          <p className="salary-cap-banner__cap">
+            <span className="salary-cap-banner__spent">
+              {formatSalary(getLineupSalaryTotal(pickedLineup))}
+            </span>{" "}
+            spent ·{" "}
+            <span className="salary-cap-banner__remaining">
+              {formatSalary(getRemainingSalaryCap(pickedLineup, salaryCapLimit))}
+            </span>{" "}
+            left of {formatSalary(salaryCapLimit)}
           </p>
         </div>
       ) : null}
@@ -373,6 +379,11 @@ export function DraftRoom({
                 <div>
                   <div className="player-pick__title-row">
                     <strong>{player.name}</strong>
+                    {hasSalaryCap ? (
+                      <span className="player-pick__salary">
+                        {formatSalary(estimatePlayerSalary(player))}
+                      </span>
+                    ) : null}
                     <span className="player-pick__badges">
                       <LimitedSampleBadge player={player} />
                       <PlayerRarityBadge
@@ -383,9 +394,6 @@ export function DraftRoom({
                   </div>
                   <span className="player-pick__team">
                     {player.team} • {formatPlayerPositions(player.positions)}
-                    {hasSalaryCap
-                      ? ` • ${formatSalary(estimatePlayerSalary(player))}`
-                      : ""}
                   </span>
                   {!isDailyDraft ? (
                     <PlayerDraftStats player={player} variant="pills" />

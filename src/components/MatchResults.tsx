@@ -18,6 +18,7 @@ import { submitStoredLineup } from "../lib/ghostMatchmaking";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
+import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import type { ClassicMatchOutcome, RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -202,15 +203,15 @@ export function MatchResults({
             {matchRecordMode === "ranked" && rankedOutcome ? (
               <>
                 {" "}
-                • Elo {rankedOutcome.delta >= 0 ? "+" : ""}
-                {rankedOutcome.delta} ({rankedOutcome.elo})
+                • {formatRatingDelta(rankedOutcome.delta)} (
+                {formatRatingPoints(rankedOutcome.elo)})
               </>
             ) : null}
             {matchRecordMode === "headToHead" && classicOutcome ? (
               <>
                 {" "}
-                • Elo {classicOutcome.delta >= 0 ? "+" : ""}
-                {classicOutcome.delta} ({classicOutcome.elo})
+                • {formatRatingDelta(classicOutcome.delta)} (
+                {formatRatingPoints(classicOutcome.elo)})
               </>
             ) : null}
           </p>
@@ -221,7 +222,7 @@ export function MatchResults({
                 elo={rankedOutcome.elo}
               />
               <p className="matchup-panel__ranked-note">
-                Matched vs {rankedOutcome.opponentElo} Elo opponent
+                Matched vs {formatRatingPoints(rankedOutcome.opponentElo)} opponent
               </p>
             </div>
           ) : null}
@@ -232,7 +233,7 @@ export function MatchResults({
                 elo={classicOutcome.elo}
               />
               <p className="matchup-panel__ranked-note">
-                Matched vs {classicOutcome.opponentElo} Elo opponent
+                Matched vs {formatRatingPoints(classicOutcome.opponentElo)} opponent
               </p>
             </div>
           ) : null}

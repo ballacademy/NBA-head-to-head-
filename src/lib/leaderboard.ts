@@ -1,6 +1,11 @@
 import { readJson, writeJson } from "./browserStorage";
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
-import { RANKED_STARTING_ELO, formatRankedElo, getTierForElo } from "./rankedElo";
+import {
+  RANKED_STARTING_ELO,
+  RATING_LABEL,
+  formatRankedElo,
+  getTierForElo,
+} from "./rankedElo";
 
 const LEADERBOARD_KEY = "nba-head-to-head-leaderboard";
 
@@ -148,7 +153,7 @@ export const getTopLeaderboard = (
 export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
   switch (sort) {
     case "elo":
-      return `Showing top ${LEADERBOARD_LIMIT} by Elo rating.`;
+      return `Showing top ${LEADERBOARD_LIMIT} by ${RATING_LABEL}.`;
     case "lossStreak":
       return `Showing top ${LEADERBOARD_LIMIT} by active loss streak.`;
     default:

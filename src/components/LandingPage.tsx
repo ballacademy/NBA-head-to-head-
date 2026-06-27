@@ -255,7 +255,7 @@ export function LandingPage({
         <div className="head-to-head-card landing-card landing-card--mode">
           <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
           <p className="head-to-head-card__description">
-            Build under a $150M cap with real 2025-26 salaries. Elo matchmaking
+            Build under a $150M cap with real 2025-26 salaries. Banner matchmaking
             pairs you with similarly rated front offices, and monthly seasons
             reset the global Top 500.
           </p>
@@ -274,7 +274,7 @@ export function LandingPage({
           <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
           <p className="ranked-cap-card__description">
             Build under a ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with
-            real 2025-26 salaries. Elo matchmaking pairs you with similarly
+            real 2025-26 salaries. Banner matchmaking pairs you with similarly
             rated front offices, and monthly seasons reset the global Top 500.
           </p>
           <RankedModeSummary record={modeRecords.ranked} />

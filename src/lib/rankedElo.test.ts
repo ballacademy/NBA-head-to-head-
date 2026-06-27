@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateEloChange,
+  formatRatingDelta,
+  formatRatingPoints,
   getPlacementMultiplier,
   getStreakMultiplier,
   getTierForElo,
   RANKED_STARTING_ELO,
+  RATING_LABEL,
 } from "./rankedElo";
 
 describe("rankedElo", () => {
@@ -15,6 +18,13 @@ describe("rankedElo", () => {
     expect(getTierForElo(1499).label).toBe("Top GM");
     expect(getTierForElo(1750).label).toBe("Top GM");
     expect(getTierForElo(2100).label).toBe("Generational GM");
+  });
+
+  it("formats rating points for player-facing copy", () => {
+    expect(formatRatingPoints(1200)).toBe("1200 Banners");
+    expect(formatRatingDelta(12)).toBe("+12 Banners");
+    expect(formatRatingDelta(-8)).toBe("-8 Banners");
+    expect(RATING_LABEL).toBe("Banners");
   });
 
   it("gives larger swings during placement and on streaks", () => {
