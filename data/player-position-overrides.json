@@ -1,0 +1,17 @@
+{
+  "description": "Manual position eligibility overrides for players whose listed or stat-inferred slots need correction.",
+  "overrides": {
+    "thompam01": ["PG", "SG", "SF"],
+    "mccolcj01": ["SG", "PG"],
+    "brunsja01": ["PG"],
+    "meltode01": ["PG", "SG"],
+    "youngtr01": ["PG"],
+    "curryst01": ["PG"],
+    "adebaba01": ["C", "PF"],
+    "porzikr01": ["C", "PF"],
+    "holmgch01": ["PF", "C"],
+    "mobleev01": ["PF"],
+    "mcdanja02": ["SF", "PF"],
+    "reidna01": ["C", "PF"]
+  }
+}

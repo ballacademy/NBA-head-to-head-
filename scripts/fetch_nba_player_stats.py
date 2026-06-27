@@ -349,31 +349,91 @@ def normalize_position(position: object) -> str:
     return "SF"
 
 
+def parse_primary_position(position: object) -> str:
+    if position is None or pd.isna(position):
+        return "SF"
+
+    normalized = str(position).upper()
+    tokens = [token.strip() for token in re.split(r"[-/,]", normalized) if token.strip()]
+    if not tokens:
+        return "SF"
+
+    parsed = parse_position_string(tokens[0])
+    if parsed:
+        return parsed[0]
+
+    return normalize_position(position)
+
+
+def finalize_positions(primary: str, eligible: set[str]) -> list[str]:
+    resolved = [primary]
+
+    for position in POSITION_ORDER:
+        if position == primary or position not in eligible:
+            continue
+
+        resolved.append(position)
+
+        if len(resolved) >= 2:
+            break
+
+    return resolved
+
+
+def pick_stat_secondary(
+    primary: str,
+    assists: float,
+    rebounds: float,
+    blocks: float,
+) -> str | None:
+    if primary == "PG":
+        return "SG" if assists >= 4 else None
+    if primary == "SG":
+        if assists >= 5:
+            return "PG"
+        if assists >= 3.5 or rebounds >= 4.5:
+            return "SF"
+        return None
+    if primary == "SF":
+        if rebounds >= 7 or blocks >= 1:
+            return "PF"
+        if assists >= 4.5:
+            return "SG"
+        return None
+    if primary == "PF":
+        if (rebounds >= 10 and blocks >= 1.2) or (rebounds >= 9.5 and blocks >= 1.5):
+            return "C"
+        if rebounds >= 6.5:
+            return "SF"
+        return None
+    if primary == "C":
+        return "PF" if rebounds < 8.5 and blocks < 1 else None
+    return None
+
+
 def infer_positions_from_stats(
+    primary: str,
     positions: list[str],
     assists: float,
     rebounds: float,
     blocks: float,
 ) -> list[str]:
-    eligible = set(positions or ["SF"])
-    primary = positions[0] if positions else "SF"
+    eligible = set(positions or [primary])
+    eligible.add(primary)
 
-    if primary == "PG" or ("PG" in eligible and assists >= 3):
-        eligible.add("SG")
-    if primary == "SG" and assists >= 4.5:
-        eligible.add("PG")
-    if primary == "SF" and assists >= 4:
-        eligible.add("SG")
-    if primary == "SF" and (rebounds >= 5.5 or blocks >= 0.8):
-        eligible.add("PF")
-    if primary == "PF" and rebounds >= 5:
-        eligible.add("SF")
-    if primary == "PF" and (rebounds >= 8 or blocks >= 1):
-        eligible.add("C")
-    if primary == "C" and rebounds < 8.5:
-        eligible.add("PF")
+    secondary = pick_stat_secondary(primary, assists, rebounds, blocks)
+    if secondary:
+        eligible.add(secondary)
 
-    return [position for position in POSITION_ORDER if position in eligible]
+    return finalize_positions(primary, eligible)
+
+
+def resolve_team_row(team_rows: list[dict], team: str) -> dict | None:
+    for row in reversed(team_rows):
+        if str(row.get("TEAM_ABBREVIATION") or "") == team:
+            return row
+
+    return team_rows[-1] if team_rows else None
 
 
 def collect_positions_from_rows(rows: list[dict]) -> list[str]:
@@ -417,6 +477,24 @@ def load_current_team_overrides() -> dict[str, str]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     overrides = payload.get("overrides", payload)
     return {str(key): str(value) for key, value in overrides.items()}
+
+
+def load_player_position_overrides() -> dict[str, list[str]]:
+    path = Path(__file__).resolve().parent.parent / "data" / "player-position-overrides.json"
+    if not path.exists():
+        return {}
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    overrides = payload.get("overrides", payload)
+    return {
+        str(key): [str(position) for position in value]
+        for key, value in overrides.items()
+    }
+
+
+def apply_position_override(bbr_player_id: str, positions: list[str]) -> list[str]:
+    override = load_player_position_overrides().get(bbr_player_id)
+    return list(override) if override else positions
 
 
 def weighted_average_rows(rows: list[dict]) -> dict:
@@ -541,12 +619,20 @@ def row_dict_to_player_payload(
         true_shooting = round(pts / (2 * (fga + 0.44 * fta)), 3)
 
     player_id = make_entry_id(player_name, team, bbr_player_id)
-    resolved_positions = positions or infer_positions_from_stats(
-        parse_position_string(row_dict.get("POSITION")),
-        to_float(row_dict.get("AST")),
-        to_float(row_dict.get("REB")),
-        to_float(row_dict.get("BLK")),
-    )
+    if positions:
+        resolved_positions = positions
+    else:
+        primary = parse_primary_position(row_dict.get("POSITION"))
+        listed_positions = parse_position_string(row_dict.get("POSITION"))
+        resolved_positions = infer_positions_from_stats(
+            primary,
+            listed_positions or [primary],
+            to_float(row_dict.get("AST")),
+            to_float(row_dict.get("REB")),
+            to_float(row_dict.get("BLK")),
+        )
+
+    resolved_positions = apply_position_override(bbr_player_id, resolved_positions)
 
     return {
         "id": player_id,
@@ -668,8 +754,17 @@ def build_app_payload(
             )
 
         collected_positions = collect_positions_from_rows(rows)
+        current_team_row = resolve_team_row(team_rows, current_team)
+        position_string = (
+            current_team_row.get("POSITION")
+            if current_team_row
+            else stats_row.get("POSITION")
+        )
+        primary = parse_primary_position(position_string)
+        listed_positions = collected_positions or parse_position_string(position_string)
         resolved_positions = infer_positions_from_stats(
-            collected_positions or parse_position_string(stats_row.get("POSITION")),
+            primary,
+            listed_positions or [primary],
             to_float(stats_row.get("AST")),
             to_float(stats_row.get("REB")),
             to_float(stats_row.get("BLK")),
