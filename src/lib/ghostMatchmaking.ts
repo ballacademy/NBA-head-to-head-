@@ -1,4 +1,3 @@
-import type { HeadToHeadResult } from "./playerRecord";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 
 export type GhostMatchmakingMode = "classic" | "ranked";
@@ -21,20 +20,6 @@ export interface StoredLineupSubmission {
 
 export interface PendingMatchmakingStatus {
   queuedLineup: { id: string; createdAt: string } | null;
-  pendingResult: PendingOwnerResult | null;
-}
-
-export interface PendingOwnerResult {
-  id: string;
-  lineupId: string;
-  mode: GhostMatchmakingMode;
-  ownerResult: HeadToHeadResult;
-  opponentTeamName: string;
-  opponentElo: number;
-  ownerLineup: string[];
-  ownerScore: number;
-  opponentScore: number;
-  createdAt: string;
 }
 
 export interface GhostMatchOutcomeSubmission {
@@ -162,23 +147,6 @@ export const fetchPendingMatchmakingStatus = async (params: {
     return (await response.json()) as PendingMatchmakingStatus;
   } catch {
     return null;
-  }
-};
-
-export const acknowledgePendingOwnerResult = async (resultId: string) => {
-  try {
-    const response = await fetch(buildUrl("/api/pending"), {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ resultId }),
-    });
-
-    return response.ok;
-  } catch {
-    return false;
   }
 };
 

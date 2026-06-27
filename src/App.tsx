@@ -6,7 +6,7 @@ import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
 import { PendingQueueResults } from "./components/PendingQueueResults";
-import { PendingOwnerResults } from "./components/PendingOwnerResults";
+import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -52,11 +52,6 @@ import {
   planHeadToHeadMatchmaking,
   type StartMatchError,
 } from "./lib/matchmaking";
-import {
-  fetchDeliverableOwnerResult,
-  finalizeDeliveredOwnerResult,
-  type DeliveredOwnerResult,
-} from "./lib/pendingOwnerResults";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
@@ -121,8 +116,6 @@ function App() {
   );
   const [matchmakingElapsedSeconds, setMatchmakingElapsedSeconds] = useState(0);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
-  const [deliveredOwnerResult, setDeliveredOwnerResult] =
-    useState<DeliveredOwnerResult | null>(null);
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
   );
@@ -176,39 +169,6 @@ function App() {
       window.clearInterval(intervalId);
     };
   }, [dailyDateKey, phase]);
-
-  useEffect(() => {
-    if (phase !== "landing" || deliveredOwnerResult) {
-      return;
-    }
-
-    let cancelled = false;
-
-    void (async () => {
-      const playerId = getOrCreatePlayerIdentity().playerId;
-
-      for (const mode of ["classic", "ranked"] as const) {
-        const delivery = await fetchDeliverableOwnerResult(mode, playerId);
-
-        if (!delivery || cancelled) {
-          continue;
-        }
-
-        await finalizeDeliveredOwnerResult(delivery, playerId);
-
-        if (!cancelled) {
-          setDeliveredOwnerResult(delivery);
-          setModeRecords(loadAllModeRecords());
-        }
-
-        break;
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [deliveredOwnerResult, phase]);
 
   const activePlayers = useMemo(
     () => getActivePlayerPool(modeRecords.allTime, { allTimeMode }),
@@ -905,18 +865,6 @@ function App() {
     );
   }
 
-  if (phase === "landing" && deliveredOwnerResult) {
-    return (
-      <main className="landing-layout">
-        <PendingOwnerResults
-          delivery={deliveredOwnerResult}
-          modeRecords={modeRecords}
-          onDone={() => setDeliveredOwnerResult(null)}
-        />
-      </main>
-    );
-  }
-
   if (phase === "landing") {
     return (
       <main className="landing-layout">
@@ -936,6 +884,12 @@ function App() {
           onViewAchievements={() => setPhase("achievements")}
           onViewLeaderboard={() => setPhase("leaderboard")}
         />
+        {matchmakingMode ? (
+          <MatchmakingOverlay
+            mode={matchmakingMode}
+            elapsedSeconds={matchmakingElapsedSeconds}
+          />
+        ) : null}
       </main>
     );
   }
@@ -1046,6 +1000,13 @@ function App() {
           onCollectionChange={handleCollectionChange}
           onPlayAgain={replayLastMode}
           onReturnToMenu={resetToLanding}
+          isMatchmaking={matchmakingMode != null}
+        />
+      ) : null}
+      {matchmakingMode ? (
+        <MatchmakingOverlay
+          mode={matchmakingMode}
+          elapsedSeconds={matchmakingElapsedSeconds}
         />
       ) : null}
     </main>

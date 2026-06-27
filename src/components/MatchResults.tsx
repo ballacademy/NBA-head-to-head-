@@ -47,6 +47,7 @@ interface MatchResultsProps {
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
+  isMatchmaking?: boolean;
 }
 
 export function MatchResults({
@@ -59,6 +60,7 @@ export function MatchResults({
   onCollectionChange,
   onPlayAgain,
   onReturnToMenu,
+  isMatchmaking = false,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
@@ -338,6 +340,7 @@ export function MatchResults({
               <button
                 type="button"
                 className="play-again-button match-results__share-button"
+                disabled={isMatchmaking}
                 onClick={() => void handleShareLineup()}
               >
                 Share lineup
@@ -345,6 +348,7 @@ export function MatchResults({
               <button
                 type="button"
                 className="play-again-button"
+                disabled={isMatchmaking}
                 onClick={onPlayAgain}
               >
                 Draft another team
@@ -352,6 +356,7 @@ export function MatchResults({
               <button
                 type="button"
                 className="play-again-button match-results__menu-button"
+                disabled={isMatchmaking}
                 onClick={onReturnToMenu}
               >
                 Back to home

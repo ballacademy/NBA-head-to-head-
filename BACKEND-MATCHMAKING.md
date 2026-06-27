@@ -19,9 +19,8 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 | `GET` | `/api/live-match?matchId=...&playerId=...` | Poll a live match for opponent lineup status |
 | `POST` | `/api/live-match` | Submit your lineup for a live match |
 | `POST` | `/api/lineups` | Store your completed lineup for future opponents |
-| `GET` | `/api/pending?mode=...&playerId=...` | Check queued lineup lock / pending owner results |
-| `POST` | `/api/pending` | Acknowledge a delivered owner result |
-| `POST` | `/api/match-results` | Score a ghost-owner when someone beats their saved lineup |
+| `GET` | `/api/pending?mode=...&playerId=...` | Check queued lineup lock |
+| `POST` | `/api/match-results` | Mark a stored ghost lineup as consumed after a challenger faces it |
 | `GET` | `/api/daily-scores?dateKey=YYYY-MM-DD&goalId=...&playerId=...` | Fetch today's Daily Draft scores (other players' values + your entry) |
 | `POST` | `/api/daily-scores` | Submit or update your Daily Draft score for today |
 | `GET` | `/api/leaderboards?mode=classic\|ranked&sort=elo\|winStreak\|lossStreak&seasonId=YYYY-MM` | Fetch global leaderboard entries (real players only) |
@@ -35,8 +34,8 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 4. If no live opponent is found: client instantly checks `/api/opponent` for a stored human lineup.
 5. If a stored lineup exists: draft against that ghost using the stored team name, with no waiting screen.
 6. If none exists and the player is **below 1500 Banners**: fall back to an NPC opponent and full results.
-7. If none exists and the player is **1500+ Banners**: draft once, queue the lineup, and block new drafts until that lineup receives a score from a live opponent.
-8. When a challenger beats a saved ghost lineup, `/api/match-results` records the owner’s win/loss and Banner change for delivery on next visit.
+7. If none exists and the player is **1500+ Banners**: draft once, queue the lineup, and block new drafts until that lineup is matched.
+8. When a challenger faces a saved ghost lineup, `/api/match-results` marks that stored lineup consumed. The original drafter only sees results from their own initial matchup, not future challengers.
 
 All-Time mode still uses the local opponent simulator. Daily Draft submissions sync to D1 for shared percentiles. Classic and Pro leaderboards sync to D1 after each match.
 
