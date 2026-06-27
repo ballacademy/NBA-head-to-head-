@@ -1,4 +1,4 @@
-import salaryData from "../../data/nba-salaries-202526.json";
+import salaryData from "../../data/nba-salaries-202627.json";
 
 interface SalaryDataFile {
   season: string;
