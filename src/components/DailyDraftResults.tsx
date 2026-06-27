@@ -12,6 +12,7 @@ import {
 import {
   formatDailyPercentile,
   getDailyDraftPercentile,
+  refreshDailyDraftScoresFromApi,
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
@@ -77,15 +78,19 @@ export function DailyDraftResults({
     }
 
     submittedRef.current = true;
-    submitDailyDraftScore(
-      dailyDateKey,
-      dailyGoal,
-      goalResult.value,
-      goalResult.formatted,
-      benchmarkValues,
-      userLineup.map((player) => player.id),
-      user.name,
-    );
+
+    void (async () => {
+      const result = await submitDailyDraftScore(
+        dailyDateKey,
+        dailyGoal,
+        goalResult.value,
+        goalResult.formatted,
+        benchmarkValues,
+        userLineup.map((player) => player.id),
+        user.name,
+      );
+      setPercentileResult(result);
+    })();
   }, [
     benchmarkValues,
     dailyDateKey,
@@ -97,7 +102,12 @@ export function DailyDraftResults({
   ]);
 
   useEffect(() => {
-    const refreshPercentile = () => {
+    const refreshPercentile = async () => {
+      await refreshDailyDraftScoresFromApi(
+        dailyDateKey,
+        dailyGoal.id,
+        getOrCreatePlayerId(),
+      );
       setPercentileResult(
         getDailyDraftPercentile(
           dailyDateKey,
@@ -109,11 +119,10 @@ export function DailyDraftResults({
       );
     };
 
-    refreshPercentile();
-    const intervalId = window.setInterval(
-      refreshPercentile,
-      LIVE_PERCENTILE_REFRESH_MS,
-    );
+    void refreshPercentile();
+    const intervalId = window.setInterval(() => {
+      void refreshPercentile();
+    }, LIVE_PERCENTILE_REFRESH_MS);
 
     return () => {
       window.clearInterval(intervalId);

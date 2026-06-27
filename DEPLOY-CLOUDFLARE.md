@@ -78,7 +78,9 @@ Requires `wrangler login` or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in
 
 ## Notes
 
-- **Leaderboards, Elo, unlocks, and daily scores** are stored in each visitor’s browser (`localStorage`). Hosting in the cloud does not make them global until you add a backend.
+- **Classic / Pro leaderboards, unlocks, and collection progress** are stored in each visitor’s browser (`localStorage`).
+- **Daily Draft scores** sync to D1 via `/api/daily-scores` so percentiles reflect all players. Local storage still caches your lineup for offline viewing.
+- **Head-to-head ghost lineups** use D1 (`/api/lineups`, `/api/opponent`, etc.).
 - **`public/_redirects`** sends unknown paths to `index.html` for safe refreshes on deep links.
 - **Node 22** is used in CI (see `.nvmrc`).
 

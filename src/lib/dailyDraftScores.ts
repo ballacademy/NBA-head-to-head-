@@ -1,4 +1,8 @@
 import { readJson, writeJson } from "./browserStorage";
+import {
+  fetchRemoteDailyDraftScores,
+  submitRemoteDailyDraftScore,
+} from "./dailyDraftApi";
 import { autoDraftLineupWithVariance } from "./draft";
 import { getDailySeed } from "./dailyDraft";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
@@ -23,6 +27,18 @@ export interface DailyDraftScoreEntry {
 
 type DailyScoreStore = Record<string, DailyDraftScoreEntry[]>;
 
+interface RemoteDailyCache {
+  values: number[];
+  totalDrafters: number;
+  entry: DailyDraftScoreEntry | null;
+  fetchedAt: number;
+}
+
+const remoteCache = new Map<string, RemoteDailyCache>();
+
+const remoteCacheKey = (dateKey: string, goalId: string) =>
+  `${dateKey}:${goalId}`;
+
 const loadDailyScoreStore = (): DailyScoreStore => {
   const saved = readJson<DailyScoreStore>(DAILY_SCORES_KEY);
 
@@ -35,6 +51,17 @@ const loadDailyScoreStore = (): DailyScoreStore => {
 
 const saveDailyScoreStore = (store: DailyScoreStore) => {
   writeJson(DAILY_SCORES_KEY, store);
+};
+
+const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
+  const store = loadDailyScoreStore();
+  const current = store[dateKey] ?? [];
+  const withoutCurrent = current.filter(
+    (candidate) => candidate.playerId !== entry.playerId,
+  );
+
+  store[dateKey] = [...withoutCurrent, entry];
+  saveDailyScoreStore(store);
 };
 
 export const loadDailyScoresForDate = (dateKey: string) =>
@@ -99,6 +126,38 @@ export interface DailyDraftPercentileResult {
   sampleSize: number;
 }
 
+const getRemoteCache = (dateKey: string, goalId: string) =>
+  remoteCache.get(remoteCacheKey(dateKey, goalId));
+
+export const refreshDailyDraftScoresFromApi = async (
+  dateKey: string,
+  goalId: string,
+  playerId = getOrCreatePlayerId(),
+) => {
+  const remote = await fetchRemoteDailyDraftScores({
+    dateKey,
+    goalId,
+    playerId,
+  });
+
+  if (!remote) {
+    return false;
+  }
+
+  remoteCache.set(remoteCacheKey(dateKey, goalId), {
+    values: remote.values,
+    totalDrafters: remote.totalDrafters,
+    entry: remote.entry,
+    fetchedAt: Date.now(),
+  });
+
+  if (remote.entry) {
+    mergeEntryToLocal(dateKey, remote.entry);
+  }
+
+  return true;
+};
+
 export const getDailyDraftPercentile = (
   dateKey: string,
   value: number,
@@ -106,13 +165,18 @@ export const getDailyDraftPercentile = (
   benchmarkValues: number[],
   excludePlayerId?: string,
 ): DailyDraftPercentileResult => {
+  const remote = getRemoteCache(dateKey, goal.id);
   const entries = loadDailyScoresForDate(dateKey).filter(
     (entry) => entry.goalId === goal.id,
   );
   const otherEntries = excludePlayerId
     ? entries.filter((entry) => entry.playerId !== excludePlayerId)
     : entries;
-  const submissionValues = otherEntries.map((entry) => entry.value);
+  const submissionValues =
+    remote?.values ??
+    (excludePlayerId != null
+      ? otherEntries.map((entry) => entry.value)
+      : entries.map((entry) => entry.value));
   const combined =
     excludePlayerId != null
       ? [...benchmarkValues, ...submissionValues, value]
@@ -125,12 +189,12 @@ export const getDailyDraftPercentile = (
 
   return {
     percentile: computePercentile(value, combined, goal.direction),
-    totalDrafters: uniqueDrafters.size,
+    totalDrafters: remote?.totalDrafters ?? uniqueDrafters.size,
     sampleSize: combined.length,
   };
 };
 
-export const submitDailyDraftScore = (
+export const submitDailyDraftScore = async (
   dateKey: string,
   goal: DailyDraftGoal,
   value: number,
@@ -138,10 +202,30 @@ export const submitDailyDraftScore = (
   benchmarkValues: number[],
   lineup: string[],
   teamName: string,
-): DailyDraftPercentileResult => {
+): Promise<DailyDraftPercentileResult> => {
   const playerId = getOrCreatePlayerId();
-  const store = loadDailyScoreStore();
-  const current = store[dateKey] ?? [];
+  const submittedAt = new Date().toISOString();
+  const nextEntry: DailyDraftScoreEntry = {
+    playerId,
+    goalId: goal.id,
+    value,
+    formattedResult,
+    lineup,
+    teamName,
+    submittedAt,
+  };
+
+  await submitRemoteDailyDraftScore({
+    dateKey,
+    goalId: goal.id,
+    playerId,
+    teamName,
+    value,
+    formattedResult,
+    lineup,
+  });
+  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId);
+
   const percentileResult = getDailyDraftPercentile(
     dateKey,
     value,
@@ -149,20 +233,11 @@ export const submitDailyDraftScore = (
     benchmarkValues,
     playerId,
   );
-  const nextEntry: DailyDraftScoreEntry = {
-    playerId,
-    goalId: goal.id,
-    value,
-    formattedResult,
-    percentile: percentileResult.percentile,
-    lineup,
-    teamName,
-    submittedAt: new Date().toISOString(),
-  };
-  const withoutCurrent = current.filter((entry) => entry.playerId !== playerId);
 
-  store[dateKey] = [...withoutCurrent, nextEntry];
-  saveDailyScoreStore(store);
+  mergeEntryToLocal(dateKey, {
+    ...nextEntry,
+    percentile: percentileResult.percentile,
+  });
 
   return percentileResult;
 };
@@ -185,8 +260,14 @@ export const hasCompletedDailyDraft = (
   dateKey: string,
   goalId: string,
   playerId = getOrCreatePlayerId(),
-) =>
-  Boolean(getPlayerDailyDraftEntry(dateKey, goalId, playerId));
+) => {
+  if (getPlayerDailyDraftEntry(dateKey, goalId, playerId)) {
+    return true;
+  }
+
+  const cached = getRemoteCache(dateKey, goalId);
+  return cached?.entry?.playerId === playerId;
+};
 
 export const formatPlayerDailyDraftPercentile = (
   result: DailyDraftPercentileResult,
@@ -199,10 +280,18 @@ export const getPlayerDailyDraftEntry = (
   dateKey: string,
   goalId: string,
   playerId = getOrCreatePlayerId(),
-) =>
-  loadDailyScoresForDate(dateKey).find(
+) => {
+  const localEntry = loadDailyScoresForDate(dateKey).find(
     (entry) => entry.playerId === playerId && entry.goalId === goalId,
   );
+
+  if (localEntry) {
+    return localEntry;
+  }
+
+  const cached = getRemoteCache(dateKey, goalId);
+  return cached?.entry?.playerId === playerId ? cached.entry : undefined;
+};
 
 export const getTopDailyScoresForDate = (
   dateKey: string,
@@ -213,3 +302,7 @@ export const getTopDailyScoresForDate = (
     .filter((entry) => entry.goalId === goalId)
     .sort((left, right) => right.value - left.value)
     .slice(0, limit);
+
+export const clearDailyDraftRemoteCacheForTests = () => {
+  remoteCache.clear();
+};
