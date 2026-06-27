@@ -43,7 +43,36 @@ const primaryPositions = (lineup: Player[]) =>
 
 export interface AchievementCheckContext {
   hasSalaryCap?: boolean;
+  lineupOvr?: number;
+  preciseOvr?: number;
+  projectedWins?: number;
 }
+
+const parsePlayerNameParts = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  const firstName = parts[0] ?? "";
+  const lastName = parts.at(-1) ?? "";
+
+  return { firstName, lastName };
+};
+
+const allSameStartingLetter = (values: string[]) => {
+  const letters = values
+    .map((value) => value.trim().charAt(0).toUpperCase())
+    .filter(Boolean);
+
+  return letters.length === 5 && new Set(letters).size === 1;
+};
+
+const hasAlphabetSquad = (lineup: Player[]) => {
+  const names = lineup.map((player) => parsePlayerNameParts(player.name));
+  const firstNames = names.map((name) => name.firstName);
+  const lastNames = names.map((name) => name.lastName);
+
+  return (
+    allSameStartingLetter(firstNames) || allSameStartingLetter(lastNames)
+  );
+};
 
 export interface AchievementCheckDefinition {
   id: string;
@@ -426,5 +455,42 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (lineup) =>
       lineup.filter((player) => player.styles.includes("rim-protector"))
         .length >= 3,
+  },
+  {
+    id: "dynasty",
+    title: "Dynasty",
+    description: "Project at least 70 wins or an 80+ lineup OVR.",
+    emoji: "👑",
+    check: (_lineup, context) =>
+      (context?.projectedWins ?? 0) >= 70 || (context?.lineupOvr ?? 0) >= 80,
+  },
+  {
+    id: "rebuild",
+    title: "Rebuild",
+    description: "Project fewer than 20 wins.",
+    emoji: "🔨",
+    check: (_lineup, context) => (context?.projectedWins ?? 82) < 20,
+  },
+  {
+    id: "alphabet-squad",
+    title: "Alphabet Squad",
+    description:
+      "Draft five players whose first names or last names all start with the same letter.",
+    emoji: "🔤",
+    check: hasAlphabetSquad,
+  },
+  {
+    id: "eighty-two-wins",
+    title: "82 Wins",
+    description: "Project a perfect 82-win season.",
+    emoji: "🏁",
+    check: (_lineup, context) => (context?.projectedWins ?? 0) >= 82,
+  },
+  {
+    id: "max-ovr",
+    title: "100 OVR",
+    description: "Build a lineup that grades out at 100 OVR.",
+    emoji: "💯",
+    check: (_lineup, context) => (context?.lineupOvr ?? 0) >= 100,
   },
 ];

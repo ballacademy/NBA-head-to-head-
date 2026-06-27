@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  buildAchievementContext,
   checkLineupAchievements,
   unlockAchievements,
 } from "../lib/achievements";
@@ -74,7 +75,10 @@ export function PendingQueueResults({
     }
 
     achievementsCheckedRef.current = true;
-    const earned = checkLineupAchievements(userLineup, { hasSalaryCap: true });
+    const earned = checkLineupAchievements(
+      userLineup,
+      buildAchievementContext(userLineup, { hasSalaryCap: true }),
+    );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
   }, [userLineup]);
