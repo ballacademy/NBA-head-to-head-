@@ -1,4 +1,8 @@
 import { readJson, writeJson } from "./browserStorage";
+import {
+  getCachedRemoteLeaderboard,
+  syncLeaderboardEntryToApi,
+} from "./leaderboardRemote";
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
 import {
   RANKED_STARTING_ELO,
@@ -99,6 +103,17 @@ export const upsertLeaderboardEntry = (
   );
 
   writeJson(LEADERBOARD_KEY, [...withoutCurrent, nextEntry]);
+  syncLeaderboardEntryToApi({
+    mode: "classic",
+    playerId: nextEntry.playerId,
+    teamName: nextEntry.name,
+    publicTag: nextEntry.publicTag,
+    elo: nextEntry.elo,
+    wins: nextEntry.wins,
+    losses: nextEntry.losses,
+    winStreak: nextEntry.winStreak,
+    lossStreak: nextEntry.lossStreak,
+  });
 };
 
 export const formatLeaderboardTeam = (
@@ -145,6 +160,19 @@ export const getTopLeaderboard = (
   sort: LeaderboardSort,
   limit = LEADERBOARD_LIMIT,
 ) => {
+  const remoteEntries = getCachedRemoteLeaderboard("classic", sort);
+
+  if (remoteEntries && remoteEntries.length > 0) {
+    return remoteEntries
+      .map((entry) =>
+        normalizeEntry({
+          ...entry,
+          tierLabel: getTierForElo(entry.elo).label,
+        }),
+      )
+      .slice(0, limit);
+  }
+
   const entries = loadLeaderboardEntries();
 
   return [...entries].sort(leaderboardSorters[sort]).slice(0, limit);
@@ -153,10 +181,10 @@ export const getTopLeaderboard = (
 export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
   switch (sort) {
     case "elo":
-      return `Showing top ${LEADERBOARD_LIMIT} by ${RATING_LABEL}.`;
+      return `Showing top ${LEADERBOARD_LIMIT} real front offices by ${RATING_LABEL}.`;
     case "lossStreak":
-      return `Showing top ${LEADERBOARD_LIMIT} by active loss streak.`;
+      return `Showing top ${LEADERBOARD_LIMIT} real front offices by active loss streak.`;
     default:
-      return `Showing top ${LEADERBOARD_LIMIT} by active win streak.`;
+      return `Showing top ${LEADERBOARD_LIMIT} real front offices by active win streak.`;
   }
 };

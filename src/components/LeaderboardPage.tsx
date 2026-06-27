@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   formatLeaderboardElo,
   formatLeaderboardLossStreak,
@@ -6,6 +6,7 @@ import {
   formatLeaderboardWinStreak,
   getLeaderboardFootnote,
   getTopLeaderboard,
+  LEADERBOARD_LIMIT,
   type LeaderboardSort,
 } from "../lib/leaderboard";
 import {
@@ -15,8 +16,10 @@ import {
   formatRankedLeaderboardWinStreak,
   getRankedLeaderboardFootnote,
   getTopRankedLeaderboard,
+  RANKED_LEADERBOARD_LIMIT,
   type RankedLeaderboardSort,
 } from "../lib/rankedLeaderboard";
+import { refreshLeaderboardFromApi } from "../lib/leaderboardRemote";
 import { RATING_LABEL } from "../lib/rankedElo";
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
@@ -45,15 +48,31 @@ const SORT_TABS: { id: BoardSort; label: string }[] = [
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
   const [sort, setSort] = useState<BoardSort>("elo");
+  const [refreshTick, setRefreshTick] = useState(0);
   const currentPlayerId = getOrCreatePlayerId();
   const seasonId = getCurrentSeasonId();
+
+  useEffect(() => {
+    const refresh = async () => {
+      await refreshLeaderboardFromApi({
+        mode: view,
+        sort: sort as LeaderboardSort,
+        limit: view === "ranked" ? RANKED_LEADERBOARD_LIMIT : LEADERBOARD_LIMIT,
+        seasonId: view === "ranked" ? seasonId : "",
+      });
+      setRefreshTick((current) => current + 1);
+    };
+
+    void refresh();
+  }, [seasonId, sort, view]);
+
   const classicEntries = useMemo(
     () => getTopLeaderboard(sort as LeaderboardSort),
-    [sort],
+    [refreshTick, sort],
   );
   const rankedEntries = useMemo(
     () => getTopRankedLeaderboard(sort as RankedLeaderboardSort),
-    [sort],
+    [refreshTick, sort],
   );
 
   const metricColumnLabel =
@@ -171,15 +190,11 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   >
                     <td>{index + 1}</td>
                     <td>
-                      {entry.isNpc ? (
-                        entry.name
-                      ) : (
-                        <GmIdentityBadge
-                          name={entry.name}
-                          publicTag={entry.publicTag}
-                          playerId={entry.playerId}
-                        />
-                      )}
+                      <GmIdentityBadge
+                        name={entry.name}
+                        publicTag={entry.publicTag}
+                        playerId={entry.playerId}
+                      />
                     </td>
                     <td>
                       <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />

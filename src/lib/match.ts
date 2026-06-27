@@ -6,7 +6,7 @@ import {
 import { ensureClassicProfile } from "./classicProfile";
 import { pickOpponentElo } from "./rankedElo";
 import {
-  ensureRankedLeaderboard,
+  ensureNpcOpponentPool,
   findRankedOpponentFromLeaderboard,
 } from "./rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
@@ -110,7 +110,7 @@ export const createClassicOpponent = (
 export const createRankedOpponent = (
   draftSlots: DraftSlotConstraint[],
 ): Drafter => {
-  ensureRankedLeaderboard();
+  ensureNpcOpponentPool();
   const playerElo = ensureCurrentRankedSeason().elo;
   const targetElo = pickOpponentElo(playerElo);
   const matchedNpc = findRankedOpponentFromLeaderboard(targetElo);

@@ -66,7 +66,7 @@ import {
 } from "./lib/playerCollection";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
-import { ensureRankedLeaderboard } from "./lib/rankedLeaderboard";
+import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
 import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import {
@@ -122,7 +122,7 @@ function App() {
 
   useEffect(() => {
     ensureCurrentRankedSeason();
-    ensureRankedLeaderboard();
+    ensureNpcOpponentPool();
   }, []);
 
   useEffect(() => {
