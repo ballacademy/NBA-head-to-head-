@@ -4,6 +4,8 @@ import { getDailyGoalById } from "./dailyDraftGoals";
 import {
   buildDailyGoalResult,
   formatGoalResult,
+  formatPlayerGoalStat,
+  formatPlayerHeight,
   scoreLineupForGoal,
 } from "./dailyGoalScoring";
 
@@ -48,5 +50,22 @@ describe("dailyGoalScoring", () => {
 
     expect(result.value).toBeCloseTo(12, 5);
     expect(result.formatted).toMatch(/A\+ avg DEF$/);
+  });
+
+  it("formats a single player's goal stat for daily results", () => {
+    const goal = getDailyGoalById("sky-high")!;
+    const player = players.find((entry) => entry.heightInches > 80)!;
+
+    expect(formatPlayerHeight(player.heightInches)).toMatch(/'\d+"$/);
+    expect(formatPlayerGoalStat(player, goal)).toBe(
+      formatPlayerHeight(player.heightInches),
+    );
+  });
+
+  it("formats per-player defensive grades for daily results", () => {
+    const goal = getDailyGoalById("defensive-fortress")!;
+    const player = players.find((entry) => entry.defenseGrade === "A+")!;
+
+    expect(formatPlayerGoalStat(player, goal)).toBe("A+ DEF");
   });
 });

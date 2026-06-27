@@ -1,6 +1,7 @@
 import type { DailyDraftGoal } from "./dailyDraftGoals";
 import {
   formatAverageDefenseGrade,
+  getDefenseGrade,
   getPlayerDefenseGradeRank,
 } from "./defenseGrade";
 import type { Player } from "./types";
@@ -97,6 +98,54 @@ const formatHeight = (inches: number) => {
   const remaining = Math.round(inches % 12);
 
   return `${feet}'${remaining}" avg height`;
+};
+
+export const formatPlayerHeight = (inches: number) => {
+  const feet = Math.floor(inches / 12);
+  const remaining = Math.round(inches % 12);
+
+  return `${feet}'${remaining}"`;
+};
+
+export const formatPlayerGoalStat = (player: Player, goal: DailyDraftGoal) => {
+  const value = getStatValue(player, goal.stat);
+
+  switch (goal.stat) {
+    case "threePoint":
+      return `${(value * 100).toFixed(1)}% 3P`;
+    case "trueShooting":
+      return `${(value * 100).toFixed(1)}% TS`;
+    case "rebounds":
+      return `${value.toFixed(1)} RPG`;
+    case "assists":
+      return `${value.toFixed(1)} APG`;
+    case "turnovers":
+      return `${value.toFixed(1)} TOV`;
+    case "steals":
+      return `${value.toFixed(1)} SPG`;
+    case "blocks":
+      return `${value.toFixed(1)} BPG`;
+    case "points":
+      return `${value.toFixed(1)} PPG`;
+    case "heightInches":
+      return formatPlayerHeight(value);
+    case "age":
+      return `${value.toFixed(1)} yrs`;
+    case "minutes":
+      return `${value.toFixed(1)} MPG`;
+    case "usage":
+      return `${value.toFixed(1)} USG%`;
+    case "defense":
+      return `${getDefenseGrade(player.defense, player.defenseGrade)} DEF`;
+    case "fieldGoalsAttempted":
+      return `${value.toFixed(1)} FGA`;
+    case "threePointersAttempted":
+      return `${value.toFixed(1)} 3PA`;
+    case "stocks":
+      return `${value.toFixed(1)} stocks`;
+    default:
+      return value.toFixed(1);
+  }
 };
 
 export const formatGoalResult = (value: number, goal: DailyDraftGoal) => {
