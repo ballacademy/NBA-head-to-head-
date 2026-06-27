@@ -1,4 +1,5 @@
 import type { HeadToHeadResult } from "./playerRecord";
+import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 
 export type GhostMatchmakingMode = "classic" | "ranked";
 
@@ -47,7 +48,6 @@ export interface GhostMatchOutcomeSubmission {
   opponentScore: number;
 }
 
-export const MATCHMAKING_SEARCH_MS = 20_000;
 export const MATCHMAKING_POLL_INTERVAL_MS = 2_000;
 
 const API_BASE = "";
@@ -123,7 +123,7 @@ export const searchGhostOpponent = async (
     pollIntervalMs?: number;
   } = {},
 ): Promise<GhostOpponentSnapshot | null> => {
-  const searchMs = options.searchMs ?? MATCHMAKING_SEARCH_MS;
+  const searchMs = options.searchMs ?? resolveMatchmakingSearchMs();
   const pollIntervalMs = options.pollIntervalMs ?? MATCHMAKING_POLL_INTERVAL_MS;
   const deadline = Date.now() + searchMs;
 

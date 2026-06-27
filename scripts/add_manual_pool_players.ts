@@ -202,7 +202,7 @@ const statsPath = new URL(
   "../data/nba-stats/nba-player-stats-202526-regular-season.json",
   import.meta.url,
 );
-const salariesPath = new URL("../data/nba-salaries-202526.json", import.meta.url);
+const salariesPath = new URL("../data/nba-salaries-202627.json", import.meta.url);
 const jerseysPath = new URL("../data/nba-jersey-numbers.json", import.meta.url);
 const recentAllStarsPath = new URL("../data/all-stars-recent.json", import.meta.url);
 const careerActivePath = new URL(

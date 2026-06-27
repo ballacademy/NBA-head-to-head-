@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Fetch 2025-26 NBA player salaries from Basketball Reference contracts page."""
+"""Fetch 2026-27 NBA player salaries from Basketball Reference contracts page."""
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from datetime import datetime, timezone
@@ -11,37 +12,44 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parent.parent
-STATS_PATH = ROOT / "data" / "nba-stats" / "nba-player-stats-202526-regular-season.json"
-OUTPUT_PATH = ROOT / "data" / "nba-salaries-202526.json"
+DEFAULT_STATS_PATH = ROOT / "data" / "nba-stats" / "nba-player-stats-202526-regular-season.json"
+DEFAULT_OUTPUT_PATH = ROOT / "data" / "nba-salaries-202627.json"
 CONTRACTS_URL = "https://www.basketball-reference.com/contracts/players.html"
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; NBA-stats-export/1.0; +https://github.com/ballacademy/NBA-head-to-head-)",
 }
-# 2025-26 NBA minimum salary (0 years experience).
-ROOKIE_MINIMUM_SALARY = 1_209_240
+# 2026-27 NBA minimum salary (0 years experience).
+ROOKIE_MINIMUM_SALARY = 1_361_969
+SALARY_COLUMN = "y2"
 
 
 def normalize_name(name: str) -> str:
     return re.sub(r"[^a-z]", "", name.lower())
 
 
-def fetch_contract_rows() -> list[tuple[str, str, int]]:
+def fetch_contract_rows(salary_column: str = SALARY_COLUMN) -> list[tuple[str, str, int]]:
     response = requests.get(CONTRACTS_URL, headers=REQUEST_HEADERS, timeout=90)
     response.raise_for_status()
     pattern = re.compile(
-        r'data-stat="player"[^>]*>.*?/players/[a-z]/([a-z0-9]+)\.html[^>]*>([^<]+)</a>.*?'
-        r'data-stat="y1"[^>]*csk="(\d+)"',
+        rf'data-stat="player"[^>]*>.*?/players/[a-z]/([a-z0-9]+)\.html[^>]*>([^<]+)</a>.*?'
+        rf'data-stat="{salary_column}"[^>]*csk="(\d+)"',
         re.DOTALL,
     )
     return [(bbr_id, name.strip(), int(salary)) for bbr_id, name, salary in pattern.findall(response.text)]
 
 
 def main() -> None:
-    rows = fetch_contract_rows()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stats-path", type=Path, default=DEFAULT_STATS_PATH)
+    parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
+    parser.add_argument("--salary-column", default=SALARY_COLUMN)
+    args = parser.parse_args()
+
+    rows = fetch_contract_rows(args.salary_column)
     by_bbr = {bbr_id: salary for bbr_id, _, salary in rows}
     by_name = {normalize_name(name): salary for _, name, salary in rows}
 
-    stats = json.loads(STATS_PATH.read_text(encoding="utf-8"))
+    stats = json.loads(args.stats_path.read_text(encoding="utf-8"))
     pool = [player for player in stats["players"] if player.get("gamesPlayed", 0) > 0]
 
     salaries: dict[str, int] = {}
@@ -67,17 +75,18 @@ def main() -> None:
         minimum_assigned += 1
 
     payload = {
-        "season": "2025-26",
+        "season": "2026-27",
         "source": CONTRACTS_URL,
+        "salaryColumn": args.salary_column,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "matchedFromContracts": matched,
         "minimumSalaryAssigned": minimum_assigned,
         "playerCount": len(salaries),
         "salaries": salaries,
     }
-    OUTPUT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    args.output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(
-        f"Wrote {len(salaries)} salaries to {OUTPUT_PATH} "
+        f"Wrote {len(salaries)} salaries to {args.output_path} "
         f"({matched} from contracts, {minimum_assigned} minimum fallback)"
     )
 

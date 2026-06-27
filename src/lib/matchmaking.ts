@@ -4,6 +4,7 @@ import {
   type GhostMatchmakingMode,
   type GhostOpponentSnapshot,
 } from "./ghostMatchmaking";
+import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import {
   clearPendingLineupState,
   loadPendingLineupState,
@@ -84,11 +85,16 @@ export const planHeadToHeadMatchmaking = async (params: {
     return { ok: false, error: "pending_lineup_locked" };
   }
 
-  const ghost = await searchGhostOpponent({
-    mode: params.mode,
-    playerId: params.playerId,
-    elo: params.playerElo,
-  });
+  const ghost = await searchGhostOpponent(
+    {
+      mode: params.mode,
+      playerId: params.playerId,
+      elo: params.playerElo,
+    },
+    {
+      searchMs: resolveMatchmakingSearchMs(),
+    },
+  );
 
   if (ghost) {
     return { ok: true, plan: { kind: "ghost", ghost } };

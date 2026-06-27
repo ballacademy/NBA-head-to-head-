@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STATS_PATH = ROOT / "data" / "nba-stats" / "nba-player-stats-202526-regular-season.json"
-SALARIES_PATH = ROOT / "data" / "nba-salaries-202526.json"
+SALARIES_PATH = ROOT / "data" / "nba-salaries-202627.json"
 JERSEYS_PATH = ROOT / "data" / "nba-jersey-numbers.json"
 OVERRIDES_PATH = ROOT / "data" / "nba-current-teams.json"
 FREE_AGENT_TEAM = "FA"

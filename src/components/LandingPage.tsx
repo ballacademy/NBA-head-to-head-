@@ -49,6 +49,7 @@ interface LandingPageProps {
   dailyChallenge: DailyDraftChallenge;
   modeRecords: ModePlayerRecords;
   isMatchmaking?: boolean;
+  matchmakingElapsedSeconds?: number;
   startMatchError?: string | null;
   onStartDraft: (
     team: TeamProfile,
@@ -90,6 +91,7 @@ export function LandingPage({
   dailyChallenge,
   modeRecords,
   isMatchmaking = false,
+  matchmakingElapsedSeconds = 0,
   startMatchError = null,
   onStartDraft,
   onCollectionChange,
@@ -119,6 +121,10 @@ export function LandingPage({
   );
   const dailyCompleted = Boolean(dailyEntry);
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
+  const matchmakingLabel =
+    matchmakingElapsedSeconds > 0
+      ? `Finding opponent… ${matchmakingElapsedSeconds}s`
+      : "Finding opponent…";
 
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, collection);
@@ -253,9 +259,7 @@ export function LandingPage({
             disabled={dailyCompleted || isMatchmaking}
             onClick={() => void handleStart({ isDailyDraft: true })}
           >
-            {isMatchmaking
-              ? "Finding opponent (up to 20s)..."
-              : dailyCompleted
+            {isMatchmaking ? matchmakingLabel : dailyCompleted
                 ? "Completed for today"
                 : "Play Today's Daily Draft"}
           </button>
@@ -266,7 +270,7 @@ export function LandingPage({
           <p className="head-to-head-card__description">
             Draft a five-player lineup under a $
             {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2025-26 salaries.
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2026-27 salaries.
             Banner matchmaking pairs similar front offices; monthly seasons reset
             the Top 500.
           </p>
@@ -277,9 +281,7 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart()}
           >
-            {isMatchmaking
-              ? "Finding opponent (up to 20s)..."
-              : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+            {isMatchmaking ? matchmakingLabel : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 
@@ -288,7 +290,7 @@ export function LandingPage({
           <p className="ranked-cap-card__description">
             Draft a five-player lineup under a $
             {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2025-26 salaries.
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2026-27 salaries.
             Banner matchmaking pairs similar front offices; monthly seasons reset
             the Top 500.
           </p>
@@ -299,9 +301,7 @@ export function LandingPage({
             disabled={isMatchmaking}
             onClick={() => void handleStart({ salaryCapMode: true })}
           >
-            {isMatchmaking
-              ? "Finding opponent (up to 20s)..."
-              : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+            {isMatchmaking ? matchmakingLabel : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
           </button>
         </div>
 

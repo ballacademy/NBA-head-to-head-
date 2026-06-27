@@ -71,6 +71,7 @@ import {
 } from "./lib/salaryCap";
 import { saveTeamProfile } from "./lib/teamProfile";
 import type { TeamProfile } from "./lib/teamProfile";
+import { getMatchmakingElapsedSeconds } from "./lib/matchmakingTiming";
 import type { Drafter } from "./lib/types";
 
 type AppPhase =
@@ -100,6 +101,10 @@ function App() {
   );
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [isMatchmaking, setIsMatchmaking] = useState(false);
+  const [matchmakingStartedAt, setMatchmakingStartedAt] = useState<number | null>(
+    null,
+  );
+  const [matchmakingElapsedSeconds, setMatchmakingElapsedSeconds] = useState(0);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [deliveredOwnerResult, setDeliveredOwnerResult] =
     useState<DeliveredOwnerResult | null>(null);
@@ -111,6 +116,26 @@ function App() {
     ensureCurrentRankedSeason();
     ensureRankedLeaderboard();
   }, []);
+
+  useEffect(() => {
+    if (!isMatchmaking || matchmakingStartedAt == null) {
+      setMatchmakingElapsedSeconds(0);
+      return;
+    }
+
+    const tick = () => {
+      setMatchmakingElapsedSeconds(
+        getMatchmakingElapsedSeconds(matchmakingStartedAt, Date.now()),
+      );
+    };
+
+    tick();
+    const intervalId = window.setInterval(tick, 250);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isMatchmaking, matchmakingStartedAt]);
 
   useEffect(() => {
     if (phase !== "landing" || deliveredOwnerResult) {
@@ -244,6 +269,7 @@ function App() {
     let isPendingQueue = false;
 
     if (!daily && !nextAllTimeMode) {
+      setMatchmakingStartedAt(Date.now());
       setIsMatchmaking(true);
       const matchmakingMode = salaryCapMode ? "ranked" : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
@@ -257,6 +283,7 @@ function App() {
       });
 
       setIsMatchmaking(false);
+      setMatchmakingStartedAt(null);
 
       if (!resolution.ok) {
         setStartMatchError(getStartMatchErrorMessage(resolution.error));
@@ -378,6 +405,7 @@ function App() {
     setDraftSessionKey(null);
     setIsPendingQueueMatch(false);
     setIsMatchmaking(false);
+    setMatchmakingStartedAt(null);
     setIsDailyDraft(false);
     setAllTimeMode(false);
     setModeRecords(loadAllModeRecords());
@@ -682,6 +710,7 @@ function App() {
           dailyChallenge={dailyChallenge}
           modeRecords={modeRecords}
           isMatchmaking={isMatchmaking}
+          matchmakingElapsedSeconds={matchmakingElapsedSeconds}
           startMatchError={startMatchError}
           onStartDraft={startMatch}
           onCollectionChange={setCollection}
