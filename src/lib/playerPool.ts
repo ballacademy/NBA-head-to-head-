@@ -11,7 +11,7 @@ import {
   buildDefensiveRatings,
   toDefensiveStatInput,
 } from "./defenseRating";
-import { isFreeAgentTeam } from "./freeAgents";
+import { isFreeAgentTeam, isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
 import seasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
 
 export interface SeasonStatsFile {
@@ -229,13 +229,9 @@ const mapStatsToPlayers = (rawPlayers: RawSeasonPlayer[]) =>
 
 export const databasePlayers: Player[] = mapStatsToPlayers(statsFile.players);
 
-export const players: Player[] = databasePlayers.filter(
-  (player) => !isFreeAgentTeam(player.team),
-);
+export const players: Player[] = databasePlayers.filter(isDraftEligiblePlayer);
 
-export const freeAgentPlayers: Player[] = databasePlayers.filter((player) =>
-  isFreeAgentTeam(player.team),
-);
+export const freeAgentPlayers: Player[] = databasePlayers.filter(isStatsFreeAgent);
 
 export const playersById = new Map(players.map((player) => [player.id, player]));
 

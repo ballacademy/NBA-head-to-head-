@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { players } from "./playerPool";
+import { databasePlayers, players } from "./playerPool";
 import { ACHIEVEMENT_CHECKS } from "./achievementChecks";
 import {
   ACHIEVEMENTS,
@@ -24,7 +24,9 @@ describe("achievements", () => {
 
   it("detects nepotism when Bronny and Thanasis are drafted together", () => {
     const bronny = players.find((player) => player.bbrPlayerId === "jamesbr02");
-    const thanasis = players.find((player) => player.bbrPlayerId === "antetth01");
+    const thanasis = databasePlayers.find(
+      (player) => player.bbrPlayerId === "antetth01",
+    );
     const fillers = players
       .filter(
         (player) =>
@@ -76,7 +78,7 @@ describe("achievements", () => {
 
   it("detects family ties when brother chemistry is active", () => {
     const steph = players.find((player) => player.bbrPlayerId === "curryst01");
-    const seth = players.find((player) => player.bbrPlayerId === "curryse01");
+    const seth = databasePlayers.find((player) => player.bbrPlayerId === "curryse01");
     const fillers = players
       .filter(
         (player) =>

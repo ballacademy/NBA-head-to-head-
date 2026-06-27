@@ -23,3 +23,8 @@ export const getPlayerSalary = (bbrPlayerId?: string, playerId?: string) => {
 
   return undefined;
 };
+
+export const hasPlayerContractSalary = (
+  bbrPlayerId?: string,
+  playerId?: string,
+) => getPlayerSalary(bbrPlayerId, playerId) != null;

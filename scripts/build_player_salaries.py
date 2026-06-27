@@ -70,7 +70,7 @@ def main() -> None:
 
     salaries: dict[str, int] = {}
     matched = 0
-    minimum_assigned = 0
+    unmatched = 0
 
     for player in pool:
         bbr_id = player.get("bbrPlayerId")
@@ -87,8 +87,7 @@ def main() -> None:
             matched += 1
             continue
 
-        salaries[key] = ROOKIE_MINIMUM_SALARY
-        minimum_assigned += 1
+        unmatched += 1
 
     payload = {
         "season": "2026-27",
@@ -96,14 +95,14 @@ def main() -> None:
         "salaryColumn": args.salary_column,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "matchedFromContracts": matched,
-        "minimumSalaryAssigned": minimum_assigned,
+        "unmatchedPlayers": unmatched,
         "playerCount": len(salaries),
         "salaries": salaries,
     }
     args.output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(
         f"Wrote {len(salaries)} salaries to {args.output_path} "
-        f"({matched} from contracts, {minimum_assigned} minimum fallback)"
+        f"({matched} from contracts, {unmatched} without a 2026-27 contract)"
     )
 
 

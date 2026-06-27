@@ -49,16 +49,14 @@ describe("impactRanking", () => {
   it("boosts ranked stars missing from the default stat ladder", () => {
     const curry = players.find((player) => player.name === "Stephen Curry");
     const lamelo = players.find((player) => player.name === "LaMelo Ball");
-    const porzingis = players.find(
-      (player) => player.name === "Kristaps Porziņģis",
-    );
+    const holiday = players.find((player) => player.name === "Jrue Holiday");
 
     expect(curry).toBeDefined();
     expect(lamelo).toBeDefined();
-    expect(porzingis).toBeDefined();
+    expect(holiday).toBeDefined();
     expect(getPlayerImpactAdjustment(curry!)).toBeGreaterThan(0);
     expect(getPlayerImpactAdjustment(lamelo!)).toBeGreaterThan(0.4);
-    expect(getPlayerImpactAdjustment(porzingis!)).toBeLessThan(0);
+    expect(getPlayerImpactAdjustment(holiday!)).toBeLessThan(0);
   });
 
   it("does not change scrub pool membership", () => {
