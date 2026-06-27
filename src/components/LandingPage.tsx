@@ -33,6 +33,7 @@ import {
   type TeamProfile,
 } from "../lib/teamProfile";
 import { ClassicModeSummary } from "./ClassicModeSummary";
+import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { LossStreakBadge } from "./LossStreakBadge";
@@ -215,7 +216,9 @@ export function LandingPage({
 
       <div className="landing__glow" aria-hidden="true" />
 
-      <p className="eyebrow landing__eyebrow">Draft Day GM</p>
+      <div className="landing__brand">
+        <DraftDayGmLogo className="landing__logo" />
+      </div>
       <h1>Draft your five. Win your way.</h1>
       <p className="landing__lede">
         Pick a mode below, name your team, and draft a five-player lineup. You

@@ -29,6 +29,7 @@ import {
   PRO_HEAD_TO_HEAD_LABEL,
   PRO_LEADERBOARD_LABEL,
 } from "../lib/modeLabels";
+import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -111,7 +112,9 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       <div className="leaderboard__top">
         <div className="leaderboard__header">
           <div>
-            <p className="eyebrow">Draft Day GM</p>
+            <div className="leaderboard__brand">
+              <DraftDayGmLogo className="leaderboard__logo" />
+            </div>
             <h1>Leaderboards</h1>
             <p className="leaderboard__subtitle">
               {view === "ranked"
