@@ -7,7 +7,11 @@ import {
   isPlayerStatsMasked,
   type PlayerCollection,
 } from "../lib/playerCollection";
-import { getPlayerTeamLabel } from "../lib/freeAgents";
+import {
+  comparePlayersForTeamColumn,
+  getPlayerTeamLabel,
+  getPlayerTeamSearchText,
+} from "../lib/freeAgents";
 import { statsFile } from "../lib/playerPool";
 import {
   isAllStarPlayer,
@@ -105,12 +109,16 @@ export function PlayerStatsTable({
           }
 
           const haystack =
-            `${player.name} ${getPlayerTeamLabel(player)} ${player.position}`.toLowerCase();
+            `${player.name} ${getPlayerTeamSearchText(player)} ${player.position}`.toLowerCase();
           return haystack.includes(normalizedQuery);
         })
       : players;
 
     return [...matches].sort((a, b) => {
+      if (sortKey === "team") {
+        return comparePlayersForTeamColumn(a, b, sortDirection);
+      }
+
       if (sortKey === "position") {
         const comparison = comparePositions(a.position, b.position);
         return sortDirection === "asc" ? comparison : -comparison;

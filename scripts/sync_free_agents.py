@@ -148,6 +148,9 @@ def player_on_espn_roster(player: dict, espn_norms: set[str]) -> bool:
 def to_fa_player(player: dict) -> dict:
     updated = deepcopy(player)
     bbr = str(updated.get("bbrPlayerId") or updated["id"].split("-")[0])
+    current_team = str(updated.get("team") or "")
+    if current_team and current_team != FREE_AGENT_TEAM:
+        updated["lastTeam"] = current_team
     updated["team"] = FREE_AGENT_TEAM
     updated["id"] = f"{bbr}-{FREE_AGENT_TEAM.lower()}"
     if bbr in CANONICAL_NAMES:

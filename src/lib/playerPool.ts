@@ -30,6 +30,7 @@ export interface RawSeasonPlayer {
   bbrPlayerId?: string;
   name: string;
   team: string;
+  lastTeam?: string;
   position?: string;
   positions?: string[];
   age?: number;
@@ -195,6 +196,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     bbrPlayerId: raw.bbrPlayerId,
     name: raw.name,
     team,
+    lastTeam: raw.lastTeam,
     position,
     positions,
     jerseyNumber: lookupJerseyNumber(raw.bbrPlayerId, playerId, team),

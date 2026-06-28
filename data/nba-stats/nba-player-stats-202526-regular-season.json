@@ -10,7 +10,7 @@
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Dončić",
+      "name": "Luka Don\u010di\u0107",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -289,7 +289,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Jokić",
+      "name": "Nikola Joki\u0107",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1598,7 +1598,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen Şengün",
+      "name": "Alperen \u015eeng\u00fcn",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -3181,7 +3181,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porziņģis",
+      "name": "Kristaps Porzi\u0146\u0123is",
       "team": "GSW",
       "position": "C",
       "positions": [
@@ -3572,7 +3572,8 @@
       "blockPct": 0.20000000000000004,
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.5763358778625953,
-      "trueShooting": 0.589
+      "trueShooting": 0.589,
+      "lastTeam": "DET"
     },
     {
       "id": "buzelma01-chi",
@@ -4050,7 +4051,7 @@
     {
       "id": "vucevni01-bos",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vučević",
+      "name": "Nikola Vu\u010devi\u0107",
       "team": "BOS",
       "position": "C",
       "positions": [
@@ -5386,7 +5387,8 @@
       "blockPct": 0.4,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.466,
-      "trueShooting": 0.529
+      "trueShooting": 0.529,
+      "lastTeam": "MIL"
     },
     {
       "id": "sheppre01-hou",
@@ -6091,7 +6093,8 @@
       "blockPct": 1.0,
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.5330188679245284,
-      "trueShooting": 0.551
+      "trueShooting": 0.551,
+      "lastTeam": "CHA"
     },
     {
       "id": "meltode01-gsw",
@@ -7628,12 +7631,13 @@
       "blockPct": 2.6,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.7153846153846154,
-      "trueShooting": 0.745
+      "trueShooting": 0.745,
+      "lastTeam": "WAS"
     },
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurkić",
+      "name": "Jusuf Nurki\u0107",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -7745,7 +7749,8 @@
       "blockPct": 1.2,
       "personalFouls": 2.6,
       "effectiveFieldGoalPct": 0.4731182795698925,
-      "trueShooting": 0.524
+      "trueShooting": 0.524,
+      "lastTeam": "MEM"
     },
     {
       "id": "plowdda01-sac",
@@ -7789,7 +7794,7 @@
     {
       "id": "schrode01-cle",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schröder",
+      "name": "Dennis Schr\u00f6der",
       "team": "CLE",
       "position": "PG",
       "positions": [
@@ -8100,7 +8105,8 @@
       "blockPct": 0.4,
       "personalFouls": 3.4,
       "effectiveFieldGoalPct": 0.5470588235294118,
-      "trueShooting": 0.573
+      "trueShooting": 0.573,
+      "lastTeam": "MEM"
     },
     {
       "id": "loveca01-por",
@@ -8218,7 +8224,8 @@
       "blockPct": 0,
       "personalFouls": 3,
       "effectiveFieldGoalPct": 0.6904761904761906,
-      "trueShooting": 0.731
+      "trueShooting": 0.731,
+      "lastTeam": "SAC"
     },
     {
       "id": "demineg01-brk",
@@ -8847,7 +8854,8 @@
       "blockPct": 0.8,
       "personalFouls": 2.5,
       "effectiveFieldGoalPct": 0.595,
-      "trueShooting": 0.611
+      "trueShooting": 0.611,
+      "lastTeam": "ATL"
     },
     {
       "id": "barneha02-sas",
@@ -9988,7 +9996,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traoré",
+      "name": "Nolan Traor\u00e9",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10184,7 +10192,7 @@
     {
       "id": "valanjo01-den",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valančiūnas",
+      "name": "Jonas Valan\u010di\u016bnas",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -10570,7 +10578,8 @@
       "blockPct": 2,
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.543,
-      "trueShooting": 0.569
+      "trueShooting": 0.569,
+      "lastTeam": "DET"
     },
     {
       "id": "fontesi01-mia",
@@ -10614,7 +10623,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "Vít Krejčí",
+      "name": "V\u00edt Krej\u010d\u00ed",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -10922,7 +10931,8 @@
       "blockPct": 1.3,
       "personalFouls": 0.6999999999999998,
       "effectiveFieldGoalPct": 0.6886792452830188,
-      "trueShooting": 0.723
+      "trueShooting": 0.723,
+      "lastTeam": "WAS"
     },
     {
       "id": "dortlu01-okc",
@@ -11039,7 +11049,8 @@
       "blockPct": 0.7,
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.532,
-      "trueShooting": 0.545
+      "trueShooting": 0.545,
+      "lastTeam": "ORL"
     },
     {
       "id": "bealbr01-lac",
@@ -11510,7 +11521,8 @@
       "blockPct": 3.2,
       "personalFouls": 2.5,
       "effectiveFieldGoalPct": 0.4266666666666667,
-      "trueShooting": 0.475
+      "trueShooting": 0.475,
+      "lastTeam": "MEM"
     },
     {
       "id": "gueyemo01-chi",
@@ -11710,7 +11722,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabaté",
+      "name": "Moussa Diabat\u00e9",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12296,12 +12308,13 @@
       "blockPct": 1.8,
       "personalFouls": 2,
       "effectiveFieldGoalPct": 0.447,
-      "trueShooting": 0.476
+      "trueShooting": 0.476,
+      "lastTeam": "UTA"
     },
     {
       "id": "bogdabo01-lac",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanović",
+      "name": "Bogdan Bogdanovi\u0107",
       "team": "LAC",
       "position": "SG",
       "positions": [
@@ -12374,7 +12387,8 @@
       "blockPct": 1.8,
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.47794117647058826,
-      "trueShooting": 0.511
+      "trueShooting": 0.511,
+      "lastTeam": "PHI"
     },
     {
       "id": "leverca01-det",
@@ -12648,7 +12662,8 @@
       "blockPct": 0.8,
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.5818181818181818,
-      "trueShooting": 0.614
+      "trueShooting": 0.614,
+      "lastTeam": "MIA"
     },
     {
       "id": "sandeko01-lac",
@@ -12732,7 +12747,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jović",
+      "name": "Nikola Jovi\u0107",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -13157,7 +13172,8 @@
       "blockPct": 1.9,
       "personalFouls": 3.5,
       "effectiveFieldGoalPct": 0.6,
-      "trueShooting": 0.574
+      "trueShooting": 0.574,
+      "lastTeam": "MEM"
     },
     {
       "id": "willipa01-chi",
@@ -13314,7 +13330,8 @@
       "blockPct": 5.2,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.6176470588235295,
-      "trueShooting": 0.629
+      "trueShooting": 0.629,
+      "lastTeam": "PHO"
     },
     {
       "id": "beaucma01-phi",
@@ -13431,7 +13448,8 @@
       "blockPct": 2.1,
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.46969696969696967,
-      "trueShooting": 0.485
+      "trueShooting": 0.485,
+      "lastTeam": "MIL"
     },
     {
       "id": "jacksis01-lac",
@@ -13627,7 +13645,8 @@
       "blockPct": 1.0,
       "personalFouls": 2.2,
       "effectiveFieldGoalPct": 0.48333333333333334,
-      "trueShooting": 0.512
+      "trueShooting": 0.512,
+      "lastTeam": "BRK"
     },
     {
       "id": "nembhry01-dal",
@@ -14220,7 +14239,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jakučionis",
+      "name": "Kasparas Jaku\u010dionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -14533,7 +14552,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Salaün",
+      "name": "Tidjane Sala\u00fcn",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -15160,7 +15179,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matković",
+      "name": "Karlo Matkovi\u0107",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -15507,7 +15526,8 @@
       "blockPct": 1.3,
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.7571428571428571,
-      "trueShooting": 0.757
+      "trueShooting": 0.757,
+      "lastTeam": "PHI"
     },
     {
       "id": "howarje01-orl",
@@ -15976,7 +15996,8 @@
       "blockPct": 2.3,
       "personalFouls": 3.2,
       "effectiveFieldGoalPct": 0.32758620689655177,
-      "trueShooting": 0.394
+      "trueShooting": 0.394,
+      "lastTeam": "UTA"
     },
     {
       "id": "newelas01-atl",
@@ -16094,7 +16115,8 @@
       "blockPct": 1.3,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5571428571428572,
-      "trueShooting": 0.625
+      "trueShooting": 0.625,
+      "lastTeam": "IND"
     },
     {
       "id": "pickeja02-den",
@@ -16177,7 +16199,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topić",
+      "name": "Nikola Topi\u0107",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -16486,7 +16508,8 @@
       "blockPct": 2.0,
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.52,
-      "trueShooting": 0.536
+      "trueShooting": 0.536,
+      "lastTeam": "LAC"
     },
     {
       "id": "simsje01-mil",
@@ -16682,7 +16705,8 @@
       "blockPct": 0.2,
       "personalFouls": 1.2,
       "effectiveFieldGoalPct": 0.42,
-      "trueShooting": 0.474
+      "trueShooting": 0.474,
+      "lastTeam": "DAL"
     },
     {
       "id": "simpskj01-den",
@@ -16760,7 +16784,8 @@
       "blockPct": 1.2,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.41,
-      "trueShooting": 0.437
+      "trueShooting": 0.437,
+      "lastTeam": "CLE"
     },
     {
       "id": "branhma01-fa",
@@ -16799,7 +16824,8 @@
       "blockPct": 1,
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.5303030303030303,
-      "trueShooting": 0.601
+      "trueShooting": 0.601,
+      "lastTeam": "WAS"
     },
     {
       "id": "pullizy01-min",
@@ -17425,7 +17451,8 @@
       "blockPct": 0.8,
       "personalFouls": 1.1,
       "effectiveFieldGoalPct": 0.48837209302325585,
-      "trueShooting": 0.496
+      "trueShooting": 0.496,
+      "lastTeam": "PHI"
     },
     {
       "id": "kolekty01-nyk",
@@ -17542,7 +17569,8 @@
       "blockPct": 13.3,
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.5652173913043479,
-      "trueShooting": 0.632
+      "trueShooting": 0.632,
+      "lastTeam": "BRK"
     },
     {
       "id": "walkeja01-phi",
@@ -17821,7 +17849,7 @@
     {
       "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissière",
+      "name": "Skal Labissi\u00e8re",
       "team": "FA",
       "position": "PF",
       "positions": [
@@ -17855,12 +17883,13 @@
       "blockPct": 2.3,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.6515151515151516,
-      "trueShooting": 0.652
+      "trueShooting": 0.652,
+      "lastTeam": "WAS"
     },
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederhäuser",
+      "name": "Yanic Konan Niederh\u00e4user",
       "team": "LAC",
       "position": "C",
       "positions": [
@@ -18090,7 +18119,8 @@
       "blockPct": 3.5,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.556,
-      "trueShooting": 0.565
+      "trueShooting": 0.565,
+      "lastTeam": "BOS"
     },
     {
       "id": "enarutr01-cle",
@@ -18168,7 +18198,8 @@
       "blockPct": 0,
       "personalFouls": 2.5,
       "effectiveFieldGoalPct": 0.3333333333333333,
-      "trueShooting": 0.372
+      "trueShooting": 0.372,
+      "lastTeam": "MEM"
     },
     {
       "id": "clarkja02-min",
@@ -18246,7 +18277,8 @@
       "blockPct": 0.6,
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.375,
-      "trueShooting": 0.398
+      "trueShooting": 0.398,
+      "lastTeam": "MIA"
     },
     {
       "id": "batumni01-lac",
@@ -18447,7 +18479,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo González",
+      "name": "Hugo Gonz\u00e1lez",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -18599,7 +18631,8 @@
       "blockPct": 0.9,
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.51,
-      "trueShooting": 0.54
+      "trueShooting": 0.54,
+      "lastTeam": "UTA"
     },
     {
       "id": "breako01-pho",
@@ -19463,7 +19496,8 @@
       "blockPct": 1.5,
       "personalFouls": 2.5,
       "effectiveFieldGoalPct": 0.6,
-      "trueShooting": 0.607
+      "trueShooting": 0.607,
+      "lastTeam": "IND"
     },
     {
       "id": "leonsma01-gsw",
@@ -19658,7 +19692,8 @@
       "blockPct": 1.6,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5,
-      "trueShooting": 0.508
+      "trueShooting": 0.508,
+      "lastTeam": "LAL"
     },
     {
       "id": "olynyke01-sas",
@@ -19737,7 +19772,8 @@
       "blockPct": 1.8,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.42,
-      "trueShooting": 0.435
+      "trueShooting": 0.435,
+      "lastTeam": "MIL"
     },
     {
       "id": "battlja01-tor",
@@ -19815,7 +19851,8 @@
       "blockPct": 0,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.631578947368421,
-      "trueShooting": 0.65
+      "trueShooting": 0.65,
+      "lastTeam": "MIL"
     },
     {
       "id": "kellymi02-fa",
@@ -19854,7 +19891,8 @@
       "blockPct": 0.6,
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.467741935483871,
-      "trueShooting": 0.493
+      "trueShooting": 0.493,
+      "lastTeam": "DAL"
     },
     {
       "id": "huntlcj01-pho",
@@ -19932,7 +19970,8 @@
       "blockPct": 0,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5652173913043479,
-      "trueShooting": 0.617
+      "trueShooting": 0.617,
+      "lastTeam": "CLE"
     },
     {
       "id": "milleem01-sas",
@@ -20050,7 +20089,8 @@
       "blockPct": 1.3,
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.4090909090909091,
-      "trueShooting": 0.416
+      "trueShooting": 0.416,
+      "lastTeam": "IND"
     },
     {
       "id": "jonesty01-den",
@@ -20167,7 +20207,8 @@
       "blockPct": 0,
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.4,
-      "trueShooting": 0.409
+      "trueShooting": 0.409,
+      "lastTeam": "LAC"
     },
     {
       "id": "jonescu01-den",
@@ -20211,7 +20252,7 @@
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones García",
+      "name": "David Jones Garc\u00eda",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -20285,7 +20326,8 @@
       "blockPct": 2.8,
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5869565217391305,
-      "trueShooting": 0.607
+      "trueShooting": 0.607,
+      "lastTeam": "POR"
     },
     {
       "id": "phillju01-min",
@@ -20363,7 +20405,8 @@
       "blockPct": 2.3,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.33870967741935487,
-      "trueShooting": 0.42
+      "trueShooting": 0.42,
+      "lastTeam": "LAL"
     },
     {
       "id": "chrisca02-lac",
@@ -20755,7 +20798,8 @@
       "blockPct": 0.0,
       "personalFouls": 1.1,
       "effectiveFieldGoalPct": 0.4166666666666667,
-      "trueShooting": 0.48
+      "trueShooting": 0.48,
+      "lastTeam": "MIL"
     },
     {
       "id": "porteot01-fa",
@@ -20794,7 +20838,8 @@
       "blockPct": 2.5,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5227272727272726,
-      "trueShooting": 0.568
+      "trueShooting": 0.568,
+      "lastTeam": "TOR"
     },
     {
       "id": "connapa01-cho",
@@ -20951,7 +20996,8 @@
       "blockPct": 6.6,
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.455,
-      "trueShooting": 0.446
+      "trueShooting": 0.446,
+      "lastTeam": "TOR"
     },
     {
       "id": "jacksan01-mil",
@@ -21265,7 +21311,8 @@
       "blockPct": 7.5,
       "personalFouls": 1.8999999999999997,
       "effectiveFieldGoalPct": 0.35714285714285715,
-      "trueShooting": 0.386
+      "trueShooting": 0.386,
+      "lastTeam": "BOS"
     },
     {
       "id": "travelu01-fa",
@@ -21304,7 +21351,8 @@
       "blockPct": 3.7000000000000006,
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.2833333333333334,
-      "trueShooting": 0.343
+      "trueShooting": 0.343,
+      "lastTeam": "CLE"
     },
     {
       "id": "martial01-tor",
@@ -21422,7 +21470,8 @@
       "blockPct": 0.6,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.33999999999999997,
-      "trueShooting": 0.398
+      "trueShooting": 0.398,
+      "lastTeam": "DEN"
     },
     {
       "id": "greenje02-hou",
@@ -21618,7 +21667,8 @@
       "blockPct": 0,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.3333333333333333,
-      "trueShooting": 0.333
+      "trueShooting": 0.333,
+      "lastTeam": "DET"
     },
     {
       "id": "bantoda01-bos",
@@ -21774,7 +21824,8 @@
       "blockPct": 1,
       "personalFouls": 0.1,
       "effectiveFieldGoalPct": 0.5277777777777778,
-      "trueShooting": 0.506
+      "trueShooting": 0.506,
+      "lastTeam": "MIN"
     },
     {
       "id": "mclaujo01-sas",
@@ -21891,7 +21942,8 @@
       "blockPct": 0,
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.6666666666666666,
-      "trueShooting": 0.667
+      "trueShooting": 0.667,
+      "lastTeam": "CHI"
     },
     {
       "id": "thierad01-lal",
@@ -22008,7 +22060,8 @@
       "blockPct": 0,
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.4130434782608697,
-      "trueShooting": 0.37
+      "trueShooting": 0.37,
+      "lastTeam": "DET"
     },
     {
       "id": "martico01-fa",
@@ -22047,7 +22100,8 @@
       "blockPct": 3.1,
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.2,
-      "trueShooting": 0.285
+      "trueShooting": 0.285,
+      "lastTeam": "IND"
     },
     {
       "id": "youngja05-mia",
@@ -22126,7 +22180,8 @@
       "blockPct": 0,
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.7307692307692308,
-      "trueShooting": 0.692
+      "trueShooting": 0.692,
+      "lastTeam": "ORL"
     },
     {
       "id": "liveris01-pho",
@@ -22209,7 +22264,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pacôme Dadiet",
+      "name": "Pac\u00f4me Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -22282,7 +22337,8 @@
       "blockPct": 3.0,
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.4444444444444445,
-      "trueShooting": 0.395
+      "trueShooting": 0.395,
+      "lastTeam": "CLE"
     },
     {
       "id": "moorewe01-det",
@@ -22399,7 +22455,8 @@
       "blockPct": 5.3,
       "personalFouls": 0.2,
       "effectiveFieldGoalPct": 0.6666666666666667,
-      "trueShooting": 0.667
+      "trueShooting": 0.667,
+      "lastTeam": "ATL"
     },
     {
       "id": "plumlma01-sas",
@@ -22478,7 +22535,8 @@
       "blockPct": 0,
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.5,
-      "trueShooting": 0.5
+      "trueShooting": 0.5,
+      "lastTeam": "OKC"
     },
     {
       "id": "inglejo01-min",
@@ -22831,7 +22889,8 @@
       "blockPct": 1,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.3823529411764706,
-      "trueShooting": 0.373
+      "trueShooting": 0.373,
+      "lastTeam": "PHO"
     },
     {
       "id": "washity02-lac",
@@ -22909,7 +22968,8 @@
       "blockPct": 0,
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.2727272727272727,
-      "trueShooting": 0.267
+      "trueShooting": 0.267,
+      "lastTeam": "POR"
     },
     {
       "id": "lowryky01-phi",
@@ -22953,7 +23013,7 @@
     {
       "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario Šarić",
+      "name": "Dario \u0160ari\u0107",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -22988,7 +23048,8 @@
       "blockPct": 0,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.25000000000000006,
-      "trueShooting": 0.363
+      "trueShooting": 0.363,
+      "lastTeam": "SAC"
     },
     {
       "id": "sallihu01-fa",
@@ -23027,7 +23088,8 @@
       "blockPct": 3.6,
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.5714285714285715,
-      "trueShooting": 0.601
+      "trueShooting": 0.601,
+      "lastTeam": "PHI"
     },
     {
       "id": "umudest01-fa",
@@ -23066,7 +23128,8 @@
       "blockPct": 0,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.5,
-      "trueShooting": 0.5
+      "trueShooting": 0.5,
+      "lastTeam": "SAS"
     },
     {
       "id": "keelstr01-mia",
@@ -23264,12 +23327,13 @@
       "blockPct": 1.3999999999999997,
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.11111111111111108,
-      "trueShooting": 0.141
+      "trueShooting": 0.141,
+      "lastTeam": "CHO"
     },
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Mañon",
+      "name": "Chris Ma\u00f1on",
       "team": "LAL",
       "position": "SG",
       "positions": [
@@ -23381,7 +23445,8 @@
       "blockPct": 0,
       "personalFouls": 0.4,
       "effectiveFieldGoalPct": 0.18181818181818182,
-      "trueShooting": 0.182
+      "trueShooting": 0.182,
+      "lastTeam": "TOR"
     },
     {
       "id": "nfalyda01-fa",
@@ -23421,7 +23486,8 @@
       "blockPct": 0,
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.3,
-      "trueShooting": 0.353
+      "trueShooting": 0.353,
+      "lastTeam": "ATL"
     },
     {
       "id": "goldivl01-mia",
@@ -23539,7 +23605,8 @@
       "blockPct": 0,
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0,
-      "trueShooting": 0.069
+      "trueShooting": 0.069,
+      "lastTeam": "LAC"
     },
     {
       "id": "hepbuch01-tor",
@@ -23617,7 +23684,8 @@
       "blockPct": 0,
       "personalFouls": 0,
       "effectiveFieldGoalPct": 0,
-      "trueShooting": 0
+      "trueShooting": 0,
+      "lastTeam": "CLE"
     },
     {
       "id": "essenno01-chi",
