@@ -447,7 +447,31 @@ main {
 }
 
 .landing-mode-card__record-block {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+}
+
+.ranked-mode-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: start;
+}
+
+.ranked-mode-summary .landing-mode-card__record {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ranked-mode-summary .landing-mode-card__record-meta {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.ranked-mode-summary .landing-mode-card__record-value {
+  font-size: 1.1rem;
 }
 
 .landing-mode-card__record {
@@ -483,7 +507,7 @@ main {
 }
 
 .landing-mode-card__record-meta {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: #94a3b8;
   font-size: 0.88rem;
 }
@@ -522,6 +546,13 @@ main {
 .landing__primary-button,
 .head-to-head-card .landing__primary-button {
   margin-top: 8px;
+}
+
+.landing-card--mode .daily-draft-card__button,
+.landing-card--mode .landing__primary-button,
+.landing-card--mode .ranked-cap-card__button,
+.landing-card--mode .all-time-card__button {
+  margin-top: 6px;
 }
 
 .landing__primary-button:hover {
@@ -1892,6 +1923,7 @@ main {
 .mode-card__actions {
   display: grid;
   gap: 10px;
+  margin-top: 0;
 }
 
 .mode-card__practice-note {
@@ -2225,14 +2257,19 @@ main {
   }
 
   .landing-mode-card__record-block {
-    margin-top: 8px;
-    margin-bottom: 18px;
-    padding-top: 12px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+    padding-top: 8px;
     border-top: 1px solid rgba(148, 163, 184, 0.14);
   }
 
   .ranked-mode-summary .landing-mode-card__record + .landing-mode-card__record {
-    margin-top: 12px;
+    margin-top: 0;
+  }
+
+  .ranked-mode-summary .landing-mode-card__record-label {
+    flex: none;
+    margin-bottom: 0;
   }
 
   .landing-mode-card__record {
@@ -2251,8 +2288,8 @@ main {
   }
 
   .landing-mode-card__record-meta {
-    margin-top: 8px;
-    line-height: 1.45;
+    margin-top: 2px;
+    line-height: 1.35;
   }
 
   .ranked-tier-badge--compact {
@@ -2269,7 +2306,7 @@ main {
   .landing-card--mode .landing__primary-button,
   .landing-card--mode .ranked-cap-card__button,
   .landing-card--mode .all-time-card__button {
-    margin-top: 12px;
+    margin-top: 6px;
   }
 
   .landing-card--mode .mode-card__actions {
