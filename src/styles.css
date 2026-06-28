@@ -1685,9 +1685,18 @@ main {
 }
 
 .matchmaking-overlay__panel {
-  width: min(100%, 560px);
+  width: min(100%, 420px);
   margin: 0;
   text-align: center;
+}
+
+.matchmaking-overlay__panel h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+}
+
+.matchmaking-overlay__indicator {
+  margin-top: 16px;
 }
 
 @keyframes spin {
@@ -2257,10 +2266,17 @@ main {
   .landing-card--mode .daily-draft-card__button,
   .landing-card--mode .landing__primary-button,
   .landing-card--mode .ranked-cap-card__button,
-  .landing-card--mode .head-to-head-card__practice-button,
-  .landing-card--mode .ranked-cap-card__practice-button,
   .landing-card--mode .all-time-card__button {
     margin-top: 12px;
+  }
+
+  .landing-card--mode .mode-card__actions {
+    gap: 6px;
+  }
+
+  .landing-card--mode .head-to-head-card__practice-button,
+  .landing-card--mode .ranked-cap-card__practice-button {
+    margin-top: 0;
   }
 
   .player-pick-list {
