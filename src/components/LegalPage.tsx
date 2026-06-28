@@ -6,7 +6,7 @@ interface LegalPageProps {
   onOpenPrivacy?: () => void;
 }
 
-const LAST_UPDATED = "June 28, 2026";
+const LAST_UPDATED = "June 29, 2026";
 
 function PrivacyPolicyContent() {
   return (
@@ -154,8 +154,10 @@ function PrivacyPolicyContent() {
         Draft Day GM is a casual sports fan game and is not directed at children
         under 13. We do not knowingly collect personal information from
         children under 13. If you believe a child has provided information
-        through the site, contact us and we will take reasonable steps to
-        remove associated server records where possible.
+        through the site, contact us at{" "}
+        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>{" "}
+        and we will take reasonable steps to remove associated server records
+        where possible.
       </p>
 
       <h2>Changes</h2>
@@ -167,15 +169,9 @@ function PrivacyPolicyContent() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this policy can be sent by opening an issue on the{" "}
-        <a
-          href="https://github.com/ballacademy/NBA-head-to-head-"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Draft Day GM GitHub repository
-        </a>{" "}
-        or through BALLACADEMY&apos;s usual support channels.
+        Questions about this policy can be sent to{" "}
+        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>
+        .
       </p>
     </>
   );
@@ -197,13 +193,6 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
         connected to the NBA, its teams, players, unions, or partners. Team
         names, player names, and statistics are used for informational and
         entertainment purposes only.
-      </p>
-
-      <h2>Eligibility</h2>
-      <p>
-        You must be old enough to use online services where you live. If you are
-        under 18, you should use the site only with a parent or guardian&apos;s
-        permission.
       </p>
 
       <h2>What the service is</h2>
@@ -337,14 +326,8 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
 
       <h2>Contact</h2>
       <p>
-        Questions about these Terms can be sent by opening an issue on the{" "}
-        <a
-          href="https://github.com/ballacademy/NBA-head-to-head-"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Draft Day GM GitHub repository
-        </a>
+        Questions about these Terms can be sent to{" "}
+        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>
         .
       </p>
     </>
