@@ -61,7 +61,7 @@ export const syncPendingLineupLock = async (params: {
     return remote;
   }
 
-  if (local && !remote?.pendingResult) {
+  if (local && !remote?.queuedLineup) {
     clearPendingLineupState(params.mode, params.playerId);
   }
 
@@ -134,7 +134,7 @@ export const getStartMatchErrorMessage = (error: StartMatchError) => {
     case "daily_completed":
       return "You've already completed today's Daily Draft. Come back tomorrow.";
     case "pending_lineup_locked":
-      return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup receives a score.`;
+      return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup is matched.`;
     case "setup_failed":
     default:
       return "Couldn't start this draft. Refresh the page and try again.";

@@ -29,7 +29,6 @@ describe("matchmaking", () => {
   it("pairs with a live opponent when another player is searching", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,
-      pendingResult: null,
     });
     vi.mocked(searchLiveOpponent).mockResolvedValue({
       matchId: "match-1",
@@ -63,7 +62,6 @@ describe("matchmaking", () => {
   it("falls back to stored lineups instantly when no live opponent is found", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,
-      pendingResult: null,
     });
     vi.mocked(searchLiveOpponent).mockResolvedValue(null);
     vi.mocked(fetchGhostOpponent).mockResolvedValue({
@@ -99,7 +97,6 @@ describe("matchmaking", () => {
   it("falls back to npc opponents below 1500 banners", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,
-      pendingResult: null,
     });
     vi.mocked(searchLiveOpponent).mockResolvedValue(null);
     vi.mocked(fetchGhostOpponent).mockResolvedValue(null);
@@ -117,7 +114,6 @@ describe("matchmaking", () => {
   it("queues live-only players when no ghost is found", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,
-      pendingResult: null,
     });
     vi.mocked(searchLiveOpponent).mockResolvedValue(null);
     vi.mocked(fetchGhostOpponent).mockResolvedValue(null);
@@ -135,7 +131,6 @@ describe("matchmaking", () => {
   it("blocks live-only players with a queued lineup", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: { id: "lineup-1", createdAt: "2026-06-26T00:00:00.000Z" },
-      pendingResult: null,
     });
 
     await expect(

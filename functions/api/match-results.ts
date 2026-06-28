@@ -43,10 +43,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.challengerTeamName === "string"
       ? body.challengerTeamName.trim().slice(0, 32)
       : "";
-  const challengerWon = body.challengerWon === true;
-  const challengerElo = Number(body.challengerElo ?? 1000);
-  const userScore = Number(body.userScore ?? 0);
-  const opponentScore = Number(body.opponentScore ?? 0);
 
   if (!mode) {
     return json({ error: "mode must be classic or ranked" }, 400);
@@ -57,10 +53,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { error: "storedLineupId, challengerPlayerId, and challengerTeamName are required" },
       400,
     );
-  }
-
-  if (!Number.isFinite(challengerElo)) {
-    return json({ error: "challengerElo must be a number" }, 400);
   }
 
   const db = context.env.DB;
@@ -85,31 +77,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ ok: true, duplicate: true });
   }
 
-  const ownerResult = challengerWon ? "loss" : userScore === opponentScore ? "tie" : "win";
   const now = new Date().toISOString();
-  const resultId = crypto.randomUUID();
-
-  await db
-    .prepare(
-      `INSERT INTO owner_match_results (
-        id, lineup_id, owner_player_id, mode, owner_result, opponent_team_name,
-        opponent_elo, owner_lineup_json, owner_score, opponent_score, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      resultId,
-      lineup.id,
-      lineup.player_id,
-      mode,
-      ownerResult,
-      challengerTeamName,
-      Math.round(challengerElo),
-      lineup.lineup_json,
-      opponentScore,
-      userScore,
-      now,
-    )
-    .run();
 
   await db
     .prepare(
@@ -120,5 +88,5 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(now, challengerPlayerId, lineup.id)
     .run();
 
-  return json({ id: resultId, ownerResult }, 201);
+  return json({ ok: true, consumed: true }, 201);
 };
