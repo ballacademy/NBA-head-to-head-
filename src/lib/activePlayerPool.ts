@@ -54,13 +54,42 @@ export const getActivePlayersById = (
   return new Map(pool.map((player) => [player.id, player]));
 };
 
+const findPlayerByBbrPlayerId = (
+  bbrPlayerId: string,
+  pool: Iterable<Player>,
+) => {
+  for (const player of pool) {
+    if (player.bbrPlayerId === bbrPlayerId) {
+      return player;
+    }
+  }
+
+  return undefined;
+};
+
 export const getPlayerFromActivePool = (
   playerId: string,
   record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
 ) => {
-  const activeById = getActivePlayersById(record, options);
-  return activeById.get(playerId) ?? playersById.get(playerId);
+  const pool = getActivePlayerPool(record, options);
+  const activeById = new Map(pool.map((player) => [player.id, player]));
+  const direct = activeById.get(playerId) ?? playersById.get(playerId);
+
+  if (direct) {
+    return direct;
+  }
+
+  const bbrPlayerId = playerId.split("-")[0];
+
+  if (!bbrPlayerId) {
+    return undefined;
+  }
+
+  return (
+    findPlayerByBbrPlayerId(bbrPlayerId, pool) ??
+    findPlayerByBbrPlayerId(bbrPlayerId, playersById.values())
+  );
 };
 
 export const getPlayersByIdFromActivePool = (

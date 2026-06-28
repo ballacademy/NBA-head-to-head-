@@ -1,4 +1,9 @@
 import type { Env, MatchmakingMode } from "../types";
+import {
+  isValidStoredLineupIds,
+  REQUIRED_STORED_LINEUP_SIZE,
+  sanitizeStoredLineupIds,
+} from "../lib/storedLineups";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -34,9 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.playerId === "string" ? body.playerId.trim() : "";
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
-  const lineup = Array.isArray(body.lineup)
-    ? body.lineup.filter((id): id is string => typeof id === "string")
-    : [];
+  const lineup = sanitizeStoredLineupIds(body.lineup);
   const elo = Number(body.elo ?? 1000);
 
   if (!mode) {
@@ -47,8 +50,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "playerId and teamName are required" }, 400);
   }
 
-  if (lineup.length !== 5) {
-    return json({ error: "lineup must contain exactly 5 player ids" }, 400);
+  if (!isValidStoredLineupIds(lineup)) {
+    return json(
+      {
+        error: `lineup must contain exactly ${REQUIRED_STORED_LINEUP_SIZE} unique non-empty player ids`,
+      },
+      400,
+    );
   }
 
   if (!Number.isFinite(elo)) {

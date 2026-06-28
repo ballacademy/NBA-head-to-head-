@@ -1,4 +1,5 @@
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
+import { parseGhostOpponentSnapshot } from "./storedLineups";
 
 export type GhostMatchmakingMode = "classic" | "ranked";
 
@@ -86,7 +87,7 @@ export const fetchGhostOpponent = async (params: {
       return null;
     }
 
-    return (await response.json()) as GhostOpponentSnapshot;
+    return parseGhostOpponentSnapshot(await response.json());
   } catch {
     return null;
   }
