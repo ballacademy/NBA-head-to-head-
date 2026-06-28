@@ -93,10 +93,11 @@ export function DraftRoom({
         activeStep,
         drafter.draftSlots.length,
         salaryCapLimit,
+        drafter.draftSlots,
       ),
     [
       activeStep,
-      drafter.draftSlots.length,
+      drafter.draftSlots,
       drafter.lineup,
       players,
       salaryCapLimit,
@@ -421,8 +422,8 @@ export function DraftRoom({
           })
         ) : (
           <p className="draft-empty">
-            No eligible players for this slot. Time will run out and the pick
-            will be skipped.
+            No eligible players for this slot. The timer will auto-fill your
+            remaining picks when it runs out.
           </p>
         )}
       </div>

@@ -7,6 +7,7 @@ import { estimatePlayerSalary, getMaxAffordableSalary } from "./salaryCap";
 
 export interface DraftFilterOptions {
   maxAffordableSalary?: number;
+  allowedPlayerIds?: Set<string>;
 }
 
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
@@ -112,6 +113,70 @@ export const validateDraftSlotsFeasible = (
   players: Player[],
   slots: DraftSlotConstraint[],
 ) => autoDraftLineup(players, slots).length === slots.length;
+
+export const pickCheapestForSlot = (
+  players: Player[],
+  slot: DraftSlotConstraint,
+  pickedIds: Set<string>,
+) =>
+  [...filterPlayersForSlot(players, slot, pickedIds)].sort(
+    (left, right) =>
+      estimatePlayerSalary(left) - estimatePlayerSalary(right) ||
+      right.points - left.points ||
+      left.name.localeCompare(right.name),
+  )[0]?.id;
+
+export const completeSalaryCapDraftFromPartial = (
+  players: Player[],
+  partialLineupIds: string[],
+  remainingSlots: DraftSlotConstraint[],
+  salaryCapLimit: number,
+): string[] | null => {
+  const lineup = [...partialLineupIds];
+  const pickedIds = new Set(lineup);
+  const poolById = new Map(players.map((player) => [player.id, player]));
+
+  for (let index = 0; index < remainingSlots.length; index += 1) {
+    const slot = remainingSlots[index]!;
+    const lineupPlayers = lineup
+      .map((playerId) => poolById.get(playerId))
+      .filter((player): player is Player => Boolean(player));
+    const picksRemaining = remainingSlots.length - index;
+    let selection = pickBestForSlot(players, slot, pickedIds, {
+      maxAffordableSalary: getMaxAffordableSalary(
+        lineupPlayers,
+        picksRemaining,
+        salaryCapLimit,
+      ),
+    });
+
+    if (!selection && picksRemaining === 1) {
+      selection = pickCheapestForSlot(players, slot, pickedIds);
+    }
+
+    if (!selection) {
+      return null;
+    }
+
+    lineup.push(selection);
+    pickedIds.add(selection);
+  }
+
+  return lineup;
+};
+
+export const canCompleteSalaryCapDraft = (
+  players: Player[],
+  partialLineup: Player[],
+  remainingSlots: DraftSlotConstraint[],
+  salaryCapLimit: number,
+) =>
+  completeSalaryCapDraftFromPartial(
+    players,
+    partialLineup.map((player) => player.id),
+    remainingSlots,
+    salaryCapLimit,
+  ) != null;
 
 export const autoDraftLineupUnderSalaryCap = (
   players: Player[],
@@ -450,6 +515,8 @@ export const filterPlayersForSlot = (
       getDivisionForTeam(player.team) === slot.division &&
       isDraftableTeam(player.team) &&
       !pickedIds.has(player.id) &&
+      (options.allowedPlayerIds === undefined ||
+        options.allowedPlayerIds.has(player.id)) &&
       (options.maxAffordableSalary === undefined ||
         estimatePlayerSalary(player) <= options.maxAffordableSalary),
   );
