@@ -15,6 +15,7 @@ import { databasePlayers } from "./lib/playerPool";
 import {
   generateFeasibleDraftSlots,
   generateFeasibleDraftSlotsUnderSalaryCap,
+  completeSalaryCapDraftFromPartial,
   pickBestForSlot,
   pickRandomTopCandidateForSlot,
   validateDraftSlotsFeasible,
@@ -274,7 +275,10 @@ function App() {
     modeRecords.allTime,
     { allTimeMode },
   );
-  const userDraftComplete = draftStep >= 5;
+  const userDraftComplete =
+    draftStep >= 5 &&
+    (user?.lineup.filter((playerId): playerId is string => Boolean(playerId))
+      .length ?? 0) >= 5;
 
   const startMatch = async (
     team: TeamProfile,
@@ -586,7 +590,7 @@ function App() {
 
   const handleTimeout = useCallback(
     (slot: number) => {
-      let picked = false;
+      let nextStep: number | null = null;
 
       setUser((current) => {
         if (!current || current.lineup[slot]) {
@@ -603,6 +607,7 @@ function App() {
           slot,
           current.draftSlots.length,
           current.salaryCapLimit,
+          current.draftSlots,
         );
         const autoPick = pickRandomTopCandidateForSlot(
           draftablePlayers,
@@ -611,22 +616,42 @@ function App() {
           salaryOptions,
         );
 
-        if (!autoPick) {
-          return current;
+        if (autoPick) {
+          nextStep = Math.min(slot + 1, 5);
+          const nextLineup = [...current.lineup];
+          nextLineup[slot] = autoPick;
+
+          return {
+            ...current,
+            lineup: nextLineup.slice(0, slot + 1),
+          };
         }
 
-        picked = true;
-        const nextLineup = [...current.lineup];
-        nextLineup[slot] = autoPick;
+        if (current.salaryCapLimit != null) {
+          const partialLineupIds = current.lineup.filter(
+            (playerId): playerId is string => Boolean(playerId),
+          );
+          const filled = completeSalaryCapDraftFromPartial(
+            draftablePlayers,
+            partialLineupIds,
+            current.draftSlots.slice(slot),
+            current.salaryCapLimit,
+          );
 
-        return {
-          ...current,
-          lineup: nextLineup.slice(0, slot + 1),
-        };
+          if (filled) {
+            nextStep = 5;
+            return {
+              ...current,
+              lineup: filled,
+            };
+          }
+        }
+
+        return current;
       });
 
-      if (picked) {
-        setDraftStep((current) => Math.min(Math.max(current, slot) + 1, 5));
+      if (nextStep != null) {
+        setDraftStep(nextStep);
       }
     },
     [draftablePlayers],
@@ -690,14 +715,28 @@ function App() {
           index,
           draftSlots.length,
           salaryCapLimit,
+          draftSlots,
         );
-        const selection = pickBestForSlot(
+        let selection = pickBestForSlot(
           opponentDraftablePlayersRef.current,
           slot,
           pickedIds,
           salaryOptions,
         );
-        if (selection) {
+
+        if (!selection && salaryCapLimit != null) {
+          const filled = completeSalaryCapDraftFromPartial(
+            opponentDraftablePlayersRef.current,
+            nextLineup,
+            draftSlots.slice(index),
+            salaryCapLimit,
+          );
+
+          if (filled) {
+            nextLineup.splice(0, nextLineup.length, ...filled);
+            break;
+          }
+        } else if (selection) {
           pickedIds.add(selection);
           nextLineup.push(selection);
         }
@@ -760,6 +799,12 @@ function App() {
       });
 
       if (cancelled || !opponentLineup) {
+        if (!cancelled && !opponentLineup) {
+          setStartMatchError(
+            "Your opponent did not finish drafting in time. Return home and try again.",
+          );
+          resetToLanding();
+        }
         return;
       }
 
@@ -958,11 +1003,7 @@ function App() {
       ) : null}
 
       {phase === "waiting" && opponent?.isLiveOpponent ? (
-        <WaitingRoom
-          opponentPickCount={opponentPickCount}
-          totalPicks={opponent.draftSlots.length}
-          theme={getMatchModeTheme(user)}
-        />
+        <WaitingRoom theme={getMatchModeTheme(user)} />
       ) : null}
 
       {phase === "results" && isPendingQueueMatch && user ? (

@@ -2,16 +2,10 @@ import type { MatchModeTheme } from "../lib/matchModeTheme";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 
 interface WaitingRoomProps {
-  opponentPickCount: number;
-  totalPicks: number;
   theme: MatchModeTheme;
 }
 
-export function WaitingRoom({
-  opponentPickCount,
-  totalPicks,
-  theme,
-}: WaitingRoomProps) {
+export function WaitingRoom({ theme }: WaitingRoomProps) {
   return (
     <section
       className={`panel waiting-room ${matchModeThemeClass(theme)}`}
@@ -20,15 +14,13 @@ export function WaitingRoom({
       <p className="eyebrow">Draft complete</p>
       <h2>Waiting for your opponent</h2>
       <p>
-        Your lineup is locked in. Your opponent is drafting live and will be
+        Your lineup is locked in. Your opponent is still drafting and will be
         revealed once both teams are ready.
       </p>
 
       <div className="waiting-indicator">
         <span className="waiting-spinner" aria-hidden="true" />
-        <strong>
-          Opponent progress: {opponentPickCount} / {totalPicks}
-        </strong>
+        <strong>Searching for opponent lineup…</strong>
       </div>
     </section>
   );
