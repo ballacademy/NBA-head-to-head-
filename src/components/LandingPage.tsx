@@ -12,8 +12,6 @@ import {
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   formatPlayerRecord,
-  formatWinPercentage,
-  shouldShowWinPercentage,
   type ModePlayerRecords,
   type PlayerRecord,
 } from "../lib/playerRecord";
@@ -67,8 +65,8 @@ interface LandingPageProps {
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
   return (
-    <div className="landing-mode-card__record-block">
-      <p className="landing-mode-card__record">
+    <div className="landing-mode-card__record-block landing-mode-card__record-block--solo">
+      <p className="landing-mode-card__record ranked-mode-summary__record">
         <span className="landing-mode-card__record-label">Record</span>
         <span className="landing-mode-card__record-value">
           {formatPlayerRecord(record)}
@@ -80,11 +78,6 @@ function MatchModeRecord({ record }: { record: PlayerRecord }) {
             <LossStreakBadge lossStreak={record.lossStreak} />
           ) : null}
         </span>
-      </p>
-      <p className="landing-mode-card__record-meta">
-        {shouldShowWinPercentage(record)
-          ? `${formatWinPercentage(record)} win rate`
-          : `${record.wins + record.losses} games played`}
       </p>
     </div>
   );
