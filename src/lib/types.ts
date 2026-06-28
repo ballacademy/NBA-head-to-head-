@@ -24,6 +24,7 @@ export interface Player {
   bbrPlayerId?: string;
   name: string;
   team: string;
+  lastTeam?: string;
   position: Position;
   positions: Position[];
   jerseyNumber: number;
