@@ -1,6 +1,10 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
-import { meetsMinimumDefenseGrade } from "./defenseGrade";
+import {
+  formatAverageDefenseGrade,
+  getPlayerDefenseGradeRank,
+  meetsMinimumDefenseGrade,
+} from "./defenseGrade";
 import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import type { HeadToHeadResult } from "./playerRecord";
@@ -9,6 +13,9 @@ import { getPlayerStatWeight } from "./sampleSize";
 export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
 export const LOW_SCORING_LINEUP_PENALTY = -7;
+export const PRIMARY_SCORER_PPG_THRESHOLD = 20;
+export const PRIMARY_SCORER_LINEUP_PENALTY = -8;
+export const STOPPER_MINIMUM_DEFENSE_GRADE = "B" as const;
 
 export const isLowScoringNonEliteDefender = (player: Player) =>
   player.points < LOW_SCORING_PPG_THRESHOLD &&
@@ -21,6 +28,19 @@ export const getLowScoringLineupPenalty = (lineup: Player[]) =>
         ? penalty + LOW_SCORING_LINEUP_PENALTY
         : penalty,
     0,
+  );
+
+export const hasPrimaryScorer = (lineup: Player[]) =>
+  lineup.some((player) => player.points >= PRIMARY_SCORER_PPG_THRESHOLD);
+
+export const getPrimaryScorerLineupPenalty = (lineup: Player[]) =>
+  hasPrimaryScorer(lineup) ? 0 : PRIMARY_SCORER_LINEUP_PENALTY;
+
+export const isPlusDefenderByGrade = (player: Player) =>
+  meetsMinimumDefenseGrade(
+    player.defense,
+    player.defenseGrade,
+    STOPPER_MINIMUM_DEFENSE_GRADE,
   );
 
 export const SEASON_LENGTH = 82;
@@ -193,13 +213,20 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     weights,
     weightSum,
   );
+  const averageDefenseGradeRank =
+    weightSum > 0
+      ? lineup.reduce(
+          (sum, player, index) =>
+            sum + getPlayerDefenseGradeRank(player) * weights[index],
+          0,
+        ) / weightSum
+      : 0;
   const averageThreePoint = weightedAverage(
     lineup,
     "threePoint",
     weights,
     weightSum,
   );
-  const averageDefense = weightedAverage(lineup, "defense", weights, weightSum);
   const averageUsage = weightedAverage(lineup, "usage", weights, weightSum);
 
   const shooters = weightedCount(
@@ -207,11 +234,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     weights,
     (player) => player.threePoint >= 0.375,
   );
-  const stoppers = weightedCount(
-    lineup,
-    weights,
-    (player) => player.defense >= 8,
-  );
+  const stoppers = weightedCount(lineup, weights, isPlusDefenderByGrade);
   const rimProtectors = weightedCount(
     lineup,
     weights,
@@ -245,7 +268,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
 
   const efficiency =
     clamp((averageTrueShooting - 0.54) * 260, 0, 34) +
-    clamp((averageDefense - 6.5) * 4.2, 0, 13);
+    clamp((averageDefenseGradeRank - 4) * 1.75, 0, 13);
 
   const threePointBonus =
     clamp((averageThreePoint - 0.335) * 150, 0, 16) +
@@ -274,9 +297,9 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     {
       label: "True shooting and defense",
       value: round(efficiency),
-      note: `${round(averageTrueShooting * 100, 1)}% TS, ${round(
-        averageDefense,
-      )}/10 defense`,
+      note: `${round(averageTrueShooting * 100, 1)}% TS, ${formatAverageDefenseGrade(
+        averageDefenseGradeRank,
+      )}`,
     },
     {
       label: "Three-point bonus",
@@ -289,7 +312,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     {
       label: "Team fit",
       value: round(fit),
-      note: `${positions.size} positions, ${stoppers} defenders, ${rimProtectors} rim protectors`,
+      note: `${positions.size} positions, ${stoppers} ${STOPPER_MINIMUM_DEFENSE_GRADE}-or-better defenders, ${rimProtectors} rim protectors`,
     },
   ];
 
@@ -320,6 +343,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
 
   if (highUsagePlayers > 2 || averageUsage > 31) {
     warnings.push("Ball-dominant stars may fight for the same touches.");
+  }
+
+  if (!hasPrimaryScorer(lineup)) {
+    warnings.push(
+      `No clear first option; the offense lacks a ${PRIMARY_SCORER_PPG_THRESHOLD} PPG scorer.`,
+    );
   }
 
   if (positions.size < 4) {
@@ -370,7 +399,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getLineupTierAdjustment(lineup) +
     getImpactRankingAdjustment(lineup) +
     getChemistryAdjustment(lineup) +
-    getLowScoringLineupPenalty(lineup);
+    getLowScoringLineupPenalty(lineup) +
+    getPrimaryScorerLineupPenalty(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 
