@@ -96,6 +96,31 @@ describe("ghostMatchmaking", () => {
     vi.useRealTimers();
   });
 
+  it("rejects ghost opponents with fewer than five valid ids", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 200,
+        ok: true,
+        json: async () => ({
+          id: "lineup-bad",
+          teamName: "Incomplete",
+          lineup: ["a", "b", "c", "d"],
+          elo: 1180,
+          createdAt: "2026-06-26T00:00:00.000Z",
+        }),
+      }),
+    );
+
+    await expect(
+      fetchGhostOpponent({
+        mode: "classic",
+        playerId: "player-1",
+        elo: 1200,
+      }),
+    ).resolves.toBeNull();
+  });
+
   it("submits stored lineups to the API", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
