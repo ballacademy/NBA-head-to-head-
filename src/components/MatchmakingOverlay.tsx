@@ -17,15 +17,11 @@ export function MatchmakingOverlay({
 
   return (
     <div className="matchmaking-overlay" role="status" aria-live="polite">
-      <section className="panel matchmaking-overlay__panel">
+      <section className="panel panel--compact matchmaking-overlay__panel">
         <p className="eyebrow">{modeLabel} matchmaking</p>
         <h2>Searching for an opponent</h2>
-        <p>
-          Checking the live queue first, then saved human lineups if no one is
-          available right now.
-        </p>
 
-        <div className="waiting-indicator">
+        <div className="waiting-indicator matchmaking-overlay__indicator">
           <span className="waiting-spinner" aria-hidden="true" />
           <strong>{statusLabel}</strong>
         </div>
