@@ -5,9 +5,13 @@ import {
   compareLineups,
   getLowScoringLineupPenalty,
   getPlayersById,
+  getPrimaryScorerLineupPenalty,
+  hasPrimaryScorer,
   isLowScoringNonEliteDefender,
+  isPlusDefenderByGrade,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
+  PRIMARY_SCORER_PPG_THRESHOLD,
   projectedWinsFromOvr,
   projectRecord,
   resolveHeadToHeadResult,
@@ -267,6 +271,128 @@ describe("calculateLineupScore", () => {
     );
     expect(superScrubScore.projectedRecord.wins).toBeLessThan(
       regularScore.projectedRecord.wins,
+    );
+  });
+
+  it("counts plus defenders by letter grade instead of inflated numeric defense", () => {
+    const inflatedNumericDefender: Player = {
+      id: "inflated-defender",
+      name: "Inflated Defender",
+      team: "LAL",
+      position: "PG",
+      positions: ["PG"],
+      jerseyNumber: 1,
+      points: 17,
+      rebounds: 4,
+      assists: 5,
+      steals: 1,
+      blocks: 0.5,
+      turnovers: 2,
+      trueShooting: 0.56,
+      threePoint: 0.36,
+      threePointersAttempted: 5,
+      fieldGoalsAttempted: 12,
+      minutes: 32,
+      heightInches: 74,
+      usage: 24,
+      defense: 8.4,
+      defenseGrade: "D+",
+      gamesPlayed: 70,
+      styles: ["connector"],
+    };
+    const trueStopper: Player = {
+      ...inflatedNumericDefender,
+      id: "true-stopper",
+      name: "True Stopper",
+      defense: 9.4,
+      defenseGrade: "A",
+    };
+
+    expect(isPlusDefenderByGrade(inflatedNumericDefender)).toBe(false);
+    expect(isPlusDefenderByGrade(trueStopper)).toBe(true);
+
+    const score = calculateLineupScore([
+      inflatedNumericDefender,
+      inflatedNumericDefender,
+      trueStopper,
+      inflatedNumericDefender,
+      inflatedNumericDefender,
+    ]);
+
+    expect(score.categories[3]?.note).toContain("1 B-or-better defenders");
+  });
+
+  it("penalizes lineups without a 20 PPG primary scorer", () => {
+    const secondaryScoringLineup: Player[] = [
+      {
+        id: "giddey",
+        name: "Secondary Scorer",
+        team: "CHI",
+        position: "PG",
+        positions: ["PG", "SG"],
+        jerseyNumber: 0,
+        points: 19.9,
+        rebounds: 8,
+        assists: 9,
+        steals: 1,
+        blocks: 0.5,
+        turnovers: 3,
+        trueShooting: 0.56,
+        threePoint: 0.36,
+        threePointersAttempted: 5,
+        fieldGoalsAttempted: 13,
+        minutes: 32,
+        heightInches: 74,
+        usage: 29,
+        defense: 8.4,
+        defenseGrade: "D+",
+        gamesPlayed: 70,
+        styles: ["engine", "connector"],
+      },
+      ...Array.from({ length: 4 }, (_, index) => ({
+        id: `support-${index}`,
+        name: `Support ${index}`,
+        team: "LAL",
+        position: "SG" as const,
+        positions: ["SG" as const, "SF" as const],
+        jerseyNumber: 1,
+        points: 14,
+        rebounds: 4,
+        assists: 3,
+        steals: 1,
+        blocks: 0.5,
+        turnovers: 2,
+        trueShooting: 0.58,
+        threePoint: 0.37,
+        threePointersAttempted: 5,
+        fieldGoalsAttempted: 12,
+        minutes: 30,
+        heightInches: 78,
+        usage: 22,
+        defense: 7.5,
+        defenseGrade: "C+" as const,
+        gamesPlayed: 70,
+        styles: ["shooter" as const],
+      })),
+    ];
+
+    const withPrimary = secondaryScoringLineup.map((player, index) =>
+      index === 0 ? { ...player, points: 24 } : player,
+    );
+
+    expect(hasPrimaryScorer(secondaryScoringLineup)).toBe(false);
+    expect(hasPrimaryScorer(withPrimary)).toBe(true);
+    expect(getPrimaryScorerLineupPenalty(secondaryScoringLineup)).toBe(-8);
+    expect(getPrimaryScorerLineupPenalty(withPrimary)).toBe(0);
+
+    const withoutPrimaryScore = calculateLineupScore(secondaryScoringLineup);
+    const withPrimaryScore = calculateLineupScore(withPrimary);
+
+    expect(withoutPrimaryScore.warnings).toContain(
+      `No clear first option; the offense lacks a ${PRIMARY_SCORER_PPG_THRESHOLD} PPG scorer.`,
+    );
+    expect(withPrimaryScore.preciseTotal).toBeGreaterThan(
+      withoutPrimaryScore.preciseTotal,
     );
   });
 });
