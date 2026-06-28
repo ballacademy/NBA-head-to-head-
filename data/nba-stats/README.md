@@ -41,6 +41,19 @@ After a successful run, this folder contains:
 
 The CSV and JSON files include every stat row from Basketball Reference, including separate rows for traded players and combined `2TM`/`TOT` lines. The JSON currently has **733 rows** across **582 unique players**.
 
+## Manual / compliant refresh (no scraping)
+
+If you are maintaining data without hitting Basketball Reference directly, use:
+
+```bash
+python3 scripts/csv_to_stats_json.py \
+  --input data/nba-stats/nba-player-stats-202526-regular-season-per-game.csv \
+  --advanced-csv data/nba-stats/nba-player-stats-202526-regular-season-advanced.csv \
+  --season 2025-26
+```
+
+Or curate a smaller CSV from `data/manual/player-stats-template.csv`. See `data/manual/README.md`.
+
 ## JSON shape (for apps)
 
 ```json

@@ -8,7 +8,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "build:impact-rankings": "npx tsx scripts/build_impact_ranking_overrides.ts"
+    "build:impact-rankings": "npx tsx scripts/build_impact_ranking_overrides.ts",
+    "data:stats:csv": "python3 scripts/csv_to_stats_json.py --output data/nba-stats/nba-player-stats-202526-regular-season.json",
+    "data:salaries:export-pool": "python3 scripts/csv_to_salaries_json.py --export-csv data/manual/nba-salaries.csv --from-json data/nba-salaries-202627.json --stats-pool data/nba-stats/nba-player-stats-202526-regular-season.json",
+    "data:salaries:build": "python3 scripts/csv_to_salaries_json.py --input data/manual/nba-salaries.csv --output data/nba-salaries-202627.json --season 2026-27 --stats-pool data/nba-stats/nba-player-stats-202526-regular-season.json --warn-missing-pool",
+    "data:manual:test": "python3 scripts/csv_to_stats_json.py --self-test && python3 scripts/csv_to_salaries_json.py --self-test"
   },
   "repository": {
     "type": "git",
