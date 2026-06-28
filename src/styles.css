@@ -1687,9 +1687,18 @@ main {
 }
 
 .matchmaking-overlay__panel {
-  width: min(100%, 560px);
+  width: min(100%, 420px);
   margin: 0;
   text-align: center;
+}
+
+.matchmaking-overlay__panel h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+}
+
+.matchmaking-overlay__indicator {
+  margin-top: 16px;
 }
 
 @keyframes spin {
@@ -2259,10 +2268,17 @@ main {
   .landing-card--mode .daily-draft-card__button,
   .landing-card--mode .landing__primary-button,
   .landing-card--mode .ranked-cap-card__button,
-  .landing-card--mode .head-to-head-card__practice-button,
-  .landing-card--mode .ranked-cap-card__practice-button,
   .landing-card--mode .all-time-card__button {
     margin-top: 12px;
+  }
+
+  .landing-card--mode .mode-card__actions {
+    gap: 6px;
+  }
+
+  .landing-card--mode .head-to-head-card__practice-button,
+  .landing-card--mode .ranked-cap-card__practice-button {
+    margin-top: 0;
   }
 
   .player-pick-list {
@@ -2312,6 +2328,40 @@ main {
     font-size: 0.64rem;
     font-weight: 700;
     line-height: 1.15;
+  }
+
+  .player-pick--compact .player-pick__title-row strong {
+    flex: 1 1 55%;
+    max-width: 100%;
+  }
+
+  .player-pick--compact .player-pick__salary {
+    margin-left: 0;
+  }
+
+  .player-pick--compact .player-rarity-badge,
+  .player-pick--compact .player-caveat-badge {
+    font-size: 0.58rem;
+    padding: 2px 5px;
+    letter-spacing: 0.02em;
+  }
+
+  .player-pick--all-star,
+  .player-pick--recent-all-star,
+  .player-pick--superstar {
+    animation: none;
+  }
+
+  .player-pick--all-star {
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.35);
+  }
+
+  .player-pick--recent-all-star {
+    box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.35);
+  }
+
+  .player-pick--superstar {
+    box-shadow: 0 0 0 1px rgba(192, 132, 252, 0.45);
   }
 
   .queued-draft-results__footer {
@@ -3015,6 +3065,7 @@ main {
   gap: 6px;
   max-height: 320px;
   overflow: auto;
+  overflow-x: hidden;
   margin-bottom: 12px;
 }
 
@@ -3023,6 +3074,8 @@ main {
   align-items: center;
   gap: 10px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid rgba(248, 250, 252, 0.24);
   border-radius: 16px;
@@ -3030,6 +3083,7 @@ main {
   color: inherit;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
   animation: player-pick-border-glow 3.2s ease-in-out infinite;
   transition:
     border-color 140ms ease,
@@ -3051,9 +3105,9 @@ main {
 }
 
 .player-pick--compact .player-pick__title-row {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px 6px;
 }
 
 .player-pick--compact .player-pick__title-row strong {
@@ -3061,6 +3115,9 @@ main {
   flex: 1 1 auto;
   font-size: 0.94rem;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-pick--compact .player-pick__salary {
@@ -3071,13 +3128,15 @@ main {
 }
 
 .player-pick--compact .player-pick__badges {
-  flex: 0 1 auto;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 4px;
 }
 
 .player-pick--compact .player-rarity-badges {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .player-pick--compact .player-pick__team {
