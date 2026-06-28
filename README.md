@@ -50,3 +50,5 @@ python scripts/fetch_nba_player_stats.py --season 2025-26
 ```
 
 This pulls data from Basketball Reference and writes CSV, JSON, and Excel files to `data/nba-stats/`. See `data/nba-stats/README.md` for file formats and usage.
+
+For a compliant refresh workflow that does not scrape Basketball Reference, see `data/manual/README.md` and use `scripts/csv_to_stats_json.py` plus `scripts/csv_to_salaries_json.py`.
