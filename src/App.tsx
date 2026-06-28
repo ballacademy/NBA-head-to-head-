@@ -5,6 +5,7 @@ import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
+import { LegalPage } from "./components/LegalPage";
 import { PendingQueueResults } from "./components/PendingQueueResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
@@ -88,7 +89,9 @@ type AppPhase =
   | "results"
   | "stats"
   | "leaderboard"
-  | "achievements";
+  | "achievements"
+  | "privacy"
+  | "terms";
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
@@ -898,6 +901,26 @@ function App() {
     );
   }
 
+  if (phase === "privacy") {
+    return (
+      <main className="landing-layout">
+        <LegalPage kind="privacy" onBack={resetToLanding} />
+      </main>
+    );
+  }
+
+  if (phase === "terms") {
+    return (
+      <main className="landing-layout">
+        <LegalPage
+          kind="terms"
+          onBack={resetToLanding}
+          onOpenPrivacy={() => setPhase("privacy")}
+        />
+      </main>
+    );
+  }
+
   if (phase === "stats") {
     return (
       <main className="landing-layout">
@@ -928,6 +951,8 @@ function App() {
           onViewStats={() => setPhase("stats")}
           onViewAchievements={() => setPhase("achievements")}
           onViewLeaderboard={() => setPhase("leaderboard")}
+          onViewPrivacy={() => setPhase("privacy")}
+          onViewTerms={() => setPhase("terms")}
         />
         {matchmakingMode ? (
           <MatchmakingOverlay

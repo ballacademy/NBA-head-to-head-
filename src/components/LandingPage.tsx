@@ -61,6 +61,8 @@ interface LandingPageProps {
   onViewStats: () => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
+  onViewPrivacy: () => void;
+  onViewTerms: () => void;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -98,6 +100,8 @@ export function LandingPage({
   onViewStats,
   onViewAchievements,
   onViewLeaderboard,
+  onViewPrivacy,
+  onViewTerms,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -481,6 +485,18 @@ export function LandingPage({
         Team names, player names, and statistics are used for informational
         purposes only.
       </p>
+
+      <nav className="landing-footer" aria-label="Legal">
+        <button type="button" className="landing-footer__link" onClick={onViewPrivacy}>
+          Privacy Policy
+        </button>
+        <span className="landing-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <button type="button" className="landing-footer__link" onClick={onViewTerms}>
+          Terms of Use
+        </button>
+      </nav>
 
       <p className="landing-credit">Powered by BALLACADEMY</p>
     </section>
