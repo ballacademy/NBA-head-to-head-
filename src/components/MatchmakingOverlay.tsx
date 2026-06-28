@@ -1,4 +1,4 @@
-import { CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/salaryCap";
+import { CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 
 interface MatchmakingOverlayProps {
   mode: "classic" | "ranked";
