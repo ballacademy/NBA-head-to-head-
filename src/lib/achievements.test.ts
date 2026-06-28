@@ -3,6 +3,7 @@ import { databasePlayers, players } from "./playerPool";
 import { ACHIEVEMENT_CHECKS } from "./achievementChecks";
 import {
   ACHIEVEMENTS,
+  buildAchievementContext,
   checkLineupAchievements,
   getAchievementProgress,
   loadAchievementState,
@@ -14,11 +15,11 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 46 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(46);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(46);
+  it("defines 51 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(51);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(51);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      46,
+      51,
     );
   });
 
@@ -142,6 +143,59 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lineup)).not.toContain("ballin-on-budget");
   });
 
+  it("detects alphabet squad when all last names share a starting letter", () => {
+    const lineup = [
+      { ...players[0]!, name: "Alex Anderson" },
+      { ...players[1]!, name: "Ben Adams" },
+      { ...players[2]!, name: "Chris Allen" },
+      { ...players[3]!, name: "Dan Abbott" },
+      { ...players[4]!, name: "Eric Avery" },
+    ];
+
+    expect(checkLineupAchievements(lineup)).toContain("alphabet-squad");
+  });
+
+  it("detects dynasty, rebuild, and ultra record badges from lineup score context", () => {
+    const lineup = players.slice(0, 5);
+
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 71,
+        lineupOvr: 79,
+      }),
+    ).toContain("dynasty");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 52,
+        lineupOvr: 80,
+      }),
+    ).toContain("dynasty");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 19,
+        lineupOvr: 40,
+      }),
+    ).toContain("rebuild");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 82,
+        lineupOvr: 100,
+      }),
+    ).toEqual(
+      expect.arrayContaining(["eighty-two-wins", "max-ovr", "dynasty"]),
+    );
+  });
+
+  it("builds achievement context from a completed lineup", () => {
+    const lineup = players.slice(0, 5);
+    const context = buildAchievementContext(lineup, { hasSalaryCap: true });
+
+    expect(context.hasSalaryCap).toBe(true);
+    expect(context.lineupOvr).toBeGreaterThan(0);
+    expect(context.preciseOvr).toBeGreaterThan(0);
+    expect(context.projectedWins).toBeGreaterThanOrEqual(0);
+  });
+
   it("persists newly unlocked achievements", () => {
     const storage = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -164,7 +218,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(46);
+    expect(progress.total).toBe(51);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

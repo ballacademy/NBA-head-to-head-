@@ -1397,10 +1397,12 @@ main {
   color: #fdba74;
 }
 
-.mode-theme .player-pick:hover,
-.mode-theme .player-pick:focus-visible {
-  border-color: var(--mode-accent-border);
-  background: var(--mode-accent-soft);
+@media (hover: hover) and (pointer: fine) {
+  .mode-theme .player-pick:hover,
+  .mode-theme .player-pick:focus-visible {
+    border-color: var(--mode-accent-border);
+    background: var(--mode-accent-soft);
+  }
 }
 
 .mode-theme .daily-draft-results__percentile {
@@ -3010,6 +3012,7 @@ main {
   background: rgba(15, 23, 42, 0.82);
   color: inherit;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
   animation: player-pick-border-glow 3.2s ease-in-out infinite;
   transition:
     border-color 140ms ease,
@@ -3081,8 +3084,27 @@ main {
   }
 }
 
-.player-pick:hover {
-  border-color: rgba(248, 250, 252, 0.38);
+@media (hover: hover) and (pointer: fine) {
+  .player-pick:hover {
+    border-color: rgba(248, 250, 252, 0.38);
+  }
+
+  .player-pick--all-star:hover {
+    border-color: #fca5a5;
+    box-shadow: 0 0 22px rgba(239, 68, 68, 0.35);
+  }
+
+  .player-pick--recent-all-star:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 0 22px rgba(59, 130, 246, 0.35);
+  }
+
+  .player-pick--superstar:hover {
+    border-color: #e9d5ff;
+    box-shadow:
+      0 0 24px rgba(168, 85, 247, 0.45),
+      0 0 36px rgba(217, 70, 239, 0.22);
+  }
 }
 
 .player-pick--all-star {
@@ -3095,11 +3117,6 @@ main {
   animation: player-pick-all-star-glow 2.4s ease-in-out infinite;
 }
 
-.player-pick--all-star:hover {
-  border-color: #fca5a5;
-  box-shadow: 0 0 22px rgba(239, 68, 68, 0.35);
-}
-
 .player-pick--recent-all-star {
   border-color: rgba(96, 165, 250, 0.75);
   background: linear-gradient(
@@ -3108,11 +3125,6 @@ main {
     rgba(15, 23, 42, 0.9) 58%
   );
   animation: player-pick-recent-all-star-glow 2.6s ease-in-out infinite;
-}
-
-.player-pick--recent-all-star:hover {
-  border-color: #93c5fd;
-  box-shadow: 0 0 22px rgba(59, 130, 246, 0.35);
 }
 
 .player-pick--superstar {
@@ -3124,13 +3136,6 @@ main {
     rgba(15, 23, 42, 0.92) 100%
   );
   animation: player-pick-superstar-glow 2s ease-in-out infinite;
-}
-
-.player-pick--superstar:hover {
-  border-color: #e9d5ff;
-  box-shadow:
-    0 0 24px rgba(168, 85, 247, 0.45),
-    0 0 36px rgba(217, 70, 239, 0.22);
 }
 
 @keyframes player-pick-all-star-glow {

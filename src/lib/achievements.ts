@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import { ACHIEVEMENT_CHECKS, type AchievementCheckContext } from "./achievementChecks";
+import { calculateLineupScore } from "./scoring";
 import type { Player } from "./types";
 
 const ACHIEVEMENTS_KEY = "nba-head-to-head-achievements";
@@ -65,6 +66,24 @@ export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_CHECKS.map(
 const achievementChecksById = new Map(
   ACHIEVEMENT_CHECKS.map((achievement) => [achievement.id, achievement.check]),
 );
+
+export const buildAchievementContext = (
+  lineup: Player[],
+  options: Pick<AchievementCheckContext, "hasSalaryCap"> = {},
+): AchievementCheckContext => {
+  if (lineup.length !== 5) {
+    return options;
+  }
+
+  const score = calculateLineupScore(lineup);
+
+  return {
+    ...options,
+    lineupOvr: score.total,
+    preciseOvr: score.preciseTotal,
+    projectedWins: score.projectedRecord.wins,
+  };
+};
 
 export const checkLineupAchievements = (
   lineup: Player[],

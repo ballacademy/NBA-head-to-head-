@@ -30,6 +30,7 @@ import {
   resolveHeadToHeadResult,
 } from "../lib/scoring";
 import {
+  buildAchievementContext,
   checkLineupAchievements,
   unlockAchievements,
 } from "../lib/achievements";
@@ -179,9 +180,12 @@ export function MatchResults({
     }
 
     achievementsCheckedRef.current = true;
-    const earned = checkLineupAchievements(userLineup, {
-      hasSalaryCap: user.salaryCapLimit != null,
-    });
+    const earned = checkLineupAchievements(
+      userLineup,
+      buildAchievementContext(userLineup, {
+        hasSalaryCap: user.salaryCapLimit != null,
+      }),
+    );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
   }, [userLineup]);

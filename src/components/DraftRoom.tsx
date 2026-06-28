@@ -377,12 +377,13 @@ export function DraftRoom({
                 type="button"
                 key={player.id}
                 className={`player-pick player-pick--compact${shineClass ? ` ${shineClass}` : ""}`}
-                onClick={() => {
+                onClick={(event) => {
                   if (draftSessionKey) {
                     clearDraftDeadline(draftSessionKey, activeStep);
                   }
                   onPick(activeStep, player.id);
                   setQuery("");
+                  event.currentTarget.blur();
                 }}
               >
                 <PlayerTeamIcon

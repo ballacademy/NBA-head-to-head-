@@ -6,6 +6,7 @@ import { AchievementToast } from "./AchievementToast";
 import { buildDailyDraftShareText } from "../lib/draftGrade";
 import { buildDailyGoalResult } from "../lib/dailyGoalScoring";
 import {
+  buildAchievementContext,
   checkLineupAchievements,
   unlockAchievements,
 } from "../lib/achievements";
@@ -140,7 +141,10 @@ export function DailyDraftResults({
     }
 
     achievementsCheckedRef.current = true;
-    const earned = checkLineupAchievements(userLineup);
+    const earned = checkLineupAchievements(
+      userLineup,
+      buildAchievementContext(userLineup),
+    );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
   }, [reviewOnly, userLineup]);
