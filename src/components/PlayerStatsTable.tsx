@@ -8,6 +8,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { getPlayerTeamLabel } from "../lib/freeAgents";
+import { statsFile } from "../lib/playerPool";
 import {
   isAllStarPlayer,
   isRecentAllStarPlayer,
@@ -36,6 +37,16 @@ type SortKey =
   | "defense";
 
 const MASKED_VALUE = "????";
+
+const getPriorSeasonLabel = (season: string) => {
+  const match = season.match(/^(\d{4})-(\d{2})$/);
+  if (!match) {
+    return "the previous NBA season";
+  }
+
+  const startYear = Number(match[1]);
+  return `${startYear - 1}-${String(startYear).padStart(2, "0")}`;
+};
 
 const getUnlockedPlayerClassBadgeClass = (player: Player) => {
   if (isSuperstarPlayer(player)) {
@@ -141,6 +152,11 @@ export function PlayerStatsTable({
           <p>
             Locked stars and scrubs stay hidden until you unlock them. Everyone
             else is visible here.
+          </p>
+          <p className="stats-panel__note">
+            Per-game stats reflect the {statsFile.season} regular season where
+            available. Players who did not play in {statsFile.season} are graded
+            using their {getPriorSeasonLabel(statsFile.season)} season instead.
           </p>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>
