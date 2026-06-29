@@ -3,8 +3,7 @@ import {
   generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
-import { ensureClassicProfile } from "./classicProfile";
-import { pickOpponentElo } from "./rankedElo";
+import { pickOpponentElo, RANKED_STARTING_ELO } from "./rankedElo";
 import {
   ensureNpcOpponentPool,
   findRankedOpponentFromLeaderboard,
@@ -31,10 +30,23 @@ export interface StartDraftOptions {
 }
 
 export const PICK_TIME_LIMIT_SECONDS = 20;
+export const CLASSIC_PICK_TIME_LIMIT_SECONDS = 30;
 export const DAILY_PICK_TIME_LIMIT_SECONDS = 45;
 
-export const getPickTimeLimitSeconds = (isDailyDraft = false) =>
-  isDailyDraft ? DAILY_PICK_TIME_LIMIT_SECONDS : PICK_TIME_LIMIT_SECONDS;
+export const getPickTimeLimitSeconds = (
+  isDailyDraft = false,
+  salaryCapMode = false,
+) => {
+  if (isDailyDraft) {
+    return DAILY_PICK_TIME_LIMIT_SECONDS;
+  }
+
+  if (salaryCapMode) {
+    return PICK_TIME_LIMIT_SECONDS;
+  }
+
+  return CLASSIC_PICK_TIME_LIMIT_SECONDS;
+};
 export const OPPONENT_PICK_MIN_MS = 3000;
 export const OPPONENT_PICK_MAX_MS = 9000;
 
@@ -94,8 +106,7 @@ export const createClassicOpponent = (
   draftSlots: DraftSlotConstraint[],
   options: { salaryCapLimit?: number } = {},
 ): Drafter => {
-  const playerElo = ensureClassicProfile().elo;
-  const opponentElo = pickOpponentElo(playerElo);
+  const opponentElo = pickOpponentElo(RANKED_STARTING_ELO);
   const blueprint =
     initialDrafterBlueprints[
       Math.floor(Math.random() * initialDrafterBlueprints.length)

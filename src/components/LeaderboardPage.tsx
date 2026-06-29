@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  formatLeaderboardElo,
   formatLeaderboardLossStreak,
   formatLeaderboardRecord,
   formatLeaderboardWinStreak,
@@ -28,10 +27,8 @@ import {
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import {
-  CLASSIC_LEADERBOARD_LABEL,
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
-  PRO_LEADERBOARD_LABEL,
 } from "../lib/modeLabels";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { GmIdentityBadge } from "./GmIdentityBadge";
@@ -43,12 +40,19 @@ interface LeaderboardPageProps {
 }
 
 type LeaderboardView = "classic" | "ranked";
-type BoardSort = LeaderboardSort | RankedLeaderboardSort;
+type RankedSort = RankedLeaderboardSort;
+type ClassicSort = Exclude<LeaderboardSort, "elo">;
+type BoardSort = RankedSort | ClassicSort;
 
 type BoardEntry = ReturnType<typeof getTopLeaderboard>[number];
 
-const SORT_TABS: { id: BoardSort; label: string }[] = [
-  { id: "elo", label: `Most ${RATING_LABEL}` },
+const RANKED_SORT_TABS: { id: RankedSort; label: string }[] = [
+  { id: "elo", label: RATING_LABEL },
+  { id: "winStreak", label: "Win streak" },
+  { id: "lossStreak", label: "Loss streak" },
+];
+
+const CLASSIC_SORT_TABS: { id: ClassicSort; label: string }[] = [
   { id: "winStreak", label: "Win streak" },
   { id: "lossStreak", label: "Loss streak" },
 ];
@@ -64,6 +68,7 @@ interface LeaderboardBoardProps {
   formatRecord: (entry: BoardEntry) => string;
   currentPlayerId: string;
   viewKey: string;
+  showTier: boolean;
 }
 
 function LeaderboardBoard({
@@ -73,6 +78,7 @@ function LeaderboardBoard({
   formatRecord,
   currentPlayerId,
   viewKey,
+  showTier,
 }: LeaderboardBoardProps) {
   return (
     <>
@@ -85,7 +91,7 @@ function LeaderboardBoard({
             <tr>
               <th scope="col">Rank</th>
               <th scope="col">Team</th>
-              <th scope="col">Tier</th>
+              {showTier ? <th scope="col">Tier</th> : null}
               <th scope="col">Record</th>
               <th scope="col">{metricColumnLabel}</th>
             </tr>
@@ -108,9 +114,11 @@ function LeaderboardBoard({
                     playerId={entry.playerId}
                   />
                 </td>
-                <td>
-                  <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
-                </td>
+                {showTier ? (
+                  <td>
+                    <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
+                  </td>
+                ) : null}
                 <td>{formatRecord(entry)}</td>
                 <td>{formatMetric(entry)}</td>
               </tr>
@@ -135,11 +143,17 @@ function LeaderboardBoard({
                 playerId={entry.playerId}
               />
             </div>
-            <div className="leaderboard-card__metrics">
-              <div>
-                <span className="leaderboard-card__label">Tier</span>
-                <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
-              </div>
+            <div
+              className={`leaderboard-card__metrics${
+                showTier ? "" : " leaderboard-card__metrics--no-tier"
+              }`}
+            >
+              {showTier ? (
+                <div>
+                  <span className="leaderboard-card__label">Tier</span>
+                  <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
+                </div>
+              ) : null}
               <div>
                 <span className="leaderboard-card__label">Record</span>
                 <strong>{formatRecord(entry)}</strong>
@@ -158,10 +172,12 @@ function LeaderboardBoard({
 
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
-  const [sort, setSort] = useState<BoardSort>("elo");
+  const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
+  const [classicSort, setClassicSort] = useState<ClassicSort>("winStreak");
   const [refreshTick, setRefreshTick] = useState(0);
   const currentPlayerId = getOrCreatePlayerId();
   const seasonId = getCurrentSeasonId();
+  const sort: BoardSort = view === "ranked" ? rankedSort : classicSort;
 
   useEffect(() => {
     const refresh = async () => {
@@ -178,12 +194,12 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   }, [seasonId, sort, view]);
 
   const classicEntries = useMemo(
-    () => getTopLeaderboard(sort as LeaderboardSort),
-    [refreshTick, sort],
+    () => getTopLeaderboard(classicSort),
+    [classicSort, refreshTick],
   );
   const rankedEntries = useMemo(
-    () => getTopRankedLeaderboard(sort as RankedLeaderboardSort),
-    [refreshTick, sort],
+    () => getTopRankedLeaderboard(rankedSort),
+    [rankedSort, refreshTick],
   );
 
   const metricColumnLabel =
@@ -198,11 +214,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       return formatLeaderboardWinStreak(entry);
     }
 
-    if (sort === "lossStreak") {
-      return formatLeaderboardLossStreak(entry);
-    }
-
-    return formatLeaderboardElo(entry);
+    return formatLeaderboardLossStreak(entry);
   };
 
   const formatRankedMetric = (entry: BoardEntry) => {
@@ -217,6 +229,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
     return formatRankedLeaderboardElo(entry);
   };
 
+  const sortTabs = view === "ranked" ? RANKED_SORT_TABS : CLASSIC_SORT_TABS;
+
   return (
     <section className="leaderboard panel panel--compact feature-page feature-page--leaderboard">
       <div className="leaderboard__top">
@@ -228,8 +242,8 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             <h1>Leaderboards</h1>
             <p className="leaderboard__subtitle">
               {view === "ranked"
-                ? getRankedLeaderboardFootnote(sort as RankedLeaderboardSort, seasonId)
-                : getLeaderboardFootnote(sort as LeaderboardSort)}
+                ? getRankedLeaderboardFootnote(rankedSort, seasonId)
+                : getLeaderboardFootnote(classicSort)}
             </p>
           </div>
           <button type="button" className="secondary-button" onClick={onBack}>
@@ -237,7 +251,11 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           </button>
         </div>
 
-        <div className="leaderboard__tabs" role="tablist" aria-label="Leaderboard view">
+        <div
+          className="leaderboard__tabs leaderboard__tabs--views"
+          role="tablist"
+          aria-label="Leaderboard view"
+        >
           <button
             type="button"
             role="tab"
@@ -245,7 +263,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             className={view === "ranked" ? "is-active" : undefined}
             onClick={() => setView("ranked")}
           >
-            {PRO_LEADERBOARD_LABEL}
+            {PRO_HEAD_TO_HEAD_LABEL}
           </button>
           <button
             type="button"
@@ -254,7 +272,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             className={view === "classic" ? "is-active" : undefined}
             onClick={() => setView("classic")}
           >
-            {CLASSIC_LEADERBOARD_LABEL}
+            {CLASSIC_HEAD_TO_HEAD_LABEL}
           </button>
         </div>
 
@@ -263,22 +281,29 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           role="tablist"
           aria-label="Leaderboard sort"
         >
-          {SORT_TABS.map((tab) => (
+          {sortTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               role="tab"
               aria-selected={sort === tab.id}
               className={sort === tab.id ? "is-active" : undefined}
-              onClick={() => setSort(tab.id)}
+              onClick={() => {
+                if (view === "ranked") {
+                  setRankedSort(tab.id as RankedSort);
+                  return;
+                }
+
+                setClassicSort(tab.id as ClassicSort);
+              }}
             >
               {tab.label}
             </button>
           ))}
-          {view === "ranked" ? (
+          {view === "ranked" && rankedSort === "elo" ? (
             <span className="leaderboard__tier-info">
               Tier ranges
-              <ModeCardInfo details={TIER_RANGE_DETAILS} />
+              <ModeCardInfo details={TIER_RANGE_DETAILS} variant="corner" />
             </span>
           ) : null}
         </div>
@@ -293,6 +318,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             formatRecord={formatRankedLeaderboardRecord}
             currentPlayerId={currentPlayerId}
             viewKey={`${view}-${sort}`}
+            showTier
           />
         ) : (
           <p className="draft-empty">
@@ -307,6 +333,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           formatRecord={formatLeaderboardRecord}
           currentPlayerId={currentPlayerId}
           viewKey={`${view}-${sort}`}
+          showTier={false}
         />
       ) : (
         <p className="draft-empty">

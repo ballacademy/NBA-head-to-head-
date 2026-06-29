@@ -1,7 +1,7 @@
-import { loadClassicProfile } from "./classicProfile";
-import { upsertLeaderboardEntry } from "./leaderboard";
+import { loadLeaderboardEntries, upsertLeaderboardEntry } from "./leaderboard";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import { getGamesPlayed, loadPlayerRecord } from "./playerRecord";
+import { RANKED_STARTING_ELO } from "./rankedElo";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
 import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
 import type { TeamProfile } from "./teamProfile";
@@ -11,13 +11,15 @@ export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
   const classicRecord = loadPlayerRecord("headToHead");
 
   if (getGamesPlayed(classicRecord) > 0) {
-    const classicProfile = loadClassicProfile();
+    const existingEntry = loadLeaderboardEntries().find(
+      (entry) => entry.playerId === playerId,
+    );
 
     upsertLeaderboardEntry({
       playerId,
       name: team.name,
       publicTag,
-      elo: classicProfile.elo,
+      elo: existingEntry?.elo ?? RANKED_STARTING_ELO,
       wins: classicRecord.wins,
       losses: classicRecord.losses,
       winStreak: classicRecord.winStreak,
