@@ -170,12 +170,12 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
 
       {view === "ranked" ? (
         rankedEntries.length > 0 ? (
-          <div className="leaderboard-table-wrap">
+          <div className="leaderboard-table-wrap" key={`leaderboard-${view}-${sort}`}>
             <table className="leaderboard-table">
               <thead>
                 <tr>
                   <th scope="col">Rank</th>
-                  <th scope="col">Front Office</th>
+                  <th scope="col">Team</th>
                   <th scope="col">Tier</th>
                   <th scope="col">Record</th>
                   <th scope="col">{metricColumnLabel}</th>
@@ -215,7 +215,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           </p>
         )
       ) : classicEntries.length > 0 ? (
-        <div className="leaderboard-table-wrap">
+        <div className="leaderboard-table-wrap" key={`leaderboard-${view}-${sort}`}>
           <table className="leaderboard-table">
             <thead>
               <tr>
