@@ -540,7 +540,7 @@ export function LandingPage({
       </div>
 
       <p className="landing-disclaimer">
-        Draft Day GM is an independent fan project. It is not affiliated with,
+        Draft Day GM is an independent project. It is not affiliated with,
         endorsed by, or connected to the NBA, its teams, players, or partners.
         Team names, player names, and statistics are used for informational
         purposes only.
