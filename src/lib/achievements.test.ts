@@ -186,6 +186,12 @@ describe("achievements", () => {
     ).toContain("rebuild");
     expect(
       checkLineupAchievements(lineup, {
+        projectedWins: 0,
+        lineupOvr: 0,
+      }),
+    ).toContain("winless");
+    expect(
+      checkLineupAchievements(lineup, {
         projectedWins: 82,
         lineupOvr: 100,
       }),

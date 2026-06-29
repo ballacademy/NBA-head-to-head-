@@ -3,9 +3,14 @@ import { players } from "./playerPool";
 import { calculateLineupStatRawTotal, normalizeLineupTotal } from "./scoring";
 import type { Player } from "./types";
 
-export const SCRUB_POOL_SIZE = 50;
-export const SUPER_SCRUB_POOL_SIZE = 10;
-export const SCRUB_POOL_EXCLUDED_BBR_IDS = ["bealbr01"] as const;
+export const SCRUB_POOL_SIZE = 30;
+export const SUPER_SCRUB_POOL_SIZE = 6;
+export const SCRUB_POOL_EXCLUDED_BBR_IDS = [
+  "bealbr01",
+  "adamsst01",
+  "martica02",
+  "russeda01",
+] as const;
 
 const scrubPoolExcludedBbrIds = new Set<string>(SCRUB_POOL_EXCLUDED_BBR_IDS);
 
