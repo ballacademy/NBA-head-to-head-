@@ -1,21 +1,56 @@
+import { containsProfanity, PROFANITY_TEAM_NAME_ERROR } from "./profanity";
+import { syncTeamNameToLeaderboards } from "./syncLeaderboardTeamName";
+
 export interface TeamProfile {
   name: string;
 }
 
 export const MAX_TEAM_NAME_LENGTH = 32;
 
+export type TeamProfileValidationError = "empty" | "profanity";
+
+export type TeamProfileValidationResult =
+  | { ok: true; profile: TeamProfile }
+  | { ok: false; error: TeamProfileValidationError };
+
 const STORAGE_KEY = "nba-head-to-head-team-profile";
 
-export const normalizeTeamProfile = (name: string): TeamProfile | null => {
+export const validateTeamProfile = (
+  name: string,
+): TeamProfileValidationResult => {
   const trimmedName = name.trim().slice(0, MAX_TEAM_NAME_LENGTH);
 
   if (!trimmedName) {
-    return null;
+    return { ok: false, error: "empty" };
+  }
+
+  if (containsProfanity(trimmedName)) {
+    return { ok: false, error: "profanity" };
   }
 
   return {
-    name: trimmedName,
+    ok: true,
+    profile: {
+      name: trimmedName,
+    },
   };
+};
+
+export const getTeamProfileValidationMessage = (
+  error: TeamProfileValidationError,
+) => {
+  switch (error) {
+    case "profanity":
+      return PROFANITY_TEAM_NAME_ERROR;
+    default:
+      return "Enter a team name to start drafting.";
+  }
+};
+
+export const normalizeTeamProfile = (name: string): TeamProfile | null => {
+  const result = validateTeamProfile(name);
+
+  return result.ok ? result.profile : null;
 };
 
 interface ProfileStorage {
@@ -48,7 +83,13 @@ export const loadTeamProfile = (): TeamProfile | null => {
     const parsed = JSON.parse(raw) as Partial<TeamProfile>;
 
     if (typeof parsed.name === "string") {
-      return normalizeTeamProfile(parsed.name);
+      const trimmedName = parsed.name.trim().slice(0, MAX_TEAM_NAME_LENGTH);
+
+      if (!trimmedName) {
+        return null;
+      }
+
+      return { name: trimmedName };
     }
 
     return null;
@@ -64,5 +105,12 @@ export const saveTeamProfile = (profile: TeamProfile) => {
     return;
   }
 
-  storage.setItem(STORAGE_KEY, JSON.stringify(profile));
+  const validated = validateTeamProfile(profile.name);
+
+  if (!validated.ok) {
+    return;
+  }
+
+  storage.setItem(STORAGE_KEY, JSON.stringify(validated.profile));
+  syncTeamNameToLeaderboards(validated.profile);
 };
