@@ -472,6 +472,13 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (_lineup, context) => (context?.projectedWins ?? 82) < 20,
   },
   {
+    id: "winless",
+    title: "Winless",
+    description: "Project a winless 0-82 season.",
+    emoji: "💀",
+    check: (_lineup, context) => (context?.projectedWins ?? 82) === 0,
+  },
+  {
     id: "alphabet-squad",
     title: "Alphabet Squad",
     description:

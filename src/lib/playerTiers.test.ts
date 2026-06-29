@@ -17,9 +17,44 @@ import {
   projectRecord,
   SEASON_LENGTH,
 } from "./scoring";
+import type { Player } from "./types";
+
+const buildGreedyLineup = (direction: "min" | "max") => {
+  const picked: Player[] = [];
+  const pickedIds = new Set<string>();
+
+  for (let index = 0; index < 5; index += 1) {
+    let selection: Player | null = null;
+    let selectionScore =
+      direction === "min" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+
+    for (const candidate of players) {
+      if (pickedIds.has(candidate.id)) {
+        continue;
+      }
+
+      const score = calculateLineupScore([...picked, candidate]).preciseTotal;
+
+      if (
+        direction === "min"
+          ? score < selectionScore
+          : score > selectionScore
+      ) {
+        selectionScore = score;
+        selection = candidate;
+      }
+    }
+
+    expect(selection).not.toBeNull();
+    picked.push(selection!);
+    pickedIds.add(selection!.id);
+  }
+
+  return picked;
+};
 
 describe("playerTiers", () => {
-  it("defines 50 scrubs with the worst 10 marked as super scrubs", () => {
+  it("defines 30 scrubs with the worst 6 marked as super scrubs", () => {
     const scrubIds = getScrubPlayerIds();
     const superScrubIds = getSuperScrubPlayerIds();
 
@@ -48,15 +83,24 @@ describe("playerTiers", () => {
     );
   });
 
-  it("excludes Bradley Beal from the scrub pool and backfills the next-worst player", () => {
+  it("excludes manual scrub-pool overrides and backfills the next-worst players", () => {
     const beal = players.find((player) => player.bbrPlayerId === "bealbr01");
+    const adams = players.find((player) => player.bbrPlayerId === "adamsst01");
+    const martin = players.find((player) => player.bbrPlayerId === "martica02");
+    const russell = players.find((player) => player.bbrPlayerId === "russeda01");
     const jackson = players.find(
       (player) => player.name === "Andre Jackson Jr.",
     );
 
     expect(beal).toBeDefined();
+    expect(adams).toBeDefined();
+    expect(martin).toBeDefined();
+    expect(russell).toBeDefined();
     expect(jackson).toBeDefined();
     expect(isScrubPlayer(beal!)).toBe(false);
+    expect(isScrubPlayer(adams!)).toBe(false);
+    expect(isScrubPlayer(martin!)).toBe(false);
+    expect(isScrubPlayer(russell!)).toBe(false);
     expect(isScrubPlayer(jackson!)).toBe(true);
     expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
   });
@@ -77,14 +121,17 @@ describe("playerTiers", () => {
       );
 
     const worstLineup = ranked.slice(0, 5).map((entry) => entry.player);
-    const bestLineup = ranked.slice(-5).map((entry) => entry.player);
     const worstRecord = calculateLineupScore(worstLineup).projectedRecord;
-    const bestRecord = calculateLineupScore(bestLineup).projectedRecord;
+    const greedyWorstRecord = calculateLineupScore(buildGreedyLineup("min"))
+      .projectedRecord;
+    const greedyBestRecord = calculateLineupScore(buildGreedyLineup("max"))
+      .projectedRecord;
 
     expect(worstRecord.formatted).toBe("Record: 0-82");
-    expect(bestRecord.wins).toBeGreaterThanOrEqual(55);
+    expect(greedyWorstRecord.formatted).toBe("Record: 0-82");
+    expect(greedyBestRecord.formatted).toBe("Record: 82-0");
     expect(worstRecord.wins + worstRecord.losses).toBe(SEASON_LENGTH);
-    expect(bestRecord.wins + bestRecord.losses).toBe(SEASON_LENGTH);
+    expect(greedyBestRecord.wins + greedyBestRecord.losses).toBe(SEASON_LENGTH);
     expect(projectRecord(0).formatted).toBe("Record: 0-82");
     expect(projectRecord(100).formatted).toBe("Record: 82-0");
   });

@@ -15,11 +15,11 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 51 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(51);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(51);
+  it("defines 52 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(52);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(52);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      51,
+      52,
     );
   });
 
@@ -178,6 +178,12 @@ describe("achievements", () => {
     ).toContain("rebuild");
     expect(
       checkLineupAchievements(lineup, {
+        projectedWins: 0,
+        lineupOvr: 0,
+      }),
+    ).toContain("winless");
+    expect(
+      checkLineupAchievements(lineup, {
         projectedWins: 82,
         lineupOvr: 100,
       }),
@@ -218,7 +224,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(51);
+    expect(progress.total).toBe(52);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
