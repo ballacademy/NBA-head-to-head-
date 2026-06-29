@@ -16,7 +16,7 @@ import {
 
 describe("rankedElo", () => {
   it("maps elo to front office tiers", () => {
-    expect(getTierForElo(250).label).toBe("Two-Way Contract");
+    expect(getTierForElo(250).label).toBe("Tank Commander");
     expect(getTierForElo(500).label).toBe("G-League GM");
     expect(getTierForElo(1200).label).toBe("NBA GM");
     expect(getTierForElo(1499).label).toBe("Top GM");

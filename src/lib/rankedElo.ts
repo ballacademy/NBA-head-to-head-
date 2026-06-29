@@ -16,7 +16,7 @@ export interface RankedTier {
 }
 
 export const RANKED_TIERS: readonly RankedTier[] = [
-  { id: "two-way", label: "Two-Way Contract", minElo: 0, maxElo: 499 },
+  { id: "two-way", label: "Tank Commander", minElo: 0, maxElo: 499 },
   { id: "gleague", label: "G-League GM", minElo: 500, maxElo: 999 },
   { id: "nba-gm", label: "NBA GM", minElo: 1000, maxElo: 1498 },
   { id: "top-gm", label: "Top GM", minElo: 1499, maxElo: 2000 },
