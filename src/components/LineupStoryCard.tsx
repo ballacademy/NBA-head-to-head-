@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { sortLineupByPosition } from "../lib/lineupOrder";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface LineupStoryCardProps {
@@ -35,7 +36,7 @@ export function LineupStoryCard({
       <p className="projected-record">{score.projectedRecord.formatted}</p>
 
       <ol className="story-lineup">
-        {lineup.map((player, index) => (
+        {sortLineupByPosition(lineup).map((player, index) => (
           <li key={player.id}>
             <span className="pick-number">{index + 1}</span>
             <div>
