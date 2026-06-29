@@ -2800,10 +2800,20 @@ main {
   margin-top: 12px;
 }
 
+.daily-draft-results__footer:has(.play-again-button:only-child) {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
 .daily-draft-results__footer .play-again-button {
   margin: 0;
   width: 100%;
   min-width: 0;
+}
+
+.daily-draft-results__footer:has(.play-again-button:only-child) .play-again-button {
+  width: auto;
+  min-width: min(100%, 280px);
 }
 
 .daily-draft-results__stat {
