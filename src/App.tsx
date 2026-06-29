@@ -23,7 +23,6 @@ import {
   validateDraftSlotsFeasibleUnderSalaryCap,
 } from "./lib/draft";
 import {
-  getDailyChallenge,
   getDailyDateKey,
   getDailyDraftSetup,
   subtractDaysFromDateKey,
@@ -158,9 +157,10 @@ function App() {
     }
 
     const refreshDailyScores = async () => {
-      const setup = getDailyDraftSetup(dailyDateKey);
+      const todayKey = getDailyDateKey();
+      const setup = getDailyDraftSetup(todayKey);
       await refreshDailyDraftScoresFromApi(
-        dailyDateKey,
+        todayKey,
         setup.goal.id,
         getOrCreatePlayerIdentity().playerId,
       );
@@ -175,17 +175,14 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [dailyDateKey, phase]);
+  }, [phase]);
 
   const activePlayers = useMemo(
     () => getActivePlayerPool(modeRecords.allTime, { allTimeMode }),
     [allTimeMode, modeRecords.allTime],
   );
 
-  const dailyChallenge = useMemo(
-    () => getDailyChallenge(dailyDateKey),
-    [dailyDateKey],
-  );
+  const todaysDailyDateKey = getDailyDateKey();
 
   const draftablePlayers = useMemo(
     () =>
@@ -212,17 +209,17 @@ function App() {
   );
 
   const landingDailySetup = useMemo(
-    () => getDailyDraftSetup(dailyDateKey),
-    [dailyDateKey],
+    () => getDailyDraftSetup(todaysDailyDateKey),
+    [dailyScoresRefreshTick, todaysDailyDateKey],
   );
 
   const landingDailyEntry = useMemo(
     () =>
       getPlayerDailyDraftEntry(
-        dailyDateKey,
+        todaysDailyDateKey,
         landingDailySetup.goal.id,
       ),
-    [dailyDateKey, dailyScoresRefreshTick, landingDailySetup.goal.id],
+    [dailyScoresRefreshTick, landingDailySetup.goal.id, todaysDailyDateKey],
   );
 
   const landingDailyBenchmarkValues = useMemo(
@@ -231,9 +228,14 @@ function App() {
         activePlayers,
         landingDailySetup.slots,
         landingDailySetup.goal,
-        dailyDateKey,
+        todaysDailyDateKey,
       ),
-    [activePlayers, dailyDateKey, landingDailySetup.goal, landingDailySetup.slots],
+    [
+      activePlayers,
+      landingDailySetup.goal,
+      landingDailySetup.slots,
+      todaysDailyDateKey,
+    ],
   );
 
   const landingDailyPercentileLabel = useMemo(() => {
@@ -243,17 +245,17 @@ function App() {
 
     return formatPlayerDailyDraftPercentile(
       resolvePlayerDailyDraftPercentile(
-        dailyDateKey,
+        todaysDailyDateKey,
         landingDailyEntry,
         landingDailySetup.goal,
         landingDailyBenchmarkValues,
       ),
     );
   }, [
-    dailyDateKey,
     landingDailyBenchmarkValues,
     landingDailyEntry,
     landingDailySetup.goal,
+    todaysDailyDateKey,
   ]);
 
   const canViewDailyLineup = Boolean(
@@ -586,6 +588,7 @@ function App() {
     setIsDailyDraft(false);
     setIsDailyReview(false);
     setIsDailyOptimalReview(false);
+    setDailyDateKey(getDailyDateKey());
     setAllTimeMode(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
@@ -988,7 +991,6 @@ function App() {
       <main className="landing-layout">
         <LandingPage
           collection={collection}
-          dailyChallenge={dailyChallenge}
           modeRecords={modeRecords}
           matchmakingMode={matchmakingMode}
           matchmakingElapsedSeconds={matchmakingElapsedSeconds}
