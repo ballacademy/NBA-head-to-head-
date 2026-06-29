@@ -5,7 +5,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
-import { getDailyDateKey } from "../lib/dailyDraft";
+import { getDailyDateKey, getDailyChallenge } from "../lib/dailyDraft";
 import {
   getPlayerDailyDraftEntry,
 } from "../lib/dailyDraftScores";
@@ -39,13 +39,11 @@ import { WinStreakBadge } from "./WinStreakBadge";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
-import type { DailyDraftChallenge } from "../lib/dailyDraft";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions } from "../lib/match";
 
 interface LandingPageProps {
   collection: PlayerCollection;
-  dailyChallenge: DailyDraftChallenge;
   modeRecords: ModePlayerRecords;
   matchmakingMode?: GhostMatchmakingMode | null;
   matchmakingElapsedSeconds?: number;
@@ -88,7 +86,6 @@ function MatchModeRecord({ record }: { record: PlayerRecord }) {
 
 export function LandingPage({
   collection,
-  dailyChallenge,
   modeRecords,
   matchmakingMode = null,
   matchmakingElapsedSeconds = 0,
@@ -120,10 +117,14 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
-  const dailyDateKey = getDailyDateKey();
+  const todayDateKey = getDailyDateKey();
+  const todayChallenge = useMemo(
+    () => getDailyChallenge(todayDateKey),
+    [todayDateKey],
+  );
   const dailyEntry = useMemo(
-    () => getPlayerDailyDraftEntry(dailyDateKey, dailyChallenge.id),
-    [dailyChallenge.id, dailyDateKey],
+    () => getPlayerDailyDraftEntry(todayDateKey, todayChallenge.id),
+    [todayChallenge.id, todayDateKey],
   );
   const dailyCompleted = Boolean(dailyEntry);
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
@@ -284,8 +285,8 @@ export function LandingPage({
       <div className="landing-game-modes">
         <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
           <p className="eyebrow">Daily Draft</p>
-          <h2 className="daily-draft-card__title">{dailyChallenge.title}</h2>
-          <p className="daily-draft-card__description">{dailyChallenge.description}</p>
+          <h2 className="daily-draft-card__title">{todayChallenge.title}</h2>
+          <p className="daily-draft-card__description">{todayChallenge.description}</p>
           <p className="daily-draft-card__meta">
             Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS} seconds
             per pick. Stats stay hidden. Same goal for everyone today — one attempt
