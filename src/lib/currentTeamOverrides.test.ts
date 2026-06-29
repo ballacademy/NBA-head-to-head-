@@ -7,13 +7,19 @@ describe("current team overrides", () => {
     expect(CURRENT_TEAM_OVERRIDES.randlju01).toBe("BRK");
     expect(CURRENT_TEAM_OVERRIDES.ballla01).toBe("MIN");
     expect(CURRENT_TEAM_OVERRIDES.reidna01).toBe("CHO");
+    expect(CURRENT_TEAM_OVERRIDES.grantje01).toBe("MEM");
+    expect(CURRENT_TEAM_OVERRIDES.moranja01).toBe("POR");
   });
 
   it("applies synced teams to active player objects", () => {
     const randle = playersById.get("randlju01-brk");
     const lamelo = playersById.get("ballla01-min");
+    const grant = playersById.get("grantje01-mem");
+    const morant = playersById.get("moranja01-por");
 
     expect(randle?.team).toBe("BRK");
     expect(lamelo?.team).toBe("MIN");
+    expect(grant?.team).toBe("MEM");
+    expect(morant?.team).toBe("POR");
   });
 });
