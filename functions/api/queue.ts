@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { rejectProfaneTeamName } from "../lib/profanity";
 
 const ELO_BAND = 250;
 const QUEUE_TTL_SECONDS = 45;
@@ -201,6 +202,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!playerId || !teamName) {
     return json({ error: "playerId and teamName are required" }, 400);
+  }
+
+  const profanityError = rejectProfaneTeamName(teamName);
+
+  if (profanityError) {
+    return json({ error: profanityError }, 400);
   }
 
   if (!Number.isFinite(elo)) {

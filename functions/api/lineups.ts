@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { rejectProfaneTeamName } from "../lib/profanity";
 import {
   isValidStoredLineupIds,
   REQUIRED_STORED_LINEUP_SIZE,
@@ -48,6 +49,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!playerId || !teamName) {
     return json({ error: "playerId and teamName are required" }, 400);
+  }
+
+  const profanityError = rejectProfaneTeamName(teamName);
+
+  if (profanityError) {
+    return json({ error: profanityError }, 400);
   }
 
   if (!isValidStoredLineupIds(lineup)) {

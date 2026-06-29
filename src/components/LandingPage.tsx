@@ -26,8 +26,10 @@ import {
   RANKED_SALARY_CAP,
 } from "../lib/salaryCap";
 import {
+  getTeamProfileValidationMessage,
   loadTeamProfile,
-  normalizeTeamProfile,
+  saveTeamProfile,
+  validateTeamProfile,
   type TeamProfile,
 } from "../lib/teamProfile";
 import { ClassicModeSummary } from "./ClassicModeSummary";
@@ -140,6 +142,31 @@ export function LandingPage({
     setShowUnlockModal(false);
   };
 
+  const handleTeamNameBlur = () => {
+    const validation = validateTeamProfile(name);
+
+    if (!validation.ok) {
+      if (validation.error === "profanity") {
+        setError(getTeamProfileValidationMessage(validation.error));
+      }
+
+      return;
+    }
+
+    const savedTeam = loadTeamProfile();
+
+    if (savedTeam?.name === validation.profile.name) {
+      return;
+    }
+
+    saveTeamProfile(validation.profile);
+    setName(validation.profile.name);
+
+    if (error === getTeamProfileValidationMessage("profanity")) {
+      setError("");
+    }
+  };
+
   const handleStart = async (options?: StartDraftOptions) => {
     if (collection.pendingUnlock || isMatchmaking) {
       if (collection.pendingUnlock) {
@@ -148,22 +175,24 @@ export function LandingPage({
       return;
     }
 
-    let team = normalizeTeamProfile(name);
+    let validation = validateTeamProfile(name);
 
-    if (!team) {
+    if (!validation.ok) {
       const savedTeam = loadTeamProfile();
 
       if (savedTeam) {
         setName(savedTeam.name);
-        team = savedTeam;
+        validation = { ok: true, profile: savedTeam };
       }
     }
 
-    if (!team) {
-      setError("Enter a team name to start drafting.");
+    if (!validation.ok) {
+      setError(getTeamProfileValidationMessage(validation.error));
       teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+
+    const team = validation.profile;
 
     setError("");
     const started = await onStartDraft(team, options);
@@ -251,6 +280,7 @@ export function LandingPage({
             type="text"
             value={name}
             placeholder="e.g. Bulls"
+            onBlur={handleTeamNameBlur}
             onChange={(event) => {
               setName(event.target.value);
               if (error) {

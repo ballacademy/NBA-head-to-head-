@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  getTeamProfileValidationMessage,
   loadTeamProfile,
   normalizeTeamProfile,
   saveTeamProfile,
+  validateTeamProfile,
 } from "./teamProfile";
 
 const storage = new Map<string, string>();
@@ -40,5 +42,14 @@ describe("teamProfile", () => {
     expect(loadTeamProfile()).toEqual({
       name: "Celtics",
     });
+  });
+
+  it("rejects profane team names", () => {
+    expect(validateTeamProfile("shit team")).toEqual({
+      ok: false,
+      error: "profanity",
+    });
+    expect(normalizeTeamProfile("shit team")).toBeNull();
+    expect(getTeamProfileValidationMessage("profanity")).toMatch(/offensive/i);
   });
 });

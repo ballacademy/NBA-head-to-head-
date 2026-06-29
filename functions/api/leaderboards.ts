@@ -1,4 +1,5 @@
 import type { Env, LeaderboardEntryRow } from "../types";
+import { rejectProfaneTeamName } from "../lib/profanity";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -150,6 +151,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { error: "playerId, teamName, and publicTag are required" },
       400,
     );
+  }
+
+  const profanityError = rejectProfaneTeamName(teamName);
+
+  if (profanityError) {
+    return json({ error: profanityError }, 400);
   }
 
   if (!Number.isFinite(elo)) {
