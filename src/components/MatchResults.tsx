@@ -355,7 +355,7 @@ export function MatchResults({
                 disabled={isMatchmaking}
                 onClick={onPlayAgain}
               >
-                Draft another team
+                {user.practiceMode ? "Practice again" : "Draft another team"}
               </button>
               <button
                 type="button"

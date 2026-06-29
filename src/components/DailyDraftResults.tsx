@@ -192,6 +192,11 @@ export function DailyDraftResults({
             : dailyGoal.description}
         </p>
         <p className="daily-draft-results__stat">{goalResult.formatted}</p>
+        {!optimalReview && !reviewOnly && !percentileResult ? (
+          <p className="daily-draft-results__percentile daily-draft-results__percentile--loading">
+            Calculating rank…
+          </p>
+        ) : null}
         {!optimalReview && percentileResult ? (
           <p className="daily-draft-results__percentile">
             {formatDailyPercentile(percentileResult)}

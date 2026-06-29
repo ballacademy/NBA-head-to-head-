@@ -35,6 +35,7 @@ import {
 } from "../lib/modeLabels";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { GmIdentityBadge } from "./GmIdentityBadge";
+import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 
 interface LeaderboardPageProps {
@@ -44,11 +45,116 @@ interface LeaderboardPageProps {
 type LeaderboardView = "classic" | "ranked";
 type BoardSort = LeaderboardSort | RankedLeaderboardSort;
 
+type BoardEntry = ReturnType<typeof getTopLeaderboard>[number];
+
 const SORT_TABS: { id: BoardSort; label: string }[] = [
   { id: "elo", label: `Most ${RATING_LABEL}` },
   { id: "winStreak", label: "Win streak" },
   { id: "lossStreak", label: "Loss streak" },
 ];
+
+const TIER_RANGE_DETAILS = RANKED_TIERS.map(
+  (tier) => `${tier.label}: ${formatTierBannerRange(tier)}`,
+);
+
+interface LeaderboardBoardProps {
+  entries: BoardEntry[];
+  metricColumnLabel: string;
+  formatMetric: (entry: BoardEntry) => string;
+  formatRecord: (entry: BoardEntry) => string;
+  currentPlayerId: string;
+  viewKey: string;
+}
+
+function LeaderboardBoard({
+  entries,
+  metricColumnLabel,
+  formatMetric,
+  formatRecord,
+  currentPlayerId,
+  viewKey,
+}: LeaderboardBoardProps) {
+  return (
+    <>
+      <div
+        className="leaderboard-table-wrap leaderboard-table-wrap--desktop"
+        key={`leaderboard-table-${viewKey}`}
+      >
+        <table className="leaderboard-table">
+          <thead>
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col">Team</th>
+              <th scope="col">Tier</th>
+              <th scope="col">Record</th>
+              <th scope="col">{metricColumnLabel}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry, index) => (
+              <tr
+                key={entry.playerId}
+                className={
+                  entry.playerId === currentPlayerId
+                    ? "leaderboard-table__row--you"
+                    : undefined
+                }
+              >
+                <td>{index + 1}</td>
+                <td>
+                  <GmIdentityBadge
+                    name={entry.name}
+                    publicTag={entry.publicTag}
+                    playerId={entry.playerId}
+                  />
+                </td>
+                <td>
+                  <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
+                </td>
+                <td>{formatRecord(entry)}</td>
+                <td>{formatMetric(entry)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ol className="leaderboard-cards leaderboard-cards--mobile" key={`leaderboard-cards-${viewKey}`}>
+        {entries.map((entry, index) => (
+          <li
+            key={entry.playerId}
+            className={`leaderboard-card${
+              entry.playerId === currentPlayerId ? " leaderboard-card--you" : ""
+            }`}
+          >
+            <div className="leaderboard-card__top">
+              <span className="leaderboard-card__rank">#{index + 1}</span>
+              <GmIdentityBadge
+                name={entry.name}
+                publicTag={entry.publicTag}
+                playerId={entry.playerId}
+              />
+            </div>
+            <div className="leaderboard-card__metrics">
+              <div>
+                <span className="leaderboard-card__label">Tier</span>
+                <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
+              </div>
+              <div>
+                <span className="leaderboard-card__label">Record</span>
+                <strong>{formatRecord(entry)}</strong>
+              </div>
+              <div>
+                <span className="leaderboard-card__label">{metricColumnLabel}</span>
+                <strong>{formatMetric(entry)}</strong>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </>
+  );
+}
 
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
@@ -87,7 +193,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         ? "Loss streak"
         : RATING_LABEL;
 
-  const formatClassicMetric = (entry: (typeof classicEntries)[number]) => {
+  const formatClassicMetric = (entry: BoardEntry) => {
     if (sort === "winStreak") {
       return formatLeaderboardWinStreak(entry);
     }
@@ -99,7 +205,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
     return formatLeaderboardElo(entry);
   };
 
-  const formatRankedMetric = (entry: (typeof rankedEntries)[number]) => {
+  const formatRankedMetric = (entry: BoardEntry) => {
     if (sort === "winStreak") {
       return formatRankedLeaderboardWinStreak(entry);
     }
@@ -169,109 +275,39 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               {tab.label}
             </button>
           ))}
+          {view === "ranked" ? (
+            <span className="leaderboard__tier-info">
+              Tier ranges
+              <ModeCardInfo details={TIER_RANGE_DETAILS} />
+            </span>
+          ) : null}
         </div>
-      </div>
-
-      <div className="leaderboard-tier-guide" aria-label="Tier banner ranges">
-        <h2 className="leaderboard-tier-guide__title">Tier ranges</h2>
-        <ul className="leaderboard-tier-guide__list">
-          {RANKED_TIERS.map((tier) => (
-            <li key={tier.id} className="leaderboard-tier-guide__item">
-              <RankedTierBadge tier={tier} compact />
-              <span className="leaderboard-tier-guide__range">
-                {formatTierBannerRange(tier)}
-              </span>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {view === "ranked" ? (
         rankedEntries.length > 0 ? (
-          <div className="leaderboard-table-wrap" key={`leaderboard-${view}-${sort}`}>
-            <table className="leaderboard-table">
-              <thead>
-                <tr>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Team</th>
-                  <th scope="col">Tier</th>
-                  <th scope="col">Record</th>
-                  <th scope="col">{metricColumnLabel}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rankedEntries.map((entry, index) => (
-                  <tr
-                    key={entry.playerId}
-                    className={
-                      entry.playerId === currentPlayerId
-                        ? "leaderboard-table__row--you"
-                        : undefined
-                    }
-                  >
-                    <td>{index + 1}</td>
-                    <td>
-                      <GmIdentityBadge
-                        name={entry.name}
-                        publicTag={entry.publicTag}
-                        playerId={entry.playerId}
-                      />
-                    </td>
-                    <td>
-                      <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
-                    </td>
-                    <td>{formatRankedLeaderboardRecord(entry)}</td>
-                    <td>{formatRankedMetric(entry)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LeaderboardBoard
+            entries={rankedEntries}
+            metricColumnLabel={metricColumnLabel}
+            formatMetric={formatRankedMetric}
+            formatRecord={formatRankedLeaderboardRecord}
+            currentPlayerId={currentPlayerId}
+            viewKey={`${view}-${sort}`}
+          />
         ) : (
           <p className="draft-empty">
             No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the ladder.
           </p>
         )
       ) : classicEntries.length > 0 ? (
-        <div className="leaderboard-table-wrap" key={`leaderboard-${view}-${sort}`}>
-          <table className="leaderboard-table">
-            <thead>
-              <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">Team</th>
-                <th scope="col">Tier</th>
-                <th scope="col">Record</th>
-                <th scope="col">{metricColumnLabel}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classicEntries.map((entry, index) => (
-                <tr
-                  key={entry.playerId}
-                  className={
-                    entry.playerId === currentPlayerId
-                      ? "leaderboard-table__row--you"
-                      : undefined
-                  }
-                >
-                  <td>{index + 1}</td>
-                  <td>
-                    <GmIdentityBadge
-                      name={entry.name}
-                      publicTag={entry.publicTag}
-                      playerId={entry.playerId}
-                    />
-                  </td>
-                  <td>
-                    <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
-                  </td>
-                  <td>{formatLeaderboardRecord(entry)}</td>
-                  <td>{formatClassicMetric(entry)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <LeaderboardBoard
+          entries={classicEntries}
+          metricColumnLabel={metricColumnLabel}
+          formatMetric={formatClassicMetric}
+          formatRecord={formatLeaderboardRecord}
+          currentPlayerId={currentPlayerId}
+          viewKey={`${view}-${sort}`}
+        />
       ) : (
         <p className="draft-empty">
           No classic entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the first spot.

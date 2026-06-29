@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { players } from "./data/players";
 import { DailyDraftResults } from "./components/DailyDraftResults";
+import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
@@ -28,6 +29,10 @@ import {
   subtractDaysFromDateKey,
 } from "./lib/dailyDraft";
 import { solveBestDailyDraftLineup } from "./lib/dailyDraftSolver";
+import {
+  hasSeenDraftOnboarding,
+  markDraftOnboardingSeen,
+} from "./lib/draftOnboarding";
 import { getMatchModeTheme } from "./lib/matchModeTheme";
 import {
   formatPlayerDailyDraftPercentile,
@@ -96,6 +101,7 @@ type AppPhase =
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
+  const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
   const [user, setUser] = useState<Drafter | null>(null);
   const [opponent, setOpponent] = useState<Drafter | null>(null);
   const [draftStep, setDraftStep] = useState(0);
@@ -590,6 +596,7 @@ function App() {
     setIsDailyOptimalReview(false);
     setDailyDateKey(getDailyDateKey());
     setAllTimeMode(false);
+    setShowDraftOnboarding(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
   };
@@ -609,6 +616,19 @@ function App() {
     }
 
     const team = { name: user.name };
+    if (user.practiceMode) {
+      if (
+        !(await startMatch(team, {
+          practiceMode: true,
+          salaryCapMode: Boolean(user.salaryCapMode),
+          salaryCapLimit: user.salaryCapLimit,
+        }))
+      ) {
+        resetToLanding();
+      }
+      return;
+    }
+
     const replayAllTime =
       Boolean(user.allTimeMode) && isAllTimeModePlayable();
 
@@ -938,6 +958,18 @@ function App() {
     document.body.scrollTop = 0;
   }, [phase]);
 
+  useEffect(() => {
+    if (
+      phase === "drafting" &&
+      user &&
+      user.draftSlots.length > 0 &&
+      draftStep < user.draftSlots.length &&
+      !hasSeenDraftOnboarding()
+    ) {
+      setShowDraftOnboarding(true);
+    }
+  }, [draftStep, phase, user, draftSessionKey]);
+
   if (phase === "leaderboard") {
     return (
       <main className="landing-layout">
@@ -1057,6 +1089,15 @@ function App() {
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
       {canRenderDraftRoom ? (
         <div className="draft-layout">
+          {showDraftOnboarding ? (
+            <DraftOnboardingOverlay
+              hasSalaryCap={user.salaryCapLimit != null}
+              onDismiss={() => {
+                markDraftOnboardingSeen();
+                setShowDraftOnboarding(false);
+              }}
+            />
+          ) : null}
           <DraftRoom
             drafter={user}
             players={draftablePlayers}

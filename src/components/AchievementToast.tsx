@@ -10,11 +10,9 @@ export function AchievementToast({ achievementIds }: AchievementToastProps) {
   }
 
   return (
-    <section className="achievement-toast panel" aria-label="New achievements unlocked">
+    <section className="achievement-toast panel" aria-label="New badges unlocked">
       <p className="eyebrow">
-        {achievementIds.length === 1
-          ? "Achievement unlocked"
-          : "Achievements unlocked"}
+        {achievementIds.length === 1 ? "Badge unlocked" : "Badges unlocked"}
       </p>
       <ul className="achievement-toast__list">
         {achievementIds.map((id) => {
