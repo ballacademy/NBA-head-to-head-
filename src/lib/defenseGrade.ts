@@ -72,6 +72,7 @@ export const getDefenseGrade = (
 export const formatPlayerDraftStats = (player: {
   points: number;
   rebounds: number;
+  assists: number;
   blocks: number;
   steals: number;
   threePoint: number;
@@ -84,6 +85,7 @@ export const formatPlayerDraftStats = (player: {
   const parts = [
     `${player.points.toFixed(1)} PTS`,
     `${player.rebounds.toFixed(1)} REB`,
+    `${player.assists.toFixed(1)} AST`,
     `${player.blocks.toFixed(1)} BLK`,
     `${player.steals.toFixed(1)} STL`,
     `${(player.threePoint * 100).toFixed(1)}% 3P`,
