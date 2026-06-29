@@ -437,6 +437,21 @@ describe("projectRecord", () => {
     expect(Number.isInteger(score.total)).toBe(true);
     expect(score.projectedRecord).toEqual(projectRecord(score.preciseTotal));
   });
+
+  it("blends same-team lineups toward prior-season team records", () => {
+    const okc = lineup([
+      "gilgesh01-okc",
+      "holmgch01-okc",
+      "willija06-okc",
+      "harteis01-okc",
+      "dortlu01-okc",
+    ]);
+    const score = calculateLineupScore(okc);
+    const ovrOnly = projectRecord(score.preciseTotal);
+
+    expect(score.projectedRecord.wins).toBeGreaterThan(ovrOnly.wins);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(58);
+  });
 });
 
 describe("compareLineups", () => {

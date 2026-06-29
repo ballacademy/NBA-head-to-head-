@@ -9,6 +9,10 @@ import { getImpactRankingAdjustment } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
+import {
+  blendProjectedWinsWithTeamAnchor,
+  getSameTeamRecordAnchor,
+} from "./teamRecordBaseline";
 
 export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
@@ -109,6 +113,30 @@ export const projectedWinsFromOvr = (lineupTotal: number) => {
 
 export const projectRecord = (lineupTotal: number): ProjectedRecord => {
   const wins = clamp(projectedWinsFromOvr(lineupTotal), 0, SEASON_LENGTH);
+  const losses = SEASON_LENGTH - wins;
+
+  return {
+    wins,
+    losses,
+    formatted: `Record: ${wins}-${losses}`,
+  };
+};
+
+const projectLineupRecord = (
+  lineup: Player[],
+  preciseTotal: number,
+): ProjectedRecord => {
+  const ovrRecord = projectRecord(preciseTotal);
+  const teamAnchor = getSameTeamRecordAnchor(lineup);
+
+  if (!teamAnchor) {
+    return ovrRecord;
+  }
+
+  const wins = blendProjectedWinsWithTeamAnchor(
+    ovrRecord.wins,
+    teamAnchor,
+  );
   const losses = SEASON_LENGTH - wins;
 
   return {
@@ -407,7 +435,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   return {
     total,
     preciseTotal,
-    projectedRecord: projectRecord(preciseTotal),
+    projectedRecord: projectLineupRecord(lineup, preciseTotal),
     categories,
     strengths,
     warnings,
