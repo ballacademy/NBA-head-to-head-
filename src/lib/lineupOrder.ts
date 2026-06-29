@@ -11,6 +11,12 @@ const POSITION_ORDER: Record<Position, number> = {
 const getSecondaryPosition = (player: Player): Position | undefined =>
   player.positions.length > 1 ? player.positions[1] : undefined;
 
+/** Lineup slot used for ordering among players with the same listed primary. */
+const getLineupSlotPosition = (player: Player): number => {
+  const secondary = getSecondaryPosition(player);
+  return POSITION_ORDER[secondary ?? player.position];
+};
+
 export const sortLineupByPosition = (lineup: Player[]) =>
   [...lineup].sort((left, right) => {
     const primaryComparison =
@@ -19,20 +25,16 @@ export const sortLineupByPosition = (lineup: Player[]) =>
       return primaryComparison;
     }
 
+    const slotComparison =
+      getLineupSlotPosition(left) - getLineupSlotPosition(right);
+    if (slotComparison !== 0) {
+      return slotComparison;
+    }
+
     const leftSinglePosition = left.positions.length === 1 ? 0 : 1;
     const rightSinglePosition = right.positions.length === 1 ? 0 : 1;
     if (leftSinglePosition !== rightSinglePosition) {
       return leftSinglePosition - rightSinglePosition;
-    }
-
-    const leftSecondary = getSecondaryPosition(left);
-    const rightSecondary = getSecondaryPosition(right);
-    if (leftSecondary && rightSecondary) {
-      const secondaryComparison =
-        POSITION_ORDER[leftSecondary] - POSITION_ORDER[rightSecondary];
-      if (secondaryComparison !== 0) {
-        return secondaryComparison;
-      }
     }
 
     const heightComparison = left.heightInches - right.heightInches;

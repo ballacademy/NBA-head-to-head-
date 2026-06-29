@@ -104,4 +104,19 @@ describe("sortLineupByPosition", () => {
       "Wing Point",
     ]);
   });
+
+  it("lists dual-position centers with a PF secondary before pure centers", () => {
+    const lineup = [
+      makePlayer("Rudy Gobert", "C", { positions: ["C"], heightInches: 85 }),
+      makePlayer("Naz Reid", "C", {
+        positions: ["C", "PF"],
+        heightInches: 81,
+      }),
+    ];
+
+    expect(sortLineupByPosition(lineup).map((player) => player.name)).toEqual([
+      "Naz Reid",
+      "Rudy Gobert",
+    ]);
+  });
 });
