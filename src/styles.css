@@ -562,6 +562,7 @@ main {
   margin-top: 8px;
 }
 
+.landing-card--mode .daily-draft-card__actions .daily-draft-card__button,
 .landing-card--mode .daily-draft-card__button,
 .landing-card--mode .landing__primary-button,
 .landing-card--mode .ranked-cap-card__button,
@@ -2451,6 +2452,7 @@ main {
     font-size: 0.68rem;
   }
 
+  .landing-card--mode .daily-draft-card__actions .daily-draft-card__button,
   .landing-card--mode .daily-draft-card__button,
   .landing-card--mode .landing__primary-button,
   .landing-card--mode .ranked-cap-card__button,
@@ -2574,6 +2576,29 @@ main {
 .daily-draft-card__meta {
   margin: 0 0 10px;
   color: #cbd5e1;
+}
+
+.daily-draft-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.daily-draft-card__actions .daily-draft-card__button {
+  margin-top: 0;
+  flex: 1 1 180px;
+}
+
+.daily-draft-card__button--secondary {
+  color: #e2e8f0;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
+}
+
+.daily-draft-card__button--secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.45);
 }
 
 .daily-draft-card__button {

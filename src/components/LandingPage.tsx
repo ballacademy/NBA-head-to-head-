@@ -55,6 +55,7 @@ interface LandingPageProps {
     options?: StartDraftOptions,
   ) => Promise<boolean>;
   onViewDailyLineup?: () => Promise<boolean> | boolean;
+  onViewYesterdayBestDailyLineup?: () => Promise<boolean> | boolean;
   dailyPercentileLabel?: string | null;
   canViewDailyLineup?: boolean;
   onCollectionChange: (collection: PlayerCollection) => void;
@@ -94,6 +95,7 @@ export function LandingPage({
   startMatchError = null,
   onStartDraft,
   onViewDailyLineup,
+  onViewYesterdayBestDailyLineup,
   dailyPercentileLabel = null,
   canViewDailyLineup = false,
   onCollectionChange,
@@ -201,6 +203,22 @@ export function LandingPage({
     await handleStart({ isDailyDraft: true });
   };
 
+  const handleYesterdayBestAction = async () => {
+    if (collection.pendingUnlock || isMatchmaking || !onViewYesterdayBestDailyLineup) {
+      if (collection.pendingUnlock) {
+        setShowUnlockModal(true);
+      }
+      return;
+    }
+
+    setError("");
+    const opened = await onViewYesterdayBestDailyLineup();
+
+    if (!opened) {
+      setError("Couldn't load yesterday's best lineup. Try again in a moment.");
+    }
+  };
+
   return (
     <section className="landing panel landing--rich">
       {showUnlockModal && collection.pendingUnlock ? (
@@ -286,16 +304,28 @@ export function LandingPage({
                 : "Not played yet today"}
             </p>
           </div>
-          <button
-            type="button"
-            className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
-            disabled={isMatchmaking || (dailyCompleted && !canViewDailyLineup)}
-            onClick={() => void handleDailyAction()}
-          >
-            {dailyCompleted
-              ? "View my lineup"
-              : "Play Today's Daily Draft"}
-          </button>
+          <div className="daily-draft-card__actions">
+            <button
+              type="button"
+              className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
+              disabled={isMatchmaking || (dailyCompleted && !canViewDailyLineup)}
+              onClick={() => void handleDailyAction()}
+            >
+              {dailyCompleted
+                ? "View my lineup"
+                : "Play Today's Daily Draft"}
+            </button>
+            {dailyCompleted ? (
+              <button
+                type="button"
+                className="daily-draft-card__button daily-draft-card__button--secondary"
+                disabled={isMatchmaking || !onViewYesterdayBestDailyLineup}
+                onClick={() => void handleYesterdayBestAction()}
+              >
+                Yesterday&apos;s best
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="head-to-head-card landing-card landing-card--mode">

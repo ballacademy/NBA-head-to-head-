@@ -50,6 +50,16 @@ export const subtractDaysFromDateKey = (dateKey: string, days: number) => {
   return getDailyDateKey(date);
 };
 
+export const formatDailyDateLabel = (dateKey: string) => {
+  const date = new Date(`${dateKey}T12:00:00`);
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const compareDateKeys = (left: string, right: string) =>
   left < right ? -1 : left > right ? 1 : 0;
 
