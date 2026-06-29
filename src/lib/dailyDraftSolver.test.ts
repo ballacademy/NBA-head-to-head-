@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { autoDraftLineup } from "./draft";
 import { getDailyDraftSetup } from "./dailyDraft";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
+import { getDivisionForTeam } from "./divisions";
+import { playerMatchesPosition } from "./positions";
 import { players } from "./playerPool";
 import {
   clearDailyDraftSolverCacheForTests,
@@ -21,6 +23,26 @@ describe("solveBestDailyDraftLineup", () => {
 
     expect(lineup).toHaveLength(5);
     expect(new Set(lineup.map((player) => player.id)).size).toBe(5);
+  });
+
+  it("fills each daily slot with the exact position and division constraint", () => {
+    const setup = getDailyDraftSetup("2026-06-15");
+    const lineup = solveBestDailyDraftLineup(
+      players,
+      setup.slots,
+      setup.goal,
+      setup.dateKey,
+    );
+
+    expect(lineup).toHaveLength(setup.slots.length);
+
+    for (let index = 0; index < setup.slots.length; index += 1) {
+      const slot = setup.slots[index]!;
+      const player = lineup[index]!;
+
+      expect(playerMatchesPosition(player, slot.position)).toBe(true);
+      expect(getDivisionForTeam(player.team)).toBe(slot.division);
+    }
   });
 
   it("beats the greedy auto-draft score for the same goal", () => {
