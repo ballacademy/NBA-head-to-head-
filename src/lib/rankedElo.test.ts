@@ -3,7 +3,9 @@ import {
   calculateEloChange,
   formatRatingDelta,
   formatRatingPoints,
+  formatTierBannerRange,
   getPlacementMultiplier,
+  RANKED_TIERS,
   getStreakMultiplier,
   getTierForElo,
   LIVE_OPPONENT_ONLY_MIN_ELO,
@@ -28,6 +30,14 @@ describe("rankedElo", () => {
     expect(formatRatingDelta(-8)).toBe("-8 Banners");
     expect(RATING_LABEL).toBe("Banners");
     expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO)).toBe(true);
+  });
+
+  it("formats tier banner ranges", () => {
+    expect(formatTierBannerRange(RANKED_TIERS[0]!)).toBe("0–499 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[1]!)).toBe("500–999 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[2]!)).toBe("1000–1498 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[3]!)).toBe("1499–2000 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[4]!)).toBe("2001+ Banners");
   });
 
   it("gives larger swings during placement and on streaks", () => {

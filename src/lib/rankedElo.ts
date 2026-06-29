@@ -52,6 +52,14 @@ export const formatRatingPoints = (rating: number) =>
 export const formatRatingDelta = (delta: number) =>
   `${delta >= 0 ? "+" : ""}${delta} ${RATING_LABEL}`;
 
+export const formatTierBannerRange = (tier: RankedTier) => {
+  if (tier.maxElo === null) {
+    return `${formatRankedElo(tier.minElo)}+ ${RATING_LABEL}`;
+  }
+
+  return `${formatRankedElo(tier.minElo)}–${formatRankedElo(tier.maxElo)} ${RATING_LABEL}`;
+};
+
 export const getPlacementMultiplier = (gamesPlayedBeforeMatch: number) => {
   if (gamesPlayedBeforeMatch >= PLACEMENT_GAMES) {
     return 1;

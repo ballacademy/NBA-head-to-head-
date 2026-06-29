@@ -20,7 +20,11 @@ import {
   type RankedLeaderboardSort,
 } from "../lib/rankedLeaderboard";
 import { refreshLeaderboardFromApi } from "../lib/leaderboardRemote";
-import { RATING_LABEL } from "../lib/rankedElo";
+import {
+  formatTierBannerRange,
+  RANKED_TIERS,
+  RATING_LABEL,
+} from "../lib/rankedElo";
 import { getCurrentSeasonId } from "../lib/rankedSeason";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import {
@@ -166,6 +170,20 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="leaderboard-tier-guide" aria-label="Tier banner ranges">
+        <h2 className="leaderboard-tier-guide__title">Tier ranges</h2>
+        <ul className="leaderboard-tier-guide__list">
+          {RANKED_TIERS.map((tier) => (
+            <li key={tier.id} className="leaderboard-tier-guide__item">
+              <RankedTierBadge tier={tier} compact />
+              <span className="leaderboard-tier-guide__range">
+                {formatTierBannerRange(tier)}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {view === "ranked" ? (
