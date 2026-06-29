@@ -32,6 +32,7 @@ describe("formatPlayerDraftStats", () => {
     const formatted = formatPlayerDraftStats({
       points: 27.4,
       rebounds: 8.1,
+      assists: 6.3,
       blocks: 1.2,
       steals: 1.4,
       trueShooting: 0.612,
@@ -45,6 +46,7 @@ describe("formatPlayerDraftStats", () => {
     expect(formatted.parts).toEqual([
       "27.4 PTS",
       "8.1 REB",
+      "6.3 AST",
       "1.2 BLK",
       "1.4 STL",
       "38.7% 3P",

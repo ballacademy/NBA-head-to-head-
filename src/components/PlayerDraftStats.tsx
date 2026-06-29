@@ -6,6 +6,7 @@ interface PlayerDraftStatsProps {
     Player,
     | "points"
     | "rebounds"
+    | "assists"
     | "blocks"
     | "steals"
     | "threePoint"
