@@ -19,6 +19,7 @@ import {
 } from "../lib/dailyDraftScores";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
+import { formatDailyDateLabel } from "../lib/dailyDraft";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 
@@ -31,6 +32,7 @@ interface DailyDraftResultsProps {
   dailyGoal: DailyDraftGoal;
   benchmarkValues: number[];
   reviewOnly?: boolean;
+  optimalReview?: boolean;
   onPlayAgain: () => void;
 }
 
@@ -41,9 +43,10 @@ export function DailyDraftResults({
   dailyGoal,
   benchmarkValues,
   reviewOnly = false,
+  optimalReview = false,
   onPlayAgain,
 }: DailyDraftResultsProps) {
-  const submittedRef = useRef(reviewOnly);
+  const submittedRef = useRef(reviewOnly || optimalReview);
   const achievementsCheckedRef = useRef(false);
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
@@ -74,7 +77,7 @@ export function DailyDraftResults({
   );
 
   useLayoutEffect(() => {
-    if (submittedRef.current) {
+    if (reviewOnly || optimalReview || submittedRef.current) {
       return;
     }
 
@@ -98,11 +101,17 @@ export function DailyDraftResults({
     dailyGoal,
     goalResult.formatted,
     goalResult.value,
+    optimalReview,
+    reviewOnly,
     user.name,
     userLineup,
   ]);
 
   useEffect(() => {
+    if (optimalReview) {
+      return;
+    }
+
     const refreshPercentile = async () => {
       await refreshDailyDraftScoresFromApi(
         dailyDateKey,
@@ -133,10 +142,11 @@ export function DailyDraftResults({
     dailyDateKey,
     dailyGoal,
     goalResult.value,
+    optimalReview,
   ]);
 
   useLayoutEffect(() => {
-    if (reviewOnly || achievementsCheckedRef.current || userLineup.length !== 5) {
+    if (reviewOnly || optimalReview || achievementsCheckedRef.current || userLineup.length !== 5) {
       return;
     }
 
@@ -147,7 +157,7 @@ export function DailyDraftResults({
     );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
-  }, [reviewOnly, userLineup]);
+  }, [optimalReview, reviewOnly, userLineup]);
 
   const handleCopyShareText = async () => {
     const copied = await copyToClipboard(dailyShareText);
@@ -170,11 +180,19 @@ export function DailyDraftResults({
       className={`match-results daily-draft-results match-results--compact ${matchModeThemeClass("daily")}`}
     >
       <div className="panel panel--compact daily-draft-results__header">
-        <p className="eyebrow">Daily Draft complete</p>
-        <h2>{dailyGoal.title}</h2>
-        <p>{dailyGoal.description}</p>
+        <p className="eyebrow">
+          {optimalReview ? "Daily Draft answer key" : "Daily Draft complete"}
+        </p>
+        <h2>
+          {optimalReview ? "Yesterday's best lineup" : dailyGoal.title}
+        </h2>
+        <p>
+          {optimalReview
+            ? `${formatDailyDateLabel(dailyDateKey)} · ${dailyGoal.description}`
+            : dailyGoal.description}
+        </p>
         <p className="daily-draft-results__stat">{goalResult.formatted}</p>
-        {percentileResult ? (
+        {!optimalReview && percentileResult ? (
           <p className="daily-draft-results__percentile">
             {formatDailyPercentile(percentileResult)}
             <span>
@@ -188,7 +206,7 @@ export function DailyDraftResults({
       <AchievementToast achievementIds={newAchievementIds} />
 
       <section className="panel panel--compact daily-draft-results__lineup">
-        <h3>{user.name}</h3>
+        <h3>{optimalReview ? "Best possible lineup" : user.name}</h3>
         <div className="team-lineup-card__players">
           {orderedLineup.map((player, index) => (
             <PlayerStatLine
@@ -202,13 +220,15 @@ export function DailyDraftResults({
       </section>
 
       <div className="panel panel--compact daily-draft-results__footer">
-        <button
-          type="button"
-          className="play-again-button match-results__share-button"
-          onClick={() => void handleCopyShareText()}
-        >
-          {copyButtonLabel}
-        </button>
+        {!optimalReview ? (
+          <button
+            type="button"
+            className="play-again-button match-results__share-button"
+            onClick={() => void handleCopyShareText()}
+          >
+            {copyButtonLabel}
+          </button>
+        ) : null}
         <button
           type="button"
           className="play-again-button match-results__menu-button"
