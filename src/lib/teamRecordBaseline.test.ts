@@ -3,6 +3,7 @@ import { players } from "./playerPool";
 import { calculateLineupScore, getPlayersById } from "./scoring";
 import {
   adjustTeamWinsForStarterAvailability,
+  getLineupTeamQualityRawAdjustment,
   getSameTeamRecordAnchor,
   getStarterAvailability,
 } from "./teamRecordBaseline";
@@ -56,6 +57,18 @@ describe("teamRecordBaseline", () => {
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(58);
     expect(score.projectedRecord.wins).toBeLessThanOrEqual(72);
     expect(getStarterAvailability(okc)).toBeGreaterThan(0.6);
+  });
+
+  it("adds a raw boost for lineups built from stronger teams", () => {
+    const mixed = lineup([
+      "doncilu01-lal",
+      "pritcpa01-bos",
+      "holmgch01-okc",
+      "gilgesh01-okc",
+      "tatumja01-bos",
+    ]);
+
+    expect(getLineupTeamQualityRawAdjustment(mixed)).toBeGreaterThan(0);
   });
 
   it("does not over-inflate injured small-market teams beyond recovery cap", () => {

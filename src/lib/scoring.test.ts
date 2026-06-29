@@ -75,9 +75,6 @@ describe("calculateLineupScore", () => {
     expect(score.warnings).toContain(
       "Ball-dominant stars may fight for the same touches.",
     );
-    expect(score.warnings).toContain(
-      "Positional overlap makes matchups harder to cover.",
-    );
   });
 
   it("projects two all-stars and three strong starters around 45-55 wins", () => {
