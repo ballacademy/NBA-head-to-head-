@@ -34,6 +34,7 @@ import {
 } from "../lib/teamProfile";
 import { ClassicModeSummary } from "./ClassicModeSummary";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
+import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { LossStreakBadge } from "./LossStreakBadge";
@@ -43,6 +44,17 @@ import { hasFireStreak } from "../lib/winStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions } from "../lib/match";
+
+const CLASSIC_MODE_DETAILS = [
+  "Real 2026-27 salaries.",
+  "Matchmaking pairs similar front offices.",
+];
+
+const PRO_MODE_DETAILS = [
+  "Real 2026-27 salaries.",
+  "Banner matchmaking pairs similar front offices.",
+  "Monthly seasons reset the Top 500.",
+];
 
 interface LandingPageProps {
   collection: PlayerCollection;
@@ -363,9 +375,8 @@ export function LandingPage({
           <p className="head-to-head-card__description">
             Draft a five-player lineup under a $
             {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2026-27 salaries.
-            Banner matchmaking pairs similar front offices; monthly seasons reset
-            the Top 500.
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick.
+            <ModeCardInfo details={CLASSIC_MODE_DETAILS} />
           </p>
           <ClassicModeSummary record={modeRecords.headToHead} />
           <div className="mode-card__actions">
@@ -404,9 +415,8 @@ export function LandingPage({
           <p className="ranked-cap-card__description">
             Draft a five-player lineup under a $
             {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick. Real 2026-27 salaries.
-            Banner matchmaking pairs similar front offices; monthly seasons reset
-            the Top 500.
+            {PICK_TIME_LIMIT_SECONDS} seconds per pick.
+            <ModeCardInfo details={PRO_MODE_DETAILS} />
           </p>
           <RankedModeSummary record={modeRecords.ranked} />
           <div className="mode-card__actions">

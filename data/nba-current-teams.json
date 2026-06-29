@@ -1,15 +1,18 @@
 {
   "description": "Current NBA team overrides synced from ESPN rosters for players traded after the Basketball Reference export window.",
   "source": "espn-roster-api",
-  "rosterAsOf": "2026-06-26",
+  "rosterAsOf": "2026-06-29",
   "overrides": {
     "agbajoc01": "BRK",
+    "allengr01": "CHO",
     "antetgi01": "MIA",
     "baglema01": "DAL",
     "baldwpa01": "SAC",
     "ballla01": "MIN",
     "bassech01": "GSW",
+    "bridgmi02": "PHO",
     "brownko01": "IND",
+    "cartede02": "ATL",
     "carteje01": "ORL",
     "claxtni01": "CHI",
     "claytwa01": "MEM",
@@ -22,6 +25,7 @@
     "evbuoto01": "CHO",
     "garlada01": "LAC",
     "gilbeke01": "ATL",
+    "grantje01": "MEM",
     "greenjo02": "MIN",
     "hallpj01": "CHO",
     "hardyja02": "WAS",
@@ -45,6 +49,9 @@
     "millele01": "CHI",
     "minixri01": "CLE",
     "minotjo01": "BRK",
+    "moranja01": "POR",
+    "murrakr01": "MEM",
+    "onealro01": "CHO",
     "phillju01": "MIN",
     "portibo01": "MIA",
     "randlju01": "BRK",
@@ -60,6 +67,5 @@
     "yabusgu01": "CHI",
     "youngch01": "POR",
     "youngtr01": "WAS"
-  },
-  "updatedAt": "2026-06-26T20:45:46.972888+00:00"
+  }
 }
