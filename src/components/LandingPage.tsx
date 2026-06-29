@@ -264,10 +264,9 @@ export function LandingPage({
       <div className="landing__brand">
         <DraftDayGmLogo className="landing__logo" />
       </div>
-      <h1>Draft your five. Win your way.</h1>
+      <h1>Draft Your Five. Compete Head to Head.</h1>
       <p className="landing__lede">
-        Pick a mode below, name your team, and draft a five-player lineup. You
-        get {PICK_TIME_LIMIT_SECONDS} seconds per pick.
+        Pick a mode below, name your team, and draft a five-player lineup.
       </p>
 
       <div
