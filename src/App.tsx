@@ -586,6 +586,7 @@ function App() {
     setIsDailyDraft(false);
     setIsDailyReview(false);
     setIsDailyOptimalReview(false);
+    setDailyDateKey(getDailyDateKey());
     setAllTimeMode(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
