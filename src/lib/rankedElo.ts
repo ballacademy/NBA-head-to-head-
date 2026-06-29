@@ -16,7 +16,7 @@ export interface RankedTier {
 }
 
 export const RANKED_TIERS: readonly RankedTier[] = [
-  { id: "two-way", label: "Two-Way Contract", minElo: 0, maxElo: 499 },
+  { id: "two-way", label: "Tank Commander", minElo: 0, maxElo: 499 },
   { id: "gleague", label: "G-League GM", minElo: 500, maxElo: 999 },
   { id: "nba-gm", label: "NBA GM", minElo: 1000, maxElo: 1498 },
   { id: "top-gm", label: "Top GM", minElo: 1499, maxElo: 2000 },
@@ -51,6 +51,14 @@ export const formatRatingPoints = (rating: number) =>
 
 export const formatRatingDelta = (delta: number) =>
   `${delta >= 0 ? "+" : ""}${delta} ${RATING_LABEL}`;
+
+export const formatTierBannerRange = (tier: RankedTier) => {
+  if (tier.maxElo === null) {
+    return `${formatRankedElo(tier.minElo)}+ ${RATING_LABEL}`;
+  }
+
+  return `${formatRankedElo(tier.minElo)}–${formatRankedElo(tier.maxElo)} ${RATING_LABEL}`;
+};
 
 export const getPlacementMultiplier = (gamesPlayedBeforeMatch: number) => {
   if (gamesPlayedBeforeMatch >= PLACEMENT_GAMES) {

@@ -3,7 +3,9 @@ import {
   calculateEloChange,
   formatRatingDelta,
   formatRatingPoints,
+  formatTierBannerRange,
   getPlacementMultiplier,
+  RANKED_TIERS,
   getStreakMultiplier,
   getTierForElo,
   LIVE_OPPONENT_ONLY_MIN_ELO,
@@ -14,7 +16,7 @@ import {
 
 describe("rankedElo", () => {
   it("maps elo to front office tiers", () => {
-    expect(getTierForElo(250).label).toBe("Two-Way Contract");
+    expect(getTierForElo(250).label).toBe("Tank Commander");
     expect(getTierForElo(500).label).toBe("G-League GM");
     expect(getTierForElo(1200).label).toBe("NBA GM");
     expect(getTierForElo(1499).label).toBe("Top GM");
@@ -28,6 +30,14 @@ describe("rankedElo", () => {
     expect(formatRatingDelta(-8)).toBe("-8 Banners");
     expect(RATING_LABEL).toBe("Banners");
     expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO)).toBe(true);
+  });
+
+  it("formats tier banner ranges", () => {
+    expect(formatTierBannerRange(RANKED_TIERS[0]!)).toBe("0–499 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[1]!)).toBe("500–999 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[2]!)).toBe("1000–1498 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[3]!)).toBe("1499–2000 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[4]!)).toBe("2001+ Banners");
   });
 
   it("gives larger swings during placement and on streaks", () => {
