@@ -11,8 +11,24 @@ import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
 import {
   blendProjectedWinsWithTeamAnchor,
+  getLineupTeamQualityRawAdjustment,
   getSameTeamRecordAnchor,
 } from "./teamRecordBaseline";
+import {
+  buildLineupShootingProfile,
+  formatLineupShootingNote,
+  hasReliableLineupSpacing,
+  scoreLineupThreePointBonus,
+} from "./lineupShooting";
+import {
+  buildLineupRoleFitProfile,
+  formatLineupRoleFitNote,
+  hasLineupCreation,
+  hasLineupFrontcourt,
+  hasNoCenter,
+  hasTooManyCenters,
+  scoreLineupRoleFit,
+} from "./lineupRoleFit";
 
 export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
@@ -249,19 +265,8 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
           0,
         ) / weightSum
       : 0;
-  const averageThreePoint = weightedAverage(
-    lineup,
-    "threePoint",
-    weights,
-    weightSum,
-  );
   const averageUsage = weightedAverage(lineup, "usage", weights, weightSum);
 
-  const shooters = weightedCount(
-    lineup,
-    weights,
-    (player) => player.threePoint >= 0.375,
-  );
   const stoppers = weightedCount(lineup, weights, isPlusDefenderByGrade);
   const rimProtectors = weightedCount(
     lineup,
@@ -285,7 +290,21 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     weights,
     (player) => player.usage <= 22,
   );
-  const positions = new Set(lineup.map((player) => player.position));
+
+  const shootingProfile = buildLineupShootingProfile(lineup, weights, weightSum);
+  const roleFitProfile = buildLineupRoleFitProfile(
+    lineup,
+    weights,
+    { assists: totals.assists },
+    {
+      stoppers,
+      rimProtectors,
+      engines,
+      connectors,
+      highUsagePlayers,
+      lowUsagePlayers,
+    },
+  );
 
   const production =
     totals.points * 0.45 +
@@ -298,21 +317,9 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     clamp((averageTrueShooting - 0.54) * 260, 0, 34) +
     clamp((averageDefenseGradeRank - 4) * 1.75, 0, 13);
 
-  const threePointBonus =
-    clamp((averageThreePoint - 0.335) * 150, 0, 16) +
-    Math.min(shooters, 4) * 2.3;
+  const threePointBonus = scoreLineupThreePointBonus(shootingProfile);
 
-  let fit = 22;
-  fit += positions.size >= 4 ? 8 : positions.size === 3 ? 4 : -4;
-  fit += stoppers >= 2 ? 7 : stoppers === 1 ? 2 : -6;
-  fit += rimProtectors >= 1 ? 6 : -6;
-  fit += connectors >= 2 ? 6 : connectors === 1 ? 3 : -4;
-  fit += shooters >= 3 ? 6 : shooters === 2 ? 3 : -4;
-  fit += engines >= 1 ? 4 : -3;
-  fit += lowUsagePlayers >= 1 ? 3 : -3;
-  fit -= Math.max(0, highUsagePlayers - 2) * 6;
-  fit -= averageUsage > 31 ? (averageUsage - 31) * 1.2 : 0;
-  fit = clamp(fit, 0, 48);
+  const fit = scoreLineupRoleFit(roleFitProfile, { assists: totals.assists });
 
   const categories: ScoreCategory[] = [
     {
@@ -332,15 +339,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     {
       label: "Three-point bonus",
       value: round(threePointBonus),
-      note: `${shooters} reliable spacers, ${round(
-        averageThreePoint * 100,
-        1,
-      )}% team 3P`,
+      note: formatLineupShootingNote(shootingProfile),
     },
     {
       label: "Team fit",
       value: round(fit),
-      note: `${positions.size} positions, ${stoppers} ${STOPPER_MINIMUM_DEFENSE_GRADE}-or-better defenders, ${rimProtectors} rim protectors`,
+      note: formatLineupRoleFitNote(roleFitProfile, STOPPER_MINIMUM_DEFENSE_GRADE),
     },
   ];
 
@@ -351,7 +355,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     strengths.push("Elite shot quality and true shooting across the lineup.");
   }
 
-  if (shooters >= 3) {
+  if (hasReliableLineupSpacing(shootingProfile)) {
     strengths.push("Enough shooting to keep the floor spaced.");
   } else {
     warnings.push("Spacing is fragile; defenses can load the paint.");
@@ -363,7 +367,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     warnings.push("Not enough defenders to survive elite scorers.");
   }
 
-  if (connectors >= 2 || engines >= 1) {
+  if (hasLineupCreation(roleFitProfile, { assists: totals.assists })) {
     strengths.push("Creation and connective passing should travel well.");
   } else {
     warnings.push("The lineup lacks a reliable table-setter.");
@@ -379,8 +383,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     );
   }
 
-  if (positions.size < 4) {
-    warnings.push("Positional overlap makes matchups harder to cover.");
+  if (hasNoCenter(roleFitProfile)) {
+    warnings.push("No true center makes rim protection and rebounding harder.");
+  } else if (hasTooManyCenters(roleFitProfile)) {
+    warnings.push("Too many centers clog the floor and limit spacing.");
+  } else if (!hasLineupFrontcourt(roleFitProfile)) {
+    warnings.push("The frontcourt is too thin to hold up across matchups.");
   }
 
   const chemistryBonuses = getActiveChemistryBonuses(lineup);
@@ -427,6 +435,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getLineupTierAdjustment(lineup) +
     getImpactRankingAdjustment(lineup) +
     getChemistryAdjustment(lineup) +
+    getLineupTeamQualityRawAdjustment(lineup) +
     getLowScoringLineupPenalty(lineup) +
     getPrimaryScorerLineupPenalty(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);

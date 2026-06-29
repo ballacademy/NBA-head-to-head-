@@ -3,9 +3,12 @@ import { statsFile } from "./playerPool";
 import type { Player } from "./types";
 import { isFreeAgentTeam } from "./freeAgents";
 
-export const SAME_TEAM_RECORD_OVR_WEIGHT = 0.25;
+export const SAME_TEAM_RECORD_OVR_WEIGHT = 0.2;
 export const HEALTHY_STARTER_GAMES = 75;
 export const INJURY_RECOVERY_FACTOR = 0.2;
+export const LEAGUE_AVERAGE_TEAM_WINS = 41;
+export const TEAM_QUALITY_RAW_PER_WIN = 0.35;
+export const TEAM_QUALITY_RAW_CAP = 5;
 const SEASON_LENGTH = 82;
 
 const winsByTeam = teamSeasonBaselines.winsByTeam as Record<string, number>;
@@ -113,3 +116,22 @@ export const blendProjectedWinsWithTeamAnchor = (
       SEASON_LENGTH,
     ),
   );
+
+export const getLineupTeamQualityRawAdjustment = (lineup: Player[]) => {
+  const teamWins = lineup
+    .map((player) => winsByTeam[player.team])
+    .filter((wins): wins is number => wins !== undefined);
+
+  if (teamWins.length === 0) {
+    return 0;
+  }
+
+  const averageTeamWins =
+    teamWins.reduce((sum, wins) => sum + wins, 0) / teamWins.length;
+
+  return clamp(
+    (averageTeamWins - LEAGUE_AVERAGE_TEAM_WINS) * TEAM_QUALITY_RAW_PER_WIN,
+    -TEAM_QUALITY_RAW_CAP,
+    TEAM_QUALITY_RAW_CAP,
+  );
+};
