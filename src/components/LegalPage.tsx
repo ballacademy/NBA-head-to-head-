@@ -14,7 +14,7 @@ function PrivacyPolicyContent() {
       <p className="legal-page__updated">Last updated: {LAST_UPDATED}</p>
       <p>
         Draft Day GM (&quot;we,&quot; &quot;us,&quot; or &quot;the site&quot;) is
-        an independent fan project operated by BALLACADEMY. This Privacy Policy
+        an independent project operated by BALLACADEMY. This Privacy Policy
         explains what information the site stores when you play, why we use it,
         and what choices you have.
       </p>
@@ -183,7 +183,7 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
       <p className="legal-page__updated">Last updated: {LAST_UPDATED}</p>
       <p>
         These Terms of Use (&quot;Terms&quot;) govern your use of Draft Day GM,
-        an independent fan project operated by BALLACADEMY. By using the site,
+        an independent project operated by BALLACADEMY. By using the site,
         you agree to these Terms.
       </p>
 
