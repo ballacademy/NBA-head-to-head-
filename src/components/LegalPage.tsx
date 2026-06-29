@@ -30,7 +30,7 @@ function PrivacyPolicyContent() {
         <li>A random anonymous player ID and derived GM code</li>
         <li>Your chosen team name</li>
         <li>Win/loss records, ratings, streaks, and mode progress</li>
-        <li>Achievement progress, unlocked players, and collection state</li>
+        <li>Badge progress, unlocked players, and collection state</li>
         <li>Daily Draft progress and cached score data</li>
         <li>Draft timer deadlines for the current session</li>
       </ul>

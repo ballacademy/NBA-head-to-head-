@@ -6,6 +6,7 @@ import {
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey, getDailyChallenge } from "../lib/dailyDraft";
+import { getYesterdayDailyBestPreview } from "../lib/dailyDraftPreview";
 import {
   getPlayerDailyDraftEntry,
 } from "../lib/dailyDraftScores";
@@ -45,15 +46,13 @@ import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions } from "../lib/match";
 
-const CLASSIC_MODE_DETAILS = [
-  "Real 2026-27 salaries.",
-  "Matchmaking pairs similar front offices.",
-];
-
-const PRO_MODE_DETAILS = [
-  "Real 2026-27 salaries.",
-  "Banner matchmaking pairs similar front offices.",
-  "Monthly seasons reset the Top 500.",
+const buildHeadToHeadModeDetails = (
+  baseDetails: string[],
+  unlockedCount: number,
+) => [
+  ...baseDetails,
+  `Your draft pool has ${unlockedCount} unlocked players.`,
+  "Win to unlock stars, lose to unlock scrubs.",
 ];
 
 interface LandingPageProps {
@@ -141,8 +140,38 @@ export function LandingPage({
     [todayChallenge.id, todayDateKey],
   );
   const dailyCompleted = Boolean(dailyEntry);
-  const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const isMatchmaking = matchmakingMode != null;
+  const yesterdayBest = useMemo(
+    () => getYesterdayDailyBestPreview(todayDateKey, modeRecords.allTime),
+    [modeRecords.allTime, todayDateKey],
+  );
+  const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
+  const canStartDraft =
+    teamValidation.ok && !isMatchmaking && !collection.pendingUnlock;
+  const classicModeDetails = useMemo(
+    () =>
+      buildHeadToHeadModeDetails(
+        [
+          "Real 2026-27 salaries.",
+          "Matchmaking pairs similar front offices.",
+        ],
+        collection.unlockedIds.length,
+      ),
+    [collection.unlockedIds.length],
+  );
+  const proModeDetails = useMemo(
+    () =>
+      buildHeadToHeadModeDetails(
+        [
+          "Real 2026-27 salaries.",
+          "Banner matchmaking pairs similar front offices.",
+          "Monthly seasons reset the Top 500.",
+        ],
+        collection.unlockedIds.length,
+      ),
+    [collection.unlockedIds.length],
+  );
+  const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const matchmakingLabel =
     matchmakingElapsedSeconds > 0
       ? `Finding opponent… ${matchmakingElapsedSeconds}s`
@@ -158,10 +187,7 @@ export function LandingPage({
     const validation = validateTeamProfile(name);
 
     if (!validation.ok) {
-      if (validation.error === "profanity") {
-        setError(getTeamProfileValidationMessage(validation.error));
-      }
-
+      setError(getTeamProfileValidationMessage(validation.error));
       return;
     }
 
@@ -187,16 +213,7 @@ export function LandingPage({
       return;
     }
 
-    let validation = validateTeamProfile(name);
-
-    if (!validation.ok) {
-      const savedTeam = loadTeamProfile();
-
-      if (savedTeam) {
-        setName(savedTeam.name);
-        validation = { ok: true, profile: savedTeam };
-      }
-    }
+    const validation = validateTeamProfile(name);
 
     if (!validation.ok) {
       setError(getTeamProfileValidationMessage(validation.error));
@@ -224,6 +241,14 @@ export function LandingPage({
       if (collection.pendingUnlock) {
         setShowUnlockModal(true);
       }
+      return;
+    }
+
+    const validation = validateTeamProfile(name);
+
+    if (!validation.ok) {
+      setError(getTeamProfileValidationMessage(validation.error));
+      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -323,6 +348,36 @@ export function LandingPage({
         ) : null}
       </div>
 
+      <div className="landing-profile-strip landing-card landing-card--profile">
+        <div className="landing-profile-strip__stats">
+          <div className="landing-profile-strip__stat">
+            <span className="landing-profile-strip__label">All-Stars</span>
+            <strong>
+              {collectionProgress.unlocked}/{collectionProgress.total}
+            </strong>
+          </div>
+          <div className="landing-profile-strip__stat">
+            <span className="landing-profile-strip__label">Superstars</span>
+            <strong>
+              {collectionProgress.superstarUnlocked}/{collectionProgress.superstarTotal}
+            </strong>
+          </div>
+          <div className="landing-profile-strip__stat">
+            <span className="landing-profile-strip__label">Scrubs</span>
+            <strong>
+              {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
+            </strong>
+          </div>
+          <div className="landing-profile-strip__stat">
+            <span className="landing-profile-strip__label">Pool</span>
+            <strong>{collection.unlockedIds.length}</strong>
+          </div>
+        </div>
+        <p className="landing-profile-strip__meta">
+          Win to unlock stars, lose to unlock scrubs.
+        </p>
+      </div>
+
       <div className="landing-game-modes">
         <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
           <p className="eyebrow">Daily Draft</p>
@@ -342,31 +397,35 @@ export function LandingPage({
             </p>
             <p className="landing-mode-card__record-meta">
               {dailyEntry
-                ? `${dailyPercentileLabel ?? "Daily draft complete"} · Daily draft complete`
+                ? dailyPercentileLabel ?? "Daily draft complete"
                 : "Not played yet today"}
             </p>
           </div>
+          {yesterdayBest ? (
+            <p className="daily-draft-card__yesterday">
+              Yesterday&apos;s best: {yesterdayBest.formattedResult} ·{" "}
+              {yesterdayBest.title}
+            </p>
+          ) : null}
           <div className="daily-draft-card__actions">
             <button
               type="button"
               className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
-              disabled={isMatchmaking || (dailyCompleted && !canViewDailyLineup)}
+              disabled={!canStartDraft || (dailyCompleted && !canViewDailyLineup)}
               onClick={() => void handleDailyAction()}
             >
               {dailyCompleted
                 ? "View my lineup"
                 : "Play Today's Daily Draft"}
             </button>
-            {dailyCompleted ? (
-              <button
-                type="button"
-                className="daily-draft-card__button daily-draft-card__button--secondary"
-                disabled={isMatchmaking || !onViewYesterdayBestDailyLineup}
-                onClick={() => void handleYesterdayBestAction()}
-              >
-                Yesterday&apos;s best
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="daily-draft-card__button daily-draft-card__button--secondary"
+              disabled={!onViewYesterdayBestDailyLineup || isMatchmaking}
+              onClick={() => void handleYesterdayBestAction()}
+            >
+              Yesterday&apos;s best
+            </button>
           </div>
         </div>
 
@@ -376,14 +435,14 @@ export function LandingPage({
             Draft a five-player lineup under a $
             {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
             {PICK_TIME_LIMIT_SECONDS} seconds per pick.
-            <ModeCardInfo details={CLASSIC_MODE_DETAILS} />
+            <ModeCardInfo details={classicModeDetails} />
           </p>
           <ClassicModeSummary record={modeRecords.headToHead} />
           <div className="mode-card__actions">
             <button
               type="button"
               className="landing__primary-button"
-              disabled={isMatchmaking}
+              disabled={!canStartDraft}
               onClick={() => void handleStart()}
             >
               {matchmakingMode === "classic"
@@ -393,7 +452,7 @@ export function LandingPage({
             <button
               type="button"
               className="head-to-head-card__practice-button"
-              disabled={isMatchmaking}
+              disabled={!canStartDraft}
               onClick={() =>
                 void handleStart({
                   practiceMode: true,
@@ -416,14 +475,14 @@ export function LandingPage({
             Draft a five-player lineup under a $
             {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
             {PICK_TIME_LIMIT_SECONDS} seconds per pick.
-            <ModeCardInfo details={PRO_MODE_DETAILS} />
+            <ModeCardInfo details={proModeDetails} />
           </p>
           <RankedModeSummary record={modeRecords.ranked} />
           <div className="mode-card__actions">
             <button
               type="button"
               className="ranked-cap-card__button"
-              disabled={isMatchmaking}
+              disabled={!canStartDraft}
               onClick={() => void handleStart({ salaryCapMode: true })}
             >
               {matchmakingMode === "ranked"
@@ -433,7 +492,7 @@ export function LandingPage({
             <button
               type="button"
               className="ranked-cap-card__practice-button"
-              disabled={isMatchmaking}
+              disabled={!canStartDraft}
               onClick={() =>
                 void handleStart({
                   practiceMode: true,
@@ -468,7 +527,7 @@ export function LandingPage({
               <button
                 type="button"
                 className="all-time-card__button"
-                disabled={isMatchmaking}
+                disabled={!canStartDraft}
                 onClick={() => void handleStart({ allTimeMode: true })}
               >
                 Play All-Time Draft
@@ -508,45 +567,6 @@ export function LandingPage({
         >
           Badges
         </button>
-      </div>
-
-      <div className="collection-progress-card landing-card landing-card--collection">
-        <p className="eyebrow">Your stars &amp; scrubs</p>
-        <div className="collection-progress-card__split">
-          <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">All-Stars</span>
-            <span className="collection-progress-card__value">
-              {collectionProgress.unlocked}/{collectionProgress.total}
-            </span>
-          </div>
-          <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">Superstars</span>
-            <span className="collection-progress-card__value collection-progress-card__value--superstar">
-              {collectionProgress.superstarUnlocked}/{collectionProgress.superstarTotal}
-            </span>
-          </div>
-          <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">Recent All-Stars</span>
-            <span className="collection-progress-card__value collection-progress-card__value--recent">
-              {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}
-            </span>
-          </div>
-          <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">Scrubs</span>
-            <span className="collection-progress-card__value collection-progress-card__value--scrubs">
-              {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
-            </span>
-          </div>
-          <div className="collection-progress-card__column">
-            <span className="collection-progress-card__label">Super Scrubs</span>
-            <span className="collection-progress-card__value collection-progress-card__value--super-scrubs">
-              {collectionProgress.unlockedSuperScrubs}/{collectionProgress.superScrubPool}
-            </span>
-          </div>
-        </div>
-        <p className="collection-progress-card__meta">
-          Win to unlock more stars, lose to unlock scrubs.
-        </p>
       </div>
 
       <p className="landing-disclaimer">
