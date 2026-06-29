@@ -457,12 +457,18 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
         .length >= 3,
   },
   {
-    id: "dynasty",
-    title: "Dynasty",
-    description: "Project at least 70 wins or an 80+ lineup OVR.",
-    emoji: "👑",
-    check: (_lineup, context) =>
-      (context?.projectedWins ?? 0) >= 70 || (context?.lineupOvr ?? 0) >= 80,
+    id: "seventy-wins",
+    title: "70 Wins",
+    description: "Project at least 70 wins.",
+    emoji: "🏆",
+    check: (_lineup, context) => (context?.projectedWins ?? 0) >= 70,
+  },
+  {
+    id: "eighty-ovr",
+    title: "80 OVR",
+    description: "Build an 80+ lineup OVR.",
+    emoji: "⭐",
+    check: (_lineup, context) => (context?.lineupOvr ?? 0) >= 80,
   },
   {
     id: "rebuild",

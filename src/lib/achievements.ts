@@ -14,6 +14,7 @@ const REMOVED_ACHIEVEMENT_IDS = new Set([
   "holiday-hoopers",
   "all-star-weekend",
   "chemistry-class",
+  "dynasty",
 ]);
 
 const LEGACY_ACHIEVEMENT_MIGRATIONS: Record<string, string> = {
@@ -29,6 +30,18 @@ const normalizeUnlockedAchievements = (unlocked: string[]) => {
   const next = new Set<string>();
 
   for (const id of unlocked) {
+    if (id === "dynasty") {
+      if (validIds.has("seventy-wins")) {
+        next.add("seventy-wins");
+      }
+
+      if (validIds.has("eighty-ovr")) {
+        next.add("eighty-ovr");
+      }
+
+      continue;
+    }
+
     if (REMOVED_ACHIEVEMENT_IDS.has(id)) {
       const migrated = LEGACY_ACHIEVEMENT_MIGRATIONS[id];
 
