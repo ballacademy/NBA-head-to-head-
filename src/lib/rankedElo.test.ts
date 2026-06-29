@@ -19,8 +19,11 @@ describe("rankedElo", () => {
     expect(getTierForElo(250).label).toBe("Tank Commander");
     expect(getTierForElo(500).label).toBe("G-League GM");
     expect(getTierForElo(1200).label).toBe("NBA GM");
-    expect(getTierForElo(1499).label).toBe("Top GM");
+    expect(getTierForElo(1499).label).toBe("NBA GM");
+    expect(getTierForElo(1500).label).toBe("Top GM");
     expect(getTierForElo(1750).label).toBe("Top GM");
+    expect(getTierForElo(1999).label).toBe("Top GM");
+    expect(getTierForElo(2000).label).toBe("Generational GM");
     expect(getTierForElo(2100).label).toBe("Generational GM");
   });
 
@@ -35,9 +38,9 @@ describe("rankedElo", () => {
   it("formats tier banner ranges", () => {
     expect(formatTierBannerRange(RANKED_TIERS[0]!)).toBe("0–499 Banners");
     expect(formatTierBannerRange(RANKED_TIERS[1]!)).toBe("500–999 Banners");
-    expect(formatTierBannerRange(RANKED_TIERS[2]!)).toBe("1000–1498 Banners");
-    expect(formatTierBannerRange(RANKED_TIERS[3]!)).toBe("1499–2000 Banners");
-    expect(formatTierBannerRange(RANKED_TIERS[4]!)).toBe("2001+ Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[2]!)).toBe("1000–1499 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[3]!)).toBe("1500–1999 Banners");
+    expect(formatTierBannerRange(RANKED_TIERS[4]!)).toBe("2000+ Banners");
   });
 
   it("gives larger swings during placement and on streaks", () => {
