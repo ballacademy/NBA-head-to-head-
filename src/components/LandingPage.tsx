@@ -21,7 +21,7 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
-import { PICK_TIME_LIMIT_SECONDS, DAILY_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
+import { PICK_TIME_LIMIT_SECONDS, CLASSIC_PICK_TIME_LIMIT_SECONDS, DAILY_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
   RANKED_SALARY_CAP,
@@ -369,8 +369,10 @@ export function LandingPage({
             </strong>
           </div>
           <div className="landing-profile-strip__stat">
-            <span className="landing-profile-strip__label">Pool</span>
-            <strong>{collection.unlockedIds.length}</strong>
+            <span className="landing-profile-strip__label">Recent All-Stars</span>
+            <strong>
+              {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}
+            </strong>
           </div>
         </div>
         <p className="landing-profile-strip__meta">
@@ -430,12 +432,14 @@ export function LandingPage({
         </div>
 
         <div className="head-to-head-card landing-card landing-card--mode">
-          <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
+          <div className="mode-card__header">
+            <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
+            <ModeCardInfo details={classicModeDetails} variant="corner" />
+          </div>
           <p className="head-to-head-card__description">
             Draft a five-player lineup under a $
             {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick.
-            <ModeCardInfo details={classicModeDetails} />
+            {CLASSIC_PICK_TIME_LIMIT_SECONDS} seconds per pick.
           </p>
           <ClassicModeSummary record={modeRecords.headToHead} />
           <div className="mode-card__actions">
@@ -465,17 +469,19 @@ export function LandingPage({
           </div>
           <p className="mode-card__practice-note">
             Practice uses the same ${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
-            opponent. Banners and streaks do not change; badges can still unlock.
+            opponent. Streaks and badges do not change.
           </p>
         </div>
 
         <div className="ranked-cap-card landing-card landing-card--mode">
-          <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
+          <div className="mode-card__header">
+            <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
+            <ModeCardInfo details={proModeDetails} variant="corner" />
+          </div>
           <p className="ranked-cap-card__description">
             Draft a five-player lineup under a $
             {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
             {PICK_TIME_LIMIT_SECONDS} seconds per pick.
-            <ModeCardInfo details={proModeDetails} />
           </p>
           <RankedModeSummary record={modeRecords.ranked} />
           <div className="mode-card__actions">
@@ -506,7 +512,7 @@ export function LandingPage({
           </div>
           <p className="mode-card__practice-note">
             Practice uses the same ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot opponent.
-            Banners and streaks do not change; badges can still unlock.
+            Banners, streaks, and badges do not change.
           </p>
         </div>
 

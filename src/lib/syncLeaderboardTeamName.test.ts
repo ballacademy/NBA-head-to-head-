@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTopLeaderboard, upsertLeaderboardEntry } from "./leaderboard";
 import { recordMatchResult } from "./playerRecord";
-import { saveClassicProfile } from "./classicProfile";
 import { RANKED_STARTING_ELO } from "./rankedElo";
 import { syncTeamNameToLeaderboards } from "./syncLeaderboardTeamName";
 import { loadTeamProfile, saveTeamProfile } from "./teamProfile";
@@ -24,12 +23,6 @@ describe("syncLeaderboardTeamName", () => {
     vi.stubGlobal("localStorage", localStorageMock);
     vi.stubGlobal("crypto", {
       randomUUID: () => "player-sync-test",
-    });
-    saveClassicProfile({
-      playerId: "player-sync-test",
-      elo: 640,
-      peakElo: 640,
-      classicGamesPlayed: 3,
     });
     recordMatchResult("win", "headToHead");
     upsertLeaderboardEntry({

@@ -6,7 +6,6 @@ import {
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
 import {
   RANKED_STARTING_ELO,
-  RATING_LABEL,
   formatRankedElo,
   getTierForElo,
 } from "./rankedElo";
@@ -180,8 +179,6 @@ export const getTopLeaderboard = (
 
 export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
   switch (sort) {
-    case "elo":
-      return `Showing top ${LEADERBOARD_LIMIT} real front offices by ${RATING_LABEL}.`;
     case "lossStreak":
       return `Showing top ${LEADERBOARD_LIMIT} real front offices by active loss streak.`;
     default:

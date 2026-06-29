@@ -67,7 +67,7 @@ import {
   submitLiveMatchLineup,
   waitForLiveOpponentLineup,
 } from "./lib/liveMatchmaking";
-import { ensureClassicProfile } from "./lib/classicProfile";
+import { RANKED_STARTING_ELO } from "./lib/rankedElo";
 import {
   ensurePlayerCollection,
   getDraftablePlayers,
@@ -346,7 +346,7 @@ function App() {
       const playerId = getOrCreatePlayerIdentity().playerId;
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
-        : ensureClassicProfile().elo;
+        : RANKED_STARTING_ELO;
       const resolution = await planHeadToHeadMatchmaking({
         mode: nextMatchmakingMode,
         playerId,

@@ -2129,6 +2129,32 @@ main {
   margin-left: 6px;
 }
 
+.mode-card-info--corner {
+  position: relative;
+  display: inline-flex;
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+.mode-card-info--corner .mode-card-info__popover {
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.mode-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.mode-card__header .eyebrow {
+  margin: 0;
+}
+
 .mode-card-info__button {
   display: inline-flex;
   align-items: center;
@@ -2334,6 +2360,21 @@ main {
 
 .ranked-cap-card__practice-button:hover:not(:disabled) {
   background: rgba(59, 130, 246, 0.18);
+}
+
+.leaderboard__tabs--views {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.leaderboard__tabs--views button {
+  width: 100%;
+  text-align: center;
+}
+
+.leaderboard-card__metrics--no-tier {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .leaderboard__tabs--secondary {

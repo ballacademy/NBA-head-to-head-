@@ -22,9 +22,8 @@ import {
   getRemainingSalaryCap,
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
-import { getClassicProfileView } from "../lib/classicProfile";
-import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 import { getRankedProfileView } from "../lib/rankedProfile";
+import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 import { formatRatingPoints } from "../lib/rankedElo";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
@@ -58,9 +57,12 @@ export function DraftRoom({
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(() =>
-    getPickTimeLimitSeconds(isDailyDraft),
+    getPickTimeLimitSeconds(isDailyDraft, drafter.salaryCapMode),
   );
-  const pickTimeLimitSeconds = getPickTimeLimitSeconds(isDailyDraft);
+  const pickTimeLimitSeconds = getPickTimeLimitSeconds(
+    isDailyDraft,
+    drafter.salaryCapMode,
+  );
   const timeoutFiredRef = useRef(false);
 
   const currentSlot = drafter.draftSlots[activeStep];
@@ -81,10 +83,8 @@ export function DraftRoom({
   const hasSalaryCap = salaryCapLimit != null;
   const rankedProfile =
     !isPracticeMode && drafter.salaryCapMode ? getRankedProfileView() : null;
-  const classicProfile =
-    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode
-      ? getClassicProfileView()
-      : null;
+  const isClassicHeadToHead =
+    hasSalaryCap && !drafter.salaryCapMode && !isPracticeMode;
   const salaryCapOptions = useMemo(
     () =>
       getSalaryCapDraftOptions(
@@ -248,17 +248,19 @@ export function DraftRoom({
             {isPracticeMode
               ? "Practice mode"
               : drafter.salaryCapMode
-                ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label}`
-                : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label}`}
+                ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
+                : CLASSIC_HEAD_TO_HEAD_LABEL}
           </p>
           {isPracticeMode ? (
             <p className="salary-cap-banner__rating">
               Bot opponent • ratings do not change
             </p>
-          ) : rankedProfile || classicProfile ? (
+          ) : rankedProfile ? (
             <p className="salary-cap-banner__rating">
-              {formatRatingPoints((rankedProfile ?? classicProfile)!.elo)}
+              {formatRatingPoints(rankedProfile.elo)}
             </p>
+          ) : isClassicHeadToHead ? (
+            <p className="salary-cap-banner__rating">Casual mode • no Banners</p>
           ) : null}
           <p className="salary-cap-banner__cap">
             <span className="salary-cap-banner__spent">

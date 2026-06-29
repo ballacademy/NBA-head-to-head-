@@ -20,10 +20,9 @@ import {
   submitStoredLineup,
 } from "../lib/ghostMatchmaking";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
-import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
-import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
-import type { ClassicMatchOutcome, RankedMatchOutcome } from "../lib/matchOutcome";
+import { formatRatingDelta, formatRatingPoints, RANKED_STARTING_ELO } from "../lib/rankedElo";
+import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
   formatProjectedSeasonRecord,
@@ -71,7 +70,6 @@ export function MatchResults({
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
-  const [classicOutcome, setClassicOutcome] = useState<ClassicMatchOutcome | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
@@ -96,9 +94,6 @@ export function MatchResults({
 
     if (!user.practiceMode) {
       const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
-      const challengerEloBefore = user.salaryCapMode
-        ? ensureCurrentRankedSeason().elo
-        : ensureClassicProfile().elo;
       const outcome = persistMatchOutcome(
         matchResult,
         { name: user.name },
@@ -109,10 +104,6 @@ export function MatchResults({
 
       if (outcome.ranked) {
         setRankedOutcome(outcome.ranked);
-      }
-
-      if (outcome.classic) {
-        setClassicOutcome(outcome.classic);
       }
 
       const next = processMatchUnlock(matchResult, matchId, collection);
@@ -127,7 +118,7 @@ export function MatchResults({
       const playerId = getOrCreatePlayerIdentity().playerId;
       const challengerEloBefore = user.salaryCapMode
         ? ensureCurrentRankedSeason().elo
-        : ensureClassicProfile().elo;
+        : RANKED_STARTING_ELO;
       const storedLineupId = opponent.isGhostOpponent
         ? extractGhostStoredLineupId(opponent.id)
         : null;
@@ -152,7 +143,7 @@ export function MatchResults({
         lineup: user.lineup.filter((id): id is string => Boolean(id)),
         elo: user.salaryCapMode
           ? ensureCurrentRankedSeason().elo
-          : ensureClassicProfile().elo,
+          : RANKED_STARTING_ELO,
       });
     }
   }, [
@@ -177,7 +168,7 @@ export function MatchResults({
   ]);
 
   useLayoutEffect(() => {
-    if (achievementsCheckedRef.current || userLineup.length !== 5) {
+    if (achievementsCheckedRef.current || userLineup.length !== 5 || user.practiceMode) {
       return;
     }
 
@@ -190,7 +181,7 @@ export function MatchResults({
     );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
-  }, [userLineup]);
+  }, [user.practiceMode, userLineup, user.salaryCapLimit]);
 
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, matchCollection);
@@ -254,13 +245,6 @@ export function MatchResults({
                 {formatRatingPoints(rankedOutcome.elo)})
               </>
             ) : null}
-            {matchRecordMode === "headToHead" && classicOutcome && !user.practiceMode ? (
-              <>
-                {" "}
-                • {formatRatingDelta(classicOutcome.delta)} (
-                {formatRatingPoints(classicOutcome.elo)})
-              </>
-            ) : null}
           </p>
           {matchRecordMode === "ranked" && rankedOutcome && !user.practiceMode ? (
             <div className="matchup-panel__ranked">
@@ -270,17 +254,6 @@ export function MatchResults({
               />
               <p className="matchup-panel__ranked-note">
                 Matched vs {formatRatingPoints(rankedOutcome.opponentElo)} opponent
-              </p>
-            </div>
-          ) : null}
-          {matchRecordMode === "headToHead" && classicOutcome && !user.practiceMode ? (
-            <div className="matchup-panel__ranked">
-              <RankedTierBadge
-                tierLabel={classicOutcome.tierLabel}
-                elo={classicOutcome.elo}
-              />
-              <p className="matchup-panel__ranked-note">
-                Matched vs {formatRatingPoints(classicOutcome.opponentElo)} opponent
               </p>
             </div>
           ) : null}

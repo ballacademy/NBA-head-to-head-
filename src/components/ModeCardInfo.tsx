@@ -2,9 +2,10 @@ import { useEffect, useId, useRef, useState } from "react";
 
 interface ModeCardInfoProps {
   details: string[];
+  variant?: "inline" | "corner";
 }
 
-export function ModeCardInfo({ details }: ModeCardInfoProps) {
+export function ModeCardInfo({ details, variant = "inline" }: ModeCardInfoProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const popoverId = useId();
@@ -36,7 +37,12 @@ export function ModeCardInfo({ details }: ModeCardInfoProps) {
   }, [open]);
 
   return (
-    <span className="mode-card-info" ref={rootRef}>
+    <span
+      className={`mode-card-info${
+        variant === "corner" ? " mode-card-info--corner" : ""
+      }`}
+      ref={rootRef}
+    >
       <button
         type="button"
         className="mode-card-info__button"
