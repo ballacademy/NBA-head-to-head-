@@ -15,11 +15,11 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 51 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(51);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(51);
+  it("defines 52 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(52);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(52);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      51,
+      52,
     );
   });
 
@@ -155,7 +155,7 @@ describe("achievements", () => {
     expect(checkLineupAchievements(lineup)).toContain("alphabet-squad");
   });
 
-  it("detects dynasty, rebuild, and ultra record badges from lineup score context", () => {
+  it("detects win/OVR milestones, rebuild, and ultra record badges from lineup score context", () => {
     const lineup = players.slice(0, 5);
 
     expect(
@@ -163,13 +163,21 @@ describe("achievements", () => {
         projectedWins: 71,
         lineupOvr: 79,
       }),
-    ).toContain("dynasty");
+    ).toContain("seventy-wins");
     expect(
       checkLineupAchievements(lineup, {
         projectedWins: 52,
         lineupOvr: 80,
       }),
-    ).toContain("dynasty");
+    ).toContain("eighty-ovr");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 71,
+        lineupOvr: 80,
+      }),
+    ).toEqual(
+      expect.arrayContaining(["seventy-wins", "eighty-ovr"]),
+    );
     expect(
       checkLineupAchievements(lineup, {
         projectedWins: 19,
@@ -182,7 +190,12 @@ describe("achievements", () => {
         lineupOvr: 100,
       }),
     ).toEqual(
-      expect.arrayContaining(["eighty-two-wins", "max-ovr", "dynasty"]),
+      expect.arrayContaining([
+        "eighty-two-wins",
+        "max-ovr",
+        "seventy-wins",
+        "eighty-ovr",
+      ]),
     );
   });
 
@@ -218,7 +231,7 @@ describe("achievements", () => {
     const progress = getAchievementProgress({ unlocked: ["nepotism"] });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(51);
+    expect(progress.total).toBe(52);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
