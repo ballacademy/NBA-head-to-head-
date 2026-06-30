@@ -193,6 +193,47 @@ describe("draft constraints", () => {
     ]);
   });
 
+  it("sorts daily draft candidates alphabetically when requested", () => {
+    const makeNamedCandidate = (name: string, points: number): Player => ({
+      id: name,
+      name,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG"],
+      jerseyNumber: 1,
+      points,
+      rebounds: 5,
+      assists: 3,
+      steals: 1,
+      blocks: 0.5,
+      turnovers: 2,
+      trueShooting: 0.58,
+      threePoint: 0.36,
+      threePointersAttempted: 5,
+      fieldGoalsAttempted: 12,
+      minutes: 30,
+      heightInches: 76,
+      usage: 24,
+      defense: 7,
+      gamesPlayed: 40,
+      styles: ["connector"],
+    });
+    const sorted = sortDraftCandidates(
+      [
+        makeNamedCandidate("Zion Candidate", 30),
+        makeNamedCandidate("Aaron Candidate", 12),
+        makeNamedCandidate("Mike Candidate", 24),
+      ],
+      "alphabetical",
+    );
+
+    expect(sorted.map((player) => player.name)).toEqual([
+      "Aaron Candidate",
+      "Mike Candidate",
+      "Zion Candidate",
+    ]);
+  });
+
   it("favors two guards, two forwards, and one center", () => {
     const simulations = 5000;
     let balancedCount = 0;

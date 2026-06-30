@@ -138,6 +138,7 @@ export function DraftRoom({
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = sortDraftCandidates(
       filterPlayersForSlot(players, currentSlot, pickedIds, salaryCapOptions),
+      isDailyDraft ? "alphabetical" : "points",
     );
 
     if (!normalizedQuery) {
@@ -147,7 +148,7 @@ export function DraftRoom({
     return filtered.filter((player) =>
       `${player.name} ${player.team}`.toLowerCase().includes(normalizedQuery),
     );
-  }, [currentSlot, pickedIds, players, query, salaryCapOptions]);
+  }, [currentSlot, isDailyDraft, pickedIds, players, query, salaryCapOptions]);
 
   useEffect(() => {
     setQuery("");

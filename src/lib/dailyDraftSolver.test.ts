@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { autoDraftLineup } from "./draft";
 import { getDailyDraftSetup } from "./dailyDraft";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
+import { DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
 import { getDivisionForTeam } from "./divisions";
 import { playerMatchesPosition } from "./positions";
 import { players } from "./playerPool";
@@ -83,5 +84,36 @@ describe("solveBestDailyDraftLineup", () => {
     expect(second.map((player) => player.id)).toEqual(
       first.map((player) => player.id),
     );
+  });
+
+  it("does not reuse cached results when the goal changes for the same date key", () => {
+    clearDailyDraftSolverCacheForTests();
+    const setup = getDailyDraftSetup("2026-06-17");
+    const alternateGoal = DAILY_DRAFT_GOALS.find((goal) => goal.id !== setup.goal.id)!;
+    const primary = solveBestDailyDraftLineup(
+      players,
+      setup.slots,
+      setup.goal,
+      setup.dateKey,
+    );
+    const alternate = solveBestDailyDraftLineup(
+      players,
+      setup.slots,
+      alternateGoal,
+      setup.dateKey,
+    );
+    const primaryScore = buildDailyGoalResult(primary, setup.goal).value;
+    const alternateScore = buildDailyGoalResult(alternate, alternateGoal).value;
+    const primaryAsAlternate = buildDailyGoalResult(primary, alternateGoal).value;
+
+    expect(buildDailyGoalResult(alternate, alternateGoal).formatted).not.toBe(
+      buildDailyGoalResult(primary, setup.goal).formatted,
+    );
+
+    if (alternateGoal.direction === "higher") {
+      expect(alternateScore).toBeGreaterThanOrEqual(primaryAsAlternate);
+    } else {
+      expect(alternateScore).toBeLessThanOrEqual(primaryAsAlternate);
+    }
   });
 });
