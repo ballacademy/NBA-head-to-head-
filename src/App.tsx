@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { players } from "./data/players";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
@@ -140,6 +140,8 @@ function App() {
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
   );
+  const [landingRenderKey, setLandingRenderKey] = useState(0);
+  const skipPopStateResetRef = useRef(false);
 
   useEffect(() => {
     ensureCurrentRankedSeason();
@@ -613,15 +615,19 @@ function App() {
     setShowDraftOnboarding(false);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
+    setLandingRenderKey((current) => current + 1);
   };
 
   const exitFeaturePage = useCallback(() => {
-    if (FEATURE_PHASES.has(phase)) {
-      window.history.back();
-      return;
-    }
+    const shouldNavigateBack =
+      FEATURE_PHASES.has(phase) && window.history.state?.appPhase;
 
     resetToLanding();
+
+    if (shouldNavigateBack) {
+      skipPopStateResetRef.current = true;
+      window.history.back();
+    }
   }, [phase]);
 
   const replayLastMode = async () => {
@@ -975,7 +981,23 @@ function App() {
     }
   }, [phase, opponentComplete]);
 
+  useLayoutEffect(() => {
+    if (phase !== "landing") {
+      return;
+    }
+
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+  }, [phase, landingRenderKey]);
+
   useEffect(() => {
+    if (phase === "landing") {
+      return;
+    }
+
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -991,6 +1013,11 @@ function App() {
     window.history.pushState({ appPhase: phase }, "");
 
     const handlePopState = () => {
+      if (skipPopStateResetRef.current) {
+        skipPopStateResetRef.current = false;
+        return;
+      }
+
       resetToLanding();
     };
 
@@ -1063,7 +1090,7 @@ function App() {
 
   if (phase === "landing") {
     return (
-      <main className="landing-layout">
+      <main className="landing-layout" key={landingRenderKey}>
         <LandingPage
           collection={collection}
           modeRecords={modeRecords}
