@@ -183,14 +183,14 @@ export function PlayerStatsTable({
     <section className="panel stats-panel feature-page feature-page--stats" aria-labelledby="stats-heading">
       <div className="stats-panel__header">
         <div className="section-heading stats-panel__heading">
-          <p className="eyebrow">Season stats</p>
+          <p className="eyebrow">Season Stats</p>
           <div className="stats-panel__title-row">
             <h2 id="stats-heading">Browse the player pool</h2>
             <ModeCardInfo
               details={statsInfoDetails}
               variant="corner"
               popoverAlign="start"
-              ariaLabel="Season stats details"
+              ariaLabel="Season Stats details"
             />
           </div>
         </div>

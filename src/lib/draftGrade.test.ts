@@ -22,7 +22,7 @@ describe("draftGrade", () => {
       87,
     );
 
-    expect(shareText).toContain("H2H Daily Draft 2026-06-15");
+    expect(shareText).toContain("Draft Day GM Daily Draft 2026-06-15");
     expect(shareText).toContain("Splash Zone");
     expect(shareText).toContain("42.3% from 3");
     expect(shareText).toContain("87th percentile");
