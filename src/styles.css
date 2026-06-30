@@ -24,12 +24,6 @@ html {
   background: var(--bg-deep);
 }
 
-html.stats-page-open,
-html.stats-page-open body {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
-
 body {
   margin: 0;
   min-width: 320px;
@@ -341,8 +335,7 @@ main {
 .landing-layout--stats {
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
-  touch-action: pan-y;
+  overflow-x: clip;
 }
 
 .landing-layout--stats > * {
@@ -1496,11 +1489,10 @@ main {
 
 .feature-page--stats {
   border-color: rgba(59, 130, 246, 0.38);
-  overflow-x: hidden;
+  overflow: visible;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  touch-action: pan-y;
   background:
     linear-gradient(
       145deg,
@@ -3832,12 +3824,8 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 12px 0;
-  background: rgba(15, 23, 42, 0.96);
-  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 4;
 }
 
 .stats-panel__header .section-heading,
@@ -4557,7 +4545,6 @@ main {
   width: min(920px, 100%);
   max-width: 100%;
   margin-top: 28px;
-  overflow-x: hidden;
   min-width: 0;
 }
 
@@ -4597,14 +4584,12 @@ main {
 
 .stats-table-wrap {
   overflow-x: auto;
-  overflow-y: hidden;
   max-width: 100%;
   width: 100%;
   min-width: 0;
   border: 1px solid var(--panel-border);
   border-radius: 18px;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
 }
 
 .stats-table {
