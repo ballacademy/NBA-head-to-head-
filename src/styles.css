@@ -787,19 +787,16 @@ main {
 .win-streak-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   flex-shrink: 0;
   margin-left: 8px;
   vertical-align: middle;
   overflow: visible;
-  opacity: 0.9;
 }
 
-.win-streak-badge__emoji {
-  display: block;
-  font-size: 1.35rem;
-  line-height: 1;
-  opacity: 0.95;
+.win-streak-badge__icon {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .win-streak-badge__count {
@@ -809,36 +806,111 @@ main {
   line-height: 1;
 }
 
+.win-streak-badge--orange .streak-icon__flame--outer {
+  fill: #f97316;
+}
+
+.win-streak-badge--orange .streak-icon__flame--inner {
+  fill: #fdba74;
+}
+
+.win-streak-badge--orange .streak-icon__flame--core {
+  fill: #fff7ed;
+}
+
+.win-streak-badge--red .win-streak-badge__icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.win-streak-badge--red .streak-icon__flame--outer {
+  fill: #ef4444;
+}
+
+.win-streak-badge--red .streak-icon__flame--inner {
+  fill: #fca5a5;
+}
+
+.win-streak-badge--red .streak-icon__flame--core {
+  fill: #fef2f2;
+}
+
 .win-streak-badge--red .win-streak-badge__count {
   color: #fca5a5;
+}
+
+.win-streak-badge--blue .win-streak-badge__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.win-streak-badge--blue .streak-icon__flame--outer {
+  fill: #3b82f6;
+}
+
+.win-streak-badge--blue .streak-icon__flame--inner {
+  fill: #93c5fd;
+}
+
+.win-streak-badge--blue .streak-icon__flame--core {
+  fill: #dbeafe;
+}
+
+.win-streak-badge--blue .streak-icon__bolt {
+  fill: #fef08a;
 }
 
 .win-streak-badge--blue .win-streak-badge__count {
   color: #93c5fd;
 }
 
+.win-streak-badge--purple .win-streak-badge__icon {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.win-streak-badge--purple .streak-icon__flame--outer {
+  fill: #a855f7;
+}
+
+.win-streak-badge--purple .streak-icon__flame--inner {
+  fill: #d8b4fe;
+}
+
+.win-streak-badge--purple .streak-icon__flame--core {
+  fill: #f3e8ff;
+}
+
 .win-streak-badge--purple .win-streak-badge__count {
   color: #d8b4fe;
 }
 
+.win-streak-badge--black .win-streak-badge__icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.win-streak-badge--black .streak-icon__flame--outer {
+  fill: #f59e0b;
+}
+
+.win-streak-badge--black .streak-icon__flame--inner {
+  fill: #fde68a;
+}
+
+.win-streak-badge--black .streak-icon__flame--core {
+  fill: #fffbeb;
+}
+
+.win-streak-badge--black .streak-icon__crown {
+  fill: #fef3c7;
+  stroke: #d97706;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
 .win-streak-badge--black .win-streak-badge__count {
   color: #fde68a;
-}
-
-.win-streak-badge--red .win-streak-badge__emoji {
-  font-size: 1.25rem;
-}
-
-.win-streak-badge--blue .win-streak-badge__emoji {
-  font-size: 1.4rem;
-}
-
-.win-streak-badge--purple .win-streak-badge__emoji {
-  font-size: 1.45rem;
-}
-
-.win-streak-badge--black .win-streak-badge__emoji {
-  font-size: 1.5rem;
 }
 
 .loss-streak-badge {
@@ -849,32 +921,11 @@ main {
   margin-left: 8px;
   vertical-align: middle;
   overflow: visible;
-  opacity: 0.95;
 }
 
 .loss-streak-badge__icon {
-  position: relative;
-  display: inline-flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
-}
-
-.loss-streak-badge__can {
-  display: block;
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
-.loss-streak-badge__fire {
-  position: absolute;
-  top: -0.42rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.82rem;
-  line-height: 1;
-  filter: saturate(1.2);
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .loss-streak-badge__count {
@@ -884,56 +935,92 @@ main {
   line-height: 1;
 }
 
-.loss-streak-badge--orange .loss-streak-badge__fire {
-  filter: saturate(1.35) hue-rotate(-8deg);
+.loss-streak-badge .streak-icon__bin {
+  fill: #64748b;
 }
 
-.loss-streak-badge--red .loss-streak-badge__fire {
-  filter: saturate(1.5) hue-rotate(-18deg) brightness(1.05);
+.loss-streak-badge .streak-icon__bin-lid {
+  fill: #475569;
+}
+
+.loss-streak-badge .streak-icon__bin-rim {
+  stroke: #94a3b8;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.loss-streak-badge--orange .streak-icon__flame--left,
+.loss-streak-badge--orange .streak-icon__flame--center,
+.loss-streak-badge--orange .streak-icon__flame--right {
+  fill: #f97316;
+}
+
+.loss-streak-badge--red .loss-streak-badge__icon {
+  width: 1.22rem;
+  height: 1.22rem;
+}
+
+.loss-streak-badge--red .streak-icon__flame--left,
+.loss-streak-badge--red .streak-icon__flame--center,
+.loss-streak-badge--red .streak-icon__flame--right {
+  fill: #ef4444;
 }
 
 .loss-streak-badge--red .loss-streak-badge__count {
   color: #fca5a5;
 }
 
-.loss-streak-badge--blue .loss-streak-badge__fire {
-  filter: saturate(1.4) hue-rotate(165deg) brightness(1.08);
+.loss-streak-badge--blue .loss-streak-badge__icon {
+  width: 1.24rem;
+  height: 1.24rem;
+}
+
+.loss-streak-badge--blue .streak-icon__flame--left,
+.loss-streak-badge--blue .streak-icon__flame--center,
+.loss-streak-badge--blue .streak-icon__flame--right {
+  fill: #38bdf8;
 }
 
 .loss-streak-badge--blue .loss-streak-badge__count {
   color: #93c5fd;
 }
 
-.loss-streak-badge--purple .loss-streak-badge__fire {
-  filter: saturate(1.45) hue-rotate(250deg) brightness(1.02);
+.loss-streak-badge--purple .loss-streak-badge__icon {
+  width: 1.26rem;
+  height: 1.26rem;
+}
+
+.loss-streak-badge--purple .streak-icon__flame--left,
+.loss-streak-badge--purple .streak-icon__flame--center,
+.loss-streak-badge--purple .streak-icon__flame--right {
+  fill: #a855f7;
 }
 
 .loss-streak-badge--purple .loss-streak-badge__count {
   color: #d8b4fe;
 }
 
-.loss-streak-badge--black .loss-streak-badge__fire {
-  filter: saturate(1.6) hue-rotate(-28deg) brightness(0.92) contrast(1.15);
+.loss-streak-badge--black .loss-streak-badge__icon {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.loss-streak-badge--black .streak-icon__flame--left,
+.loss-streak-badge--black .streak-icon__flame--center,
+.loss-streak-badge--black .streak-icon__flame--right {
+  fill: #dc2626;
+}
+
+.loss-streak-badge--black .streak-icon__smoke {
+  stroke: #475569;
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
 }
 
 .loss-streak-badge--black .loss-streak-badge__count {
   color: #fecaca;
-}
-
-.loss-streak-badge--red .loss-streak-badge__can {
-  font-size: 1rem;
-}
-
-.loss-streak-badge--blue .loss-streak-badge__can {
-  font-size: 1.02rem;
-}
-
-.loss-streak-badge--purple .loss-streak-badge__can {
-  font-size: 1.05rem;
-}
-
-.loss-streak-badge--black .loss-streak-badge__can {
-  font-size: 1.08rem;
 }
 
 .play-again-button {

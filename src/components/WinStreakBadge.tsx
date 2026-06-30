@@ -1,17 +1,9 @@
-import type { WinStreakTierId } from "../lib/winStreak";
 import { getWinStreakTier } from "../lib/winStreak";
+import { WinStreakIcon } from "./StreakIcons";
 
 interface WinStreakBadgeProps {
   winStreak: number;
 }
-
-const TIER_EMOJI: Record<WinStreakTierId, string> = {
-  orange: "🔥",
-  red: "🔥",
-  blue: "⚡",
-  purple: "💜",
-  black: "👑",
-};
 
 export function WinStreakBadge({ winStreak }: WinStreakBadgeProps) {
   const tier = getWinStreakTier(winStreak);
@@ -26,9 +18,7 @@ export function WinStreakBadge({ winStreak }: WinStreakBadgeProps) {
       aria-label={`${winStreak} game ${tier.label.toLowerCase()}`}
       title={`${winStreak} game ${tier.label.toLowerCase()}`}
     >
-      <span className="win-streak-badge__emoji" aria-hidden="true">
-        {TIER_EMOJI[tier.id]}
-      </span>
+      <WinStreakIcon tier={tier.id} className="win-streak-badge__icon" />
       <span className="win-streak-badge__count">{winStreak}</span>
     </span>
   );
