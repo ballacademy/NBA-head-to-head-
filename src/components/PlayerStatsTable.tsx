@@ -143,6 +143,13 @@ export function PlayerStatsTable({
       : players;
 
     return [...matches].sort((a, b) => {
+      const aMasked = isPlayerStatsMasked(a, collection);
+      const bMasked = isPlayerStatsMasked(b, collection);
+
+      if (aMasked !== bMasked) {
+        return aMasked ? 1 : -1;
+      }
+
       if (sortKey === "team") {
         return comparePlayersForTeamColumn(a, b, sortDirection);
       }

@@ -50,6 +50,9 @@ export function DailyDraftResults({
   const achievementsCheckedRef = useRef(false);
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
+  const [percentileReady, setPercentileReady] = useState(
+    reviewOnly || optimalReview,
+  );
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const goalResult = useMemo(
@@ -94,6 +97,7 @@ export function DailyDraftResults({
         user.name,
       );
       setPercentileResult(result);
+      setPercentileReady(true);
     })();
   }, [
     benchmarkValues,
@@ -108,7 +112,7 @@ export function DailyDraftResults({
   ]);
 
   useEffect(() => {
-    if (optimalReview) {
+    if (optimalReview || reviewOnly || !percentileReady) {
       return;
     }
 
@@ -143,6 +147,8 @@ export function DailyDraftResults({
     dailyGoal,
     goalResult.value,
     optimalReview,
+    percentileReady,
+    reviewOnly,
   ]);
 
   useLayoutEffect(() => {

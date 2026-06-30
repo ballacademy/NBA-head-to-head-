@@ -6,17 +6,20 @@ interface ModeCardInfoProps {
   variant?: "inline" | "corner";
   popoverAlign?: "start" | "center" | "end";
   ariaLabel?: string;
+  popoverClassName?: string;
 }
 
 const POPOVER_WIDTH = 280;
 const POPOVER_MARGIN = 12;
 const POPOVER_GAP = 8;
+const DISMISS_CLICK_GUARD_MS = 400;
 
 export function ModeCardInfo({
   details,
   variant = "inline",
   popoverAlign,
   ariaLabel = "Mode details",
+  popoverClassName = "",
 }: ModeCardInfoProps) {
   const [open, setOpen] = useState(false);
   const [popoverStyle, setPopoverStyle] = useState<{
@@ -27,9 +30,18 @@ export function ModeCardInfo({
   const rootRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLSpanElement>(null);
+  const suppressClickRef = useRef(false);
   const popoverId = useId();
   const resolvedAlign =
     popoverAlign ?? (variant === "corner" ? "end" : "center");
+
+  const closePopover = () => {
+    setOpen(false);
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, DISMISS_CLICK_GUARD_MS);
+  };
 
   const updatePopoverPosition = () => {
     const button = buttonRef.current;
@@ -92,13 +104,14 @@ export function ModeCardInfo({
       const clickedInsidePopover = popoverRef.current?.contains(target);
 
       if (!clickedInsideRoot && !clickedInsidePopover) {
-        setOpen(false);
+        closePopover();
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        event.stopPropagation();
+        closePopover();
       }
     };
 
@@ -116,7 +129,7 @@ export function ModeCardInfo({
   const popover =
     open && popoverStyle ? (
       <span
-        className={`mode-card-info__popover mode-card-info__popover--fixed mode-card-info__popover--align-${resolvedAlign}`}
+        className={`mode-card-info__popover mode-card-info__popover--fixed mode-card-info__popover--align-${resolvedAlign}${popoverClassName ? ` ${popoverClassName}` : ""}`}
         id={popoverId}
         ref={popoverRef}
         role="tooltip"
@@ -148,7 +161,13 @@ export function ModeCardInfo({
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={popoverId}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (suppressClickRef.current) {
+            return;
+          }
+
+          setOpen((current) => !current);
+        }}
       >
         i
       </button>

@@ -587,9 +587,11 @@ export const pickRandomTopCandidateForSlot = (
   options: DraftFilterOptions = {},
   topCount = 5,
   random: RandomSource = defaultRandom,
+  sortMode: "points" | "alphabetical" = "points",
 ) => {
   const candidates = sortDraftCandidates(
     filterPlayersForSlot(players, slot, pickedIds, options),
+    sortMode,
   );
   const poolSize = Math.min(topCount, candidates.length);
 
@@ -605,6 +607,7 @@ export const autoDraftLineupWithVariance = (
   draftSlots: DraftSlotConstraint[],
   random: RandomSource = defaultRandom,
   varianceDepth = 3,
+  sortMode: "points" | "alphabetical" = "points",
 ) => {
   const lineup: string[] = [];
   const pickedIds = new Set<string>();
@@ -612,6 +615,7 @@ export const autoDraftLineupWithVariance = (
   for (const slot of draftSlots) {
     const candidates = sortDraftCandidates(
       filterPlayersForSlot(players, slot, pickedIds),
+      sortMode,
     );
     const poolSize = Math.min(varianceDepth, candidates.length);
 

@@ -298,6 +298,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   variant="corner"
                   popoverAlign="start"
                   ariaLabel="Banner tier ranges"
+                  popoverClassName="mode-card-info__popover--leaderboard"
                 />
               </span>
             </div>

@@ -6,7 +6,11 @@ import {
 import { autoDraftLineupWithVariance } from "./draft";
 import { getDailySeed } from "./dailyDraft";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
-import type { DailyDraftGoal, DailyGoalDirection } from "./dailyDraftGoals";
+import {
+  getDailyGoalById,
+  type DailyDraftGoal,
+  type DailyGoalDirection,
+} from "./dailyDraftGoals";
 import { getOrCreatePlayerId } from "./playerRecord";
 import { getPlayersById } from "./scoring";
 import type { DraftSlotConstraint, Player } from "./types";
@@ -107,7 +111,13 @@ export const simulateDailyBenchmarkValues = (
   const values: number[] = [];
 
   for (let index = 0; index < samples; index += 1) {
-    const lineupIds = autoDraftLineupWithVariance(players, slots, random);
+    const lineupIds = autoDraftLineupWithVariance(
+      players,
+      slots,
+      random,
+      3,
+      "alphabetical",
+    );
 
     if (lineupIds.length !== slots.length) {
       continue;
@@ -256,18 +266,36 @@ export const resolvePlayerDailyDraftPercentile = (
     entry.playerId,
   );
 
-export const hasCompletedDailyDraft = (
+export const findPlayerDailyDraftEntry = (
   dateKey: string,
-  goalId: string,
   playerId = getOrCreatePlayerId(),
-) => {
-  if (getPlayerDailyDraftEntry(dateKey, goalId, playerId)) {
-    return true;
+): DailyDraftScoreEntry | undefined => {
+  const localEntry = loadDailyScoresForDate(dateKey).find(
+    (entry) => entry.playerId === playerId,
+  );
+
+  if (localEntry) {
+    return localEntry;
   }
 
-  const cached = getRemoteCache(dateKey, goalId);
-  return cached?.entry?.playerId === playerId;
+  for (const [key, cache] of remoteCache.entries()) {
+    if (!key.startsWith(`${dateKey}:`)) {
+      continue;
+    }
+
+    if (cache.entry?.playerId === playerId) {
+      return cache.entry;
+    }
+  }
+
+  return undefined;
 };
+
+export const hasCompletedDailyDraft = (
+  dateKey: string,
+  _goalId?: string,
+  playerId = getOrCreatePlayerId(),
+) => Boolean(findPlayerDailyDraftEntry(dateKey, playerId));
 
 export const formatPlayerDailyDraftPercentile = (
   result: DailyDraftPercentileResult,
@@ -295,13 +323,24 @@ export const getPlayerDailyDraftEntry = (
 
 export const getTopDailyScoresForDate = (
   dateKey: string,
-  goalId: string,
+  goal: DailyDraftGoal | string,
   limit = 10,
-) =>
-  loadDailyScoresForDate(dateKey)
+) => {
+  const goalId = typeof goal === "string" ? goal : goal.id;
+  const direction =
+    typeof goal === "string"
+      ? getDailyGoalById(goal)?.direction ?? "higher"
+      : goal.direction;
+
+  return loadDailyScoresForDate(dateKey)
     .filter((entry) => entry.goalId === goalId)
-    .sort((left, right) => right.value - left.value)
+    .sort((left, right) =>
+      direction === "higher"
+        ? right.value - left.value
+        : left.value - right.value,
+    )
     .slice(0, limit);
+};
 
 export const clearDailyDraftRemoteCacheForTests = () => {
   remoteCache.clear();

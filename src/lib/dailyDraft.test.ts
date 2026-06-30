@@ -10,7 +10,7 @@ import {
   getDailyGoal,
   subtractDaysFromDateKey,
 } from "./dailyDraft";
-import { DAILY_GOAL_REPEAT_WINDOW_DAYS } from "./dailyDraftGoals";
+import { DAILY_DRAFT_GOALS, DAILY_GOAL_REPEAT_WINDOW_DAYS } from "./dailyDraftGoals";
 
 describe("dailyDraft", () => {
   it("returns the same goal and slots for a given date", () => {
@@ -50,16 +50,35 @@ describe("dailyDraft", () => {
     expect(goal.direction).toMatch(/higher|lower/);
   });
 
-  it("does not repeat the same goal within a 4-week window", () => {
+  it("does not repeat the same goal within a 4-week window when possible", () => {
     const startKey = "2026-06-15";
 
     for (let day = 0; day < DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
       const dateKey = subtractDaysFromDateKey(startKey, -day);
       const goal = getDailyGoal(dateKey);
 
-      for (let prior = 1; prior < DAILY_GOAL_REPEAT_WINDOW_DAYS; prior += 1) {
+      for (let prior = 1; prior <= DAILY_GOAL_REPEAT_WINDOW_DAYS; prior += 1) {
         const priorKey = subtractDaysFromDateKey(dateKey, prior);
-        expect(getDailyGoal(priorKey).id).not.toBe(goal.id);
+        const priorGoal = getDailyGoal(priorKey);
+
+        if (priorGoal.id === goal.id) {
+          const blockedIds = new Set<string>();
+
+          for (
+            let blockedDay = 1;
+            blockedDay <= DAILY_GOAL_REPEAT_WINDOW_DAYS;
+            blockedDay += 1
+          ) {
+            blockedIds.add(
+              getDailyGoal(subtractDaysFromDateKey(dateKey, blockedDay)).id,
+            );
+          }
+
+          expect(blockedIds.size).toBe(DAILY_DRAFT_GOALS.length);
+          continue;
+        }
+
+        expect(priorGoal.id).not.toBe(goal.id);
       }
     }
   });

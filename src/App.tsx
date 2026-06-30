@@ -36,13 +36,15 @@ import {
 } from "./lib/draftOnboarding";
 import { getMatchModeTheme } from "./lib/matchModeTheme";
 import {
+  findPlayerDailyDraftEntry,
   formatPlayerDailyDraftPercentile,
-  getPlayerDailyDraftEntry,
   hasCompletedDailyDraft,
   resolvePlayerDailyDraftPercentile,
   refreshDailyDraftScoresFromApi,
   simulateDailyBenchmarkValues,
 } from "./lib/dailyDraftScores";
+import { getDailyGoalById } from "./lib/dailyDraftGoals";
+import { useDailyDateKey } from "./lib/useDailyDateKey";
 import {
   createOpponentDraftSlots,
   createRandomOpponent,
@@ -108,6 +110,11 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "terms",
 ]);
 
+type FeatureHistoryState = {
+  appPhase?: AppPhase;
+  returnTo?: AppPhase;
+};
+
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
@@ -142,6 +149,8 @@ function App() {
   );
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const skipPopStateResetRef = useRef(false);
+  const pendingFeatureNavigationRef = useRef(false);
+  const todaysDailyDateKey = useDailyDateKey();
 
   useEffect(() => {
     ensureCurrentRankedSeason();
@@ -175,10 +184,13 @@ function App() {
 
     const refreshDailyScores = async () => {
       const todayKey = getDailyDateKey();
-      const setup = getDailyDraftSetup(todayKey);
+      const entry = findPlayerDailyDraftEntry(todayKey);
+      const goalId =
+        entry?.goalId ?? getDailyDraftSetup(todayKey).goal.id;
+
       await refreshDailyDraftScoresFromApi(
         todayKey,
-        setup.goal.id,
+        goalId,
         getOrCreatePlayerIdentity().playerId,
       );
       setDailyScoresRefreshTick((current) => current + 1);
@@ -199,8 +211,6 @@ function App() {
     [allTimeMode, modeRecords.allTime],
   );
 
-  const todaysDailyDateKey = getDailyDateKey();
-
   const draftablePlayers = useMemo(
     () =>
       isDailyDraft
@@ -220,15 +230,21 @@ function App() {
 
   opponentDraftablePlayersRef.current = opponentDraftablePlayers;
 
-  const dailySetup = useMemo(
-    () =>
-      isDailyDraft
-        ? isDailyOptimalReview || isDailyReview
-          ? getResolvedDailyDraftSetup(dailyDateKey)
-          : getDailyDraftSetup(dailyDateKey)
-        : null,
-    [dailyDateKey, isDailyDraft, isDailyOptimalReview, isDailyReview],
-  );
+  const dailySetup = useMemo(() => {
+    if (!isDailyDraft) {
+      return null;
+    }
+
+    if (isDailyOptimalReview) {
+      return getDailyDraftSetup(dailyDateKey);
+    }
+
+    if (isDailyReview) {
+      return getResolvedDailyDraftSetup(dailyDateKey);
+    }
+
+    return getDailyDraftSetup(dailyDateKey);
+  }, [dailyDateKey, isDailyDraft, isDailyOptimalReview, isDailyReview]);
 
   const landingDailySetup = useMemo(
     () => getDailyDraftSetup(todaysDailyDateKey),
@@ -236,25 +252,33 @@ function App() {
   );
 
   const landingDailyEntry = useMemo(
-    () =>
-      getPlayerDailyDraftEntry(
-        todaysDailyDateKey,
-        landingDailySetup.goal.id,
-      ),
-    [dailyScoresRefreshTick, landingDailySetup.goal.id, todaysDailyDateKey],
+    () => findPlayerDailyDraftEntry(todaysDailyDateKey),
+    [dailyScoresRefreshTick, todaysDailyDateKey],
   );
+
+  const landingDailyGoal = useMemo(() => {
+    if (landingDailyEntry?.goalId) {
+      const storedGoal = getDailyGoalById(landingDailyEntry.goalId);
+
+      if (storedGoal) {
+        return storedGoal;
+      }
+    }
+
+    return landingDailySetup.goal;
+  }, [landingDailyEntry, landingDailySetup.goal]);
 
   const landingDailyBenchmarkValues = useMemo(
     () =>
       simulateDailyBenchmarkValues(
         activePlayers,
         landingDailySetup.slots,
-        landingDailySetup.goal,
+        landingDailyGoal,
         todaysDailyDateKey,
       ),
     [
       activePlayers,
-      landingDailySetup.goal,
+      landingDailyGoal,
       landingDailySetup.slots,
       todaysDailyDateKey,
     ],
@@ -269,14 +293,14 @@ function App() {
       resolvePlayerDailyDraftPercentile(
         todaysDailyDateKey,
         landingDailyEntry,
-        landingDailySetup.goal,
+        landingDailyGoal,
         landingDailyBenchmarkValues,
       ),
     );
   }, [
     landingDailyBenchmarkValues,
     landingDailyEntry,
-    landingDailySetup.goal,
+    landingDailyGoal,
     todaysDailyDateKey,
   ]);
 
@@ -331,11 +355,7 @@ function App() {
     const dateKey = getDailyDateKey();
     const setup = daily ? getDailyDraftSetup(dateKey) : null;
 
-    if (
-      daily &&
-      setup &&
-      hasCompletedDailyDraft(dateKey, setup.goal.id)
-    ) {
+    if (daily && hasCompletedDailyDraft(dateKey)) {
       return false;
     }
 
@@ -511,12 +531,13 @@ function App() {
 
   const viewDailyLineup = useCallback((): boolean => {
     const dateKey = getDailyDateKey();
-    const setup = getDailyDraftSetup(dateKey);
-    const entry = getPlayerDailyDraftEntry(dateKey, setup.goal.id);
+    const entry = findPlayerDailyDraftEntry(dateKey);
 
     if (!entry?.lineup || entry.lineup.length < 5) {
       return false;
     }
+
+    const setup = getResolvedDailyDraftSetup(dateKey);
 
     const team =
       loadTeamProfile() ??
@@ -552,7 +573,7 @@ function App() {
 
   const viewYesterdayBestDailyLineup = useCallback((): boolean => {
     const yesterdayKey = subtractDaysFromDateKey(getDailyDateKey(), 1);
-    const setup = getResolvedDailyDraftSetup(yesterdayKey);
+    const setup = getDailyDraftSetup(yesterdayKey);
     const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
     const bestLineup = solveBestDailyDraftLineup(
       pool,
@@ -613,14 +634,38 @@ function App() {
     setDailyDateKey(getDailyDateKey());
     setAllTimeMode(false);
     setShowDraftOnboarding(false);
+    setStartMatchError(null);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
   };
 
+  const openFeaturePage = useCallback(
+    (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
+      pendingFeatureNavigationRef.current = true;
+      const historyState: FeatureHistoryState = {
+        appPhase: nextPhase,
+        returnTo: options?.returnTo,
+      };
+      window.history.pushState(historyState, "");
+      setPhase(nextPhase);
+    },
+    [],
+  );
+
   const exitFeaturePage = useCallback(() => {
+    const state = window.history.state as FeatureHistoryState | null;
+    const returnTo = state?.returnTo;
+
+    if (returnTo && FEATURE_PHASES.has(returnTo)) {
+      skipPopStateResetRef.current = true;
+      window.history.back();
+      setPhase(returnTo);
+      return;
+    }
+
     const shouldNavigateBack =
-      FEATURE_PHASES.has(phase) && window.history.state?.appPhase;
+      FEATURE_PHASES.has(phase) && state?.appPhase;
 
     resetToLanding();
 
@@ -719,6 +764,9 @@ function App() {
           slotConstraint,
           pickedIds,
           salaryOptions,
+          5,
+          undefined,
+          isDailyDraft ? "alphabetical" : "points",
         );
 
         if (autoPick) {
@@ -759,7 +807,7 @@ function App() {
         setDraftStep(nextStep);
       }
     },
-    [draftablePlayers],
+    [draftablePlayers, isDailyDraft],
   );
 
   const handleCollectionChange = useCallback((next: PlayerCollection) => {
@@ -777,7 +825,12 @@ function App() {
   }, [isDailyDraft, isPendingQueueMatch, matchId, phase]);
 
   useEffect(() => {
-    if (isDailyDraft || !opponent) {
+    if (
+      isDailyDraft ||
+      !opponent ||
+      phase !== "drafting" ||
+      userDraftComplete
+    ) {
       return;
     }
 
@@ -868,7 +921,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [isDailyDraft, opponent?.id]);
+  }, [isDailyDraft, opponent?.id, phase, userDraftComplete]);
 
   useEffect(() => {
     if (
@@ -1010,11 +1063,23 @@ function App() {
       return;
     }
 
-    window.history.pushState({ appPhase: phase }, "");
+    if (!pendingFeatureNavigationRef.current) {
+      window.history.pushState({ appPhase: phase }, "");
+    } else {
+      pendingFeatureNavigationRef.current = false;
+    }
 
-    const handlePopState = () => {
+    const handlePopState = (event: PopStateEvent) => {
       if (skipPopStateResetRef.current) {
         skipPopStateResetRef.current = false;
+        return;
+      }
+
+      const state = event.state as FeatureHistoryState | null;
+      const nextPhase = state?.appPhase;
+
+      if (typeof nextPhase === "string" && FEATURE_PHASES.has(nextPhase)) {
+        setPhase(nextPhase);
         return;
       }
 
@@ -1070,7 +1135,7 @@ function App() {
         <LegalPage
           kind="terms"
           onBack={exitFeaturePage}
-          onOpenPrivacy={() => setPhase("privacy")}
+          onOpenPrivacy={() => openFeaturePage("privacy", { returnTo: "terms" })}
         />
       </main>
     );
@@ -1103,11 +1168,11 @@ function App() {
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
           onCollectionChange={setCollection}
-          onViewStats={() => setPhase("stats")}
-          onViewAchievements={() => setPhase("achievements")}
-          onViewLeaderboard={() => setPhase("leaderboard")}
-          onViewPrivacy={() => setPhase("privacy")}
-          onViewTerms={() => setPhase("terms")}
+          onViewStats={() => openFeaturePage("stats")}
+          onViewAchievements={() => openFeaturePage("achievements")}
+          onViewLeaderboard={() => openFeaturePage("leaderboard")}
+          onViewPrivacy={() => openFeaturePage("privacy")}
+          onViewTerms={() => openFeaturePage("terms")}
         />
         {matchmakingMode ? (
           <MatchmakingOverlay
