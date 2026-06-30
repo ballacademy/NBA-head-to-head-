@@ -100,6 +100,14 @@ type AppPhase =
   | "privacy"
   | "terms";
 
+const FEATURE_PHASES = new Set<AppPhase>([
+  "stats",
+  "leaderboard",
+  "achievements",
+  "privacy",
+  "terms",
+]);
+
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
@@ -607,6 +615,15 @@ function App() {
     setPhase("landing");
   };
 
+  const exitFeaturePage = useCallback(() => {
+    if (FEATURE_PHASES.has(phase)) {
+      window.history.back();
+      return;
+    }
+
+    resetToLanding();
+  }, [phase]);
+
   const replayLastMode = async () => {
     if (!user) {
       resetToLanding();
@@ -962,6 +979,38 @@ function App() {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+  }, [phase]);
+
+  useEffect(() => {
+    if (!FEATURE_PHASES.has(phase)) {
+      return;
+    }
+
+    window.history.pushState({ appPhase: phase }, "");
+
+    const handlePopState = () => {
+      resetToLanding();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "stats") {
+      return;
+    }
+
+    document.documentElement.classList.add("stats-page-open");
+
+    return () => {
+      document.documentElement.classList.remove("stats-page-open");
+    };
   }, [phase]);
 
   useEffect(() => {
@@ -979,7 +1028,7 @@ function App() {
   if (phase === "leaderboard") {
     return (
       <main className="landing-layout">
-        <LeaderboardPage onBack={resetToLanding} />
+        <LeaderboardPage onBack={exitFeaturePage} />
       </main>
     );
   }
@@ -987,7 +1036,7 @@ function App() {
   if (phase === "achievements") {
     return (
       <main className="landing-layout">
-        <AchievementsPage onBack={resetToLanding} />
+        <AchievementsPage onBack={exitFeaturePage} />
       </main>
     );
   }
@@ -995,7 +1044,7 @@ function App() {
   if (phase === "privacy") {
     return (
       <main className="landing-layout">
-        <LegalPage kind="privacy" onBack={resetToLanding} />
+        <LegalPage kind="privacy" onBack={exitFeaturePage} />
       </main>
     );
   }
@@ -1005,7 +1054,7 @@ function App() {
       <main className="landing-layout">
         <LegalPage
           kind="terms"
-          onBack={resetToLanding}
+          onBack={exitFeaturePage}
           onOpenPrivacy={() => setPhase("privacy")}
         />
       </main>
@@ -1018,7 +1067,7 @@ function App() {
         <PlayerStatsTable
           players={databasePlayers}
           collection={collection}
-          onBack={resetToLanding}
+          onBack={exitFeaturePage}
         />
       </main>
     );

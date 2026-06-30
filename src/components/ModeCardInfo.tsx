@@ -86,7 +86,7 @@ export function ModeCardInfo({
       return;
     }
 
-    const handlePointerDown = (event: MouseEvent) => {
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
       const clickedInsideRoot = rootRef.current?.contains(target);
       const clickedInsidePopover = popoverRef.current?.contains(target);
@@ -103,10 +103,12 @@ export function ModeCardInfo({
     };
 
     document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
     document.addEventListener("keydown", handleEscape);
 
     return () => {
       document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
