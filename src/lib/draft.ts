@@ -521,13 +521,20 @@ export const filterPlayersForSlot = (
         estimatePlayerSalary(player) <= options.maxAffordableSalary),
   );
 
-export const sortDraftCandidates = (players: Player[]) =>
+export const sortDraftCandidates = (
+  players: Player[],
+  sortMode: "points" | "alphabetical" = "points",
+) =>
   [...players].sort((a, b) => {
     const aLimited = hasLimitedSampleSize(a);
     const bLimited = hasLimitedSampleSize(b);
 
     if (aLimited !== bLimited) {
       return aLimited ? 1 : -1;
+    }
+
+    if (sortMode === "alphabetical") {
+      return a.name.localeCompare(b.name);
     }
 
     return b.points - a.points || a.name.localeCompare(b.name);

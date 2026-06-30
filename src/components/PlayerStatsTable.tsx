@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { comparePositions } from "../lib/positions";
 import { getDefenseGrade } from "../lib/defenseGrade";
 import {
@@ -99,6 +99,21 @@ export function PlayerStatsTable({
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("points");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const resetTableScroll = () => {
+      if (tableWrapRef.current) {
+        tableWrapRef.current.scrollLeft = 0;
+      }
+    };
+
+    resetTableScroll();
+
+    if (typeof document !== "undefined" && "fonts" in document) {
+      void document.fonts.ready.then(resetTableScroll);
+    }
+  }, []);
 
   const statsInfoDetails = useMemo(
     () => [
@@ -190,7 +205,7 @@ export function PlayerStatsTable({
         />
       </label>
 
-      <div className="stats-table-wrap">
+      <div className="stats-table-wrap" ref={tableWrapRef}>
         <table className="stats-table">
           <thead>
             <tr>
