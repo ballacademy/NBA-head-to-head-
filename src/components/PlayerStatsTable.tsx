@@ -19,6 +19,7 @@ import {
   isSuperstarPlayer,
 } from "../lib/allStars";
 import { isScrubPlayer, isSuperScrubPlayer } from "../lib/playerTiers";
+import { ModeCardInfo } from "./ModeCardInfo";
 import type { Player } from "../lib/types";
 
 interface PlayerStatsTableProps {
@@ -99,6 +100,14 @@ export function PlayerStatsTable({
   const [sortKey, setSortKey] = useState<SortKey>("points");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
+  const statsInfoDetails = useMemo(
+    () => [
+      "Locked stars and scrubs stay hidden until you unlock them. Everyone else is visible here.",
+      `Per-game stats reflect the ${statsFile.season} regular season where available. Players who did not play in ${statsFile.season} are graded using their ${getPriorSeasonLabel(statsFile.season)} season instead.`,
+    ],
+    [],
+  );
+
   const filteredPlayers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -154,18 +163,17 @@ export function PlayerStatsTable({
   return (
     <section className="panel stats-panel feature-page feature-page--stats" aria-labelledby="stats-heading">
       <div className="stats-panel__header">
-        <div className="section-heading">
+        <div className="section-heading stats-panel__heading">
           <p className="eyebrow">Season stats</p>
-          <h2 id="stats-heading">Browse the player pool</h2>
-          <p>
-            Locked stars and scrubs stay hidden until you unlock them. Everyone
-            else is visible here.
-          </p>
-          <p className="stats-panel__note">
-            Per-game stats reflect the {statsFile.season} regular season where
-            available. Players who did not play in {statsFile.season} are graded
-            using their {getPriorSeasonLabel(statsFile.season)} season instead.
-          </p>
+          <div className="stats-panel__title-row">
+            <h2 id="stats-heading">Browse the player pool</h2>
+            <ModeCardInfo
+              details={statsInfoDetails}
+              variant="corner"
+              popoverAlign="start"
+              ariaLabel="Season stats details"
+            />
+          </div>
         </div>
         <button type="button" className="secondary-button" onClick={onBack}>
           Back to home
