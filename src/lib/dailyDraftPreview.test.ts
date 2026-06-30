@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getYesterdayDailyBestPreview } from "./dailyDraftPreview";
-import { getDailyDateKey, getDailyDraftSetup, subtractDaysFromDateKey } from "./dailyDraft";
+import { getDailyDateKey, subtractDaysFromDateKey } from "./dailyDraft";
+import { getResolvedDailyDraftSetup } from "./dailyDraftGoalResolve";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
 import { solveBestDailyDraftLineup } from "./dailyDraftSolver";
 import { getActivePlayerPool } from "./activePlayerPool";
@@ -18,7 +19,7 @@ describe("dailyDraftPreview", () => {
   it("matches yesterday's goal to the formatted best lineup result", () => {
     const todayDateKey = getDailyDateKey();
     const yesterdayKey = subtractDaysFromDateKey(todayDateKey, 1);
-    const setup = getDailyDraftSetup(yesterdayKey);
+    const setup = getResolvedDailyDraftSetup(yesterdayKey);
     const pool = getActivePlayerPool({ wins: 0 }, {
       allTimeMode: false,
     });

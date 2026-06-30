@@ -103,6 +103,10 @@ export function PlayerStatsTable({
 
   useLayoutEffect(() => {
     const resetTableScroll = () => {
+      window.scrollTo({ top: 0, left: 0 });
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
+
       if (tableWrapRef.current) {
         tableWrapRef.current.scrollLeft = 0;
       }
@@ -110,9 +114,30 @@ export function PlayerStatsTable({
 
     resetTableScroll();
 
+    const frameId = window.requestAnimationFrame(resetTableScroll);
+    const timeoutId = window.setTimeout(resetTableScroll, 120);
+
     if (typeof document !== "undefined" && "fonts" in document) {
       void document.fonts.ready.then(resetTableScroll);
     }
+
+    const tableWrap = tableWrapRef.current;
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined" && tableWrap
+        ? new ResizeObserver(() => {
+            resetTableScroll();
+          })
+        : null;
+
+    if (tableWrap) {
+      resizeObserver?.observe(tableWrap);
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+      resizeObserver?.disconnect();
+    };
   }, []);
 
   const statsInfoDetails = useMemo(
@@ -199,6 +224,10 @@ export function PlayerStatsTable({
         <span>Search players</span>
         <input
           type="search"
+          inputMode="search"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
           value={query}
           placeholder="Search by name, team, or position"
           onChange={(event) => setQuery(event.target.value)}

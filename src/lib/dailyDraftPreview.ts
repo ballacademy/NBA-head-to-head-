@@ -1,8 +1,8 @@
 import { getActivePlayerPool } from "./activePlayerPool";
 import {
-  getDailyDraftSetup,
   subtractDaysFromDateKey,
 } from "./dailyDraft";
+import { getResolvedDailyDraftSetup } from "./dailyDraftGoalResolve";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
 import { solveBestDailyDraftLineup } from "./dailyDraftSolver";
 import type { PlayerRecord } from "./playerRecord";
@@ -18,7 +18,7 @@ export const getYesterdayDailyBestPreview = (
   allTimeRecord: Pick<PlayerRecord, "wins">,
 ): YesterdayDailyBestPreview | null => {
   const yesterdayKey = subtractDaysFromDateKey(todayDateKey, 1);
-  const setup = getDailyDraftSetup(yesterdayKey);
+  const setup = getResolvedDailyDraftSetup(yesterdayKey);
   const pool = getActivePlayerPool(allTimeRecord, { allTimeMode: false });
   const bestLineup = solveBestDailyDraftLineup(
     pool,
