@@ -4497,24 +4497,55 @@ main {
 }
 
 .stats-table-wrap {
-  overflow: auto;
+  overflow-x: auto;
   border: 1px solid var(--panel-border);
   border-radius: 18px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .stats-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 760px;
+  table-layout: fixed;
+  font-size: 0.8rem;
 }
 
 .stats-table th,
 .stats-table td {
-  padding: 12px 14px;
+  padding: 8px 6px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   text-align: left;
   white-space: nowrap;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-table th:first-child,
+.stats-table td:first-child {
+  width: 30%;
+  white-space: normal;
+  overflow: visible;
+}
+
+.stats-table th:nth-child(2),
+.stats-table td:nth-child(2) {
+  width: 7%;
+}
+
+.stats-table th:nth-child(3),
+.stats-table td:nth-child(3) {
+  width: 6%;
+}
+
+.stats-table th:nth-child(n + 4),
+.stats-table td:nth-child(n + 4) {
+  width: 6.5%;
+  text-align: right;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  padding-left: 4px;
+  padding-right: 8px;
 }
 
 .stats-table th {
@@ -4522,6 +4553,15 @@ main {
   top: 0;
   background: rgba(15, 23, 42, 0.98);
   z-index: 1;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.stats-table th:nth-child(n + 4) .sort-button {
+  justify-content: flex-end;
+  width: 100%;
+  text-align: right;
 }
 
 .stats-table tbody tr:hover {
@@ -4529,15 +4569,23 @@ main {
 }
 
 .stats-table__player {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 1.5rem;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+  min-height: 1.25rem;
 }
 
 .stats-table__player-name {
-  display: inline-flex;
-  align-items: center;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -4545,6 +4593,9 @@ main {
 .stats-table__player .stats-table__class--na {
   align-self: center;
   margin: 0;
+  font-size: 0.58rem;
+  padding: 2px 5px;
+  letter-spacing: 0.02em;
 }
 
 .stats-table__class--na {
@@ -4563,11 +4614,14 @@ main {
 
 .sort-button,
 .sort-button.active {
+  display: inline-flex;
+  align-items: center;
   border: 0;
   background: transparent;
   color: inherit;
   padding: 0;
   font-weight: 600;
+  font-size: inherit;
 }
 
 .stats-footnote {
@@ -4579,6 +4633,35 @@ main {
   main {
     width: min(100% - 20px, 720px);
     padding-top: 20px;
+  }
+
+  .stats-table {
+    font-size: 0.76rem;
+  }
+
+  .stats-table th,
+  .stats-table td {
+    padding: 7px 4px;
+  }
+
+  .stats-table__player-name {
+    font-size: 0.78rem;
+  }
+
+  .stats-table th:nth-child(n + 4),
+  .stats-table td:nth-child(n + 4) {
+    font-size: 0.72rem;
+    padding-right: 6px;
+  }
+
+  .stats-table th {
+    font-size: 0.68rem;
+  }
+
+  .stats-table__player .player-rarity-badge,
+  .stats-table__player .stats-table__class--na {
+    font-size: 0.54rem;
+    padding: 1px 4px;
   }
 
   .hero,
