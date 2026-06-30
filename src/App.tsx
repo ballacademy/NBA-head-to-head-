@@ -1002,18 +1002,6 @@ function App() {
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "stats") {
-      return;
-    }
-
-    document.documentElement.classList.add("stats-page-open");
-
-    return () => {
-      document.documentElement.classList.remove("stats-page-open");
-    };
-  }, [phase]);
-
-  useEffect(() => {
     if (
       phase === "drafting" &&
       user &&
