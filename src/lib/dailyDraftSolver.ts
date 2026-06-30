@@ -5,11 +5,25 @@ import type { DraftSlotConstraint, Player } from "./types";
 
 const lineupCache = new Map<string, Player[]>();
 
+const buildPlayerPoolFingerprint = (players: Player[]) => {
+  if (players.length === 0) {
+    return "0";
+  }
+
+  const sortedIds = [...players]
+    .map((player) => player.id)
+    .sort((left, right) => left.localeCompare(right));
+
+  return `${players.length}:${sortedIds.join(",")}`;
+};
+
 export const buildDailyDraftSolverCacheKey = (
   dateKey: string,
   goal: DailyDraftGoal,
   slots: DraftSlotConstraint[],
-) => `${dateKey}:${goal.id}:${JSON.stringify(slots)}`;
+  players: Player[],
+) =>
+  `${dateKey}:${goal.id}:${JSON.stringify(slots)}:${buildPlayerPoolFingerprint(players)}`;
 
 const compareLineups = (left: Player[], right: Player[]) => {
   for (let index = 0; index < Math.min(left.length, right.length); index += 1) {
@@ -50,7 +64,7 @@ export const solveBestDailyDraftLineup = (
   cacheKey?: string,
 ): Player[] => {
   const resolvedCacheKey = cacheKey
-    ? buildDailyDraftSolverCacheKey(cacheKey, goal, slots)
+    ? buildDailyDraftSolverCacheKey(cacheKey, goal, slots, players)
     : undefined;
 
   if (resolvedCacheKey) {

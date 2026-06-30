@@ -5,10 +5,10 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
-import { getDailyDateKey, getDailyChallenge } from "../lib/dailyDraft";
-import {
-  getPlayerDailyDraftEntry,
-} from "../lib/dailyDraftScores";
+import { getDailyChallenge } from "../lib/dailyDraft";
+import { findPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
+import { getDailyGoalById } from "../lib/dailyDraftGoals";
+import { useDailyDateKey } from "../lib/useDailyDateKey";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   formatPlayerRecord,
@@ -129,15 +129,22 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
-  const todayDateKey = getDailyDateKey();
-  const todayChallenge = useMemo(
-    () => getDailyChallenge(todayDateKey),
+  const todayDateKey = useDailyDateKey();
+  const dailyEntry = useMemo(
+    () => findPlayerDailyDraftEntry(todayDateKey),
     [todayDateKey],
   );
-  const dailyEntry = useMemo(
-    () => getPlayerDailyDraftEntry(todayDateKey, todayChallenge.id),
-    [todayChallenge.id, todayDateKey],
-  );
+  const todayChallenge = useMemo(() => {
+    if (dailyEntry?.goalId) {
+      const storedGoal = getDailyGoalById(dailyEntry.goalId);
+
+      if (storedGoal) {
+        return storedGoal;
+      }
+    }
+
+    return getDailyChallenge(todayDateKey);
+  }, [dailyEntry, todayDateKey]);
   const dailyCompleted = Boolean(dailyEntry);
   const isMatchmaking = matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);

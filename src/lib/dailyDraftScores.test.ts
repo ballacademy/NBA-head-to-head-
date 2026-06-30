@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   computePercentile,
+  findPlayerDailyDraftEntry,
   formatDailyPercentile,
   formatPlayerDailyDraftPercentile,
   getDailyDraftPercentile,
@@ -141,5 +142,34 @@ describe("dailyDraftScores", () => {
         sampleSize: 510,
       }),
     ).toBe("Top 8% Today");
+  });
+
+  it("finds a daily entry by player id regardless of goal id", () => {
+    const storage = stubPlayerStorage("player-goal-mismatch");
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    const alternateGoal = DAILY_DRAFT_GOALS[1]!;
+
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-03-01": [
+          {
+            playerId: "player-goal-mismatch",
+            goalId: alternateGoal.id,
+            value: 12,
+            formattedResult: "12.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-03-01T12:00:00.000Z",
+          },
+        ],
+      }),
+    );
+
+    expect(
+      findPlayerDailyDraftEntry("2099-03-01", "player-goal-mismatch")?.goalId,
+    ).toBe(alternateGoal.id);
+    expect(hasCompletedDailyDraft("2099-03-01", goal.id, "player-goal-mismatch")).toBe(
+      true,
+    );
   });
 });

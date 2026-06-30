@@ -116,4 +116,26 @@ describe("solveBestDailyDraftLineup", () => {
       expect(alternateScore).toBeLessThanOrEqual(primaryAsAlternate);
     }
   });
+
+  it("does not reuse cached results when the player pool changes", () => {
+    clearDailyDraftSolverCacheForTests();
+    const setup = getDailyDraftSetup("2026-06-18");
+    const reducedPool = players.slice(0, 120);
+    const fullResult = solveBestDailyDraftLineup(
+      players,
+      setup.slots,
+      setup.goal,
+      setup.dateKey,
+    );
+    const reducedResult = solveBestDailyDraftLineup(
+      reducedPool,
+      setup.slots,
+      setup.goal,
+      setup.dateKey,
+    );
+
+    expect(reducedResult.map((player) => player.id)).not.toEqual(
+      fullResult.map((player) => player.id),
+    );
+  });
 });

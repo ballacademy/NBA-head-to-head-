@@ -78,7 +78,7 @@ const fillGoalsThrough = (dateKey: string) => {
     if (!goalCache.has(cursor)) {
       const recentGoalIds = new Set<string>();
 
-      for (let day = 1; day < DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
+      for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
         const pastKey = subtractDaysFromDateKey(cursor, day);
         const pastGoal = goalCache.get(pastKey);
 
@@ -90,11 +90,36 @@ const fillGoalsThrough = (dateKey: string) => {
       const available = DAILY_DRAFT_GOALS.filter(
         (goal) => !recentGoalIds.has(goal.id),
       );
-      const seed = getDailySeed(cursor);
-      const pool = available.length > 0 ? available : DAILY_DRAFT_GOALS;
-      const goal = pool[seed % pool.length]!;
 
-      goalCache.set(cursor, goal);
+      if (available.length > 0) {
+        const seed = getDailySeed(cursor);
+        const goal = available[seed % available.length]!;
+        goalCache.set(cursor, goal);
+      } else {
+        let bestGoal = DAILY_DRAFT_GOALS[0]!;
+        let bestDistance = -1;
+
+        for (const goal of DAILY_DRAFT_GOALS) {
+          let distance = DAILY_GOAL_REPEAT_WINDOW_DAYS * 2;
+
+          for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS * 2; day += 1) {
+            const pastKey = subtractDaysFromDateKey(cursor, day);
+            const pastGoal = goalCache.get(pastKey);
+
+            if (pastGoal?.id === goal.id) {
+              distance = day;
+              break;
+            }
+          }
+
+          if (distance > bestDistance) {
+            bestDistance = distance;
+            bestGoal = goal;
+          }
+        }
+
+        goalCache.set(cursor, bestGoal);
+      }
     }
 
     if (cursor === dateKey) {
