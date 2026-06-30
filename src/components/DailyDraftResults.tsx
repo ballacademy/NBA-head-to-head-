@@ -13,6 +13,7 @@ import {
 import {
   formatDailyPercentile,
   getDailyDraftPercentile,
+  loadReviewDailyDraftPercentile,
   refreshDailyDraftScoresFromApi,
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
@@ -78,6 +79,21 @@ export function DailyDraftResults({
     () => sortLineupByPosition(userLineup),
     [userLineup],
   );
+
+  useLayoutEffect(() => {
+    if (!reviewOnly || optimalReview) {
+      return;
+    }
+
+    void (async () => {
+      const result = await loadReviewDailyDraftPercentile(
+        dailyDateKey,
+        dailyGoal,
+        benchmarkValues,
+      );
+      setPercentileResult(result);
+    })();
+  }, [benchmarkValues, dailyDateKey, dailyGoal, optimalReview, reviewOnly]);
 
   useLayoutEffect(() => {
     if (reviewOnly || optimalReview || submittedRef.current) {
@@ -198,9 +214,14 @@ export function DailyDraftResults({
             : dailyGoal.description}
         </p>
         <p className="daily-draft-results__stat">{goalResult.formatted}</p>
-        {!optimalReview && !reviewOnly && !percentileResult ? (
+        {!optimalReview && !percentileResult && !reviewOnly ? (
           <p className="daily-draft-results__percentile daily-draft-results__percentile--loading">
             Calculating rank…
+          </p>
+        ) : null}
+        {!optimalReview && !percentileResult && reviewOnly ? (
+          <p className="daily-draft-results__percentile daily-draft-results__percentile--loading">
+            Loading rank…
           </p>
         ) : null}
         {!optimalReview && percentileResult ? (

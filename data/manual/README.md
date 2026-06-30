@@ -69,6 +69,10 @@ python3 scripts/csv_to_salaries_json.py \
 
 Fill in the `name` and `notes` columns if you want, then edit `salary_usd`.
 
+Recent free-agent signings that are not yet on Basketball Reference can go in
+`nba-salary-supplements.csv`. Those rows are merged into the salary JSON only
+when the player is missing from the main CSV.
+
 ### Rebuild the salary JSON
 
 ```bash
