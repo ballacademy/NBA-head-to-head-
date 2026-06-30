@@ -28,6 +28,7 @@ import {
   getDailyDraftSetup,
   subtractDaysFromDateKey,
 } from "./lib/dailyDraft";
+import { getResolvedDailyDraftSetup } from "./lib/dailyDraftGoalResolve";
 import { solveBestDailyDraftLineup } from "./lib/dailyDraftSolver";
 import {
   hasSeenDraftOnboarding,
@@ -210,8 +211,13 @@ function App() {
   opponentDraftablePlayersRef.current = opponentDraftablePlayers;
 
   const dailySetup = useMemo(
-    () => (isDailyDraft ? getDailyDraftSetup(dailyDateKey) : null),
-    [dailyDateKey, isDailyDraft],
+    () =>
+      isDailyDraft
+        ? isDailyOptimalReview || isDailyReview
+          ? getResolvedDailyDraftSetup(dailyDateKey)
+          : getDailyDraftSetup(dailyDateKey)
+        : null,
+    [dailyDateKey, isDailyDraft, isDailyOptimalReview, isDailyReview],
   );
 
   const landingDailySetup = useMemo(
@@ -536,7 +542,7 @@ function App() {
 
   const viewYesterdayBestDailyLineup = useCallback((): boolean => {
     const yesterdayKey = subtractDaysFromDateKey(getDailyDateKey(), 1);
-    const setup = getDailyDraftSetup(yesterdayKey);
+    const setup = getResolvedDailyDraftSetup(yesterdayKey);
     const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
     const bestLineup = solveBestDailyDraftLineup(
       pool,
@@ -1008,7 +1014,7 @@ function App() {
 
   if (phase === "stats") {
     return (
-      <main className="landing-layout">
+      <main className="landing-layout landing-layout--stats">
         <PlayerStatsTable
           players={databasePlayers}
           collection={collection}

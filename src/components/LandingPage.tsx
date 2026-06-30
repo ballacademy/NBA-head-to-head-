@@ -6,7 +6,6 @@ import {
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { getDailyDateKey, getDailyChallenge } from "../lib/dailyDraft";
-import { getYesterdayDailyBestPreview } from "../lib/dailyDraftPreview";
 import {
   getPlayerDailyDraftEntry,
 } from "../lib/dailyDraftScores";
@@ -141,10 +140,6 @@ export function LandingPage({
   );
   const dailyCompleted = Boolean(dailyEntry);
   const isMatchmaking = matchmakingMode != null;
-  const yesterdayBest = useMemo(
-    () => getYesterdayDailyBestPreview(todayDateKey, modeRecords.allTime),
-    [modeRecords.allTime, todayDateKey],
-  );
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const canStartDraft =
     teamValidation.ok && !isMatchmaking && !collection.pendingUnlock;
@@ -403,12 +398,6 @@ export function LandingPage({
                 : "Not played yet today"}
             </p>
           </div>
-          {yesterdayBest ? (
-            <p className="daily-draft-card__yesterday">
-              Yesterday&apos;s best: {yesterdayBest.formattedResult} ·{" "}
-              {yesterdayBest.title}
-            </p>
-          ) : null}
           <div className="daily-draft-card__actions">
             <button
               type="button"

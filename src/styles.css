@@ -332,6 +332,16 @@ main {
   position: relative;
 }
 
+.landing-layout--stats {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+.landing-layout--stats > * {
+  width: 100%;
+  max-width: min(920px, 100%);
+}
+
 .landing-layout::before {
   content: "";
   position: fixed;
@@ -1478,6 +1488,9 @@ main {
 .feature-page--stats {
   border-color: rgba(59, 130, 246, 0.38);
   overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background:
     linear-gradient(
       145deg,
@@ -1838,6 +1851,8 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 0;
+  position: relative;
+  z-index: 20;
 }
 
 .leaderboard__title-block {
@@ -2380,12 +2395,20 @@ main {
   color: #e2e8f0;
   font-size: 0.82rem;
   line-height: 1.45;
+  background: #0f172a;
   background-color: #0f172a;
   box-shadow:
     0 18px 40px rgba(2, 6, 23, 0.65),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transform: translateX(-50%);
   isolation: isolate;
+}
+
+.mode-card-info__popover--fixed {
+  position: fixed;
+  z-index: 1200;
+  transform: none;
+  margin: 0;
 }
 
 .mode-card-info__popover--align-start {
@@ -2409,6 +2432,8 @@ main {
 
 .leaderboard__tier-info .mode-card-info__popover {
   border-color: rgba(167, 139, 250, 0.45);
+  background: #0f172a;
+  background-color: #0f172a;
 }
 
 .stats-panel__title-row .mode-card-info__popover {
@@ -2603,6 +2628,8 @@ main {
   gap: 10px;
   align-items: center;
   overflow: visible;
+  position: relative;
+  z-index: 20;
 }
 
 .leaderboard__toolbar--with-tier-info {
@@ -3795,6 +3822,8 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
+  position: relative;
+  z-index: 20;
 }
 
 .stats-panel__header .section-heading,
@@ -3825,6 +3854,7 @@ main {
 
 .feature-page--stats .stats-table-wrap {
   border-color: rgba(59, 130, 246, 0.28);
+  max-width: 100%;
 }
 
 .feature-page--stats .stats-table th {
@@ -4668,5 +4698,13 @@ main {
   .story-footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .feature-page--stats .stats-search input,
+  .feature-page--stats .stats-table th,
+  .feature-page--stats .stats-table td,
+  .feature-page--stats .sort-button,
+  .feature-page--stats .sort-button.active {
+    font-size: 16px;
   }
 }
