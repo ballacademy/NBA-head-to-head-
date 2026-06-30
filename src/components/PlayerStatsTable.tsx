@@ -223,12 +223,7 @@ export function PlayerStatsTable({
                       MASKED_VALUE
                     ) : (
                       <span className="stats-table__player">
-                        <span
-                          className="stats-table__player-name"
-                          title={player.name}
-                        >
-                          {player.name}
-                        </span>
+                        <span className="stats-table__player-name">{player.name}</span>
                         {collection.unlockedIds.includes(player.id) ? (
                           <span className={getUnlockedPlayerClassBadgeClass(player)}>
                             {getUnlockedPlayerClassLabel(player)}
