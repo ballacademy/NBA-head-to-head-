@@ -285,16 +285,32 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               },
             )}
           </div>
-          {showTierInfo ? (
-            <div className="leaderboard__tier-info-slot">
-              <span className="leaderboard__tier-info">
-                Tier ranges
-                <ModeCardInfo details={TIER_RANGE_DETAILS} variant="corner" />
-              </span>
-            </div>
-          ) : null}
         </div>
       </div>
+
+      {showTierInfo ? (
+        <div className="leaderboard-tier-guide">
+          <div className="leaderboard-tier-guide__header">
+            <p className="leaderboard-tier-guide__title">Banner tier ranges</p>
+            <ModeCardInfo
+              details={TIER_RANGE_DETAILS}
+              variant="corner"
+              popoverAlign="start"
+              ariaLabel="Banner tier ranges"
+            />
+          </div>
+          <ul className="leaderboard-tier-guide__list">
+            {RANKED_TIERS.map((tier) => (
+              <li key={tier.id} className="leaderboard-tier-guide__item">
+                <RankedTierBadge tier={tier} compact />
+                <span className="leaderboard-tier-guide__range">
+                  {formatTierBannerRange(tier)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {view === "ranked" ? (
         rankedEntries.length > 0 ? (

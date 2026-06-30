@@ -3,12 +3,21 @@ import { useEffect, useId, useRef, useState } from "react";
 interface ModeCardInfoProps {
   details: string[];
   variant?: "inline" | "corner";
+  popoverAlign?: "start" | "center" | "end";
+  ariaLabel?: string;
 }
 
-export function ModeCardInfo({ details, variant = "inline" }: ModeCardInfoProps) {
+export function ModeCardInfo({
+  details,
+  variant = "inline",
+  popoverAlign,
+  ariaLabel = "Mode details",
+}: ModeCardInfoProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const popoverId = useId();
+  const resolvedAlign =
+    popoverAlign ?? (variant === "corner" ? "end" : "center");
 
   useEffect(() => {
     if (!open) {
@@ -46,7 +55,7 @@ export function ModeCardInfo({ details, variant = "inline" }: ModeCardInfoProps)
       <button
         type="button"
         className="mode-card-info__button"
-        aria-label="Mode details"
+        aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={popoverId}
         onClick={() => setOpen((current) => !current)}
@@ -54,7 +63,11 @@ export function ModeCardInfo({ details, variant = "inline" }: ModeCardInfoProps)
         i
       </button>
       {open ? (
-        <span className="mode-card-info__popover" id={popoverId} role="tooltip">
+        <span
+          className={`mode-card-info__popover mode-card-info__popover--align-${resolvedAlign}`}
+          id={popoverId}
+          role="tooltip"
+        >
           <ul className="mode-card-info__list">
             {details.map((detail) => (
               <li key={detail}>{detail}</li>
