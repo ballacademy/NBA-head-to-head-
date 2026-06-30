@@ -1,4 +1,4 @@
-export const CLASSIC_HEAD_TO_HEAD_LABEL = "Classic Head to Head";
+export const CLASSIC_HEAD_TO_HEAD_LABEL = "Casual Head to Head";
 export const PRO_HEAD_TO_HEAD_LABEL = "Pro Head to Head";
 export const ALL_TIME_LABEL = "All-Time";
 

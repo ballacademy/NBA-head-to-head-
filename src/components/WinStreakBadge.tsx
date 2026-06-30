@@ -7,7 +7,7 @@ interface WinStreakBadgeProps {
 
 const TIER_EMOJI: Record<WinStreakTierId, string> = {
   orange: "🔥",
-  red: "🔥🔥",
+  red: "🔥",
   blue: "⚡",
   purple: "💜",
   black: "👑",
@@ -29,6 +29,7 @@ export function WinStreakBadge({ winStreak }: WinStreakBadgeProps) {
       <span className="win-streak-badge__emoji" aria-hidden="true">
         {TIER_EMOJI[tier.id]}
       </span>
+      <span className="win-streak-badge__count">{winStreak}</span>
     </span>
   );
 }
