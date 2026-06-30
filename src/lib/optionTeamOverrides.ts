@@ -1,4 +1,5 @@
 import optionTeamData from "../../data/nba-option-team-overrides-202627.json";
+import { CURRENT_TEAM_OVERRIDES } from "./currentTeamOverrides";
 
 interface OptionTeamOverrideFile {
   overrides?: Record<string, string>;
@@ -15,6 +16,10 @@ export const applyOptionTeamOverride = (
   team: string,
 ) => {
   if (!bbrPlayerId) {
+    return team;
+  }
+
+  if (CURRENT_TEAM_OVERRIDES[bbrPlayerId]) {
     return team;
   }
 

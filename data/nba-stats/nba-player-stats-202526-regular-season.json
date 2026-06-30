@@ -2,15 +2,15 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-06-29T22:07:53.173340+00:00",
-  "rosterAsOf": "2026-06-29",
+  "generatedAt": "2026-06-30T21:57:27.265751+00:00",
+  "rosterAsOf": "2026-06-30",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Dončić",
+      "name": "Luka Don\u010di\u0107",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -248,10 +248,10 @@
       "trueShooting": 0.615
     },
     {
-      "id": "leonaka01-lac",
+      "id": "leonaka01-tor",
       "bbrPlayerId": "leonaka01",
       "name": "Kawhi Leonard",
-      "team": "LAC",
+      "team": "TOR",
       "position": "SF",
       "positions": [
         "SF"
@@ -289,7 +289,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Jokić",
+      "name": "Nikola Joki\u0107",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1201,10 +1201,10 @@
       "trueShooting": 0.609
     },
     {
-      "id": "ingrabr01-tor",
+      "id": "ingrabr01-lac",
       "bbrPlayerId": "ingrabr01",
       "name": "Brandon Ingram",
-      "team": "TOR",
+      "team": "LAC",
       "position": "SF",
       "positions": [
         "SF"
@@ -1398,10 +1398,10 @@
       "trueShooting": 0.644
     },
     {
-      "id": "jamesle01-lal",
+      "id": "jamesle01-fa",
       "bbrPlayerId": "jamesle01",
       "name": "LeBron James",
-      "team": "LAL",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF",
@@ -1435,7 +1435,8 @@
       "blockPct": 1.6,
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.5588235294117647,
-      "trueShooting": 0.593
+      "trueShooting": 0.593,
+      "lastTeam": "LAL"
     },
     {
       "id": "alexani01-atl",
@@ -1598,7 +1599,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen Şengün",
+      "name": "Alperen \u015eeng\u00fcn",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -3181,7 +3182,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porziņģis",
+      "name": "Kristaps Porzi\u0146\u0123is",
       "team": "GSW",
       "position": "C",
       "positions": [
@@ -4051,7 +4052,7 @@
     {
       "id": "vucevni01-bos",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vučević",
+      "name": "Nikola Vu\u010devi\u0107",
       "team": "BOS",
       "position": "C",
       "positions": [
@@ -7637,7 +7638,7 @@
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurkić",
+      "name": "Jusuf Nurki\u0107",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -7794,7 +7795,7 @@
     {
       "id": "schrode01-cle",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schröder",
+      "name": "Dennis Schr\u00f6der",
       "team": "CLE",
       "position": "PG",
       "positions": [
@@ -9996,7 +9997,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traoré",
+      "name": "Nolan Traor\u00e9",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10192,7 +10193,7 @@
     {
       "id": "valanjo01-den",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valančiūnas",
+      "name": "Jonas Valan\u010di\u016bnas",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -10623,7 +10624,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "Vít Krejčí",
+      "name": "V\u00edt Krej\u010d\u00ed",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -11053,10 +11054,10 @@
       "lastTeam": "ORL"
     },
     {
-      "id": "bealbr01-lac",
+      "id": "bealbr01-fa",
       "bbrPlayerId": "bealbr01",
       "name": "Bradley Beal",
-      "team": "LAC",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -11089,7 +11090,8 @@
       "blockPct": 0,
       "personalFouls": 2.3,
       "effectiveFieldGoalPct": 0.45,
-      "trueShooting": 0.478
+      "trueShooting": 0.478,
+      "lastTeam": "LAC"
     },
     {
       "id": "johnsch06-brk",
@@ -11722,7 +11724,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabaté",
+      "name": "Moussa Diabat\u00e9",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12314,7 +12316,7 @@
     {
       "id": "bogdabo01-lac",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanović",
+      "name": "Bogdan Bogdanovi\u0107",
       "team": "LAC",
       "position": "SG",
       "positions": [
@@ -12747,7 +12749,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jović",
+      "name": "Nikola Jovi\u0107",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -14239,7 +14241,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jakučionis",
+      "name": "Kasparas Jaku\u010dionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -14433,10 +14435,10 @@
       "trueShooting": 0.5
     },
     {
-      "id": "dickgr01-tor",
+      "id": "dickgr01-lac",
       "bbrPlayerId": "dickgr01",
       "name": "Gradey Dick",
-      "team": "TOR",
+      "team": "LAC",
       "position": "SG",
       "positions": [
         "SG"
@@ -14552,7 +14554,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Salaün",
+      "name": "Tidjane Sala\u00fcn",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -15179,7 +15181,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matković",
+      "name": "Karlo Matkovi\u0107",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -16199,7 +16201,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topić",
+      "name": "Nikola Topi\u0107",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -17849,7 +17851,7 @@
     {
       "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissière",
+      "name": "Skal Labissi\u00e8re",
       "team": "FA",
       "position": "PF",
       "positions": [
@@ -17889,7 +17891,7 @@
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederhäuser",
+      "name": "Yanic Konan Niederh\u00e4user",
       "team": "LAC",
       "position": "C",
       "positions": [
@@ -18479,7 +18481,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo González",
+      "name": "Hugo Gonz\u00e1lez",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -20252,7 +20254,7 @@
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones García",
+      "name": "David Jones Garc\u00eda",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -20723,10 +20725,10 @@
       "trueShooting": 0.455
     },
     {
-      "id": "isaacjo01-orl",
+      "id": "isaacjo01-fa",
       "bbrPlayerId": "isaacjo01",
       "name": "Jonathan Isaac",
-      "team": "ORL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -20759,7 +20761,8 @@
       "blockPct": 5.4,
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.45238095238095244,
-      "trueShooting": 0.503
+      "trueShooting": 0.503,
+      "lastTeam": "ORL"
     },
     {
       "id": "crowdja01-fa",
@@ -22264,7 +22267,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pacôme Dadiet",
+      "name": "Pac\u00f4me Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -23013,7 +23016,7 @@
     {
       "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario Šarić",
+      "name": "Dario \u0160ari\u0107",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -23333,7 +23336,7 @@
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Mañon",
+      "name": "Chris Ma\u00f1on",
       "team": "LAL",
       "position": "SG",
       "positions": [
@@ -23773,6 +23776,6 @@
     "Fred VanVleet"
   ],
   "rosterSource": "espn-roster-api",
-  "freeAgentCount": 68,
-  "freeAgentSyncedAt": "2026-06-26T20:45:46.972874+00:00"
+  "freeAgentCount": 71,
+  "freeAgentSyncedAt": "2026-06-30T21:57:28.850146+00:00"
 }
