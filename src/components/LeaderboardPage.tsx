@@ -108,15 +108,15 @@ function LeaderboardEntryRow({
       </button>
       {expanded ? (
         <div className="leaderboard-row__details">
-          <span className="leaderboard-row__detail">
+          <div className="leaderboard-row__detail">
             <span className="leaderboard-row__detail-label">Record</span>
             <strong>{formatRecord(entry)}</strong>
-          </span>
+          </div>
           {showTier ? (
-            <span className="leaderboard-row__detail">
+            <div className="leaderboard-row__detail">
               <span className="leaderboard-row__detail-label">Tier</span>
               <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
-            </span>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -266,34 +266,24 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             role="tablist"
             aria-label="Leaderboard sort"
           >
-            {SORT_OPTIONS.map((option) => {
-              const available = option.views.includes(view);
-              const isActive = sort === option.id;
+            {SORT_OPTIONS.filter((option) => option.views.includes(view)).map(
+              (option) => {
+                const isActive = sort === option.id;
 
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-disabled={!available}
-                  tabIndex={available ? 0 : -1}
-                  className={[
-                    isActive ? "is-active" : "",
-                    available ? "" : "is-unavailable",
-                  ]
-                    .filter(Boolean)
-                    .join(" ") || undefined}
-                  onClick={() => {
-                    if (available) {
-                      handleSortChange(option.id);
-                    }
-                  }}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    className={isActive ? "is-active" : undefined}
+                    onClick={() => handleSortChange(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                );
+              },
+            )}
           </div>
           {showTierInfo ? (
             <div className="leaderboard__tier-info-slot">

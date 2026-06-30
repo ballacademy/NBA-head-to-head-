@@ -1369,6 +1369,7 @@ main {
 
 .feature-page--leaderboard {
   border-color: rgba(124, 58, 237, 0.38);
+  overflow: visible;
   background:
     linear-gradient(
       145deg,
@@ -1740,6 +1741,7 @@ main {
   display: grid;
   gap: 12px;
   margin-bottom: 16px;
+  overflow: visible;
 }
 
 .leaderboard__header {
@@ -2478,6 +2480,7 @@ main {
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   align-items: center;
+  overflow: visible;
 }
 
 .leaderboard__toolbar:has(.leaderboard__tier-info-slot) {
@@ -2487,18 +2490,22 @@ main {
 .leaderboard__sort-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .leaderboard__sort-grid button {
   width: 100%;
-  padding: 10px 12px;
+  min-width: 0;
+  padding: 8px 10px;
   border: 1px solid var(--panel-border);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.55);
   color: #e2e8f0;
+  font-size: clamp(0.72rem, 2.6vw, 0.84rem);
   font-weight: 700;
+  line-height: 1.15;
   text-align: center;
+  white-space: nowrap;
 }
 
 .leaderboard__sort-grid button.is-active {
@@ -2507,15 +2514,13 @@ main {
   color: #ede9fe;
 }
 
-.leaderboard__sort-grid button.is-unavailable {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .leaderboard__tier-info-slot {
   min-width: 108px;
   display: flex;
   justify-content: flex-end;
+  overflow: visible;
+  position: relative;
+  z-index: 6;
 }
 
 .leaderboard__tier-info {
@@ -2526,6 +2531,17 @@ main {
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
+  position: relative;
+}
+
+.leaderboard__tier-info .mode-card-info__popover {
+  z-index: 30;
+  width: min(280px, 84vw);
+  border-color: rgba(167, 139, 250, 0.45);
+  background: #0f172a;
+  box-shadow:
+    0 18px 40px rgba(2, 6, 23, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .leaderboard-rows {
@@ -2613,16 +2629,17 @@ main {
 
 .leaderboard-row__details {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  padding: 0 10px 8px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .leaderboard-row__detail {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .leaderboard-row__detail-label {
@@ -2667,6 +2684,17 @@ main {
 .daily-draft-results__percentile--loading {
   color: #94a3b8;
   font-style: italic;
+}
+
+@media (max-width: 860px) {
+  .leaderboard__toolbar:has(.leaderboard__tier-info-slot) {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard__tier-info-slot {
+    min-width: 0;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 720px) {
