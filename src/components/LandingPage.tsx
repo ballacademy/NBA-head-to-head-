@@ -553,7 +553,7 @@ export function LandingPage({
           className="landing-nav-actions__button"
           onClick={onViewStats}
         >
-          Season stats
+          Season Stats
         </button>
         <button
           type="button"

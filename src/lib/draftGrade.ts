@@ -72,7 +72,7 @@ export const buildDailyDraftShareText = (
   percentile?: number,
 ) => {
   const lines = [
-    `H2H Daily Draft ${dateKey}`,
+    `Draft Day GM Daily Draft ${dateKey}`,
     `🎯 ${goalTitle}`,
     `📊 ${formattedResult}`,
   ];
