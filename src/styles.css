@@ -24,6 +24,12 @@ html {
   background: var(--bg-deep);
 }
 
+html.stats-page-open,
+html.stats-page-open body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -333,13 +339,16 @@ main {
 }
 
 .landing-layout--stats {
-  overflow-x: clip;
-  max-width: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  touch-action: pan-y;
 }
 
 .landing-layout--stats > * {
   width: 100%;
   max-width: min(920px, 100%);
+  min-width: 0;
 }
 
 .landing-layout::before {
@@ -1487,10 +1496,11 @@ main {
 
 .feature-page--stats {
   border-color: rgba(59, 130, 246, 0.38);
-  overflow: visible;
+  overflow-x: hidden;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  touch-action: pan-y;
   background:
     linear-gradient(
       145deg,
@@ -3822,8 +3832,12 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
-  position: relative;
-  z-index: 20;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 12px 0;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(8px);
 }
 
 .stats-panel__header .section-heading,
@@ -3855,6 +3869,8 @@ main {
 .feature-page--stats .stats-table-wrap {
   border-color: rgba(59, 130, 246, 0.28);
   max-width: 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 .feature-page--stats .stats-table th {
@@ -4539,7 +4555,10 @@ main {
 
 .stats-panel {
   width: min(920px, 100%);
+  max-width: 100%;
   margin-top: 28px;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .stats-meta {
@@ -4578,9 +4597,14 @@ main {
 
 .stats-table-wrap {
   overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--panel-border);
   border-radius: 18px;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
 }
 
 .stats-table {
@@ -4660,6 +4684,15 @@ main {
   color: var(--muted);
 }
 
+.stats-panel__footer {
+  display: none;
+  margin-top: 16px;
+}
+
+.stats-panel__footer .secondary-button {
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   main {
     width: min(100% - 20px, 720px);
@@ -4700,11 +4733,17 @@ main {
     flex-direction: column;
   }
 
-  .feature-page--stats .stats-search input,
-  .feature-page--stats .stats-table th,
-  .feature-page--stats .stats-table td,
-  .feature-page--stats .sort-button,
-  .feature-page--stats .sort-button.active {
+  .stats-panel__footer {
+    display: block;
+  }
+
+  .feature-page--stats .stats-search input {
     font-size: 16px;
+  }
+
+  .feature-page--stats .stats-table th,
+  .feature-page--stats .stats-table td {
+    padding: 10px 10px;
+    font-size: 0.88rem;
   }
 }

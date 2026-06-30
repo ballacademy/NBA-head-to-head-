@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { comparePositions } from "../lib/positions";
 import { getDefenseGrade } from "../lib/defenseGrade";
 import {
@@ -101,44 +101,23 @@ export function PlayerStatsTable({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const tableWrapRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    const resetTableScroll = () => {
-      window.scrollTo({ top: 0, left: 0 });
-      document.documentElement.scrollLeft = 0;
-      document.body.scrollLeft = 0;
+  useEffect(() => {
+    tableWrapRef.current?.scrollTo({ left: 0 });
+  }, []);
 
-      if (tableWrapRef.current) {
-        tableWrapRef.current.scrollLeft = 0;
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onBack();
       }
     };
 
-    resetTableScroll();
-
-    const frameId = window.requestAnimationFrame(resetTableScroll);
-    const timeoutId = window.setTimeout(resetTableScroll, 120);
-
-    if (typeof document !== "undefined" && "fonts" in document) {
-      void document.fonts.ready.then(resetTableScroll);
-    }
-
-    const tableWrap = tableWrapRef.current;
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined" && tableWrap
-        ? new ResizeObserver(() => {
-            resetTableScroll();
-          })
-        : null;
-
-    if (tableWrap) {
-      resizeObserver?.observe(tableWrap);
-    }
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-      resizeObserver?.disconnect();
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [onBack]);
 
   const statsInfoDetails = useMemo(
     () => [
@@ -304,6 +283,11 @@ export function PlayerStatsTable({
       <p className="stats-footnote">
         Showing {filteredPlayers.length} of {players.length} players.
       </p>
+      <div className="stats-panel__footer">
+        <button type="button" className="secondary-button" onClick={onBack}>
+          Back to home
+        </button>
+      </div>
     </section>
   );
 }
