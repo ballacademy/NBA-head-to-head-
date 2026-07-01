@@ -11,6 +11,9 @@ interface LossStreakIconProps {
   className?: string;
 }
 
+const LOSS_SIDE_FLAME =
+  "M9.35 12.15c-.75 1.2-.8 2.35-.15 3.3.4-.7.9-1.1 1.4-1.1.35 0 .6.15.85.35-.25-1.2-.2-2.25.4-3.05-.6.35-1.25.15-1.65-.35-.15.15-.3.3-.35.45Z";
+
 export function WinStreakIcon({ tier, className }: WinStreakIconProps) {
   return (
     <svg
@@ -64,18 +67,14 @@ export function LossStreakIcon({ tier, className }: LossStreakIconProps) {
         d="M7.5 12.75h9l-.65-2.05a.75.75 0 0 0-.7-.5h-6a.75.75 0 0 0-.7.5l-.65 2.05Z"
       />
       <path className="streak-icon__bin-rim" d="M10.25 9.85h3.5" />
-      <path
-        className="streak-icon__flame streak-icon__flame--left"
-        d="M9.65 12.35c-.7 1.15-.75 2.3-.15 3.25.35-.7.85-1.1 1.35-1.1.35 0 .6.15.85.4-.25-1.2-.2-2.25.4-3.1-.6.35-1.25.15-1.65-.35Z"
-      />
+      <path className="streak-icon__flame streak-icon__flame--left" d={LOSS_SIDE_FLAME} />
       <path
         className="streak-icon__flame streak-icon__flame--center"
         d="M12 10.85c-1.05 1.7-1.1 3.45 0 4.85.55-.75 1.25-1.2 2-1.2s1.45.45 2 1.2c1.1-1.4 1.05-3.15 0-4.85-.95.45-1.95.45-2.9 0Z"
       />
-      <path
-        className="streak-icon__flame streak-icon__flame--right"
-        d="M14.35 12.35c.4-.5 1.05-.7 1.65-.35.6.85.65 1.9.4 3.1.25-.25.5-.4.85-.4.5 0 1 .4 1.35 1.1.6-.95.55-2.1-.15-3.25-.4.5-1.05.7-1.65.35Z"
-      />
+      <g transform="translate(24 0) scale(-1 1)">
+        <path className="streak-icon__flame streak-icon__flame--right" d={LOSS_SIDE_FLAME} />
+      </g>
       {tier === "black" ? (
         <>
           <path className="streak-icon__smoke" d="M8.75 6.45c.35-.75.75-.75 1.1 0" />

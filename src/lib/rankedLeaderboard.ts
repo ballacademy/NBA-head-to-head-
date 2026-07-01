@@ -4,6 +4,7 @@ import {
   getCachedRemoteLeaderboard,
   syncLeaderboardEntryToApi,
 } from "./leaderboardRemote";
+import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
 import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
 import { RATING_LABEL, formatRankedElo, getTierForElo } from "./rankedElo";
 import { PRO_LEADERBOARD_LABEL } from "./modeLabels";
@@ -343,7 +344,18 @@ export const upsertRankedLeaderboardEntry = (
   });
 
   const merged = [...current, nextEntry].sort(compareByElo);
-  saveLeaderboard(seasonId, merged.slice(0, RANKED_LEADERBOARD_LIMIT));
+  const limited = merged.slice(0, RANKED_LEADERBOARD_LIMIT);
+  saveLeaderboard(seasonId, limited);
+
+  const monthlyRank =
+    limited.findIndex((candidate) => candidate.playerId === entry.playerId) + 1;
+
+  recordLocalGmLegacySnapshot({
+    elo: nextEntry.elo,
+    seasonId,
+    monthlyRank: monthlyRank > 0 ? monthlyRank : null,
+  });
+
   syncLeaderboardEntryToApi({
     mode: "ranked",
     seasonId,

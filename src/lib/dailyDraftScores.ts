@@ -71,6 +71,37 @@ const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
 export const loadDailyScoresForDate = (dateKey: string) =>
   loadDailyScoreStore()[dateKey] ?? [];
 
+export const summarizePlayerDailyDraftHistory = (
+  playerId = getOrCreatePlayerId(),
+) => {
+  const store = loadDailyScoreStore();
+  const entries = Object.entries(store).flatMap(([dateKey, dayEntries]) =>
+    dayEntries
+      .filter((entry) => entry.playerId === playerId)
+      .map((entry) => ({ ...entry, dateKey })),
+  );
+  const percentiles = entries
+    .map((entry) => entry.percentile)
+    .filter((value): value is number => typeof value === "number");
+  const latest = [...entries].sort((left, right) =>
+    right.submittedAt.localeCompare(left.submittedAt),
+  )[0];
+
+  return {
+    daysPlayed: new Set(entries.map((entry) => entry.dateKey)).size,
+    bestPercentile:
+      percentiles.length > 0 ? Math.max(...percentiles) : null,
+    averagePercentile:
+      percentiles.length > 0
+        ? Math.round(
+            percentiles.reduce((sum, value) => sum + value, 0) /
+              percentiles.length,
+          )
+        : null,
+    latestResult: latest?.formattedResult ?? null,
+  };
+};
+
 export const computePercentile = (
   value: number,
   values: number[],

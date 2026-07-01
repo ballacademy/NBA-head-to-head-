@@ -7,6 +7,7 @@ import {
   type RankedTier,
 } from "./rankedElo";
 import { getCurrentSeasonId } from "./rankedSeason";
+import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
 import type { HeadToHeadResult } from "./playerRecord";
 
 const getActiveStreakForElo = (
@@ -151,6 +152,11 @@ export const applyRankedMatchResult = ({
   };
 
   saveRankedProfile(nextProfile);
+
+  recordLocalGmLegacySnapshot({
+    elo: nextProfile.peakElo,
+    seasonId: nextProfile.seasonId,
+  });
 
   return {
     profile: {

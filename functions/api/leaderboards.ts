@@ -1,5 +1,6 @@
 import type { Env, LeaderboardEntryRow } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
+import { upsertPlayerLegacyStats } from "../lib/playerLegacy";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -194,6 +195,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       updatedAt,
     )
     .run();
+
+  if (mode === "ranked" && seasonId) {
+    await upsertPlayerLegacyStats(context.env, playerId, seasonId, elo);
+  }
 
   return json(
     {
