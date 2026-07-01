@@ -1211,6 +1211,15 @@ main {
   line-height: 1.2;
 }
 
+.team-name-modal__panel {
+  text-align: center;
+}
+
+.team-name-modal__button {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .unlock-modal--compact .eyebrow {
   font-size: 0.7rem;
 }

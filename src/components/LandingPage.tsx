@@ -35,6 +35,7 @@ import {
 import { ClassicModeSummary } from "./ClassicModeSummary";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { ModeCardInfo } from "./ModeCardInfo";
+import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { LossStreakBadge } from "./LossStreakBadge";
@@ -116,6 +117,8 @@ export function LandingPage({
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
+  const [showTeamNameModal, setShowTeamNameModal] = useState(false);
+  const [teamNameModalMessage, setTeamNameModalMessage] = useState("");
   const [showUnlockModal, setShowUnlockModal] = useState(
     () => Boolean(collection.pendingUnlock),
   );
@@ -148,8 +151,11 @@ export function LandingPage({
   const dailyCompleted = Boolean(dailyEntry);
   const isMatchmaking = matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
-  const canStartDraft =
-    teamValidation.ok && !isMatchmaking && !collection.pendingUnlock;
+  const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
+  const profanityWarning =
+    teamValidation.ok === false && teamValidation.error === "profanity"
+      ? getTeamProfileValidationMessage("profanity")
+      : null;
   const classicModeDetails = useMemo(
     () =>
       buildHeadToHeadModeDetails(
@@ -178,6 +184,21 @@ export function LandingPage({
     matchmakingElapsedSeconds > 0
       ? `Finding opponent… ${matchmakingElapsedSeconds}s`
       : "Finding opponent…";
+
+  const promptForValidTeamProfile = (): TeamProfile | null => {
+    const validation = validateTeamProfile(name);
+
+    if (!validation.ok) {
+      const message = getTeamProfileValidationMessage(validation.error);
+      setError(message);
+      setTeamNameModalMessage(message);
+      setShowTeamNameModal(true);
+      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return null;
+    }
+
+    return validation.profile;
+  };
 
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, collection);
@@ -215,15 +236,11 @@ export function LandingPage({
       return;
     }
 
-    const validation = validateTeamProfile(name);
+    const team = promptForValidTeamProfile();
 
-    if (!validation.ok) {
-      setError(getTeamProfileValidationMessage(validation.error));
-      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!team) {
       return;
     }
-
-    const team = validation.profile;
 
     setError("");
     const started = await onStartDraft(team, options);
@@ -243,14 +260,6 @@ export function LandingPage({
       if (collection.pendingUnlock) {
         setShowUnlockModal(true);
       }
-      return;
-    }
-
-    const validation = validateTeamProfile(name);
-
-    if (!validation.ok) {
-      setError(getTeamProfileValidationMessage(validation.error));
-      teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -290,6 +299,15 @@ export function LandingPage({
 
   return (
     <section className="landing panel landing--rich">
+      {showTeamNameModal ? (
+        <TeamNameValidationModal
+          message={teamNameModalMessage}
+          onClose={() => {
+            setShowTeamNameModal(false);
+          }}
+        />
+      ) : null}
+
       {showUnlockModal && collection.pendingUnlock ? (
         <PlayerUnlockModal
           offer={collection.pendingUnlock}
@@ -345,8 +363,8 @@ export function LandingPage({
           </span>
         </p>
 
-        {error || startMatchError ? (
-          <p className="form-error">{error || startMatchError}</p>
+        {profanityWarning || error || startMatchError ? (
+          <p className="form-error">{profanityWarning || error || startMatchError}</p>
         ) : null}
       </div>
 
@@ -409,7 +427,7 @@ export function LandingPage({
             <button
               type="button"
               className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
-              disabled={!canStartDraft || (dailyCompleted && !canViewDailyLineup)}
+              disabled={modesBlocked || (dailyCompleted && !canViewDailyLineup)}
               onClick={() => void handleDailyAction()}
             >
               {dailyCompleted
@@ -442,7 +460,7 @@ export function LandingPage({
             <button
               type="button"
               className="landing__primary-button"
-              disabled={!canStartDraft}
+              disabled={modesBlocked}
               onClick={() => void handleStart()}
             >
               {matchmakingMode === "classic"
@@ -452,7 +470,7 @@ export function LandingPage({
             <button
               type="button"
               className="head-to-head-card__practice-button"
-              disabled={!canStartDraft}
+              disabled={modesBlocked}
               onClick={() =>
                 void handleStart({
                   practiceMode: true,
@@ -484,7 +502,7 @@ export function LandingPage({
             <button
               type="button"
               className="ranked-cap-card__button"
-              disabled={!canStartDraft}
+              disabled={modesBlocked}
               onClick={() => void handleStart({ salaryCapMode: true })}
             >
               {matchmakingMode === "ranked"
@@ -494,7 +512,7 @@ export function LandingPage({
             <button
               type="button"
               className="ranked-cap-card__practice-button"
-              disabled={!canStartDraft}
+              disabled={modesBlocked}
               onClick={() =>
                 void handleStart({
                   practiceMode: true,
@@ -529,7 +547,7 @@ export function LandingPage({
               <button
                 type="button"
                 className="all-time-card__button"
-                disabled={!canStartDraft}
+                disabled={modesBlocked}
                 onClick={() => void handleStart({ allTimeMode: true })}
               >
                 Play All-Time Draft
