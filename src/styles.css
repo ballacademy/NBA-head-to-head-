@@ -465,6 +465,33 @@ main {
   margin-bottom: 8px;
 }
 
+.landing-mode-card__record-stats {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  margin: 0;
+}
+
+.landing-mode-card__record-stats--right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.landing-mode-card__record-stats--right .landing-mode-card__record-stat {
+  align-items: flex-end;
+}
+
+.landing-mode-card__record-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.landing-mode-card__record-value--streak {
+  min-height: 1.3rem;
+}
+
 .ranked-mode-summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -488,6 +515,10 @@ main {
   justify-self: end;
   align-items: flex-end;
   text-align: right;
+}
+
+.ranked-mode-summary__record.landing-mode-card__record-stats {
+  justify-self: end;
 }
 
 .landing-mode-card__record-block--casual {
@@ -799,9 +830,8 @@ main {
 .win-streak-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-shrink: 0;
-  margin-left: 8px;
   vertical-align: middle;
   overflow: visible;
 }
@@ -950,9 +980,8 @@ main {
 .loss-streak-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-shrink: 0;
-  margin-left: 8px;
   vertical-align: middle;
   overflow: visible;
 }
@@ -3146,6 +3175,10 @@ main {
     line-height: 1.25;
   }
 
+  .landing-mode-card__record-stats {
+    gap: 12px;
+  }
+
   .landing-mode-card__record-meta {
     margin-top: 2px;
     line-height: 1.35;
@@ -3661,19 +3694,18 @@ main {
 }
 
 .player-team-icon--jersey {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   background: rgba(15, 23, 42, 0.2);
 }
 
 .player-jersey {
   display: block;
-  width: 88%;
-  height: 88%;
-  margin: 0;
-  transform: translateY(0.5px);
+  width: 82%;
+  height: 82%;
+  margin: 0 auto;
+  overflow: visible;
 }
 
 .player-jersey__outline {
@@ -3692,7 +3724,7 @@ main {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 12px;
+  font-size: 16.2px;
   font-weight: 900;
   letter-spacing: -0.04em;
   paint-order: stroke;
