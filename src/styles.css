@@ -2305,11 +2305,11 @@ main {
 }
 
 .head-to-head-card .eyebrow {
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 
 .head-to-head-card__description {
-  margin: 6px 0 12px;
+  margin: 2px 0 10px;
   color: #cbd5e1;
 }
 
@@ -2337,7 +2337,7 @@ main {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .mode-card__header .eyebrow {
@@ -2348,13 +2348,13 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: 1px solid rgba(148, 163, 184, 0.45);
   border-radius: 999px;
   color: #cbd5e1;
-  font-size: 0.75rem;
+  font-size: 0.62rem;
   font-weight: 800;
   font-style: italic;
   line-height: 1;
@@ -2561,7 +2561,7 @@ main {
 }
 
 .ranked-cap-card__description {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: #cbd5e1;
 }
 
