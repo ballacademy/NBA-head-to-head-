@@ -29,6 +29,7 @@
     "grantje01": "MEM",
     "greenjo02": "MIN",
     "hallpj01": "CHO",
+    "hardati02": "MIA",
     "hardyja02": "WAS",
     "hendrta01": "MEM",
     "herroty01": "MIL",
@@ -69,7 +70,13 @@
     "wareke01": "MIL",
     "yabusgu01": "CHI",
     "youngch01": "POR",
-    "youngtr01": "WAS"
+    "youngtr01": "WAS",
+    "williro04": "POR",
+    "carlsbr01": "POR",
+    "jordade01": "NOP",
+    "achiupr01": "SAC",
+    "champju02": "SAS",
+    "fontesi01": "MIA"
   },
-  "updatedAt": "2026-06-30T21:57:28.850158+00:00"
+  "updatedAt": "2026-07-01T01:55:06.120126+00:00"
 }

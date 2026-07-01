@@ -266,6 +266,28 @@ export const resolvePlayerDailyDraftPercentile = (
     entry.playerId,
   );
 
+export const loadReviewDailyDraftPercentile = async (
+  dateKey: string,
+  goal: DailyDraftGoal,
+  benchmarkValues: number[],
+  playerId = getOrCreatePlayerId(),
+): Promise<DailyDraftPercentileResult | null> => {
+  const entry = findPlayerDailyDraftEntry(dateKey, playerId);
+
+  if (!entry) {
+    return null;
+  }
+
+  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId);
+
+  return resolvePlayerDailyDraftPercentile(
+    dateKey,
+    entry,
+    goal,
+    benchmarkValues,
+  );
+};
+
 export const findPlayerDailyDraftEntry = (
   dateKey: string,
   playerId = getOrCreatePlayerId(),

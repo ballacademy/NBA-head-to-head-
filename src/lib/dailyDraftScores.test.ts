@@ -6,6 +6,7 @@ import {
   formatPlayerDailyDraftPercentile,
   getDailyDraftPercentile,
   hasCompletedDailyDraft,
+  loadReviewDailyDraftPercentile,
   submitDailyDraftScore,
 } from "./dailyDraftScores";
 import { DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
@@ -170,6 +171,58 @@ describe("dailyDraftScores", () => {
     ).toBe(alternateGoal.id);
     expect(hasCompletedDailyDraft("2099-03-01", goal.id, "player-goal-mismatch")).toBe(
       true,
+    );
+  });
+
+  it("loads stored review percentiles for completed daily drafts", async () => {
+    const storage = stubPlayerStorage("player-review-percentile");
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-04-01": [
+          {
+            playerId: "player-review-percentile",
+            goalId: goal.id,
+            value: 42,
+            formattedResult: "42.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-04-01T12:00:00.000Z",
+            percentile: 88,
+          },
+        ],
+      }),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          dateKey: "2099-04-01",
+          goalId: goal.id,
+          values: [10, 20, 30, 50],
+          totalDrafters: 2,
+          entry: null,
+        }),
+      }),
+    );
+
+    const result = await loadReviewDailyDraftPercentile(
+      "2099-04-01",
+      goal,
+      [10, 20, 30],
+      "player-review-percentile",
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.percentile).toBe(
+      getDailyDraftPercentile(
+        "2099-04-01",
+        42,
+        goal,
+        [10, 20, 30],
+        "player-review-percentile",
+      ).percentile,
     );
   });
 });

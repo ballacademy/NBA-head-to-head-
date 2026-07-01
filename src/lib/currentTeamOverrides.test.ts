@@ -12,6 +12,7 @@ describe("current team overrides", () => {
     expect(CURRENT_TEAM_OVERRIDES.leonaka01).toBe("TOR");
     expect(CURRENT_TEAM_OVERRIDES.ingrabr01).toBe("LAC");
     expect(CURRENT_TEAM_OVERRIDES.dickgr01).toBe("LAC");
+    expect(CURRENT_TEAM_OVERRIDES.hardati02).toBe("MIA");
   });
 
   it("applies synced teams to active player objects", () => {
@@ -21,6 +22,7 @@ describe("current team overrides", () => {
     const morant = playersById.get("moranja01-por");
     const kawhi = playersById.get("leonaka01-tor");
     const ingram = playersById.get("ingrabr01-lac");
+    const hardaway = playersById.get("hardati02-mia");
 
     expect(randle?.team).toBe("BRK");
     expect(lamelo?.team).toBe("MIN");
@@ -28,5 +30,7 @@ describe("current team overrides", () => {
     expect(morant?.team).toBe("POR");
     expect(kawhi?.team).toBe("TOR");
     expect(ingram?.team).toBe("LAC");
+    expect(hardaway?.team).toBe("MIA");
+    expect(hardaway?.salary).toBe(6_500_000);
   });
 });

@@ -13,6 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INPUT_PATH = ROOT / "data" / "manual" / "nba-salaries.csv"
+DEFAULT_SUPPLEMENTS_PATH = ROOT / "data" / "manual" / "nba-salary-supplements.csv"
 DEFAULT_OUTPUT_PATH = ROOT / "data" / "nba-salaries-202627.json"
 DEFAULT_STATS_PATH = (
     ROOT / "data" / "nba-stats" / "nba-player-stats-202526-regular-season.json"
@@ -115,28 +116,40 @@ def build_salary_payload(
     season: str,
     input_path: Path,
     stats_pool: set[str] | None = None,
+    supplement_rows: list[dict[str, str]] | None = None,
 ) -> dict:
     salaries: dict[str, int] = {}
     duplicates: list[str] = []
 
-    for row in rows:
-        bbr_player_id = row["bbr_player_id"]
-        if stats_pool is not None and bbr_player_id not in stats_pool:
-            continue
+    def apply_rows(source_rows: list[dict[str, str]], *, overwrite: bool) -> None:
+        for row in source_rows:
+            bbr_player_id = row["bbr_player_id"]
+            if stats_pool is not None and bbr_player_id not in stats_pool:
+                continue
 
-        salary = parse_salary(row["salary_usd"])
-        if bbr_player_id in salaries and salaries[bbr_player_id] != salary:
-            duplicates.append(bbr_player_id)
-        salaries[bbr_player_id] = salary
+            salary = parse_salary(row["salary_usd"])
+            if bbr_player_id in salaries and salaries[bbr_player_id] != salary:
+                duplicates.append(bbr_player_id)
+            if overwrite or bbr_player_id not in salaries:
+                salaries[bbr_player_id] = salary
+
+    apply_rows(rows, overwrite=True)
+    if supplement_rows:
+        apply_rows(supplement_rows, overwrite=False)
 
     if duplicates:
         joined = ", ".join(sorted(set(duplicates)))
         raise ValueError(f"Conflicting salaries for: {joined}")
 
+    sources = [relative_repo_path(input_path)]
+    if supplement_rows:
+        sources.append(relative_repo_path(DEFAULT_SUPPLEMENTS_PATH))
+
     return {
         "season": season,
         "source": "manual-curation",
-        "inputFile": relative_repo_path(input_path),
+        "inputFile": sources[0],
+        "supplementsFile": sources[1] if len(sources) > 1 else None,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "playerCount": len(salaries),
         "salaries": dict(sorted(salaries.items())),
@@ -225,6 +238,20 @@ def parse_args() -> argparse.Namespace:
         help=f"Output JSON path (default: {DEFAULT_OUTPUT_PATH})",
     )
     parser.add_argument(
+        "--supplements",
+        type=Path,
+        default=DEFAULT_SUPPLEMENTS_PATH,
+        help=(
+            "Optional supplemental salary CSV for recent signings not yet in "
+            f"the main file (default: {DEFAULT_SUPPLEMENTS_PATH})."
+        ),
+    )
+    parser.add_argument(
+        "--no-supplements",
+        action="store_true",
+        help="Skip loading the supplemental salary CSV.",
+    )
+    parser.add_argument(
         "--season",
         default="2026-27",
         help="Salary season label stored in the JSON file (default: 2026-27).",
@@ -288,12 +315,16 @@ def main() -> int:
         return 0
 
     rows = read_salary_rows(args.input)
+    supplement_rows = None
+    if not args.no_supplements and args.supplements.exists():
+        supplement_rows = read_salary_rows(args.supplements)
     stats_pool = load_stats_pool(args.stats_pool) if args.stats_pool else None
     payload = build_salary_payload(
         rows,
         season=args.season,
         input_path=args.input,
         stats_pool=stats_pool,
+        supplement_rows=supplement_rows,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -5431,10 +5431,10 @@
       "trueShooting": 0.565
     },
     {
-      "id": "hardati02-den",
+      "id": "hardati02-mia",
       "bbrPlayerId": "hardati02",
       "name": "Tim Hardaway Jr.",
-      "team": "DEN",
+      "team": "MIA",
       "position": "SG",
       "positions": [
         "SG"
@@ -14709,10 +14709,10 @@
       "trueShooting": 0.682
     },
     {
-      "id": "carlsbr01-okc",
+      "id": "carlsbr01-por",
       "bbrPlayerId": "carlsbr01",
       "name": "Branden Carlson",
-      "team": "OKC",
+      "team": "POR",
       "position": "C",
       "positions": [
         "C",
