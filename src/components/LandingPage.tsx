@@ -11,7 +11,6 @@ import { getDailyGoalById } from "../lib/dailyDraftGoals";
 import { useDailyDateKey } from "../lib/useDailyDateKey";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
-  formatPlayerRecord,
   type ModePlayerRecords,
   type PlayerRecord,
 } from "../lib/playerRecord";
@@ -38,10 +37,7 @@ import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
-import { LossStreakBadge } from "./LossStreakBadge";
-import { WinStreakBadge } from "./WinStreakBadge";
-import { hasLossStreakBadge } from "../lib/lossStreak";
-import { hasFireStreak } from "../lib/winStreak";
+import { RecordWithStreak } from "./RecordWithStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions } from "../lib/match";
@@ -80,19 +76,11 @@ interface LandingPageProps {
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
   return (
     <div className="landing-mode-card__record-block landing-mode-card__record-block--solo">
-      <p className="landing-mode-card__record ranked-mode-summary__record">
-        <span className="landing-mode-card__record-label">Record</span>
-        <span className="landing-mode-card__record-value">
-          {formatPlayerRecord(record)}
-          {hasFireStreak(record.winStreak) ? (
-            <WinStreakBadge winStreak={record.winStreak} />
-          ) : null}
-          {!hasFireStreak(record.winStreak) &&
-          hasLossStreakBadge(record.lossStreak) ? (
-            <LossStreakBadge lossStreak={record.lossStreak} />
-          ) : null}
-        </span>
-      </p>
+      <RecordWithStreak
+        record={record}
+        align="right"
+        className="ranked-mode-summary__record"
+      />
     </div>
   );
 }
