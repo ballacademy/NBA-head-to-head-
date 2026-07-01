@@ -28,7 +28,11 @@ import {
   getDailyDraftSetup,
   subtractDaysFromDateKey,
 } from "./lib/dailyDraft";
-import { getResolvedDailyDraftSetup } from "./lib/dailyDraftGoalResolve";
+import {
+  getCanonicalDailyDraftSetup,
+  getResolvedDailyDraftSetup,
+  refreshCanonicalDailyGoalData,
+} from "./lib/dailyDraftGoalResolve";
 import { solveBestDailyDraftLineup } from "./lib/dailyDraftSolver";
 import {
   hasSeenDraftOnboarding,
@@ -236,7 +240,7 @@ function App() {
     }
 
     if (isDailyOptimalReview) {
-      return getDailyDraftSetup(dailyDateKey);
+      return getCanonicalDailyDraftSetup(dailyDateKey);
     }
 
     if (isDailyReview) {
@@ -571,9 +575,10 @@ function App() {
     return true;
   }, []);
 
-  const viewYesterdayBestDailyLineup = useCallback((): boolean => {
+  const viewYesterdayBestDailyLineup = useCallback(async (): Promise<boolean> => {
     const yesterdayKey = subtractDaysFromDateKey(getDailyDateKey(), 1);
-    const setup = getDailyDraftSetup(yesterdayKey);
+    const playerId = getOrCreatePlayerIdentity().playerId;
+    const setup = await refreshCanonicalDailyGoalData(yesterdayKey, playerId);
     const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
     const bestLineup = solveBestDailyDraftLineup(
       pool,

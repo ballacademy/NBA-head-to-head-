@@ -52,7 +52,7 @@ export function PlayerTeamIcon({
           <text
             className="player-jersey__number"
             x="24"
-            y="33"
+            y="31.5"
             textAnchor="middle"
             dominantBaseline="middle"
           >

@@ -806,6 +806,24 @@ main {
   overflow: visible;
 }
 
+.streak-icon {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 1px 1.5px rgba(2, 6, 23, 0.45));
+}
+
+.streak-icon--win .streak-icon__flame--outer {
+  stroke: rgba(124, 45, 18, 0.35);
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+}
+
+.streak-icon--loss .streak-icon__bin {
+  stroke: rgba(15, 23, 42, 0.35);
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+}
+
 .win-streak-badge__icon {
   width: 1.15rem;
   height: 1.15rem;
@@ -870,6 +888,10 @@ main {
 
 .win-streak-badge--blue .streak-icon__bolt {
   fill: #fef08a;
+  stroke: #ca8a04;
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
 }
 
 .win-streak-badge--blue .win-streak-badge__count {
@@ -953,6 +975,9 @@ main {
 
 .loss-streak-badge .streak-icon__bin-lid {
   fill: #475569;
+  stroke: rgba(15, 23, 42, 0.25);
+  stroke-width: 0.35;
+  stroke-linejoin: round;
 }
 
 .loss-streak-badge .streak-icon__bin-rim {
@@ -3627,15 +3652,19 @@ main {
 }
 
 .player-team-icon--jersey {
-  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
   background: rgba(15, 23, 42, 0.2);
 }
 
 .player-jersey {
   display: block;
-  width: 82%;
-  height: 82%;
-  margin: auto;
+  width: 88%;
+  height: 88%;
+  margin: 0;
+  transform: translateY(0.5px);
 }
 
 .player-jersey__outline {
@@ -3654,7 +3683,7 @@ main {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: -0.04em;
   paint-order: stroke;
