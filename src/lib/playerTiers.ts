@@ -6,7 +6,7 @@ import type { Player } from "./types";
 export const SCRUB_POOL_SIZE = 30;
 export const SUPER_SCRUB_POOL_SIZE = 6;
 export const SCRUB_POOL_EXCLUDED_BBR_IDS = [
-  "bealbr01",
+  "looneke01",
   "adamsst01",
   "martica02",
   "russeda01",

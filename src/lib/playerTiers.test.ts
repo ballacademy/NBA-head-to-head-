@@ -84,7 +84,7 @@ describe("playerTiers", () => {
   });
 
   it("excludes manual scrub-pool overrides and backfills the next-worst players", () => {
-    const beal = players.find((player) => player.bbrPlayerId === "bealbr01");
+    const looney = players.find((player) => player.bbrPlayerId === "looneke01");
     const adams = players.find((player) => player.bbrPlayerId === "adamsst01");
     const martin = players.find((player) => player.bbrPlayerId === "martica02");
     const russell = players.find((player) => player.bbrPlayerId === "russeda01");
@@ -92,12 +92,12 @@ describe("playerTiers", () => {
       (player) => player.name === "Andre Jackson Jr.",
     );
 
-    expect(beal).toBeDefined();
+    expect(looney).toBeDefined();
     expect(adams).toBeDefined();
     expect(martin).toBeDefined();
     expect(russell).toBeDefined();
     expect(jackson).toBeDefined();
-    expect(isScrubPlayer(beal!)).toBe(false);
+    expect(isScrubPlayer(looney!)).toBe(false);
     expect(isScrubPlayer(adams!)).toBe(false);
     expect(isScrubPlayer(martin!)).toBe(false);
     expect(isScrubPlayer(russell!)).toBe(false);

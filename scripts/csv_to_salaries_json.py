@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_INPUT_PATH = ROOT / "data" / "manual" / "nba-salaries.csv"
 DEFAULT_SUPPLEMENTS_PATH = ROOT / "data" / "manual" / "nba-salary-supplements.csv"
+DEFAULT_VOIDED_PATH = ROOT / "data" / "manual" / "nba-voided-contracts.csv"
 DEFAULT_OUTPUT_PATH = ROOT / "data" / "nba-salaries-202627.json"
 DEFAULT_STATS_PATH = (
     ROOT / "data" / "nba-stats" / "nba-player-stats-202526-regular-season.json"
@@ -23,6 +24,8 @@ SALARY_ID_COLUMNS = ("bbr_player_id", "bbrPlayerId", "bbrplayerid")
 SALARY_VALUE_COLUMNS = ("salary_usd", "salary", "salaryUsd", "salary_usd_2026_27")
 NAME_COLUMNS = ("name", "player_name", "playerName")
 NOTES_COLUMNS = ("notes", "note", "comment")
+VOIDED_ID_COLUMNS = ("bbr_id", "bbr_player_id", "bbrPlayerId")
+VOIDED_REASON_COLUMNS = ("reason", "notes", "note")
 
 
 def relative_repo_path(path: Path) -> str:
@@ -110,6 +113,29 @@ def read_salary_rows(path: Path) -> list[dict[str, str]]:
     return rows
 
 
+def read_voided_contract_ids(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames:
+            raise ValueError(f"{path} is missing a header row.")
+
+        id_column = resolve_column(reader.fieldnames, VOIDED_ID_COLUMNS)
+        if not id_column:
+            raise ValueError(f"{path} must include a bbr_id or bbr_player_id column.")
+
+        voided_ids: set[str] = set()
+        for line_number, row in enumerate(reader, start=2):
+            bbr_player_id = str(row.get(id_column) or "").strip()
+            if not bbr_player_id:
+                continue
+            voided_ids.add(bbr_player_id)
+
+    return voided_ids
+
+
 def build_salary_payload(
     rows: list[dict[str, str]],
     *,
@@ -117,13 +143,18 @@ def build_salary_payload(
     input_path: Path,
     stats_pool: set[str] | None = None,
     supplement_rows: list[dict[str, str]] | None = None,
+    voided_ids: set[str] | None = None,
 ) -> dict:
     salaries: dict[str, int] = {}
     duplicates: list[str] = []
+    excluded_voided: list[str] = []
 
     def apply_rows(source_rows: list[dict[str, str]], *, overwrite: bool) -> None:
         for row in source_rows:
             bbr_player_id = row["bbr_player_id"]
+            if voided_ids and bbr_player_id in voided_ids:
+                excluded_voided.append(bbr_player_id)
+                continue
             if stats_pool is not None and bbr_player_id not in stats_pool:
                 continue
 
@@ -150,9 +181,16 @@ def build_salary_payload(
         "source": "manual-curation",
         "inputFile": sources[0],
         "supplementsFile": sources[1] if len(sources) > 1 else None,
+        "voidedContractsFile": (
+            relative_repo_path(DEFAULT_VOIDED_PATH)
+            if voided_ids
+            else None
+        ),
+        "voidedPlayerCount": len(voided_ids or ()),
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "playerCount": len(salaries),
         "salaries": dict(sorted(salaries.items())),
+        "_excludedVoided": sorted(set(excluded_voided)),
     }
 
 
@@ -252,6 +290,20 @@ def parse_args() -> argparse.Namespace:
         help="Skip loading the supplemental salary CSV.",
     )
     parser.add_argument(
+        "--voided",
+        type=Path,
+        default=DEFAULT_VOIDED_PATH,
+        help=(
+            "Optional CSV of voided/declined contracts to exclude from output "
+            f"(default: {DEFAULT_VOIDED_PATH})."
+        ),
+    )
+    parser.add_argument(
+        "--no-voided",
+        action="store_true",
+        help="Skip loading the voided contracts CSV.",
+    )
+    parser.add_argument(
         "--season",
         default="2026-27",
         help="Salary season label stored in the JSON file (default: 2026-27).",
@@ -318,6 +370,9 @@ def main() -> int:
     supplement_rows = None
     if not args.no_supplements and args.supplements.exists():
         supplement_rows = read_salary_rows(args.supplements)
+    voided_ids = None
+    if not args.no_voided and args.voided.exists():
+        voided_ids = read_voided_contract_ids(args.voided)
     stats_pool = load_stats_pool(args.stats_pool) if args.stats_pool else None
     payload = build_salary_payload(
         rows,
@@ -325,8 +380,10 @@ def main() -> int:
         input_path=args.input,
         stats_pool=stats_pool,
         supplement_rows=supplement_rows,
+        voided_ids=voided_ids,
     )
 
+    excluded_voided = payload.pop("_excludedVoided", [])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
@@ -334,6 +391,13 @@ def main() -> int:
         f"Wrote {payload['playerCount']} salaries to {args.output} "
         f"from {args.input}"
     )
+    if excluded_voided:
+        preview = ", ".join(excluded_voided[:8])
+        suffix = " ..." if len(excluded_voided) > 8 else ""
+        print(
+            f"Excluded {len(excluded_voided)} voided contract(s): "
+            f"{preview}{suffix}"
+        )
 
     if args.warn_missing_pool:
         if not args.stats_pool:
