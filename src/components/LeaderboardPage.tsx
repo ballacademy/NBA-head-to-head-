@@ -32,6 +32,7 @@ import {
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
+import { GmProfileModal } from "./GmProfileModal";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -85,6 +86,7 @@ function LeaderboardEntryRow({
   showTier: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const isYou = entry.playerId === currentPlayerId;
 
   return (
@@ -93,19 +95,27 @@ function LeaderboardEntryRow({
         isYou ? " leaderboard-row--you" : ""
       }${expanded ? " leaderboard-row--expanded" : ""}`}
     >
-      <button
-        type="button"
-        className="leaderboard-row__main"
-        aria-expanded={expanded}
-        onClick={() => setExpanded((current) => !current)}
-      >
-        <span className="leaderboard-row__rank">{rank}</span>
-        <span className="leaderboard-row__name">{entry.name}</span>
-        <span className="leaderboard-row__tag">{formatPublicTag(entry.publicTag)}</span>
-        <span className="leaderboard-row__metric">
-          <strong>{formatMetric(entry)}</strong>
-        </span>
-      </button>
+      <div className="leaderboard-row__main">
+        <button
+          type="button"
+          className="leaderboard-row__toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <span className="leaderboard-row__rank">{rank}</span>
+          <span className="leaderboard-row__tag">{formatPublicTag(entry.publicTag)}</span>
+          <span className="leaderboard-row__metric">
+            <strong>{formatMetric(entry)}</strong>
+          </span>
+        </button>
+        <button
+          type="button"
+          className="leaderboard-row__name"
+          onClick={() => setProfileOpen(true)}
+        >
+          {entry.name}
+        </button>
+      </div>
       {expanded ? (
         <div className="leaderboard-row__details">
           <div className="leaderboard-row__detail">
@@ -119,6 +129,18 @@ function LeaderboardEntryRow({
             </div>
           ) : null}
         </div>
+      ) : null}
+      {profileOpen ? (
+        <GmProfileModal
+          playerId={entry.playerId}
+          name={entry.name}
+          publicTag={entry.publicTag}
+          wins={entry.wins}
+          losses={entry.losses}
+          elo={entry.elo}
+          tierLabel={entry.tierLabel}
+          onClose={() => setProfileOpen(false)}
+        />
       ) : null}
     </li>
   );

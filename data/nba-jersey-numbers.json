@@ -1331,7 +1331,7 @@
     },
     "powelno01": {
       "jerseyNumber": 24,
-      "team": "MIA",
+      "team": "CHI",
       "name": "Norman Powell"
     },
     "jakucka01": {
@@ -6634,6 +6634,6 @@
       "position": "PG"
     }
   ],
-  "updatedAt": "2026-07-01T04:59:43.890888+00:00",
+  "updatedAt": "2026-07-01T20:45:49.922483+00:00",
   "rosterSource": "espn"
 }

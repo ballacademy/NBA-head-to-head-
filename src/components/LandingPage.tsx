@@ -67,6 +67,7 @@ interface LandingPageProps {
   canViewDailyLineup?: boolean;
   onCollectionChange: (collection: PlayerCollection) => void;
   onViewStats: () => void;
+  onViewGmStats: () => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
   onViewPrivacy: () => void;
@@ -98,6 +99,7 @@ export function LandingPage({
   canViewDailyLineup = false,
   onCollectionChange,
   onViewStats,
+  onViewGmStats,
   onViewAchievements,
   onViewLeaderboard,
   onViewPrivacy,
@@ -346,8 +348,26 @@ export function LandingPage({
             playerId={playerIdentity.playerId}
             showName={false}
           />
+          <button
+            type="button"
+            className="landing-team-form__gm-stats-button"
+            onClick={onViewGmStats}
+          >
+            GM stats
+          </button>
+          <ModeCardInfo
+            details={[
+              "Career wins and losses across every mode.",
+              "Daily draft days played, best percentile, and latest result.",
+              "Best monthly leaderboard finish and most banners ever.",
+              "Front office rank badges earned from peak banner totals.",
+            ]}
+            variant="corner"
+            popoverAlign="start"
+            ariaLabel="GM career stats details"
+          />
           <span className="landing-team-form__identity-note">
-            Shown on leaderboards. Tap to verify or copy your full ID.
+            Shown on leaderboards. Tap your code to verify or copy your full ID.
           </span>
         </p>
 

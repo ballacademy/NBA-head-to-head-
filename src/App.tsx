@@ -6,6 +6,7 @@ import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
+import { GmStatsPage } from "./components/GmStatsPage";
 import { LegalPage } from "./components/LegalPage";
 import { PendingQueueResults } from "./components/PendingQueueResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
@@ -101,6 +102,7 @@ type AppPhase =
   | "waiting"
   | "results"
   | "stats"
+  | "gmStats"
   | "leaderboard"
   | "achievements"
   | "privacy"
@@ -108,6 +110,7 @@ type AppPhase =
 
 const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
+  "gmStats",
   "leaderboard",
   "achievements",
   "privacy",
@@ -1118,6 +1121,14 @@ function App() {
     );
   }
 
+  if (phase === "gmStats") {
+    return (
+      <main className="landing-layout">
+        <GmStatsPage onBack={exitFeaturePage} />
+      </main>
+    );
+  }
+
   if (phase === "achievements") {
     return (
       <main className="landing-layout">
@@ -1174,6 +1185,7 @@ function App() {
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
           onCollectionChange={setCollection}
           onViewStats={() => openFeaturePage("stats")}
+          onViewGmStats={() => openFeaturePage("gmStats")}
           onViewAchievements={() => openFeaturePage("achievements")}
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
           onViewPrivacy={() => openFeaturePage("privacy")}
