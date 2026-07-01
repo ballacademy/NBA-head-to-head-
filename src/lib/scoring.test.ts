@@ -28,7 +28,7 @@ const TWO_ALL_STARS_THREE_STARTERS = [
   "brownja02-bos",
   "maxeyty01-phi",
   "embiijo01-phi",
-  "hardeja01-cle",
+  "bookede01-pho",
   "markkla01-uta",
 ];
 
