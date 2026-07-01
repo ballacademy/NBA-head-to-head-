@@ -10,7 +10,7 @@
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Dončić",
+      "name": "Luka Don\u010di\u0107",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -289,7 +289,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Jokić",
+      "name": "Nikola Joki\u0107",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1599,7 +1599,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen Şengün",
+      "name": "Alperen \u015eeng\u00fcn",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -3182,7 +3182,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porziņģis",
+      "name": "Kristaps Porzi\u0146\u0123is",
       "team": "GSW",
       "position": "C",
       "positions": [
@@ -4052,7 +4052,7 @@
     {
       "id": "vucevni01-bos",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vučević",
+      "name": "Nikola Vu\u010devi\u0107",
       "team": "BOS",
       "position": "C",
       "positions": [
@@ -7638,7 +7638,7 @@
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurkić",
+      "name": "Jusuf Nurki\u0107",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -7795,7 +7795,7 @@
     {
       "id": "schrode01-cle",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schröder",
+      "name": "Dennis Schr\u00f6der",
       "team": "CLE",
       "position": "PG",
       "positions": [
@@ -9997,7 +9997,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traoré",
+      "name": "Nolan Traor\u00e9",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10193,7 +10193,7 @@
     {
       "id": "valanjo01-den",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valančiūnas",
+      "name": "Jonas Valan\u010di\u016bnas",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -10624,7 +10624,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "Vít Krejčí",
+      "name": "V\u00edt Krej\u010d\u00ed",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -11724,7 +11724,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabaté",
+      "name": "Moussa Diabat\u00e9",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12316,7 +12316,7 @@
     {
       "id": "bogdabo01-lac",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanović",
+      "name": "Bogdan Bogdanovi\u0107",
       "team": "LAC",
       "position": "SG",
       "positions": [
@@ -12749,7 +12749,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jović",
+      "name": "Nikola Jovi\u0107",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -14241,7 +14241,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jakučionis",
+      "name": "Kasparas Jaku\u010dionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -14554,7 +14554,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Salaün",
+      "name": "Tidjane Sala\u00fcn",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -14709,10 +14709,10 @@
       "trueShooting": 0.682
     },
     {
-      "id": "carlsbr01-okc",
+      "id": "carlsbr01-por",
       "bbrPlayerId": "carlsbr01",
       "name": "Branden Carlson",
-      "team": "OKC",
+      "team": "POR",
       "position": "C",
       "positions": [
         "C",
@@ -15181,7 +15181,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matković",
+      "name": "Karlo Matkovi\u0107",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -16201,7 +16201,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topić",
+      "name": "Nikola Topi\u0107",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -17851,7 +17851,7 @@
     {
       "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissière",
+      "name": "Skal Labissi\u00e8re",
       "team": "FA",
       "position": "PF",
       "positions": [
@@ -17891,7 +17891,7 @@
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederhäuser",
+      "name": "Yanic Konan Niederh\u00e4user",
       "team": "LAC",
       "position": "C",
       "positions": [
@@ -18481,7 +18481,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo González",
+      "name": "Hugo Gonz\u00e1lez",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -20254,7 +20254,7 @@
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones García",
+      "name": "David Jones Garc\u00eda",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -22267,7 +22267,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pacôme Dadiet",
+      "name": "Pac\u00f4me Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -23016,7 +23016,7 @@
     {
       "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario Šarić",
+      "name": "Dario \u0160ari\u0107",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -23336,7 +23336,7 @@
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Mañon",
+      "name": "Chris Ma\u00f1on",
       "team": "LAL",
       "position": "SG",
       "positions": [

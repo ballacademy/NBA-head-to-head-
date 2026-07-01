@@ -73,6 +73,30 @@ Recent free-agent signings that are not yet on Basketball Reference can go in
 `nba-salary-supplements.csv`. Those rows are merged into the salary JSON only
 when the player is missing from the main CSV.
 
+### Batch free-agent signings
+
+When several deals are announced at once, add rows to
+`nba-free-agent-signings.csv` and run:
+
+```bash
+npm run data:signings:apply
+```
+
+That script updates salaries (main CSV when the player already has a row,
+otherwise supplements), syncs team overrides and stats teams, refreshes jersey
+tags, and rebuilds `nba-salaries-202627.json`.
+
+Tracker columns: `bbr_player_id`, `name`, `team`, `salary_usd`, `announced_at`,
+`source`, `notes`.
+
+Roster moves without a new contract can still be refreshed with
+`python3 scripts/sync_espn_roster_teams.py`.
+
+Full salary automation is not possible without a licensed contract feed — BBR
+only covers players with published `y2` rows, and ESPN does not expose deal
+terms. The signing tracker plus `apply_free_agent_signings.py` is the
+maintainer workflow until BBR catches up.
+
 ### Rebuild the salary JSON
 
 ```bash

@@ -31,6 +31,6 @@ describe("current team overrides", () => {
     expect(kawhi?.team).toBe("TOR");
     expect(ingram?.team).toBe("LAC");
     expect(hardaway?.team).toBe("MIA");
-    expect(hardaway?.salary).toBe(3_634_153);
+    expect(hardaway?.salary).toBe(6_500_000);
   });
 });
