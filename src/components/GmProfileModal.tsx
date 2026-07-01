@@ -123,20 +123,12 @@ export function GmProfileModal({
             <strong>
               {currentSeasonRank
                 ? `#${currentSeasonRank} · ${formatPlayerRecord({
-                    playerId,
                     wins,
                     losses,
-                    ties: 0,
-                    winStreak: 0,
-                    lossStreak: 0,
                   })}`
                 : formatPlayerRecord({
-                    playerId,
                     wins,
                     losses,
-                    ties: 0,
-                    winStreak: 0,
-                    lossStreak: 0,
                   })}
             </strong>
             {typeof currentSeasonElo === "number" ? (

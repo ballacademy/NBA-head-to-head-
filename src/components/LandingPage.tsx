@@ -37,7 +37,6 @@ import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
-import { ModeCardInfo } from "./ModeCardInfo";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
