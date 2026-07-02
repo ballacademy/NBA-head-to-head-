@@ -37,7 +37,7 @@ export function PlayerTeamIcon({
       {showJersey ? (
         <svg
           className="player-jersey"
-          viewBox="0 0 48 48"
+          viewBox="7 4 34 40"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
