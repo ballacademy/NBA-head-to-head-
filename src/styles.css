@@ -3456,8 +3456,9 @@ main {
     font-size: 0.56rem;
   }
 
-  .player-pick--compact .player-jersey {
-    transform: translateY(2px);
+  .player-pick--compact .player-team-icon--jersey .player-jersey {
+    top: 60%;
+    width: 72%;
   }
 
   .player-pick--compact .player-pick__title-row strong {
@@ -3925,26 +3926,36 @@ main {
 }
 
 .player-team-icon--jersey {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 0;
   background: rgba(15, 23, 42, 0.2);
+  line-height: 0;
 }
 
 .player-jersey {
   display: block;
   width: 78%;
   height: auto;
-  margin: 0 auto;
+  margin: 0;
   overflow: visible;
 }
 
-.player-stat-line .player-jersey {
+.player-stat-line .player-team-icon--jersey .player-jersey {
   transform: translateY(-1px);
 }
 
-.player-pick--compact .player-jersey {
-  transform: translateY(1px);
+.player-pick--compact .player-team-icon--jersey {
+  display: block;
+}
+
+.player-pick--compact .player-team-icon--jersey .player-jersey {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  width: 74%;
+  transform: translate(-50%, -50%);
 }
 
 .player-jersey__outline {
