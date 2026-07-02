@@ -3,7 +3,8 @@ import {
   buildLocalGmStatsSnapshot,
   formatGmModeRecord,
   formatLegacyMonthlyFinish,
-  formatLegacyPeakBanners,
+  formatLegacyPeakBannerCount,
+  formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
 import { formatRatingPoints } from "../lib/rankedElo";
@@ -41,6 +42,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
     () => buildLocalGmStatsSnapshot(teamName),
     [teamName, legacyTick],
   );
+  const peakBannerTier = formatLegacyPeakBannerTier(snapshot.legacy.peakElo);
 
   return (
     <section className="gm-stats-page panel panel--compact feature-page feature-page--gm-stats">
@@ -72,7 +74,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         </div>
         <div className="gm-stats-page__summary-card">
           <span className="gm-stats-page__label">Best monthly finish</span>
-          <strong>
+          <strong className="gm-stats-page__value">
             {formatLegacyMonthlyFinish(
               snapshot.legacy.bestMonthlyRank,
               snapshot.legacy.bestMonthlyRankSeasonId,
@@ -81,7 +83,12 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         </div>
         <div className="gm-stats-page__summary-card">
           <span className="gm-stats-page__label">Most banners ever</span>
-          <strong>{formatLegacyPeakBanners(snapshot.legacy.peakElo)}</strong>
+          <strong className="gm-stats-page__value">
+            {formatLegacyPeakBannerCount(snapshot.legacy.peakElo)}
+          </strong>
+          {peakBannerTier ? (
+            <span className="gm-stats-page__value-meta">{peakBannerTier} tier</span>
+          ) : null}
         </div>
       </div>
 

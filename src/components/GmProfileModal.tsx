@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   formatLegacyMonthlyFinish,
-  formatLegacyPeakBanners,
+  formatLegacyPeakBannerCount,
+  formatLegacyPeakBannerTier,
 } from "../lib/frontOfficeBadges";
 import { formatPublicTag } from "../lib/playerIdentity";
 import { fetchRemotePlayerProfile } from "../lib/playerProfileApi";
@@ -98,7 +99,7 @@ export function GmProfileModal({
         <div className="gm-profile-modal__grid">
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Best monthly finish</span>
-            <strong>
+            <strong className="gm-profile-modal__value">
               {loading
                 ? "Loading..."
                 : formatLegacyMonthlyFinish(
@@ -109,12 +110,15 @@ export function GmProfileModal({
           </div>
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Most banners ever</span>
-            <strong>
-              {loading ? "Loading..." : formatLegacyPeakBanners(legacyPeakElo)}
+            <strong className="gm-profile-modal__value">
+              {loading ? "Loading..." : formatLegacyPeakBannerCount(legacyPeakElo)}
             </strong>
-            {!loading && legacyPeakSeasonId ? (
+            {!loading && formatLegacyPeakBannerTier(legacyPeakElo) ? (
               <span className="gm-profile-modal__meta">
-                Peak in {formatSeasonLabel(legacyPeakSeasonId)}
+                {formatLegacyPeakBannerTier(legacyPeakElo)} tier
+                {legacyPeakSeasonId
+                  ? ` · Peak in ${formatSeasonLabel(legacyPeakSeasonId)}`
+                  : ""}
               </span>
             ) : null}
           </div>
