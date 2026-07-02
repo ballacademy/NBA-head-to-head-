@@ -2151,10 +2151,27 @@ main {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
   padding: 12px 14px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.45);
+}
+
+.gm-stats-page__summary-card strong,
+.gm-profile-modal__stat strong,
+.gm-stats-page__value,
+.gm-profile-modal__value {
+  font-size: clamp(0.95rem, 2.8vw, 1.15rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.gm-stats-page__value-meta {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.25;
 }
 
 .gm-stats-page__label,
@@ -2175,11 +2192,17 @@ main {
   font-size: 1.05rem;
 }
 
-.gm-stats-page__section-copy,
-.gm-profile-modal__meta {
+.gm-stats-page__section-copy {
   margin: 0;
   color: #94a3b8;
   font-size: 0.88rem;
+}
+
+.gm-profile-modal__meta {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.25;
 }
 
 .gm-stats-page__tier-row {
@@ -2238,6 +2261,45 @@ main {
   margin: 0 0 14px;
   color: #94a3b8;
   font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .gm-stats-page__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gm-profile-modal__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .gm-stats-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gm-stats-page__header .secondary-button {
+    width: 100%;
+  }
+
+  .gm-stats-page__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gm-profile-modal__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gm-stats-page__label,
+  .gm-profile-modal__label {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
+
+  .front-office-badges {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .matchup-panel__identity {
@@ -3394,6 +3456,10 @@ main {
     font-size: 0.56rem;
   }
 
+  .player-pick--compact .player-jersey {
+    transform: translateY(2px);
+  }
+
   .player-pick--compact .player-pick__title-row strong {
     font-size: 0.86rem;
   }
@@ -3871,7 +3937,14 @@ main {
   height: auto;
   margin: 0 auto;
   overflow: visible;
+}
+
+.player-stat-line .player-jersey {
   transform: translateY(-1px);
+}
+
+.player-pick--compact .player-jersey {
+  transform: translateY(1px);
 }
 
 .player-jersey__outline {

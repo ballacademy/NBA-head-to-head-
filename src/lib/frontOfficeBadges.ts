@@ -71,13 +71,35 @@ export const formatLegacyMonthlyFinish = (
   return `#${rank} in ${seasonLabel}`;
 };
 
-export const formatLegacyPeakBanners = (peakElo: number | null | undefined) => {
+export const formatLegacyPeakBannerCount = (
+  peakElo: number | null | undefined,
+) => {
   if (!peakElo || peakElo <= 0) {
     return "No banners yet";
   }
 
-  const tier = getTierForElo(peakElo);
-  return `${tier.label} · ${formatRatingPoints(peakElo)}`;
+  return formatRatingPoints(peakElo);
+};
+
+export const formatLegacyPeakBannerTier = (
+  peakElo: number | null | undefined,
+) => {
+  if (!peakElo || peakElo <= 0) {
+    return null;
+  }
+
+  return getTierForElo(peakElo).label;
+};
+
+export const formatLegacyPeakBanners = (peakElo: number | null | undefined) => {
+  const count = formatLegacyPeakBannerCount(peakElo);
+  const tier = formatLegacyPeakBannerTier(peakElo);
+
+  if (!tier) {
+    return count;
+  }
+
+  return `${count} · ${tier}`;
 };
 
 export const summarizePeakEloSeason = (seasonId: string | null | undefined) =>

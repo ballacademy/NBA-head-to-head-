@@ -9,36 +9,9 @@ import {
 } from "./dailyDraftScores";
 import { getOrCreatePlayerId } from "./playerRecord";
 
-const getMostCommonGoalId = (goalIds: string[]) => {
-  const counts = new Map<string, number>();
-
-  for (const goalId of goalIds) {
-    if (!goalId) {
-      continue;
-    }
-
-    counts.set(goalId, (counts.get(goalId) ?? 0) + 1);
-  }
-
-  return [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0];
-};
-
 export const resolveCanonicalDailyGoalForDate = (
   dateKey: string,
-): DailyDraftGoal => {
-  const entries = loadDailyScoresForDate(dateKey);
-  const topGoalId = getMostCommonGoalId(entries.map((entry) => entry.goalId));
-
-  if (topGoalId) {
-    const storedGoal = getDailyGoalById(topGoalId);
-
-    if (storedGoal) {
-      return storedGoal;
-    }
-  }
-
-  return getComputedDailyGoal(dateKey);
-};
+): DailyDraftGoal => getComputedDailyGoal(dateKey);
 
 export const resolveDailyGoalForDate = (
   dateKey: string,
@@ -89,16 +62,17 @@ export const refreshCanonicalDailyGoalData = async (
   dateKey: string,
   playerId = getOrCreatePlayerId(),
 ) => {
-  const goalIds = new Set<string>([getComputedDailyGoal(dateKey).id]);
+  const computedGoal = getComputedDailyGoal(dateKey);
+  const refreshGoalIds = new Set<string>([computedGoal.id]);
 
   for (const entry of loadDailyScoresForDate(dateKey)) {
     if (entry.goalId) {
-      goalIds.add(entry.goalId);
+      refreshGoalIds.add(entry.goalId);
     }
   }
 
   await Promise.all(
-    [...goalIds].map((goalId) =>
+    [...refreshGoalIds].map((goalId) =>
       refreshDailyDraftScoresFromApi(dateKey, goalId, playerId),
     ),
   );

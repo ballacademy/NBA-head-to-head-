@@ -57,7 +57,7 @@ describe("dailyDraftGoalResolve", () => {
     expect(getDailyDraftSetup(dateKey).goal.id).toBe(computedGoal.id);
   });
 
-  it("uses the most common stored goal as the canonical goal for a date", () => {
+  it("uses the date-based daily goal as the canonical goal for a date", () => {
     stubPlayerStorage();
     const dateKey = "2026-06-29";
     const computedGoal = getDailyGoal(dateKey);
@@ -84,7 +84,7 @@ describe("dailyDraftGoalResolve", () => {
       ],
     });
 
-    expect(resolveCanonicalDailyGoalForDate(dateKey).id).toBe(storedGoal.id);
-    expect(getCanonicalDailyDraftSetup(dateKey).goal.id).toBe(storedGoal.id);
+    expect(resolveCanonicalDailyGoalForDate(dateKey).id).toBe(computedGoal.id);
+    expect(getCanonicalDailyDraftSetup(dateKey).goal.id).toBe(computedGoal.id);
   });
 });

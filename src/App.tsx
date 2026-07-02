@@ -30,7 +30,6 @@ import {
   subtractDaysFromDateKey,
 } from "./lib/dailyDraft";
 import {
-  getCanonicalDailyDraftSetup,
   getResolvedDailyDraftSetup,
   refreshCanonicalDailyGoalData,
 } from "./lib/dailyDraftGoalResolve";
@@ -243,7 +242,7 @@ function App() {
     }
 
     if (isDailyOptimalReview) {
-      return getCanonicalDailyDraftSetup(dailyDateKey);
+      return getDailyDraftSetup(dailyDateKey);
     }
 
     if (isDailyReview) {

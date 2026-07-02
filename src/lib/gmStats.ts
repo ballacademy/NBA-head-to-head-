@@ -11,6 +11,8 @@ import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
 import {
   formatLegacyMonthlyFinish,
   formatLegacyPeakBanners,
+  formatLegacyPeakBannerCount,
+  formatLegacyPeakBannerTier,
   getUnlockedFrontOfficeBadges,
 } from "./frontOfficeBadges";
 import {
@@ -113,5 +115,7 @@ export const formatCurrentRankedTier = (elo: number) =>
 export {
   formatLegacyMonthlyFinish,
   formatLegacyPeakBanners,
+  formatLegacyPeakBannerCount,
+  formatLegacyPeakBannerTier,
   formatPlayerRecord,
 };

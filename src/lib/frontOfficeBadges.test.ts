@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   formatLegacyMonthlyFinish,
   formatLegacyPeakBanners,
+  formatLegacyPeakBannerCount,
+  formatLegacyPeakBannerTier,
   getUnlockedFrontOfficeBadges,
 } from "./frontOfficeBadges";
 
@@ -11,8 +13,10 @@ describe("frontOfficeBadges", () => {
     expect(formatLegacyMonthlyFinish(null, "2026-06")).toBe(
       "No ranked finish yet",
     );
-    expect(formatLegacyPeakBanners(1520)).toContain("Top GM");
+    expect(formatLegacyPeakBannerCount(1520)).toBe("1520 Banners");
+    expect(formatLegacyPeakBannerTier(1520)).toBe("Top GM");
     expect(formatLegacyPeakBanners(1520)).toContain("1520 Banners");
+    expect(formatLegacyPeakBanners(1520)).toContain("Top GM");
   });
 
   it("unlocks front office badges by peak elo", () => {
