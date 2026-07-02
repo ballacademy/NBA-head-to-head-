@@ -4520,6 +4520,11 @@ main {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
+.player-pick .player-team-icon .player-jersey {
+  width: 76%;
+  transform: translateX(1px);
+}
+
 .player-pick span:not(.player-team-icon) {
   display: block;
   margin-top: 4px;
