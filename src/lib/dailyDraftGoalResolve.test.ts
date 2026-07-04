@@ -94,19 +94,20 @@ describe("dailyDraftGoalResolve", () => {
   });
 
   it("uses today's date-based setup for tomorrow's yesterday best", () => {
-    const todayKey = "2026-07-04";
+    const todayKey = "2026-07-03";
     const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
     const todaySetup = getDailyDraftSetup(todayKey);
     const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(tomorrowKey);
 
     expect(tomorrowYesterdaySetup.dateKey).toBe(todayKey);
     expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
+    expect(tomorrowYesterdaySetup.goal.id).toBe("anti-offense");
     expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
   });
 
   it("ignores stale local goal ids when resolving yesterday best setup", () => {
     stubPlayerStorage();
-    const todayKey = "2026-07-04";
+    const todayKey = "2026-07-03";
     const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
     const wrongGoal = getDailyGoal("2026-06-15");
 
