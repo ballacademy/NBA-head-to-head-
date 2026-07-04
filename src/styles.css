@@ -842,7 +842,6 @@ main {
   height: 1.15rem;
   display: block;
   flex: 0 0 auto;
-  transform: translateY(-2px);
 }
 
 .win-streak-badge__count {
@@ -857,7 +856,7 @@ main {
 .streak-icon {
   display: block;
   overflow: visible;
-  filter: drop-shadow(0 1px 1.5px rgba(2, 6, 23, 0.45));
+  filter: drop-shadow(0 0 1.5px rgba(2, 6, 23, 0.45));
 }
 
 .streak-icon--win .streak-icon__flame--outer {
@@ -998,7 +997,6 @@ main {
   height: 1.2rem;
   display: block;
   flex: 0 0 auto;
-  transform: translateY(-3px);
 }
 
 .loss-streak-badge__count {
