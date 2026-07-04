@@ -37,23 +37,23 @@ export function PlayerTeamIcon({
       {showJersey ? (
         <svg
           className="player-jersey"
-          viewBox="0 0 40 44"
+          viewBox="0 0 42 38"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
         >
           <path
             className="player-jersey__outline"
-            d="M12 7 16 3 20 9 24 3 28 7 30 17 30 41 10 41 10 17Z"
+            d="M4 10 10 3 17 9 21 5 25 9 32 3 38 10 39 17 39 35 3 35 3 17Z"
           />
           <path
             className="player-jersey__neck"
-            d="M17 9c0-1.6 1.3-2.8 3-2.8s3 1.2 3 2.8"
+            d="M18.5 9.5Q21 6.5 23.5 9.5"
           />
           <text
             className="player-jersey__number"
-            x="20"
-            y="29"
+            x="21"
+            y="25.5"
             textAnchor="middle"
             dominantBaseline="middle"
           >

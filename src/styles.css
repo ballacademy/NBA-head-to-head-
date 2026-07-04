@@ -3921,26 +3921,30 @@ main {
 .player-team-icon--jersey {
   padding: 0;
   background: rgba(15, 23, 42, 0.2);
+  line-height: 0;
 }
 
 .player-jersey {
   display: block;
-  width: 72%;
-  height: auto;
+  height: 79%;
+  width: auto;
+  max-width: 90%;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .player-jersey__outline {
   fill: var(--team-primary, #334155);
   stroke: var(--team-secondary, #f8fafc);
-  stroke-width: 1.8;
+  stroke-width: 1.6;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .player-jersey__neck {
   fill: none;
   stroke: rgba(15, 23, 42, 0.35);
-  stroke-width: 1.2;
+  stroke-width: 1.1;
   stroke-linecap: round;
 }
 
