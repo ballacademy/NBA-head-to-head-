@@ -24,6 +24,8 @@ interface LineupBody {
   teamName?: unknown;
   lineup?: unknown;
   elo?: unknown;
+  practiceMode?: unknown;
+  isPractice?: unknown;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -42,6 +44,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
   const lineup = sanitizeStoredLineupIds(body.lineup);
   const elo = Number(body.elo ?? 1000);
+  const isPractice =
+    body.practiceMode === true ||
+    body.isPractice === true ||
+    body.practiceMode === "true" ||
+    body.isPractice === "true";
+
+  if (isPractice) {
+    return json({ error: "practice lineups cannot be stored for matchmaking" }, 400);
+  }
 
   if (!mode) {
     return json({ error: "mode must be classic or ranked" }, 400);

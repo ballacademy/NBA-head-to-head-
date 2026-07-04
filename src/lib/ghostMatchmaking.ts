@@ -17,6 +17,7 @@ export interface StoredLineupSubmission {
   teamName: string;
   lineup: string[];
   elo: number;
+  practiceMode?: boolean;
 }
 
 export interface PendingMatchmakingStatus {
@@ -154,6 +155,10 @@ export const fetchPendingMatchmakingStatus = async (params: {
 export const submitStoredLineup = async (
   submission: StoredLineupSubmission,
 ): Promise<{ id: string; createdAt: string } | null> => {
+  if (submission.practiceMode) {
+    return null;
+  }
+
   try {
     const response = await fetch(buildUrl("/api/lineups"), {
       method: "POST",

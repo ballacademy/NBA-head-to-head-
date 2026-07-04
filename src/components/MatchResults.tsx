@@ -19,6 +19,7 @@ import {
   submitGhostMatchOutcome,
   submitStoredLineup,
 } from "../lib/ghostMatchmaking";
+import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints, RANKED_STARTING_ELO } from "../lib/rankedElo";
@@ -113,7 +114,7 @@ export function MatchResults({
 
     setActionsReady(true);
 
-    if (!user.allTimeMode && !user.practiceMode && userLineup.length === 5) {
+    if (canStoreLineupForMatchmaking(user)) {
       const mode = user.salaryCapMode ? "ranked" : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
       const challengerEloBefore = user.salaryCapMode

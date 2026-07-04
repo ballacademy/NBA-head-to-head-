@@ -149,4 +149,22 @@ describe("ghostMatchmaking", () => {
       expect.objectContaining({ method: "POST" }),
     );
   });
+
+  it("does not submit practice lineups to the API", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      submitStoredLineup({
+        mode: "ranked",
+        playerId: "player-1",
+        teamName: "Bulls",
+        lineup: ["a", "b", "c", "d", "e"],
+        elo: 1200,
+        practiceMode: true,
+      }),
+    ).resolves.toBeNull();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
