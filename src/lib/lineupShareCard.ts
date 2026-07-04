@@ -234,7 +234,7 @@ const drawPlayerRow = (
   context.stroke();
   context.restore();
 
-  drawJerseyBadge(context, rowX + 18, y + 16, 72, jerseyNumber, colors);
+  drawJerseyBadge(context, rowX + 18, y + 16, 94, jerseyNumber, colors);
 
   context.fillStyle = "#ffffff";
   context.font = `700 30px ${FONT_STACK}`;
