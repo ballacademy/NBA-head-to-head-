@@ -1,6 +1,7 @@
 import {
   generateDailyDraftSlots,
   getDailyGoal as getComputedDailyGoal,
+  subtractDaysFromDateKey,
 } from "./dailyDraft";
 import { getDailyGoalById, type DailyDraftGoal } from "./dailyDraftGoals";
 import {
@@ -42,6 +43,9 @@ export const getCanonicalDailyDraftSetup = (dateKey: string) => {
     slots,
   };
 };
+
+export const getYesterdayBestDailyDraftSetup = (viewedOnDateKey: string) =>
+  getCanonicalDailyDraftSetup(subtractDaysFromDateKey(viewedOnDateKey, 1));
 
 export const getResolvedDailyDraftSetup = (
   dateKey: string,

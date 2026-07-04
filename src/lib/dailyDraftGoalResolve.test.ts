@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getDailyGoal, getDailyDraftSetup } from "./dailyDraft";
+import {
+  getDailyGoal,
+  getDailyDraftSetup,
+  subtractDaysFromDateKey,
+} from "./dailyDraft";
 import {
   getCanonicalDailyDraftSetup,
+  getYesterdayBestDailyDraftSetup,
   resolveCanonicalDailyGoalForDate,
   resolveDailyGoalForDate,
 } from "./dailyDraftGoalResolve";
@@ -86,5 +91,41 @@ describe("dailyDraftGoalResolve", () => {
 
     expect(resolveCanonicalDailyGoalForDate(dateKey).id).toBe(computedGoal.id);
     expect(getCanonicalDailyDraftSetup(dateKey).goal.id).toBe(computedGoal.id);
+  });
+
+  it("uses today's date-based setup for tomorrow's yesterday best", () => {
+    const todayKey = "2026-07-04";
+    const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
+    const todaySetup = getDailyDraftSetup(todayKey);
+    const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(tomorrowKey);
+
+    expect(tomorrowYesterdaySetup.dateKey).toBe(todayKey);
+    expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
+    expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
+  });
+
+  it("ignores stale local goal ids when resolving yesterday best setup", () => {
+    stubPlayerStorage();
+    const todayKey = "2026-07-04";
+    const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
+    const wrongGoal = getDailyGoal("2026-06-15");
+
+    writeJson(DAILY_SCORES_KEY, {
+      [todayKey]: [
+        {
+          playerId: "player-a",
+          goalId: wrongGoal.id,
+          value: 12,
+          formattedResult: "12.0 PPG",
+          submittedAt: "2026-07-04T12:00:00.000Z",
+        },
+      ],
+    });
+
+    const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(tomorrowKey);
+    const todaySetup = getDailyDraftSetup(todayKey);
+
+    expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
+    expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
   });
 });
