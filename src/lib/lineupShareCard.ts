@@ -25,17 +25,9 @@ const CHEMISTRY_ROW_GAP = 8;
 const CHEMISTRY_BLOCK_GAP = 12;
 const CHEMISTRY_FONT = `700 14px ${FONT_STACK}`;
 
-const JERSEY_POINTS: Array<[number, number]> = [
-  [11, 9],
-  [17, 5],
-  [24, 11],
-  [31, 5],
-  [37, 9],
-  [41, 19],
-  [41, 43],
-  [7, 43],
-  [7, 19],
-];
+// 48x48 jersey space; every point mirrors across x=24.
+const JERSEY_SCALE = 1.5;
+const JERSEY_CENTER_X = 24;
 
 let fontsReady: Promise<void> | null = null;
 
@@ -98,14 +90,25 @@ export const ensureShareCardFonts = () => {
 };
 
 const traceJerseyPath = (context: CanvasRenderingContext2D) => {
-  const [first, ...rest] = JERSEY_POINTS;
+  const s = JERSEY_SCALE;
   context.beginPath();
-  context.moveTo(first[0], first[1]);
+  context.moveTo(7 * s, 10.5 * s);
+  context.lineTo(8 * s, 5 * s);
+  context.lineTo(13.5 * s, 9.5 * s);
+  context.lineTo(JERSEY_CENTER_X, 6.5 * s);
+  context.lineTo(18.5 * s, 9.5 * s);
+  context.lineTo(24 * s, 5 * s);
+  context.lineTo(25 * s, 10.5 * s);
+  context.bezierCurveTo(26.5 * s, 12.25 * s, 25.5 * s, 13.75 * s, 22.5 * s, 14.5 * s);
+  context.lineTo(22 * s, 27 * s);
+  context.lineTo(10 * s, 27 * s);
+  context.lineTo(9.5 * s, 14.5 * s);
+  context.bezierCurveTo(6.5 * s, 13.75 * s, 5.5 * s, 12.25 * s, 7 * s, 10.5 * s);
+  context.closePath();
 
-  for (const [x, y] of rest) {
-    context.lineTo(x, y);
-  }
-
+  context.moveTo(12.75 * s, 9.75 * s);
+  context.quadraticCurveTo(JERSEY_CENTER_X, 12 * s, 19.25 * s, 9.75 * s);
+  context.quadraticCurveTo(JERSEY_CENTER_X, 8.25 * s, 12.75 * s, 9.75 * s);
   context.closePath();
 };
 
@@ -171,21 +174,16 @@ const drawJerseyBadge = (
   context.shadowColor = rgbaFromHex(colors.primary, 0.85);
   context.shadowBlur = 14;
   context.fillStyle = colors.primary;
-  context.fill();
+  context.fill("evenodd");
 
   context.shadowBlur = 8;
   context.shadowColor = rgbaFromHex(colors.secondary, 0.75);
   context.strokeStyle = colors.secondary;
-  context.lineWidth = 2.4;
+  context.lineWidth = 2.2;
   context.lineJoin = "round";
   context.stroke();
 
   context.shadowBlur = 0;
-  context.beginPath();
-  context.arc(24, 11, 3.5, Math.PI, 0);
-  context.strokeStyle = "rgba(0,0,0,0.38)";
-  context.lineWidth = 1.5;
-  context.stroke();
 
   context.font = `900 11px ${FONT_STACK}`;
   context.textAlign = "center";
