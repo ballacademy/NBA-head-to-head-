@@ -15,6 +15,24 @@ export const isValidStoredLineupIds = (lineup: string[]) =>
   lineup.length === REQUIRED_STORED_LINEUP_SIZE &&
   new Set(lineup).size === REQUIRED_STORED_LINEUP_SIZE;
 
+export interface MatchmakingLineupSource {
+  practiceMode?: boolean;
+  allTimeMode?: boolean;
+  isDailyDraft?: boolean;
+  lineup: readonly (string | null | undefined)[];
+}
+
+export const canStoreLineupForMatchmaking = (
+  source: MatchmakingLineupSource,
+): boolean => {
+  if (source.practiceMode || source.allTimeMode || source.isDailyDraft) {
+    return false;
+  }
+
+  const lineup = sanitizeStoredLineupIds([...source.lineup]);
+  return isValidStoredLineupIds(lineup);
+};
+
 export const parseGhostOpponentSnapshot = (payload: {
   id?: unknown;
   teamName?: unknown;

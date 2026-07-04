@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canStoreLineupForMatchmaking,
   isValidStoredLineupIds,
   parseGhostOpponentSnapshot,
   sanitizeStoredLineupIds,
@@ -88,5 +89,38 @@ describe("storedLineups", () => {
       elo: 1200,
       createdAt: "2026-06-28T06:00:00.000Z",
     });
+  });
+
+  it("excludes practice, all-time, and daily drafts from matchmaking storage", () => {
+    const lineup = ["a", "b", "c", "d", "e"];
+
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup,
+      }),
+    ).toBe(true);
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup,
+        practiceMode: true,
+      }),
+    ).toBe(false);
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup,
+        allTimeMode: true,
+      }),
+    ).toBe(false);
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup,
+        isDailyDraft: true,
+      }),
+    ).toBe(false);
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup: lineup.slice(0, 4),
+      }),
+    ).toBe(false);
   });
 });
