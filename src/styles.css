@@ -3940,28 +3940,14 @@ main {
 .player-jersey__outline {
   fill: var(--team-primary, #334155);
   stroke: var(--team-secondary, #f8fafc);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.player-jersey__neck {
-  fill: none;
-  stroke: rgba(15, 23, 42, 0.35);
   stroke-width: 1.1;
-  stroke-linecap: round;
-}
-
-.player-jersey__armhole {
-  fill: none;
-  stroke: rgba(15, 23, 42, 0.22);
-  stroke-width: 0.9;
+  stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 900;
   letter-spacing: -0.04em;
   paint-order: stroke;

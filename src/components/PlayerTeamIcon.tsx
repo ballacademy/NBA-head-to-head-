@@ -12,14 +12,14 @@ interface PlayerTeamIconProps {
 }
 
 /**
- * Sleeveless basketball jersey centered in a 32x32 viewBox.
- * Bbox is ~22.5 x 21 units at (16, 16) with equal padding on all sides.
+ * Symmetric sleeveless NBA jersey silhouette in a 32x32 viewBox.
+ * Every coordinate mirrors across x=16; bbox is 18x22 centered at (16, 16).
  */
-const JERSEY_OUTLINE =
-  "M4.75 9Q4.25 6.5 7.5 5.5L11 8.75L16 5.5L21 8.75Q24.25 6.5 27.25 9" +
-  "Q28.75 11.25 28 13.75L27.25 26.5L4.75 26.5L4 13.75Q3.25 11.25 4.75 9Z";
-
-const JERSEY_NECK = "M13.25 9Q16 6.75 18.75 9";
+const JERSEY_SILHOUETTE =
+  "M7 10.5L8 5L13.5 9.5L16 6.5L18.5 9.5L24 5L25 10.5" +
+  "C26.5 12.25 25.5 13.75 22.5 14.5L22 27L10 27L9.5 14.5" +
+  "C6.5 13.75 5.5 12.25 7 10.5Z" +
+  "M12.75 9.75Q16 12 19.25 9.75Q16 8.25 12.75 9.75Z";
 
 export function PlayerTeamIcon({
   team,
@@ -52,17 +52,15 @@ export function PlayerTeamIcon({
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
         >
-          <path className="player-jersey__outline" d={JERSEY_OUTLINE} />
-          <path className="player-jersey__neck" d={JERSEY_NECK} />
-          <path className="player-jersey__armhole" d="M7.75 11.25Q8.75 13.25 8.25 14.75" />
           <path
-            className="player-jersey__armhole"
-            d="M24.25 11.25Q23.25 13.25 23.75 14.75"
+            className="player-jersey__outline"
+            d={JERSEY_SILHOUETTE}
+            fillRule="evenodd"
           />
           <text
             className="player-jersey__number"
             x="16"
-            y="20.5"
+            y="21"
             textAnchor="middle"
             dominantBaseline="middle"
           >
