@@ -3952,9 +3952,16 @@ main {
   stroke-linecap: round;
 }
 
+.player-jersey__armhole {
+  fill: none;
+  stroke: rgba(15, 23, 42, 0.22);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: -0.04em;
   paint-order: stroke;
