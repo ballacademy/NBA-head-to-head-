@@ -3931,8 +3931,8 @@ main {
 
 .player-jersey {
   display: block;
-  width: 75%;
-  height: 75%;
+  width: 98%;
+  height: 98%;
   margin: 0;
   flex-shrink: 0;
 }
@@ -3947,7 +3947,7 @@ main {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 10.5px;
+  font-size: 13.5px;
   font-weight: 900;
   letter-spacing: -0.04em;
   paint-order: stroke;
