@@ -11,6 +11,10 @@ interface PlayerTeamIconProps {
   showJersey?: boolean;
 }
 
+/** Jersey outline bbox is 25x25 units centered at (16, 16) inside a 32x32 viewBox. */
+const JERSEY_OUTLINE =
+  "M4.5 9.5 7.5 3.5 12 8.5 16 5 20 8.5 24.5 3.5 27.5 9.5 28.5 15.5 28.5 28.5 3.5 28.5 3.5 15.5Z";
+
 export function PlayerTeamIcon({
   team,
   position,
@@ -37,23 +41,17 @@ export function PlayerTeamIcon({
       {showJersey ? (
         <svg
           className="player-jersey"
-          viewBox="0 0 40 38"
+          viewBox="0 0 32 32"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
         >
-          <path
-            className="player-jersey__outline"
-            d="M7 10 11 4 16 9 20 5 24 9 29 4 33 10 34 17 34 35 6 35 6 17Z"
-          />
-          <path
-            className="player-jersey__neck"
-            d="M18 9.5Q20 6.5 22 9.5"
-          />
+          <path className="player-jersey__outline" d={JERSEY_OUTLINE} />
+          <path className="player-jersey__neck" d="M14.25 8.75Q16 6 17.75 8.75" />
           <text
             className="player-jersey__number"
-            x="20"
-            y="25.5"
+            x="16"
+            y="22"
             textAnchor="middle"
             dominantBaseline="middle"
           >

@@ -3918,7 +3918,9 @@ main {
   background: rgba(15, 23, 42, 0.35);
 }
 
-.player-team-icon--jersey {
+.player-team-icon--jersey,
+.player-pick .player-team-icon--jersey,
+.player-stat-line .player-team-icon--jersey {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3929,18 +3931,16 @@ main {
 
 .player-jersey {
   display: block;
-  height: 79%;
-  width: auto;
-  max-width: 76%;
+  width: 75%;
+  height: 75%;
   margin: 0;
   flex-shrink: 0;
-  transform: translateX(1px);
 }
 
 .player-jersey__outline {
   fill: var(--team-primary, #334155);
   stroke: var(--team-secondary, #f8fafc);
-  stroke-width: 1.6;
+  stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
