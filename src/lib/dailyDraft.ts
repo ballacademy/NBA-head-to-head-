@@ -63,64 +63,69 @@ export const formatDailyDateLabel = (dateKey: string) => {
 const compareDateKeys = (left: string, right: string) =>
   left < right ? -1 : left > right ? 1 : 0;
 
-const fillGoalsThrough = (dateKey: string) => {
-  if (goalCache.has(dateKey)) {
-    return;
-  }
-
-  const startKey = subtractDaysFromDateKey(
+const getGoalCalendarBootstrapStartKey = (dateKey: string) =>
+  subtractDaysFromDateKey(
     dateKey,
     Math.max(DAILY_GOAL_REPEAT_WINDOW_DAYS * 2, 120),
   );
+
+const computeGoalForDate = (
+  dateKey: string,
+  workingCache: Map<string, DailyDraftGoal>,
+) => {
+  const recentGoalIds = new Set<string>();
+
+  for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
+    const pastKey = subtractDaysFromDateKey(dateKey, day);
+    const pastGoal = workingCache.get(pastKey);
+
+    if (pastGoal) {
+      recentGoalIds.add(pastGoal.id);
+    }
+  }
+
+  const available = DAILY_DRAFT_GOALS.filter(
+    (goal) => !recentGoalIds.has(goal.id),
+  );
+
+  if (available.length > 0) {
+    const seed = getDailySeed(dateKey);
+    return available[seed % available.length]!;
+  }
+
+  let bestGoal = DAILY_DRAFT_GOALS[0]!;
+  let bestDistance = -1;
+
+  for (const goal of DAILY_DRAFT_GOALS) {
+    let distance = DAILY_GOAL_REPEAT_WINDOW_DAYS * 2;
+
+    for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS * 2; day += 1) {
+      const pastKey = subtractDaysFromDateKey(dateKey, day);
+      const pastGoal = workingCache.get(pastKey);
+
+      if (pastGoal?.id === goal.id) {
+        distance = day;
+        break;
+      }
+    }
+
+    if (distance > bestDistance) {
+      bestDistance = distance;
+      bestGoal = goal;
+    }
+  }
+
+  return bestGoal;
+};
+
+const buildIsolatedDailyGoal = (dateKey: string) => {
+  const workingCache = new Map<string, DailyDraftGoal>();
+  const startKey = getGoalCalendarBootstrapStartKey(dateKey);
   let cursor = startKey;
 
   while (compareDateKeys(cursor, dateKey) <= 0) {
-    if (!goalCache.has(cursor)) {
-      const recentGoalIds = new Set<string>();
-
-      for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
-        const pastKey = subtractDaysFromDateKey(cursor, day);
-        const pastGoal = goalCache.get(pastKey);
-
-        if (pastGoal) {
-          recentGoalIds.add(pastGoal.id);
-        }
-      }
-
-      const available = DAILY_DRAFT_GOALS.filter(
-        (goal) => !recentGoalIds.has(goal.id),
-      );
-
-      if (available.length > 0) {
-        const seed = getDailySeed(cursor);
-        const goal = available[seed % available.length]!;
-        goalCache.set(cursor, goal);
-      } else {
-        let bestGoal = DAILY_DRAFT_GOALS[0]!;
-        let bestDistance = -1;
-
-        for (const goal of DAILY_DRAFT_GOALS) {
-          let distance = DAILY_GOAL_REPEAT_WINDOW_DAYS * 2;
-
-          for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS * 2; day += 1) {
-            const pastKey = subtractDaysFromDateKey(cursor, day);
-            const pastGoal = goalCache.get(pastKey);
-
-            if (pastGoal?.id === goal.id) {
-              distance = day;
-              break;
-            }
-          }
-
-          if (distance > bestDistance) {
-            bestDistance = distance;
-            bestGoal = goal;
-          }
-        }
-
-        goalCache.set(cursor, bestGoal);
-      }
-    }
+    const goal = computeGoalForDate(cursor, workingCache);
+    workingCache.set(cursor, goal);
 
     if (cursor === dateKey) {
       break;
@@ -128,6 +133,39 @@ const fillGoalsThrough = (dateKey: string) => {
 
     cursor = subtractDaysFromDateKey(cursor, -1);
   }
+
+  return workingCache.get(dateKey) ?? DAILY_DRAFT_GOALS[0]!;
+};
+
+export const buildDailyGoalChainForTests = (dateKey: string) => {
+  const workingCache = new Map<string, DailyDraftGoal>();
+  const startKey = getGoalCalendarBootstrapStartKey(dateKey);
+  let cursor = startKey;
+
+  while (compareDateKeys(cursor, dateKey) <= 0) {
+    workingCache.set(cursor, computeGoalForDate(cursor, workingCache));
+
+    if (cursor === dateKey) {
+      break;
+    }
+
+    cursor = subtractDaysFromDateKey(cursor, -1);
+  }
+
+  return workingCache;
+};
+
+const fillGoalsThrough = (dateKey: string) => {
+  if (goalCache.has(dateKey)) {
+    return;
+  }
+
+  goalCache.set(dateKey, buildIsolatedDailyGoal(dateKey));
+};
+
+export const clearDailyDraftCachesForTests = () => {
+  goalCache.clear();
+  slotCache.clear();
 };
 
 export const getDailyGoal = (dateKey = getDailyDateKey()): DailyDraftGoal => {
