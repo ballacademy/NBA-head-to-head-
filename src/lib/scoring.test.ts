@@ -25,7 +25,7 @@ const lineup = (ids: string[]) => getPlayersById(ids, players);
 
 /** Two regular all-stars plus three strong non-all-star starters. */
 const TWO_ALL_STARS_THREE_STARTERS = [
-  "brownja02-bos",
+  "brownja02-phi",
   "maxeyty01-phi",
   "embiijo01-phi",
   "bookede01-pho",
