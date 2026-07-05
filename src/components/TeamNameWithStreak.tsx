@@ -17,8 +17,8 @@ export function TeamNameWithStreak({
   className,
 }: TeamNameWithStreakProps) {
   return (
-    <span className={className}>
-      {name}
+    <span className={["team-name-with-streak", className].filter(Boolean).join(" ")}>
+      <span className="team-name-with-streak__name">{name}</span>
       {hasFireStreak(winStreak) ? (
         <WinStreakBadge winStreak={winStreak} />
       ) : null}
