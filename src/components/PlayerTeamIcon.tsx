@@ -1,5 +1,12 @@
 import type { CSSProperties } from "react";
 import { formatJerseyNumber } from "../lib/jerseyNumbers";
+import {
+  JERSEY_CENTER_X,
+  JERSEY_COLLAR_PATH,
+  JERSEY_NUMBER_Y,
+  JERSEY_SILHOUETTE_PATH,
+  JERSEY_VIEWBOX_SIZE,
+} from "../lib/jerseySilhouette";
 import { getTeamColors } from "../lib/teamColors";
 import type { Position } from "../lib/types";
 
@@ -10,16 +17,6 @@ interface PlayerTeamIconProps {
   label?: string;
   showJersey?: boolean;
 }
-
-/**
- * Symmetric sleeveless NBA jersey silhouette in a 32x32 viewBox.
- * Every coordinate mirrors across x=16; bbox is 18x22 centered at (16, 16).
- */
-const JERSEY_SILHOUETTE =
-  "M7 10.5L8 5L13.5 9.5L16 6.5L18.5 9.5L24 5L25 10.5" +
-  "C26.5 12.25 25.5 13.75 22.5 14.5L22 27L10 27L9.5 14.5" +
-  "C6.5 13.75 5.5 12.25 7 10.5Z" +
-  "M12.75 9.75Q16 12 19.25 9.75Q16 8.25 12.75 9.75Z";
 
 export function PlayerTeamIcon({
   team,
@@ -47,20 +44,21 @@ export function PlayerTeamIcon({
       {showJersey ? (
         <svg
           className="player-jersey"
-          viewBox="0 0 32 32"
+          viewBox={`0 0 ${JERSEY_VIEWBOX_SIZE} ${JERSEY_VIEWBOX_SIZE}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
         >
           <path
             className="player-jersey__outline"
-            d={JERSEY_SILHOUETTE}
+            d={JERSEY_SILHOUETTE_PATH}
             fillRule="evenodd"
           />
+          <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
           <text
             className="player-jersey__number"
-            x="16"
-            y="21"
+            x={JERSEY_CENTER_X}
+            y={JERSEY_NUMBER_Y}
             textAnchor="middle"
             dominantBaseline="middle"
           >
