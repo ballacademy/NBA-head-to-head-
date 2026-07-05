@@ -38,12 +38,14 @@ export function RecordWithStreak({
       </div>
       {showStreak ? (
         <div className="landing-mode-card__record-stat landing-mode-card__record-stat--streak">
-          <span className="landing-mode-card__record-label">Streak</span>
+          <span className="landing-mode-card__record-label">
+            {showWinStreak ? "Win streak" : "Loss streak"}
+          </span>
           <span className="landing-mode-card__record-value landing-mode-card__record-value--streak">
             {showWinStreak ? (
-              <WinStreakBadge winStreak={record.winStreak} />
+              <WinStreakBadge winStreak={record.winStreak} showTypeLabel={false} />
             ) : (
-              <LossStreakBadge lossStreak={record.lossStreak} />
+              <LossStreakBadge lossStreak={record.lossStreak} showTypeLabel={false} />
             )}
           </span>
         </div>
