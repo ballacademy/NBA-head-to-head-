@@ -3994,6 +3994,14 @@ main {
   stroke-linecap: round;
 }
 
+.player-jersey__collar {
+  fill: none;
+  stroke: var(--team-secondary, #f8fafc);
+  stroke-width: 0.75;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
 .player-jersey__number {
   fill: #f8fafc;
   font-size: 13.5px;

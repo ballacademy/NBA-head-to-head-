@@ -1,4 +1,11 @@
 import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
+import {
+  JERSEY_CENTER_X,
+  JERSEY_COLLAR_PATH,
+  JERSEY_NUMBER_Y,
+  JERSEY_SILHOUETTE_PATH,
+  JERSEY_VIEWBOX_SIZE,
+} from "./jerseySilhouette";
 import { sortLineupByPosition } from "./lineupOrder";
 import { getTeamColors, type TeamColors } from "./teamColors";
 import type { Player } from "./types";
@@ -24,10 +31,6 @@ const CHEMISTRY_PILL_HEIGHT = 26;
 const CHEMISTRY_ROW_GAP = 8;
 const CHEMISTRY_BLOCK_GAP = 12;
 const CHEMISTRY_FONT = `700 14px ${FONT_STACK}`;
-
-// 48x48 jersey space; every point mirrors across x=24.
-const JERSEY_SCALE = 1.5;
-const JERSEY_CENTER_X = 24;
 
 let fontsReady: Promise<void> | null = null;
 
@@ -89,27 +92,51 @@ export const ensureShareCardFonts = () => {
   return fontsReady;
 };
 
-const traceJerseyPath = (context: CanvasRenderingContext2D) => {
-  const s = JERSEY_SCALE;
-  context.beginPath();
-  context.moveTo(7 * s, 10.5 * s);
-  context.lineTo(8 * s, 5 * s);
-  context.lineTo(13.5 * s, 9.5 * s);
-  context.lineTo(JERSEY_CENTER_X, 6.5 * s);
-  context.lineTo(18.5 * s, 9.5 * s);
-  context.lineTo(24 * s, 5 * s);
-  context.lineTo(25 * s, 10.5 * s);
-  context.bezierCurveTo(26.5 * s, 12.25 * s, 25.5 * s, 13.75 * s, 22.5 * s, 14.5 * s);
-  context.lineTo(22 * s, 27 * s);
-  context.lineTo(10 * s, 27 * s);
-  context.lineTo(9.5 * s, 14.5 * s);
-  context.bezierCurveTo(6.5 * s, 13.75 * s, 5.5 * s, 12.25 * s, 7 * s, 10.5 * s);
-  context.closePath();
+const drawJerseyBadge = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  number: string,
+  colors: TeamColors,
+) => {
+  const scale = size / JERSEY_VIEWBOX_SIZE;
+  const jerseyPath = new Path2D(JERSEY_SILHOUETTE_PATH);
+  const collarPath = new Path2D(JERSEY_COLLAR_PATH);
 
-  context.moveTo(12.75 * s, 9.75 * s);
-  context.quadraticCurveTo(JERSEY_CENTER_X, 12 * s, 19.25 * s, 9.75 * s);
-  context.quadraticCurveTo(JERSEY_CENTER_X, 8.25 * s, 12.75 * s, 9.75 * s);
-  context.closePath();
+  context.save();
+  context.translate(x, y);
+  context.scale(scale, scale);
+
+  context.shadowColor = rgbaFromHex(colors.primary, 0.85);
+  context.shadowBlur = 14;
+  context.fillStyle = colors.primary;
+  context.fill(jerseyPath, "evenodd");
+
+  context.shadowBlur = 8;
+  context.shadowColor = rgbaFromHex(colors.secondary, 0.75);
+  context.strokeStyle = colors.secondary;
+  context.lineWidth = 1.5;
+  context.lineJoin = "round";
+  context.stroke(jerseyPath);
+
+  context.shadowBlur = 0;
+  context.strokeStyle = rgbaFromHex(colors.secondary, 0.85);
+  context.lineWidth = 0.85;
+  context.lineCap = "round";
+  context.stroke(collarPath);
+
+  const fontSize = Math.max(9, Math.round(size * 0.12));
+  context.font = `900 ${fontSize}px ${FONT_STACK}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineWidth = 1.2;
+  context.strokeStyle = "rgba(8,8,10,0.65)";
+  context.fillStyle = "#ffffff";
+  context.strokeText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+  context.fillText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+
+  context.restore();
 };
 
 const drawTexturedBackground = (
@@ -153,48 +180,6 @@ const drawTexturedBackground = (
   vignette.addColorStop(1, "rgba(0,0,0,0.55)");
   context.fillStyle = vignette;
   context.fillRect(0, 0, CARD_WIDTH, cardHeight);
-};
-
-const drawJerseyBadge = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  size: number,
-  number: string,
-  colors: TeamColors,
-) => {
-  const scale = size / 48;
-
-  context.save();
-  context.translate(x, y);
-  context.scale(scale, scale);
-
-  traceJerseyPath(context);
-
-  context.shadowColor = rgbaFromHex(colors.primary, 0.85);
-  context.shadowBlur = 14;
-  context.fillStyle = colors.primary;
-  context.fill("evenodd");
-
-  context.shadowBlur = 8;
-  context.shadowColor = rgbaFromHex(colors.secondary, 0.75);
-  context.strokeStyle = colors.secondary;
-  context.lineWidth = 2.2;
-  context.lineJoin = "round";
-  context.stroke();
-
-  context.shadowBlur = 0;
-
-  context.font = `900 11px ${FONT_STACK}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.lineWidth = 1.2;
-  context.strokeStyle = "rgba(8,8,10,0.65)";
-  context.fillStyle = "#ffffff";
-  context.strokeText(number, 24, 30);
-  context.fillText(number, 24, 30);
-
-  context.restore();
 };
 
 const drawPlayerRow = (
