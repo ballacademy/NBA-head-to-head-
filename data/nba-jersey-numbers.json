@@ -1,7 +1,7 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-04T01:56:40.280077+00:00",
+  "generatedAt": "2026-07-06T01:49:19.178179+00:00",
   "playerCount": 603,
   "byPlayerId": {
     "alexani01": {
@@ -886,7 +886,7 @@
     },
     "okogijo01": {
       "jerseyNumber": 20,
-      "team": "HOU",
+      "team": "UTA",
       "name": "Josh Okogie"
     },
     "smithja05": {
@@ -1621,7 +1621,7 @@
     },
     "alexatr01": {
       "jerseyNumber": 23,
-      "team": "NOP",
+      "team": "UTA",
       "name": "Trey Alexander"
     },
     "dickihu01": {
@@ -2116,7 +2116,7 @@
     },
     "loveca01": {
       "jerseyNumber": 2,
-      "team": "POR",
+      "team": "PHI",
       "name": "Caleb Love"
     },
     "yangha01": {
@@ -2786,7 +2786,7 @@
     },
     "joneska03": {
       "jerseyNumber": 0,
-      "team": "CHI",
+      "team": "MIL",
       "name": "Kam Jones"
     },
     "dennira01": {
@@ -5285,7 +5285,7 @@
     {
       "bbrPlayerId": "alexatr01",
       "name": "Trey Alexander",
-      "team": "NOP",
+      "team": "UTA",
       "jerseyNumber": 23,
       "position": "SG"
     },
@@ -6634,6 +6634,6 @@
       "position": "PG"
     }
   ],
-  "updatedAt": "2026-07-04T01:56:33.770919+00:00",
+  "updatedAt": "2026-07-06T01:49:16.597444+00:00",
   "rosterSource": "espn"
 }
