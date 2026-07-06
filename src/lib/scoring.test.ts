@@ -2,25 +2,32 @@ import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import {
   calculateLineupScore,
+  capLineupRoleFitForOffense,
   capLineupRoleFitWithoutFirstOption,
   compareLineups,
   getLineupOffenseFloorPenalty,
   getLowScoringLineupPenalty,
+  getNoTrueStarLineupPenalty,
   getPlayersById,
   getPrimaryScorerLineupPenalty,
   hasLineupFirstOption,
   hasPrimaryScorer,
+  hasStarScorer,
+  hasStarTierPlayer,
   isLowScoringNonEliteDefender,
   isPlusDefenderByGrade,
   LINEUP_FIRST_OPTION_PPG_THRESHOLD,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
+  NO_TRUE_STAR_LINEUP_PENALTY,
   PRIMARY_SCORER_PPG_THRESHOLD,
   projectedWinsFromOvr,
   projectRecord,
   resolveHeadToHeadResult,
   SEASON_LENGTH,
+  STAR_SCORER_PPG_THRESHOLD,
   TEAM_FIT_CAP_WITHOUT_FIRST_OPTION,
+  TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
 } from "./scoring";
 import { playersById } from "./playerPool";
 import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
@@ -480,7 +487,7 @@ describe("calculateLineupScore", () => {
     expect(hasLineupFirstOption(defensiveRolePlayers)).toBe(false);
     expect(getLineupOffenseFloorPenalty(defensiveRolePlayers)).toBe(-14);
     expect(
-      capLineupRoleFitWithoutFirstOption(defensiveRolePlayers, 48),
+      capLineupRoleFitForOffense(defensiveRolePlayers, 48),
     ).toBe(TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
 
     const score = calculateLineupScore(defensiveRolePlayers);
@@ -491,8 +498,8 @@ describe("calculateLineupScore", () => {
     expect(score.warnings).toContain(
       `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
     );
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(24);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(32);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(20);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
   });
 
   it("projects a defensive role-player lineup near the play-in instead of the mid-30s", () => {
@@ -506,11 +513,11 @@ describe("calculateLineupScore", () => {
 
     const score = calculateLineupScore(defensiveLineup);
 
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(24);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(32);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(20);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
   });
 
-  it("does not cap team fit when a lineup has an 18+ PPG first option", () => {
+  it("uses a softer team fit cap when a lineup has an 18+ PPG option but no 22+ star scorer", () => {
     const withFirstOption: Player[] = [
       {
         id: "lead",
@@ -565,10 +572,190 @@ describe("calculateLineupScore", () => {
     ];
 
     expect(hasLineupFirstOption(withFirstOption)).toBe(true);
+    expect(hasStarScorer(withFirstOption)).toBe(false);
     expect(getLineupOffenseFloorPenalty(withFirstOption)).toBe(0);
-    expect(
-      capLineupRoleFitWithoutFirstOption(withFirstOption, 48),
-    ).toBe(48);
+    expect(getNoTrueStarLineupPenalty(withFirstOption)).toBe(
+      NO_TRUE_STAR_LINEUP_PENALTY,
+    );
+    expect(capLineupRoleFitForOffense(withFirstOption, 48)).toBe(
+      TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
+    );
+  });
+
+  it("does not cap team fit when a lineup has a 22+ PPG scorer", () => {
+    const withStarScorer: Player[] = [
+      {
+        id: "star",
+        name: "Star Scorer",
+        team: "MIA",
+        position: "SG",
+        positions: ["SG"],
+        jerseyNumber: 1,
+        points: 23.5,
+        rebounds: 4,
+        assists: 4,
+        steals: 1,
+        blocks: 0.3,
+        turnovers: 2,
+        trueShooting: 0.58,
+        threePoint: 0.36,
+        threePointersAttempted: 6,
+        fieldGoalsAttempted: 14,
+        minutes: 32,
+        heightInches: 77,
+        usage: 26,
+        defense: 7.5,
+        defenseGrade: "C+",
+        gamesPlayed: 70,
+        styles: ["scorer"],
+      },
+      ...Array.from({ length: 4 }, (_, index) => ({
+        id: `support-${index}`,
+        name: `Support ${index}`,
+        team: "LAL",
+        position: "SF" as const,
+        positions: ["SF" as const],
+        jerseyNumber: 2 + index,
+        points: 10,
+        rebounds: 4,
+        assists: 2,
+        steals: 1,
+        blocks: 0.5,
+        turnovers: 1,
+        trueShooting: 0.57,
+        threePoint: 0.35,
+        threePointersAttempted: 4,
+        fieldGoalsAttempted: 9,
+        minutes: 28,
+        heightInches: 79,
+        usage: 18,
+        defense: 7.8,
+        defenseGrade: "B-" as const,
+        gamesPlayed: 70,
+        styles: ["connector" as const],
+      })),
+    ];
+
+    expect(hasStarScorer(withStarScorer)).toBe(true);
+    expect(getNoTrueStarLineupPenalty(withStarScorer)).toBe(0);
+    expect(capLineupRoleFitForOffense(withStarScorer, 48)).toBe(48);
+  });
+
+  it("caps team fit at 40 and penalizes lineups without a 22+ PPG or star-tier player", () => {
+    const secondaryStarLineup: Player[] = [
+      {
+        id: "naw",
+        name: "Borderline Lead",
+        team: "ATL",
+        position: "SG",
+        positions: ["SG"],
+        jerseyNumber: 1,
+        points: 20.8,
+        rebounds: 4,
+        assists: 4,
+        steals: 1,
+        blocks: 0.4,
+        turnovers: 2,
+        trueShooting: 0.6,
+        threePoint: 0.38,
+        threePointersAttempted: 6,
+        fieldGoalsAttempted: 14,
+        minutes: 32,
+        heightInches: 77,
+        usage: 26,
+        defense: 8.5,
+        defenseGrade: "A-",
+        gamesPlayed: 70,
+        styles: ["scorer"],
+      },
+      {
+        id: "bane",
+        name: "Secondary Lead",
+        team: "ORL",
+        position: "SG",
+        positions: ["SG"],
+        jerseyNumber: 2,
+        points: 20.1,
+        rebounds: 4,
+        assists: 4,
+        steals: 1,
+        blocks: 0.3,
+        turnovers: 2,
+        trueShooting: 0.59,
+        threePoint: 0.37,
+        threePointersAttempted: 6,
+        fieldGoalsAttempted: 14,
+        minutes: 32,
+        heightInches: 77,
+        usage: 26,
+        defense: 7.8,
+        defenseGrade: "B",
+        gamesPlayed: 70,
+        styles: ["scorer"],
+      },
+      ...Array.from({ length: 3 }, (_, index) => ({
+        id: `role-${index}`,
+        name: `Role ${index}`,
+        team: "BOS",
+        position: "SF" as const,
+        positions: ["SF" as const],
+        jerseyNumber: 3 + index,
+        points: 14,
+        rebounds: 5,
+        assists: 3,
+        steals: 1,
+        blocks: 1,
+        turnovers: 1,
+        trueShooting: 0.58,
+        threePoint: 0.36,
+        threePointersAttempted: 5,
+        fieldGoalsAttempted: 10,
+        minutes: 28,
+        heightInches: 79,
+        usage: 22,
+        defense: 7.5,
+        defenseGrade: "B" as const,
+        gamesPlayed: 70,
+        styles: ["connector" as const],
+      })),
+    ];
+
+    expect(hasLineupFirstOption(secondaryStarLineup)).toBe(true);
+    expect(hasPrimaryScorer(secondaryStarLineup)).toBe(true);
+    expect(hasStarScorer(secondaryStarLineup)).toBe(false);
+    expect(hasStarTierPlayer(secondaryStarLineup)).toBe(false);
+    expect(getNoTrueStarLineupPenalty(secondaryStarLineup)).toBe(
+      NO_TRUE_STAR_LINEUP_PENALTY,
+    );
+    expect(capLineupRoleFitForOffense(secondaryStarLineup, 48)).toBe(
+      TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
+    );
+
+    const score = calculateLineupScore(secondaryStarLineup);
+
+    expect(score.categories[3]?.value).toBeLessThanOrEqual(
+      TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
+    );
+    expect(score.warnings).toContain(
+      `No true star; nobody reaches ${STAR_SCORER_PPG_THRESHOLD} PPG and the lineup lacks an All-Star or superstar.`,
+    );
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(36);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(42);
+  });
+
+  it("projects the Pritchard secondary-star lineup near 40 wins instead of the mid-40s", () => {
+    const secondaryStarLineup = lineup([
+      "pritcpa01-bos",
+      "alexani01-atl",
+      "banede01-orl",
+      "sensabr01-uta",
+      "clingdo01-por",
+    ]);
+
+    const score = calculateLineupScore(secondaryStarLineup);
+
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(36);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(42);
   });
 });
 
