@@ -1,4 +1,9 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
+import {
+  isAllStarPlayer,
+  isRecentAllStarPlayer,
+  isSuperstarPlayer,
+} from "./allStars";
 import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
 import {
   formatAverageDefenseGrade,
@@ -36,7 +41,10 @@ export const LOW_SCORING_LINEUP_PENALTY = -7;
 export const PRIMARY_SCORER_PPG_THRESHOLD = 20;
 export const PRIMARY_SCORER_LINEUP_PENALTY = -8;
 export const LINEUP_FIRST_OPTION_PPG_THRESHOLD = 18;
+export const STAR_SCORER_PPG_THRESHOLD = 22;
 export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
+export const TEAM_FIT_CAP_WITHOUT_STAR_SCORER = 40;
+export const NO_TRUE_STAR_LINEUP_PENALTY = -8;
 export const OFFENSE_FLOOR_BASE_PENALTY = -6;
 export const OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD = 16;
 export const OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY = -4;
@@ -62,6 +70,17 @@ export const hasPrimaryScorer = (lineup: Player[]) =>
 
 export const hasLineupFirstOption = (lineup: Player[]) =>
   lineup.some((player) => player.points >= LINEUP_FIRST_OPTION_PPG_THRESHOLD);
+
+export const hasStarScorer = (lineup: Player[]) =>
+  lineup.some((player) => player.points >= STAR_SCORER_PPG_THRESHOLD);
+
+export const hasStarTierPlayer = (lineup: Player[]) =>
+  lineup.some(
+    (player) =>
+      isSuperstarPlayer(player) ||
+      isAllStarPlayer(player) ||
+      isRecentAllStarPlayer(player),
+  );
 
 export const getLineupTopScoringAverage = (lineup: Player[]) => {
   if (lineup.length === 0) {
@@ -100,13 +119,28 @@ export const getLineupOffenseFloorPenalty = (lineup: Player[]) => {
   return penalty;
 };
 
-export const capLineupRoleFitWithoutFirstOption = (
+export const getNoTrueStarLineupPenalty = (lineup: Player[]) =>
+  hasStarScorer(lineup) || hasStarTierPlayer(lineup)
+    ? 0
+    : NO_TRUE_STAR_LINEUP_PENALTY;
+
+export const capLineupRoleFitForOffense = (
   lineup: Player[],
   roleFitScore: number,
-) =>
-  hasLineupFirstOption(lineup)
-    ? roleFitScore
-    : Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
+) => {
+  if (!hasLineupFirstOption(lineup)) {
+    return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
+  }
+
+  if (!hasStarScorer(lineup)) {
+    return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_STAR_SCORER);
+  }
+
+  return roleFitScore;
+};
+
+/** @deprecated Use capLineupRoleFitForOffense */
+export const capLineupRoleFitWithoutFirstOption = capLineupRoleFitForOffense;
 
 export const isPlusDefenderByGrade = (player: Player) =>
   meetsMinimumDefenseGrade(
@@ -371,7 +405,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
 
   const threePointBonus = scoreLineupThreePointBonus(shootingProfile);
 
-  const fit = capLineupRoleFitWithoutFirstOption(
+  const fit = capLineupRoleFitForOffense(
     lineup,
     scoreLineupRoleFit(roleFitProfile, { assists: totals.assists }),
   );
@@ -442,6 +476,10 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     warnings.push(
       `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
     );
+  } else if (!hasStarScorer(lineup) && !hasStarTierPlayer(lineup)) {
+    warnings.push(
+      `No true star; nobody reaches ${STAR_SCORER_PPG_THRESHOLD} PPG and the lineup lacks an All-Star or superstar.`,
+    );
   }
 
   if (hasNoCenter(roleFitProfile)) {
@@ -499,7 +537,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getLineupTeamQualityRawAdjustment(lineup) +
     getLowScoringLineupPenalty(lineup) +
     getPrimaryScorerLineupPenalty(lineup) +
-    getLineupOffenseFloorPenalty(lineup);
+    getLineupOffenseFloorPenalty(lineup) +
+    getNoTrueStarLineupPenalty(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 
