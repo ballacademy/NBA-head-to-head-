@@ -2,13 +2,17 @@ import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import {
   calculateLineupScore,
+  capLineupRoleFitWithoutFirstOption,
   compareLineups,
+  getLineupOffenseFloorPenalty,
   getLowScoringLineupPenalty,
   getPlayersById,
   getPrimaryScorerLineupPenalty,
+  hasLineupFirstOption,
   hasPrimaryScorer,
   isLowScoringNonEliteDefender,
   isPlusDefenderByGrade,
+  LINEUP_FIRST_OPTION_PPG_THRESHOLD,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
   PRIMARY_SCORER_PPG_THRESHOLD,
@@ -16,6 +20,7 @@ import {
   projectRecord,
   resolveHeadToHeadResult,
   SEASON_LENGTH,
+  TEAM_FIT_CAP_WITHOUT_FIRST_OPTION,
 } from "./scoring";
 import { playersById } from "./playerPool";
 import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
@@ -391,6 +396,179 @@ describe("calculateLineupScore", () => {
     expect(withPrimaryScore.preciseTotal).toBeGreaterThan(
       withoutPrimaryScore.preciseTotal,
     );
+  });
+
+  it("caps team fit and applies an offense floor without an 18+ PPG scorer", () => {
+    const defensiveRolePlayers: Player[] = [
+      {
+        id: "dunn",
+        name: "Defensive Guard",
+        team: "LAC",
+        position: "PG",
+        positions: ["PG"],
+        jerseyNumber: 1,
+        points: 7.3,
+        rebounds: 2,
+        assists: 3,
+        steals: 1.2,
+        blocks: 0.3,
+        turnovers: 1,
+        trueShooting: 0.59,
+        threePoint: 0.36,
+        threePointersAttempted: 3,
+        fieldGoalsAttempted: 8,
+        minutes: 24,
+        heightInches: 75,
+        usage: 19,
+        defense: 8.2,
+        defenseGrade: "B+",
+        gamesPlayed: 70,
+        styles: ["stopper"],
+      },
+      {
+        id: "melton",
+        name: "Two-Way Guard",
+        team: "GSW",
+        position: "SG",
+        positions: ["SG", "PG"],
+        jerseyNumber: 8,
+        points: 12.3,
+        rebounds: 3,
+        assists: 3,
+        steals: 1.1,
+        blocks: 0.4,
+        turnovers: 1.5,
+        trueShooting: 0.6,
+        threePoint: 0.37,
+        threePointersAttempted: 5,
+        fieldGoalsAttempted: 10,
+        minutes: 26,
+        heightInches: 76,
+        usage: 22,
+        defense: 8.1,
+        defenseGrade: "B+",
+        gamesPlayed: 70,
+        styles: ["stopper"],
+      },
+      ...Array.from({ length: 3 }, (_, index) => ({
+        id: `wing-${index}`,
+        name: `Wing ${index}`,
+        team: "MIN",
+        position: "SF" as const,
+        positions: ["SF" as const, "PF" as const],
+        jerseyNumber: 10 + index,
+        points: 11,
+        rebounds: 4,
+        assists: 2,
+        steals: 1,
+        blocks: 0.8,
+        turnovers: 1,
+        trueShooting: 0.58,
+        threePoint: 0.36,
+        threePointersAttempted: 4,
+        fieldGoalsAttempted: 9,
+        minutes: 28,
+        heightInches: 79,
+        usage: 20,
+        defense: 8,
+        defenseGrade: "B+" as const,
+        gamesPlayed: 70,
+        styles: ["stopper" as const],
+      })),
+    ];
+
+    expect(hasLineupFirstOption(defensiveRolePlayers)).toBe(false);
+    expect(getLineupOffenseFloorPenalty(defensiveRolePlayers)).toBe(-14);
+    expect(
+      capLineupRoleFitWithoutFirstOption(defensiveRolePlayers, 48),
+    ).toBe(TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
+
+    const score = calculateLineupScore(defensiveRolePlayers);
+
+    expect(score.categories[3]?.value).toBeLessThanOrEqual(
+      TEAM_FIT_CAP_WITHOUT_FIRST_OPTION,
+    );
+    expect(score.warnings).toContain(
+      `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
+    );
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(24);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(32);
+  });
+
+  it("projects a defensive role-player lineup near the play-in instead of the mid-30s", () => {
+    const defensiveLineup = lineup([
+      "dunnkr01-lac",
+      "meltode01-gsw",
+      "mcdanja02-min",
+      "murraybo01-tor",
+      "wareke01-mil",
+    ]);
+
+    const score = calculateLineupScore(defensiveLineup);
+
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(24);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(32);
+  });
+
+  it("does not cap team fit when a lineup has an 18+ PPG first option", () => {
+    const withFirstOption: Player[] = [
+      {
+        id: "lead",
+        name: "Lead Scorer",
+        team: "MIA",
+        position: "SG",
+        positions: ["SG"],
+        jerseyNumber: 1,
+        points: 18.5,
+        rebounds: 4,
+        assists: 4,
+        steals: 1,
+        blocks: 0.3,
+        turnovers: 2,
+        trueShooting: 0.58,
+        threePoint: 0.36,
+        threePointersAttempted: 6,
+        fieldGoalsAttempted: 14,
+        minutes: 32,
+        heightInches: 77,
+        usage: 26,
+        defense: 7.5,
+        defenseGrade: "C+",
+        gamesPlayed: 70,
+        styles: ["scorer"],
+      },
+      ...Array.from({ length: 4 }, (_, index) => ({
+        id: `support-${index}`,
+        name: `Support ${index}`,
+        team: "LAL",
+        position: "SF" as const,
+        positions: ["SF" as const],
+        jerseyNumber: 2 + index,
+        points: 10,
+        rebounds: 4,
+        assists: 2,
+        steals: 1,
+        blocks: 0.5,
+        turnovers: 1,
+        trueShooting: 0.57,
+        threePoint: 0.35,
+        threePointersAttempted: 4,
+        fieldGoalsAttempted: 9,
+        minutes: 28,
+        heightInches: 79,
+        usage: 18,
+        defense: 7.8,
+        defenseGrade: "B-" as const,
+        gamesPlayed: 70,
+        styles: ["connector" as const],
+      })),
+    ];
+
+    expect(hasLineupFirstOption(withFirstOption)).toBe(true);
+    expect(getLineupOffenseFloorPenalty(withFirstOption)).toBe(0);
+    expect(
+      capLineupRoleFitWithoutFirstOption(withFirstOption, 48),
+    ).toBe(48);
   });
 });
 
