@@ -48,6 +48,17 @@ export const getPlayerDefenseGradeRank = (player: {
   defenseGrade?: DefenseGrade;
 }) => defenseGradeToRank(getDefenseGrade(player.defense, player.defenseGrade));
 
+export const comparePlayersByDefenseGrade = (
+  left: { defense: number; defenseGrade?: DefenseGrade },
+  right: { defense: number; defenseGrade?: DefenseGrade },
+  direction: "asc" | "desc",
+) => {
+  const comparison =
+    getPlayerDefenseGradeRank(left) - getPlayerDefenseGradeRank(right);
+
+  return direction === "asc" ? comparison : -comparison;
+};
+
 export const formatAverageDefenseGrade = (averageRank: number) =>
   `${rankToDefenseGrade(averageRank)} avg DEF`;
 

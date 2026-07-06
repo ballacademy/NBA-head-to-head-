@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  comparePlayersByDefenseGrade,
   formatPlayerDraftStats,
   getDefenseGrade,
   meetsMinimumDefenseGrade,
@@ -16,6 +17,38 @@ describe("getDefenseGrade", () => {
     expect(getDefenseGrade(8.56)).toBe("B+");
     expect(getDefenseGrade(8.08)).toBe("B");
     expect(getDefenseGrade(7.48)).toBe("B-");
+  });
+});
+
+describe("comparePlayersByDefenseGrade", () => {
+  it("orders letter grades from A+ to F when descending", () => {
+    expect(
+      comparePlayersByDefenseGrade(
+        { defense: 6, defenseGrade: "A+" },
+        { defense: 9.4, defenseGrade: "B" },
+        "desc",
+      ),
+    ).toBeLessThan(0);
+  });
+
+  it("orders letter grades from F to A+ when ascending", () => {
+    expect(
+      comparePlayersByDefenseGrade(
+        { defense: 6, defenseGrade: "A+" },
+        { defense: 9.4, defenseGrade: "B" },
+        "asc",
+      ),
+    ).toBeGreaterThan(0);
+  });
+
+  it("uses stored grades instead of inflated numeric defense scores", () => {
+    expect(
+      comparePlayersByDefenseGrade(
+        { defense: 9.4, defenseGrade: "C+" },
+        { defense: 8.2, defenseGrade: "B+" },
+        "desc",
+      ),
+    ).toBeGreaterThan(0);
   });
 });
 

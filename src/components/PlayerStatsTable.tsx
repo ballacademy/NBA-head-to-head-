@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { comparePositions } from "../lib/positions";
-import { getDefenseGrade } from "../lib/defenseGrade";
+import {
+  comparePlayersByDefenseGrade,
+  getDefenseGrade,
+} from "../lib/defenseGrade";
 import {
   ensurePlayerCollection,
   getUnlockedPlayerClassLabel,
@@ -157,6 +160,10 @@ export function PlayerStatsTable({
       if (sortKey === "position") {
         const comparison = comparePositions(a.position, b.position);
         return sortDirection === "asc" ? comparison : -comparison;
+      }
+
+      if (sortKey === "defense") {
+        return comparePlayersByDefenseGrade(a, b, sortDirection);
       }
 
       const left = a[sortKey];
