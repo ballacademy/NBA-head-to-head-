@@ -35,6 +35,13 @@ export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
 export const LOW_SCORING_LINEUP_PENALTY = -7;
 export const PRIMARY_SCORER_PPG_THRESHOLD = 20;
 export const PRIMARY_SCORER_LINEUP_PENALTY = -8;
+export const LINEUP_FIRST_OPTION_PPG_THRESHOLD = 18;
+export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
+export const OFFENSE_FLOOR_BASE_PENALTY = -6;
+export const OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD = 16;
+export const OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY = -4;
+export const OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD = 58;
+export const OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY = -4;
 export const STOPPER_MINIMUM_DEFENSE_GRADE = "B" as const;
 
 export const isLowScoringNonEliteDefender = (player: Player) =>
@@ -53,8 +60,53 @@ export const getLowScoringLineupPenalty = (lineup: Player[]) =>
 export const hasPrimaryScorer = (lineup: Player[]) =>
   lineup.some((player) => player.points >= PRIMARY_SCORER_PPG_THRESHOLD);
 
+export const hasLineupFirstOption = (lineup: Player[]) =>
+  lineup.some((player) => player.points >= LINEUP_FIRST_OPTION_PPG_THRESHOLD);
+
+export const getLineupTopScoringAverage = (lineup: Player[]) => {
+  if (lineup.length === 0) {
+    return 0;
+  }
+
+  const sorted = [...lineup].sort((left, right) => right.points - left.points);
+  const topScorers = sorted.slice(0, Math.min(2, sorted.length));
+
+  return (
+    topScorers.reduce((sum, player) => sum + player.points, 0) /
+    topScorers.length
+  );
+};
+
 export const getPrimaryScorerLineupPenalty = (lineup: Player[]) =>
   hasPrimaryScorer(lineup) ? 0 : PRIMARY_SCORER_LINEUP_PENALTY;
+
+export const getLineupOffenseFloorPenalty = (lineup: Player[]) => {
+  if (lineup.length === 0 || hasLineupFirstOption(lineup)) {
+    return 0;
+  }
+
+  let penalty = OFFENSE_FLOOR_BASE_PENALTY;
+  const maxPoints = Math.max(...lineup.map((player) => player.points));
+  const totalPoints = lineup.reduce((sum, player) => sum + player.points, 0);
+
+  if (maxPoints < OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD) {
+    penalty += OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY;
+  }
+
+  if (totalPoints < OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD) {
+    penalty += OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY;
+  }
+
+  return penalty;
+};
+
+export const capLineupRoleFitWithoutFirstOption = (
+  lineup: Player[],
+  roleFitScore: number,
+) =>
+  hasLineupFirstOption(lineup)
+    ? roleFitScore
+    : Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
 
 export const isPlusDefenderByGrade = (player: Player) =>
   meetsMinimumDefenseGrade(
@@ -319,7 +371,10 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
 
   const threePointBonus = scoreLineupThreePointBonus(shootingProfile);
 
-  const fit = scoreLineupRoleFit(roleFitProfile, { assists: totals.assists });
+  const fit = capLineupRoleFitWithoutFirstOption(
+    lineup,
+    scoreLineupRoleFit(roleFitProfile, { assists: totals.assists }),
+  );
 
   const categories: ScoreCategory[] = [
     {
@@ -383,6 +438,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     );
   }
 
+  if (!hasLineupFirstOption(lineup)) {
+    warnings.push(
+      `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
+    );
+  }
+
   if (hasNoCenter(roleFitProfile)) {
     warnings.push("No true center makes rim protection and rebounding harder.");
   } else if (hasTooManyCenters(roleFitProfile)) {
@@ -437,7 +498,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getChemistryAdjustment(lineup) +
     getLineupTeamQualityRawAdjustment(lineup) +
     getLowScoringLineupPenalty(lineup) +
-    getPrimaryScorerLineupPenalty(lineup);
+    getPrimaryScorerLineupPenalty(lineup) +
+    getLineupOffenseFloorPenalty(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 
