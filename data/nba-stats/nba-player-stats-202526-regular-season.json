@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-04T01:56:40.258634+00:00",
-  "rosterAsOf": "2026-07-03",
+  "generatedAt": "2026-07-06T01:49:19.160923+00:00",
+  "rosterAsOf": "2026-07-06",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -8110,10 +8110,10 @@
       "lastTeam": "MEM"
     },
     {
-      "id": "loveca01-por",
+      "id": "loveca01-phi",
       "bbrPlayerId": "loveca01",
       "name": "Caleb Love",
-      "team": "POR",
+      "team": "PHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -16278,10 +16278,10 @@
       "trueShooting": 0.495
     },
     {
-      "id": "alexatr01-nop",
+      "id": "alexatr01-uta",
       "bbrPlayerId": "alexatr01",
       "name": "Trey Alexander",
-      "team": "NOP",
+      "team": "UTA",
       "position": "SG",
       "positions": [
         "SG"
@@ -16908,10 +16908,10 @@
       "trueShooting": 0.528
     },
     {
-      "id": "okogijo01-hou",
+      "id": "okogijo01-uta",
       "bbrPlayerId": "okogijo01",
       "name": "Josh Okogie",
-      "team": "HOU",
+      "team": "UTA",
       "position": "SG",
       "positions": [
         "SG"
@@ -17300,10 +17300,10 @@
       "trueShooting": 0.557
     },
     {
-      "id": "joneska03-chi",
+      "id": "joneska03-mil",
       "bbrPlayerId": "joneska03",
       "name": "Kam Jones",
-      "team": "CHI",
+      "team": "MIL",
       "position": "SG",
       "positions": [
         "SG"
