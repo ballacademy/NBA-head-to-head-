@@ -1,7 +1,7 @@
 {
   "description": "Current NBA team overrides synced from ESPN rosters for players traded after the Basketball Reference export window.",
   "source": "espn-roster-api",
-  "rosterAsOf": "2026-07-06",
+  "rosterAsOf": "2026-07-07",
   "overrides": {
     "achiupr01": "SAC",
     "agbajoc01": "BRK",
@@ -46,6 +46,7 @@
     "greenja02": "DET",
     "greenjo02": "MIN",
     "grimequ01": "LAL",
+    "hachiru01": "LAC",
     "hallpj01": "CHO",
     "hardati02": "MIA",
     "hardyja02": "LAL",

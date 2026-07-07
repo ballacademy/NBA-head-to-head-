@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-06T01:49:19.160923+00:00",
-  "rosterAsOf": "2026-07-06",
+  "generatedAt": "2026-07-07T02:55:12.303871+00:00",
+  "rosterAsOf": "2026-07-07",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -7201,10 +7201,10 @@
       "trueShooting": 0.635
     },
     {
-      "id": "hachiru01-lal",
+      "id": "hachiru01-lac",
       "bbrPlayerId": "hachiru01",
       "name": "Rui Hachimura",
-      "team": "LAL",
+      "team": "LAC",
       "position": "PF",
       "positions": [
         "PF"
