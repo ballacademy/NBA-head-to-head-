@@ -55,6 +55,7 @@ interface LandingPageProps {
   collection: PlayerCollection;
   modeRecords: ModePlayerRecords;
   matchmakingMode?: GhostMatchmakingMode | null;
+  isMatchmakingSearchActive?: boolean;
   matchmakingElapsedSeconds?: number;
   startMatchError?: string | null;
   onStartDraft: (
@@ -90,6 +91,7 @@ export function LandingPage({
   collection,
   modeRecords,
   matchmakingMode = null,
+  isMatchmakingSearchActive = false,
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
   onStartDraft,
@@ -139,7 +141,7 @@ export function LandingPage({
     return getDailyChallenge(todayDateKey);
   }, [dailyEntry, todayDateKey]);
   const dailyCompleted = Boolean(dailyEntry);
-  const isMatchmaking = matchmakingMode != null;
+  const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
   const profanityWarning =

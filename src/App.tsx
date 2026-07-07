@@ -151,6 +151,7 @@ function App() {
   );
   const [matchmakingElapsedSeconds, setMatchmakingElapsedSeconds] = useState(0);
   const [isCancellingMatchmaking, setIsCancellingMatchmaking] = useState(false);
+  const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
@@ -158,10 +159,12 @@ function App() {
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const skipPopStateResetRef = useRef(false);
   const pendingFeatureNavigationRef = useRef(false);
-  const matchmakingCancelledRef = useRef(false);
+  const matchmakingGenerationRef = useRef(0);
   const matchmakingSessionRef = useRef<{
+    generation: number;
     mode: "classic" | "ranked";
     playerId: string;
+    cancelled: boolean;
   } | null>(null);
   const todaysDailyDateKey = useDailyDateKey();
 
@@ -387,51 +390,86 @@ function App() {
     let ghostOpponent: GhostOpponentSnapshot | null = null;
     let liveOpponent: LiveOpponentSnapshot | null = null;
     let isPendingQueue = false;
+    let activeMatchmakingGeneration: number | null = null;
 
     if (!daily && !nextAllTimeMode && !practiceMode) {
       const nextMatchmakingMode = salaryCapMode ? "ranked" : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
-      matchmakingCancelledRef.current = false;
-      matchmakingSessionRef.current = {
+      const previousSession = matchmakingSessionRef.current;
+
+      if (previousSession) {
+        previousSession.cancelled = true;
+      }
+
+      const generation = ++matchmakingGenerationRef.current;
+      activeMatchmakingGeneration = generation;
+      const session = {
+        generation,
         mode: nextMatchmakingMode,
         playerId,
+        cancelled: false,
       };
+      matchmakingSessionRef.current = session;
+      setIsMatchmakingInFlight(true);
+      setIsCancellingMatchmaking(false);
       setMatchmakingStartedAt(Date.now());
       setMatchmakingMode(nextMatchmakingMode);
+
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
         : RANKED_STARTING_ELO;
-      const resolution = await planHeadToHeadMatchmaking(
-        {
-          mode: nextMatchmakingMode,
-          playerId,
-          playerElo: elo,
-          teamName: team.name,
-        },
-        { isCancelled: () => matchmakingCancelledRef.current },
-      );
 
-      setMatchmakingMode(null);
-      setMatchmakingStartedAt(null);
-      matchmakingSessionRef.current = null;
-      setIsCancellingMatchmaking(false);
+      try {
+        const resolution = await planHeadToHeadMatchmaking(
+          {
+            mode: nextMatchmakingMode,
+            playerId,
+            playerElo: elo,
+            teamName: team.name,
+          },
+          { isCancelled: () => session.cancelled },
+        );
 
-      if (!resolution.ok) {
-        if (resolution.error === "cancelled") {
+        if (session.cancelled) {
           return "cancelled";
         }
 
-        setStartMatchError(getStartMatchErrorMessage(resolution.error));
-        return "failed";
-      }
+        if (!resolution.ok) {
+          if (resolution.error === "cancelled") {
+            return "cancelled";
+          }
 
-      if (resolution.plan.kind === "live") {
-        liveOpponent = resolution.plan.live;
-      } else if (resolution.plan.kind === "ghost") {
-        ghostOpponent = resolution.plan.ghost;
-      } else if (resolution.plan.kind === "queue_for_live") {
-        isPendingQueue = true;
+          setStartMatchError(getStartMatchErrorMessage(resolution.error));
+          return "failed";
+        }
+
+        if (resolution.plan.kind === "live") {
+          liveOpponent = resolution.plan.live;
+        } else if (resolution.plan.kind === "ghost") {
+          ghostOpponent = resolution.plan.ghost;
+        } else if (resolution.plan.kind === "queue_for_live") {
+          isPendingQueue = true;
+        }
+      } finally {
+        if (matchmakingSessionRef.current?.generation === generation) {
+          matchmakingSessionRef.current = null;
+          setMatchmakingMode(null);
+          setMatchmakingStartedAt(null);
+        }
+
+        setIsCancellingMatchmaking(false);
+
+        if (matchmakingGenerationRef.current === generation) {
+          setIsMatchmakingInFlight(false);
+        }
       }
+    }
+
+    if (
+      activeMatchmakingGeneration != null &&
+      activeMatchmakingGeneration !== matchmakingGenerationRef.current
+    ) {
+      return "cancelled";
     }
 
     const nextOpponentCollection =
@@ -559,11 +597,11 @@ function App() {
   const cancelMatchmaking = useCallback(async () => {
     const session = matchmakingSessionRef.current;
 
-    if (!session || matchmakingCancelledRef.current) {
+    if (!session || session.cancelled) {
       return;
     }
 
-    matchmakingCancelledRef.current = true;
+    session.cancelled = true;
     setIsCancellingMatchmaking(true);
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
@@ -675,6 +713,8 @@ function App() {
     setIsPendingQueueMatch(false);
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
+    setIsCancellingMatchmaking(false);
+    setIsMatchmakingInFlight(false);
     setIsDailyDraft(false);
     setIsDailyReview(false);
     setIsDailyOptimalReview(false);
@@ -1152,6 +1192,9 @@ function App() {
     }
   }, [draftStep, phase, user, draftSessionKey]);
 
+  const isMatchmakingSearchActive =
+    matchmakingMode != null || isMatchmakingInFlight;
+
   if (phase === "leaderboard") {
     return (
       <main className="landing-layout">
@@ -1215,6 +1258,7 @@ function App() {
           collection={collection}
           modeRecords={modeRecords}
           matchmakingMode={matchmakingMode}
+          isMatchmakingSearchActive={isMatchmakingSearchActive}
           matchmakingElapsedSeconds={matchmakingElapsedSeconds}
           dailyPercentileLabel={landingDailyPercentileLabel}
           canViewDailyLineup={canViewDailyLineup}
@@ -1354,7 +1398,7 @@ function App() {
           onCollectionChange={handleCollectionChange}
           onPlayAgain={replayLastMode}
           onReturnToMenu={resetToLanding}
-          isMatchmaking={matchmakingMode != null}
+          isMatchmaking={isMatchmakingSearchActive}
         />
       ) : null}
       {matchmakingMode ? (
