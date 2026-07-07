@@ -10,6 +10,8 @@ import {
   getNoTrueStarLineupPenalty,
   getPlayersById,
   getPrimaryScorerLineupPenalty,
+  getEliteOffenseLineupBonus,
+  getSuperstarStackingLineupBonus,
   hasLineupFirstOption,
   hasPrimaryScorer,
   hasStarScorer,
@@ -30,6 +32,11 @@ import {
   TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
 } from "./scoring";
 import { playersById } from "./playerPool";
+import {
+  ELITE_CREATION_ASSISTS_THRESHOLD,
+  ELITE_CREATION_MIN_ENGINES,
+  scoreLineupRoleFit,
+} from "./lineupRoleFit";
 import { getScrubPlayerIds, getSuperScrubPlayerIds } from "./playerTiers";
 import type { Player } from "./types";
 
@@ -93,7 +100,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(55);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(58);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {
@@ -756,6 +763,78 @@ describe("calculateLineupScore", () => {
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(36);
     expect(score.projectedRecord.wins).toBeLessThanOrEqual(42);
+  });
+
+  it("rewards elite offensive lineups with superstar stacking and production bonuses", () => {
+    const eliteOffenseLineup = lineup([
+      "doncilu01-lal",
+      "mccolcj01-atl",
+      "portemi01-brk",
+      "markkla01-uta",
+      "jokicni01-den",
+    ]);
+
+    const score = calculateLineupScore(eliteOffenseLineup);
+
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(55);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(62);
+    expect(score.strengths).toContain(
+      "Elite playmaking supports multiple high-usage creators.",
+    );
+    expect(score.warnings).not.toContain(
+      "Ball-dominant stars may fight for the same touches.",
+    );
+  });
+
+  it("applies superstar stacking and elite offense raw bonuses", () => {
+    const eliteOffenseLineup = lineup([
+      "doncilu01-lal",
+      "mccolcj01-atl",
+      "portemi01-brk",
+      "markkla01-uta",
+      "jokicni01-den",
+    ]);
+    const productionScore = eliteOffenseLineup.reduce(
+      (sum, player) =>
+        sum +
+        player.points * 0.45 +
+        player.rebounds * 0.38 +
+        player.assists * 0.52,
+      0,
+    );
+    const totalPoints = eliteOffenseLineup.reduce(
+      (sum, player) => sum + player.points,
+      0,
+    );
+
+    expect(getSuperstarStackingLineupBonus(eliteOffenseLineup)).toBe(8);
+    expect(getEliteOffenseLineupBonus(productionScore, totalPoints)).toBe(10);
+  });
+
+  it("softens high-usage team fit penalties when creation is elite", () => {
+    const highUsageProfile = {
+      guardCount: 2,
+      forwardCount: 2,
+      centerCount: 1,
+      creators: 3,
+      engines: ELITE_CREATION_MIN_ENGINES,
+      connectors: 1,
+      highUsagePlayers: 3,
+      lowUsagePlayers: 1,
+      stoppers: 1,
+      rimProtectors: 1,
+    };
+    const eliteTotals = { assists: ELITE_CREATION_ASSISTS_THRESHOLD };
+    const thinCreationProfile = {
+      ...highUsageProfile,
+      engines: ELITE_CREATION_MIN_ENGINES - 1,
+    };
+
+    expect(
+      scoreLineupRoleFit(highUsageProfile, eliteTotals),
+    ).toBeGreaterThan(
+      scoreLineupRoleFit(thinCreationProfile, eliteTotals),
+    );
   });
 });
 

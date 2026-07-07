@@ -28,12 +28,22 @@ import {
 import {
   buildLineupRoleFitProfile,
   formatLineupRoleFitNote,
+  hasEliteLineupCreation,
   hasLineupCreation,
   hasLineupFrontcourt,
   hasNoCenter,
   hasTooManyCenters,
   scoreLineupRoleFit,
 } from "./lineupRoleFit";
+
+export interface LineupScoreBreakdown {
+  categories: ScoreCategory[];
+  strengths: string[];
+  warnings: string[];
+  statRawTotal: number;
+  productionScore: number;
+  totalPoints: number;
+}
 
 export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
@@ -45,6 +55,11 @@ export const STAR_SCORER_PPG_THRESHOLD = 22;
 export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
 export const TEAM_FIT_CAP_WITHOUT_STAR_SCORER = 40;
 export const NO_TRUE_STAR_LINEUP_PENALTY = -8;
+export const ELITE_OFFENSE_PRODUCTION_THRESHOLD = 110;
+export const ELITE_OFFENSE_TOTAL_PPG_THRESHOLD = 120;
+export const ELITE_OFFENSE_LINEUP_BONUS = 10;
+export const SUPERSTAR_STACKING_MIN_COUNT = 2;
+export const SUPERSTAR_STACKING_LINEUP_BONUS = 8;
 export const OFFENSE_FLOOR_BASE_PENALTY = -6;
 export const OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD = 16;
 export const OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY = -4;
@@ -123,6 +138,23 @@ export const getNoTrueStarLineupPenalty = (lineup: Player[]) =>
   hasStarScorer(lineup) || hasStarTierPlayer(lineup)
     ? 0
     : NO_TRUE_STAR_LINEUP_PENALTY;
+
+export const countSuperstars = (lineup: Player[]) =>
+  lineup.filter(isSuperstarPlayer).length;
+
+export const getSuperstarStackingLineupBonus = (lineup: Player[]) =>
+  countSuperstars(lineup) >= SUPERSTAR_STACKING_MIN_COUNT
+    ? SUPERSTAR_STACKING_LINEUP_BONUS
+    : 0;
+
+export const getEliteOffenseLineupBonus = (
+  productionScore: number,
+  totalPoints: number,
+) =>
+  productionScore >= ELITE_OFFENSE_PRODUCTION_THRESHOLD ||
+  totalPoints >= ELITE_OFFENSE_TOTAL_PPG_THRESHOLD
+    ? ELITE_OFFENSE_LINEUP_BONUS
+    : 0;
 
 export const capLineupRoleFitForOffense = (
   lineup: Player[],
@@ -326,7 +358,7 @@ const weightedCount = (
     0,
   );
 
-const buildLineupScoreBreakdown = (lineup: Player[]) => {
+const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   const { weights, weightSum } = buildLineupWeights(lineup);
 
   const totals = {
@@ -462,8 +494,17 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
     warnings.push("The lineup lacks a reliable table-setter.");
   }
 
-  if (highUsagePlayers > 2 || averageUsage > 31) {
+  const eliteCreation = hasEliteLineupCreation(roleFitProfile, {
+    assists: totals.assists,
+  });
+
+  if (
+    (highUsagePlayers > 2 || averageUsage > 31) &&
+    !eliteCreation
+  ) {
     warnings.push("Ball-dominant stars may fight for the same touches.");
+  } else if (eliteCreation && highUsagePlayers >= 2) {
+    strengths.push("Elite playmaking supports multiple high-usage creators.");
   }
 
   if (!hasPrimaryScorer(lineup)) {
@@ -499,8 +540,16 @@ const buildLineupScoreBreakdown = (lineup: Player[]) => {
   const statRawTotal = round(
     categories.reduce((sum, category) => sum + category.value, 0),
   );
+  const totalPoints = lineup.reduce((sum, player) => sum + player.points, 0);
 
-  return { categories, strengths, warnings, statRawTotal };
+  return {
+    categories,
+    strengths,
+    warnings,
+    statRawTotal,
+    productionScore: production,
+    totalPoints,
+  };
 };
 
 export const calculateLineupStatRawTotal = (lineup: Player[]) => {
@@ -527,7 +576,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     };
   }
 
-  const { categories, strengths, warnings, statRawTotal } =
+  const { categories, strengths, warnings, statRawTotal, productionScore, totalPoints } =
     buildLineupScoreBreakdown(lineup);
   const rawTotal =
     statRawTotal +
@@ -538,7 +587,9 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     getLowScoringLineupPenalty(lineup) +
     getPrimaryScorerLineupPenalty(lineup) +
     getLineupOffenseFloorPenalty(lineup) +
-    getNoTrueStarLineupPenalty(lineup);
+    getNoTrueStarLineupPenalty(lineup) +
+    getEliteOffenseLineupBonus(productionScore, totalPoints) +
+    getSuperstarStackingLineupBonus(lineup);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 
