@@ -10,7 +10,7 @@ import {
   getPlayerDefenseGradeRank,
   meetsMinimumDefenseGrade,
 } from "./defenseGrade";
-import { getImpactRankingAdjustment } from "./impactRanking";
+import { getImpactRankingAdjustment, isImpactRankStarPlayer } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
@@ -94,7 +94,8 @@ export const hasStarTierPlayer = (lineup: Player[]) =>
     (player) =>
       isSuperstarPlayer(player) ||
       isAllStarPlayer(player) ||
-      isRecentAllStarPlayer(player),
+      isRecentAllStarPlayer(player) ||
+      isImpactRankStarPlayer(player),
   );
 
 export const getLineupTopScoringAverage = (lineup: Player[]) => {
@@ -164,7 +165,7 @@ export const capLineupRoleFitForOffense = (
     return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
   }
 
-  if (!hasStarScorer(lineup)) {
+  if (!hasStarScorer(lineup) && !hasStarTierPlayer(lineup)) {
     return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_STAR_SCORER);
   }
 

@@ -3,6 +3,8 @@ import { players } from "../data/players";
 import {
   getImpactRankingAdjustment,
   getPlayerImpactAdjustment,
+  getPlayerImpactRank,
+  isImpactRankStarPlayer,
 } from "./impactRanking";
 import {
   getScrubPlayerIds,
@@ -57,6 +59,17 @@ describe("impactRanking", () => {
     expect(getPlayerImpactAdjustment(curry!)).toBeGreaterThan(0);
     expect(getPlayerImpactAdjustment(lamelo!)).toBeGreaterThan(0.4);
     expect(getPlayerImpactAdjustment(holiday!)).toBeLessThan(0);
+  });
+
+  it("exposes impact ranks for ranked players", () => {
+    const butler = players.find((player) => player.name === "Jimmy Butler");
+    const pritchard = players.find((player) => player.name === "Payton Pritchard");
+
+    expect(butler).toBeDefined();
+    expect(pritchard).toBeDefined();
+    expect(getPlayerImpactRank(butler!)).toBe(24);
+    expect(isImpactRankStarPlayer(butler!)).toBe(true);
+    expect(isImpactRankStarPlayer(pritchard!)).toBe(false);
   });
 
   it("does not change scrub pool membership", () => {
