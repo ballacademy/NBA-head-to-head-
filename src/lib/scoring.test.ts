@@ -100,7 +100,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(58);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(60);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {

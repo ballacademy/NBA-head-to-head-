@@ -4,8 +4,11 @@ import { playersById } from "./playerPool";
 import {
   ALL_STAR_LINEUP_BONUS,
   getImpactRankLineupBonus,
+  getLineupStarBonus,
   getLineupTierAdjustment,
   getPlayerImpactRankLineupBonus,
+  getPlayerLineupStarBonus,
+  getPlayerTaggedStarTierBonus,
   getScrubTierLineupPenalty,
   getStarTierLineupBonus,
   IMPACT_RANK_FLOOR_BONUS,
@@ -41,19 +44,29 @@ describe("getImpactRankLineupBonus", () => {
 
     expect(butler).toBeDefined();
     expect(getPlayerImpactRank(butler!)).toBe(24);
-    expect(getPlayerImpactRankLineupBonus(butler!)).toBeGreaterThan(1.5);
-    expect(getPlayerImpactRankLineupBonus(butler!)).toBeLessThan(
+    expect(getPlayerLineupStarBonus(butler!)).toBeGreaterThan(1.5);
+    expect(getPlayerLineupStarBonus(butler!)).toBeLessThan(
       IMPACT_RANK_TOP_BONUS,
     );
   });
 
-  it("does not stack impact rank boosts on players already receiving star tier credit", () => {
+  it("uses the higher of tag credit or impact rank credit without double-counting", () => {
     const kat = playersById.get("townska01-nyk");
+    const butler = playersById.get("butleji01-gsw");
 
-    expect(kat).toBeDefined();
-    expect(getPlayerImpactRank(kat!)).toBeLessThanOrEqual(30);
-    expect(getStarTierLineupBonus([kat!])).toBe(ALL_STAR_LINEUP_BONUS);
-    expect(getPlayerImpactRankLineupBonus(kat!)).toBe(0);
+    expect(kat && butler).toBeTruthy();
+    expect(getPlayerTaggedStarTierBonus(kat!)).toBe(ALL_STAR_LINEUP_BONUS);
+    expect(getPlayerImpactRankLineupBonus(kat!)).toBeGreaterThan(
+      ALL_STAR_LINEUP_BONUS,
+    );
+    expect(getPlayerLineupStarBonus(kat!)).toBe(
+      getPlayerImpactRankLineupBonus(kat!),
+    );
+    expect(getPlayerLineupStarBonus(kat!)).toBeGreaterThan(
+      getPlayerLineupStarBonus(butler!),
+    );
+    expect(getImpactRankLineupBonus([kat!])).toBeGreaterThan(0);
+    expect(getLineupStarBonus([kat!])).toBe(getPlayerLineupStarBonus(kat!));
   });
 
   it("applies diminishing boosts through the top 75 impact players", () => {
@@ -62,25 +75,23 @@ describe("getImpactRankLineupBonus", () => {
     const pritchard = playersById.get("pritcpa01-bos");
 
     expect(castle && amen && pritchard).toBeTruthy();
-    expect(getPlayerImpactRankLineupBonus(castle!)).toBeGreaterThan(
-      getPlayerImpactRankLineupBonus(amen!),
+    expect(getPlayerLineupStarBonus(castle!)).toBeGreaterThan(
+      getPlayerLineupStarBonus(amen!),
     );
-    expect(getPlayerImpactRankLineupBonus(amen!)).toBeGreaterThan(
+    expect(getPlayerLineupStarBonus(amen!)).toBeGreaterThan(
       IMPACT_RANK_FLOOR_BONUS,
     );
-    expect(getPlayerImpactRankLineupBonus(pritchard!)).toBe(0);
+    expect(getPlayerLineupStarBonus(pritchard!)).toBe(0);
   });
 
-  it("folds impact rank boosts into lineup tier adjustments", () => {
+  it("folds unified star boosts into lineup tier adjustments", () => {
     const lineup = [
       playersById.get("butleji01-gsw"),
       playersById.get("castlst01-sas"),
       playersById.get("thompam01-hou"),
     ].filter((player): player is NonNullable<typeof player> => Boolean(player));
 
-    expect(getLineupTierAdjustment(lineup)).toBe(
-      getImpactRankLineupBonus(lineup),
-    );
+    expect(getLineupTierAdjustment(lineup)).toBe(getLineupStarBonus(lineup));
   });
 });
 
