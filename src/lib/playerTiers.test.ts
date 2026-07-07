@@ -83,6 +83,19 @@ describe("playerTiers", () => {
     );
   });
 
+  it("forces the worst cumulative-stat non-scrubs into the scrub pool", () => {
+    const isaac = players.find((player) => player.bbrPlayerId === "isaacjo01");
+    const connaughton = players.find(
+      (player) => player.bbrPlayerId === "connapa01",
+    );
+
+    expect(isaac).toBeDefined();
+    expect(connaughton).toBeDefined();
+    expect(isScrubPlayer(isaac!)).toBe(true);
+    expect(isScrubPlayer(connaughton!)).toBe(true);
+    expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
+  });
+
   it("excludes manual scrub-pool overrides and backfills the next-worst players", () => {
     const looney = players.find((player) => player.bbrPlayerId === "looneke01");
     const adams = players.find((player) => player.bbrPlayerId === "adamsst01");
