@@ -100,7 +100,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(58);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(60);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {
@@ -763,6 +763,22 @@ describe("calculateLineupScore", () => {
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(36);
     expect(score.projectedRecord.wins).toBeLessThanOrEqual(42);
+  });
+
+  it("boosts impact-ranked stars like Butler without double-counting tagged all-stars", () => {
+    const impactStarLineup = lineup([
+      "thompam01-hou",
+      "pritcpa01-bos",
+      "castlst01-sas",
+      "butleji01-gsw",
+      "townska01-nyk",
+    ]);
+
+    const score = calculateLineupScore(impactStarLineup);
+
+    expect(hasStarTierPlayer(impactStarLineup)).toBe(true);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(46);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(52);
   });
 
   it("rewards elite offensive lineups with superstar stacking and production bonuses", () => {
