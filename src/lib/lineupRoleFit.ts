@@ -57,6 +57,16 @@ export const buildLineupRoleFitProfile = (
   };
 };
 
+export const ELITE_CREATION_ASSISTS_THRESHOLD = 26;
+export const ELITE_CREATION_MIN_ENGINES = 2;
+
+export const hasEliteLineupCreation = (
+  profile: LineupRoleFitProfile,
+  totals: LineupRoleTotals,
+) =>
+  totals.assists >= ELITE_CREATION_ASSISTS_THRESHOLD &&
+  profile.engines >= ELITE_CREATION_MIN_ENGINES;
+
 export const scoreLineupRoleFit = (
   profile: LineupRoleFitProfile,
   totals: LineupRoleTotals,
@@ -99,8 +109,12 @@ export const scoreLineupRoleFit = (
   }
 
   fit += profile.lowUsagePlayers >= 1 ? 3 : -3;
-  fit -= Math.max(0, profile.highUsagePlayers - 2) * 6;
-  fit -= profile.highUsagePlayers > 2 ? 2 : 0;
+
+  const eliteCreation = hasEliteLineupCreation(profile, totals);
+  if (!eliteCreation) {
+    fit -= Math.max(0, profile.highUsagePlayers - 2) * 6;
+    fit -= profile.highUsagePlayers > 2 ? 2 : 0;
+  }
 
   return clamp(fit, 0, 48);
 };
