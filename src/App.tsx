@@ -393,7 +393,9 @@ function App() {
     let activeMatchmakingGeneration: number | null = null;
 
     if (!daily && !nextAllTimeMode && !practiceMode) {
-      const nextMatchmakingMode = salaryCapMode ? "ranked" : "classic";
+      const nextMatchmakingMode: "classic" | "ranked" = salaryCapMode
+        ? "ranked"
+        : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
       const previousSession = matchmakingSessionRef.current;
 
