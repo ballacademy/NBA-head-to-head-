@@ -164,10 +164,17 @@ export const searchLiveOpponent = async (
   options: {
     searchMs?: number;
     pollIntervalMs?: number;
+    isCancelled?: () => boolean;
   } = {},
 ): Promise<LiveOpponentSnapshot | null> => {
   const searchMs = options.searchMs ?? resolveMatchmakingSearchMs();
   const pollIntervalMs = options.pollIntervalMs ?? MATCHMAKING_POLL_INTERVAL_MS;
+  const isCancelled = options.isCancelled ?? (() => false);
+
+  if (isCancelled()) {
+    return null;
+  }
+
   const joined = await joinMatchmakingQueue(params);
 
   if (!joined) {
@@ -181,6 +188,14 @@ export const searchLiveOpponent = async (
   const deadline = Date.now() + searchMs;
 
   while (Date.now() < deadline) {
+    if (isCancelled()) {
+      await leaveMatchmakingQueue({
+        mode: params.mode,
+        playerId: params.playerId,
+      });
+      return null;
+    }
+
     const opponent = await pollMatchmakingQueue({
       mode: params.mode,
       playerId: params.playerId,
@@ -197,6 +212,14 @@ export const searchLiveOpponent = async (
     }
 
     await sleep(Math.min(pollIntervalMs, remaining));
+  }
+
+  if (isCancelled()) {
+    await leaveMatchmakingQueue({
+      mode: params.mode,
+      playerId: params.playerId,
+    });
+    return null;
   }
 
   await leaveMatchmakingQueue({

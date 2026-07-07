@@ -29,6 +29,8 @@ export interface StartDraftOptions {
   practiceMode?: boolean;
 }
 
+export type StartMatchResult = "started" | "cancelled" | "failed";
+
 export const PICK_TIME_LIMIT_SECONDS = 20;
 export const CLASSIC_PICK_TIME_LIMIT_SECONDS = 30;
 export const DAILY_PICK_TIME_LIMIT_SECONDS = 45;

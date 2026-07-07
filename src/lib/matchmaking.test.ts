@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { planHeadToHeadMatchmaking } from "./matchmaking";
 import { LIVE_OPPONENT_ONLY_MIN_ELO, requiresLiveOpponentOnly } from "./rankedElo";
 
@@ -21,6 +21,10 @@ import { fetchGhostOpponent, fetchPendingMatchmakingStatus } from "./ghostMatchm
 import { searchLiveOpponent } from "./liveMatchmaking";
 
 describe("matchmaking", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("requires live opponents at 1500+ banners", () => {
     expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO - 1)).toBe(false);
     expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO)).toBe(true);
@@ -126,6 +130,34 @@ describe("matchmaking", () => {
         teamName: "Lakers",
       }),
     ).resolves.toEqual({ ok: true, plan: { kind: "queue_for_live" } });
+  });
+
+  it("stops matchmaking when the live search is cancelled", async () => {
+    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
+      queuedLineup: null,
+    });
+    vi.mocked(searchLiveOpponent).mockResolvedValue(null);
+    vi.mocked(fetchGhostOpponent).mockResolvedValue({
+      id: "lineup-1",
+      teamName: "Celtics",
+      lineup: ["a", "b", "c", "d", "e"],
+      elo: 1210,
+      createdAt: "2026-06-26T00:00:00.000Z",
+    });
+
+    await expect(
+      planHeadToHeadMatchmaking(
+        {
+          mode: "classic",
+          playerId: "player-1",
+          playerElo: 1200,
+          teamName: "Lakers",
+        },
+        { isCancelled: () => true },
+      ),
+    ).resolves.toEqual({ ok: false, error: "cancelled" });
+
+    expect(fetchGhostOpponent).not.toHaveBeenCalled();
   });
 
   it("blocks live-only players with a queued lineup", async () => {

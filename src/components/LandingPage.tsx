@@ -40,7 +40,7 @@ import { GmIdentityBadge } from "./GmIdentityBadge";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
-import type { StartDraftOptions } from "../lib/match";
+import type { StartDraftOptions, StartMatchResult } from "../lib/match";
 
 const buildHeadToHeadModeDetails = (
   baseDetails: string[],
@@ -60,7 +60,7 @@ interface LandingPageProps {
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
-  ) => Promise<boolean>;
+  ) => Promise<StartMatchResult>;
   onViewDailyLineup?: () => Promise<boolean> | boolean;
   onViewYesterdayBestDailyLineup?: () => Promise<boolean> | boolean;
   dailyPercentileLabel?: string | null;
@@ -233,9 +233,9 @@ export function LandingPage({
     }
 
     setError("");
-    const started = await onStartDraft(team, options);
+    const result = await onStartDraft(team, options);
 
-    if (!started) {
+    if (result === "failed") {
       if (options?.isDailyDraft && dailyCompleted) {
         setError("You've already completed today's Daily Draft. Come back tomorrow.");
         return;
