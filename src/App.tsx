@@ -61,16 +61,17 @@ import {
   getOpponentPickDelayMs,
   sleep,
   type StartDraftOptions,
+  type StartMatchResult,
 } from "./lib/match";
 import {
   getStartMatchErrorMessage,
   planHeadToHeadMatchmaking,
-  type StartMatchError,
 } from "./lib/matchmaking";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
 import {
+  leaveMatchmakingQueue,
   submitLiveMatchLineup,
   waitForLiveOpponentLineup,
 } from "./lib/liveMatchmaking";
@@ -149,6 +150,7 @@ function App() {
     null,
   );
   const [matchmakingElapsedSeconds, setMatchmakingElapsedSeconds] = useState(0);
+  const [isCancellingMatchmaking, setIsCancellingMatchmaking] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
@@ -156,6 +158,11 @@ function App() {
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const skipPopStateResetRef = useRef(false);
   const pendingFeatureNavigationRef = useRef(false);
+  const matchmakingCancelledRef = useRef(false);
+  const matchmakingSessionRef = useRef<{
+    mode: "classic" | "ranked";
+    playerId: string;
+  } | null>(null);
   const todaysDailyDateKey = useDailyDateKey();
 
   useEffect(() => {
@@ -343,15 +350,15 @@ function App() {
   const startMatch = async (
     team: TeamProfile,
     options: StartDraftOptions = {},
-  ): Promise<boolean> => {
+  ): Promise<StartMatchResult> => {
     if (collection.pendingUnlock) {
-      return false;
+      return "failed";
     }
 
     setStartMatchError(null);
 
     if (options.allTimeMode && !isAllTimeModePlayable()) {
-      return false;
+      return "failed";
     }
 
     const daily = Boolean(options.isDailyDraft);
@@ -362,7 +369,7 @@ function App() {
     const setup = daily ? getDailyDraftSetup(dateKey) : null;
 
     if (daily && hasCompletedDailyDraft(dateKey)) {
-      return false;
+      return "failed";
     }
 
     const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
@@ -383,25 +390,39 @@ function App() {
 
     if (!daily && !nextAllTimeMode && !practiceMode) {
       const nextMatchmakingMode = salaryCapMode ? "ranked" : "classic";
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      matchmakingCancelledRef.current = false;
+      matchmakingSessionRef.current = {
+        mode: nextMatchmakingMode,
+        playerId,
+      };
       setMatchmakingStartedAt(Date.now());
       setMatchmakingMode(nextMatchmakingMode);
-      const playerId = getOrCreatePlayerIdentity().playerId;
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
         : RANKED_STARTING_ELO;
-      const resolution = await planHeadToHeadMatchmaking({
-        mode: nextMatchmakingMode,
-        playerId,
-        playerElo: elo,
-        teamName: team.name,
-      });
+      const resolution = await planHeadToHeadMatchmaking(
+        {
+          mode: nextMatchmakingMode,
+          playerId,
+          playerElo: elo,
+          teamName: team.name,
+        },
+        { isCancelled: () => matchmakingCancelledRef.current },
+      );
 
       setMatchmakingMode(null);
       setMatchmakingStartedAt(null);
+      matchmakingSessionRef.current = null;
+      setIsCancellingMatchmaking(false);
 
       if (!resolution.ok) {
+        if (resolution.error === "cancelled") {
+          return "cancelled";
+        }
+
         setStartMatchError(getStartMatchErrorMessage(resolution.error));
-        return false;
+        return "failed";
       }
 
       if (resolution.plan.kind === "live") {
@@ -471,7 +492,7 @@ function App() {
           !slotsAreFeasible(opponentPool, opponentSlots)))
     ) {
       setStartMatchError(getStartMatchErrorMessage("setup_failed"));
-      return false;
+      return "failed";
     }
 
     if (
@@ -481,7 +502,7 @@ function App() {
         !slotsAreFeasible(draftPool, opponentSlots))
     ) {
       setStartMatchError(getStartMatchErrorMessage("setup_failed"));
-      return false;
+      return "failed";
     }
 
     saveTeamProfile(team);
@@ -532,8 +553,26 @@ function App() {
         : `draft-${Date.now()}`,
     );
     setPhase("drafting");
-    return true;
+    return "started";
   };
+
+  const cancelMatchmaking = useCallback(async () => {
+    const session = matchmakingSessionRef.current;
+
+    if (!session || matchmakingCancelledRef.current) {
+      return;
+    }
+
+    matchmakingCancelledRef.current = true;
+    setIsCancellingMatchmaking(true);
+    setMatchmakingMode(null);
+    setMatchmakingStartedAt(null);
+
+    await leaveMatchmakingQueue({
+      mode: session.mode,
+      playerId: session.playerId,
+    });
+  }, []);
 
   const viewDailyLineup = useCallback((): boolean => {
     const dateKey = getDailyDateKey();
@@ -691,7 +730,7 @@ function App() {
 
     if (isDailyDraft) {
       const team = { name: user.name };
-      if (!(await startMatch(team, { isDailyDraft: true }))) {
+      if ((await startMatch(team, { isDailyDraft: true })) === "failed") {
         resetToLanding();
       }
       return;
@@ -700,11 +739,11 @@ function App() {
     const team = { name: user.name };
     if (user.practiceMode) {
       if (
-        !(await startMatch(team, {
+        (await startMatch(team, {
           practiceMode: true,
           salaryCapMode: Boolean(user.salaryCapMode),
           salaryCapLimit: user.salaryCapLimit,
-        }))
+        })) === "failed"
       ) {
         resetToLanding();
       }
@@ -715,10 +754,10 @@ function App() {
       Boolean(user.allTimeMode) && isAllTimeModePlayable();
 
     if (
-      !(await startMatch(team, {
+      (await startMatch(team, {
         salaryCapMode: Boolean(user.salaryCapMode),
         allTimeMode: replayAllTime,
-      }))
+      })) === "failed"
     ) {
       resetToLanding();
     }
@@ -1195,6 +1234,8 @@ function App() {
           <MatchmakingOverlay
             mode={matchmakingMode}
             elapsedSeconds={matchmakingElapsedSeconds}
+            onCancel={cancelMatchmaking}
+            isCancelling={isCancellingMatchmaking}
           />
         ) : null}
       </main>
@@ -1320,6 +1361,8 @@ function App() {
         <MatchmakingOverlay
           mode={matchmakingMode}
           elapsedSeconds={matchmakingElapsedSeconds}
+          onCancel={cancelMatchmaking}
+          isCancelling={isCancellingMatchmaking}
         />
       ) : null}
     </main>

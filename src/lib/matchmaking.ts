@@ -24,7 +24,8 @@ export type StartMatchError =
   | "pending_unlock"
   | "daily_completed"
   | "pending_lineup_locked"
-  | "setup_failed";
+  | "setup_failed"
+  | "cancelled";
 
 export type HeadToHeadMatchmakingPlan =
   | {
@@ -81,12 +82,17 @@ export const isHeadToHeadLineupLocked = async (params: {
   return Boolean(status?.queuedLineup || loadPendingLineupState(params.mode, params.playerId));
 };
 
-export const planHeadToHeadMatchmaking = async (params: {
-  mode: GhostMatchmakingMode;
-  playerId: string;
-  playerElo: number;
-  teamName: string;
-}): Promise<
+export const planHeadToHeadMatchmaking = async (
+  params: {
+    mode: GhostMatchmakingMode;
+    playerId: string;
+    playerElo: number;
+    teamName: string;
+  },
+  options: {
+    isCancelled?: () => boolean;
+  } = {},
+): Promise<
   | { ok: true; plan: HeadToHeadMatchmakingPlan }
   | { ok: false; error: StartMatchError }
 > => {
@@ -103,11 +109,15 @@ export const planHeadToHeadMatchmaking = async (params: {
       teamName: params.teamName,
       elo: params.playerElo,
     },
-    { searchMs },
+    { searchMs, isCancelled: options.isCancelled },
   );
 
   if (live) {
     return { ok: true, plan: { kind: "live", live } };
+  }
+
+  if (options.isCancelled?.()) {
+    return { ok: false, error: "cancelled" };
   }
 
   const ghost = await fetchGhostOpponent({

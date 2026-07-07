@@ -3,11 +3,15 @@ import { CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 interface MatchmakingOverlayProps {
   mode: "classic" | "ranked";
   elapsedSeconds: number;
+  onCancel?: () => void;
+  isCancelling?: boolean;
 }
 
 export function MatchmakingOverlay({
   mode,
   elapsedSeconds,
+  onCancel,
+  isCancelling = false,
 }: MatchmakingOverlayProps) {
   const modeLabel = mode === "ranked" ? "Pro" : CLASSIC_HEAD_TO_HEAD_LABEL;
   const statusLabel =
@@ -25,6 +29,17 @@ export function MatchmakingOverlay({
           <span className="waiting-spinner" aria-hidden="true" />
           <strong>{statusLabel}</strong>
         </div>
+
+        {onCancel ? (
+          <button
+            type="button"
+            className="secondary-button matchmaking-overlay__cancel"
+            onClick={onCancel}
+            disabled={isCancelling}
+          >
+            {isCancelling ? "Cancelling…" : "Cancel search"}
+          </button>
+        ) : null}
       </section>
     </div>
   );
