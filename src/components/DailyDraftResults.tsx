@@ -68,12 +68,14 @@ export function DailyDraftResults({
         goalResult.formatted,
         dailyDateKey,
         percentileResult?.percentile,
+        user.dailyDraftMode ?? dailyGoal.mode,
       ),
     [
       dailyDateKey,
       dailyGoal.title,
       goalResult.formatted,
       percentileResult?.percentile,
+      user.dailyDraftMode ?? dailyGoal.mode,
     ],
   );
   const orderedLineup = useMemo(
