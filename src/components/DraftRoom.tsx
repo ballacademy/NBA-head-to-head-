@@ -399,28 +399,30 @@ export function DraftRoom({
                 />
                 <div className="player-pick__body">
                   <div className="player-pick__title-row">
-                    <strong>{player.name}</strong>
-                    {hasSalaryCap ? (
-                      <span className="player-pick__salary">
-                        {formatSalary(estimatePlayerSalary(player))}
+                    <span className="player-pick__identity">
+                      <strong className="player-pick__name">{player.name}</strong>
+                      <span className="player-pick__team">
+                        {player.team} · {formatPlayerPositions(player.positions)}
                       </span>
-                    ) : null}
-                  </div>
-                  <div className="player-pick__meta-row">
-                    <span className="player-pick__team">
-                      {player.team} • {formatPlayerPositions(player.positions)}
                     </span>
-                    <span className="player-pick__badges">
-                      <LimitedSampleBadge player={player} compact />
-                      <PlayerRarityBadge
-                        player={player}
-                        allTimeMode={drafter.allTimeMode}
-                        compact
-                      />
+                    <span className="player-pick__trailing">
+                      {hasSalaryCap ? (
+                        <span className="player-pick__salary">
+                          {formatSalary(estimatePlayerSalary(player))}
+                        </span>
+                      ) : null}
+                      <span className="player-pick__badges">
+                        <LimitedSampleBadge player={player} compact />
+                        <PlayerRarityBadge
+                          player={player}
+                          allTimeMode={drafter.allTimeMode}
+                          compact
+                        />
+                      </span>
                     </span>
                   </div>
                   {!isDailyDraft ? (
-                    <PlayerDraftStats player={player} variant="pills" />
+                    <PlayerDraftStats player={player} variant="inline" />
                   ) : null}
                 </div>
               </button>

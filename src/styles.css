@@ -1471,7 +1471,36 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.player-pick__identity {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.player-pick__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-pick__trailing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.player-pick__trailing .player-pick__salary {
+  margin-left: 0;
 }
 
 .player-pick__badges {
@@ -3524,48 +3553,37 @@ main {
 
   .player-pick-list {
     max-height: min(54vh, 440px);
-    gap: 5px;
+    gap: 4px;
     margin-bottom: 10px;
   }
 
   .player-pick--compact {
     align-items: center;
-    padding: 5px 7px;
-    gap: 6px;
+    padding: 4px 6px;
+    gap: 5px;
   }
 
   .player-pick--compact .player-team-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 0.56rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.54rem;
   }
 
-  .player-pick--compact .player-pick__title-row strong {
-    font-size: 0.86rem;
-  }
-
-  .player-pick--compact .player-pick__salary {
-    padding: 2px 6px;
-    font-size: 0.78rem;
+  .player-pick--compact .player-pick__name {
+    font-size: 0.84rem;
   }
 
   .player-pick--compact .player-pick__team {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 
-  .player-pick--compact .player-caveat-badge {
-    font-size: 0.56rem;
+  .player-pick--compact .player-pick__salary {
     padding: 1px 5px;
+    font-size: 0.74rem;
   }
 
-  .player-pick--compact .player-draft-stats {
-    gap: 2px;
-    margin-top: 2px;
-  }
-
-  .player-pick--compact .player-draft-stats__item {
-    padding: 1px 4px;
-    font-size: 0.58rem;
+  .player-pick--compact .player-pick__body .player-draft-stats--inline {
+    font-size: 0.66rem;
   }
 
   .player-pick--compact .player-rarity-badge,
@@ -4129,11 +4147,23 @@ main {
 
 .player-stat-line__meta,
 .player-pick__team {
-  display: block;
-  margin-top: 1px;
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.15;
+}
+
+.player-stat-line__meta {
+  display: block;
+  margin-top: 1px;
+}
+
+.player-pick__team {
+  display: inline;
+  margin-top: 0;
+  flex: 0 0 auto;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .player-stat-line__goal-stat {
@@ -4152,7 +4182,13 @@ main {
 .player-pick__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+}
+
+.player-pick--compact .player-pick__body .player-draft-stats--inline {
+  margin-top: 0;
+  font-size: 0.7rem;
+  line-height: 1.15;
 }
 
 .player-pick__meta-row {
@@ -4452,7 +4488,7 @@ main {
 
 .player-pick-list {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   max-height: 320px;
   overflow: auto;
   overflow-x: hidden;
@@ -4482,44 +4518,46 @@ main {
 }
 
 .player-pick--compact {
-  padding: 6px 9px;
-  gap: 7px;
-  border-radius: 14px;
+  padding: 4px 8px;
+  gap: 6px;
+  border-radius: 12px;
   align-items: center;
 }
 
 .player-pick--compact .player-team-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-width: 2px;
-  font-size: 0.66rem;
+  font-size: 0.62rem;
 }
 
 .player-pick--compact .player-pick__title-row {
   flex-wrap: nowrap;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
-.player-pick--compact .player-pick__title-row strong {
-  min-width: 0;
-  flex: 1 1 auto;
-  font-size: 0.92rem;
-  line-height: 1.15;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.player-pick--compact .player-pick__identity {
+  gap: 5px;
+}
+
+.player-pick--compact .player-pick__name {
+  font-size: 0.88rem;
+  line-height: 1.1;
+}
+
+.player-pick--compact .player-pick__team {
+  font-size: 0.72rem;
+}
+
+.player-pick--compact .player-pick__trailing {
+  gap: 4px;
 }
 
 .player-pick--compact .player-pick__salary {
   flex: 0 0 auto;
-  margin-left: auto;
-  padding: 2px 7px;
-  font-size: 0.84rem;
-}
-
-.player-pick--compact .player-pick__meta-row {
-  gap: 4px;
+  padding: 1px 6px;
+  font-size: 0.8rem;
 }
 
 .player-pick--compact .player-pick__badges {
