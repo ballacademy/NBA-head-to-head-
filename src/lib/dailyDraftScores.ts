@@ -5,6 +5,8 @@ import {
 } from "./dailyDraftApi";
 import { autoDraftLineupWithVariance } from "./draft";
 import { getDailySeed } from "./dailyDraft";
+import type { DailyDraftMode } from "./dailyDraftMode";
+import { getDailyDraftModeForGoalId } from "./dailyDraftMode";
 import { buildDailyGoalResult } from "./dailyGoalScoring";
 import {
   getDailyGoalById,
@@ -21,6 +23,7 @@ const BENCHMARK_SAMPLES = 500;
 export interface DailyDraftScoreEntry {
   playerId: string;
   goalId: string;
+  mode?: DailyDraftMode;
   value: number;
   formattedResult: string;
   percentile?: number;
@@ -43,6 +46,14 @@ const remoteCache = new Map<string, RemoteDailyCache>();
 const remoteCacheKey = (dateKey: string, goalId: string) =>
   `${dateKey}:${goalId}`;
 
+const resolveEntryMode = (entry: DailyDraftScoreEntry): DailyDraftMode =>
+  entry.mode ?? getDailyDraftModeForGoalId(entry.goalId);
+
+const normalizeEntry = (entry: DailyDraftScoreEntry): DailyDraftScoreEntry => ({
+  ...entry,
+  mode: resolveEntryMode(entry),
+});
+
 const loadDailyScoreStore = (): DailyScoreStore => {
   const saved = readJson<DailyScoreStore>(DAILY_SCORES_KEY);
 
@@ -60,16 +71,31 @@ const saveDailyScoreStore = (store: DailyScoreStore) => {
 const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
   const store = loadDailyScoreStore();
   const current = store[dateKey] ?? [];
+  const normalizedEntry = normalizeEntry(entry);
   const withoutCurrent = current.filter(
-    (candidate) => candidate.playerId !== entry.playerId,
+    (candidate) =>
+      !(
+        candidate.playerId === normalizedEntry.playerId &&
+        resolveEntryMode(candidate) === normalizedEntry.mode
+      ),
   );
 
-  store[dateKey] = [...withoutCurrent, entry];
+  store[dateKey] = [...withoutCurrent, normalizedEntry];
   saveDailyScoreStore(store);
 };
 
-export const loadDailyScoresForDate = (dateKey: string) =>
-  loadDailyScoreStore()[dateKey] ?? [];
+export const loadDailyScoresForDate = (
+  dateKey: string,
+  mode?: DailyDraftMode,
+) => {
+  const entries = (loadDailyScoreStore()[dateKey] ?? []).map(normalizeEntry);
+
+  if (!mode) {
+    return entries;
+  }
+
+  return entries.filter((entry) => resolveEntryMode(entry) === mode);
+};
 
 export const summarizePlayerDailyDraftHistory = (
   playerId = getOrCreatePlayerId(),
@@ -249,6 +275,7 @@ export const submitDailyDraftScore = async (
   const nextEntry: DailyDraftScoreEntry = {
     playerId,
     goalId: goal.id,
+    mode: goal.mode,
     value,
     formattedResult,
     lineup,
@@ -303,7 +330,7 @@ export const loadReviewDailyDraftPercentile = async (
   benchmarkValues: number[],
   playerId = getOrCreatePlayerId(),
 ): Promise<DailyDraftPercentileResult | null> => {
-  const entry = findPlayerDailyDraftEntry(dateKey, playerId);
+  const entry = findPlayerDailyDraftEntry(dateKey, playerId, goal.mode);
 
   if (!entry) {
     return null;
@@ -322,8 +349,9 @@ export const loadReviewDailyDraftPercentile = async (
 export const findPlayerDailyDraftEntry = (
   dateKey: string,
   playerId = getOrCreatePlayerId(),
+  mode: DailyDraftMode = "basic",
 ): DailyDraftScoreEntry | undefined => {
-  const localEntry = loadDailyScoresForDate(dateKey).find(
+  const localEntry = loadDailyScoresForDate(dateKey, mode).find(
     (entry) => entry.playerId === playerId,
   );
 
@@ -336,7 +364,10 @@ export const findPlayerDailyDraftEntry = (
       continue;
     }
 
-    if (cache.entry?.playerId === playerId) {
+    if (
+      cache.entry?.playerId === playerId &&
+      resolveEntryMode(cache.entry) === mode
+    ) {
       return cache.entry;
     }
   }
@@ -346,9 +377,9 @@ export const findPlayerDailyDraftEntry = (
 
 export const hasCompletedDailyDraft = (
   dateKey: string,
-  _goalId?: string,
+  mode: DailyDraftMode = "basic",
   playerId = getOrCreatePlayerId(),
-) => Boolean(findPlayerDailyDraftEntry(dateKey, playerId));
+) => Boolean(findPlayerDailyDraftEntry(dateKey, playerId, mode));
 
 export const formatPlayerDailyDraftPercentile = (
   result: DailyDraftPercentileResult,
@@ -361,8 +392,9 @@ export const getPlayerDailyDraftEntry = (
   dateKey: string,
   goalId: string,
   playerId = getOrCreatePlayerId(),
+  mode: DailyDraftMode = "basic",
 ) => {
-  const localEntry = loadDailyScoresForDate(dateKey).find(
+  const localEntry = loadDailyScoresForDate(dateKey, mode).find(
     (entry) => entry.playerId === playerId && entry.goalId === goalId,
   );
 

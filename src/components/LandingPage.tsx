@@ -5,10 +5,9 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
-import { getDailyChallenge } from "../lib/dailyDraft";
-import { findPlayerDailyDraftEntry } from "../lib/dailyDraftScores";
-import { getDailyGoalById } from "../lib/dailyDraftGoals";
-import { useDailyDateKey } from "../lib/useDailyDateKey";
+import type { DailyDraftMode } from "../lib/dailyDraftMode";
+import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
+import type { LandingDailyDraftSnapshot } from "../lib/landingDailyDraft";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   type ModePlayerRecords,
@@ -62,10 +61,12 @@ interface LandingPageProps {
     team: TeamProfile,
     options?: StartDraftOptions,
   ) => Promise<StartMatchResult>;
-  onViewDailyLineup?: () => Promise<boolean> | boolean;
-  onViewYesterdayBestDailyLineup?: () => Promise<boolean> | boolean;
-  dailyPercentileLabel?: string | null;
-  canViewDailyLineup?: boolean;
+  onViewDailyLineup?: (mode: DailyDraftMode) => Promise<boolean> | boolean;
+  onViewYesterdayBestDailyLineup?: (
+    mode: DailyDraftMode,
+  ) => Promise<boolean> | boolean;
+  landingBasicDaily: LandingDailyDraftSnapshot;
+  landingAdvancedDaily: LandingDailyDraftSnapshot;
   onCollectionChange: (collection: PlayerCollection) => void;
   onViewStats: () => void;
   onViewGmStats: () => void;
@@ -97,8 +98,8 @@ export function LandingPage({
   onStartDraft,
   onViewDailyLineup,
   onViewYesterdayBestDailyLineup,
-  dailyPercentileLabel = null,
-  canViewDailyLineup = false,
+  landingBasicDaily,
+  landingAdvancedDaily,
   onCollectionChange,
   onViewStats,
   onViewGmStats,
@@ -124,23 +125,6 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
-  const todayDateKey = useDailyDateKey();
-  const dailyEntry = useMemo(
-    () => findPlayerDailyDraftEntry(todayDateKey),
-    [todayDateKey],
-  );
-  const todayChallenge = useMemo(() => {
-    if (dailyEntry?.goalId) {
-      const storedGoal = getDailyGoalById(dailyEntry.goalId);
-
-      if (storedGoal) {
-        return storedGoal;
-      }
-    }
-
-    return getDailyChallenge(todayDateKey);
-  }, [dailyEntry, todayDateKey]);
-  const dailyCompleted = Boolean(dailyEntry);
   const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
@@ -238,16 +222,30 @@ export function LandingPage({
     const result = await onStartDraft(team, options);
 
     if (result === "failed") {
-      if (options?.isDailyDraft && dailyCompleted) {
-        setError("You've already completed today's Daily Draft. Come back tomorrow.");
-        return;
+      if (options?.isDailyDraft) {
+        const mode = options.dailyDraftMode ?? "basic";
+        const completed =
+          mode === "advanced"
+            ? Boolean(landingAdvancedDaily.entry)
+            : Boolean(landingBasicDaily.entry);
+
+        if (completed) {
+          setError(
+            `You've already completed today's ${formatDailyDraftModeLabel(mode)} Daily Draft. Come back tomorrow.`,
+          );
+          return;
+        }
       }
 
       setError("Couldn't start this draft. Refresh the page and try again.");
     }
   };
 
-  const handleDailyAction = async () => {
+  const handleDailyAction = async (mode: DailyDraftMode) => {
+    const snapshot =
+      mode === "advanced" ? landingAdvancedDaily : landingBasicDaily;
+    const dailyCompleted = Boolean(snapshot.entry);
+
     if (collection.pendingUnlock || isMatchmaking) {
       if (collection.pendingUnlock) {
         setShowUnlockModal(true);
@@ -256,12 +254,12 @@ export function LandingPage({
     }
 
     if (dailyCompleted) {
-      if (!canViewDailyLineup || !onViewDailyLineup) {
+      if (!snapshot.canViewLineup || !onViewDailyLineup) {
         return;
       }
 
       setError("");
-      const opened = await onViewDailyLineup();
+      const opened = await onViewDailyLineup(mode);
 
       if (!opened) {
         setError("Couldn't load today's lineup. Try again in a moment.");
@@ -270,10 +268,10 @@ export function LandingPage({
       return;
     }
 
-    await handleStart({ isDailyDraft: true });
+    await handleStart({ isDailyDraft: true, dailyDraftMode: mode });
   };
 
-  const handleYesterdayBestAction = async () => {
+  const handleYesterdayBestAction = async (mode: DailyDraftMode) => {
     if (collection.pendingUnlock || isMatchmaking || !onViewYesterdayBestDailyLineup) {
       if (collection.pendingUnlock) {
         setShowUnlockModal(true);
@@ -282,11 +280,74 @@ export function LandingPage({
     }
 
     setError("");
-    const opened = await onViewYesterdayBestDailyLineup();
+    const opened = await onViewYesterdayBestDailyLineup(mode);
 
     if (!opened) {
       setError("Couldn't load yesterday's best lineup. Try again in a moment.");
     }
+  };
+
+  const renderDailyModeSection = (snapshot: LandingDailyDraftSnapshot) => {
+    const mode = snapshot.setup.mode;
+    const dailyCompleted = Boolean(snapshot.entry);
+
+    return (
+      <section
+        key={mode}
+        className="daily-draft-mode-section"
+        aria-labelledby={`daily-draft-${mode}-title`}
+      >
+        <div className="daily-draft-mode-section__header">
+          <h3 id={`daily-draft-${mode}-title`}>
+            {formatDailyDraftModeLabel(mode)} Daily
+          </h3>
+          <p className="daily-draft-mode-section__subtitle">
+            {mode === "advanced"
+              ? "Per-minute and rate stats"
+              : "Season per-game stats"}
+          </p>
+        </div>
+        <h4 className="daily-draft-mode-section__challenge-title">
+          {snapshot.goal.title}
+        </h4>
+        <p className="daily-draft-mode-section__description">
+          {snapshot.goal.description}
+        </p>
+        <div className="landing-mode-card__record-block daily-draft-mode-section__record">
+          <p className="landing-mode-card__record">
+            <span className="landing-mode-card__record-label">Today</span>
+            <span className="landing-mode-card__record-value landing-mode-card__record-value--daily">
+              {snapshot.entry?.formattedResult ?? "—"}
+            </span>
+          </p>
+          <p className="landing-mode-card__record-meta">
+            {snapshot.entry
+              ? snapshot.percentileLabel ?? "Daily draft complete"
+              : "Not played yet today"}
+          </p>
+        </div>
+        <div className="daily-draft-mode-section__actions">
+          <button
+            type="button"
+            className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
+            disabled={modesBlocked || (dailyCompleted && !snapshot.canViewLineup)}
+            onClick={() => void handleDailyAction(mode)}
+          >
+            {dailyCompleted
+              ? `View ${formatDailyDraftModeLabel(mode)} lineup`
+              : `Play ${formatDailyDraftModeLabel(mode)} Today`}
+          </button>
+          <button
+            type="button"
+            className="daily-draft-card__button daily-draft-card__button--secondary"
+            disabled={!onViewYesterdayBestDailyLineup || isMatchmaking}
+            onClick={() => void handleYesterdayBestAction(mode)}
+          >
+            Yesterday&apos;s best ({formatDailyDraftModeLabel(mode)})
+          </button>
+        </div>
+      </section>
+    );
   };
 
   return (
@@ -413,45 +474,13 @@ export function LandingPage({
       <div className="landing-game-modes">
         <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
           <p className="eyebrow">Daily Draft</p>
-          <h2 className="daily-draft-card__title">{todayChallenge.title}</h2>
-          <p className="daily-draft-card__description">{todayChallenge.description}</p>
-          <p className="daily-draft-card__meta">
+          <p className="daily-draft-card__meta daily-draft-card__meta--intro">
             Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS} seconds
-            per pick. Stats stay hidden. Same goal for everyone today — one attempt
-            per day.
+            per pick. Stats stay hidden. One attempt per mode each day.
           </p>
-          <div className="landing-mode-card__record-block">
-            <p className="landing-mode-card__record">
-              <span className="landing-mode-card__record-label">Today</span>
-              <span className="landing-mode-card__record-value landing-mode-card__record-value--daily">
-                {dailyEntry?.formattedResult ?? "—"}
-              </span>
-            </p>
-            <p className="landing-mode-card__record-meta">
-              {dailyEntry
-                ? dailyPercentileLabel ?? "Daily draft complete"
-                : "Not played yet today"}
-            </p>
-          </div>
-          <div className="daily-draft-card__actions">
-            <button
-              type="button"
-              className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
-              disabled={modesBlocked || (dailyCompleted && !canViewDailyLineup)}
-              onClick={() => void handleDailyAction()}
-            >
-              {dailyCompleted
-                ? "View my lineup"
-                : "Play Today's Daily Draft"}
-            </button>
-            <button
-              type="button"
-              className="daily-draft-card__button daily-draft-card__button--secondary"
-              disabled={!onViewYesterdayBestDailyLineup || isMatchmaking}
-              onClick={() => void handleYesterdayBestAction()}
-            >
-              Yesterday&apos;s best
-            </button>
+          <div className="daily-draft-card__modes">
+            {renderDailyModeSection(landingBasicDaily)}
+            {renderDailyModeSection(landingAdvancedDaily)}
           </div>
         </div>
 

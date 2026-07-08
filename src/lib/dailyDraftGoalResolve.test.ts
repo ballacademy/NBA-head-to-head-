@@ -96,12 +96,27 @@ describe("dailyDraftGoalResolve", () => {
   it("uses today's date-based setup for tomorrow's yesterday best", () => {
     const todayKey = "2026-07-03";
     const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
-    const todaySetup = getDailyDraftSetup(todayKey);
-    const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(tomorrowKey);
+    const todaySetup = getDailyDraftSetup(todayKey, "basic");
+    const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(tomorrowKey, "basic");
 
     expect(tomorrowYesterdaySetup.dateKey).toBe(todayKey);
     expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
     expect(tomorrowYesterdaySetup.goal.id).toBe("anti-offense");
+    expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
+  });
+
+  it("uses today's advanced setup for tomorrow's advanced yesterday best", () => {
+    const todayKey = "2026-07-03";
+    const tomorrowKey = subtractDaysFromDateKey(todayKey, -1);
+    const todaySetup = getDailyDraftSetup(todayKey, "advanced");
+    const tomorrowYesterdaySetup = getYesterdayBestDailyDraftSetup(
+      tomorrowKey,
+      "advanced",
+    );
+
+    expect(tomorrowYesterdaySetup.dateKey).toBe(todayKey);
+    expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
+    expect(tomorrowYesterdaySetup.goal.mode).toBe("advanced");
     expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
   });
 

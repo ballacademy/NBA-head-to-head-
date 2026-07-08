@@ -9,7 +9,7 @@ import {
   loadReviewDailyDraftPercentile,
   submitDailyDraftScore,
 } from "./dailyDraftScores";
-import { DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
+import { ADVANCED_DAILY_DRAFT_GOALS, DAILY_DRAFT_GOALS } from "./dailyDraftGoals";
 
 const stubPlayerStorage = (playerId = "player-test-1") => {
   const storage = new Map<string, string>();
@@ -132,7 +132,7 @@ describe("dailyDraftScores", () => {
     )["2099-01-02"][0];
 
     expect(saved.percentile).toBe(result.percentile);
-    expect(hasCompletedDailyDraft("2099-01-02", goal.id)).toBe(true);
+    expect(hasCompletedDailyDraft("2099-01-02", "basic")).toBe(true);
   });
 
   it("formats stored percentile copy for the landing page", () => {
@@ -169,7 +169,7 @@ describe("dailyDraftScores", () => {
     expect(
       findPlayerDailyDraftEntry("2099-03-01", "player-goal-mismatch")?.goalId,
     ).toBe(alternateGoal.id);
-    expect(hasCompletedDailyDraft("2099-03-01", goal.id, "player-goal-mismatch")).toBe(
+    expect(hasCompletedDailyDraft("2099-03-01", "basic", "player-goal-mismatch")).toBe(
       true,
     );
   });
@@ -224,5 +224,41 @@ describe("dailyDraftScores", () => {
         "player-review-percentile",
       ).percentile,
     );
+  });
+
+  it("tracks basic and advanced daily drafts separately", () => {
+    const storage = stubPlayerStorage("dual-mode-player");
+    const basicGoal = DAILY_DRAFT_GOALS[0]!;
+
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-05-01": [
+          {
+            playerId: "dual-mode-player",
+            goalId: basicGoal.id,
+            mode: "basic",
+            value: 12,
+            formattedResult: "12.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-01T12:00:00.000Z",
+          },
+        ],
+      }),
+    );
+
+    expect(hasCompletedDailyDraft("2099-05-01", "basic", "dual-mode-player")).toBe(
+      true,
+    );
+    expect(
+      hasCompletedDailyDraft("2099-05-01", "advanced", "dual-mode-player"),
+    ).toBe(false);
+    expect(
+      findPlayerDailyDraftEntry("2099-05-01", "dual-mode-player", "advanced"),
+    ).toBeUndefined();
+    expect(
+      findPlayerDailyDraftEntry("2099-05-01", "dual-mode-player", "basic")?.goalId,
+    ).toBe(basicGoal.id);
+    expect(ADVANCED_DAILY_DRAFT_GOALS[0]?.mode).toBe("advanced");
   });
 });

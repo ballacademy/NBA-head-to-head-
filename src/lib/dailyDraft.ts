@@ -3,9 +3,10 @@ import {
   generateSeededSlotConstraints,
   validateDraftSlotsFeasible,
 } from "./draft";
+import type { DailyDraftMode } from "./dailyDraftMode";
 import {
-  DAILY_DRAFT_GOALS,
   DAILY_GOAL_REPEAT_WINDOW_DAYS,
+  getDailyDraftGoalsForMode,
   getDailyGoalById,
   type DailyDraftGoal,
 } from "./dailyDraftGoals";
@@ -17,7 +18,11 @@ const slotCache = new Map<string, DraftSlotConstraint[]>();
 
 const DAILY_SLOT_ATTEMPTS = 64;
 const DAILY_SLOT_SEED_OFFSET = 17;
+const ADVANCED_DAILY_GOAL_SEED_OFFSET = 1003;
 const DAILY_SLOT_ATTEMPT_STEP = 7919;
+
+const goalCacheKey = (mode: DailyDraftMode, dateKey: string) =>
+  `${mode}:${dateKey}`;
 
 const createSeededRandom = (seed: number) => {
   let state = seed % 2147483647;
@@ -72,7 +77,9 @@ const getGoalCalendarBootstrapStartKey = (dateKey: string) =>
 const computeGoalForDate = (
   dateKey: string,
   workingCache: Map<string, DailyDraftGoal>,
+  mode: DailyDraftMode,
 ) => {
+  const goals = getDailyDraftGoalsForMode(mode);
   const recentGoalIds = new Set<string>();
 
   for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS; day += 1) {
@@ -84,19 +91,19 @@ const computeGoalForDate = (
     }
   }
 
-  const available = DAILY_DRAFT_GOALS.filter(
-    (goal) => !recentGoalIds.has(goal.id),
-  );
+  const available = goals.filter((goal) => !recentGoalIds.has(goal.id));
 
   if (available.length > 0) {
-    const seed = getDailySeed(dateKey);
+    const seed =
+      getDailySeed(dateKey) +
+      (mode === "advanced" ? ADVANCED_DAILY_GOAL_SEED_OFFSET : 0);
     return available[seed % available.length]!;
   }
 
-  let bestGoal = DAILY_DRAFT_GOALS[0]!;
+  let bestGoal = goals[0]!;
   let bestDistance = -1;
 
-  for (const goal of DAILY_DRAFT_GOALS) {
+  for (const goal of goals) {
     let distance = DAILY_GOAL_REPEAT_WINDOW_DAYS * 2;
 
     for (let day = 1; day <= DAILY_GOAL_REPEAT_WINDOW_DAYS * 2; day += 1) {
@@ -118,13 +125,13 @@ const computeGoalForDate = (
   return bestGoal;
 };
 
-const buildIsolatedDailyGoal = (dateKey: string) => {
+const buildIsolatedDailyGoal = (dateKey: string, mode: DailyDraftMode) => {
   const workingCache = new Map<string, DailyDraftGoal>();
   const startKey = getGoalCalendarBootstrapStartKey(dateKey);
   let cursor = startKey;
 
   while (compareDateKeys(cursor, dateKey) <= 0) {
-    const goal = computeGoalForDate(cursor, workingCache);
+    const goal = computeGoalForDate(cursor, workingCache, mode);
     workingCache.set(cursor, goal);
 
     if (cursor === dateKey) {
@@ -134,16 +141,19 @@ const buildIsolatedDailyGoal = (dateKey: string) => {
     cursor = subtractDaysFromDateKey(cursor, -1);
   }
 
-  return workingCache.get(dateKey) ?? DAILY_DRAFT_GOALS[0]!;
+  return workingCache.get(dateKey) ?? getDailyDraftGoalsForMode(mode)[0]!;
 };
 
-export const buildDailyGoalChainForTests = (dateKey: string) => {
+export const buildDailyGoalChainForTests = (
+  dateKey: string,
+  mode: DailyDraftMode = "basic",
+) => {
   const workingCache = new Map<string, DailyDraftGoal>();
   const startKey = getGoalCalendarBootstrapStartKey(dateKey);
   let cursor = startKey;
 
   while (compareDateKeys(cursor, dateKey) <= 0) {
-    workingCache.set(cursor, computeGoalForDate(cursor, workingCache));
+    workingCache.set(cursor, computeGoalForDate(cursor, workingCache, mode));
 
     if (cursor === dateKey) {
       break;
@@ -155,12 +165,14 @@ export const buildDailyGoalChainForTests = (dateKey: string) => {
   return workingCache;
 };
 
-const fillGoalsThrough = (dateKey: string) => {
-  if (goalCache.has(dateKey)) {
+const fillGoalsThrough = (dateKey: string, mode: DailyDraftMode) => {
+  const cacheKey = goalCacheKey(mode, dateKey);
+
+  if (goalCache.has(cacheKey)) {
     return;
   }
 
-  goalCache.set(dateKey, buildIsolatedDailyGoal(dateKey));
+  goalCache.set(cacheKey, buildIsolatedDailyGoal(dateKey, mode));
 };
 
 export const clearDailyDraftCachesForTests = () => {
@@ -168,16 +180,21 @@ export const clearDailyDraftCachesForTests = () => {
   slotCache.clear();
 };
 
-export const getDailyGoal = (dateKey = getDailyDateKey()): DailyDraftGoal => {
-  fillGoalsThrough(dateKey);
+export const getDailyGoal = (
+  dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
+): DailyDraftGoal => {
+  fillGoalsThrough(dateKey, mode);
 
-  return goalCache.get(dateKey) ?? DAILY_DRAFT_GOALS[0]!;
+  return goalCache.get(goalCacheKey(mode, dateKey)) ?? getDailyDraftGoalsForMode(mode)[0]!;
 };
 
 export type DailyDraftChallenge = DailyDraftGoal;
 
-export const getDailyChallenge = (dateKey = getDailyDateKey()) =>
-  getDailyGoal(dateKey);
+export const getDailyChallenge = (
+  dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
+) => getDailyGoal(dateKey, mode);
 
 export const generateDailyDraftSlots = (
   dateKey = getDailyDateKey(),
@@ -216,12 +233,16 @@ export const generateDailyDraftSlots = (
   return fallbackSlots.map((slot) => ({ ...slot }));
 };
 
-export const getDailyDraftSetup = (dateKey = getDailyDateKey()) => {
-  const goal = getDailyGoal(dateKey);
+export const getDailyDraftSetup = (
+  dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
+) => {
+  const goal = getDailyGoal(dateKey, mode);
   const slots = generateDailyDraftSlots(dateKey);
 
   return {
     dateKey,
+    mode,
     goal,
     challenge: goal,
     slots,
