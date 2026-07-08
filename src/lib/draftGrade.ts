@@ -1,5 +1,7 @@
 import { calculateLineupStatRawTotal, normalizeLineupTotal } from "./scoring";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
+import { formatDailyDraftModeLabel } from "./dailyDraftMode";
+import type { DailyDraftMode } from "./dailyDraftMode";
 import { formatOrdinal } from "./ordinal";
 import type { Player } from "./types";
 
@@ -70,9 +72,10 @@ export const buildDailyDraftShareText = (
   formattedResult: string,
   dateKey: string,
   percentile?: number,
+  mode: DailyDraftMode = "basic",
 ) => {
   const lines = [
-    `Draft Day GM Daily Draft ${dateKey}`,
+    `Draft Day GM ${formatDailyDraftModeLabel(mode)} Daily Draft ${dateKey}`,
     `🎯 ${goalTitle}`,
     `📊 ${formattedResult}`,
   ];

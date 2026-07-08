@@ -22,7 +22,7 @@ describe("draftGrade", () => {
       87,
     );
 
-    expect(shareText).toContain("Draft Day GM Daily Draft 2026-06-15");
+    expect(shareText).toContain("Draft Day GM Basic Daily Draft 2026-06-15");
     expect(shareText).toContain("Splash Zone");
     expect(shareText).toContain("42.3% from 3");
     expect(shareText).toContain("87th percentile");
@@ -40,5 +40,18 @@ describe("draftGrade", () => {
     expect(buildDailyDraftShareText("Goal", "1.0", "2026-06-15", 22)).toContain(
       "22nd percentile",
     );
+  });
+
+  it("labels advanced daily draft share text", () => {
+    const shareText = buildDailyDraftShareText(
+      "Per-Minute Scorers",
+      "0.82 points per minute",
+      "2026-06-15",
+      64,
+      "advanced",
+    );
+
+    expect(shareText).toContain("Draft Day GM Advanced Daily Draft 2026-06-15");
+    expect(shareText).toContain("Per-Minute Scorers");
   });
 });
