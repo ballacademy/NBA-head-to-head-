@@ -35,6 +35,10 @@ import {
   hasTooManyCenters,
   scoreLineupRoleFit,
 } from "./lineupRoleFit";
+import { buildLineupScorePipeline } from "./scoring/lineupScorePipeline";
+
+export type { LineupScoreLayer, LineupScoreModifiers, LineupScorePipelineResult } from "./scoring/lineupScorePipeline";
+export { buildLineupScorePipeline, computeLineupScoreLayers } from "./scoring/lineupScorePipeline";
 
 export interface LineupScoreBreakdown {
   categories: ScoreCategory[];
@@ -579,18 +583,23 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
 
   const { categories, strengths, warnings, statRawTotal, productionScore, totalPoints } =
     buildLineupScoreBreakdown(lineup);
-  const rawTotal =
-    statRawTotal +
-    getLineupTierAdjustment(lineup) +
-    getImpactRankingAdjustment(lineup) +
-    getChemistryAdjustment(lineup) +
-    getLineupTeamQualityRawAdjustment(lineup) +
-    getLowScoringLineupPenalty(lineup) +
-    getPrimaryScorerLineupPenalty(lineup) +
-    getLineupOffenseFloorPenalty(lineup) +
-    getNoTrueStarLineupPenalty(lineup) +
-    getEliteOffenseLineupBonus(productionScore, totalPoints) +
-    getSuperstarStackingLineupBonus(lineup);
+  const modifiers = {
+    tierAdjustment: getLineupTierAdjustment(lineup),
+    impactBlend: getImpactRankingAdjustment(lineup),
+    chemistry: getChemistryAdjustment(lineup),
+    teamQuality: getLineupTeamQualityRawAdjustment(lineup),
+    lowScoringPenalty: getLowScoringLineupPenalty(lineup),
+    primaryScorerPenalty: getPrimaryScorerLineupPenalty(lineup),
+    offenseFloorPenalty: getLineupOffenseFloorPenalty(lineup),
+    noStarPenalty: getNoTrueStarLineupPenalty(lineup),
+    eliteOffenseBonus: getEliteOffenseLineupBonus(productionScore, totalPoints),
+    superstarStackBonus: getSuperstarStackingLineupBonus(lineup),
+  };
+  const pipeline = buildLineupScorePipeline(
+    { categories, strengths, warnings, statRawTotal, productionScore, totalPoints },
+    modifiers,
+  );
+  const rawTotal = pipeline.rawTotal;
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
 

@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import { claimGhostOpponent } from "../lib/matchmakingDb";
 import {
   INVALID_STORED_LINEUP_CONSUMED_BY,
   isValidStoredLineupIds,
@@ -17,12 +18,6 @@ const json = (body: unknown, status = 200) =>
 const parseMode = (value: string | null): MatchmakingMode | null =>
   value === "classic" || value === "ranked" ? value : null;
 
-const cutoffIso = (days: number) => {
-  const date = new Date();
-  date.setUTCDate(date.getUTCDate() - days);
-  return date.toISOString();
-};
-
 const rowToPayload = (row: StoredLineupRow) => {
   const lineup = parseStoredLineupJson(row.lineup_json);
 
@@ -37,77 +32,6 @@ const rowToPayload = (row: StoredLineupRow) => {
     elo: row.elo,
     createdAt: row.created_at,
   };
-};
-
-const markStoredLineupInvalid = async (db: D1Database, id: string) => {
-  await db
-    .prepare(
-      `UPDATE stored_lineups
-       SET consumed_at = ?, consumed_by = ?
-       WHERE id = ? AND consumed_at IS NULL`,
-    )
-    .bind(new Date().toISOString(), INVALID_STORED_LINEUP_CONSUMED_BY, id)
-    .run();
-};
-
-const findOpponentCandidates = async (
-  db: D1Database,
-  mode: MatchmakingMode,
-  playerId: string,
-  minElo: number,
-  maxElo: number,
-) => {
-  const cutoff = cutoffIso(14);
-
-  return db
-    .prepare(
-      `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at
-       FROM stored_lineups
-       WHERE mode = ?
-         AND player_id != ?
-         AND consumed_at IS NULL
-         AND elo BETWEEN ? AND ?
-         AND created_at >= ?
-         AND json_array_length(lineup_json) = 5
-       ORDER BY RANDOM()
-       LIMIT 12`,
-    )
-    .bind(mode, playerId, minElo, maxElo, cutoff)
-    .all<StoredLineupRow>();
-};
-
-const selectOpponent = async (
-  db: D1Database,
-  mode: MatchmakingMode,
-  playerId: string,
-  elo: number,
-) => {
-  const bands = [
-    [Math.max(0, Math.round(elo) - 250), Math.round(elo) + 250],
-    [0, 9999],
-  ] as const;
-
-  for (const [minElo, maxElo] of bands) {
-    const candidates = await findOpponentCandidates(
-      db,
-      mode,
-      playerId,
-      minElo,
-      maxElo,
-    );
-
-    for (const row of candidates.results ?? []) {
-      const payload = rowToPayload(row);
-
-      if (payload) {
-        return payload;
-      }
-
-      await markStoredLineupInvalid(db, row.id);
-    }
-  }
-
-  return null;
 };
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -129,7 +53,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
-  const opponent = await selectOpponent(context.env.DB, mode, playerId, elo);
+  const opponent = await claimGhostOpponent(
+    context.env.DB,
+    mode,
+    playerId,
+    elo,
+    rowToPayload,
+  );
 
   if (!opponent) {
     return json({ error: "no opponent available" }, 404);

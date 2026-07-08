@@ -1,7 +1,7 @@
 import type { Env, MatchmakingMode } from "../types";
+import { claimQueueOpponent } from "../lib/matchmakingDb";
 import { rejectProfaneTeamName } from "../lib/profanity";
 
-const ELO_BAND = 250;
 const QUEUE_TTL_SECONDS = 45;
 
 const json = (body: unknown, status = 200) =>
@@ -48,44 +48,6 @@ const cleanupExpiredQueue = async (db: D1Database) => {
     .prepare(`DELETE FROM matchmaking_queue WHERE expires_at < ?`)
     .bind(nowIso())
     .run();
-};
-
-const findWaitingOpponent = async (
-  db: D1Database,
-  mode: MatchmakingMode,
-  playerId: string,
-  elo: number,
-) => {
-  const minElo = Math.max(0, Math.round(elo) - ELO_BAND);
-  const maxElo = Math.round(elo) + ELO_BAND;
-
-  return (
-    (await db
-      .prepare(
-        `SELECT id, mode, player_id, team_name, elo, joined_at, expires_at
-         FROM matchmaking_queue
-         WHERE mode = ?
-           AND player_id != ?
-           AND expires_at >= ?
-           AND elo BETWEEN ? AND ?
-         ORDER BY joined_at ASC
-         LIMIT 1`,
-      )
-      .bind(mode, playerId, nowIso(), minElo, maxElo)
-      .first<QueueRow>()) ??
-    (await db
-      .prepare(
-        `SELECT id, mode, player_id, team_name, elo, joined_at, expires_at
-         FROM matchmaking_queue
-         WHERE mode = ?
-           AND player_id != ?
-           AND expires_at >= ?
-         ORDER BY joined_at ASC
-         LIMIT 1`,
-      )
-      .bind(mode, playerId, nowIso())
-      .first<QueueRow>())
-  );
 };
 
 const findLiveMatchSince = async (
@@ -157,11 +119,6 @@ const createLiveMatch = async (
     )
     .run();
 
-  await db
-    .prepare(`DELETE FROM matchmaking_queue WHERE id = ?`)
-    .bind(opponent.id)
-    .run();
-
   return {
     matchId,
     createdAt,
@@ -216,12 +173,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const db = context.env.DB;
   await cleanupExpiredQueue(db);
+  const now = nowIso();
 
-  const opponent = await findWaitingOpponent(
+  const opponent = await claimQueueOpponent(
     db,
     mode,
     playerId,
     Math.round(elo),
+    now,
   );
 
   if (opponent) {

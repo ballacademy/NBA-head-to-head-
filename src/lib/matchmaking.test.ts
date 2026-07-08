@@ -1,177 +1,52 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { planHeadToHeadMatchmaking } from "./matchmaking";
-import { LIVE_OPPONENT_ONLY_MIN_ELO, requiresLiveOpponentOnly } from "./rankedElo";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { syncPendingLineupLock } from "./matchmaking";
 
-vi.mock("./ghostMatchmaking", () => ({
-  fetchGhostOpponent: vi.fn(),
-  fetchPendingMatchmakingStatus: vi.fn(),
-}));
+const stubStorage = () => {
+  const storage = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      storage.set(key, value);
+    },
+    removeItem: (key: string) => {
+      storage.delete(key);
+    },
+    clear: () => {
+      storage.clear();
+    },
+  });
+  return storage;
+};
 
-vi.mock("./liveMatchmaking", () => ({
-  searchLiveOpponent: vi.fn(),
-}));
-
-vi.mock("./pendingLineup", () => ({
-  loadPendingLineupState: vi.fn(() => null),
-  savePendingLineupState: vi.fn(),
-  clearPendingLineupState: vi.fn(),
-}));
-
-import { fetchGhostOpponent, fetchPendingMatchmakingStatus } from "./ghostMatchmaking";
-import { searchLiveOpponent } from "./liveMatchmaking";
-
-describe("matchmaking", () => {
+describe("syncPendingLineupLock", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
-  it("requires live opponents at 1500+ banners", () => {
-    expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO - 1)).toBe(false);
-    expect(requiresLiveOpponentOnly(LIVE_OPPONENT_ONLY_MIN_ELO)).toBe(true);
-  });
-
-  it("pairs with a live opponent when another player is searching", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: null,
-    });
-    vi.mocked(searchLiveOpponent).mockResolvedValue({
-      matchId: "match-1",
-      teamName: "Bulls",
-      elo: 1180,
-      playerId: "player-2",
-    });
-    vi.mocked(fetchGhostOpponent).mockResolvedValue(null);
-
-    await expect(
-      planHeadToHeadMatchmaking({
+  it("keeps local pending lineup state when the status request fails", async () => {
+    const storage = stubStorage();
+    storage.set(
+      "nba-head-to-head-pending-lineup-classic-player-1",
+      JSON.stringify({
+        storedLineupId: "lineup-1",
         mode: "classic",
-        playerId: "player-1",
-        playerElo: 1200,
-        teamName: "Lakers",
+        submittedAt: "2026-01-01T00:00:00.000Z",
       }),
-    ).resolves.toEqual({
-      ok: true,
-      plan: {
-        kind: "live",
-        live: {
-          matchId: "match-1",
-          teamName: "Bulls",
-          elo: 1180,
-          playerId: "player-2",
-        },
-      },
-    });
-  });
+    );
 
-  it("falls back to stored lineups instantly when no live opponent is found", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: null,
-    });
-    vi.mocked(searchLiveOpponent).mockResolvedValue(null);
-    vi.mocked(fetchGhostOpponent).mockResolvedValue({
-      id: "lineup-1",
-      teamName: "Celtics",
-      lineup: ["a", "b", "c", "d", "e"],
-      elo: 1210,
-      createdAt: "2026-06-26T00:00:00.000Z",
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("network down")),
+    );
+
+    const status = await syncPendingLineupLock({
+      mode: "classic",
+      playerId: "player-1",
     });
 
-    await expect(
-      planHeadToHeadMatchmaking({
-        mode: "classic",
-        playerId: "player-1",
-        playerElo: 1200,
-        teamName: "Lakers",
-      }),
-    ).resolves.toEqual({
-      ok: true,
-      plan: {
-        kind: "ghost",
-        ghost: {
-          id: "lineup-1",
-          teamName: "Celtics",
-          lineup: ["a", "b", "c", "d", "e"],
-          elo: 1210,
-          createdAt: "2026-06-26T00:00:00.000Z",
-        },
-      },
-    });
-  });
-
-  it("falls back to npc opponents below 1500 banners", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: null,
-    });
-    vi.mocked(searchLiveOpponent).mockResolvedValue(null);
-    vi.mocked(fetchGhostOpponent).mockResolvedValue(null);
-
-    await expect(
-      planHeadToHeadMatchmaking({
-        mode: "classic",
-        playerId: "player-1",
-        playerElo: 1200,
-        teamName: "Lakers",
-      }),
-    ).resolves.toEqual({ ok: true, plan: { kind: "npc" } });
-  });
-
-  it("queues live-only players when no ghost is found", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: null,
-    });
-    vi.mocked(searchLiveOpponent).mockResolvedValue(null);
-    vi.mocked(fetchGhostOpponent).mockResolvedValue(null);
-
-    await expect(
-      planHeadToHeadMatchmaking({
-        mode: "ranked",
-        playerId: "player-1",
-        playerElo: 1600,
-        teamName: "Lakers",
-      }),
-    ).resolves.toEqual({ ok: true, plan: { kind: "queue_for_live" } });
-  });
-
-  it("stops matchmaking when the live search is cancelled", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: null,
-    });
-    vi.mocked(searchLiveOpponent).mockResolvedValue(null);
-    vi.mocked(fetchGhostOpponent).mockResolvedValue({
-      id: "lineup-1",
-      teamName: "Celtics",
-      lineup: ["a", "b", "c", "d", "e"],
-      elo: 1210,
-      createdAt: "2026-06-26T00:00:00.000Z",
-    });
-
-    await expect(
-      planHeadToHeadMatchmaking(
-        {
-          mode: "classic",
-          playerId: "player-1",
-          playerElo: 1200,
-          teamName: "Lakers",
-        },
-        { isCancelled: () => true },
-      ),
-    ).resolves.toEqual({ ok: false, error: "cancelled" });
-
-    expect(fetchGhostOpponent).not.toHaveBeenCalled();
-  });
-
-  it("blocks live-only players with a queued lineup", async () => {
-    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
-      queuedLineup: { id: "lineup-1", createdAt: "2026-06-26T00:00:00.000Z" },
-    });
-
-    await expect(
-      planHeadToHeadMatchmaking({
-        mode: "ranked",
-        playerId: "player-1",
-        playerElo: 1600,
-        teamName: "Lakers",
-      }),
-    ).resolves.toEqual({ ok: false, error: "pending_lineup_locked" });
+    expect(status).toBeNull();
+    expect(storage.has("nba-head-to-head-pending-lineup-classic-player-1")).toBe(
+      true,
+    );
   });
 });

@@ -3,6 +3,7 @@ import type { DailyDraftScoreEntry } from "./dailyDraftScores";
 export interface RemoteDailyDraftScores {
   dateKey: string;
   goalId: string;
+  mode?: string;
   values: number[];
   totalDrafters: number;
   entry: DailyDraftScoreEntry | null;
@@ -15,12 +16,17 @@ const buildUrl = (path: string) => `${API_BASE}${path}`;
 export const fetchRemoteDailyDraftScores = async (params: {
   dateKey: string;
   goalId: string;
+  mode?: string;
   playerId?: string;
 }): Promise<RemoteDailyDraftScores | null> => {
   const search = new URLSearchParams({
     dateKey: params.dateKey,
     goalId: params.goalId,
   });
+
+  if (params.mode) {
+    search.set("mode", params.mode);
+  }
 
   if (params.playerId) {
     search.set("playerId", params.playerId);
@@ -45,6 +51,7 @@ export const fetchRemoteDailyDraftScores = async (params: {
 export const submitRemoteDailyDraftScore = async (params: {
   dateKey: string;
   goalId: string;
+  mode?: string;
   playerId: string;
   teamName: string;
   value: number;

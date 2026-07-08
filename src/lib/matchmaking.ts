@@ -62,7 +62,11 @@ export const syncPendingLineupLock = async (params: {
     return remote;
   }
 
-  if (local && !remote?.queuedLineup) {
+  if (remote === null) {
+    return null;
+  }
+
+  if (local && !remote.queuedLineup) {
     clearPendingLineupState(params.mode, params.playerId);
   }
 

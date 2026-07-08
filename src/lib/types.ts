@@ -74,6 +74,7 @@ export interface Drafter {
   isGhostOpponent?: boolean;
   isLiveOpponent?: boolean;
   liveMatchId?: string;
+  liveOpponentPlayerId?: string;
 }
 
 export interface ScoreCategory {
