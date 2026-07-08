@@ -3,16 +3,20 @@ import type { Player } from "../lib/types";
 
 interface LimitedSampleBadgeProps {
   player: Pick<Player, "gamesPlayed">;
+  compact?: boolean;
 }
 
-export function LimitedSampleBadge({ player }: LimitedSampleBadgeProps) {
+export function LimitedSampleBadge({
+  player,
+  compact = false,
+}: LimitedSampleBadgeProps) {
   if (!hasLimitedSampleSize(player)) {
     return null;
   }
 
   return (
     <span className="player-caveat-badge player-caveat-badge--limited-sample">
-      Limited sample size
+      {compact ? "Limited sample" : "Limited sample size"}
     </span>
   );
 }

@@ -70,6 +70,7 @@ export function TeamLineupCard({
               player={player}
               pickNumber={index + 1}
               compact={compact}
+              allTimeMode={drafter.allTimeMode}
             />
           ))
         ) : (
