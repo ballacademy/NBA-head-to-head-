@@ -411,10 +411,11 @@ export function DraftRoom({
                       {player.team} • {formatPlayerPositions(player.positions)}
                     </span>
                     <span className="player-pick__badges">
-                      <LimitedSampleBadge player={player} />
+                      <LimitedSampleBadge player={player} compact />
                       <PlayerRarityBadge
                         player={player}
                         allTimeMode={drafter.allTimeMode}
+                        compact
                       />
                     </span>
                   </div>

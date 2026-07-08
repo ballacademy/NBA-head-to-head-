@@ -1,4 +1,6 @@
 import { PlayerDraftStats } from "./PlayerDraftStats";
+import { LimitedSampleBadge } from "./LimitedSampleBadge";
+import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import { formatPlayerGoalStat } from "../lib/dailyGoalScoring";
 import type { Player } from "../lib/types";
@@ -9,6 +11,7 @@ interface PlayerStatLineProps {
   pickNumber?: number;
   compact?: boolean;
   dailyGoal?: DailyDraftGoal;
+  allTimeMode?: boolean;
 }
 
 export function PlayerStatLine({
@@ -16,6 +19,7 @@ export function PlayerStatLine({
   pickNumber,
   compact = false,
   dailyGoal,
+  allTimeMode = false,
 }: PlayerStatLineProps) {
   const goalStat = dailyGoal ? formatPlayerGoalStat(player, dailyGoal) : null;
 
@@ -28,18 +32,32 @@ export function PlayerStatLine({
         showJersey
         label={`${player.name}, ${player.team} ${player.position}`}
       />
-      <div>
-        <strong>
-          {player.name}
-          {goalStat ? (
-            <span className="player-stat-line__goal-stat"> · {goalStat}</span>
-          ) : null}
-        </strong>
-        <span className="player-stat-line__meta">
-          {player.position} • {player.team}
-          {pickNumber ? ` • Pick ${pickNumber}` : ""}
-        </span>
-        {dailyGoal ? null : <PlayerDraftStats player={player} />}
+      <div className="player-stat-line__content">
+        <div className="player-stat-line__title-row">
+          <strong>
+            {player.name}
+            {goalStat ? (
+              <span className="player-stat-line__goal-stat"> · {goalStat}</span>
+            ) : null}
+          </strong>
+        </div>
+        <div className="player-stat-line__meta-row">
+          <span className="player-stat-line__meta">
+            {player.position} • {player.team}
+            {pickNumber ? ` • Pick ${pickNumber}` : ""}
+          </span>
+          <span className="player-stat-line__badges">
+            <LimitedSampleBadge player={player} compact={compact} />
+            <PlayerRarityBadge
+              player={player}
+              allTimeMode={allTimeMode}
+              compact={compact}
+            />
+          </span>
+        </div>
+        {dailyGoal ? null : (
+          <PlayerDraftStats player={player} variant={compact ? "inline" : "pills"} />
+        )}
       </div>
     </div>
   );
