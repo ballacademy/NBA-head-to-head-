@@ -33,6 +33,8 @@ import {
   getYesterdayBestDailyDraftSetup,
   refreshCanonicalDailyGoalData,
 } from "./lib/dailyDraftGoalResolve";
+import type { DailyDraftMode } from "./lib/dailyDraftMode";
+import { DAILY_DRAFT_MODES } from "./lib/dailyDraftMode";
 import { solveBestDailyDraftLineup } from "./lib/dailyDraftSolver";
 import {
   hasSeenDraftOnboarding,
@@ -133,6 +135,7 @@ function App() {
   const [matchId, setMatchId] = useState<string | null>(null);
   const [draftSessionKey, setDraftSessionKey] = useState<string | null>(null);
   const [isDailyDraft, setIsDailyDraft] = useState(false);
+  const [dailyDraftMode, setDailyDraftMode] = useState<DailyDraftMode>("basic");
   const [isDailyReview, setIsDailyReview] = useState(false);
   const [isDailyOptimalReview, setIsDailyOptimalReview] = useState(false);
   const [allTimeMode, setAllTimeMode] = useState(false);
@@ -200,14 +203,16 @@ function App() {
 
     const refreshDailyScores = async () => {
       const todayKey = getDailyDateKey();
-      const entry = findPlayerDailyDraftEntry(todayKey);
-      const goalId =
-        entry?.goalId ?? getDailyDraftSetup(todayKey).goal.id;
+      const playerId = getOrCreatePlayerIdentity().playerId;
 
-      await refreshDailyDraftScoresFromApi(
-        todayKey,
-        goalId,
-        getOrCreatePlayerIdentity().playerId,
+      await Promise.all(
+        DAILY_DRAFT_MODES.map(async (mode) => {
+          const entry = findPlayerDailyDraftEntry(todayKey, playerId, mode);
+          const goalId =
+            entry?.goalId ?? getDailyDraftSetup(todayKey, mode).goal.id;
+
+          await refreshDailyDraftScoresFromApi(todayKey, goalId, playerId);
+        }),
       );
       setDailyScoresRefreshTick((current) => current + 1);
     };
@@ -252,76 +257,66 @@ function App() {
     }
 
     if (isDailyOptimalReview) {
-      return getDailyDraftSetup(dailyDateKey);
+      return getDailyDraftSetup(dailyDateKey, dailyDraftMode);
     }
 
     if (isDailyReview) {
-      return getResolvedDailyDraftSetup(dailyDateKey);
+      return getResolvedDailyDraftSetup(dailyDateKey, undefined, dailyDraftMode);
     }
 
-    return getDailyDraftSetup(dailyDateKey);
-  }, [dailyDateKey, isDailyDraft, isDailyOptimalReview, isDailyReview]);
-
-  const landingDailySetup = useMemo(
-    () => getDailyDraftSetup(todaysDailyDateKey),
-    [dailyScoresRefreshTick, todaysDailyDateKey],
-  );
-
-  const landingDailyEntry = useMemo(
-    () => findPlayerDailyDraftEntry(todaysDailyDateKey),
-    [dailyScoresRefreshTick, todaysDailyDateKey],
-  );
-
-  const landingDailyGoal = useMemo(() => {
-    if (landingDailyEntry?.goalId) {
-      const storedGoal = getDailyGoalById(landingDailyEntry.goalId);
-
-      if (storedGoal) {
-        return storedGoal;
-      }
-    }
-
-    return landingDailySetup.goal;
-  }, [landingDailyEntry, landingDailySetup.goal]);
-
-  const landingDailyBenchmarkValues = useMemo(
-    () =>
-      simulateDailyBenchmarkValues(
-        activePlayers,
-        landingDailySetup.slots,
-        landingDailyGoal,
-        todaysDailyDateKey,
-      ),
-    [
-      activePlayers,
-      landingDailyGoal,
-      landingDailySetup.slots,
-      todaysDailyDateKey,
-    ],
-  );
-
-  const landingDailyPercentileLabel = useMemo(() => {
-    if (!landingDailyEntry) {
-      return null;
-    }
-
-    return formatPlayerDailyDraftPercentile(
-      resolvePlayerDailyDraftPercentile(
-        todaysDailyDateKey,
-        landingDailyEntry,
-        landingDailyGoal,
-        landingDailyBenchmarkValues,
-      ),
-    );
+    return getDailyDraftSetup(dailyDateKey, dailyDraftMode);
   }, [
-    landingDailyBenchmarkValues,
-    landingDailyEntry,
-    landingDailyGoal,
-    todaysDailyDateKey,
+    dailyDateKey,
+    dailyDraftMode,
+    isDailyDraft,
+    isDailyOptimalReview,
+    isDailyReview,
   ]);
 
-  const canViewDailyLineup = Boolean(
-    landingDailyEntry?.lineup && landingDailyEntry.lineup.length >= 5,
+  const buildLandingDailySnapshot = useCallback(
+    (mode: DailyDraftMode) => {
+      const setup = getDailyDraftSetup(todaysDailyDateKey, mode);
+      const entry = findPlayerDailyDraftEntry(todaysDailyDateKey, undefined, mode);
+      const goal =
+        entry?.goalId && getDailyGoalById(entry.goalId)?.mode === mode
+          ? getDailyGoalById(entry.goalId)!
+          : setup.goal;
+      const benchmarkValues = simulateDailyBenchmarkValues(
+        activePlayers,
+        setup.slots,
+        goal,
+        todaysDailyDateKey,
+      );
+      const percentileLabel = entry
+        ? formatPlayerDailyDraftPercentile(
+            resolvePlayerDailyDraftPercentile(
+              todaysDailyDateKey,
+              entry,
+              goal,
+              benchmarkValues,
+            ),
+          )
+        : null;
+
+      return {
+        setup,
+        entry,
+        goal,
+        percentileLabel,
+        canViewLineup: Boolean(entry?.lineup && entry.lineup.length >= 5),
+      };
+    },
+    [activePlayers, todaysDailyDateKey, dailyScoresRefreshTick],
+  );
+
+  const landingBasicDaily = useMemo(
+    () => buildLandingDailySnapshot("basic"),
+    [buildLandingDailySnapshot],
+  );
+
+  const landingAdvancedDaily = useMemo(
+    () => buildLandingDailySnapshot("advanced"),
+    [buildLandingDailySnapshot],
   );
 
   const dailyBenchmarkValues = useMemo(() => {
@@ -365,13 +360,14 @@ function App() {
     }
 
     const daily = Boolean(options.isDailyDraft);
+    const nextDailyDraftMode = options.dailyDraftMode ?? "basic";
     const practiceMode = Boolean(options.practiceMode);
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
-    const setup = daily ? getDailyDraftSetup(dateKey) : null;
+    const setup = daily ? getDailyDraftSetup(dateKey, nextDailyDraftMode) : null;
 
-    if (daily && hasCompletedDailyDraft(dateKey)) {
+    if (daily && hasCompletedDailyDraft(dateKey, nextDailyDraftMode)) {
       return "failed";
     }
 
@@ -548,6 +544,7 @@ function App() {
     saveTeamProfile(team);
     setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
+    setDailyDraftMode(daily ? nextDailyDraftMode : "basic");
     setIsDailyReview(false);
     setAllTimeMode(nextAllTimeMode);
     setIsPendingQueueMatch(isPendingQueue);
@@ -555,6 +552,7 @@ function App() {
     setUser(
       createUserDrafter(team, userSlots, {
         isDailyDraft: daily,
+        dailyDraftMode: daily ? nextDailyDraftMode : undefined,
         dailyChallengeTitle: setup?.challenge.title,
         salaryCapMode,
         salaryCapLimit,
@@ -614,15 +612,15 @@ function App() {
     });
   }, []);
 
-  const viewDailyLineup = useCallback((): boolean => {
+  const viewDailyLineup = useCallback((mode: DailyDraftMode = "basic"): boolean => {
     const dateKey = getDailyDateKey();
-    const entry = findPlayerDailyDraftEntry(dateKey);
+    const entry = findPlayerDailyDraftEntry(dateKey, undefined, mode);
 
     if (!entry?.lineup || entry.lineup.length < 5) {
       return false;
     }
 
-    const setup = getResolvedDailyDraftSetup(dateKey);
+    const setup = getResolvedDailyDraftSetup(dateKey, undefined, mode);
 
     const team =
       loadTeamProfile() ??
@@ -633,6 +631,7 @@ function App() {
     }
 
     saveTeamProfile(team);
+    setDailyDraftMode(mode);
     setIsDailyDraft(true);
     setIsDailyReview(true);
     setIsDailyOptimalReview(false);
@@ -640,6 +639,7 @@ function App() {
     setUser({
       ...createUserDrafter(team, setup.slots, {
         isDailyDraft: true,
+        dailyDraftMode: mode,
         dailyChallengeTitle: setup.challenge.title,
       }),
       lineup: entry.lineup,
@@ -656,52 +656,57 @@ function App() {
     return true;
   }, []);
 
-  const viewYesterdayBestDailyLineup = useCallback(async (): Promise<boolean> => {
-    const setup = getYesterdayBestDailyDraftSetup(getDailyDateKey());
-    const yesterdayKey = setup.dateKey;
-    const playerId = getOrCreatePlayerIdentity().playerId;
-    await refreshCanonicalDailyGoalData(yesterdayKey, playerId);
-    const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
-    const bestLineup = solveBestDailyDraftLineup(
-      pool,
-      setup.slots,
-      setup.goal,
-      yesterdayKey,
-    );
+  const viewYesterdayBestDailyLineup = useCallback(
+    async (mode: DailyDraftMode = "basic"): Promise<boolean> => {
+      const setup = getYesterdayBestDailyDraftSetup(getDailyDateKey(), mode);
+      const yesterdayKey = setup.dateKey;
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      await refreshCanonicalDailyGoalData(yesterdayKey, playerId, mode);
+      const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
+      const bestLineup = solveBestDailyDraftLineup(
+        pool,
+        setup.slots,
+        setup.goal,
+        yesterdayKey,
+      );
 
-    if (bestLineup.length < 5) {
-      return false;
-    }
+      if (bestLineup.length < 5) {
+        return false;
+      }
 
-    const team =
-      loadTeamProfile() ??
-      ({
-        name: "Daily Draft",
-      } satisfies TeamProfile);
+      const team =
+        loadTeamProfile() ??
+        ({
+          name: "Daily Draft",
+        } satisfies TeamProfile);
 
-    saveTeamProfile(team);
-    setIsDailyDraft(true);
-    setIsDailyReview(true);
-    setIsDailyOptimalReview(true);
-    setDailyDateKey(yesterdayKey);
-    setUser({
-      ...createUserDrafter(team, setup.slots, {
-        isDailyDraft: true,
-        dailyChallengeTitle: setup.challenge.title,
-      }),
-      lineup: bestLineup.map((player) => player.id),
-    });
-    setOpponent(null);
-    setOpponentCollection(null);
-    setDraftStep(5);
-    setOpponentPickCount(0);
-    setOpponentComplete(true);
-    setMatchId(null);
-    setDraftSessionKey(null);
-    setIsPendingQueueMatch(false);
-    setPhase("results");
-    return true;
-  }, [modeRecords.allTime]);
+      saveTeamProfile(team);
+      setDailyDraftMode(mode);
+      setIsDailyDraft(true);
+      setIsDailyReview(true);
+      setIsDailyOptimalReview(true);
+      setDailyDateKey(yesterdayKey);
+      setUser({
+        ...createUserDrafter(team, setup.slots, {
+          isDailyDraft: true,
+          dailyDraftMode: mode,
+          dailyChallengeTitle: setup.challenge.title,
+        }),
+        lineup: bestLineup.map((player) => player.id),
+      });
+      setOpponent(null);
+      setOpponentCollection(null);
+      setDraftStep(5);
+      setOpponentPickCount(0);
+      setOpponentComplete(true);
+      setMatchId(null);
+      setDraftSessionKey(null);
+      setIsPendingQueueMatch(false);
+      setPhase("results");
+      return true;
+    },
+    [modeRecords.allTime],
+  );
 
   const resetToLanding = () => {
     setUser(null);
@@ -718,6 +723,7 @@ function App() {
     setIsCancellingMatchmaking(false);
     setIsMatchmakingInFlight(false);
     setIsDailyDraft(false);
+    setDailyDraftMode("basic");
     setIsDailyReview(false);
     setIsDailyOptimalReview(false);
     setDailyDateKey(getDailyDateKey());
@@ -772,7 +778,12 @@ function App() {
 
     if (isDailyDraft) {
       const team = { name: user.name };
-      if ((await startMatch(team, { isDailyDraft: true })) === "failed") {
+      if (
+        (await startMatch(team, {
+          isDailyDraft: true,
+          dailyDraftMode: user.dailyDraftMode ?? dailyDraftMode,
+        })) === "failed"
+      ) {
         resetToLanding();
       }
       return;
@@ -1262,8 +1273,8 @@ function App() {
           matchmakingMode={matchmakingMode}
           isMatchmakingSearchActive={isMatchmakingSearchActive}
           matchmakingElapsedSeconds={matchmakingElapsedSeconds}
-          dailyPercentileLabel={landingDailyPercentileLabel}
-          canViewDailyLineup={canViewDailyLineup}
+          landingBasicDaily={landingBasicDaily}
+          landingAdvancedDaily={landingAdvancedDaily}
           startMatchError={startMatchError}
           onStartDraft={startMatch}
           onViewDailyLineup={viewDailyLineup}

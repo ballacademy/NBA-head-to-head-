@@ -11,6 +11,7 @@ import {
 import { ensureCurrentRankedSeason } from "./rankedProfile";
 import type { GhostOpponentSnapshot } from "./ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./liveMatchmaking";
+import type { DailyDraftMode } from "./dailyDraftMode";
 import type { TeamProfile } from "./teamProfile";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -22,6 +23,7 @@ import type { Player } from "./types";
 
 export interface StartDraftOptions {
   isDailyDraft?: boolean;
+  dailyDraftMode?: DailyDraftMode;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
   salaryCapLimit?: number;
@@ -61,6 +63,7 @@ export const createUserDrafter = (
   const allTimeMode = Boolean(options.allTimeMode);
   const practiceMode = Boolean(options.practiceMode);
   const isDailyDraft = Boolean(options.isDailyDraft);
+  const dailyDraftMode = options.dailyDraftMode ?? "basic";
   const salaryCapLimit =
     options.salaryCapLimit ??
     (isDailyDraft || allTimeMode
@@ -76,6 +79,7 @@ export const createUserDrafter = (
     draftSlots,
     lineup: [],
     isDailyDraft,
+    dailyDraftMode: isDailyDraft ? dailyDraftMode : undefined,
     dailyChallengeTitle: options.dailyChallengeTitle,
     salaryCapMode,
     salaryCapLimit,

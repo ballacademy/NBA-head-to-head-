@@ -11,6 +11,17 @@ const average = (values: number[]) =>
     ? values.reduce((sum, value) => sum + value, 0) / values.length
     : 0;
 
+const perMinute = (player: Player, value: number) =>
+  player.minutes > 0 ? value / player.minutes : 0;
+
+const assistToTurnoverRatio = (player: Player) =>
+  player.turnovers > 0 ? player.assists / player.turnovers : player.assists;
+
+const threePointAttemptShare = (player: Player) =>
+  player.fieldGoalsAttempted > 0
+    ? player.threePointersAttempted / player.fieldGoalsAttempted
+    : 0;
+
 const weightedRate = (
   lineup: Player[],
   rate: (player: Player) => number,
@@ -64,6 +75,28 @@ const getStatValue = (player: Player, stat: DailyDraftGoal["stat"]) => {
       return player.threePointersAttempted;
     case "stocks":
       return player.steals + player.blocks;
+    case "pointsPerMinute":
+      return perMinute(player, player.points);
+    case "assistsPerMinute":
+      return perMinute(player, player.assists);
+    case "reboundsPerMinute":
+      return perMinute(player, player.rebounds);
+    case "stealsPerMinute":
+      return perMinute(player, player.steals);
+    case "blocksPerMinute":
+      return perMinute(player, player.blocks);
+    case "stocksPerMinute":
+      return perMinute(player, player.steals + player.blocks);
+    case "turnoversPerMinute":
+      return perMinute(player, player.turnovers);
+    case "assistToTurnoverRatio":
+      return assistToTurnoverRatio(player);
+    case "threePointAttemptShare":
+      return threePointAttemptShare(player);
+    case "threePointersAttemptedPerMinute":
+      return perMinute(player, player.threePointersAttempted);
+    case "fieldGoalsAttemptedPerMinute":
+      return perMinute(player, player.fieldGoalsAttempted);
     default:
       return 0;
   }
@@ -143,6 +176,28 @@ export const formatPlayerGoalStat = (player: Player, goal: DailyDraftGoal) => {
       return `${value.toFixed(1)} 3PA`;
     case "stocks":
       return `${value.toFixed(1)} stocks`;
+    case "pointsPerMinute":
+      return `${value.toFixed(2)} PPM`;
+    case "assistsPerMinute":
+      return `${value.toFixed(2)} APM`;
+    case "reboundsPerMinute":
+      return `${value.toFixed(2)} RPM`;
+    case "stealsPerMinute":
+      return `${value.toFixed(2)} SPM`;
+    case "blocksPerMinute":
+      return `${value.toFixed(2)} BPM`;
+    case "stocksPerMinute":
+      return `${value.toFixed(2)} stocks/min`;
+    case "turnoversPerMinute":
+      return `${value.toFixed(2)} TOV/min`;
+    case "assistToTurnoverRatio":
+      return `${value.toFixed(2)} AST/TOV`;
+    case "threePointAttemptShare":
+      return `${(value * 100).toFixed(1)}% 3PA share`;
+    case "threePointersAttemptedPerMinute":
+      return `${value.toFixed(2)} 3PA/min`;
+    case "fieldGoalsAttemptedPerMinute":
+      return `${value.toFixed(2)} FGA/min`;
     default:
       return value.toFixed(1);
   }
@@ -182,6 +237,28 @@ export const formatGoalResult = (value: number, goal: DailyDraftGoal) => {
       return `${value.toFixed(1)} 3PA`;
     case "stocks":
       return `${value.toFixed(1)} stocks per game`;
+    case "pointsPerMinute":
+      return `${value.toFixed(2)} points per minute`;
+    case "assistsPerMinute":
+      return `${value.toFixed(2)} assists per minute`;
+    case "reboundsPerMinute":
+      return `${value.toFixed(2)} rebounds per minute`;
+    case "stealsPerMinute":
+      return `${value.toFixed(2)} steals per minute`;
+    case "blocksPerMinute":
+      return `${value.toFixed(2)} blocks per minute`;
+    case "stocksPerMinute":
+      return `${value.toFixed(2)} stocks per minute`;
+    case "turnoversPerMinute":
+      return `${value.toFixed(2)} turnovers per minute`;
+    case "assistToTurnoverRatio":
+      return `${value.toFixed(2)} assist-to-turnover ratio`;
+    case "threePointAttemptShare":
+      return `${(value * 100).toFixed(1)}% of shots from 3`;
+    case "threePointersAttemptedPerMinute":
+      return `${value.toFixed(2)} 3PA per minute`;
+    case "fieldGoalsAttemptedPerMinute":
+      return `${value.toFixed(2)} FGA per minute`;
     default:
       return value.toFixed(1);
   }

@@ -23,6 +23,7 @@ import {
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
 import { getRankedProfileView } from "../lib/rankedProfile";
+import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
 import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 import { formatRatingPoints } from "../lib/rankedElo";
 import type { Drafter, Player } from "../lib/types";
@@ -232,7 +233,9 @@ export function DraftRoom({
     >
       {isDailyDraft && dailyChallengeTitle ? (
         <div className="daily-draft-banner" role="status">
-          <p className="eyebrow">Daily Draft</p>
+          <p className="eyebrow">
+            {formatDailyDraftModeLabel(drafter.dailyDraftMode ?? "basic")} Daily Draft
+          </p>
           <h3>{dailyChallengeTitle}</h3>
           {dailyChallengeDescription ? (
             <p>{dailyChallengeDescription}</p>

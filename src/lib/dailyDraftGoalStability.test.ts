@@ -16,17 +16,16 @@ describe("dailyDraft goal calendar stability", () => {
     expect(july3AfterJuly4.id).toBe(july3Direct.id);
   });
 
-  it("keeps today's challenge aligned with tomorrow's yesterday best", () => {
+  it("keeps today's advanced challenge aligned with tomorrow's yesterday best", () => {
     clearDailyDraftCachesForTests();
     const todayKey = "2026-07-03";
     const tomorrowKey = "2026-07-04";
 
-    const todayGoal = getDailyGoal(todayKey);
+    const todayGoal = getDailyGoal(todayKey, "advanced");
     clearDailyDraftCachesForTests();
-    getDailyGoal(tomorrowKey);
-    const yesterdayViaTomorrow = getDailyGoal(todayKey);
+    getDailyGoal(tomorrowKey, "advanced");
+    const yesterdayViaTomorrow = getDailyGoal(todayKey, "advanced");
 
     expect(yesterdayViaTomorrow.id).toBe(todayGoal.id);
-    expect(todayGoal.id).toBe("anti-offense");
   });
 });

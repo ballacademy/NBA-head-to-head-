@@ -68,4 +68,20 @@ describe("dailyGoalScoring", () => {
 
     expect(formatPlayerGoalStat(player, goal)).toBe("A+ DEF");
   });
+
+  it("scores advanced per-minute and ratio goals", () => {
+    const ppmGoal = getDailyGoalById("adv-ppm-scorers")!;
+    const ratioGoal = getDailyGoalById("adv-playmaker-ratio")!;
+    const threeShareGoal = getDailyGoalById("adv-three-heavy")!;
+    const player = players.find((entry) => entry.minutes > 20)!;
+
+    expect(player).toBeDefined();
+    expect(formatPlayerGoalStat(player!, ppmGoal)).toMatch(/PPM$/);
+    expect(formatPlayerGoalStat(player!, ratioGoal)).toMatch(/AST\/TOV$/);
+    expect(formatPlayerGoalStat(player!, threeShareGoal)).toMatch(/3PA share$/);
+    expect(scoreLineupForGoal([player!], ppmGoal)).toBeCloseTo(
+      player!.points / player!.minutes,
+      5,
+    );
+  });
 });

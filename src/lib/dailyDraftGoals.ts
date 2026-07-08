@@ -1,6 +1,8 @@
+import type { DailyDraftMode } from "./dailyDraftMode";
+
 export type DailyGoalDirection = "higher" | "lower";
 
-export type DailyGoalStat =
+export type BasicDailyGoalStat =
   | "threePoint"
   | "trueShooting"
   | "rebounds"
@@ -18,6 +20,22 @@ export type DailyGoalStat =
   | "threePointersAttempted"
   | "stocks";
 
+export type AdvancedDailyGoalStat =
+  | "pointsPerMinute"
+  | "assistsPerMinute"
+  | "reboundsPerMinute"
+  | "stealsPerMinute"
+  | "blocksPerMinute"
+  | "stocksPerMinute"
+  | "turnoversPerMinute"
+  | "assistToTurnoverRatio"
+  | "threePointAttemptShare"
+  | "threePointersAttemptedPerMinute"
+  | "fieldGoalsAttemptedPerMinute"
+  | "trueShooting";
+
+export type DailyGoalStat = BasicDailyGoalStat | AdvancedDailyGoalStat;
+
 export type DailyGoalAggregation = "weightedRate" | "average";
 
 export interface DailyDraftGoal {
@@ -27,9 +45,17 @@ export interface DailyDraftGoal {
   direction: DailyGoalDirection;
   aggregation: DailyGoalAggregation;
   stat: DailyGoalStat;
+  mode: DailyDraftMode;
 }
 
-export const DAILY_DRAFT_GOALS: DailyDraftGoal[] = [
+type DailyDraftGoalDefinition = Omit<DailyDraftGoal, "mode">;
+
+const attachDailyDraftMode = (
+  goals: DailyDraftGoalDefinition[],
+  mode: DailyDraftMode,
+): DailyDraftGoal[] => goals.map((goal) => ({ ...goal, mode }));
+
+const BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
   {
     id: "splash-zone",
     title: "Splash Zone",
@@ -256,8 +282,171 @@ export const DAILY_DRAFT_GOALS: DailyDraftGoal[] = [
   },
 ];
 
+const ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
+  {
+    id: "adv-ppm-scorers",
+    title: "Per-Minute Scorers",
+    description: "Draft the lineup with the highest average points per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "pointsPerMinute",
+  },
+  {
+    id: "adv-low-ppm",
+    title: "Low Usage Scorers",
+    description: "Draft the lineup with the lowest average points per minute.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "pointsPerMinute",
+  },
+  {
+    id: "adv-playmaking-rate",
+    title: "Playmaking Rate",
+    description: "Draft the lineup with the highest average assists per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "assistsPerMinute",
+  },
+  {
+    id: "adv-glass-rate",
+    title: "Glass Rate",
+    description: "Draft the lineup with the highest average rebounds per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "reboundsPerMinute",
+  },
+  {
+    id: "adv-hawk-rate",
+    title: "Hawk Rate",
+    description: "Draft the lineup with the highest average steals per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "stealsPerMinute",
+  },
+  {
+    id: "adv-rim-rate",
+    title: "Rim Rate",
+    description: "Draft the lineup with the highest average blocks per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "blocksPerMinute",
+  },
+  {
+    id: "adv-stocks-rate",
+    title: "Stocks Rate",
+    description: "Draft the lineup with the highest average steals plus blocks per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "stocksPerMinute",
+  },
+  {
+    id: "adv-careful-rate",
+    title: "Careful Rate",
+    description: "Draft the lineup with the lowest average turnovers per minute.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "turnoversPerMinute",
+  },
+  {
+    id: "adv-chaos-rate",
+    title: "Chaos Rate",
+    description: "Draft the lineup with the highest average turnovers per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "turnoversPerMinute",
+  },
+  {
+    id: "adv-playmaker-ratio",
+    title: "Playmaker Ratio",
+    description: "Draft the lineup with the highest average assist-to-turnover ratio.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "assistToTurnoverRatio",
+  },
+  {
+    id: "adv-turnover-prone",
+    title: "Turnover Prone",
+    description: "Draft the lineup with the lowest average assist-to-turnover ratio.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "assistToTurnoverRatio",
+  },
+  {
+    id: "adv-three-heavy",
+    title: "Three-Heavy",
+    description: "Draft the lineup with the highest share of shot attempts from three.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "threePointAttemptShare",
+  },
+  {
+    id: "adv-paint-heavy",
+    title: "Paint Heavy",
+    description: "Draft the lineup with the lowest share of shot attempts from three.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "threePointAttemptShare",
+  },
+  {
+    id: "adv-deep-rate",
+    title: "Deep Rate",
+    description: "Draft the lineup with the highest average three-point attempts per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "threePointersAttemptedPerMinute",
+  },
+  {
+    id: "adv-volume-rate",
+    title: "Volume Rate",
+    description: "Draft the lineup with the highest average field goal attempts per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "fieldGoalsAttemptedPerMinute",
+  },
+  {
+    id: "adv-efficient-minute",
+    title: "Efficient Minute",
+    description: "Draft the lineup with the highest weighted true shooting.",
+    direction: "higher",
+    aggregation: "weightedRate",
+    stat: "trueShooting",
+  },
+  {
+    id: "adv-inefficient-minute",
+    title: "Inefficient Minute",
+    description: "Draft the lineup with the lowest weighted true shooting.",
+    direction: "lower",
+    aggregation: "weightedRate",
+    stat: "trueShooting",
+  },
+  {
+    id: "adv-low-glass-rate",
+    title: "Low Glass Rate",
+    description: "Draft the lineup with the lowest average rebounds per minute.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "reboundsPerMinute",
+  },
+];
+
+export const DAILY_DRAFT_GOALS = attachDailyDraftMode(
+  BASIC_DAILY_DRAFT_GOAL_DEFINITIONS,
+  "basic",
+);
+export const ADVANCED_DAILY_DRAFT_GOALS = attachDailyDraftMode(
+  ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS,
+  "advanced",
+);
+export const ALL_DAILY_DRAFT_GOALS = [
+  ...DAILY_DRAFT_GOALS,
+  ...ADVANCED_DAILY_DRAFT_GOALS,
+];
+
+export const getDailyDraftGoalsForMode = (mode: DailyDraftMode) =>
+  mode === "advanced" ? ADVANCED_DAILY_DRAFT_GOALS : DAILY_DRAFT_GOALS;
+
 export const DAILY_GOAL_REPEAT_WINDOW_DAYS = 28;
 
-const goalsById = new Map(DAILY_DRAFT_GOALS.map((goal) => [goal.id, goal]));
+const goalsById = new Map(ALL_DAILY_DRAFT_GOALS.map((goal) => [goal.id, goal]));
 
 export const getDailyGoalById = (goalId: string) => goalsById.get(goalId);

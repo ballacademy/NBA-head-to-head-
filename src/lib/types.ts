@@ -1,4 +1,5 @@
 import type { DefenseGrade } from "./defenseRating";
+import type { DailyDraftMode } from "./dailyDraftMode";
 
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 
@@ -62,6 +63,7 @@ export interface Drafter {
   lineup: string[];
   draftSlots: DraftSlotConstraint[];
   isDailyDraft?: boolean;
+  dailyDraftMode?: DailyDraftMode;
   dailyChallengeTitle?: string;
   salaryCapMode?: boolean;
   salaryCapLimit?: number;
