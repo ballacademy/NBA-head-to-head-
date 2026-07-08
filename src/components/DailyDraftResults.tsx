@@ -20,6 +20,7 @@ import {
 } from "../lib/dailyDraftScores";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
+import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
 import { formatDailyDateLabel } from "../lib/dailyDraft";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
@@ -203,7 +204,9 @@ export function DailyDraftResults({
     >
       <div className="panel panel--compact daily-draft-results__header">
         <p className="eyebrow">
-          {optimalReview ? "Daily Draft answer key" : "Daily Draft complete"}
+          {optimalReview
+            ? `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily answer key`
+            : `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily complete`}
         </p>
         <h2>
           {optimalReview ? "Yesterday's best lineup" : dailyGoal.title}
