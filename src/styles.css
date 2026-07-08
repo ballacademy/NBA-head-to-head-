@@ -834,6 +834,11 @@ main {
   flex-wrap: wrap;
 }
 
+.team-name-with-streak--compact {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
 .streak-badge {
   display: inline-flex;
   align-items: center;
@@ -844,11 +849,19 @@ main {
   line-height: 1;
 }
 
+.streak-badge--inline {
+  gap: 3px;
+}
+
 .streak-badge__metric {
   display: inline-flex;
   align-items: baseline;
   gap: 1px;
   flex-shrink: 0;
+}
+
+.streak-badge--inline .streak-badge__metric {
+  gap: 3px;
 }
 
 .streak-badge__count {
@@ -859,12 +872,26 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+.streak-badge--inline .streak-badge__count {
+  font-size: 0.88rem;
+}
+
 .streak-badge__type {
   color: rgba(248, 250, 252, 0.72);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1;
+}
+
+.streak-badge--inline .streak-badge__type {
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+
+.team-lineup-card--compact .streak-badge__icon {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .win-streak-badge {
