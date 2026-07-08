@@ -283,6 +283,8 @@ export const submitDailyDraftScore = async (
     submittedAt,
   };
 
+  mergeEntryToLocal(dateKey, nextEntry);
+
   await submitRemoteDailyDraftScore({
     dateKey,
     goalId: goal.id,

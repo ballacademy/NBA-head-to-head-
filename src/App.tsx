@@ -900,6 +900,38 @@ function App() {
           }
         }
 
+        const nextLineup = [...current.lineup];
+        let filledSlot = slot;
+
+        while (filledSlot < current.draftSlots.length) {
+          const filledIds = new Set(
+            nextLineup.filter((playerId): playerId is string => Boolean(playerId)),
+          );
+          const selection = pickBestForSlot(
+            draftablePlayers,
+            current.draftSlots[filledSlot]!,
+            filledIds,
+          );
+
+          if (!selection) {
+            break;
+          }
+
+          nextLineup[filledSlot] = selection;
+          filledSlot += 1;
+        }
+
+        if (
+          nextLineup.filter((playerId): playerId is string => Boolean(playerId))
+            .length === current.draftSlots.length
+        ) {
+          nextStep = 5;
+          return {
+            ...current,
+            lineup: nextLineup,
+          };
+        }
+
         return current;
       });
 

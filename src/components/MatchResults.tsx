@@ -22,7 +22,8 @@ import {
 import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
-import { formatRatingDelta, formatRatingPoints, RANKED_STARTING_ELO } from "../lib/rankedElo";
+import { loadClassicProfile } from "../lib/classicProfile";
+import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -95,6 +96,8 @@ export function MatchResults({
 
     if (!user.practiceMode) {
       const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
+      const rankedEloBefore = ensureCurrentRankedSeason().elo;
+      const classicEloBefore = loadClassicProfile().elo;
       const outcome = persistMatchOutcome(
         matchResult,
         { name: user.name },
@@ -110,43 +113,41 @@ export function MatchResults({
       const next = processMatchUnlock(matchResult, matchId, collection);
       setMatchCollection(next);
       onCollectionChange(next);
+
+      if (canStoreLineupForMatchmaking(user)) {
+        const mode = user.salaryCapMode ? "ranked" : "classic";
+        const playerId = getOrCreatePlayerIdentity().playerId;
+        const challengerEloBefore = user.salaryCapMode
+          ? rankedEloBefore
+          : classicEloBefore;
+        const storedLineupId = opponent.isGhostOpponent
+          ? extractGhostStoredLineupId(opponent.id)
+          : null;
+
+        if (storedLineupId) {
+          void submitGhostMatchOutcome({
+            storedLineupId,
+            mode,
+            challengerPlayerId: playerId,
+            challengerTeamName: user.name,
+            challengerWon: userWon,
+            challengerElo: challengerEloBefore,
+            userScore: userScore.total,
+            opponentScore: opponentScore.total,
+          });
+        }
+
+        void submitStoredLineup({
+          mode,
+          playerId,
+          teamName: user.name,
+          lineup: user.lineup.filter((id): id is string => Boolean(id)),
+          elo: challengerEloBefore,
+        });
+      }
     }
 
     setActionsReady(true);
-
-    if (canStoreLineupForMatchmaking(user)) {
-      const mode = user.salaryCapMode ? "ranked" : "classic";
-      const playerId = getOrCreatePlayerIdentity().playerId;
-      const challengerEloBefore = user.salaryCapMode
-        ? ensureCurrentRankedSeason().elo
-        : RANKED_STARTING_ELO;
-      const storedLineupId = opponent.isGhostOpponent
-        ? extractGhostStoredLineupId(opponent.id)
-        : null;
-
-      if (storedLineupId) {
-        void submitGhostMatchOutcome({
-          storedLineupId,
-          mode,
-          challengerPlayerId: playerId,
-          challengerTeamName: user.name,
-          challengerWon: userWon,
-          challengerElo: challengerEloBefore,
-          userScore: userScore.total,
-          opponentScore: opponentScore.total,
-        });
-      }
-
-      void submitStoredLineup({
-        mode,
-        playerId,
-        teamName: user.name,
-        lineup: user.lineup.filter((id): id is string => Boolean(id)),
-        elo: user.salaryCapMode
-          ? ensureCurrentRankedSeason().elo
-          : RANKED_STARTING_ELO,
-      });
-    }
   }, [
     collection,
     matchId,
@@ -237,8 +238,11 @@ export function MatchResults({
             </h2>
           </div>
           <p className="matchup-panel__meta">
-            Margin {Math.abs(userScore.total - opponentScore.total)} • OVR{" "}
-            {userScore.total} vs {opponentScore.total}
+            Margin{" "}
+            {Math.round(
+              Math.abs(userScore.preciseTotal - opponentScore.preciseTotal),
+            )}{" "}
+            • OVR {userScore.total} vs {opponentScore.total}
             {matchRecordMode === "ranked" && rankedOutcome && !user.practiceMode ? (
               <>
                 {" "}
