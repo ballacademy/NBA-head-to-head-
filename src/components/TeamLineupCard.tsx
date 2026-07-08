@@ -43,6 +43,7 @@ export function TeamLineupCard({
                 name={drafter.name}
                 winStreak={winStreak}
                 lossStreak={lossStreak}
+                compact={compact}
               />
             ) : (
               drafter.name

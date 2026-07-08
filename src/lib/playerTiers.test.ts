@@ -83,7 +83,7 @@ describe("playerTiers", () => {
     );
   });
 
-  it("forces the worst cumulative-stat non-scrubs into the scrub pool", () => {
+  it("keeps Jonathan Isaac and Pat Connaughton out of the scrub pool", () => {
     const isaac = players.find((player) => player.bbrPlayerId === "isaacjo01");
     const connaughton = players.find(
       (player) => player.bbrPlayerId === "connapa01",
@@ -91,8 +91,19 @@ describe("playerTiers", () => {
 
     expect(isaac).toBeDefined();
     expect(connaughton).toBeDefined();
-    expect(isScrubPlayer(isaac!)).toBe(true);
-    expect(isScrubPlayer(connaughton!)).toBe(true);
+    expect(isScrubPlayer(isaac!)).toBe(false);
+    expect(isScrubPlayer(connaughton!)).toBe(false);
+    expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
+  });
+
+  it("includes the curated scrub pool members", () => {
+    const ajJohnson = players.find((player) => player.bbrPlayerId === "johnsaj01");
+    const adouThiero = players.find((player) => player.bbrPlayerId === "thierad01");
+
+    expect(ajJohnson).toBeDefined();
+    expect(adouThiero).toBeDefined();
+    expect(isScrubPlayer(ajJohnson!)).toBe(true);
+    expect(isScrubPlayer(adouThiero!)).toBe(true);
     expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
   });
 
