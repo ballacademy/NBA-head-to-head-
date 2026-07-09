@@ -1,6 +1,8 @@
+import { autoDraftLineup } from "./draft";
 import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import type { GhostMatchmakingMode } from "./ghostMatchmaking";
+import type { DraftSlotConstraint, Player } from "./types";
 
 export interface LiveOpponentSnapshot {
   matchId: string;
@@ -307,6 +309,44 @@ export const waitForLiveOpponentLineup = async (
     }
 
     await sleep(Math.min(pollIntervalMs, remaining));
+  }
+
+  return null;
+};
+
+export interface ResolvedLiveOpponentLineup {
+  lineup: string[];
+  autoDrafted: boolean;
+}
+
+export const resolveLiveOpponentLineup = async (
+  params: {
+    matchId: string;
+    playerId: string;
+    opponentDraftSlots: DraftSlotConstraint[];
+    players: Player[];
+  },
+  options: {
+    timeoutMs?: number;
+    pollIntervalMs?: number;
+  } = {},
+): Promise<ResolvedLiveOpponentLineup | null> => {
+  const polled = await waitForLiveOpponentLineup(
+    {
+      matchId: params.matchId,
+      playerId: params.playerId,
+    },
+    options,
+  );
+
+  if (polled) {
+    return { lineup: polled, autoDrafted: false };
+  }
+
+  const autoLineup = autoDraftLineup(params.players, params.opponentDraftSlots);
+
+  if (autoLineup.length === params.opponentDraftSlots.length) {
+    return { lineup: autoLineup, autoDrafted: true };
   }
 
   return null;

@@ -13,7 +13,7 @@ import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { WaitingRoom } from "./components/WaitingRoom";
-import { getActivePlayerPool, getPlayersByIdFromActivePool } from "./lib/activePlayerPool";
+import { getActivePlayerPool, getPlayersByIdFromActivePool, isCompleteLineupFromActivePool } from "./lib/activePlayerPool";
 import { databasePlayers } from "./lib/playerPool";
 import {
   generateFeasibleDraftSlots,
@@ -74,9 +74,14 @@ import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
 import {
   leaveMatchmakingQueue,
+  resolveLiveOpponentLineup,
   submitLiveMatchLineup,
-  waitForLiveOpponentLineup,
 } from "./lib/liveMatchmaking";
+import {
+  clearLiveDraftSession,
+  saveLiveDraftSession,
+} from "./lib/liveDraftSession";
+import { restoreLiveDraftSession } from "./lib/restoreLiveDraftSession";
 import { RANKED_STARTING_ELO } from "./lib/rankedElo";
 import {
   ensurePlayerCollection,
@@ -169,7 +174,73 @@ function App() {
     playerId: string;
     cancelled: boolean;
   } | null>(null);
+  const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
+
+  useEffect(() => {
+    if (liveRecoveryAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    liveRecoveryAttemptedRef.current = true;
+
+    void (async () => {
+      const restored = await restoreLiveDraftSession();
+
+      if (!restored) {
+        return;
+      }
+
+      setUser(restored.user);
+      setOpponent(restored.opponent);
+      setDraftStep(restored.draftStep);
+      setMatchId(restored.matchId);
+      setDraftSessionKey(restored.matchId);
+      setOpponentPickCount(restored.opponent.lineup.length);
+      setOpponentComplete(restored.opponentComplete);
+      setIsPendingQueueMatch(false);
+      setIsDailyDraft(false);
+      setPhase(restored.opponentComplete ? "results" : restored.phase);
+    })();
+  }, [phase]);
+
+  useEffect(() => {
+    if (!user || !opponent?.isLiveOpponent || !opponent.liveMatchId) {
+      return;
+    }
+
+    if (!opponent.liveOpponentPlayerId) {
+      return;
+    }
+
+    saveLiveDraftSession({
+      matchId: opponent.liveMatchId,
+      mode: user.salaryCapMode ? "ranked" : "classic",
+      playerId: getOrCreatePlayerIdentity().playerId,
+      teamName: user.name,
+      teamAccent: user.accent,
+      draftSlots: user.draftSlots,
+      lineup: user.lineup.filter((playerId): playerId is string => Boolean(playerId)),
+      draftStep,
+      opponentTeamName: opponent.name,
+      opponentElo:
+        opponent.rankedOpponentElo ??
+        opponent.classicOpponentElo ??
+        RANKED_STARTING_ELO,
+      opponentPlayerId: opponent.liveOpponentPlayerId,
+      opponentDraftSlots: opponent.draftSlots,
+      salaryCapMode: Boolean(user.salaryCapMode),
+      salaryCapLimit: user.salaryCapLimit,
+      phase: phase === "waiting" ? "waiting" : "drafting",
+      savedAt: new Date().toISOString(),
+    });
+  }, [draftStep, opponent, phase, user]);
+
+  useEffect(() => {
+    if (phase === "results" && opponent?.isLiveOpponent) {
+      clearLiveDraftSession();
+    }
+  }, [opponent?.isLiveOpponent, phase]);
 
   useEffect(() => {
     ensureCurrentRankedSeason();
@@ -332,14 +403,22 @@ function App() {
     );
   }, [activePlayers, dailyDateKey, dailySetup]);
 
-  const userLineup = getPlayersByIdFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
+  const userLineup = isCompleteLineupFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
     allTimeMode,
-  });
-  const opponentLineup = getPlayersByIdFromActivePool(
+  })
+    ? getPlayersByIdFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
+        allTimeMode,
+      })
+    : [];
+  const opponentLineup = isCompleteLineupFromActivePool(
     opponent?.lineup ?? [],
     modeRecords.allTime,
     { allTimeMode },
-  );
+  )
+    ? getPlayersByIdFromActivePool(opponent?.lineup ?? [], modeRecords.allTime, {
+        allTimeMode,
+      })
+    : [];
   const userDraftComplete =
     draftStep >= 5 &&
     (user?.lineup.filter((playerId): playerId is string => Boolean(playerId))
@@ -590,6 +669,28 @@ function App() {
         ? crypto.randomUUID()
         : `draft-${Date.now()}`,
     );
+
+    if (liveOpponent && opponentSlots) {
+      saveLiveDraftSession({
+        matchId: liveOpponent.matchId,
+        mode: salaryCapMode ? "ranked" : "classic",
+        playerId: getOrCreatePlayerIdentity().playerId,
+        teamName: team.name,
+        teamAccent: "#2563eb",
+        draftSlots: userSlots,
+        lineup: [],
+        draftStep: 0,
+        opponentTeamName: liveOpponent.teamName,
+        opponentElo: liveOpponent.elo,
+        opponentPlayerId: liveOpponent.playerId,
+        opponentDraftSlots: opponentSlots,
+        salaryCapMode,
+        salaryCapLimit,
+        phase: "drafting",
+        savedAt: new Date().toISOString(),
+      });
+    }
+
     setPhase("drafting");
     return "started";
   };
@@ -709,6 +810,7 @@ function App() {
   );
 
   const resetToLanding = () => {
+    clearLiveDraftSession();
     setUser(null);
     setOpponent(null);
     setOpponentCollection(null);
@@ -1083,13 +1185,17 @@ function App() {
         lineup,
       });
 
-      const opponentLineup = await waitForLiveOpponentLineup({
-        matchId: liveMatchId,
-        playerId,
-      });
+      const resolved = await resolveLiveOpponentLineup(
+        {
+          matchId: liveMatchId,
+          playerId,
+          opponentDraftSlots: opponent.draftSlots,
+          players: opponentDraftablePlayersRef.current,
+        },
+      );
 
-      if (cancelled || !opponentLineup) {
-        if (!cancelled && !opponentLineup) {
+      if (cancelled || !resolved) {
+        if (!cancelled && !resolved) {
           setStartMatchError(
             "Your opponent did not finish drafting in time. Return home and try again.",
           );
@@ -1100,10 +1206,10 @@ function App() {
 
       setOpponent((current) =>
         current?.liveMatchId === liveMatchId
-          ? { ...current, lineup: opponentLineup }
+          ? { ...current, lineup: resolved.lineup }
           : current,
       );
-      setOpponentPickCount(opponentLineup.length);
+      setOpponentPickCount(resolved.lineup.length);
       setOpponentComplete(true);
     })();
 

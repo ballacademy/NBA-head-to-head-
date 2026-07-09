@@ -22,8 +22,7 @@ import {
 import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
-import { loadClassicProfile } from "../lib/classicProfile";
-import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
+import { formatRatingDelta, formatRatingPoints, RANKED_STARTING_ELO } from "../lib/rankedElo";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -97,7 +96,6 @@ export function MatchResults({
     if (!user.practiceMode) {
       const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
       const rankedEloBefore = ensureCurrentRankedSeason().elo;
-      const classicEloBefore = loadClassicProfile().elo;
       const outcome = persistMatchOutcome(
         matchResult,
         { name: user.name },
@@ -119,7 +117,7 @@ export function MatchResults({
         const playerId = getOrCreatePlayerIdentity().playerId;
         const challengerEloBefore = user.salaryCapMode
           ? rankedEloBefore
-          : classicEloBefore;
+          : RANKED_STARTING_ELO;
         const storedLineupId = opponent.isGhostOpponent
           ? extractGhostStoredLineupId(opponent.id)
           : null;

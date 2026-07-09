@@ -18,10 +18,14 @@ const slotCache = new Map<string, DraftSlotConstraint[]>();
 
 const DAILY_SLOT_ATTEMPTS = 64;
 const DAILY_SLOT_SEED_OFFSET = 17;
+const ADVANCED_DAILY_SLOT_SEED_OFFSET = 503;
 const ADVANCED_DAILY_GOAL_SEED_OFFSET = 1003;
 const DAILY_SLOT_ATTEMPT_STEP = 7919;
 
 const goalCacheKey = (mode: DailyDraftMode, dateKey: string) =>
+  `${mode}:${dateKey}`;
+
+const slotCacheKey = (mode: DailyDraftMode, dateKey: string) =>
   `${mode}:${dateKey}`;
 
 const createSeededRandom = (seed: number) => {
@@ -198,21 +202,26 @@ export const getDailyChallenge = (
 
 export const generateDailyDraftSlots = (
   dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
 ): DraftSlotConstraint[] => {
-  const cached = slotCache.get(dateKey);
+  const cacheKey = slotCacheKey(mode, dateKey);
+  const cached = slotCache.get(cacheKey);
 
   if (cached) {
     return cached.map((slot) => ({ ...slot }));
   }
 
-  const baseSeed = getDailySeed(dateKey) + DAILY_SLOT_SEED_OFFSET;
+  const baseSeed =
+    getDailySeed(dateKey) +
+    DAILY_SLOT_SEED_OFFSET +
+    (mode === "advanced" ? ADVANCED_DAILY_SLOT_SEED_OFFSET : 0);
 
   for (let attempt = 0; attempt < DAILY_SLOT_ATTEMPTS; attempt += 1) {
     const random = createSeededRandom(baseSeed + attempt * DAILY_SLOT_ATTEMPT_STEP);
     const slots = generateSeededSlotConstraints(random, 5);
 
     if (slots && validateDraftSlotsFeasible(canonicalPlayers, slots)) {
-      slotCache.set(dateKey, slots.map((slot) => ({ ...slot })));
+      slotCache.set(cacheKey, slots.map((slot) => ({ ...slot })));
       return slots;
     }
   }
@@ -225,7 +234,7 @@ export const generateDailyDraftSlots = (
 
   if (validateDraftSlotsFeasible(canonicalPlayers, fallbackSlots)) {
     slotCache.set(
-      dateKey,
+      cacheKey,
       fallbackSlots.map((slot) => ({ ...slot })),
     );
   }
@@ -238,7 +247,7 @@ export const getDailyDraftSetup = (
   mode: DailyDraftMode = "basic",
 ) => {
   const goal = getDailyGoal(dateKey, mode);
-  const slots = generateDailyDraftSlots(dateKey);
+  const slots = generateDailyDraftSlots(dateKey, mode);
 
   return {
     dateKey,
@@ -257,13 +266,17 @@ export const formatDailyChallengeDescription = (goal: DailyDraftGoal) =>
 export const isDailySlotConstraint = (
   slots: DraftSlotConstraint[],
   dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
 ) => {
-  const expected = generateDailyDraftSlots(dateKey);
+  const expected = generateDailyDraftSlots(dateKey, mode);
   return JSON.stringify(slots) === JSON.stringify(expected);
 };
 
-export const assertDailyDraftFeasible = (dateKey = getDailyDateKey()) => {
-  const slots = generateDailyDraftSlots(dateKey);
+export const assertDailyDraftFeasible = (
+  dateKey = getDailyDateKey(),
+  mode: DailyDraftMode = "basic",
+) => {
+  const slots = generateDailyDraftSlots(dateKey, mode);
 
   return validateDraftSlotsFeasible(canonicalPlayers, slots);
 };

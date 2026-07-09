@@ -1,4 +1,8 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import {
+  isValidStoredLineupIds,
+  parseStoredLineupJson,
+} from "../lib/storedLineups";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -23,6 +27,18 @@ interface MatchResultBody {
   opponentScore?: unknown;
 }
 
+const ownerResultFromChallengerWin = (challengerWon: unknown) => {
+  if (challengerWon === true) {
+    return "loss";
+  }
+
+  if (challengerWon === false) {
+    return "win";
+  }
+
+  return "tie";
+};
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: MatchResultBody;
 
@@ -43,6 +59,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.challengerTeamName === "string"
       ? body.challengerTeamName.trim().slice(0, 32)
       : "";
+  const challengerElo = Number(body.challengerElo ?? 500);
+  const userScore = Number(body.userScore ?? 0);
+  const opponentScore = Number(body.opponentScore ?? 0);
 
   if (!mode) {
     return json({ error: "mode must be classic or ranked" }, 400);
@@ -53,6 +72,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { error: "storedLineupId, challengerPlayerId, and challengerTeamName are required" },
       400,
     );
+  }
+
+  if (!Number.isFinite(challengerElo)) {
+    return json({ error: "challengerElo must be a number" }, 400);
   }
 
   const db = context.env.DB;
@@ -77,15 +100,46 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ ok: true, duplicate: true });
   }
 
+  const ownerLineup = parseStoredLineupJson(lineup.lineup_json);
+
+  if (!isValidStoredLineupIds(ownerLineup)) {
+    return json({ error: "stored lineup is invalid" }, 400);
+  }
+
   const now = new Date().toISOString();
+  const ownerResult = ownerResultFromChallengerWin(body.challengerWon);
 
   await db
     .prepare(
       `UPDATE stored_lineups
        SET consumed_at = ?, consumed_by = ?
-       WHERE id = ?`,
+       WHERE id = ? AND consumed_at IS NULL`,
     )
     .bind(now, challengerPlayerId, lineup.id)
+    .run();
+
+  await db
+    .prepare(
+      `INSERT INTO owner_match_results (
+        id, lineup_id, owner_player_id, mode,
+        owner_result, opponent_team_name, opponent_elo,
+        owner_lineup_json, owner_score, opponent_score,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      crypto.randomUUID(),
+      lineup.id,
+      lineup.player_id,
+      mode,
+      ownerResult,
+      challengerTeamName,
+      Math.round(challengerElo),
+      lineup.lineup_json,
+      Number.isFinite(opponentScore) ? Math.round(opponentScore) : 0,
+      Number.isFinite(userScore) ? Math.round(userScore) : 0,
+      now,
+    )
     .run();
 
   return json({ ok: true, consumed: true }, 201);

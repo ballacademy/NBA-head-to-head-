@@ -1,36 +1,21 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
-  loadLeaderboardEntries,
-  upsertLeaderboardEntry,
-} from "./leaderboard";
-import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
-import { applyRankedMatchResult } from "./rankedProfile";
-import { RANKED_STARTING_ELO } from "./rankedElo";
-import { getOrCreatePlayerIdentity } from "./playerIdentity";
+  persistClassicLeaderboardOutcome,
+  persistRankedOutcome,
+  type PersistedRankedOutcome,
+} from "./matchOutcomePersistence";
 import {
   applyHeadToHeadResultToStats,
-  buildLeaderboardIdentity,
   loadPlayerRecord,
   recordMatchResult,
   type HeadToHeadResult,
   type MatchRecordMode,
   type PlayerRecord,
 } from "./playerRecord";
+import { RANKED_STARTING_ELO } from "./rankedElo";
 import type { TeamProfile } from "./teamProfile";
 
-export interface RankedMatchOutcome {
-  delta: number;
-  elo: number;
-  tierLabel: string;
-  opponentElo: number;
-}
-
-export interface ClassicMatchOutcome {
-  delta: number;
-  elo: number;
-  tierLabel: string;
-  opponentElo: number;
-}
+export type RankedMatchOutcome = PersistedRankedOutcome;
 
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
@@ -38,7 +23,6 @@ const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
 interface CachedMatchOutcome {
   matchId: string;
   ranked?: RankedMatchOutcome;
-  classic?: ClassicMatchOutcome;
 }
 
 export const projectRecordAfterMatch = (
@@ -56,7 +40,7 @@ export const persistMatchOutcome = (
   matchId: string,
   mode: MatchRecordMode = "headToHead",
   options: { opponentElo?: number } = {},
-): { record: PlayerRecord; ranked?: RankedMatchOutcome; classic?: ClassicMatchOutcome } => {
+): { record: PlayerRecord; ranked?: RankedMatchOutcome } => {
   const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
 
   if (lastRecorded?.matchId === matchId) {
@@ -65,7 +49,6 @@ export const persistMatchOutcome = (
     return {
       record: loadPlayerRecord(mode),
       ranked: cached?.matchId === matchId ? cached.ranked : undefined,
-      classic: cached?.matchId === matchId ? cached.classic : undefined,
     };
   }
 
@@ -73,43 +56,16 @@ export const persistMatchOutcome = (
   let ranked: RankedMatchOutcome | undefined;
 
   if (mode === "headToHead") {
-    const existingEntry = loadLeaderboardEntries().find(
-      (entry) => entry.playerId === record.playerId,
-    );
-
-    upsertLeaderboardEntry({
-      ...buildLeaderboardIdentity(team, record),
-      elo: existingEntry?.elo ?? RANKED_STARTING_ELO,
-    });
+    persistClassicLeaderboardOutcome(result, team, record);
   }
 
   if (mode === "ranked") {
-    const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
-    const rankedResult = applyRankedMatchResult({
+    ranked = persistRankedOutcome(
       result,
-      opponentElo,
-      winStreak: record.winStreak,
-      lossStreak: record.lossStreak,
-    });
-
-    upsertRankedLeaderboardEntry({
-      playerId: record.playerId,
-      name: team.name,
-      publicTag: getOrCreatePlayerIdentity().publicTag,
-      elo: rankedResult.profile.elo,
-      wins: record.wins,
-      losses: record.losses,
-      winStreak: record.winStreak,
-      lossStreak: record.lossStreak,
-      isNpc: false,
-    });
-
-    ranked = {
-      delta: rankedResult.delta,
-      elo: rankedResult.profile.elo,
-      tierLabel: rankedResult.profile.tier.label,
-      opponentElo: rankedResult.opponentElo,
-    };
+      team,
+      record,
+      options.opponentElo ?? RANKED_STARTING_ELO,
+    );
   }
 
   writeJson(LAST_RECORDED_MATCH_KEY, { matchId });

@@ -202,6 +202,7 @@ export const createLiveOpponent = (
     lineup: [],
     isLiveOpponent: true,
     liveMatchId: live.matchId,
+    liveOpponentPlayerId: live.playerId,
     salaryCapMode: options.salaryCapMode,
     salaryCapLimit: options.salaryCapMode
       ? RANKED_SALARY_CAP

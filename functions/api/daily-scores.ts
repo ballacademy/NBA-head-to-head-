@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { parseDailyLineupJson, parseDailyMode } from "../lib/dailyScoresDb";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -18,6 +19,8 @@ const parseDateKey = (value: string | null) =>
 const parseGoalId = (value: string | null) =>
   value && GOAL_ID_PATTERN.test(value) ? value : null;
 
+const parseMode = parseDailyMode;
+
 const parsePlayerId = (value: unknown) =>
   typeof value === "string" && value.trim().length > 0
     ? value.trim().slice(0, 128)
@@ -26,6 +29,7 @@ const parsePlayerId = (value: unknown) =>
 interface DailyScoreBody {
   dateKey?: unknown;
   goalId?: unknown;
+  mode?: unknown;
   playerId?: unknown;
   teamName?: unknown;
   value?: unknown;
@@ -36,6 +40,7 @@ interface DailyScoreBody {
 interface DailyScoreRow {
   date_key: string;
   goal_id: string;
+  mode: string;
   player_id: string;
   team_name: string;
   value: number;
@@ -44,20 +49,32 @@ interface DailyScoreRow {
   submitted_at: string;
 }
 
-const rowToEntry = (row: DailyScoreRow) => ({
-  playerId: row.player_id,
-  goalId: row.goal_id,
-  value: row.value,
-  formattedResult: row.formatted_result,
-  lineup: JSON.parse(row.lineup_json) as string[],
-  teamName: row.team_name,
-  submittedAt: row.submitted_at,
-});
+const parseLineupJson = parseDailyLineupJson;
+
+const rowToEntry = (row: DailyScoreRow) => {
+  const lineup = parseLineupJson(row.lineup_json);
+
+  if (!lineup) {
+    return null;
+  }
+
+  return {
+    playerId: row.player_id,
+    goalId: row.goal_id,
+    mode: parseMode(row.mode),
+    value: row.value,
+    formattedResult: row.formatted_result,
+    lineup,
+    teamName: row.team_name,
+    submittedAt: row.submitted_at,
+  };
+};
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const dateKey = parseDateKey(url.searchParams.get("dateKey"));
   const goalId = parseGoalId(url.searchParams.get("goalId"));
+  const mode = parseMode(url.searchParams.get("mode"));
   const playerId = parsePlayerId(url.searchParams.get("playerId"));
 
   if (!dateKey || !goalId) {
@@ -71,26 +88,26 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         .prepare(
           `SELECT value
            FROM daily_draft_scores
-           WHERE date_key = ? AND goal_id = ? AND player_id != ?`,
+           WHERE date_key = ? AND goal_id = ? AND mode = ? AND player_id != ?`,
         )
-        .bind(dateKey, goalId, playerId)
+        .bind(dateKey, goalId, mode, playerId)
         .all<{ value: number }>()
     : await db
         .prepare(
           `SELECT value
            FROM daily_draft_scores
-           WHERE date_key = ? AND goal_id = ?`,
+           WHERE date_key = ? AND goal_id = ? AND mode = ?`,
         )
-        .bind(dateKey, goalId)
+        .bind(dateKey, goalId, mode)
         .all<{ value: number }>();
 
   const countRow = await db
     .prepare(
       `SELECT COUNT(*) AS total
        FROM daily_draft_scores
-       WHERE date_key = ? AND goal_id = ?`,
+       WHERE date_key = ? AND goal_id = ? AND mode = ?`,
     )
-    .bind(dateKey, goalId)
+    .bind(dateKey, goalId, mode)
     .first<{ total: number }>();
 
   let entry = null;
@@ -98,11 +115,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   if (playerId) {
     const playerRow = await db
       .prepare(
-        `SELECT date_key, goal_id, player_id, team_name, value, formatted_result, lineup_json, submitted_at
+        `SELECT date_key, goal_id, mode, player_id, team_name, value, formatted_result, lineup_json, submitted_at
          FROM daily_draft_scores
-         WHERE date_key = ? AND goal_id = ? AND player_id = ?`,
+         WHERE date_key = ? AND goal_id = ? AND mode = ? AND player_id = ?`,
       )
-      .bind(dateKey, goalId, playerId)
+      .bind(dateKey, goalId, mode, playerId)
       .first<DailyScoreRow>();
 
     entry = playerRow ? rowToEntry(playerRow) : null;
@@ -111,6 +128,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   return json({
     dateKey,
     goalId,
+    mode,
     values: (valueRows.results ?? []).map((row) => row.value),
     totalDrafters: countRow?.total ?? 0,
     entry,
@@ -130,6 +148,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.dateKey === "string" ? body.dateKey : null,
   );
   const goalId = parseGoalId(typeof body.goalId === "string" ? body.goalId : null);
+  const mode = parseMode(typeof body.mode === "string" ? body.mode : null);
   const playerId = parsePlayerId(body.playerId);
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
@@ -165,9 +184,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   await context.env.DB.prepare(
     `INSERT INTO daily_draft_scores (
-      date_key, goal_id, player_id, team_name, value, formatted_result, lineup_json, submitted_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      date_key, goal_id, mode, player_id, team_name, value, formatted_result, lineup_json, submitted_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(date_key, goal_id, player_id) DO UPDATE SET
+      mode = excluded.mode,
       team_name = excluded.team_name,
       value = excluded.value,
       formatted_result = excluded.formatted_result,
@@ -177,6 +197,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(
       dateKey,
       goalId,
+      mode,
       playerId,
       teamName,
       value,
@@ -190,9 +211,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     {
       dateKey,
       goalId,
+      mode,
       entry: {
         playerId,
         goalId,
+        mode,
         value,
         formattedResult,
         lineup,

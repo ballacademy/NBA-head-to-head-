@@ -200,10 +200,12 @@ export const refreshDailyDraftScoresFromApi = async (
   dateKey: string,
   goalId: string,
   playerId = getOrCreatePlayerId(),
+  mode = "basic",
 ) => {
   const remote = await fetchRemoteDailyDraftScores({
     dateKey,
     goalId,
+    mode,
     playerId,
   });
 
@@ -288,13 +290,14 @@ export const submitDailyDraftScore = async (
   await submitRemoteDailyDraftScore({
     dateKey,
     goalId: goal.id,
+    mode: goal.mode,
     playerId,
     teamName,
     value,
     formattedResult,
     lineup,
   });
-  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId);
+  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId, goal.mode);
 
   const percentileResult = getDailyDraftPercentile(
     dateKey,
@@ -338,7 +341,7 @@ export const loadReviewDailyDraftPercentile = async (
     return null;
   }
 
-  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId);
+  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId, goal.mode);
 
   return resolvePlayerDailyDraftPercentile(
     dateKey,

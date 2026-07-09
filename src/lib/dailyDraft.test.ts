@@ -43,6 +43,14 @@ describe("dailyDraft", () => {
     expect(firstDay).not.toEqual(secondDay);
   });
 
+  it("uses different draft slots for basic and advanced modes", () => {
+    const dateKey = "2026-06-15";
+
+    expect(generateDailyDraftSlots(dateKey, "basic")).not.toEqual(
+      generateDailyDraftSlots(dateKey, "advanced"),
+    );
+  });
+
   it("uses a stat goal instead of a player pool filter", () => {
     const goal = getDailyChallenge("2026-06-15");
 

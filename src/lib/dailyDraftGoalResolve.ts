@@ -40,7 +40,7 @@ export const getCanonicalDailyDraftSetup = (
   mode: DailyDraftMode = "basic",
 ) => {
   const goal = resolveCanonicalDailyGoalForDate(dateKey, mode);
-  const slots = generateDailyDraftSlots(dateKey);
+  const slots = generateDailyDraftSlots(dateKey, mode);
 
   return {
     dateKey,
@@ -62,7 +62,7 @@ export const getResolvedDailyDraftSetup = (
   mode: DailyDraftMode = "basic",
 ) => {
   const goal = resolveDailyGoalForDate(dateKey, playerId, mode);
-  const slots = generateDailyDraftSlots(dateKey);
+  const slots = generateDailyDraftSlots(dateKey, mode);
 
   return {
     dateKey,
