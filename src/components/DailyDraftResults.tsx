@@ -22,6 +22,10 @@ import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
 import { formatDailyDateLabel } from "../lib/dailyDraft";
+import {
+  formatDailyDraftPlayStreak,
+  getDailyDraftPlayStreak,
+} from "../lib/dailyDraftPlayStreak";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 
@@ -199,6 +203,12 @@ export function DailyDraftResults({
       : copyState === "error"
         ? "Copy failed — try again"
         : "Copy share text";
+  const playStreak = optimalReview
+    ? null
+    : getDailyDraftPlayStreak(
+        user.dailyDraftMode ?? dailyGoal.mode,
+        dailyDateKey,
+      );
 
   return (
     <section
@@ -235,6 +245,15 @@ export function DailyDraftResults({
             <span>
               Compared to {percentileResult.sampleSize.toLocaleString()} scores
               today
+            </span>
+          </p>
+        ) : null}
+        {playStreak && playStreak.current > 0 ? (
+          <p className="daily-draft-results__streak">
+            {formatDailyDraftPlayStreak(playStreak)}
+            <span>
+              {formatDailyDraftModeLabel(user.dailyDraftMode ?? dailyGoal.mode)}{" "}
+              days in a row
             </span>
           </p>
         ) : null}

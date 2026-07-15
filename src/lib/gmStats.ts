@@ -1,4 +1,9 @@
 import { summarizePlayerDailyDraftHistory } from "./dailyDraftScores";
+import {
+  formatDailyDraftPlayStreak,
+  getDailyDraftPlayStreak,
+} from "./dailyDraftPlayStreak";
+import { getDailyDateKey } from "./dailyDraft";
 import { getCollectionProgress } from "./playerCollection";
 import {
   formatPlayerRecord,
@@ -28,6 +33,10 @@ export interface GmDailyDraftStats {
   bestPercentile: number | null;
   averagePercentile: number | null;
   latestResult: string | null;
+  basicStreak: number;
+  advancedStreak: number;
+  basicStreakLabel: string;
+  advancedStreakLabel: string;
 }
 
 export interface GmStatsSnapshot {
@@ -43,7 +52,20 @@ export interface GmStatsSnapshot {
   currentSeasonLabel: string;
 }
 
-const summarizeDailyDraftStats = () => summarizePlayerDailyDraftHistory();
+const summarizeDailyDraftStats = (): GmDailyDraftStats => {
+  const summary = summarizePlayerDailyDraftHistory();
+  const asOf = getDailyDateKey();
+  const basic = getDailyDraftPlayStreak("basic", asOf);
+  const advanced = getDailyDraftPlayStreak("advanced", asOf);
+
+  return {
+    ...summary,
+    basicStreak: basic.current,
+    advancedStreak: advanced.current,
+    basicStreakLabel: formatDailyDraftPlayStreak(basic),
+    advancedStreakLabel: formatDailyDraftPlayStreak(advanced),
+  };
+};
 
 export const buildLocalGmStatsSnapshot = (
   teamName: string,

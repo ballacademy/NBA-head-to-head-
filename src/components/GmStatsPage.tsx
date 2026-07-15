@@ -121,6 +121,8 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         <h2>Daily draft</h2>
         <ul className="gm-stats-page__list">
           <li>Days played: {snapshot.dailyDraft.daysPlayed}</li>
+          <li>Basic streak: {snapshot.dailyDraft.basicStreakLabel}</li>
+          <li>Advanced streak: {snapshot.dailyDraft.advancedStreakLabel}</li>
           <li>
             Best percentile:{" "}
             {snapshot.dailyDraft.bestPercentile != null

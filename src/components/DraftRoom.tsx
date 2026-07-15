@@ -32,6 +32,11 @@ import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
+import {
+  formatDailyDraftPlayStreak,
+  getDailyDraftPlayStreak,
+} from "../lib/dailyDraftPlayStreak";
+import { getDailyDateKey } from "../lib/dailyDraft";
 
 interface DraftRoomProps {
   drafter: Drafter;
@@ -69,6 +74,12 @@ export function DraftRoom({
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
   const isPracticeMode = Boolean(drafter.practiceMode);
+  const dailyPlayStreak = isDailyDraft
+    ? getDailyDraftPlayStreak(
+        drafter.dailyDraftMode ?? "basic",
+        getDailyDateKey(),
+      )
+    : null;
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
     [players],
@@ -288,11 +299,25 @@ export function DraftRoom({
 
       <div className="draft-page-header">
         <p className="eyebrow">
-          <TeamNameWithStreak
-            name={drafter.name}
-            winStreak={isPracticeMode ? 0 : playerRecord.winStreak}
-            lossStreak={isPracticeMode ? 0 : playerRecord.lossStreak}
-          />
+          {isDailyDraft ? (
+            <span className="team-name-with-streak">
+              <span className="team-name-with-streak__name">{drafter.name}</span>
+              {dailyPlayStreak && dailyPlayStreak.current > 0 ? (
+                <span
+                  className="daily-draft-play-streak"
+                  title={`${formatDailyDraftModeLabel(drafter.dailyDraftMode ?? "basic")} consecutive days played`}
+                >
+                  {formatDailyDraftPlayStreak(dailyPlayStreak)}
+                </span>
+              ) : null}
+            </span>
+          ) : (
+            <TeamNameWithStreak
+              name={drafter.name}
+              winStreak={isPracticeMode ? 0 : playerRecord.winStreak}
+              lossStreak={isPracticeMode ? 0 : playerRecord.lossStreak}
+            />
+          )}
         </p>
       </div>
 
