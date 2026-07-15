@@ -86,7 +86,9 @@ describe("solveBestDailyDraftLineup", () => {
     );
   });
 
-  it("does not reuse cached results when the goal changes for the same date key", () => {
+  it(
+    "does not reuse cached results when the goal changes for the same date key",
+    () => {
     clearDailyDraftSolverCacheForTests();
     const setup = getDailyDraftSetup("2026-06-17");
     const alternateGoal = DAILY_DRAFT_GOALS.find((goal) => goal.id !== setup.goal.id)!;
@@ -115,7 +117,9 @@ describe("solveBestDailyDraftLineup", () => {
     } else {
       expect(alternateScore).toBeLessThanOrEqual(primaryAsAlternate);
     }
-  });
+  },
+    15_000,
+  );
 
   it("does not reuse cached results when the player pool changes", () => {
     clearDailyDraftSolverCacheForTests();

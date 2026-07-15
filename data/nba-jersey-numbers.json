@@ -1,7 +1,7 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-07T02:55:12.325482+00:00",
+  "generatedAt": "2026-07-15T02:52:19.671842+00:00",
   "playerCount": 603,
   "byPlayerId": {
     "alexani01": {
@@ -201,7 +201,7 @@
     },
     "willizi02": {
       "jerseyNumber": 1,
-      "team": "BRK",
+      "team": "LAL",
       "name": "Ziaire Williams"
     },
     "traorno01": {
@@ -336,7 +336,7 @@
     },
     "gueyemo01": {
       "jerseyNumber": 16,
-      "team": "CHI",
+      "team": "CHO",
       "name": "Mouhamadou Gueye"
     },
     "essenno01": {
@@ -481,7 +481,7 @@
     },
     "nancela02": {
       "jerseyNumber": 22,
-      "team": "CLE",
+      "team": "IND",
       "name": "Larry Nance Jr."
     },
     "schrode01": {
@@ -576,7 +576,7 @@
     },
     "middlkh01": {
       "jerseyNumber": 20,
-      "team": "DAL",
+      "team": "WAS",
       "name": "Khris Middleton"
     },
     "johnsaj01": {
@@ -741,7 +741,7 @@
     },
     "leverca01": {
       "jerseyNumber": 8,
-      "team": "DET",
+      "team": "MIL",
       "name": "Caris LeVert"
     },
     "stewais01": {
@@ -751,7 +751,7 @@
     },
     "sassema01": {
       "jerseyNumber": 25,
-      "team": "DET",
+      "team": "DAL",
       "name": "Marcus Sasser"
     },
     "laniech01": {
@@ -806,7 +806,7 @@
     },
     "postqu01": {
       "jerseyNumber": 21,
-      "team": "GSW",
+      "team": "MEM",
       "name": "Quinten Post"
     },
     "spencpa01": {
@@ -986,7 +986,7 @@
     },
     "pottemi01": {
       "jerseyNumber": 11,
-      "team": "IND",
+      "team": "POR",
       "name": "Micah Potter"
     },
     "nesmiaa01": {
@@ -1056,7 +1056,7 @@
     },
     "leonaka01": {
       "jerseyNumber": 2,
-      "team": "TOR",
+      "team": "LAC",
       "name": "Kawhi Leonard"
     },
     "millejo02": {
@@ -1411,7 +1411,7 @@
     },
     "harriga01": {
       "jerseyNumber": 11,
-      "team": "MIL",
+      "team": "DET",
       "name": "Gary Harris"
     },
     "jacksan01": {
@@ -1446,7 +1446,7 @@
     },
     "princta02": {
       "jerseyNumber": 12,
-      "team": "MIL",
+      "team": "DET",
       "name": "Taurean Prince"
     },
     "ryanco01": {
@@ -1611,7 +1611,7 @@
     },
     "looneke01": {
       "jerseyNumber": 55,
-      "team": "NOP",
+      "team": "LAL",
       "name": "Kevon Looney"
     },
     "murrade01": {
@@ -1751,7 +1751,7 @@
     },
     "wiggiaa01": {
       "jerseyNumber": 21,
-      "team": "OKC",
+      "team": "ATL",
       "name": "Aaron Wiggins"
     },
     "willija07": {
@@ -2346,12 +2346,12 @@
     },
     "ingrabr01": {
       "jerseyNumber": 3,
-      "team": "LAC",
+      "team": "TOR",
       "name": "Brandon Ingram"
     },
     "dickgr01": {
       "jerseyNumber": 1,
-      "team": "LAC",
+      "team": "TOR",
       "name": "Gradey Dick"
     },
     "walteja01": {
@@ -2386,7 +2386,7 @@
     },
     "mogbojo01": {
       "jerseyNumber": 2,
-      "team": "TOR",
+      "team": "SAC",
       "name": "Jonathan Mogbo"
     },
     "lawsoaj01": {
@@ -2471,7 +2471,7 @@
     },
     "harklej01": {
       "jerseyNumber": 16,
-      "team": "UTA",
+      "team": "DET",
       "name": "Elijah Harkless"
     },
     "konchjo01": {
@@ -2666,7 +2666,7 @@
     },
     "russeda01": {
       "jerseyNumber": 0,
-      "team": "WAS",
+      "team": "MEM",
       "name": "D'Angelo Russell"
     },
     "okanito01": {
@@ -2896,7 +2896,7 @@
     },
     "bambamo01": {
       "jerseyNumber": 0,
-      "team": "FA",
+      "team": "UTA",
       "name": "Mo Bamba"
     },
     "houstca01": {
@@ -3297,7 +3297,7 @@
     {
       "bbrPlayerId": "willizi02",
       "name": "Ziaire Williams",
-      "team": "BRK",
+      "team": "LAL",
       "jerseyNumber": 1,
       "position": "SF"
     },
@@ -3486,7 +3486,7 @@
     {
       "bbrPlayerId": "gueyemo01",
       "name": "Mouhamadou Gueye",
-      "team": "CHI",
+      "team": "CHO",
       "jerseyNumber": 16,
       "position": "PF"
     },
@@ -3689,7 +3689,7 @@
     {
       "bbrPlayerId": "nancela02",
       "name": "Larry Nance Jr.",
-      "team": "CLE",
+      "team": "IND",
       "jerseyNumber": 22,
       "position": "PF"
     },
@@ -3822,7 +3822,7 @@
     {
       "bbrPlayerId": "middlkh01",
       "name": "Khris Middleton",
-      "team": "DAL",
+      "team": "WAS",
       "jerseyNumber": 20,
       "position": "SF"
     },
@@ -4053,7 +4053,7 @@
     {
       "bbrPlayerId": "leverca01",
       "name": "Caris LeVert",
-      "team": "DET",
+      "team": "MIL",
       "jerseyNumber": 8,
       "position": "SG"
     },
@@ -4067,7 +4067,7 @@
     {
       "bbrPlayerId": "sassema01",
       "name": "Marcus Sasser",
-      "team": "DET",
+      "team": "DAL",
       "jerseyNumber": 25,
       "position": "PG"
     },
@@ -4144,7 +4144,7 @@
     {
       "bbrPlayerId": "postqu01",
       "name": "Quinten Post",
-      "team": "GSW",
+      "team": "MEM",
       "jerseyNumber": 21,
       "position": "PF"
     },
@@ -4396,7 +4396,7 @@
     {
       "bbrPlayerId": "pottemi01",
       "name": "Micah Potter",
-      "team": "IND",
+      "team": "POR",
       "jerseyNumber": 11,
       "position": "C"
     },
@@ -4494,7 +4494,7 @@
     {
       "bbrPlayerId": "leonaka01",
       "name": "Kawhi Leonard",
-      "team": "TOR",
+      "team": "LAC",
       "jerseyNumber": 2,
       "position": "SF"
     },
@@ -4991,7 +4991,7 @@
     {
       "bbrPlayerId": "harriga01",
       "name": "Gary Harris",
-      "team": "MIL",
+      "team": "DET",
       "jerseyNumber": 11,
       "position": "SG"
     },
@@ -5040,7 +5040,7 @@
     {
       "bbrPlayerId": "princta02",
       "name": "Taurean Prince",
-      "team": "MIL",
+      "team": "DET",
       "jerseyNumber": 12,
       "position": "SF"
     },
@@ -5271,7 +5271,7 @@
     {
       "bbrPlayerId": "looneke01",
       "name": "Kevon Looney",
-      "team": "NOP",
+      "team": "LAL",
       "jerseyNumber": 55,
       "position": "C"
     },
@@ -6300,14 +6300,14 @@
     {
       "bbrPlayerId": "ingrabr01",
       "name": "Brandon Ingram",
-      "team": "LAC",
+      "team": "TOR",
       "jerseyNumber": 3,
       "position": "SF"
     },
     {
       "bbrPlayerId": "dickgr01",
       "name": "Gradey Dick",
-      "team": "LAC",
+      "team": "TOR",
       "jerseyNumber": 1,
       "position": "SG"
     },
@@ -6356,7 +6356,7 @@
     {
       "bbrPlayerId": "mogbojo01",
       "name": "Jonathan Mogbo",
-      "team": "TOR",
+      "team": "SAC",
       "jerseyNumber": 2,
       "position": "PF"
     },
@@ -6475,7 +6475,7 @@
     {
       "bbrPlayerId": "harklej01",
       "name": "Elijah Harkless",
-      "team": "UTA",
+      "team": "DET",
       "jerseyNumber": 16,
       "position": "SG"
     },
@@ -6634,6 +6634,6 @@
       "position": "PG"
     }
   ],
-  "updatedAt": "2026-07-07T02:56:25.788070+00:00",
+  "updatedAt": "2026-07-15T02:54:19.234611+00:00",
   "rosterSource": "espn"
 }

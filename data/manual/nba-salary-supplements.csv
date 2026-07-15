@@ -1,7 +1,7 @@
 bbr_player_id,name,salary_usd,notes
 hardati02,Tim Hardaway Jr.,6500000,1-year $6.5M (MLE)
 porzikr01,Kristaps Porzingis,20000000,2-year $40M extension (GSW)
-huertke01,Kevin Huerter,9000000,3-year $27M return (DET)
+huertke01,Kevin Huerter,8333333,3-year $27M return (Y1 $8.333M)
 shamela01,Landry Shamet,6000000,4-year $24M deal (NYK)
 nurkiju01,Jusuf Nurkic,11000000,2-year $22M deal (UTA)
 harpero02,Ron Harper Jr.,3000000,3-year $9M deal (BOS)
@@ -28,7 +28,7 @@ wadede01,Dean Wade,9750000,4-year $39M (NTMLE)
 elliske01,Keon Ellis,9000000,2-year $18M (mutual option)
 simonan01,Anfernee Simons,6150000,2-year $12.3M (player option Y2)
 willike04,Kenrich Williams,5000000,1-year $5M after declined option
-kennaky01,Luke Kennard,6500000,2-year $13M (player option Y2)
+kennalu01,Luke Kennard,6500000,2-year $13M (player option Y2)
 isaacjo01,Jonathan Isaac,3876529,1-year veteran minimum return to ORL
 drumman01,Andre Drummond,3900000,1-year $3.9M veteran minimum
 easonta01,Tari Eason,16300000,5-year $81.5M extension
@@ -46,3 +46,20 @@ martial01,Alijah Martin,2400000,2-year $4.8M return
 carteje01,Jevon Carter,3500000,1-year $3.5M return
 loveca01,Caleb Love,559782,Two-way contract
 ruperra01,Rayan Rupert,559782,Two-way contract
+youngtr01,Trae Young,49488300,"4-year $212.8M (player option Y4, 7.5% trade kicker)"
+whiteco01,Coby White,24666667,3-year $74M
+willima07,Mark Williams,12666667,3-year $38M return
+gilleco01,Collin Gillespie,12000000,4-year $48M
+goodwjo01,Jordan Goodwin,6333333,3-year $19M return
+dosunay01,Ayo Dosunmu,22400000,5-year $112M
+clarkja02,Jaylen Clark,3333333,3-year $10M
+barneha02,Harrison Barnes,8000000,1-year $8M return
+hachiru01,Rui Hachimura,14000000,2-year $28M
+middlkh01,Khris Middleton,5866667,3-year $17.6M sign-and-trade from DAL
+postqu01,Quinten Post,10000000,3-year $30M offer sheet (Warriors declined to match)
+nancela02,Larry Nance Jr.,3876529,1-year veteran minimum
+bambamo01,Mo Bamba,2500000,2-year return
+willizi02,Ziaire Williams,3000000,1-year $3M
+bassech01,Charles Bassey,2449142,1-year minimum return
+nancepe01,Pete Nance,2449142,2-year return
+clarkjo01,Jordan Clarkson,2449142,1-year return
