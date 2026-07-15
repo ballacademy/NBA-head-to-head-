@@ -59,25 +59,29 @@ export function PlayerTeamIcon({
             fillRule="evenodd"
           />
           <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
-          <text
-            className={`player-jersey__number${
-              isDoubleDigit ? " player-jersey__number--double" : ""
-            }`}
-            x={JERSEY_CENTER_X}
-            y={JERSEY_NUMBER_Y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            alignmentBaseline="middle"
-            fontSize={numberFontSize}
-            style={{
-              fontSize: numberFontSize,
-              letterSpacing: isDoubleDigit ? "-0.08em" : "0",
-            }}
-            textLength={isDoubleDigit ? JERSEY_NUMBER_MAX_WIDTH : undefined}
-            lengthAdjust={isDoubleDigit ? "spacingAndGlyphs" : undefined}
-          >
-            {numberLabel}
-          </text>
+          {/*
+            Anchor via transform. For double digits, use start anchoring at
+            -maxWidth/2 with textLength=maxWidth — text-anchor="middle" +
+            textLength is mis-centered in Chromium.
+            Avoid CSS letter-spacing on SVG text (also shifts left/right).
+          */}
+          <g transform={`translate(${JERSEY_CENTER_X} ${JERSEY_NUMBER_Y})`}>
+            <text
+              className={`player-jersey__number${
+                isDoubleDigit ? " player-jersey__number--double" : ""
+              }`}
+              x={isDoubleDigit ? -JERSEY_NUMBER_MAX_WIDTH / 2 : 0}
+              y={0}
+              textAnchor={isDoubleDigit ? "start" : "middle"}
+              dominantBaseline="middle"
+              fontSize={numberFontSize}
+              style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
+              textLength={isDoubleDigit ? JERSEY_NUMBER_MAX_WIDTH : undefined}
+              lengthAdjust={isDoubleDigit ? "spacingAndGlyphs" : undefined}
+            >
+              {numberLabel}
+            </text>
+          </g>
         </svg>
       ) : (
         position
