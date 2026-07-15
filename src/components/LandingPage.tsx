@@ -8,6 +8,11 @@ import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import type { DailyDraftMode } from "../lib/dailyDraftMode";
 import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
 import type { LandingDailyDraftSnapshot } from "../lib/landingDailyDraft";
+import {
+  formatDailyDraftPlayStreak,
+  getDailyDraftPlayStreak,
+} from "../lib/dailyDraftPlayStreak";
+import { getDailyDateKey } from "../lib/dailyDraft";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   type ModePlayerRecords,
@@ -290,6 +295,7 @@ export function LandingPage({
   const renderDailyModeSection = (snapshot: LandingDailyDraftSnapshot) => {
     const mode = snapshot.setup.mode;
     const dailyCompleted = Boolean(snapshot.entry);
+    const playStreak = getDailyDraftPlayStreak(mode, getDailyDateKey());
 
     return (
       <section
@@ -324,6 +330,11 @@ export function LandingPage({
             {snapshot.entry
               ? snapshot.percentileLabel ?? "Daily draft complete"
               : "Not played yet today"}
+          </p>
+          <p className="landing-mode-card__record-meta daily-draft-mode-section__streak">
+            {playStreak.current > 0
+              ? formatDailyDraftPlayStreak(playStreak)
+              : "Play today to start a streak"}
           </p>
         </div>
         <div className="daily-draft-mode-section__actions">
@@ -421,7 +432,7 @@ export function LandingPage({
           <ModeCardInfo
             details={[
               "Career wins and losses across every mode.",
-              "Daily draft days played, best percentile, and latest result.",
+              "Daily draft days played, consecutive-day streaks, best percentile, and latest result.",
               "Best monthly leaderboard finish and most banners ever.",
               "Front office rank badges earned from peak banner totals.",
             ]}
