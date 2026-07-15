@@ -109,8 +109,6 @@ const drawJerseyBadge = (
   context.save();
   context.translate(x, y);
   context.scale(scale, scale);
-  // Match SVG optical centering (JERSEY_ARTWORK_TRANSFORM).
-  context.translate(0, -0.35);
 
   context.shadowColor = rgbaFromHex(colors.primary, 0.85);
   context.shadowBlur = 14;
@@ -135,8 +133,8 @@ const drawJerseyBadge = (
   context.font = `900 ${fontSize}px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.lineWidth = 1.2;
-  context.strokeStyle = "rgba(8,8,10,0.65)";
+  context.lineWidth = 0.9;
+  context.strokeStyle = "rgba(8,8,10,0.55)";
   context.fillStyle = "#ffffff";
   if (isDoubleDigit) {
     const measured = context.measureText(number).width;
@@ -239,7 +237,7 @@ const drawPlayerRow = (
   context.stroke();
   context.restore();
 
-  drawJerseyBadge(context, rowX + 18, y + 16, 94, jerseyNumber, colors);
+  drawJerseyBadge(context, rowX + 10, y + 2, 100, jerseyNumber, colors);
 
   context.fillStyle = "#ffffff";
   context.font = `700 30px ${FONT_STACK}`;

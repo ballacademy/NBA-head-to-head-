@@ -5,13 +5,17 @@
  */
 export const JERSEY_VIEWBOX_SIZE = 32;
 export const JERSEY_CENTER_X = 16;
-/** Optical chest center for numbers (between collar and hem). */
-export const JERSEY_NUMBER_Y = 18.6;
+/**
+ * Visual center of the jersey silhouette (strap top ~7.25, hem 27).
+ * Slight bias toward chest so numbers sit in the torso panel, not the neck.
+ */
+export const JERSEY_NUMBER_Y = 17.55;
 /** Usable torso width for jersey numbers inside the silhouette. */
-export const JERSEY_NUMBER_MAX_WIDTH = 11.2;
+export const JERSEY_NUMBER_MAX_WIDTH = 12;
 
+/** Font size in viewBox units; kept modest so CSS-enlarged jerseys grow more than digits. */
 export const getJerseyNumberFontSize = (label: string) =>
-  label.replace(/\D/g, "").length >= 2 ? 8.6 : 11.25;
+  label.replace(/\D/g, "").length >= 2 ? 7.4 : 9.4;
 
 export const JERSEY_BODY_PATH =
   "M6.25 8.5L10.5 7.25L12.5 8.75Q16 10.85 19.5 8.75L21.5 7.25L25.75 8.5" +
@@ -26,6 +30,3 @@ export const JERSEY_COLLAR_PATH = "M12.85 9.05Q16 11.05 19.15 9.05";
 
 export const JERSEY_SILHOUETTE_PATH =
   `${JERSEY_BODY_PATH}${JERSEY_NECK_CUTOUT_PATH}`;
-
-/** Nudge the artwork so the silhouette sits optically centered in the circle. */
-export const JERSEY_ARTWORK_TRANSFORM = "translate(0 -0.35)";
