@@ -4212,13 +4212,16 @@ main {
   padding: 0;
   background: rgba(15, 23, 42, 0.2);
   line-height: 0;
+  font-size: 0;
+  letter-spacing: 0;
+  text-shadow: none;
 }
 
 .player-jersey {
   display: block;
-  width: 98%;
-  height: 98%;
-  margin: 0;
+  width: 86%;
+  height: 86%;
+  margin: auto;
   flex-shrink: 0;
 }
 
@@ -4240,12 +4243,17 @@ main {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-size: 13.5px;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.06em;
   paint-order: stroke;
   stroke: rgba(15, 23, 42, 0.45);
-  stroke-width: 0.5px;
+  stroke-width: 0.45px;
+}
+
+.player-jersey__number--double {
+  letter-spacing: -0.12em;
 }
 
 .player-team-icon__image {

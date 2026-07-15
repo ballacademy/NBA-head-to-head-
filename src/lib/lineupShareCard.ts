@@ -1,7 +1,9 @@
 import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
 import {
+  getJerseyNumberFontSize,
   JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
+  JERSEY_NUMBER_MAX_WIDTH,
   JERSEY_NUMBER_Y,
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
@@ -107,6 +109,8 @@ const drawJerseyBadge = (
   context.save();
   context.translate(x, y);
   context.scale(scale, scale);
+  // Match SVG optical centering (JERSEY_ARTWORK_TRANSFORM).
+  context.translate(0, -0.35);
 
   context.shadowColor = rgbaFromHex(colors.primary, 0.85);
   context.shadowBlur = 14;
@@ -126,15 +130,31 @@ const drawJerseyBadge = (
   context.lineCap = "round";
   context.stroke(collarPath);
 
-  const fontSize = Math.max(9, Math.round(size * 0.12));
+  const fontSize = getJerseyNumberFontSize(number);
+  const isDoubleDigit = number.replace(/\D/g, "").length >= 2;
   context.font = `900 ${fontSize}px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.lineWidth = 1.2;
   context.strokeStyle = "rgba(8,8,10,0.65)";
   context.fillStyle = "#ffffff";
-  context.strokeText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
-  context.fillText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+  if (isDoubleDigit) {
+    const measured = context.measureText(number).width;
+    if (measured > JERSEY_NUMBER_MAX_WIDTH && measured > 0) {
+      context.save();
+      context.translate(JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+      context.scale(JERSEY_NUMBER_MAX_WIDTH / measured, 1);
+      context.strokeText(number, 0, 0);
+      context.fillText(number, 0, 0);
+      context.restore();
+    } else {
+      context.strokeText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+      context.fillText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+    }
+  } else {
+    context.strokeText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+    context.fillText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+  }
 
   context.restore();
 };

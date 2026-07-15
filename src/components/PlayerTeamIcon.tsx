@@ -1,8 +1,11 @@
 import type { CSSProperties } from "react";
 import { formatJerseyNumber } from "../lib/jerseyNumbers";
 import {
+  getJerseyNumberFontSize,
+  JERSEY_ARTWORK_TRANSFORM,
   JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
+  JERSEY_NUMBER_MAX_WIDTH,
   JERSEY_NUMBER_Y,
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
@@ -28,6 +31,8 @@ export function PlayerTeamIcon({
   const colors = getTeamColors(team);
   const numberLabel =
     jerseyNumber === undefined ? "?" : formatJerseyNumber(jerseyNumber);
+  const isDoubleDigit = numberLabel.replace(/\D/g, "").length >= 2;
+  const numberFontSize = getJerseyNumberFontSize(numberLabel);
 
   return (
     <span
@@ -49,21 +54,29 @@ export function PlayerTeamIcon({
           role="img"
           aria-label={`${team} jersey number ${numberLabel}`}
         >
-          <path
-            className="player-jersey__outline"
-            d={JERSEY_SILHOUETTE_PATH}
-            fillRule="evenodd"
-          />
-          <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
-          <text
-            className="player-jersey__number"
-            x={JERSEY_CENTER_X}
-            y={JERSEY_NUMBER_Y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-          >
-            {numberLabel}
-          </text>
+          <g transform={JERSEY_ARTWORK_TRANSFORM}>
+            <path
+              className="player-jersey__outline"
+              d={JERSEY_SILHOUETTE_PATH}
+              fillRule="evenodd"
+            />
+            <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
+            <text
+              className={`player-jersey__number${
+                isDoubleDigit ? " player-jersey__number--double" : ""
+              }`}
+              x={JERSEY_CENTER_X}
+              y={JERSEY_NUMBER_Y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={numberFontSize}
+              style={{ fontSize: numberFontSize }}
+              textLength={isDoubleDigit ? JERSEY_NUMBER_MAX_WIDTH : undefined}
+              lengthAdjust={isDoubleDigit ? "spacingAndGlyphs" : undefined}
+            >
+              {numberLabel}
+            </text>
+          </g>
         </svg>
       ) : (
         position
