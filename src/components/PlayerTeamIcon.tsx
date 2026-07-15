@@ -30,8 +30,12 @@ export function PlayerTeamIcon({
   const colors = getTeamColors(team);
   const numberLabel =
     jerseyNumber === undefined ? "?" : formatJerseyNumber(jerseyNumber);
-  const isDoubleDigit = numberLabel.replace(/\D/g, "").length >= 2;
+  const digits = Array.from(numberLabel);
+  const isMultiDigit = digits.length >= 2;
   const numberFontSize = getJerseyNumberFontSize(numberLabel);
+  const digitSlot = isMultiDigit
+    ? JERSEY_NUMBER_MAX_WIDTH / digits.length
+    : 0;
 
   return (
     <span
@@ -60,27 +64,38 @@ export function PlayerTeamIcon({
           />
           <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
           {/*
-            Anchor via transform. For double digits, use start anchoring at
-            -maxWidth/2 with textLength=maxWidth — text-anchor="middle" +
-            textLength is mis-centered in Chromium.
-            Avoid CSS letter-spacing on SVG text (also shifts left/right).
+            Numbers sit on the vertical centerline. Multi-digit labels use
+            equal mirrored slots so the group stays left/right balanced.
           */}
           <g transform={`translate(${JERSEY_CENTER_X} ${JERSEY_NUMBER_Y})`}>
-            <text
-              className={`player-jersey__number${
-                isDoubleDigit ? " player-jersey__number--double" : ""
-              }`}
-              x={isDoubleDigit ? -JERSEY_NUMBER_MAX_WIDTH / 2 : 0}
-              y={0}
-              textAnchor={isDoubleDigit ? "start" : "middle"}
-              dominantBaseline="middle"
-              fontSize={numberFontSize}
-              style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
-              textLength={isDoubleDigit ? JERSEY_NUMBER_MAX_WIDTH : undefined}
-              lengthAdjust={isDoubleDigit ? "spacingAndGlyphs" : undefined}
-            >
-              {numberLabel}
-            </text>
+            {isMultiDigit ? (
+              digits.map((digit, index) => (
+                <text
+                  key={`${digit}-${index}`}
+                  className="player-jersey__number player-jersey__number--double"
+                  x={-JERSEY_NUMBER_MAX_WIDTH / 2 + digitSlot * (index + 0.5)}
+                  y={0}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={numberFontSize}
+                  style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
+                >
+                  {digit}
+                </text>
+              ))
+            ) : (
+              <text
+                className="player-jersey__number"
+                x={0}
+                y={0}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={numberFontSize}
+                style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
+              >
+                {numberLabel}
+              </text>
+            )}
           </g>
         </svg>
       ) : (
