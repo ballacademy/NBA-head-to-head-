@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-07T02:55:12.303871+00:00",
-  "rosterAsOf": "2026-07-07",
+  "generatedAt": "2026-07-15T02:52:54.607497+00:00",
+  "rosterAsOf": "2026-07-14",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -248,10 +248,10 @@
       "trueShooting": 0.615
     },
     {
-      "id": "leonaka01-tor",
+      "id": "leonaka01-lac",
       "bbrPlayerId": "leonaka01",
       "name": "Kawhi Leonard",
-      "team": "TOR",
+      "team": "LAC",
       "position": "SF",
       "positions": [
         "SF"
@@ -1201,10 +1201,10 @@
       "trueShooting": 0.609
     },
     {
-      "id": "ingrabr01-lac",
+      "id": "ingrabr01-tor",
       "bbrPlayerId": "ingrabr01",
       "name": "Brandon Ingram",
-      "team": "LAC",
+      "team": "TOR",
       "position": "SF",
       "positions": [
         "SF"
@@ -8307,10 +8307,10 @@
       "trueShooting": 0.545
     },
     {
-      "id": "russeda01-was",
+      "id": "russeda01-mem",
       "bbrPlayerId": "russeda01",
       "name": "D'Angelo Russell",
-      "team": "WAS",
+      "team": "MEM",
       "position": "PG",
       "positions": [
         "PG",
@@ -8347,10 +8347,10 @@
       "trueShooting": 0.515
     },
     {
-      "id": "middlkh01-dal",
+      "id": "middlkh01-was",
       "bbrPlayerId": "middlkh01",
       "name": "Khris Middleton",
-      "team": "DAL",
+      "team": "WAS",
       "position": "SF",
       "positions": [
         "SF"
@@ -8425,10 +8425,10 @@
       "trueShooting": 0.67
     },
     {
-      "id": "willizi02-brk",
+      "id": "willizi02-lal",
       "bbrPlayerId": "willizi02",
       "name": "Ziaire Williams",
-      "team": "BRK",
+      "team": "LAL",
       "position": "SF",
       "positions": [
         "SF"
@@ -9015,10 +9015,10 @@
       "trueShooting": 0.615
     },
     {
-      "id": "pottemi01-ind",
+      "id": "pottemi01-por",
       "bbrPlayerId": "pottemi01",
       "name": "Micah Potter",
-      "team": "IND",
+      "team": "POR",
       "position": "C",
       "positions": [
         "C",
@@ -9212,10 +9212,10 @@
       "trueShooting": 0.592
     },
     {
-      "id": "wiggiaa01-okc",
+      "id": "wiggiaa01-atl",
       "bbrPlayerId": "wiggiaa01",
       "name": "Aaron Wiggins",
-      "team": "OKC",
+      "team": "ATL",
       "position": "SG",
       "positions": [
         "SG"
@@ -9760,10 +9760,10 @@
       "trueShooting": 0.587
     },
     {
-      "id": "princta02-mil",
+      "id": "princta02-det",
       "bbrPlayerId": "princta02",
       "name": "Taurean Prince",
-      "team": "MIL",
+      "team": "DET",
       "position": "SF",
       "positions": [
         "SF"
@@ -11527,10 +11527,10 @@
       "lastTeam": "MEM"
     },
     {
-      "id": "gueyemo01-chi",
+      "id": "gueyemo01-cho",
       "bbrPlayerId": "gueyemo01",
       "name": "Mouhamadou Gueye",
-      "team": "CHI",
+      "team": "CHO",
       "position": "PF",
       "positions": [
         "PF"
@@ -11959,10 +11959,10 @@
       "trueShooting": 0.602
     },
     {
-      "id": "postqu01-gsw",
+      "id": "postqu01-mem",
       "bbrPlayerId": "postqu01",
       "name": "Quinten Post",
-      "team": "GSW",
+      "team": "MEM",
       "position": "PF",
       "positions": [
         "PF"
@@ -12393,10 +12393,10 @@
       "lastTeam": "PHI"
     },
     {
-      "id": "leverca01-det",
+      "id": "leverca01-mil",
       "bbrPlayerId": "leverca01",
       "name": "Caris LeVert",
-      "team": "DET",
+      "team": "MIL",
       "position": "SG",
       "positions": [
         "SG"
@@ -13375,10 +13375,10 @@
       "trueShooting": 0.565
     },
     {
-      "id": "harklej01-uta",
+      "id": "harklej01-det",
       "bbrPlayerId": "harklej01",
       "name": "Elijah Harkless",
-      "team": "UTA",
+      "team": "DET",
       "position": "SG",
       "positions": [
         "SG"
@@ -14435,10 +14435,10 @@
       "trueShooting": 0.5
     },
     {
-      "id": "dickgr01-lac",
+      "id": "dickgr01-tor",
       "bbrPlayerId": "dickgr01",
       "name": "Gradey Dick",
-      "team": "LAC",
+      "team": "TOR",
       "position": "SG",
       "positions": [
         "SG"
@@ -16160,10 +16160,10 @@
       "trueShooting": 0.544
     },
     {
-      "id": "sassema01-det",
+      "id": "sassema01-dal",
       "bbrPlayerId": "sassema01",
       "name": "Marcus Sasser",
-      "team": "DET",
+      "team": "DAL",
       "position": "PG",
       "positions": [
         "PG"
@@ -18794,10 +18794,10 @@
       "trueShooting": 0.534
     },
     {
-      "id": "nancela02-cle",
+      "id": "nancela02-ind",
       "bbrPlayerId": "nancela02",
       "name": "Larry Nance Jr.",
-      "team": "CLE",
+      "team": "IND",
       "position": "PF",
       "positions": [
         "PF"
@@ -20489,10 +20489,10 @@
       "trueShooting": 0.563
     },
     {
-      "id": "looneke01-nop",
+      "id": "looneke01-lal",
       "bbrPlayerId": "looneke01",
       "name": "Kevon Looney",
-      "team": "NOP",
+      "team": "LAL",
       "position": "C",
       "positions": [
         "C",
@@ -20607,10 +20607,10 @@
       "trueShooting": 0.729
     },
     {
-      "id": "harriga01-mil",
+      "id": "harriga01-det",
       "bbrPlayerId": "harriga01",
       "name": "Gary Harris",
-      "team": "MIL",
+      "team": "DET",
       "position": "SG",
       "positions": [
         "SG"
@@ -20962,10 +20962,10 @@
       "trueShooting": 0.479
     },
     {
-      "id": "bambamo01-fa",
+      "id": "bambamo01-uta",
       "bbrPlayerId": "bambamo01",
       "name": "Mo Bamba",
-      "team": "FA",
+      "team": "UTA",
       "position": "C",
       "positions": [
         "C",
@@ -22581,10 +22581,10 @@
       "trueShooting": 0.718
     },
     {
-      "id": "mogbojo01-tor",
+      "id": "mogbojo01-sac",
       "bbrPlayerId": "mogbojo01",
       "name": "Jonathan Mogbo",
-      "team": "TOR",
+      "team": "SAC",
       "position": "PF",
       "positions": [
         "PF"
