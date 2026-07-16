@@ -1477,10 +1477,13 @@ main {
 
 .player-pick__identity {
   display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
   flex: 1 1 auto;
+  margin-top: 0;
 }
 
 .player-pick__name {
@@ -3570,8 +3573,8 @@ main {
   }
 
   .player-pick--compact .player-team-icon--jersey {
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
     border: none;
   }
 
@@ -4121,16 +4124,29 @@ main {
 }
 
 .player-stat-line__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   min-width: 0;
 }
 
-.player-stat-line__title-row strong {
+.player-stat-line__title-row strong,
+.player-stat-line__name {
   display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.95rem;
   line-height: 1.2;
+}
+
+.player-stat-line__name .player-stat-line__meta {
+  display: inline;
+  margin-top: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .player-stat-line--compact .player-stat-line__title-row strong {
@@ -4228,14 +4244,19 @@ main {
   text-shadow: none;
 }
 
+.player-pick .player-team-icon--jersey {
+  width: 64px;
+  height: 64px;
+}
+
 .player-stat-line--compact .player-team-icon--jersey {
   width: 42px;
   height: 42px;
 }
 
 .player-pick--compact .player-team-icon--jersey {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   border-width: 0;
 }
 
@@ -4867,11 +4888,28 @@ main {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
-.player-pick span:not(.player-team-icon) {
+/* Legacy catch-all; exclude layout spans so name + team stay on one row. */
+.player-pick > .player-pick__cta,
+.player-pick span.player-pick__cta {
   display: block;
   margin-top: 4px;
+  color: #fb923c;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.player-pick__identity,
+.player-pick__trailing,
+.player-pick__badges,
+.player-pick__team,
+.player-pick__salary {
+  display: inline-flex;
+  margin-top: 0;
+}
+
+.player-pick__team {
+  display: inline;
   color: var(--muted);
-  font-size: 0.92rem;
 }
 
 .player-pick__cta {

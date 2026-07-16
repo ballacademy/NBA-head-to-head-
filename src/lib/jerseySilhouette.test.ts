@@ -5,6 +5,7 @@ import {
   JERSEY_COLLAR_PATH,
   JERSEY_NECK_CUTOUT_PATH,
   JERSEY_NUMBER_MAX_WIDTH,
+  JERSEY_NUMBER_OPTICAL_DX,
   JERSEY_NUMBER_Y,
   JERSEY_SYMMETRY_SAMPLES,
   JERSEY_VIEWBOX_SIZE,
@@ -54,18 +55,11 @@ describe("jerseySilhouette symmetry", () => {
     assertMirrored(JERSEY_COLLAR_PATH, "collar");
   });
 
-  it("places numbers on the symmetry axis inside equal torso slots", () => {
+  it("nudges numbers left of geometric center for optical balance", () => {
     expect(JERSEY_CENTER_X).toBe(16);
     expect(JERSEY_NUMBER_Y).toBeGreaterThan(12);
     expect(JERSEY_NUMBER_Y).toBeLessThan(24);
     expect(JERSEY_NUMBER_MAX_WIDTH).toBeGreaterThan(8);
-    expect(JERSEY_NUMBER_MAX_WIDTH % 1 === 0 || JERSEY_NUMBER_MAX_WIDTH > 0).toBe(
-      true,
-    );
-    // Slot centers for two digits are ±maxWidth/4 from the centerline
-    const slot = JERSEY_NUMBER_MAX_WIDTH / 2;
-    const leftDigit = -JERSEY_NUMBER_MAX_WIDTH / 2 + slot * 0.5;
-    const rightDigit = -JERSEY_NUMBER_MAX_WIDTH / 2 + slot * 1.5;
-    expect(leftDigit).toBeCloseTo(-rightDigit, 8);
+    expect(JERSEY_NUMBER_OPTICAL_DX).toBeLessThan(0);
   });
 });

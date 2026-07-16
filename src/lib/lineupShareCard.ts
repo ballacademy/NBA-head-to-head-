@@ -4,6 +4,7 @@ import {
   JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
   JERSEY_NUMBER_MAX_WIDTH,
+  JERSEY_NUMBER_OPTICAL_DX,
   JERSEY_NUMBER_Y,
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
@@ -129,8 +130,8 @@ const drawJerseyBadge = (
   context.stroke(collarPath);
 
   const fontSize = getJerseyNumberFontSize(number);
-  const digits = Array.from(number);
-  const isDoubleDigit = digits.length >= 2;
+  const isDoubleDigit = number.replace(/\D/g, "").length >= 2;
+  const numberX = JERSEY_CENTER_X + JERSEY_NUMBER_OPTICAL_DX;
   context.font = `900 ${fontSize}px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -138,16 +139,21 @@ const drawJerseyBadge = (
   context.strokeStyle = "rgba(8,8,10,0.55)";
   context.fillStyle = "#ffffff";
   if (isDoubleDigit) {
-    const slot = JERSEY_NUMBER_MAX_WIDTH / digits.length;
-    for (let index = 0; index < digits.length; index += 1) {
-      const digitX =
-        JERSEY_CENTER_X - JERSEY_NUMBER_MAX_WIDTH / 2 + slot * (index + 0.5);
-      context.strokeText(digits[index]!, digitX, JERSEY_NUMBER_Y);
-      context.fillText(digits[index]!, digitX, JERSEY_NUMBER_Y);
+    const measured = context.measureText(number).width;
+    if (measured > JERSEY_NUMBER_MAX_WIDTH && measured > 0) {
+      context.save();
+      context.translate(numberX, JERSEY_NUMBER_Y);
+      context.scale(JERSEY_NUMBER_MAX_WIDTH / measured, 1);
+      context.strokeText(number, 0, 0);
+      context.fillText(number, 0, 0);
+      context.restore();
+    } else {
+      context.strokeText(number, numberX, JERSEY_NUMBER_Y);
+      context.fillText(number, numberX, JERSEY_NUMBER_Y);
     }
   } else {
-    context.strokeText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
-    context.fillText(number, JERSEY_CENTER_X, JERSEY_NUMBER_Y);
+    context.strokeText(number, numberX, JERSEY_NUMBER_Y);
+    context.fillText(number, numberX, JERSEY_NUMBER_Y);
   }
 
   context.restore();
