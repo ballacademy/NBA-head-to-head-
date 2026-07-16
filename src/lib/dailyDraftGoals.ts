@@ -18,7 +18,12 @@ export type BasicDailyGoalStat =
   | "defense"
   | "fieldGoalsAttempted"
   | "threePointersAttempted"
-  | "stocks";
+  | "stocks"
+  | "gamesPlayed"
+  | "personalFouls"
+  | "freeThrowsAttempted"
+  | "midrangeAttempts"
+  | "boxPlus";
 
 export type AdvancedDailyGoalStat =
   | "pointsPerMinute"
@@ -32,7 +37,10 @@ export type AdvancedDailyGoalStat =
   | "threePointAttemptShare"
   | "threePointersAttemptedPerMinute"
   | "fieldGoalsAttemptedPerMinute"
-  | "trueShooting";
+  | "trueShooting"
+  | "creationRate"
+  | "whistleRate"
+  | "highEventRate";
 
 export type DailyGoalStat = BasicDailyGoalStat | AdvancedDailyGoalStat;
 
@@ -137,52 +145,12 @@ const BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     stat: "points",
   },
   {
-    id: "sky-high",
-    title: "Sky High",
-    description: "Draft the tallest lineup by average height.",
-    direction: "higher",
-    aggregation: "average",
-    stat: "heightInches",
-  },
-  {
-    id: "small-ball",
-    title: "Small Ball Revolution",
-    description: "Draft the shortest lineup by average height.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "heightInches",
-  },
-  {
     id: "usage-hogs",
     title: "Usage Hogs",
     description: "Draft the lineup with the highest average usage.",
     direction: "higher",
     aggregation: "average",
     stat: "usage",
-  },
-  {
-    id: "defensive-fortress",
-    title: "Defensive Fortress",
-    description: "Draft the lineup with the highest average defensive grade.",
-    direction: "higher",
-    aggregation: "average",
-    stat: "defense",
-  },
-  {
-    id: "veteran-council",
-    title: "Veteran Council",
-    description: "Draft the oldest lineup by average age.",
-    direction: "higher",
-    aggregation: "average",
-    stat: "age",
-  },
-  {
-    id: "youth-movement",
-    title: "Youth Movement",
-    description: "Draft the youngest lineup by average age.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "age",
   },
   {
     id: "workhorses",
@@ -209,14 +177,6 @@ const BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     stat: "usage",
   },
   {
-    id: "anti-offense",
-    title: "Anti Offense",
-    description: "Draft the lineup with the lowest average points.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "points",
-  },
-  {
     id: "volume-shooter",
     title: "Volume Shooter",
     description: "Draft the lineup with the highest average field goal attempts.",
@@ -233,38 +193,6 @@ const BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     stat: "threePointersAttempted",
   },
   {
-    id: "low-boards",
-    title: "Low Boards",
-    description: "Draft the lineup with the lowest average rebounds.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "rebounds",
-  },
-  {
-    id: "assist-avoiders",
-    title: "Assist Avoiders",
-    description: "Draft the lineup with the lowest average assists.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "assists",
-  },
-  {
-    id: "quiet-hands",
-    title: "Quiet Hands",
-    description: "Draft the lineup with the lowest average steals.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "steals",
-  },
-  {
-    id: "no-rim-protection",
-    title: "No Rim Protection",
-    description: "Draft the lineup with the lowest average blocks.",
-    direction: "lower",
-    aggregation: "average",
-    stat: "blocks",
-  },
-  {
     id: "stocks-market",
     title: "Stocks Market",
     description: "Draft the lineup with the highest average steals plus blocks.",
@@ -273,12 +201,54 @@ const BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     stat: "stocks",
   },
   {
-    id: "defensive-liability",
-    title: "Defensive Liability",
-    description: "Draft the lineup with the lowest average defensive grade.",
+    id: "iron-men",
+    title: "Iron Men",
+    description: "Draft the lineup with the highest average games played.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "gamesPlayed",
+  },
+  {
+    id: "bench-mob",
+    title: "Bench Mob",
+    description: "Draft the lineup with the lowest average minutes.",
     direction: "lower",
     aggregation: "average",
-    stat: "defense",
+    stat: "minutes",
+  },
+  {
+    id: "foul-trouble",
+    title: "Foul Trouble",
+    description: "Draft the lineup with the highest average personal fouls.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "personalFouls",
+  },
+  {
+    id: "free-throw-merchants",
+    title: "Free Throw Merchants",
+    description: "Draft the lineup with the highest average free throw attempts.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "freeThrowsAttempted",
+  },
+  {
+    id: "midrange-museum",
+    title: "Midrange Museum",
+    description:
+      "Draft the lineup with the highest average two-point field goal attempts.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "midrangeAttempts",
+  },
+  {
+    id: "plus-factory",
+    title: "Plus Factory",
+    description:
+      "Draft the lineup with the highest average box-score surplus (PTS+REB+AST+STL+BLK − TOV − PF).",
+    direction: "higher",
+    aggregation: "average",
+    stat: "boxPlus",
   },
 ];
 
@@ -288,14 +258,6 @@ const ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     title: "Per-Minute Scorers",
     description: "Draft the lineup with the highest average points per minute.",
     direction: "higher",
-    aggregation: "average",
-    stat: "pointsPerMinute",
-  },
-  {
-    id: "adv-low-ppm",
-    title: "Low Usage Scorers",
-    description: "Draft the lineup with the lowest average points per minute.",
-    direction: "lower",
     aggregation: "average",
     stat: "pointsPerMinute",
   },
@@ -404,6 +366,135 @@ const ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
     stat: "fieldGoalsAttemptedPerMinute",
   },
   {
+    id: "adv-creation-rate",
+    title: "Creation Rate",
+    description:
+      "Draft the lineup with the highest average points plus assists per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "creationRate",
+  },
+  {
+    id: "adv-whistle-rate",
+    title: "Whistle Rate",
+    description: "Draft the lineup with the highest average free throw attempts per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "whistleRate",
+  },
+  {
+    id: "adv-high-event",
+    title: "High Event",
+    description:
+      "Draft the lineup with the highest average steals, blocks, and turnovers per minute.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "highEventRate",
+  },
+];
+
+/** Removed from rotation but kept so historical daily scores still resolve. */
+const LEGACY_BASIC_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
+  {
+    id: "sky-high",
+    title: "Sky High",
+    description: "Draft the tallest lineup by average height.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "heightInches",
+  },
+  {
+    id: "small-ball",
+    title: "Small Ball Revolution",
+    description: "Draft the shortest lineup by average height.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "heightInches",
+  },
+  {
+    id: "defensive-fortress",
+    title: "Defensive Fortress",
+    description: "Draft the lineup with the highest average defensive grade.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "defense",
+  },
+  {
+    id: "veteran-council",
+    title: "Veteran Council",
+    description: "Draft the oldest lineup by average age.",
+    direction: "higher",
+    aggregation: "average",
+    stat: "age",
+  },
+  {
+    id: "youth-movement",
+    title: "Youth Movement",
+    description: "Draft the youngest lineup by average age.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "age",
+  },
+  {
+    id: "anti-offense",
+    title: "Anti Offense",
+    description: "Draft the lineup with the lowest average points.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "points",
+  },
+  {
+    id: "low-boards",
+    title: "Low Boards",
+    description: "Draft the lineup with the lowest average rebounds.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "rebounds",
+  },
+  {
+    id: "assist-avoiders",
+    title: "Assist Avoiders",
+    description: "Draft the lineup with the lowest average assists.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "assists",
+  },
+  {
+    id: "quiet-hands",
+    title: "Quiet Hands",
+    description: "Draft the lineup with the lowest average steals.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "steals",
+  },
+  {
+    id: "no-rim-protection",
+    title: "No Rim Protection",
+    description: "Draft the lineup with the lowest average blocks.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "blocks",
+  },
+  {
+    id: "defensive-liability",
+    title: "Defensive Liability",
+    description: "Draft the lineup with the lowest average defensive grade.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "defense",
+  },
+];
+
+const LEGACY_ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS: DailyDraftGoalDefinition[] = [
+  {
+    id: "adv-low-ppm",
+    title: "Low Usage Scorers",
+    description: "Draft the lineup with the lowest average points per minute.",
+    direction: "lower",
+    aggregation: "average",
+    stat: "pointsPerMinute",
+  },
+  {
     id: "adv-efficient-minute",
     title: "Efficient Minute",
     description: "Draft the lineup with the highest weighted true shooting.",
@@ -442,11 +533,21 @@ export const ALL_DAILY_DRAFT_GOALS = [
   ...ADVANCED_DAILY_DRAFT_GOALS,
 ];
 
+const LEGACY_DAILY_DRAFT_GOALS = [
+  ...attachDailyDraftMode(LEGACY_BASIC_DAILY_DRAFT_GOAL_DEFINITIONS, "basic"),
+  ...attachDailyDraftMode(LEGACY_ADVANCED_DAILY_DRAFT_GOAL_DEFINITIONS, "advanced"),
+];
+
 export const getDailyDraftGoalsForMode = (mode: DailyDraftMode) =>
   mode === "advanced" ? ADVANCED_DAILY_DRAFT_GOALS : DAILY_DRAFT_GOALS;
 
 export const DAILY_GOAL_REPEAT_WINDOW_DAYS = 28;
 
-const goalsById = new Map(ALL_DAILY_DRAFT_GOALS.map((goal) => [goal.id, goal]));
+const goalsById = new Map(
+  [...ALL_DAILY_DRAFT_GOALS, ...LEGACY_DAILY_DRAFT_GOALS].map((goal) => [
+    goal.id,
+    goal,
+  ]),
+);
 
 export const getDailyGoalById = (goalId: string) => goalsById.get(goalId);

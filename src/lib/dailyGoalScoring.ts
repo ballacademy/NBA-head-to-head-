@@ -22,6 +22,19 @@ const threePointAttemptShare = (player: Player) =>
     ? player.threePointersAttempted / player.fieldGoalsAttempted
     : 0;
 
+const midrangeAttempts = (player: Player) =>
+  Math.max(0, player.fieldGoalsAttempted - player.threePointersAttempted);
+
+/** Box-score surplus used when true on/off plus-minus is unavailable. */
+const boxPlus = (player: Player) =>
+  player.points +
+  player.rebounds +
+  player.assists +
+  player.steals +
+  player.blocks -
+  player.turnovers -
+  player.personalFouls;
+
 const weightedRate = (
   lineup: Player[],
   rate: (player: Player) => number,
@@ -75,6 +88,16 @@ const getStatValue = (player: Player, stat: DailyDraftGoal["stat"]) => {
       return player.threePointersAttempted;
     case "stocks":
       return player.steals + player.blocks;
+    case "gamesPlayed":
+      return player.gamesPlayed;
+    case "personalFouls":
+      return player.personalFouls;
+    case "freeThrowsAttempted":
+      return player.freeThrowsAttempted;
+    case "midrangeAttempts":
+      return midrangeAttempts(player);
+    case "boxPlus":
+      return boxPlus(player);
     case "pointsPerMinute":
       return perMinute(player, player.points);
     case "assistsPerMinute":
@@ -97,6 +120,12 @@ const getStatValue = (player: Player, stat: DailyDraftGoal["stat"]) => {
       return perMinute(player, player.threePointersAttempted);
     case "fieldGoalsAttemptedPerMinute":
       return perMinute(player, player.fieldGoalsAttempted);
+    case "creationRate":
+      return perMinute(player, player.points + player.assists);
+    case "whistleRate":
+      return perMinute(player, player.freeThrowsAttempted);
+    case "highEventRate":
+      return perMinute(player, player.steals + player.blocks + player.turnovers);
     default:
       return 0;
   }
@@ -176,6 +205,16 @@ export const formatPlayerGoalStat = (player: Player, goal: DailyDraftGoal) => {
       return `${value.toFixed(1)} 3PA`;
     case "stocks":
       return `${value.toFixed(1)} stocks`;
+    case "gamesPlayed":
+      return `${Math.round(value)} GP`;
+    case "personalFouls":
+      return `${value.toFixed(1)} PF`;
+    case "freeThrowsAttempted":
+      return `${value.toFixed(1)} FTA`;
+    case "midrangeAttempts":
+      return `${value.toFixed(1)} 2PA`;
+    case "boxPlus":
+      return `${value.toFixed(1)} box+`;
     case "pointsPerMinute":
       return `${value.toFixed(2)} PPM`;
     case "assistsPerMinute":
@@ -198,6 +237,12 @@ export const formatPlayerGoalStat = (player: Player, goal: DailyDraftGoal) => {
       return `${value.toFixed(2)} 3PA/min`;
     case "fieldGoalsAttemptedPerMinute":
       return `${value.toFixed(2)} FGA/min`;
+    case "creationRate":
+      return `${value.toFixed(2)} (PTS+AST)/min`;
+    case "whistleRate":
+      return `${value.toFixed(2)} FTA/min`;
+    case "highEventRate":
+      return `${value.toFixed(2)} events/min`;
     default:
       return value.toFixed(1);
   }
@@ -237,6 +282,16 @@ export const formatGoalResult = (value: number, goal: DailyDraftGoal) => {
       return `${value.toFixed(1)} 3PA`;
     case "stocks":
       return `${value.toFixed(1)} stocks per game`;
+    case "gamesPlayed":
+      return `${value.toFixed(1)} games played`;
+    case "personalFouls":
+      return `${value.toFixed(1)} PF`;
+    case "freeThrowsAttempted":
+      return `${value.toFixed(1)} FTA`;
+    case "midrangeAttempts":
+      return `${value.toFixed(1)} 2PA`;
+    case "boxPlus":
+      return `${value.toFixed(1)} box-score surplus`;
     case "pointsPerMinute":
       return `${value.toFixed(2)} points per minute`;
     case "assistsPerMinute":
@@ -259,6 +314,12 @@ export const formatGoalResult = (value: number, goal: DailyDraftGoal) => {
       return `${value.toFixed(2)} 3PA per minute`;
     case "fieldGoalsAttemptedPerMinute":
       return `${value.toFixed(2)} FGA per minute`;
+    case "creationRate":
+      return `${value.toFixed(2)} points + assists per minute`;
+    case "whistleRate":
+      return `${value.toFixed(2)} FTA per minute`;
+    case "highEventRate":
+      return `${value.toFixed(2)} stocks + turnovers per minute`;
     default:
       return value.toFixed(1);
   }

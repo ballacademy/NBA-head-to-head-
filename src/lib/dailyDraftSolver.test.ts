@@ -124,13 +124,14 @@ describe("solveBestDailyDraftLineup", () => {
   it("does not reuse cached results when the player pool changes", () => {
     clearDailyDraftSolverCacheForTests();
     const setup = getDailyDraftSetup("2026-06-18");
-    const reducedPool = players.slice(0, 120);
     const fullResult = solveBestDailyDraftLineup(
       players,
       setup.slots,
       setup.goal,
       setup.dateKey,
     );
+    const excludedId = fullResult[0]?.id;
+    const reducedPool = players.filter((player) => player.id !== excludedId);
     const reducedResult = solveBestDailyDraftLineup(
       reducedPool,
       setup.slots,
@@ -141,5 +142,6 @@ describe("solveBestDailyDraftLineup", () => {
     expect(reducedResult.map((player) => player.id)).not.toEqual(
       fullResult.map((player) => player.id),
     );
+    expect(reducedResult.some((player) => player.id === excludedId)).toBe(false);
   });
 });
