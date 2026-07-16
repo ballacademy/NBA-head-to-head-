@@ -96,12 +96,18 @@ export const JERSEY_SILHOUETTE_PATH =
  */
 export const JERSEY_NUMBER_Y = 17.55;
 
-/** Total width for multi-digit numbers; digits get equal slots across this span. */
-export const JERSEY_NUMBER_MAX_WIDTH = 10.5;
+/**
+ * Optical left nudge for bold jersey numerals. Heavy weight + stroke makes
+ * digits read right of geometric center without this correction.
+ */
+export const JERSEY_NUMBER_OPTICAL_DX = -0.7;
+
+/** Total width for multi-digit numbers inside the torso. */
+export const JERSEY_NUMBER_MAX_WIDTH = 10;
 
 /** Font size in viewBox units; kept modest so CSS-enlarged jerseys grow more than digits. */
 export const getJerseyNumberFontSize = (label: string) =>
-  label.replace(/\D/g, "").length >= 2 ? 7.6 : 9.6;
+  label.replace(/\D/g, "").length >= 2 ? 7.8 : 9.8;
 
 /** Right-half samples for bilateral symmetry tests. */
 export const JERSEY_SYMMETRY_SAMPLES: Pt[] = [

@@ -5,6 +5,7 @@ import {
   JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
   JERSEY_NUMBER_MAX_WIDTH,
+  JERSEY_NUMBER_OPTICAL_DX,
   JERSEY_NUMBER_Y,
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
@@ -30,12 +31,9 @@ export function PlayerTeamIcon({
   const colors = getTeamColors(team);
   const numberLabel =
     jerseyNumber === undefined ? "?" : formatJerseyNumber(jerseyNumber);
-  const digits = Array.from(numberLabel);
-  const isMultiDigit = digits.length >= 2;
+  const isMultiDigit = numberLabel.replace(/\D/g, "").length >= 2;
   const numberFontSize = getJerseyNumberFontSize(numberLabel);
-  const digitSlot = isMultiDigit
-    ? JERSEY_NUMBER_MAX_WIDTH / digits.length
-    : 0;
+  const numberX = JERSEY_CENTER_X + JERSEY_NUMBER_OPTICAL_DX;
 
   return (
     <span
@@ -64,39 +62,37 @@ export function PlayerTeamIcon({
           />
           <path className="player-jersey__collar" d={JERSEY_COLLAR_PATH} />
           {/*
-            Numbers sit on the vertical centerline. Multi-digit labels use
-            equal mirrored slots so the group stays left/right balanced.
+            Single centered text run (not per-digit slots). Bold system fonts
+            optically sit right of true center, so apply a small left nudge.
+            Multi-digit width is capped with start-anchored textLength.
           */}
-          <g transform={`translate(${JERSEY_CENTER_X} ${JERSEY_NUMBER_Y})`}>
-            {isMultiDigit ? (
-              digits.map((digit, index) => (
-                <text
-                  key={`${digit}-${index}`}
-                  className="player-jersey__number player-jersey__number--double"
-                  x={-JERSEY_NUMBER_MAX_WIDTH / 2 + digitSlot * (index + 0.5)}
-                  y={0}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={numberFontSize}
-                  style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
-                >
-                  {digit}
-                </text>
-              ))
-            ) : (
-              <text
-                className="player-jersey__number"
-                x={0}
-                y={0}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={numberFontSize}
-                style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
-              >
-                {numberLabel}
-              </text>
-            )}
-          </g>
+          {isMultiDigit ? (
+            <text
+              className="player-jersey__number player-jersey__number--double"
+              x={numberX - JERSEY_NUMBER_MAX_WIDTH / 2}
+              y={JERSEY_NUMBER_Y}
+              textAnchor="start"
+              dominantBaseline="middle"
+              fontSize={numberFontSize}
+              style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
+              textLength={JERSEY_NUMBER_MAX_WIDTH}
+              lengthAdjust="spacingAndGlyphs"
+            >
+              {numberLabel}
+            </text>
+          ) : (
+            <text
+              className="player-jersey__number"
+              x={numberX}
+              y={JERSEY_NUMBER_Y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={numberFontSize}
+              style={{ fontSize: numberFontSize, letterSpacing: "normal" }}
+            >
+              {numberLabel}
+            </text>
+          )}
         </svg>
       ) : (
         position
