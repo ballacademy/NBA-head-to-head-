@@ -101,7 +101,7 @@ describe("dailyDraftGoalResolve", () => {
 
     expect(tomorrowYesterdaySetup.dateKey).toBe(todayKey);
     expect(tomorrowYesterdaySetup.goal.id).toBe(todaySetup.goal.id);
-    expect(tomorrowYesterdaySetup.goal.id).toBe("anti-offense");
+    expect(tomorrowYesterdaySetup.goal.mode).toBe("basic");
     expect(tomorrowYesterdaySetup.slots).toEqual(todaySetup.slots);
   });
 

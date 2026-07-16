@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { players } from "./playerPool";
-import { getDailyGoalById } from "./dailyDraftGoals";
+import {
+  ADVANCED_DAILY_DRAFT_GOALS,
+  DAILY_DRAFT_GOALS,
+  getDailyGoalById,
+} from "./dailyDraftGoals";
 import {
   buildDailyGoalResult,
   formatGoalResult,
@@ -40,7 +44,7 @@ describe("dailyGoalScoring", () => {
     expect(result.value).toBeGreaterThan(0);
   });
 
-  it("scores defensive fortress by average letter grade rank", () => {
+  it("still scores legacy defensive fortress by average letter grade rank", () => {
     const goal = getDailyGoalById("defensive-fortress")!;
     const lineup = players
       .filter((player) => player.defenseGrade === "A+")
@@ -52,7 +56,7 @@ describe("dailyGoalScoring", () => {
     expect(result.formatted).toMatch(/A\+ avg DEF$/);
   });
 
-  it("formats a single player's goal stat for daily results", () => {
+  it("formats a single player's goal height for legacy goals", () => {
     const goal = getDailyGoalById("sky-high")!;
     const player = players.find((entry) => entry.heightInches > 80)!;
 
@@ -62,7 +66,7 @@ describe("dailyGoalScoring", () => {
     );
   });
 
-  it("formats per-player defensive grades for daily results", () => {
+  it("formats per-player defensive grades for legacy goals", () => {
     const goal = getDailyGoalById("defensive-fortress")!;
     const player = players.find((entry) => entry.defenseGrade === "A+")!;
 
@@ -83,5 +87,76 @@ describe("dailyGoalScoring", () => {
       player!.points / player!.minutes,
       5,
     );
+  });
+
+  it("scores the refreshed basic and advanced challenge set", () => {
+    const player = players.find(
+      (entry) =>
+        entry.minutes > 20 &&
+        entry.freeThrowsAttempted > 0 &&
+        entry.personalFouls > 0,
+    )!;
+
+    expect(player).toBeDefined();
+
+    const ironMen = getDailyGoalById("iron-men")!;
+    const benchMob = getDailyGoalById("bench-mob")!;
+    const foulTrouble = getDailyGoalById("foul-trouble")!;
+    const freeThrowMerchants = getDailyGoalById("free-throw-merchants")!;
+    const midrangeMuseum = getDailyGoalById("midrange-museum")!;
+    const plusFactory = getDailyGoalById("plus-factory")!;
+    const creationRate = getDailyGoalById("adv-creation-rate")!;
+    const whistleRate = getDailyGoalById("adv-whistle-rate")!;
+    const highEvent = getDailyGoalById("adv-high-event")!;
+
+    expect(scoreLineupForGoal([player], ironMen)).toBe(player.gamesPlayed);
+    expect(scoreLineupForGoal([player], benchMob)).toBe(player.minutes);
+    expect(scoreLineupForGoal([player], foulTrouble)).toBe(player.personalFouls);
+    expect(scoreLineupForGoal([player], freeThrowMerchants)).toBe(
+      player.freeThrowsAttempted,
+    );
+    expect(scoreLineupForGoal([player], midrangeMuseum)).toBeCloseTo(
+      Math.max(0, player.fieldGoalsAttempted - player.threePointersAttempted),
+      5,
+    );
+    expect(scoreLineupForGoal([player], plusFactory)).toBeCloseTo(
+      player.points +
+        player.rebounds +
+        player.assists +
+        player.steals +
+        player.blocks -
+        player.turnovers -
+        player.personalFouls,
+      5,
+    );
+    expect(scoreLineupForGoal([player], creationRate)).toBeCloseTo(
+      (player.points + player.assists) / player.minutes,
+      5,
+    );
+    expect(scoreLineupForGoal([player], whistleRate)).toBeCloseTo(
+      player.freeThrowsAttempted / player.minutes,
+      5,
+    );
+    expect(scoreLineupForGoal([player], highEvent)).toBeCloseTo(
+      (player.steals + player.blocks + player.turnovers) / player.minutes,
+      5,
+    );
+
+    expect(formatPlayerGoalStat(player, plusFactory)).toMatch(/box\+$/);
+    expect(formatGoalResult(1.23, creationRate)).toMatch(/points \+ assists/);
+  });
+
+  it("keeps removed goals out of the active rotation catalogs", () => {
+    expect(DAILY_DRAFT_GOALS.some((goal) => goal.id === "defensive-fortress")).toBe(
+      false,
+    );
+    expect(DAILY_DRAFT_GOALS.some((goal) => goal.id === "anti-offense")).toBe(false);
+    expect(ADVANCED_DAILY_DRAFT_GOALS.some((goal) => goal.id === "adv-low-ppm")).toBe(
+      false,
+    );
+    expect(getDailyGoalById("defensive-fortress")?.mode).toBe("basic");
+    expect(getDailyGoalById("adv-efficient-minute")?.mode).toBe("advanced");
+    expect(DAILY_DRAFT_GOALS).toHaveLength(23);
+    expect(ADVANCED_DAILY_DRAFT_GOALS).toHaveLength(17);
   });
 });

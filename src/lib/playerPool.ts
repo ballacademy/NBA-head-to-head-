@@ -53,6 +53,9 @@ export interface RawSeasonPlayer {
   threePointersMade?: number;
   threePointersAttempted?: number;
   freeThrowsAttempted?: number;
+  freeThrowsMade?: number;
+  freeThrowPct?: number;
+  personalFouls?: number;
   fieldGoalPct?: number;
   threePointPct?: number;
   trueShooting?: number | null;
@@ -210,6 +213,9 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     threePoint: raw.threePointPct ?? 0,
     threePointersAttempted: raw.threePointersAttempted ?? 0,
     fieldGoalsAttempted: raw.fieldGoalsAttempted ?? 0,
+    freeThrowsAttempted: raw.freeThrowsAttempted ?? 0,
+    freeThrowPct: raw.freeThrowPct ?? 0,
+    personalFouls: raw.personalFouls ?? 0,
     minutes: raw.minutes,
     heightInches: estimateHeightInches(raw, position),
     usage: estimateUsage(raw),

@@ -39,6 +39,9 @@ export interface Player {
   threePoint: number;
   threePointersAttempted: number;
   fieldGoalsAttempted: number;
+  freeThrowsAttempted: number;
+  freeThrowPct: number;
+  personalFouls: number;
   minutes: number;
   heightInches: number;
   usage: number;
