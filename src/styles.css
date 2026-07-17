@@ -3565,7 +3565,7 @@ main {
   }
 
   .player-pick--compact {
-    align-items: flex-start;
+    align-items: center;
     padding: 6px 6px;
     gap: 5px;
   }
@@ -3574,13 +3574,16 @@ main {
     width: 28px;
     height: 28px;
     font-size: 0.54rem;
-    margin-top: 2px;
+    margin-top: 0;
+    align-self: center;
   }
 
   .player-pick--compact .player-team-icon--jersey {
     width: 48px;
     height: 48px;
     border: none;
+    margin-top: 0;
+    align-self: center;
   }
 
   .player-pick--compact .player-pick__name {
