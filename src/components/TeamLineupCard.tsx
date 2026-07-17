@@ -65,11 +65,10 @@ export function TeamLineupCard({
 
       <div className="team-lineup-card__players">
         {orderedLineup.length > 0 ? (
-          orderedLineup.map((player, index) => (
+          orderedLineup.map((player) => (
             <PlayerStatLine
               key={player.id}
               player={player}
-              pickNumber={index + 1}
               compact={compact}
               allTimeMode={drafter.allTimeMode}
             />

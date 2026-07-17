@@ -428,7 +428,10 @@ function App() {
     team: TeamProfile,
     options: StartDraftOptions = {},
   ): Promise<StartMatchResult> => {
-    if (collection.pendingUnlock) {
+    const practiceMode = Boolean(options.practiceMode);
+
+    // Practice can always restart; pending unlocks only block ranked/classic starts.
+    if (collection.pendingUnlock && !practiceMode) {
       return "failed";
     }
 
@@ -440,7 +443,6 @@ function App() {
 
     const daily = Boolean(options.isDailyDraft);
     const nextDailyDraftMode = options.dailyDraftMode ?? "basic";
-    const practiceMode = Boolean(options.practiceMode);
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const dateKey = getDailyDateKey();
@@ -893,14 +895,14 @@ function App() {
 
     const team = { name: user.name };
     if (user.practiceMode) {
-      if (
-        (await startMatch(team, {
-          practiceMode: true,
-          salaryCapMode: Boolean(user.salaryCapMode),
-          salaryCapLimit: user.salaryCapLimit,
-        })) === "failed"
-      ) {
-        resetToLanding();
+      const result = await startMatch(team, {
+        practiceMode: true,
+        salaryCapMode: Boolean(user.salaryCapMode),
+        salaryCapLimit: user.salaryCapLimit,
+      });
+      // Stay on results if practice restart fails instead of dumping to home.
+      if (result === "failed") {
+        return;
       }
       return;
     }
