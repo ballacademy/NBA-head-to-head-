@@ -28,6 +28,8 @@ import { PRO_HEAD_TO_HEAD_LABEL, CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeL
 import { formatRatingPoints } from "../lib/rankedElo";
 import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
+import { getPlayerRarityBadgeItems } from "../lib/playerRarityBadges";
+import { hasLimitedSampleSize } from "../lib/sampleSize";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
@@ -403,6 +405,11 @@ export function DraftRoom({
         {candidates.length > 0 ? (
           candidates.map((player) => {
             const shineClass = getPlayerPickShineClass(player);
+            const showTags =
+              hasLimitedSampleSize(player) ||
+              getPlayerRarityBadgeItems(player, {
+                allTimeMode: drafter.allTimeMode,
+              }).length > 0;
 
             return (
               <button
@@ -426,31 +433,31 @@ export function DraftRoom({
                   label={player.name}
                 />
                 <div className="player-pick__body">
-                  <div className="player-pick__title-row">
+                  <div className="player-pick__header">
                     <span className="player-pick__identity">
                       <strong className="player-pick__name">{player.name}</strong>
                       <span className="player-pick__team">
                         {player.team} · {formatPlayerPositions(player.positions)}
                       </span>
                     </span>
-                    <span className="player-pick__trailing">
-                      {hasSalaryCap ? (
-                        <span className="player-pick__salary">
-                          {formatSalary(estimatePlayerSalary(player))}
-                        </span>
-                      ) : null}
-                      <span className="player-pick__badges">
-                        <LimitedSampleBadge player={player} compact />
-                        <PlayerRarityBadge
-                          player={player}
-                          allTimeMode={drafter.allTimeMode}
-                          compact
-                        />
+                    {hasSalaryCap ? (
+                      <span className="player-pick__salary">
+                        {formatSalary(estimatePlayerSalary(player))}
                       </span>
-                    </span>
+                    ) : null}
                   </div>
                   {!isDailyDraft ? (
                     <PlayerDraftStats player={player} variant="pills" />
+                  ) : null}
+                  {showTags ? (
+                    <span className="player-pick__badges">
+                      <LimitedSampleBadge player={player} compact />
+                      <PlayerRarityBadge
+                        player={player}
+                        allTimeMode={drafter.allTimeMode}
+                        compact
+                      />
+                    </span>
                   ) : null}
                 </div>
               </button>
