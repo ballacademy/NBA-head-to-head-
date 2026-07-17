@@ -91,23 +91,25 @@ export const JERSEY_SILHOUETTE_PATH =
   `${JERSEY_BODY_PATH}${JERSEY_NECK_CUTOUT_PATH}`;
 
 /**
- * Visual center of the torso panel on the vertical symmetry axis
- * (between the neck curve and the hem).
+ * Chest number plate inset from the torso edges.
+ * Torso width near mid-body is ~14.8 (x≈8.6–23.4); keep ≥2 units of padding
+ * on each side so digits never kiss the silhouette.
  */
-export const JERSEY_NUMBER_Y = 17.55;
+export const JERSEY_NUMBER_ZONE = {
+  x: 10.5,
+  y: 13.4,
+  width: 11,
+  height: 9.2,
+  centerX: JERSEY_CENTER_X,
+  centerY: 18.0,
+} as const;
 
-/**
- * Optical left nudge for bold jersey numerals. Heavy weight + stroke makes
- * digits read right of geometric center without this correction.
- */
-export const JERSEY_NUMBER_OPTICAL_DX = -0.7;
-
-/** Total width for multi-digit numbers inside the torso. */
-export const JERSEY_NUMBER_MAX_WIDTH = 10;
-
-/** Font size in viewBox units; kept modest so CSS-enlarged jerseys grow more than digits. */
+/** Readable sizes that still clear the padded number zone. */
 export const getJerseyNumberFontSize = (label: string) =>
-  label.replace(/\D/g, "").length >= 2 ? 7.8 : 9.8;
+  label.replace(/\D/g, "").length >= 2 ? 8.4 : 10.4;
+
+/** @deprecated Prefer JERSEY_NUMBER_ZONE.centerY */
+export const JERSEY_NUMBER_Y = JERSEY_NUMBER_ZONE.centerY;
 
 /** Right-half samples for bilateral symmetry tests. */
 export const JERSEY_SYMMETRY_SAMPLES: Pt[] = [
