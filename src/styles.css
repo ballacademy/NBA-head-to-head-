@@ -1467,29 +1467,30 @@ main {
 }
 
 .player-pick__title-row,
+.player-pick__header,
 .unlock-option__title-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .player-pick__identity {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px;
+  gap: 2px 6px;
   min-width: 0;
-  flex: 1 1 12rem;
+  flex: 1 1 auto;
   margin-top: 0;
 }
 
 .player-pick__name {
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   overflow: visible;
   text-overflow: unset;
   white-space: normal;
@@ -1511,14 +1512,32 @@ main {
 }
 
 .player-pick__badges {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  margin-top: 3px;
+}
+
+.player-pick__badges:empty {
+  display: none;
+}
+
+.player-pick__badges .player-rarity-badges {
+  justify-content: flex-start;
+}
+
+.player-pick__badges .player-rarity-badges--compact {
+  flex-wrap: wrap;
 }
 
 .player-pick__salary {
-  margin-left: auto;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: 0;
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(250, 204, 21, 0.45);
@@ -3603,12 +3622,17 @@ main {
   }
 
   .player-pick--compact .player-pick__body .player-draft-stats {
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   .player-pick--compact .player-draft-stats__item {
     font-size: 0.58rem;
     padding: 1px 4px;
+  }
+
+  .player-pick--compact .player-pick__badges {
+    justify-content: flex-start;
+    margin-top: 2px;
   }
 
   .player-pick--compact .player-rarity-badge,
@@ -4359,11 +4383,13 @@ main {
 .player-pick__body {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: stretch;
+  gap: 2px;
+  min-width: 0;
 }
 
 .player-pick--compact .player-pick__body .player-draft-stats {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .player-pick__meta-row {
@@ -4708,15 +4734,16 @@ main {
   margin-top: 2px;
 }
 
-.player-pick--compact .player-pick__title-row {
-  flex-wrap: wrap;
+.player-pick--compact .player-pick__header {
+  flex-wrap: nowrap;
   align-items: flex-start;
-  gap: 5px;
+  gap: 6px;
 }
 
 .player-pick--compact .player-pick__identity {
-  gap: 5px;
-  flex: 1 1 10rem;
+  gap: 2px 5px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .player-pick--compact .player-pick__name {
@@ -4731,10 +4758,6 @@ main {
   font-size: 0.72rem;
 }
 
-.player-pick--compact .player-pick__trailing {
-  gap: 4px;
-}
-
 .player-pick--compact .player-pick__salary {
   flex: 0 0 auto;
   padding: 1px 6px;
@@ -4743,22 +4766,19 @@ main {
 
 .player-pick--compact .player-pick__badges {
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 3px;
+  margin-top: 2px;
 }
 
 .player-pick--compact .player-rarity-badges {
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 3px;
 }
 
-.player-pick--compact .player-pick__team {
-  font-size: 0.76rem;
-}
-
 .player-pick--compact .player-draft-stats {
-  margin-top: 2px;
+  margin-top: 1px;
   gap: 3px;
 }
 
@@ -4913,17 +4933,12 @@ main {
   white-space: nowrap;
 }
 
-.player-pick__identity,
-.player-pick__trailing,
-.player-pick__badges,
-.player-pick__team,
-.player-pick__salary {
+.player-pick__trailing {
   display: inline-flex;
   margin-top: 0;
 }
 
 .player-pick__team {
-  display: inline;
   color: var(--muted);
 }
 
