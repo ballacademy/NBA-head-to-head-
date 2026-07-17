@@ -4287,21 +4287,16 @@ main {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Arial Black", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
   font-weight: 900;
   letter-spacing: normal;
   font-kerning: none;
   font-feature-settings: "kern" 0, "liga" 0;
   paint-order: stroke fill;
-  stroke: rgba(15, 23, 42, 0.4);
-  stroke-width: 0.35px;
+  stroke: rgba(15, 23, 42, 0.35);
+  stroke-width: 0.4px;
   text-anchor: middle;
-  dominant-baseline: middle;
-}
-
-.player-jersey__number--double {
-  letter-spacing: normal;
+  dominant-baseline: central;
 }
 
 .player-team-icon__image {

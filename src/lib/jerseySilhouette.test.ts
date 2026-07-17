@@ -4,11 +4,10 @@ import {
   JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
   JERSEY_NECK_CUTOUT_PATH,
-  JERSEY_NUMBER_MAX_WIDTH,
-  JERSEY_NUMBER_OPTICAL_DX,
-  JERSEY_NUMBER_Y,
+  JERSEY_NUMBER_ZONE,
   JERSEY_SYMMETRY_SAMPLES,
   JERSEY_VIEWBOX_SIZE,
+  getJerseyNumberFontSize,
   mirrorJerseyX,
 } from "./jerseySilhouette";
 
@@ -55,11 +54,20 @@ describe("jerseySilhouette symmetry", () => {
     assertMirrored(JERSEY_COLLAR_PATH, "collar");
   });
 
-  it("nudges numbers left of geometric center for optical balance", () => {
-    expect(JERSEY_CENTER_X).toBe(16);
-    expect(JERSEY_NUMBER_Y).toBeGreaterThan(12);
-    expect(JERSEY_NUMBER_Y).toBeLessThan(24);
-    expect(JERSEY_NUMBER_MAX_WIDTH).toBeGreaterThan(8);
-    expect(JERSEY_NUMBER_OPTICAL_DX).toBeLessThan(0);
+  it("keeps the number plate centered with padding inside the torso", () => {
+    expect(JERSEY_NUMBER_ZONE.centerX).toBe(JERSEY_CENTER_X);
+    expect(JERSEY_NUMBER_ZONE.x + JERSEY_NUMBER_ZONE.width / 2).toBeCloseTo(
+      JERSEY_CENTER_X,
+      5,
+    );
+    expect(JERSEY_NUMBER_ZONE.width).toBeLessThanOrEqual(12);
+    expect(JERSEY_NUMBER_ZONE.x).toBeGreaterThanOrEqual(9.5);
+    expect(
+      JERSEY_NUMBER_ZONE.x + JERSEY_NUMBER_ZONE.width,
+    ).toBeLessThanOrEqual(22.5);
+    expect(getJerseyNumberFontSize("7")).toBeGreaterThan(
+      getJerseyNumberFontSize("23"),
+    );
+    expect(getJerseyNumberFontSize("23")).toBeGreaterThanOrEqual(8);
   });
 });

@@ -1,11 +1,8 @@
 import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
 import {
   getJerseyNumberFontSize,
-  JERSEY_CENTER_X,
   JERSEY_COLLAR_PATH,
-  JERSEY_NUMBER_MAX_WIDTH,
-  JERSEY_NUMBER_OPTICAL_DX,
-  JERSEY_NUMBER_Y,
+  JERSEY_NUMBER_ZONE,
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
 } from "./jerseySilhouette";
@@ -130,30 +127,26 @@ const drawJerseyBadge = (
   context.stroke(collarPath);
 
   const fontSize = getJerseyNumberFontSize(number);
-  const isDoubleDigit = number.replace(/\D/g, "").length >= 2;
-  const numberX = JERSEY_CENTER_X + JERSEY_NUMBER_OPTICAL_DX;
-  context.font = `900 ${fontSize}px ${FONT_STACK}`;
+  context.font = `900 ${fontSize}px "Arial Black", "Helvetica Neue", ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.lineWidth = 0.9;
   context.strokeStyle = "rgba(8,8,10,0.55)";
   context.fillStyle = "#ffffff";
-  if (isDoubleDigit) {
-    const measured = context.measureText(number).width;
-    if (measured > JERSEY_NUMBER_MAX_WIDTH && measured > 0) {
-      context.save();
-      context.translate(numberX, JERSEY_NUMBER_Y);
-      context.scale(JERSEY_NUMBER_MAX_WIDTH / measured, 1);
-      context.strokeText(number, 0, 0);
-      context.fillText(number, 0, 0);
-      context.restore();
-    } else {
-      context.strokeText(number, numberX, JERSEY_NUMBER_Y);
-      context.fillText(number, numberX, JERSEY_NUMBER_Y);
-    }
+  const numberX = JERSEY_NUMBER_ZONE.centerX;
+  const numberY = JERSEY_NUMBER_ZONE.centerY;
+  const maxWidth = JERSEY_NUMBER_ZONE.width - 1;
+  const measured = context.measureText(number).width;
+  if (measured > maxWidth && measured > 0) {
+    context.save();
+    context.translate(numberX, numberY);
+    context.scale(maxWidth / measured, 1);
+    context.strokeText(number, 0, 0);
+    context.fillText(number, 0, 0);
+    context.restore();
   } else {
-    context.strokeText(number, numberX, JERSEY_NUMBER_Y);
-    context.fillText(number, numberX, JERSEY_NUMBER_Y);
+    context.strokeText(number, numberX, numberY);
+    context.fillText(number, numberX, numberY);
   }
 
   context.restore();
