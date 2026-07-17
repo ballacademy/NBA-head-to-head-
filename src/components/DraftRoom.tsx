@@ -450,7 +450,7 @@ export function DraftRoom({
                     </span>
                   </div>
                   {!isDailyDraft ? (
-                    <PlayerDraftStats player={player} variant="inline" />
+                    <PlayerDraftStats player={player} variant="pills" />
                   ) : null}
                 </div>
               </button>

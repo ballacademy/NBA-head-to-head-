@@ -1469,28 +1469,32 @@ main {
 .player-pick__title-row,
 .unlock-option__title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .player-pick__identity {
   display: inline-flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 1 1 12rem;
   margin-top: 0;
 }
 
 .player-pick__name {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex: 1 1 auto;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .player-pick__trailing {
@@ -3561,8 +3565,8 @@ main {
   }
 
   .player-pick--compact {
-    align-items: center;
-    padding: 4px 6px;
+    align-items: flex-start;
+    padding: 6px 6px;
     gap: 5px;
   }
 
@@ -3570,6 +3574,7 @@ main {
     width: 28px;
     height: 28px;
     font-size: 0.54rem;
+    margin-top: 2px;
   }
 
   .player-pick--compact .player-team-icon--jersey {
@@ -3580,6 +3585,9 @@ main {
 
   .player-pick--compact .player-pick__name {
     font-size: 0.84rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
   }
 
   .player-pick--compact .player-pick__team {
@@ -3591,8 +3599,13 @@ main {
     font-size: 0.74rem;
   }
 
-  .player-pick--compact .player-pick__body .player-draft-stats--inline {
-    font-size: 0.66rem;
+  .player-pick--compact .player-pick__body .player-draft-stats {
+    margin-top: 2px;
+  }
+
+  .player-pick--compact .player-draft-stats__item {
+    font-size: 0.58rem;
+    padding: 1px 4px;
   }
 
   .player-pick--compact .player-rarity-badge,
@@ -4346,10 +4359,8 @@ main {
   gap: 1px;
 }
 
-.player-pick--compact .player-pick__body .player-draft-stats--inline {
-  margin-top: 0;
-  font-size: 0.7rem;
-  line-height: 1.15;
+.player-pick--compact .player-pick__body .player-draft-stats {
+  margin-top: 2px;
 }
 
 .player-pick__meta-row {
@@ -4400,10 +4411,11 @@ main {
   color: #cbd5e1;
   font-size: 0.78rem;
   font-weight: 600;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
 }
 
 .player-stat-line__stats,
@@ -4658,7 +4670,7 @@ main {
 
 .player-pick {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
   max-width: 100%;
@@ -4670,7 +4682,7 @@ main {
   color: inherit;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
+  overflow: visible;
   animation: player-pick-border-glow 3.2s ease-in-out infinite;
   transition:
     border-color 140ms ease,
@@ -4679,10 +4691,10 @@ main {
 }
 
 .player-pick--compact {
-  padding: 4px 8px;
+  padding: 6px 8px;
   gap: 6px;
   border-radius: 12px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .player-pick--compact .player-team-icon {
@@ -4690,21 +4702,26 @@ main {
   height: 32px;
   border-width: 2px;
   font-size: 0.62rem;
+  margin-top: 2px;
 }
 
 .player-pick--compact .player-pick__title-row {
-  flex-wrap: nowrap;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 5px;
 }
 
 .player-pick--compact .player-pick__identity {
   gap: 5px;
+  flex: 1 1 10rem;
 }
 
 .player-pick--compact .player-pick__name {
   font-size: 0.88rem;
-  line-height: 1.1;
+  line-height: 1.2;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .player-pick--compact .player-pick__team {
@@ -4722,13 +4739,13 @@ main {
 }
 
 .player-pick--compact .player-pick__badges {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 3px;
 }
 
 .player-pick--compact .player-rarity-badges {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 3px;
 }
@@ -4737,22 +4754,22 @@ main {
   font-size: 0.76rem;
 }
 
+.player-pick--compact .player-draft-stats {
+  margin-top: 2px;
+  gap: 3px;
+}
+
+.player-pick--compact .player-draft-stats__item {
+  padding: 1px 5px;
+  font-size: 0.62rem;
+}
+
 .player-pick--compact .player-rarity-badge,
 .player-pick--compact .player-caveat-badge {
   padding: 2px 5px;
   font-size: 0.58rem;
   letter-spacing: 0.02em;
   line-height: 1.1;
-}
-
-.player-pick--compact .player-draft-stats {
-  gap: 3px;
-  margin-top: 2px;
-}
-
-.player-pick--compact .player-draft-stats__item {
-  padding: 1px 5px;
-  font-size: 0.62rem;
 }
 
 @keyframes player-pick-border-glow {
