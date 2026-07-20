@@ -1,1 +1,10 @@
-/*    /index.html   200
+# Intentionally empty of SPA catch-alls.
+#
+# Cloudflare Pages already serves index.html for unknown app routes when there
+# is no top-level 404.html. A `/* /index.html 200` rule also rewrote *missing*
+# /assets/* hashes to index.html with status 200 and Content-Type text/html.
+# Browsers then refused to apply the "stylesheet" (or execute the module),
+# which shows up as a white page with unstyled black text — especially on
+# mobile tabs that outlive a deploy.
+#
+# public/assets/404.html makes missing hashed assets return a real 404 instead.
