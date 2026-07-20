@@ -98,22 +98,37 @@ function LeaderboardEntryRow({
       <div className="leaderboard-row__main">
         <button
           type="button"
-          className="leaderboard-row__toggle"
+          className="leaderboard-row__rank-button"
           aria-expanded={expanded}
+          aria-label={`${expanded ? "Hide" : "Show"} details for ${entry.name}`}
           onClick={() => setExpanded((current) => !current)}
         >
           <span className="leaderboard-row__rank">{rank}</span>
-          <span className="leaderboard-row__tag">{formatPublicTag(entry.publicTag)}</span>
-          <span className="leaderboard-row__metric">
-            <strong>{formatMetric(entry)}</strong>
-          </span>
         </button>
+        <div className="leaderboard-row__identity">
+          <button
+            type="button"
+            className="leaderboard-row__name"
+            onClick={() => setProfileOpen(true)}
+          >
+            {entry.name}
+          </button>
+          <button
+            type="button"
+            className="leaderboard-row__tag"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((current) => !current)}
+          >
+            {formatPublicTag(entry.publicTag)}
+          </button>
+        </div>
         <button
           type="button"
-          className="leaderboard-row__name"
-          onClick={() => setProfileOpen(true)}
+          className="leaderboard-row__metric"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
         >
-          {entry.name}
+          <strong>{formatMetric(entry)}</strong>
         </button>
       </div>
       {expanded ? (
