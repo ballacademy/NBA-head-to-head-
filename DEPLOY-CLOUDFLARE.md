@@ -82,7 +82,9 @@ Requires `wrangler login` or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in
 - **Daily Draft scores** sync to D1 via `/api/daily-scores` so percentiles reflect all players. Local storage still caches your lineup for offline viewing.
 - **Classic and Pro leaderboards** sync to D1 via `/api/leaderboards` so rankings reflect real front offices globally. Local storage remains an offline fallback.
 - **Head-to-head ghost lineups** use D1 (`/api/lineups`, `/api/opponent`, etc.).
-- **`public/_redirects`** sends unknown paths to `index.html` for safe refreshes on deep links.
+- **`public/_redirects`** intentionally has no `/* → index.html` catch-all. Cloudflare Pages already SPA-falls back when there is no top-level `404.html`. A catch-all also rewrote missing `/assets/*` hashes to HTML (`200 text/html`), which browsers refuse as CSS/JS and shows as a white unstyled page.
+- **`public/assets/404.html`** makes missing hashed bundles return a real 404 instead of the app shell.
+- **`public/_headers`** keeps `index.html` non-cacheable and long-caches only hashed `.js`/`.css` files.
 - **Node 22** is used in CI (see `.nvmrc`).
 
 ## Troubleshooting
@@ -92,4 +94,5 @@ Requires `wrangler login` or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in
 | Deploy fails: missing secrets | Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in GitHub |
 | Project not found | Create the Pages project or match `project-name` in the workflow |
 | Site shows old scaffold | Merge latest branches into `main` and redeploy |
+| White page / black unstyled text after a deploy | Hard refresh. Confirm `/assets/missing.css` returns **404**, not `200 text/html`. Keep `public/assets/404.html` and do not restore `/* /index.html 200`. |
 | Build fails in CI | Run `npm test` and `npm run build` locally first |

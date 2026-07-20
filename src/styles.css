@@ -3589,6 +3589,10 @@ main {
     gap: 5px;
   }
 
+  .player-pick--compact.player-pick--daily .player-pick__header {
+    align-items: center;
+  }
+
   .player-pick--compact .player-team-icon {
     width: 28px;
     height: 28px;

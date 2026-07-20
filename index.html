@@ -15,6 +15,35 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // If a deploy replaces hashed CSS/JS while a tab still has old HTML,
+      // asset requests can fail. Reload once to pick up the new shell.
+      (function () {
+        var key = "ddgm-asset-reload";
+        window.addEventListener(
+          "error",
+          function (event) {
+            var target = event && event.target;
+            if (!target || !target.tagName) return;
+            var tag = String(target.tagName).toUpperCase();
+            var isStylesheet =
+              tag === "LINK" &&
+              String(target.rel || "").toLowerCase() === "stylesheet";
+            var isScript = tag === "SCRIPT";
+            if (!isStylesheet && !isScript) return;
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, "1");
+            window.location.reload();
+          },
+          true,
+        );
+        window.addEventListener("load", function () {
+          window.setTimeout(function () {
+            sessionStorage.removeItem(key);
+          }, 2500);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
