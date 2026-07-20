@@ -4726,6 +4726,29 @@ main {
   align-items: flex-start;
 }
 
+/* Daily drafts hide stats, so center the single content block vs. jersey. */
+.player-pick--compact.player-pick--daily {
+  align-items: center;
+}
+
+.player-pick--compact.player-pick--daily .player-team-icon,
+.player-pick--compact.player-pick--daily .player-team-icon--jersey {
+  margin-top: 0;
+  align-self: center;
+}
+
+.player-pick--compact.player-pick--daily .player-pick__body {
+  justify-content: center;
+}
+
+.player-pick--compact.player-pick--daily .player-pick__header {
+  align-items: center;
+}
+
+.player-pick--compact.player-pick--daily .player-pick__badges {
+  margin-top: 2px;
+}
+
 .player-pick--compact .player-team-icon {
   width: 32px;
   height: 32px;

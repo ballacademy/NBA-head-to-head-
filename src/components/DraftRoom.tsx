@@ -415,7 +415,7 @@ export function DraftRoom({
               <button
                 type="button"
                 key={player.id}
-                className={`player-pick player-pick--compact${shineClass ? ` ${shineClass}` : ""}`}
+                className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}`}
                 onClick={(event) => {
                   if (draftSessionKey) {
                     clearDraftDeadline(draftSessionKey, activeStep);
