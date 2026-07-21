@@ -42,10 +42,10 @@ export function PlayerStatLine({
               {player.team} · {formatPlayerPositions(player.positions)}
               {pickNumber ? ` · Pick ${pickNumber}` : ""}
             </span>
-            {goalStat ? (
-              <span className="player-stat-line__goal-stat"> · {goalStat}</span>
-            ) : null}
           </strong>
+          {goalStat ? (
+            <span className="player-stat-line__goal-stat">{goalStat}</span>
+          ) : null}
           <span className="player-stat-line__badges">
             <LimitedSampleBadge player={player} compact={compact} />
             <PlayerRarityBadge
