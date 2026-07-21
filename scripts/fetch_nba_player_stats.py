@@ -602,12 +602,25 @@ def optional_float(value: object) -> float | None:
     return float(value)
 
 
+def primary_stats_team(team_rows: list[dict], stats_row: dict) -> str:
+    """Team the player actually produced the season stats for (most GP)."""
+    if team_rows:
+        best = max(team_rows, key=lambda row: to_int(row.get("GP")))
+        team = str(best.get("TEAM_ABBREVIATION") or "").strip()
+        if team and not is_aggregate_team(team):
+            return team
+
+    team = str(stats_row.get("TEAM_ABBREVIATION") or "").strip()
+    return team or "UNK"
+
+
 def row_dict_to_player_payload(
     row_dict: dict,
     team: str,
     advanced_stats: dict[str, float | None],
     bbr_player_id: str,
     positions: list[str] | None = None,
+    stats_team: str | None = None,
 ) -> dict:
     player_name = str(row_dict["PLAYER_NAME"])
     fga = to_float(row_dict.get("FGA"))
@@ -633,12 +646,14 @@ def row_dict_to_player_payload(
         )
 
     resolved_positions = apply_position_override(bbr_player_id, resolved_positions)
+    resolved_stats_team = stats_team or team
 
     return {
         "id": player_id,
         "bbrPlayerId": bbr_player_id,
         "name": player_name,
         "team": team,
+        "statsTeam": resolved_stats_team,
         "position": resolved_positions[0] if resolved_positions else normalize_position(row_dict.get("POSITION")),
         "positions": resolved_positions,
         "age": to_int(row_dict.get("AGE"), default=0) if pd.notna(row_dict.get("AGE")) else None,
@@ -733,12 +748,14 @@ def build_app_payload(
         else:
             continue
 
+        stats_team = primary_stats_team(team_rows, stats_row)
+
         if bbr_id in current_team_overrides:
             current_team = current_team_overrides[bbr_id]
         elif team_rows:
             current_team = str(team_rows[-1].get("TEAM_ABBREVIATION") or "UNK")
         else:
-            current_team = str(stats_row.get("TEAM_ABBREVIATION") or "UNK")
+            current_team = stats_team
 
         advanced_stats = merge_advanced_stats(
             player_name,
@@ -777,6 +794,7 @@ def build_app_payload(
                 advanced_stats,
                 bbr_id,
                 resolved_positions,
+                stats_team=stats_team,
             )
         )
 
