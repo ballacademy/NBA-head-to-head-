@@ -3,6 +3,8 @@ import {
   getAllStarPlayerIds,
   getPlayerById,
   getRecentAllStarPlayerIds,
+  getRecentAllStarUnlockPlayerIds,
+  getSuperstarPlayerIds,
   getSuperstarPlayersInAllStarPool,
   getWinUnlockPlayerIds,
   isAllStarPlayer,
@@ -107,7 +109,7 @@ export const createStarterCollection = (): string[] => {
     return Boolean(player && !isSuperstarPlayer(player));
   });
   const supporting = shuffle(remainingPool).slice(0, STARTING_COLLECTION_SIZE - 1);
-  const recentAllStars = getRecentAllStarPlayerIds();
+  const recentAllStars = getRecentAllStarUnlockPlayerIds();
 
   return Array.from(
     new Set([superstar.id, ...supporting, ...recentAllStars]),
@@ -121,7 +123,7 @@ export const withRecentAllStarsUnlocked = (
   const unlocked = new Set(collection.unlockedIds);
   let changed = false;
 
-  for (const playerId of getRecentAllStarPlayerIds()) {
+  for (const playerId of getRecentAllStarUnlockPlayerIds()) {
     if (!unlocked.has(playerId)) {
       unlocked.add(playerId);
       changed = true;
@@ -248,14 +250,18 @@ export const MAX_OPPONENT_ALL_STAR_UNLOCK_GAP = 10;
 export const countUnlockedAllStars = (collection: PlayerCollection) =>
   collection.unlockedIds.filter((playerId) => {
     const player = getPlayerById(playerId);
-    return Boolean(player && isAllStarPlayer(player));
+    return Boolean(
+      player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+    );
   }).length;
 
 export const createOpponentCollection = (
   userCollection: PlayerCollection,
 ): PlayerCollection => {
   const userAllStarCount = countUnlockedAllStars(userCollection);
-  const pool = getAllStarPlayerIds();
+  const pool = [
+    ...new Set([...getAllStarPlayerIds(), ...getSuperstarPlayerIds()]),
+  ];
   const maxCount = Math.min(
     userAllStarCount + MAX_OPPONENT_ALL_STAR_UNLOCK_GAP,
     pool.length,
@@ -266,6 +272,7 @@ export const createOpponentCollection = (
   const unlockedIds = Array.from(
     new Set([
       ...shuffle(pool).slice(0, targetCount),
+      // Non-super recent all-stars are free for everyone; supers already sit in `pool`.
       ...getRecentAllStarPlayerIds(),
     ]),
   );

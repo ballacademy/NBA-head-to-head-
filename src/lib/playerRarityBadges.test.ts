@@ -19,12 +19,17 @@ describe("getPlayerRarityBadgeItems", () => {
 
   it("shows only the highest star tier", () => {
     const superstar = players.find((player) => player.bbrPlayerId === "jokicni01");
+    const tatum = players.find((player) => player.bbrPlayerId === "tatumja01");
 
     expect(superstar).toBeDefined();
+    expect(tatum).toBeDefined();
 
-    const items = getPlayerRarityBadgeItems(superstar!);
-
-    expect(items.map((item) => item.key)).toEqual(["superstar"]);
+    expect(getPlayerRarityBadgeItems(superstar!).map((item) => item.key)).toEqual([
+      "superstar",
+    ]);
+    expect(getPlayerRarityBadgeItems(tatum!).map((item) => item.key)).toEqual([
+      "superstar",
+    ]);
   });
 
   it("returns no badges for regular players outside the scrub pool", () => {

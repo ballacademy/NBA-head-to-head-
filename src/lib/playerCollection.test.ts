@@ -4,6 +4,7 @@ import {
   getAllStarPlayerIds,
   getPlayerById,
   getRecentAllStarPlayerIds,
+  getRecentAllStarUnlockPlayerIds,
   getWinUnlockPlayerIds,
   isAllStarPlayer,
   isRecentAllStarPlayer,
@@ -57,13 +58,13 @@ describe("playerCollection", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts each user with five 2026 all-stars plus every recent all-star", () => {
+  it("starts each user with five 2026 stars plus every recent all-star unlock", () => {
     const starters = createStarterCollection();
-    const recentIds = getRecentAllStarPlayerIds();
+    const recentIds = getRecentAllStarUnlockPlayerIds();
     const starterSet = new Set(starters);
 
     expect(starters.length).toBeGreaterThanOrEqual(
-      STARTING_COLLECTION_SIZE + recentIds.length,
+      STARTING_COLLECTION_SIZE + recentIds.length - 1,
     );
     expect(starterSet.size).toBe(starters.length);
 
@@ -71,12 +72,14 @@ describe("playerCollection", () => {
       expect(starterSet.has(playerId)).toBe(true);
     });
 
-    const currentAllStarStarters = starters.filter((playerId) => {
+    const currentStarStarters = starters.filter((playerId) => {
       const player = getPlayerById(playerId);
-      return Boolean(player && isAllStarPlayer(player));
+      return Boolean(
+        player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+      );
     });
 
-    expect(currentAllStarStarters.length).toBeGreaterThanOrEqual(
+    expect(currentStarStarters.length).toBeGreaterThanOrEqual(
       STARTING_COLLECTION_SIZE,
     );
 
@@ -321,14 +324,18 @@ describe("playerCollection", () => {
     const collection = loadPlayerCollection();
     const userAllStarCount = collection.unlockedIds.filter((playerId) => {
       const player = getPlayerById(playerId);
-      return Boolean(player && isAllStarPlayer(player));
+      return Boolean(
+        player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+      );
     }).length;
 
     for (let index = 0; index < 25; index += 1) {
       const opponent = createOpponentCollection(collection);
       const opponentAllStarCount = opponent.unlockedIds.filter((playerId) => {
         const player = getPlayerById(playerId);
-        return Boolean(player && isAllStarPlayer(player));
+        return Boolean(
+          player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+        );
       }).length;
 
       expect(opponentAllStarCount).toBeGreaterThanOrEqual(userAllStarCount);

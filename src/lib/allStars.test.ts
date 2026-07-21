@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getRecentAllStarPlayerIds,
+  getRecentAllStarUnlockPlayerIds,
   getWinUnlockPlayerIds,
   isAllStarPlayer,
   isRecentAllStarPlayer,
@@ -10,7 +11,7 @@ import {
 import { players, playersById } from "./playerPool";
 
 describe("allStars recent tier", () => {
-  it("defines recent all-stars from 2023 through 2025 who are not 2026 all-stars", () => {
+  it("defines recent all-stars from 2023 through 2025 who are not 2026 all-stars or superstars", () => {
     const recentIds = getRecentAllStarPlayerIds();
 
     expect(recentIds.length).toBeGreaterThan(0);
@@ -22,24 +23,27 @@ describe("allStars recent tier", () => {
       expect(player).toBeDefined();
       expect(isRecentAllStarPlayer(player!)).toBe(true);
       expect(isAllStarPlayer(player!)).toBe(false);
+      expect(isSuperstarPlayer(player!)).toBe(false);
     });
   });
 
-  it("includes Jayson Tatum as a recent all-star and superstar but not a 2026 all-star", () => {
+  it("classifies Jayson Tatum as superstar only, while still unlocking him with recent grants", () => {
     const tatum = players.find((player) => player.bbrPlayerId === "tatumja01");
 
     expect(tatum).toBeDefined();
-    expect(isRecentAllStarPlayer(tatum!)).toBe(true);
     expect(isSuperstarPlayer(tatum!)).toBe(true);
+    expect(isRecentAllStarPlayer(tatum!)).toBe(false);
     expect(isAllStarPlayer(tatum!)).toBe(false);
+    expect(getRecentAllStarUnlockPlayerIds()).toContain(tatum!.id);
+    expect(getRecentAllStarPlayerIds()).not.toContain(tatum!.id);
   });
 
-  it("includes Kawhi Leonard as a superstar", () => {
+  it("classifies current all-star superstars as superstar only", () => {
     const kawhi = players.find((player) => player.bbrPlayerId === "leonaka01");
 
     expect(kawhi).toBeDefined();
     expect(isSuperstarPlayer(kawhi!)).toBe(true);
-    expect(isAllStarPlayer(kawhi!)).toBe(true);
+    expect(isAllStarPlayer(kawhi!)).toBe(false);
   });
 
   it("includes manually added recent all-stars in the active pool", () => {
@@ -55,12 +59,12 @@ describe("allStars recent tier", () => {
     expect(isRecentAllStarPlayer(vanvleet!)).toBe(false);
   });
 
-  it("expands win unlocks to include recent all-stars", () => {
+  it("expands win unlocks to include recent all-stars and superstars", () => {
     const unlockPool = getWinUnlockPlayerIds();
 
     expect(unlockPool.length).toBeGreaterThan(getRecentAllStarPlayerIds().length);
 
-    getRecentAllStarPlayerIds().forEach((playerId) => {
+    getRecentAllStarUnlockPlayerIds().forEach((playerId) => {
       expect(unlockPool).toContain(playerId);
     });
   });
