@@ -9,6 +9,8 @@ describe("player salaries", () => {
     expect(getPlayerSalary("gilgesh01")).toBe(40_806_150);
     expect(getPlayerSalary("jokicni01")).toBe(59_033_114);
     expect(getPlayerSalary("vassede01")).toBe(27_000_000);
+    // Year-1 cash, not AAV of the new max deal.
+    expect(getPlayerSalary("reaveau01")).toBe(41_240_250);
   });
 
   it("does not invent a minimum salary for players without contracts", () => {

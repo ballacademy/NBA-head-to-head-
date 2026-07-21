@@ -20,7 +20,7 @@ OPTIONS_URL = "https://www.spotrac.com/nba/option/_/year/2026"
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; NBA-stats-export/1.0; +https://github.com/ballacademy/NBA-head-to-head-)",
 }
-SALARY_COLUMN = "y2"
+SALARY_COLUMN = "y1"  # Basketball Reference currently labels 2026-27 as y1
 
 SPOTRAC_TEAM_MAP = {
     "BKN": "BRK",

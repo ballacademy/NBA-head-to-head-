@@ -42,6 +42,6 @@ describe("current team overrides", () => {
     expect(hardaway?.team).toBe("MIA");
     expect(hardaway?.salary).toBe(6_500_000);
     expect(post?.team).toBe("MEM");
-    expect(post?.salary).toBe(10_000_000);
+    expect(post?.salary).toBe(8_285_714);
   });
 });
