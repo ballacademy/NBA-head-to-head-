@@ -47,8 +47,10 @@ export function PlayerStatLine({
             <strong className="player-stat-line__name player-stat-line__name--full">
               {player.name}
             </strong>
-            <div className="player-stat-line__meta-row">
-              <span className="player-stat-line__meta">{meta}</span>
+            <span className="player-stat-line__meta player-stat-line__meta--block">
+              {meta}
+            </span>
+            <div className="player-stat-line__facts">
               {goalStat ? (
                 <span className="player-stat-line__goal-stat">{goalStat}</span>
               ) : null}

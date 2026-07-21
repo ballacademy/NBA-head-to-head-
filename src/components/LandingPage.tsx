@@ -467,6 +467,10 @@ export function LandingPage({
       </div>
 
       <div className="landing-profile-strip landing-card landing-card--profile">
+        <div className="landing-profile-strip__header">
+          <p className="landing-profile-strip__title">Your collection</p>
+          <p className="landing-profile-strip__hint">Tap a category to view unlocked players</p>
+        </div>
         <div
           className="landing-profile-strip__stats"
           aria-label="Player collection by category"
@@ -475,48 +479,63 @@ export function LandingPage({
             type="button"
             className="landing-profile-strip__stat landing-profile-strip__stat--btn"
             onClick={() => setCollectionTier("all-star")}
+            aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
           >
             <span className="landing-profile-strip__label">All-Stars</span>
             <strong>
               {collectionProgress.unlocked}/{collectionProgress.total}
             </strong>
+            <span className="landing-profile-strip__action" aria-hidden="true">
+              View ›
+            </span>
           </button>
           <button
             type="button"
             className="landing-profile-strip__stat landing-profile-strip__stat--btn"
             onClick={() => setCollectionTier("superstar")}
+            aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
           >
             <span className="landing-profile-strip__label">Superstars</span>
             <strong>
               {collectionProgress.superstarUnlocked}/
               {collectionProgress.superstarTotal}
             </strong>
+            <span className="landing-profile-strip__action" aria-hidden="true">
+              View ›
+            </span>
           </button>
           <button
             type="button"
             className="landing-profile-strip__stat landing-profile-strip__stat--btn"
             onClick={() => setCollectionTier("scrub")}
+            aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
           >
             <span className="landing-profile-strip__label">Scrubs</span>
             <strong>
               {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
             </strong>
+            <span className="landing-profile-strip__action" aria-hidden="true">
+              View ›
+            </span>
           </button>
           <button
             type="button"
             className="landing-profile-strip__stat landing-profile-strip__stat--btn"
             onClick={() => setCollectionTier("recent-all-star")}
+            aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
           >
             <span className="landing-profile-strip__label">Recent All-Stars</span>
             <strong>
               {collectionProgress.recentUnlocked}/
               {collectionProgress.recentTotal}
             </strong>
+            <span className="landing-profile-strip__action" aria-hidden="true">
+              View ›
+            </span>
           </button>
         </div>
         <p className="landing-profile-strip__meta">
-          Tap a category to see unlocked players. Win to unlock All-Stars, lose
-          to unlock scrubs.
+          Win to unlock All-Stars, lose to unlock scrubs.
         </p>
       </div>
 
