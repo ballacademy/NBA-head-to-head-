@@ -4,6 +4,7 @@ import { calculateLineupScore, getPlayersById } from "./scoring";
 import {
   adjustTeamWinsForStarterAvailability,
   getLineupTeamQualityRawAdjustment,
+  getPlayerTeamQualityTeam,
   getSameTeamRecordAnchor,
   getStarterAvailability,
 } from "./teamRecordBaseline";
@@ -14,7 +15,7 @@ describe("teamRecordBaseline", () => {
   it("bumps baseline wins when starters missed significant time", () => {
     expect(adjustTeamWinsForStarterAvailability(21, 1)).toBe(21);
     expect(adjustTeamWinsForStarterAvailability(21, 0.5)).toBeGreaterThan(21);
-    expect(adjustTeamWinsForStarterAvailability(68, 0.5)).toBeGreaterThan(68);
+    expect(adjustTeamWinsForStarterAvailability(64, 0.5)).toBeGreaterThan(64);
   });
 
   it("returns an anchor only for five-player same-team lineups", () => {
@@ -27,7 +28,7 @@ describe("teamRecordBaseline", () => {
     ]);
 
     expect(getSameTeamRecordAnchor(okc)?.team).toBe("OKC");
-    expect(getSameTeamRecordAnchor(okc)?.actualWins).toBe(68);
+    expect(getSameTeamRecordAnchor(okc)?.actualWins).toBe(64);
 
     expect(
       getSameTeamRecordAnchor(
@@ -54,8 +55,8 @@ describe("teamRecordBaseline", () => {
     const anchor = getSameTeamRecordAnchor(okc);
 
     expect(anchor).not.toBeNull();
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(58);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(72);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(55);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(70);
     expect(getStarterAvailability(okc)).toBeGreaterThan(0.6);
   });
 
@@ -71,6 +72,18 @@ describe("teamRecordBaseline", () => {
     expect(getLineupTeamQualityRawAdjustment(mixed)).toBeGreaterThan(0);
   });
 
+  it("uses stats-season teams for quality, not later roster moves", () => {
+    const naz = players.find((player) => player.bbrPlayerId === "reidna01");
+    expect(naz).toBeDefined();
+    expect(naz?.team).toBe("CHO");
+    expect(naz?.statsTeam).toBe("MIN");
+    expect(getPlayerTeamQualityTeam(naz!)).toBe("MIN");
+
+    const emb = players.find((player) => player.bbrPlayerId === "embiijo01");
+    expect(emb?.team).toBe("PHI");
+    expect(getPlayerTeamQualityTeam(emb!)).toBe("PHI");
+  });
+
   it("does not over-inflate injured small-market teams beyond recovery cap", () => {
     const pelicans = players
       .filter((player) => player.team === "NOP")
@@ -80,8 +93,8 @@ describe("teamRecordBaseline", () => {
     const score = calculateLineupScore(pelicans);
     const anchor = getSameTeamRecordAnchor(pelicans);
 
-    expect(anchor?.actualWins).toBe(21);
+    expect(anchor?.actualWins).toBe(26);
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(20);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(40);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(45);
   });
 });

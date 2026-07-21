@@ -32,6 +32,25 @@ export interface TeamRecordAnchor {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
+/** Normalize alternate Charlotte abbreviations used in source data. */
+export const normalizeTeamAbbreviation = (team: string) =>
+  team === "CHA" ? "CHO" : team;
+
+/**
+ * Team whose prior-season record should influence this player's quality bump.
+ * Prefer the club the season stats were earned for, not a later roster move.
+ */
+export const getPlayerTeamQualityTeam = (
+  player: Pick<Player, "team" | "statsTeam" | "lastTeam">,
+) => {
+  const seasonTeam =
+    player.statsTeam ??
+    (isFreeAgentTeam(player.team) ? player.lastTeam : undefined) ??
+    player.team;
+
+  return seasonTeam ? normalizeTeamAbbreviation(seasonTeam) : undefined;
+};
+
 export const getStarterAvailability = (lineup: Player[]) => {
   if (lineup.length === 0) {
     return 1;
@@ -85,7 +104,7 @@ export const getSameTeamRecordAnchor = (
   }
 
   const team = [...teams][0];
-  const actualWins = winsByTeam[team];
+  const actualWins = winsByTeam[normalizeTeamAbbreviation(team)];
 
   if (actualWins === undefined) {
     return null;
@@ -119,7 +138,10 @@ export const blendProjectedWinsWithTeamAnchor = (
 
 export const getLineupTeamQualityRawAdjustment = (lineup: Player[]) => {
   const teamWins = lineup
-    .map((player) => winsByTeam[player.team])
+    .map((player) => {
+      const team = getPlayerTeamQualityTeam(player);
+      return team ? winsByTeam[team] : undefined;
+    })
     .filter((wins): wins is number => wins !== undefined);
 
   if (teamWins.length === 0) {

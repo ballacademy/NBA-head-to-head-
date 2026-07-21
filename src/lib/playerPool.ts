@@ -30,6 +30,7 @@ export interface RawSeasonPlayer {
   bbrPlayerId?: string;
   name: string;
   team: string;
+  statsTeam?: string;
   lastTeam?: string;
   position?: string;
   positions?: string[];
@@ -186,6 +187,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
   const position = positions[0];
   const ratingKey = raw.bbrPlayerId ?? raw.id;
   const rating = defensiveRatings.get(ratingKey);
+  const statsTeam = raw.statsTeam ?? raw.team;
   const team = applyOptionTeamOverride(
     raw.bbrPlayerId,
     applyCurrentTeamOverride(raw.bbrPlayerId, raw.team),
@@ -199,6 +201,7 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     bbrPlayerId: raw.bbrPlayerId,
     name: raw.name,
     team,
+    statsTeam,
     lastTeam: raw.lastTeam,
     position,
     positions,

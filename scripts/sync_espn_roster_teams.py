@@ -166,6 +166,10 @@ def apply_team_updates(players: list[dict], overrides: dict[str, str]) -> int:
         if not target_team or str(player["team"]) == target_team:
             continue
 
+        # Preserve the team the season stats were earned for.
+        if not player.get("statsTeam"):
+            player["statsTeam"] = str(player["team"])
+
         player["team"] = target_team
         player["id"] = f"{bbr_id}-{target_team.lower()}"
         updated += 1

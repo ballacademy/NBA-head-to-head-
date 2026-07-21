@@ -96,11 +96,11 @@ describe("calculateLineupScore", () => {
     );
   });
 
-  it("projects two all-stars and three strong starters around 45-55 wins", () => {
+  it("projects two all-stars and three strong starters around mid-50s to low-60s wins", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(45);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(60);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(50);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(65);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {

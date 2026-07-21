@@ -25,6 +25,8 @@ export interface Player {
   bbrPlayerId?: string;
   name: string;
   team: string;
+  /** Team the player's season stats were earned for (before roster overrides). */
+  statsTeam?: string;
   lastTeam?: string;
   position: Position;
   positions: Position[];
