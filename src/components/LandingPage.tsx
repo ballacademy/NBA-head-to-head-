@@ -52,7 +52,7 @@ const buildHeadToHeadModeDetails = (
 ) => [
   ...baseDetails,
   `Your draft pool has ${unlockedCount} unlocked players.`,
-  "Win to unlock stars, lose to unlock scrubs.",
+  "Win to unlock All-Stars, lose to unlock scrubs.",
 ];
 
 interface LandingPageProps {
@@ -478,7 +478,7 @@ export function LandingPage({
           </div>
         </div>
         <p className="landing-profile-strip__meta">
-          Win to unlock stars, lose to unlock scrubs.
+          Win to unlock All-Stars, lose to unlock scrubs.
         </p>
       </div>
 

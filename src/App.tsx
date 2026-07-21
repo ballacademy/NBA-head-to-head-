@@ -132,6 +132,12 @@ type FeatureHistoryState = {
 function App() {
   const [phase, setPhase] = useState<AppPhase>("landing");
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
+  const [draftOnboardingHasSalaryCap, setDraftOnboardingHasSalaryCap] =
+    useState(false);
+  const [matchedOpponentName, setMatchedOpponentName] = useState<string | null>(
+    null,
+  );
+  const draftOnboardingResolverRef = useRef<(() => void) | null>(null);
   const [user, setUser] = useState<Drafter | null>(null);
   const [opponent, setOpponent] = useState<Drafter | null>(null);
   const [draftStep, setDraftStep] = useState(0);
@@ -424,6 +430,26 @@ function App() {
     (user?.lineup.filter((playerId): playerId is string => Boolean(playerId))
       .length ?? 0) >= 5;
 
+  const ensureDraftOnboarding = useCallback((hasSalaryCap: boolean) => {
+    if (hasSeenDraftOnboarding()) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      draftOnboardingResolverRef.current = resolve;
+      setDraftOnboardingHasSalaryCap(hasSalaryCap);
+      setShowDraftOnboarding(true);
+    });
+  }, []);
+
+  const dismissDraftOnboarding = useCallback(() => {
+    markDraftOnboardingSeen();
+    setShowDraftOnboarding(false);
+    const resolve = draftOnboardingResolverRef.current;
+    draftOnboardingResolverRef.current = null;
+    resolve?.();
+  }, []);
+
   const startMatch = async (
     team: TeamProfile,
     options: StartDraftOptions = {},
@@ -463,6 +489,10 @@ function App() {
           : salaryCapMode
             ? RANKED_SALARY_CAP
             : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+
+    // Show first-draft instructions before matchmaking or the pick timer starts.
+    await ensureDraftOnboarding(salaryCapLimit != null);
+
     const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
     let ghostOpponent: GhostOpponentSnapshot | null = null;
     let liveOpponent: LiveOpponentSnapshot | null = null;
@@ -493,6 +523,7 @@ function App() {
       setIsCancellingMatchmaking(false);
       setMatchmakingStartedAt(Date.now());
       setMatchmakingMode(nextMatchmakingMode);
+      setMatchedOpponentName(null);
 
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
@@ -529,11 +560,26 @@ function App() {
         } else if (resolution.plan.kind === "queue_for_live") {
           isPendingQueue = true;
         }
+
+        const foundOpponentName =
+          liveOpponent?.teamName ?? ghostOpponent?.teamName ?? null;
+
+        if (foundOpponentName && !session.cancelled) {
+          setMatchedOpponentName(foundOpponentName);
+          await new Promise<void>((resolve) => {
+            window.setTimeout(resolve, 1600);
+          });
+        }
+
+        if (session.cancelled) {
+          return "cancelled";
+        }
       } finally {
         if (matchmakingSessionRef.current?.generation === generation) {
           matchmakingSessionRef.current = null;
           setMatchmakingMode(null);
           setMatchmakingStartedAt(null);
+          setMatchedOpponentName(null);
         }
 
         setIsCancellingMatchmaking(false);
@@ -833,6 +879,8 @@ function App() {
     setDailyDateKey(getDailyDateKey());
     setAllTimeMode(false);
     setShowDraftOnboarding(false);
+    setMatchedOpponentName(null);
+    draftOnboardingResolverRef.current = null;
     setStartMatchError(null);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
@@ -1333,18 +1381,6 @@ function App() {
     };
   }, [phase]);
 
-  useEffect(() => {
-    if (
-      phase === "drafting" &&
-      user &&
-      user.draftSlots.length > 0 &&
-      draftStep < user.draftSlots.length &&
-      !hasSeenDraftOnboarding()
-    ) {
-      setShowDraftOnboarding(true);
-    }
-  }, [draftStep, phase, user, draftSessionKey]);
-
   const isMatchmakingSearchActive =
     matchmakingMode != null || isMatchmakingInFlight;
 
@@ -1427,10 +1463,17 @@ function App() {
           onViewPrivacy={() => openFeaturePage("privacy")}
           onViewTerms={() => openFeaturePage("terms")}
         />
+        {showDraftOnboarding ? (
+          <DraftOnboardingOverlay
+            hasSalaryCap={draftOnboardingHasSalaryCap}
+            onDismiss={dismissDraftOnboarding}
+          />
+        ) : null}
         {matchmakingMode ? (
           <MatchmakingOverlay
             mode={matchmakingMode}
             elapsedSeconds={matchmakingElapsedSeconds}
+            matchedOpponentName={matchedOpponentName}
             onCancel={cancelMatchmaking}
             isCancelling={isCancellingMatchmaking}
           />
@@ -1479,15 +1522,6 @@ function App() {
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
       {canRenderDraftRoom ? (
         <div className="draft-layout">
-          {showDraftOnboarding ? (
-            <DraftOnboardingOverlay
-              hasSalaryCap={user.salaryCapLimit != null}
-              onDismiss={() => {
-                markDraftOnboardingSeen();
-                setShowDraftOnboarding(false);
-              }}
-            />
-          ) : null}
           <DraftRoom
             drafter={user}
             players={draftablePlayers}
@@ -1496,6 +1530,7 @@ function App() {
             dailyChallengeDescription={dailySetup?.challenge.description}
             dailyChallengeTitle={dailySetup?.challenge.title}
             isDailyDraft={isDailyDraft}
+            opponentName={isDailyDraft ? null : opponent?.name}
             onPick={handlePick}
             onTimeout={handleTimeout}
           />
@@ -1512,7 +1547,10 @@ function App() {
       ) : null}
 
       {phase === "waiting" && opponent?.isLiveOpponent ? (
-        <WaitingRoom theme={getMatchModeTheme(user)} />
+        <WaitingRoom
+          theme={getMatchModeTheme(user)}
+          opponentName={opponent.name}
+        />
       ) : null}
 
       {phase === "results" && isPendingQueueMatch && user ? (
@@ -1558,6 +1596,7 @@ function App() {
         <MatchmakingOverlay
           mode={matchmakingMode}
           elapsedSeconds={matchmakingElapsedSeconds}
+          matchedOpponentName={matchedOpponentName}
           onCancel={cancelMatchmaking}
           isCancelling={isCancellingMatchmaking}
         />

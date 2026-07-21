@@ -107,19 +107,48 @@ export const createStarterCollection = (): string[] => {
     return Boolean(player && !isSuperstarPlayer(player));
   });
   const supporting = shuffle(remainingPool).slice(0, STARTING_COLLECTION_SIZE - 1);
+  const recentAllStars = getRecentAllStarPlayerIds();
 
-  return shuffle([superstar.id, ...supporting]);
+  return Array.from(
+    new Set([superstar.id, ...supporting, ...recentAllStars]),
+  );
+};
+
+/** Ensure existing saves also receive the free Recent All-Star unlock set. */
+export const withRecentAllStarsUnlocked = (
+  collection: PlayerCollection,
+): PlayerCollection => {
+  const unlocked = new Set(collection.unlockedIds);
+  let changed = false;
+
+  for (const playerId of getRecentAllStarPlayerIds()) {
+    if (!unlocked.has(playerId)) {
+      unlocked.add(playerId);
+      changed = true;
+    }
+  }
+
+  if (!changed) {
+    return collection;
+  }
+
+  return {
+    ...collection,
+    unlockedIds: [...unlocked],
+  };
 };
 
 export const loadPlayerCollection = (): PlayerCollection => {
   const saved = readJson<Partial<PlayerCollection>>(COLLECTION_KEY);
 
   if (saved?.initialized && Array.isArray(saved.unlockedIds)) {
-    return sanitizePlayerCollection({
-      unlockedIds: saved.unlockedIds,
-      pendingUnlock: saved.pendingUnlock ?? null,
-      initialized: true,
-    });
+    return withRecentAllStarsUnlocked(
+      sanitizePlayerCollection({
+        unlockedIds: saved.unlockedIds,
+        pendingUnlock: saved.pendingUnlock ?? null,
+        initialized: true,
+      }),
+    );
   }
 
   const unlockedIds = createStarterCollection();
@@ -168,13 +197,19 @@ export const savePlayerCollection = (collection: PlayerCollection) => {
 export const ensurePlayerCollection = (): PlayerCollection => {
   const saved = readJson<Partial<PlayerCollection>>(COLLECTION_KEY);
   const collection = sanitizePlayerCollection(loadPlayerCollection());
+  const previousUnlockedCount = Array.isArray(saved?.unlockedIds)
+    ? saved.unlockedIds.length
+    : 0;
 
   if (!saved) {
     savePlayerCollection(collection);
     return collection;
   }
 
-  if (saved.pendingUnlock && !collection.pendingUnlock) {
+  if (
+    (saved.pendingUnlock && !collection.pendingUnlock) ||
+    collection.unlockedIds.length !== previousUnlockedCount
+  ) {
     savePlayerCollection(collection);
   }
 
@@ -228,7 +263,12 @@ export const createOpponentCollection = (
   const minCount = Math.min(userAllStarCount, maxCount);
   const targetCount =
     minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
-  const unlockedIds = shuffle(pool).slice(0, targetCount);
+  const unlockedIds = Array.from(
+    new Set([
+      ...shuffle(pool).slice(0, targetCount),
+      ...getRecentAllStarPlayerIds(),
+    ]),
+  );
 
   return {
     unlockedIds,

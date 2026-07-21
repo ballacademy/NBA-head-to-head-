@@ -184,6 +184,13 @@ main {
   margin-bottom: 14px;
 }
 
+.draft-page-header__matchup {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 .draft-progress {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

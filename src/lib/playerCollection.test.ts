@@ -54,25 +54,35 @@ describe("playerCollection", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts each user with five random all-stars including a superstar", () => {
+  it("starts each user with five 2026 all-stars plus every recent all-star", () => {
     const starters = createStarterCollection();
+    const recentIds = getRecentAllStarPlayerIds();
+    const starterSet = new Set(starters);
 
-    expect(starters).toHaveLength(STARTING_COLLECTION_SIZE);
-    expect(new Set(starters).size).toBe(STARTING_COLLECTION_SIZE);
+    expect(starters.length).toBeGreaterThanOrEqual(
+      STARTING_COLLECTION_SIZE + recentIds.length,
+    );
+    expect(starterSet.size).toBe(starters.length);
 
-    starters.forEach((playerId) => {
-      const player = getPlayerById(playerId);
-
-      expect(player).toBeDefined();
-      expect(isAllStarPlayer(player!)).toBe(true);
+    recentIds.forEach((playerId) => {
+      expect(starterSet.has(playerId)).toBe(true);
     });
+
+    const currentAllStarStarters = starters.filter((playerId) => {
+      const player = getPlayerById(playerId);
+      return Boolean(player && isAllStarPlayer(player));
+    });
+
+    expect(currentAllStarStarters.length).toBeGreaterThanOrEqual(
+      STARTING_COLLECTION_SIZE,
+    );
 
     const superstarCount = starters.filter((playerId) => {
       const player = getPlayerById(playerId);
       return player && isSuperstarPlayer(player);
     }).length;
 
-    expect(superstarCount).toBe(1);
+    expect(superstarCount).toBeGreaterThanOrEqual(1);
   });
 
   it("offers two locked all-stars after a win once unlock progress is met", () => {
@@ -232,7 +242,9 @@ describe("playerCollection", () => {
   it("tracks progress against the full 2026 all-star pool", () => {
     const collection = loadPlayerCollection();
 
-    expect(collection.unlockedIds.length).toBe(STARTING_COLLECTION_SIZE);
+    expect(collection.unlockedIds.length).toBeGreaterThanOrEqual(
+      STARTING_COLLECTION_SIZE,
+    );
     expect(ALL_STAR_COUNT).toBeGreaterThan(STARTING_COLLECTION_SIZE);
   });
 
@@ -254,12 +266,10 @@ describe("playerCollection", () => {
     expect(lockedAllStarId).toBeDefined();
     expect(draftableIds.has(lockedAllStarId!)).toBe(false);
 
-    const lockedRecentAllStarId = getRecentAllStarPlayerIds().find(
-      (playerId) => !collection.unlockedIds.includes(playerId),
-    );
-
-    expect(lockedRecentAllStarId).toBeDefined();
-    expect(draftableIds.has(lockedRecentAllStarId!)).toBe(false);
+    getRecentAllStarPlayerIds().forEach((playerId) => {
+      expect(collection.unlockedIds).toContain(playerId);
+      expect(draftableIds.has(playerId)).toBe(true);
+    });
 
     const regularPlayer = players.find((player) => isRegularDraftPlayer(player));
 

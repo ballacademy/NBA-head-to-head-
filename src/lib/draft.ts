@@ -132,37 +132,51 @@ export const completeSalaryCapDraftFromPartial = (
   remainingSlots: DraftSlotConstraint[],
   salaryCapLimit: number,
 ): string[] | null => {
-  const lineup = [...partialLineupIds];
-  const pickedIds = new Set(lineup);
   const poolById = new Map(players.map((player) => [player.id, player]));
+  const memo = new Map<string, string[] | null>();
 
-  for (let index = 0; index < remainingSlots.length; index += 1) {
-    const slot = remainingSlots[index]!;
-    const lineupPlayers = lineup
+  const solve = (lineupIds: string[], slotIndex: number): string[] | null => {
+    if (slotIndex >= remainingSlots.length) {
+      return lineupIds;
+    }
+
+    const memoKey = `${lineupIds.join(">")}@${slotIndex}`;
+    if (memo.has(memoKey)) {
+      return memo.get(memoKey) ?? null;
+    }
+
+    const slot = remainingSlots[slotIndex]!;
+    const pickedIds = new Set(lineupIds);
+    const lineupPlayers = lineupIds
       .map((playerId) => poolById.get(playerId))
       .filter((player): player is Player => Boolean(player));
-    const picksRemaining = remainingSlots.length - index;
-    let selection = pickBestForSlot(players, slot, pickedIds, {
-      maxAffordableSalary: getMaxAffordableSalary(
-        lineupPlayers,
-        picksRemaining,
-        salaryCapLimit,
-      ),
-    });
+    const picksRemaining = remainingSlots.length - slotIndex;
+    const maxAffordableSalary = getMaxAffordableSalary(
+      lineupPlayers,
+      picksRemaining,
+      salaryCapLimit,
+    );
+    const candidates = sortDraftCandidates(
+      filterPlayersForSlot(players, slot, pickedIds, {
+        maxAffordableSalary,
+      }),
+    );
 
-    if (!selection && picksRemaining === 1) {
-      selection = pickCheapestForSlot(players, slot, pickedIds);
+    let result: string[] | null = null;
+
+    for (const candidate of candidates) {
+      const next = solve([...lineupIds, candidate.id], slotIndex + 1);
+      if (next) {
+        result = next;
+        break;
+      }
     }
 
-    if (!selection) {
-      return null;
-    }
+    memo.set(memoKey, result);
+    return result;
+  };
 
-    lineup.push(selection);
-    pickedIds.add(selection);
-  }
-
-  return lineup;
+  return solve(partialLineupIds, 0);
 };
 
 export const canCompleteSalaryCapDraft = (
@@ -182,35 +196,9 @@ export const autoDraftLineupUnderSalaryCap = (
   players: Player[],
   draftSlots: DraftSlotConstraint[],
   salaryCapLimit: number,
-) => {
-  const lineup: string[] = [];
-  const pickedIds = new Set<string>();
-  const poolById = new Map(players.map((player) => [player.id, player]));
-
-  for (let index = 0; index < draftSlots.length; index += 1) {
-    const slot = draftSlots[index]!;
-    const lineupPlayers = lineup
-      .map((playerId) => poolById.get(playerId))
-      .filter((player): player is Player => Boolean(player));
-    const picksRemaining = draftSlots.length - index;
-    const selection = pickBestForSlot(players, slot, pickedIds, {
-      maxAffordableSalary: getMaxAffordableSalary(
-        lineupPlayers,
-        picksRemaining,
-        salaryCapLimit,
-      ),
-    });
-
-    if (!selection) {
-      break;
-    }
-
-    lineup.push(selection);
-    pickedIds.add(selection);
-  }
-
-  return lineup;
-};
+) =>
+  completeSalaryCapDraftFromPartial(players, [], draftSlots, salaryCapLimit) ??
+  [];
 
 export const validateDraftSlotsFeasibleUnderSalaryCap = (
   players: Player[],
