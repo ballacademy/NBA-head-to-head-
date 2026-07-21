@@ -217,12 +217,10 @@ export function DailyDraftResults({
       <div className="panel panel--compact daily-draft-results__header">
         <p className="eyebrow">
           {optimalReview
-            ? `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily answer key`
+            ? `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily Answer Key`
             : `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily complete`}
         </p>
-        <h2>
-          {optimalReview ? "Yesterday's best lineup" : dailyGoal.title}
-        </h2>
+        <h2>{dailyGoal.title}</h2>
         <p>
           {optimalReview
             ? `${formatDailyDateLabel(dailyDateKey)} · ${dailyGoal.description}`
@@ -262,13 +260,12 @@ export function DailyDraftResults({
       <AchievementToast achievementIds={newAchievementIds} />
 
       <section className="panel panel--compact daily-draft-results__lineup">
-        <h3>{optimalReview ? "Best possible lineup" : user.name}</h3>
+        <h3>{optimalReview ? "Best Possible Lineup" : user.name}</h3>
         <div className="team-lineup-card__players">
-          {orderedLineup.map((player, index) => (
+          {orderedLineup.map((player) => (
             <PlayerStatLine
               key={player.id}
               player={player}
-              pickNumber={index + 1}
               dailyGoal={dailyGoal}
             />
           ))}
