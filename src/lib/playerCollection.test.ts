@@ -17,8 +17,11 @@ import {
   createStarterCollection,
   createTieredUnlockPair,
   createWinUnlockOffer,
+  getCollectionProgress,
+  getCollectionTierTotal,
   getDraftablePlayers,
   getUnlockedPlayerClassLabel,
+  getUnlockedPlayersByTier,
   grantLossUnlock,
   grantWinUnlock,
   isPlayerStatsMasked,
@@ -371,5 +374,24 @@ describe("playerCollection", () => {
     expect(
       [offer!.optionA, offer!.optionB].some((id) => isSuperScrubPlayer({ id })),
     ).toBe(true);
+  });
+
+  it("lists unlocked players by collection tier", () => {
+    const collection = loadPlayerCollection();
+    const progress = getCollectionProgress(collection);
+    const allStars = getUnlockedPlayersByTier("all-star", collection);
+    const recent = getUnlockedPlayersByTier("recent-all-star", collection);
+    const scrubs = getUnlockedPlayersByTier("scrub", collection);
+
+    expect(allStars.length).toBe(progress.unlocked);
+    expect(recent.length).toBe(progress.recentUnlocked);
+    expect(scrubs.length).toBe(progress.unlockedScrubs);
+    expect(allStars.every((player) => isAllStarPlayer(player))).toBe(true);
+    expect(recent.every((player) => isRecentAllStarPlayer(player))).toBe(true);
+    expect(getCollectionTierTotal("all-star", progress)).toBe(progress.total);
+    expect(getCollectionTierTotal("scrub", progress)).toBe(progress.scrubPool);
+    expect(getCollectionTierTotal("recent-all-star", progress)).toBe(
+      progress.recentTotal,
+    );
   });
 });

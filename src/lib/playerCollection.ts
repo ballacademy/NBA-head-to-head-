@@ -487,6 +487,56 @@ export const dismissPendingUnlock = (collection = ensurePlayerCollection()) => {
   return next;
 };
 
+export type CollectionTier =
+  | "all-star"
+  | "superstar"
+  | "recent-all-star"
+  | "scrub"
+  | "super-scrub";
+
+export const COLLECTION_TIER_LABELS: Record<CollectionTier, string> = {
+  "all-star": "All-Stars",
+  superstar: "Superstars",
+  "recent-all-star": "Recent All-Stars",
+  scrub: "Scrubs",
+  "super-scrub": "Super Scrubs",
+};
+
+const playerMatchesCollectionTier = (
+  player: Player | undefined,
+  tier: CollectionTier,
+) => {
+  if (!player) {
+    return false;
+  }
+
+  switch (tier) {
+    case "all-star":
+      return isAllStarPlayer(player);
+    case "superstar":
+      return isSuperstarPlayer(player);
+    case "recent-all-star":
+      return isRecentAllStarPlayer(player);
+    case "scrub":
+      return isScrubPlayer(player);
+    case "super-scrub":
+      return isSuperScrubPlayer(player);
+    default:
+      return false;
+  }
+};
+
+export const getUnlockedPlayersByTier = (
+  tier: CollectionTier,
+  collection = ensurePlayerCollection(),
+): Player[] =>
+  collection.unlockedIds
+    .map((playerId) => getPlayerById(playerId))
+    .filter((player): player is Player =>
+      playerMatchesCollectionTier(player, tier),
+    )
+    .sort((left, right) => left.name.localeCompare(right.name));
+
 export const getCollectionProgress = (collection = ensurePlayerCollection()) => {
   const unlockedAllStars = collection.unlockedIds.filter((playerId) => {
     const player = getPlayerById(playerId);
@@ -526,4 +576,24 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     unlockedScrubs,
     unlockedSuperScrubs,
   };
+};
+
+export const getCollectionTierTotal = (
+  tier: CollectionTier,
+  progress = getCollectionProgress(),
+) => {
+  switch (tier) {
+    case "all-star":
+      return progress.total;
+    case "superstar":
+      return progress.superstarTotal;
+    case "recent-all-star":
+      return progress.recentTotal;
+    case "scrub":
+      return progress.scrubPool;
+    case "super-scrub":
+      return progress.superScrubPool;
+    default:
+      return 0;
+  }
 };

@@ -23,9 +23,17 @@ export function PlayerStatLine({
   allTimeMode = false,
 }: PlayerStatLineProps) {
   const goalStat = dailyGoal ? formatPlayerGoalStat(player, dailyGoal) : null;
+  const isDaily = Boolean(dailyGoal);
+  const meta = `${player.team} · ${formatPlayerPositions(player.positions)}${
+    pickNumber ? ` · Pick ${pickNumber}` : ""
+  }`;
 
   return (
-    <div className={`player-stat-line${compact ? " player-stat-line--compact" : ""}`}>
+    <div
+      className={`player-stat-line${compact ? " player-stat-line--compact" : ""}${
+        isDaily ? " player-stat-line--daily" : ""
+      }`}
+    >
       <PlayerTeamIcon
         team={player.team}
         position={player.position}
@@ -34,29 +42,47 @@ export function PlayerStatLine({
         label={`${player.name}, ${player.team} ${player.position}`}
       />
       <div className="player-stat-line__content">
-        <div className="player-stat-line__title-row">
-          <strong className="player-stat-line__name">
-            {player.name}
-            <span className="player-stat-line__meta">
-              {" "}
-              {player.team} · {formatPlayerPositions(player.positions)}
-              {pickNumber ? ` · Pick ${pickNumber}` : ""}
-            </span>
-          </strong>
-          {goalStat ? (
-            <span className="player-stat-line__goal-stat">{goalStat}</span>
-          ) : null}
-          <span className="player-stat-line__badges">
-            <LimitedSampleBadge player={player} compact={compact} />
-            <PlayerRarityBadge
+        {isDaily ? (
+          <>
+            <strong className="player-stat-line__name player-stat-line__name--full">
+              {player.name}
+            </strong>
+            <div className="player-stat-line__meta-row">
+              <span className="player-stat-line__meta">{meta}</span>
+              {goalStat ? (
+                <span className="player-stat-line__goal-stat">{goalStat}</span>
+              ) : null}
+              <span className="player-stat-line__badges">
+                <LimitedSampleBadge player={player} compact={compact} />
+                <PlayerRarityBadge
+                  player={player}
+                  allTimeMode={allTimeMode}
+                  compact={compact}
+                />
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="player-stat-line__title-row">
+              <strong className="player-stat-line__name">
+                {player.name}
+                <span className="player-stat-line__meta"> {meta}</span>
+              </strong>
+              <span className="player-stat-line__badges">
+                <LimitedSampleBadge player={player} compact={compact} />
+                <PlayerRarityBadge
+                  player={player}
+                  allTimeMode={allTimeMode}
+                  compact={compact}
+                />
+              </span>
+            </div>
+            <PlayerDraftStats
               player={player}
-              allTimeMode={allTimeMode}
-              compact={compact}
+              variant={compact ? "inline" : "pills"}
             />
-          </span>
-        </div>
-        {dailyGoal ? null : (
-          <PlayerDraftStats player={player} variant={compact ? "inline" : "pills"} />
+          </>
         )}
       </div>
     </div>

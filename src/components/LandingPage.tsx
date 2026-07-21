@@ -2,8 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   completeUnlock,
   getCollectionProgress,
+  getCollectionTierTotal,
+  getUnlockedPlayersByTier,
+  type CollectionTier,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { CollectionTierModal } from "./CollectionTierModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import type { DailyDraftMode } from "../lib/dailyDraftMode";
 import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
@@ -119,6 +123,9 @@ export function LandingPage({
   const [teamNameModalMessage, setTeamNameModalMessage] = useState("");
   const [showUnlockModal, setShowUnlockModal] = useState(
     () => Boolean(collection.pendingUnlock),
+  );
+  const [collectionTier, setCollectionTier] = useState<CollectionTier | null>(
+    null,
   );
   const teamFormRef = useRef<HTMLDivElement>(null);
 
@@ -380,6 +387,15 @@ export function LandingPage({
         />
       ) : null}
 
+      {collectionTier ? (
+        <CollectionTierModal
+          tier={collectionTier}
+          players={getUnlockedPlayersByTier(collectionTier, collection)}
+          total={getCollectionTierTotal(collectionTier, collectionProgress)}
+          onClose={() => setCollectionTier(null)}
+        />
+      ) : null}
+
       <div className="landing__glow" aria-hidden="true" />
 
       <div className="landing__brand">
@@ -451,34 +467,56 @@ export function LandingPage({
       </div>
 
       <div className="landing-profile-strip landing-card landing-card--profile">
-        <div className="landing-profile-strip__stats">
-          <div className="landing-profile-strip__stat">
+        <div
+          className="landing-profile-strip__stats"
+          aria-label="Player collection by category"
+        >
+          <button
+            type="button"
+            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+            onClick={() => setCollectionTier("all-star")}
+          >
             <span className="landing-profile-strip__label">All-Stars</span>
             <strong>
               {collectionProgress.unlocked}/{collectionProgress.total}
             </strong>
-          </div>
-          <div className="landing-profile-strip__stat">
+          </button>
+          <button
+            type="button"
+            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+            onClick={() => setCollectionTier("superstar")}
+          >
             <span className="landing-profile-strip__label">Superstars</span>
             <strong>
-              {collectionProgress.superstarUnlocked}/{collectionProgress.superstarTotal}
+              {collectionProgress.superstarUnlocked}/
+              {collectionProgress.superstarTotal}
             </strong>
-          </div>
-          <div className="landing-profile-strip__stat">
+          </button>
+          <button
+            type="button"
+            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+            onClick={() => setCollectionTier("scrub")}
+          >
             <span className="landing-profile-strip__label">Scrubs</span>
             <strong>
               {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
             </strong>
-          </div>
-          <div className="landing-profile-strip__stat">
+          </button>
+          <button
+            type="button"
+            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+            onClick={() => setCollectionTier("recent-all-star")}
+          >
             <span className="landing-profile-strip__label">Recent All-Stars</span>
             <strong>
-              {collectionProgress.recentUnlocked}/{collectionProgress.recentTotal}
+              {collectionProgress.recentUnlocked}/
+              {collectionProgress.recentTotal}
             </strong>
-          </div>
+          </button>
         </div>
         <p className="landing-profile-strip__meta">
-          Win to unlock All-Stars, lose to unlock scrubs.
+          Tap a category to see unlocked players. Win to unlock All-Stars, lose
+          to unlock scrubs.
         </p>
       </div>
 

@@ -724,6 +724,27 @@ main {
   min-width: 0;
 }
 
+.landing-profile-strip__stat--btn {
+  margin: 0;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.landing-profile-strip__stat--btn:hover,
+.landing-profile-strip__stat--btn:focus-visible {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+  outline: none;
+}
+
 .landing-profile-strip__label {
   color: #94a3b8;
   font-size: 0.68rem;
@@ -742,6 +763,68 @@ main {
   margin: 10px 0 0;
   color: #94a3b8;
   font-size: 0.82rem;
+}
+
+.collection-tier-modal__panel {
+  width: min(520px, 100%);
+  max-height: min(640px, calc(100vh - 48px));
+  display: grid;
+  gap: 12px;
+}
+
+.collection-tier-modal__panel h2 {
+  margin: 0;
+}
+
+.collection-tier-modal__summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.collection-tier-modal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-height: min(420px, 55vh);
+  overflow: auto;
+}
+
+.collection-tier-modal__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.collection-tier-modal__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.collection-tier-modal__name {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.collection-tier-modal__meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.collection-tier-modal__empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .daily-draft-card__yesterday {
@@ -4036,7 +4119,11 @@ main {
 }
 
 .daily-draft-results__lineup h3 {
-  margin: 4px 0 10px;
+  margin: 4px 0 8px;
+}
+
+.daily-draft-results__lineup .team-lineup-card__players {
+  gap: 5px;
 }
 
 .daily-draft-results__header {
@@ -4205,6 +4292,50 @@ main {
   white-space: nowrap;
   font-size: 0.95rem;
   line-height: 1.2;
+}
+
+.player-stat-line__name--full,
+.player-stat-line--daily .player-stat-line__name {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.player-stat-line--daily {
+  align-items: start;
+  padding: 7px 9px;
+  gap: 7px;
+}
+
+.player-stat-line--daily .player-stat-line__content {
+  display: grid;
+  gap: 3px;
+}
+
+.player-stat-line--daily .player-stat-line__meta-row {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.player-stat-line--daily .player-stat-line__meta-row .player-stat-line__meta {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  flex: 1 1 auto;
+  line-height: 1.25;
+}
+
+.player-stat-line--daily .player-stat-line__goal-stat {
+  margin-left: 0;
+  line-height: 1.25;
+}
+
+.player-stat-line--daily .player-stat-line__badges {
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .player-stat-line__name .player-stat-line__meta {
