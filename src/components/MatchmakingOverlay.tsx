@@ -3,6 +3,7 @@ import { CLASSIC_HEAD_TO_HEAD_LABEL } from "../lib/modeLabels";
 interface MatchmakingOverlayProps {
   mode: "classic" | "ranked";
   elapsedSeconds: number;
+  matchedOpponentName?: string | null;
   onCancel?: () => void;
   isCancelling?: boolean;
 }
@@ -10,12 +11,15 @@ interface MatchmakingOverlayProps {
 export function MatchmakingOverlay({
   mode,
   elapsedSeconds,
+  matchedOpponentName = null,
   onCancel,
   isCancelling = false,
 }: MatchmakingOverlayProps) {
   const modeLabel = mode === "ranked" ? "Pro" : CLASSIC_HEAD_TO_HEAD_LABEL;
-  const statusLabel =
-    elapsedSeconds > 0
+  const isMatched = Boolean(matchedOpponentName);
+  const statusLabel = isMatched
+    ? `Matched vs ${matchedOpponentName}`
+    : elapsedSeconds > 0
       ? `Finding opponent… ${elapsedSeconds}s`
       : "Finding opponent…";
 
@@ -23,14 +27,14 @@ export function MatchmakingOverlay({
     <div className="matchmaking-overlay" role="status" aria-live="polite">
       <section className="panel panel--compact matchmaking-overlay__panel">
         <p className="eyebrow">{modeLabel} matchmaking</p>
-        <h2>Searching for an opponent</h2>
+        <h2>{isMatched ? "Opponent found" : "Searching for an opponent"}</h2>
 
         <div className="waiting-indicator matchmaking-overlay__indicator">
           <span className="waiting-spinner" aria-hidden="true" />
           <strong>{statusLabel}</strong>
         </div>
 
-        {onCancel ? (
+        {onCancel && !isMatched ? (
           <button
             type="button"
             className="secondary-button matchmaking-overlay__cancel"

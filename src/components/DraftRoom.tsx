@@ -48,6 +48,7 @@ interface DraftRoomProps {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   dailyChallengeDescription?: string;
+  opponentName?: string | null;
   onPick: (slot: number, playerId: string) => void;
   onTimeout: (slot: number) => void;
 }
@@ -60,6 +61,7 @@ export function DraftRoom({
   isDailyDraft = false,
   dailyChallengeTitle,
   dailyChallengeDescription,
+  opponentName = null,
   onPick,
   onTimeout,
 }: DraftRoomProps) {
@@ -321,6 +323,9 @@ export function DraftRoom({
             />
           )}
         </p>
+        {opponentName ? (
+          <p className="draft-page-header__matchup">vs {opponentName}</p>
+        ) : null}
       </div>
 
       <div

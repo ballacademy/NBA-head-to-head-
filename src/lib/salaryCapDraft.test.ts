@@ -5,7 +5,11 @@ import {
   filterPlayersForSlot,
 } from "./draft";
 import { filterSalaryCapPlayersForSlot } from "./salaryCapDraft";
-import { getMaxAffordableSalary, RANKED_SALARY_CAP } from "./salaryCap";
+import {
+  getMaxAffordableSalary,
+  MINIMUM_PLAYER_SALARY,
+  RANKED_SALARY_CAP,
+} from "./salaryCap";
 import { players } from "../data/players";
 
 describe("salaryCapDraft", () => {
@@ -18,15 +22,15 @@ describe("salaryCapDraft", () => {
       { position: "C" as const, division: "Northwest" as const },
     ];
 
-    const firstThree = completeSalaryCapDraftFromPartial(
+    const fullPath = completeSalaryCapDraftFromPartial(
       players,
       [],
-      slots.slice(0, 3),
+      slots,
       RANKED_SALARY_CAP,
     );
 
-    expect(firstThree).not.toBeNull();
-    const partialIds = firstThree!;
+    expect(fullPath).toHaveLength(5);
+    const partialIds = fullPath!.slice(0, 3);
 
     const fourthSlot = slots[3]!;
     const forwardFeasible = filterSalaryCapPlayersForSlot(
@@ -58,7 +62,6 @@ describe("salaryCapDraft", () => {
     expect(forwardFeasible.length).toBeLessThanOrEqual(capOnly.length);
 
     for (const candidate of forwardFeasible) {
-      const poolById = new Map(players.map((player) => [player.id, player]));
       const partialLineup = partialIds
         .map((playerId) => poolById.get(playerId))
         .filter((player): player is NonNullable<typeof player> => Boolean(player));
@@ -83,22 +86,46 @@ describe("salaryCapDraft", () => {
       { position: "C" as const, division: "Northwest" as const },
     ];
 
-    const partial = completeSalaryCapDraftFromPartial(
+    const fullPath = completeSalaryCapDraftFromPartial(
       players,
       [],
-      slots.slice(0, 4),
+      slots,
       RANKED_SALARY_CAP,
     );
 
-    expect(partial).toHaveLength(4);
+    expect(fullPath).toHaveLength(5);
 
+    const partial = fullPath!.slice(0, 4);
     const completed = completeSalaryCapDraftFromPartial(
       players,
-      partial ?? [],
+      partial,
       slots.slice(4),
       RANKED_SALARY_CAP,
     );
 
     expect(completed).toHaveLength(5);
+  });
+
+  it("never treats an over-cap final pick as a legal completion", () => {
+    const slot = {
+      position: "PG" as const,
+      division: "Pacific" as const,
+    };
+    const completed = completeSalaryCapDraftFromPartial(
+      players,
+      [],
+      [slot],
+      MINIMUM_PLAYER_SALARY - 1,
+    );
+
+    expect(completed).toBeNull();
+    expect(canCompleteSalaryCapDraft(players, [], [slot], MINIMUM_PLAYER_SALARY - 1)).toBe(
+      false,
+    );
+
+    const affordable = filterPlayersForSlot(players, slot, new Set(), {
+      maxAffordableSalary: MINIMUM_PLAYER_SALARY - 1,
+    });
+    expect(affordable).toHaveLength(0);
   });
 });
