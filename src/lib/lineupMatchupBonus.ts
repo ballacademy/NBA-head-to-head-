@@ -10,11 +10,13 @@ import {
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import type { Player } from "./types";
 
-export const SUPERSTAR_LINEUP_BONUS = 2.5;
-export const ALL_STAR_LINEUP_BONUS = 1.4;
-export const RECENT_ALL_STAR_LINEUP_BONUS = 0.45;
-export const IMPACT_RANK_TOP_BONUS = 2.5;
-export const IMPACT_RANK_FLOOR_BONUS = 0.2;
+export const SUPERSTAR_LINEUP_BONUS = 3.5;
+export const ALL_STAR_LINEUP_BONUS = 2.0;
+export const RECENT_ALL_STAR_LINEUP_BONUS = 1.0;
+export const IMPACT_RANK_TOP_BONUS = 3.5;
+export const IMPACT_RANK_FLOOR_BONUS = 0.35;
+/** Flat talent credit for each player ranked inside the impact elite band. */
+export const IMPACT_RANK_DEPTH_BONUS_PER_PLAYER = 0.55;
 export const SCRUB_LINEUP_PENALTY = -1.1;
 export const SUPER_SCRUB_LINEUP_PENALTY = -2;
 
@@ -47,6 +49,20 @@ export const getPlayerImpactRankLineupBonus = (player: Player) => {
     (IMPACT_RANK_FLOOR_BONUS - IMPACT_RANK_TOP_BONUS) * progress
   );
 };
+
+export const isImpactRankDepthPlayer = (player: Player) => {
+  const rank = getPlayerImpactRank(player);
+  return rank !== null && rank <= IMPACT_RANK_ELITE_THRESHOLD;
+};
+
+/** Rewards lineups that stack more top-100 impact players. */
+export const getImpactDepthLineupBonus = (lineup: Player[]) =>
+  lineup.reduce(
+    (bonus, player) =>
+      bonus +
+      (isImpactRankDepthPlayer(player) ? IMPACT_RANK_DEPTH_BONUS_PER_PLAYER : 0),
+    0,
+  );
 
 export const getPlayerLineupStarBonus = (player: Player) =>
   Math.max(
@@ -94,4 +110,6 @@ export const getScrubTierLineupPenalty = (lineup: Player[]) =>
   }, 0);
 
 export const getLineupTierAdjustment = (lineup: Player[]) =>
-  getLineupStarBonus(lineup) + getScrubTierLineupPenalty(lineup);
+  getLineupStarBonus(lineup) +
+  getImpactDepthLineupBonus(lineup) +
+  getScrubTierLineupPenalty(lineup);

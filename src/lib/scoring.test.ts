@@ -100,7 +100,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(50);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(65);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(68);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {
@@ -844,7 +844,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(eliteOffenseLineup);
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(55);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(62);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(66);
     expect(score.strengths).toContain(
       "Elite playmaking supports multiple high-usage creators.",
     );
@@ -1001,5 +1001,29 @@ describe("compareLineups", () => {
     expect(
       compareLineups(lineupA, lineupA).result,
     ).toBe("tie");
+  });
+
+  it("prefers five top-100 impact players over a thinner star core", () => {
+    const deepTalent = lineup([
+      "giddejo01-chi",
+      "holidjr01-por",
+      "thompau01-det",
+      "adebaba01-mia",
+      "reidna01-cho",
+    ]);
+    const thinStarCore = lineup([
+      "hardyja02-lal",
+      "banede01-orl",
+      "portibo01-mia",
+      "reidna01-cho",
+      "embiijo01-phi",
+    ]);
+
+    const result = compareLineups(deepTalent, thinStarCore);
+
+    expect(deepTalent).toHaveLength(5);
+    expect(thinStarCore).toHaveLength(5);
+    expect(result.winner).toBe("A");
+    expect(result.margin).toBeGreaterThan(0);
   });
 });

@@ -3,6 +3,7 @@ import { players } from "../data/players";
 import { playersById } from "./playerPool";
 import {
   ALL_STAR_LINEUP_BONUS,
+  getImpactDepthLineupBonus,
   getImpactRankLineupBonus,
   getLineupStarBonus,
   getLineupTierAdjustment,
@@ -11,6 +12,7 @@ import {
   getPlayerTaggedStarTierBonus,
   getScrubTierLineupPenalty,
   getStarTierLineupBonus,
+  IMPACT_RANK_DEPTH_BONUS_PER_PLAYER,
   IMPACT_RANK_FLOOR_BONUS,
   IMPACT_RANK_TOP_BONUS,
   RECENT_ALL_STAR_LINEUP_BONUS,
@@ -69,19 +71,25 @@ describe("getImpactRankLineupBonus", () => {
     expect(getLineupStarBonus([kat!])).toBe(getPlayerLineupStarBonus(kat!));
   });
 
-  it("applies diminishing boosts through the top 75 impact players", () => {
+  it("applies diminishing boosts through the top 100 impact players", () => {
     const castle = playersById.get("castlst01-sas");
     const amen = playersById.get("thompam01-hou");
-    const pritchard = playersById.get("pritcpa01-bos");
+    const giddey = players.find((player) => player.bbrPlayerId === "giddejo01");
+    const unranked = players.find(
+      (player) => getPlayerImpactRank(player) === null,
+    );
 
-    expect(castle && amen && pritchard).toBeTruthy();
+    expect(castle && amen && giddey && unranked).toBeTruthy();
     expect(getPlayerLineupStarBonus(castle!)).toBeGreaterThan(
       getPlayerLineupStarBonus(amen!),
     );
     expect(getPlayerLineupStarBonus(amen!)).toBeGreaterThan(
+      getPlayerLineupStarBonus(giddey!),
+    );
+    expect(getPlayerLineupStarBonus(giddey!)).toBeGreaterThan(
       IMPACT_RANK_FLOOR_BONUS,
     );
-    expect(getPlayerLineupStarBonus(pritchard!)).toBe(0);
+    expect(getPlayerLineupStarBonus(unranked!)).toBe(0);
   });
 
   it("folds unified star boosts into lineup tier adjustments", () => {
@@ -91,7 +99,34 @@ describe("getImpactRankLineupBonus", () => {
       playersById.get("thompam01-hou"),
     ].filter((player): player is NonNullable<typeof player> => Boolean(player));
 
-    expect(getLineupTierAdjustment(lineup)).toBe(getLineupStarBonus(lineup));
+    expect(getLineupTierAdjustment(lineup)).toBe(
+      getLineupStarBonus(lineup) + getImpactDepthLineupBonus(lineup),
+    );
+  });
+
+  it("rewards top-100 impact depth so fuller talent lineups climb", () => {
+    const deep = [
+      players.find((player) => player.bbrPlayerId === "giddejo01"),
+      players.find((player) => player.bbrPlayerId === "holidjr01"),
+      players.find((player) => player.bbrPlayerId === "thompau01"),
+      players.find((player) => player.bbrPlayerId === "adebaba01"),
+      players.find((player) => player.bbrPlayerId === "reidna01"),
+    ].filter((player): player is NonNullable<typeof player> => Boolean(player));
+    const thin = [
+      players.find((player) => player.bbrPlayerId === "hardyja02"),
+      players.find((player) => player.bbrPlayerId === "banede01"),
+      players.find((player) => player.bbrPlayerId === "portibo01"),
+      players.find((player) => player.bbrPlayerId === "reidna01"),
+      players.find((player) => player.bbrPlayerId === "embiijo01"),
+    ].filter((player): player is NonNullable<typeof player> => Boolean(player));
+
+    expect(deep).toHaveLength(5);
+    expect(thin).toHaveLength(5);
+    expect(getImpactDepthLineupBonus(deep)).toBe(IMPACT_RANK_DEPTH_BONUS_PER_PLAYER * 5);
+    expect(getImpactDepthLineupBonus(thin)).toBe(IMPACT_RANK_DEPTH_BONUS_PER_PLAYER * 3);
+    expect(getLineupTierAdjustment(deep)).toBeGreaterThan(
+      getLineupTierAdjustment(thin),
+    );
   });
 });
 

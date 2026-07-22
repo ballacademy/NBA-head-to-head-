@@ -3,7 +3,8 @@ import type { Player } from "./types";
 
 export const IMPACT_BLEND_MAX_RAW = impactRankingData.blendMaxRaw;
 export const IMPACT_RANK_STAR_THRESHOLD = 30;
-export const IMPACT_RANK_ELITE_THRESHOLD = 75;
+/** Impact ranks through this band earn lineup star-tier credit. */
+export const IMPACT_RANK_ELITE_THRESHOLD = 100;
 
 const adjustments = impactRankingData.adjustments as Record<string, number>;
 const ranks = impactRankingData.ranks as Record<string, number>;
