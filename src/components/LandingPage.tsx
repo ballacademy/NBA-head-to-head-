@@ -521,6 +521,21 @@ export function LandingPage({
           <button
             type="button"
             className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+            onClick={() => setCollectionTier("super-scrub")}
+            aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
+          >
+            <span className="landing-profile-strip__label">Super Scrubs</span>
+            <strong>
+              {collectionProgress.unlockedSuperScrubs}/
+              {collectionProgress.superScrubPool}
+            </strong>
+            <span className="landing-profile-strip__action" aria-hidden="true">
+              View ›
+            </span>
+          </button>
+          <button
+            type="button"
+            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
             onClick={() => setCollectionTier("recent-all-star")}
             aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
           >

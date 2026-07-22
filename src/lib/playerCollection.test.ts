@@ -30,7 +30,12 @@ import {
   loadPlayerCollection,
   sanitizePlayerCollection,
 } from "./playerCollection";
-import { getScrubPlayerIds, isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
+import {
+  getScrubPlayerIds,
+  isScrubPlayer,
+  isSuperScrubPlayer,
+  SCRUB_POOL_SIZE,
+} from "./playerTiers";
 import { writeJson } from "./browserStorage";
 import { players } from "./playerPool";
 import { resetUnlockProgress, saveUnlockProgress } from "./unlockProgress";
@@ -389,14 +394,28 @@ describe("playerCollection", () => {
     const allStars = getUnlockedPlayersByTier("all-star", collection);
     const recent = getUnlockedPlayersByTier("recent-all-star", collection);
     const scrubs = getUnlockedPlayersByTier("scrub", collection);
+    const superScrubs = getUnlockedPlayersByTier("super-scrub", collection);
 
     expect(allStars.length).toBe(progress.unlocked);
     expect(recent.length).toBe(progress.recentUnlocked);
     expect(scrubs.length).toBe(progress.unlockedScrubs);
+    expect(superScrubs.length).toBe(progress.unlockedSuperScrubs);
     expect(allStars.every((player) => isAllStarPlayer(player))).toBe(true);
     expect(recent.every((player) => isRecentAllStarPlayer(player))).toBe(true);
+    expect(
+      scrubs.every(
+        (player) => isScrubPlayer(player) && !isSuperScrubPlayer(player),
+      ),
+    ).toBe(true);
+    expect(superScrubs.every((player) => isSuperScrubPlayer(player))).toBe(
+      true,
+    );
     expect(getCollectionTierTotal("all-star", progress)).toBe(progress.total);
     expect(getCollectionTierTotal("scrub", progress)).toBe(progress.scrubPool);
+    expect(getCollectionTierTotal("super-scrub", progress)).toBe(
+      progress.superScrubPool,
+    );
+    expect(progress.scrubPool + progress.superScrubPool).toBe(SCRUB_POOL_SIZE);
     expect(getCollectionTierTotal("recent-all-star", progress)).toBe(
       progress.recentTotal,
     );

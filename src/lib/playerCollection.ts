@@ -525,7 +525,8 @@ const playerMatchesCollectionTier = (
     case "recent-all-star":
       return isRecentAllStarPlayer(player);
     case "scrub":
-      return isScrubPlayer(player);
+      // Collection browse only: super scrubs live in their own tier.
+      return isScrubPlayer(player) && !isSuperScrubPlayer(player);
     case "super-scrub":
       return isSuperScrubPlayer(player);
     default:
@@ -553,11 +554,12 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     const player = getPlayerById(playerId);
     return Boolean(player && isRecentAllStarPlayer(player));
   }).length;
-  const unlockedScrubs = collection.unlockedIds.filter((playerId) =>
-    isScrubPlayer({ id: playerId }),
-  ).length;
   const unlockedSuperScrubs = collection.unlockedIds.filter((playerId) =>
     isSuperScrubPlayer({ id: playerId }),
+  ).length;
+  const unlockedScrubs = collection.unlockedIds.filter(
+    (playerId) =>
+      isScrubPlayer({ id: playerId }) && !isSuperScrubPlayer({ id: playerId }),
   ).length;
   const unlockedSuperstars = collection.unlockedIds.filter((playerId) => {
     const player = getPlayerById(playerId);
@@ -578,7 +580,8 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     superstarTotal: SUPERSTAR_COUNT,
     starsUnlocked,
     starPool: winUnlockIds.size,
-    scrubPool: SCRUB_POOL_SIZE,
+    // Scrubs collection excludes super scrubs (same split as All-Stars vs Superstars).
+    scrubPool: SCRUB_POOL_SIZE - getSuperScrubPlayerIds().length,
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,
     unlockedSuperScrubs,
