@@ -19,6 +19,7 @@ interface GmProfileModalProps {
   losses: number;
   elo?: number;
   tierLabel?: string;
+  fetchRemoteProfile?: boolean;
   onClose: () => void;
 }
 
@@ -30,9 +31,10 @@ export function GmProfileModal({
   losses,
   elo,
   tierLabel,
+  fetchRemoteProfile = true,
   onClose,
 }: GmProfileModalProps) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(fetchRemoteProfile);
   const [legacyPeakElo, setLegacyPeakElo] = useState<number | null>(elo ?? null);
   const [legacyBestRank, setLegacyBestRank] = useState<number | null>(null);
   const [legacyBestRankSeasonId, setLegacyBestRankSeasonId] = useState("");
@@ -43,6 +45,11 @@ export function GmProfileModal({
   );
 
   useEffect(() => {
+    if (!fetchRemoteProfile) {
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     const load = async () => {
@@ -76,7 +83,7 @@ export function GmProfileModal({
     return () => {
       cancelled = true;
     };
-  }, [playerId]);
+  }, [playerId, fetchRemoteProfile]);
 
   const modal = (
     <div

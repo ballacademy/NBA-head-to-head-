@@ -5,9 +5,12 @@ import {
   validateUsername,
 } from "../../lib/accountCredentials";
 import {
+  assertRegisterRateLimitAllow,
+  buildRegisterRateLimitKey,
   createPlayerAccount,
   getAccountByPlayerId,
   getAccountByUsername,
+  recordRegisterAttempt,
 } from "../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
@@ -32,6 +35,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
+
+  const rateKey = buildRegisterRateLimitKey(context.request);
+  const rate = await assertRegisterRateLimitAllow(context.env.DB, rateKey);
+  if (!rate.ok) {
+    return json({ error: rate.error }, 429);
+  }
+
+  // Count every register attempt (success or fail) against the IP bucket.
+  await recordRegisterAttempt(context.env.DB, rateKey);
 
   if (body.acceptedTerms !== true) {
     return json(
@@ -74,7 +86,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json(
       {
         error: "This GM identity already has an account. Log in instead.",
-        username: existingPlayer.username,
       },
       409,
     );
@@ -96,6 +107,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/UNIQUE/i.test(message)) {
+      if (/player_id/i.test(message)) {
+        return json(
+          {
+            error: "This GM identity already has an account. Log in instead.",
+          },
+          409,
+        );
+      }
+
       return json({ error: "That username is already taken." }, 409);
     }
 

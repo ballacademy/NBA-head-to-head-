@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   fetchAccountStatus,
   loginAccount,
   registerAccount,
 } from "../lib/accountApi";
 import {
+  PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "../lib/accountCredentials";
-import { setPlayerIdentity } from "../lib/playerIdentity";
+import { restorePlayerIdentityFromLogin } from "../lib/restorePlayerIdentity";
 
 type AccountPanelMode = "closed" | "register" | "login";
+type AccountLinkState = "loading" | "unknown" | "linked" | "unlinked";
 
 interface AccountAuthPanelProps {
   playerId: string;
@@ -24,9 +26,11 @@ export function AccountAuthPanel({
   onViewPrivacy,
   onViewTerms,
 }: AccountAuthPanelProps) {
+  const consentId = useId();
+  const submitLock = useRef(false);
   const [mode, setMode] = useState<AccountPanelMode>("closed");
+  const [linkState, setLinkState] = useState<AccountLinkState>("loading");
   const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
-  const [statusLoading, setStatusLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,20 +39,49 @@ export function AccountAuthPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshStatus = async () => {
+    setLinkState("loading");
+    const status = await fetchAccountStatus(playerId);
+
+    if (!status) {
+      setLinkedUsername(null);
+      setLinkState("unknown");
+      return;
+    }
+
+    if (status.linked && status.username) {
+      setLinkedUsername(status.username);
+      setLinkState("linked");
+      return;
+    }
+
+    setLinkedUsername(null);
+    setLinkState("unlinked");
+  };
+
   useEffect(() => {
     let cancelled = false;
 
     const loadStatus = async () => {
-      setStatusLoading(true);
       const status = await fetchAccountStatus(playerId);
       if (cancelled) {
         return;
       }
 
-      setLinkedUsername(
-        status?.linked && status.username ? status.username : null,
-      );
-      setStatusLoading(false);
+      if (!status) {
+        setLinkedUsername(null);
+        setLinkState("unknown");
+        return;
+      }
+
+      if (status.linked && status.username) {
+        setLinkedUsername(status.username);
+        setLinkState("linked");
+        return;
+      }
+
+      setLinkedUsername(null);
+      setLinkState("unlinked");
     };
 
     void loadStatus();
@@ -73,6 +106,10 @@ export function AccountAuthPanel({
   };
 
   const handleRegister = async () => {
+    if (submitLock.current) {
+      return;
+    }
+
     setError(null);
     setMessage(null);
 
@@ -81,6 +118,7 @@ export function AccountAuthPanel({
       return;
     }
 
+    submitLock.current = true;
     setBusy(true);
     const result = await registerAccount({
       username,
@@ -89,6 +127,7 @@ export function AccountAuthPanel({
       acceptedTerms,
     });
     setBusy(false);
+    submitLock.current = false;
 
     if (!result.ok) {
       setError(result.error);
@@ -96,6 +135,7 @@ export function AccountAuthPanel({
     }
 
     setLinkedUsername(result.username);
+    setLinkState("linked");
     setMode("closed");
     setMessage(
       `Account created for @${result.username}. You can use it to restore this GM code later.`,
@@ -103,35 +143,61 @@ export function AccountAuthPanel({
   };
 
   const handleLogin = async () => {
+    if (submitLock.current) {
+      return;
+    }
+
     setError(null);
     setMessage(null);
+    submitLock.current = true;
     setBusy(true);
 
     const result = await loginAccount({ username, password });
-    setBusy(false);
 
     if (!result.ok) {
+      setBusy(false);
+      submitLock.current = false;
       setError(result.error);
       return;
     }
 
     if (result.playerId === playerId) {
+      setBusy(false);
+      submitLock.current = false;
       setLinkedUsername(result.username);
+      setLinkState("linked");
       setMode("closed");
       setMessage(`Signed in as @${result.username}.`);
       return;
     }
 
-    setPlayerIdentity(result.playerId);
-    window.location.reload();
+    try {
+      await restorePlayerIdentityFromLogin(result.playerId);
+      window.location.reload();
+    } catch {
+      setBusy(false);
+      submitLock.current = false;
+      setError("Signed in, but could not restore local progress. Try again.");
+    }
   };
 
   return (
     <div className="landing-team-form__account">
       <div className="landing-team-form__account-header">
         <span className="landing-team-form__account-label">Account</span>
-        {statusLoading ? (
+        {linkState === "loading" ? (
           <span className="landing-team-form__account-status">Checking…</span>
+        ) : linkState === "unknown" ? (
+          <span className="landing-team-form__account-status">
+            Could not check account status.{" "}
+            <button
+              type="button"
+              className="landing-team-form__account-action"
+              onClick={() => void refreshStatus()}
+            >
+              Retry
+            </button>
+          </span>
         ) : linkedUsername ? (
           <span className="landing-team-form__account-status">
             Linked as <strong>@{linkedUsername}</strong>
@@ -146,11 +212,12 @@ export function AccountAuthPanel({
       <p className="landing-team-form__account-note">
         Playing does not require an account. Create one only if you want to
         restore this GM code after clearing browser data. Passwords are stored
-        as secure hashes, never in plain text. There is no password reset
-        without your username and password.
+        as secure hashes, never in plain text. There is no password reset.
+        Logging in on another device restores online records (like leaderboard
+        rows) but resets on-device collection progress for that browser.
       </p>
 
-      {!linkedUsername && mode === "closed" ? (
+      {linkState === "unlinked" && mode === "closed" ? (
         <div className="landing-team-form__account-actions">
           <button
             type="button"
@@ -172,14 +239,14 @@ export function AccountAuthPanel({
         </div>
       ) : null}
 
-      {linkedUsername && mode === "closed" ? (
+      {linkState === "linked" && mode === "closed" ? (
         <div className="landing-team-form__account-actions">
           <button
             type="button"
             className="landing-team-form__account-action"
             onClick={() => openMode("login")}
           >
-            Log in on another device
+            Switch account
           </button>
         </div>
       ) : null}
@@ -202,6 +269,8 @@ export function AccountAuthPanel({
               type="text"
               autoComplete="username"
               spellCheck={false}
+              required
+              minLength={USERNAME_MIN_LENGTH}
               maxLength={USERNAME_MAX_LENGTH}
               value={username}
               onChange={(event) => setUsername(event.target.value)}
@@ -217,6 +286,9 @@ export function AccountAuthPanel({
               autoComplete={
                 mode === "register" ? "new-password" : "current-password"
               }
+              required
+              minLength={PASSWORD_MIN_LENGTH}
+              maxLength={PASSWORD_MAX_LENGTH}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
@@ -231,25 +303,33 @@ export function AccountAuthPanel({
                 <input
                   type="password"
                   autoComplete="new-password"
+                  required
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   disabled={busy}
                 />
               </label>
 
-              <label className="landing-team-form__account-consent">
+              <div className="landing-team-form__account-consent">
                 <input
+                  id={consentId}
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(event) => setAcceptedTerms(event.target.checked)}
                   disabled={busy}
+                  required
                 />
-                <span>
+                <label htmlFor={consentId}>
                   I agree to the{" "}
                   <button
                     type="button"
                     className="landing-team-form__account-legal-link"
-                    onClick={onViewPrivacy}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onViewPrivacy();
+                    }}
                   >
                     Privacy Policy
                   </button>{" "}
@@ -257,27 +337,40 @@ export function AccountAuthPanel({
                   <button
                     type="button"
                     className="landing-team-form__account-legal-link"
-                    onClick={onViewTerms}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onViewTerms();
+                    }}
                   >
                     Terms of Use
                   </button>
                   . I understand my password is stored only as a secure hash
                   linked to this GM identity.
-                </span>
-              </label>
+                </label>
+              </div>
             </>
           ) : (
             <p className="landing-team-form__account-warning">
-              Logging in replaces this browser&apos;s GM identity with your
-              saved account. Local collection progress on this device is not
-              cloud-synced.
+              Logging in replaces this browser&apos;s GM identity. Local
+              collection, achievements, and device-only progress reset.
+              Leaderboard / online records for the account are restored from the
+              server when available.
             </p>
           )}
 
-          {error ? <p className="form-error">{error}</p> : null}
+          {error ? (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          ) : null}
 
           <div className="landing-team-form__account-form-actions">
-            <button type="submit" className="primary-button" disabled={busy}>
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={busy}
+              aria-busy={busy}
+            >
               {busy
                 ? "Please wait…"
                 : mode === "register"
@@ -297,7 +390,9 @@ export function AccountAuthPanel({
       ) : null}
 
       {message ? (
-        <p className="landing-team-form__account-success">{message}</p>
+        <p className="landing-team-form__account-success" role="status">
+          {message}
+        </p>
       ) : null}
     </div>
   );

@@ -110,6 +110,27 @@ const saveModeStats = (mode: MatchRecordMode, stats: ModeRecordStats) => {
   });
 };
 
+/** Replace local mode records (used when restoring a GM identity). */
+export const replaceModePlayerRecords = (records: {
+  headToHead?: Partial<ModeRecordStats>;
+  ranked?: Partial<ModeRecordStats>;
+  allTime?: Partial<ModeRecordStats>;
+}) => {
+  writeJson(PLAYER_RECORDS_KEY, {
+    headToHead: normalizeModeStats(records.headToHead),
+    ranked: normalizeModeStats(records.ranked),
+    allTime: normalizeModeStats(records.allTime),
+  });
+};
+
+export const clearModePlayerRecords = () => {
+  writeJson(PLAYER_RECORDS_KEY, {
+    headToHead: emptyModeStats(),
+    ranked: emptyModeStats(),
+    allTime: emptyModeStats(),
+  });
+};
+
 export const getMatchRecordMode = (options: {
   allTimeMode?: boolean;
   salaryCapMode?: boolean;

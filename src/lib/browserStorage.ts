@@ -1,6 +1,7 @@
 interface BrowserStorage {
   getItem: (key: string) => string | null;
   setItem: (key: string, value: string) => void;
+  removeItem?: (key: string) => void;
 }
 
 export const getBrowserStorage = (): BrowserStorage | null => {
@@ -39,4 +40,14 @@ export const writeJson = <T>(key: string, value: T) => {
   }
 
   storage.setItem(key, JSON.stringify(value));
+};
+
+export const removeJson = (key: string) => {
+  const storage = getBrowserStorage();
+
+  if (!storage?.removeItem) {
+    return;
+  }
+
+  storage.removeItem(key);
 };

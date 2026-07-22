@@ -7,6 +7,8 @@ import {
 
 export const AUTH_RATE_LIMIT_MAX_ATTEMPTS = 8;
 export const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+export const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 5;
+export const REGISTER_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
 export const getAccountByUsername = async (
   db: D1Database,
@@ -103,9 +105,13 @@ const getClientIp = (request: Request) => {
 export const buildAuthRateLimitKey = (request: Request, username: string) =>
   `${getClientIp(request)}:${username}`.slice(0, 160);
 
-export const assertAuthRateLimitAllow = async (
+export const buildRegisterRateLimitKey = (request: Request) =>
+  `register:${getClientIp(request)}`.slice(0, 160);
+
+export const assertRateLimitAllow = async (
   db: D1Database,
   bucketKey: string,
+  options: { maxAttempts: number; windowMs: number },
 ) => {
   const now = Date.now();
   const row = await db
@@ -126,7 +132,7 @@ export const assertAuthRateLimitAllow = async (
   }
 
   const windowStart = Date.parse(row.window_start);
-  if (!Number.isFinite(windowStart) || now - windowStart > AUTH_RATE_LIMIT_WINDOW_MS) {
+  if (!Number.isFinite(windowStart) || now - windowStart > options.windowMs) {
     await db
       .prepare(`DELETE FROM auth_rate_limits WHERE bucket_key = ?`)
       .bind(bucketKey)
@@ -134,17 +140,39 @@ export const assertAuthRateLimitAllow = async (
     return { ok: true as const };
   }
 
-  if (row.attempt_count >= AUTH_RATE_LIMIT_MAX_ATTEMPTS) {
+  if (row.attempt_count >= options.maxAttempts) {
     return {
       ok: false as const,
-      error: "Too many login attempts. Try again in a few minutes.",
+      error: "Too many attempts. Try again in about 15 minutes.",
     };
   }
 
   return { ok: true as const };
 };
 
-export const recordAuthFailure = async (db: D1Database, bucketKey: string) => {
+export const assertAuthRateLimitAllow = async (
+  db: D1Database,
+  bucketKey: string,
+) =>
+  assertRateLimitAllow(db, bucketKey, {
+    maxAttempts: AUTH_RATE_LIMIT_MAX_ATTEMPTS,
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+  });
+
+export const assertRegisterRateLimitAllow = async (
+  db: D1Database,
+  bucketKey: string,
+) =>
+  assertRateLimitAllow(db, bucketKey, {
+    maxAttempts: REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
+    windowMs: REGISTER_RATE_LIMIT_WINDOW_MS,
+  });
+
+export const recordRateLimitAttempt = async (
+  db: D1Database,
+  bucketKey: string,
+  windowMs: number,
+) => {
   const nowIso = new Date().toISOString();
   const existing = await db
     .prepare(
@@ -160,21 +188,22 @@ export const recordAuthFailure = async (db: D1Database, bucketKey: string) => {
     }>();
 
   if (!existing) {
-    await db
-      .prepare(
-        `INSERT INTO auth_rate_limits (bucket_key, window_start, attempt_count)
-         VALUES (?, ?, 1)`,
-      )
-      .bind(bucketKey, nowIso)
-      .run();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO auth_rate_limits (bucket_key, window_start, attempt_count)
+           VALUES (?, ?, 1)`,
+        )
+        .bind(bucketKey, nowIso)
+        .run();
+    } catch {
+      // Concurrent first insert — ignore and let the next attempt update.
+    }
     return;
   }
 
   const windowStart = Date.parse(existing.window_start);
-  if (
-    !Number.isFinite(windowStart) ||
-    Date.now() - windowStart > AUTH_RATE_LIMIT_WINDOW_MS
-  ) {
+  if (!Number.isFinite(windowStart) || Date.now() - windowStart > windowMs) {
     await db
       .prepare(
         `UPDATE auth_rate_limits
@@ -194,6 +223,17 @@ export const recordAuthFailure = async (db: D1Database, bucketKey: string) => {
     )
     .bind(bucketKey)
     .run();
+};
+
+export const recordAuthFailure = async (db: D1Database, bucketKey: string) => {
+  await recordRateLimitAttempt(db, bucketKey, AUTH_RATE_LIMIT_WINDOW_MS);
+};
+
+export const recordRegisterAttempt = async (
+  db: D1Database,
+  bucketKey: string,
+) => {
+  await recordRateLimitAttempt(db, bucketKey, REGISTER_RATE_LIMIT_WINDOW_MS);
 };
 
 export const clearAuthRateLimit = async (db: D1Database, bucketKey: string) => {

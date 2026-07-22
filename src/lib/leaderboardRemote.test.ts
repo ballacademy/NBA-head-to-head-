@@ -74,7 +74,7 @@ describe("leaderboard remote integration", () => {
       }),
     ]);
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/leaderboards?mode=classic&sort=elo&limit=100",
+      "/api/leaderboards?mode=classic&sort=elo&limit=100&viewerPlayerId=player-test-1",
       expect.any(Object),
     );
   });

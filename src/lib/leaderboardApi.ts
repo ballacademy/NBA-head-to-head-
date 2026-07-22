@@ -3,6 +3,7 @@ export type LeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
 export interface RemoteLeaderboardEntry {
   playerId: string;
+  isYou?: boolean;
   name: string;
   publicTag: string;
   elo: number;
@@ -29,6 +30,7 @@ export const fetchRemoteLeaderboard = async (params: {
   seasonId?: string;
   sort: LeaderboardSort;
   limit?: number;
+  viewerPlayerId?: string;
 }): Promise<RemoteLeaderboardResponse | null> => {
   const search = new URLSearchParams({
     mode: params.mode,
@@ -41,6 +43,10 @@ export const fetchRemoteLeaderboard = async (params: {
 
   if (params.limit != null) {
     search.set("limit", String(params.limit));
+  }
+
+  if (params.viewerPlayerId) {
+    search.set("viewerPlayerId", params.viewerPlayerId);
   }
 
   try {

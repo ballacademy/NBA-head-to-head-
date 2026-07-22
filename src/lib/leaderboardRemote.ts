@@ -5,6 +5,7 @@ import {
   type LeaderboardSort,
   type RemoteLeaderboardEntry,
 } from "./leaderboardApi";
+import { getOrCreatePlayerId } from "./playerIdentity";
 import { getCurrentSeasonId } from "./rankedSeason";
 
 interface RemoteLeaderboardCache {
@@ -35,6 +36,7 @@ export const refreshLeaderboardFromApi = async (params: {
     seasonId,
     sort: params.sort,
     limit: params.limit,
+    viewerPlayerId: getOrCreatePlayerId(),
   });
 
   if (!remote) {

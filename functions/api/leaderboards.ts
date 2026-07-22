@@ -1,6 +1,10 @@
 import type { Env, LeaderboardEntryRow } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import { upsertPlayerLegacyStats } from "../lib/playerLegacy";
+import {
+  isPublicOpaquePlayerId,
+  toLeaderboardPublicEntry,
+} from "../lib/leaderboardPublicId";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -45,18 +49,6 @@ const sortClause = (sort: "elo" | "winStreak" | "lossStreak") => {
   }
 };
 
-const rowToEntry = (row: LeaderboardEntryRow) => ({
-  playerId: row.player_id,
-  name: row.team_name,
-  publicTag: row.public_tag,
-  elo: row.elo,
-  wins: row.wins,
-  losses: row.losses,
-  winStreak: row.win_streak,
-  lossStreak: row.loss_streak,
-  updatedAt: row.updated_at,
-});
-
 interface LeaderboardBody {
   mode?: unknown;
   seasonId?: unknown;
@@ -85,8 +77,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   const sort = parseSort(url.searchParams.get("sort"));
+  const viewerPlayerId = parsePlayerId(url.searchParams.get("viewerPlayerId"));
   const limit = Math.min(
-    Math.max(Number(url.searchParams.get("limit") ?? (mode === "ranked" ? 500 : 100)), 1),
+    Math.max(
+      Number(url.searchParams.get("limit") ?? (mode === "ranked" ? 500 : 100)),
+      1,
+    ),
     mode === "ranked" ? 500 : 100,
   );
 
@@ -101,11 +97,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     .bind(mode, seasonId, limit)
     .all<LeaderboardEntryRow>();
 
+  const entries = await Promise.all(
+    (rows.results ?? []).map((row) =>
+      toLeaderboardPublicEntry(row, viewerPlayerId),
+    ),
+  );
+
   return json({
     mode,
     seasonId,
     sort,
-    entries: (rows.results ?? []).map(rowToEntry),
+    entries,
   });
 };
 
@@ -152,6 +154,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { error: "playerId, teamName, and publicTag are required" },
       400,
     );
+  }
+
+  if (isPublicOpaquePlayerId(playerId)) {
+    return json({ error: "playerId is invalid" }, 400);
   }
 
   const profanityError = rejectProfaneTeamName(teamName);
@@ -206,6 +212,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       seasonId,
       entry: {
         playerId,
+        isYou: true,
         name: teamName,
         publicTag,
         elo,

@@ -87,7 +87,8 @@ function LeaderboardEntryRow({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const isYou = entry.playerId === currentPlayerId;
+  const isYou = entry.isYou === true || entry.playerId === currentPlayerId;
+  const canFetchRemoteProfile = !entry.playerId.startsWith("p_");
 
   return (
     <li
@@ -154,6 +155,7 @@ function LeaderboardEntryRow({
           losses={entry.losses}
           elo={entry.elo}
           tierLabel={entry.tierLabel}
+          fetchRemoteProfile={canFetchRemoteProfile}
           onClose={() => setProfileOpen(false)}
         />
       ) : null}

@@ -13,7 +13,9 @@ const json = (body: unknown, status = 200) =>
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
-  const playerIdResult = validatePlayerId(url.searchParams.get("playerId") ?? "");
+  const playerIdResult = validatePlayerId(
+    url.searchParams.get("playerId") ?? "",
+  );
 
   if (!playerIdResult.ok) {
     return json({ error: playerIdResult.error }, 400);
@@ -31,11 +33,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
+  // Only confirm linkage + username for the browser that already holds the GM id.
+  // Do not expose last-login timestamps on this unauthenticated endpoint.
   return json({
     linked: true,
     playerId: account.player_id,
     username: account.username,
-    createdAt: account.created_at,
-    lastLoginAt: account.last_login_at,
   });
 };
