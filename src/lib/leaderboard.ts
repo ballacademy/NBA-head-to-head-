@@ -16,6 +16,7 @@ export const LEADERBOARD_LIMIT = 100;
 
 export interface LeaderboardEntry {
   playerId: string;
+  isYou?: boolean;
   name: string;
   publicTag: string;
   elo: number;
@@ -34,6 +35,7 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
 
   return {
     playerId: entry.playerId,
+    isYou: entry.isYou,
     name: entry.name.trim(),
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     elo,

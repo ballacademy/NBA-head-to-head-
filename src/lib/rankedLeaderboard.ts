@@ -18,6 +18,7 @@ const NPC_POOL_SIZE = RANKED_LEADERBOARD_LIMIT - 1;
 
 export interface RankedLeaderboardEntry {
   playerId: string;
+  isYou?: boolean;
   name: string;
   publicTag: string;
   elo: number;
@@ -185,6 +186,7 @@ const normalizeEntry = (entry: RankedLeaderboardEntry): RankedLeaderboardEntry =
 
   return {
     playerId: entry.playerId,
+    isYou: entry.isYou,
     name: entry.name.trim(),
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     elo,

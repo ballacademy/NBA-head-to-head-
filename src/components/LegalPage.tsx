@@ -77,7 +77,13 @@ function PrivacyPolicyContent() {
         We do not currently offer automated password reset. If you forget your
         username or password, contact us to request account deletion. Local
         collection progress stays on your device and is not uploaded with the
-        account.
+        account. Logging into an account on a new browser restores the GM
+        identity and online competitive records when available; on-device
+        collection must be rebuilt on that browser.
+      </p>
+      <p>
+        Public leaderboards show team names and GM codes, not full private
+        player IDs, so other players cannot claim your identity from the board.
       </p>
 
       <h3>Information we do not collect on purpose</h3>

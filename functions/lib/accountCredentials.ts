@@ -65,5 +65,17 @@ export const validatePlayerId = (value: string) => {
     };
   }
 
+  // Reject opaque leaderboard ids and other non-identity strings.
+  if (
+    playerId.startsWith("p_") ||
+    playerId.startsWith("npc-") ||
+    playerId.includes(":")
+  ) {
+    return {
+      ok: false as const,
+      error: "A valid GM identity is required to create an account.",
+    };
+  }
+
   return { ok: true as const, playerId };
 };

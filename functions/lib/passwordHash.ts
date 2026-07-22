@@ -46,10 +46,9 @@ export const hashPassword = async (
   },
 ) => {
   const iterations = options?.iterations ?? PASSWORD_PBKDF2_ITERATIONS;
+  const providedSalt = options?.saltHex ? hexToBytes(options.saltHex) : null;
   const salt =
-    options?.saltHex && hexToBytes(options.saltHex)
-      ? hexToBytes(options.saltHex)!
-      : crypto.getRandomValues(new Uint8Array(PASSWORD_SALT_BYTES));
+    providedSalt ?? crypto.getRandomValues(new Uint8Array(PASSWORD_SALT_BYTES));
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
