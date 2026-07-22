@@ -1,4 +1,14 @@
+import {
+  CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+  getLineupSalaryTotal,
+  RANKED_SALARY_CAP,
+} from "./salaryCap";
+import type { Player } from "./types";
+
 export const REQUIRED_STORED_LINEUP_SIZE = 5;
+
+/** Block stored opponents with 7+ more unlocked stars than the challenger. */
+export const MAX_STORED_OPPONENT_STAR_GAP = 6;
 
 export const sanitizeStoredLineupIds = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
@@ -19,8 +29,25 @@ export interface MatchmakingLineupSource {
   practiceMode?: boolean;
   allTimeMode?: boolean;
   isDailyDraft?: boolean;
+  salaryCapMode?: boolean;
+  salaryCapLimit?: number;
   lineup: readonly (string | null | undefined)[];
+  /** Resolved players for the lineup ids, when available for cap checks. */
+  players?: readonly Player[];
 }
+
+export const salaryCapForStoredLineup = (source: {
+  salaryCapMode?: boolean;
+  salaryCapLimit?: number;
+}) => {
+  if (typeof source.salaryCapLimit === "number") {
+    return source.salaryCapLimit;
+  }
+
+  return source.salaryCapMode
+    ? RANKED_SALARY_CAP
+    : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+};
 
 export const canStoreLineupForMatchmaking = (
   source: MatchmakingLineupSource,
@@ -30,7 +57,18 @@ export const canStoreLineupForMatchmaking = (
   }
 
   const lineup = sanitizeStoredLineupIds([...source.lineup]);
-  return isValidStoredLineupIds(lineup);
+  if (!isValidStoredLineupIds(lineup)) {
+    return false;
+  }
+
+  if (source.players && source.players.length === REQUIRED_STORED_LINEUP_SIZE) {
+    const cap = salaryCapForStoredLineup(source);
+    if (getLineupSalaryTotal([...source.players]) > cap) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 export const parseGhostOpponentSnapshot = (payload: {

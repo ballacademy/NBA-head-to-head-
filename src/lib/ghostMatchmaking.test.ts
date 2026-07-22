@@ -20,6 +20,7 @@ describe("ghostMatchmaking", () => {
         mode: "classic",
         playerId: "player-1",
         elo: 1200,
+        starCount: 8,
       }),
     ).resolves.toBeNull();
   });
@@ -45,6 +46,7 @@ describe("ghostMatchmaking", () => {
         mode: "ranked",
         playerId: "player-1",
         elo: 1200,
+        starCount: 8,
       }),
     ).resolves.toEqual({
       id: "lineup-1",
@@ -78,6 +80,7 @@ describe("ghostMatchmaking", () => {
         mode: "classic",
         playerId: "player-1",
         elo: 1200,
+        starCount: 8,
       },
       { searchMs: 5000, pollIntervalMs: 1000 },
     );
@@ -117,6 +120,7 @@ describe("ghostMatchmaking", () => {
         mode: "classic",
         playerId: "player-1",
         elo: 1200,
+        starCount: 8,
       }),
     ).resolves.toBeNull();
   });
@@ -138,6 +142,8 @@ describe("ghostMatchmaking", () => {
         teamName: "Bulls",
         lineup: ["a", "b", "c", "d", "e"],
         elo: 1200,
+        salaryTotal: 120_000_000,
+        starCount: 8,
       }),
     ).resolves.toEqual({
       id: "lineup-3",
@@ -162,6 +168,8 @@ describe("ghostMatchmaking", () => {
         lineup: ["a", "b", "c", "d", "e"],
         elo: 1200,
         practiceMode: true,
+        salaryTotal: 90_000_000,
+        starCount: 8,
       }),
     ).resolves.toBeNull();
 

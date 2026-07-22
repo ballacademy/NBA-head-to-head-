@@ -10,6 +10,7 @@ import {
 } from "../lib/playerRecord";
 import {
   completeUnlock,
+  countUnlockedAllStars,
   processMatchUnlock,
   type PlayerCollection,
 } from "../lib/playerCollection";
@@ -20,6 +21,7 @@ import {
   submitStoredLineup,
 } from "../lib/ghostMatchmaking";
 import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
+import { getLineupSalaryTotal } from "../lib/salaryCap";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints, RANKED_STARTING_ELO } from "../lib/rankedElo";
@@ -112,7 +114,12 @@ export function MatchResults({
       setMatchCollection(next);
       onCollectionChange(next);
 
-      if (canStoreLineupForMatchmaking(user)) {
+      if (
+        canStoreLineupForMatchmaking({
+          ...user,
+          players: userLineup,
+        })
+      ) {
         const mode = user.salaryCapMode ? "ranked" : "classic";
         const playerId = getOrCreatePlayerIdentity().playerId;
         const challengerEloBefore = user.salaryCapMode
@@ -121,6 +128,7 @@ export function MatchResults({
         const storedLineupId = opponent.isGhostOpponent
           ? extractGhostStoredLineupId(opponent.id)
           : null;
+        const starCount = countUnlockedAllStars(collection);
 
         if (storedLineupId) {
           void submitGhostMatchOutcome({
@@ -141,6 +149,9 @@ export function MatchResults({
           teamName: user.name,
           lineup: user.lineup.filter((id): id is string => Boolean(id)),
           elo: challengerEloBefore,
+          awaitingLive: false,
+          salaryTotal: getLineupSalaryTotal(userLineup),
+          starCount,
         });
       }
     }

@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { findPlayerId, players } from "./playerPool";
 import {
   canStoreLineupForMatchmaking,
   isValidStoredLineupIds,
+  MAX_STORED_OPPONENT_STAR_GAP,
   parseGhostOpponentSnapshot,
   sanitizeStoredLineupIds,
 } from "./storedLineups";
+import { getLineupSalaryTotal, RANKED_SALARY_CAP } from "./salaryCap";
+
+const lineupPlayers = (names: string[]) =>
+  names.map((name) => {
+    const player = players.find((entry) => entry.id === findPlayerId(name));
+    if (!player) {
+      throw new Error(`missing ${name}`);
+    }
+    return player;
+  });
 
 describe("storedLineups", () => {
   it("requires five unique non-empty player ids", () => {
@@ -122,5 +134,25 @@ describe("storedLineups", () => {
         lineup: lineup.slice(0, 4),
       }),
     ).toBe(false);
+  });
+
+  it("rejects ranked lineups that exceed the $100M salary cap", () => {
+    const overCap = lineupPlayers([
+      "Cade Cunningham",
+      "Shai Gilgeous-Alexander",
+      "Kawhi Leonard",
+      "DeMar DeRozan",
+      "Jarrett Allen",
+    ]);
+
+    expect(getLineupSalaryTotal(overCap)).toBeGreaterThan(RANKED_SALARY_CAP);
+    expect(
+      canStoreLineupForMatchmaking({
+        lineup: overCap.map((player) => player.id),
+        players: overCap,
+        salaryCapMode: true,
+      }),
+    ).toBe(false);
+    expect(MAX_STORED_OPPONENT_STAR_GAP).toBe(6);
   });
 });

@@ -87,6 +87,7 @@ import {
   ensurePlayerCollection,
   getDraftablePlayers,
   createOpponentCollection,
+  countUnlockedAllStars,
   type PlayerCollection,
 } from "./lib/playerCollection";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
@@ -536,6 +537,7 @@ function App() {
             playerId,
             playerElo: elo,
             teamName: team.name,
+            starCount: countUnlockedAllStars(collection),
           },
           { isCancelled: () => session.cancelled },
         );
@@ -1557,6 +1559,7 @@ function App() {
         <PendingQueueResults
           user={user}
           userLineup={userLineup}
+          starCount={countUnlockedAllStars(collection)}
           onDone={resetToLanding}
         />
       ) : null}

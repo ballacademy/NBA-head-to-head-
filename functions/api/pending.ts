@@ -1,4 +1,4 @@
-import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import type { Env, MatchmakingMode } from "../types";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -27,6 +27,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const db = context.env.DB;
 
+  // Only intentional live-queue submissions lock Pro play — not every ghost-pool save.
   const queuedLineup = await db
     .prepare(
       `SELECT id, created_at
@@ -34,11 +35,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
        WHERE mode = ?
          AND player_id = ?
          AND consumed_at IS NULL
+         AND awaiting_live = 1
        ORDER BY created_at DESC
        LIMIT 1`,
     )
     .bind(mode, playerId)
-    .first<Pick<StoredLineupRow, "id" | "created_at">>();
+    .first<{ id: string; created_at: string }>();
 
   return json({
     queuedLineup: queuedLineup

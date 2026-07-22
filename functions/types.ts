@@ -14,6 +14,9 @@ export interface StoredLineupRow {
   created_at: string;
   consumed_at?: string | null;
   consumed_by?: string | null;
+  awaiting_live?: number | null;
+  salary_total?: number | null;
+  star_count?: number | null;
 }
 
 export interface DailyDraftScoreRow {

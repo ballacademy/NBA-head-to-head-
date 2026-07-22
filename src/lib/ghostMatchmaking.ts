@@ -18,6 +18,10 @@ export interface StoredLineupSubmission {
   lineup: string[];
   elo: number;
   practiceMode?: boolean;
+  /** True when this lineup is waiting for a 1500+ live/ghost claim (queue_for_live). */
+  awaitingLive?: boolean;
+  salaryTotal: number;
+  starCount: number;
 }
 
 export interface PendingMatchmakingStatus {
@@ -45,11 +49,13 @@ const buildOpponentPath = (params: {
   mode: GhostMatchmakingMode;
   playerId: string;
   elo: number;
+  starCount: number;
 }) => {
   const search = new URLSearchParams({
     mode: params.mode,
     playerId: params.playerId,
     elo: String(Math.round(params.elo)),
+    starCount: String(Math.round(params.starCount)),
   });
 
   return `${buildUrl("/api/opponent")}?${search.toString()}`;
@@ -74,6 +80,7 @@ export const fetchGhostOpponent = async (params: {
   mode: GhostMatchmakingMode;
   playerId: string;
   elo: number;
+  starCount: number;
 }): Promise<GhostOpponentSnapshot | null> => {
   try {
     const response = await fetch(buildOpponentPath(params), {
@@ -104,6 +111,7 @@ export const searchGhostOpponent = async (
     mode: GhostMatchmakingMode;
     playerId: string;
     elo: number;
+    starCount: number;
   },
   options: {
     searchMs?: number;
