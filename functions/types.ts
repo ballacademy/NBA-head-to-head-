@@ -17,6 +17,8 @@ export interface StoredLineupRow {
   awaiting_live?: number | null;
   salary_total?: number | null;
   star_count?: number | null;
+  claimed_by?: string | null;
+  claim_expires_at?: string | null;
 }
 
 export interface DailyDraftScoreRow {

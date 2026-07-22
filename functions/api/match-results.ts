@@ -69,7 +69,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!storedLineupId || !challengerPlayerId || !challengerTeamName) {
     return json(
-      { error: "storedLineupId, challengerPlayerId, and challengerTeamName are required" },
+      {
+        error:
+          "storedLineupId, challengerPlayerId, and challengerTeamName are required",
+      },
       400,
     );
   }
@@ -81,12 +84,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const db = context.env.DB;
   const lineup = await db
     .prepare(
-      `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at, consumed_at
+      `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at,
+              consumed_at, claimed_by, claim_expires_at
        FROM stored_lineups
        WHERE id = ?`,
     )
     .bind(storedLineupId)
-    .first<StoredLineupRow & { consumed_at: string | null }>();
+    .first<StoredLineupRow>();
 
   if (!lineup || lineup.mode !== mode) {
     return json({ error: "stored lineup not found" }, 404);
@@ -100,23 +104,41 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ ok: true, duplicate: true });
   }
 
+  const nowMs = Date.now();
+  const claimExpires = lineup.claim_expires_at
+    ? Date.parse(lineup.claim_expires_at)
+    : NaN;
+  const claimActive =
+    Boolean(lineup.claimed_by) &&
+    Number.isFinite(claimExpires) &&
+    claimExpires > nowMs;
+
+  if (claimActive && lineup.claimed_by !== challengerPlayerId) {
+    return json({ error: "stored lineup is claimed by another challenger" }, 409);
+  }
+
   const ownerLineup = parseStoredLineupJson(lineup.lineup_json);
 
   if (!isValidStoredLineupIds(ownerLineup)) {
     return json({ error: "stored lineup is invalid" }, 400);
   }
 
-  const now = new Date().toISOString();
+  const now = new Date(nowMs).toISOString();
   const ownerResult = ownerResultFromChallengerWin(body.challengerWon);
 
-  await db
+  const consume = await db
     .prepare(
       `UPDATE stored_lineups
-       SET consumed_at = ?, consumed_by = ?
+       SET consumed_at = ?, consumed_by = ?,
+           claimed_by = NULL, claim_expires_at = NULL
        WHERE id = ? AND consumed_at IS NULL`,
     )
     .bind(now, challengerPlayerId, lineup.id)
     .run();
+
+  if ((consume.meta?.changes ?? 0) === 0) {
+    return json({ ok: true, duplicate: true });
+  }
 
   await db
     .prepare(

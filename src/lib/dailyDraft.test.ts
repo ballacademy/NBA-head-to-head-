@@ -118,4 +118,20 @@ describe("dailyDraft", () => {
   it("uses the current date key by default", () => {
     expect(getDailyDateKey()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
+
+  it("uses America/New_York calendar days for daily keys", () => {
+    // 2026-07-22 23:30 UTC is still 7:30pm Eastern on the 22nd.
+    expect(getDailyDateKey(new Date("2026-07-22T23:30:00.000Z"))).toBe(
+      "2026-07-22",
+    );
+    // 2026-07-23 03:30 UTC is 11:30pm Eastern on the 22nd.
+    expect(getDailyDateKey(new Date("2026-07-23T03:30:00.000Z"))).toBe(
+      "2026-07-22",
+    );
+    // 2026-07-23 04:30 UTC is 12:30am Eastern on the 23rd.
+    expect(getDailyDateKey(new Date("2026-07-23T04:30:00.000Z"))).toBe(
+      "2026-07-23",
+    );
+    expect(subtractDaysFromDateKey("2026-07-23", 1)).toBe("2026-07-22");
+  });
 });

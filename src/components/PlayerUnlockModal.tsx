@@ -39,13 +39,13 @@ export function PlayerUnlockModal({
     >
       <div className={`unlock-modal__panel panel${isCompact ? " unlock-modal__panel--compact" : ""}`}>
         <p className="eyebrow">
-          {isWinOffer ? "New star unlocked" : "New scrub unlocked"}
+          {isWinOffer ? "New star unlocked" : "New Scrub unlocked"}
         </p>
         <h2 id="unlock-title">
           {isCompact
             ? isWinOffer
               ? "Choose your star"
-              : "Choose your scrub"
+              : "Choose your Scrub"
             : isWinOffer
               ? "Choose one All-Star for your collection"
               : "Choose one Scrub for your collection"}

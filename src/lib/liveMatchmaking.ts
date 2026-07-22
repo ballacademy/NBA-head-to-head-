@@ -216,7 +216,25 @@ export const searchLiveOpponent = async (
     await sleep(Math.min(pollIntervalMs, remaining));
   }
 
+  // Final poll before leaving — a concurrent claim may have matched us.
+  const lateMatch = await pollMatchmakingQueue({
+    mode: params.mode,
+    playerId: params.playerId,
+  });
+
+  if (lateMatch) {
+    return lateMatch;
+  }
+
   if (isCancelled()) {
+    const cancelledMatch = await pollMatchmakingQueue({
+      mode: params.mode,
+      playerId: params.playerId,
+    });
+    if (cancelledMatch) {
+      return cancelledMatch;
+    }
+
     await leaveMatchmakingQueue({
       mode: params.mode,
       playerId: params.playerId,
@@ -229,7 +247,12 @@ export const searchLiveOpponent = async (
     playerId: params.playerId,
   });
 
-  return null;
+  // One more check after leave in case DELETE raced with a claim that already
+  // created a live match row (GET still finds matches by player id).
+  return pollMatchmakingQueue({
+    mode: params.mode,
+    playerId: params.playerId,
+  });
 };
 
 export const fetchLiveMatchState = async (params: {

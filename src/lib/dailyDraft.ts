@@ -41,10 +41,26 @@ const createSeededRandom = (seed: number) => {
   };
 };
 
+/** League calendar day timezone for Daily Draft (US Eastern). */
+export const DAILY_TIMEZONE = "America/New_York";
+
+const easternDateParts = (date: Date) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: DAILY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((part) => part.type === "year")?.value ?? "1970";
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
+  const day = parts.find((part) => part.type === "day")?.value ?? "01";
+
+  return { year, month, day };
+};
+
 export const getDailyDateKey = (date = new Date()) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const { year, month, day } = easternDateParts(date);
   return `${year}-${month}-${day}`;
 };
 
@@ -54,15 +70,23 @@ export const getDailySeed = (dateKey = getDailyDateKey()) => {
 };
 
 export const subtractDaysFromDateKey = (dateKey: string, days: number) => {
-  const date = new Date(`${dateKey}T12:00:00`);
-  date.setDate(date.getDate() - days);
-  return getDailyDateKey(date);
+  const [year, month, day] = dateKey.split("-").map(Number);
+  // Date keys are already Eastern civil dates — shift with calendar math only.
+  const shifted = new Date(Date.UTC(year, month - 1, day));
+  shifted.setUTCDate(shifted.getUTCDate() - days);
+  const nextYear = shifted.getUTCFullYear();
+  const nextMonth = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  const nextDay = String(shifted.getUTCDate()).padStart(2, "0");
+  return `${nextYear}-${nextMonth}-${nextDay}`;
 };
 
 export const formatDailyDateLabel = (dateKey: string) => {
-  const date = new Date(`${dateKey}T12:00:00`);
+  const [year, month, day] = dateKey.split("-").map(Number);
+  // Noon UTC keeps the civil date stable when formatting in Eastern.
+  const date = new Date(Date.UTC(year, month - 1, day, 16, 0, 0));
 
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString("en-US", {
+    timeZone: DAILY_TIMEZONE,
     month: "short",
     day: "numeric",
     year: "numeric",

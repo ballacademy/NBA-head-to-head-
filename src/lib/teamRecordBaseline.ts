@@ -95,15 +95,15 @@ export const getSameTeamRecordAnchor = (
 
   const teams = new Set(
     lineup
-      .map((player) => player.team)
-      .filter((team) => team && !isFreeAgentTeam(team)),
+      .map((player) => getPlayerTeamQualityTeam(player))
+      .filter((team): team is string => Boolean(team && !isFreeAgentTeam(team))),
   );
 
   if (teams.size !== 1) {
     return null;
   }
 
-  const team = [...teams][0];
+  const team = [...teams][0]!;
   const actualWins = winsByTeam[normalizeTeamAbbreviation(team)];
 
   if (actualWins === undefined) {

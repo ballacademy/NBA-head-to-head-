@@ -9,3 +9,7 @@ export const getDailyDraftModeForGoalId = (goalId: string): DailyDraftMode =>
 
 export const formatDailyDraftModeLabel = (mode: DailyDraftMode) =>
   mode === "advanced" ? "Advanced" : "Basic";
+
+/** Full product name used in UI chrome (landing, draft, results, share). */
+export const formatDailyDraftProductName = (mode: DailyDraftMode) =>
+  `${formatDailyDraftModeLabel(mode)} Daily Draft`;

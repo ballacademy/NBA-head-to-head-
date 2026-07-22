@@ -20,7 +20,10 @@ import {
 } from "../lib/dailyDraftScores";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
-import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
+import {
+  formatDailyDraftModeLabel,
+  formatDailyDraftProductName,
+} from "../lib/dailyDraftMode";
 import { formatDailyDateLabel } from "../lib/dailyDraft";
 import {
   formatDailyDraftPlayStreak,
@@ -217,8 +220,8 @@ export function DailyDraftResults({
       <div className="panel panel--compact daily-draft-results__header">
         <p className="eyebrow">
           {optimalReview
-            ? `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily Answer Key`
-            : `${formatDailyDraftModeLabel(user.dailyDraftMode ?? "basic")} Daily complete`}
+            ? `${formatDailyDraftProductName(user.dailyDraftMode ?? "basic")} Answer Key`
+            : `${formatDailyDraftProductName(user.dailyDraftMode ?? "basic")} complete`}
         </p>
         <h2>{dailyGoal.title}</h2>
         <p>

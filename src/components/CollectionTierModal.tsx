@@ -78,7 +78,7 @@ export function CollectionTierModal({
           </ul>
         ) : (
           <p className="collection-tier-modal__empty">
-            No unlocked {label.toLowerCase()} yet.
+            No unlocked {label} yet.
           </p>
         )}
 

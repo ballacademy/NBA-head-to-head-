@@ -5,6 +5,7 @@ import {
   savePlayerCollection,
 } from "./playerCollection";
 import { setPlayerIdentity } from "./playerIdentity";
+import { fetchRemotePlayerProfile } from "./playerProfileApi";
 import {
   clearModePlayerRecords,
   replaceModePlayerRecords,
@@ -55,7 +56,7 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   const identity = setPlayerIdentity(playerId);
   const seasonId = getCurrentSeasonId();
 
-  const [rankedBoard, classicBoard] = await Promise.all([
+  const [rankedBoard, classicBoard, profile] = await Promise.all([
     fetchRemoteLeaderboard({
       mode: "ranked",
       seasonId,
@@ -69,6 +70,7 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
       limit: 100,
       viewerPlayerId: playerId,
     }),
+    fetchRemotePlayerProfile({ playerId, seasonId }),
   ]);
 
   const rankedEntry =
@@ -80,25 +82,34 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
       (entry) => entry.isYou || entry.playerId === playerId,
     ) ?? null;
 
-  if (rankedEntry) {
+  const currentElo =
+    profile?.currentSeason?.elo ?? rankedEntry?.elo ?? null;
+  const currentWins =
+    profile?.currentSeason?.wins ?? rankedEntry?.wins ?? 0;
+  const currentLosses =
+    profile?.currentSeason?.losses ?? rankedEntry?.losses ?? 0;
+  const legacyPeak = profile?.legacy?.peakElo ?? null;
+
+  if (currentElo != null) {
     saveRankedProfile({
       playerId,
       seasonId,
-      elo: rankedEntry.elo,
-      peakElo: rankedEntry.elo,
-      rankedGamesPlayed: rankedEntry.wins + rankedEntry.losses,
+      elo: currentElo,
+      peakElo: Math.max(currentElo, legacyPeak ?? currentElo),
+      rankedGamesPlayed: Math.max(0, currentWins + currentLosses),
     });
   }
 
   replaceModePlayerRecords({
-    ranked: rankedEntry
-      ? {
-          wins: rankedEntry.wins,
-          losses: rankedEntry.losses,
-          winStreak: rankedEntry.winStreak,
-          lossStreak: rankedEntry.lossStreak,
-        }
-      : undefined,
+    ranked:
+      rankedEntry || profile?.currentSeason
+        ? {
+            wins: currentWins,
+            losses: currentLosses,
+            winStreak: rankedEntry?.winStreak ?? 0,
+            lossStreak: rankedEntry?.lossStreak ?? 0,
+          }
+        : undefined,
     headToHead: classicEntry
       ? {
           wins: classicEntry.wins,
