@@ -68,7 +68,8 @@ export const submitRemoteDailyDraftScore = async (params: {
       body: JSON.stringify(params),
     });
 
-    if (!response.ok) {
+    // 409 = already submitted (one attempt); return the stored entry.
+    if (!response.ok && response.status !== 409) {
       return null;
     }
 

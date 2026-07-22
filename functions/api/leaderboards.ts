@@ -170,6 +170,56 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
+  // Max single-match Elo swing ≈ BASE_K * max placement * max streak (32*2.5*1.6).
+  const MAX_ELO_DELTA_PER_UPSERT = 128;
+  const MAX_RECORD_DELTA_PER_UPSERT = 1;
+
+  const existing = await context.env.DB.prepare(
+    `SELECT elo, wins, losses, win_streak, loss_streak
+     FROM leaderboard_entries
+     WHERE mode = ? AND season_id = ? AND player_id = ?`,
+  )
+    .bind(mode, seasonId, playerId)
+    .first<{
+      elo: number;
+      wins: number;
+      losses: number;
+      win_streak: number;
+      loss_streak: number;
+    }>();
+
+  if (existing) {
+    const eloDelta = Math.abs(elo - existing.elo);
+    const winsDelta = wins - existing.wins;
+    const lossesDelta = losses - existing.losses;
+    const gamesDelta = winsDelta + lossesDelta;
+
+    if (eloDelta > MAX_ELO_DELTA_PER_UPSERT) {
+      return json(
+        { error: "elo change exceeds the maximum allowed per update" },
+        400,
+      );
+    }
+
+    if (winsDelta < 0 || lossesDelta < 0) {
+      return json({ error: "wins and losses cannot decrease" }, 400);
+    }
+
+    if (gamesDelta > MAX_RECORD_DELTA_PER_UPSERT) {
+      return json(
+        { error: "record change exceeds one match per update" },
+        400,
+      );
+    }
+
+    if (gamesDelta === 0 && eloDelta > 0) {
+      return json(
+        { error: "elo cannot change without a recorded match" },
+        400,
+      );
+    }
+  }
+
   const updatedAt = new Date().toISOString();
 
   await context.env.DB.prepare(

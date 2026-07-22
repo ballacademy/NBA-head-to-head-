@@ -62,7 +62,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft submissions s
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
-   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, and `0010_player_accounts.sql` for optional username/password GM restore.
+   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, `0010_player_accounts.sql` for optional username/password GM restore, and `0011_stored_lineup_soft_claim.sql` for soft-claim ghost matchmaking.
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

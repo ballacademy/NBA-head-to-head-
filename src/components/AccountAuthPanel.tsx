@@ -367,7 +367,7 @@ export function AccountAuthPanel({
           <div className="landing-team-form__account-form-actions">
             <button
               type="submit"
-              className="primary-button"
+              className="landing__primary-button"
               disabled={busy}
               aria-busy={busy}
             >

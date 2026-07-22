@@ -84,6 +84,25 @@ describe("teamRecordBaseline", () => {
     expect(getPlayerTeamQualityTeam(emb!)).toBe("PHI");
   });
 
+  it("anchors same-team projected records on stats-season clubs", () => {
+    const naz = players.find((player) => player.bbrPlayerId === "reidna01")!;
+    const wolves = [
+      naz,
+      ...players
+        .filter(
+          (player) =>
+            player.bbrPlayerId !== "reidna01" &&
+            getPlayerTeamQualityTeam(player) === "MIN",
+        )
+        .sort((left, right) => right.minutes - left.minutes)
+        .slice(0, 4),
+    ];
+
+    expect(wolves).toHaveLength(5);
+    expect(naz.team).not.toBe("MIN");
+    expect(getSameTeamRecordAnchor(wolves)?.team).toBe("MIN");
+  });
+
   it("does not over-inflate injured small-market teams beyond recovery cap", () => {
     const pelicans = players
       .filter((player) => player.team === "NOP")

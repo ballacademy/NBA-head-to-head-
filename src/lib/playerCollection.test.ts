@@ -366,6 +366,12 @@ describe("playerCollection", () => {
     expect(premiumPair?.some((id) => isPremium(id))).toBe(true);
   });
 
+  it("does not offer a duplicate unlock choice when fewer than two players remain", () => {
+    const isPremium = () => false;
+    expect(createTieredUnlockPair([], isPremium)).toBeNull();
+    expect(createTieredUnlockPair(["only-one"], isPremium)).toBeNull();
+  });
+
   it("can offer super scrubs when the premium roll hits on a loss offer", () => {
     const collection = loadPlayerCollection();
     const unlocked = new Set(collection.unlockedIds);

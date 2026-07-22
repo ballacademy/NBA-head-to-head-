@@ -215,7 +215,7 @@ export function MatchResults({
 
   const unlockButtonLabel =
     matchCollection.pendingUnlock?.kind === "loss"
-      ? "New scrub unlocked — click to choose"
+      ? "New Scrub unlocked — choose one"
       : "New star unlocked — click to choose";
   const playerIdentity = getOrCreatePlayerIdentity();
 
@@ -272,7 +272,7 @@ export function MatchResults({
             </div>
           ) : null}
           <p className="matchup-panel__identity">
-            <span className="matchup-panel__identity-label">Listed as</span>
+            <span className="matchup-panel__identity-label">GM code</span>
             <GmIdentityBadge
               name={user.name}
               publicTag={playerIdentity.publicTag}

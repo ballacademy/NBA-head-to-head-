@@ -1,5 +1,6 @@
 import type { Env, MatchmakingMode } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
+import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
   isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
@@ -19,6 +20,9 @@ const json = (body: unknown, status = 200) =>
 
 const parseMode = (value: unknown): MatchmakingMode | null =>
   value === "classic" || value === "ranked" ? value : null;
+
+/** Upper bound for depositor-reported star depth (collection size safety). */
+const MAX_STORED_STAR_COUNT = 40;
 
 interface LineupBody {
   mode?: unknown;
@@ -48,10 +52,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
   const lineup = sanitizeStoredLineupIds(body.lineup);
-  const elo = Number(body.elo ?? 1000);
   const awaitingLive = body.awaitingLive === true || body.awaitingLive === 1;
-  const salaryTotal = Number(body.salaryTotal);
-  const starCount = Number(body.starCount);
+  const clientStarCount = Number(body.starCount);
   const isPractice =
     body.practiceMode === true ||
     body.isPractice === true ||
@@ -85,13 +87,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (!Number.isFinite(elo)) {
-    return json({ error: "elo must be a number" }, 400);
+  const salary = computeLineupSalaryTotal(lineup);
+  if (salary.missing > 0) {
+    return json(
+      { error: "lineup contains players without known contract salaries" },
+      400,
+    );
   }
 
-  if (!Number.isFinite(salaryTotal) || salaryTotal < 0) {
-    return json({ error: "salaryTotal must be a non-negative number" }, 400);
-  }
+  const salaryTotal = Math.round(salary.total);
 
   if (!isStoredLineupWithinSalaryCap(mode, salaryTotal)) {
     return json(
@@ -102,9 +106,33 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (!Number.isFinite(starCount) || starCount < 0) {
+  if (!Number.isFinite(clientStarCount) || clientStarCount < 0) {
     return json({ error: "starCount must be a non-negative number" }, 400);
   }
+
+  const starCount = Math.min(
+    MAX_STORED_STAR_COUNT,
+    Math.round(clientStarCount),
+  );
+
+  // Prefer server leaderboard Elo when available; otherwise accept a clamped client value.
+  const leaderboard = await context.env.DB.prepare(
+    `SELECT elo FROM leaderboard_entries
+     WHERE mode = ? AND player_id = ?
+     ORDER BY updated_at DESC
+     LIMIT 1`,
+  )
+    .bind(mode, playerId)
+    .first<{ elo: number }>();
+
+  const clientElo = Number(body.elo ?? 1000);
+  if (!leaderboard && !Number.isFinite(clientElo)) {
+    return json({ error: "elo must be a number" }, 400);
+  }
+
+  const elo = Math.round(
+    leaderboard?.elo ?? Math.max(0, Math.min(4000, clientElo)),
+  );
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
@@ -121,13 +149,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       playerId,
       teamName,
       JSON.stringify(lineup),
-      Math.round(elo),
+      elo,
       createdAt,
       awaitingLive ? 1 : 0,
-      Math.round(salaryTotal),
-      Math.round(starCount),
+      salaryTotal,
+      starCount,
     )
     .run();
 
-  return json({ id, createdAt }, 201);
+  return json({ id, createdAt, salaryTotal, elo, starCount }, 201);
 };

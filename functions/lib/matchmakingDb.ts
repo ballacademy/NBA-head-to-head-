@@ -24,10 +24,22 @@ export interface QueueEntryRow {
   expires_at: string;
 }
 
+/** Soft claim TTL so abandoned ghost searches release Pro locks. */
+export const GHOST_CLAIM_TTL_MS = 5 * 60 * 1000;
+
 const cutoffIso = (days: number) => {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() - days);
   return date.toISOString();
+};
+
+const isClaimActive = (row: StoredLineupRow, nowMs: number) => {
+  if (!row.claim_expires_at) {
+    return false;
+  }
+
+  const expires = Date.parse(row.claim_expires_at);
+  return Number.isFinite(expires) && expires > nowMs;
 };
 
 export const claimGhostOpponent = async (
@@ -43,13 +55,15 @@ export const claimGhostOpponent = async (
     [0, 9999],
   ] as const;
   const cutoff = cutoffIso(14);
-  const now = new Date().toISOString();
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const claimExpiresAt = new Date(nowMs + GHOST_CLAIM_TTL_MS).toISOString();
 
   for (const [minElo, maxElo] of bands) {
     const candidates = await db
       .prepare(
         `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at,
-                awaiting_live, salary_total, star_count
+                awaiting_live, salary_total, star_count, claimed_by, claim_expires_at
          FROM stored_lineups
          WHERE mode = ?
            AND player_id != ?
@@ -64,13 +78,18 @@ export const claimGhostOpponent = async (
       .all<StoredLineupRow>();
 
     for (const row of candidates.results ?? []) {
+      if (isClaimActive(row, nowMs) && row.claimed_by !== playerId) {
+        continue;
+      }
+
       const payload = rowToPayload(row);
 
       if (!payload) {
         await db
           .prepare(
             `UPDATE stored_lineups
-             SET consumed_at = ?, consumed_by = ?
+             SET consumed_at = ?, consumed_by = ?,
+                 claimed_by = NULL, claim_expires_at = NULL
              WHERE id = ? AND consumed_at IS NULL`,
           )
           .bind(now, INVALID_STORED_LINEUP_CONSUMED_BY, row.id)
@@ -82,7 +101,8 @@ export const claimGhostOpponent = async (
         await db
           .prepare(
             `UPDATE stored_lineups
-             SET consumed_at = ?, consumed_by = ?
+             SET consumed_at = ?, consumed_by = ?,
+                 claimed_by = NULL, claim_expires_at = NULL
              WHERE id = ? AND consumed_at IS NULL`,
           )
           .bind(now, OVER_CAP_STORED_LINEUP_CONSUMED_BY, row.id)
@@ -97,10 +117,16 @@ export const claimGhostOpponent = async (
       const claim = await db
         .prepare(
           `UPDATE stored_lineups
-           SET consumed_at = ?, consumed_by = ?
-           WHERE id = ? AND consumed_at IS NULL`,
+           SET claimed_by = ?, claim_expires_at = ?
+           WHERE id = ?
+             AND consumed_at IS NULL
+             AND (
+               claim_expires_at IS NULL
+               OR claim_expires_at < ?
+               OR claimed_by = ?
+             )`,
         )
-        .bind(now, playerId, row.id)
+        .bind(playerId, claimExpiresAt, row.id, now, playerId)
         .run();
 
       if ((claim.meta?.changes ?? 0) > 0) {

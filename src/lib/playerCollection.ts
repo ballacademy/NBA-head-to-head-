@@ -65,12 +65,8 @@ export const createTieredUnlockPair = (
   isPremium: (playerId: string) => boolean,
   premiumChance = PREMIUM_UNLOCK_CHANCE,
 ): [string, string] | null => {
-  if (available.length === 0) {
+  if (available.length < 2) {
     return null;
-  }
-
-  if (available.length === 1) {
-    return [available[0]!, available[0]!];
   }
 
   const premium = available.filter(isPremium);

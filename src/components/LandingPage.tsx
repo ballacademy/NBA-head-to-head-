@@ -10,7 +10,10 @@ import {
 import { CollectionTierModal } from "./CollectionTierModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import type { DailyDraftMode } from "../lib/dailyDraftMode";
-import { formatDailyDraftModeLabel } from "../lib/dailyDraftMode";
+import {
+  formatDailyDraftModeLabel,
+  formatDailyDraftProductName,
+} from "../lib/dailyDraftMode";
 import type { LandingDailyDraftSnapshot } from "../lib/landingDailyDraft";
 import {
   formatDailyDraftPlayStreak,
@@ -57,7 +60,7 @@ const buildHeadToHeadModeDetails = (
 ) => [
   ...baseDetails,
   `Your draft pool has ${unlockedCount} unlocked players.`,
-  "Win to unlock All-Stars, lose to unlock scrubs.",
+  "Win to unlock All-Stars, lose to unlock Scrubs.",
 ];
 
 interface LandingPageProps {
@@ -313,7 +316,7 @@ export function LandingPage({
       >
         <div className="daily-draft-mode-section__header">
           <h3 id={`daily-draft-${mode}-title`}>
-            {formatDailyDraftModeLabel(mode)} Daily
+            {formatDailyDraftProductName(mode)}
           </h3>
           <p className="daily-draft-mode-section__subtitle">
             {mode === "advanced"
@@ -359,7 +362,9 @@ export function LandingPage({
           <button
             type="button"
             className="daily-draft-card__button daily-draft-card__button--secondary"
-            disabled={!onViewYesterdayBestDailyLineup || isMatchmaking}
+            disabled={
+              !onViewYesterdayBestDailyLineup || modesBlocked
+            }
             onClick={() => void handleYesterdayBestAction(mode)}
           >
             Yesterday&apos;s best ({formatDailyDraftModeLabel(mode)})
@@ -469,7 +474,9 @@ export function LandingPage({
         />
 
         {profanityWarning || error || startMatchError ? (
-          <p className="form-error">{profanityWarning || error || startMatchError}</p>
+          <p className="form-error" role="alert">
+            {profanityWarning || error || startMatchError}
+          </p>
         ) : null}
       </div>
 
@@ -557,7 +564,7 @@ export function LandingPage({
           </button>
         </div>
         <p className="landing-profile-strip__meta">
-          Win to unlock All-Stars, lose to unlock scrubs.
+          Win to unlock All-Stars, lose to unlock Scrubs.
         </p>
       </div>
 

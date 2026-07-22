@@ -182,30 +182,76 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const submittedAt = new Date().toISOString();
 
-  await context.env.DB.prepare(
-    `INSERT INTO daily_draft_scores (
-      date_key, goal_id, mode, player_id, team_name, value, formatted_result, lineup_json, submitted_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(date_key, goal_id, player_id) DO UPDATE SET
-      mode = excluded.mode,
-      team_name = excluded.team_name,
-      value = excluded.value,
-      formatted_result = excluded.formatted_result,
-      lineup_json = excluded.lineup_json,
-      submitted_at = excluded.submitted_at`,
+  const existing = await context.env.DB.prepare(
+    `SELECT date_key, goal_id, mode, player_id, team_name, value, formatted_result,
+            lineup_json, submitted_at
+     FROM daily_draft_scores
+     WHERE date_key = ? AND goal_id = ? AND player_id = ?`,
   )
-    .bind(
-      dateKey,
-      goalId,
-      mode,
-      playerId,
-      teamName,
-      value,
-      formattedResult,
-      JSON.stringify(lineup),
-      submittedAt,
+    .bind(dateKey, goalId, playerId)
+    .first<{
+      date_key: string;
+      goal_id: string;
+      mode: string;
+      player_id: string;
+      team_name: string;
+      value: number;
+      formatted_result: string;
+      lineup_json: string;
+      submitted_at: string;
+    }>();
+
+  if (existing) {
+    const existingLineup = parseDailyLineupJson(existing.lineup_json) ?? [];
+    return json(
+      {
+        error: "daily draft already submitted for this goal",
+        dateKey,
+        goalId,
+        mode: parseMode(existing.mode),
+        entry: {
+          playerId: existing.player_id,
+          goalId: existing.goal_id,
+          mode: parseMode(existing.mode),
+          value: existing.value,
+          formattedResult: existing.formatted_result,
+          lineup: existingLineup,
+          teamName: existing.team_name,
+          submittedAt: existing.submitted_at,
+        },
+      },
+      409,
+    );
+  }
+
+  try {
+    await context.env.DB.prepare(
+      `INSERT INTO daily_draft_scores (
+        date_key, goal_id, mode, player_id, team_name, value, formatted_result, lineup_json, submitted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run();
+      .bind(
+        dateKey,
+        goalId,
+        mode,
+        playerId,
+        teamName,
+        value,
+        formattedResult,
+        JSON.stringify(lineup),
+        submittedAt,
+      )
+      .run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/UNIQUE/i.test(message)) {
+      return json(
+        { error: "daily draft already submitted for this goal" },
+        409,
+      );
+    }
+    return json({ error: "could not save daily draft score" }, 500);
+  }
 
   return json(
     {
