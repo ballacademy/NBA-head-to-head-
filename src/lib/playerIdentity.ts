@@ -87,6 +87,16 @@ const saveIdentity = (identity: PlayerIdentity) => {
   writeJson(LEGACY_PLAYER_ID_KEY, { playerId: identity.playerId });
 };
 
+export const setPlayerIdentity = (playerId: string): PlayerIdentity => {
+  const identity: PlayerIdentity = {
+    playerId: playerId.trim(),
+    publicTag: derivePublicTag(playerId.trim()),
+  };
+
+  saveIdentity(identity);
+  return identity;
+};
+
 export const getOrCreatePlayerIdentity = (): PlayerIdentity => {
   const stored = loadStoredIdentity() ?? migrateLegacyPlayerId();
 

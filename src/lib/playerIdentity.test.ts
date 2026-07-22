@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { writeJson } from "./browserStorage";
 import {
   derivePublicTag,
   formatGmDisplayName,
   formatPublicTag,
   getOrCreatePlayerIdentity,
   resolvePublicTag,
+  setPlayerIdentity,
 } from "./playerIdentity";
 
 const storage = new Map<string, string>();
@@ -64,5 +66,27 @@ describe("playerIdentity", () => {
     expect(identity.playerId).toBe("legacy-player-id");
     expect(identity.publicTag).toBe(derivePublicTag("legacy-player-id"));
     expect(storage.has("nba-head-to-head-player-identity")).toBe(true);
+  });
+
+  it("can replace the local GM identity after login", () => {
+    const original = getOrCreatePlayerIdentity();
+    expect(original.playerId).toBeTruthy();
+
+    const restoredId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+    const restored = setPlayerIdentity(restoredId);
+
+    expect(restored.playerId).toBe(restoredId);
+    expect(restored.publicTag).toBe(derivePublicTag(restoredId));
+    expect(getOrCreatePlayerIdentity()).toEqual(restored);
+  });
+
+  it("keeps a previously saved identity until setPlayerIdentity runs", () => {
+    writeJson("nba-head-to-head-player-identity", {
+      playerId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      publicTag: "ABCD",
+    });
+
+    const identity = getOrCreatePlayerIdentity();
+    expect(identity.playerId).toBe("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
   });
 });

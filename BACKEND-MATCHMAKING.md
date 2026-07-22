@@ -25,6 +25,18 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 | `POST` | `/api/daily-scores` | Submit or update your Daily Draft score for today |
 | `GET` | `/api/leaderboards?mode=classic\|ranked&sort=elo\|winStreak\|lossStreak&seasonId=YYYY-MM` | Fetch global leaderboard entries (real players only) |
 | `POST` | `/api/leaderboards` | Upsert your Classic or Pro leaderboard row after a match |
+| `GET` | `/api/player-profile?playerId=...` | Fetch legacy / current-season profile snippets |
+| `POST` | `/api/account/register` | Optional: bind username + password hash to current `playerId` |
+| `POST` | `/api/account/login` | Optional: restore a saved `playerId` with username/password |
+| `GET` | `/api/account/status?playerId=...` | Whether the current GM identity already has an account |
+
+## Optional accounts
+
+Accounts are optional. Register stores a username and PBKDF2-SHA-256 password hash linked to the browser GM `playerId`. Login returns that `playerId` so the client can restore identity after cleared local storage. Apply migration `0010_player_accounts.sql` before enabling the feature in production:
+
+```bash
+npx wrangler d1 migrations apply draft-day-gm --remote
+```
 
 ## Flow
 
@@ -50,7 +62,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft submissions s
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
-   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, and `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids.
+   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, and `0010_player_accounts.sql` for optional username/password GM restore.
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

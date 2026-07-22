@@ -45,6 +45,7 @@ import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
+import { AccountAuthPanel } from "./AccountAuthPanel";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
@@ -460,6 +461,12 @@ export function LandingPage({
             Shown on leaderboards. Tap your code to verify or copy your full ID.
           </span>
         </p>
+
+        <AccountAuthPanel
+          playerId={playerIdentity.playerId}
+          onViewPrivacy={onViewPrivacy}
+          onViewTerms={onViewTerms}
+        />
 
         {profanityWarning || error || startMatchError ? (
           <p className="form-error">{profanityWarning || error || startMatchError}</p>
