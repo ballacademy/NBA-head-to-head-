@@ -1,0 +1,104 @@
+import type { Env } from "../../types";
+import {
+  validatePassword,
+  validatePlayerId,
+  validateUsername,
+} from "../../lib/accountCredentials";
+import {
+  createPlayerAccount,
+  getAccountByPlayerId,
+  getAccountByUsername,
+} from "../../lib/playerAccounts";
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
+
+export const onRequestPost: PagesFunction<Env> = async (context) => {
+  let body: {
+    username?: unknown;
+    password?: unknown;
+    playerId?: unknown;
+    acceptedTerms?: unknown;
+  };
+
+  try {
+    body = (await context.request.json()) as typeof body;
+  } catch {
+    return json({ error: "Invalid JSON body" }, 400);
+  }
+
+  if (body.acceptedTerms !== true) {
+    return json(
+      {
+        error:
+          "You must accept the Privacy Policy and Terms of Use to create an account.",
+      },
+      400,
+    );
+  }
+
+  const usernameResult = validateUsername(String(body.username ?? ""));
+  if (!usernameResult.ok) {
+    return json({ error: usernameResult.error }, 400);
+  }
+
+  const passwordResult = validatePassword(String(body.password ?? ""));
+  if (!passwordResult.ok) {
+    return json({ error: passwordResult.error }, 400);
+  }
+
+  const playerIdResult = validatePlayerId(String(body.playerId ?? ""));
+  if (!playerIdResult.ok) {
+    return json({ error: playerIdResult.error }, 400);
+  }
+
+  const existingUsername = await getAccountByUsername(
+    context.env.DB,
+    usernameResult.username,
+  );
+  if (existingUsername) {
+    return json({ error: "That username is already taken." }, 409);
+  }
+
+  const existingPlayer = await getAccountByPlayerId(
+    context.env.DB,
+    playerIdResult.playerId,
+  );
+  if (existingPlayer) {
+    return json(
+      {
+        error: "This GM identity already has an account. Log in instead.",
+        username: existingPlayer.username,
+      },
+      409,
+    );
+  }
+
+  try {
+    const account = await createPlayerAccount(context.env.DB, {
+      username: usernameResult.username,
+      password: passwordResult.password,
+      playerId: playerIdResult.playerId,
+    });
+
+    return json({
+      ok: true,
+      username: account.username,
+      playerId: account.playerId,
+      createdAt: account.createdAt,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/UNIQUE/i.test(message)) {
+      return json({ error: "That username is already taken." }, 409);
+    }
+
+    return json({ error: "Could not create account." }, 500);
+  }
+};

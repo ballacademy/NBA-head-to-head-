@@ -6,7 +6,7 @@ interface LegalPageProps {
   onOpenPrivacy?: () => void;
 }
 
-const LAST_UPDATED = "June 29, 2026";
+const LAST_UPDATED = "July 22, 2026";
 
 function PrivacyPolicyContent() {
   return (
@@ -19,8 +19,10 @@ function PrivacyPolicyContent() {
         and what choices you have.
       </p>
       <p>
-        We do not ask for your real name, email address, phone number, or payment
-        information to play.
+        You can play without creating an account. We do not ask for your real
+        name, email address, phone number, or payment information to play.
+        Optional accounts use a username and password you choose so you can
+        restore your GM identity later.
       </p>
 
       <h2>Information we collect</h2>
@@ -48,15 +50,40 @@ function PrivacyPolicyContent() {
         <li>Daily Draft scores and formatted results</li>
         <li>Temporary matchmaking queue entries while you search for an opponent</li>
       </ul>
+
+      <h3>Optional accounts</h3>
       <p>
-        We do not operate a login system. Your player ID is created in your
-        browser and sent with API requests so we can match you with opponents
-        and show leaderboard entries.
+        If you choose Create account, we store:
+      </p>
+      <ul>
+        <li>Your chosen username</li>
+        <li>
+          A salted password hash created with PBKDF2-SHA-256 (we never store your
+          password in plain text)
+        </li>
+        <li>The GM player ID linked to that account</li>
+        <li>Account created and last-login timestamps</li>
+        <li>
+          Short-lived login attempt counters (username + network address) used
+          only to limit brute-force attacks
+        </li>
+      </ul>
+      <p>
+        Accounts are optional. Your player ID is still created in your browser
+        for play without an account. Creating an account only lets you restore
+        that GM identity on another browser or after clearing site data.
+      </p>
+      <p>
+        We do not currently offer automated password reset. If you forget your
+        username or password, contact us to request account deletion. Local
+        collection progress stays on your device and is not uploaded with the
+        account.
       </p>
 
       <h3>Information we do not collect on purpose</h3>
       <ul>
-        <li>Email addresses or account passwords</li>
+        <li>Email addresses (accounts use a username, not email)</li>
+        <li>Plain-text account passwords</li>
         <li>Payment or billing information</li>
         <li>Precise location</li>
         <li>Advertising or analytics tracking cookies</li>
@@ -68,7 +95,10 @@ function PrivacyPolicyContent() {
         <li>Store lineups for ghost opponents and live queue features</li>
         <li>Display leaderboards and Daily Draft percentiles</li>
         <li>Keep your local progress synced with server-side competitive features</li>
-        <li>Maintain and protect the service</li>
+        <li>
+          Authenticate optional accounts so you can restore a GM identity
+        </li>
+        <li>Maintain and protect the service, including login rate limiting</li>
       </ul>
       <p>We do not sell your personal information.</p>
 
@@ -120,6 +150,10 @@ function PrivacyPolicyContent() {
           use a different browser
         </li>
         <li>
+          Optional account records remain until you ask us to delete them or we
+          remove inactive accounts as needed to operate the service
+        </li>
+        <li>
           Stored ghost lineups used for matchmaking are generally kept for a
           limited window (about 14 days) before they stop being offered to
           opponents
@@ -129,32 +163,44 @@ function PrivacyPolicyContent() {
           records are overwritten by newer submissions
         </li>
         <li>Matchmaking queue entries are short-lived and removed after use</li>
+        <li>Login rate-limit counters expire after a short window</li>
       </ul>
 
       <h2>Your choices</h2>
       <ul>
+        <li>Play without creating an account</li>
         <li>
-          Clear your browser&apos;s site data to reset local progress and receive
-          a new anonymous player ID
+          Create an optional account to restore your GM code after clearing
+          browser data
+        </li>
+        <li>
+          Clear your browser&apos;s site data to reset local progress (you will
+          get a new anonymous player ID unless you log back into an account)
         </li>
         <li>
           Stop using online modes if you do not want team names, lineups, or
           scores stored on our servers
         </li>
+        <li>
+          Email{" "}
+          <a href="mailto:ballacademyofficial@gmail.com">
+            ballacademyofficial@gmail.com
+          </a>{" "}
+          to request deletion of an optional account and associated login
+          records. Include your username. We will take reasonable steps to
+          delete the account row; competitive history tied to the same player ID
+          may remain unless you also ask us to remove those records where
+          feasible.
+        </li>
       </ul>
-      <p>
-        Because there is no account system, we cannot reliably delete
-        server-side records tied to your old player ID if you clear local
-        storage. Clearing local data creates a new anonymous identity going
-        forward.
-      </p>
 
       <h2>Children&apos;s privacy</h2>
       <p>
         Draft Day GM is a casual sports fan game and is not directed at children
         under 13. We do not knowingly collect personal information from
-        children under 13. If you believe a child has provided information
-        through the site, contact us at{" "}
+        children under 13. Optional accounts are intended for users 13 and older.
+        If you believe a child has provided information through the site, contact
+        us at{" "}
         <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>{" "}
         and we will take reasonable steps to remove associated server records
         where possible.
@@ -216,11 +262,34 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
         Terms or creates risk for the service.
       </p>
 
+      <h2>Optional accounts</h2>
+      <p>
+        Creating an account is optional and not required to play. If you create
+        one:
+      </p>
+      <ul>
+        <li>
+          You are responsible for keeping your username and password confidential
+        </li>
+        <li>
+          Do not attempt to access another player&apos;s account or GM identity
+        </li>
+        <li>
+          We may suspend or delete accounts that violate these Terms or abuse
+          authentication endpoints
+        </li>
+        <li>
+          There is currently no self-serve password reset; contact us if you need
+          an account removed
+        </li>
+      </ul>
+
       <h2>Acceptable use</h2>
       <p>You agree not to:</p>
       <ul>
         <li>Cheat, exploit bugs, or manipulate matchmaking or leaderboards</li>
         <li>Scrape, overload, or attack the site or its APIs</li>
+        <li>Attempt to break into accounts or bypass login rate limits</li>
         <li>Reverse engineer the service to build a competing product</li>
         <li>Use the site for unlawful purposes</li>
       </ul>

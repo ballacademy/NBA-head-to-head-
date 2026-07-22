@@ -43,3 +43,14 @@ export interface LeaderboardEntryRow {
   loss_streak: number;
   updated_at: string;
 }
+
+export interface PlayerAccountRow {
+  id: string;
+  username: string;
+  password_salt: string;
+  password_hash: string;
+  password_iters: number;
+  player_id: string;
+  created_at: string;
+  last_login_at: string | null;
+}

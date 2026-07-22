@@ -2377,6 +2377,123 @@ main {
   background: rgba(124, 58, 237, 0.28);
 }
 
+.landing-team-form__account {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.landing-team-form__account-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.landing-team-form__account-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.landing-team-form__account-status {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.landing-team-form__account-status strong {
+  color: #e2e8f0;
+  font-weight: 800;
+}
+
+.landing-team-form__account-note,
+.landing-team-form__account-warning,
+.landing-team-form__account-success {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.landing-team-form__account-warning {
+  color: #fbbf24;
+}
+
+.landing-team-form__account-success {
+  color: #86efac;
+}
+
+.landing-team-form__account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.landing-team-form__account-action {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fbbf24;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.landing-team-form__account-action:hover {
+  color: #fde68a;
+}
+
+.landing-team-form__account-sep {
+  color: #64748b;
+}
+
+.landing-team-form__account-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.landing-team-form__account-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.landing-team-form__account-consent input {
+  margin-top: 3px;
+}
+
+.landing-team-form__account-legal-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fbbf24;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.landing-team-form__account-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .gm-profile-modal__panel {
   width: min(560px, 100%);
 }
