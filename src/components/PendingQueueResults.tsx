@@ -19,6 +19,7 @@ import {
   RANKED_STARTING_ELO,
   RATING_LABEL,
 } from "../lib/rankedElo";
+import { getLineupSalaryTotal } from "../lib/salaryCap";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { matchModeThemeClass, getMatchModeTheme } from "../lib/matchModeTheme";
 import type { Drafter, Player } from "../lib/types";
@@ -26,12 +27,14 @@ import type { Drafter, Player } from "../lib/types";
 interface PendingQueueResultsProps {
   user: Drafter;
   userLineup: Player[];
+  starCount: number;
   onDone: () => void;
 }
 
 export function PendingQueueResults({
   user,
   userLineup,
+  starCount,
   onDone,
 }: PendingQueueResultsProps) {
   const orderedLineup = sortLineupByPosition(userLineup);
@@ -58,6 +61,9 @@ export function PendingQueueResults({
         teamName: user.name,
         lineup: user.lineup.filter((id): id is string => Boolean(id)),
         elo,
+        awaitingLive: true,
+        salaryTotal: getLineupSalaryTotal(userLineup),
+        starCount,
       });
 
       if (stored) {
@@ -71,7 +77,7 @@ export function PendingQueueResults({
         );
       }
     })();
-  }, [elo, mode, playerId, user.lineup, user.name]);
+  }, [elo, mode, playerId, starCount, user.lineup, user.name, userLineup]);
 
   useEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {

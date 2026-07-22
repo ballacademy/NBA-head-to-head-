@@ -1,7 +1,6 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
 import { claimGhostOpponent } from "../lib/matchmakingDb";
 import {
-  INVALID_STORED_LINEUP_CONSUMED_BY,
   isValidStoredLineupIds,
   parseStoredLineupJson,
 } from "../lib/storedLineups";
@@ -44,6 +43,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const playerId = url.searchParams.get("playerId")?.trim();
   const elo = Number(url.searchParams.get("elo") ?? "1000");
+  const starCount = Number(url.searchParams.get("starCount") ?? "0");
 
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
@@ -53,11 +53,16 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
+  if (!Number.isFinite(starCount) || starCount < 0) {
+    return json({ error: "starCount must be a non-negative number" }, 400);
+  }
+
   const opponent = await claimGhostOpponent(
     context.env.DB,
     mode,
     playerId,
     elo,
+    Math.round(starCount),
     rowToPayload,
   );
 

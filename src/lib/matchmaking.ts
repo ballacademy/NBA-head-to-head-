@@ -92,6 +92,7 @@ export const planHeadToHeadMatchmaking = async (
     playerId: string;
     playerElo: number;
     teamName: string;
+    starCount: number;
   },
   options: {
     isCancelled?: () => boolean;
@@ -128,6 +129,7 @@ export const planHeadToHeadMatchmaking = async (
     mode: params.mode,
     playerId: params.playerId,
     elo: params.playerElo,
+    starCount: params.starCount,
   });
 
   if (ghost) {

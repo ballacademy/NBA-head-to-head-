@@ -1,9 +1,11 @@
 import type { Env, MatchmakingMode } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import {
+  isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
   REQUIRED_STORED_LINEUP_SIZE,
   sanitizeStoredLineupIds,
+  salaryCapForMatchmakingMode,
 } from "../lib/storedLineups";
 
 const json = (body: unknown, status = 200) =>
@@ -26,6 +28,9 @@ interface LineupBody {
   elo?: unknown;
   practiceMode?: unknown;
   isPractice?: unknown;
+  awaitingLive?: unknown;
+  salaryTotal?: unknown;
+  starCount?: unknown;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -44,6 +49,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
   const lineup = sanitizeStoredLineupIds(body.lineup);
   const elo = Number(body.elo ?? 1000);
+  const awaitingLive = body.awaitingLive === true || body.awaitingLive === 1;
+  const salaryTotal = Number(body.salaryTotal);
+  const starCount = Number(body.starCount);
   const isPractice =
     body.practiceMode === true ||
     body.isPractice === true ||
@@ -81,13 +89,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
+  if (!Number.isFinite(salaryTotal) || salaryTotal < 0) {
+    return json({ error: "salaryTotal must be a non-negative number" }, 400);
+  }
+
+  if (!isStoredLineupWithinSalaryCap(mode, salaryTotal)) {
+    return json(
+      {
+        error: `lineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
+      },
+      400,
+    );
+  }
+
+  if (!Number.isFinite(starCount) || starCount < 0) {
+    return json({ error: "starCount must be a non-negative number" }, 400);
+  }
+
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
 
   await context.env.DB.prepare(
     `INSERT INTO stored_lineups (
-      id, mode, player_id, team_name, lineup_json, elo, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      id, mode, player_id, team_name, lineup_json, elo, created_at,
+      awaiting_live, salary_total, star_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -97,6 +123,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       JSON.stringify(lineup),
       Math.round(elo),
       createdAt,
+      awaitingLive ? 1 : 0,
+      Math.round(salaryTotal),
+      Math.round(starCount),
     )
     .run();
 

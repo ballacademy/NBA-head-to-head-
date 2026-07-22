@@ -1,5 +1,10 @@
 import type { MatchmakingMode, StoredLineupRow } from "../types";
-import { INVALID_STORED_LINEUP_CONSUMED_BY } from "./storedLineups";
+import {
+  INVALID_STORED_LINEUP_CONSUMED_BY,
+  isStoredLineupWithinSalaryCap,
+  isStoredLineupWithinStarGap,
+  OVER_CAP_STORED_LINEUP_CONSUMED_BY,
+} from "./storedLineups";
 
 export interface GhostOpponentPayload {
   id: string;
@@ -30,6 +35,7 @@ export const claimGhostOpponent = async (
   mode: MatchmakingMode,
   playerId: string,
   elo: number,
+  challengerStarCount: number,
   rowToPayload: (row: StoredLineupRow) => GhostOpponentPayload | null,
 ): Promise<GhostOpponentPayload | null> => {
   const bands = [
@@ -42,7 +48,8 @@ export const claimGhostOpponent = async (
   for (const [minElo, maxElo] of bands) {
     const candidates = await db
       .prepare(
-        `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at
+        `SELECT id, mode, player_id, team_name, lineup_json, elo, created_at,
+                awaiting_live, salary_total, star_count
          FROM stored_lineups
          WHERE mode = ?
            AND player_id != ?
@@ -51,7 +58,7 @@ export const claimGhostOpponent = async (
            AND created_at >= ?
            AND json_array_length(lineup_json) = 5
          ORDER BY RANDOM()
-         LIMIT 12`,
+         LIMIT 24`,
       )
       .bind(mode, playerId, minElo, maxElo, cutoff)
       .all<StoredLineupRow>();
@@ -68,6 +75,22 @@ export const claimGhostOpponent = async (
           )
           .bind(now, INVALID_STORED_LINEUP_CONSUMED_BY, row.id)
           .run();
+        continue;
+      }
+
+      if (!isStoredLineupWithinSalaryCap(mode, row.salary_total)) {
+        await db
+          .prepare(
+            `UPDATE stored_lineups
+             SET consumed_at = ?, consumed_by = ?
+             WHERE id = ? AND consumed_at IS NULL`,
+          )
+          .bind(now, OVER_CAP_STORED_LINEUP_CONSUMED_BY, row.id)
+          .run();
+        continue;
+      }
+
+      if (!isStoredLineupWithinStarGap(challengerStarCount, row.star_count)) {
         continue;
       }
 
