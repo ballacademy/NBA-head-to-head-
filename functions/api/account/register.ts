@@ -22,6 +22,14 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
+const missingAccountsTableError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/no such table/i.test(message) || /player_accounts|auth_rate_limits/i.test(message)) {
+    return "Account tables are not ready. Apply D1 migrations, then retry.";
+  }
+  return null;
+};
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: {
     username?: unknown;
@@ -36,14 +44,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const rateKey = buildRegisterRateLimitKey(context.request);
-  const rate = await assertRegisterRateLimitAllow(context.env.DB, rateKey);
-  if (!rate.ok) {
-    return json({ error: rate.error }, 429);
+  if (!context.env.DB) {
+    return json({ error: "Account database is not configured." }, 503);
   }
-
-  // Count every register attempt (success or fail) against the IP bucket.
-  await recordRegisterAttempt(context.env.DB, rateKey);
 
   if (body.acceptedTerms !== true) {
     return json(
@@ -70,28 +73,37 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: playerIdResult.error }, 400);
   }
 
-  const existingUsername = await getAccountByUsername(
-    context.env.DB,
-    usernameResult.username,
-  );
-  if (existingUsername) {
-    return json({ error: "That username is already taken." }, 409);
-  }
-
-  const existingPlayer = await getAccountByPlayerId(
-    context.env.DB,
-    playerIdResult.playerId,
-  );
-  if (existingPlayer) {
-    return json(
-      {
-        error: "This GM identity already has an account. Log in instead.",
-      },
-      409,
-    );
-  }
-
   try {
+    const rateKey = buildRegisterRateLimitKey(context.request);
+    const rate = await assertRegisterRateLimitAllow(context.env.DB, rateKey);
+    if (!rate.ok) {
+      return json({ error: rate.error }, 429);
+    }
+
+    // Count every register attempt (success or fail) against the IP bucket.
+    await recordRegisterAttempt(context.env.DB, rateKey);
+
+    const existingUsername = await getAccountByUsername(
+      context.env.DB,
+      usernameResult.username,
+    );
+    if (existingUsername) {
+      return json({ error: "That username is already taken." }, 409);
+    }
+
+    const existingPlayer = await getAccountByPlayerId(
+      context.env.DB,
+      playerIdResult.playerId,
+    );
+    if (existingPlayer) {
+      return json(
+        {
+          error: "This GM identity already has an account. Log in instead.",
+        },
+        409,
+      );
+    }
+
     const account = await createPlayerAccount(context.env.DB, {
       username: usernameResult.username,
       password: passwordResult.password,
@@ -105,6 +117,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       createdAt: account.createdAt,
     });
   } catch (error) {
+    const missingTable = missingAccountsTableError(error);
+    if (missingTable) {
+      return json({ error: missingTable }, 503);
+    }
+
     const message = error instanceof Error ? error.message : String(error);
     if (/UNIQUE/i.test(message)) {
       if (/player_id/i.test(message)) {
