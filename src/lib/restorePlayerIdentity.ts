@@ -42,6 +42,7 @@ const clearIdentityBoundLocalState = () => {
   savePlayerCollection({
     unlockedIds: createStarterCollection(),
     pendingUnlock: null,
+    initialized: true,
   });
 };
 
