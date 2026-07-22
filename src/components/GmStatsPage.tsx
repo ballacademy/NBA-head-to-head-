@@ -156,6 +156,10 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
             Scrubs: {snapshot.collection.unlockedScrubs}/
             {snapshot.collection.scrubPool}
           </li>
+          <li>
+            Super Scrubs: {snapshot.collection.unlockedSuperScrubs}/
+            {snapshot.collection.superScrubPool}
+          </li>
         </ul>
       </section>
     </section>
