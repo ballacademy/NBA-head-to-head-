@@ -13,20 +13,13 @@ export function DraftOnboardingOverlay({
         <p className="eyebrow">First draft</p>
         <h2 id="draft-onboarding-title">How drafting works</h2>
         <ul className="draft-onboarding-overlay__list">
-          <li>
-            You will fill five position slots. Each pick must match the slot
-            shown on the clock.
-          </li>
+          <li>Make five timed draft picks for your lineup.</li>
           {hasSalaryCap ? (
             <li>
-              Watch salary cap space. Your banner shows spent vs. remaining
-              budget for the lineup.
+              Stay under the salary cap — your banner shows spent vs remaining.
             </li>
           ) : null}
-          <li>
-            The timer counts down each pick. If it hits zero, the game
-            auto-fills your remaining slots.
-          </li>
+          <li>If the timer hits zero, remaining picks auto-fill.</li>
         </ul>
         <button type="button" className="landing__primary-button" onClick={onDismiss}>
           Got it
