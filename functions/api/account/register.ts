@@ -136,6 +136,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return json({ error: "That username is already taken." }, 409);
     }
 
+    if (/PBKDF2|iteration|deriveBits|subtle/i.test(message)) {
+      return json(
+        { error: "Password hashing failed on the server. Try again." },
+        500,
+      );
+    }
+
     return json({ error: "Could not create account." }, 500);
   }
 };
