@@ -21,23 +21,42 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: playerIdResult.error }, 400);
   }
 
-  const account = await getAccountByPlayerId(
-    context.env.DB,
-    playerIdResult.playerId,
-  );
-
-  if (!account) {
-    return json({
-      linked: false,
-      playerId: playerIdResult.playerId,
-    });
+  if (!context.env.DB) {
+    return json({ error: "Account database is not configured." }, 503);
   }
 
-  // Only confirm linkage + username for the browser that already holds the GM id.
-  // Do not expose last-login timestamps on this unauthenticated endpoint.
-  return json({
-    linked: true,
-    playerId: account.player_id,
-    username: account.username,
-  });
+  try {
+    const account = await getAccountByPlayerId(
+      context.env.DB,
+      playerIdResult.playerId,
+    );
+
+    if (!account) {
+      return json({
+        linked: false,
+        playerId: playerIdResult.playerId,
+      });
+    }
+
+    // Only confirm linkage + username for the browser that already holds the GM id.
+    // Do not expose last-login timestamps on this unauthenticated endpoint.
+    return json({
+      linked: true,
+      playerId: account.player_id,
+      username: account.username,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const missingTable =
+      /no such table/i.test(message) || /player_accounts/i.test(message);
+
+    return json(
+      {
+        error: missingTable
+          ? "Account tables are not ready. Apply D1 migrations, then retry."
+          : "Could not check account status.",
+      },
+      503,
+    );
+  }
 };

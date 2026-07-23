@@ -38,19 +38,22 @@ export function AccountAuthPanel({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
-  const refreshStatus = async () => {
-    setLinkState("loading");
-    const status = await fetchAccountStatus(playerId);
-
-    if (!status) {
+  const applyStatusResult = (
+    result: Awaited<ReturnType<typeof fetchAccountStatus>>,
+  ) => {
+    if (!result.ok) {
       setLinkedUsername(null);
       setLinkState("unknown");
+      setStatusError(result.error);
       return;
     }
 
-    if (status.linked && status.username) {
-      setLinkedUsername(status.username);
+    setStatusError(null);
+
+    if (result.status.linked && result.status.username) {
+      setLinkedUsername(result.status.username);
       setLinkState("linked");
       return;
     }
@@ -59,29 +62,22 @@ export function AccountAuthPanel({
     setLinkState("unlinked");
   };
 
+  const refreshStatus = async () => {
+    setLinkState("loading");
+    setStatusError(null);
+    applyStatusResult(await fetchAccountStatus(playerId));
+  };
+
   useEffect(() => {
     let cancelled = false;
 
     const loadStatus = async () => {
-      const status = await fetchAccountStatus(playerId);
+      const result = await fetchAccountStatus(playerId);
       if (cancelled) {
         return;
       }
 
-      if (!status) {
-        setLinkedUsername(null);
-        setLinkState("unknown");
-        return;
-      }
-
-      if (status.linked && status.username) {
-        setLinkedUsername(status.username);
-        setLinkState("linked");
-        return;
-      }
-
-      setLinkedUsername(null);
-      setLinkState("unlinked");
+      applyStatusResult(result);
     };
 
     void loadStatus();
@@ -189,7 +185,7 @@ export function AccountAuthPanel({
           <span className="landing-team-form__account-status">Checking…</span>
         ) : linkState === "unknown" ? (
           <span className="landing-team-form__account-status">
-            Could not check account status.{" "}
+            {statusError ?? "Could not check account status."}{" "}
             <button
               type="button"
               className="landing-team-form__account-action"
@@ -217,7 +213,8 @@ export function AccountAuthPanel({
         rows) but resets on-device collection progress for that browser.
       </p>
 
-      {linkState === "unlinked" && mode === "closed" ? (
+      {(linkState === "unlinked" || linkState === "unknown") &&
+      mode === "closed" ? (
         <div className="landing-team-form__account-actions">
           <button
             type="button"

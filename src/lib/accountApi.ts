@@ -38,9 +38,13 @@ const readError = async (response: Response) => {
   return "Something went wrong. Try again.";
 };
 
+export type AccountStatusResult =
+  | { ok: true; status: AccountStatusResponse }
+  | { ok: false; error: string };
+
 export const fetchAccountStatus = async (
   playerId: string,
-): Promise<AccountStatusResponse | null> => {
+): Promise<AccountStatusResult> => {
   try {
     const search = new URLSearchParams({ playerId });
     const response = await fetch(
@@ -49,12 +53,21 @@ export const fetchAccountStatus = async (
     );
 
     if (!response.ok) {
-      return null;
+      return {
+        ok: false,
+        error: await readError(response),
+      };
     }
 
-    return (await response.json()) as AccountStatusResponse;
+    return {
+      ok: true,
+      status: (await response.json()) as AccountStatusResponse,
+    };
   } catch {
-    return null;
+    return {
+      ok: false,
+      error: "Could not reach the account service.",
+    };
   }
 };
 
