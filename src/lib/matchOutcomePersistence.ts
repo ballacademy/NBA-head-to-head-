@@ -2,6 +2,7 @@ import {
   upsertLeaderboardEntry,
 } from "./leaderboard";
 import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
+import { applyClassicMatchResult } from "./classicProfile";
 import { applyRankedMatchResult } from "./rankedProfile";
 import { RANKED_STARTING_ELO } from "./rankedElo";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
@@ -12,24 +13,40 @@ import {
 } from "./playerRecord";
 import type { TeamProfile } from "./teamProfile";
 
-export interface PersistedRankedOutcome {
+export interface PersistedBannersOutcome {
   delta: number;
   elo: number;
   tierLabel: string;
   opponentElo: number;
 }
 
+/** @deprecated Prefer PersistedBannersOutcome */
+export type PersistedRankedOutcome = PersistedBannersOutcome;
+
 export const persistClassicLeaderboardOutcome = (
   result: HeadToHeadResult,
   team: TeamProfile,
   record: PlayerRecord,
-) => {
-  void result;
+  opponentElo: number,
+): PersistedBannersOutcome => {
+  const classicResult = applyClassicMatchResult({
+    result,
+    opponentElo,
+    winStreak: record.winStreak,
+    lossStreak: record.lossStreak,
+  });
 
   upsertLeaderboardEntry({
     ...buildLeaderboardIdentity(team, record),
-    elo: RANKED_STARTING_ELO,
+    elo: classicResult.profile.elo,
   });
+
+  return {
+    delta: classicResult.delta,
+    elo: classicResult.profile.elo,
+    tierLabel: classicResult.profile.tier.label,
+    opponentElo: classicResult.opponentElo,
+  };
 };
 
 export const persistRankedOutcome = (
@@ -37,7 +54,7 @@ export const persistRankedOutcome = (
   team: TeamProfile,
   record: PlayerRecord,
   opponentElo: number,
-): PersistedRankedOutcome => {
+): PersistedBannersOutcome => {
   const rankedResult = applyRankedMatchResult({
     result,
     opponentElo,

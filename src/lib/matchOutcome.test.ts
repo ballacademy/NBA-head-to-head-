@@ -33,7 +33,8 @@ describe("matchOutcome", () => {
     persistMatchOutcome("win", { name: "Bulls" }, "match-1", "headToHead");
 
     expect(first.record.wins).toBe(1);
+    expect(first.classic?.elo).toBeGreaterThan(500);
     expect(loadPlayerRecord("headToHead").wins).toBe(1);
-    expect(getTopLeaderboard("winStreak")[0]?.winStreak).toBe(1);
+    expect(getTopLeaderboard("elo")[0]?.elo).toBe(first.classic?.elo);
   });
 });

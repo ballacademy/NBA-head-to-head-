@@ -80,10 +80,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const viewerPlayerId = parsePlayerId(url.searchParams.get("viewerPlayerId"));
   const limit = Math.min(
     Math.max(
-      Number(url.searchParams.get("limit") ?? (mode === "ranked" ? 500 : 100)),
+      Number(url.searchParams.get("limit") ?? 500),
       1,
     ),
-    mode === "ranked" ? 500 : 100,
+    500,
   );
 
   const rows = await context.env.DB.prepare(

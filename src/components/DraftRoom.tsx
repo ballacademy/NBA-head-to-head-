@@ -22,6 +22,7 @@ import {
   getRemainingSalaryCap,
 } from "../lib/salaryCap";
 import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
+import { getClassicProfileView } from "../lib/classicProfile";
 import { getRankedProfileView } from "../lib/rankedProfile";
 import {
   formatDailyDraftModeLabel,
@@ -102,8 +103,10 @@ export function DraftRoom({
   const hasSalaryCap = salaryCapLimit != null;
   const rankedProfile =
     !isPracticeMode && drafter.salaryCapMode ? getRankedProfileView() : null;
-  const isClassicHeadToHead =
-    hasSalaryCap && !drafter.salaryCapMode && !isPracticeMode;
+  const classicProfile =
+    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode
+      ? getClassicProfileView()
+      : null;
   const salaryCapOptions = useMemo(
     () =>
       getSalaryCapDraftOptions(
@@ -271,7 +274,7 @@ export function DraftRoom({
               ? "Practice mode"
               : drafter.salaryCapMode
                 ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
-                : CLASSIC_HEAD_TO_HEAD_LABEL}
+                : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label ?? "Casual"}`}
           </p>
           {isPracticeMode ? (
             <p className="salary-cap-banner__rating">
@@ -281,8 +284,10 @@ export function DraftRoom({
             <p className="salary-cap-banner__rating">
               {formatRatingPoints(rankedProfile.elo)}
             </p>
-          ) : isClassicHeadToHead ? (
-            <p className="salary-cap-banner__rating">Casual mode • no Banners</p>
+          ) : classicProfile ? (
+            <p className="salary-cap-banner__rating">
+              {formatRatingPoints(classicProfile.elo)}
+            </p>
           ) : null}
           <p className="salary-cap-banner__cap">
             <span className="salary-cap-banner__spent">

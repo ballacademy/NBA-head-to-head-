@@ -2,7 +2,7 @@ import { readJson, writeJson } from "./browserStorage";
 import {
   persistClassicLeaderboardOutcome,
   persistRankedOutcome,
-  type PersistedRankedOutcome,
+  type PersistedBannersOutcome,
 } from "./matchOutcomePersistence";
 import {
   applyHeadToHeadResultToStats,
@@ -15,7 +15,8 @@ import {
 import { RANKED_STARTING_ELO } from "./rankedElo";
 import type { TeamProfile } from "./teamProfile";
 
-export type RankedMatchOutcome = PersistedRankedOutcome;
+export type RankedMatchOutcome = PersistedBannersOutcome;
+export type ClassicMatchOutcome = PersistedBannersOutcome;
 
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
@@ -23,6 +24,7 @@ const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
 interface CachedMatchOutcome {
   matchId: string;
   ranked?: RankedMatchOutcome;
+  classic?: ClassicMatchOutcome;
 }
 
 export const projectRecordAfterMatch = (
@@ -40,7 +42,11 @@ export const persistMatchOutcome = (
   matchId: string,
   mode: MatchRecordMode = "headToHead",
   options: { opponentElo?: number } = {},
-): { record: PlayerRecord; ranked?: RankedMatchOutcome } => {
+): {
+  record: PlayerRecord;
+  ranked?: RankedMatchOutcome;
+  classic?: ClassicMatchOutcome;
+} => {
   const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
 
   if (lastRecorded?.matchId === matchId) {
@@ -49,27 +55,30 @@ export const persistMatchOutcome = (
     return {
       record: loadPlayerRecord(mode),
       ranked: cached?.matchId === matchId ? cached.ranked : undefined,
+      classic: cached?.matchId === matchId ? cached.classic : undefined,
     };
   }
 
   const record = recordMatchResult(result, mode);
   let ranked: RankedMatchOutcome | undefined;
+  let classic: ClassicMatchOutcome | undefined;
+  const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
 
   if (mode === "headToHead") {
-    persistClassicLeaderboardOutcome(result, team, record);
-  }
-
-  if (mode === "ranked") {
-    ranked = persistRankedOutcome(
+    classic = persistClassicLeaderboardOutcome(
       result,
       team,
       record,
-      options.opponentElo ?? RANKED_STARTING_ELO,
+      opponentElo,
     );
   }
 
-  writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
-  writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked });
+  if (mode === "ranked") {
+    ranked = persistRankedOutcome(result, team, record, opponentElo);
+  }
 
-  return { record, ranked };
+  writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
+  writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic });
+
+  return { record, ranked, classic };
 };

@@ -6,13 +6,14 @@ import {
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
 import {
   RANKED_STARTING_ELO,
+  RATING_LABEL,
   formatRankedElo,
   getTierForElo,
 } from "./rankedElo";
 
 const LEADERBOARD_KEY = "nba-head-to-head-leaderboard";
 
-export const LEADERBOARD_LIMIT = 100;
+export const LEADERBOARD_LIMIT = 500;
 
 export interface LeaderboardEntry {
   playerId: string;
@@ -181,6 +182,8 @@ export const getTopLeaderboard = (
 
 export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
   switch (sort) {
+    case "elo":
+      return `Showing top ${LEADERBOARD_LIMIT} real front offices by ${RATING_LABEL}. All-time ladder.`;
     case "lossStreak":
       return `Showing top ${LEADERBOARD_LIMIT} real front offices by active loss streak.`;
     default:

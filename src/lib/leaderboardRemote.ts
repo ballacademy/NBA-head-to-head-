@@ -89,7 +89,7 @@ export const syncLeaderboardEntryToApi = (params: {
       await refreshLeaderboardFromApi({
         mode: params.mode,
         sort,
-        limit: params.mode === "ranked" ? 500 : 100,
+        limit: 500,
         seasonId,
       });
     }

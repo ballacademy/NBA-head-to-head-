@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  formatLeaderboardElo,
   formatLeaderboardLossStreak,
   formatLeaderboardRecord,
   formatLeaderboardWinStreak,
@@ -42,7 +43,7 @@ interface LeaderboardPageProps {
 
 type LeaderboardView = "classic" | "ranked";
 type RankedSort = RankedLeaderboardSort;
-type ClassicSort = Exclude<LeaderboardSort, "elo">;
+type ClassicSort = LeaderboardSort;
 type BoardSort = RankedSort | ClassicSort;
 
 type BoardEntry = ReturnType<typeof getTopLeaderboard>[number];
@@ -52,7 +53,7 @@ const SORT_OPTIONS: {
   label: string;
   views: LeaderboardView[];
 }[] = [
-  { id: "elo", label: RATING_LABEL, views: ["ranked"] },
+  { id: "elo", label: RATING_LABEL, views: ["ranked", "classic"] },
   { id: "winStreak", label: "Win streak", views: ["ranked", "classic"] },
   { id: "lossStreak", label: "Loss streak", views: ["ranked", "classic"] },
 ];
@@ -191,7 +192,7 @@ function LeaderboardBoard({
 export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
-  const [classicSort, setClassicSort] = useState<ClassicSort>("winStreak");
+  const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
   const [refreshTick, setRefreshTick] = useState(0);
   const currentPlayerId = getOrCreatePlayerId();
   const seasonId = getCurrentSeasonId();
@@ -225,7 +226,11 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       return formatLeaderboardWinStreak(entry);
     }
 
-    return formatLeaderboardLossStreak(entry);
+    if (sort === "lossStreak") {
+      return formatLeaderboardLossStreak(entry);
+    }
+
+    return formatLeaderboardElo(entry);
   };
 
   const formatRankedMetric = (entry: BoardEntry) => {
@@ -240,7 +245,9 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
     return formatRankedLeaderboardElo(entry);
   };
 
-  const showTierInfo = view === "ranked" && rankedSort === "elo";
+  const showTierInfo =
+    (view === "ranked" && rankedSort === "elo") ||
+    (view === "classic" && classicSort === "elo");
 
   const handleSortChange = (nextSort: BoardSort) => {
     if (view === "ranked") {
@@ -248,9 +255,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       return;
     }
 
-    if (nextSort !== "elo") {
-      setClassicSort(nextSort as ClassicSort);
-    }
+    setClassicSort(nextSort as ClassicSort);
   };
 
   return (
@@ -367,7 +372,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
           formatRecord={formatLeaderboardRecord}
           currentPlayerId={currentPlayerId}
           viewKey={`${view}-${sort}`}
-          showTier={false}
+          showTier
         />
       ) : (
         <p className="draft-empty">

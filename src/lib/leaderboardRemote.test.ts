@@ -62,7 +62,7 @@ describe("leaderboard remote integration", () => {
     const refreshed = await refreshLeaderboardFromApi({
       mode: "classic",
       sort: "elo",
-      limit: 100,
+      limit: 500,
     });
 
     expect(refreshed).toBe(true);
@@ -74,7 +74,7 @@ describe("leaderboard remote integration", () => {
       }),
     ]);
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/leaderboards?mode=classic&sort=elo&limit=100&viewerPlayerId=player-test-1",
+      "/api/leaderboards?mode=classic&sort=elo&limit=500&viewerPlayerId=player-test-1",
       expect.any(Object),
     );
   });

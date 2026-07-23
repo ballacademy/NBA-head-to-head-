@@ -3,11 +3,12 @@ import {
   generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
-import { pickOpponentElo, RANKED_STARTING_ELO } from "./rankedElo";
+import { pickOpponentElo } from "./rankedElo";
 import {
   ensureNpcOpponentPool,
   findRankedOpponentFromLeaderboard,
 } from "./rankedLeaderboard";
+import { ensureClassicProfile } from "./classicProfile";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
 import type { GhostOpponentSnapshot } from "./ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./liveMatchmaking";
@@ -112,7 +113,8 @@ export const createClassicOpponent = (
   draftSlots: DraftSlotConstraint[],
   options: { salaryCapLimit?: number } = {},
 ): Drafter => {
-  const opponentElo = pickOpponentElo(RANKED_STARTING_ELO);
+  const playerElo = ensureClassicProfile().elo;
+  const opponentElo = pickOpponentElo(playerElo);
   const blueprint =
     initialDrafterBlueprints[
       Math.floor(Math.random() * initialDrafterBlueprints.length)
