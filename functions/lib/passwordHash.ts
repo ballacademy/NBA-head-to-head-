@@ -1,7 +1,8 @@
 /** PBKDF2-SHA-256 password hashing for Cloudflare Workers (Web Crypto). */
 
 export const PASSWORD_HASH_ALGORITHM = "PBKDF2-SHA256";
-export const PASSWORD_PBKDF2_ITERATIONS = 310_000;
+/** Cloudflare Workers caps subtle PBKDF2 at 100k iterations. */
+export const PASSWORD_PBKDF2_ITERATIONS = 100_000;
 export const PASSWORD_SALT_BYTES = 16;
 export const PASSWORD_HASH_BYTES = 32;
 
