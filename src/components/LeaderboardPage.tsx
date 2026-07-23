@@ -204,7 +204,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         mode: view,
         sort: sort as LeaderboardSort,
         limit: view === "ranked" ? RANKED_LEADERBOARD_LIMIT : LEADERBOARD_LIMIT,
-        seasonId: view === "ranked" ? seasonId : "",
+        seasonId,
       });
       setRefreshTick((current) => current + 1);
     };
@@ -276,7 +276,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
         <p className="leaderboard__subtitle">
           {view === "ranked"
             ? getRankedLeaderboardFootnote(rankedSort, seasonId)
-            : getLeaderboardFootnote(classicSort)}
+            : getLeaderboardFootnote(classicSort, seasonId)}
         </p>
 
         <div

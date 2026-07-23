@@ -21,8 +21,10 @@ const cacheKey = (
   sort: LeaderboardSort,
 ) => `${mode}:${seasonId}:${sort}`;
 
-export const getSeasonIdForMode = (mode: LeaderboardMode) =>
-  mode === "ranked" ? getCurrentSeasonId() : "";
+export const getSeasonIdForMode = (mode: LeaderboardMode) => {
+  void mode;
+  return getCurrentSeasonId();
+};
 
 export const refreshLeaderboardFromApi = async (params: {
   mode: LeaderboardMode;

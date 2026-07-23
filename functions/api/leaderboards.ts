@@ -26,10 +26,7 @@ const parseSort = (value: string | null) =>
 const SEASON_ID_PATTERN = /^\d{4}-\d{2}$/;
 
 const parseSeasonId = (mode: "classic" | "ranked", value: string | null) => {
-  if (mode === "classic") {
-    return "";
-  }
-
+  void mode;
   return value && SEASON_ID_PATTERN.test(value) ? value : null;
 };
 
@@ -73,7 +70,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const seasonId = parseSeasonId(mode, url.searchParams.get("seasonId"));
 
   if (seasonId == null) {
-    return json({ error: "seasonId is required for ranked leaderboards" }, 400);
+    return json({ error: "seasonId is required for leaderboards" }, 400);
   }
 
   const sort = parseSort(url.searchParams.get("sort"));
@@ -126,16 +123,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "mode must be classic or ranked" }, 400);
   }
 
-  const seasonId =
-    mode === "classic"
-      ? ""
-      : parseSeasonId(
-          mode,
-          typeof body.seasonId === "string" ? body.seasonId : null,
-        );
+  const seasonId = parseSeasonId(
+    mode,
+    typeof body.seasonId === "string" ? body.seasonId : null,
+  );
 
   if (seasonId == null) {
-    return json({ error: "seasonId is required for ranked leaderboards" }, 400);
+    return json({ error: "seasonId is required for leaderboards" }, 400);
   }
 
   const playerId = parsePlayerId(body.playerId);
