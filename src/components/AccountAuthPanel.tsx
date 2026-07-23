@@ -284,11 +284,17 @@ export function AccountAuthPanel({
                 mode === "register" ? "new-password" : "current-password"
               }
               required
-              minLength={PASSWORD_MIN_LENGTH}
+              minLength={
+                mode === "register" ? PASSWORD_MIN_LENGTH : undefined
+              }
               maxLength={PASSWORD_MAX_LENGTH}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+              placeholder={
+                mode === "register"
+                  ? `At least ${PASSWORD_MIN_LENGTH} characters`
+                  : undefined
+              }
               disabled={busy}
             />
           </label>
