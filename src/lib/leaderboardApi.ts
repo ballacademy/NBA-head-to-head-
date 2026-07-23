@@ -37,7 +37,7 @@ export const fetchRemoteLeaderboard = async (params: {
     sort: params.sort,
   });
 
-  if (params.mode === "ranked" && params.seasonId) {
+  if (params.seasonId) {
     search.set("seasonId", params.seasonId);
   }
 
@@ -85,7 +85,7 @@ export const submitRemoteLeaderboardEntry = async (params: {
       },
       body: JSON.stringify({
         mode: params.mode,
-        seasonId: params.mode === "ranked" ? params.seasonId : "",
+        seasonId: params.seasonId,
         playerId: params.playerId,
         teamName: params.teamName,
         publicTag: params.publicTag,

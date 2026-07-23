@@ -68,6 +68,7 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     }),
     fetchRemoteLeaderboard({
       mode: "classic",
+      seasonId,
       sort: "elo",
       limit: 500,
       viewerPlayerId: playerId,
@@ -105,6 +106,7 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   if (classicEntry) {
     saveClassicProfile({
       playerId,
+      seasonId,
       elo: classicEntry.elo,
       peakElo: classicEntry.elo,
       classicGamesPlayed: Math.max(

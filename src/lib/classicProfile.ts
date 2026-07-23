@@ -6,6 +6,7 @@ import {
   getTierForElo,
   type RankedTier,
 } from "./rankedElo";
+import { getCurrentSeasonId } from "./rankedSeason";
 import type { HeadToHeadResult } from "./playerRecord";
 
 const getActiveStreakForElo = (
@@ -28,13 +29,18 @@ const CLASSIC_PROFILE_KEY = "nba-head-to-head-classic-profile";
 
 export interface ClassicProfile {
   playerId: string;
+  seasonId: string;
   elo: number;
   peakElo: number;
   classicGamesPlayed: number;
 }
 
-const createDefaultProfile = (playerId: string): ClassicProfile => ({
+const createDefaultProfile = (
+  playerId: string,
+  seasonId: string,
+): ClassicProfile => ({
   playerId,
+  seasonId,
   elo: RANKED_STARTING_ELO,
   peakElo: RANKED_STARTING_ELO,
   classicGamesPlayed: 0,
@@ -43,9 +49,15 @@ const createDefaultProfile = (playerId: string): ClassicProfile => ({
 const normalizeProfile = (
   saved: Partial<ClassicProfile> | null,
   playerId: string,
+  seasonId: string,
 ): ClassicProfile => {
-  if (!saved || saved.playerId !== playerId || typeof saved.elo !== "number") {
-    return createDefaultProfile(playerId);
+  if (
+    !saved ||
+    saved.playerId !== playerId ||
+    saved.seasonId !== seasonId ||
+    typeof saved.elo !== "number"
+  ) {
+    return createDefaultProfile(playerId, seasonId);
   }
 
   const elo = Math.max(0, Math.round(saved.elo));
@@ -53,6 +65,7 @@ const normalizeProfile = (
 
   return {
     playerId,
+    seasonId,
     elo,
     peakElo,
     classicGamesPlayed: Math.max(0, saved.classicGamesPlayed ?? 0),
@@ -61,27 +74,39 @@ const normalizeProfile = (
 
 export const loadClassicProfile = (): ClassicProfile => {
   const playerId = getOrCreatePlayerId();
+  const seasonId = getCurrentSeasonId();
   const saved = readJson<ClassicProfile>(CLASSIC_PROFILE_KEY);
 
-  return normalizeProfile(saved, playerId);
+  return normalizeProfile(saved, playerId, seasonId);
 };
 
 export const saveClassicProfile = (profile: ClassicProfile) => {
   writeJson(CLASSIC_PROFILE_KEY, profile);
 };
 
-export const ensureClassicProfile = (): ClassicProfile => {
+export const ensureCurrentClassicSeason = (): ClassicProfile => {
   const profile = loadClassicProfile();
-  saveClassicProfile(profile);
-  return profile;
+  const seasonId = getCurrentSeasonId();
+
+  if (profile.seasonId === seasonId) {
+    return profile;
+  }
+
+  const next = createDefaultProfile(profile.playerId, seasonId);
+  saveClassicProfile(next);
+
+  return next;
 };
+
+/** @deprecated Prefer ensureCurrentClassicSeason */
+export const ensureClassicProfile = ensureCurrentClassicSeason;
 
 export interface ClassicProfileView extends ClassicProfile {
   tier: RankedTier;
 }
 
 export const getClassicProfileView = (): ClassicProfileView => {
-  const profile = ensureClassicProfile();
+  const profile = ensureCurrentClassicSeason();
 
   return {
     ...profile,
@@ -108,7 +133,7 @@ export const applyClassicMatchResult = ({
   winStreak,
   lossStreak,
 }: ApplyClassicMatchInput): ApplyClassicMatchResult => {
-  const current = ensureClassicProfile();
+  const current = ensureCurrentClassicSeason();
   const activeStreak = getActiveStreakForElo(result, winStreak, lossStreak);
   const { delta, nextElo } = calculateEloChange({
     playerElo: current.elo,

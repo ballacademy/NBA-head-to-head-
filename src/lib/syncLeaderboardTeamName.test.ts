@@ -27,6 +27,7 @@ describe("syncLeaderboardTeamName", () => {
     recordMatchResult("win", "headToHead");
     saveClassicProfile({
       playerId: "player-sync-test",
+      seasonId: "2026-07",
       elo: 640,
       peakElo: 640,
       classicGamesPlayed: 1,

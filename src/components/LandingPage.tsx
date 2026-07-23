@@ -154,7 +154,7 @@ export function LandingPage({
         [
           "Real 2026-27 salaries.",
           "Banner matchmaking pairs similar front offices.",
-          "All-time leaderboard.",
+          "Monthly seasons reset the Top 500.",
         ],
         collection.unlockedIds.length,
       ),

@@ -6,6 +6,7 @@ import {
 } from "./leaderboardRemote";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { RANKED_STARTING_ELO } from "./rankedElo";
+import { getCurrentSeasonId } from "./rankedSeason";
 
 const storage = new Map<string, string>();
 
@@ -35,11 +36,12 @@ describe("leaderboard remote integration", () => {
   });
 
   it("caches classic leaderboard entries from the API", async () => {
+    const seasonId = getCurrentSeasonId();
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
           mode: "classic",
-          seasonId: "",
+          seasonId,
           sort: "elo",
           entries: [
             {
@@ -63,10 +65,11 @@ describe("leaderboard remote integration", () => {
       mode: "classic",
       sort: "elo",
       limit: 500,
+      seasonId,
     });
 
     expect(refreshed).toBe(true);
-    expect(getCachedRemoteLeaderboard("classic", "elo")).toEqual([
+    expect(getCachedRemoteLeaderboard("classic", "elo", seasonId)).toEqual([
       expect.objectContaining({
         playerId: "player-a",
         name: "Bulls",
@@ -74,12 +77,13 @@ describe("leaderboard remote integration", () => {
       }),
     ]);
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/leaderboards?mode=classic&sort=elo&limit=500&viewerPlayerId=player-test-1",
+      `/api/leaderboards?mode=classic&sort=elo&seasonId=${seasonId}&limit=500&viewerPlayerId=player-test-1`,
       expect.any(Object),
     );
   });
 
   it("submits local classic upserts to the leaderboard API", async () => {
+    const seasonId = getCurrentSeasonId();
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ entry: { playerId: "player-test-1" } }), {
         status: 201,
@@ -106,6 +110,12 @@ describe("leaderboard remote integration", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining('"mode":"classic"'),
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/leaderboards",
+      expect.objectContaining({
+        body: expect.stringContaining(`"seasonId":"${seasonId}"`),
       }),
     );
   });

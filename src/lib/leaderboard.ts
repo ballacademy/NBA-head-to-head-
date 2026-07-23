@@ -4,12 +4,14 @@ import {
   syncLeaderboardEntryToApi,
 } from "./leaderboardRemote";
 import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
+import { CLASSIC_LEADERBOARD_LABEL } from "./modeLabels";
 import {
   RANKED_STARTING_ELO,
   RATING_LABEL,
   formatRankedElo,
   getTierForElo,
 } from "./rankedElo";
+import { formatSeasonLabel, getCurrentSeasonId } from "./rankedSeason";
 
 const LEADERBOARD_KEY = "nba-head-to-head-leaderboard";
 
@@ -31,6 +33,11 @@ export interface LeaderboardEntry {
 
 export type LeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
+interface StoredClassicLeaderboard {
+  seasonId: string;
+  entries: StoredLeaderboardEntry[];
+}
+
 const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
   const elo = Math.max(0, Math.round(entry.elo ?? RANKED_STARTING_ELO));
 
@@ -49,16 +56,19 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
   };
 };
 
-type StoredLeaderboardEntry = Omit<LeaderboardEntry, "publicTag" | "elo" | "tierLabel"> & {
+type StoredLeaderboardEntry = Omit<
+  LeaderboardEntry,
+  "publicTag" | "elo" | "tierLabel"
+> & {
   city?: string;
   publicTag?: string;
   elo?: number;
   tierLabel?: string;
 };
 
-export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
-  const entries = readJson<StoredLeaderboardEntry[]>(LEADERBOARD_KEY);
-
+const parseStoredEntries = (
+  entries: StoredLeaderboardEntry[] | null | undefined,
+): LeaderboardEntry[] => {
   if (!Array.isArray(entries)) {
     return [];
   }
@@ -77,7 +87,9 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
         name: entry.name?.trim() || entry.city?.trim() || "",
         publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
         elo: entry.elo ?? RANKED_STARTING_ELO,
-        tierLabel: entry.tierLabel ?? getTierForElo(entry.elo ?? RANKED_STARTING_ELO).label,
+        tierLabel:
+          entry.tierLabel ??
+          getTierForElo(entry.elo ?? RANKED_STARTING_ELO).label,
         wins: entry.wins,
         losses: entry.losses,
         winStreak: entry.winStreak ?? 0,
@@ -87,12 +99,60 @@ export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
     );
 };
 
+const readStoredLeaderboard = (): StoredClassicLeaderboard | null => {
+  const stored = readJson<StoredClassicLeaderboard | StoredLeaderboardEntry[]>(
+    LEADERBOARD_KEY,
+  );
+
+  if (!stored) {
+    return null;
+  }
+
+  // Legacy flat array (pre-monthly seasons) — treat as expired for the new season.
+  if (Array.isArray(stored)) {
+    return null;
+  }
+
+  if (
+    typeof stored !== "object" ||
+    typeof stored.seasonId !== "string" ||
+    !Array.isArray(stored.entries)
+  ) {
+    return null;
+  }
+
+  return {
+    seasonId: stored.seasonId,
+    entries: stored.entries,
+  };
+};
+
+const saveLeaderboard = (seasonId: string, entries: LeaderboardEntry[]) => {
+  writeJson(LEADERBOARD_KEY, {
+    seasonId,
+    entries,
+  } satisfies StoredClassicLeaderboard);
+};
+
+export const loadLeaderboardEntries = (): LeaderboardEntry[] => {
+  const seasonId = getCurrentSeasonId();
+  const stored = readStoredLeaderboard();
+
+  if (!stored || stored.seasonId !== seasonId) {
+    saveLeaderboard(seasonId, []);
+    return [];
+  }
+
+  return parseStoredEntries(stored.entries);
+};
+
 export const upsertLeaderboardEntry = (
   entry: Omit<LeaderboardEntry, "updatedAt" | "publicTag" | "tierLabel"> & {
     publicTag?: string;
     tierLabel?: string;
   },
 ) => {
+  const seasonId = getCurrentSeasonId();
   const current = loadLeaderboardEntries();
   const nextEntry = normalizeEntry({
     ...entry,
@@ -103,10 +163,19 @@ export const upsertLeaderboardEntry = (
   const withoutCurrent = current.filter(
     (candidate) => candidate.playerId !== nextEntry.playerId,
   );
+  const merged = [...withoutCurrent, nextEntry]
+    .sort(
+      (left, right) =>
+        right.elo - left.elo ||
+        right.wins - left.wins ||
+        left.name.localeCompare(right.name),
+    )
+    .slice(0, LEADERBOARD_LIMIT);
 
-  writeJson(LEADERBOARD_KEY, [...withoutCurrent, nextEntry]);
+  saveLeaderboard(seasonId, merged);
   syncLeaderboardEntryToApi({
     mode: "classic",
+    seasonId,
     playerId: nextEntry.playerId,
     teamName: nextEntry.name,
     publicTag: nextEntry.publicTag,
@@ -162,7 +231,8 @@ export const getTopLeaderboard = (
   sort: LeaderboardSort,
   limit = LEADERBOARD_LIMIT,
 ) => {
-  const remoteEntries = getCachedRemoteLeaderboard("classic", sort);
+  const seasonId = getCurrentSeasonId();
+  const remoteEntries = getCachedRemoteLeaderboard("classic", sort, seasonId);
 
   if (remoteEntries && remoteEntries.length > 0) {
     return remoteEntries
@@ -180,13 +250,18 @@ export const getTopLeaderboard = (
   return [...entries].sort(leaderboardSorters[sort]).slice(0, limit);
 };
 
-export const getLeaderboardFootnote = (sort: LeaderboardSort) => {
+export const getLeaderboardFootnote = (
+  sort: LeaderboardSort,
+  seasonId = getCurrentSeasonId(),
+) => {
+  const seasonNote = `${CLASSIC_LEADERBOARD_LABEL} for ${formatSeasonLabel(seasonId)}. Real front offices only — ratings reset at the start of each calendar month.`;
+
   switch (sort) {
-    case "elo":
-      return `Showing top ${LEADERBOARD_LIMIT} real front offices by ${RATING_LABEL}. All-time ladder.`;
+    case "winStreak":
+      return `${seasonNote} Sorted by active win streak.`;
     case "lossStreak":
-      return `Showing top ${LEADERBOARD_LIMIT} real front offices by active loss streak.`;
+      return `${seasonNote} Sorted by active loss streak.`;
     default:
-      return `Showing top ${LEADERBOARD_LIMIT} real front offices by active win streak.`;
+      return `${seasonNote} Sorted by ${RATING_LABEL}.`;
   }
 };
