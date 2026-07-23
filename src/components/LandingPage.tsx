@@ -153,7 +153,8 @@ export function LandingPage({
       buildHeadToHeadModeDetails(
         [
           "Real 2026-27 salaries.",
-          "Matchmaking pairs similar front offices.",
+          "Banner matchmaking pairs similar front offices.",
+          "All-time leaderboard.",
         ],
         collection.unlockedIds.length,
       ),

@@ -10,11 +10,13 @@ import {
   clearModePlayerRecords,
   replaceModePlayerRecords,
 } from "./playerRecord";
+import { saveClassicProfile } from "./classicProfile";
 import { saveRankedProfile } from "./rankedProfile";
 import { getCurrentSeasonId } from "./rankedSeason";
 import { resetUnlockProgress } from "./unlockProgress";
 
 const IDENTITY_BOUND_STORAGE_KEYS = [
+  "nba-head-to-head-classic-profile",
   "nba-head-to-head-ranked-profile",
   "nba-head-to-head-player-records-by-mode",
   "nba-head-to-head-player-record",
@@ -66,8 +68,8 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     }),
     fetchRemoteLeaderboard({
       mode: "classic",
-      sort: "winStreak",
-      limit: 100,
+      sort: "elo",
+      limit: 500,
       viewerPlayerId: playerId,
     }),
     fetchRemotePlayerProfile({ playerId, seasonId }),
@@ -97,6 +99,18 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
       elo: currentElo,
       peakElo: Math.max(currentElo, legacyPeak ?? currentElo),
       rankedGamesPlayed: Math.max(0, currentWins + currentLosses),
+    });
+  }
+
+  if (classicEntry) {
+    saveClassicProfile({
+      playerId,
+      elo: classicEntry.elo,
+      peakElo: classicEntry.elo,
+      classicGamesPlayed: Math.max(
+        0,
+        classicEntry.wins + classicEntry.losses,
+      ),
     });
   }
 

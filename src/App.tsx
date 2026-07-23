@@ -93,6 +93,7 @@ import {
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
+import { ensureClassicProfile } from "./lib/classicProfile";
 import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import {
@@ -251,6 +252,7 @@ function App() {
 
   useEffect(() => {
     ensureCurrentRankedSeason();
+    ensureClassicProfile();
     ensureNpcOpponentPool();
   }, []);
 
@@ -528,7 +530,7 @@ function App() {
 
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
-        : RANKED_STARTING_ELO;
+        : ensureClassicProfile().elo;
 
       try {
         const resolution = await planHeadToHeadMatchmaking(

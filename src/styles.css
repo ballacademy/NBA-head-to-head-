@@ -530,8 +530,13 @@ main {
 }
 
 .landing-mode-card__record-block--casual {
-  display: flex;
-  justify-content: flex-start;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.landing-mode-card__record-block--casual .ranked-mode-summary__front-office {
+  justify-self: start;
 }
 
 .landing-mode-card__record-block--casual .ranked-mode-summary__record--left {

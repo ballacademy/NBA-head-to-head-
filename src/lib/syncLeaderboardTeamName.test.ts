@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTopLeaderboard, upsertLeaderboardEntry } from "./leaderboard";
 import { recordMatchResult } from "./playerRecord";
-import { RANKED_STARTING_ELO } from "./rankedElo";
+import { saveClassicProfile } from "./classicProfile";
 import { syncTeamNameToLeaderboards } from "./syncLeaderboardTeamName";
 import { loadTeamProfile, saveTeamProfile } from "./teamProfile";
 
@@ -25,6 +25,12 @@ describe("syncLeaderboardTeamName", () => {
       randomUUID: () => "player-sync-test",
     });
     recordMatchResult("win", "headToHead");
+    saveClassicProfile({
+      playerId: "player-sync-test",
+      elo: 640,
+      peakElo: 640,
+      classicGamesPlayed: 1,
+    });
     upsertLeaderboardEntry({
       playerId: "player-sync-test",
       name: "Old Name",

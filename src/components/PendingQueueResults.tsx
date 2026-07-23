@@ -12,11 +12,11 @@ import {
 } from "../lib/ghostMatchmaking";
 import { savePendingLineupState } from "../lib/pendingLineup";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
+import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import {
   formatRatingPoints,
   LIVE_OPPONENT_ONLY_MIN_ELO,
-  RANKED_STARTING_ELO,
   RATING_LABEL,
 } from "../lib/rankedElo";
 import { getLineupSalaryTotal } from "../lib/salaryCap";
@@ -45,7 +45,7 @@ export function PendingQueueResults({
   const playerId = getOrCreatePlayerIdentity().playerId;
   const elo = user.salaryCapMode
     ? ensureCurrentRankedSeason().elo
-    : RANKED_STARTING_ELO;
+    : ensureClassicProfile().elo;
 
   useEffect(() => {
     if (submittedRef.current) {
