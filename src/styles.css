@@ -502,8 +502,9 @@ main {
 
 .ranked-mode-summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 12px;
+  row-gap: 8px;
   align-items: start;
 }
 
@@ -512,21 +513,29 @@ main {
   align-items: flex-start;
   gap: 4px;
   min-width: 0;
+  max-width: 100%;
   margin: 0;
 }
 
 .ranked-mode-summary__front-office {
-  justify-self: start;
+  justify-self: stretch;
+  min-width: 0;
 }
 
 .ranked-mode-summary__record {
-  justify-self: end;
+  justify-self: stretch;
+  justify-content: flex-end;
   align-items: flex-end;
   text-align: right;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .ranked-mode-summary__record.landing-mode-card__record-stats {
-  justify-self: end;
+  justify-self: stretch;
+  width: 100%;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .landing-mode-card__record-block--solo {
@@ -536,10 +545,25 @@ main {
 
 .landing-mode-card__record-block--solo .ranked-mode-summary__record {
   justify-self: auto;
+  width: auto;
 }
 
 .ranked-mode-summary .landing-mode-card__record-value {
   font-size: 1.1rem;
+}
+
+.ranked-mode-summary__tier {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ranked-mode-summary .ranked-tier-badge {
+  max-width: 100%;
+  flex-wrap: wrap;
+  white-space: normal;
+  line-height: 1.25;
+  height: auto;
 }
 
 .landing-mode-card__record {
@@ -3597,11 +3621,6 @@ main {
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.ranked-mode-summary__tier {
-  display: inline-flex;
-  align-items: center;
 }
 
 .ranked-tier-badge {

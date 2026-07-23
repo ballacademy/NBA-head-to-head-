@@ -46,6 +46,21 @@ describe("allStars recent tier", () => {
     expect(isAllStarPlayer(kawhi!)).toBe(false);
   });
 
+  it("treats Curry, Mitchell, and Brown as superstars and LeBron as a regular all-star", () => {
+    const curry = players.find((player) => player.bbrPlayerId === "curryst01");
+    const mitchell = players.find((player) => player.bbrPlayerId === "mitchdo01");
+    const brown = players.find((player) => player.bbrPlayerId === "brownja02");
+
+    expect(curry && mitchell && brown).toBeTruthy();
+    expect(isSuperstarPlayer(curry!)).toBe(true);
+    expect(isSuperstarPlayer(mitchell!)).toBe(true);
+    expect(isSuperstarPlayer(brown!)).toBe(true);
+    expect(isAllStarPlayer(curry!)).toBe(false);
+    expect(isAllStarPlayer(mitchell!)).toBe(false);
+    expect(isAllStarPlayer(brown!)).toBe(false);
+    expect(isSuperstarPlayer({ bbrPlayerId: "jamesle01" })).toBe(false);
+  });
+
   it("includes manually added recent all-stars in the active pool", () => {
     const haliburton = players.find((player) => player.bbrPlayerId === "halibty01");
     const kyrie = players.find((player) => player.bbrPlayerId === "irvinky01");
