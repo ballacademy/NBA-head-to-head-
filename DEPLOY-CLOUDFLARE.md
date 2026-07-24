@@ -64,8 +64,25 @@ npx wrangler pages dev dist
 ## Custom domain (optional)
 
 1. Cloudflare dashboard → **Workers & Pages** → **nba-head-to-head** → **Custom domains**
-2. Add your domain (e.g. `draft.ballacademy.com`)
-3. Follow DNS instructions (Cloudflare can manage DNS if the domain is on your account)
+2. Add **both**:
+   - `www.draftdaygm.com`
+   - `draftdaygm.com` (apex)
+3. Confirm DNS for the zone includes Cloudflare’s apex target (Pages usually adds this when you attach the apex custom domain). Bare `draftdaygm.com` must resolve — if `dig draftdaygm.com A` returns nothing, Safari will show “couldn’t connect to the server” even though `www` works.
+4. Prefer **www** as the public URL. `functions/_middleware.ts` 301-redirects `draftdaygm.com` → `www.draftdaygm.com` once the apex is reachable.
+
+### Apex not opening on mobile Safari
+
+Symptom: `https://www.draftdaygm.com` works, but `draftdaygm.com` / `https://draftdaygm.com` fails with “Safari can’t open the page because it couldn’t connect to the server.”
+
+Cause: the apex hostname has no A/AAAA records (only `www` is published). App redirects cannot run until DNS answers for the apex.
+
+Fix in Cloudflare DNS / Pages:
+
+1. Pages → **Custom domains** → add `draftdaygm.com` if missing
+2. DNS → ensure apex (`draftdaygm.com`) has the proxied record Cloudflare creates for Pages (not only `www`)
+3. Wait for propagation, then verify:
+   - `dig draftdaygm.com A` returns Cloudflare IPs
+   - `https://draftdaygm.com` redirects to `https://www.draftdaygm.com`
 
 ## Manual deploy from your machine
 

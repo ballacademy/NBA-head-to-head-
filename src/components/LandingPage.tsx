@@ -436,7 +436,7 @@ export function LandingPage({
 
   const hubLede =
     hubTab === "play"
-      ? "Pick Casual or Pro, then draft five."
+      ? "Play live against a real opponent. Pick Casual or Pro."
       : hubTab === "daily"
         ? "One attempt per mode each day. Stats stay hidden."
         : hubTab === "roster"
