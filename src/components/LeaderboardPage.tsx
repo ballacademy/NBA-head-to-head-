@@ -254,124 +254,126 @@ export function LeaderboardPage() {
     setClassicSort(nextSort as ClassicSort);
   };
 
+  const subtitle =
+    view === "ranked"
+      ? getRankedLeaderboardFootnote(rankedSort, seasonId)
+      : getLeaderboardFootnote(classicSort, seasonId);
+
   return (
-    <section className="leaderboard panel panel--compact feature-page feature-page--leaderboard">
-      <div className="leaderboard__top">
-        <div className="leaderboard__header">
-          <div className="leaderboard__title-block">
-            <div className="leaderboard__brand">
-              <DraftDayGmLogo className="leaderboard__logo" />
-            </div>
-            <h1>Leaderboards</h1>
-          </div>
+    <div className="hub-feature leaderboard">
+      <div className="landing-hub__top">
+        <div className="landing__brand landing__brand--compact">
+          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
         </div>
-
-        <p className="leaderboard__subtitle">
-          {view === "ranked"
-            ? getRankedLeaderboardFootnote(rankedSort, seasonId)
-            : getLeaderboardFootnote(classicSort, seasonId)}
-        </p>
-
-        <div
-          className="leaderboard__tabs leaderboard__tabs--views"
-          role="tablist"
-          aria-label="Leaderboard view"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "ranked"}
-            className={view === "ranked" ? "is-active" : undefined}
-            onClick={() => setView("ranked")}
-          >
-            {PRO_HEAD_TO_HEAD_LABEL}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "classic"}
-            className={view === "classic" ? "is-active" : undefined}
-            onClick={() => setView("classic")}
-          >
-            {CLASSIC_HEAD_TO_HEAD_LABEL}
-          </button>
-        </div>
-
-        <div
-          className={`leaderboard__toolbar${
-            showTierInfo ? " leaderboard__toolbar--with-tier-info" : ""
-          }`}
-        >
-          <div
-            className="leaderboard__sort-grid"
-            role="tablist"
-            aria-label="Leaderboard sort"
-          >
-            {SORT_OPTIONS.filter((option) => option.views.includes(view)).map(
-              (option) => {
-                const isActive = sort === option.id;
-
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    className={isActive ? "is-active" : undefined}
-                    onClick={() => handleSortChange(option.id)}
-                  >
-                    {option.label}
-                  </button>
-                );
-              },
-            )}
-          </div>
-          {showTierInfo ? (
-            <div className="leaderboard__tier-info-slot">
-              <span className="leaderboard__tier-info">
-                Tier ranges
-                <ModeCardInfo
-                  details={TIER_RANGE_DETAILS}
-                  variant="corner"
-                  popoverAlign="start"
-                  ariaLabel="Banner tier ranges"
-                  popoverClassName="mode-card-info__popover--leaderboard"
-                />
-              </span>
-            </div>
-          ) : null}
-        </div>
+        <h1 className="landing-hub__title">Leaderboards</h1>
+        <p className="landing__lede landing-hub__lede">{subtitle}</p>
       </div>
 
-      {view === "ranked" ? (
-        rankedEntries.length > 0 ? (
+      <section className="hub-feature__panel leaderboard__panel">
+        <div className="leaderboard__top">
+          <div
+            className="leaderboard__tabs leaderboard__tabs--views"
+            role="tablist"
+            aria-label="Leaderboard view"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "ranked"}
+              className={view === "ranked" ? "is-active" : undefined}
+              onClick={() => setView("ranked")}
+            >
+              {PRO_HEAD_TO_HEAD_LABEL}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "classic"}
+              className={view === "classic" ? "is-active" : undefined}
+              onClick={() => setView("classic")}
+            >
+              {CLASSIC_HEAD_TO_HEAD_LABEL}
+            </button>
+          </div>
+
+          <div
+            className={`leaderboard__toolbar${
+              showTierInfo ? " leaderboard__toolbar--with-tier-info" : ""
+            }`}
+          >
+            <div
+              className="leaderboard__sort-grid"
+              role="tablist"
+              aria-label="Leaderboard sort"
+            >
+              {SORT_OPTIONS.filter((option) => option.views.includes(view)).map(
+                (option) => {
+                  const isActive = sort === option.id;
+
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={isActive ? "is-active" : undefined}
+                      onClick={() => handleSortChange(option.id)}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                },
+              )}
+            </div>
+            {showTierInfo ? (
+              <div className="leaderboard__tier-info-slot">
+                <span className="leaderboard__tier-info">
+                  Tier ranges
+                  <ModeCardInfo
+                    details={TIER_RANGE_DETAILS}
+                    variant="corner"
+                    popoverAlign="start"
+                    ariaLabel="Banner tier ranges"
+                    popoverClassName="mode-card-info__popover--leaderboard"
+                  />
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {view === "ranked" ? (
+          rankedEntries.length > 0 ? (
+            <LeaderboardBoard
+              entries={rankedEntries}
+              formatMetric={formatRankedMetric}
+              formatRecord={formatRankedLeaderboardRecord}
+              currentPlayerId={currentPlayerId}
+              viewKey={`${view}-${sort}`}
+              showTier
+            />
+          ) : (
+            <p className="draft-empty">
+              No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the
+              ladder.
+            </p>
+          )
+        ) : classicEntries.length > 0 ? (
           <LeaderboardBoard
-            entries={rankedEntries}
-            formatMetric={formatRankedMetric}
-            formatRecord={formatRankedLeaderboardRecord}
+            entries={classicEntries}
+            formatMetric={formatClassicMetric}
+            formatRecord={formatLeaderboardRecord}
             currentPlayerId={currentPlayerId}
             viewKey={`${view}-${sort}`}
             showTier
           />
         ) : (
           <p className="draft-empty">
-            No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the ladder.
+            No casual entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the
+            first spot.
           </p>
-        )
-      ) : classicEntries.length > 0 ? (
-        <LeaderboardBoard
-          entries={classicEntries}
-          formatMetric={formatClassicMetric}
-          formatRecord={formatLeaderboardRecord}
-          currentPlayerId={currentPlayerId}
-          viewKey={`${view}-${sort}`}
-          showTier
-        />
-      ) : (
-        <p className="draft-empty">
-          No casual entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the first spot.
-        </p>
-      )}
-    </section>
+        )}
+      </section>
+    </div>
   );
 }

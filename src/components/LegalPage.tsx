@@ -412,21 +412,21 @@ export function LegalPage({ kind, onOpenPrivacy }: LegalPageProps) {
   const title = kind === "privacy" ? "Privacy Policy" : "Terms of Use";
 
   return (
-    <section className="legal-page panel panel--compact feature-page feature-page--legal">
-      <div className="legal-page__header">
-        <div>
-          <p className="eyebrow">Draft Day GM</p>
-          <h1>{title}</h1>
-        </div>
+    <div className="hub-feature legal-page">
+      <div className="landing-hub__top">
+        <h1 className="landing-hub__title">{title}</h1>
+        <p className="landing__lede landing-hub__lede">Draft Day GM policies</p>
       </div>
 
-      <div className="legal-page__body">
-        {kind === "privacy" ? (
-          <PrivacyPolicyContent />
-        ) : (
-          <TermsContent onOpenPrivacy={onOpenPrivacy} />
-        )}
-      </div>
-    </section>
+      <section className="hub-feature__panel">
+        <div className="legal-page__body">
+          {kind === "privacy" ? (
+            <PrivacyPolicyContent />
+          ) : (
+            <TermsContent onOpenPrivacy={onOpenPrivacy} />
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
