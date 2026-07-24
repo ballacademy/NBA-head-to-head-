@@ -50,10 +50,9 @@ import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { RecordWithStreak } from "./RecordWithStreak";
-import {
-  LandingBottomNav,
-  type LandingHubTab,
-} from "./LandingBottomNav";
+import { type LandingHubTab } from "./LandingBottomNav";
+import { HubShell } from "./HubShell";
+import type { LandingContentTab } from "../lib/landingHub";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
@@ -91,6 +90,8 @@ interface LandingPageProps {
   onViewLeaderboard: () => void;
   onViewPrivacy: () => void;
   onViewTerms: () => void;
+  hubTab: LandingContentTab;
+  onHubTabChange: (tab: LandingContentTab) => void;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -124,6 +125,8 @@ export function LandingPage({
   onViewLeaderboard,
   onViewPrivacy,
   onViewTerms,
+  hubTab,
+  onHubTabChange,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -135,7 +138,6 @@ export function LandingPage({
   const [collectionTier, setCollectionTier] = useState<CollectionTier | null>(
     null,
   );
-  const [hubTab, setHubTab] = useState<LandingHubTab>("play");
   const teamFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -386,7 +388,12 @@ export function LandingPage({
       return;
     }
 
-    setHubTab(tab);
+    onHubTabChange(tab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const openAccountTab = () => {
+    onHubTabChange("account");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -437,7 +444,11 @@ export function LandingPage({
           : "Save your GM code or open career pages.";
 
   return (
-    <section className="landing panel landing--rich landing--hub">
+    <HubShell
+      activeTab={hubTab}
+      onSelectTab={handleHubSelect}
+      onAccountClick={openAccountTab}
+    >
       {showTeamNameModal ? (
         <TeamNameValidationModal
           message={teamNameModalMessage}
@@ -463,8 +474,6 @@ export function LandingPage({
           onClose={() => setCollectionTier(null)}
         />
       ) : null}
-
-      <div className="landing__glow" aria-hidden="true" />
 
       <div className="landing-hub__top">
         <div className="landing__brand landing__brand--compact">
@@ -819,8 +828,6 @@ export function LandingPage({
           </>
         ) : null}
       </div>
-
-      <LandingBottomNav activeTab={hubTab} onSelect={handleHubSelect} />
-    </section>
+    </HubShell>
   );
 }

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   buildLocalGmStatsSnapshot,
-  formatGmModeRecord,
+  formatGmRecordLine,
   formatLegacyMonthlyFinish,
   formatLegacyPeakBannerCount,
   formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
+import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
@@ -16,6 +17,29 @@ import { RankedTierBadge } from "./RankedTierBadge";
 interface GmStatsPageProps {
   onBack: () => void;
 }
+
+function GmStatsFactRows({
+  rows,
+}: {
+  rows: { label: string; value: string }[];
+}) {
+  return (
+    <dl className="gm-stats-page__facts">
+      {rows.map((row) => (
+        <div key={row.label} className="gm-stats-page__fact">
+          <dt>{row.label}</dt>
+          <dd>{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+const formatPercentileStat = (value: number | null) =>
+  value != null ? formatOrdinal(Math.round(value)) : "—";
+
+const formatCollectionCount = (unlocked: number, total: number) =>
+  `${unlocked} of ${total}`;
 
 export function GmStatsPage({ onBack }: GmStatsPageProps) {
   const teamName = loadTeamProfile()?.name ?? "Your team";
@@ -110,57 +134,102 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
 
       <section className="gm-stats-page__section">
         <h2>Mode records</h2>
-        <ul className="gm-stats-page__list">
-          <li>{formatGmModeRecord("Casual H2H", snapshot.records.headToHead.wins, snapshot.records.headToHead.losses, snapshot.records.headToHead.ties)}</li>
-          <li>{formatGmModeRecord("Pro H2H", snapshot.records.ranked.wins, snapshot.records.ranked.losses, snapshot.records.ranked.ties)}</li>
-          <li>{formatGmModeRecord("All-Time", snapshot.records.allTime.wins, snapshot.records.allTime.losses, snapshot.records.allTime.ties)}</li>
-        </ul>
+        <GmStatsFactRows
+          rows={[
+            {
+              label: "Casual H2H",
+              value: formatGmRecordLine(
+                snapshot.records.headToHead.wins,
+                snapshot.records.headToHead.losses,
+                snapshot.records.headToHead.ties,
+              ),
+            },
+            {
+              label: "Pro H2H",
+              value: formatGmRecordLine(
+                snapshot.records.ranked.wins,
+                snapshot.records.ranked.losses,
+                snapshot.records.ranked.ties,
+              ),
+            },
+            {
+              label: "All-Time",
+              value: formatGmRecordLine(
+                snapshot.records.allTime.wins,
+                snapshot.records.allTime.losses,
+                snapshot.records.allTime.ties,
+              ),
+            },
+          ]}
+        />
       </section>
 
       <section className="gm-stats-page__section">
         <h2>Daily draft</h2>
-        <ul className="gm-stats-page__list">
-          <li>Days played: {snapshot.dailyDraft.daysPlayed}</li>
-          <li>Basic streak: {snapshot.dailyDraft.basicStreakLabel}</li>
-          <li>Advanced streak: {snapshot.dailyDraft.advancedStreakLabel}</li>
-          <li>
-            Best percentile:{" "}
-            {snapshot.dailyDraft.bestPercentile != null
-              ? `${snapshot.dailyDraft.bestPercentile}th`
-              : "—"}
-          </li>
-          <li>
-            Average percentile:{" "}
-            {snapshot.dailyDraft.averagePercentile != null
-              ? `${snapshot.dailyDraft.averagePercentile}th`
-              : "—"}
-          </li>
-          <li>
-            Latest result: {snapshot.dailyDraft.latestResult ?? "—"}
-          </li>
-        </ul>
+        <GmStatsFactRows
+          rows={[
+            {
+              label: "Days played",
+              value: String(snapshot.dailyDraft.daysPlayed),
+            },
+            {
+              label: "Basic streak",
+              value: snapshot.dailyDraft.basicStreakLabel,
+            },
+            {
+              label: "Advanced streak",
+              value: snapshot.dailyDraft.advancedStreakLabel,
+            },
+            {
+              label: "Best percentile",
+              value: formatPercentileStat(snapshot.dailyDraft.bestPercentile),
+            },
+            {
+              label: "Average percentile",
+              value: formatPercentileStat(snapshot.dailyDraft.averagePercentile),
+            },
+            {
+              label: "Latest result",
+              value: snapshot.dailyDraft.latestResult ?? "—",
+            },
+          ]}
+        />
       </section>
 
       <section className="gm-stats-page__section">
         <h2>Collection</h2>
-        <ul className="gm-stats-page__list">
-          <li>
-            All-Stars: {snapshot.collection.unlocked}/
-            {snapshot.collection.total}
-          </li>
-          <li>
-            Superstars: {snapshot.collection.superstarUnlocked}/
-            {snapshot.collection.superstarTotal}
-          </li>
-          <li>
-            Scrubs: {snapshot.collection.unlockedScrubs}/
-            {snapshot.collection.scrubPool}
-          </li>
-          <li>
-            Super Scrubs: {snapshot.collection.unlockedSuperScrubs}/
-            {snapshot.collection.superScrubPool}
-          </li>
-        </ul>
+        <GmStatsFactRows
+          rows={[
+            {
+              label: "All-Stars",
+              value: formatCollectionCount(
+                snapshot.collection.unlocked,
+                snapshot.collection.total,
+              ),
+            },
+            {
+              label: "Superstars",
+              value: formatCollectionCount(
+                snapshot.collection.superstarUnlocked,
+                snapshot.collection.superstarTotal,
+              ),
+            },
+            {
+              label: "Scrubs",
+              value: formatCollectionCount(
+                snapshot.collection.unlockedScrubs,
+                snapshot.collection.scrubPool,
+              ),
+            },
+            {
+              label: "Super Scrubs",
+              value: formatCollectionCount(
+                snapshot.collection.unlockedSuperScrubs,
+                snapshot.collection.superScrubPool,
+              ),
+            },
+          ]}
+        />
       </section>
     </section>
   );

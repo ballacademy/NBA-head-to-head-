@@ -1,13 +1,20 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { players } from "./data/players";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
+import { HubShell } from "./components/HubShell";
+import type { LandingHubTab } from "./components/LandingBottomNav";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
 import { GmStatsPage } from "./components/GmStatsPage";
 import { LegalPage } from "./components/LegalPage";
+import {
+  loadLandingHubTab,
+  saveLandingHubTab,
+  type LandingContentTab,
+} from "./lib/landingHub";
 import { PendingQueueResults } from "./components/PendingQueueResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
@@ -173,6 +180,9 @@ function App() {
     null,
   );
   const [landingRenderKey, setLandingRenderKey] = useState(0);
+  const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() =>
+    loadLandingHubTab(),
+  );
   const skipPopStateResetRef = useRef(false);
   const pendingFeatureNavigationRef = useRef(false);
   const matchmakingGenerationRef = useRef(0);
@@ -1385,62 +1395,118 @@ function App() {
     };
   }, [phase]);
 
+  const updateLandingHubTab = useCallback((tab: LandingContentTab) => {
+    setLandingHubTab(tab);
+    saveLandingHubTab(tab);
+  }, []);
+
+  const goToLandingHub = useCallback(
+    (tab: LandingContentTab) => {
+      updateLandingHubTab(tab);
+
+      if (phase === "landing") {
+        return;
+      }
+
+      const state = window.history.state as FeatureHistoryState | null;
+      const shouldNavigateBack =
+        FEATURE_PHASES.has(phase) && Boolean(state?.appPhase);
+
+      resetToLanding();
+
+      if (shouldNavigateBack) {
+        skipPopStateResetRef.current = true;
+        window.history.back();
+      }
+    },
+    [phase, updateLandingHubTab],
+  );
+
+  const handleHubNav = useCallback(
+    (tab: LandingHubTab) => {
+      if (tab === "standings") {
+        if (phase !== "leaderboard") {
+          openFeaturePage("leaderboard");
+        }
+        return;
+      }
+
+      goToLandingHub(tab);
+    },
+    [goToLandingHub, openFeaturePage, phase],
+  );
+
+  const goToAccountHub = useCallback(() => {
+    goToLandingHub("account");
+  }, [goToLandingHub]);
+
+  const hubNavForPhase = ((): LandingHubTab => {
+    if (phase === "leaderboard") {
+      return "standings";
+    }
+
+    if (phase === "gmStats" || phase === "privacy" || phase === "terms") {
+      return "account";
+    }
+
+    if (phase === "achievements" || phase === "stats") {
+      return "roster";
+    }
+
+    return landingHubTab;
+  })();
+
+  const renderHubFeature = (content: ReactNode, layoutClass = "") => (
+    <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
+      <HubShell
+        activeTab={hubNavForPhase}
+        onSelectTab={handleHubNav}
+        onAccountClick={goToAccountHub}
+      >
+        {content}
+      </HubShell>
+    </main>
+  );
+
   const isMatchmakingSearchActive =
     matchmakingMode != null || isMatchmakingInFlight;
 
   if (phase === "leaderboard") {
-    return (
-      <main className="landing-layout">
-        <LeaderboardPage onBack={exitFeaturePage} />
-      </main>
-    );
+    return renderHubFeature(<LeaderboardPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "gmStats") {
-    return (
-      <main className="landing-layout">
-        <GmStatsPage onBack={exitFeaturePage} />
-      </main>
-    );
+    return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "achievements") {
-    return (
-      <main className="landing-layout">
-        <AchievementsPage onBack={exitFeaturePage} />
-      </main>
-    );
+    return renderHubFeature(<AchievementsPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "privacy") {
-    return (
-      <main className="landing-layout">
-        <LegalPage kind="privacy" onBack={exitFeaturePage} />
-      </main>
+    return renderHubFeature(
+      <LegalPage kind="privacy" onBack={exitFeaturePage} />,
     );
   }
 
   if (phase === "terms") {
-    return (
-      <main className="landing-layout">
-        <LegalPage
-          kind="terms"
-          onBack={exitFeaturePage}
-          onOpenPrivacy={() => openFeaturePage("privacy", { returnTo: "terms" })}
-        />
-      </main>
+    return renderHubFeature(
+      <LegalPage
+        kind="terms"
+        onBack={exitFeaturePage}
+        onOpenPrivacy={() => openFeaturePage("privacy", { returnTo: "terms" })}
+      />,
     );
   }
 
   if (phase === "stats") {
-    return (
-      <main className="landing-layout landing-layout--stats">
-        <PlayerStatsTable
-          players={databasePlayers}
-          collection={collection}
-          onBack={exitFeaturePage}
-        />
-      </main>
+    return renderHubFeature(
+      <PlayerStatsTable
+        players={databasePlayers}
+        collection={collection}
+        onBack={exitFeaturePage}
+      />,
+      "landing-layout--stats",
     );
   }
 
@@ -1466,6 +1532,8 @@ function App() {
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
           onViewPrivacy={() => openFeaturePage("privacy")}
           onViewTerms={() => openFeaturePage("terms")}
+          hubTab={landingHubTab}
+          onHubTabChange={updateLandingHubTab}
         />
         {showDraftOnboarding ? (
           <DraftOnboardingOverlay
