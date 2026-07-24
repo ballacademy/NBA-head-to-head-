@@ -198,22 +198,25 @@ export function PlayerStatsTable({
   };
 
   return (
-    <section className="panel stats-panel feature-page feature-page--stats" aria-labelledby="stats-heading">
-      <div className="stats-panel__header">
-        <div className="section-heading stats-panel__heading">
-          <p className="eyebrow">Season Stats</p>
-          <div className="stats-panel__title-row">
-            <h2 id="stats-heading">Browse the player pool</h2>
-            <ModeCardInfo
-              details={statsInfoDetails}
-              variant="corner"
-              popoverAlign="start"
-              ariaLabel="Season Stats details"
-            />
-          </div>
+    <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
+      <div className="landing-hub__top">
+        <div className="landing-hub__title-row">
+          <h1 className="landing-hub__title" id="stats-heading">
+            Season Stats
+          </h1>
+          <ModeCardInfo
+            details={statsInfoDetails}
+            variant="corner"
+            popoverAlign="start"
+            ariaLabel="Season Stats details"
+          />
         </div>
+        <p className="landing__lede landing-hub__lede">
+          Browse the player pool
+        </p>
       </div>
 
+      <section className="hub-feature__panel">
       <label className="field stats-search">
         <span>Search players</span>
         <input
@@ -298,6 +301,7 @@ export function PlayerStatsTable({
       <p className="stats-footnote">
         Showing {filteredPlayers.length} of {players.length} players.
       </p>
-    </section>
+      </section>
+    </div>
   );
 }

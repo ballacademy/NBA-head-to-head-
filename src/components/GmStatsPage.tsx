@@ -65,21 +65,19 @@ export function GmStatsPage() {
   const peakBannerTier = formatLegacyPeakBannerTier(snapshot.legacy.peakElo);
 
   return (
-    <section className="gm-stats-page panel panel--compact feature-page feature-page--gm-stats">
-      <div className="gm-stats-page__header">
-        <div>
-          <div className="gm-stats-page__brand">
-            <DraftDayGmLogo className="gm-stats-page__logo" />
-          </div>
-          <p className="eyebrow">GM career</p>
-          <h1>{snapshot.teamName}</h1>
-          <p className="gm-stats-page__subtitle">
-            {formatRatingPoints(snapshot.ranked.elo)} this month ·{" "}
-            {snapshot.currentSeasonLabel}
-          </p>
+    <div className="hub-feature gm-stats-page">
+      <div className="landing-hub__top">
+        <div className="landing__brand landing__brand--compact">
+          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
         </div>
+        <h1 className="landing-hub__title">{snapshot.teamName}</h1>
+        <p className="landing__lede landing-hub__lede">
+          {formatRatingPoints(snapshot.ranked.elo)} this month ·{" "}
+          {snapshot.currentSeasonLabel}
+        </p>
       </div>
 
+      <section className="hub-feature__panel">
       <div className="gm-stats-page__summary">
         <div className="gm-stats-page__summary-card">
           <span className="gm-stats-page__label">Total wins</span>
@@ -224,6 +222,7 @@ export function GmStatsPage() {
           ]}
         />
       </section>
-    </section>
+      </section>
+    </div>
   );
 }
