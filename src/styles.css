@@ -459,6 +459,118 @@ main {
   text-align: center;
 }
 
+.landing--hub {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
+.landing-hub__top {
+  margin-bottom: 14px;
+}
+
+.landing__brand--compact {
+  margin-bottom: 4px;
+}
+
+.landing__logo--compact {
+  width: min(88px, 24vw);
+}
+
+.landing-hub__title {
+  margin: 4px auto 8px;
+  max-width: min(100%, 14em);
+  font-size: clamp(1.55rem, 4vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  text-align: center;
+  color: #1e1035;
+}
+
+.landing-hub__lede {
+  margin-bottom: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.landing-hub__content {
+  display: grid;
+  gap: 12px;
+}
+
+.landing-team-form--compact {
+  margin-top: 0;
+}
+
+.landing-hub__links {
+  display: grid;
+  gap: 8px;
+}
+
+.landing-hub__link-button {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.22);
+  background: rgba(255, 255, 255, 0.72);
+  color: #4c1d95;
+  font-weight: 700;
+}
+
+.landing-hub__link-button:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.landing-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: min(760px, 100%);
+  transform: translateX(-50%);
+  padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 -10px 30px rgba(30, 16, 53, 0.12);
+}
+
+.landing-bottom-nav__item {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #64748b;
+}
+
+.landing-bottom-nav__item--active {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.landing-bottom-nav__icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+}
+
+.landing-bottom-nav__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.landing-bottom-nav__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
 .landing-cards {
   display: grid;
   gap: 12px;

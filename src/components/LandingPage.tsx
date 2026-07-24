@@ -50,6 +50,10 @@ import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { RecordWithStreak } from "./RecordWithStreak";
+import {
+  LandingBottomNav,
+  type LandingHubTab,
+} from "./LandingBottomNav";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
@@ -131,6 +135,7 @@ export function LandingPage({
   const [collectionTier, setCollectionTier] = useState<CollectionTier | null>(
     null,
   );
+  const [hubTab, setHubTab] = useState<LandingHubTab>("play");
   const teamFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -375,8 +380,64 @@ export function LandingPage({
     );
   };
 
+  const handleHubSelect = (tab: LandingHubTab) => {
+    if (tab === "standings") {
+      onViewLeaderboard();
+      return;
+    }
+
+    setHubTab(tab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderTeamNameField = () => (
+    <div
+      ref={teamFormRef}
+      className="landing-team-form landing-card landing-card--form landing-team-form--compact"
+    >
+      <label className="field">
+        <span>Team Name</span>
+        <input
+          type="text"
+          value={name}
+          placeholder="e.g. Bulls"
+          onBlur={handleTeamNameBlur}
+          onChange={(event) => {
+            setName(event.target.value);
+            if (error) {
+              setError("");
+            }
+          }}
+        />
+      </label>
+      {profanityWarning || error || startMatchError ? (
+        <p className="form-error" role="alert">
+          {profanityWarning || error || startMatchError}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  const hubTitle =
+    hubTab === "play"
+      ? "Head to Head"
+      : hubTab === "daily"
+        ? "Daily Draft"
+        : hubTab === "roster"
+          ? "Roster"
+          : "Account";
+
+  const hubLede =
+    hubTab === "play"
+      ? "Pick Casual or Pro, then draft five."
+      : hubTab === "daily"
+        ? "One attempt per mode each day. Stats stay hidden."
+        : hubTab === "roster"
+          ? "Browse unlocked players and season stats."
+          : "Save your GM code or open career pages.";
+
   return (
-    <section className="landing panel landing--rich">
+    <section className="landing panel landing--rich landing--hub">
       {showTeamNameModal ? (
         <TeamNameValidationModal
           message={teamNameModalMessage}
@@ -405,347 +466,361 @@ export function LandingPage({
 
       <div className="landing__glow" aria-hidden="true" />
 
-      <div className="landing__brand">
-        <DraftDayGmLogo className="landing__logo" />
+      <div className="landing-hub__top">
+        <div className="landing__brand landing__brand--compact">
+          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
+        </div>
+        <h1 className="landing-hub__title">{hubTitle}</h1>
+        <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
-      <h1>Draft your five. Compete head to head.</h1>
-      <p className="landing__lede">
-        Name your team, pick a mode below, and draft a five-player lineup.
-      </p>
 
-      <div
-        ref={teamFormRef}
-        className="landing-team-form landing-card landing-card--form"
-      >
-        <label className="field">
-          <span>Team Name</span>
-          <input
-            type="text"
-            value={name}
-            placeholder="e.g. Bulls"
-            onBlur={handleTeamNameBlur}
-            onChange={(event) => {
-              setName(event.target.value);
-              if (error) {
-                setError("");
-              }
-            }}
-          />
-        </label>
+      <div className="landing-hub__content">
+        {hubTab === "play" ? (
+          <>
+            {renderTeamNameField()}
+            <div className="landing-game-modes">
+              <div className="head-to-head-card landing-card landing-card--mode">
+                <div className="mode-card__header">
+                  <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
+                  <ModeCardInfo details={classicModeDetails} variant="corner" />
+                </div>
+                <p className="head-to-head-card__description">
+                  Draft a five-player lineup under a $
+                  {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
+                  cap with {CLASSIC_PICK_TIME_LIMIT_SECONDS} seconds per pick.
+                </p>
+                <ClassicModeSummary record={modeRecords.headToHead} />
+                <div className="mode-card__actions">
+                  <button
+                    type="button"
+                    className="landing__primary-button"
+                    disabled={modesBlocked}
+                    onClick={() => void handleStart()}
+                  >
+                    {matchmakingMode === "classic"
+                      ? matchmakingLabel
+                      : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+                  </button>
+                  <button
+                    type="button"
+                    className="head-to-head-card__practice-button"
+                    disabled={modesBlocked}
+                    onClick={() =>
+                      void handleStart({
+                        practiceMode: true,
+                        salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+                      })
+                    }
+                  >
+                    Practice
+                  </button>
+                </div>
+                <p className="mode-card__practice-note">
+                  Practice uses the same $
+                  {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
+                  cap and bot opponent. Streaks and badges do not change.
+                </p>
+              </div>
 
-        <p className="landing-team-form__note">
-          Your team name is saved for future drafts. You can change it here
-          anytime before you start.
-        </p>
+              <div className="ranked-cap-card landing-card landing-card--mode">
+                <div className="mode-card__header">
+                  <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
+                  <ModeCardInfo details={proModeDetails} variant="corner" />
+                </div>
+                <p className="ranked-cap-card__description">
+                  Draft a five-player lineup under a $
+                  {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
+                  {PICK_TIME_LIMIT_SECONDS} seconds per pick.
+                </p>
+                <RankedModeSummary record={modeRecords.ranked} />
+                <div className="mode-card__actions">
+                  <button
+                    type="button"
+                    className="ranked-cap-card__button"
+                    disabled={modesBlocked}
+                    onClick={() => void handleStart({ salaryCapMode: true })}
+                  >
+                    {matchmakingMode === "ranked"
+                      ? matchmakingLabel
+                      : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+                  </button>
+                  <button
+                    type="button"
+                    className="ranked-cap-card__practice-button"
+                    disabled={modesBlocked}
+                    onClick={() =>
+                      void handleStart({
+                        practiceMode: true,
+                        salaryCapMode: true,
+                        salaryCapLimit: RANKED_SALARY_CAP,
+                      })
+                    }
+                  >
+                    Practice
+                  </button>
+                </div>
+                <p className="mode-card__practice-note">
+                  Practice uses the same $
+                  {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
+                  opponent. Banners, streaks, and badges do not change.
+                </p>
+              </div>
 
-        <p className="landing-team-form__identity">
-          <span className="landing-team-form__identity-label">GM code</span>
-          <GmIdentityBadge
-            publicTag={playerIdentity.publicTag}
-            playerId={playerIdentity.playerId}
-            showName={false}
-          />
-          <button
-            type="button"
-            className="landing-team-form__gm-stats-button"
-            onClick={onViewGmStats}
-          >
-            GM stats
-          </button>
-          <ModeCardInfo
-            details={[
-              "Career wins and losses across every mode.",
-              "Daily draft days played, consecutive-day streaks, best percentile, and latest result.",
-              "Best monthly leaderboard finish and most banners ever.",
-              "Front office rank badges earned from peak banner totals.",
-            ]}
-            variant="corner"
-            popoverAlign="start"
-            ariaLabel="GM career stats details"
-          />
-          <span className="landing-team-form__identity-note">
-            Shown on leaderboards. Tap your code to verify or copy your full ID.
-          </span>
-        </p>
+              <div className="all-time-card landing-card landing-card--mode">
+                <p className="eyebrow">{ALL_TIME_LABEL}</p>
+                <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
+                <p className="all-time-card__description">
+                  Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS}{" "}
+                  seconds per pick from active stars at peak seasons plus
+                  legendary All-Stars from every era.
+                  {allTimePlayable
+                    ? ""
+                    : " This mode is in development and will launch soon."}
+                </p>
+                {allTimePlayable ? (
+                  <>
+                    <MatchModeRecord record={modeRecords.allTime} />
+                    <button
+                      type="button"
+                      className="all-time-card__button"
+                      disabled={modesBlocked}
+                      onClick={() => void handleStart({ allTimeMode: true })}
+                    >
+                      Play All-Time Draft
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="all-time-card__button all-time-card__button--locked"
+                    disabled
+                  >
+                    Coming soon
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        ) : null}
 
-        <AccountAuthPanel
-          playerId={playerIdentity.playerId}
-          onViewPrivacy={onViewPrivacy}
-          onViewTerms={onViewTerms}
-        />
+        {hubTab === "daily" ? (
+          <>
+            {renderTeamNameField()}
+            <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
+              <p className="daily-draft-card__meta daily-draft-card__meta--intro">
+                Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS}{" "}
+                seconds per pick. Stats stay hidden. One attempt per mode each
+                day.
+              </p>
+              <div className="daily-draft-card__modes">
+                {renderDailyModeSection(landingBasicDaily)}
+                {renderDailyModeSection(landingAdvancedDaily)}
+              </div>
+            </div>
+          </>
+        ) : null}
 
-        {profanityWarning || error || startMatchError ? (
-          <p className="form-error" role="alert">
-            {profanityWarning || error || startMatchError}
-          </p>
+        {hubTab === "roster" ? (
+          <>
+            <div className="landing-profile-strip landing-card landing-card--profile">
+              <div className="landing-profile-strip__header">
+                <p className="landing-profile-strip__title">Your collection</p>
+                <p className="landing-profile-strip__hint">
+                  Tap a category to view unlocked players
+                </p>
+              </div>
+              <div
+                className="landing-profile-strip__stats"
+                aria-label="Player collection by category"
+              >
+                <button
+                  type="button"
+                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  onClick={() => setCollectionTier("all-star")}
+                  aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
+                >
+                  <span className="landing-profile-strip__label">All-Stars</span>
+                  <strong>
+                    {collectionProgress.unlocked}/{collectionProgress.total}
+                  </strong>
+                  <span
+                    className="landing-profile-strip__action"
+                    aria-hidden="true"
+                  >
+                    View ›
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  onClick={() => setCollectionTier("superstar")}
+                  aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
+                >
+                  <span className="landing-profile-strip__label">
+                    Superstars
+                  </span>
+                  <strong>
+                    {collectionProgress.superstarUnlocked}/
+                    {collectionProgress.superstarTotal}
+                  </strong>
+                  <span
+                    className="landing-profile-strip__action"
+                    aria-hidden="true"
+                  >
+                    View ›
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  onClick={() => setCollectionTier("scrub")}
+                  aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
+                >
+                  <span className="landing-profile-strip__label">Scrubs</span>
+                  <strong>
+                    {collectionProgress.unlockedScrubs}/
+                    {collectionProgress.scrubPool}
+                  </strong>
+                  <span
+                    className="landing-profile-strip__action"
+                    aria-hidden="true"
+                  >
+                    View ›
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  onClick={() => setCollectionTier("super-scrub")}
+                  aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
+                >
+                  <span className="landing-profile-strip__label">
+                    Super Scrubs
+                  </span>
+                  <strong>
+                    {collectionProgress.unlockedSuperScrubs}/
+                    {collectionProgress.superScrubPool}
+                  </strong>
+                  <span
+                    className="landing-profile-strip__action"
+                    aria-hidden="true"
+                  >
+                    View ›
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  onClick={() => setCollectionTier("recent-all-star")}
+                  aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
+                >
+                  <span className="landing-profile-strip__label">
+                    Recent All-Stars
+                  </span>
+                  <strong>
+                    {collectionProgress.recentUnlocked}/
+                    {collectionProgress.recentTotal}
+                  </strong>
+                  <span
+                    className="landing-profile-strip__action"
+                    aria-hidden="true"
+                  >
+                    View ›
+                  </span>
+                </button>
+              </div>
+              <p className="landing-profile-strip__meta">
+                Win to unlock All-Stars, lose to unlock Scrubs.
+              </p>
+            </div>
+
+            <div className="landing-hub__links">
+              <button
+                type="button"
+                className="landing-hub__link-button"
+                onClick={onViewStats}
+              >
+                Season Stats
+              </button>
+            </div>
+          </>
+        ) : null}
+
+        {hubTab === "account" ? (
+          <>
+            <div className="landing-team-form landing-card landing-card--form">
+              <p className="landing-team-form__identity">
+                <span className="landing-team-form__identity-label">
+                  GM code
+                </span>
+                <GmIdentityBadge
+                  publicTag={playerIdentity.publicTag}
+                  playerId={playerIdentity.playerId}
+                  showName={false}
+                />
+                <span className="landing-team-form__identity-note">
+                  Shown on leaderboards. Tap your code to verify or copy your
+                  full ID.
+                </span>
+              </p>
+
+              <AccountAuthPanel
+                playerId={playerIdentity.playerId}
+                onViewPrivacy={onViewPrivacy}
+                onViewTerms={onViewTerms}
+              />
+            </div>
+
+            <div className="landing-hub__links">
+              <button
+                type="button"
+                className="landing-hub__link-button"
+                onClick={onViewGmStats}
+              >
+                GM stats
+              </button>
+              <button
+                type="button"
+                className="landing-hub__link-button"
+                onClick={onViewAchievements}
+              >
+                Badges
+              </button>
+            </div>
+
+            <p className="landing-disclaimer">
+              Draft Day GM is an independent project. It is not affiliated with,
+              endorsed by, or connected to the NBA, its teams, players, or
+              partners. Team names, player names, and statistics are used for
+              informational purposes only.
+            </p>
+
+            <nav className="landing-footer" aria-label="Legal">
+              <button
+                type="button"
+                className="landing-footer__link"
+                onClick={onViewPrivacy}
+              >
+                Privacy Policy
+              </button>
+              <span className="landing-footer__sep" aria-hidden="true">
+                ·
+              </span>
+              <button
+                type="button"
+                className="landing-footer__link"
+                onClick={onViewTerms}
+              >
+                Terms of Use
+              </button>
+            </nav>
+
+            <p className="landing-credit">Powered by BALLACADEMY</p>
+          </>
         ) : null}
       </div>
 
-      <div className="landing-profile-strip landing-card landing-card--profile">
-        <div className="landing-profile-strip__header">
-          <p className="landing-profile-strip__title">Your collection</p>
-          <p className="landing-profile-strip__hint">Tap a category to view unlocked players</p>
-        </div>
-        <div
-          className="landing-profile-strip__stats"
-          aria-label="Player collection by category"
-        >
-          <button
-            type="button"
-            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
-            onClick={() => setCollectionTier("all-star")}
-            aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
-          >
-            <span className="landing-profile-strip__label">All-Stars</span>
-            <strong>
-              {collectionProgress.unlocked}/{collectionProgress.total}
-            </strong>
-            <span className="landing-profile-strip__action" aria-hidden="true">
-              View ›
-            </span>
-          </button>
-          <button
-            type="button"
-            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
-            onClick={() => setCollectionTier("superstar")}
-            aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
-          >
-            <span className="landing-profile-strip__label">Superstars</span>
-            <strong>
-              {collectionProgress.superstarUnlocked}/
-              {collectionProgress.superstarTotal}
-            </strong>
-            <span className="landing-profile-strip__action" aria-hidden="true">
-              View ›
-            </span>
-          </button>
-          <button
-            type="button"
-            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
-            onClick={() => setCollectionTier("scrub")}
-            aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
-          >
-            <span className="landing-profile-strip__label">Scrubs</span>
-            <strong>
-              {collectionProgress.unlockedScrubs}/{collectionProgress.scrubPool}
-            </strong>
-            <span className="landing-profile-strip__action" aria-hidden="true">
-              View ›
-            </span>
-          </button>
-          <button
-            type="button"
-            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
-            onClick={() => setCollectionTier("super-scrub")}
-            aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
-          >
-            <span className="landing-profile-strip__label">Super Scrubs</span>
-            <strong>
-              {collectionProgress.unlockedSuperScrubs}/
-              {collectionProgress.superScrubPool}
-            </strong>
-            <span className="landing-profile-strip__action" aria-hidden="true">
-              View ›
-            </span>
-          </button>
-          <button
-            type="button"
-            className="landing-profile-strip__stat landing-profile-strip__stat--btn"
-            onClick={() => setCollectionTier("recent-all-star")}
-            aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
-          >
-            <span className="landing-profile-strip__label">Recent All-Stars</span>
-            <strong>
-              {collectionProgress.recentUnlocked}/
-              {collectionProgress.recentTotal}
-            </strong>
-            <span className="landing-profile-strip__action" aria-hidden="true">
-              View ›
-            </span>
-          </button>
-        </div>
-        <p className="landing-profile-strip__meta">
-          Win to unlock All-Stars, lose to unlock Scrubs.
-        </p>
-      </div>
-
-      <div className="landing-game-modes">
-        <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
-          <p className="eyebrow">Daily Draft</p>
-          <p className="daily-draft-card__meta daily-draft-card__meta--intro">
-            Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS} seconds
-            per pick. Stats stay hidden. One attempt per mode each day.
-          </p>
-          <div className="daily-draft-card__modes">
-            {renderDailyModeSection(landingBasicDaily)}
-            {renderDailyModeSection(landingAdvancedDaily)}
-          </div>
-        </div>
-
-        <div className="head-to-head-card landing-card landing-card--mode">
-          <div className="mode-card__header">
-            <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
-            <ModeCardInfo details={classicModeDetails} variant="corner" />
-          </div>
-          <p className="head-to-head-card__description">
-            Draft a five-player lineup under a $
-            {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {CLASSIC_PICK_TIME_LIMIT_SECONDS} seconds per pick.
-          </p>
-          <ClassicModeSummary record={modeRecords.headToHead} />
-          <div className="mode-card__actions">
-            <button
-              type="button"
-              className="landing__primary-button"
-              disabled={modesBlocked}
-              onClick={() => void handleStart()}
-            >
-              {matchmakingMode === "classic"
-                ? matchmakingLabel
-                : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
-            </button>
-            <button
-              type="button"
-              className="head-to-head-card__practice-button"
-              disabled={modesBlocked}
-              onClick={() =>
-                void handleStart({
-                  practiceMode: true,
-                  salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
-                })
-              }
-            >
-              Practice
-            </button>
-          </div>
-          <p className="mode-card__practice-note">
-            Practice uses the same ${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
-            opponent. Streaks and badges do not change.
-          </p>
-        </div>
-
-        <div className="ranked-cap-card landing-card landing-card--mode">
-          <div className="mode-card__header">
-            <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
-            <ModeCardInfo details={proModeDetails} variant="corner" />
-          </div>
-          <p className="ranked-cap-card__description">
-            Draft a five-player lineup under a $
-            {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-            {PICK_TIME_LIMIT_SECONDS} seconds per pick.
-          </p>
-          <RankedModeSummary record={modeRecords.ranked} />
-          <div className="mode-card__actions">
-            <button
-              type="button"
-              className="ranked-cap-card__button"
-              disabled={modesBlocked}
-              onClick={() => void handleStart({ salaryCapMode: true })}
-            >
-              {matchmakingMode === "ranked"
-                ? matchmakingLabel
-                : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
-            </button>
-            <button
-              type="button"
-              className="ranked-cap-card__practice-button"
-              disabled={modesBlocked}
-              onClick={() =>
-                void handleStart({
-                  practiceMode: true,
-                  salaryCapMode: true,
-                  salaryCapLimit: RANKED_SALARY_CAP,
-                })
-              }
-            >
-              Practice
-            </button>
-          </div>
-          <p className="mode-card__practice-note">
-            Practice uses the same ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot opponent.
-            Banners, streaks, and badges do not change.
-          </p>
-        </div>
-
-        <div className="all-time-card landing-card landing-card--mode">
-          <p className="eyebrow">{ALL_TIME_LABEL}</p>
-          <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
-          <p className="all-time-card__description">
-            Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS} seconds per
-            pick from active stars at peak seasons plus legendary All-Stars from
-            every era.
-            {allTimePlayable
-              ? ""
-              : " This mode is in development and will launch soon."}
-          </p>
-          {allTimePlayable ? (
-            <>
-              <MatchModeRecord record={modeRecords.allTime} />
-              <button
-                type="button"
-                className="all-time-card__button"
-                disabled={modesBlocked}
-                onClick={() => void handleStart({ allTimeMode: true })}
-              >
-                Play All-Time Draft
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="all-time-card__button all-time-card__button--locked"
-              disabled
-            >
-              Coming soon
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="landing-nav-actions">
-        <button
-          type="button"
-          className="landing-nav-actions__button"
-          onClick={onViewLeaderboard}
-        >
-          Leaderboard
-        </button>
-        <button
-          type="button"
-          className="landing-nav-actions__button"
-          onClick={onViewStats}
-        >
-          Season Stats
-        </button>
-        <button
-          type="button"
-          className="landing-nav-actions__button"
-          onClick={onViewAchievements}
-        >
-          Badges
-        </button>
-      </div>
-
-      <p className="landing-disclaimer">
-        Draft Day GM is an independent project. It is not affiliated with,
-        endorsed by, or connected to the NBA, its teams, players, or partners.
-        Team names, player names, and statistics are used for informational
-        purposes only.
-      </p>
-
-      <nav className="landing-footer" aria-label="Legal">
-        <button type="button" className="landing-footer__link" onClick={onViewPrivacy}>
-          Privacy Policy
-        </button>
-        <span className="landing-footer__sep" aria-hidden="true">
-          ·
-        </span>
-        <button type="button" className="landing-footer__link" onClick={onViewTerms}>
-          Terms of Use
-        </button>
-      </nav>
-
-      <p className="landing-credit">Powered by BALLACADEMY</p>
+      <LandingBottomNav activeTab={hubTab} onSelect={handleHubSelect} />
     </section>
   );
 }
