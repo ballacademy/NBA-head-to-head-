@@ -1472,28 +1472,25 @@ function App() {
     matchmakingMode != null || isMatchmakingInFlight;
 
   if (phase === "leaderboard") {
-    return renderHubFeature(<LeaderboardPage onBack={exitFeaturePage} />);
+    return renderHubFeature(<LeaderboardPage />);
   }
 
   if (phase === "gmStats") {
-    return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
+    return renderHubFeature(<GmStatsPage />);
   }
 
   if (phase === "achievements") {
-    return renderHubFeature(<AchievementsPage onBack={exitFeaturePage} />);
+    return renderHubFeature(<AchievementsPage />);
   }
 
   if (phase === "privacy") {
-    return renderHubFeature(
-      <LegalPage kind="privacy" onBack={exitFeaturePage} />,
-    );
+    return renderHubFeature(<LegalPage kind="privacy" />);
   }
 
   if (phase === "terms") {
     return renderHubFeature(
       <LegalPage
         kind="terms"
-        onBack={exitFeaturePage}
         onOpenPrivacy={() => openFeaturePage("privacy", { returnTo: "terms" })}
       />,
     );

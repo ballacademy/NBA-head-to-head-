@@ -37,10 +37,6 @@ import { GmProfileModal } from "./GmProfileModal";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 
-interface LeaderboardPageProps {
-  onBack: () => void;
-}
-
 type LeaderboardView = "classic" | "ranked";
 type RankedSort = RankedLeaderboardSort;
 type ClassicSort = LeaderboardSort;
@@ -189,7 +185,7 @@ function LeaderboardBoard({
   );
 }
 
-export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
+export function LeaderboardPage() {
   const [view, setView] = useState<LeaderboardView>("ranked");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
   const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
@@ -268,9 +264,6 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
             </div>
             <h1>Leaderboards</h1>
           </div>
-          <button type="button" className="secondary-button" onClick={onBack}>
-            Back to home
-          </button>
         </div>
 
         <p className="leaderboard__subtitle">

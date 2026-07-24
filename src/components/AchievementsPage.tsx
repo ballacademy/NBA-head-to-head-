@@ -1,11 +1,7 @@
 import { useMemo } from "react";
 import { getAchievementProgress } from "../lib/achievements";
 
-interface AchievementsPageProps {
-  onBack: () => void;
-}
-
-export function AchievementsPage({ onBack }: AchievementsPageProps) {
+export function AchievementsPage() {
   const progress = useMemo(() => getAchievementProgress(), []);
 
   return (
@@ -19,9 +15,6 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             hidden until earned
           </p>
         </div>
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
       </div>
 
       <ul className="achievements-page__list">

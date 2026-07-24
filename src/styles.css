@@ -52,6 +52,13 @@ main {
   padding: 24px 0 32px;
 }
 
+main.landing-layout {
+  padding: 8px 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -333,9 +340,10 @@ main {
 
 .landing-layout {
   display: grid;
-  place-items: start center;
-  align-content: start;
-  min-height: calc(100vh - 80px);
+  place-items: stretch center;
+  align-content: stretch;
+  min-height: calc(100vh - 16px);
+  min-height: calc(100dvh - 16px);
   position: relative;
 }
 
@@ -462,7 +470,11 @@ main {
 .landing--hub {
   display: flex;
   flex-direction: column;
-  max-height: min(86vh, 820px);
+  width: min(760px, 100%);
+  height: calc(100vh - 16px);
+  height: calc(100dvh - 16px);
+  max-height: calc(100vh - 16px);
+  max-height: calc(100dvh - 16px);
   padding: 0;
   overflow: hidden;
 }

@@ -2,7 +2,6 @@ type LegalPageKind = "privacy" | "terms";
 
 interface LegalPageProps {
   kind: LegalPageKind;
-  onBack: () => void;
   onOpenPrivacy?: () => void;
 }
 
@@ -409,7 +408,7 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
   );
 }
 
-export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
+export function LegalPage({ kind, onOpenPrivacy }: LegalPageProps) {
   const title = kind === "privacy" ? "Privacy Policy" : "Terms of Use";
 
   return (
@@ -419,9 +418,6 @@ export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
           <p className="eyebrow">Draft Day GM</p>
           <h1>{title}</h1>
         </div>
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
       </div>
 
       <div className="legal-page__body">
