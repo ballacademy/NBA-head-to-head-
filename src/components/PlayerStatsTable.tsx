@@ -28,7 +28,7 @@ import type { Player } from "../lib/types";
 interface PlayerStatsTableProps {
   players: Player[];
   collection?: PlayerCollection;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 type SortKey =
@@ -109,6 +109,10 @@ export function PlayerStatsTable({
   }, []);
 
   useEffect(() => {
+    if (!onBack) {
+      return;
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onBack();
@@ -208,9 +212,6 @@ export function PlayerStatsTable({
             />
           </div>
         </div>
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
       </div>
 
       <label className="field stats-search">
@@ -297,11 +298,6 @@ export function PlayerStatsTable({
       <p className="stats-footnote">
         Showing {filteredPlayers.length} of {players.length} players.
       </p>
-      <div className="stats-panel__footer">
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
-      </div>
     </section>
   );
 }

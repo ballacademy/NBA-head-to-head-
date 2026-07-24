@@ -14,10 +14,6 @@ import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { RankedTierBadge } from "./RankedTierBadge";
 
-interface GmStatsPageProps {
-  onBack: () => void;
-}
-
 function GmStatsFactRows({
   rows,
 }: {
@@ -41,7 +37,7 @@ const formatPercentileStat = (value: number | null) =>
 const formatCollectionCount = (unlocked: number, total: number) =>
   `${unlocked} of ${total}`;
 
-export function GmStatsPage({ onBack }: GmStatsPageProps) {
+export function GmStatsPage() {
   const teamName = loadTeamProfile()?.name ?? "Your team";
   const [legacyTick, setLegacyTick] = useState(0);
 
@@ -82,9 +78,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
             {snapshot.currentSeasonLabel}
           </p>
         </div>
-        <button type="button" className="secondary-button" onClick={onBack}>
-          Back to home
-        </button>
       </div>
 
       <div className="gm-stats-page__summary">
