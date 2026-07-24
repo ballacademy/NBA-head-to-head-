@@ -441,7 +441,7 @@ export function LandingPage({
         ? "One attempt per mode each day. Stats stay hidden."
         : hubTab === "roster"
           ? "Browse unlocked players and season stats."
-          : "Save your GM code or open career pages.";
+          : "Sign in to keep your progress, or open GM stats and badges.";
 
   return (
     <HubShell
