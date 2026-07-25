@@ -494,17 +494,18 @@ main.landing-layout {
 }
 
 .landing--hub > .landing-hub-brand {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  z-index: 3;
+  /* Viewport-fixed so the mark stays put even if the page/hub scrolls. */
+  position: fixed;
+  top: 14px;
+  left: max(24px, calc(50vw - 380px + 12px));
+  z-index: 20;
   display: flex;
   align-items: center;
   pointer-events: none;
 }
 
 .landing--hub > .landing-hub-brand .landing-hub-brand__logo {
-  width: min(52px, 14vw);
+  width: min(78px, 21vw);
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.22));
 }
@@ -529,12 +530,12 @@ main.landing-layout {
 
 @media (min-width: 900px) {
   .landing--hub > .landing-hub-brand {
-    top: 14px;
-    left: 22px;
+    top: 18px;
+    left: max(34px, calc(50vw - 380px + 22px));
   }
 
   .landing--hub > .landing-hub-brand .landing-hub-brand__logo {
-    width: 58px;
+    width: 87px;
   }
 
   .landing--hub > .landing-hub-account-btn {
@@ -647,7 +648,7 @@ main.landing-layout {
 
 .landing-hub__top {
   margin-bottom: 0;
-  padding-inline: 56px;
+  padding-inline: 96px;
   text-align: center;
 }
 
@@ -5965,7 +5966,7 @@ main.landing-layout {
 
 .stats-panel__hub-top {
   width: 100%;
-  padding-inline: 56px;
+  padding-inline: 96px;
   text-align: center;
 }
 
@@ -6223,6 +6224,6 @@ main.landing-layout {
   }
 
   .hub-feature.stats-panel .stats-panel__hub-top {
-    padding-inline: 56px;
+    padding-inline: 96px;
   }
 }
