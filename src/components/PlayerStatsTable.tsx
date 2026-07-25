@@ -199,24 +199,21 @@ export function PlayerStatsTable({
 
   return (
     <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
-      <div className="landing-hub__top">
-        <div className="landing-hub__title-row">
-          <h1 className="landing-hub__title" id="stats-heading">
-            Season Stats
-          </h1>
+      <div className="landing-hub__top stats-panel__hub-top">
+        <h1 className="landing-hub__title" id="stats-heading">
+          Season Stats
+        </h1>
+        <p className="landing__lede landing-hub__lede stats-panel__lede">
+          <span>Browse the player pool</span>
           <ModeCardInfo
             details={statsInfoDetails}
-            variant="corner"
-            popoverAlign="start"
+            popoverAlign="center"
             ariaLabel="Season Stats details"
           />
-        </div>
-        <p className="landing__lede landing-hub__lede">
-          Browse the player pool
         </p>
       </div>
 
-      <section className="hub-feature__panel">
+      <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">
         <span>Search players</span>
         <input

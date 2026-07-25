@@ -363,7 +363,7 @@ main.landing-layout {
 .landing-layout--stats {
   width: 100%;
   max-width: 100vw;
-  overflow-x: clip;
+  overflow-x: visible;
 }
 
 .landing-layout--stats > * {
@@ -371,6 +371,10 @@ main.landing-layout {
   max-width: min(920px, 100%);
   min-width: 0;
   margin-inline: auto;
+}
+
+.landing-layout--stats .landing--hub {
+  width: min(920px, 100%);
 }
 
 .landing-layout::before {
@@ -5882,8 +5886,43 @@ main.landing-layout {
 .stats-panel {
   width: min(920px, 100%);
   max-width: 100%;
-  margin-top: 28px;
+  margin-top: 0;
   min-width: 0;
+}
+
+.hub-feature.stats-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.stats-panel__hub-top {
+  width: 100%;
+  padding-inline: 48px;
+  text-align: center;
+}
+
+.stats-panel__hub-top .landing-hub__title {
+  width: 100%;
+  max-width: none;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.stats-panel__lede {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  text-align: center;
+}
+
+.stats-panel__body {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .stats-meta {
@@ -5910,11 +5949,15 @@ main.landing-layout {
   font-size: 0.92rem;
 }
 
+.stats-search {
+  margin-bottom: 10px;
+}
+
 .stats-search input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--panel-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(15, 23, 42, 0.9);
   color: #f8fafc;
   font-size: 16px;
@@ -5922,12 +5965,15 @@ main.landing-layout {
 
 .stats-table-wrap {
   overflow-x: auto;
+  overflow-y: visible;
   max-width: 100%;
   width: 100%;
   min-width: 0;
   border: 1px solid var(--panel-border);
-  border-radius: 18px;
+  border-radius: 14px;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
 }
 
 .stats-table {
@@ -5938,11 +5984,13 @@ main.landing-layout {
 
 .stats-table th,
 .stats-table td {
-  padding: 12px 14px;
+  padding: 6px 8px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   text-align: left;
   white-space: nowrap;
   vertical-align: middle;
+  font-size: 0.78rem;
+  line-height: 1.25;
 }
 
 .stats-table th {
@@ -5960,13 +6008,14 @@ main.landing-layout {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
-  min-height: 1.5rem;
+  gap: 2px;
+  min-height: 0;
 }
 
 .stats-table__player-name {
   display: block;
-  line-height: 1.2;
+  line-height: 1.15;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -5974,11 +6023,13 @@ main.landing-layout {
 .stats-table__player .stats-table__class--na {
   align-self: flex-start;
   margin: 0;
+  font-size: 0.62rem;
+  padding: 1px 5px;
 }
 
 .stats-table__class--na {
   color: #64748b;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -5988,6 +6039,33 @@ main.landing-layout {
   color: #94a3b8;
   font-style: italic;
   letter-spacing: 0.04em;
+}
+
+.hub-feature.stats-panel .sort-button,
+.hub-feature.stats-panel .sort-button.active {
+  font-size: 0.7rem;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.hub-feature.stats-panel .stats-footnote {
+  margin-top: 8px;
+  font-size: 0.78rem;
+}
+
+.hub-feature.stats-panel .mode-card-info__button {
+  width: 22px;
+  height: 22px;
+  font-size: 0.58rem;
+  color: #475569;
+  border-color: rgba(71, 85, 105, 0.35);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.hub-feature.stats-panel .mode-card-info__button:hover {
+  color: #0f172a;
+  border-color: rgba(71, 85, 105, 0.55);
+  background: #ffffff;
 }
 
 .sort-button,
@@ -6060,13 +6138,24 @@ main.landing-layout {
     display: block;
   }
 
-  .feature-page--stats .stats-search input {
+  .feature-page--stats .stats-search input,
+  .hub-feature.stats-panel .stats-search input {
     font-size: 16px;
   }
 
   .feature-page--stats .stats-table th,
-  .feature-page--stats .stats-table td {
-    padding: 10px 10px;
-    font-size: 0.88rem;
+  .feature-page--stats .stats-table td,
+  .hub-feature.stats-panel .stats-table th,
+  .hub-feature.stats-panel .stats-table td {
+    padding: 5px 6px;
+    font-size: 0.72rem;
+  }
+
+  .hub-feature.stats-panel .stats-table__player-name {
+    font-size: 0.74rem;
+  }
+
+  .hub-feature.stats-panel .stats-panel__hub-top {
+    padding-inline: 40px;
   }
 }
