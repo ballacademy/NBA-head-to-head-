@@ -812,7 +812,7 @@ main.landing-layout {
 
 .ranked-mode-summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.9fr);
   column-gap: 12px;
   row-gap: 8px;
   align-items: start;
@@ -869,11 +869,27 @@ main.landing-layout {
 }
 
 .ranked-mode-summary .ranked-tier-badge {
+  box-sizing: border-box;
+  width: fit-content;
   max-width: 100%;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 14px;
   white-space: normal;
-  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.3;
   height: auto;
+}
+
+.ranked-mode-summary .ranked-tier-badge--compact {
+  padding: 6px 14px;
+}
+
+.ranked-mode-summary .ranked-tier-badge__rating {
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .landing-mode-card__record {
@@ -4114,8 +4130,18 @@ main.landing-layout {
     gap: 6px;
   }
 
+  .ranked-mode-summary .ranked-tier-badge--compact {
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    gap: 4px 8px;
+  }
+
   .ranked-tier-badge--compact .ranked-tier-badge__rating {
     font-size: 0.68rem;
+  }
+
+  .ranked-mode-summary .ranked-tier-badge--compact .ranked-tier-badge__rating {
+    font-size: 0.72rem;
   }
 
   .landing-card--mode .daily-draft-card__actions .daily-draft-card__button,
