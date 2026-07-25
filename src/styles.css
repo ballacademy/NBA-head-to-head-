@@ -481,6 +481,8 @@ main.landing-layout {
 
 .landing--hub {
   --hub-chrome-inset: 14px;
+  /* Logo sits tighter to the left edge than the account inset on the right. */
+  --hub-logo-inset: 6px;
   display: flex;
   flex-direction: column;
   width: min(760px, 100%);
@@ -515,6 +517,7 @@ main.landing-layout {
 @media (min-width: 900px) {
   .landing--hub {
     --hub-chrome-inset: 22px;
+    --hub-logo-inset: 10px;
   }
 
   .landing--hub > .landing-hub-account-btn {
@@ -553,7 +556,7 @@ main.landing-layout {
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
   top: 6px;
-  left: var(--hub-chrome-inset);
+  left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -562,7 +565,8 @@ main.landing-layout {
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
-  width: min(110px, 28vw);
+  /* ~30% smaller than prior 110px / 120px sizes */
+  width: min(77px, 20vw);
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.22));
 }
@@ -573,7 +577,7 @@ main.landing-layout {
   }
 
   .landing-hub-chrome .landing-hub-brand__logo {
-    width: 120px;
+    width: 84px;
   }
 }
 
@@ -665,9 +669,11 @@ main.landing-layout {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   min-height: 52px;
   margin: 0 0 6px;
-  padding-inline: max(72px, calc(var(--hub-chrome-inset) + 56px));
+  /* Symmetric side padding so title/subtitle stay optically centered. */
+  padding-inline: max(72px, calc(var(--hub-chrome-inset) + 48px));
   text-align: center;
 }
 
@@ -696,19 +702,14 @@ h1.landing-hub__title {
   margin-bottom: 0;
 }
 
+.landing .landing-hub__lede,
 .landing-hub__lede {
   margin: 0 auto;
-  max-width: 36em;
+  max-width: 34em;
+  width: 100%;
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: center;
-}
-
-.daily-draft-shared-copy {
-  margin: 0;
-  max-width: none;
-  text-align: left;
-  color: #475569;
 }
 
 .landing-hub__content {

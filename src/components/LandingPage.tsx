@@ -435,12 +435,10 @@ export function LandingPage({
     hubTab === "play"
       ? "Play live against a real opponent. Pick Casual or Pro."
       : hubTab === "daily"
-        ? null
+        ? `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`
         : hubTab === "roster"
           ? "Browse unlocked players and season stats."
           : "Sign in to keep your progress, or open GM stats and badges.";
-
-  const dailySharedInstructions = `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`;
 
   return (
     <HubShell
@@ -476,9 +474,7 @@ export function LandingPage({
 
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{hubTitle}</h1>
-        {hubLede ? (
-          <p className="landing__lede landing-hub__lede">{hubLede}</p>
-        ) : null}
+        <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
 
       <div className="landing-hub__content">
@@ -613,9 +609,6 @@ export function LandingPage({
         {hubTab === "daily" ? (
           <>
             {renderTeamNameField()}
-            <p className="landing__lede landing-hub__lede daily-draft-shared-copy">
-              {dailySharedInstructions}
-            </p>
             <div className="landing-game-modes landing-game-modes--daily-split">
               {renderDailyModeCard(landingBasicDaily)}
               {renderDailyModeCard(landingAdvancedDaily)}
