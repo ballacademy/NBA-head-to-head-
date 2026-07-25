@@ -328,9 +328,8 @@ export function LandingPage({
         </div>
         <p className="daily-draft-card__description">
           {mode === "advanced"
-            ? "Per-minute and rate stats. Draft five with stats hidden."
-            : "Season per-game stats. Draft five with stats hidden."}{" "}
-          {DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt each day.
+            ? "Per-minute and rate stats."
+            : "Season per-game stats."}
         </p>
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
@@ -373,7 +372,7 @@ export function LandingPage({
             disabled={!onViewYesterdayBestDailyLineup || modesBlocked}
             onClick={() => void handleYesterdayBestAction(mode)}
           >
-            Yesterday&apos;s best ({formatDailyDraftModeLabel(mode)})
+            Yesterday&apos;s best
           </button>
         </div>
       </section>
@@ -436,7 +435,7 @@ export function LandingPage({
     hubTab === "play"
       ? "Play live against a real opponent. Pick Casual or Pro."
       : hubTab === "daily"
-        ? "One attempt per mode each day. Stats stay hidden."
+        ? `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`
         : hubTab === "roster"
           ? "Browse unlocked players and season stats."
           : "Sign in to keep your progress, or open GM stats and badges.";
@@ -610,7 +609,7 @@ export function LandingPage({
         {hubTab === "daily" ? (
           <>
             {renderTeamNameField()}
-            <div className="landing-game-modes">
+            <div className="landing-game-modes landing-game-modes--daily-split">
               {renderDailyModeCard(landingBasicDaily)}
               {renderDailyModeCard(landingAdvancedDaily)}
             </div>

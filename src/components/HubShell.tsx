@@ -61,8 +61,11 @@ export function HubShell({
       </button>
 
       <div className="landing-hub-scroll">
-        <div className="landing-hub-brand" aria-hidden="true">
-          <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
+        {/* Zero-height chrome keeps the logo top-left and scrolling away with content. */}
+        <div className="landing-hub-chrome" aria-hidden="true">
+          <div className="landing-hub-brand">
+            <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
+          </div>
         </div>
         {children}
       </div>
