@@ -311,7 +311,7 @@ export function LandingPage({
     }
   };
 
-  const renderDailyModeSection = (snapshot: LandingDailyDraftSnapshot) => {
+  const renderDailyModeCard = (snapshot: LandingDailyDraftSnapshot) => {
     const mode = snapshot.setup.mode;
     const dailyCompleted = Boolean(snapshot.entry);
     const playStreak = getDailyDraftPlayStreak(mode, getDailyDateKey());
@@ -319,26 +319,27 @@ export function LandingPage({
     return (
       <section
         key={mode}
-        className="daily-draft-mode-section"
+        className="daily-draft-card landing-card landing-card--daily landing-card--mode"
         aria-labelledby={`daily-draft-${mode}-title`}
       >
-        <div className="daily-draft-mode-section__header">
-          <h3 id={`daily-draft-${mode}-title`}>
+        <div className="mode-card__header">
+          <p className="eyebrow" id={`daily-draft-${mode}-title`}>
             {formatDailyDraftProductName(mode)}
-          </h3>
-          <p className="daily-draft-mode-section__subtitle">
-            {mode === "advanced"
-              ? "Per-minute and rate stats"
-              : "Season per-game stats"}
           </p>
         </div>
-        <h4 className="daily-draft-mode-section__challenge-title">
+        <p className="daily-draft-card__description">
+          {mode === "advanced"
+            ? "Per-minute and rate stats. Draft five with stats hidden."
+            : "Season per-game stats. Draft five with stats hidden."}{" "}
+          {DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt each day.
+        </p>
+        <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
-        </h4>
-        <p className="daily-draft-mode-section__description">
+        </h3>
+        <p className="daily-draft-card__challenge-copy">
           {snapshot.goal.description}
         </p>
-        <div className="landing-mode-card__record-block daily-draft-mode-section__record">
+        <div className="landing-mode-card__record-block">
           <p className="landing-mode-card__record">
             <span className="landing-mode-card__record-label">Today</span>
             <span className="landing-mode-card__record-value landing-mode-card__record-value--daily">
@@ -350,13 +351,13 @@ export function LandingPage({
               ? snapshot.percentileLabel ?? "Daily draft complete"
               : "Not played yet today"}
           </p>
-          <p className="landing-mode-card__record-meta daily-draft-mode-section__streak">
+          <p className="landing-mode-card__record-meta">
             {playStreak.current > 0
               ? formatDailyDraftPlayStreak(playStreak)
               : "Play today to start a streak"}
           </p>
         </div>
-        <div className="daily-draft-mode-section__actions">
+        <div className="daily-draft-card__actions">
           <button
             type="button"
             className={`daily-draft-card__button${dailyCompleted ? " daily-draft-card__button--completed" : ""}`}
@@ -370,9 +371,7 @@ export function LandingPage({
           <button
             type="button"
             className="daily-draft-card__button daily-draft-card__button--secondary"
-            disabled={
-              !onViewYesterdayBestDailyLineup || modesBlocked
-            }
+            disabled={!onViewYesterdayBestDailyLineup || modesBlocked}
             onClick={() => void handleYesterdayBestAction(mode)}
           >
             Yesterday&apos;s best ({formatDailyDraftModeLabel(mode)})
@@ -615,16 +614,9 @@ export function LandingPage({
         {hubTab === "daily" ? (
           <>
             {renderTeamNameField()}
-            <div className="daily-draft-card landing-card landing-card--daily landing-card--mode">
-              <p className="daily-draft-card__meta daily-draft-card__meta--intro">
-                Draft a five-player lineup with {DAILY_PICK_TIME_LIMIT_SECONDS}{" "}
-                seconds per pick. Stats stay hidden. One attempt per mode each
-                day.
-              </p>
-              <div className="daily-draft-card__modes">
-                {renderDailyModeSection(landingBasicDaily)}
-                {renderDailyModeSection(landingAdvancedDaily)}
-              </div>
+            <div className="landing-game-modes">
+              {renderDailyModeCard(landingBasicDaily)}
+              {renderDailyModeCard(landingAdvancedDaily)}
             </div>
           </>
         ) : null}
