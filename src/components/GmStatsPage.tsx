@@ -10,7 +10,6 @@ import {
 import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
-import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -67,9 +66,6 @@ export function GmStatsPage() {
   return (
     <div className="hub-feature gm-stats-page">
       <div className="landing-hub__top">
-        <div className="landing__brand landing__brand--compact">
-          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
-        </div>
         <h1 className="landing-hub__title">{snapshot.teamName}</h1>
         <p className="landing__lede landing-hub__lede">
           {formatRatingPoints(snapshot.ranked.elo)} this month ·{" "}

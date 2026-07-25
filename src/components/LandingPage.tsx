@@ -43,7 +43,6 @@ import {
   type TeamProfile,
 } from "../lib/teamProfile";
 import { ClassicModeSummary } from "./ClassicModeSummary";
-import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
@@ -475,9 +474,6 @@ export function LandingPage({
       ) : null}
 
       <div className="landing-hub__top">
-        <div className="landing__brand landing__brand--compact">
-          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
-        </div>
         <h1 className="landing-hub__title">{hubTitle}</h1>
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>

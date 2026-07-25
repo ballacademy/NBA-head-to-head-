@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { getAchievementProgress } from "../lib/achievements";
-import { DraftDayGmLogo } from "./DraftDayGmLogo";
 
 export function AchievementsPage() {
   const progress = useMemo(() => getAchievementProgress(), []);
@@ -8,9 +7,6 @@ export function AchievementsPage() {
   return (
     <div className="hub-feature achievements-page">
       <div className="landing-hub__top">
-        <div className="landing__brand landing__brand--compact">
-          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
-        </div>
         <h1 className="landing-hub__title">Badges</h1>
         <p className="landing__lede landing-hub__lede">
           {progress.unlocked}/{progress.total} unlocked · Locked badges stay
