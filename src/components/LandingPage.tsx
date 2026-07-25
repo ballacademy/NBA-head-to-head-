@@ -235,7 +235,11 @@ export function LandingPage({
       return;
     }
 
-    const team = promptForValidTeamProfile();
+    // Daily Draft only uses a name for results labeling — reuse a saved
+    // profile when present, otherwise a local default (no team-name gate).
+    const team = options?.isDailyDraft
+      ? (loadTeamProfile() ?? ({ name: "Daily Draft" } satisfies TeamProfile))
+      : promptForValidTeamProfile();
 
     if (!team) {
       return;
@@ -608,7 +612,11 @@ export function LandingPage({
 
         {hubTab === "daily" ? (
           <>
-            {renderTeamNameField()}
+            {error || startMatchError ? (
+              <p className="form-error" role="alert">
+                {error || startMatchError}
+              </p>
+            ) : null}
             <div className="landing-game-modes landing-game-modes--daily-split">
               {renderDailyModeCard(landingBasicDaily)}
               {renderDailyModeCard(landingAdvancedDaily)}

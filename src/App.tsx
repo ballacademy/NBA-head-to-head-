@@ -682,7 +682,10 @@ function App() {
       return "failed";
     }
 
-    saveTeamProfile(team);
+    // Don't persist a placeholder daily-only name over a real team profile.
+    if (!daily || loadTeamProfile() != null) {
+      saveTeamProfile(team);
+    }
     setModeRecords(loadAllModeRecords());
     setIsDailyDraft(daily);
     setDailyDraftMode(daily ? nextDailyDraftMode : "basic");
@@ -787,13 +790,8 @@ function App() {
 
     const team =
       loadTeamProfile() ??
-      (entry.teamName ? { name: entry.teamName } : null);
+      (entry.teamName ? { name: entry.teamName } : { name: "Daily Draft" });
 
-    if (!team) {
-      return false;
-    }
-
-    saveTeamProfile(team);
     setDailyDraftMode(mode);
     setIsDailyDraft(true);
     setIsDailyReview(true);
@@ -843,7 +841,6 @@ function App() {
           name: "Daily Draft",
         } satisfies TeamProfile);
 
-      saveTeamProfile(team);
       setDailyDraftMode(mode);
       setIsDailyDraft(true);
       setIsDailyReview(true);
