@@ -98,7 +98,7 @@ export function GmStatsPage() {
             {formatLegacyPeakBannerCount(snapshot.legacy.peakElo)}
           </strong>
           {peakBannerTier ? (
-            <span className="gm-stats-page__value-meta">{peakBannerTier} tier</span>
+            <span className="gm-stats-page__value-meta">{peakBannerTier}</span>
           ) : null}
         </div>
       </div>
