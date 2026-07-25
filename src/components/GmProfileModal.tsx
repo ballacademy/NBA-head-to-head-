@@ -122,7 +122,7 @@ export function GmProfileModal({
             </strong>
             {!loading && formatLegacyPeakBannerTier(legacyPeakElo) ? (
               <span className="gm-profile-modal__meta">
-                {formatLegacyPeakBannerTier(legacyPeakElo)} tier
+                {formatLegacyPeakBannerTier(legacyPeakElo)}
                 {legacyPeakSeasonId
                   ? ` · Peak in ${formatSeasonLabel(legacyPeakSeasonId)}`
                   : ""}

@@ -2880,6 +2880,31 @@ main.landing-layout {
   line-height: 1.25;
 }
 
+.gm-profile-modal__stat .ranked-tier-badge {
+  box-sizing: border-box;
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  height: auto;
+  padding: 6px 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.gm-profile-modal__stat .ranked-tier-badge--compact {
+  padding: 6px 12px;
+}
+
+.gm-profile-modal__stat .ranked-tier-badge__rating {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .gm-stats-page__tier-row {
   display: flex;
   flex-wrap: wrap;
