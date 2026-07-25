@@ -50,10 +50,6 @@ export function HubShell({
     >
       <div className="landing__glow" aria-hidden="true" />
 
-      <div className="landing-hub-brand" aria-hidden="true">
-        <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
-      </div>
-
       <button
         type="button"
         className="landing-hub-account-btn"
@@ -64,7 +60,12 @@ export function HubShell({
         <AccountGlyph />
       </button>
 
-      <div className="landing-hub-scroll">{children}</div>
+      <div className="landing-hub-scroll">
+        <div className="landing-hub-brand" aria-hidden="true">
+          <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
+        </div>
+        {children}
+      </div>
 
       <LandingBottomNav activeTab={activeTab} onSelect={onSelectTab} />
     </section>
