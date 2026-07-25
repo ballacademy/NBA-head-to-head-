@@ -51,7 +51,16 @@ export function ModeCardInfo({
     }
 
     const rect = button.getBoundingClientRect();
-    const width = Math.min(POPOVER_WIDTH, window.innerWidth - POPOVER_MARGIN * 2);
+    const viewportWidth =
+      window.visualViewport?.width ?? document.documentElement.clientWidth;
+    const viewportHeight =
+      window.visualViewport?.height ?? document.documentElement.clientHeight;
+    const viewportOffsetLeft = window.visualViewport?.offsetLeft ?? 0;
+    const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
+    const width = Math.min(
+      POPOVER_WIDTH,
+      viewportWidth - POPOVER_MARGIN * 2,
+    );
     let left = rect.left + rect.width / 2 - width / 2;
 
     if (resolvedAlign === "start") {
@@ -60,13 +69,24 @@ export function ModeCardInfo({
       left = rect.right - width;
     }
 
-    left = Math.max(
-      POPOVER_MARGIN,
-      Math.min(left, window.innerWidth - width - POPOVER_MARGIN),
-    );
+    const minLeft = viewportOffsetLeft + POPOVER_MARGIN;
+    const maxLeft = viewportOffsetLeft + viewportWidth - width - POPOVER_MARGIN;
+    left = Math.max(minLeft, Math.min(left, maxLeft));
+
+    let top = rect.bottom + POPOVER_GAP;
+    const estimatedHeight = 160;
+    const maxTop =
+      viewportOffsetTop + viewportHeight - estimatedHeight - POPOVER_MARGIN;
+
+    if (top > maxTop) {
+      top = Math.max(
+        viewportOffsetTop + POPOVER_MARGIN,
+        rect.top - estimatedHeight - POPOVER_GAP,
+      );
+    }
 
     setPopoverStyle({
-      top: rect.bottom + POPOVER_GAP,
+      top,
       left,
       width,
     });
@@ -137,6 +157,8 @@ export function ModeCardInfo({
           top: popoverStyle.top,
           left: popoverStyle.left,
           width: popoverStyle.width,
+          transform: "none",
+          maxWidth: `min(${POPOVER_WIDTH}px, calc(100vw - ${POPOVER_MARGIN * 2}px))`,
         }}
       >
         <ul className="mode-card-info__list">
