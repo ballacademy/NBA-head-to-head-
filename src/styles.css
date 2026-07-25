@@ -480,6 +480,7 @@ main.landing-layout {
 }
 
 .landing--hub {
+  --hub-chrome-inset: 14px;
   display: flex;
   flex-direction: column;
   width: min(760px, 100%);
@@ -496,7 +497,7 @@ main.landing-layout {
   position: absolute;
   /* Vertically centered with the top header band / logo. */
   top: 18px;
-  right: 14px;
+  right: var(--hub-chrome-inset);
   left: auto;
   z-index: 5;
   display: grid;
@@ -512,9 +513,12 @@ main.landing-layout {
 }
 
 @media (min-width: 900px) {
+  .landing--hub {
+    --hub-chrome-inset: 22px;
+  }
+
   .landing--hub > .landing-hub-account-btn {
     top: 22px;
-    right: 22px;
   }
 }
 
@@ -532,24 +536,24 @@ main.landing-layout {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 12px 14px 10px;
-  /* Right gutter only — both-edges was shifting the logo right. */
-  scrollbar-gutter: stable;
+  /* Horizontal padding matches account inset; logo sits in that same inset. */
+  padding: 12px var(--hub-chrome-inset) 10px;
 }
 
 .landing-hub-chrome {
   position: relative;
   z-index: 4;
-  width: 100%;
+  /* Span full hub width so logo left inset matches account right inset. */
+  width: calc(100% + 2 * var(--hub-chrome-inset));
   height: 0;
-  margin: 0;
+  margin: 0 0 0 calc(-1 * var(--hub-chrome-inset));
   pointer-events: none;
 }
 
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
   top: 6px;
-  left: 0;
+  left: var(--hub-chrome-inset);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -566,10 +570,6 @@ main.landing-layout {
 @media (min-width: 900px) {
   .landing-hub-scroll {
     padding-top: 16px;
-  }
-
-  .landing-hub-chrome .landing-hub-brand {
-    height: 40px;
   }
 
   .landing-hub-chrome .landing-hub-brand__logo {
@@ -667,19 +667,21 @@ main.landing-layout {
   justify-content: center;
   min-height: 52px;
   margin: 0 0 6px;
-  padding-inline: 84px;
+  padding-inline: max(72px, calc(var(--hub-chrome-inset) + 56px));
   text-align: center;
 }
 
-.landing-hub__title {
+.landing .landing-hub__title,
+h1.landing-hub__title {
   width: 100%;
   max-width: none;
   margin: 0 auto 4px;
-  font-size: clamp(1.35rem, 5.4vw, 2rem);
-  line-height: 1.15;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.2rem, 5.2vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
   text-align: center;
   white-space: nowrap;
+  text-wrap: nowrap;
   color: #1e1035;
 }
 
@@ -700,6 +702,13 @@ main.landing-layout {
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: center;
+}
+
+.daily-draft-shared-copy {
+  margin: 0;
+  max-width: none;
+  text-align: left;
+  color: #475569;
 }
 
 .landing-hub__content {
@@ -6055,13 +6064,15 @@ main.landing-layout {
   text-align: center;
 }
 
-.stats-panel__hub-top .landing-hub__title {
+.stats-panel__hub-top .landing-hub__title,
+.hub-feature .landing-hub__title {
   width: 100%;
   max-width: none;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
   white-space: nowrap;
+  text-wrap: nowrap;
 }
 
 .stats-panel__lede {
