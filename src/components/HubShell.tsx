@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import {
   LandingBottomNav,
   type LandingHubTab,
@@ -48,6 +49,10 @@ export function HubShell({
       }`}
     >
       <div className="landing__glow" aria-hidden="true" />
+
+      <div className="landing-hub-brand" aria-hidden="true">
+        <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
+      </div>
 
       <button
         type="button"

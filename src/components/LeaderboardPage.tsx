@@ -32,7 +32,6 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
-import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { GmProfileModal } from "./GmProfileModal";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -262,9 +261,6 @@ export function LeaderboardPage() {
   return (
     <div className="hub-feature leaderboard">
       <div className="landing-hub__top">
-        <div className="landing__brand landing__brand--compact">
-          <DraftDayGmLogo className="landing__logo landing__logo--compact" />
-        </div>
         <h1 className="landing-hub__title">Leaderboards</h1>
         <p className="landing__lede landing-hub__lede">{subtitle}</p>
       </div>
