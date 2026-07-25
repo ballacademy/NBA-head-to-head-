@@ -556,7 +556,7 @@ main.landing-layout {
 
 .hub-feature {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   margin-inline: auto;
 }
@@ -627,7 +627,7 @@ main.landing-layout {
 }
 
 .landing-hub__top {
-  margin-bottom: 4px;
+  margin-bottom: 0;
   padding-inline: 44px;
   text-align: center;
 }
@@ -642,7 +642,7 @@ main.landing-layout {
 }
 
 .landing-hub__title {
-  margin: 2px auto 4px;
+  margin: 2px auto 8px;
   max-width: min(100%, 14em);
   font-size: clamp(1.45rem, 3.8vw, 2rem);
   line-height: 1.15;
@@ -675,7 +675,7 @@ main.landing-layout {
   gap: 10px;
   width: 100%;
   margin-inline: auto;
-  margin-top: 2px;
+  margin-top: 8px;
 }
 
 .landing-team-form--compact {
