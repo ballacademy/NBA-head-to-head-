@@ -5946,7 +5946,7 @@ main.landing-layout {
 
 .stats-panel__hub-top {
   width: 100%;
-  padding-inline: 48px;
+  padding-inline: 56px;
   text-align: center;
 }
 
@@ -6204,6 +6204,6 @@ main.landing-layout {
   }
 
   .hub-feature.stats-panel .stats-panel__hub-top {
-    padding-inline: 40px;
+    padding-inline: 56px;
   }
 }
