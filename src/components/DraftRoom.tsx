@@ -78,6 +78,7 @@ export function DraftRoom({
     drafter.salaryCapMode,
   );
   const timeoutFiredRef = useRef(false);
+  const playerPickListRef = useRef<HTMLDivElement | null>(null);
 
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
@@ -176,6 +177,8 @@ export function DraftRoom({
     setQuery("");
     setSecondsLeft(pickTimeLimitSeconds);
     timeoutFiredRef.current = false;
+    // Reset the pick list so each new slot starts from the top of the pool.
+    playerPickListRef.current?.scrollTo({ top: 0 });
   }, [activeStep, currentSlot?.division, currentSlot?.position, pickTimeLimitSeconds]);
 
   useEffect(() => {
@@ -414,7 +417,12 @@ export function DraftRoom({
         />
       </label>
 
-      <div className="player-pick-list" role="listbox" aria-label="Eligible players">
+      <div
+        ref={playerPickListRef}
+        className="player-pick-list"
+        role="listbox"
+        aria-label="Eligible players"
+      >
         {candidates.length > 0 ? (
           candidates.map((player) => {
             const shineClass = getPlayerPickShineClass(player);
