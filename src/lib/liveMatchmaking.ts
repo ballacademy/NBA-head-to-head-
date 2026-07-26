@@ -1,4 +1,7 @@
-import { autoDraftLineup } from "./draft";
+import {
+  autoDraftLineup,
+  autoDraftLineupUnderSalaryCap,
+} from "./draft";
 import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import type { GhostMatchmakingMode } from "./ghostMatchmaking";
@@ -348,6 +351,7 @@ export const resolveLiveOpponentLineup = async (
     playerId: string;
     opponentDraftSlots: DraftSlotConstraint[];
     players: Player[];
+    salaryCapLimit?: number;
   },
   options: {
     timeoutMs?: number;
@@ -366,7 +370,14 @@ export const resolveLiveOpponentLineup = async (
     return { lineup: polled, autoDrafted: false };
   }
 
-  const autoLineup = autoDraftLineup(params.players, params.opponentDraftSlots);
+  const autoLineup =
+    params.salaryCapLimit != null
+      ? autoDraftLineupUnderSalaryCap(
+          params.players,
+          params.opponentDraftSlots,
+          params.salaryCapLimit,
+        )
+      : autoDraftLineup(params.players, params.opponentDraftSlots);
 
   if (autoLineup.length === params.opponentDraftSlots.length) {
     return { lineup: autoLineup, autoDrafted: true };

@@ -18,10 +18,15 @@ import {
   hasStarTierPlayer,
   isLowScoringNonEliteDefender,
   isPlusDefenderByGrade,
+  buildLineupScoreContext,
   LINEUP_FIRST_OPTION_PPG_THRESHOLD,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
   NO_TRUE_STAR_LINEUP_PENALTY,
+  OFFENSE_FLOOR_BASE_PENALTY,
+  OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY,
+  OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY,
+  PRIMARY_SCORER_LINEUP_PENALTY,
   PRIMARY_SCORER_PPG_THRESHOLD,
   projectedWinsFromOvr,
   projectRecord,
@@ -419,7 +424,9 @@ describe("calculateLineupScore", () => {
 
     expect(hasPrimaryScorer(secondaryScoringLineup)).toBe(false);
     expect(hasPrimaryScorer(withPrimary)).toBe(true);
-    expect(getPrimaryScorerLineupPenalty(secondaryScoringLineup)).toBe(-8);
+    expect(getPrimaryScorerLineupPenalty(secondaryScoringLineup)).toBe(
+      PRIMARY_SCORER_LINEUP_PENALTY,
+    );
     expect(getPrimaryScorerLineupPenalty(withPrimary)).toBe(0);
 
     const withoutPrimaryScore = calculateLineupScore(secondaryScoringLineup);
@@ -522,7 +529,12 @@ describe("calculateLineupScore", () => {
     ];
 
     expect(hasLineupFirstOption(defensiveRolePlayers)).toBe(false);
-    expect(getLineupOffenseFloorPenalty(defensiveRolePlayers)).toBe(-14);
+    expect(getPrimaryScorerLineupPenalty(defensiveRolePlayers)).toBe(0);
+    expect(getLineupOffenseFloorPenalty(defensiveRolePlayers)).toBe(
+      OFFENSE_FLOOR_BASE_PENALTY +
+        OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY +
+        OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY,
+    );
     expect(
       capLineupRoleFitForOffense(defensiveRolePlayers, 48),
     ).toBe(TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
@@ -1001,6 +1013,26 @@ describe("compareLineups", () => {
     expect(
       compareLineups(lineupA, lineupA).result,
     ).toBe("tie");
+  });
+
+  it("builds two sentences of score context from strengths and warnings", () => {
+    const score = calculateLineupScore(
+      lineup([
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
+      ]),
+    );
+    const context = buildLineupScoreContext(score);
+    const sentences = context
+      .split(/(?<=[.!?])\s+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    expect(sentences.length).toBe(2);
+    expect(context.length).toBeGreaterThan(40);
   });
 
   it("prefers five top-100 impact players over a thinner star core", () => {

@@ -4800,6 +4800,13 @@ h1.landing-hub__title {
   margin-bottom: 10px;
 }
 
+.team-lineup-card__score-context {
+  margin: 0 0 10px;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .team-lineup-card--compact .team-lineup-card__header h3 {
   font-size: 1.15rem;
 }

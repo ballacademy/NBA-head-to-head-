@@ -145,8 +145,11 @@ export function MatchResults({
             challengerTeamName: user.name,
             challengerWon: userWon,
             challengerElo: challengerEloBefore,
-            userScore: userScore.total,
-            opponentScore: opponentScore.total,
+            userScore: userScore.preciseTotal,
+            opponentScore: opponentScore.preciseTotal,
+            challengerLineup: user.lineup.filter(
+              (id): id is string => Boolean(id),
+            ),
           });
         }
 
@@ -255,10 +258,13 @@ export function MatchResults({
           </div>
           <p className="matchup-panel__meta">
             Margin{" "}
-            {Math.round(
-              Math.abs(userScore.preciseTotal - opponentScore.preciseTotal),
-            )}{" "}
+            {Math.abs(
+              userScore.preciseTotal - opponentScore.preciseTotal,
+            ).toFixed(1)}{" "}
             • OVR {userScore.total} vs {opponentScore.total}
+            {userScore.total === opponentScore.total && !isTie
+              ? ` · decided by precise OVR (${userScore.preciseTotal.toFixed(1)} vs ${opponentScore.preciseTotal.toFixed(1)})`
+              : ""}
             {((matchRecordMode === "ranked" && rankedOutcome) ||
               (matchRecordMode === "headToHead" && classicOutcome)) &&
             !user.practiceMode ? (
@@ -327,6 +333,7 @@ export function MatchResults({
               winStreak={updatedRecord.winStreak}
               lossStreak={updatedRecord.lossStreak}
               showStreak
+              showScoreContext
               compact
             />
           </div>
@@ -337,6 +344,7 @@ export function MatchResults({
               lineup={opponentLineup}
               score={opponentScore}
               isWinner={matchResult === "loss"}
+              showScoreContext
               compact
             />
           </div>

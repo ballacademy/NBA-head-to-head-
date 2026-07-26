@@ -53,22 +53,22 @@ export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
 export const LOW_SCORING_LINEUP_PENALTY = -7;
 export const PRIMARY_SCORER_PPG_THRESHOLD = 20;
-export const PRIMARY_SCORER_LINEUP_PENALTY = -8;
+export const PRIMARY_SCORER_LINEUP_PENALTY = -5;
 export const LINEUP_FIRST_OPTION_PPG_THRESHOLD = 18;
 export const STAR_SCORER_PPG_THRESHOLD = 22;
 export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
 export const TEAM_FIT_CAP_WITHOUT_STAR_SCORER = 40;
-export const NO_TRUE_STAR_LINEUP_PENALTY = -8;
+export const NO_TRUE_STAR_LINEUP_PENALTY = -5;
 export const ELITE_OFFENSE_PRODUCTION_THRESHOLD = 110;
 export const ELITE_OFFENSE_TOTAL_PPG_THRESHOLD = 120;
 export const ELITE_OFFENSE_LINEUP_BONUS = 10;
 export const SUPERSTAR_STACKING_MIN_COUNT = 2;
 export const SUPERSTAR_STACKING_LINEUP_BONUS = 8;
-export const OFFENSE_FLOOR_BASE_PENALTY = -6;
+export const OFFENSE_FLOOR_BASE_PENALTY = -4;
 export const OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD = 16;
-export const OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY = -4;
+export const OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY = -3;
 export const OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD = 58;
-export const OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY = -4;
+export const OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY = -3;
 export const STOPPER_MINIMUM_DEFENSE_GRADE = "B" as const;
 
 export const isLowScoringNonEliteDefender = (player: Player) =>
@@ -116,8 +116,18 @@ export const getLineupTopScoringAverage = (lineup: Player[]) => {
   );
 };
 
-export const getPrimaryScorerLineupPenalty = (lineup: Player[]) =>
-  hasPrimaryScorer(lineup) ? 0 : PRIMARY_SCORER_LINEUP_PENALTY;
+export const getPrimaryScorerLineupPenalty = (lineup: Player[]) => {
+  if (hasPrimaryScorer(lineup)) {
+    return 0;
+  }
+
+  // Offense-floor already covers no-go-to lineups; only ding 18–19 PPG builds.
+  if (!hasLineupFirstOption(lineup)) {
+    return 0;
+  }
+
+  return PRIMARY_SCORER_LINEUP_PENALTY;
+};
 
 export const getLineupOffenseFloorPenalty = (lineup: Player[]) => {
   if (lineup.length === 0 || hasLineupFirstOption(lineup)) {
@@ -611,6 +621,41 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     strengths,
     warnings,
   };
+};
+
+const ensureContextSentence = (text: string) => {
+  const trimmed = text.trim().replace(/\s+/g, " ");
+
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+};
+
+/** Two short sentences explaining a lineup's OVR (strength + hole when available). */
+export const buildLineupScoreContext = (score: LineupScore): string => {
+  const strength = score.strengths[0];
+  const warning = score.warnings[0];
+  const first =
+    strength ??
+    warning ??
+    "This five has no single defining trait on paper";
+  const second =
+    (strength ? warning : score.warnings[1]) ??
+    score.strengths[1] ??
+    (strength
+      ? "The rest of the construction is steady without a major red flag"
+      : "Matchup luck and execution will decide how far it travels");
+
+  const firstSentence = ensureContextSentence(first);
+  const secondSentence = ensureContextSentence(second);
+
+  if (firstSentence === secondSentence) {
+    return `${firstSentence} Overall the OVR reflects a tightly contested construction.`;
+  }
+
+  return `${firstSentence} ${secondSentence}`;
 };
 
 export const resolveHeadToHeadResult = (
