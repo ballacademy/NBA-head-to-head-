@@ -37,6 +37,7 @@ export interface GhostMatchOutcomeSubmission {
   challengerElo: number;
   userScore: number;
   opponentScore: number;
+  challengerLineup: string[];
 }
 
 export const MATCHMAKING_POLL_INTERVAL_MS = 2_000;
@@ -206,6 +207,7 @@ export const submitGhostMatchOutcome = async (
         challengerElo: submission.challengerElo,
         userScore: submission.userScore,
         opponentScore: submission.opponentScore,
+        challengerLineup: submission.challengerLineup,
       }),
     });
 

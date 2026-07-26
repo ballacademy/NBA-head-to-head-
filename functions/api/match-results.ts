@@ -1,7 +1,11 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
+  isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
   parseStoredLineupJson,
+  salaryCapForMatchmakingMode,
+  sanitizeStoredLineupIds,
 } from "../lib/storedLineups";
 
 const json = (body: unknown, status = 200) =>
@@ -25,18 +29,19 @@ interface MatchResultBody {
   challengerElo?: unknown;
   userScore?: unknown;
   opponentScore?: unknown;
+  challengerLineup?: unknown;
 }
 
-const ownerResultFromChallengerWin = (challengerWon: unknown) => {
-  if (challengerWon === true) {
-    return "loss";
+/** Owner result from submitted scores (challenger = userScore, owner = opponentScore). */
+export const ownerResultFromScores = (
+  challengerScore: number,
+  ownerScore: number,
+): "win" | "loss" | "tie" => {
+  if (challengerScore === ownerScore) {
+    return "tie";
   }
 
-  if (challengerWon === false) {
-    return "win";
-  }
-
-  return "tie";
+  return challengerScore > ownerScore ? "loss" : "win";
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -62,6 +67,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const challengerElo = Number(body.challengerElo ?? 500);
   const userScore = Number(body.userScore ?? 0);
   const opponentScore = Number(body.opponentScore ?? 0);
+  const challengerLineup = sanitizeStoredLineupIds(body.challengerLineup);
 
   if (!mode) {
     return json({ error: "mode must be classic or ranked" }, 400);
@@ -79,6 +85,40 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!Number.isFinite(challengerElo)) {
     return json({ error: "challengerElo must be a number" }, 400);
+  }
+
+  if (!Number.isFinite(userScore) || !Number.isFinite(opponentScore)) {
+    return json({ error: "userScore and opponentScore must be numbers" }, 400);
+  }
+
+  if (!isValidStoredLineupIds(challengerLineup)) {
+    return json(
+      {
+        error:
+          "challengerLineup must contain exactly 5 unique non-empty player ids",
+      },
+      400,
+    );
+  }
+
+  const challengerSalary = computeLineupSalaryTotal(challengerLineup);
+
+  if (challengerSalary.missing > 0) {
+    return json(
+      { error: "challengerLineup contains players without known contract salaries" },
+      400,
+    );
+  }
+
+  if (
+    !isStoredLineupWithinSalaryCap(mode, Math.round(challengerSalary.total))
+  ) {
+    return json(
+      {
+        error: `challengerLineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
+      },
+      400,
+    );
   }
 
   const db = context.env.DB;
@@ -124,7 +164,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const now = new Date(nowMs).toISOString();
-  const ownerResult = ownerResultFromChallengerWin(body.challengerWon);
+  // Recompute from scores; do not trust client challengerWon.
+  const ownerResult = ownerResultFromScores(userScore, opponentScore);
 
   const consume = await db
     .prepare(
@@ -158,11 +199,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       challengerTeamName,
       Math.round(challengerElo),
       lineup.lineup_json,
-      Number.isFinite(opponentScore) ? Math.round(opponentScore) : 0,
-      Number.isFinite(userScore) ? Math.round(userScore) : 0,
+      Math.round(opponentScore),
+      Math.round(userScore),
       now,
     )
     .run();
 
-  return json({ ok: true, consumed: true }, 201);
+  return json({ ok: true, consumed: true, ownerResult }, 201);
 };

@@ -1252,6 +1252,7 @@ function App() {
           playerId,
           opponentDraftSlots: opponent.draftSlots,
           players: opponentDraftablePlayersRef.current,
+          salaryCapLimit: opponent.salaryCapLimit,
         },
       );
 

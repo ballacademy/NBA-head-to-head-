@@ -1,4 +1,11 @@
 import type { Env, MatchmakingMode } from "../types";
+import { computeLineupSalaryTotal } from "../lib/playerSalaries";
+import {
+  isStoredLineupWithinSalaryCap,
+  isValidStoredLineupIds,
+  salaryCapForMatchmakingMode,
+  sanitizeStoredLineupIds,
+} from "../lib/storedLineups";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -117,16 +124,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const matchId = typeof body.matchId === "string" ? body.matchId.trim() : "";
   const playerId =
     typeof body.playerId === "string" ? body.playerId.trim() : "";
-  const lineup = Array.isArray(body.lineup)
-    ? body.lineup.filter((id): id is string => typeof id === "string")
-    : [];
+  const lineup = sanitizeStoredLineupIds(body.lineup);
 
   if (!matchId || !playerId) {
     return json({ error: "matchId and playerId are required" }, 400);
   }
 
-  if (lineup.length !== 5) {
-    return json({ error: "lineup must contain exactly 5 player ids" }, 400);
+  if (!isValidStoredLineupIds(lineup)) {
+    return json(
+      { error: "lineup must contain exactly 5 unique non-empty player ids" },
+      400,
+    );
   }
 
   const row = await context.env.DB.prepare(
@@ -142,6 +150,30 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!row) {
     return json({ error: "match not found" }, 404);
+  }
+
+  const mode = parseMode(row.mode);
+
+  if (!mode) {
+    return json({ error: "match mode is invalid" }, 400);
+  }
+
+  const salary = computeLineupSalaryTotal(lineup);
+
+  if (salary.missing > 0) {
+    return json(
+      { error: "lineup contains players without known contract salaries" },
+      400,
+    );
+  }
+
+  if (!isStoredLineupWithinSalaryCap(mode, Math.round(salary.total))) {
+    return json(
+      {
+        error: `lineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
+      },
+      400,
+    );
   }
 
   const now = new Date().toISOString();

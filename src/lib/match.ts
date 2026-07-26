@@ -1,5 +1,7 @@
 import {
   autoDraftLineup,
+  autoDraftLineupUnderSalaryCap,
+  completeSalaryCapDraftFromPartial,
   generateFeasibleDraftSlots,
   pickBestForSlot,
 } from "./draft";
@@ -217,10 +219,43 @@ export const createLiveOpponent = (
 export const finalizeOpponentLineup = (
   players: Player[],
   opponent: Drafter,
-): Drafter => ({
-  ...opponent,
-  lineup: autoDraftLineup(players, opponent.draftSlots),
-});
+): Drafter => {
+  const partialLineup = opponent.lineup.filter(
+    (playerId): playerId is string => Boolean(playerId),
+  );
+
+  if (partialLineup.length === opponent.draftSlots.length) {
+    return {
+      ...opponent,
+      lineup: partialLineup,
+    };
+  }
+
+  if (opponent.salaryCapLimit != null) {
+    const completed =
+      completeSalaryCapDraftFromPartial(
+        players,
+        partialLineup,
+        opponent.draftSlots.slice(partialLineup.length),
+        opponent.salaryCapLimit,
+      ) ??
+      autoDraftLineupUnderSalaryCap(
+        players,
+        opponent.draftSlots,
+        opponent.salaryCapLimit,
+      );
+
+    return {
+      ...opponent,
+      lineup: completed,
+    };
+  }
+
+  return {
+    ...opponent,
+    lineup: autoDraftLineup(players, opponent.draftSlots),
+  };
+};
 
 export const getOpponentPickDelayMs = () =>
   OPPONENT_PICK_MIN_MS +

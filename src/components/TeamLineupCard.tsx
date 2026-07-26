@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
+import { buildLineupScoreContext } from "../lib/scoring";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
@@ -15,6 +16,7 @@ interface TeamLineupCardProps {
   showStreak?: boolean;
   compact?: boolean;
   showProjectedRecord?: boolean;
+  showScoreContext?: boolean;
 }
 
 export function TeamLineupCard({
@@ -27,8 +29,12 @@ export function TeamLineupCard({
   showStreak = false,
   compact = false,
   showProjectedRecord = true,
+  showScoreContext = false,
 }: TeamLineupCardProps) {
   const orderedLineup = sortLineupByPosition(lineup);
+  const scoreContext = showScoreContext
+    ? buildLineupScoreContext(score)
+    : null;
 
   return (
     <article
@@ -60,6 +66,10 @@ export function TeamLineupCard({
           </div>
         </div>
       </div>
+
+      {scoreContext ? (
+        <p className="team-lineup-card__score-context">{scoreContext}</p>
+      ) : null}
 
       <LineupChemistryBadges lineup={lineup} />
 

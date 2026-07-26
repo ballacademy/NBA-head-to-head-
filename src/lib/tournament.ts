@@ -22,10 +22,13 @@ export const buildTournament = (
       const scoreB = calculateLineupScore(
         getPlayersById(drafterB.lineup, pool),
       );
+      const headToHead = resolveHeadToHeadResult(
+        scoreA.preciseTotal,
+        scoreB.preciseTotal,
+      );
+      // True ties advance the left/higher seed (drafter A) instead of awarding B.
       const winnerId =
-        resolveHeadToHeadResult(scoreA.preciseTotal, scoreB.preciseTotal) === "win"
-          ? drafterA.id
-          : drafterB.id;
+        headToHead === "loss" ? drafterB.id : drafterA.id;
 
       results.push({
         id: `${roundIndex}-${index}`,
