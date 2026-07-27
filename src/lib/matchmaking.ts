@@ -203,7 +203,7 @@ export const getStartMatchErrorMessage = (error: StartMatchError) => {
     case "pending_lineup_locked":
       return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup is matched.`;
     case "event_limit_reached":
-      return "You've used all 30 matches for this week's event. Check back next week.";
+      return "You've used all 30 entries for this week's event. Check back next week.";
     case "setup_failed":
     default:
       return "Couldn't start this draft. Refresh the page and try again.";
