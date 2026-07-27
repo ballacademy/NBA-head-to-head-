@@ -10,7 +10,11 @@ import {
   getPlayerDefenseGradeRank,
   meetsMinimumDefenseGrade,
 } from "./defenseGrade";
-import { getImpactRankingAdjustment, isImpactRankStarPlayer } from "./impactRanking";
+import {
+  getImpactRankingAdjustment,
+  getMidTierImpactLineupPenalty,
+  isImpactRankStarPlayer,
+} from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
@@ -58,7 +62,7 @@ export const LINEUP_FIRST_OPTION_PPG_THRESHOLD = 18;
 export const STAR_SCORER_PPG_THRESHOLD = 22;
 export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
 export const TEAM_FIT_CAP_WITHOUT_STAR_SCORER = 40;
-export const NO_TRUE_STAR_LINEUP_PENALTY = -5;
+export const NO_TRUE_STAR_LINEUP_PENALTY = -8;
 export const ELITE_OFFENSE_PRODUCTION_THRESHOLD = 110;
 export const ELITE_OFFENSE_TOTAL_PPG_THRESHOLD = 120;
 export const ELITE_OFFENSE_LINEUP_BONUS = 10;
@@ -538,6 +542,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     );
   }
 
+  if (getMidTierImpactLineupPenalty(lineup) < 0) {
+    warnings.push(
+      "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
+    );
+  }
+
   if (hasNoCenter(roleFitProfile)) {
     warnings.push("No true center makes rim protection and rebounding harder.");
   } else if (hasTooManyCenters(roleFitProfile)) {
@@ -602,6 +612,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     primaryScorerPenalty: getPrimaryScorerLineupPenalty(lineup),
     offenseFloorPenalty: getLineupOffenseFloorPenalty(lineup),
     noStarPenalty: getNoTrueStarLineupPenalty(lineup),
+    midTierImpactPenalty: getMidTierImpactLineupPenalty(lineup),
     eliteOffenseBonus: getEliteOffenseLineupBonus(productionScore, totalPoints),
     superstarStackBonus: getSuperstarStackingLineupBonus(lineup),
   };

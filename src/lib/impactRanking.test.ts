@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import {
   getImpactRankingAdjustment,
+  getLineupBestImpactRank,
+  getMidTierImpactLineupPenalty,
   getPlayerImpactAdjustment,
   getPlayerImpactRank,
   isImpactRankStarPlayer,
+  MID_TIER_IMPACT_NO_ELITE_PENALTY,
+  MID_TIER_IMPACT_NO_TOP50_PENALTY,
+  MID_TIER_NEGATIVE_IMPACT_SCALE,
 } from "./impactRanking";
 import {
   getScrubPlayerIds,
@@ -70,6 +75,58 @@ describe("impactRanking", () => {
     expect(getPlayerImpactRank(butler!)).toBe(24);
     expect(isImpactRankStarPlayer(butler!)).toBe(true);
     expect(isImpactRankStarPlayer(pritchard!)).toBe(false);
+  });
+
+  it("amplifies negative mid-tier impact blends and dings lineups without a top-50 anchor", () => {
+    const miller = players.find((player) => player.bbrPlayerId === "millebr02");
+    const ware = players.find((player) => player.bbrPlayerId === "wareke01");
+    const fears = players.find((player) => player.bbrPlayerId === "fearsje01");
+    const rollins = players.find((player) => player.bbrPlayerId === "rolliry01");
+    const oubre = players.find((player) => player.bbrPlayerId === "oubreke01");
+
+    expect(miller && ware && fears && rollins && oubre).toBeTruthy();
+
+    const lineup = [fears!, rollins!, miller!, oubre!, ware!];
+    const rawBlend = lineup.reduce(
+      (sum, player) => sum + getPlayerImpactAdjustment(player),
+      0,
+    );
+    const scaledBlend = lineup.reduce((sum, player) => {
+      const adjustment = getPlayerImpactAdjustment(player);
+      const rank = getPlayerImpactRank(player);
+      const isMidOrWorse =
+        rank == null || rank > 50;
+      return (
+        sum +
+        (adjustment < 0 && isMidOrWorse
+          ? adjustment * MID_TIER_NEGATIVE_IMPACT_SCALE
+          : adjustment)
+      );
+    }, 0);
+
+    expect(getLineupBestImpactRank(lineup)).toBe(69);
+    expect(getMidTierImpactLineupPenalty(lineup)).toBe(
+      MID_TIER_IMPACT_NO_TOP50_PENALTY,
+    );
+    expect(getImpactRankingAdjustment(lineup)).toBeCloseTo(scaledBlend, 5);
+    expect(getImpactRankingAdjustment(lineup)).toBeLessThan(rawBlend);
+  });
+
+  it("does not apply mid-tier impact penalty when a top-50 impact player is present", () => {
+    const jokic = players.find((player) => player.name === "Nikola Jokić");
+    const ware = players.find((player) => player.bbrPlayerId === "wareke01");
+    const fears = players.find((player) => player.bbrPlayerId === "fearsje01");
+    const rollins = players.find((player) => player.bbrPlayerId === "rolliry01");
+    const oubre = players.find((player) => player.bbrPlayerId === "oubreke01");
+
+    expect(jokic && ware && fears && rollins && oubre).toBeTruthy();
+
+    const lineup = [jokic!, fears!, rollins!, oubre!, ware!];
+    expect(getLineupBestImpactRank(lineup)).toBe(1);
+    expect(getMidTierImpactLineupPenalty(lineup)).toBe(0);
+    expect(MID_TIER_IMPACT_NO_ELITE_PENALTY).toBeLessThan(
+      MID_TIER_IMPACT_NO_TOP50_PENALTY,
+    );
   });
 
   it("does not change scrub pool membership", () => {

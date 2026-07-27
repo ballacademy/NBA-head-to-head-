@@ -20,14 +20,15 @@ describe("lineupScorePipeline", () => {
       primaryScorerPenalty: 0,
       offenseFloorPenalty: 0,
       noStarPenalty: 0,
+      midTierImpactPenalty: -2,
       eliteOffenseBonus: 1,
       superstarStackBonus: 0,
     };
 
     const pipeline = buildLineupScorePipeline(breakdown, modifiers);
 
-    expect(pipeline.rawTotal).toBe(73.5);
-    expect(pipeline.layers).toHaveLength(11);
+    expect(pipeline.rawTotal).toBe(71.5);
+    expect(pipeline.layers).toHaveLength(12);
     expect(pipeline.layers[0]?.id).toBe("baseStats");
   });
 });
