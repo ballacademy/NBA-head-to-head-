@@ -37,9 +37,9 @@ export const parseStoredLineupJson = (lineupJson: string): string[] => {
 };
 
 export const salaryCapForMatchmakingMode = (mode: string) =>
-  mode === "ranked"
-    ? RANKED_STORED_LINEUP_SALARY_CAP
-    : CLASSIC_STORED_LINEUP_SALARY_CAP;
+  mode === "classic"
+    ? CLASSIC_STORED_LINEUP_SALARY_CAP
+    : RANKED_STORED_LINEUP_SALARY_CAP;
 
 export const isStoredLineupWithinSalaryCap = (
   mode: string,

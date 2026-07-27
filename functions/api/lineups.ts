@@ -2,6 +2,10 @@ import type { Env, MatchmakingMode } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
+  matchmakingModeError,
+  parseMatchmakingMode,
+} from "../lib/matchmakingMode";
+import {
   isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
   REQUIRED_STORED_LINEUP_SIZE,
@@ -18,8 +22,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: unknown): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 /** Upper bound for depositor-reported star depth (collection size safety). */
 const MAX_STORED_STAR_COUNT = 40;
@@ -65,7 +68,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!playerId || !teamName) {

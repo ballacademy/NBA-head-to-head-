@@ -1,7 +1,7 @@
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import { parseGhostOpponentSnapshot } from "./storedLineups";
 
-export type GhostMatchmakingMode = "classic" | "ranked";
+export type GhostMatchmakingMode = "classic" | "ranked" | "event";
 
 export interface GhostOpponentSnapshot {
   id: string;

@@ -1,5 +1,6 @@
 import type { Env, MatchmakingMode } from "../types";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
+import { parseMatchmakingMode } from "../lib/matchmakingMode";
 import {
   isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
@@ -16,8 +17,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: string | null): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 interface LiveMatchRow {
   id: string;

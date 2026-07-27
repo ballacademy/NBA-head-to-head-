@@ -82,6 +82,11 @@ export const loadEventProfile = (eventId: string): EventProfile => {
   return profiles[eventId] ?? emptyProfile(eventId);
 };
 
+export const loadAllEventProfiles = (): EventProfile[] =>
+  Object.values(loadAllProfiles()).sort((left, right) =>
+    right.eventId.localeCompare(left.eventId),
+  );
+
 export const canPlayEventMatch = (eventId: string) =>
   loadEventProfile(eventId).matchesPlayed < EVENT_MAX_MATCHES;
 
