@@ -74,14 +74,16 @@ import {
 } from "./lib/match";
 import {
   getStartMatchErrorMessage,
+  planEventLiveMatchmaking,
   planHeadToHeadMatchmaking,
 } from "./lib/matchmaking";
-import { canPlayEventMatch } from "./lib/eventProfile";
+import { canPlayEventMatch, loadEventProfile } from "./lib/eventProfile";
 import {
   filterPlayersForEventRestriction,
   type EventRestrictionId,
 } from "./lib/weeklyEvents";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
+import type { GhostMatchmakingMode } from "./lib/ghostMatchmaking";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
 import {
@@ -172,7 +174,7 @@ function App() {
   );
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
-    "classic" | "ranked" | null
+    GhostMatchmakingMode | null
   >(null);
   const [matchmakingStartedAt, setMatchmakingStartedAt] = useState<number | null>(
     null,
@@ -193,7 +195,7 @@ function App() {
   const matchmakingGenerationRef = useRef(0);
   const matchmakingSessionRef = useRef<{
     generation: number;
-    mode: "classic" | "ranked";
+    mode: GhostMatchmakingMode;
     playerId: string;
     cancelled: boolean;
   } | null>(null);
@@ -238,7 +240,7 @@ function App() {
 
     saveLiveDraftSession({
       matchId: opponent.liveMatchId,
-      mode: user.salaryCapMode ? "ranked" : "classic",
+      mode: user.eventId ? "event" : user.salaryCapMode ? "ranked" : "classic",
       playerId: getOrCreatePlayerIdentity().playerId,
       teamName: user.name,
       teamAccent: user.accent,
@@ -545,10 +547,12 @@ function App() {
     let isPendingQueue = false;
     let activeMatchmakingGeneration: number | null = null;
 
-    if (!daily && !nextAllTimeMode && !practiceMode && !eventMode) {
-      const nextMatchmakingMode: "classic" | "ranked" = salaryCapMode
-        ? "ranked"
-        : "classic";
+    if (!daily && !nextAllTimeMode && !practiceMode) {
+      const nextMatchmakingMode: GhostMatchmakingMode = eventMode
+        ? "event"
+        : salaryCapMode
+          ? "ranked"
+          : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
       const previousSession = matchmakingSessionRef.current;
 
@@ -571,21 +575,32 @@ function App() {
       setMatchmakingMode(nextMatchmakingMode);
       setMatchedOpponentName(null);
 
-      const elo = salaryCapMode
-        ? ensureCurrentRankedSeason().elo
-        : ensureClassicProfile().elo;
+      const elo = eventMode
+        ? loadEventProfile(eventId!).elo
+        : salaryCapMode
+          ? ensureCurrentRankedSeason().elo
+          : ensureClassicProfile().elo;
 
       try {
-        const resolution = await planHeadToHeadMatchmaking(
-          {
-            mode: nextMatchmakingMode,
-            playerId,
-            playerElo: elo,
-            teamName: team.name,
-            starCount: countUnlockedAllStars(collection),
-          },
-          { isCancelled: () => session.cancelled },
-        );
+        const resolution = eventMode
+          ? await planEventLiveMatchmaking(
+              {
+                playerId,
+                playerElo: elo,
+                teamName: team.name,
+              },
+              { isCancelled: () => session.cancelled },
+            )
+          : await planHeadToHeadMatchmaking(
+              {
+                mode: nextMatchmakingMode,
+                playerId,
+                playerElo: elo,
+                teamName: team.name,
+                starCount: countUnlockedAllStars(collection),
+              },
+              { isCancelled: () => session.cancelled },
+            );
 
         if (session.cancelled) {
           return "cancelled";
@@ -642,6 +657,11 @@ function App() {
       activeMatchmakingGeneration !== matchmakingGenerationRef.current
     ) {
       return "cancelled";
+    }
+
+    if (eventMode && !liveOpponent) {
+      setStartMatchError(getStartMatchErrorMessage("setup_failed"));
+      return "failed";
     }
 
     const nextOpponentCollection =
@@ -753,26 +773,26 @@ function App() {
       isPendingQueue
         ? null
         : liveOpponent && opponentSlots
-          ? createLiveOpponent(opponentSlots, liveOpponent, { salaryCapMode })
+          ? {
+              ...createLiveOpponent(opponentSlots, liveOpponent, {
+                salaryCapMode: eventMode || salaryCapMode,
+              }),
+              eventId,
+              eventRestriction,
+            }
           : ghostOpponent && opponentSlots
             ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
             : opponentSlots
-              ? eventMode
+              ? practiceMode
                 ? {
-                    ...createRankedOpponent(opponentSlots),
-                    eventId,
-                    eventRestriction,
+                    ...createClassicOpponent(opponentSlots, { salaryCapLimit }),
+                    practiceMode: true,
                   }
-                : practiceMode
-                  ? {
-                      ...createClassicOpponent(opponentSlots, { salaryCapLimit }),
-                      practiceMode: true,
-                    }
-                  : salaryCapMode
-                    ? createRankedOpponent(opponentSlots)
-                    : nextAllTimeMode
-                      ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
-                      : createClassicOpponent(opponentSlots)
+                : salaryCapMode
+                  ? createRankedOpponent(opponentSlots)
+                  : nextAllTimeMode
+                    ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                    : createClassicOpponent(opponentSlots)
               : null,
     );
     setOpponentCollection(nextOpponentCollection);
@@ -789,7 +809,7 @@ function App() {
     if (liveOpponent && opponentSlots) {
       saveLiveDraftSession({
         matchId: liveOpponent.matchId,
-        mode: salaryCapMode ? "ranked" : "classic",
+        mode: eventMode ? "event" : salaryCapMode ? "ranked" : "classic",
         playerId: getOrCreatePlayerIdentity().playerId,
         teamName: team.name,
         teamAccent: "#2563eb",
@@ -800,7 +820,7 @@ function App() {
         opponentElo: liveOpponent.elo,
         opponentPlayerId: liveOpponent.playerId,
         opponentDraftSlots: opponentSlots,
-        salaryCapMode,
+        salaryCapMode: eventMode || salaryCapMode,
         salaryCapLimit,
         phase: "drafting",
         savedAt: new Date().toISOString(),

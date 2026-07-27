@@ -5,7 +5,7 @@ const LIVE_DRAFT_SESSION_KEY = "nba-head-to-head-live-draft-session";
 
 export interface LiveDraftSession {
   matchId: string;
-  mode: "classic" | "ranked";
+  mode: "classic" | "ranked" | "event";
   playerId: string;
   teamName: string;
   teamAccent: string;

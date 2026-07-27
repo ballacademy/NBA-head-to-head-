@@ -1,5 +1,9 @@
 import type { Env, MatchmakingMode } from "../types";
 import { claimQueueOpponent } from "../lib/matchmakingDb";
+import {
+  matchmakingModeError,
+  parseMatchmakingMode,
+} from "../lib/matchmakingMode";
 import { rejectProfaneTeamName } from "../lib/profanity";
 
 const QUEUE_TTL_SECONDS = 45;
@@ -13,8 +17,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: string | null): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 const nowIso = () => new Date().toISOString();
 
@@ -154,7 +157,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const elo = Number(body.elo ?? 1000);
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!playerId || !teamName) {
@@ -231,7 +234,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const playerId = url.searchParams.get("playerId")?.trim();
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!playerId) {
@@ -300,7 +303,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
   const playerId = url.searchParams.get("playerId")?.trim();
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!playerId) {

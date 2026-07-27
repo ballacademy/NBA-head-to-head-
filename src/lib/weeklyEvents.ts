@@ -189,3 +189,71 @@ export const formatEventBadgeLabel = (tier: EventBadgeTier) => {
       return "Competitor";
   }
 };
+
+export const formatEventBadgeEmoji = (tier: EventBadgeTier) => {
+  switch (tier) {
+    case "gold":
+      return "🥇";
+    case "silver":
+      return "🥈";
+    case "bronze":
+      return "🥉";
+    default:
+      return "🎟️";
+  }
+};
+
+export const formatEventBadgeDescription = (
+  tier: EventBadgeTier,
+  eventTitle: string,
+) => {
+  switch (tier) {
+    case "gold":
+      return `Earn ${EVENT_BADGE_THRESHOLDS.gold}+ wins in ${eventTitle}.`;
+    case "silver":
+      return `Earn ${EVENT_BADGE_THRESHOLDS.silver}+ wins in ${eventTitle}.`;
+    case "bronze":
+      return `Earn ${EVENT_BADGE_THRESHOLDS.bronze}+ wins in ${eventTitle}.`;
+    default:
+      return `Play ${EVENT_BADGE_THRESHOLDS.participation}+ matches in ${eventTitle}.`;
+  }
+};
+
+/** Event identity for badge/UI surfaces that don't need draft slots. */
+export const getCurrentEventMeta = (date: Date = new Date()) => {
+  const weekId = getIsoWeekId(date);
+  const restriction = getEventRestrictionForWeek(weekId);
+
+  return {
+    id: buildEventId(weekId, restriction),
+    weekLabel: formatEventWeekLabel(weekId),
+    title: getEventTitle(restriction),
+    restrictionLabel: getEventRestrictionLabel(restriction),
+    restriction,
+  };
+};
+
+export const describeEventFromId = (eventId: string) => {
+  const match = /^(\d{4}-W\d{2})-(u25|intl)$/.exec(eventId);
+
+  if (!match) {
+    return {
+      id: eventId,
+      weekLabel: eventId,
+      title: "Weekly Event",
+      restrictionLabel: "Event",
+      restriction: "u25" as EventRestrictionId,
+    };
+  }
+
+  const weekId = match[1]!;
+  const restriction = match[2] as EventRestrictionId;
+
+  return {
+    id: eventId,
+    weekLabel: formatEventWeekLabel(weekId),
+    title: getEventTitle(restriction),
+    restrictionLabel: getEventRestrictionLabel(restriction),
+    restriction,
+  };
+};

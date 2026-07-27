@@ -20,6 +20,14 @@ import {
   requiresLiveOpponentOnly,
 } from "./rankedElo";
 
+const EVENT_LIVE_SEARCH_MS = 45_000;
+const EVENT_REJOIN_PAUSE_MS = 400;
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
 export type StartMatchError =
   | "pending_unlock"
   | "daily_completed"
@@ -142,6 +150,48 @@ export const planHeadToHeadMatchmaking = async (
   }
 
   return { ok: true, plan: { kind: "npc" } };
+};
+
+/** Weekly Events only match live opponents; keep searching until found or cancelled. */
+export const planEventLiveMatchmaking = async (
+  params: {
+    playerId: string;
+    playerElo: number;
+    teamName: string;
+  },
+  options: {
+    isCancelled?: () => boolean;
+  } = {},
+): Promise<
+  | { ok: true; plan: Extract<HeadToHeadMatchmakingPlan, { kind: "live" }> }
+  | { ok: false; error: StartMatchError }
+> => {
+  while (!options.isCancelled?.()) {
+    const live = await searchLiveOpponent(
+      {
+        mode: "event",
+        playerId: params.playerId,
+        teamName: params.teamName,
+        elo: params.playerElo,
+      },
+      {
+        searchMs: EVENT_LIVE_SEARCH_MS,
+        isCancelled: options.isCancelled,
+      },
+    );
+
+    if (live) {
+      return { ok: true, plan: { kind: "live", live } };
+    }
+
+    if (options.isCancelled?.()) {
+      break;
+    }
+
+    await sleep(EVENT_REJOIN_PAUSE_MS);
+  }
+
+  return { ok: false, error: "cancelled" };
 };
 
 export const getStartMatchErrorMessage = (error: StartMatchError) => {

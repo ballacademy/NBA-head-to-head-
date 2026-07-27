@@ -1,6 +1,10 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
 import { claimGhostOpponent } from "../lib/matchmakingDb";
 import {
+  matchmakingModeError,
+  parseMatchmakingMode,
+} from "../lib/matchmakingMode";
+import {
   isValidStoredLineupIds,
   parseStoredLineupJson,
 } from "../lib/storedLineups";
@@ -14,8 +18,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: string | null): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 const rowToPayload = (row: StoredLineupRow) => {
   const lineup = parseStoredLineupJson(row.lineup_json);
@@ -62,7 +65,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const mode = parseMode(url.searchParams.get("mode"));
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   const playerId = url.searchParams.get("playerId")?.trim();

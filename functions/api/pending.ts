@@ -1,4 +1,8 @@
 import type { Env, MatchmakingMode } from "../types";
+import {
+  matchmakingModeError,
+  parseMatchmakingMode,
+} from "../lib/matchmakingMode";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -9,8 +13,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: string | null): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
@@ -18,7 +21,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const playerId = url.searchParams.get("playerId")?.trim();
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!playerId) {

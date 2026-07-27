@@ -3198,6 +3198,14 @@ h1.landing-hub__title {
   margin-top: 16px;
 }
 
+.matchmaking-overlay__note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .matchmaking-overlay__cancel {
   margin-top: 18px;
   width: 100%;
@@ -4623,6 +4631,26 @@ h1.landing-hub__title {
   margin: 6px 0 0;
   color: #94a3b8;
   font-size: 0.9rem;
+}
+
+.achievements-page__section-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.achievements-page__section-heading h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.2rem;
+}
+
+.achievements-page__section-heading--spaced {
+  margin-top: 22px;
+}
+
+.achievements-page__event-panel {
+  margin-top: 12px;
 }
 
 .achievements-page__list {

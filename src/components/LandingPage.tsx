@@ -504,7 +504,7 @@ export function LandingPage({
       : hubTab === "daily"
         ? `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`
         : hubTab === "events"
-          ? "Weekly head-to-head with a shared draft board, restricted pool, and $100M cap."
+          ? "Weekly live head-to-head with a shared draft board, restricted pool, and $100M cap. Waits until a live opponent joins."
           : hubTab === "roster"
             ? "Browse unlocked players and season stats."
             : "Sign in to keep your progress, or open GM stats and badges.";
@@ -710,6 +710,10 @@ export function LandingPage({
                       Pool: <strong>{weeklyEvent.restrictionLabel}</strong>
                     </li>
                     <li>
+                      Live opponents only — search keeps counting until someone
+                      joins
+                    </li>
+                    <li>
                       Badges: Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins ·
                       Silver {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
                       {EVENT_BADGE_THRESHOLDS.gold}+
@@ -768,9 +772,11 @@ export function LandingPage({
                         })
                       }
                     >
-                      {eventPlayable
-                        ? "Play weekly event"
-                        : "Event matches used up"}
+                      {matchmakingMode === "event"
+                        ? matchmakingLabel
+                        : eventPlayable
+                          ? "Play weekly event"
+                          : "Event matches used up"}
                     </button>
                   </div>
                 </div>

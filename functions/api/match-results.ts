@@ -1,6 +1,10 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
+  matchmakingModeError,
+  parseMatchmakingMode,
+} from "../lib/matchmakingMode";
+import {
   isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
   parseStoredLineupJson,
@@ -17,8 +21,7 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: unknown): MatchmakingMode | null =>
-  value === "classic" || value === "ranked" ? value : null;
+const parseMode = parseMatchmakingMode;
 
 interface MatchResultBody {
   storedLineupId?: unknown;
@@ -70,7 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const challengerLineup = sanitizeStoredLineupIds(body.challengerLineup);
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: matchmakingModeError() }, 400);
   }
 
   if (!storedLineupId || !challengerPlayerId || !challengerTeamName) {

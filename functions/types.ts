@@ -2,7 +2,7 @@ export interface Env {
   DB: D1Database;
 }
 
-export type MatchmakingMode = "classic" | "ranked";
+export type MatchmakingMode = "classic" | "ranked" | "event";
 
 export interface StoredLineupRow {
   id: string;
