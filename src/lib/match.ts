@@ -32,6 +32,10 @@ export interface StartDraftOptions {
   salaryCapLimit?: number;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  eventId?: string;
+  eventRestriction?: "u25" | "intl";
+  /** When set, both competitors use these exact draft slots. */
+  sharedDraftSlots?: DraftSlotConstraint[];
 }
 
 export type StartMatchResult = "started" | "cancelled" | "failed";
@@ -88,6 +92,8 @@ export const createUserDrafter = (
     salaryCapLimit,
     allTimeMode,
     practiceMode,
+    eventId: options.eventId,
+    eventRestriction: options.eventRestriction,
   };
 };
 

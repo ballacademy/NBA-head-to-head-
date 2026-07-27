@@ -39,7 +39,19 @@ import {
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
+import {
+  loadEventProfile,
+  persistEventMatchOutcome,
+  type EventProfile,
+} from "../lib/eventProfile";
+import { submitEventLeaderboardEntry } from "../lib/eventLeaderboard";
+import {
+  formatEventBadgeLabel,
+  getCurrentWeeklyEvent,
+  type EventBadgeTier,
+} from "../lib/weeklyEvents";
 import type { Drafter, Player } from "../lib/types";
+import { players as allPlayers } from "../data/players";
 
 interface MatchResultsProps {
   user: Drafter;
@@ -75,6 +87,10 @@ export function MatchResults({
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
   const [classicOutcome, setClassicOutcome] = useState<RankedMatchOutcome | null>(null);
+  const [eventProfile, setEventProfile] = useState<EventProfile | null>(() =>
+    user.eventId ? loadEventProfile(user.eventId) : null,
+  );
+  const [newEventBadges, setNewEventBadges] = useState<EventBadgeTier[]>([]);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
@@ -83,12 +99,27 @@ export function MatchResults({
   );
   const isTie = matchResult === "tie";
   const userWon = matchResult === "win";
+  const isEventMatch = Boolean(user.eventId);
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
-  const updatedRecord = useMemo(
-    () => projectRecordAfterMatch(matchResult, matchRecordMode, loadPlayerRecord(matchRecordMode)),
-    [matchRecordMode, matchResult],
-  );
+  const updatedRecord = useMemo(() => {
+    if (isEventMatch && eventProfile) {
+      return {
+        playerId: getOrCreatePlayerIdentity().playerId,
+        wins: eventProfile.wins,
+        losses: eventProfile.losses,
+        ties: eventProfile.ties,
+        winStreak: eventProfile.winStreak,
+        lossStreak: eventProfile.lossStreak,
+      };
+    }
+
+    return projectRecordAfterMatch(
+      matchResult,
+      matchRecordMode,
+      loadPlayerRecord(matchRecordMode),
+    );
+  }, [eventProfile, isEventMatch, matchRecordMode, matchResult]);
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -98,72 +129,94 @@ export function MatchResults({
     recordedRef.current = true;
 
     if (!user.practiceMode) {
-      const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
-      const rankedEloBefore = ensureCurrentRankedSeason().elo;
-      const classicEloBefore = ensureClassicProfile().elo;
-      const outcome = persistMatchOutcome(
-        matchResult,
-        { name: user.name },
-        matchId,
-        matchRecordMode,
-        { opponentElo },
-      );
+      if (user.eventId) {
+        const before = loadEventProfile(user.eventId);
+        const nextProfile = persistEventMatchOutcome(
+          user.eventId,
+          matchResult,
+          matchId,
+        );
+        setEventProfile(nextProfile);
+        setNewEventBadges(
+          nextProfile.badges.filter((badge) => !before.badges.includes(badge)),
+        );
 
-      if (outcome.ranked) {
-        setRankedOutcome(outcome.ranked);
-      }
+        const event = getCurrentWeeklyEvent(allPlayers);
+        if (event && event.id === user.eventId) {
+          void submitEventLeaderboardEntry({
+            event,
+            teamName: user.name,
+            profile: nextProfile,
+          });
+        }
+      } else {
+        const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
+        const rankedEloBefore = ensureCurrentRankedSeason().elo;
+        const classicEloBefore = ensureClassicProfile().elo;
+        const outcome = persistMatchOutcome(
+          matchResult,
+          { name: user.name },
+          matchId,
+          matchRecordMode,
+          { opponentElo },
+        );
 
-      if (outcome.classic) {
-        setClassicOutcome(outcome.classic);
+        if (outcome.ranked) {
+          setRankedOutcome(outcome.ranked);
+        }
+
+        if (outcome.classic) {
+          setClassicOutcome(outcome.classic);
+        }
+
+        if (
+          canStoreLineupForMatchmaking({
+            ...user,
+            players: userLineup,
+          })
+        ) {
+          const mode = user.salaryCapMode ? "ranked" : "classic";
+          const playerId = getOrCreatePlayerIdentity().playerId;
+          const challengerEloBefore = user.salaryCapMode
+            ? rankedEloBefore
+            : classicEloBefore;
+          const storedLineupId = opponent.isGhostOpponent
+            ? extractGhostStoredLineupId(opponent.id)
+            : null;
+          const starCount = countUnlockedAllStars(collection);
+
+          if (storedLineupId) {
+            void submitGhostMatchOutcome({
+              storedLineupId,
+              mode,
+              challengerPlayerId: playerId,
+              challengerTeamName: user.name,
+              challengerWon: userWon,
+              challengerElo: challengerEloBefore,
+              userScore: userScore.preciseTotal,
+              opponentScore: opponentScore.preciseTotal,
+              challengerLineup: user.lineup.filter(
+                (id): id is string => Boolean(id),
+              ),
+            });
+          }
+
+          void submitStoredLineup({
+            mode,
+            playerId,
+            teamName: user.name,
+            lineup: user.lineup.filter((id): id is string => Boolean(id)),
+            elo: challengerEloBefore,
+            awaitingLive: false,
+            salaryTotal: getLineupSalaryTotal(userLineup),
+            starCount,
+          });
+        }
       }
 
       const next = processMatchUnlock(matchResult, matchId, collection);
       setMatchCollection(next);
       onCollectionChange(next);
-
-      if (
-        canStoreLineupForMatchmaking({
-          ...user,
-          players: userLineup,
-        })
-      ) {
-        const mode = user.salaryCapMode ? "ranked" : "classic";
-        const playerId = getOrCreatePlayerIdentity().playerId;
-        const challengerEloBefore = user.salaryCapMode
-          ? rankedEloBefore
-          : classicEloBefore;
-        const storedLineupId = opponent.isGhostOpponent
-          ? extractGhostStoredLineupId(opponent.id)
-          : null;
-        const starCount = countUnlockedAllStars(collection);
-
-        if (storedLineupId) {
-          void submitGhostMatchOutcome({
-            storedLineupId,
-            mode,
-            challengerPlayerId: playerId,
-            challengerTeamName: user.name,
-            challengerWon: userWon,
-            challengerElo: challengerEloBefore,
-            userScore: userScore.preciseTotal,
-            opponentScore: opponentScore.preciseTotal,
-            challengerLineup: user.lineup.filter(
-              (id): id is string => Boolean(id),
-            ),
-          });
-        }
-
-        void submitStoredLineup({
-          mode,
-          playerId,
-          teamName: user.name,
-          lineup: user.lineup.filter((id): id is string => Boolean(id)),
-          elo: challengerEloBefore,
-          awaitingLive: false,
-          salaryTotal: getLineupSalaryTotal(userLineup),
-          starCount,
-        });
-      }
     }
 
     setActionsReady(true);
@@ -177,14 +230,15 @@ export function MatchResults({
     opponent.id,
     opponent.isGhostOpponent,
     opponent.rankedOpponentElo,
-    opponentScore.total,
+    opponentScore.preciseTotal,
     user.allTimeMode,
+    user.eventId,
     user.lineup,
     user.name,
     user.practiceMode,
     user.salaryCapMode,
-    userLineup.length,
-    userScore.total,
+    userLineup,
+    userScore.preciseTotal,
     userWon,
   ]);
 
@@ -246,7 +300,11 @@ export function MatchResults({
         <div className="matchup-panel__banner">
           <div>
             <p className="eyebrow">
-              {user.practiceMode ? "Practice results" : "Matchup results"}
+              {user.practiceMode
+                ? "Practice results"
+                : isEventMatch
+                  ? "Event results"
+                  : "Matchup results"}
             </p>
             <h2 className="matchup-panel__title">
               {isTie
@@ -265,8 +323,11 @@ export function MatchResults({
             {userScore.total === opponentScore.total && !isTie
               ? ` · decided by precise OVR (${userScore.preciseTotal.toFixed(1)} vs ${opponentScore.preciseTotal.toFixed(1)})`
               : ""}
+            {isEventMatch && eventProfile
+              ? ` · Event record ${eventProfile.wins}-${eventProfile.losses} (${eventProfile.matchesPlayed}/30)`
+              : null}
             {((matchRecordMode === "ranked" && rankedOutcome) ||
-              (matchRecordMode === "headToHead" && classicOutcome)) &&
+              (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
             !user.practiceMode ? (
               <>
                 {" "}
@@ -287,7 +348,7 @@ export function MatchResults({
             ) : null}
           </p>
           {((matchRecordMode === "ranked" && rankedOutcome) ||
-            (matchRecordMode === "headToHead" && classicOutcome)) &&
+            (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
           !user.practiceMode ? (
             <div className="matchup-panel__ranked">
               <RankedTierBadge
@@ -312,6 +373,13 @@ export function MatchResults({
                 opponent
               </p>
             </div>
+          ) : null}
+          {isEventMatch && newEventBadges.length > 0 ? (
+            <p className="matchup-panel__event-badges">
+              New event badge
+              {newEventBadges.length > 1 ? "s" : ""}:{" "}
+              {newEventBadges.map((badge) => formatEventBadgeLabel(badge)).join(", ")}
+            </p>
           ) : null}
           <p className="matchup-panel__identity">
             <span className="matchup-panel__identity-label">GM code</span>

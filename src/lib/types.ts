@@ -74,6 +74,9 @@ export interface Drafter {
   salaryCapLimit?: number;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  /** Weekly Events mode id (e.g. 2026-W30-u25). */
+  eventId?: string;
+  eventRestriction?: "u25" | "intl";
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
   isGhostOpponent?: boolean;

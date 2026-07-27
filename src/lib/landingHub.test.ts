@@ -30,6 +30,7 @@ describe("landingHub", () => {
 
   it("validates content tabs", () => {
     expect(isLandingContentTab("play")).toBe(true);
+    expect(isLandingContentTab("events")).toBe(true);
     expect(isLandingContentTab("standings")).toBe(false);
     expect(isLandingContentTab(null)).toBe(false);
   });
