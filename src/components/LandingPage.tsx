@@ -320,7 +320,7 @@ export function LandingPage({
 
       if (options?.eventId && !canPlayEventMatch(options.eventId)) {
         setError(
-          "You've used all 30 matches for this week's event. Check back next week.",
+          "You've used all 30 entries for this week's event. Check back next week.",
         );
         return;
       }
@@ -703,15 +703,12 @@ export function LandingPage({
                     {weeklyEvent.description} Both GMs draft the same five
                     position/division slots under a $
                     {(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M cap.{" "}
-                    {PICK_TIME_LIMIT_SECONDS} seconds per pick. 30 matches max.
+                    {PICK_TIME_LIMIT_SECONDS} seconds per pick. 30 entries
+                    available max.
                   </p>
                   <ul className="event-card__rules">
                     <li>
                       Pool: <strong>{weeklyEvent.restrictionLabel}</strong>
-                    </li>
-                    <li>
-                      Live opponents only — search keeps counting until someone
-                      joins
                     </li>
                     <li>
                       Badges: Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins ·
