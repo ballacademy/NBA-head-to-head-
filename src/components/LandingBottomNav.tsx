@@ -1,6 +1,7 @@
 export type LandingHubTab =
   | "play"
   | "daily"
+  | "events"
   | "roster"
   | "standings"
   | "account";
@@ -17,6 +18,7 @@ const TABS: {
 }[] = [
   { id: "play", label: "Play", icon: "play" },
   { id: "daily", label: "Daily", icon: "daily" },
+  { id: "events", label: "Events", icon: "events" },
   { id: "roster", label: "Roster", icon: "roster" },
   { id: "standings", label: "Standings", icon: "standings" },
   { id: "account", label: "Account", icon: "account" },
@@ -48,6 +50,18 @@ function NavIcon({ name }: { name: string }) {
             strokeWidth="1.8"
           />
           <path d="M8 3v4M16 3v4M4 10h16" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      );
+    case "events":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M12 3l2.2 4.6L19 8.2l-3.5 3.4.8 4.9L12 14.2 7.7 16.5l.8-4.9L5 8.2l4.8-.6L12 3Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
         </svg>
       );
     case "roster":

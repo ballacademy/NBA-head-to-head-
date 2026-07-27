@@ -55,6 +55,22 @@ import type { LandingContentTab } from "../lib/landingHub";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
+import { players as allPlayers } from "../data/players";
+import {
+  canPlayEventMatch,
+  loadEventProfile,
+  remainingEventMatches,
+} from "../lib/eventProfile";
+import {
+  fetchEventLeaderboard,
+  type EventLeaderboardEntry,
+} from "../lib/eventLeaderboard";
+import {
+  EVENT_BADGE_THRESHOLDS,
+  EVENT_SALARY_CAP,
+  formatEventBadgeLabel,
+  getCurrentWeeklyEvent,
+} from "../lib/weeklyEvents";
 
 const buildHeadToHeadModeDetails = (
   baseDetails: string[],
@@ -131,6 +147,10 @@ export function LandingPage({
   const [error, setError] = useState("");
   const [showTeamNameModal, setShowTeamNameModal] = useState(false);
   const [teamNameModalMessage, setTeamNameModalMessage] = useState("");
+  const [eventLeaderboard, setEventLeaderboard] = useState<
+    EventLeaderboardEntry[]
+  >([]);
+  const [eventLeaderboardLoading, setEventLeaderboardLoading] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(
     () => Boolean(collection.pendingUnlock),
   );
@@ -227,6 +247,40 @@ export function LandingPage({
     }
   };
 
+  const weeklyEvent = useMemo(
+    () => getCurrentWeeklyEvent(allPlayers),
+    [],
+  );
+  const eventProfile = weeklyEvent
+    ? loadEventProfile(weeklyEvent.id)
+    : null;
+  const eventMatchesLeft = weeklyEvent
+    ? remainingEventMatches(weeklyEvent.id)
+    : 0;
+  const eventPlayable = weeklyEvent
+    ? canPlayEventMatch(weeklyEvent.id)
+    : false;
+
+  useEffect(() => {
+    if (hubTab !== "events" || !weeklyEvent) {
+      return;
+    }
+
+    let cancelled = false;
+    setEventLeaderboardLoading(true);
+
+    void fetchEventLeaderboard(weeklyEvent.id).then((entries) => {
+      if (!cancelled) {
+        setEventLeaderboard(entries);
+        setEventLeaderboardLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hubTab, weeklyEvent]);
+
   const handleStart = async (options?: StartDraftOptions) => {
     if (collection.pendingUnlock || isMatchmaking) {
       if (collection.pendingUnlock) {
@@ -262,6 +316,13 @@ export function LandingPage({
           );
           return;
         }
+      }
+
+      if (options?.eventId && !canPlayEventMatch(options.eventId)) {
+        setError(
+          "You've used all 30 matches for this week's event. Check back next week.",
+        );
+        return;
       }
 
       setError("Couldn't start this draft. Refresh the page and try again.");
@@ -431,18 +492,22 @@ export function LandingPage({
       ? "Head to Head"
       : hubTab === "daily"
         ? "Daily Draft"
-        : hubTab === "roster"
-          ? "Roster"
-          : "Account";
+        : hubTab === "events"
+          ? "Events"
+          : hubTab === "roster"
+            ? "Roster"
+            : "Account";
 
   const hubLede =
     hubTab === "play"
       ? "Play live against a real opponent. Pick Casual or Pro."
       : hubTab === "daily"
         ? `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`
-        : hubTab === "roster"
-          ? "Browse unlocked players and season stats."
-          : "Sign in to keep your progress, or open GM stats and badges.";
+        : hubTab === "events"
+          ? "Weekly head-to-head with a shared draft board, restricted pool, and $100M cap."
+          : hubTab === "roster"
+            ? "Browse unlocked players and season stats."
+            : "Sign in to keep your progress, or open GM stats and badges.";
 
   return (
     <HubShell
@@ -621,6 +686,141 @@ export function LandingPage({
               {renderDailyModeCard(landingBasicDaily)}
               {renderDailyModeCard(landingAdvancedDaily)}
             </div>
+          </>
+        ) : null}
+
+        {hubTab === "events" ? (
+          <>
+            {renderTeamNameField()}
+            {weeklyEvent && eventProfile ? (
+              <div className="landing-game-modes">
+                <div className="event-card landing-card landing-card--mode">
+                  <div className="mode-card__header">
+                    <p className="eyebrow">{weeklyEvent.weekLabel}</p>
+                  </div>
+                  <h2 className="event-card__title">{weeklyEvent.title}</h2>
+                  <p className="event-card__description">
+                    {weeklyEvent.description} Both GMs draft the same five
+                    position/division slots under a $
+                    {(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M cap.{" "}
+                    {PICK_TIME_LIMIT_SECONDS} seconds per pick. 30 matches max.
+                  </p>
+                  <ul className="event-card__rules">
+                    <li>
+                      Pool: <strong>{weeklyEvent.restrictionLabel}</strong>
+                    </li>
+                    <li>
+                      Badges: Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins ·
+                      Silver {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
+                      {EVENT_BADGE_THRESHOLDS.gold}+
+                    </li>
+                    <li>
+                      Competitor badge at {EVENT_BADGE_THRESHOLDS.participation}+
+                      matches played
+                    </li>
+                  </ul>
+                  <div className="event-card__record">
+                    <RecordWithStreak
+                      record={{
+                        playerId: playerIdentity.playerId,
+                        wins: eventProfile.wins,
+                        losses: eventProfile.losses,
+                        ties: eventProfile.ties,
+                        winStreak: eventProfile.winStreak,
+                        lossStreak: eventProfile.lossStreak,
+                      }}
+                      align="right"
+                      className="ranked-mode-summary__record"
+                    />
+                    <p className="event-card__matches">
+                      {eventMatchesLeft} of {weeklyEvent.maxMatches} matches left
+                    </p>
+                  </div>
+                  <div className="event-card__badges" aria-label="Event badges">
+                    {(
+                      ["participation", "bronze", "silver", "gold"] as const
+                    ).map((tier) => {
+                      const earned = eventProfile.badges.includes(tier);
+                      return (
+                        <span
+                          key={tier}
+                          className={`event-badge event-badge--${tier}${
+                            earned ? " event-badge--earned" : ""
+                          }`}
+                        >
+                          {formatEventBadgeLabel(tier)}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div className="mode-card__actions">
+                    <button
+                      type="button"
+                      className="landing__primary-button"
+                      disabled={modesBlocked || !eventPlayable}
+                      onClick={() =>
+                        void handleStart({
+                          eventId: weeklyEvent.id,
+                          eventRestriction: weeklyEvent.restriction,
+                          salaryCapMode: true,
+                          salaryCapLimit: weeklyEvent.salaryCapLimit,
+                          sharedDraftSlots: weeklyEvent.sharedSlots,
+                        })
+                      }
+                    >
+                      {eventPlayable
+                        ? "Play weekly event"
+                        : "Event matches used up"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="event-leaderboard landing-card">
+                  <div className="mode-card__header">
+                    <p className="eyebrow">Event standings</p>
+                  </div>
+                  <h2 className="event-card__title">Top 100 wins</h2>
+                  <p className="event-card__description">
+                    Ranked by wins this week. Ties break by fewer losses.
+                  </p>
+                  {eventLeaderboardLoading ? (
+                    <p className="event-leaderboard__empty">Loading standings…</p>
+                  ) : eventLeaderboard.length === 0 ? (
+                    <p className="event-leaderboard__empty">
+                      No event results yet. Be the first on the board.
+                    </p>
+                  ) : (
+                    <ol className="event-leaderboard__list">
+                      {eventLeaderboard.map((entry) => (
+                        <li
+                          key={`${entry.playerId}-${entry.rank}`}
+                          className={`event-leaderboard__row${
+                            entry.isViewer
+                              ? " event-leaderboard__row--you"
+                              : ""
+                          }`}
+                        >
+                          <span className="event-leaderboard__rank">
+                            #{entry.rank}
+                          </span>
+                          <span className="event-leaderboard__team">
+                            {entry.teamName}
+                            {entry.isViewer ? " (you)" : ""}
+                          </span>
+                          <span className="event-leaderboard__wins">
+                            {entry.wins}-{entry.losses}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="form-error" role="alert">
+                This week&apos;s event is unavailable. Check back soon.
+              </p>
+            )}
           </>
         ) : null}
 

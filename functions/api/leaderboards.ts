@@ -15,19 +15,34 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const parseMode = (value: string | null) =>
-  value === "classic" || value === "ranked" ? value : null;
+type LeaderboardMode = "classic" | "ranked" | "event";
+
+const parseMode = (value: string | null): LeaderboardMode | null =>
+  value === "classic" || value === "ranked" || value === "event"
+    ? value
+    : null;
 
 const parseSort = (value: string | null) =>
-  value === "elo" || value === "winStreak" || value === "lossStreak"
+  value === "elo" ||
+  value === "winStreak" ||
+  value === "lossStreak" ||
+  value === "wins"
     ? value
     : "elo";
 
 const SEASON_ID_PATTERN = /^\d{4}-\d{2}$/;
+const EVENT_SEASON_ID_PATTERN = /^\d{4}-W\d{2}-(u25|intl)$/;
 
-const parseSeasonId = (mode: "classic" | "ranked", value: string | null) => {
-  void mode;
-  return value && SEASON_ID_PATTERN.test(value) ? value : null;
+const parseSeasonId = (mode: LeaderboardMode, value: string | null) => {
+  if (!value) {
+    return null;
+  }
+
+  if (mode === "event") {
+    return EVENT_SEASON_ID_PATTERN.test(value) ? value : null;
+  }
+
+  return SEASON_ID_PATTERN.test(value) ? value : null;
 };
 
 const parsePlayerId = (value: unknown) =>
@@ -35,8 +50,12 @@ const parsePlayerId = (value: unknown) =>
     ? value.trim().slice(0, 128)
     : "";
 
-const sortClause = (sort: "elo" | "winStreak" | "lossStreak") => {
+const sortClause = (
+  sort: "elo" | "winStreak" | "lossStreak" | "wins",
+) => {
   switch (sort) {
+    case "wins":
+      return "wins DESC, losses ASC, elo DESC, team_name ASC";
     case "winStreak":
       return "win_streak DESC, wins DESC, team_name ASC";
     case "lossStreak":
@@ -64,7 +83,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const mode = parseMode(url.searchParams.get("mode"));
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: "mode must be classic, ranked, or event" }, 400);
   }
 
   const seasonId = parseSeasonId(mode, url.searchParams.get("seasonId"));
@@ -73,14 +92,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "seasonId is required for leaderboards" }, 400);
   }
 
-  const sort = parseSort(url.searchParams.get("sort"));
+  const sort =
+    mode === "event" && !url.searchParams.get("sort")
+      ? "wins"
+      : parseSort(url.searchParams.get("sort"));
   const viewerPlayerId = parsePlayerId(url.searchParams.get("viewerPlayerId"));
+  const defaultLimit = mode === "event" ? 100 : 500;
   const limit = Math.min(
     Math.max(
-      Number(url.searchParams.get("limit") ?? 500),
+      Number(url.searchParams.get("limit") ?? defaultLimit),
       1,
     ),
-    500,
+    mode === "event" ? 100 : 500,
   );
 
   const rows = await context.env.DB.prepare(
@@ -120,7 +143,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const mode = parseMode(typeof body.mode === "string" ? body.mode : null);
 
   if (!mode) {
-    return json({ error: "mode must be classic or ranked" }, 400);
+    return json({ error: "mode must be classic, ranked, or event" }, 400);
   }
 
   const seasonId = parseSeasonId(

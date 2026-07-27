@@ -3,16 +3,22 @@ export type MatchModeTheme =
   | "daily"
   | "ranked"
   | "all-time"
-  | "practice";
+  | "practice"
+  | "event";
 
 export const getMatchModeTheme = (options: {
   isDailyDraft?: boolean;
   salaryCapMode?: boolean;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  eventId?: string;
 }): MatchModeTheme => {
   if (options.practiceMode) {
     return "practice";
+  }
+
+  if (options.eventId) {
+    return "event";
   }
 
   if (options.isDailyDraft) {

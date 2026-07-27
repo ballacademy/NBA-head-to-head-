@@ -135,8 +135,14 @@ export const getMatchRecordMode = (options: {
   allTimeMode?: boolean;
   salaryCapMode?: boolean;
   practiceMode?: boolean;
+  eventId?: string;
 }): MatchRecordMode => {
   if (options.practiceMode) {
+    return "headToHead";
+  }
+
+  // Events track record separately; avoid writing into Pro / Casual seasons.
+  if (options.eventId) {
     return "headToHead";
   }
 

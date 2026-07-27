@@ -103,9 +103,11 @@ export function DraftRoom({
   const salaryCapLimit = drafter.salaryCapLimit;
   const hasSalaryCap = salaryCapLimit != null;
   const rankedProfile =
-    !isPracticeMode && drafter.salaryCapMode ? getRankedProfileView() : null;
+    !isPracticeMode && drafter.salaryCapMode && !drafter.eventId
+      ? getRankedProfileView()
+      : null;
   const classicProfile =
-    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode
+    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode && !drafter.eventId
       ? getClassicProfileView()
       : null;
   const salaryCapOptions = useMemo(
@@ -248,6 +250,7 @@ export function DraftRoom({
     salaryCapMode: drafter.salaryCapMode,
     allTimeMode: drafter.allTimeMode,
     practiceMode: drafter.practiceMode,
+    eventId: drafter.eventId,
   });
 
   return (
@@ -275,13 +278,19 @@ export function DraftRoom({
           <p className="eyebrow">
             {isPracticeMode
               ? "Practice mode"
-              : drafter.salaryCapMode
-                ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
-                : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label ?? "Casual"}`}
+              : drafter.eventId
+                ? "Weekly Event"
+                : drafter.salaryCapMode
+                  ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
+                  : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label ?? "Casual"}`}
           </p>
           {isPracticeMode ? (
             <p className="salary-cap-banner__rating">
               Bot opponent • ratings do not change
+            </p>
+          ) : drafter.eventId ? (
+            <p className="salary-cap-banner__rating">
+              Shared board • event record only
             </p>
           ) : rankedProfile ? (
             <p className="salary-cap-banner__rating">

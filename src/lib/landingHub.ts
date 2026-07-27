@@ -1,4 +1,9 @@
-export type LandingContentTab = "play" | "daily" | "roster" | "account";
+export type LandingContentTab =
+  | "play"
+  | "daily"
+  | "events"
+  | "roster"
+  | "account";
 
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
 
@@ -7,6 +12,7 @@ export const isLandingContentTab = (
 ): value is LandingContentTab =>
   value === "play" ||
   value === "daily" ||
+  value === "events" ||
   value === "roster" ||
   value === "account";
 

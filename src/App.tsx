@@ -76,6 +76,11 @@ import {
   getStartMatchErrorMessage,
   planHeadToHeadMatchmaking,
 } from "./lib/matchmaking";
+import { canPlayEventMatch } from "./lib/eventProfile";
+import {
+  filterPlayersForEventRestriction,
+  type EventRestrictionId,
+} from "./lib/weeklyEvents";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
@@ -322,21 +327,29 @@ function App() {
     [allTimeMode, modeRecords.allTime],
   );
 
-  const draftablePlayers = useMemo(
-    () =>
-      isDailyDraft
-        ? activePlayers
-        : getDraftablePlayers(activePlayers, collection),
-    [activePlayers, collection, isDailyDraft],
-  );
+  const eventRestriction = user?.eventRestriction;
 
-  const opponentDraftablePlayers = useMemo(
-    () =>
-      opponentCollection
-        ? getDraftablePlayers(activePlayers, opponentCollection)
-        : activePlayers,
-    [activePlayers, opponentCollection],
-  );
+  const draftablePlayers = useMemo(() => {
+    if (isDailyDraft) {
+      return activePlayers;
+    }
+
+    if (eventRestriction) {
+      return filterPlayersForEventRestriction(activePlayers, eventRestriction);
+    }
+
+    return getDraftablePlayers(activePlayers, collection);
+  }, [activePlayers, collection, eventRestriction, isDailyDraft]);
+
+  const opponentDraftablePlayers = useMemo(() => {
+    if (eventRestriction) {
+      return filterPlayersForEventRestriction(activePlayers, eventRestriction);
+    }
+
+    return opponentCollection
+      ? getDraftablePlayers(activePlayers, opponentCollection)
+      : activePlayers;
+  }, [activePlayers, eventRestriction, opponentCollection]);
   const opponentDraftablePlayersRef = useRef(opponentDraftablePlayers);
 
   opponentDraftablePlayersRef.current = opponentDraftablePlayers;
@@ -484,6 +497,11 @@ function App() {
     const nextDailyDraftMode = options.dailyDraftMode ?? "basic";
     const salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
+    const eventId = options.eventId;
+    const eventMode = Boolean(eventId);
+    const eventRestriction = options.eventRestriction as
+      | EventRestrictionId
+      | undefined;
     const dateKey = getDailyDateKey();
     const setup = daily ? getDailyDraftSetup(dateKey, nextDailyDraftMode) : null;
 
@@ -491,28 +509,43 @@ function App() {
       return "failed";
     }
 
+    if (eventMode && eventId && !canPlayEventMatch(eventId)) {
+      setStartMatchError(getStartMatchErrorMessage("event_limit_reached"));
+      return "failed";
+    }
+
     const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
       allTimeMode: nextAllTimeMode,
     });
     const salaryCapLimit =
-      practiceMode
+      eventMode
         ? options.salaryCapLimit ?? RANKED_SALARY_CAP
-        : daily || nextAllTimeMode
-          ? undefined
-          : salaryCapMode
-            ? RANKED_SALARY_CAP
-            : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+        : practiceMode
+          ? options.salaryCapLimit ?? RANKED_SALARY_CAP
+          : daily || nextAllTimeMode
+            ? undefined
+            : salaryCapMode
+              ? RANKED_SALARY_CAP
+              : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
 
     // Show first-draft instructions before matchmaking or the pick timer starts.
     await ensureDraftOnboarding(salaryCapLimit != null);
 
-    const draftPool = daily ? pool : getDraftablePlayers(pool, collection);
+    const eventPool =
+      eventMode && eventRestriction
+        ? filterPlayersForEventRestriction(pool, eventRestriction)
+        : null;
+    const draftPool = daily
+      ? pool
+      : eventPool
+        ? eventPool
+        : getDraftablePlayers(pool, collection);
     let ghostOpponent: GhostOpponentSnapshot | null = null;
     let liveOpponent: LiveOpponentSnapshot | null = null;
     let isPendingQueue = false;
     let activeMatchmakingGeneration: number | null = null;
 
-    if (!daily && !nextAllTimeMode && !practiceMode) {
+    if (!daily && !nextAllTimeMode && !practiceMode && !eventMode) {
       const nextMatchmakingMode: "classic" | "ranked" = salaryCapMode
         ? "ranked"
         : "classic";
@@ -612,13 +645,16 @@ function App() {
     }
 
     const nextOpponentCollection =
-      daily || isPendingQueue || practiceMode
+      daily || isPendingQueue || practiceMode || eventMode
         ? null
         : createOpponentCollection(collection);
-    const opponentPool = nextOpponentCollection
-      ? getDraftablePlayers(pool, nextOpponentCollection)
-      : pool;
+    const opponentPool = eventPool
+      ? eventPool
+      : nextOpponentCollection
+        ? getDraftablePlayers(pool, nextOpponentCollection)
+        : pool;
     const setupSlots = setup?.slots;
+    const sharedSlots = options.sharedDraftSlots;
     const slotsAreFeasible = (
       players: typeof draftPool,
       slots: ReturnType<typeof generateFeasibleDraftSlots>,
@@ -631,8 +667,10 @@ function App() {
           )
         : validateDraftSlotsFeasible(players, slots);
 
-    let userSlots = setupSlots ?? generateFeasibleDraftSlots(draftPool);
+    let userSlots =
+      sharedSlots ?? setupSlots ?? generateFeasibleDraftSlots(draftPool);
     if (
+      !sharedSlots &&
       salaryCapLimit != null &&
       !slotsAreFeasible(draftPool, userSlots)
     ) {
@@ -645,9 +683,12 @@ function App() {
     let opponentSlots =
       daily || isPendingQueue
         ? null
-        : createOpponentDraftSlots(practiceMode ? draftPool : opponentPool);
+        : sharedSlots
+          ? [...sharedSlots]
+          : createOpponentDraftSlots(practiceMode || eventMode ? draftPool : opponentPool);
     if (
       opponentSlots &&
+      !sharedSlots &&
       salaryCapLimit != null &&
       !slotsAreFeasible(opponentPool, opponentSlots)
     ) {
@@ -664,6 +705,7 @@ function App() {
         !isPendingQueue &&
         !nextAllTimeMode &&
         !practiceMode &&
+        !eventMode &&
         (!opponentSlots ||
           opponentSlots.length === 0 ||
           !slotsAreFeasible(opponentPool, opponentSlots)))
@@ -673,7 +715,7 @@ function App() {
     }
 
     if (
-      practiceMode &&
+      (practiceMode || eventMode) &&
       (!opponentSlots ||
         opponentSlots.length === 0 ||
         !slotsAreFeasible(draftPool, opponentSlots))
@@ -698,10 +740,13 @@ function App() {
         isDailyDraft: daily,
         dailyDraftMode: daily ? nextDailyDraftMode : undefined,
         dailyChallengeTitle: setup?.challenge.title,
-        salaryCapMode,
+        salaryCapMode: eventMode ? true : salaryCapMode,
         salaryCapLimit,
         allTimeMode: nextAllTimeMode,
         practiceMode,
+        eventId,
+        eventRestriction,
+        sharedDraftSlots: sharedSlots,
       }),
     );
     setOpponent(
@@ -712,16 +757,22 @@ function App() {
           : ghostOpponent && opponentSlots
             ? createGhostOpponent(opponentSlots, ghostOpponent, { salaryCapMode })
             : opponentSlots
-              ? practiceMode
+              ? eventMode
                 ? {
-                    ...createClassicOpponent(opponentSlots, { salaryCapLimit }),
-                    practiceMode: true,
+                    ...createRankedOpponent(opponentSlots),
+                    eventId,
+                    eventRestriction,
                   }
-                : salaryCapMode
-                  ? createRankedOpponent(opponentSlots)
-                  : nextAllTimeMode
-                    ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
-                    : createClassicOpponent(opponentSlots)
+                : practiceMode
+                  ? {
+                      ...createClassicOpponent(opponentSlots, { salaryCapLimit }),
+                      practiceMode: true,
+                    }
+                  : salaryCapMode
+                    ? createRankedOpponent(opponentSlots)
+                    : nextAllTimeMode
+                      ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                      : createClassicOpponent(opponentSlots)
               : null,
     );
     setOpponentCollection(nextOpponentCollection);

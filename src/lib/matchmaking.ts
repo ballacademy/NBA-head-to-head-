@@ -24,6 +24,7 @@ export type StartMatchError =
   | "pending_unlock"
   | "daily_completed"
   | "pending_lineup_locked"
+  | "event_limit_reached"
   | "setup_failed"
   | "cancelled";
 
@@ -151,6 +152,8 @@ export const getStartMatchErrorMessage = (error: StartMatchError) => {
       return "You've already completed today's Daily Draft. Come back tomorrow.";
     case "pending_lineup_locked":
       return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup is matched.`;
+    case "event_limit_reached":
+      return "You've used all 30 matches for this week's event. Check back next week.";
     case "setup_failed":
     default:
       return "Couldn't start this draft. Refresh the page and try again.";
