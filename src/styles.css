@@ -4942,9 +4942,13 @@ h1.landing-hub__title {
 .event-leaderboard__list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 8px;
   display: grid;
   gap: 6px;
+  border: 1px solid var(--hub-subbox-inset-border);
+  border-radius: 12px;
+  background: var(--hub-subbox-inset-bg);
+  box-shadow: var(--hub-subbox-inset-shadow);
 }
 
 .event-leaderboard__row {
@@ -4954,7 +4958,8 @@ h1.landing-hub__title {
   align-items: center;
   padding: 8px 10px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
   font-size: 0.88rem;
 }
 
@@ -4963,7 +4968,7 @@ h1.landing-hub__title {
 }
 
 .event-leaderboard__rank {
-  color: rgba(226, 232, 240, 0.65);
+  color: #94a3b8;
   font-weight: 700;
 }
 
@@ -4982,14 +4987,6 @@ h1.landing-hub__title {
 .event-leaderboard__empty {
   font-size: 0.9rem;
   color: #cbd5e1;
-}
-
-.event-leaderboard__list {
-  padding: 8px;
-  border: 1px solid var(--hub-subbox-inset-border);
-  border-radius: 12px;
-  background: var(--hub-subbox-inset-bg);
-  box-shadow: var(--hub-subbox-inset-shadow);
 }
 
 .matchup-panel__event-badges {
