@@ -10,6 +10,10 @@ import {
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "../lib/accountCredentials";
+import {
+  FOUNDING_GM_ACHIEVEMENT_ID,
+  syncFoundingGmAchievement,
+} from "../lib/foundingGm";
 import { restorePlayerIdentityFromLogin } from "../lib/restorePlayerIdentity";
 
 type AccountPanelMode = "closed" | "register" | "login";
@@ -55,6 +59,7 @@ export function AccountAuthPanel({
     if (result.status.linked && result.status.username) {
       setLinkedUsername(result.status.username);
       setLinkState("linked");
+      syncFoundingGmAchievement(Boolean(result.status.foundingGm));
       return;
     }
 
@@ -133,8 +138,13 @@ export function AccountAuthPanel({
     setLinkedUsername(result.username);
     setLinkState("linked");
     setMode("closed");
+    const { newlyUnlocked } = syncFoundingGmAchievement(
+      Boolean(result.foundingGm),
+    );
     setMessage(
-      `Account created for @${result.username}. You can use it to restore this GM code later.`,
+      newlyUnlocked.includes(FOUNDING_GM_ACHIEVEMENT_ID)
+        ? `Account created for @${result.username}. Founding GM badge unlocked — one of the first 500 accounts.`
+        : `Account created for @${result.username}. You can use it to restore this GM code later.`,
     );
   };
 
@@ -163,12 +173,20 @@ export function AccountAuthPanel({
       setLinkedUsername(result.username);
       setLinkState("linked");
       setMode("closed");
-      setMessage(`Signed in as @${result.username}.`);
+      const { newlyUnlocked } = syncFoundingGmAchievement(
+        Boolean(result.foundingGm),
+      );
+      setMessage(
+        newlyUnlocked.includes(FOUNDING_GM_ACHIEVEMENT_ID)
+          ? `Signed in as @${result.username}. Founding GM badge unlocked.`
+          : `Signed in as @${result.username}.`,
+      );
       return;
     }
 
     try {
       await restorePlayerIdentityFromLogin(result.playerId);
+      syncFoundingGmAchievement(Boolean(result.foundingGm));
       window.location.reload();
     } catch {
       setBusy(false);

@@ -115,6 +115,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       username: account.username,
       playerId: account.playerId,
       createdAt: account.createdAt,
+      signupIndex: account.signupIndex,
+      foundingGm: account.foundingGm,
     });
   } catch (error) {
     const missingTable = missingAccountsTableError(error);

@@ -55,4 +55,5 @@ export interface PlayerAccountRow {
   player_id: string;
   created_at: string;
   last_login_at: string | null;
+  signup_index: number | null;
 }

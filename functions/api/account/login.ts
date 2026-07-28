@@ -12,6 +12,7 @@ import {
   touchAccountLogin,
   verifyAccountPassword,
 } from "../../lib/playerAccounts";
+import { isFoundingGmSignupIndex } from "../../lib/foundingGm";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -82,5 +83,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     ok: true,
     username: account.username,
     playerId: account.player_id,
+    signupIndex: account.signup_index,
+    foundingGm: isFoundingGmSignupIndex(account.signup_index),
   });
 };
