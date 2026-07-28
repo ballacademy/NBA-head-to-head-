@@ -454,7 +454,10 @@ main.landing-layout {
   width: min(80px, 20vw);
   height: auto;
   aspect-ratio: 1;
-  object-fit: contain;
+  background-color: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
   filter: drop-shadow(0 8px 20px rgba(30, 16, 53, 0.18));
 }
 
@@ -571,6 +574,11 @@ main.landing-layout {
   /* ~20% larger than prior 40px on mobile. */
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
+  background-color: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
   filter: drop-shadow(0 4px 10px rgba(30, 16, 53, 0.16));
 }
 
@@ -580,6 +588,8 @@ main.landing-layout {
   }
 
   .landing-hub-chrome .landing-hub-brand {
+    /* Center the 80px mark between panel top and the hub title band. */
+    top: -8px;
     height: 80px;
   }
 
