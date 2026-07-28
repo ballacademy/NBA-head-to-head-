@@ -10,6 +10,10 @@ import {
   timingSafeEqualHex,
   verifyPassword,
 } from "../lib/passwordHash";
+import {
+  FOUNDING_GM_ACCOUNT_LIMIT,
+  isFoundingGmSignupIndex,
+} from "../lib/foundingGm";
 
 describe("accountCredentials", () => {
   it("normalizes and validates usernames", () => {
@@ -27,6 +31,15 @@ describe("accountCredentials", () => {
   it("requires a player id for registration", () => {
     expect(validatePlayerId("").ok).toBe(false);
     expect(validatePlayerId("player-123").ok).toBe(true);
+  });
+});
+
+describe("foundingGm", () => {
+  it("limits the Founding GM badge to the first 500 accounts", () => {
+    expect(isFoundingGmSignupIndex(1)).toBe(true);
+    expect(isFoundingGmSignupIndex(500)).toBe(true);
+    expect(isFoundingGmSignupIndex(FOUNDING_GM_ACCOUNT_LIMIT)).toBe(true);
+    expect(isFoundingGmSignupIndex(501)).toBe(false);
   });
 });
 

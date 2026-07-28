@@ -506,4 +506,13 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     emoji: "💯",
     check: (_lineup, context) => (context?.lineupOvr ?? 0) >= 100,
   },
+  {
+    id: "founding-gm",
+    title: "Founding GM",
+    description:
+      "Create an account among the first 500 GMs on Draft Day GM.",
+    emoji: "🏛️",
+    // Granted by the account service for early registered accounts.
+    check: () => false,
+  },
 ];

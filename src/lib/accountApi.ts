@@ -12,6 +12,8 @@ export interface AccountStatusResponse {
   username?: string;
   createdAt?: string;
   lastLoginAt?: string | null;
+  signupIndex?: number | null;
+  foundingGm?: boolean;
 }
 
 export interface AccountAuthSuccess {
@@ -19,6 +21,8 @@ export interface AccountAuthSuccess {
   username: string;
   playerId: string;
   createdAt?: string;
+  signupIndex?: number | null;
+  foundingGm?: boolean;
 }
 
 export type AccountApiResult =
@@ -124,6 +128,8 @@ export const registerAccount = async (params: {
       username: body.username,
       playerId: body.playerId,
       createdAt: body.createdAt,
+      signupIndex: body.signupIndex,
+      foundingGm: Boolean(body.foundingGm),
     };
   } catch {
     return {
@@ -174,6 +180,8 @@ export const loginAccount = async (params: {
       ok: true,
       username: body.username,
       playerId: body.playerId,
+      signupIndex: body.signupIndex,
+      foundingGm: Boolean(body.foundingGm),
     };
   } catch {
     return {

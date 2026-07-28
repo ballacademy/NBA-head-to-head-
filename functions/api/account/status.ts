@@ -1,5 +1,6 @@
 import type { Env } from "../../types";
 import { validatePlayerId } from "../../lib/accountCredentials";
+import { isFoundingGmSignupIndex } from "../../lib/foundingGm";
 import { getAccountByPlayerId } from "../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
@@ -44,6 +45,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       linked: true,
       playerId: account.player_id,
       username: account.username,
+      signupIndex: account.signup_index,
+      foundingGm: isFoundingGmSignupIndex(account.signup_index),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

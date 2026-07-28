@@ -1,4 +1,5 @@
 import type { PlayerAccountRow } from "../types";
+import { isFoundingGmSignupIndex } from "./foundingGm";
 import {
   hashPassword,
   PASSWORD_PBKDF2_ITERATIONS,
@@ -10,14 +11,16 @@ export const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 export const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 5;
 export const REGISTER_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
+const ACCOUNT_SELECT_COLUMNS = `id, username, password_salt, password_hash, password_iters,
+              player_id, created_at, last_login_at, signup_index`;
+
 export const getAccountByUsername = async (
   db: D1Database,
   username: string,
 ) =>
   db
     .prepare(
-      `SELECT id, username, password_salt, password_hash, password_iters,
-              player_id, created_at, last_login_at
+      `SELECT ${ACCOUNT_SELECT_COLUMNS}
        FROM player_accounts
        WHERE username = ?`,
     )
@@ -30,8 +33,7 @@ export const getAccountByPlayerId = async (
 ) =>
   db
     .prepare(
-      `SELECT id, username, password_salt, password_hash, password_iters,
-              player_id, created_at, last_login_at
+      `SELECT ${ACCOUNT_SELECT_COLUMNS}
        FROM player_accounts
        WHERE player_id = ?`,
     )
@@ -54,8 +56,11 @@ export const createPlayerAccount = async (
     .prepare(
       `INSERT INTO player_accounts (
          id, username, password_salt, password_hash, password_iters,
-         player_id, created_at, last_login_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+         player_id, created_at, last_login_at, signup_index
+       ) VALUES (
+         ?, ?, ?, ?, ?, ?, ?, NULL,
+         (SELECT COALESCE(MAX(signup_index), 0) + 1 FROM player_accounts)
+       )`,
     )
     .bind(
       id,
@@ -68,11 +73,16 @@ export const createPlayerAccount = async (
     )
     .run();
 
+  const created = await getAccountByPlayerId(db, params.playerId);
+  const signupIndex = created?.signup_index ?? null;
+
   return {
     id,
     username: params.username,
     playerId: params.playerId,
     createdAt,
+    signupIndex,
+    foundingGm: isFoundingGmSignupIndex(signupIndex),
   };
 };
 
