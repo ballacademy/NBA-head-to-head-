@@ -14,8 +14,8 @@ export function DraftDayGmLogo({
       className={className}
       src={LOGO_SRC}
       alt={title}
-      width={200}
-      height={236}
+      width={720}
+      height={720}
       draggable={false}
       decoding="async"
     />
