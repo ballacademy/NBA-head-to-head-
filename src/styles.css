@@ -563,14 +563,14 @@ main.landing-layout {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 40px;
+  height: 48px;
   margin: 0;
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
-  /* Match hub chrome row (~40px) so titles stay aligned. */
-  width: 40px;
-  height: 40px;
+  /* ~20% larger than prior 40px on mobile. */
+  width: 48px;
+  height: 48px;
   filter: drop-shadow(0 4px 10px rgba(30, 16, 53, 0.16));
 }
 
@@ -579,9 +579,14 @@ main.landing-layout {
     padding-top: 16px;
   }
 
+  .landing-hub-chrome .landing-hub-brand {
+    height: 80px;
+  }
+
   .landing-hub-chrome .landing-hub-brand__logo {
-    width: 40px;
-    height: 40px;
+    /* Double the prior 40px size on laptop/PC. */
+    width: 80px;
+    height: 80px;
   }
 }
 
@@ -677,8 +682,16 @@ main.landing-layout {
   min-height: 52px;
   margin: 0 0 6px;
   /* Symmetric side padding so title/subtitle stay optically centered. */
-  padding-inline: max(72px, calc(var(--hub-chrome-inset) + 48px));
+  padding-inline: max(80px, calc(var(--hub-chrome-inset) + 56px));
   text-align: center;
+}
+
+@media (min-width: 900px) {
+  .landing-hub__top {
+    /* Clear the doubled desktop logo while keeping titles centered. */
+    min-height: 80px;
+    padding-inline: max(112px, calc(var(--hub-chrome-inset) + 88px));
+  }
 }
 
 .landing .landing-hub__title,
