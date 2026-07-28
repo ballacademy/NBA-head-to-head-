@@ -682,8 +682,16 @@ main.landing-layout {
   min-height: 52px;
   margin: 0 0 6px;
   /* Symmetric side padding so title/subtitle stay optically centered. */
-  padding-inline: max(72px, calc(var(--hub-chrome-inset) + 48px));
+  padding-inline: max(80px, calc(var(--hub-chrome-inset) + 56px));
   text-align: center;
+}
+
+@media (min-width: 900px) {
+  .landing-hub__top {
+    /* Clear the doubled desktop logo while keeping titles centered. */
+    min-height: 80px;
+    padding-inline: max(112px, calc(var(--hub-chrome-inset) + 88px));
+  }
 }
 
 .landing .landing-hub__title,
