@@ -54,14 +54,14 @@ describe("impactRanking", () => {
   });
 
   it("boosts ranked stars missing from the default stat ladder", () => {
-    const curry = players.find((player) => player.name === "Stephen Curry");
+    const cade = players.find((player) => player.name === "Cade Cunningham");
     const lamelo = players.find((player) => player.name === "LaMelo Ball");
     const holiday = players.find((player) => player.name === "Jrue Holiday");
 
-    expect(curry).toBeDefined();
+    expect(cade).toBeDefined();
     expect(lamelo).toBeDefined();
     expect(holiday).toBeDefined();
-    expect(getPlayerImpactAdjustment(curry!)).toBeGreaterThan(0);
+    expect(getPlayerImpactAdjustment(cade!)).toBeGreaterThan(0);
     expect(getPlayerImpactAdjustment(lamelo!)).toBeGreaterThan(0.4);
     expect(getPlayerImpactAdjustment(holiday!)).toBeLessThan(0);
   });
@@ -72,7 +72,7 @@ describe("impactRanking", () => {
 
     expect(butler).toBeDefined();
     expect(pritchard).toBeDefined();
-    expect(getPlayerImpactRank(butler!)).toBe(24);
+    expect(getPlayerImpactRank(butler!)).toBe(23);
     expect(isImpactRankStarPlayer(butler!)).toBe(true);
     expect(isImpactRankStarPlayer(pritchard!)).toBe(false);
   });
@@ -104,7 +104,7 @@ describe("impactRanking", () => {
       );
     }, 0);
 
-    expect(getLineupBestImpactRank(lineup)).toBe(69);
+    expect(getLineupBestImpactRank(lineup)).toBe(68);
     expect(getMidTierImpactLineupPenalty(lineup)).toBe(
       MID_TIER_IMPACT_NO_TOP50_PENALTY,
     );
