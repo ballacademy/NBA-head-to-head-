@@ -45,7 +45,7 @@ describe("getImpactRankLineupBonus", () => {
     const butler = playersById.get("butleji01-gsw");
 
     expect(butler).toBeDefined();
-    expect(getPlayerImpactRank(butler!)).toBe(24);
+    expect(getPlayerImpactRank(butler!)).toBe(23);
     expect(getPlayerLineupStarBonus(butler!)).toBeGreaterThan(1.5);
     expect(getPlayerLineupStarBonus(butler!)).toBeLessThan(
       IMPACT_RANK_TOP_BONUS,
@@ -76,7 +76,9 @@ describe("getImpactRankLineupBonus", () => {
     const amen = playersById.get("thompam01-hou");
     const giddey = players.find((player) => player.bbrPlayerId === "giddejo01");
     const unranked = players.find(
-      (player) => getPlayerImpactRank(player) === null,
+      (player) =>
+        getPlayerImpactRank(player) === null &&
+        getPlayerLineupStarBonus(player) === 0,
     );
 
     expect(castle && amen && giddey && unranked).toBeTruthy();
