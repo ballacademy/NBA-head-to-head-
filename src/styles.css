@@ -450,9 +450,12 @@ main.landing-layout {
 
 .landing__logo {
   display: block;
-  width: min(148px, 36vw);
+  /* Square circular mark — match prior vertical footprint (~80px). */
+  width: min(80px, 20vw);
   height: auto;
-  filter: drop-shadow(0 10px 28px rgba(124, 58, 237, 0.28));
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(30, 16, 53, 0.18));
 }
 
 .landing__eyebrow {
@@ -565,10 +568,10 @@ main.landing-layout {
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
-  /* ~30% smaller than prior 110px / 120px sizes */
-  width: min(77px, 20vw);
-  height: auto;
-  filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.22));
+  /* Match hub chrome row (~40px) so titles stay aligned. */
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 4px 10px rgba(30, 16, 53, 0.16));
 }
 
 @media (min-width: 900px) {
@@ -577,7 +580,8 @@ main.landing-layout {
   }
 
   .landing-hub-chrome .landing-hub-brand__logo {
-    width: 84px;
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -2549,9 +2553,11 @@ h1.landing-hub__title {
 
 .leaderboard__logo {
   display: block;
-  width: min(108px, 28vw);
+  width: min(56px, 16vw);
   height: auto;
-  filter: drop-shadow(0 8px 20px rgba(124, 58, 237, 0.22));
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(30, 16, 53, 0.16));
 }
 
 .leaderboard__subtitle {
@@ -2859,6 +2865,8 @@ h1.landing-hub__title {
 .gm-stats-page__logo {
   width: 42px;
   height: 42px;
+  aspect-ratio: 1;
+  object-fit: contain;
 }
 
 .gm-stats-page__subtitle {
