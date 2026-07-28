@@ -579,9 +579,6 @@ main.landing-layout {
   border: 0;
   outline: 0;
   box-shadow: none;
-  /* Avoid any pre-paint frame behind the circular mark. */
-  -webkit-mask-image: radial-gradient(closest-side, #000 99%, transparent 100%);
-  mask-image: radial-gradient(closest-side, #000 99%, transparent 100%);
   filter: drop-shadow(0 4px 10px rgba(30, 16, 53, 0.16));
 }
 
