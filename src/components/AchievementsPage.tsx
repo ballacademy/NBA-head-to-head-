@@ -2,78 +2,58 @@ import { useMemo } from "react";
 import { getAchievementProgress } from "../lib/achievements";
 import {
   loadAllEventProfiles,
-  loadEventProfile,
   type EventProfile,
 } from "../lib/eventProfile";
 import {
   describeEventFromId,
-  EVENT_BADGE_THRESHOLDS,
   formatEventBadgeDescription,
   formatEventBadgeEmoji,
   formatEventBadgeLabel,
-  getCurrentEventMeta,
-  type EventBadgeTier,
+  getTopEventBadgeTier,
 } from "../lib/weeklyEvents";
 
-const EVENT_BADGE_TIERS: EventBadgeTier[] = [
-  "participation",
-  "bronze",
-  "silver",
-  "gold",
-];
+const buildTopEventBadge = (profile: EventProfile) => {
+  const topTier = getTopEventBadgeTier(profile.badges);
+  if (!topTier) {
+    return null;
+  }
 
-const buildEventBadgeRows = (profile: EventProfile) => {
   const meta = describeEventFromId(profile.eventId);
 
-  return EVENT_BADGE_TIERS.map((tier) => ({
-    id: `${profile.eventId}:${tier}`,
-    tier,
-    emoji: formatEventBadgeEmoji(tier),
-    title: `${formatEventBadgeLabel(tier)} · ${meta.title}`,
-    description: `${formatEventBadgeDescription(tier, meta.title)} (${meta.weekLabel})`,
-    isUnlocked: profile.badges.includes(tier),
-  }));
+  return {
+    id: `${profile.eventId}:${topTier}`,
+    tier: topTier,
+    emoji: formatEventBadgeEmoji(topTier),
+    title: `${formatEventBadgeLabel(topTier)} · ${meta.title}`,
+    description: `${formatEventBadgeDescription(topTier, meta.title)} (${meta.weekLabel})`,
+  };
 };
 
 export function AchievementsPage() {
   const progress = useMemo(() => getAchievementProgress(), []);
-  const eventBadgeSections = useMemo(() => {
-    const current = getCurrentEventMeta();
-    const currentProfile = loadEventProfile(current.id);
-    const pastProfiles = loadAllEventProfiles().filter(
-      (profile) =>
-        profile.eventId !== current.id && profile.badges.length > 0,
-    );
-
-    return {
-      current: {
-        meta: current,
-        profile: currentProfile,
-        badges: buildEventBadgeRows(currentProfile),
-      },
-      past: pastProfiles.map((profile) => ({
-        meta: describeEventFromId(profile.eventId),
-        profile,
-        badges: buildEventBadgeRows(profile).filter((badge) => badge.isUnlocked),
-      })),
-    };
+  const eventBadges = useMemo(() => {
+    return loadAllEventProfiles()
+      .map((profile) => buildTopEventBadge(profile))
+      .filter((badge): badge is NonNullable<typeof badge> => badge != null)
+      .sort((left, right) => right.id.localeCompare(left.id));
   }, []);
 
-  const unlockedEventBadges =
-    eventBadgeSections.current.badges.filter((badge) => badge.isUnlocked)
-      .length +
-    eventBadgeSections.past.reduce(
-      (sum, section) => sum + section.badges.length,
-      0,
-    );
+  const unlockedSpecial = progress.special.achievements.filter(
+    (achievement) => achievement.isUnlocked,
+  );
 
   return (
     <div className="hub-feature achievements-page">
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Badges</h1>
         <p className="landing__lede landing-hub__lede">
-          {progress.unlocked}/{progress.total} career · {unlockedEventBadges}{" "}
-          event · Locked badges stay hidden until earned
+          {progress.unlocked}/{progress.total} career
+          {unlockedSpecial.length > 0
+            ? ` · ${unlockedSpecial.length} special`
+            : ""}
+          {eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}
+          {" · "}
+          Locked badges stay hidden until earned
         </p>
       </div>
 
@@ -111,79 +91,72 @@ export function AchievementsPage() {
         </ul>
       </section>
 
+      {unlockedSpecial.length > 0 ? (
+        <section className="hub-feature__panel">
+          <div className="achievements-page__section-heading">
+            <p className="eyebrow">Special</p>
+            <h2>Account badges</h2>
+          </div>
+          <ul className="achievements-page__list">
+            {unlockedSpecial.map((achievement) => (
+              <li
+                key={achievement.id}
+                className="achievements-page__item achievements-page__item--unlocked"
+              >
+                <span className="achievements-page__emoji" aria-hidden="true">
+                  {achievement.emoji}
+                </span>
+                <div className="achievements-page__copy">
+                  <div className="achievements-page__title-row">
+                    <strong>{achievement.title}</strong>
+                    <span className="achievements-page__status">Unlocked</span>
+                  </div>
+                  <span className="achievements-page__description">
+                    {achievement.description}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <section className="hub-feature__panel achievements-page__event-panel">
         <div className="achievements-page__section-heading">
           <p className="eyebrow">Weekly Events</p>
-          <h2>{eventBadgeSections.current.meta.title}</h2>
+          <h2>Event badges</h2>
           <p className="achievements-page__subtitle">
-            {eventBadgeSections.current.meta.weekLabel} ·{" "}
-            {eventBadgeSections.current.meta.restrictionLabel} ·{" "}
-            {eventBadgeSections.current.profile.wins}-
-            {eventBadgeSections.current.profile.losses} (
-            {eventBadgeSections.current.profile.matchesPlayed} played) ·
-            Competitor {EVENT_BADGE_THRESHOLDS.participation}+ matches · Bronze{" "}
-            {EVENT_BADGE_THRESHOLDS.bronze}+ / Silver{" "}
-            {EVENT_BADGE_THRESHOLDS.silver}+ / Gold{" "}
-            {EVENT_BADGE_THRESHOLDS.gold}+ wins
+            Only your highest badge from each event is shown.
           </p>
         </div>
-        <ul className="achievements-page__list">
-          {eventBadgeSections.current.badges.map((badge) => (
-            <li
-              key={badge.id}
-              className={`achievements-page__item${
-                badge.isUnlocked ? " achievements-page__item--unlocked" : ""
-              }${badge.isUnlocked ? "" : " achievements-page__item--masked"}`}
-            >
-              <span className="achievements-page__emoji" aria-hidden="true">
-                {badge.emoji}
-              </span>
-              <div className="achievements-page__copy">
-                <div className="achievements-page__title-row">
-                  <strong>{badge.title}</strong>
-                  <span className="achievements-page__status">
-                    {badge.isUnlocked ? "Unlocked" : "Locked"}
+        {eventBadges.length > 0 ? (
+          <ul className="achievements-page__list">
+            {eventBadges.map((badge) => (
+              <li
+                key={badge.id}
+                className="achievements-page__item achievements-page__item--unlocked"
+              >
+                <span className="achievements-page__emoji" aria-hidden="true">
+                  {badge.emoji}
+                </span>
+                <div className="achievements-page__copy">
+                  <div className="achievements-page__title-row">
+                    <strong>{badge.title}</strong>
+                    <span className="achievements-page__status">Unlocked</span>
+                  </div>
+                  <span className="achievements-page__description">
+                    {badge.description}
                   </span>
                 </div>
-                <span className="achievements-page__description">
-                  {badge.description}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {eventBadgeSections.past.length > 0 ? (
-          <>
-            <div className="achievements-page__section-heading achievements-page__section-heading--spaced">
-              <p className="eyebrow">Past events</p>
-              <h2>Earned event badges</h2>
-            </div>
-            <ul className="achievements-page__list">
-              {eventBadgeSections.past.flatMap((section) =>
-                section.badges.map((badge) => (
-                  <li
-                    key={badge.id}
-                    className="achievements-page__item achievements-page__item--unlocked"
-                  >
-                    <span className="achievements-page__emoji" aria-hidden="true">
-                      {badge.emoji}
-                    </span>
-                    <div className="achievements-page__copy">
-                      <div className="achievements-page__title-row">
-                        <strong>{badge.title}</strong>
-                        <span className="achievements-page__status">Unlocked</span>
-                      </div>
-                      <span className="achievements-page__description">
-                        {badge.description}
-                      </span>
-                    </div>
-                  </li>
-                )),
-              )}
-            </ul>
-          </>
-        ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="achievements-page__subtitle">
+            Play Weekly Events to earn Competitor, Bronze, Silver, and Gold
+            badges.
+          </p>
+        )}
       </section>
     </div>
   );

@@ -233,15 +233,26 @@ describe("achievements", () => {
     vi.unstubAllGlobals();
   });
 
-  it("reports achievement progress", () => {
-    const progress = getAchievementProgress({ unlocked: ["nepotism"] });
+  it("reports career progress without counting special badges", () => {
+    const progress = getAchievementProgress({
+      unlocked: ["nepotism", "founding-gm"],
+    });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(54);
+    expect(progress.total).toBe(53);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
     ).toBe(true);
+    expect(
+      progress.achievements.find(
+        (achievement) => achievement.id === "founding-gm",
+      ),
+    ).toBeUndefined();
+    expect(progress.special.unlocked).toBe(1);
+    expect(progress.special.total).toBe(1);
+    expect(progress.special.achievements[0]?.id).toBe("founding-gm");
+    expect(progress.special.achievements[0]?.isUnlocked).toBe(true);
   });
 
   it("migrates removed achievement ids when loading saved progress", () => {
