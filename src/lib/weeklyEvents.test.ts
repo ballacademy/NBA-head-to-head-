@@ -7,6 +7,7 @@ import {
   getCurrentWeeklyEvent,
   getEventRestrictionForWeek,
   getIsoWeekId,
+  getTopEventBadgeTier,
   isValidEventId,
 } from "./weeklyEvents";
 
@@ -56,5 +57,16 @@ describe("weeklyEvents", () => {
       "silver",
       "gold",
     ]);
+  });
+
+  it("picks the highest earned event badge tier", () => {
+    expect(getTopEventBadgeTier([])).toBeNull();
+    expect(getTopEventBadgeTier(["participation"])).toBe("participation");
+    expect(
+      getTopEventBadgeTier(["participation", "bronze", "silver"]),
+    ).toBe("silver");
+    expect(
+      getTopEventBadgeTier(["gold", "participation", "bronze"]),
+    ).toBe("gold");
   });
 });

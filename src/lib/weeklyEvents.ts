@@ -177,6 +177,26 @@ export const evaluateEventBadges = (params: {
   return badges;
 };
 
+const EVENT_BADGE_TIER_RANK: Record<EventBadgeTier, number> = {
+  participation: 1,
+  bronze: 2,
+  silver: 3,
+  gold: 4,
+};
+
+/** Highest earned event tier, or null if none. */
+export const getTopEventBadgeTier = (
+  badges: EventBadgeTier[],
+): EventBadgeTier | null => {
+  if (badges.length === 0) {
+    return null;
+  }
+
+  return badges.reduce((best, tier) =>
+    EVENT_BADGE_TIER_RANK[tier] > EVENT_BADGE_TIER_RANK[best] ? tier : best,
+  );
+};
+
 export const formatEventBadgeLabel = (tier: EventBadgeTier) => {
   switch (tier) {
     case "gold":

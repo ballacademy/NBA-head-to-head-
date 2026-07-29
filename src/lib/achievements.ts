@@ -5,6 +5,9 @@ import type { Player } from "./types";
 
 const ACHIEVEMENTS_KEY = "nba-head-to-head-achievements";
 
+/** Account / promo badges kept out of the career lineup total. */
+export const SPECIAL_ACHIEVEMENT_IDS = new Set<string>(["founding-gm"]);
+
 const REMOVED_ACHIEVEMENT_IDS = new Set([
   "zero-big",
   "twin-towers",
@@ -74,6 +77,14 @@ export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_CHECKS.map(
     description,
     emoji,
   }),
+);
+
+export const CAREER_ACHIEVEMENTS = ACHIEVEMENTS.filter(
+  (achievement) => !SPECIAL_ACHIEVEMENT_IDS.has(achievement.id),
+);
+
+export const SPECIAL_ACHIEVEMENTS = ACHIEVEMENTS.filter((achievement) =>
+  SPECIAL_ACHIEVEMENT_IDS.has(achievement.id),
 );
 
 const achievementChecksById = new Map(
@@ -163,22 +174,44 @@ export const unlockAchievements = (
 export const getAchievementById = (id: string) =>
   ACHIEVEMENTS.find((achievement) => achievement.id === id);
 
+const mapAchievementProgress = (
+  definitions: AchievementDefinition[],
+  unlocked: Set<string>,
+) =>
+  definitions.map((achievement) => {
+    const isUnlocked = unlocked.has(achievement.id);
+
+    return {
+      ...achievement,
+      isUnlocked,
+      title: isUnlocked ? achievement.title : "????",
+      description: isUnlocked ? achievement.description : "????",
+      emoji: isUnlocked ? achievement.emoji : "❓",
+    };
+  });
+
 export const getAchievementProgress = (state = loadAchievementState()) => {
   const unlocked = new Set(state.unlocked);
+  const careerAchievements = mapAchievementProgress(
+    CAREER_ACHIEVEMENTS,
+    unlocked,
+  );
+  const specialAchievements = mapAchievementProgress(
+    SPECIAL_ACHIEVEMENTS,
+    unlocked,
+  );
 
   return {
-    unlocked: state.unlocked.length,
-    total: ACHIEVEMENTS.length,
-    achievements: ACHIEVEMENTS.map((achievement) => {
-      const isUnlocked = unlocked.has(achievement.id);
-
-      return {
-        ...achievement,
-        isUnlocked,
-        title: isUnlocked ? achievement.title : "????",
-        description: isUnlocked ? achievement.description : "????",
-        emoji: isUnlocked ? achievement.emoji : "❓",
-      };
-    }),
+    unlocked: careerAchievements.filter((achievement) => achievement.isUnlocked)
+      .length,
+    total: CAREER_ACHIEVEMENTS.length,
+    achievements: careerAchievements,
+    special: {
+      unlocked: specialAchievements.filter(
+        (achievement) => achievement.isUnlocked,
+      ).length,
+      total: SPECIAL_ACHIEVEMENTS.length,
+      achievements: specialAchievements,
+    },
   };
 };
