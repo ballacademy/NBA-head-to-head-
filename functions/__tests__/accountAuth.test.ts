@@ -43,6 +43,30 @@ describe("foundingGm", () => {
   });
 });
 
+describe("verifyAccountPassword", () => {
+  it("verifies when D1 returns password_iters as a numeric string", async () => {
+    const { verifyAccountPassword } = await import("../lib/playerAccounts");
+    const hashed = await hashPassword("correct-horse-battery");
+
+    await expect(
+      verifyAccountPassword(
+        {
+          id: "acc-1",
+          username: "coach_one",
+          password_salt: hashed.saltHex,
+          password_hash: hashed.hashHex,
+          password_iters: String(hashed.iterations) as unknown as number,
+          player_id: "player-1",
+          created_at: new Date().toISOString(),
+          last_login_at: null,
+          signup_index: null,
+        },
+        "correct-horse-battery",
+      ),
+    ).resolves.toBe(true);
+  });
+});
+
 describe("passwordHash", () => {
   it("hashes with PBKDF2 and verifies matches", async () => {
     const hashed = await hashPassword("correct-horse-battery");
