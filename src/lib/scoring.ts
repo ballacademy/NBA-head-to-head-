@@ -7,7 +7,6 @@ import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
 import {
   formatAverageDefenseGrade,
   getPlayerDefenseGradeRank,
-  meetsMinimumDefenseGrade,
 } from "./defenseGrade";
 import {
   getImpactRankingAdjustment,
@@ -57,12 +56,17 @@ export interface LineupScoreBreakdown {
 export const LOW_SCORING_PPG_THRESHOLD = 6;
 export const LOW_SCORING_IMPACT_WEIGHT = 0.05;
 export const LOW_SCORING_LINEUP_PENALTY = -7;
+/** Below this PPG, low-scoring severity is fully on (before defense mitigation). */
+export const LOW_SCORING_SEVERITY_FULL_PPG = 3.5;
+/** At/above this PPG, low-scoring severity is fully off. */
+export const LOW_SCORING_SEVERITY_CLEAR_PPG = 10;
 export const PRIMARY_SCORER_PPG_THRESHOLD = 20;
 export const PRIMARY_SCORER_LINEUP_PENALTY = -5;
 export const LINEUP_FIRST_OPTION_PPG_THRESHOLD = 18;
 export const STAR_SCORER_PPG_THRESHOLD = 22;
 export const TEAM_FIT_CAP_WITHOUT_FIRST_OPTION = 34;
 export const TEAM_FIT_CAP_WITHOUT_STAR_SCORER = 40;
+export const TEAM_FIT_CAP_FULL = 48;
 export const NO_TRUE_STAR_LINEUP_PENALTY = -8;
 export const ELITE_OFFENSE_PRODUCTION_THRESHOLD = 110;
 export const ELITE_OFFENSE_TOTAL_PPG_THRESHOLD = 120;
@@ -76,18 +80,62 @@ export const OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD = 58;
 export const OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY = -3;
 export const STOPPER_MINIMUM_DEFENSE_GRADE = "B" as const;
 
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const lerp = (from: number, to: number, t: number) =>
+  from + (to - from) * clamp01(t);
+const smoothUnit = (value: number, lo: number, hi: number) => {
+  if (hi <= lo) {
+    return value >= hi ? 1 : 0;
+  }
+  return clamp01((value - lo) / (hi - lo));
+};
+
+/**
+ * 0 = healthy scorer / fully mitigated, 1 = very low usage scorer with weak D.
+ * Defense softens (does not binary-exempt) the severity.
+ */
+export const getLowScoringSeverity = (player: Player) => {
+  const scoringSeverity =
+    1 -
+    smoothUnit(
+      player.points,
+      LOW_SCORING_SEVERITY_FULL_PPG,
+      LOW_SCORING_SEVERITY_CLEAR_PPG,
+    );
+
+  if (scoringSeverity <= 0) {
+    return 0;
+  }
+
+  // Rank 0 (F) → no mitigation; rank 7 (B-) starts helping; rank 10 (A-) ≈ full.
+  const defenseRank = getPlayerDefenseGradeRank(player);
+  const defenseMitigation = smoothUnit(defenseRank, 7, 10);
+  return scoringSeverity * (1 - defenseMitigation * 0.95);
+};
+
+/** @deprecated Prefer getLowScoringSeverity — kept for call sites / tests. */
 export const isLowScoringNonEliteDefender = (player: Player) =>
-  player.points < LOW_SCORING_PPG_THRESHOLD &&
-  !meetsMinimumDefenseGrade(player.defense, player.defenseGrade, "B+");
+  getLowScoringSeverity(player) >= 0.45;
+
+export const getPlayerLowScoringPenalty = (player: Player) =>
+  LOW_SCORING_LINEUP_PENALTY * getLowScoringSeverity(player);
 
 export const getLowScoringLineupPenalty = (lineup: Player[]) =>
   lineup.reduce(
-    (penalty, player) =>
-      isLowScoringNonEliteDefender(player)
-        ? penalty + LOW_SCORING_LINEUP_PENALTY
-        : penalty,
+    (penalty, player) => penalty + getPlayerLowScoringPenalty(player),
     0,
   );
+
+export const getLineupMaxPoints = (lineup: Player[]) =>
+  lineup.length === 0 ? 0 : Math.max(...lineup.map((player) => player.points));
+
+/** 0–1 how clearly the lineup has an 18+ first option. */
+export const getFirstOptionStrength = (lineup: Player[]) =>
+  smoothUnit(getLineupMaxPoints(lineup), 14, 18);
+
+/** 0–1 volume-star strength around the 22 PPG band. */
+export const getStarScorerStrength = (lineup: Player[]) =>
+  smoothUnit(getLineupMaxPoints(lineup), 19, 22);
 
 export const hasPrimaryScorer = (lineup: Player[]) =>
   lineup.some((player) => player.points >= PRIMARY_SCORER_PPG_THRESHOLD);
@@ -111,6 +159,14 @@ export const isTrueStarAnchorPlayer = (player: Player) =>
 export const hasStarTierPlayer = (lineup: Player[]) =>
   lineup.some((player) => isTrueStarAnchorPlayer(player));
 
+export const getTrueStarAnchorStrength = (lineup: Player[]) => {
+  if (hasStarTierPlayer(lineup)) {
+    return 1;
+  }
+
+  return getStarScorerStrength(lineup);
+};
+
 export const hasTrueStarAnchor = (lineup: Player[]) =>
   hasStarScorer(lineup) || hasStarTierPlayer(lineup);
 
@@ -128,83 +184,134 @@ export const getLineupTopScoringAverage = (lineup: Player[]) => {
   );
 };
 
+/**
+ * Soft primary-scorer ding for soft secondary-lead bands below 20 PPG.
+ * Ramps in from 16→18, holds through the high teens, clears into 20–21.
+ */
 export const getPrimaryScorerLineupPenalty = (lineup: Player[]) => {
-  if (hasPrimaryScorer(lineup)) {
+  const maxPoints = getLineupMaxPoints(lineup);
+  if (maxPoints <= 0 || maxPoints >= 21) {
     return 0;
   }
 
-  // Offense-floor already covers no-go-to lineups; only ding 18–19 PPG builds.
-  if (!hasLineupFirstOption(lineup)) {
+  if (maxPoints < 16) {
     return 0;
   }
 
-  return PRIMARY_SCORER_LINEUP_PENALTY;
+  const enter = smoothUnit(maxPoints, 16, 18);
+  const clear = smoothUnit(maxPoints, 19.75, 21);
+  return PRIMARY_SCORER_LINEUP_PENALTY * enter * (1 - clear);
 };
 
 export const getLineupOffenseFloorPenalty = (lineup: Player[]) => {
-  if (lineup.length === 0 || hasLineupFirstOption(lineup)) {
+  if (lineup.length === 0) {
     return 0;
   }
 
-  let penalty = OFFENSE_FLOOR_BASE_PENALTY;
-  const maxPoints = Math.max(...lineup.map((player) => player.points));
+  const firstOptionStrength = getFirstOptionStrength(lineup);
+  if (firstOptionStrength >= 1) {
+    return 0;
+  }
+
+  const maxPoints = getLineupMaxPoints(lineup);
   const totalPoints = lineup.reduce((sum, player) => sum + player.points, 0);
 
-  if (maxPoints < OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD) {
-    penalty += OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY;
-  }
-
-  if (totalPoints < OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD) {
-    penalty += OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY;
-  }
+  let penalty = OFFENSE_FLOOR_BASE_PENALTY * (1 - firstOptionStrength);
+  penalty +=
+    OFFENSE_FLOOR_LOW_MAX_PPG_PENALTY *
+    (1 - smoothUnit(maxPoints, 12, OFFENSE_FLOOR_LOW_MAX_PPG_THRESHOLD));
+  penalty +=
+    OFFENSE_FLOOR_LOW_TOTAL_PPG_PENALTY *
+    (1 -
+      smoothUnit(
+        totalPoints,
+        OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD - 12,
+        OFFENSE_FLOOR_LOW_TOTAL_PPG_THRESHOLD + 6,
+      ));
 
   return penalty;
 };
 
 export const getNoTrueStarLineupPenalty = (lineup: Player[]) =>
-  hasTrueStarAnchor(lineup) ? 0 : NO_TRUE_STAR_LINEUP_PENALTY;
+  NO_TRUE_STAR_LINEUP_PENALTY * (1 - getTrueStarAnchorStrength(lineup));
 
 export const countSuperstars = (lineup: Player[]) =>
   lineup.filter(isSuperstarPlayer).length;
 
-export const getSuperstarStackingLineupBonus = (lineup: Player[]) =>
-  countSuperstars(lineup) >= SUPERSTAR_STACKING_MIN_COUNT
-    ? SUPERSTAR_STACKING_LINEUP_BONUS
-    : 0;
+export const getSuperstarStackingLineupBonus = (lineup: Player[]) => {
+  const count = countSuperstars(lineup);
+  if (count <= 0) {
+    return 0;
+  }
+
+  // Soft ramp: 1 superstar → partial, 2+ → full.
+  return SUPERSTAR_STACKING_LINEUP_BONUS * clamp01(count / SUPERSTAR_STACKING_MIN_COUNT);
+};
 
 export const getEliteOffenseLineupBonus = (
   productionScore: number,
   totalPoints: number,
-) =>
-  productionScore >= ELITE_OFFENSE_PRODUCTION_THRESHOLD ||
-  totalPoints >= ELITE_OFFENSE_TOTAL_PPG_THRESHOLD
-    ? ELITE_OFFENSE_LINEUP_BONUS
-    : 0;
+) => {
+  const productionFactor = smoothUnit(
+    productionScore,
+    ELITE_OFFENSE_PRODUCTION_THRESHOLD - 15,
+    ELITE_OFFENSE_PRODUCTION_THRESHOLD + 10,
+  );
+  const pointsFactor = smoothUnit(
+    totalPoints,
+    ELITE_OFFENSE_TOTAL_PPG_THRESHOLD - 15,
+    ELITE_OFFENSE_TOTAL_PPG_THRESHOLD + 10,
+  );
+  return ELITE_OFFENSE_LINEUP_BONUS * Math.max(productionFactor, pointsFactor);
+};
 
 export const capLineupRoleFitForOffense = (
   lineup: Player[],
   roleFitScore: number,
 ) => {
-  if (!hasLineupFirstOption(lineup)) {
-    return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_FIRST_OPTION);
-  }
+  const firstOptionStrength = getFirstOptionStrength(lineup);
+  const starStrength = getTrueStarAnchorStrength(lineup);
 
-  if (!hasStarScorer(lineup) && !hasStarTierPlayer(lineup)) {
-    return Math.min(roleFitScore, TEAM_FIT_CAP_WITHOUT_STAR_SCORER);
-  }
+  // Soft caps: weak offense → toward 34; mid → toward 40; anchored → full 48.
+  const midCap = lerp(
+    TEAM_FIT_CAP_WITHOUT_FIRST_OPTION,
+    TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
+    firstOptionStrength,
+  );
+  const effectiveCap = lerp(midCap, TEAM_FIT_CAP_FULL, starStrength);
 
-  return roleFitScore;
+  return Math.min(roleFitScore, effectiveCap);
 };
 
 /** @deprecated Use capLineupRoleFitForOffense */
 export const capLineupRoleFitWithoutFirstOption = capLineupRoleFitForOffense;
 
+/** Gradual stopper factor from defense grade (0 at weak D, 1 near B+/A-). */
+export const getStopperGradeFactor = (player: Player) => {
+  const rank = getPlayerDefenseGradeRank(player);
+  // C- (4) → 0, B (8) → ~0.8, B+ (9) → 1
+  return smoothUnit(rank, 4, 9);
+};
+
 export const isPlusDefenderByGrade = (player: Player) =>
-  meetsMinimumDefenseGrade(
-    player.defense,
-    player.defenseGrade,
-    STOPPER_MINIMUM_DEFENSE_GRADE,
-  );
+  getStopperGradeFactor(player) >= 0.75;
+
+/** Soft high-usage contribution (rises through the high-20s into 32+). */
+export const getHighUsageFactor = (player: Player) =>
+  smoothUnit(player.usage, 26, 32);
+
+/** Soft low-usage / spacer contribution. */
+export const getLowUsageFactor = (player: Player) =>
+  1 - smoothUnit(player.usage, 16, 24);
+
+/** Soft rim-protection contribution from blocks / style. */
+export const getRimProtectorFactor = (player: Player) => {
+  if (player.styles.includes("rim-protector")) {
+    return 1;
+  }
+
+  return smoothUnit(player.blocks, 0.6, 1.5);
+};
 
 export const SEASON_LENGTH = 82;
 export const LINEUP_RAW_CEILING = 232;
@@ -319,12 +426,9 @@ export { getActiveChemistryBonuses, getChemistryAdjustment } from "./chemistry";
 
 const getPlayerLineupWeight = (player: Player) => {
   const sampleWeight = getPlayerStatWeight(player);
-
-  if (isLowScoringNonEliteDefender(player)) {
-    return sampleWeight * LOW_SCORING_IMPACT_WEIGHT;
-  }
-
-  return sampleWeight;
+  const severity = getLowScoringSeverity(player);
+  const lowScoringFactor = lerp(1, LOW_SCORING_IMPACT_WEIGHT, severity);
+  return sampleWeight * lowScoringFactor;
 };
 
 const buildLineupWeights = (lineup: Player[]) => {
@@ -415,12 +519,15 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
       : 0;
   const averageUsage = weightedAverage(lineup, "usage", weights, weightSum);
 
-  const stoppers = weightedCount(lineup, weights, isPlusDefenderByGrade);
-  const rimProtectors = weightedCount(
-    lineup,
-    weights,
-    (player) =>
-      player.blocks >= 1.2 || player.styles.includes("rim-protector"),
+  const stoppers = lineup.reduce(
+    (sum, player, index) =>
+      sum + weights[index] * getStopperGradeFactor(player),
+    0,
+  );
+  const rimProtectors = lineup.reduce(
+    (sum, player, index) =>
+      sum + weights[index] * getRimProtectorFactor(player),
+    0,
   );
   const engines = weightedCount(lineup, weights, (player) =>
     player.styles.includes("engine"),
@@ -428,15 +535,15 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   const connectors = weightedCount(lineup, weights, (player) =>
     player.styles.includes("connector"),
   );
-  const highUsagePlayers = weightedCount(
-    lineup,
-    weights,
-    (player) => player.usage >= 30,
+  const highUsagePlayers = lineup.reduce(
+    (sum, player, index) =>
+      sum + weights[index] * getHighUsageFactor(player),
+    0,
   );
-  const lowUsagePlayers = weightedCount(
-    lineup,
-    weights,
-    (player) => player.usage <= 22,
+  const lowUsagePlayers = lineup.reduce(
+    (sum, player, index) =>
+      sum + weights[index] * getLowUsageFactor(player),
+    0,
   );
 
   // Usage-weight spacing so low-usage specialists don't max the 3P category.
