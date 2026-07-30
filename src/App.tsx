@@ -10,6 +10,7 @@ import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AchievementsPage } from "./components/AchievementsPage";
 import { GmStatsPage } from "./components/GmStatsPage";
 import { LegalPage } from "./components/LegalPage";
+import { BetaNotesPage } from "./components/BetaNotesPage";
 import {
   loadLandingHubTab,
   saveLandingHubTab,
@@ -129,7 +130,8 @@ type AppPhase =
   | "leaderboard"
   | "achievements"
   | "privacy"
-  | "terms";
+  | "terms"
+  | "beta";
 
 const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
@@ -138,6 +140,7 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "achievements",
   "privacy",
   "terms",
+  "beta",
 ]);
 
 type FeatureHistoryState = {
@@ -1514,7 +1517,12 @@ function App() {
       return "standings";
     }
 
-    if (phase === "gmStats" || phase === "privacy" || phase === "terms") {
+    if (
+      phase === "gmStats" ||
+      phase === "privacy" ||
+      phase === "terms" ||
+      phase === "beta"
+    ) {
       return "account";
     }
 
@@ -1565,6 +1573,10 @@ function App() {
     );
   }
 
+  if (phase === "beta") {
+    return renderHubFeature(<BetaNotesPage />);
+  }
+
   if (phase === "stats") {
     return renderHubFeature(
       <PlayerStatsTable
@@ -1598,6 +1610,7 @@ function App() {
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
           onViewPrivacy={() => openFeaturePage("privacy")}
           onViewTerms={() => openFeaturePage("terms")}
+          onViewBetaNotes={() => openFeaturePage("beta")}
           hubTab={landingHubTab}
           onHubTabChange={updateLandingHubTab}
         />

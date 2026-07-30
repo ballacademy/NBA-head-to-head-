@@ -1,11 +1,11 @@
 {
   "season": "2026-27",
-  "source": "bbr-contracts-y1-2026-27+fa-year1-corrections",
+  "source": "manual-curation",
   "inputFile": "data/manual/nba-salaries.csv",
   "supplementsFile": null,
   "voidedContractsFile": "data/manual/nba-voided-contracts.csv",
   "voidedPlayerCount": 10,
-  "generatedAt": "2026-07-21T02:22:44.969605+00:00",
+  "generatedAt": "2026-07-30T01:01:49.105971+00:00",
   "playerCount": 402,
   "salaries": {
     "achiupr01": 5477000,

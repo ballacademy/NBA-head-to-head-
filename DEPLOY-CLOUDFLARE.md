@@ -1,6 +1,6 @@
 # Deploy to Cloudflare Pages
 
-This app is a static Vite build (`dist/`). Cloudflare Pages serves the files globally with no backend required for the current game features.
+This app is a Vite SPA (`dist/`) hosted on Cloudflare Pages. Online features (matchmaking, leaderboards, accounts, Daily Draft scores) use **Pages Functions** plus a **D1** database binding named `DB`. See `BACKEND-MATCHMAKING.md` for API + migration details.
 
 ## One-time setup
 

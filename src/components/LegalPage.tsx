@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL } from "../lib/support";
+
 type LegalPageKind = "privacy" | "terms";
 
 interface LegalPageProps {
@@ -188,8 +190,8 @@ function PrivacyPolicyContent() {
         </li>
         <li>
           Email{" "}
-          <a href="mailto:ballacademyofficial@gmail.com">
-            ballacademyofficial@gmail.com
+          <a href={`mailto:${SUPPORT_EMAIL}`}>
+            {SUPPORT_EMAIL}
           </a>{" "}
           to request deletion of an optional account and associated login
           records. Include your username. We will take reasonable steps to
@@ -206,7 +208,7 @@ function PrivacyPolicyContent() {
         children under 13. Optional accounts are intended for users 13 and older.
         If you believe a child has provided information through the site, contact
         us at{" "}
-        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>{" "}
         and we will take reasonable steps to remove associated server records
         where possible.
       </p>
@@ -221,7 +223,7 @@ function PrivacyPolicyContent() {
       <h2>Contact</h2>
       <p>
         Questions about this policy can be sent to{" "}
-        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         .
       </p>
     </>
@@ -401,7 +403,7 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
       <h2>Contact</h2>
       <p>
         Questions about these Terms can be sent to{" "}
-        <a href="mailto:ballacademyofficial@gmail.com">ballacademyofficial@gmail.com</a>
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         .
       </p>
     </>

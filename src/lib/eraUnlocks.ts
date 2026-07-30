@@ -9,7 +9,7 @@ export const ALL_TIME_WIN_THRESHOLD = 50;
 export const ALL_TIME_MODE_PLAYABLE = false;
 
 /** Set to false before release to require 50 wins for legends. */
-export const ALL_TIME_LEGENDS_TESTING_UNLOCK = true;
+export const ALL_TIME_LEGENDS_TESTING_UNLOCK = false;
 
 export const isAllTimeModePlayable = () => ALL_TIME_MODE_PLAYABLE;
 

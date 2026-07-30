@@ -30,7 +30,10 @@ describe("active player pool", () => {
   });
 
   it("adds active stars and legend pools in all-time mode when unlocked", () => {
-    const allTimePool = getActivePlayerPool({ wins: 0 }, { allTimeMode: true });
+    const allTimePool = getActivePlayerPool(
+      { wins: ALL_TIME_WIN_THRESHOLD },
+      { allTimeMode: true },
+    );
     const activeStarIds = new Set(getActiveStarPlayerIds());
     const nonStarCurrentPlayers = players.filter(
       (player) => !activeStarIds.has(player.id),
