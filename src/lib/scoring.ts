@@ -1,7 +1,6 @@
 import type { LineupScore, Player, ProjectedRecord, ScoreCategory } from "./types";
 import {
   isAllStarPlayer,
-  isRecentAllStarPlayer,
   isSuperstarPlayer,
 } from "./allStars";
 import { getChemistryAdjustment, getActiveChemistryBonuses } from "./chemistry";
@@ -12,7 +11,9 @@ import {
 } from "./defenseGrade";
 import {
   getImpactRankingAdjustment,
+  getLineupBestImpactRank,
   getMidTierImpactLineupPenalty,
+  getThinImpactLineupPenalty,
   isImpactRankStarPlayer,
 } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
@@ -97,14 +98,21 @@ export const hasLineupFirstOption = (lineup: Player[]) =>
 export const hasStarScorer = (lineup: Player[]) =>
   lineup.some((player) => player.points >= STAR_SCORER_PPG_THRESHOLD);
 
+/**
+ * True-star anchors for no-star / fit caps: current All-Stars, superstars,
+ * or top-30 impact. Recent All-Stars outside that impact band no longer clear.
+ * Volume scorers (≥22 PPG) still clear via hasStarScorer.
+ */
+export const isTrueStarAnchorPlayer = (player: Player) =>
+  isSuperstarPlayer(player) ||
+  isAllStarPlayer(player) ||
+  isImpactRankStarPlayer(player);
+
 export const hasStarTierPlayer = (lineup: Player[]) =>
-  lineup.some(
-    (player) =>
-      isSuperstarPlayer(player) ||
-      isAllStarPlayer(player) ||
-      isRecentAllStarPlayer(player) ||
-      isImpactRankStarPlayer(player),
-  );
+  lineup.some((player) => isTrueStarAnchorPlayer(player));
+
+export const hasTrueStarAnchor = (lineup: Player[]) =>
+  hasStarScorer(lineup) || hasStarTierPlayer(lineup);
 
 export const getLineupTopScoringAverage = (lineup: Player[]) => {
   if (lineup.length === 0) {
@@ -154,9 +162,7 @@ export const getLineupOffenseFloorPenalty = (lineup: Player[]) => {
 };
 
 export const getNoTrueStarLineupPenalty = (lineup: Player[]) =>
-  hasStarScorer(lineup) || hasStarTierPlayer(lineup)
-    ? 0
-    : NO_TRUE_STAR_LINEUP_PENALTY;
+  hasTrueStarAnchor(lineup) ? 0 : NO_TRUE_STAR_LINEUP_PENALTY;
 
 export const countSuperstars = (lineup: Player[]) =>
   lineup.filter(isSuperstarPlayer).length;
@@ -379,6 +385,10 @@ const weightedCount = (
 
 const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   const { weights, weightSum } = buildLineupWeights(lineup);
+  const usageWeights = lineup.map(
+    (player, index) => weights[index] * Math.max(player.usage, 8),
+  );
+  const usageWeightSum = usageWeights.reduce((sum, weight) => sum + weight, 0);
 
   const totals = {
     points: weightedTotal(lineup, "points", weights),
@@ -388,11 +398,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     blocks: weightedTotal(lineup, "blocks", weights),
   };
 
+  // Usage-weight TS so low-usage bench efficiency cannot dominate.
   const averageTrueShooting = weightedAverage(
     lineup,
     "trueShooting",
-    weights,
-    weightSum,
+    usageWeights,
+    usageWeightSum,
   );
   const averageDefenseGradeRank =
     weightSum > 0
@@ -428,7 +439,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     (player) => player.usage <= 22,
   );
 
-  const shootingProfile = buildLineupShootingProfile(lineup, weights, weightSum);
+  // Usage-weight spacing so low-usage specialists don't max the 3P category.
+  const shootingProfile = buildLineupShootingProfile(
+    lineup,
+    usageWeights,
+    usageWeightSum,
+  );
   const roleFitProfile = buildLineupRoleFitProfile(
     lineup,
     weights,
@@ -536,15 +552,24 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     warnings.push(
       `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
     );
-  } else if (!hasStarScorer(lineup) && !hasStarTierPlayer(lineup)) {
+  } else if (!hasTrueStarAnchor(lineup)) {
     warnings.push(
       `No true star; nobody reaches ${STAR_SCORER_PPG_THRESHOLD} PPG and the lineup lacks an All-Star or superstar.`,
     );
   }
 
   if (getMidTierImpactLineupPenalty(lineup) < 0) {
+    const best = getLineupBestImpactRank(lineup);
     warnings.push(
-      "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
+      best != null && best <= 50
+        ? "Impact depth is soft; a lone top-50 piece is not enough elite support."
+        : "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
+    );
+  }
+
+  if (getThinImpactLineupPenalty(lineup) < 0) {
+    warnings.push(
+      "Impact depth is thin; the lineup leans too hard on one ranked piece.",
     );
   }
 
@@ -613,6 +638,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     offenseFloorPenalty: getLineupOffenseFloorPenalty(lineup),
     noStarPenalty: getNoTrueStarLineupPenalty(lineup),
     midTierImpactPenalty: getMidTierImpactLineupPenalty(lineup),
+    thinImpactPenalty: getThinImpactLineupPenalty(lineup),
     eliteOffenseBonus: getEliteOffenseLineupBonus(productionScore, totalPoints),
     superstarStackBonus: getSuperstarStackingLineupBonus(lineup),
   };

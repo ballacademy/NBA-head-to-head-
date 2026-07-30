@@ -4,12 +4,16 @@ import {
   getImpactRankingAdjustment,
   getLineupBestImpactRank,
   getMidTierImpactLineupPenalty,
+  getThinImpactLineupPenalty,
   getPlayerImpactAdjustment,
   getPlayerImpactRank,
   isImpactRankStarPlayer,
   MID_TIER_IMPACT_NO_ELITE_PENALTY,
   MID_TIER_IMPACT_NO_TOP50_PENALTY,
+  MID_TIER_IMPACT_SOFT_CLEAR_PENALTY,
   MID_TIER_NEGATIVE_IMPACT_SCALE,
+  ONE_STAR_RELIANCE_PENALTY,
+  THIN_IMPACT_ONE_ELITE_PENALTY,
 } from "./impactRanking";
 import {
   getScrubPlayerIds,
@@ -112,7 +116,7 @@ describe("impactRanking", () => {
     expect(getImpactRankingAdjustment(lineup)).toBeLessThan(rawBlend);
   });
 
-  it("does not apply mid-tier impact penalty when a top-50 impact player is present", () => {
+  it("soft-clears mid-tier when only a lone top-50 / top-30 is present", () => {
     const jokic = players.find((player) => player.name === "Nikola Jokić");
     const ware = players.find((player) => player.bbrPlayerId === "wareke01");
     const fears = players.find((player) => player.bbrPlayerId === "fearsje01");
@@ -121,9 +125,20 @@ describe("impactRanking", () => {
 
     expect(jokic && ware && fears && rollins && oubre).toBeTruthy();
 
-    const lineup = [jokic!, fears!, rollins!, oubre!, ware!];
-    expect(getLineupBestImpactRank(lineup)).toBe(1);
-    expect(getMidTierImpactLineupPenalty(lineup)).toBe(0);
+    const thin = [jokic!, fears!, rollins!, oubre!, ware!];
+    expect(getLineupBestImpactRank(thin)).toBe(1);
+    expect(getMidTierImpactLineupPenalty(thin)).toBe(
+      MID_TIER_IMPACT_SOFT_CLEAR_PENALTY,
+    );
+    expect(getThinImpactLineupPenalty(thin)).toBe(
+      THIN_IMPACT_ONE_ELITE_PENALTY + ONE_STAR_RELIANCE_PENALTY,
+    );
+
+    const brunson = players.find((player) => player.name === "Jalen Brunson");
+    expect(brunson).toBeDefined();
+    const deep = [jokic!, brunson!, fears!, rollins!, oubre!];
+    expect(getMidTierImpactLineupPenalty(deep)).toBe(0);
+    expect(getThinImpactLineupPenalty(deep)).toBe(0);
     expect(MID_TIER_IMPACT_NO_ELITE_PENALTY).toBeLessThan(
       MID_TIER_IMPACT_NO_TOP50_PENALTY,
     );

@@ -105,7 +105,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(50);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(68);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(74);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {
@@ -825,7 +825,24 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(secondaryStarLineup);
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(28);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(40);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(42);
+  });
+
+  it("punishes Kyrie-plus-unranked role lineups below the old soft mid-30s floor", () => {
+    const thinStarLineup = lineup([
+      "sandeko01-lac",
+      "irvinky01-dal",
+      "minotjo01-brk",
+      "grantje01-mem",
+      "garzalu01-bos",
+    ]);
+
+    const score = calculateLineupScore(thinStarLineup);
+
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
+    expect(score.warnings).toContain(
+      "Impact depth is thin; the lineup leans too hard on one ranked piece.",
+    );
   });
 
   it("boosts impact-ranked stars like Butler without double-counting tagged all-stars", () => {
