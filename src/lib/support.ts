@@ -36,3 +36,15 @@ export const buildBugReportMailto = (details?: string) =>
       .filter(Boolean)
       .join("\n"),
   });
+
+export const buildPasswordResetMailto = (username?: string) =>
+  buildSupportMailto({
+    subject: "Draft Day GM password reset",
+    body: [
+      "Hi — I need a password reset code.",
+      "",
+      `Username: ${username?.trim() || "(your username here)"}`,
+      "",
+      "Please send me an 8-character reset code.",
+    ].join("\n"),
+  });

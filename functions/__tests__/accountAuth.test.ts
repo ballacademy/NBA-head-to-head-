@@ -67,6 +67,28 @@ describe("verifyAccountPassword", () => {
   });
 });
 
+describe("passwordReset", () => {
+  it("normalizes and validates reset codes", async () => {
+    const {
+      normalizeResetCode,
+      validateResetCodeFormat,
+      hashResetCode,
+      resetCodeHashesMatch,
+      generateResetCode,
+    } = await import("../lib/passwordReset");
+
+    expect(normalizeResetCode(" A1-b2 C3d4 ")).toBe("a1b2c3d4");
+    expect(validateResetCodeFormat("short").ok).toBe(false);
+    expect(validateResetCodeFormat("A1B2C3D4").ok).toBe(true);
+
+    const code = generateResetCode();
+    expect(code).toMatch(/^[A-F0-9]{8}$/);
+    const hash = await hashResetCode(code);
+    const again = await hashResetCode(code.toLowerCase());
+    expect(resetCodeHashesMatch(hash, again)).toBe(true);
+  });
+});
+
 describe("passwordHash", () => {
   it("hashes with PBKDF2 and verifies matches", async () => {
     const hashed = await hashPassword("correct-horse-battery");

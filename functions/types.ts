@@ -1,5 +1,7 @@
 export interface Env {
   DB: D1Database;
+  /** Optional support secret for POST /api/account/issue-reset */
+  ACCOUNT_RESET_SECRET?: string;
 }
 
 export type MatchmakingMode = "classic" | "ranked" | "event";

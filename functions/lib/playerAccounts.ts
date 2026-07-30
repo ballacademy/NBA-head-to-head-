@@ -185,6 +185,22 @@ export const touchAccountLogin = async (db: D1Database, accountId: string) => {
     .run();
 };
 
+export const updateAccountPassword = async (
+  db: D1Database,
+  accountId: string,
+  password: string,
+) => {
+  const hashed = await hashPassword(password);
+  await db
+    .prepare(
+      `UPDATE player_accounts
+       SET password_salt = ?, password_hash = ?, password_iters = ?
+       WHERE id = ?`,
+    )
+    .bind(hashed.saltHex, hashed.hashHex, hashed.iterations, accountId)
+    .run();
+};
+
 const getClientIp = (request: Request) => {
   const forwarded = request.headers.get("cf-connecting-ip")
     ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()

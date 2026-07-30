@@ -31,9 +31,9 @@ export function BetaNotesPage() {
           <h2>Known limits</h2>
           <ul>
             <li>
-              <strong>No password reset yet.</strong> If you lose access, email{" "}
-              <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> and
-              we&apos;ll help manually.
+              <strong>Password reset</strong> is support-assisted: email{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with your
+              username, get a one-time code, then use Account → Forgot password.
             </li>
             <li>
               <strong>Guest / local Collection</strong> stays on this device.

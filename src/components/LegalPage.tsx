@@ -75,12 +75,14 @@ function PrivacyPolicyContent() {
         that GM identity on another browser or after clearing site data.
       </p>
       <p>
-        We do not currently offer automated password reset. If you forget your
-        username or password, contact us to request account deletion. Local
-        collection progress stays on your device and is not uploaded with the
-        account. Logging into an account on a new browser restores the GM
-        identity and online competitive records when available; on-device
-        collection must be rebuilt on that browser.
+        Password resets are support-assisted during beta: email us with your
+        username, we send a one-time reset code, and you set a new password in
+        the Account tab. We do not collect an email address on the account
+        itself. If you forget your username, contact us to request help or
+        account deletion. Local collection progress stays on your device and is
+        not uploaded with the account. Logging into an account on a new browser
+        restores the GM identity and online competitive records when available;
+        on-device collection must be rebuilt on that browser.
       </p>
       <p>
         Public leaderboards show team names and GM codes, not full private
@@ -286,8 +288,8 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
           authentication endpoints
         </li>
         <li>
-          There is currently no self-serve password reset; contact us if you need
-          an account removed
+          Password resets use a one-time support-issued code; contact us if you
+          need a reset or an account removed
         </li>
       </ul>
 
