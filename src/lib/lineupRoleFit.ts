@@ -122,8 +122,9 @@ export const scoreLineupRoleFit = (
   // Stoppers: 0 → -6, 1 → +0.5, 2 → +7
   fit += lerp(-6, 7, clamp(profile.stoppers / 2, 0, 1));
 
-  // Rim: 0 → -6, 1 → +6
-  fit += lerp(-6, 6, clamp(profile.rimProtectors, 0, 1));
+  // Rim protection is a bonus when present, not a missing-piece hammer.
+  // (No-center already covers the structural frontcourt hole.)
+  fit += lerp(0, 6, clamp(profile.rimProtectors, 0, 1));
 
   // Creation: blend engines / creator count / assists
   const creationFactor = Math.max(

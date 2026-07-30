@@ -12,6 +12,7 @@ import {
   getPlayersById,
   getPrimaryScorerLineupPenalty,
   getEliteOffenseLineupBonus,
+  getRimProtectorFactor,
   getStopperGradeFactor,
   getSuperstarStackingLineupBonus,
   hasLineupFirstOption,
@@ -291,6 +292,86 @@ describe("calculateLineupScore", () => {
     expect(getStopperGradeFactor(solidD)).toBeGreaterThan(getStopperGradeFactor(weakD));
     expect(getStopperGradeFactor(solidD)).toBeGreaterThan(0.7);
     expect(getStopperGradeFactor(weakD)).toBeLessThan(0.3);
+  });
+
+  it("treats elite frontcourt defenders as rim protectors beyond block rate alone", () => {
+    const giannisLike: Player = {
+      id: "giannis-like",
+      name: "Paint Presence",
+      team: "MIL",
+      position: "PF",
+      positions: ["PF", "SF"],
+      jerseyNumber: 34,
+      points: 27,
+      rebounds: 11,
+      assists: 6,
+      steals: 1,
+      blocks: 0.7,
+      turnovers: 3,
+      trueShooting: 0.63,
+      threePoint: 0.28,
+      threePointersAttempted: 1,
+      fieldGoalsAttempted: 18,
+      freeThrowsAttempted: 8,
+      freeThrowPct: 0.65,
+      personalFouls: 3,
+      minutes: 35,
+      heightInches: 83,
+      usage: 31,
+      defense: 9,
+      defenseGrade: "A",
+      gamesPlayed: 70,
+      styles: ["scorer", "roll-man"],
+    };
+    const lowBlockGuard: Player = {
+      ...giannisLike,
+      id: "guard",
+      position: "PG",
+      positions: ["PG"],
+      blocks: 0.7,
+      defenseGrade: "A",
+      styles: ["engine"],
+    };
+
+    expect(getRimProtectorFactor(giannisLike)).toBeGreaterThan(0.65);
+    expect(getRimProtectorFactor(lowBlockGuard)).toBeLessThan(
+      getRimProtectorFactor(giannisLike),
+    );
+
+    const withPresence = scoreLineupRoleFit(
+      {
+        guardCount: 2,
+        forwardCount: 2,
+        centerCount: 0,
+        creators: 2,
+        engines: 1,
+        connectors: 1,
+        highUsagePlayers: 2,
+        lowUsagePlayers: 1,
+        stoppers: 2,
+        rimProtectors: getRimProtectorFactor(giannisLike),
+      },
+      { assists: 20 },
+    );
+    const withoutPresence = scoreLineupRoleFit(
+      {
+        guardCount: 2,
+        forwardCount: 2,
+        centerCount: 0,
+        creators: 2,
+        engines: 1,
+        connectors: 1,
+        highUsagePlayers: 2,
+        lowUsagePlayers: 1,
+        stoppers: 2,
+        rimProtectors: 0,
+      },
+      { assists: 20 },
+    );
+
+    // Missing rim protection should not hammer fit; having it still helps.
+    expect(withPresence).toBeGreaterThan(withoutPresence);
+    expect(withoutPresence).toBeGreaterThan(20);
   });
 
   it("reduces OVR and projected wins for scrub tiers without a visible category", () => {
@@ -924,7 +1005,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(eliteOffenseLineup);
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(55);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(72);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(78);
     expect(score.strengths).toContain(
       "Elite playmaking supports multiple high-usage creators.",
     );
