@@ -22,6 +22,7 @@ import {
   isSuperstarPlayer,
 } from "../lib/allStars";
 import { isScrubPlayer, isSuperScrubPlayer } from "../lib/playerTiers";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { ModeCardInfo } from "./ModeCardInfo";
 import type { Player } from "../lib/types";
 
@@ -108,24 +109,6 @@ export function PlayerStatsTable({
     tableWrapRef.current?.scrollTo({ left: 0 });
   }, []);
 
-  useEffect(() => {
-    if (!onBack) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onBack();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onBack]);
-
   const statsInfoDetails = useMemo(
     () => [
       "Locked stars and scrubs stay hidden until you unlock them. Everyone else is visible here.",
@@ -199,6 +182,7 @@ export function PlayerStatsTable({
 
   return (
     <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
+      {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
       <div className="landing-hub__top stats-panel__hub-top">
         <h1 className="landing-hub__title" id="stats-heading">
           Season Stats

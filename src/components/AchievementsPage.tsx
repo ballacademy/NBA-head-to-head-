@@ -11,6 +11,11 @@ import {
   formatEventBadgeLabel,
   getTopEventBadgeTier,
 } from "../lib/weeklyEvents";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+
+interface AchievementsPageProps {
+  onBack: () => void;
+}
 
 const buildTopEventBadge = (profile: EventProfile) => {
   const topTier = getTopEventBadgeTier(profile.badges);
@@ -29,7 +34,7 @@ const buildTopEventBadge = (profile: EventProfile) => {
   };
 };
 
-export function AchievementsPage() {
+export function AchievementsPage({ onBack }: AchievementsPageProps) {
   const progress = useMemo(() => getAchievementProgress(), []);
   const eventBadges = useMemo(() => {
     return loadAllEventProfiles()
@@ -44,6 +49,7 @@ export function AchievementsPage() {
 
   return (
     <div className="hub-feature achievements-page">
+      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Badges</h1>
         <p className="landing__lede landing-hub__lede">

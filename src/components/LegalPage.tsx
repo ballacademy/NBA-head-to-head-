@@ -1,9 +1,11 @@
 import { SUPPORT_EMAIL } from "../lib/support";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
 type LegalPageKind = "privacy" | "terms";
 
 interface LegalPageProps {
   kind: LegalPageKind;
+  onBack: () => void;
   onOpenPrivacy?: () => void;
 }
 
@@ -416,11 +418,12 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
   );
 }
 
-export function LegalPage({ kind, onOpenPrivacy }: LegalPageProps) {
+export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
   const title = kind === "privacy" ? "Privacy Policy" : "Terms of Use";
 
   return (
     <div className="hub-feature legal-page">
+      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{title}</h1>
         <p className="landing__lede landing-hub__lede">Draft Day GM policies</p>

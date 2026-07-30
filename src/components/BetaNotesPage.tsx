@@ -6,10 +6,16 @@ import {
   buildSupportMailto,
 } from "../lib/support";
 import { ACTIVE_ROSTER_AS_OF_LABEL } from "../lib/playerPool";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
-export function BetaNotesPage() {
+interface BetaNotesPageProps {
+  onBack: () => void;
+}
+
+export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
   return (
     <div className="hub-feature beta-notes-page">
+      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Beta notes</h1>
         <p className="landing__lede landing-hub__lede">

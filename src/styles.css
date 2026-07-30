@@ -619,6 +619,21 @@ main.landing-layout {
   margin-inline: auto;
 }
 
+.hub-feature__return-row {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0;
+  /* Align under the left hub chrome instead of the centered title band. */
+  padding-inline: 2px;
+}
+
+.hub-feature__return {
+  min-height: 36px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .hub-feature__panel {
   padding: 14px 16px;
   border: 1px solid var(--hub-subbox-border);
