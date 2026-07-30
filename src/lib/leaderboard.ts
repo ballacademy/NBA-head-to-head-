@@ -22,6 +22,7 @@ export interface LeaderboardEntry {
   isYou?: boolean;
   name: string;
   publicTag: string;
+  username?: string;
   elo: number;
   tierLabel: string;
   wins: number;
@@ -46,6 +47,7 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
     isYou: entry.isYou,
     name: entry.name.trim(),
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+    username: entry.username?.trim() || undefined,
     elo,
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),
@@ -58,10 +60,11 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
 
 type StoredLeaderboardEntry = Omit<
   LeaderboardEntry,
-  "publicTag" | "elo" | "tierLabel"
+  "publicTag" | "elo" | "tierLabel" | "username"
 > & {
   city?: string;
   publicTag?: string;
+  username?: string;
   elo?: number;
   tierLabel?: string;
 };
@@ -86,6 +89,7 @@ const parseStoredEntries = (
         playerId: entry.playerId,
         name: entry.name?.trim() || entry.city?.trim() || "",
         publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+        username: entry.username,
         elo: entry.elo ?? RANKED_STARTING_ELO,
         tierLabel:
           entry.tierLabel ??

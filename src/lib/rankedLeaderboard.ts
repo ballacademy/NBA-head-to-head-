@@ -21,6 +21,7 @@ export interface RankedLeaderboardEntry {
   isYou?: boolean;
   name: string;
   publicTag: string;
+  username?: string;
   elo: number;
   tierLabel: string;
   wins: number;
@@ -189,6 +190,7 @@ const normalizeEntry = (entry: RankedLeaderboardEntry): RankedLeaderboardEntry =
     isYou: entry.isYou,
     name: entry.name.trim(),
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
+    username: entry.username?.trim() || undefined,
     elo,
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),

@@ -30,10 +30,15 @@ export const toLeaderboardPublicEntry = async (
     win_streak: number;
     loss_streak: number;
     updated_at: string;
+    username?: string | null;
   },
   viewerPlayerId: string,
 ) => {
   const isYou = Boolean(viewerPlayerId) && row.player_id === viewerPlayerId;
+  const username =
+    typeof row.username === "string" && row.username.trim().length > 0
+      ? row.username.trim().toLowerCase()
+      : undefined;
 
   return {
     playerId: isYou
@@ -42,6 +47,7 @@ export const toLeaderboardPublicEntry = async (
     isYou,
     name: row.team_name,
     publicTag: row.public_tag,
+    username,
     elo: row.elo,
     wins: row.wins,
     losses: row.losses,
@@ -49,4 +55,40 @@ export const toLeaderboardPublicEntry = async (
     lossStreak: row.loss_streak,
     updatedAt: row.updated_at,
   };
+};
+
+/** Resolve an opaque public leaderboard id back to the private player_id. */
+export const resolvePrivatePlayerId = async (
+  db: D1Database,
+  playerIdOrPublicId: string,
+  seasonId?: string | null,
+): Promise<string | null> => {
+  const trimmed = playerIdOrPublicId.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (!isPublicOpaquePlayerId(trimmed)) {
+    return trimmed;
+  }
+
+  const query = seasonId
+    ? `SELECT DISTINCT player_id
+       FROM leaderboard_entries
+       WHERE season_id = ?`
+    : `SELECT DISTINCT player_id
+       FROM leaderboard_entries`;
+
+  const rows = seasonId
+    ? await db.prepare(query).bind(seasonId).all<{ player_id: string }>()
+    : await db.prepare(query).all<{ player_id: string }>();
+
+  for (const row of rows.results ?? []) {
+    if ((await toPublicLeaderboardPlayerId(row.player_id)) === trimmed) {
+      return row.player_id;
+    }
+  }
+
+  return null;
 };

@@ -1,5 +1,6 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
 import { claimGhostOpponent } from "../lib/matchmakingDb";
+import { toPublicLeaderboardPlayerId } from "../lib/leaderboardPublicId";
 import {
   matchmakingModeError,
   parseMatchmakingMode,
@@ -20,7 +21,7 @@ const json = (body: unknown, status = 200) =>
 
 const parseMode = parseMatchmakingMode;
 
-const rowToPayload = (row: StoredLineupRow) => {
+const rowToPayload = async (row: StoredLineupRow) => {
   const lineup = parseStoredLineupJson(row.lineup_json);
 
   if (!isValidStoredLineupIds(lineup)) {
@@ -33,6 +34,7 @@ const rowToPayload = (row: StoredLineupRow) => {
     lineup,
     elo: row.elo,
     createdAt: row.created_at,
+    publicPlayerId: await toPublicLeaderboardPlayerId(row.player_id),
   };
 };
 

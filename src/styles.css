@@ -2883,7 +2883,7 @@ h1.landing-hub__title {
 
 .gm-profile-modal__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -3093,6 +3093,16 @@ h1.landing-hub__title {
   margin: 0 0 14px;
   color: #94a3b8;
   font-weight: 700;
+}
+
+.gm-profile-modal__username {
+  color: #cbd5e1;
+}
+
+.gm-profile-modal__value--streak {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.4em;
 }
 
 @media (max-width: 900px) {
@@ -3864,6 +3874,7 @@ h1.landing-hub__title {
 
 .leaderboard-row__rank-button:hover,
 .leaderboard-row__tag:hover,
+.leaderboard-row__username:hover,
 .leaderboard-row__metric:hover {
   opacity: 0.92;
 }
@@ -3876,6 +3887,7 @@ h1.landing-hub__title {
 
 .leaderboard-row__identity {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
@@ -3899,6 +3911,27 @@ h1.landing-hub__title {
 
 .leaderboard-row__name:hover {
   color: #f8fafc;
+  text-decoration: underline;
+}
+
+.leaderboard-row__username {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.leaderboard-row__username:hover {
+  color: #bfdbfe;
   text-decoration: underline;
 }
 
@@ -5085,6 +5118,23 @@ h1.landing-hub__title {
   margin: 0;
   line-height: 1.15;
   font-size: 1.1rem;
+}
+
+.team-lineup-card__name-button {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.team-lineup-card__name-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .matchup-panel__team .team-lineup-card__header .projected-record {

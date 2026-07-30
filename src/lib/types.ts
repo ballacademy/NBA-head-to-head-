@@ -83,6 +83,8 @@ export interface Drafter {
   isLiveOpponent?: boolean;
   liveMatchId?: string;
   liveOpponentPlayerId?: string;
+  /** Opaque or private id used to open a GM profile from match results. */
+  profilePlayerId?: string;
 }
 
 export interface ScoreCategory {

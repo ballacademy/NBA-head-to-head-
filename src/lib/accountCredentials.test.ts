@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatUsername,
   getPasswordValidationError,
   getUsernameValidationError,
   normalizeUsername,
@@ -8,6 +9,7 @@ import {
 describe("accountCredentials client helpers", () => {
   it("normalizes usernames", () => {
     expect(normalizeUsername("  FrontOffice ")).toBe("frontoffice");
+    expect(formatUsername("FrontOffice")).toBe("@frontoffice");
   });
 
   it("rejects invalid usernames and short passwords", () => {
