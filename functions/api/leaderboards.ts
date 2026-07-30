@@ -52,16 +52,19 @@ const parsePlayerId = (value: unknown) =>
 
 const sortClause = (
   sort: "elo" | "winStreak" | "lossStreak" | "wins",
+  tableAlias = "",
 ) => {
+  const col = (name: string) => (tableAlias ? `${tableAlias}.${name}` : name);
+
   switch (sort) {
     case "wins":
-      return "wins DESC, losses ASC, elo DESC, team_name ASC";
+      return `${col("wins")} DESC, ${col("losses")} ASC, ${col("elo")} DESC, ${col("team_name")} ASC`;
     case "winStreak":
-      return "win_streak DESC, wins DESC, team_name ASC";
+      return `${col("win_streak")} DESC, ${col("wins")} DESC, ${col("team_name")} ASC`;
     case "lossStreak":
-      return "loss_streak DESC, losses DESC, team_name ASC";
+      return `${col("loss_streak")} DESC, ${col("losses")} DESC, ${col("team_name")} ASC`;
     default:
-      return "elo DESC, wins DESC, team_name ASC";
+      return `${col("elo")} DESC, ${col("wins")} DESC, ${col("team_name")} ASC`;
   }
 };
 
@@ -107,15 +110,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   );
 
   const rows = await context.env.DB.prepare(
-    `SELECT mode, season_id, player_id, team_name, public_tag, elo, wins, losses,
-            win_streak, loss_streak, updated_at
-     FROM leaderboard_entries
-     WHERE mode = ? AND season_id = ?
-     ORDER BY ${sortClause(sort)}
+    `SELECT le.mode AS mode, le.season_id AS season_id, le.player_id AS player_id,
+            le.team_name AS team_name, le.public_tag AS public_tag, le.elo AS elo,
+            le.wins AS wins, le.losses AS losses, le.win_streak AS win_streak,
+            le.loss_streak AS loss_streak, le.updated_at AS updated_at,
+            pa.username AS username
+     FROM leaderboard_entries le
+     LEFT JOIN player_accounts pa ON pa.player_id = le.player_id
+     WHERE le.mode = ? AND le.season_id = ?
+     ORDER BY ${sortClause(sort, "le")}
      LIMIT ?`,
   )
     .bind(mode, seasonId, limit)
-    .all<LeaderboardEntryRow>();
+    .all<LeaderboardEntryRow & { username?: string | null }>();
 
   const entries = await Promise.all(
     (rows.results ?? []).map((row) =>

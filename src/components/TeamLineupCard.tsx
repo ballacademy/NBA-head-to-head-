@@ -17,6 +17,7 @@ interface TeamLineupCardProps {
   compact?: boolean;
   showProjectedRecord?: boolean;
   showScoreContext?: boolean;
+  onNameClick?: () => void;
 }
 
 export function TeamLineupCard({
@@ -30,11 +31,23 @@ export function TeamLineupCard({
   compact = false,
   showProjectedRecord = true,
   showScoreContext = false,
+  onNameClick,
 }: TeamLineupCardProps) {
   const orderedLineup = sortLineupByPosition(lineup);
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
     : null;
+
+  const nameContent = showStreak ? (
+    <TeamNameWithStreak
+      name={drafter.name}
+      winStreak={winStreak}
+      lossStreak={lossStreak}
+      compact={compact}
+    />
+  ) : (
+    drafter.name
+  );
 
   return (
     <article
@@ -44,15 +57,16 @@ export function TeamLineupCard({
       <div className="team-lineup-card__header">
         <div>
           <h3>
-            {showStreak ? (
-              <TeamNameWithStreak
-                name={drafter.name}
-                winStreak={winStreak}
-                lossStreak={lossStreak}
-                compact={compact}
-              />
+            {onNameClick ? (
+              <button
+                type="button"
+                className="team-lineup-card__name-button"
+                onClick={onNameClick}
+              >
+                {nameContent}
+              </button>
             ) : (
-              drafter.name
+              nameContent
             )}
           </h3>
           {showProjectedRecord ? (

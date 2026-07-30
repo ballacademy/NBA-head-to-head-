@@ -12,6 +12,7 @@ export interface GhostOpponentPayload {
   lineup: string[];
   elo: number;
   createdAt: string;
+  publicPlayerId?: string;
 }
 
 export interface QueueEntryRow {
@@ -48,7 +49,12 @@ export const claimGhostOpponent = async (
   playerId: string,
   elo: number,
   challengerStarCount: number,
-  rowToPayload: (row: StoredLineupRow) => GhostOpponentPayload | null,
+  rowToPayload: (
+    row: StoredLineupRow,
+  ) =>
+    | GhostOpponentPayload
+    | null
+    | Promise<GhostOpponentPayload | null>,
 ): Promise<GhostOpponentPayload | null> => {
   const bands = [
     [Math.max(0, Math.round(elo) - 250), Math.round(elo) + 250],
@@ -82,7 +88,7 @@ export const claimGhostOpponent = async (
         continue;
       }
 
-      const payload = rowToPayload(row);
+      const payload = await Promise.resolve(rowToPayload(row));
 
       if (!payload) {
         await db

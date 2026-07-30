@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { formatUsername } from "../lib/accountCredentials";
 import {
   formatLegacyMonthlyFinish,
   formatLegacyPeakBannerCount,
@@ -9,32 +10,63 @@ import { formatPublicTag } from "../lib/playerIdentity";
 import { fetchRemotePlayerProfile } from "../lib/playerProfileApi";
 import { formatPlayerRecord } from "../lib/playerRecord";
 import { formatSeasonLabel, getCurrentSeasonId } from "../lib/rankedSeason";
+import { hasLossStreakBadge } from "../lib/lossStreak";
+import { hasFireStreak } from "../lib/winStreak";
+import { LossStreakBadge } from "./LossStreakBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { WinStreakBadge } from "./WinStreakBadge";
 
 interface GmProfileModalProps {
   playerId: string;
   name: string;
   publicTag: string;
+  username?: string;
   wins: number;
   losses: number;
+  winStreak?: number;
+  lossStreak?: number;
   elo?: number;
   tierLabel?: string;
+  profileMode?: "classic" | "ranked";
   fetchRemoteProfile?: boolean;
   onClose: () => void;
 }
+
+const formatPlainStreak = (winStreak: number, lossStreak: number) => {
+  if (winStreak > 0) {
+    return `${winStreak} win${winStreak === 1 ? "" : "s"}`;
+  }
+
+  if (lossStreak > 0) {
+    return `${lossStreak} loss${lossStreak === 1 ? "" : "es"}`;
+  }
+
+  return "None";
+};
 
 export function GmProfileModal({
   playerId,
   name,
   publicTag,
+  username,
   wins,
   losses,
+  winStreak = 0,
+  lossStreak = 0,
   elo,
   tierLabel,
+  profileMode = "ranked",
   fetchRemoteProfile = true,
   onClose,
 }: GmProfileModalProps) {
   const [loading, setLoading] = useState(fetchRemoteProfile);
+  const [displayName, setDisplayName] = useState(name);
+  const [displayTag, setDisplayTag] = useState(publicTag);
+  const [displayUsername, setDisplayUsername] = useState(username);
+  const [displayWins, setDisplayWins] = useState(wins);
+  const [displayLosses, setDisplayLosses] = useState(losses);
+  const [displayWinStreak, setDisplayWinStreak] = useState(winStreak);
+  const [displayLossStreak, setDisplayLossStreak] = useState(lossStreak);
   const [legacyPeakElo, setLegacyPeakElo] = useState<number | null>(elo ?? null);
   const [legacyBestRank, setLegacyBestRank] = useState<number | null>(null);
   const [legacyBestRankSeasonId, setLegacyBestRankSeasonId] = useState("");
@@ -43,6 +75,17 @@ export function GmProfileModal({
   const [currentSeasonElo, setCurrentSeasonElo] = useState<number | null>(
     elo ?? null,
   );
+
+  useEffect(() => {
+    setDisplayName(name);
+    setDisplayTag(publicTag);
+    setDisplayUsername(username);
+    setDisplayWins(wins);
+    setDisplayLosses(losses);
+    setDisplayWinStreak(winStreak);
+    setDisplayLossStreak(lossStreak);
+    setCurrentSeasonElo(elo ?? null);
+  }, [name, publicTag, username, wins, losses, winStreak, lossStreak, elo]);
 
   useEffect(() => {
     if (!fetchRemoteProfile) {
@@ -57,10 +100,15 @@ export function GmProfileModal({
       const profile = await fetchRemotePlayerProfile({
         playerId,
         seasonId: getCurrentSeasonId(),
+        mode: profileMode,
       });
 
       if (cancelled) {
         return;
+      }
+
+      if (profile?.username) {
+        setDisplayUsername(profile.username);
       }
 
       if (profile?.legacy) {
@@ -71,8 +119,17 @@ export function GmProfileModal({
       }
 
       if (profile?.currentSeason) {
+        setDisplayName(profile.currentSeason.teamName || name);
+        setDisplayTag(profile.currentSeason.publicTag || publicTag);
+        setDisplayWins(profile.currentSeason.wins);
+        setDisplayLosses(profile.currentSeason.losses);
+        setDisplayWinStreak(profile.currentSeason.winStreak ?? winStreak);
+        setDisplayLossStreak(profile.currentSeason.lossStreak ?? lossStreak);
         setCurrentSeasonElo(profile.currentSeason.elo);
         setCurrentSeasonRank(profile.currentSeason.rank);
+        if (profile.currentSeason.username) {
+          setDisplayUsername(profile.currentSeason.username);
+        }
       }
 
       setLoading(false);
@@ -83,7 +140,19 @@ export function GmProfileModal({
     return () => {
       cancelled = true;
     };
-  }, [playerId, fetchRemoteProfile]);
+  }, [
+    playerId,
+    fetchRemoteProfile,
+    profileMode,
+    name,
+    publicTag,
+    winStreak,
+    lossStreak,
+  ]);
+
+  const showWinBadge = hasFireStreak(displayWinStreak);
+  const showLossBadge =
+    !showWinBadge && hasLossStreakBadge(displayLossStreak);
 
   const modal = (
     <div
@@ -98,9 +167,17 @@ export function GmProfileModal({
         onClick={(event) => event.stopPropagation()}
       >
         <p className="eyebrow">Legacy rank</p>
-        <h2 id="gm-profile-title">{name}</h2>
+        <h2 id="gm-profile-title">{displayName}</h2>
         <p className="gm-profile-modal__identity">
-          {formatPublicTag(publicTag)}
+          {displayUsername ? (
+            <>
+              <span className="gm-profile-modal__username">
+                {formatUsername(displayUsername)}
+              </span>
+              <span aria-hidden="true"> · </span>
+            </>
+          ) : null}
+          {formatPublicTag(displayTag)}
         </p>
 
         <div className="gm-profile-modal__grid">
@@ -134,12 +211,12 @@ export function GmProfileModal({
             <strong>
               {currentSeasonRank
                 ? `#${currentSeasonRank} · ${formatPlayerRecord({
-                    wins,
-                    losses,
+                    wins: displayWins,
+                    losses: displayLosses,
                   })}`
                 : formatPlayerRecord({
-                    wins,
-                    losses,
+                    wins: displayWins,
+                    losses: displayLosses,
                   })}
             </strong>
             {typeof currentSeasonElo === "number" ? (
@@ -149,6 +226,24 @@ export function GmProfileModal({
                 compact
               />
             ) : null}
+          </div>
+          <div className="gm-profile-modal__stat">
+            <span className="gm-profile-modal__label">Current streak</span>
+            <strong className="gm-profile-modal__value gm-profile-modal__value--streak">
+              {showWinBadge ? (
+                <WinStreakBadge
+                  winStreak={displayWinStreak}
+                  showTypeLabel={false}
+                />
+              ) : showLossBadge ? (
+                <LossStreakBadge
+                  lossStreak={displayLossStreak}
+                  showTypeLabel={false}
+                />
+              ) : (
+                formatPlainStreak(displayWinStreak, displayLossStreak)
+              )}
+            </strong>
           </div>
         </div>
 

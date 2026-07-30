@@ -6,6 +6,7 @@ export interface RemoteLeaderboardEntry {
   isYou?: boolean;
   name: string;
   publicTag: string;
+  username?: string;
   elo: number;
   wins: number;
   losses: number;

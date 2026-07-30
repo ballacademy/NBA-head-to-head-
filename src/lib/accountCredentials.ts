@@ -9,6 +9,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const normalizeUsername = (value: string) => value.trim().toLowerCase();
 
+export const formatUsername = (username: string) =>
+  `@${normalizeUsername(username)}`;
+
 export const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 export const getUsernameValidationError = (value: string) => {

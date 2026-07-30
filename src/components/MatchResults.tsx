@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { TeamLineupCard } from "./TeamLineupCard";
 import { GmIdentityBadge } from "./GmIdentityBadge";
+import { GmProfileModal } from "./GmProfileModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
@@ -22,7 +23,7 @@ import {
 } from "../lib/ghostMatchmaking";
 import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
 import { getLineupSalaryTotal } from "../lib/salaryCap";
-import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
+import { getOrCreatePlayerIdentity, derivePublicTag } from "../lib/playerIdentity";
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
@@ -91,6 +92,7 @@ export function MatchResults({
     user.eventId ? loadEventProfile(user.eventId) : null,
   );
   const [newEventBadges, setNewEventBadges] = useState<EventBadgeTier[]>([]);
+  const [opponentProfileOpen, setOpponentProfileOpen] = useState(false);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
@@ -282,6 +284,16 @@ export function MatchResults({
       ? "New Scrub unlocked — choose one"
       : "New star unlocked — click to choose";
   const playerIdentity = getOrCreatePlayerIdentity();
+  const opponentProfileId =
+    opponent.profilePlayerId ?? opponent.liveOpponentPlayerId ?? null;
+  const opponentProfileMode: "classic" | "ranked" = user.salaryCapMode
+    ? "ranked"
+    : "classic";
+  const canOpenOpponentProfile =
+    Boolean(opponentProfileId) &&
+    !user.practiceMode &&
+    !user.eventId &&
+    !opponentProfileId?.startsWith("npc-");
 
   return (
     <section
@@ -291,6 +303,19 @@ export function MatchResults({
         <PlayerUnlockModal
           offer={matchCollection.pendingUnlock}
           onSelect={handleUnlockSelect}
+        />
+      ) : null}
+
+      {opponentProfileOpen && opponentProfileId && canOpenOpponentProfile ? (
+        <GmProfileModal
+          playerId={opponentProfileId}
+          name={opponent.name}
+          publicTag={derivePublicTag(opponentProfileId)}
+          wins={0}
+          losses={0}
+          elo={opponent.rankedOpponentElo ?? opponent.classicOpponentElo}
+          profileMode={opponentProfileMode}
+          onClose={() => setOpponentProfileOpen(false)}
         />
       ) : null}
 
@@ -414,6 +439,11 @@ export function MatchResults({
               isWinner={matchResult === "loss"}
               showScoreContext
               compact
+              onNameClick={
+                canOpenOpponentProfile
+                  ? () => setOpponentProfileOpen(true)
+                  : undefined
+              }
             />
           </div>
         </div>

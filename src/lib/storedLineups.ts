@@ -77,6 +77,7 @@ export const parseGhostOpponentSnapshot = (payload: {
   lineup?: unknown;
   elo?: unknown;
   createdAt?: unknown;
+  publicPlayerId?: unknown;
 }) => {
   const lineup = sanitizeStoredLineupIds(payload.lineup);
 
@@ -90,11 +91,18 @@ export const parseGhostOpponentSnapshot = (payload: {
     return null;
   }
 
+  const publicPlayerId =
+    typeof payload.publicPlayerId === "string" &&
+    payload.publicPlayerId.trim().length > 0
+      ? payload.publicPlayerId.trim()
+      : undefined;
+
   return {
     id: payload.id,
     teamName: payload.teamName,
     lineup,
     elo: payload.elo,
     createdAt: payload.createdAt,
+    publicPlayerId,
   };
 };

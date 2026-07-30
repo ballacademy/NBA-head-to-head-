@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { formatUsername } from "../lib/accountCredentials";
 import {
   formatLeaderboardElo,
   formatLeaderboardLossStreak,
@@ -64,6 +65,7 @@ interface LeaderboardBoardProps {
   currentPlayerId: string;
   viewKey: string;
   showTier: boolean;
+  profileMode: "classic" | "ranked";
 }
 
 function LeaderboardEntryRow({
@@ -73,6 +75,7 @@ function LeaderboardEntryRow({
   formatRecord,
   currentPlayerId,
   showTier,
+  profileMode,
 }: {
   entry: BoardEntry;
   rank: number;
@@ -80,11 +83,11 @@ function LeaderboardEntryRow({
   formatRecord: (entry: BoardEntry) => string;
   currentPlayerId: string;
   showTier: boolean;
+  profileMode: "classic" | "ranked";
 }) {
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const isYou = entry.isYou === true || entry.playerId === currentPlayerId;
-  const canFetchRemoteProfile = !entry.playerId.startsWith("p_");
 
   return (
     <li
@@ -110,6 +113,15 @@ function LeaderboardEntryRow({
           >
             {entry.name}
           </button>
+          {entry.username ? (
+            <button
+              type="button"
+              className="leaderboard-row__username"
+              onClick={() => setProfileOpen(true)}
+            >
+              {formatUsername(entry.username)}
+            </button>
+          ) : null}
           <button
             type="button"
             className="leaderboard-row__tag"
@@ -147,11 +159,14 @@ function LeaderboardEntryRow({
           playerId={entry.playerId}
           name={entry.name}
           publicTag={entry.publicTag}
+          username={entry.username}
           wins={entry.wins}
           losses={entry.losses}
+          winStreak={entry.winStreak}
+          lossStreak={entry.lossStreak}
           elo={entry.elo}
           tierLabel={entry.tierLabel}
-          fetchRemoteProfile={canFetchRemoteProfile}
+          profileMode={profileMode}
           onClose={() => setProfileOpen(false)}
         />
       ) : null}
@@ -166,6 +181,7 @@ function LeaderboardBoard({
   currentPlayerId,
   viewKey,
   showTier,
+  profileMode,
 }: LeaderboardBoardProps) {
   return (
     <ol className="leaderboard-rows" key={`leaderboard-rows-${viewKey}`}>
@@ -178,6 +194,7 @@ function LeaderboardBoard({
           formatRecord={formatRecord}
           currentPlayerId={currentPlayerId}
           showTier={showTier}
+          profileMode={profileMode}
         />
       ))}
     </ol>
@@ -347,6 +364,7 @@ export function LeaderboardPage() {
               currentPlayerId={currentPlayerId}
               viewKey={`${view}-${sort}`}
               showTier
+              profileMode="ranked"
             />
           ) : (
             <p className="draft-empty">
@@ -362,6 +380,7 @@ export function LeaderboardPage() {
             currentPlayerId={currentPlayerId}
             viewKey={`${view}-${sort}`}
             showTier
+            profileMode="classic"
           />
         ) : (
           <p className="draft-empty">
