@@ -304,13 +304,29 @@ export const getHighUsageFactor = (player: Player) =>
 export const getLowUsageFactor = (player: Player) =>
   1 - smoothUnit(player.usage, 16, 24);
 
-/** Soft rim-protection contribution from blocks / style. */
+/** Soft rim-protection contribution from blocks, style, and elite frontcourt D. */
 export const getRimProtectorFactor = (player: Player) => {
   if (player.styles.includes("rim-protector")) {
     return 1;
   }
 
-  return smoothUnit(player.blocks, 0.6, 1.5);
+  const blockFactor = smoothUnit(player.blocks, 0.55, 1.45);
+  const isFrontcourt = player.positions.some(
+    (position) => position === "C" || position === "PF" || position === "SF",
+  );
+
+  if (!isFrontcourt) {
+    return blockFactor;
+  }
+
+  // Elite frontcourt defenders protect the paint beyond raw block rate
+  // (Giannis, Bam, etc.). Grade carries most of the weight; blocks help.
+  const defenseRank = getPlayerDefenseGradeRank(player);
+  const gradeFactor = smoothUnit(defenseRank, 8, 11); // B → A
+  const blockBoost = smoothUnit(player.blocks, 0.35, 1.2);
+  const paintPresence = lerp(gradeFactor * 0.6, 1, blockBoost);
+
+  return Math.max(blockFactor, paintPresence);
 };
 
 export const SEASON_LENGTH = 82;
@@ -681,7 +697,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   }
 
   if (hasNoCenter(roleFitProfile)) {
-    warnings.push("No true center makes rim protection and rebounding harder.");
+    warnings.push("No true center makes rebounding and interior size harder.");
   } else if (hasTooManyCenters(roleFitProfile)) {
     warnings.push("Too many centers clog the floor and limit spacing.");
   } else if (!hasLineupFrontcourt(roleFitProfile)) {
