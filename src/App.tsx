@@ -1553,28 +1553,31 @@ function App() {
   }
 
   if (phase === "gmStats") {
-    return renderHubFeature(<GmStatsPage />);
+    return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "achievements") {
-    return renderHubFeature(<AchievementsPage />);
+    return renderHubFeature(<AchievementsPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "privacy") {
-    return renderHubFeature(<LegalPage kind="privacy" />);
+    return renderHubFeature(
+      <LegalPage kind="privacy" onBack={exitFeaturePage} />,
+    );
   }
 
   if (phase === "terms") {
     return renderHubFeature(
       <LegalPage
         kind="terms"
+        onBack={exitFeaturePage}
         onOpenPrivacy={() => openFeaturePage("privacy", { returnTo: "terms" })}
       />,
     );
   }
 
   if (phase === "beta") {
-    return renderHubFeature(<BetaNotesPage />);
+    return renderHubFeature(<BetaNotesPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "stats") {

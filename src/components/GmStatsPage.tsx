@@ -11,7 +11,12 @@ import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { RankedTierBadge } from "./RankedTierBadge";
+
+interface GmStatsPageProps {
+  onBack: () => void;
+}
 
 function GmStatsFactRows({
   rows,
@@ -36,7 +41,7 @@ const formatPercentileStat = (value: number | null) =>
 const formatCollectionCount = (unlocked: number, total: number) =>
   `${unlocked} of ${total}`;
 
-export function GmStatsPage() {
+export function GmStatsPage({ onBack }: GmStatsPageProps) {
   const teamName = loadTeamProfile()?.name ?? "Your team";
   const [legacyTick, setLegacyTick] = useState(0);
 
@@ -65,6 +70,7 @@ export function GmStatsPage() {
 
   return (
     <div className="hub-feature gm-stats-page">
+      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{snapshot.teamName}</h1>
         <p className="landing__lede landing-hub__lede">
