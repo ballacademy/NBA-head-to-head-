@@ -16,6 +16,7 @@ export interface LineupScoreModifiers {
   offenseFloorPenalty: number;
   noStarPenalty: number;
   midTierImpactPenalty: number;
+  thinImpactPenalty: number;
   eliteOffenseBonus: number;
   superstarStackBonus: number;
 }
@@ -56,6 +57,11 @@ export const computeLineupScoreLayers = (
     id: "midTierImpactPenalty",
     label: "Mid-tier impact penalty",
     value: modifiers.midTierImpactPenalty,
+  },
+  {
+    id: "thinImpactPenalty",
+    label: "Thin impact / one-star tax",
+    value: modifiers.thinImpactPenalty,
   },
   {
     id: "eliteOffenseBonus",

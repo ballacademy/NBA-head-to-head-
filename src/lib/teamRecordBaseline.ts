@@ -1,4 +1,5 @@
 import teamSeasonBaselines from "../../data/team-season-baselines.json";
+import { getPlayerTeamQualityImpactWeight } from "./impactRanking";
 import { statsFile } from "./playerPool";
 import type { Player } from "./types";
 import { isFreeAgentTeam } from "./freeAgents";
@@ -13,12 +14,20 @@ const SEASON_LENGTH = 82;
 
 const winsByTeam = teamSeasonBaselines.winsByTeam as Record<string, number>;
 
-const rawAvailabilityByBbr = new Map(
+interface RawSeasonAvailability {
+  gamesPlayed: number;
+  gamesStarted: number;
+}
+
+const rawSeasonByBbr = new Map<string, RawSeasonAvailability>(
   statsFile.players
     .filter((player) => player.bbrPlayerId)
     .map((player) => [
       player.bbrPlayerId as string,
-      player.gamesStarted ?? player.gamesPlayed,
+      {
+        gamesPlayed: player.gamesPlayed,
+        gamesStarted: player.gamesStarted ?? 0,
+      },
     ]),
 );
 
@@ -51,16 +60,40 @@ export const getPlayerTeamQualityTeam = (
   return seasonTeam ? normalizeTeamAbbreviation(seasonTeam) : undefined;
 };
 
+export const getPlayerSeasonAvailability = (
+  player: Pick<Player, "bbrPlayerId" | "gamesPlayed">,
+): RawSeasonAvailability => {
+  const raw = player.bbrPlayerId
+    ? rawSeasonByBbr.get(player.bbrPlayerId)
+    : undefined;
+
+  return {
+    gamesPlayed: raw?.gamesPlayed ?? player.gamesPlayed,
+    gamesStarted: raw?.gamesStarted ?? 0,
+  };
+};
+
+/** More games off the bench than as a starter → no statsTeam quality boost. */
+export const isBenchMajorityPlayer = (
+  player: Pick<Player, "bbrPlayerId" | "gamesPlayed">,
+) => {
+  const { gamesPlayed, gamesStarted } = getPlayerSeasonAvailability(player);
+  if (gamesPlayed <= 0) {
+    return true;
+  }
+
+  const benchGames = gamesPlayed - gamesStarted;
+  return benchGames > gamesStarted;
+};
+
 export const getStarterAvailability = (lineup: Player[]) => {
   if (lineup.length === 0) {
     return 1;
   }
 
   const availabilityScores = lineup.map((player) => {
-    const games =
-      (player.bbrPlayerId
-        ? rawAvailabilityByBbr.get(player.bbrPlayerId)
-        : undefined) ?? player.gamesPlayed;
+    const { gamesStarted, gamesPlayed } = getPlayerSeasonAvailability(player);
+    const games = gamesStarted > 0 ? gamesStarted : gamesPlayed;
 
     return clamp(games / HEALTHY_STARTER_GAMES, 0, 1);
   });
@@ -136,20 +169,35 @@ export const blendProjectedWinsWithTeamAnchor = (
     ),
   );
 
+/**
+ * Prior-season team wins bump, impact-weighted within the lineup.
+ * Bench-majority players (more DNP-start / bench games than starts) are excluded.
+ */
 export const getLineupTeamQualityRawAdjustment = (lineup: Player[]) => {
-  const teamWins = lineup
-    .map((player) => {
-      const team = getPlayerTeamQualityTeam(player);
-      return team ? winsByTeam[team] : undefined;
-    })
-    .filter((wins): wins is number => wins !== undefined);
+  let weightedWins = 0;
+  let weightSum = 0;
 
-  if (teamWins.length === 0) {
+  for (const player of lineup) {
+    if (isBenchMajorityPlayer(player)) {
+      continue;
+    }
+
+    const team = getPlayerTeamQualityTeam(player);
+    const wins = team ? winsByTeam[team] : undefined;
+    if (wins === undefined) {
+      continue;
+    }
+
+    const weight = getPlayerTeamQualityImpactWeight(player);
+    weightedWins += wins * weight;
+    weightSum += weight;
+  }
+
+  if (weightSum <= 0) {
     return 0;
   }
 
-  const averageTeamWins =
-    teamWins.reduce((sum, wins) => sum + wins, 0) / teamWins.length;
+  const averageTeamWins = weightedWins / weightSum;
 
   return clamp(
     (averageTeamWins - LEAGUE_AVERAGE_TEAM_WINS) * TEAM_QUALITY_RAW_PER_WIN,

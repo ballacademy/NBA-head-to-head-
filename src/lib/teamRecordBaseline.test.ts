@@ -7,6 +7,7 @@ import {
   getPlayerTeamQualityTeam,
   getSameTeamRecordAnchor,
   getStarterAvailability,
+  isBenchMajorityPlayer,
 } from "./teamRecordBaseline";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
@@ -70,6 +71,38 @@ describe("teamRecordBaseline", () => {
     ]);
 
     expect(getLineupTeamQualityRawAdjustment(mixed)).toBeGreaterThan(0);
+  });
+
+  it("excludes bench-majority players and down-weights low-impact role players", () => {
+    const minott = players.find((player) => player.bbrPlayerId === "minotjo01");
+    const tatum = players.find((player) => player.bbrPlayerId === "tatumja01");
+    const brown = players.find((player) => player.bbrPlayerId === "brownja02");
+    const sga = players.find((player) => player.bbrPlayerId === "gilgesh01");
+    const jokic = players.find((player) => player.bbrPlayerId === "jokicni01");
+
+    expect(minott && tatum && brown && sga && jokic).toBeTruthy();
+    expect(getPlayerTeamQualityTeam(minott!)).toBe("BOS");
+    expect(isBenchMajorityPlayer(minott!)).toBe(true);
+    expect(isBenchMajorityPlayer(tatum!)).toBe(false);
+
+    // Bench-majority BOS role player contributes nothing on his own.
+    expect(
+      getLineupTeamQualityRawAdjustment([
+        minott!,
+        minott!,
+        minott!,
+        minott!,
+        minott!,
+      ]),
+    ).toBe(0);
+
+    const withMinott = [tatum!, brown!, sga!, jokic!, minott!];
+    const withoutMinott = [tatum!, brown!, sga!, jokic!, brown!];
+
+    // Replacing a star with Minott must not keep the same equal-share BOS boost.
+    expect(getLineupTeamQualityRawAdjustment(withMinott)).toBeLessThanOrEqual(
+      getLineupTeamQualityRawAdjustment(withoutMinott),
+    );
   });
 
   it("uses stats-season teams for quality, not later roster moves", () => {
