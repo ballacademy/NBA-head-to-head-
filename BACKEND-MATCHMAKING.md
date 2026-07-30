@@ -32,7 +32,9 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 
 ## Optional accounts
 
-Accounts are optional. Register stores a username and PBKDF2-SHA-256 password hash linked to the browser GM `playerId`. Login returns that `playerId` so the client can restore identity after cleared local storage. Apply migration `0010_player_accounts.sql` before enabling the feature in production:
+Accounts are optional. Register stores a username and PBKDF2-SHA-256 password hash linked to the browser GM `playerId`. Login returns that `playerId` so the client can restore identity after cleared local storage. Apply migration `0010_player_accounts.sql` before enabling the feature in production.
+Password resets use support-issued one-time codes (`0013_password_reset_tokens.sql`);
+see `PASSWORD-RESET.md`.
 
 ```bash
 npx wrangler d1 migrations apply draft-day-gm --remote

@@ -1,5 +1,7 @@
 export interface Env {
   DB: D1Database;
+  /** Optional support secret for POST /api/account/issue-reset */
+  ACCOUNT_RESET_SECRET?: string;
 }
 
 export type MatchmakingMode = "classic" | "ranked" | "event";
@@ -49,6 +51,7 @@ export interface LeaderboardEntryRow {
 export interface PlayerAccountRow {
   id: string;
   username: string;
+  email: string | null;
   password_salt: string;
   password_hash: string;
   password_iters: number;

@@ -1,5 +1,7 @@
 import {
   normalizeUsername,
+  normalizeEmail,
+  getEmailValidationError,
   getPasswordValidationError,
   getUsernameValidationError,
 } from "./accountCredentials";
@@ -77,6 +79,7 @@ export const fetchAccountStatus = async (
 
 export const registerAccount = async (params: {
   username: string;
+  email: string;
   password: string;
   playerId: string;
   acceptedTerms: boolean;
@@ -84,6 +87,11 @@ export const registerAccount = async (params: {
   const usernameError = getUsernameValidationError(params.username);
   if (usernameError) {
     return { ok: false, error: usernameError, status: 400 };
+  }
+
+  const emailError = getEmailValidationError(params.email);
+  if (emailError) {
+    return { ok: false, error: emailError, status: 400 };
   }
 
   const passwordError = getPasswordValidationError(params.password);
@@ -108,6 +116,7 @@ export const registerAccount = async (params: {
       },
       body: JSON.stringify({
         username: normalizeUsername(params.username),
+        email: normalizeEmail(params.email),
         password: params.password,
         playerId: params.playerId,
         acceptedTerms: true,
@@ -182,6 +191,67 @@ export const loginAccount = async (params: {
       playerId: body.playerId,
       signupIndex: body.signupIndex,
       foundingGm: Boolean(body.foundingGm),
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the account service.",
+      status: 0,
+    };
+  }
+};
+
+export const resetAccountPassword = async (params: {
+  username: string;
+  resetCode: string;
+  password: string;
+}): Promise<AccountApiResult> => {
+  const usernameError = getUsernameValidationError(params.username);
+  if (usernameError) {
+    return { ok: false, error: usernameError, status: 400 };
+  }
+
+  const passwordError = getPasswordValidationError(params.password);
+  if (passwordError) {
+    return { ok: false, error: passwordError, status: 400 };
+  }
+
+  const code = params.resetCode.trim().toLowerCase().replace(/[\s-]+/g, "");
+  if (!/^[a-f0-9]{8}$/.test(code)) {
+    return {
+      ok: false,
+      error: "Enter the 8-character reset code from support.",
+      status: 400,
+    };
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/account/reset-password`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username: normalizeUsername(params.username),
+        resetCode: code,
+        password: params.password,
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: await readError(response),
+        status: response.status,
+      };
+    }
+
+    const body = (await response.json()) as { username?: string };
+    return {
+      ok: true,
+      username: body.username ?? normalizeUsername(params.username),
+      playerId: "",
     };
   } catch {
     return {

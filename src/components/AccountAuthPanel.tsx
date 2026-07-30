@@ -3,6 +3,7 @@ import {
   fetchAccountStatus,
   loginAccount,
   registerAccount,
+  resetAccountPassword,
 } from "../lib/accountApi";
 import {
   PASSWORD_MAX_LENGTH,
@@ -17,10 +18,11 @@ import {
 import { restorePlayerIdentityFromLogin } from "../lib/restorePlayerIdentity";
 import {
   SUPPORT_EMAIL,
+  buildPasswordResetMailto,
   buildSupportMailto,
 } from "../lib/support";
 
-type AccountPanelMode = "closed" | "register" | "login";
+type AccountPanelMode = "closed" | "register" | "login" | "reset";
 type AccountLinkState = "loading" | "unknown" | "linked" | "unlinked";
 
 interface AccountAuthPanelProps {
@@ -40,8 +42,10 @@ export function AccountAuthPanel({
   const [linkState, setLinkState] = useState<AccountLinkState>("loading");
   const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetCode, setResetCode] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -98,8 +102,10 @@ export function AccountAuthPanel({
 
   const resetForm = () => {
     setUsername("");
+    setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setResetCode("");
     setAcceptedTerms(false);
     setError(null);
     setMessage(null);
@@ -127,6 +133,7 @@ export function AccountAuthPanel({
     setBusy(true);
     const result = await registerAccount({
       username,
+      email,
       password,
       playerId,
       acceptedTerms,
@@ -199,6 +206,43 @@ export function AccountAuthPanel({
     }
   };
 
+  const handleReset = async () => {
+    if (submitLock.current) {
+      return;
+    }
+
+    setError(null);
+    setMessage(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    submitLock.current = true;
+    setBusy(true);
+    const result = await resetAccountPassword({
+      username,
+      resetCode,
+      password,
+    });
+    setBusy(false);
+    submitLock.current = false;
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    setMode("login");
+    setPassword("");
+    setConfirmPassword("");
+    setResetCode("");
+    setMessage(
+      `Password updated for @${result.username}. Log in with your new password.`,
+    );
+  };
+
   return (
     <div className="landing-team-form__account">
       <div className="landing-team-form__account-header">
@@ -229,12 +273,13 @@ export function AccountAuthPanel({
 
       <p className="landing-team-form__account-note">
         Playing does not require an account. Create one only if you want to
-        restore this GM code after clearing browser data. Passwords are stored
-        as secure hashes, never in plain text.{" "}
-        <strong>There is no password reset</strong> — if you lose access, email{" "}
-        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Logging in on
-        another device restores online records (like leaderboard rows) but
-        resets on-device collection progress for that browser.
+        restore this GM code after clearing browser data. New accounts need a
+        username, email, and password. Passwords are stored as secure hashes;
+        email is stored for account recovery. Forgot your password? Email{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with your
+        username to get a one-time reset code, then use Forgot password below.
+        Logging in on another device restores online records (like leaderboard
+        rows) but resets on-device collection progress for that browser.
       </p>
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">
@@ -265,6 +310,16 @@ export function AccountAuthPanel({
           >
             Log in
           </button>
+          <span className="landing-team-form__account-sep" aria-hidden="true">
+            ·
+          </span>
+          <button
+            type="button"
+            className="landing-team-form__account-action"
+            onClick={() => openMode("reset")}
+          >
+            Forgot password
+          </button>
         </div>
       ) : null}
 
@@ -277,6 +332,16 @@ export function AccountAuthPanel({
           >
             Switch account
           </button>
+          <span className="landing-team-form__account-sep" aria-hidden="true">
+            ·
+          </span>
+          <button
+            type="button"
+            className="landing-team-form__account-action"
+            onClick={() => openMode("reset")}
+          >
+            Forgot password
+          </button>
         </div>
       ) : null}
 
@@ -287,6 +352,8 @@ export function AccountAuthPanel({
             event.preventDefault();
             if (mode === "register") {
               void handleRegister();
+            } else if (mode === "reset") {
+              void handleReset();
             } else {
               void handleLogin();
             }
@@ -308,91 +375,150 @@ export function AccountAuthPanel({
             />
           </label>
 
+          {mode === "register" ? (
+            <label className="field">
+              <span>Email</span>
+              <input
+                type="email"
+                autoComplete="email"
+                required
+                maxLength={254}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                disabled={busy}
+              />
+            </label>
+          ) : null}
+
+          {mode === "reset" ? (
+            <label className="field">
+              <span>Reset code</span>
+              <input
+                type="text"
+                autoComplete="one-time-code"
+                spellCheck={false}
+                required
+                minLength={8}
+                maxLength={12}
+                value={resetCode}
+                onChange={(event) => setResetCode(event.target.value)}
+                placeholder="8-character code from support"
+                disabled={busy}
+              />
+            </label>
+          ) : null}
+
           <label className="field">
-            <span>Password</span>
+            <span>{mode === "reset" ? "New password" : "Password"}</span>
             <input
               type="password"
               autoComplete={
-                mode === "register" ? "new-password" : "current-password"
+                mode === "login" ? "current-password" : "new-password"
               }
               required
               minLength={
-                mode === "register" ? PASSWORD_MIN_LENGTH : undefined
+                mode === "login" ? undefined : PASSWORD_MIN_LENGTH
               }
               maxLength={PASSWORD_MAX_LENGTH}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder={
-                mode === "register"
-                  ? `At least ${PASSWORD_MIN_LENGTH} characters`
-                  : undefined
+                mode === "login"
+                  ? undefined
+                  : `At least ${PASSWORD_MIN_LENGTH} characters`
               }
               disabled={busy}
             />
           </label>
 
-          {mode === "register" ? (
-            <>
-              <label className="field">
-                <span>Confirm password</span>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={PASSWORD_MIN_LENGTH}
-                  maxLength={PASSWORD_MAX_LENGTH}
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  disabled={busy}
-                />
-              </label>
+          {mode === "register" || mode === "reset" ? (
+            <label className="field">
+              <span>Confirm {mode === "reset" ? "new password" : "password"}</span>
+              <input
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                disabled={busy}
+              />
+            </label>
+          ) : null}
 
-              <div className="landing-team-form__account-consent">
-                <input
-                  id={consentId}
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(event) => setAcceptedTerms(event.target.checked)}
-                  disabled={busy}
-                  required
-                />
-                <label htmlFor={consentId}>
-                  I agree to the{" "}
-                  <button
-                    type="button"
-                    className="landing-team-form__account-legal-link"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onViewPrivacy();
-                    }}
-                  >
-                    Privacy Policy
-                  </button>{" "}
-                  and{" "}
-                  <button
-                    type="button"
-                    className="landing-team-form__account-legal-link"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onViewTerms();
-                    }}
-                  >
-                    Terms of Use
-                  </button>
-                  . I understand my password is stored only as a secure hash
-                  linked to this GM identity, and that there is no password
-                  reset.
-                </label>
-              </div>
+          {mode === "register" ? (
+            <div className="landing-team-form__account-consent">
+              <input
+                id={consentId}
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(event) => setAcceptedTerms(event.target.checked)}
+                disabled={busy}
+                required
+              />
+              <label htmlFor={consentId}>
+                I agree to the{" "}
+                <button
+                  type="button"
+                  className="landing-team-form__account-legal-link"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onViewPrivacy();
+                  }}
+                >
+                  Privacy Policy
+                </button>{" "}
+                and{" "}
+                <button
+                  type="button"
+                  className="landing-team-form__account-legal-link"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onViewTerms();
+                  }}
+                >
+                  Terms of Use
+                </button>
+                . I understand my password is stored only as a secure hash
+                linked to this GM identity, and that my email may be used for
+                account recovery. Password resets currently use a one-time code
+                from support.
+              </label>
+            </div>
+          ) : null}
+
+          {mode === "login" ? (
+            <>
+              <p className="landing-team-form__account-warning">
+                Logging in replaces this browser&apos;s GM identity. Local
+                collection, achievements, and device-only progress reset.
+                Leaderboard / online records for the account are restored from the
+                server when available.
+              </p>
+              <p className="landing-team-form__account-note">
+                <button
+                  type="button"
+                  className="landing-team-form__account-action"
+                  onClick={() => openMode("reset")}
+                >
+                  Forgot password?
+                </button>
+              </p>
             </>
-          ) : (
-            <p className="landing-team-form__account-warning">
-              Logging in replaces this browser&apos;s GM identity. Local
-              collection, achievements, and device-only progress reset.
-              Leaderboard / online records for the account are restored from the
-              server when available.
+          ) : null}
+
+          {mode === "reset" ? (
+            <p className="landing-team-form__account-note">
+              Email{" "}
+              <a href={buildPasswordResetMailto(username)}>
+                {SUPPORT_EMAIL}
+              </a>{" "}
+              with your username. We&apos;ll reply with an 8-character code
+              (expires in 1 hour). Enter it here with a new password.
             </p>
-          )}
+          ) : null}
 
           {error ? (
             <p className="form-error" role="alert">
@@ -411,7 +537,9 @@ export function AccountAuthPanel({
                 ? "Please wait…"
                 : mode === "register"
                   ? "Create account"
-                  : "Log in"}
+                  : mode === "reset"
+                    ? "Set new password"
+                    : "Log in"}
             </button>
             <button
               type="button"

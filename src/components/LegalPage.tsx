@@ -7,7 +7,7 @@ interface LegalPageProps {
   onOpenPrivacy?: () => void;
 }
 
-const LAST_UPDATED = "July 22, 2026";
+const LAST_UPDATED = "July 30, 2026";
 
 function PrivacyPolicyContent() {
   return (
@@ -21,9 +21,10 @@ function PrivacyPolicyContent() {
       </p>
       <p>
         You can play without creating an account. We do not ask for your real
-        name, email address, phone number, or payment information to play.
-        Optional accounts use a username and password you choose so you can
-        restore your GM identity later.
+        name, phone number, or payment information to play. Optional accounts
+        use a username, email address, and password you choose so you can
+        restore your GM identity later and recover access if you forget your
+        password.
       </p>
 
       <h2>Information we collect</h2>
@@ -58,6 +59,7 @@ function PrivacyPolicyContent() {
       </p>
       <ul>
         <li>Your chosen username</li>
+        <li>Your email address (for account recovery)</li>
         <li>
           A salted password hash created with PBKDF2-SHA-256 (we never store your
           password in plain text)
@@ -75,12 +77,15 @@ function PrivacyPolicyContent() {
         that GM identity on another browser or after clearing site data.
       </p>
       <p>
-        We do not currently offer automated password reset. If you forget your
-        username or password, contact us to request account deletion. Local
-        collection progress stays on your device and is not uploaded with the
-        account. Logging into an account on a new browser restores the GM
-        identity and online competitive records when available; on-device
-        collection must be rebuilt on that browser.
+        Password resets are support-assisted during beta: email us with your
+        username, we send a one-time reset code, and you set a new password in
+        the Account tab. New accounts store an email address for recovery. Older
+        accounts created before email was required may not have one on file. If
+        you forget your username, contact us to request help or account
+        deletion. Local collection progress stays on your device and is not
+        uploaded with the account. Logging into an account on a new browser
+        restores the GM identity and online competitive records when available;
+        on-device collection must be rebuilt on that browser.
       </p>
       <p>
         Public leaderboards show team names and GM codes, not full private
@@ -89,7 +94,7 @@ function PrivacyPolicyContent() {
 
       <h3>Information we do not collect on purpose</h3>
       <ul>
-        <li>Email addresses (accounts use a username, not email)</li>
+        <li>Phone numbers</li>
         <li>Plain-text account passwords</li>
         <li>Payment or billing information</li>
         <li>Precise location</li>
@@ -105,6 +110,7 @@ function PrivacyPolicyContent() {
         <li>
           Authenticate optional accounts so you can restore a GM identity
         </li>
+        <li>Contact you about account recovery when you request a reset</li>
         <li>Maintain and protect the service, including login rate limiting</li>
       </ul>
       <p>We do not sell your personal information.</p>
@@ -286,8 +292,8 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
           authentication endpoints
         </li>
         <li>
-          There is currently no self-serve password reset; contact us if you need
-          an account removed
+          Password resets use a one-time support-issued code; contact us if you
+          need a reset or an account removed
         </li>
       </ul>
 

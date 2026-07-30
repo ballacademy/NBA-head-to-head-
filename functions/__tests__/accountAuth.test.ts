@@ -23,6 +23,16 @@ describe("accountCredentials", () => {
     expect(validateUsername("Bad Name").ok).toBe(false);
   });
 
+  it("requires and validates email", async () => {
+    const { validateEmail, normalizeEmail } = await import(
+      "../lib/accountCredentials"
+    );
+    expect(normalizeEmail("  Coach@Example.COM ")).toBe("coach@example.com");
+    expect(validateEmail("").ok).toBe(false);
+    expect(validateEmail("not-an-email").ok).toBe(false);
+    expect(validateEmail("coach@example.com").ok).toBe(true);
+  });
+
   it("validates password length", () => {
     expect(validatePassword("short").ok).toBe(false);
     expect(validatePassword("longenough").ok).toBe(true);
@@ -53,6 +63,7 @@ describe("verifyAccountPassword", () => {
         {
           id: "acc-1",
           username: "coach_one",
+          email: "coach@example.com",
           password_salt: hashed.saltHex,
           password_hash: hashed.hashHex,
           password_iters: String(hashed.iterations) as unknown as number,
@@ -64,6 +75,28 @@ describe("verifyAccountPassword", () => {
         "correct-horse-battery",
       ),
     ).resolves.toBe(true);
+  });
+});
+
+describe("passwordReset", () => {
+  it("normalizes and validates reset codes", async () => {
+    const {
+      normalizeResetCode,
+      validateResetCodeFormat,
+      hashResetCode,
+      resetCodeHashesMatch,
+      generateResetCode,
+    } = await import("../lib/passwordReset");
+
+    expect(normalizeResetCode(" A1-b2 C3d4 ")).toBe("a1b2c3d4");
+    expect(validateResetCodeFormat("short").ok).toBe(false);
+    expect(validateResetCodeFormat("A1B2C3D4").ok).toBe(true);
+
+    const code = generateResetCode();
+    expect(code).toMatch(/^[A-F0-9]{8}$/);
+    const hash = await hashResetCode(code);
+    const again = await hashResetCode(code.toLowerCase());
+    expect(resetCodeHashesMatch(hash, again)).toBe(true);
   });
 });
 

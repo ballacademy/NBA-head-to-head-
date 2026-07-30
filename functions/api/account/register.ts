@@ -1,5 +1,6 @@
 import type { Env } from "../../types";
 import {
+  validateEmail,
   validatePassword,
   validatePlayerId,
   validateUsername,
@@ -8,6 +9,7 @@ import {
   assertRegisterRateLimitAllow,
   buildRegisterRateLimitKey,
   createPlayerAccount,
+  getAccountByEmail,
   getAccountByPlayerId,
   getAccountByUsername,
   recordRegisterAttempt,
@@ -27,12 +29,16 @@ const missingAccountsTableError = (error: unknown) => {
   if (/no such table/i.test(message) || /player_accounts|auth_rate_limits/i.test(message)) {
     return "Account tables are not ready. Apply D1 migrations, then retry.";
   }
+  if (/no such column:\s*email/i.test(message) || /needs an update/i.test(message)) {
+    return "Account database needs an update. Apply D1 migrations, then retry.";
+  }
   return null;
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: {
     username?: unknown;
+    email?: unknown;
     password?: unknown;
     playerId?: unknown;
     acceptedTerms?: unknown;
@@ -63,6 +69,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: usernameResult.error }, 400);
   }
 
+  const emailResult = validateEmail(String(body.email ?? ""));
+  if (!emailResult.ok) {
+    return json({ error: emailResult.error }, 400);
+  }
+
   const passwordResult = validatePassword(String(body.password ?? ""));
   if (!passwordResult.ok) {
     return json({ error: passwordResult.error }, 400);
@@ -91,6 +102,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return json({ error: "That username is already taken." }, 409);
     }
 
+    const existingEmail = await getAccountByEmail(
+      context.env.DB,
+      emailResult.email,
+    );
+    if (existingEmail) {
+      return json({ error: "That email is already in use." }, 409);
+    }
+
     const existingPlayer = await getAccountByPlayerId(
       context.env.DB,
       playerIdResult.playerId,
@@ -106,6 +125,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const account = await createPlayerAccount(context.env.DB, {
       username: usernameResult.username,
+      email: emailResult.email,
       password: passwordResult.password,
       playerId: playerIdResult.playerId,
     });
@@ -133,6 +153,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           },
           409,
         );
+      }
+
+      if (/email/i.test(message)) {
+        return json({ error: "That email is already in use." }, 409);
       }
 
       return json({ error: "That username is already taken." }, 409);
