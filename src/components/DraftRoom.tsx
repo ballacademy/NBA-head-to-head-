@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  filterPlayersForSlot,
   formatSlotConstraint,
-  sortDraftCandidates,
 } from "../lib/draft";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
@@ -21,7 +19,10 @@ import {
   getLineupSalaryTotal,
   getRemainingSalaryCap,
 } from "../lib/salaryCap";
-import { getSalaryCapDraftOptions } from "../lib/salaryCapDraft";
+import {
+  buildDraftCandidateList,
+  getSalaryCapDraftOptions,
+} from "../lib/salaryCapDraft";
 import { getClassicProfileView } from "../lib/classicProfile";
 import { getRankedProfileView } from "../lib/rankedProfile";
 import {
@@ -161,19 +162,27 @@ export function DraftRoom({
     }
 
     const normalizedQuery = query.trim().toLowerCase();
-    const filtered = sortDraftCandidates(
-      filterPlayersForSlot(players, currentSlot, pickedIds, salaryCapOptions),
+    const listed = buildDraftCandidateList(
+      players,
+      currentSlot,
+      pickedIds,
+      salaryCapOptions,
       isDailyDraft ? "alphabetical" : "points",
     );
 
     if (!normalizedQuery) {
-      return filtered;
+      return listed;
     }
 
-    return filtered.filter((player) =>
+    return listed.filter(({ player }) =>
       `${player.name} ${player.team}`.toLowerCase().includes(normalizedQuery),
     );
   }, [currentSlot, isDailyDraft, pickedIds, players, query, salaryCapOptions]);
+
+  const affordableCandidateCount = useMemo(
+    () => candidates.filter((entry) => entry.affordable).length,
+    [candidates],
+  );
 
   useEffect(() => {
     setQuery("");
@@ -409,8 +418,11 @@ export function DraftRoom({
               {formatSlotConstraint(currentSlot)}
             </h3>
             <p className="draft-prompt__eligible">
-              {candidates.length}{" "}
-              {candidates.length === 1 ? "player" : "players"} available
+              {hasSalaryCap && candidates.length > affordableCandidateCount
+                ? `${affordableCandidateCount} affordable · ${candidates.length - affordableCandidateCount} over cap`
+                : `${affordableCandidateCount} ${
+                    affordableCandidateCount === 1 ? "player" : "players"
+                  } available`}
             </p>
           </div>
         </div>
@@ -433,8 +445,10 @@ export function DraftRoom({
         aria-label="Eligible players"
       >
         {candidates.length > 0 ? (
-          candidates.map((player) => {
-            const shineClass = getPlayerPickShineClass(player);
+          candidates.map(({ player, affordable }) => {
+            const shineClass = affordable
+              ? getPlayerPickShineClass(player)
+              : "";
             const showTags =
               hasLimitedSampleSize(player) ||
               getPlayerRarityBadgeItems(player, {
@@ -445,8 +459,18 @@ export function DraftRoom({
               <button
                 type="button"
                 key={player.id}
-                className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}`}
+                disabled={!affordable}
+                aria-disabled={!affordable}
+                title={
+                  affordable
+                    ? undefined
+                    : "Over the remaining salary cap for this pick"
+                }
+                className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}${affordable ? "" : " player-pick--unaffordable"}`}
                 onClick={(event) => {
+                  if (!affordable) {
+                    return;
+                  }
                   if (draftSessionKey) {
                     clearDraftDeadline(draftSessionKey, activeStep);
                   }
@@ -473,6 +497,9 @@ export function DraftRoom({
                     {hasSalaryCap ? (
                       <span className="player-pick__salary">
                         {formatSalary(estimatePlayerSalary(player))}
+                        {!affordable ? (
+                          <span className="player-pick__over-cap">Over cap</span>
+                        ) : null}
                       </span>
                     ) : null}
                   </div>
