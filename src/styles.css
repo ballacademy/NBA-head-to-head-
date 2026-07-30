@@ -5770,6 +5770,39 @@ h1.landing-hub__title {
   align-items: flex-start;
 }
 
+.player-pick--unaffordable,
+.player-pick--unaffordable:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  filter: grayscale(0.55);
+  box-shadow: none;
+  animation: none;
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  transform: none;
+}
+
+.player-pick--unaffordable:hover,
+.player-pick--unaffordable:focus-visible {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.player-pick__over-cap {
+  display: block;
+  margin-top: 2px;
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.player-pick--unaffordable .player-pick__salary {
+  color: #fca5a5;
+}
+
 /* Daily drafts hide stats, so center the single content block vs. jersey. */
 .player-pick--compact.player-pick--daily {
   align-items: center;
@@ -6605,6 +6638,27 @@ h1.landing-hub__title {
   align-items: center;
   justify-content: center;
   text-decoration: none;
+}
+
+/* High-contrast on the dark hub panel (default orange gradient washes out). */
+.beta-notes-actions .landing__primary-button {
+  color: #fff7ed;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: #9a3412;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+.beta-notes-actions .landing__primary-button:hover {
+  background: #c2410c;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.beta-notes-actions .secondary-button {
+  color: #f8fafc;
+  border-color: rgba(248, 250, 252, 0.35);
+  background: rgba(15, 23, 42, 0.45);
 }
 
 .app-error-screen {

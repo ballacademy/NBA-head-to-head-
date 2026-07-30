@@ -98,3 +98,67 @@ export const getSalaryCapDraftOptions = (
     ),
   };
 };
+
+export const isPlayerAffordableForDraft = (
+  player: Player,
+  options: DraftFilterOptions,
+) => {
+  if (
+    options.allowedPlayerIds !== undefined &&
+    !options.allowedPlayerIds.has(player.id)
+  ) {
+    return false;
+  }
+
+  if (
+    options.maxAffordableSalary !== undefined &&
+    estimatePlayerSalary(player) > options.maxAffordableSalary
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+/** Position-eligible picks with affordable players first; unaffordable last. */
+export const buildDraftCandidateList = (
+  pool: Player[],
+  slot: DraftSlotConstraint,
+  pickedIds: Set<string>,
+  options: DraftFilterOptions,
+  sortMode: "points" | "alphabetical" = "points",
+) => {
+  const eligible = filterPlayersForSlot(pool, slot, pickedIds, {});
+  const hasCapFilter =
+    options.allowedPlayerIds !== undefined ||
+    options.maxAffordableSalary !== undefined;
+
+  if (!hasCapFilter) {
+    return sortDraftCandidates(eligible, sortMode).map((player) => ({
+      player,
+      affordable: true,
+    }));
+  }
+
+  const affordable: Player[] = [];
+  const unaffordable: Player[] = [];
+
+  for (const player of eligible) {
+    if (isPlayerAffordableForDraft(player, options)) {
+      affordable.push(player);
+    } else {
+      unaffordable.push(player);
+    }
+  }
+
+  return [
+    ...sortDraftCandidates(affordable, sortMode).map((player) => ({
+      player,
+      affordable: true,
+    })),
+    ...sortDraftCandidates(unaffordable, sortMode).map((player) => ({
+      player,
+      affordable: false,
+    })),
+  ];
+};

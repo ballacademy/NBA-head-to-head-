@@ -4,7 +4,7 @@ import {
   completeSalaryCapDraftFromPartial,
   filterPlayersForSlot,
 } from "./draft";
-import { filterSalaryCapPlayersForSlot } from "./salaryCapDraft";
+import { filterSalaryCapPlayersForSlot, buildDraftCandidateList } from "./salaryCapDraft";
 import {
   getMaxAffordableSalary,
   MINIMUM_PLAYER_SALARY,
@@ -127,5 +127,31 @@ describe("salaryCapDraft", () => {
       maxAffordableSalary: MINIMUM_PLAYER_SALARY - 1,
     });
     expect(affordable).toHaveLength(0);
+  });
+
+  it("lists unaffordable slot matches after affordable ones", () => {
+    const slot = {
+      position: "PG" as const,
+      division: "Pacific" as const,
+    };
+    const listed = buildDraftCandidateList(
+      players,
+      slot,
+      new Set(),
+      { maxAffordableSalary: 8_000_000 },
+      "points",
+    );
+
+    expect(listed.some((entry) => entry.affordable)).toBe(true);
+    expect(listed.some((entry) => !entry.affordable)).toBe(true);
+
+    const firstUnaffordable = listed.findIndex((entry) => !entry.affordable);
+    expect(firstUnaffordable).toBeGreaterThan(0);
+    expect(listed.slice(0, firstUnaffordable).every((entry) => entry.affordable)).toBe(
+      true,
+    );
+    expect(listed.slice(firstUnaffordable).every((entry) => !entry.affordable)).toBe(
+      true,
+    );
   });
 });
