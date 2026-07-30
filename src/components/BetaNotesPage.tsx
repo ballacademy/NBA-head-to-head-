@@ -34,6 +34,7 @@ export function BetaNotesPage() {
               <strong>Password reset</strong> is support-assisted: email{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with your
               username, get a one-time code, then use Account → Forgot password.
+              New accounts require an email for recovery.
             </li>
             <li>
               <strong>Guest / local Collection</strong> stays on this device.

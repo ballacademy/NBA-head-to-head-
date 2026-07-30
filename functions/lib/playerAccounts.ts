@@ -11,7 +11,10 @@ export const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 export const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 5;
 export const REGISTER_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
-const ACCOUNT_SELECT_COLUMNS = `id, username, password_salt, password_hash, password_iters,
+const ACCOUNT_SELECT_COLUMNS = `id, username, email, password_salt, password_hash, password_iters,
+              player_id, created_at, last_login_at, signup_index`;
+
+const ACCOUNT_SELECT_COLUMNS_NO_EMAIL = `id, username, password_salt, password_hash, password_iters,
               player_id, created_at, last_login_at, signup_index`;
 
 const ACCOUNT_SELECT_COLUMNS_LEGACY = `id, username, password_salt, password_hash, password_iters,
@@ -20,6 +23,11 @@ const ACCOUNT_SELECT_COLUMNS_LEGACY = `id, username, password_salt, password_has
 const isMissingSignupIndexColumn = (error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
   return /no such column:\s*signup_index/i.test(message);
+};
+
+const isMissingEmailColumn = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  return /no such column:\s*email/i.test(message);
 };
 
 const normalizeAccountRow = (
@@ -33,6 +41,7 @@ const normalizeAccountRow = (
 
   return {
     ...row,
+    email: row.email ? String(row.email).trim().toLowerCase() : null,
     password_iters: Number.isFinite(iterations) && iterations > 0
       ? iterations
       : PASSWORD_PBKDF2_ITERATIONS,
@@ -62,7 +71,23 @@ const selectAccount = async (
       .first<PlayerAccountRow>();
     return normalizeAccountRow(row);
   } catch (error) {
-    if (!isMissingSignupIndexColumn(error)) {
+    if (isMissingEmailColumn(error)) {
+      try {
+        const row = await db
+          .prepare(
+            `SELECT ${ACCOUNT_SELECT_COLUMNS_NO_EMAIL}
+             FROM player_accounts
+             WHERE ${whereSql}`,
+          )
+          .bind(bindValue)
+          .first<PlayerAccountRow>();
+        return normalizeAccountRow(row ? { ...row, email: null } : null);
+      } catch (innerError) {
+        if (!isMissingSignupIndexColumn(innerError)) {
+          throw innerError;
+        }
+      }
+    } else if (!isMissingSignupIndexColumn(error)) {
       throw error;
     }
 
@@ -76,7 +101,7 @@ const selectAccount = async (
       .bind(bindValue)
       .first<PlayerAccountRow>();
     return normalizeAccountRow(
-      row ? { ...row, signup_index: null } : null,
+      row ? { ...row, email: null, signup_index: null } : null,
     );
   }
 };
@@ -91,10 +116,14 @@ export const getAccountByPlayerId = async (
   playerId: string,
 ) => selectAccount(db, "player_id = ?", playerId);
 
+export const getAccountByEmail = async (db: D1Database, email: string) =>
+  selectAccount(db, "email = ?", email);
+
 export const createPlayerAccount = async (
   db: D1Database,
   params: {
     username: string;
+    email: string;
     password: string;
     playerId: string;
   },
@@ -107,16 +136,17 @@ export const createPlayerAccount = async (
     await db
       .prepare(
         `INSERT INTO player_accounts (
-           id, username, password_salt, password_hash, password_iters,
+           id, username, email, password_salt, password_hash, password_iters,
            player_id, created_at, last_login_at, signup_index
          ) VALUES (
-           ?, ?, ?, ?, ?, ?, ?, NULL,
+           ?, ?, ?, ?, ?, ?, ?, ?, NULL,
            (SELECT COALESCE(MAX(signup_index), 0) + 1 FROM player_accounts)
          )`,
       )
       .bind(
         id,
         params.username,
+        params.email,
         hashed.saltHex,
         hashed.hashHex,
         hashed.iterations,
@@ -125,6 +155,12 @@ export const createPlayerAccount = async (
       )
       .run();
   } catch (error) {
+    if (isMissingEmailColumn(error)) {
+      throw new Error(
+        "Account database needs an update. Apply D1 migrations, then retry.",
+      );
+    }
+
     if (!isMissingSignupIndexColumn(error)) {
       throw error;
     }
@@ -132,13 +168,14 @@ export const createPlayerAccount = async (
     await db
       .prepare(
         `INSERT INTO player_accounts (
-           id, username, password_salt, password_hash, password_iters,
+           id, username, email, password_salt, password_hash, password_iters,
            player_id, created_at, last_login_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
       )
       .bind(
         id,
         params.username,
+        params.email,
         hashed.saltHex,
         hashed.hashHex,
         hashed.iterations,
@@ -154,6 +191,7 @@ export const createPlayerAccount = async (
   return {
     id,
     username: params.username,
+    email: params.email,
     playerId: params.playerId,
     createdAt,
     signupIndex,

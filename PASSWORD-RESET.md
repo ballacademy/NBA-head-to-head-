@@ -1,12 +1,15 @@
 # Password reset (support-assisted)
 
-Accounts use a **username + password**, not email. During beta, resets work like this:
+Accounts use a **username + email + password**. Email is required for new
+signups (stored for recovery). During beta, resets still work like this:
 
 1. Player emails `ballacademyofficial@gmail.com` with their username
 2. You issue a one-time 8-character code
 3. Player opens Account → **Forgot password**, enters username + code + new password
 
 Codes expire in **1 hour** and can only be used once.
+
+Automated “email me a reset link” can come later now that email is on file.
 
 ## One-time database update (you must run this)
 
@@ -18,9 +21,12 @@ git pull
 npx wrangler d1 migrations apply draft-day-gm --remote
 ```
 
-You want migration `0013_password_reset_tokens` applied. If it says **No migrations to apply**, you’re already current after this ships.
+You want migrations through `0014_player_account_email` applied (includes
+`0013_password_reset_tokens`). If it says **No migrations to apply**, you’re
+already current after this ships.
 
-Also merge/deploy the password-reset PR so the live site has the Forgot password form.
+Also merge/deploy the password-reset PR so the live site has the Forgot
+password form and email field on signup.
 
 ## How you issue a code (after migrate + pull)
 

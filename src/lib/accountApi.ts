@@ -1,5 +1,7 @@
 import {
   normalizeUsername,
+  normalizeEmail,
+  getEmailValidationError,
   getPasswordValidationError,
   getUsernameValidationError,
 } from "./accountCredentials";
@@ -77,6 +79,7 @@ export const fetchAccountStatus = async (
 
 export const registerAccount = async (params: {
   username: string;
+  email: string;
   password: string;
   playerId: string;
   acceptedTerms: boolean;
@@ -84,6 +87,11 @@ export const registerAccount = async (params: {
   const usernameError = getUsernameValidationError(params.username);
   if (usernameError) {
     return { ok: false, error: usernameError, status: 400 };
+  }
+
+  const emailError = getEmailValidationError(params.email);
+  if (emailError) {
+    return { ok: false, error: emailError, status: 400 };
   }
 
   const passwordError = getPasswordValidationError(params.password);
@@ -108,6 +116,7 @@ export const registerAccount = async (params: {
       },
       body: JSON.stringify({
         username: normalizeUsername(params.username),
+        email: normalizeEmail(params.email),
         password: params.password,
         playerId: params.playerId,
         acceptedTerms: true,

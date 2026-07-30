@@ -5,11 +5,15 @@ export const USERNAME_MAX_LENGTH = 24;
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
 export const PLAYER_ID_MAX_LENGTH = 128;
+export const EMAIL_MAX_LENGTH = 254;
 
 const USERNAME_PATTERN = /^[a-z0-9_]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const normalizeUsername = (value: string) =>
   value.trim().toLowerCase();
+
+export const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 export const validateUsername = (value: string) => {
   const username = normalizeUsername(value);
@@ -39,6 +43,33 @@ export const validateUsername = (value: string) => {
   }
 
   return { ok: true as const, username };
+};
+
+export const validateEmail = (value: string) => {
+  const email = normalizeEmail(value);
+
+  if (!email) {
+    return {
+      ok: false as const,
+      error: "Email is required to create an account.",
+    };
+  }
+
+  if (email.length > EMAIL_MAX_LENGTH) {
+    return {
+      ok: false as const,
+      error: `Email must be at most ${EMAIL_MAX_LENGTH} characters.`,
+    };
+  }
+
+  if (!EMAIL_PATTERN.test(email) || email.includes("..")) {
+    return {
+      ok: false as const,
+      error: "Enter a valid email address.",
+    };
+  }
+
+  return { ok: true as const, email };
 };
 
 export const validatePassword = (value: string) => {

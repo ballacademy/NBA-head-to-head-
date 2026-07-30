@@ -42,6 +42,7 @@ export function AccountAuthPanel({
   const [linkState, setLinkState] = useState<AccountLinkState>("loading");
   const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetCode, setResetCode] = useState("");
@@ -101,6 +102,7 @@ export function AccountAuthPanel({
 
   const resetForm = () => {
     setUsername("");
+    setEmail("");
     setPassword("");
     setConfirmPassword("");
     setResetCode("");
@@ -131,6 +133,7 @@ export function AccountAuthPanel({
     setBusy(true);
     const result = await registerAccount({
       username,
+      email,
       password,
       playerId,
       acceptedTerms,
@@ -270,8 +273,9 @@ export function AccountAuthPanel({
 
       <p className="landing-team-form__account-note">
         Playing does not require an account. Create one only if you want to
-        restore this GM code after clearing browser data. Passwords are stored
-        as secure hashes, never in plain text. Forgot your password? Email{" "}
+        restore this GM code after clearing browser data. New accounts need a
+        username, email, and password. Passwords are stored as secure hashes;
+        email is stored for account recovery. Forgot your password? Email{" "}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with your
         username to get a one-time reset code, then use Forgot password below.
         Logging in on another device restores online records (like leaderboard
@@ -371,6 +375,22 @@ export function AccountAuthPanel({
             />
           </label>
 
+          {mode === "register" ? (
+            <label className="field">
+              <span>Email</span>
+              <input
+                type="email"
+                autoComplete="email"
+                required
+                maxLength={254}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                disabled={busy}
+              />
+            </label>
+          ) : null}
+
           {mode === "reset" ? (
             <label className="field">
               <span>Reset code</span>
@@ -462,7 +482,8 @@ export function AccountAuthPanel({
                   Terms of Use
                 </button>
                 . I understand my password is stored only as a secure hash
-                linked to this GM identity. Password resets use a one-time code
+                linked to this GM identity, and that my email may be used for
+                account recovery. Password resets currently use a one-time code
                 from support.
               </label>
             </div>

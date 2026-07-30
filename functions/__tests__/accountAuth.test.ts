@@ -23,6 +23,16 @@ describe("accountCredentials", () => {
     expect(validateUsername("Bad Name").ok).toBe(false);
   });
 
+  it("requires and validates email", async () => {
+    const { validateEmail, normalizeEmail } = await import(
+      "../lib/accountCredentials"
+    );
+    expect(normalizeEmail("  Coach@Example.COM ")).toBe("coach@example.com");
+    expect(validateEmail("").ok).toBe(false);
+    expect(validateEmail("not-an-email").ok).toBe(false);
+    expect(validateEmail("coach@example.com").ok).toBe(true);
+  });
+
   it("validates password length", () => {
     expect(validatePassword("short").ok).toBe(false);
     expect(validatePassword("longenough").ok).toBe(true);
@@ -53,6 +63,7 @@ describe("verifyAccountPassword", () => {
         {
           id: "acc-1",
           username: "coach_one",
+          email: "coach@example.com",
           password_salt: hashed.saltHex,
           password_hash: hashed.hashHex,
           password_iters: String(hashed.iterations) as unknown as number,

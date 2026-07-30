@@ -51,6 +51,7 @@ export interface LeaderboardEntryRow {
 export interface PlayerAccountRow {
   id: string;
   username: string;
+  email: string | null;
   password_salt: string;
   password_hash: string;
   password_iters: number;
