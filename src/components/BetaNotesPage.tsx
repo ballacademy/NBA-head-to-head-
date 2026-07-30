@@ -30,7 +30,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <li>Daily Draft (one attempt per day; Practice for extra runs)</li>
             <li>Classic H2H and Pro H2H ranked matchmaking</li>
             <li>Weekly Events (live opponents only)</li>
-            <li>Collection, Badges, Leaderboards, and Stats</li>
+            <li>Collection, Badges, Leaderboards, Stats, and Tier Lists</li>
             <li>Optional accounts for restoring a GM identity across devices</li>
           </ul>
 

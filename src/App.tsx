@@ -20,6 +20,7 @@ import { PendingQueueResults } from "./components/PendingQueueResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
+import { TierListPage } from "./components/TierListPage";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool, isCompleteLineupFromActivePool } from "./lib/activePlayerPool";
 import { databasePlayers } from "./lib/playerPool";
@@ -126,6 +127,7 @@ type AppPhase =
   | "waiting"
   | "results"
   | "stats"
+  | "tierList"
   | "gmStats"
   | "leaderboard"
   | "achievements"
@@ -135,6 +137,7 @@ type AppPhase =
 
 const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
+  "tierList",
   "gmStats",
   "leaderboard",
   "achievements",
@@ -1526,7 +1529,7 @@ function App() {
       return "account";
     }
 
-    if (phase === "achievements" || phase === "stats") {
+    if (phase === "achievements" || phase === "stats" || phase === "tierList") {
       return "roster";
     }
 
@@ -1591,6 +1594,17 @@ function App() {
     );
   }
 
+  if (phase === "tierList") {
+    return renderHubFeature(
+      <TierListPage
+        players={databasePlayers}
+        collection={collection}
+        onBack={exitFeaturePage}
+      />,
+      "landing-layout--tier-list",
+    );
+  }
+
   if (phase === "landing") {
     return (
       <main className="landing-layout" key={landingRenderKey}>
@@ -1608,6 +1622,7 @@ function App() {
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
           onCollectionChange={setCollection}
           onViewStats={() => openFeaturePage("stats")}
+          onViewTierList={() => openFeaturePage("tierList")}
           onViewGmStats={() => openFeaturePage("gmStats")}
           onViewAchievements={() => openFeaturePage("achievements")}
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
