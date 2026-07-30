@@ -15,6 +15,10 @@ import {
   syncFoundingGmAchievement,
 } from "../lib/foundingGm";
 import { restorePlayerIdentityFromLogin } from "../lib/restorePlayerIdentity";
+import {
+  SUPPORT_EMAIL,
+  buildSupportMailto,
+} from "../lib/support";
 
 type AccountPanelMode = "closed" | "register" | "login";
 type AccountLinkState = "loading" | "unknown" | "linked" | "unlinked";
@@ -226,9 +230,19 @@ export function AccountAuthPanel({
       <p className="landing-team-form__account-note">
         Playing does not require an account. Create one only if you want to
         restore this GM code after clearing browser data. Passwords are stored
-        as secure hashes, never in plain text. There is no password reset.
-        Logging in on another device restores online records (like leaderboard
-        rows) but resets on-device collection progress for that browser.
+        as secure hashes, never in plain text.{" "}
+        <strong>There is no password reset</strong> — if you lose access, email{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Logging in on
+        another device restores online records (like leaderboard rows) but
+        resets on-device collection progress for that browser.
+      </p>
+
+      <p className="landing-team-form__account-note landing-team-form__account-note--support">
+        Questions or feedback?{" "}
+        <a href={buildSupportMailto({ subject: "Draft Day GM beta feedback" })}>
+          Email support
+        </a>
+        .
       </p>
 
       {(linkState === "unlinked" || linkState === "unknown") &&
@@ -366,7 +380,8 @@ export function AccountAuthPanel({
                     Terms of Use
                   </button>
                   . I understand my password is stored only as a secure hash
-                  linked to this GM identity.
+                  linked to this GM identity, and that there is no password
+                  reset.
                 </label>
               </div>
             </>

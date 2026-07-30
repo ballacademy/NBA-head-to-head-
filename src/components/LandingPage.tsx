@@ -105,6 +105,7 @@ interface LandingPageProps {
   onViewLeaderboard: () => void;
   onViewPrivacy: () => void;
   onViewTerms: () => void;
+  onViewBetaNotes: () => void;
   hubTab: LandingContentTab;
   onHubTabChange: (tab: LandingContentTab) => void;
 }
@@ -140,6 +141,7 @@ export function LandingPage({
   onViewLeaderboard,
   onViewPrivacy,
   onViewTerms,
+  onViewBetaNotes,
   hubTab,
   onHubTabChange,
 }: LandingPageProps) {
@@ -993,6 +995,13 @@ export function LandingPage({
               >
                 Badges
               </button>
+              <button
+                type="button"
+                className="landing-hub__link-button"
+                onClick={onViewBetaNotes}
+              >
+                Beta notes
+              </button>
             </div>
 
             <p className="landing-disclaimer">
@@ -1003,6 +1012,16 @@ export function LandingPage({
             </p>
 
             <nav className="landing-footer" aria-label="Legal">
+              <button
+                type="button"
+                className="landing-footer__link"
+                onClick={onViewBetaNotes}
+              >
+                Beta notes
+              </button>
+              <span className="landing-footer__sep" aria-hidden="true">
+                ·
+              </span>
               <button
                 type="button"
                 className="landing-footer__link"
