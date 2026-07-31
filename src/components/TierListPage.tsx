@@ -3,6 +3,7 @@ import {
   addTier,
   clearTierListPlacements,
   DEFAULT_TIER_LIST_FILTERS,
+  DRAFT_CLASS_YEARS,
   filterTierListPool,
   getAssignedPlayerIds,
   loadTierListState,
@@ -15,7 +16,8 @@ import {
   setTierListTitle,
   type TierListAgeFilter,
   type TierListClassFilter,
-  type TierListFilters,
+  type TierListDraftClassFilter,
+  type TierListExperienceFilter,
   type TierListPoolSort,
   type TierListRoleFilter,
   type TierListState,
@@ -58,16 +60,46 @@ const SORT_OPTIONS: { id: TierListPoolSort; label: string }[] = [
   { id: "minutes", label: "Minutes" },
 ];
 
-const TIER_ACCENTS = [
-  "#f59e0b",
-  "#22c55e",
-  "#38bdf8",
-  "#a78bfa",
-  "#fb7185",
-  "#94a3b8",
-  "#f97316",
-  "#14b8a6",
+const EXPERIENCE_OPTIONS: { id: TierListExperienceFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "rookies", label: "Rookies" },
+  { id: "veterans", label: "Veterans" },
+  { id: "upcoming", label: "Upcoming" },
 ];
+
+const DRAFT_CLASS_OPTIONS: { id: TierListDraftClassFilter; label: string }[] = [
+  { id: "all", label: "All classes" },
+  ...DRAFT_CLASS_YEARS.map((year) => ({
+    id: year as TierListDraftClassFilter,
+    label: String(year),
+  })),
+];
+
+/** Ten distinct accents — cycle only after the 10th unnamed tier. */
+const TIER_ACCENTS = [
+  "#f59e0b", // amber
+  "#94a3b8", // slate silver
+  "#cd7f32", // bronze
+  "#22c55e", // green
+  "#3b82f6", // blue
+  "#a855f7", // violet
+  "#ef4444", // red
+  "#14b8a6", // teal
+  "#ec4899", // pink
+  "#84cc16", // lime
+];
+
+const TIER_METAL_BY_NAME: Record<string, string> = {
+  S: "#d4af37", // gold
+  A: "#c0c0c0", // silver
+  B: "#cd7f32", // bronze
+};
+
+function accentForTier(index: number, name: string): string {
+  const metal = TIER_METAL_BY_NAME[name.trim().toUpperCase()];
+  if (metal) return metal;
+  return TIER_ACCENTS[index % TIER_ACCENTS.length]!;
+}
 
 const DRAG_TYPE = "application/x-ddgm-tier-player";
 
@@ -317,6 +349,54 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           </div>
 
           <div className="tier-list__filter-group">
+            <span className="tier-list__filter-label">Experience</span>
+            <div className="tier-list__chips">
+              {EXPERIENCE_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`tier-list__chip${
+                    filters.experience === option.id ? " is-active" : ""
+                  }`}
+                  aria-pressed={filters.experience === option.id}
+                  onClick={() =>
+                    setFilters((current) => ({
+                      ...current,
+                      experience: option.id,
+                    }))
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="tier-list__filter-group">
+            <span className="tier-list__filter-label">Draft class</span>
+            <div className="tier-list__chips">
+              {DRAFT_CLASS_OPTIONS.map((option) => (
+                <button
+                  key={String(option.id)}
+                  type="button"
+                  className={`tier-list__chip${
+                    filters.draftClass === option.id ? " is-active" : ""
+                  }`}
+                  aria-pressed={filters.draftClass === option.id}
+                  onClick={() =>
+                    setFilters((current) => ({
+                      ...current,
+                      draftClass: option.id,
+                    }))
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="tier-list__filter-group">
             <span className="tier-list__filter-label">Class</span>
             <div className="tier-list__chips">
               {CLASS_OPTIONS.map((option) => (
@@ -369,14 +449,14 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           </p>
         ) : (
           <p className="tier-list__hint">
-            Drag players into tiers, or tap a player then tap a tier. The full
-            season pool is available here.
+            Drag players into tiers, or tap a player then tap a tier. Includes
+            the full season pool plus upcoming rookies.
           </p>
         )}
 
         <div className="tier-list__board">
           {state.tiers.map((tier, index) => {
-            const accent = TIER_ACCENTS[index % TIER_ACCENTS.length]!;
+            const accent = accentForTier(index, tier.name);
             const tierPlayers = tier.playerIds
               .map((playerId) => resolvePlayer(playerId))
               .filter((player): player is Player => player != null);

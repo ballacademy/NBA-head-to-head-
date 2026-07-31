@@ -4,6 +4,16 @@ import {
   isRecentAllStarPlayer,
   isSuperstarPlayer,
 } from "./allStars";
+import {
+  DRAFT_CLASS_YEARS,
+  type DraftClassYear,
+  isCurrentRookiePlayer,
+  isUpcomingRookiePlayer,
+  isVeteranPlayer,
+  playerMatchesDraftClass,
+  upcomingRookiePlayers,
+} from "./draftClasses";
+import { databasePlayers } from "./playerPool";
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { isBenchMajorityPlayer } from "./teamRecordBaseline";
 import type { Player, Position } from "./types";
@@ -16,6 +26,11 @@ export const TIER_LIST_STORAGE_KEY = "nba-head-to-head-tier-list";
 
 export type TierListAgeFilter = "all" | "u25" | "26-30" | "31plus";
 export type TierListRoleFilter = "all" | "starter" | "bench";
+export type TierListExperienceFilter =
+  | "all"
+  | "rookies"
+  | "veterans"
+  | "upcoming";
 export type TierListClassFilter =
   | "all"
   | "superstar"
@@ -24,6 +39,7 @@ export type TierListClassFilter =
   | "scrub"
   | "super-scrub";
 export type TierListPoolSort = "points" | "name" | "age" | "minutes";
+export type TierListDraftClassFilter = "all" | DraftClassYear;
 
 export interface TierListFilters {
   query: string;
@@ -31,6 +47,8 @@ export interface TierListFilters {
   age: TierListAgeFilter;
   role: TierListRoleFilter;
   internationalOnly: boolean;
+  experience: TierListExperienceFilter;
+  draftClass: TierListDraftClassFilter;
   playerClass: TierListClassFilter;
   sort: TierListPoolSort;
 }
@@ -52,9 +70,19 @@ export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   age: "all",
   role: "all",
   internationalOnly: false,
+  experience: "all",
+  draftClass: "all",
   playerClass: "all",
   sort: "points",
 };
+
+/** Full season pool plus upcoming rookies (Tier List only). */
+export const getTierListPlayers = (): Player[] => [
+  ...databasePlayers,
+  ...upcomingRookiePlayers,
+];
+
+export { DRAFT_CLASS_YEARS };
 
 const DEFAULT_TIER_NAMES = ["S", "A", "B", "C", "D", "F"] as const;
 
@@ -271,6 +299,22 @@ export const matchesClassFilter = (
   }
 };
 
+export const matchesExperienceFilter = (
+  player: Player,
+  experience: TierListExperienceFilter,
+): boolean => {
+  switch (experience) {
+    case "rookies":
+      return isCurrentRookiePlayer(player);
+    case "veterans":
+      return isVeteranPlayer(player);
+    case "upcoming":
+      return isUpcomingRookiePlayer(player);
+    default:
+      return true;
+  }
+};
+
 export const playerMatchesTierListFilters = (
   player: Player,
   filters: TierListFilters,
@@ -298,11 +342,30 @@ export const playerMatchesTierListFilters = (
     return false;
   }
 
-  if (!matchesRoleFilter(player, filters.role)) {
-    return false;
+  // Upcoming rookies have no NBA minutes sample — skip starter/bench gating
+  // when browsing them explicitly; otherwise exclude from role-filtered views.
+  if (filters.role !== "all") {
+    if (isUpcomingRookiePlayer(player)) {
+      if (
+        filters.experience !== "upcoming" &&
+        filters.draftClass !== 2026
+      ) {
+        return false;
+      }
+    } else if (!matchesRoleFilter(player, filters.role)) {
+      return false;
+    }
   }
 
   if (filters.internationalOnly && !isInternationalEventPlayer(player)) {
+    return false;
+  }
+
+  if (!matchesExperienceFilter(player, filters.experience)) {
+    return false;
+  }
+
+  if (!playerMatchesDraftClass(player, filters.draftClass)) {
     return false;
   }
 

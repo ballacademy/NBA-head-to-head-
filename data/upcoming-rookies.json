@@ -1,0 +1,474 @@
+{
+  "source": "2026 NBA draft prospects for Tier List only (not available in competitive modes).",
+  "draftYear": 2026,
+  "players": [
+    {
+      "id": "upcoming-darrynpeterson-2026",
+      "bbrPlayerId": "upcoming-darrynpeterson",
+      "name": "Darryn Peterson",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 1,
+      "school": "Kansas",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-ajdybantsa-2026",
+      "bbrPlayerId": "upcoming-ajdybantsa",
+      "name": "AJ Dybantsa",
+      "team": "RFA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 2,
+      "school": "BYU",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-cameronboozer-2026",
+      "bbrPlayerId": "upcoming-cameronboozer",
+      "name": "Cameron Boozer",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 3,
+      "school": "Duke",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-nateament-2026",
+      "bbrPlayerId": "upcoming-nateament",
+      "name": "Nate Ament",
+      "team": "RFA",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 4,
+      "school": "Tennessee",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-calebwilson-2026",
+      "bbrPlayerId": "upcoming-calebwilson",
+      "name": "Caleb Wilson",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 5,
+      "school": "North Carolina",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-mikelbrownjr-2026",
+      "bbrPlayerId": "upcoming-mikelbrownjr",
+      "name": "Mikel Brown Jr.",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 6,
+      "school": "Louisville",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-chriscenacjr-2026",
+      "bbrPlayerId": "upcoming-chriscenacjr",
+      "name": "Chris Cenac Jr.",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 7,
+      "school": "Houston",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-koapeat-2026",
+      "bbrPlayerId": "upcoming-koapeat",
+      "name": "Koa Peat",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 8,
+      "school": "Arizona",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-jaydenquaintance-2026",
+      "bbrPlayerId": "upcoming-jaydenquaintance",
+      "name": "Jayden Quaintance",
+      "team": "RFA",
+      "position": "C",
+      "positions": [
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 9,
+      "school": "Kentucky",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-damesarr-2026",
+      "bbrPlayerId": "upcoming-damesarr",
+      "name": "Dame Sarr",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 10,
+      "school": "Duke",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-karimlopez-2026",
+      "bbrPlayerId": "upcoming-karimlopez",
+      "name": "Karim Lopez",
+      "team": "RFA",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 11,
+      "school": "New Zealand Breakers",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-neoklisavdalas-2026",
+      "bbrPlayerId": "upcoming-neoklisavdalas",
+      "name": "Neoklis Avdalas",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 12,
+      "school": "Virginia Tech",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-braylonmullins-2026",
+      "bbrPlayerId": "upcoming-braylonmullins",
+      "name": "Braylon Mullins",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 13,
+      "school": "UConn",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-dariusacuffjr-2026",
+      "bbrPlayerId": "upcoming-dariusacuffjr",
+      "name": "Darius Acuff Jr.",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 14,
+      "school": "Arkansas",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-thomashaugh-2026",
+      "bbrPlayerId": "upcoming-thomashaugh",
+      "name": "Thomas Haugh",
+      "team": "RFA",
+      "position": "SF",
+      "positions": [
+        "SF",
+        "PF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 15,
+      "school": "Florida",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-labaronphilonjr-2026",
+      "bbrPlayerId": "upcoming-labaronphilonjr",
+      "name": "Labaron Philon Jr.",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 16,
+      "school": "Alabama",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-toundeyessoufou-2026",
+      "bbrPlayerId": "upcoming-toundeyessoufou",
+      "name": "Tounde Yessoufou",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 17,
+      "school": "Baylor",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-yaxellendeborg-2026",
+      "bbrPlayerId": "upcoming-yaxellendeborg",
+      "name": "Yaxel Lendeborg",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 18,
+      "school": "Michigan",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-kingstonflemings-2026",
+      "bbrPlayerId": "upcoming-kingstonflemings",
+      "name": "Kingston Flemings",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 19,
+      "school": "Houston",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-bennettstirtz-2026",
+      "bbrPlayerId": "upcoming-bennettstirtz",
+      "name": "Bennett Stirtz",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 20,
+      "school": "Iowa",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-hannessteinbach-2026",
+      "bbrPlayerId": "upcoming-hannessteinbach",
+      "name": "Hannes Steinbach",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 21,
+      "school": "Washington",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-isaiahevans-2026",
+      "bbrPlayerId": "upcoming-isaiahevans",
+      "name": "Isaiah Evans",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 22,
+      "school": "Duke",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-dashdaniels-2026",
+      "bbrPlayerId": "upcoming-dashdaniels",
+      "name": "Dash Daniels",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 23,
+      "school": "Melbourne United",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-adaymara-2026",
+      "bbrPlayerId": "upcoming-adaymara",
+      "name": "Aday Mara",
+      "team": "RFA",
+      "position": "C",
+      "positions": [
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 24,
+      "school": "Michigan",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-zubyejiofor-2026",
+      "bbrPlayerId": "upcoming-zubyejiofor",
+      "name": "Zuby Ejiofor",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 25,
+      "school": "St. John's",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-milesbyrd-2026",
+      "bbrPlayerId": "upcoming-milesbyrd",
+      "name": "Miles Byrd",
+      "team": "RFA",
+      "position": "SG",
+      "positions": [
+        "SG",
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 26,
+      "school": "San Diego State",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-meleekthomas-2026",
+      "bbrPlayerId": "upcoming-meleekthomas",
+      "name": "Meleek Thomas",
+      "team": "RFA",
+      "position": "PG",
+      "positions": [
+        "PG",
+        "SG"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 27,
+      "school": "Arkansas",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-alexcondon-2026",
+      "bbrPlayerId": "upcoming-alexcondon",
+      "name": "Alex Condon",
+      "team": "RFA",
+      "position": "C",
+      "positions": [
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 28,
+      "school": "Florida",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-josephtugler-2026",
+      "bbrPlayerId": "upcoming-josephtugler",
+      "name": "Joseph Tugler",
+      "team": "RFA",
+      "position": "PF",
+      "positions": [
+        "PF",
+        "C"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 29,
+      "school": "Houston",
+      "isUpcomingRookie": true
+    },
+    {
+      "id": "upcoming-dwaynearistode-2026",
+      "bbrPlayerId": "upcoming-dwaynearistode",
+      "name": "Dwayne Aristode",
+      "team": "RFA",
+      "position": "SF",
+      "positions": [
+        "SF"
+      ],
+      "age": 19,
+      "draftYear": 2026,
+      "draftPick": 30,
+      "school": "Arizona",
+      "isUpcomingRookie": true
+    }
+  ]
+}

@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
+import {
+  isCurrentRookiePlayer,
+  isUpcomingRookiePlayer,
+  upcomingRookiePlayers,
+} from "./draftClasses";
 import { databasePlayers, findPlayerId, players } from "./playerPool";
 import {
   createDefaultTierListState,
   filterTierListPool,
+  getTierListPlayers,
   movePlayerToTier,
   playerMatchesTierListFilters,
   DEFAULT_TIER_LIST_FILTERS,
@@ -68,5 +74,79 @@ describe("tierList", () => {
     );
     // US-born with international ties should not count as international-born.
     expect(intl.some((player) => player.name.includes("Towns"))).toBe(false);
+  });
+
+  it("adds upcoming rookies only to the tier list pool", () => {
+    const tierPool = getTierListPlayers();
+    expect(upcomingRookiePlayers.length).toBeGreaterThanOrEqual(20);
+    expect(tierPool.length).toBe(
+      databasePlayers.length + upcomingRookiePlayers.length,
+    );
+    expect(
+      databasePlayers.some((player) => isUpcomingRookiePlayer(player)),
+    ).toBe(false);
+    expect(tierPool.some((player) => player.name === "Darryn Peterson")).toBe(
+      true,
+    );
+  });
+
+  it("filters by experience and draft class", () => {
+    const rookies = databasePlayers.filter(isCurrentRookiePlayer);
+    expect(rookies.length).toBeGreaterThan(10);
+
+    const cooper = rookies.find((player) => player.name.includes("Flagg"));
+    expect(cooper).toBeTruthy();
+    expect(
+      playerMatchesTierListFilters(cooper!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        experience: "rookies",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(cooper!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        experience: "veterans",
+      }),
+    ).toBe(false);
+    expect(
+      playerMatchesTierListFilters(cooper!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2025,
+      }),
+    ).toBe(true);
+
+    const prospect = upcomingRookiePlayers[0]!;
+    expect(
+      playerMatchesTierListFilters(prospect, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        experience: "upcoming",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(prospect, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2026,
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(prospect, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        experience: "veterans",
+      }),
+    ).toBe(false);
+
+    const veteran = byName("Jayson Tatum");
+    expect(
+      playerMatchesTierListFilters(veteran, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        experience: "veterans",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(veteran, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2022,
+      }),
+    ).toBe(false);
   });
 });
