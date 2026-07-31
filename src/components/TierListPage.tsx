@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-  ensurePlayerCollection,
-  isPlayerStatsMasked,
-  type PlayerCollection,
-} from "../lib/playerCollection";
-import {
   addTier,
   clearTierListPlacements,
   DEFAULT_TIER_LIST_FILTERS,
@@ -31,7 +26,6 @@ import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
 interface TierListPageProps {
   players: Player[];
-  collection?: PlayerCollection;
   onBack: () => void;
 }
 
@@ -77,11 +71,7 @@ const TIER_ACCENTS = [
 
 const DRAG_TYPE = "application/x-ddgm-tier-player";
 
-export function TierListPage({
-  players,
-  collection = ensurePlayerCollection(),
-  onBack,
-}: TierListPageProps) {
+export function TierListPage({ players, onBack }: TierListPageProps) {
   const [state, setState] = useState<TierListState>(() => loadTierListState());
   const [filters, setFilters] = useState<TierListFilters>(DEFAULT_TIER_LIST_FILTERS);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -91,16 +81,11 @@ export function TierListPage({
     saveTierListState(state);
   }, [state]);
 
-  const visiblePlayers = useMemo(
-    () => players.filter((player) => !isPlayerStatsMasked(player, collection)),
-    [collection, players],
-  );
-
   const assignedIds = useMemo(() => getAssignedPlayerIds(state), [state]);
 
   const pool = useMemo(
-    () => filterTierListPool(visiblePlayers, filters, assignedIds),
-    [assignedIds, filters, visiblePlayers],
+    () => filterTierListPool(players, filters, assignedIds),
+    [assignedIds, filters, players],
   );
 
   const updateState = (next: TierListState) => {
@@ -308,8 +293,23 @@ export function TierListPage({
           </div>
 
           <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">More</span>
+            <span className="tier-list__filter-label">International</span>
             <div className="tier-list__chips">
+              <button
+                type="button"
+                className={`tier-list__chip${
+                  !filters.internationalOnly ? " is-active" : ""
+                }`}
+                aria-pressed={!filters.internationalOnly}
+                onClick={() =>
+                  setFilters((current) => ({
+                    ...current,
+                    internationalOnly: false,
+                  }))
+                }
+              >
+                All countries
+              </button>
               <button
                 type="button"
                 className={`tier-list__chip${
@@ -319,12 +319,18 @@ export function TierListPage({
                 onClick={() =>
                   setFilters((current) => ({
                     ...current,
-                    internationalOnly: !current.internationalOnly,
+                    internationalOnly: true,
                   }))
                 }
               >
-                International
+                Born outside U.S.
               </button>
+            </div>
+          </div>
+
+          <div className="tier-list__filter-group">
+            <span className="tier-list__filter-label">Class</span>
+            <div className="tier-list__chips">
               {CLASS_OPTIONS.map((option) => (
                 <button
                   key={option.id}
@@ -375,8 +381,8 @@ export function TierListPage({
           </p>
         ) : (
           <p className="tier-list__hint">
-            Drag players into tiers, or tap a player then tap a tier. Locked
-            collectibles stay hidden until unlocked.
+            Drag players into tiers, or tap a player then tap a tier. The full
+            season pool is available here.
           </p>
         )}
 

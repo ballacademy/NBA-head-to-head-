@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findPlayerId, players } from "./playerPool";
+import { databasePlayers, findPlayerId, players } from "./playerPool";
 import {
   createDefaultTierListState,
   filterTierListPool,
@@ -7,6 +7,7 @@ import {
   playerMatchesTierListFilters,
   DEFAULT_TIER_LIST_FILTERS,
 } from "./tierList";
+import { isInternationalEventPlayer } from "./weeklyEvents";
 
 const byName = (name: string) => {
   const id = findPlayerId(name);
@@ -54,5 +55,18 @@ describe("tierList", () => {
     expect(state.tiers.every((tier) => !tier.playerIds.includes(player.id))).toBe(
       true,
     );
+  });
+
+  it("includes a broad non-US-born international pool from the season database", () => {
+    const intl = databasePlayers.filter(isInternationalEventPlayer);
+    expect(intl.length).toBeGreaterThanOrEqual(120);
+    expect(intl.some((player) => player.name.includes("Gilgeous-Alexander"))).toBe(
+      true,
+    );
+    expect(intl.some((player) => player.name.includes("Jokić") || player.name.includes("Jokic"))).toBe(
+      true,
+    );
+    // US-born with international ties should not count as international-born.
+    expect(intl.some((player) => player.name.includes("Towns"))).toBe(false);
   });
 });

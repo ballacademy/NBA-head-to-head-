@@ -454,6 +454,11 @@ export function LandingPage({
       return;
     }
 
+    if (tab === "tiers") {
+      onViewTierList();
+      return;
+    }
+
     onHubTabChange(tab);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -510,7 +515,7 @@ export function LandingPage({
         : hubTab === "events"
           ? "Weekly live head-to-head with a shared draft board, restricted pool, and $100M cap. Waits until a live opponent joins."
           : hubTab === "roster"
-            ? "Browse unlocked players, season stats, and build tier lists."
+            ? "Browse unlocked players and season stats."
             : "Sign in to keep your progress, or open GM stats and badges.";
 
   return (
@@ -674,23 +679,6 @@ export function LandingPage({
                     Coming soon
                   </button>
                 )}
-              </div>
-
-              <div className="tier-list-card landing-card landing-card--mode">
-                <p className="eyebrow">Fan Tools</p>
-                <h2 className="tier-list-card__title">Build a Tier List</h2>
-                <p className="tier-list-card__description">
-                  Filter the league by position, age, starters vs bench,
-                  international, and more — then drag players into tiers you
-                  name.
-                </p>
-                <button
-                  type="button"
-                  className="tier-list-card__button"
-                  onClick={onViewTierList}
-                >
-                  Open Tier List
-                </button>
               </div>
             </div>
           </>
@@ -969,13 +957,6 @@ export function LandingPage({
                 onClick={onViewStats}
               >
                 Season Stats
-              </button>
-              <button
-                type="button"
-                className="landing-hub__link-button"
-                onClick={onViewTierList}
-              >
-                Tier List
               </button>
             </div>
           </>
