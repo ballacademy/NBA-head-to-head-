@@ -35,7 +35,7 @@ import {
   type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
-import { getTeamColors } from "../lib/teamColors";
+import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import type { Player, Position } from "../lib/types";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -267,7 +267,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   ) => {
     const selected = selectedPlayerId === player.id;
     const dragging = draggingPlayerId === player.id;
-    const colors = getTeamColors(player.team);
+    const colors = { primary: getTeamGlowColor(player.team) };
 
     return (
       <button

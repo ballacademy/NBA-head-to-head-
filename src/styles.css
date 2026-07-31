@@ -7273,10 +7273,21 @@ h1.landing-hub__title {
   max-width: 100%;
   padding: 7px 10px;
   border-radius: 12px;
-  border: 1.5px solid var(--team-primary, #64748b);
-  background: #000000;
+  border: 1.5px solid var(--team-primary, #94a3b8);
+  background-color: #171b22;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.055) 0.6px, transparent 0.7px),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.045) 0%,
+      transparent 42%,
+      rgba(0, 0, 0, 0.18) 100%
+    );
+  background-size:
+    3px 3px,
+    100% 100%;
   color: #ffffff;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--team-primary, #64748b) 45%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--team-primary, #94a3b8) 52%, transparent);
   text-align: left;
   cursor: grab;
 }
@@ -7290,7 +7301,7 @@ h1.landing-hub__title {
   border-color: var(--team-primary, #34d399);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--team-primary, #34d399) 55%, transparent),
-    0 0 14px color-mix(in srgb, var(--team-primary, #34d399) 60%, transparent);
+    0 0 16px color-mix(in srgb, var(--team-primary, #34d399) 65%, transparent);
 }
 
 .tier-list__player-copy {
