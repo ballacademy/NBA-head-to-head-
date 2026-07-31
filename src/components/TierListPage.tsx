@@ -216,25 +216,26 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     return () => window.clearTimeout(timer);
   }, [statusMessage]);
 
-  const refreshPublicLists = async (sort: PublicTierListSort = publicSort) => {
-    setPublicLoading(true);
-    try {
-      const lists = await fetchPublicTierLists({
-        viewerPlayerId: identity.playerId,
-        sort,
-      });
-      setPublicLists(lists);
-    } finally {
-      setPublicLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (view !== "public") {
       return;
     }
-    void refreshPublicLists(publicSort);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when entering public or sort changes
+
+    let cancelled = false;
+    setPublicLoading(true);
+    void fetchPublicTierLists({
+      viewerPlayerId: identity.playerId,
+      sort: publicSort,
+    }).then((lists) => {
+      if (!cancelled) {
+        setPublicLists(lists);
+        setPublicLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [view, publicSort, identity.playerId]);
 
   useEffect(() => {
