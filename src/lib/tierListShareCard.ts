@@ -1,5 +1,5 @@
 import { ensureShareCardFonts } from "./lineupShareCard";
-import { getTeamColors } from "./teamColors";
+import { getTeamGlowColor } from "./teamColors";
 
 export interface TierListSharePlayer {
   name: string;
@@ -183,16 +183,30 @@ export const drawTierListShareCard = (
         const label = player.team ? playerLabel(player) : player.name;
         const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
         const primary = player.team
-          ? getTeamColors(player.team).primary
-          : "#64748b";
+          ? getTeamGlowColor(player.team)
+          : "#94a3b8";
 
         context.shadowColor = primary;
-        context.shadowBlur = 12;
-        context.fillStyle = "#000000";
+        context.shadowBlur = 14;
+        context.fillStyle = "#171b22";
         roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);
         context.fill();
 
+        // Subtle grain on chip face
         context.shadowBlur = 0;
+        context.fillStyle = "rgba(255, 255, 255, 0.035)";
+        for (let grainY = chipY + 3; grainY < chipY + CHIP_HEIGHT - 3; grainY += 3) {
+          for (
+            let grainX = chipX + 3;
+            grainX < chipX + chipWidth - 3;
+            grainX += 3
+          ) {
+            if ((grainX + grainY) % 6 === 0) {
+              context.fillRect(grainX, grainY, 1, 1);
+            }
+          }
+        }
+
         context.strokeStyle = primary;
         context.lineWidth = 2;
         roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);

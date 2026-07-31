@@ -35,7 +35,7 @@ import {
   type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
-import { getTeamColors } from "../lib/teamColors";
+import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import type { Player, Position } from "../lib/types";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -78,14 +78,6 @@ const EXPERIENCE_OPTIONS: { id: TierListExperienceFilter; label: string }[] = [
   { id: "rookies", label: "Rookies" },
   { id: "veterans", label: "Veterans" },
   { id: "upcoming", label: "Upcoming" },
-];
-
-const DRAFT_CLASS_OPTIONS: { id: TierListDraftClassFilter; label: string }[] = [
-  { id: "all", label: "All classes" },
-  ...DRAFT_CLASS_YEARS.map((year) => ({
-    id: year as TierListDraftClassFilter,
-    label: String(year),
-  })),
 ];
 
 const parseAgeBound = (value: string): number | null => {
@@ -275,7 +267,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   ) => {
     const selected = selectedPlayerId === player.id;
     const dragging = draggingPlayerId === player.id;
-    const colors = getTeamColors(player.team);
+    const colors = { primary: getTeamGlowColor(player.team) };
 
     return (
       <button
@@ -494,62 +486,117 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           <div className="tier-list__filter-row tier-list__filter-row--selects">
             <label className="tier-list__select-field">
               <span className="tier-list__filter-label">Team</span>
-              <select
-                value={filters.team}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    team: event.target.value as TierListTeamFilter,
-                  }))
-                }
-              >
-                <option value="all">All teams</option>
-                {teamOptions.map((team) => (
-                  <option key={team} value={team}>
-                    {team}
-                  </option>
-                ))}
-              </select>
+              <div className="tier-list__select-shell">
+                <select
+                  value={filters.team}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      team: event.target.value as TierListTeamFilter,
+                    }))
+                  }
+                >
+                  <option value="all">All teams</option>
+                  {teamOptions.map((team) => (
+                    <option key={team} value={team}>
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
 
             <label className="tier-list__select-field">
               <span className="tier-list__filter-label">Division</span>
-              <select
-                value={filters.division}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    division: event.target.value as TierListDivisionFilter,
-                  }))
-                }
-              >
-                <option value="all">All divisions</option>
-                {DIVISIONS.map((division) => (
-                  <option key={division} value={division}>
-                    {division}
-                  </option>
-                ))}
-              </select>
+              <div className="tier-list__select-shell">
+                <select
+                  value={filters.division}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      division: event.target.value as TierListDivisionFilter,
+                    }))
+                  }
+                >
+                  <option value="all">All divisions</option>
+                  {DIVISIONS.map((division) => (
+                    <option key={division} value={division}>
+                      {division}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
 
             <label className="tier-list__select-field">
               <span className="tier-list__filter-label">Conference</span>
-              <select
-                value={filters.conference}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    conference: event.target.value as TierListConferenceFilter,
-                  }))
-                }
-              >
-                <option value="all">All conferences</option>
-                {CONFERENCES.map((conference) => (
-                  <option key={conference} value={conference}>
-                    {conference}
-                  </option>
-                ))}
-              </select>
+              <div className="tier-list__select-shell">
+                <select
+                  value={filters.conference}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      conference: event.target.value as TierListConferenceFilter,
+                    }))
+                  }
+                >
+                  <option value="all">All conferences</option>
+                  {CONFERENCES.map((conference) => (
+                    <option key={conference} value={conference}>
+                      {conference}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </label>
+          </div>
+
+          <div className="tier-list__filter-row tier-list__filter-row--selects">
+            <label className="tier-list__select-field">
+              <span className="tier-list__filter-label">Experience</span>
+              <div className="tier-list__select-shell">
+                <select
+                  value={filters.experience}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      experience: event.target.value as TierListExperienceFilter,
+                    }))
+                  }
+                >
+                  {EXPERIENCE_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </label>
+
+            <label className="tier-list__select-field">
+              <span className="tier-list__filter-label">Draft class</span>
+              <div className="tier-list__select-shell">
+                <select
+                  value={filters.draftClass === "all" ? "all" : String(filters.draftClass)}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setFilters((current) => ({
+                      ...current,
+                      draftClass:
+                        value === "all"
+                          ? "all"
+                          : (Number(value) as TierListDraftClassFilter),
+                    }));
+                  }}
+                >
+                  <option value="all">All classes</option>
+                  {DRAFT_CLASS_YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
           </div>
 
@@ -631,54 +678,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               >
                 Born outside U.S.
               </button>
-            </div>
-          </div>
-
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Experience</span>
-            <div className="tier-list__chips">
-              {EXPERIENCE_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={`tier-list__chip${
-                    filters.experience === option.id ? " is-active" : ""
-                  }`}
-                  aria-pressed={filters.experience === option.id}
-                  onClick={() =>
-                    setFilters((current) => ({
-                      ...current,
-                      experience: option.id,
-                    }))
-                  }
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Draft class</span>
-            <div className="tier-list__chips">
-              {DRAFT_CLASS_OPTIONS.map((option) => (
-                <button
-                  key={String(option.id)}
-                  type="button"
-                  className={`tier-list__chip${
-                    filters.draftClass === option.id ? " is-active" : ""
-                  }`}
-                  aria-pressed={filters.draftClass === option.id}
-                  onClick={() =>
-                    setFilters((current) => ({
-                      ...current,
-                      draftClass: option.id,
-                    }))
-                  }
-                >
-                  {option.label}
-                </button>
-              ))}
             </div>
           </div>
 

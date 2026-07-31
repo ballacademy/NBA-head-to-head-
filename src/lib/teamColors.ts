@@ -50,3 +50,79 @@ export const TEAM_COLORS: Record<string, TeamColors> = {
 
 export const getTeamColors = (team: string): TeamColors =>
   TEAM_COLORS[team] ?? DEFAULT_TEAM_COLORS;
+
+const hexToRgb = (hex: string) => {
+  const normalized = hex.replace("#", "");
+  if (normalized.length !== 6) {
+    return { r: 51, g: 65, b: 85 };
+  }
+
+  return {
+    r: Number.parseInt(normalized.slice(0, 2), 16),
+    g: Number.parseInt(normalized.slice(2, 4), 16),
+    b: Number.parseInt(normalized.slice(4, 6), 16),
+  };
+};
+
+const rgbToHex = (r: number, g: number, b: number) => {
+  const toHex = (value: number) =>
+    Math.max(0, Math.min(255, Math.round(value)))
+      .toString(16)
+      .padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+/** Relative luminance 0–1 (sRGB). */
+const relativeLuminance = (hex: string) => {
+  const { r, g, b } = hexToRgb(hex);
+  const channel = (value: number) => {
+    const normalized = value / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+
+  return (
+    0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+  );
+};
+
+const mixWithWhite = (hex: string, amount: number) => {
+  const { r, g, b } = hexToRgb(hex);
+  const t = Math.max(0, Math.min(1, amount));
+  return rgbToHex(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+};
+
+/**
+ * Outline/glow color for dark UI chips. Keeps vibrant primaries, but swaps to
+ * the brighter secondary (or a lifted tint) when the primary is a dark navy/black
+ * that disappears on charcoal chips (DEN / MIN / UTA / IND / etc.).
+ */
+const TIER_GLOW_OVERRIDES: Record<string, string> = {
+  // Both official blues read dull on charcoal — use Aurora Green for borders.
+  MIN: "#78BE20",
+};
+
+export const getTeamGlowColor = (team: string): string => {
+  const override = TIER_GLOW_OVERRIDES[team];
+  if (override) {
+    return override;
+  }
+
+  const { primary, secondary } = getTeamColors(team);
+  const primaryLum = relativeLuminance(primary);
+  const secondaryLum = relativeLuminance(secondary);
+
+  if (primaryLum >= 0.14) {
+    return primaryLum < 0.2 ? mixWithWhite(primary, 0.12) : primary;
+  }
+
+  if (secondaryLum > primaryLum) {
+    return secondaryLum >= 0.16
+      ? secondary
+      : mixWithWhite(secondary, 0.35);
+  }
+
+  return mixWithWhite(primary, 0.42);
+};
+

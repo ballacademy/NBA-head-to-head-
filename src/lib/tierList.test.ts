@@ -245,5 +245,16 @@ describe("tierList", () => {
         draftClass: 2022,
       }),
     ).toBe(false);
+
+    const lebron = databasePlayers.find((player) =>
+      player.name.includes("LeBron"),
+    );
+    expect(lebron).toBeTruthy();
+    expect(
+      playerMatchesTierListFilters(lebron!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2003,
+      }),
+    ).toBe(true);
   });
 });
