@@ -24,6 +24,10 @@
   --hub-subbox-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --hub-subbox-active-bg: #1c222b;
   --hub-subbox-active-border: rgba(203, 213, 225, 0.35);
+  --text-on-dark: #f8fafc;
+  --text-muted-on-dark: #cbd5e1;
+  --text-on-light: #1e1035;
+  --text-muted-on-light: #475569;
 }
 
 * {
@@ -657,19 +661,19 @@ main.landing-layout {
 }
 
 .hub-feature__panel .eyebrow {
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .draft-empty,
 .hub-feature__panel .stats-footnote,
 .hub-feature__panel .leaderboard__tier-info {
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .gm-stats-page__section h2,
 .hub-feature__panel .gm-stats-page__fact dd,
 .hub-feature__panel .achievements-page__item strong {
-  color: #f8fafc;
+  color: var(--text-on-dark);
 }
 
 .hub-feature__panel .gm-stats-page__fact dt,
@@ -678,19 +682,19 @@ main.landing-layout {
 .hub-feature__panel .gm-stats-page__value-meta,
 .hub-feature__panel .achievements-page__description,
 .hub-feature__panel .achievements-page__status {
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .legal-page__body,
 .hub-feature__panel .legal-page__body p,
 .hub-feature__panel .legal-page__body li,
 .hub-feature__panel .legal-page__updated {
-  color: #cbd5e1;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .legal-page__body h2,
 .hub-feature__panel .legal-page__body h3 {
-  color: #f8fafc;
+  color: var(--text-on-dark);
 }
 
 .hub-feature__panel .legal-page__body a,
@@ -699,12 +703,20 @@ main.landing-layout {
 }
 
 .hub-feature__panel .stats-search span {
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .stats-search input,
 .hub-feature__panel .sort-button {
   color: #e2e8f0;
+}
+
+/* Dark-panel secondary buttons stay light-on-dark (not the light-chrome return style). */
+.hub-feature__panel .secondary-button {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: none;
 }
 
 .leaderboard__panel {
@@ -762,6 +774,7 @@ h1.landing-hub__title {
   margin: 0 auto;
   max-width: 34em;
   width: 100%;
+  color: var(--text-muted-on-light);
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: center;
@@ -809,6 +822,12 @@ h1.landing-hub__title {
   display: grid;
   gap: 12px;
   margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--hub-subbox-border);
+  background: var(--hub-subbox-bg);
+  box-shadow: var(--hub-subbox-shadow);
+  color: #e2e8f0;
 }
 
 .tier-list-hub__panel-header {
@@ -821,7 +840,9 @@ h1.landing-hub__title {
 
 .tier-list-hub__panel-header h2 {
   margin: 0;
+  color: #f8fafc;
   font-size: 1.05rem;
+  font-weight: 800;
 }
 
 .tier-list-hub__sort {
@@ -831,7 +852,7 @@ h1.landing-hub__title {
 }
 
 .tier-list-hub__sort span {
-  color: #94a3b8;
+  color: #cbd5e1;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -844,11 +865,40 @@ h1.landing-hub__title {
   min-height: 36px;
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(15, 23, 42, 0.75);
   color: #f8fafc;
   padding: 0 12px;
   font-size: 0.86rem;
   font-weight: 650;
+}
+
+.tier-list-hub__panel .tier-list__hint {
+  color: #cbd5e1;
+}
+
+.tier-list-hub__panel .tier-list__library-copy strong {
+  color: #f8fafc;
+}
+
+.tier-list-hub__panel .tier-list__library-copy span {
+  color: #cbd5e1;
+}
+
+.tier-list-hub__panel .tier-list__library-item {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.tier-list-hub__panel .secondary-button {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.tier-list-hub__panel .secondary-button.is-active-like {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(16, 185, 129, 0.18);
+  color: #ecfdf5;
 }
 
 .tier-list-hub__viewer .tier-list__board {
@@ -7198,9 +7248,13 @@ h1.landing-hub__title {
 
 .tier-list__status {
   margin: 0;
-  color: #86efac;
+  color: #047857;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.hub-feature__panel .tier-list__status {
+  color: #86efac;
 }
 
 .tier-list__library {
@@ -7227,8 +7281,12 @@ h1.landing-hub__title {
 
 .tier-list__library-header span,
 .tier-list__library-copy span {
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
   font-size: 0.82rem;
+}
+
+.tier-list__library-copy strong {
+  color: var(--text-on-dark);
 }
 
 .tier-list__library-list {
@@ -7302,7 +7360,7 @@ h1.landing-hub__title {
 
 .tier-list__hint {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-muted-on-dark);
   font-size: 0.8rem;
 }
 
