@@ -16,6 +16,7 @@ import {
   DIVISIONS,
   DRAFT_CLASS_YEARS,
   deleteTierListFromLibrary,
+  displayTierListTitle,
   filterTierListPool,
   getAssignedPlayerIds,
   loadTierListLibrary,
@@ -27,6 +28,7 @@ import {
   renameTier,
   saveTierListState,
   saveTierListToLibrary,
+  setTierListPublishedId,
   setTierListTitle,
   TIER_NAME_MAX_LENGTH,
   type TierListAgencyFilter,
@@ -43,15 +45,38 @@ import {
   type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
+import {
+  formatPublicTag,
+  getOrCreatePlayerIdentity,
+} from "../lib/playerIdentity";
 import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
+import {
+  fetchPublicTierList,
+  fetchPublicTierLists,
+  publishTierList,
+  setTierListLike,
+  unpublishTierList,
+  type PublicTierListDetail,
+  type PublicTierListSort,
+  type PublicTierListSummary,
+} from "../lib/tierListCommunity";
+import { fetchAccountStatus } from "../lib/accountApi";
 import type { Player, Position } from "../lib/types";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import {
+  TierListHubHome,
+  TierListMinePanel,
+  TierListPublicPanel,
+  TierListPublicViewer,
+} from "./TierListHubPanels";
 
 interface TierListPageProps {
   players: Player[];
   onBack: () => void;
 }
+
+type TierListView = "hub" | "editor" | "mine" | "public" | "viewer";
 
 const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
   { id: "all", label: "Any role" },
@@ -138,15 +163,9 @@ type PointerDragSession = {
   activated: boolean;
 };
 
-const formatSavedAt = (savedAt: number) =>
-  new Date(savedAt).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
 export function TierListPage({ players, onBack }: TierListPageProps) {
+  const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
+  const [view, setView] = useState<TierListView>("hub");
   const [state, setState] = useState<TierListState>(() => loadTierListState());
   const [library, setLibrary] = useState<TierListLibrary>(() =>
     loadTierListLibrary(),
@@ -155,8 +174,15 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [libraryOpen, setLibraryOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [authorName, setAuthorName] = useState(`GM ${formatPublicTag(identity.publicTag)}`);
+  const [mineSort, setMineSort] = useState<PublicTierListSort>("recent");
+  const [publicSort, setPublicSort] = useState<PublicTierListSort>("recent");
+  const [publicLists, setPublicLists] = useState<PublicTierListSummary[]>([]);
+  const [publicLoading, setPublicLoading] = useState(false);
+  const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
+    null,
+  );
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -169,6 +195,19 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   }, [state]);
 
   useEffect(() => {
+    let cancelled = false;
+    void fetchAccountStatus(identity.playerId).then((result) => {
+      if (cancelled || !result.ok || !result.status.username) {
+        return;
+      }
+      setAuthorName(result.status.username);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [identity.playerId]);
+
+  useEffect(() => {
     if (!statusMessage) {
       return;
     }
@@ -176,6 +215,27 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     const timer = window.setTimeout(() => setStatusMessage(null), 2500);
     return () => window.clearTimeout(timer);
   }, [statusMessage]);
+
+  const refreshPublicLists = async (sort: PublicTierListSort = publicSort) => {
+    setPublicLoading(true);
+    try {
+      const lists = await fetchPublicTierLists({
+        viewerPlayerId: identity.playerId,
+        sort,
+      });
+      setPublicLists(lists);
+    } finally {
+      setPublicLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (view !== "public") {
+      return;
+    }
+    void refreshPublicLists(publicSort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when entering public or sort changes
+  }, [view, publicSort, identity.playerId]);
 
   useEffect(() => {
     return () => {
@@ -397,6 +457,53 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     setStatusMessage("Tier list saved");
   };
 
+  const handlePublish = async () => {
+    const saved = saveTierListToLibrary(state, library);
+    setState(saved.state);
+    setLibrary(saved.library);
+
+    const result = await publishTierList({
+      state: saved.state,
+      playerId: identity.playerId,
+      authorName,
+      authorTag: identity.publicTag,
+      publishedId: saved.state.publishedId,
+    });
+
+    if (!result.ok) {
+      setStatusMessage(result.error);
+      return;
+    }
+
+    const nextState = setTierListPublishedId(saved.state, result.id);
+    const nextSaved = saveTierListToLibrary(nextState, saved.library);
+    setState(nextSaved.state);
+    setLibrary(nextSaved.library);
+    setStatusMessage("Published to public tier lists");
+  };
+
+  const handleUnpublish = async () => {
+    if (!state.publishedId) {
+      return;
+    }
+
+    const result = await unpublishTierList({
+      id: state.publishedId,
+      playerId: identity.playerId,
+    });
+
+    if (!result.ok) {
+      setStatusMessage(result.error);
+      return;
+    }
+
+    const nextState = setTierListPublishedId(state, null);
+    const nextSaved = saveTierListToLibrary(nextState, library);
+    setState(nextSaved.state);
+    setLibrary(nextSaved.library);
+    setStatusMessage("Removed from public tier lists");
+  };
+
   const handleDownload = async () => {
     try {
       const tiers = state.tiers.map((tier, index) => ({
@@ -414,7 +521,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
       await downloadTierListImage(
         {
-          title: state.title.trim() || DEFAULT_TIER_LIST_TITLE,
+          title: displayTierListTitle(state.title),
           tiers,
         },
         "png",
@@ -430,8 +537,8 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     updateState(next);
     setFilters(DEFAULT_TIER_LIST_FILTERS);
     setSelectedPlayerId(null);
-    setLibraryOpen(false);
     setStatusMessage("Started a new tier list");
+    setView("editor");
   };
 
   const handleOpenSaved = (documentId: string) => {
@@ -442,13 +549,72 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
     updateState(next);
     setSelectedPlayerId(null);
-    setLibraryOpen(false);
-    setStatusMessage(`Opened “${next.title}”`);
+    setStatusMessage(`Opened “${displayTierListTitle(next.title)}”`);
+    setView("editor");
   };
 
   const handleDeleteSaved = (documentId: string) => {
     setLibrary(deleteTierListFromLibrary(documentId, library));
     setStatusMessage("Removed saved tier list");
+  };
+
+  const handleOpenPublic = async (id: string) => {
+    const detail = await fetchPublicTierList({
+      id,
+      viewerPlayerId: identity.playerId,
+    });
+    if (!detail) {
+      setStatusMessage("Could not open that tier list");
+      return;
+    }
+    setViewerDetail(detail);
+    setView("viewer");
+  };
+
+  const handleToggleLike = async (id: string, liked: boolean) => {
+    const result = await setTierListLike({
+      id,
+      playerId: identity.playerId,
+      liked,
+    });
+    if (!result.ok) {
+      setStatusMessage(result.error);
+      return;
+    }
+
+    setPublicLists((current) =>
+      current.map((entry) =>
+        entry.id === id
+          ? {
+              ...entry,
+              likedByViewer: result.liked,
+              likeCount: result.likeCount,
+            }
+          : entry,
+      ),
+    );
+    setViewerDetail((current) =>
+      current && current.id === id
+        ? {
+            ...current,
+            likedByViewer: result.liked,
+            likeCount: result.likeCount,
+          }
+        : current,
+    );
+  };
+
+  const handleBack = () => {
+    if (view === "hub") {
+      onBack();
+      return;
+    }
+    if (view === "viewer") {
+      setViewerDetail(null);
+      setView("public");
+      return;
+    }
+    setView("hub");
   };
 
   const renderPlayerChip = (
@@ -501,28 +667,77 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     ? resolvePlayer(draggingPlayerId)
     : null;
 
+  const playersById = useMemo(() => {
+    const map = new Map<string, Player>();
+    for (const player of players) {
+      map.set(player.id, player);
+    }
+    for (const [id, player] of databasePlayersById) {
+      map.set(id, player);
+    }
+    return map;
+  }, [players]);
+
   return (
     <div className="hub-feature tier-list-page">
-      <HubFeatureReturnButton onBack={onBack} />
+      <HubFeatureReturnButton
+        onBack={handleBack}
+        label={view === "hub" ? "Return" : "Back"}
+      />
       <div className="landing-hub__top">
-        <p className="eyebrow landing-hub__eyebrow">Tier List</p>
-        <h1 className="landing-hub__title">Build your rankings</h1>
+        <h1 className="landing-hub__title">Tier List Builder</h1>
         <p className="landing__lede landing-hub__lede">
-          Filter the pool, then drag players into named tiers
+          Create and share your own tier lists
         </p>
       </div>
 
+      {statusMessage ? (
+        <p className="tier-list__status" role="status">
+          {statusMessage}
+        </p>
+      ) : null}
+
+      {view === "hub" ? (
+        <TierListHubHome
+          onCreate={handleNew}
+          onOpenMine={() => setView("mine")}
+          onOpenPublic={() => setView("public")}
+        />
+      ) : null}
+
+      {view === "mine" ? (
+        <TierListMinePanel
+          library={library}
+          sort={mineSort}
+          onSortChange={setMineSort}
+          onOpen={handleOpenSaved}
+          onDelete={handleDeleteSaved}
+        />
+      ) : null}
+
+      {view === "public" ? (
+        <TierListPublicPanel
+          lists={publicLists}
+          loading={publicLoading}
+          sort={publicSort}
+          onSortChange={setPublicSort}
+          onOpen={handleOpenPublic}
+          onToggleLike={handleToggleLike}
+        />
+      ) : null}
+
+      {view === "viewer" && viewerDetail ? (
+        <TierListPublicViewer
+          detail={viewerDetail}
+          playersById={playersById}
+          onToggleLike={(liked) => handleToggleLike(viewerDetail.id, liked)}
+        />
+      ) : null}
+
+      {view === "editor" ? (
       <section className="hub-feature__panel tier-list">
         <div className="tier-list__toolbar">
           <div className="tier-list__toolbar-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => setLibraryOpen((open) => !open)}
-              aria-expanded={libraryOpen}
-            >
-              {libraryOpen ? "Hide saved lists" : "My saved lists"}
-            </button>
             <button type="button" className="secondary-button" onClick={handleNew}>
               New list
             </button>
@@ -550,59 +765,12 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
                 updateState(createDefaultTierListState());
                 setFilters(DEFAULT_TIER_LIST_FILTERS);
                 setSelectedPlayerId(null);
-                setLibraryOpen(false);
               }}
             >
               Reset board and filters
             </button>
           </div>
-          {statusMessage ? (
-            <p className="tier-list__status" role="status">
-              {statusMessage}
-            </p>
-          ) : null}
         </div>
-
-        {libraryOpen ? (
-          <div className="tier-list__library" aria-label="Saved tier lists">
-            <div className="tier-list__library-header">
-              <h2>Saved tier lists</h2>
-              <span>{library.documents.length} saved</span>
-            </div>
-            {library.documents.length > 0 ? (
-              <ul className="tier-list__library-list">
-                {library.documents.map((document) => (
-                  <li key={document.id} className="tier-list__library-item">
-                    <div className="tier-list__library-copy">
-                      <strong>{document.title}</strong>
-                      <span>{formatSavedAt(document.savedAt)}</span>
-                    </div>
-                    <div className="tier-list__library-actions">
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={() => handleOpenSaved(document.id)}
-                      >
-                        Open
-                      </button>
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={() => handleDeleteSaved(document.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="tier-list__hint">
-                No saved lists yet. Hit Save to keep the current board here.
-              </p>
-            )}
-          </div>
-        ) : null}
 
         <div className="tier-list__filters" aria-label="Player filters">
           <div className="tier-list__filter-row">
@@ -928,6 +1096,23 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             <button type="button" className="secondary-button" onClick={handleSave}>
               Save
             </button>
+            {state.publishedId ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => void handleUnpublish()}
+              >
+                Unpublish
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => void handlePublish()}
+              >
+                Publish
+              </button>
+            )}
             <button
               type="button"
               className="secondary-button"
@@ -1087,6 +1272,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           </div>
         </div>
       </section>
+      ) : null}
 
       {draggingPlayer ? (
         <div

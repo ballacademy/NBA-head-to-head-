@@ -79,6 +79,8 @@ export interface TierListState {
   id: string;
   title: string;
   tiers: TierListRow[];
+  /** Remote/local public catalog id when this board has been published. */
+  publishedId?: string | null;
 }
 
 export interface TierListSavedDocument {
@@ -86,6 +88,7 @@ export interface TierListSavedDocument {
   title: string;
   tiers: TierListRow[];
   savedAt: number;
+  publishedId?: string | null;
 }
 
 export interface TierListLibrary {
@@ -203,6 +206,10 @@ export const normalizeTierListState = (
     id: isNonEmptyString(saved.id) ? saved.id : fallback.id,
     title: normalizeTierListTitle(saved.title),
     tiers,
+    publishedId:
+      typeof saved.publishedId === "string" && saved.publishedId.trim()
+        ? saved.publishedId.trim().slice(0, 64)
+        : null,
   };
 };
 
@@ -237,6 +244,7 @@ export const normalizeTierListLibrary = (
         title: normalized.title,
         tiers: normalized.tiers,
         savedAt,
+        publishedId: normalized.publishedId ?? null,
       };
     })
     .filter((doc): doc is TierListSavedDocument => doc != null)
@@ -266,6 +274,7 @@ export const saveTierListToLibrary = (
     title: displayTierListTitle(normalized.title),
     tiers: normalized.tiers,
     savedAt,
+    publishedId: normalized.publishedId ?? null,
   };
 
   const without = library.documents.filter((entry) => entry.id !== document.id);
@@ -317,6 +326,14 @@ export const renameTier = (
       ? { ...tier, name: name.slice(0, TIER_NAME_MAX_LENGTH) }
       : tier,
   ),
+});
+
+export const setTierListPublishedId = (
+  state: TierListState,
+  publishedId: string | null,
+): TierListState => ({
+  ...state,
+  publishedId,
 });
 
 export const setTierListTitle = (
