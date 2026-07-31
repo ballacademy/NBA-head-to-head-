@@ -73,7 +73,8 @@ import {
 
 interface TierListPageProps {
   players: Player[];
-  onBack: () => void;
+  /** Kept for App wiring; leaving the Tiers hub uses bottom nav, not Return. */
+  onBack?: () => void;
 }
 
 type TierListView = "hub" | "editor" | "mine" | "public" | "viewer";
@@ -163,7 +164,7 @@ type PointerDragSession = {
   activated: boolean;
 };
 
-export function TierListPage({ players, onBack }: TierListPageProps) {
+export function TierListPage({ players }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const [view, setView] = useState<TierListView>("hub");
   const [state, setState] = useState<TierListState>(() => loadTierListState());
@@ -606,10 +607,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   };
 
   const handleBack = () => {
-    if (view === "hub") {
-      onBack();
-      return;
-    }
     if (view === "viewer") {
       setViewerDetail(null);
       setView("public");
@@ -688,10 +685,9 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         </p>
       </div>
 
-      <HubFeatureReturnButton
-        onBack={handleBack}
-        label={view === "hub" ? "Return" : "Back"}
-      />
+      {view !== "hub" ? (
+        <HubFeatureReturnButton onBack={handleBack} label="Back" />
+      ) : null}
 
       {statusMessage ? (
         <p className="tier-list__status" role="status">
