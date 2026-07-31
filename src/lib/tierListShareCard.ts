@@ -31,6 +31,89 @@ const FOOTER_GAP = 40;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
+const wrapLabelLines = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+) => {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return ["Tier"];
+  }
+
+  if (words.length === 1) {
+    return [words[0]!];
+  }
+
+  const lines: string[] = [];
+  let current = words[0]!;
+
+  for (const word of words.slice(1)) {
+    const candidate = `${current} ${word}`;
+    if (context.measureText(candidate).width <= maxWidth) {
+      current = candidate;
+      continue;
+    }
+
+    lines.push(current);
+    current = word;
+    if (lines.length >= maxLines) {
+      break;
+    }
+  }
+
+  if (lines.length < maxLines) {
+    lines.push(current);
+  } else {
+    const last = lines[lines.length - 1] ?? "";
+    lines[lines.length - 1] =
+      last.length > 1 ? `${last.slice(0, Math.max(1, last.length - 1))}…` : "…";
+  }
+
+  return lines.slice(0, maxLines);
+};
+
+const drawTierLabel = (
+  context: CanvasRenderingContext2D,
+  rawName: string,
+  centerX: number,
+  centerY: number,
+  maxWidth: number,
+  maxHeight: number,
+) => {
+  const name = (rawName.trim() || "Tier").slice(0, 12);
+  let fontSize = 28;
+
+  while (fontSize >= 14) {
+    context.font = `800 ${fontSize}px ${FONT_STACK}`;
+    const lines = wrapLabelLines(context, name, maxWidth, 3);
+    const lineHeight = fontSize * 1.15;
+    const blockHeight = lines.length * lineHeight;
+    const widest = Math.max(
+      ...lines.map((line) => context.measureText(line).width),
+      0,
+    );
+
+    if (blockHeight <= maxHeight && widest <= maxWidth) {
+      const startY = centerY - blockHeight / 2 + lineHeight * 0.8;
+      context.textAlign = "center";
+      context.fillStyle = "#f8fafc";
+      lines.forEach((line, index) => {
+        context.fillText(line, centerX, startY + index * lineHeight);
+      });
+      return;
+    }
+
+    fontSize -= 2;
+  }
+
+  context.font = `800 14px ${FONT_STACK}`;
+  context.textAlign = "center";
+  context.fillStyle = "#f8fafc";
+  context.fillText(name, centerX, centerY + 5);
+};
+
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -164,13 +247,13 @@ export const drawTierListShareCard = (
     context.fillStyle = tier.accent;
     context.fillRect(PAD_X, y, 10, rowHeight);
 
-    context.fillStyle = "#f8fafc";
-    context.font = `800 28px ${FONT_STACK}`;
-    context.textAlign = "center";
-    context.fillText(
+    drawTierLabel(
+      context,
       tier.name || "Tier",
       PAD_X + 10 + TIER_LABEL_WIDTH / 2,
-      y + rowHeight / 2 + 10,
+      y + rowHeight / 2,
+      TIER_LABEL_WIDTH - 16,
+      rowHeight - 16,
     );
     context.textAlign = "left";
 

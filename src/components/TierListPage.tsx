@@ -21,6 +21,7 @@ import {
   saveTierListState,
   saveTierListToLibrary,
   setTierListTitle,
+  TIER_NAME_MAX_LENGTH,
   type TierListAgencyFilter,
   type TierListClassFilter,
   type TierListConferenceFilter,
@@ -773,16 +774,29 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
                   }
                 }}
               >
-                <div className="tier-list__tier-label">
-                  <input
-                    type="text"
+                <div
+                  className="tier-list__tier-label"
+                  style={
+                    {
+                      "--tier-name-len": Math.max(tier.name.length, 1),
+                    } as CSSProperties
+                  }
+                >
+                  <textarea
                     className="tier-list__tier-name"
                     value={tier.name}
-                    maxLength={24}
+                    maxLength={TIER_NAME_MAX_LENGTH}
+                    rows={2}
                     aria-label="Tier name"
                     onChange={(event) =>
                       updateState(renameTier(state, tier.id, event.target.value))
                     }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        event.currentTarget.blur();
+                      }
+                    }}
                     onClick={() => {
                       if (selectedPlayerId) {
                         placePlayer(selectedPlayerId, tier.id);
