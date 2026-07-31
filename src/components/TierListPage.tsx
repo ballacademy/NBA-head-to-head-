@@ -5,10 +5,10 @@ import {
   CONFERENCES,
   createDefaultTierListState,
   DEFAULT_TIER_LIST_FILTERS,
+  DEFAULT_TIER_LIST_TITLE,
   DIVISIONS,
   DRAFT_CLASS_YEARS,
   deleteTierListFromLibrary,
-  downloadTierListState,
   filterTierListPool,
   getAssignedPlayerIds,
   loadTierListLibrary,
@@ -35,6 +35,7 @@ import {
   type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
+import { downloadTierListImage } from "../lib/tierListShareCard";
 import type { Player, Position } from "../lib/types";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
@@ -213,9 +214,32 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     setStatusMessage("Tier list saved");
   };
 
-  const handleDownload = () => {
-    downloadTierListState(state);
-    setStatusMessage("Download started");
+  const handleDownload = async () => {
+    try {
+      const tiers = state.tiers.map((tier, index) => ({
+        name: tier.name,
+        accent: accentForTier(index, tier.name),
+        players: tier.playerIds
+          .map((playerId) => resolvePlayer(playerId))
+          .filter((player): player is Player => player != null)
+          .map((player) => ({
+            name: player.name,
+            team: player.team,
+            position: player.position,
+          })),
+      }));
+
+      await downloadTierListImage(
+        {
+          title: state.title.trim() || DEFAULT_TIER_LIST_TITLE,
+          tiers,
+        },
+        "png",
+      );
+      setStatusMessage("Image download started");
+    } catch {
+      setStatusMessage("Could not download image");
+    }
   };
 
   const handleNew = () => {
@@ -684,27 +708,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               ))}
             </div>
           </div>
-
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Sort pool</span>
-            <div className="tier-list__chips">
-              {SORT_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={`tier-list__chip${
-                    filters.sort === option.id ? " is-active" : ""
-                  }`}
-                  aria-pressed={filters.sort === option.id}
-                  onClick={() =>
-                    setFilters((current) => ({ ...current, sort: option.id }))
-                  }
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {selectedPlayerId ? (
@@ -727,7 +730,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               className="tier-list__page-title-input"
               value={state.title}
               maxLength={48}
-              placeholder="Name your tier list"
+              placeholder={DEFAULT_TIER_LIST_TITLE}
               aria-label="Tier list name"
               onChange={(event) =>
                 updateState(setTierListTitle(state, event.target.value))
@@ -841,20 +844,45 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               </button>
             ) : null}
           </div>
-          <label className="tier-list__search tier-list__search--pool">
-            <span>Search players</span>
-            <input
-              type="search"
-              value={filters.query}
-              placeholder="Name, team, or position"
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  query: event.target.value,
-                }))
-              }
-            />
-          </label>
+          <div className="tier-list__pool-controls">
+            <label className="tier-list__search tier-list__search--pool">
+              <span>Search players</span>
+              <input
+                type="search"
+                value={filters.query}
+                placeholder="Name, team, or position"
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    query: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <div className="tier-list__filter-group tier-list__sort-pool">
+              <span className="tier-list__filter-label">Sort pool</span>
+              <div className="tier-list__chips">
+                {SORT_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`tier-list__chip${
+                      filters.sort === option.id ? " is-active" : ""
+                    }`}
+                    aria-pressed={filters.sort === option.id}
+                    onClick={() =>
+                      setFilters((current) => ({
+                        ...current,
+                        sort: option.id,
+                      }))
+                    }
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="tier-list__pool-grid">
             {pool.length > 0 ? (
               pool.map((player) => renderPlayerChip(player))

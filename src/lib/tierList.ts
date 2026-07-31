@@ -131,14 +131,38 @@ export const createDefaultTier = (): TierListRow[] =>
 const createTierListId = () =>
   `tier-list-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+/** Shown as the empty-state / placeholder title for a new board. */
+export const DEFAULT_TIER_LIST_TITLE = "Name your tier list";
+
+const LEGACY_DEFAULT_TITLES = new Set([
+  "my tier list",
+  "name your tier list",
+]);
+
 export const createDefaultTierListState = (): TierListState => ({
   id: createTierListId(),
-  title: "My Tier List",
+  title: "",
   tiers: createDefaultTier(),
 });
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
+
+const normalizeTierListTitle = (title: unknown): string => {
+  if (!isNonEmptyString(title)) {
+    return "";
+  }
+
+  const trimmed = title.trim();
+  if (LEGACY_DEFAULT_TITLES.has(trimmed.toLowerCase())) {
+    return "";
+  }
+
+  return trimmed;
+};
+
+export const displayTierListTitle = (title: string) =>
+  title.trim() || DEFAULT_TIER_LIST_TITLE;
 
 export const normalizeTierListState = (
   saved: Partial<TierListState> | null | undefined,
@@ -171,7 +195,7 @@ export const normalizeTierListState = (
 
   return {
     id: isNonEmptyString(saved.id) ? saved.id : fallback.id,
-    title: isNonEmptyString(saved.title) ? saved.title.trim() : fallback.title,
+    title: normalizeTierListTitle(saved.title),
     tiers,
   };
 };
@@ -233,7 +257,7 @@ export const saveTierListToLibrary = (
   const savedAt = Date.now();
   const document: TierListSavedDocument = {
     id: normalized.id,
-    title: normalized.title,
+    title: displayTierListTitle(normalized.title),
     tiers: normalized.tiers,
     savedAt,
   };
@@ -271,31 +295,6 @@ export const deleteTierListFromLibrary = (
   });
   saveTierListLibrary(nextLibrary);
   return nextLibrary;
-};
-
-export const downloadTierListState = (state: TierListState) => {
-  const normalized = normalizeTierListState(state);
-  const payload = {
-    id: normalized.id,
-    title: normalized.title,
-    tiers: normalized.tiers,
-    exportedAt: Date.now(),
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  const safeTitle =
-    normalized.title
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "tier-list";
-  anchor.href = url;
-  anchor.download = `${safeTitle}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
 };
 
 export const getAssignedPlayerIds = (state: TierListState) =>
