@@ -24,6 +24,7 @@ import { TierListPage } from "./components/TierListPage";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool, isCompleteLineupFromActivePool } from "./lib/activePlayerPool";
 import { databasePlayers } from "./lib/playerPool";
+import { getTierListPlayers } from "./lib/tierList";
 import {
   generateFeasibleDraftSlots,
   generateFeasibleDraftSlotsUnderSalaryCap,
@@ -1607,7 +1608,7 @@ function App() {
 
   if (phase === "tierList") {
     return renderHubFeature(
-      <TierListPage players={databasePlayers} onBack={exitFeaturePage} />,
+      <TierListPage players={getTierListPlayers()} onBack={exitFeaturePage} />,
       "landing-layout--tier-list",
     );
   }

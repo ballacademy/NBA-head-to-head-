@@ -6958,6 +6958,36 @@ h1.landing-hub__title {
   gap: 6px;
 }
 
+.tier-list__age-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tier-list__age-field {
+  display: grid;
+  gap: 4px;
+  min-width: 96px;
+}
+
+.tier-list__age-field span {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tier-list__age-field input {
+  width: 96px;
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  color: #f8fafc;
+  padding: 0 10px;
+}
+
 .tier-list__chips {
   display: flex;
   flex-wrap: wrap;

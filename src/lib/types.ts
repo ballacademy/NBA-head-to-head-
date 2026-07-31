@@ -54,6 +54,10 @@ export interface Player {
   styles: PlayStyle[];
   era?: "1970s" | "1980s" | "1990s" | "2000s" | "2010s";
   salary?: number;
+  /** NBA draft year when known (used by Tier List filters). */
+  draftYear?: number;
+  /** Prospect available in Tier List only, not competitive modes. */
+  isUpcomingRookie?: boolean;
 }
 
 export interface DraftSlotConstraint {
