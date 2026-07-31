@@ -19,4 +19,17 @@ describe("teamColors", () => {
     expect(getTeamGlowColor("MIN")).toBe("#78BE20");
     expect(getTeamGlowColor("OKC").toLowerCase()).not.toBe("#000000");
   });
+
+  it("keeps Heat outlines reddish-orange instead of yellow gold", () => {
+    expect(getTeamGlowColor("MIA").toLowerCase()).toBe("#ff4a1f");
+  });
+
+  it("prefers recognizable brand hues over dull secondaries", () => {
+    expect(getTeamGlowColor("MIL").toLowerCase()).toBe("#1f9a4a");
+    expect(getTeamGlowColor("DAL").toLowerCase()).toBe("#1a7ab8");
+    expect(getTeamGlowColor("SAC").toLowerCase()).toBe("#9b5de5");
+    expect(getTeamGlowColor("PHI").toLowerCase()).toBe("#1a8ad4");
+    expect(getTeamGlowColor("LAL").toLowerCase()).toBe("#9b5de8");
+    expect(getTeamGlowColor("PHX").toLowerCase()).toBe("#f06a28");
+  });
 });
