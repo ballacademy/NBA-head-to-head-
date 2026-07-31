@@ -6857,7 +6857,7 @@ h1.landing-hub__title {
 
 .tier-list {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .tier-list__board-header .tier-list__page-title {
@@ -6868,15 +6868,15 @@ h1.landing-hub__title {
 
 .tier-list__board-header .tier-list__page-title-input {
   width: 100%;
-  min-height: 44px;
+  min-height: 36px;
   margin: 0;
-  padding: 4px 0 8px;
+  padding: 2px 0 6px;
   border: 0;
   border-bottom: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 0;
   background: transparent;
   color: #f8fafc;
-  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
   font-weight: 800;
   letter-spacing: -0.02em;
   text-align: left;
@@ -6900,7 +6900,7 @@ h1.landing-hub__title {
 .tier-list__toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 6px 8px;
   align-items: end;
   justify-content: flex-end;
 }
@@ -6908,7 +6908,7 @@ h1.landing-hub__title {
 .tier-list__search span,
 .tier-list__filter-label {
   color: #94a3b8;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -6916,23 +6916,34 @@ h1.landing-hub__title {
 
 .tier-list__search input {
   width: 100%;
-  min-height: 42px;
-  border-radius: 12px;
+  min-height: 36px;
+  border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.55);
   color: #f8fafc;
   padding: 0 12px;
+  font-size: 0.88rem;
 }
 
 .tier-list__toolbar-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+}
+
+.tier-list__toolbar-actions .secondary-button,
+.tier-list__board-header-actions .secondary-button,
+.tier-list__library-actions .secondary-button,
+.tier-list__unrank {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  font-weight: 750;
 }
 
 .tier-list__filters {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tier-list__search {
@@ -7014,14 +7025,14 @@ h1.landing-hub__title {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  min-height: 42px;
-  border-radius: 12px;
+  min-height: 36px;
+  border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.24);
   background:
     linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
   color: #f8fafc;
-  padding: 0 40px 0 14px;
-  font-size: 0.92rem;
+  padding: 0 36px 0 12px;
+  font-size: 0.86rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   box-shadow:
@@ -7071,8 +7082,8 @@ h1.landing-hub__title {
 }
 
 .tier-list__age-field input {
-  width: 96px;
-  min-height: 36px;
+  width: 88px;
+  min-height: 34px;
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.55);
@@ -7083,7 +7094,7 @@ h1.landing-hub__title {
 .tier-list__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .tier-list__status {
@@ -7155,10 +7166,10 @@ h1.landing-hub__title {
 .tier-list__board-header {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 8px 12px;
   align-items: end;
   justify-content: space-between;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .tier-list__board-header .tier-list__page-title {
@@ -7169,18 +7180,18 @@ h1.landing-hub__title {
 .tier-list__board-header-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   flex: 0 0 auto;
 }
 
 .tier-list__chip {
-  min-height: 32px;
-  padding: 6px 10px;
+  min-height: 28px;
+  padding: 4px 9px;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.4);
   color: #cbd5e1;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
@@ -7193,20 +7204,25 @@ h1.landing-hub__title {
 .tier-list__hint {
   margin: 0;
   color: #94a3b8;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
 }
 
 .tier-list__board {
   display: grid;
-  gap: 8px;
+  gap: 5px;
 }
 
 .tier-list__row {
   display: grid;
-  grid-template-columns: minmax(92px, 118px) minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: minmax(76px, 96px) minmax(0, 1fr);
+  gap: 6px;
   align-items: stretch;
-  min-height: 72px;
+  min-height: 52px;
+}
+
+.tier-list__row.is-drop-target .tier-list__tier-drop {
+  border-color: rgba(52, 211, 153, 0.7);
+  background: rgba(16, 185, 129, 0.12);
 }
 
 .tier-list__tier-label {
@@ -7216,8 +7232,8 @@ h1.landing-hub__title {
   justify-items: stretch;
   min-width: 0;
   overflow: hidden;
-  padding: 8px 6px;
-  border-radius: 12px;
+  padding: 5px 4px;
+  border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--tier-accent) 55%, transparent);
   background: color-mix(in srgb, var(--tier-accent) 22%, rgba(15, 23, 42, 0.85));
 }
@@ -7235,9 +7251,9 @@ h1.landing-hub__title {
   color: #f8fafc;
   font-weight: 900;
   font-size: clamp(
-    0.62rem,
-    calc(1.12rem - 0.04rem * var(--tier-name-len, 1)),
-    1.08rem
+    0.58rem,
+    calc(0.98rem - 0.035rem * var(--tier-name-len, 1)),
+    0.92rem
   );
   line-height: 1.15;
   text-align: center;
@@ -7249,8 +7265,8 @@ h1.landing-hub__title {
 
 .tier-list__tier-remove {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 2px;
+  right: 2px;
   width: 22px;
   height: 22px;
   border: 0;
@@ -7270,28 +7286,31 @@ h1.landing-hub__title {
 .tier-list__tier-drop {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-content: flex-start;
-  min-height: 72px;
-  padding: 8px;
-  border-radius: 12px;
+  min-height: 52px;
+  padding: 6px;
+  border-radius: 10px;
   border: 1px dashed rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.35);
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
 }
 
 .tier-list__empty {
   color: #64748b;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   align-self: center;
 }
 
 .tier-list__player {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   max-width: 100%;
-  padding: 7px 10px;
-  border-radius: 12px;
+  padding: 5px 8px;
+  border-radius: 10px;
   border: 1.5px solid var(--team-primary, #94a3b8);
   background-color: #171b22;
   background-image:
@@ -7309,6 +7328,9 @@ h1.landing-hub__title {
   box-shadow: 0 0 12px color-mix(in srgb, var(--team-primary, #94a3b8) 52%, transparent);
   text-align: left;
   cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tier-list__player:active {
@@ -7323,6 +7345,10 @@ h1.landing-hub__title {
     0 0 16px color-mix(in srgb, var(--team-primary, #34d399) 65%, transparent);
 }
 
+.tier-list__player.is-dragging {
+  opacity: 0.35;
+}
+
 .tier-list__player-copy {
   display: grid;
   gap: 1px;
@@ -7330,7 +7356,7 @@ h1.landing-hub__title {
 }
 
 .tier-list__player-copy strong {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   line-height: 1.15;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7340,15 +7366,66 @@ h1.landing-hub__title {
 
 .tier-list__player-copy span {
   color: rgba(255, 255, 255, 0.78);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   white-space: nowrap;
+}
+
+.tier-list__drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  display: grid;
+  gap: 1px;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--team-primary, #94a3b8);
+  background: #171b22;
+  color: #fff;
+  box-shadow:
+    0 10px 28px rgba(2, 6, 23, 0.45),
+    0 0 14px color-mix(in srgb, var(--team-primary, #94a3b8) 55%, transparent);
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(-9999px, -9999px, 0);
+}
+
+.tier-list__drag-ghost strong {
+  font-size: 0.8rem;
+  line-height: 1.15;
+}
+
+.tier-list__drag-ghost span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.68rem;
+}
+
+body.tier-list-dragging {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.tier-list-dragging .tier-list__player {
+  cursor: grabbing;
 }
 
 .tier-list__pool {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding-top: 4px;
   border-top: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.tier-list__pool.is-drop-target {
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.35);
 }
 
 .tier-list__pool-header {
