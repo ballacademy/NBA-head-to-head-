@@ -27,7 +27,6 @@ const ROW_GAP = 14;
 const CHIP_HEIGHT = 44;
 const CHIP_GAP = 10;
 const CHIP_PAD_X = 14;
-const CHIP_ACCENT_WIDTH = 6;
 const FOOTER_GAP = 40;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -83,8 +82,7 @@ const wrapPlayerChips = (
     const label = player.team
       ? playerLabel(player)
       : player.name;
-    const chipWidth =
-      context.measureText(label).width + CHIP_PAD_X * 2 + CHIP_ACCENT_WIDTH;
+    const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
     const nextWidth =
       rowWidth === 0 ? chipWidth : rowWidth + CHIP_GAP + chipWidth;
 
@@ -183,31 +181,26 @@ export const drawTierListShareCard = (
 
       for (const player of row) {
         const label = player.team ? playerLabel(player) : player.name;
-        const chipWidth =
-          context.measureText(label).width + CHIP_PAD_X * 2 + CHIP_ACCENT_WIDTH;
-        const colors = player.team
-          ? getTeamColors(player.team)
-          : { primary: "#334155", secondary: "#e2e8f0" };
+        const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
+        const primary = player.team
+          ? getTeamColors(player.team).primary
+          : "#64748b";
 
-        context.fillStyle = colors.primary;
+        context.shadowColor = primary;
+        context.shadowBlur = 12;
+        context.fillStyle = "#000000";
         roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);
         context.fill();
 
-        context.fillStyle = colors.secondary;
-        context.fillRect(chipX, chipY, CHIP_ACCENT_WIDTH, CHIP_HEIGHT);
-
-        context.strokeStyle = colors.secondary;
-        context.lineWidth = 1.5;
+        context.shadowBlur = 0;
+        context.strokeStyle = primary;
+        context.lineWidth = 2;
         roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);
         context.stroke();
         context.lineWidth = 1;
 
-        context.fillStyle = colors.secondary;
-        context.fillText(
-          label,
-          chipX + CHIP_ACCENT_WIDTH + CHIP_PAD_X,
-          chipY + 28,
-        );
+        context.fillStyle = "#ffffff";
+        context.fillText(label, chipX + CHIP_PAD_X, chipY + 28);
         chipX += chipWidth + CHIP_GAP;
       }
 

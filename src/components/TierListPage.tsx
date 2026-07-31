@@ -287,7 +287,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         style={
           {
             "--team-primary": colors.primary,
-            "--team-secondary": colors.secondary,
           } as CSSProperties
         }
         draggable
