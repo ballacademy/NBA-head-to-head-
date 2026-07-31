@@ -16,7 +16,9 @@ import {
   normalizeTierListState,
   openTierListFromLibrary,
   playerMatchesTierListFilters,
+  renameTier,
   saveTierListToLibrary,
+  TIER_NAME_MAX_LENGTH,
   DEFAULT_TIER_LIST_FILTERS,
 } from "./tierList";
 import { isInternationalEventPlayer } from "./weeklyEvents";
@@ -31,6 +33,31 @@ const byName = (name: string) => {
 };
 
 describe("tierList", () => {
+  it("caps tier names so labels stay inside the board column", () => {
+    const state = createDefaultTierListState();
+    const tierId = state.tiers[0]!.id;
+    const renamed = renameTier(
+      state,
+      tierId,
+      "Super powered players forever",
+    );
+    expect(renamed.tiers[0]!.name).toBe("Super powere");
+    expect(renamed.tiers[0]!.name.length).toBe(TIER_NAME_MAX_LENGTH);
+
+    const normalized = normalizeTierListState({
+      tiers: [
+        {
+          id: "tier-long",
+          name: "Absolutely enormous tier title",
+          playerIds: [],
+        },
+      ],
+    });
+    expect(normalized.tiers[0]!.name.length).toBeLessThanOrEqual(
+      TIER_NAME_MAX_LENGTH,
+    );
+  });
+
   it("defaults new boards to an empty title shown as Name your tier list", () => {
     const state = createDefaultTierListState();
     expect(state.title).toBe("");

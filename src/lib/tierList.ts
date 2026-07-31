@@ -121,6 +121,9 @@ export { DRAFT_CLASS_YEARS };
 
 const DEFAULT_TIER_NAMES = ["S", "A", "B", "C", "D", "F"] as const;
 
+/** Soft cap so tier labels stay readable in the narrow board column. */
+export const TIER_NAME_MAX_LENGTH = 12;
+
 export const createDefaultTier = (): TierListRow[] =>
   DEFAULT_TIER_NAMES.map((name, index) => ({
     id: `tier-${name.toLowerCase()}-${index}`,
@@ -180,7 +183,10 @@ export const normalizeTierListState = (
       }
 
       const id = isNonEmptyString(tier.id) ? tier.id : `tier-${index}`;
-      const name = isNonEmptyString(tier.name) ? tier.name.trim() : `Tier ${index + 1}`;
+      const rawName = isNonEmptyString(tier.name)
+        ? tier.name.trim()
+        : `Tier ${index + 1}`;
+      const name = rawName.slice(0, TIER_NAME_MAX_LENGTH);
       const playerIds = Array.isArray(tier.playerIds)
         ? tier.playerIds.filter(isNonEmptyString)
         : [];
@@ -307,7 +313,9 @@ export const renameTier = (
 ): TierListState => ({
   ...state,
   tiers: state.tiers.map((tier) =>
-    tier.id === tierId ? { ...tier, name: name.slice(0, 24) } : tier,
+    tier.id === tierId
+      ? { ...tier, name: name.slice(0, TIER_NAME_MAX_LENGTH) }
+      : tier,
   ),
 });
 
