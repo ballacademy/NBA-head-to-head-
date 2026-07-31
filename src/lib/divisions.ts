@@ -1,6 +1,20 @@
 import type { Division } from "./types";
 import { FREE_AGENT_TEAM } from "./freeAgents";
 
+export type Conference = "East" | "West";
+
+const EAST_DIVISIONS: readonly Division[] = [
+  "Atlantic",
+  "Central",
+  "Southeast",
+];
+
+const WEST_DIVISIONS: readonly Division[] = [
+  "Northwest",
+  "Pacific",
+  "Southwest",
+];
+
 const divisionTeams: Record<Division, readonly string[]> = {
   Atlantic: ["BOS", "BRK", "BKN", "NYK", "PHI", "TOR"],
   Central: ["CHI", "CLE", "DET", "IND", "MIL"],
@@ -33,6 +47,25 @@ export const getDivisionForTeam = (team: string): Division | undefined => {
   return teamDivisionLookup.get(team);
 };
 
+export const getConferenceForDivision = (
+  division: Division,
+): Conference | undefined => {
+  if (EAST_DIVISIONS.includes(division)) {
+    return "East";
+  }
+
+  if (WEST_DIVISIONS.includes(division)) {
+    return "West";
+  }
+
+  return undefined;
+};
+
+export const getConferenceForTeam = (team: string): Conference | undefined => {
+  const division = getDivisionForTeam(team);
+  return division ? getConferenceForDivision(division) : undefined;
+};
+
 export const DIVISIONS: Division[] = [
   "Atlantic",
   "Central",
@@ -41,3 +74,5 @@ export const DIVISIONS: Division[] = [
   "Pacific",
   "Southwest",
 ];
+
+export const CONFERENCES: Conference[] = ["East", "West"];

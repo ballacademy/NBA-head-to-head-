@@ -73,8 +73,8 @@ const normalizeName = (name: string) =>
 
 export const statsFile = seasonStats as SeasonStatsFile;
 
-export const ACTIVE_ROSTER_AS_OF = "2026-07-06";
-export const ACTIVE_ROSTER_AS_OF_LABEL = "July 6, 2026";
+export const ACTIVE_ROSTER_AS_OF = "2026-07-31";
+export const ACTIVE_ROSTER_AS_OF_LABEL = "July 31, 2026";
 
 export { formatPlayerPositions, normalizePosition } from "./positions";
 

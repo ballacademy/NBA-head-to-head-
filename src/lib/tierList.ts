@@ -13,14 +13,22 @@ import {
   playerMatchesDraftClass,
   upcomingRookiePlayers,
 } from "./draftClasses";
+import {
+  CONFERENCES,
+  DIVISIONS,
+  getConferenceForTeam,
+  getDivisionForTeam,
+  type Conference,
+} from "./divisions";
 import { isStatsFreeAgent } from "./freeAgents";
 import { databasePlayers } from "./playerPool";
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { isBenchMajorityPlayer } from "./teamRecordBaseline";
-import type { Player, Position } from "./types";
+import type { Division, Player, Position } from "./types";
 import { isInternationalEventPlayer } from "./weeklyEvents";
 
 export const TIER_LIST_STORAGE_KEY = "nba-head-to-head-tier-list";
+export const TIER_LIST_LIBRARY_KEY = "nba-head-to-head-tier-list-library";
 
 export type TierListRoleFilter = "all" | "starter" | "bench";
 export type TierListExperienceFilter =
@@ -38,6 +46,9 @@ export type TierListClassFilter =
   | "super-scrub";
 export type TierListPoolSort = "points" | "name" | "age" | "minutes";
 export type TierListDraftClassFilter = "all" | DraftClassYear;
+export type TierListTeamFilter = "all" | string;
+export type TierListDivisionFilter = "all" | Division;
+export type TierListConferenceFilter = "all" | Conference;
 
 export interface TierListFilters {
   query: string;
@@ -46,8 +57,9 @@ export interface TierListFilters {
   ageMin: number | null;
   /** Inclusive upper age bound; null means no maximum. */
   ageMax: number | null;
-  /** Empty means all teams. */
-  teams: string[];
+  team: TierListTeamFilter;
+  division: TierListDivisionFilter;
+  conference: TierListConferenceFilter;
   agency: TierListAgencyFilter;
   role: TierListRoleFilter;
   internationalOnly: boolean;
@@ -64,8 +76,20 @@ export interface TierListRow {
 }
 
 export interface TierListState {
+  id: string;
   title: string;
   tiers: TierListRow[];
+}
+
+export interface TierListSavedDocument {
+  id: string;
+  title: string;
+  tiers: TierListRow[];
+  savedAt: number;
+}
+
+export interface TierListLibrary {
+  documents: TierListSavedDocument[];
 }
 
 export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
@@ -73,7 +97,9 @@ export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   positions: [],
   ageMin: null,
   ageMax: null,
-  teams: [],
+  team: "all",
+  division: "all",
+  conference: "all",
   agency: "all",
   role: "all",
   internationalOnly: false,
@@ -82,6 +108,8 @@ export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   playerClass: "all",
   sort: "points",
 };
+
+export { DIVISIONS, CONFERENCES };
 
 /** Full season pool plus upcoming rookies (Tier List only). */
 export const getTierListPlayers = (): Player[] => [
@@ -100,7 +128,11 @@ export const createDefaultTier = (): TierListRow[] =>
     playerIds: [],
   }));
 
+const createTierListId = () =>
+  `tier-list-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 export const createDefaultTierListState = (): TierListState => ({
+  id: createTierListId(),
   title: "My Tier List",
   tiers: createDefaultTier(),
 });
@@ -138,6 +170,7 @@ export const normalizeTierListState = (
   }
 
   return {
+    id: isNonEmptyString(saved.id) ? saved.id : fallback.id,
     title: isNonEmptyString(saved.title) ? saved.title.trim() : fallback.title,
     tiers,
   };
@@ -148,6 +181,121 @@ export const loadTierListState = (): TierListState =>
 
 export const saveTierListState = (state: TierListState) => {
   writeJson(TIER_LIST_STORAGE_KEY, normalizeTierListState(state));
+};
+
+export const normalizeTierListLibrary = (
+  saved: Partial<TierListLibrary> | null | undefined,
+): TierListLibrary => {
+  if (!saved || !Array.isArray(saved.documents)) {
+    return { documents: [] };
+  }
+
+  const documents = saved.documents
+    .map((doc): TierListSavedDocument | null => {
+      if (!doc || typeof doc !== "object") {
+        return null;
+      }
+
+      const normalized = normalizeTierListState(doc);
+      const savedAt =
+        typeof doc.savedAt === "number" && Number.isFinite(doc.savedAt)
+          ? doc.savedAt
+          : Date.now();
+
+      return {
+        id: normalized.id,
+        title: normalized.title,
+        tiers: normalized.tiers,
+        savedAt,
+      };
+    })
+    .filter((doc): doc is TierListSavedDocument => doc != null)
+    .sort((left, right) => right.savedAt - left.savedAt);
+
+  return { documents };
+};
+
+export const loadTierListLibrary = (): TierListLibrary =>
+  normalizeTierListLibrary(
+    readJson<Partial<TierListLibrary>>(TIER_LIST_LIBRARY_KEY),
+  );
+
+export const saveTierListLibrary = (library: TierListLibrary) => {
+  writeJson(TIER_LIST_LIBRARY_KEY, normalizeTierListLibrary(library));
+};
+
+/** Upsert the working board into the saved-library list. */
+export const saveTierListToLibrary = (
+  state: TierListState,
+  library: TierListLibrary = loadTierListLibrary(),
+): { state: TierListState; library: TierListLibrary } => {
+  const normalized = normalizeTierListState(state);
+  const savedAt = Date.now();
+  const document: TierListSavedDocument = {
+    id: normalized.id,
+    title: normalized.title,
+    tiers: normalized.tiers,
+    savedAt,
+  };
+
+  const without = library.documents.filter((entry) => entry.id !== document.id);
+  const nextLibrary = normalizeTierListLibrary({
+    documents: [document, ...without],
+  });
+  saveTierListLibrary(nextLibrary);
+  saveTierListState(normalized);
+
+  return { state: normalized, library: nextLibrary };
+};
+
+export const openTierListFromLibrary = (
+  documentId: string,
+  library: TierListLibrary = loadTierListLibrary(),
+): TierListState | null => {
+  const document = library.documents.find((entry) => entry.id === documentId);
+  if (!document) {
+    return null;
+  }
+
+  const next = normalizeTierListState(document);
+  saveTierListState(next);
+  return next;
+};
+
+export const deleteTierListFromLibrary = (
+  documentId: string,
+  library: TierListLibrary = loadTierListLibrary(),
+): TierListLibrary => {
+  const nextLibrary = normalizeTierListLibrary({
+    documents: library.documents.filter((entry) => entry.id !== documentId),
+  });
+  saveTierListLibrary(nextLibrary);
+  return nextLibrary;
+};
+
+export const downloadTierListState = (state: TierListState) => {
+  const normalized = normalizeTierListState(state);
+  const payload = {
+    id: normalized.id,
+    title: normalized.title,
+    tiers: normalized.tiers,
+    exportedAt: Date.now(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const safeTitle =
+    normalized.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "tier-list";
+  anchor.href = url;
+  anchor.download = `${safeTitle}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
 };
 
 export const getAssignedPlayerIds = (state: TierListState) =>
@@ -289,13 +437,35 @@ export const matchesAgencyFilter = (
 
 export const matchesTeamFilter = (
   player: Player,
-  teams: string[],
+  team: TierListTeamFilter,
 ): boolean => {
-  if (teams.length === 0) {
+  if (team === "all") {
     return true;
   }
 
-  return teams.includes(player.team);
+  return player.team === team;
+};
+
+export const matchesDivisionFilter = (
+  player: Player,
+  division: TierListDivisionFilter,
+): boolean => {
+  if (division === "all") {
+    return true;
+  }
+
+  return getDivisionForTeam(player.team) === division;
+};
+
+export const matchesConferenceFilter = (
+  player: Player,
+  conference: TierListConferenceFilter,
+): boolean => {
+  if (conference === "all") {
+    return true;
+  }
+
+  return getConferenceForTeam(player.team) === conference;
 };
 
 export const matchesRoleFilter = (
@@ -373,7 +543,15 @@ export const playerMatchesTierListFilters = (
     return false;
   }
 
-  if (!matchesTeamFilter(player, filters.teams)) {
+  if (!matchesTeamFilter(player, filters.team)) {
+    return false;
+  }
+
+  if (!matchesDivisionFilter(player, filters.division)) {
+    return false;
+  }
+
+  if (!matchesConferenceFilter(player, filters.conference)) {
     return false;
   }
 

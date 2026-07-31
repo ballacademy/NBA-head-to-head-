@@ -141,7 +141,7 @@ describe("storedLineups", () => {
       "Cade Cunningham",
       "Shai Gilgeous-Alexander",
       "Kawhi Leonard",
-      "DeMar DeRozan",
+      "Jayson Tatum",
       "Jarrett Allen",
     ]);
 

@@ -2,26 +2,37 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   addTier,
   clearTierListPlacements,
+  CONFERENCES,
+  createDefaultTierListState,
   DEFAULT_TIER_LIST_FILTERS,
+  DIVISIONS,
   DRAFT_CLASS_YEARS,
+  deleteTierListFromLibrary,
+  downloadTierListState,
   filterTierListPool,
   getAssignedPlayerIds,
+  loadTierListLibrary,
   loadTierListState,
   movePlayerToTier,
+  openTierListFromLibrary,
   POSITIONS,
   removeTier,
   renameTier,
-  resetTierListState,
   saveTierListState,
+  saveTierListToLibrary,
   setTierListTitle,
   type TierListAgencyFilter,
   type TierListClassFilter,
+  type TierListConferenceFilter,
+  type TierListDivisionFilter,
   type TierListDraftClassFilter,
   type TierListExperienceFilter,
   type TierListFilters,
+  type TierListLibrary,
   type TierListPoolSort,
   type TierListRoleFilter,
   type TierListState,
+  type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
 import type { Player, Position } from "../lib/types";
@@ -117,15 +128,37 @@ function accentForTier(index: number, name: string): string {
 
 const DRAG_TYPE = "application/x-ddgm-tier-player";
 
+const formatSavedAt = (savedAt: number) =>
+  new Date(savedAt).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
 export function TierListPage({ players, onBack }: TierListPageProps) {
   const [state, setState] = useState<TierListState>(() => loadTierListState());
+  const [library, setLibrary] = useState<TierListLibrary>(() =>
+    loadTierListLibrary(),
+  );
   const [filters, setFilters] = useState<TierListFilters>(DEFAULT_TIER_LIST_FILTERS);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
     saveTierListState(state);
   }, [state]);
+
+  useEffect(() => {
+    if (!statusMessage) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setStatusMessage(null), 2500);
+    return () => window.clearTimeout(timer);
+  }, [statusMessage]);
 
   const assignedIds = useMemo(() => getAssignedPlayerIds(state), [state]);
 
@@ -168,22 +201,48 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     });
   };
 
-  const toggleTeam = (team: string) => {
-    setFilters((current) => {
-      const exists = current.teams.includes(team);
-      return {
-        ...current,
-        teams: exists
-          ? current.teams.filter((entry) => entry !== team)
-          : [...current.teams, team],
-      };
-    });
-  };
-
   const resolvePlayer = (playerId: string) =>
     databasePlayersById.get(playerId) ??
     players.find((player) => player.id === playerId) ??
     null;
+
+  const handleSave = () => {
+    const result = saveTierListToLibrary(state, library);
+    setState(result.state);
+    setLibrary(result.library);
+    setStatusMessage("Tier list saved");
+  };
+
+  const handleDownload = () => {
+    downloadTierListState(state);
+    setStatusMessage("Download started");
+  };
+
+  const handleNew = () => {
+    const next = createDefaultTierListState();
+    updateState(next);
+    setFilters(DEFAULT_TIER_LIST_FILTERS);
+    setSelectedPlayerId(null);
+    setLibraryOpen(false);
+    setStatusMessage("Started a new tier list");
+  };
+
+  const handleOpenSaved = (documentId: string) => {
+    const next = openTierListFromLibrary(documentId, library);
+    if (!next) {
+      return;
+    }
+
+    updateState(next);
+    setSelectedPlayerId(null);
+    setLibraryOpen(false);
+    setStatusMessage(`Opened “${next.title}”`);
+  };
+
+  const handleDeleteSaved = (documentId: string) => {
+    setLibrary(deleteTierListFromLibrary(documentId, library));
+    setStatusMessage("Removed saved tier list");
+  };
 
   const renderPlayerChip = (
     player: Player,
@@ -233,20 +292,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
       <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <p className="eyebrow landing-hub__eyebrow">Tier List</p>
-        <label className="tier-list__page-title">
-          <span className="visually-hidden">Tier list name</span>
-          <input
-            type="text"
-            className="landing-hub__title tier-list__page-title-input"
-            value={state.title}
-            maxLength={48}
-            placeholder="Name your tier list"
-            aria-label="Tier list name"
-            onChange={(event) =>
-              updateState(setTierListTitle(state, event.target.value))
-            }
-          />
-        </label>
+        <h1 className="landing-hub__title">Build your rankings</h1>
         <p className="landing__lede landing-hub__lede">
           Filter the pool, then drag players into named tiers
         </p>
@@ -262,118 +308,228 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             >
               Add tier
             </button>
+            <button type="button" className="secondary-button" onClick={handleSave}>
+              Save
+            </button>
             <button
               type="button"
               className="secondary-button"
-              onClick={() => updateState(clearTierListPlacements(state))}
+              onClick={handleDownload}
             >
-              Clear board
+              Download
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setLibraryOpen((open) => !open)}
+              aria-expanded={libraryOpen}
+            >
+              {libraryOpen ? "Hide saved" : "Open saved"}
+            </button>
+            <button type="button" className="secondary-button" onClick={handleNew}>
+              New list
             </button>
             <button
               type="button"
               className="secondary-button"
               onClick={() => {
-                updateState(resetTierListState());
-                setFilters(DEFAULT_TIER_LIST_FILTERS);
+                updateState(clearTierListPlacements(state));
                 setSelectedPlayerId(null);
               }}
             >
-              Reset
+              Reset board
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setFilters(DEFAULT_TIER_LIST_FILTERS)}
+            >
+              Reset filters
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                updateState(createDefaultTierListState());
+                setFilters(DEFAULT_TIER_LIST_FILTERS);
+                setSelectedPlayerId(null);
+                setLibraryOpen(false);
+              }}
+            >
+              Reset all
             </button>
           </div>
+          {statusMessage ? (
+            <p className="tier-list__status" role="status">
+              {statusMessage}
+            </p>
+          ) : null}
         </div>
 
+        {libraryOpen ? (
+          <div className="tier-list__library" aria-label="Saved tier lists">
+            <div className="tier-list__library-header">
+              <h2>Saved tier lists</h2>
+              <span>{library.documents.length} saved</span>
+            </div>
+            {library.documents.length > 0 ? (
+              <ul className="tier-list__library-list">
+                {library.documents.map((document) => (
+                  <li key={document.id} className="tier-list__library-item">
+                    <div className="tier-list__library-copy">
+                      <strong>{document.title}</strong>
+                      <span>{formatSavedAt(document.savedAt)}</span>
+                    </div>
+                    <div className="tier-list__library-actions">
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => handleOpenSaved(document.id)}
+                      >
+                        Open
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => handleDeleteSaved(document.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="tier-list__hint">
+                No saved lists yet. Hit Save to keep the current board here.
+              </p>
+            )}
+          </div>
+        ) : null}
+
         <div className="tier-list__filters" aria-label="Player filters">
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Position</span>
-            <div className="tier-list__chips">
-              {POSITIONS.map((position) => {
-                const active = filters.positions.includes(position);
-                return (
-                  <button
-                    key={position}
-                    type="button"
-                    className={`tier-list__chip${active ? " is-active" : ""}`}
-                    aria-pressed={active}
-                    onClick={() => togglePosition(position)}
-                  >
-                    {position}
-                  </button>
-                );
-              })}
+          <div className="tier-list__filter-row">
+            <div className="tier-list__filter-group">
+              <span className="tier-list__filter-label">Position</span>
+              <div className="tier-list__chips">
+                {POSITIONS.map((position) => {
+                  const active = filters.positions.includes(position);
+                  return (
+                    <button
+                      key={position}
+                      type="button"
+                      className={`tier-list__chip${active ? " is-active" : ""}`}
+                      aria-pressed={active}
+                      onClick={() => togglePosition(position)}
+                    >
+                      {position}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="tier-list__filter-group">
+              <span className="tier-list__filter-label">Age</span>
+              <div className="tier-list__age-range">
+                <label className="tier-list__age-field">
+                  <span>Min</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={99}
+                    placeholder="Any"
+                    value={filters.ageMin ?? ""}
+                    onChange={(event) =>
+                      setFilters((current) => ({
+                        ...current,
+                        ageMin: parseAgeBound(event.target.value),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="tier-list__age-field">
+                  <span>Max</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={99}
+                    placeholder="Any"
+                    value={filters.ageMax ?? ""}
+                    onChange={(event) =>
+                      setFilters((current) => ({
+                        ...current,
+                        ageMax: parseAgeBound(event.target.value),
+                      }))
+                    }
+                  />
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Age</span>
-            <div className="tier-list__age-range">
-              <label className="tier-list__age-field">
-                <span>Min</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={99}
-                  placeholder="Any"
-                  value={filters.ageMin ?? ""}
-                  onChange={(event) =>
-                    setFilters((current) => ({
-                      ...current,
-                      ageMin: parseAgeBound(event.target.value),
-                    }))
-                  }
-                />
-              </label>
-              <label className="tier-list__age-field">
-                <span>Max</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={99}
-                  placeholder="Any"
-                  value={filters.ageMax ?? ""}
-                  onChange={(event) =>
-                    setFilters((current) => ({
-                      ...current,
-                      ageMax: parseAgeBound(event.target.value),
-                    }))
-                  }
-                />
-              </label>
-            </div>
-          </div>
-
-          <div className="tier-list__filter-group">
-            <span className="tier-list__filter-label">Team</span>
-            <div className="tier-list__chips">
-              <button
-                type="button"
-                className={`tier-list__chip${
-                  filters.teams.length === 0 ? " is-active" : ""
-                }`}
-                aria-pressed={filters.teams.length === 0}
-                onClick={() =>
-                  setFilters((current) => ({ ...current, teams: [] }))
+          <div className="tier-list__filter-row tier-list__filter-row--selects">
+            <label className="tier-list__select-field">
+              <span className="tier-list__filter-label">Team</span>
+              <select
+                value={filters.team}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    team: event.target.value as TierListTeamFilter,
+                  }))
                 }
               >
-                All teams
-              </button>
-              {teamOptions.map((team) => {
-                const active = filters.teams.includes(team);
-                return (
-                  <button
-                    key={team}
-                    type="button"
-                    className={`tier-list__chip${active ? " is-active" : ""}`}
-                    aria-pressed={active}
-                    onClick={() => toggleTeam(team)}
-                  >
+                <option value="all">All teams</option>
+                {teamOptions.map((team) => (
+                  <option key={team} value={team}>
                     {team}
-                  </button>
-                );
-              })}
-            </div>
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="tier-list__select-field">
+              <span className="tier-list__filter-label">Division</span>
+              <select
+                value={filters.division}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    division: event.target.value as TierListDivisionFilter,
+                  }))
+                }
+              >
+                <option value="all">All divisions</option>
+                {DIVISIONS.map((division) => (
+                  <option key={division} value={division}>
+                    {division}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="tier-list__select-field">
+              <span className="tier-list__filter-label">Conference</span>
+              <select
+                value={filters.conference}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    conference: event.target.value as TierListConferenceFilter,
+                  }))
+                }
+              >
+                <option value="all">All conferences</option>
+                {CONFERENCES.map((conference) => (
+                  <option key={conference} value={conference}>
+                    {conference}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
           <div className="tier-list__filter-group">
@@ -562,6 +718,23 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             the full season pool plus upcoming rookies.
           </p>
         )}
+
+        <div className="tier-list__board-header">
+          <label className="tier-list__page-title">
+            <span className="visually-hidden">Tier list name</span>
+            <input
+              type="text"
+              className="tier-list__page-title-input"
+              value={state.title}
+              maxLength={48}
+              placeholder="Name your tier list"
+              aria-label="Tier list name"
+              onChange={(event) =>
+                updateState(setTierListTitle(state, event.target.value))
+              }
+            />
+          </label>
+        </div>
 
         <div className="tier-list__board">
           {state.tiers.map((tier, index) => {

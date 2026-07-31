@@ -1116,7 +1116,7 @@ describe("projectRecord", () => {
       "holmgch01-okc",
       "willija06-okc",
       "harteis01-okc",
-      "dortlu01-okc",
+      "mitchaj01-okc",
     ]);
     const score = calculateLineupScore(okc);
     const ovrOnly = projectRecord(score.preciseTotal);
