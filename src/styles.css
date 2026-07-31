@@ -622,8 +622,7 @@ main.landing-layout {
 .hub-feature__return-row {
   display: flex;
   justify-content: flex-start;
-  margin: 0;
-  /* Align under the left hub chrome instead of the centered title band. */
+  margin: 0 0 4px;
   padding-inline: 2px;
 }
 
@@ -632,6 +631,20 @@ main.landing-layout {
   padding: 8px 14px;
   font-size: 0.88rem;
   font-weight: 800;
+}
+
+/* Return sits on the light hub chrome (not the dark panels), so override
+   the translucent light-on-light secondary-button look. */
+.landing--hub .hub-feature__return {
+  color: #1e1035;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(30, 16, 53, 0.14);
+  box-shadow: 0 6px 16px rgba(30, 16, 53, 0.08);
+}
+
+.landing--hub .hub-feature__return:hover {
+  background: #ffffff;
+  border-color: rgba(30, 16, 53, 0.22);
 }
 
 .hub-feature__panel {

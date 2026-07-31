@@ -15,13 +15,14 @@ interface BetaNotesPageProps {
 export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
   return (
     <div className="hub-feature beta-notes-page">
-      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Beta notes</h1>
         <p className="landing__lede landing-hub__lede">
           What works, what doesn&apos;t, and how to reach us
         </p>
       </div>
+
+      <HubFeatureReturnButton onBack={onBack} />
 
       <section className="hub-feature__panel">
         <div className="legal-page__body beta-notes-body">

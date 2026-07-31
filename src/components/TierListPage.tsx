@@ -681,16 +681,17 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
   return (
     <div className="hub-feature tier-list-page">
-      <HubFeatureReturnButton
-        onBack={handleBack}
-        label={view === "hub" ? "Return" : "Back"}
-      />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Tier List Builder</h1>
         <p className="landing__lede landing-hub__lede">
           Create and share your own tier lists
         </p>
       </div>
+
+      <HubFeatureReturnButton
+        onBack={handleBack}
+        label={view === "hub" ? "Return" : "Back"}
+      />
 
       {statusMessage ? (
         <p className="tier-list__status" role="status">

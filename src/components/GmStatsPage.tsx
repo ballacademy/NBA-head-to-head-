@@ -70,7 +70,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
 
   return (
     <div className="hub-feature gm-stats-page">
-      <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{snapshot.teamName}</h1>
         <p className="landing__lede landing-hub__lede">
@@ -78,6 +77,8 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
           {snapshot.currentSeasonLabel}
         </p>
       </div>
+
+      <HubFeatureReturnButton onBack={onBack} />
 
       <section className="hub-feature__panel">
       <div className="gm-stats-page__summary">

@@ -1564,7 +1564,7 @@ function App() {
     matchmakingMode != null || isMatchmakingInFlight;
 
   if (phase === "leaderboard") {
-    return renderHubFeature(<LeaderboardPage />);
+    return renderHubFeature(<LeaderboardPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "gmStats") {
