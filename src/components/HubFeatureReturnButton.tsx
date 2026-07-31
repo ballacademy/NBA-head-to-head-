@@ -23,6 +23,8 @@ export function HubFeatureReturnButton({
     };
   }, [onBack]);
 
+  const displayLabel = label.startsWith("←") ? label : `← ${label}`;
+
   return (
     <div className="hub-feature__return-row">
       <button
@@ -30,7 +32,7 @@ export function HubFeatureReturnButton({
         className="secondary-button hub-feature__return"
         onClick={onBack}
       >
-        {label}
+        {displayLabel}
       </button>
     </div>
   );

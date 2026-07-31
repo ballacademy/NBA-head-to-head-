@@ -34,6 +34,7 @@ import {
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
 import { GmProfileModal } from "./GmProfileModal";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -201,7 +202,11 @@ function LeaderboardBoard({
   );
 }
 
-export function LeaderboardPage() {
+interface LeaderboardPageProps {
+  onBack?: () => void;
+}
+
+export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [view, setView] = useState<LeaderboardView>("ranked");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
   const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
@@ -281,6 +286,8 @@ export function LeaderboardPage() {
         <h1 className="landing-hub__title">Leaderboards</h1>
         <p className="landing__lede landing-hub__lede">{subtitle}</p>
       </div>
+
+      {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
 
       <section className="hub-feature__panel leaderboard__panel">
         <div className="leaderboard__top">

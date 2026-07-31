@@ -182,7 +182,6 @@ export function PlayerStatsTable({
 
   return (
     <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
-      {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
       <div className="landing-hub__top stats-panel__hub-top">
         <h1 className="landing-hub__title" id="stats-heading">
           Season Stats
@@ -196,6 +195,8 @@ export function PlayerStatsTable({
           />
         </p>
       </div>
+
+      {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
 
       <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">
