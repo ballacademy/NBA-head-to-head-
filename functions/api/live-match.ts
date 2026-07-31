@@ -61,6 +61,10 @@ const buildMatchPayload = (row: LiveMatchRow, playerId: string) => {
   const opponentLineup = parseLineup(
     isPlayerA ? row.player_b_lineup_json : row.player_a_lineup_json,
   );
+  const selfReady = Boolean(selfLineup && selfLineup.length === 5);
+  const opponentReady = Boolean(opponentLineup && opponentLineup.length === 5);
+  // Only reveal opponent picks once both sides have locked a lineup.
+  const revealOpponent = selfReady && opponentReady;
 
   return {
     matchId: row.id,
@@ -68,9 +72,9 @@ const buildMatchPayload = (row: LiveMatchRow, playerId: string) => {
     opponentTeamName: isPlayerA ? row.player_b_team : row.player_a_team,
     opponentElo: isPlayerA ? row.player_b_elo : row.player_a_elo,
     opponentPlayerId: isPlayerA ? row.player_b_id : row.player_a_id,
-    selfReady: Boolean(selfLineup && selfLineup.length === 5),
-    opponentReady: Boolean(opponentLineup && opponentLineup.length === 5),
-    opponentLineup,
+    selfReady,
+    opponentReady,
+    opponentLineup: revealOpponent ? opponentLineup : null,
     createdAt: row.created_at,
   };
 };
@@ -180,21 +184,37 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const lineupJson = JSON.stringify(lineup);
 
   if (row.player_a_id === playerId) {
-    await context.env.DB.prepare(
+    if (row.player_a_lineup_json) {
+      return json({ error: "lineup is already locked for this match" }, 409);
+    }
+
+    const locked = await context.env.DB.prepare(
       `UPDATE live_matches
        SET player_a_lineup_json = ?, player_a_ready_at = ?
-       WHERE id = ?`,
+       WHERE id = ? AND player_a_id = ? AND player_a_lineup_json IS NULL`,
     )
-      .bind(lineupJson, now, matchId)
+      .bind(lineupJson, now, matchId, playerId)
       .run();
+
+    if ((locked.meta?.changes ?? 0) === 0) {
+      return json({ error: "lineup is already locked for this match" }, 409);
+    }
   } else if (row.player_b_id === playerId) {
-    await context.env.DB.prepare(
+    if (row.player_b_lineup_json) {
+      return json({ error: "lineup is already locked for this match" }, 409);
+    }
+
+    const locked = await context.env.DB.prepare(
       `UPDATE live_matches
        SET player_b_lineup_json = ?, player_b_ready_at = ?
-       WHERE id = ?`,
+       WHERE id = ? AND player_b_id = ? AND player_b_lineup_json IS NULL`,
     )
-      .bind(lineupJson, now, matchId)
+      .bind(lineupJson, now, matchId, playerId)
       .run();
+
+    if ((locked.meta?.changes ?? 0) === 0) {
+      return json({ error: "lineup is already locked for this match" }, 409);
+    }
   } else {
     return json({ error: "player not in match" }, 403);
   }
