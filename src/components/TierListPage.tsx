@@ -166,7 +166,21 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     <div className="hub-feature tier-list-page">
       <HubFeatureReturnButton onBack={onBack} />
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Tier List</h1>
+        <p className="eyebrow landing-hub__eyebrow">Tier List</p>
+        <label className="tier-list__page-title">
+          <span className="visually-hidden">Tier list name</span>
+          <input
+            type="text"
+            className="landing-hub__title tier-list__page-title-input"
+            value={state.title}
+            maxLength={48}
+            placeholder="Name your tier list"
+            aria-label="Tier list name"
+            onChange={(event) =>
+              updateState(setTierListTitle(state, event.target.value))
+            }
+          />
+        </label>
         <p className="landing__lede landing-hub__lede">
           Filter the pool, then drag players into named tiers
         </p>
@@ -174,17 +188,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
       <section className="hub-feature__panel tier-list">
         <div className="tier-list__toolbar">
-          <label className="tier-list__title-field">
-            <span>List title</span>
-            <input
-              type="text"
-              value={state.title}
-              maxLength={48}
-              onChange={(event) =>
-                updateState(setTierListTitle(state, event.target.value))
-              }
-            />
-          </label>
           <div className="tier-list__toolbar-actions">
             <button
               type="button"
@@ -215,21 +218,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         </div>
 
         <div className="tier-list__filters" aria-label="Player filters">
-          <label className="tier-list__search">
-            <span>Search</span>
-            <input
-              type="search"
-              value={filters.query}
-              placeholder="Name, team, or position"
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  query: event.target.value,
-                }))
-              }
-            />
-          </label>
-
           <div className="tier-list__filter-group">
             <span className="tier-list__filter-label">Position</span>
             <div className="tier-list__chips">
@@ -491,6 +479,20 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               </button>
             ) : null}
           </div>
+          <label className="tier-list__search tier-list__search--pool">
+            <span>Search players</span>
+            <input
+              type="search"
+              value={filters.query}
+              placeholder="Name, team, or position"
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  query: event.target.value,
+                }))
+              }
+            />
+          </label>
           <div className="tier-list__pool-grid">
             {pool.length > 0 ? (
               pool.map((player) => renderPlayerChip(player))
