@@ -6988,17 +6988,66 @@ h1.landing-hub__title {
 .tier-list__select-field {
   display: grid;
   gap: 6px;
-  min-width: min(100%, 160px);
-  flex: 1 1 140px;
+  min-width: min(100%, 168px);
+  flex: 1 1 150px;
+}
+
+.tier-list__select-shell {
+  position: relative;
+  display: grid;
+}
+
+.tier-list__select-shell::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #94a3b8;
+  border-bottom: 2px solid #94a3b8;
+  transform: translateY(-60%) rotate(45deg);
+  pointer-events: none;
 }
 
 .tier-list__select-field select {
-  min-height: 38px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.55);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
   color: #f8fafc;
-  padding: 0 10px;
+  padding: 0 40px 0 14px;
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(2, 6, 23, 0.25);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.tier-list__select-field select:hover {
+  border-color: rgba(148, 163, 184, 0.42);
+}
+
+.tier-list__select-field select:focus {
+  outline: none;
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow:
+    0 0 0 3px rgba(16, 185, 129, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.tier-list__select-field select option {
+  background: #0f172a;
+  color: #f8fafc;
 }
 
 .tier-list__age-range {

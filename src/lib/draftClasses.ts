@@ -2,14 +2,21 @@ import draftClassesData from "../../data/draft-classes.json";
 import upcomingRookiesData from "../../data/upcoming-rookies.json";
 import type { Player, Position } from "./types";
 
-export type DraftClassYear = 2022 | 2023 | 2024 | 2025 | 2026;
+export type DraftClassYear = number;
 
-export const DRAFT_CLASS_YEARS: DraftClassYear[] = [
-  2022, 2023, 2024, 2025, 2026,
-];
+const curatedYears = Object.keys(draftClassesData.classes)
+  .map(Number)
+  .filter((year) => Number.isFinite(year))
+  .sort((left, right) => right - left);
 
-export const CURRENT_ROOKIE_DRAFT_YEAR = 2025;
 export const UPCOMING_ROOKIE_DRAFT_YEAR = 2026;
+export const CURRENT_ROOKIE_DRAFT_YEAR = 2025;
+
+/** Newest → oldest, including upcoming 2026 prospects. */
+export const DRAFT_CLASS_YEARS: DraftClassYear[] = [
+  UPCOMING_ROOKIE_DRAFT_YEAR,
+  ...curatedYears.filter((year) => year !== UPCOMING_ROOKIE_DRAFT_YEAR),
+];
 
 const draftClassIdsByYear = new Map<number, Set<string>>(
   Object.entries(draftClassesData.classes).map(([year, ids]) => [
