@@ -11,7 +11,9 @@ import {
   filterTierListPool,
   getTierListPlayers,
   movePlayerToTier,
+  openTierListFromLibrary,
   playerMatchesTierListFilters,
+  saveTierListToLibrary,
   DEFAULT_TIER_LIST_FILTERS,
 } from "./tierList";
 import { isInternationalEventPlayer } from "./weeklyEvents";
@@ -26,7 +28,7 @@ const byName = (name: string) => {
 };
 
 describe("tierList", () => {
-  it("filters by position, age range, team, and agency", () => {
+  it("filters by position, age range, team, conference, and agency", () => {
     const guard = byName("Shai Gilgeous-Alexander");
     expect(
       playerMatchesTierListFilters(guard, {
@@ -59,15 +61,27 @@ describe("tierList", () => {
     expect(
       playerMatchesTierListFilters(guard, {
         ...DEFAULT_TIER_LIST_FILTERS,
-        teams: [guard.team],
+        team: guard.team,
       }),
     ).toBe(true);
     expect(
       playerMatchesTierListFilters(guard, {
         ...DEFAULT_TIER_LIST_FILTERS,
-        teams: ["BOS"],
+        team: "BOS",
       }),
     ).toBe(guard.team === "BOS");
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "West",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "East",
+      }),
+    ).toBe(false);
 
     expect(
       playerMatchesTierListFilters(guard, {
@@ -90,6 +104,24 @@ describe("tierList", () => {
         agency: "rostered",
       }),
     ).toBe(false);
+  });
+
+  it("saves and reopens tier lists from the library", () => {
+    const player = byName("Jayson Tatum");
+    let state = createDefaultTierListState();
+    state = movePlayerToTier(state, player.id, state.tiers[0]!.id);
+    state = { ...state, title: "East Wings" };
+
+    const saved = saveTierListToLibrary(state, { documents: [] });
+    expect(saved.library.documents).toHaveLength(1);
+    expect(saved.library.documents[0]?.title).toBe("East Wings");
+
+    const reopened = openTierListFromLibrary(
+      saved.library.documents[0]!.id,
+      saved.library,
+    );
+    expect(reopened?.title).toBe("East Wings");
+    expect(reopened?.tiers[0]?.playerIds).toContain(player.id);
   });
 
   it("moves players between tiers and clears them from the pool", () => {

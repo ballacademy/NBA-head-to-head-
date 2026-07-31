@@ -2,15 +2,15 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-07-15T02:52:54.607497+00:00",
-  "rosterAsOf": "2026-07-14",
+  "generatedAt": "2026-07-31T00:55:46.272188+00:00",
+  "rosterAsOf": "2026-07-31",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Dončić",
+      "name": "Luka Don\u010di\u0107",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -296,7 +296,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Jokić",
+      "name": "Nikola Joki\u0107",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1433,10 +1433,10 @@
       "statsTeam": "NOP"
     },
     {
-      "id": "jamesle01-fa",
+      "id": "jamesle01-phi",
       "bbrPlayerId": "jamesle01",
       "name": "LeBron James",
-      "team": "FA",
+      "team": "PHI",
       "position": "SF",
       "positions": [
         "SF",
@@ -1639,7 +1639,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen Şengün",
+      "name": "Alperen \u015eeng\u00fcn",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -2488,10 +2488,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "derozde01-sac",
+      "id": "derozde01-fa",
       "bbrPlayerId": "derozde01",
       "name": "DeMar DeRozan",
-      "team": "SAC",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -2525,7 +2525,8 @@
       "personalFouls": 1.8999999999999997,
       "effectiveFieldGoalPct": 0.5190839694656488,
       "trueShooting": 0.591,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "thompam01-hou",
@@ -3262,7 +3263,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porziņģis",
+      "name": "Kristaps Porzi\u0146\u0123is",
       "team": "GSW",
       "position": "C",
       "positions": [
@@ -3545,10 +3546,10 @@
       "statsTeam": "WAS"
     },
     {
-      "id": "whiteda01-mem",
+      "id": "whiteda01-fa",
       "bbrPlayerId": "whiteda01",
       "name": "Dariq Whitehead",
-      "team": "MEM",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -3582,7 +3583,8 @@
       "personalFouls": 2.2,
       "effectiveFieldGoalPct": 0.503225806451613,
       "trueShooting": 0.508,
-      "statsTeam": "MEM"
+      "statsTeam": "MEM",
+      "lastTeam": "MEM"
     },
     {
       "id": "holidjr01-por",
@@ -4111,10 +4113,10 @@
       "statsTeam": "ATL"
     },
     {
-      "id": "westbru01-sac",
+      "id": "westbru01-fa",
       "bbrPlayerId": "westbru01",
       "name": "Russell Westbrook",
-      "team": "SAC",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF",
@@ -4149,12 +4151,13 @@
       "personalFouls": 2.3,
       "effectiveFieldGoalPct": 0.5038167938931297,
       "trueShooting": 0.529,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "vucevni01-orl",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vučević",
+      "name": "Nikola Vu\u010devi\u0107",
       "team": "ORL",
       "position": "C",
       "positions": [
@@ -4233,10 +4236,10 @@
       "statsTeam": "ORL"
     },
     {
-      "id": "chandke01-uta",
+      "id": "chandke01-fa",
       "bbrPlayerId": "chandke01",
       "name": "Kennedy Chandler",
-      "team": "UTA",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG",
@@ -4271,7 +4274,8 @@
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.496,
       "trueShooting": 0.528,
-      "statsTeam": "UTA"
+      "statsTeam": "UTA",
+      "lastTeam": "UTA"
     },
     {
       "id": "sensabr01-uta",
@@ -5849,10 +5853,10 @@
       "statsTeam": "SAS"
     },
     {
-      "id": "willibr03-dal",
+      "id": "willibr03-fa",
       "bbrPlayerId": "willibr03",
       "name": "Brandon Williams",
-      "team": "DAL",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -5886,7 +5890,8 @@
       "personalFouls": 1.6,
       "effectiveFieldGoalPct": 0.5,
       "trueShooting": 0.574,
-      "statsTeam": "DAL"
+      "statsTeam": "DAL",
+      "lastTeam": "DAL"
     },
     {
       "id": "kuzmaky01-mil",
@@ -6494,10 +6499,10 @@
       "statsTeam": "DET"
     },
     {
-      "id": "kuminjo01-atl",
+      "id": "kuminjo01-fa",
       "bbrPlayerId": "kuminjo01",
       "name": "Jonathan Kuminga",
-      "team": "ATL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -6531,7 +6536,8 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.515,
       "trueShooting": 0.56,
-      "statsTeam": "GSW"
+      "statsTeam": "GSW",
+      "lastTeam": "ATL"
     },
     {
       "id": "johnstr03-was",
@@ -7831,7 +7837,7 @@
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurkić",
+      "name": "Jusuf Nurki\u0107",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -7992,7 +7998,7 @@
     {
       "id": "schrode01-cle",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schröder",
+      "name": "Dennis Schr\u00f6der",
       "team": "CLE",
       "position": "PG",
       "positions": [
@@ -8355,10 +8361,10 @@
       "statsTeam": "POR"
     },
     {
-      "id": "willilu01-mem",
+      "id": "willilu01-fa",
       "bbrPlayerId": "willilu01",
       "name": "Lucas Williamson",
-      "team": "MEM",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG",
@@ -8393,7 +8399,8 @@
       "personalFouls": 3.7,
       "effectiveFieldGoalPct": 0.4345794392523365,
       "trueShooting": 0.465,
-      "statsTeam": "MEM"
+      "statsTeam": "MEM",
+      "lastTeam": "MEM"
     },
     {
       "id": "jeffrda01-fa",
@@ -8962,10 +8969,10 @@
       "statsTeam": "MEM"
     },
     {
-      "id": "okanito01-mem",
+      "id": "okanito01-fa",
       "bbrPlayerId": "okanito01",
       "name": "Toby Okani",
-      "team": "MEM",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -8999,7 +9006,8 @@
       "personalFouls": 3.2999999999999994,
       "effectiveFieldGoalPct": 0.4230769230769232,
       "trueShooting": 0.407,
-      "statsTeam": "MEM"
+      "statsTeam": "MEM",
+      "lastTeam": "MEM"
     },
     {
       "id": "thompau01-det",
@@ -9325,10 +9333,10 @@
       "statsTeam": "CHI"
     },
     {
-      "id": "risacza01-atl",
+      "id": "risacza01-dal",
       "bbrPlayerId": "risacza01",
       "name": "Zaccharie Risacher",
-      "team": "ATL",
+      "team": "DAL",
       "position": "SF",
       "positions": [
         "SF"
@@ -10250,7 +10258,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traoré",
+      "name": "Nolan Traor\u00e9",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10368,10 +10376,10 @@
       "statsTeam": "DAL"
     },
     {
-      "id": "sandfpa01-okc",
+      "id": "sandfpa01-fa",
       "bbrPlayerId": "sandfpa01",
       "name": "Payton Sandfort",
-      "team": "OKC",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -10405,7 +10413,8 @@
       "personalFouls": 2,
       "effectiveFieldGoalPct": 0.6461538461538462,
       "trueShooting": 0.634,
-      "statsTeam": "OKC"
+      "statsTeam": "OKC",
+      "lastTeam": "OKC"
     },
     {
       "id": "sharpda01-brk",
@@ -10449,10 +10458,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "valanjo01-den",
+      "id": "valanjo01-fa",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valančiūnas",
-      "team": "DEN",
+      "name": "Jonas Valan\u010di\u016bnas",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -10487,7 +10496,8 @@
       "personalFouls": 2,
       "effectiveFieldGoalPct": 0.5916666666666667,
       "trueShooting": 0.628,
-      "statsTeam": "DEN"
+      "statsTeam": "DEN",
+      "lastTeam": "DEN"
     },
     {
       "id": "goodwjo01-pho",
@@ -10893,7 +10903,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "Vít Krejčí",
+      "name": "V\u00edt Krej\u010d\u00ed",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -10971,10 +10981,10 @@
       "statsTeam": "GSW"
     },
     {
-      "id": "caldwke01-mem",
+      "id": "caldwke01-phi",
       "bbrPlayerId": "caldwke01",
       "name": "Kentavious Caldwell-Pope",
-      "team": "MEM",
+      "team": "PHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -11213,10 +11223,10 @@
       "statsTeam": "WAS"
     },
     {
-      "id": "dortlu01-okc",
+      "id": "dortlu01-atl",
       "bbrPlayerId": "dortlu01",
       "name": "Luguentz Dort",
-      "team": "OKC",
+      "team": "ATL",
       "position": "SF",
       "positions": [
         "SF"
@@ -11253,10 +11263,10 @@
       "statsTeam": "OKC"
     },
     {
-      "id": "smithma02-brk",
+      "id": "smithma02-fa",
       "bbrPlayerId": "smithma02",
       "name": "Malachi Smith",
-      "team": "BRK",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -11290,7 +11300,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5833333333333334,
       "trueShooting": 0.609,
-      "statsTeam": "BRK"
+      "statsTeam": "BRK",
+      "lastTeam": "BRK"
     },
     {
       "id": "rosste01-fa",
@@ -11899,10 +11910,10 @@
       "statsTeam": "GSW"
     },
     {
-      "id": "scotttr01-brk",
+      "id": "scotttr01-fa",
       "bbrPlayerId": "scotttr01",
       "name": "Trevon Scott",
-      "team": "BRK",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -11936,13 +11947,14 @@
       "personalFouls": 2,
       "effectiveFieldGoalPct": 0.44578313253012053,
       "trueShooting": 0.458,
-      "statsTeam": "BRK"
+      "statsTeam": "BRK",
+      "lastTeam": "BRK"
     },
     {
-      "id": "brownbr01-den",
+      "id": "brownbr01-fa",
       "bbrPlayerId": "brownbr01",
       "name": "Bruce Brown",
-      "team": "DEN",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -11976,7 +11988,8 @@
       "personalFouls": 2.4,
       "effectiveFieldGoalPct": 0.5234374999999999,
       "trueShooting": 0.559,
-      "statsTeam": "DEN"
+      "statsTeam": "DEN",
+      "lastTeam": "DEN"
     },
     {
       "id": "etienty01-brk",
@@ -12021,7 +12034,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabaté",
+      "name": "Moussa Diabat\u00e9",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12463,10 +12476,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "paytoga02-gsw",
+      "id": "paytoga02-fa",
       "bbrPlayerId": "paytoga02",
       "name": "Gary Payton II",
-      "team": "GSW",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -12500,7 +12513,8 @@
       "personalFouls": 1.8,
       "effectiveFieldGoalPct": 0.6228070175438596,
       "trueShooting": 0.633,
-      "statsTeam": "GSW"
+      "statsTeam": "GSW",
+      "lastTeam": "GSW"
     },
     {
       "id": "walteja01-tor",
@@ -12628,7 +12642,7 @@
     {
       "id": "bogdabo01-hou",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanović",
+      "name": "Bogdan Bogdanovi\u0107",
       "team": "HOU",
       "position": "SG",
       "positions": [
@@ -13072,7 +13086,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jović",
+      "name": "Nikola Jovi\u0107",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -13310,10 +13324,10 @@
       "statsTeam": "IND"
     },
     {
-      "id": "blackle01-was",
+      "id": "blackle01-fa",
       "bbrPlayerId": "blackle01",
       "name": "Leaky Black",
-      "team": "WAS",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -13347,13 +13361,14 @@
       "personalFouls": 2.7,
       "effectiveFieldGoalPct": 0.4855072463768116,
       "trueShooting": 0.499,
-      "statsTeam": "WAS"
+      "statsTeam": "WAS",
+      "lastTeam": "WAS"
     },
     {
-      "id": "curryse01-gsw",
+      "id": "curryse01-fa",
       "bbrPlayerId": "curryse01",
       "name": "Seth Curry",
-      "team": "GSW",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -13387,7 +13402,8 @@
       "personalFouls": 0.7,
       "effectiveFieldGoalPct": 0.6122448979591836,
       "trueShooting": 0.654,
-      "statsTeam": "GSW"
+      "statsTeam": "GSW",
+      "lastTeam": "GSW"
     },
     {
       "id": "thompet01-ind",
@@ -13674,10 +13690,10 @@
       "statsTeam": "PHO"
     },
     {
-      "id": "beaucma01-phi",
+      "id": "beaucma01-fa",
       "bbrPlayerId": "beaucma01",
       "name": "MarJon Beauchamp",
-      "team": "PHI",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -13711,7 +13727,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5462962962962963,
       "trueShooting": 0.565,
-      "statsTeam": "PHI"
+      "statsTeam": "PHI",
+      "lastTeam": "PHI"
     },
     {
       "id": "harklej01-det",
@@ -13876,10 +13893,10 @@
       "statsTeam": "SAC"
     },
     {
-      "id": "loveke01-uta",
+      "id": "loveke01-fa",
       "bbrPlayerId": "loveke01",
       "name": "Kevin Love",
-      "team": "UTA",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -13913,7 +13930,8 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.5185185185185185,
       "trueShooting": 0.565,
-      "statsTeam": "UTA"
+      "statsTeam": "UTA",
+      "lastTeam": "UTA"
     },
     {
       "id": "williro04-por",
@@ -13997,10 +14015,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "nembhry01-dal",
+      "id": "nembhry01-atl",
       "bbrPlayerId": "nembhry01",
       "name": "Ryan Nembhard",
-      "team": "DAL",
+      "team": "ATL",
       "position": "PG",
       "positions": [
         "PG",
@@ -14320,10 +14338,10 @@
       "statsTeam": "PHI"
     },
     {
-      "id": "wilsoja03-brk",
+      "id": "wilsoja03-atl",
       "bbrPlayerId": "wilsoja03",
       "name": "Jalen Wilson",
-      "team": "BRK",
+      "team": "ATL",
       "position": "PF",
       "positions": [
         "PF"
@@ -14480,10 +14498,10 @@
       "statsTeam": "MIN"
     },
     {
-      "id": "martity01-phi",
+      "id": "martity01-fa",
       "bbrPlayerId": "martity01",
       "name": "Tyrese Martin",
-      "team": "PHI",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -14517,7 +14535,8 @@
       "personalFouls": 0.7,
       "effectiveFieldGoalPct": 0.489,
       "trueShooting": 0.503,
-      "statsTeam": "BRK"
+      "statsTeam": "BRK",
+      "lastTeam": "PHI"
     },
     {
       "id": "carusal01-okc",
@@ -14602,7 +14621,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jakučionis",
+      "name": "Kasparas Jaku\u010dionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -14680,10 +14699,10 @@
       "statsTeam": "UTA"
     },
     {
-      "id": "smithni01-lal",
+      "id": "smithni01-fa",
       "bbrPlayerId": "smithni01",
       "name": "Nick Smith Jr.",
-      "team": "LAL",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -14717,7 +14736,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5277777777777777,
       "trueShooting": 0.552,
-      "statsTeam": "LAL"
+      "statsTeam": "LAL",
+      "lastTeam": "LAL"
     },
     {
       "id": "bryanth01-cle",
@@ -14841,10 +14861,10 @@
       "statsTeam": "TOR"
     },
     {
-      "id": "grayha01-uta",
+      "id": "grayha01-fa",
       "bbrPlayerId": "grayha01",
       "name": "Hayden Gray",
-      "team": "UTA",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -14878,7 +14898,8 @@
       "personalFouls": 0,
       "effectiveFieldGoalPct": 0.6666666666666666,
       "trueShooting": 0.773,
-      "statsTeam": "UTA"
+      "statsTeam": "UTA",
+      "lastTeam": "UTA"
     },
     {
       "id": "edwarju01-phi",
@@ -14923,7 +14944,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Salaün",
+      "name": "Tidjane Sala\u00fcn",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -15042,10 +15063,10 @@
       "statsTeam": "4TM"
     },
     {
-      "id": "gillan01-was",
+      "id": "gillan01-fa",
       "bbrPlayerId": "gillan01",
       "name": "Anthony Gill",
-      "team": "WAS",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -15079,7 +15100,8 @@
       "personalFouls": 1.6,
       "effectiveFieldGoalPct": 0.6794871794871795,
       "trueShooting": 0.682,
-      "statsTeam": "WAS"
+      "statsTeam": "WAS",
+      "lastTeam": "WAS"
     },
     {
       "id": "carlsbr01-por",
@@ -15243,10 +15265,10 @@
       "statsTeam": "POR"
     },
     {
-      "id": "thybuma01-por",
+      "id": "thybuma01-lal",
       "bbrPlayerId": "thybuma01",
       "name": "Matisse Thybulle",
-      "team": "POR",
+      "team": "LAL",
       "position": "SG",
       "positions": [
         "SG"
@@ -15323,10 +15345,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "richani01-chi",
+      "id": "richani01-fa",
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
-      "team": "CHI",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -15361,7 +15383,8 @@
       "personalFouls": 1.8,
       "effectiveFieldGoalPct": 0.525,
       "trueShooting": 0.566,
-      "statsTeam": "PHO"
+      "statsTeam": "PHO",
+      "lastTeam": "CHI"
     },
     {
       "id": "dunnry01-pho",
@@ -15484,10 +15507,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "mcderdo01-sac",
+      "id": "mcderdo01-fa",
       "bbrPlayerId": "mcderdo01",
       "name": "Doug McDermott",
-      "team": "SAC",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -15521,7 +15544,8 @@
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.5729166666666667,
       "trueShooting": 0.578,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "bouyeja01-pho",
@@ -15566,7 +15590,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matković",
+      "name": "Karlo Matkovi\u0107",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -15805,10 +15829,10 @@
       "statsTeam": "MIN"
     },
     {
-      "id": "holidaa01-hou",
+      "id": "holidaa01-fa",
       "bbrPlayerId": "holidaa01",
       "name": "Aaron Holiday",
-      "team": "HOU",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -15842,7 +15866,8 @@
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5454545454545454,
       "trueShooting": 0.584,
-      "statsTeam": "HOU"
+      "statsTeam": "HOU",
+      "lastTeam": "HOU"
     },
     {
       "id": "scheiba01-bos",
@@ -15926,10 +15951,10 @@
       "statsTeam": "PHI"
     },
     {
-      "id": "howarje01-orl",
+      "id": "howarje01-dal",
       "bbrPlayerId": "howarje01",
       "name": "Jett Howard",
-      "team": "ORL",
+      "team": "DAL",
       "position": "SF",
       "positions": [
         "SF"
@@ -15966,10 +15991,10 @@
       "statsTeam": "ORL"
     },
     {
-      "id": "hayeski01-sac",
+      "id": "hayeski01-fa",
       "bbrPlayerId": "hayeski01",
       "name": "Killian Hayes",
-      "team": "SAC",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -16003,7 +16028,8 @@
       "personalFouls": 1.6,
       "effectiveFieldGoalPct": 0.35833333333333334,
       "trueShooting": 0.421,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "jonessp01-den",
@@ -16448,10 +16474,10 @@
       "statsTeam": "ATL"
     },
     {
-      "id": "eubandr01-sac",
+      "id": "eubandr01-fa",
       "bbrPlayerId": "eubandr01",
       "name": "Drew Eubanks",
-      "team": "SAC",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -16486,7 +16512,8 @@
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.5945945945945946,
       "trueShooting": 0.602,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "mathega01-fa",
@@ -16612,7 +16639,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topić",
+      "name": "Nikola Topi\u0107",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -16811,10 +16838,10 @@
       "statsTeam": "NOP"
     },
     {
-      "id": "agbajoc01-brk",
+      "id": "agbajoc01-fa",
       "bbrPlayerId": "agbajoc01",
       "name": "Ochai Agbaji",
-      "team": "BRK",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -16848,7 +16875,8 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.496,
       "trueShooting": 0.53,
-      "statsTeam": "TOR"
+      "statsTeam": "TOR",
+      "lastTeam": "BRK"
     },
     {
       "id": "cissosi01-por",
@@ -17014,10 +17042,10 @@
       "statsTeam": "PHI"
     },
     {
-      "id": "weslebl01-por",
+      "id": "weslebl01-fa",
       "bbrPlayerId": "weslebl01",
       "name": "Blake Wesley",
-      "team": "POR",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -17051,13 +17079,14 @@
       "personalFouls": 1.1,
       "effectiveFieldGoalPct": 0.4875,
       "trueShooting": 0.515,
-      "statsTeam": "POR"
+      "statsTeam": "POR",
+      "lastTeam": "POR"
     },
     {
-      "id": "smithty02-dal",
+      "id": "smithty02-fa",
       "bbrPlayerId": "smithty02",
       "name": "Tyler Smith",
-      "team": "DAL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -17091,7 +17120,8 @@
       "personalFouls": 1.1,
       "effectiveFieldGoalPct": 0.5238095238095238,
       "trueShooting": 0.532,
-      "statsTeam": "DAL"
+      "statsTeam": "DAL",
+      "lastTeam": "DAL"
     },
     {
       "id": "robinje02-fa",
@@ -17498,10 +17528,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "peterta01-ind",
+      "id": "peterta01-fa",
       "bbrPlayerId": "peterta01",
       "name": "Taelon Peter",
-      "team": "IND",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -17535,7 +17565,8 @@
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.511904761904762,
       "trueShooting": 0.514,
-      "statsTeam": "IND"
+      "statsTeam": "IND",
+      "lastTeam": "IND"
     },
     {
       "id": "jordade01-nop",
@@ -17579,10 +17610,10 @@
       "statsTeam": "NOP"
     },
     {
-      "id": "vincega01-atl",
+      "id": "vincega01-fa",
       "bbrPlayerId": "vincega01",
       "name": "Gabe Vincent",
-      "team": "ATL",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -17616,7 +17647,8 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.488,
       "trueShooting": 0.514,
-      "statsTeam": "LAL"
+      "statsTeam": "LAL",
+      "lastTeam": "ATL"
     },
     {
       "id": "vandeja01-lal",
@@ -18101,10 +18133,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "johnske10-mia",
+      "id": "johnske10-fa",
       "bbrPlayerId": "johnske10",
       "name": "Keshad Johnson",
-      "team": "MIA",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -18138,7 +18170,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.5454545454545455,
       "trueShooting": 0.582,
-      "statsTeam": "MIA"
+      "statsTeam": "MIA",
+      "lastTeam": "MIA"
     },
     {
       "id": "gilbeke01-atl",
@@ -18304,7 +18337,7 @@
     {
       "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissière",
+      "name": "Skal Labissi\u00e8re",
       "team": "FA",
       "position": "PF",
       "positions": [
@@ -18345,7 +18378,7 @@
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederhäuser",
+      "name": "Yanic Konan Niederh\u00e4user",
       "team": "LAC",
       "position": "C",
       "positions": [
@@ -18747,10 +18780,10 @@
       "statsTeam": "MIA"
     },
     {
-      "id": "batumni01-lac",
+      "id": "batumni01-fa",
       "bbrPlayerId": "batumni01",
       "name": "Nicolas Batum",
-      "team": "LAC",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -18784,13 +18817,14 @@
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.5937499999999999,
       "trueShooting": 0.617,
-      "statsTeam": "LAC"
+      "statsTeam": "LAC",
+      "lastTeam": "LAC"
     },
     {
-      "id": "bradlto01-atl",
+      "id": "bradlto01-fa",
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "ATL",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -18825,7 +18859,8 @@
       "personalFouls": 1.5,
       "effectiveFieldGoalPct": 0.556,
       "trueShooting": 0.599,
-      "statsTeam": "IND"
+      "statsTeam": "IND",
+      "lastTeam": "ATL"
     },
     {
       "id": "martica02-dal",
@@ -18950,7 +18985,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo González",
+      "name": "Hugo Gonz\u00e1lez",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -19150,10 +19185,10 @@
       "statsTeam": "PHO"
     },
     {
-      "id": "yurtsom01-gsw",
+      "id": "yurtsom01-fa",
       "bbrPlayerId": "yurtsom01",
       "name": "Omer Yurtseven",
-      "team": "GSW",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -19188,7 +19223,8 @@
       "personalFouls": 1.7,
       "effectiveFieldGoalPct": 0.41379310344827586,
       "trueShooting": 0.503,
-      "statsTeam": "GSW"
+      "statsTeam": "GSW",
+      "lastTeam": "GSW"
     },
     {
       "id": "holmeda01-den",
@@ -19231,10 +19267,10 @@
       "statsTeam": "DEN"
     },
     {
-      "id": "terryda01-phi",
+      "id": "terryda01-fa",
       "bbrPlayerId": "terryda01",
       "name": "Dalen Terry",
-      "team": "PHI",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -19268,7 +19304,8 @@
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.516,
       "trueShooting": 0.534,
-      "statsTeam": "CHI"
+      "statsTeam": "CHI",
+      "lastTeam": "PHI"
     },
     {
       "id": "nancela02-ind",
@@ -19311,10 +19348,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "baldwpa01-sac",
+      "id": "baldwpa01-fa",
       "bbrPlayerId": "baldwpa01",
       "name": "Patrick Baldwin Jr.",
-      "team": "SAC",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -19348,7 +19385,8 @@
       "personalFouls": 1.7,
       "effectiveFieldGoalPct": 0.519,
       "trueShooting": 0.552,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
       "id": "smithto05-det",
@@ -19431,10 +19469,10 @@
       "statsTeam": "DEN"
     },
     {
-      "id": "sochaje01-nyk",
+      "id": "sochaje01-fa",
       "bbrPlayerId": "sochaje01",
       "name": "Jeremy Sochan",
-      "team": "NYK",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -19468,7 +19506,8 @@
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.539,
       "trueShooting": 0.569,
-      "statsTeam": "SAS"
+      "statsTeam": "SAS",
+      "lastTeam": "NYK"
     },
     {
       "id": "diawamo01-nyk",
@@ -19632,10 +19671,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "timmedr01-lal",
+      "id": "timmedr01-fa",
       "bbrPlayerId": "timmedr01",
       "name": "Drew Timme",
-      "team": "LAL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -19669,7 +19708,8 @@
       "personalFouls": 0.7,
       "effectiveFieldGoalPct": 0.6666666666666666,
       "trueShooting": 0.671,
-      "statsTeam": "LAL"
+      "statsTeam": "LAL",
+      "lastTeam": "LAL"
     },
     {
       "id": "gibsota01-mem",
@@ -19754,10 +19794,10 @@
       "statsTeam": "GSW"
     },
     {
-      "id": "kawamyu01-chi",
+      "id": "kawamyu01-fa",
       "bbrPlayerId": "kawamyu01",
       "name": "Yuki Kawamura",
-      "team": "CHI",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -19791,7 +19831,8 @@
       "personalFouls": 0.8,
       "effectiveFieldGoalPct": 0.41379310344827586,
       "trueShooting": 0.502,
-      "statsTeam": "CHI"
+      "statsTeam": "CHI",
+      "lastTeam": "CHI"
     },
     {
       "id": "johnsaj01-mem",
@@ -19874,10 +19915,10 @@
       "statsTeam": "HOU"
     },
     {
-      "id": "poweldw01-dal",
+      "id": "poweldw01-fa",
       "bbrPlayerId": "poweldw01",
       "name": "Dwight Powell",
-      "team": "DAL",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -19912,7 +19953,8 @@
       "personalFouls": 2.1,
       "effectiveFieldGoalPct": 0.625,
       "trueShooting": 0.69,
-      "statsTeam": "DAL"
+      "statsTeam": "DAL",
+      "lastTeam": "DAL"
     },
     {
       "id": "freemen01-min",
@@ -20037,10 +20079,10 @@
       "statsTeam": "GSW"
     },
     {
-      "id": "steveis01-sac",
+      "id": "steveis01-fa",
       "bbrPlayerId": "steveis01",
       "name": "Isaiah Stevens",
-      "team": "SAC",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -20074,13 +20116,14 @@
       "personalFouls": 0.6999999999999998,
       "effectiveFieldGoalPct": 0.4347826086956522,
       "trueShooting": 0.575,
-      "statsTeam": "SAC"
+      "statsTeam": "SAC",
+      "lastTeam": "SAC"
     },
     {
-      "id": "antetal01-mil",
+      "id": "antetal01-fa",
       "bbrPlayerId": "antetal01",
       "name": "Alex Antetokounmpo",
-      "team": "MIL",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -20114,13 +20157,14 @@
       "personalFouls": 0.20000000000000004,
       "effectiveFieldGoalPct": 0.5,
       "trueShooting": 0.667,
-      "statsTeam": "MIL"
+      "statsTeam": "MIL",
+      "lastTeam": "MIL"
     },
     {
-      "id": "coffeam01-pho",
+      "id": "coffeam01-fa",
       "bbrPlayerId": "coffeam01",
       "name": "Amir Coffey",
-      "team": "PHO",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -20154,7 +20198,8 @@
       "personalFouls": 0.7,
       "effectiveFieldGoalPct": 0.562,
       "trueShooting": 0.579,
-      "statsTeam": "MIL"
+      "statsTeam": "MIL",
+      "lastTeam": "PHO"
     },
     {
       "id": "reddica01-fa",
@@ -20198,10 +20243,10 @@
       "statsTeam": "LAL"
     },
     {
-      "id": "olynyke01-sas",
+      "id": "olynyke01-fa",
       "bbrPlayerId": "olynyke01",
       "name": "Kelly Olynyk",
-      "team": "SAS",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -20236,7 +20281,8 @@
       "personalFouls": 0.9000000000000001,
       "effectiveFieldGoalPct": 0.5434782608695653,
       "trueShooting": 0.593,
-      "statsTeam": "SAS"
+      "statsTeam": "SAS",
+      "lastTeam": "SAS"
     },
     {
       "id": "wrighde01-fa",
@@ -20726,10 +20772,10 @@
       "statsTeam": "LAC"
     },
     {
-      "id": "jonescu01-den",
+      "id": "jonescu01-fa",
       "bbrPlayerId": "jonescu01",
       "name": "Curtis Jones",
-      "team": "DEN",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -20763,12 +20809,13 @@
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.5185185185185185,
       "trueShooting": 0.52,
-      "statsTeam": "DEN"
+      "statsTeam": "DEN",
+      "lastTeam": "DEN"
     },
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones García",
+      "name": "David Jones Garc\u00eda",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -21090,10 +21137,10 @@
       "statsTeam": "MIN"
     },
     {
-      "id": "omierno01-lac",
+      "id": "omierno01-fa",
       "bbrPlayerId": "omierno01",
       "name": "Norchad Omier",
-      "team": "LAC",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -21127,7 +21174,8 @@
       "personalFouls": 0.6999999999999998,
       "effectiveFieldGoalPct": 0.7058823529411765,
       "trueShooting": 0.729,
-      "statsTeam": "LAC"
+      "statsTeam": "LAC",
+      "lastTeam": "LAC"
     },
     {
       "id": "harriga01-det",
@@ -21170,10 +21218,10 @@
       "statsTeam": "MIL"
     },
     {
-      "id": "reevean01-cho",
+      "id": "reevean01-fa",
       "bbrPlayerId": "reevean01",
       "name": "Antonio Reeves",
-      "team": "CHO",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -21207,7 +21255,8 @@
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.675,
       "trueShooting": 0.675,
-      "statsTeam": "CHO"
+      "statsTeam": "CHO",
+      "lastTeam": "CHO"
     },
     {
       "id": "kolokch01-atl",
@@ -21454,10 +21503,10 @@
       "statsTeam": "HOU"
     },
     {
-      "id": "tonjejo01-bos",
+      "id": "tonjejo01-por",
       "bbrPlayerId": "tonjejo01",
       "name": "John Tonje",
-      "team": "BOS",
+      "team": "POR",
       "position": "SG",
       "positions": [
         "SG"
@@ -21536,10 +21585,10 @@
       "statsTeam": "UTA"
     },
     {
-      "id": "jacksan01-mil",
+      "id": "jacksan01-fa",
       "bbrPlayerId": "jacksan01",
       "name": "Andre Jackson Jr.",
-      "team": "MIL",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -21573,7 +21622,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.38000000000000006,
       "trueShooting": 0.427,
-      "statsTeam": "MIL"
+      "statsTeam": "MIL",
+      "lastTeam": "MIL"
     },
     {
       "id": "laniech01-det",
@@ -21697,10 +21747,10 @@
       "statsTeam": "NYK"
     },
     {
-      "id": "olbrila01-chi",
+      "id": "olbrila01-fa",
       "bbrPlayerId": "olbrila01",
       "name": "Lachlan Olbrich",
-      "team": "CHI",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -21735,13 +21785,14 @@
       "personalFouls": 1.3,
       "effectiveFieldGoalPct": 0.5,
       "trueShooting": 0.464,
-      "statsTeam": "CHI"
+      "statsTeam": "CHI",
+      "lastTeam": "CHI"
     },
     {
-      "id": "waterli01-sas",
+      "id": "waterli01-fa",
       "bbrPlayerId": "waterli01",
       "name": "Lindy Waters III",
-      "team": "SAS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -21775,13 +21826,14 @@
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.5227272727272726,
       "trueShooting": 0.535,
-      "statsTeam": "SAS"
+      "statsTeam": "SAS",
+      "lastTeam": "SAS"
     },
     {
-      "id": "houstca01-atl",
+      "id": "houstca01-fa",
       "bbrPlayerId": "houstca01",
       "name": "Caleb Houstan",
-      "team": "ATL",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -21815,7 +21867,8 @@
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.7857142857142858,
       "trueShooting": 0.773,
-      "statsTeam": "ATL"
+      "statsTeam": "ATL",
+      "lastTeam": "ATL"
     },
     {
       "id": "bouchch01-fa",
@@ -22022,10 +22075,10 @@
       "statsTeam": "DEN"
     },
     {
-      "id": "greenje02-hou",
+      "id": "greenje02-fa",
       "bbrPlayerId": "greenje02",
       "name": "Jeff Green",
-      "team": "HOU",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -22059,7 +22112,8 @@
       "personalFouls": 0.4,
       "effectiveFieldGoalPct": 0.4347826086956522,
       "trueShooting": 0.461,
-      "statsTeam": "HOU"
+      "statsTeam": "HOU",
+      "lastTeam": "HOU"
     },
     {
       "id": "yangha01-por",
@@ -22224,10 +22278,10 @@
       "statsTeam": "DET"
     },
     {
-      "id": "bantoda01-bos",
+      "id": "bantoda01-fa",
       "bbrPlayerId": "bantoda01",
       "name": "Dalano Banton",
-      "team": "BOS",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -22261,7 +22315,8 @@
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.333,
       "trueShooting": 0.433,
-      "statsTeam": "BOS"
+      "statsTeam": "BOS",
+      "lastTeam": "BOS"
     },
     {
       "id": "crawfis01-hou",
@@ -22425,10 +22480,10 @@
       "statsTeam": "SAS"
     },
     {
-      "id": "klebima01-lal",
+      "id": "klebima01-fa",
       "bbrPlayerId": "klebima01",
       "name": "Maxi Kleber",
-      "team": "LAL",
+      "team": "FA",
       "position": "PF",
       "positions": [
         "PF"
@@ -22462,7 +22517,8 @@
       "personalFouls": 1.4,
       "effectiveFieldGoalPct": 0.5,
       "trueShooting": 0.509,
-      "statsTeam": "LAL"
+      "statsTeam": "LAL",
+      "lastTeam": "LAL"
     },
     {
       "id": "flowetr01-fa",
@@ -22832,7 +22888,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pacôme Dadiet",
+      "name": "Pac\u00f4me Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -23032,10 +23088,10 @@
       "statsTeam": "ATL"
     },
     {
-      "id": "plumlma01-sas",
+      "id": "plumlma01-fa",
       "bbrPlayerId": "plumlma01",
       "name": "Mason Plumlee",
-      "team": "SAS",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -23070,7 +23126,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.786,
       "trueShooting": 0.794,
-      "statsTeam": "CHO"
+      "statsTeam": "CHO",
+      "lastTeam": "SAS"
     },
     {
       "id": "boehebu01-fa",
@@ -23114,10 +23171,10 @@
       "statsTeam": "OKC"
     },
     {
-      "id": "inglejo01-min",
+      "id": "inglejo01-fa",
       "bbrPlayerId": "inglejo01",
       "name": "Joe Ingles",
-      "team": "MIN",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -23151,7 +23208,8 @@
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.75,
       "trueShooting": 0.718,
-      "statsTeam": "MIN"
+      "statsTeam": "MIN",
+      "lastTeam": "MIN"
     },
     {
       "id": "mogbojo01-sac",
@@ -23194,10 +23252,10 @@
       "statsTeam": "TOR"
     },
     {
-      "id": "tillmxa01-cho",
+      "id": "tillmxa01-fa",
       "bbrPlayerId": "tillmxa01",
       "name": "Xavier Tillman Sr.",
-      "team": "CHO",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -23232,7 +23290,8 @@
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.467,
       "trueShooting": 0.486,
-      "statsTeam": "CHO"
+      "statsTeam": "CHO",
+      "lastTeam": "CHO"
     },
     {
       "id": "william01-bos",
@@ -23275,10 +23334,10 @@
       "statsTeam": "BOS"
     },
     {
-      "id": "antetth01-mil",
+      "id": "antetth01-fa",
       "bbrPlayerId": "antetth01",
       "name": "Thanasis Antetokounmpo",
-      "team": "MIL",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -23312,7 +23371,8 @@
       "personalFouls": 0.5,
       "effectiveFieldGoalPct": 0.4444444444444445,
       "trueShooting": 0.54,
-      "statsTeam": "MIL"
+      "statsTeam": "MIL",
+      "lastTeam": "MIL"
     },
     {
       "id": "castlco01-orl",
@@ -23356,10 +23416,10 @@
       "statsTeam": "ORL"
     },
     {
-      "id": "jonesdi01-nyk",
+      "id": "jonesdi01-fa",
       "bbrPlayerId": "jonesdi01",
       "name": "Dillon Jones",
-      "team": "NYK",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -23393,7 +23453,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.2692307692307692,
       "trueShooting": 0.416,
-      "statsTeam": "NYK"
+      "statsTeam": "NYK",
+      "lastTeam": "NYK"
     },
     {
       "id": "jonesis01-det",
@@ -23558,10 +23619,10 @@
       "statsTeam": "POR"
     },
     {
-      "id": "lowryky01-phi",
+      "id": "lowryky01-fa",
       "bbrPlayerId": "lowryky01",
       "name": "Kyle Lowry",
-      "team": "PHI",
+      "team": "FA",
       "position": "PG",
       "positions": [
         "PG"
@@ -23595,12 +23656,13 @@
       "personalFouls": 0.6,
       "effectiveFieldGoalPct": 0.24999999999999997,
       "trueShooting": 0.304,
-      "statsTeam": "PHI"
+      "statsTeam": "PHI",
+      "lastTeam": "PHI"
     },
     {
       "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario Šarić",
+      "name": "Dario \u0160ari\u0107",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -23803,10 +23865,10 @@
       "statsTeam": "NYK"
     },
     {
-      "id": "biyombi01-sas",
+      "id": "biyombi01-fa",
       "bbrPlayerId": "biyombi01",
       "name": "Bismack Biyombo",
-      "team": "SAS",
+      "team": "FA",
       "position": "C",
       "positions": [
         "C",
@@ -23841,13 +23903,14 @@
       "personalFouls": 1.1,
       "effectiveFieldGoalPct": 0.6666666666666667,
       "trueShooting": 0.615,
-      "statsTeam": "SAS"
+      "statsTeam": "SAS",
+      "lastTeam": "SAS"
     },
     {
-      "id": "broomjo01-phi",
+      "id": "broomjo01-lac",
       "bbrPlayerId": "broomjo01",
       "name": "Johni Broome",
-      "team": "PHI",
+      "team": "LAC",
       "position": "C",
       "positions": [
         "C",
@@ -23928,7 +23991,7 @@
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Mañon",
+      "name": "Chris Ma\u00f1on",
       "team": "LAL",
       "position": "SG",
       "positions": [
@@ -23966,10 +24029,10 @@
       "statsTeam": "LAL"
     },
     {
-      "id": "templga01-tor",
+      "id": "templga01-fa",
       "bbrPlayerId": "templga01",
       "name": "Garrett Temple",
-      "team": "TOR",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -24003,7 +24066,8 @@
       "personalFouls": 0.3,
       "effectiveFieldGoalPct": 0.35714285714285715,
       "trueShooting": 0.457,
-      "statsTeam": "TOR"
+      "statsTeam": "TOR",
+      "lastTeam": "TOR"
     },
     {
       "id": "fultzma01-fa",
@@ -24130,10 +24194,10 @@
       "statsTeam": "MIA"
     },
     {
-      "id": "shulgma01-bos",
+      "id": "shulgma01-fa",
       "bbrPlayerId": "shulgma01",
       "name": "Max Shulga",
-      "team": "BOS",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -24167,7 +24231,8 @@
       "personalFouls": 0.9,
       "effectiveFieldGoalPct": 0.35714285714285715,
       "trueShooting": 0.381,
-      "statsTeam": "BOS"
+      "statsTeam": "BOS",
+      "lastTeam": "BOS"
     },
     {
       "id": "telfoja01-fa",
@@ -24332,10 +24397,10 @@
       "statsTeam": "CHI"
     },
     {
-      "id": "evbuoto01-cho",
+      "id": "evbuoto01-fa",
       "bbrPlayerId": "evbuoto01",
       "name": "Tosan Evbuomwan",
-      "team": "CHO",
+      "team": "FA",
       "position": "SF",
       "positions": [
         "SF"
@@ -24369,7 +24434,8 @@
       "personalFouls": 0.2,
       "effectiveFieldGoalPct": 0,
       "trueShooting": 0,
-      "statsTeam": "NYK"
+      "statsTeam": "NYK",
+      "lastTeam": "CHO"
     }
   ],
   "manualPoolAdditions": [
@@ -24379,6 +24445,6 @@
     "Fred VanVleet"
   ],
   "rosterSource": "espn-roster-api",
-  "freeAgentCount": 71,
-  "freeAgentSyncedAt": "2026-06-30T21:57:28.850146+00:00"
+  "freeAgentCount": 134,
+  "freeAgentSyncedAt": "2026-07-31T00:56:05.170669+00:00"
 }
