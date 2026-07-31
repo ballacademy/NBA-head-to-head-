@@ -327,13 +327,6 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => updateState(addTier(state))}
-            >
-              Add tier
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
               onClick={() => setLibraryOpen((open) => !open)}
               aria-expanded={libraryOpen}
             >
@@ -734,6 +727,13 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             />
           </label>
           <div className="tier-list__board-header-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => updateState(addTier(state))}
+            >
+              Add tier
+            </button>
             <button type="button" className="secondary-button" onClick={handleSave}>
               Save
             </button>
