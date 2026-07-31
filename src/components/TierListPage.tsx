@@ -35,6 +35,7 @@ import {
   type TierListTeamFilter,
 } from "../lib/tierList";
 import { databasePlayersById } from "../lib/playerPool";
+import { getTeamColors } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import type { Player, Position } from "../lib/types";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -53,7 +54,7 @@ const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
 const AGENCY_OPTIONS: { id: TierListAgencyFilter; label: string }[] = [
   { id: "all", label: "All players" },
   { id: "free-agent", label: "Free agents" },
-  { id: "rostered", label: "Non free agents" },
+  { id: "rostered", label: "Rostered" },
 ];
 
 const CLASS_OPTIONS: { id: TierListClassFilter; label: string }[] = [
@@ -274,6 +275,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   ) => {
     const selected = selectedPlayerId === player.id;
     const dragging = draggingPlayerId === player.id;
+    const colors = getTeamColors(player.team);
 
     return (
       <button
@@ -282,6 +284,12 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         className={`tier-list__player${selected ? " is-selected" : ""}${
           dragging ? " is-dragging" : ""
         }${options.inTier ? " tier-list__player--ranked" : ""}`}
+        style={
+          {
+            "--team-primary": colors.primary,
+            "--team-secondary": colors.secondary,
+          } as CSSProperties
+        }
         draggable
         onDragStart={(event) => {
           event.dataTransfer.setData(DRAG_TYPE, player.id);
@@ -332,23 +340,13 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             >
               Add tier
             </button>
-            <button type="button" className="secondary-button" onClick={handleSave}>
-              Save
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleDownload}
-            >
-              Download
-            </button>
             <button
               type="button"
               className="secondary-button"
               onClick={() => setLibraryOpen((open) => !open)}
               aria-expanded={libraryOpen}
             >
-              {libraryOpen ? "Hide saved" : "Open saved"}
+              {libraryOpen ? "Hide saved lists" : "My saved lists"}
             </button>
             <button type="button" className="secondary-button" onClick={handleNew}>
               New list
@@ -737,6 +735,18 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               }
             />
           </label>
+          <div className="tier-list__board-header-actions">
+            <button type="button" className="secondary-button" onClick={handleSave}>
+              Save
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={handleDownload}
+            >
+              Download
+            </button>
+          </div>
         </div>
 
         <div className="tier-list__board">
