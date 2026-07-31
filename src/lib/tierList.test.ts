@@ -4,7 +4,8 @@ import {
   isUpcomingRookiePlayer,
   upcomingRookiePlayers,
 } from "./draftClasses";
-import { databasePlayers, findPlayerId, players } from "./playerPool";
+import { isStatsFreeAgent } from "./freeAgents";
+import { databasePlayers, findPlayerId, freeAgentPlayers, players } from "./playerPool";
 import {
   createDefaultTierListState,
   filterTierListPool,
@@ -25,7 +26,7 @@ const byName = (name: string) => {
 };
 
 describe("tierList", () => {
-  it("filters by position and age band", () => {
+  it("filters by position, age range, team, and agency", () => {
     const guard = byName("Shai Gilgeous-Alexander");
     expect(
       playerMatchesTierListFilters(guard, {
@@ -38,6 +39,55 @@ describe("tierList", () => {
       playerMatchesTierListFilters(guard, {
         ...DEFAULT_TIER_LIST_FILTERS,
         positions: ["C"],
+      }),
+    ).toBe(false);
+
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        ageMin: 20,
+        ageMax: 40,
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        ageMax: 20,
+      }),
+    ).toBe(false);
+
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        teams: [guard.team],
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        teams: ["BOS"],
+      }),
+    ).toBe(guard.team === "BOS");
+
+    expect(
+      playerMatchesTierListFilters(guard, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        agency: "rostered",
+      }),
+    ).toBe(!isStatsFreeAgent(guard));
+
+    const freeAgent = freeAgentPlayers[0];
+    expect(freeAgent).toBeTruthy();
+    expect(
+      playerMatchesTierListFilters(freeAgent!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        agency: "free-agent",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(freeAgent!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        agency: "rostered",
       }),
     ).toBe(false);
   });

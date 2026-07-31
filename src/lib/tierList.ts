@@ -13,24 +13,22 @@ import {
   playerMatchesDraftClass,
   upcomingRookiePlayers,
 } from "./draftClasses";
+import { isStatsFreeAgent } from "./freeAgents";
 import { databasePlayers } from "./playerPool";
 import { isScrubPlayer, isSuperScrubPlayer } from "./playerTiers";
 import { isBenchMajorityPlayer } from "./teamRecordBaseline";
 import type { Player, Position } from "./types";
-import {
-  isInternationalEventPlayer,
-  isUnder25EventPlayer,
-} from "./weeklyEvents";
+import { isInternationalEventPlayer } from "./weeklyEvents";
 
 export const TIER_LIST_STORAGE_KEY = "nba-head-to-head-tier-list";
 
-export type TierListAgeFilter = "all" | "u25" | "26-30" | "31plus";
 export type TierListRoleFilter = "all" | "starter" | "bench";
 export type TierListExperienceFilter =
   | "all"
   | "rookies"
   | "veterans"
   | "upcoming";
+export type TierListAgencyFilter = "all" | "free-agent" | "rostered";
 export type TierListClassFilter =
   | "all"
   | "superstar"
@@ -44,7 +42,13 @@ export type TierListDraftClassFilter = "all" | DraftClassYear;
 export interface TierListFilters {
   query: string;
   positions: Position[];
-  age: TierListAgeFilter;
+  /** Inclusive lower age bound; null means no minimum. */
+  ageMin: number | null;
+  /** Inclusive upper age bound; null means no maximum. */
+  ageMax: number | null;
+  /** Empty means all teams. */
+  teams: string[];
+  agency: TierListAgencyFilter;
   role: TierListRoleFilter;
   internationalOnly: boolean;
   experience: TierListExperienceFilter;
@@ -67,7 +71,10 @@ export interface TierListState {
 export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   query: "",
   positions: [],
-  age: "all",
+  ageMin: null,
+  ageMax: null,
+  teams: [],
+  agency: "all",
   role: "all",
   internationalOnly: false,
   experience: "all",
@@ -244,11 +251,12 @@ export const clearTierListPlacements = (state: TierListState): TierListState => 
 
 export const resetTierListState = (): TierListState => createDefaultTierListState();
 
-export const matchesAgeFilter = (
+export const matchesAgeRangeFilter = (
   player: Player,
-  age: TierListAgeFilter,
+  ageMin: number | null,
+  ageMax: number | null,
 ): boolean => {
-  if (age === "all") {
+  if (ageMin == null && ageMax == null) {
     return true;
   }
 
@@ -256,15 +264,38 @@ export const matchesAgeFilter = (
     return false;
   }
 
-  if (age === "u25") {
-    return isUnder25EventPlayer(player);
+  if (ageMin != null && player.age < ageMin) {
+    return false;
   }
 
-  if (age === "26-30") {
-    return player.age >= 26 && player.age <= 30;
+  if (ageMax != null && player.age > ageMax) {
+    return false;
   }
 
-  return player.age >= 31;
+  return true;
+};
+
+export const matchesAgencyFilter = (
+  player: Player,
+  agency: TierListAgencyFilter,
+): boolean => {
+  if (agency === "all") {
+    return true;
+  }
+
+  const freeAgent = isStatsFreeAgent(player);
+  return agency === "free-agent" ? freeAgent : !freeAgent;
+};
+
+export const matchesTeamFilter = (
+  player: Player,
+  teams: string[],
+): boolean => {
+  if (teams.length === 0) {
+    return true;
+  }
+
+  return teams.includes(player.team);
 };
 
 export const matchesRoleFilter = (
@@ -338,7 +369,15 @@ export const playerMatchesTierListFilters = (
     return false;
   }
 
-  if (!matchesAgeFilter(player, filters.age)) {
+  if (!matchesAgeRangeFilter(player, filters.ageMin, filters.ageMax)) {
+    return false;
+  }
+
+  if (!matchesTeamFilter(player, filters.teams)) {
+    return false;
+  }
+
+  if (!matchesAgencyFilter(player, filters.agency)) {
     return false;
   }
 

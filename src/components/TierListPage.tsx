@@ -14,10 +14,11 @@ import {
   resetTierListState,
   saveTierListState,
   setTierListTitle,
-  type TierListAgeFilter,
+  type TierListAgencyFilter,
   type TierListClassFilter,
   type TierListDraftClassFilter,
   type TierListExperienceFilter,
+  type TierListFilters,
   type TierListPoolSort,
   type TierListRoleFilter,
   type TierListState,
@@ -31,17 +32,16 @@ interface TierListPageProps {
   onBack: () => void;
 }
 
-const AGE_OPTIONS: { id: TierListAgeFilter; label: string }[] = [
-  { id: "all", label: "Any age" },
-  { id: "u25", label: "25 & under" },
-  { id: "26-30", label: "26–30" },
-  { id: "31plus", label: "31+" },
-];
-
 const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
   { id: "all", label: "Any role" },
   { id: "starter", label: "Starters" },
   { id: "bench", label: "Bench" },
+];
+
+const AGENCY_OPTIONS: { id: TierListAgencyFilter; label: string }[] = [
+  { id: "all", label: "All players" },
+  { id: "free-agent", label: "Free agents" },
+  { id: "rostered", label: "Non free agents" },
 ];
 
 const CLASS_OPTIONS: { id: TierListClassFilter; label: string }[] = [
@@ -74,6 +74,20 @@ const DRAFT_CLASS_OPTIONS: { id: TierListDraftClassFilter; label: string }[] = [
     label: String(year),
   })),
 ];
+
+const parseAgeBound = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(99, Math.round(parsed)));
+};
 
 /** Ten distinct accents — cycle only after the 10th unnamed tier. */
 const TIER_ACCENTS = [
@@ -115,6 +129,14 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
   const assignedIds = useMemo(() => getAssignedPlayerIds(state), [state]);
 
+  const teamOptions = useMemo(
+    () =>
+      [...new Set(players.map((player) => player.team))].sort((left, right) =>
+        left.localeCompare(right),
+      ),
+    [players],
+  );
+
   const pool = useMemo(
     () => filterTierListPool(players, filters, assignedIds),
     [assignedIds, filters, players],
@@ -142,6 +164,18 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         positions: exists
           ? current.positions.filter((entry) => entry !== position)
           : [...current.positions, position],
+      };
+    });
+  };
+
+  const toggleTeam = (team: string) => {
+    setFilters((current) => {
+      const exists = current.teams.includes(team);
+      return {
+        ...current,
+        teams: exists
+          ? current.teams.filter((entry) => entry !== team)
+          : [...current.teams, team],
       };
     });
   };
@@ -272,17 +306,92 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
 
           <div className="tier-list__filter-group">
             <span className="tier-list__filter-label">Age</span>
+            <div className="tier-list__age-range">
+              <label className="tier-list__age-field">
+                <span>Min</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={99}
+                  placeholder="Any"
+                  value={filters.ageMin ?? ""}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      ageMin: parseAgeBound(event.target.value),
+                    }))
+                  }
+                />
+              </label>
+              <label className="tier-list__age-field">
+                <span>Max</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={99}
+                  placeholder="Any"
+                  value={filters.ageMax ?? ""}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      ageMax: parseAgeBound(event.target.value),
+                    }))
+                  }
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="tier-list__filter-group">
+            <span className="tier-list__filter-label">Team</span>
             <div className="tier-list__chips">
-              {AGE_OPTIONS.map((option) => (
+              <button
+                type="button"
+                className={`tier-list__chip${
+                  filters.teams.length === 0 ? " is-active" : ""
+                }`}
+                aria-pressed={filters.teams.length === 0}
+                onClick={() =>
+                  setFilters((current) => ({ ...current, teams: [] }))
+                }
+              >
+                All teams
+              </button>
+              {teamOptions.map((team) => {
+                const active = filters.teams.includes(team);
+                return (
+                  <button
+                    key={team}
+                    type="button"
+                    className={`tier-list__chip${active ? " is-active" : ""}`}
+                    aria-pressed={active}
+                    onClick={() => toggleTeam(team)}
+                  >
+                    {team}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="tier-list__filter-group">
+            <span className="tier-list__filter-label">Agency</span>
+            <div className="tier-list__chips">
+              {AGENCY_OPTIONS.map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   className={`tier-list__chip${
-                    filters.age === option.id ? " is-active" : ""
+                    filters.agency === option.id ? " is-active" : ""
                   }`}
-                  aria-pressed={filters.age === option.id}
+                  aria-pressed={filters.agency === option.id}
                   onClick={() =>
-                    setFilters((current) => ({ ...current, age: option.id }))
+                    setFilters((current) => ({
+                      ...current,
+                      agency: option.id,
+                    }))
                   }
                 >
                   {option.label}
