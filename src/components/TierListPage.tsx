@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   addTier,
   clearTierListPlacements,
@@ -120,7 +127,15 @@ function accentForTier(index: number, name: string): string {
   return TIER_ACCENTS[index % TIER_ACCENTS.length]!;
 }
 
-const DRAG_TYPE = "application/x-ddgm-tier-player";
+const DRAG_ACTIVATION_DISTANCE = 6;
+
+type PointerDragSession = {
+  playerId: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  activated: boolean;
+};
 
 const formatSavedAt = (savedAt: number) =>
   new Date(savedAt).toLocaleString(undefined, {
@@ -138,8 +153,15 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
   const [filters, setFilters] = useState<TierListFilters>(DEFAULT_TIER_LIST_FILTERS);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const dragSessionRef = useRef<PointerDragSession | null>(null);
+  const suppressClickRef = useRef(false);
+  const dragGhostRef = useRef<HTMLDivElement | null>(null);
+  const dragPointRef = useRef<{ x: number; y: number } | null>(null);
+  const dropTargetRef = useRef<string | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     saveTierListState(state);
@@ -153,6 +175,15 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     const timer = window.setTimeout(() => setStatusMessage(null), 2500);
     return () => window.clearTimeout(timer);
   }, [statusMessage]);
+
+  useEffect(() => {
+    return () => {
+      if (dragFrameRef.current !== null) {
+        window.cancelAnimationFrame(dragFrameRef.current);
+      }
+      document.body.classList.remove("tier-list-dragging");
+    };
+  }, []);
 
   const assignedIds = useMemo(() => getAssignedPlayerIds(state), [state]);
 
@@ -173,14 +204,172 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
     setState(next);
   };
 
+  const clearDragVisuals = () => {
+    if (dragFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
+    }
+    dragPointRef.current = null;
+    dropTargetRef.current = null;
+    setDraggingPlayerId(null);
+    setDropTargetId(null);
+    document.body.classList.remove("tier-list-dragging");
+  };
+
   const placePlayer = (
     playerId: string,
     tierId: string | null,
     insertBeforePlayerId?: string | null,
   ) => {
-    updateState(movePlayerToTier(state, playerId, tierId, insertBeforePlayerId));
+    setState((current) =>
+      movePlayerToTier(current, playerId, tierId, insertBeforePlayerId),
+    );
     setSelectedPlayerId(null);
-    setDraggingPlayerId(null);
+    clearDragVisuals();
+  };
+
+  const resolveDropTargetId = (clientX: number, clientY: number) => {
+    const element = document.elementFromPoint(clientX, clientY);
+    if (!(element instanceof Element)) {
+      return null;
+    }
+
+    const dropZone = element.closest("[data-tier-drop]");
+    if (!(dropZone instanceof HTMLElement)) {
+      return null;
+    }
+
+    return dropZone.dataset.tierDrop ?? null;
+  };
+
+  const scheduleDragFrame = () => {
+    if (dragFrameRef.current !== null) {
+      return;
+    }
+
+    dragFrameRef.current = window.requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      const point = dragPointRef.current;
+      const ghost = dragGhostRef.current;
+      if (point && ghost) {
+        ghost.style.transform = `translate3d(${point.x + 10}px, ${point.y + 10}px, 0)`;
+      }
+
+      if (!point) {
+        return;
+      }
+
+      const nextTarget = resolveDropTargetId(point.x, point.y);
+      if (nextTarget !== dropTargetRef.current) {
+        dropTargetRef.current = nextTarget;
+        setDropTargetId(nextTarget);
+      }
+    });
+  };
+
+  const finishPointerDrag = (clientX: number, clientY: number) => {
+    const session = dragSessionRef.current;
+    dragSessionRef.current = null;
+
+    if (!session) {
+      return;
+    }
+
+    if (session.activated) {
+      suppressClickRef.current = true;
+      const target = resolveDropTargetId(clientX, clientY);
+      if (target === "pool") {
+        placePlayer(session.playerId, null);
+      } else if (target) {
+        placePlayer(session.playerId, target);
+      } else {
+        clearDragVisuals();
+      }
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+      return;
+    }
+
+    clearDragVisuals();
+  };
+
+  const handlePlayerPointerDown = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    playerId: string,
+  ) => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const target = event.currentTarget;
+    suppressClickRef.current = false;
+    dragSessionRef.current = {
+      playerId,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      activated: false,
+    };
+    setSelectedPlayerId(playerId);
+
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is best-effort on some mobile browsers.
+    }
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const session = dragSessionRef.current;
+      if (!session || moveEvent.pointerId !== session.pointerId) {
+        return;
+      }
+
+      const dx = moveEvent.clientX - session.startX;
+      const dy = moveEvent.clientY - session.startY;
+      const distance = Math.hypot(dx, dy);
+
+      if (!session.activated) {
+        if (distance < DRAG_ACTIVATION_DISTANCE) {
+          return;
+        }
+
+        session.activated = true;
+        suppressClickRef.current = true;
+        document.body.classList.add("tier-list-dragging");
+        dragPointRef.current = { x: moveEvent.clientX, y: moveEvent.clientY };
+        setDraggingPlayerId(session.playerId);
+      }
+
+      moveEvent.preventDefault();
+      dragPointRef.current = { x: moveEvent.clientX, y: moveEvent.clientY };
+      scheduleDragFrame();
+    };
+
+    const onPointerUp = (upEvent: PointerEvent) => {
+      if (
+        dragSessionRef.current &&
+        upEvent.pointerId !== dragSessionRef.current.pointerId
+      ) {
+        return;
+      }
+
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      try {
+        if (target.hasPointerCapture(upEvent.pointerId)) {
+          target.releasePointerCapture(upEvent.pointerId);
+        }
+      } catch {
+        // Ignore release failures.
+      }
+      finishPointerDrag(upEvent.clientX, upEvent.clientY);
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: false });
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
   };
 
   const togglePosition = (position: Position) => {
@@ -281,20 +470,17 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             "--team-primary": colors.primary,
           } as CSSProperties
         }
-        draggable
-        onDragStart={(event) => {
-          event.dataTransfer.setData(DRAG_TYPE, player.id);
-          event.dataTransfer.setData("text/plain", player.id);
-          event.dataTransfer.effectAllowed = "move";
-          setDraggingPlayerId(player.id);
-          setSelectedPlayerId(player.id);
-        }}
-        onDragEnd={() => setDraggingPlayerId(null)}
-        onClick={() =>
+        onPointerDown={(event) => handlePlayerPointerDown(event, player.id)}
+        onClick={() => {
+          if (suppressClickRef.current) {
+            suppressClickRef.current = false;
+            return;
+          }
+
           setSelectedPlayerId((current) =>
             current === player.id ? null : player.id,
-          )
-        }
+          );
+        }}
         aria-pressed={selected}
         title={`${player.name} · ${player.position} · ${player.points.toFixed(1)} PPG`}
       >
@@ -309,6 +495,10 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
       </button>
     );
   };
+
+  const draggingPlayer = draggingPlayerId
+    ? resolvePlayer(draggingPlayerId)
+    : null;
 
   return (
     <div className="hub-feature tier-list-page">
@@ -362,7 +552,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
                 setLibraryOpen(false);
               }}
             >
-              Reset all
+              Reset board and filters
             </button>
           </div>
           {statusMessage ? (
@@ -699,7 +889,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           </div>
         </div>
 
-        {selectedPlayerId ? (
+        {selectedPlayerId && !draggingPlayerId ? (
           <p className="tier-list__hint">
             Tap a tier name or drop zone to place the selected player. Tap the
             pool header to unrank them.
@@ -757,21 +947,10 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
             return (
               <div
                 key={tier.id}
-                className="tier-list__row"
+                className={`tier-list__row${
+                  dropTargetId === tier.id ? " is-drop-target" : ""
+                }`}
                 style={{ "--tier-accent": accent } as CSSProperties}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.dataTransfer.dropEffect = "move";
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  const playerId =
-                    event.dataTransfer.getData(DRAG_TYPE) ||
-                    event.dataTransfer.getData("text/plain");
-                  if (playerId) {
-                    placePlayer(playerId, tier.id);
-                  }
-                }}
               >
                 <div className="tier-list__tier-label">
                   <input
@@ -784,7 +963,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
                       updateState(renameTier(state, tier.id, event.target.value))
                     }
                     onClick={() => {
-                      if (selectedPlayerId) {
+                      if (selectedPlayerId && !draggingPlayerId) {
                         placePlayer(selectedPlayerId, tier.id);
                       }
                     }}
@@ -801,8 +980,9 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
                 </div>
                 <div
                   className="tier-list__tier-drop"
+                  data-tier-drop={tier.id}
                   onClick={() => {
-                    if (selectedPlayerId) {
+                    if (selectedPlayerId && !draggingPlayerId) {
                       placePlayer(selectedPlayerId, tier.id);
                     }
                   }}
@@ -821,20 +1001,10 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
         </div>
 
         <div
-          className="tier-list__pool"
-          onDragOver={(event) => {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            const playerId =
-              event.dataTransfer.getData(DRAG_TYPE) ||
-              event.dataTransfer.getData("text/plain");
-            if (playerId) {
-              placePlayer(playerId, null);
-            }
-          }}
+          className={`tier-list__pool${
+            dropTargetId === "pool" ? " is-drop-target" : ""
+          }`}
+          data-tier-drop="pool"
         >
           <div className="tier-list__pool-header">
             <h2>Player pool</h2>
@@ -842,7 +1012,7 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
               {pool.length} available
               {assignedIds.size > 0 ? ` · ${assignedIds.size} ranked` : ""}
             </span>
-            {selectedPlayerId ? (
+            {selectedPlayerId && !draggingPlayerId ? (
               <button
                 type="button"
                 className="secondary-button tier-list__unrank"
@@ -903,6 +1073,30 @@ export function TierListPage({ players, onBack }: TierListPageProps) {
           </div>
         </div>
       </section>
+
+      {draggingPlayer ? (
+        <div
+          ref={(node) => {
+            dragGhostRef.current = node;
+            const point = dragPointRef.current;
+            if (node && point) {
+              node.style.transform = `translate3d(${point.x + 10}px, ${point.y + 10}px, 0)`;
+            }
+          }}
+          className="tier-list__drag-ghost"
+          style={
+            {
+              "--team-primary": getTeamGlowColor(draggingPlayer.team),
+            } as CSSProperties
+          }
+          aria-hidden
+        >
+          <strong>{draggingPlayer.name}</strong>
+          <span>
+            {draggingPlayer.team} · {draggingPlayer.position}
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
