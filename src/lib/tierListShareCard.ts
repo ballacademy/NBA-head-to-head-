@@ -1,9 +1,16 @@
 import { ensureShareCardFonts } from "./lineupShareCard";
+import { getTeamColors } from "./teamColors";
+
+export interface TierListSharePlayer {
+  name: string;
+  team: string;
+  position: string;
+}
 
 export interface TierListShareTier {
   name: string;
   accent: string;
-  players: Array<{ name: string; team: string; position: string }>;
+  players: TierListSharePlayer[];
 }
 
 export interface TierListShareCardInput {
@@ -20,6 +27,7 @@ const ROW_GAP = 14;
 const CHIP_HEIGHT = 44;
 const CHIP_GAP = 10;
 const CHIP_PAD_X = 14;
+const CHIP_ACCENT_WIDTH = 6;
 const FOOTER_GAP = 40;
 const FONT_STACK =
   'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -54,25 +62,37 @@ const roundRect = (
   context.closePath();
 };
 
-const wrapChips = (
+const playerLabel = (player: TierListSharePlayer) =>
+  `${player.name} · ${player.team} ${player.position}`;
+
+const wrapPlayerChips = (
   context: CanvasRenderingContext2D,
-  labels: string[],
+  players: TierListSharePlayer[],
   maxWidth: number,
 ) => {
   context.font = `700 18px ${FONT_STACK}`;
-  const rows: string[][] = [[]];
+  const rows: TierListSharePlayer[][] = [[]];
   let rowWidth = 0;
 
-  for (const label of labels) {
-    const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
+  const entries =
+    players.length > 0
+      ? players
+      : [{ name: "Empty", team: "", position: "" } satisfies TierListSharePlayer];
+
+  for (const player of entries) {
+    const label = player.team
+      ? playerLabel(player)
+      : player.name;
+    const chipWidth =
+      context.measureText(label).width + CHIP_PAD_X * 2 + CHIP_ACCENT_WIDTH;
     const nextWidth =
       rowWidth === 0 ? chipWidth : rowWidth + CHIP_GAP + chipWidth;
 
     if (nextWidth > maxWidth && rows[rows.length - 1]!.length > 0) {
-      rows.push([label]);
+      rows.push([player]);
       rowWidth = chipWidth;
     } else {
-      rows[rows.length - 1]!.push(label);
+      rows[rows.length - 1]!.push(player);
       rowWidth = nextWidth;
     }
   }
@@ -88,13 +108,7 @@ const measureCardHeight = (
   const contentWidth = CARD_WIDTH - PAD_X * 2 - TIER_LABEL_WIDTH - 16;
 
   for (const tier of input.tiers) {
-    const labels =
-      tier.players.length > 0
-        ? tier.players.map(
-            (player) => `${player.name} · ${player.team} ${player.position}`,
-          )
-        : ["Empty"];
-    const rows = wrapChips(context, labels, contentWidth);
+    const rows = wrapPlayerChips(context, tier.players, contentWidth);
     const rowHeight = Math.max(
       72,
       rows.length * CHIP_HEIGHT + (rows.length - 1) * CHIP_GAP + 24,
@@ -124,9 +138,7 @@ export const drawTierListShareCard = (
   context.fillStyle = gradient;
   context.fillRect(0, 0, CARD_WIDTH, height);
 
-  const title =
-    input.title.trim() ||
-    "Name your tier list";
+  const title = input.title.trim() || "Name your tier list";
 
   context.fillStyle = "#f8fafc";
   context.font = `800 ${TITLE_SIZE}px ${FONT_STACK}`;
@@ -141,13 +153,7 @@ export const drawTierListShareCard = (
   const contentWidth = CARD_WIDTH - PAD_X * 2 - TIER_LABEL_WIDTH - 16;
 
   for (const tier of input.tiers) {
-    const labels =
-      tier.players.length > 0
-        ? tier.players.map(
-            (player) => `${player.name} · ${player.team} ${player.position}`,
-          )
-        : ["Empty"];
-    const chipRows = wrapChips(context, labels, contentWidth);
+    const chipRows = wrapPlayerChips(context, tier.players, contentWidth);
     const rowHeight = Math.max(
       72,
       chipRows.length * CHIP_HEIGHT + (chipRows.length - 1) * CHIP_GAP + 24,
@@ -175,15 +181,33 @@ export const drawTierListShareCard = (
       let chipX = PAD_X + 10 + TIER_LABEL_WIDTH + 8;
       context.font = `700 18px ${FONT_STACK}`;
 
-      for (const label of row) {
-        const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
-        context.fillStyle = "rgba(15, 23, 42, 0.85)";
+      for (const player of row) {
+        const label = player.team ? playerLabel(player) : player.name;
+        const chipWidth =
+          context.measureText(label).width + CHIP_PAD_X * 2 + CHIP_ACCENT_WIDTH;
+        const colors = player.team
+          ? getTeamColors(player.team)
+          : { primary: "#334155", secondary: "#e2e8f0" };
+
+        context.fillStyle = colors.primary;
         roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);
         context.fill();
-        context.strokeStyle = "rgba(148, 163, 184, 0.28)";
+
+        context.fillStyle = colors.secondary;
+        context.fillRect(chipX, chipY, CHIP_ACCENT_WIDTH, CHIP_HEIGHT);
+
+        context.strokeStyle = colors.secondary;
+        context.lineWidth = 1.5;
+        roundRect(context, chipX, chipY, chipWidth, CHIP_HEIGHT, 12);
         context.stroke();
-        context.fillStyle = "#e2e8f0";
-        context.fillText(label, chipX + CHIP_PAD_X, chipY + 28);
+        context.lineWidth = 1;
+
+        context.fillStyle = colors.secondary;
+        context.fillText(
+          label,
+          chipX + CHIP_ACCENT_WIDTH + CHIP_PAD_X,
+          chipY + 28,
+        );
         chipX += chipWidth + CHIP_GAP;
       }
 

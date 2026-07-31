@@ -44,6 +44,8 @@ export const TEAM_COLORS: Record<string, TeamColors> = {
   TOR: { primary: "#CE1141", secondary: "#000000" },
   UTA: { primary: "#002B5C", secondary: "#F9A01B" },
   WAS: { primary: "#002B5C", secondary: "#E31837" },
+  FA: { primary: "#334155", secondary: "#F8FAFC" },
+  RFA: { primary: "#1E3A5F", secondary: "#93C5FD" },
 };
 
 export const getTeamColors = (team: string): TeamColors =>
