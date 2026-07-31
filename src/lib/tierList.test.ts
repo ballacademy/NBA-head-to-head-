@@ -8,9 +8,12 @@ import { isStatsFreeAgent } from "./freeAgents";
 import { databasePlayers, findPlayerId, freeAgentPlayers, players } from "./playerPool";
 import {
   createDefaultTierListState,
+  DEFAULT_TIER_LIST_TITLE,
+  displayTierListTitle,
   filterTierListPool,
   getTierListPlayers,
   movePlayerToTier,
+  normalizeTierListState,
   openTierListFromLibrary,
   playerMatchesTierListFilters,
   saveTierListToLibrary,
@@ -28,6 +31,18 @@ const byName = (name: string) => {
 };
 
 describe("tierList", () => {
+  it("defaults new boards to an empty title shown as Name your tier list", () => {
+    const state = createDefaultTierListState();
+    expect(state.title).toBe("");
+    expect(displayTierListTitle(state.title)).toBe(DEFAULT_TIER_LIST_TITLE);
+    expect(
+      normalizeTierListState({
+        title: "My Tier List",
+        tiers: state.tiers,
+      }).title,
+    ).toBe("");
+  });
+
   it("filters by position, age range, team, conference, and agency", () => {
     const guard = byName("Shai Gilgeous-Alexander");
     expect(
