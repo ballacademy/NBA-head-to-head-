@@ -794,7 +794,7 @@ h1.landing-hub__title {
   bottom: auto;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-flow: column;
   align-items: stretch;
   flex-shrink: 0;
@@ -845,7 +845,7 @@ h1.landing-hub__title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.58rem;
+  font-size: 0.54rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.1;

@@ -1506,6 +1506,13 @@ function App() {
         return;
       }
 
+      if (tab === "tiers") {
+        if (phase !== "tierList") {
+          openFeaturePage("tierList");
+        }
+        return;
+      }
+
       goToLandingHub(tab);
     },
     [goToLandingHub, openFeaturePage, phase],
@@ -1520,6 +1527,10 @@ function App() {
       return "standings";
     }
 
+    if (phase === "tierList") {
+      return "tiers";
+    }
+
     if (
       phase === "gmStats" ||
       phase === "privacy" ||
@@ -1529,7 +1540,7 @@ function App() {
       return "account";
     }
 
-    if (phase === "achievements" || phase === "stats" || phase === "tierList") {
+    if (phase === "achievements" || phase === "stats") {
       return "roster";
     }
 
@@ -1596,11 +1607,7 @@ function App() {
 
   if (phase === "tierList") {
     return renderHubFeature(
-      <TierListPage
-        players={databasePlayers}
-        collection={collection}
-        onBack={exitFeaturePage}
-      />,
+      <TierListPage players={databasePlayers} onBack={exitFeaturePage} />,
       "landing-layout--tier-list",
     );
   }
