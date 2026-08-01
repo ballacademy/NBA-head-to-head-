@@ -251,6 +251,27 @@ export const countUnlockedAllStars = (collection: PlayerCollection) =>
     );
   }).length;
 
+/**
+ * Practice bots share the user's unlock set. Competitive H2H gets a synthetic
+ * collection; daily / pending / event leave collection null (other pool rules).
+ */
+export const resolveOpponentCollectionForMatch = (params: {
+  userCollection: PlayerCollection;
+  practiceMode?: boolean;
+  /** Daily, pending-queue, and event matches do not use a collection filter. */
+  skipCollectionFilter?: boolean;
+}): PlayerCollection | null => {
+  if (params.skipCollectionFilter) {
+    return null;
+  }
+
+  if (params.practiceMode) {
+    return params.userCollection;
+  }
+
+  return createOpponentCollection(params.userCollection);
+};
+
 export const createOpponentCollection = (
   userCollection: PlayerCollection,
 ): PlayerCollection => {

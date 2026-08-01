@@ -103,7 +103,7 @@ import { RANKED_STARTING_ELO } from "./lib/rankedElo";
 import {
   ensurePlayerCollection,
   getDraftablePlayers,
-  createOpponentCollection,
+  resolveOpponentCollectionForMatch,
   countUnlockedAllStars,
   type PlayerCollection,
 } from "./lib/playerCollection";
@@ -380,10 +380,21 @@ function App() {
       return filterPlayersForEventRestriction(activePlayers, eventRestriction);
     }
 
+    // Practice bots always mirror the user's unlocked/draftable pool.
+    if (user?.practiceMode) {
+      return getDraftablePlayers(activePlayers, collection);
+    }
+
     return opponentCollection
       ? getDraftablePlayers(activePlayers, opponentCollection)
       : activePlayers;
-  }, [activePlayers, eventRestriction, opponentCollection]);
+  }, [
+    activePlayers,
+    collection,
+    eventRestriction,
+    opponentCollection,
+    user?.practiceMode,
+  ]);
   const opponentDraftablePlayersRef = useRef(opponentDraftablePlayers);
 
   opponentDraftablePlayersRef.current = opponentDraftablePlayers;
@@ -696,10 +707,11 @@ function App() {
       return "failed";
     }
 
-    const nextOpponentCollection =
-      daily || isPendingQueue || practiceMode || eventMode
-        ? null
-        : createOpponentCollection(collection);
+    const nextOpponentCollection = resolveOpponentCollectionForMatch({
+      userCollection: collection,
+      practiceMode,
+      skipCollectionFilter: daily || isPendingQueue || eventMode,
+    });
     const opponentPool = eventPool
       ? eventPool
       : nextOpponentCollection

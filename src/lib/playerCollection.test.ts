@@ -28,6 +28,7 @@ import {
   isPlayerStatsMasked,
   isRegularDraftPlayer,
   loadPlayerCollection,
+  resolveOpponentCollectionForMatch,
   sanitizePlayerCollection,
 } from "./playerCollection";
 import {
@@ -346,6 +347,34 @@ describe("playerCollection", () => {
       expect(opponentAllStarCount).toBeGreaterThanOrEqual(userAllStarCount);
       expect(opponentAllStarCount).toBeLessThanOrEqual(userAllStarCount + 10);
     }
+  });
+
+  it("gives practice bots the user's exact unlock pool", () => {
+    const collection = loadPlayerCollection();
+    const practiceOpponent = resolveOpponentCollectionForMatch({
+      userCollection: collection,
+      practiceMode: true,
+    });
+
+    expect(practiceOpponent).toBe(collection);
+    expect(getDraftablePlayers(players, practiceOpponent!)).toEqual(
+      getDraftablePlayers(players, collection),
+    );
+
+    expect(
+      resolveOpponentCollectionForMatch({
+        userCollection: collection,
+        practiceMode: true,
+        skipCollectionFilter: true,
+      }),
+    ).toBeNull();
+
+    const competitive = resolveOpponentCollectionForMatch({
+      userCollection: collection,
+      practiceMode: false,
+    });
+    expect(competitive).not.toBeNull();
+    expect(competitive).not.toBe(collection);
   });
 
   it("only rolls premium unlocks at the configured chance", () => {
