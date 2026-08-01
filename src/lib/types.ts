@@ -106,6 +106,10 @@ export interface ProjectedRecord {
 export interface LineupScore {
   total: number;
   preciseTotal: number;
+  /** Uncapped OVR before the 0–100 clamp (can exceed 100). */
+  uncappedTotal: number;
+  /** Whole-number points over 100 OVR; 0 when not capped. */
+  ovrOverflow: number;
   projectedRecord: ProjectedRecord;
   categories: ScoreCategory[];
   strengths: string[];

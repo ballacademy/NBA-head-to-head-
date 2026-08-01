@@ -14,6 +14,7 @@ export interface LineupShareCardInput {
   teamName: string;
   accent: string;
   ovr: number;
+  ovrOverflow?: number;
   lineup: Player[];
   record?: string;
 }
@@ -395,7 +396,12 @@ const drawShareCardHeader = (
 
   context.font = `700 22px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
-  context.fillText("OVR", headerRightX, layout.ovrLabelY);
+  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
+  context.fillText(
+    overflow > 0 ? `OVR (+${overflow})` : "OVR",
+    headerRightX,
+    layout.ovrLabelY,
+  );
 
   if (input.record && layout.recordY) {
     context.font = `600 20px ${FONT_STACK}`;
@@ -510,7 +516,11 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
   const blob = await createLineupShareCardBlob(input);
   const filename = "draft-day-gm-lineup.png";
   const file = new File([blob], filename, { type: "image/png" });
-  const shareText = `${input.teamName} • OVR ${input.ovr}`;
+  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
+  const shareText =
+    overflow > 0
+      ? `${input.teamName} • OVR ${input.ovr} (+${overflow})`
+      : `${input.teamName} • OVR ${input.ovr}`;
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({

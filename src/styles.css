@@ -6384,6 +6384,11 @@ h1.landing-hub__title {
   line-height: 1;
 }
 
+.score-orb--compact small {
+  font-size: 0.58rem;
+  letter-spacing: -0.01em;
+}
+
 .story-lineup {
   display: grid;
   gap: 12px;

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
+import { formatLineupOvrLabel } from "../lib/scoring";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface LineupStoryCardProps {
@@ -28,8 +29,10 @@ export function LineupStoryCard({
           <p>Your lineup</p>
         </div>
         <div className="score-orb">
-          <span>{score.total}</span>
-          <small>OVR</small>
+          <div className="score-orb__content">
+            <span>{score.total}</span>
+            <small>{formatLineupOvrLabel(score)}</small>
+          </div>
         </div>
       </div>
 
