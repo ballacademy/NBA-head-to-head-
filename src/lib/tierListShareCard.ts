@@ -240,17 +240,20 @@ export const drawTierListShareCard = (
       chipRows.length * CHIP_HEIGHT + (chipRows.length - 1) * CHIP_GAP + 24,
     );
 
+    // Tier label column only — no broad row box behind player chips.
+    const labelX = PAD_X;
+    const labelWidth = 10 + TIER_LABEL_WIDTH;
     context.fillStyle = "#1e293b";
-    roundRect(context, PAD_X, y, CARD_WIDTH - PAD_X * 2, rowHeight, 16);
+    roundRect(context, labelX, y, labelWidth, rowHeight, 14);
     context.fill();
 
     context.fillStyle = tier.accent;
-    context.fillRect(PAD_X, y, 10, rowHeight);
+    context.fillRect(labelX, y, 10, rowHeight);
 
     drawTierLabel(
       context,
       tier.name || "Tier",
-      PAD_X + 10 + TIER_LABEL_WIDTH / 2,
+      labelX + 10 + TIER_LABEL_WIDTH / 2,
       y + rowHeight / 2,
       TIER_LABEL_WIDTH - 16,
       rowHeight - 16,
@@ -259,7 +262,7 @@ export const drawTierListShareCard = (
 
     let chipY = y + 12;
     for (const row of chipRows) {
-      let chipX = PAD_X + 10 + TIER_LABEL_WIDTH + 8;
+      let chipX = labelX + labelWidth + 8;
       context.font = `700 18px ${FONT_STACK}`;
 
       for (const player of row) {

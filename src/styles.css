@@ -7478,8 +7478,9 @@ h1.landing-hub__title {
   min-height: 52px;
   padding: 6px;
   border-radius: 10px;
-  border: 1px dashed rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.35);
+  /* Keep layout/hit area, but no visible outer frame behind player chips. */
+  border: 1px dashed transparent;
+  background: transparent;
   transition:
     border-color 120ms ease,
     background 120ms ease;
