@@ -344,6 +344,22 @@ const clamp = (value: number, min: number, max: number) =>
 export const preciseLineupOvr = (rawTotal: number) =>
   clamp((rawTotal / LINEUP_RAW_CEILING) * 100, 0, 100);
 
+/** OVR before the 100 cap — used to show how far a maxed lineup cleared 100. */
+export const uncappedLineupOvr = (rawTotal: number) =>
+  (rawTotal / LINEUP_RAW_CEILING) * 100;
+
+export const lineupOvrOverflow = (uncappedTotal: number) =>
+  Math.max(0, Math.round(uncappedTotal - 100));
+
+export const formatLineupOvrDisplay = (
+  score: Pick<LineupScore, "total" | "ovrOverflow">,
+) =>
+  score.ovrOverflow > 0 ? `${score.total} (+${score.ovrOverflow})` : `${score.total}`;
+
+export const formatLineupOvrLabel = (
+  score: Pick<LineupScore, "ovrOverflow">,
+) => (score.ovrOverflow > 0 ? `OVR (+${score.ovrOverflow})` : "OVR");
+
 export const displayLineupOvr = (preciseOvr: number) => Math.round(preciseOvr);
 
 export const normalizeLineupTotal = (rawTotal: number) =>
@@ -746,6 +762,8 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     return {
       total: 0,
       preciseTotal: 0,
+      uncappedTotal: 0,
+      ovrOverflow: 0,
       projectedRecord: {
         wins: 0,
         losses: 0,
@@ -779,12 +797,16 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     modifiers,
   );
   const rawTotal = pipeline.rawTotal;
+  const uncappedTotal = uncappedLineupOvr(rawTotal);
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
+  const ovrOverflow = lineupOvrOverflow(uncappedTotal);
 
   return {
     total,
     preciseTotal,
+    uncappedTotal,
+    ovrOverflow,
     projectedRecord: projectLineupRecord(lineup, preciseTotal),
     categories,
     strengths,

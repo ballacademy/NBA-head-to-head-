@@ -30,6 +30,7 @@ import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
+  formatLineupOvrDisplay,
   formatProjectedSeasonRecord,
   resolveHeadToHeadResult,
 } from "../lib/scoring";
@@ -272,6 +273,7 @@ export function MatchResults({
       teamName: user.name,
       accent: user.accent,
       ovr: userScore.total,
+      ovrOverflow: userScore.ovrOverflow,
       lineup: userLineup,
       record: formatProjectedSeasonRecord(userScore.projectedRecord),
     });
@@ -344,7 +346,8 @@ export function MatchResults({
             {Math.abs(
               userScore.preciseTotal - opponentScore.preciseTotal,
             ).toFixed(1)}{" "}
-            • OVR {userScore.total} vs {opponentScore.total}
+            • OVR {formatLineupOvrDisplay(userScore)} vs{" "}
+            {formatLineupOvrDisplay(opponentScore)}
             {userScore.total === opponentScore.total && !isTie
               ? ` · decided by precise OVR (${userScore.preciseTotal.toFixed(1)} vs ${opponentScore.preciseTotal.toFixed(1)})`
               : ""}

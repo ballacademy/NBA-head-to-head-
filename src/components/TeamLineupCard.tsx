@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
-import { buildLineupScoreContext } from "../lib/scoring";
+import { buildLineupScoreContext, formatLineupOvrLabel } from "../lib/scoring";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
@@ -76,7 +76,7 @@ export function TeamLineupCard({
         <div className={`score-orb${compact ? " score-orb--compact" : ""}`}>
           <div className="score-orb__content">
             <span>{score.total}</span>
-            <small>OVR</small>
+            <small>{formatLineupOvrLabel(score)}</small>
           </div>
         </div>
       </div>

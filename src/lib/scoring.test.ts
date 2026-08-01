@@ -5,6 +5,8 @@ import {
   capLineupRoleFitForOffense,
   capLineupRoleFitWithoutFirstOption,
   compareLineups,
+  formatLineupOvrDisplay,
+  formatLineupOvrLabel,
   getLineupOffenseFloorPenalty,
   getLowScoringLineupPenalty,
   getLowScoringSeverity,
@@ -22,6 +24,7 @@ import {
   isLowScoringNonEliteDefender,
   isPlusDefenderByGrade,
   buildLineupScoreContext,
+  lineupOvrOverflow,
   LINEUP_FIRST_OPTION_PPG_THRESHOLD,
   LINEUP_RAW_CEILING,
   normalizeLineupTotal,
@@ -38,6 +41,7 @@ import {
   STAR_SCORER_PPG_THRESHOLD,
   TEAM_FIT_CAP_WITHOUT_FIRST_OPTION,
   TEAM_FIT_CAP_WITHOUT_STAR_SCORER,
+  uncappedLineupOvr,
 } from "./scoring";
 import { playersById } from "./playerPool";
 import {
@@ -1078,6 +1082,18 @@ describe("normalizeLineupTotal", () => {
   it("rounds display OVR to the nearest whole number", () => {
     expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.846)).toBe(85);
     expect(normalizeLineupTotal(LINEUP_RAW_CEILING * 0.844)).toBe(84);
+  });
+
+  it("reports how far a maxed lineup clears 100 OVR", () => {
+    expect(uncappedLineupOvr(LINEUP_RAW_CEILING)).toBeCloseTo(100, 5);
+    expect(uncappedLineupOvr(LINEUP_RAW_CEILING + 11.6)).toBeCloseTo(105, 1);
+    expect(lineupOvrOverflow(104.47)).toBe(4);
+    expect(lineupOvrOverflow(99.8)).toBe(0);
+    expect(formatLineupOvrDisplay({ total: 100, ovrOverflow: 4 })).toBe(
+      "100 (+4)",
+    );
+    expect(formatLineupOvrLabel({ ovrOverflow: 4 })).toBe("OVR (+4)");
+    expect(formatLineupOvrLabel({ ovrOverflow: 0 })).toBe("OVR");
   });
 });
 
