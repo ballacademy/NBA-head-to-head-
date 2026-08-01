@@ -30,6 +30,8 @@ import {
   saveTierListToLibrary,
   setTierListPublishedId,
   setTierListTitle,
+  TIER_LIST_HEIGHT_BANDS,
+  TIER_LIST_MAX_TIERS,
   TIER_NAME_MAX_LENGTH,
   type TierListAgencyFilter,
   type TierListClassFilter,
@@ -38,6 +40,7 @@ import {
   type TierListDraftClassFilter,
   type TierListExperienceFilter,
   type TierListFilters,
+  type TierListHeightBand,
   type TierListLibrary,
   type TierListPoolSort,
   type TierListRoleFilter,
@@ -52,11 +55,14 @@ import {
 import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import {
+  DEFAULT_PUBLIC_TIER_LIST_FILTERS,
+  fetchPublishedLikeCounts,
   fetchPublicTierList,
   fetchPublicTierLists,
   publishTierList,
   setTierListLike,
   unpublishTierList,
+  type PublicTierListBrowseFilters,
   type PublicTierListDetail,
   type PublicTierListSort,
   type PublicTierListSummary,
@@ -184,7 +190,13 @@ export function TierListPage({ players }: TierListPageProps) {
   const [authorName, setAuthorName] = useState(`GM ${formatPublicTag(identity.publicTag)}`);
   const [accountLinked, setAccountLinked] = useState(false);
   const [mineSort, setMineSort] = useState<PublicTierListSort>("recent");
+  const [publishedLikeCounts, setPublishedLikeCounts] = useState<
+    Record<string, number>
+  >({});
   const [publicSort, setPublicSort] = useState<PublicTierListSort>("recent");
+  const [publicFilters, setPublicFilters] = useState<PublicTierListBrowseFilters>(
+    DEFAULT_PUBLIC_TIER_LIST_FILTERS,
+  );
   const [publicLists, setPublicLists] = useState<PublicTierListSummary[]>([]);
   const [publicLoading, setPublicLoading] = useState(false);
   const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
@@ -238,6 +250,7 @@ export function TierListPage({ players }: TierListPageProps) {
     void fetchPublicTierLists({
       viewerPlayerId: identity.playerId,
       sort: publicSort,
+      filters: publicFilters,
     }).then((lists) => {
       if (!cancelled) {
         setPublicLists(lists);
@@ -248,7 +261,26 @@ export function TierListPage({ players }: TierListPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [view, publicSort, identity.playerId]);
+  }, [view, publicSort, publicFilters, identity.playerId]);
+
+  useEffect(() => {
+    if (view !== "mine") {
+      return;
+    }
+
+    let cancelled = false;
+    void fetchPublishedLikeCounts({
+      viewerPlayerId: identity.playerId,
+    }).then((counts) => {
+      if (!cancelled) {
+        setPublishedLikeCounts(counts);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [view, identity.playerId, library]);
 
   useEffect(() => {
     return () => {
@@ -302,10 +334,19 @@ export function TierListPage({ players }: TierListPageProps) {
     clearDragVisuals();
   };
 
-  const resolveDropTargetId = (clientX: number, clientY: number) => {
+  const resolveDropTarget = (clientX: number, clientY: number) => {
     const element = document.elementFromPoint(clientX, clientY);
     if (!(element instanceof Element)) {
       return null;
+    }
+
+    const playerChip = element.closest("[data-tier-player]");
+    if (playerChip instanceof HTMLElement) {
+      const tierId = playerChip.dataset.tierId ?? null;
+      const insertBeforePlayerId = playerChip.dataset.tierPlayer ?? null;
+      if (tierId) {
+        return { tierId, insertBeforePlayerId };
+      }
     }
 
     const dropZone = element.closest("[data-tier-drop]");
@@ -313,7 +354,12 @@ export function TierListPage({ players }: TierListPageProps) {
       return null;
     }
 
-    return dropZone.dataset.tierDrop ?? null;
+    const tierId = dropZone.dataset.tierDrop ?? null;
+    if (!tierId) {
+      return null;
+    }
+
+    return { tierId, insertBeforePlayerId: null as string | null };
   };
 
   const scheduleDragFrame = () => {
@@ -333,7 +379,7 @@ export function TierListPage({ players }: TierListPageProps) {
         return;
       }
 
-      const nextTarget = resolveDropTargetId(point.x, point.y);
+      const nextTarget = resolveDropTarget(point.x, point.y)?.tierId ?? null;
       if (nextTarget !== dropTargetRef.current) {
         dropTargetRef.current = nextTarget;
         setDropTargetId(nextTarget);
@@ -351,11 +397,15 @@ export function TierListPage({ players }: TierListPageProps) {
 
     if (session.activated) {
       suppressClickRef.current = true;
-      const target = resolveDropTargetId(clientX, clientY);
-      if (target === "pool") {
+      const target = resolveDropTarget(clientX, clientY);
+      if (target?.tierId === "pool") {
         placePlayer(session.playerId, null);
-      } else if (target) {
-        placePlayer(session.playerId, target);
+      } else if (target?.tierId) {
+        placePlayer(
+          session.playerId,
+          target.tierId,
+          target.insertBeforePlayerId,
+        );
       } else {
         clearDragVisuals();
       }
@@ -473,6 +523,24 @@ export function TierListPage({ players }: TierListPageProps) {
     players.find((player) => player.id === playerId) ??
     null;
 
+  const unpublishPublishedCopy = async (publishedId: string | null | undefined) => {
+    if (!publishedId) {
+      return true;
+    }
+
+    const result = await unpublishTierList({
+      id: publishedId,
+      playerId: identity.playerId,
+    });
+
+    if (!result.ok) {
+      setStatusMessage(result.error);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = () => {
     const result = saveTierListToLibrary(state, library);
     setState(result.state);
@@ -492,6 +560,7 @@ export function TierListPage({ players }: TierListPageProps) {
     setState(saved.state);
     setLibrary(saved.library);
 
+    const wasPublished = Boolean(saved.state.publishedId);
     const result = await publishTierList({
       state: saved.state,
       playerId: identity.playerId,
@@ -509,7 +578,11 @@ export function TierListPage({ players }: TierListPageProps) {
     const nextSaved = saveTierListToLibrary(nextState, saved.library);
     setState(nextSaved.state);
     setLibrary(nextSaved.library);
-    setStatusMessage("Published to public tier lists");
+    setStatusMessage(
+      wasPublished || result.updated
+        ? "Updated public tier list"
+        : "Published to public tier lists",
+    );
   };
 
   const handleUnpublish = async () => {
@@ -562,12 +635,21 @@ export function TierListPage({ players }: TierListPageProps) {
     }
   };
 
-  const handleNew = () => {
+  const handleNew = async () => {
+    const ok = await unpublishPublishedCopy(state.publishedId);
+    if (!ok) {
+      return;
+    }
+
     const next = createDefaultTierListState();
     updateState(next);
     setFilters(DEFAULT_TIER_LIST_FILTERS);
     setSelectedPlayerId(null);
-    setStatusMessage("Started a new tier list");
+    setStatusMessage(
+      state.publishedId
+        ? "Started a new tier list (previous public copy removed)"
+        : "Started a new tier list",
+    );
     setView("editor");
   };
 
@@ -583,9 +665,46 @@ export function TierListPage({ players }: TierListPageProps) {
     setView("editor");
   };
 
-  const handleDeleteSaved = (documentId: string) => {
-    setLibrary(deleteTierListFromLibrary(documentId, library));
-    setStatusMessage("Removed saved tier list");
+  const handleDeleteSaved = async (documentId: string) => {
+    const document = library.documents.find((entry) => entry.id === documentId);
+    const ok = await unpublishPublishedCopy(document?.publishedId);
+    if (!ok) {
+      return;
+    }
+
+    const nextLibrary = deleteTierListFromLibrary(documentId, library);
+    setLibrary(nextLibrary);
+
+    if (state.id === documentId) {
+      updateState(createDefaultTierListState());
+    } else if (
+      document?.publishedId &&
+      state.publishedId === document.publishedId
+    ) {
+      updateState(setTierListPublishedId(state, null));
+    }
+
+    setStatusMessage(
+      document?.publishedId
+        ? "Removed saved tier list and its public copy"
+        : "Removed saved tier list",
+    );
+  };
+
+  const handleResetBoardAndFilters = async () => {
+    const ok = await unpublishPublishedCopy(state.publishedId);
+    if (!ok) {
+      return;
+    }
+
+    updateState(createDefaultTierListState());
+    setFilters(DEFAULT_TIER_LIST_FILTERS);
+    setSelectedPlayerId(null);
+    setStatusMessage(
+      state.publishedId
+        ? "Board reset (previous public copy removed)"
+        : "Board and filters reset",
+    );
   };
 
   const handleOpenPublic = async (id: string) => {
@@ -645,7 +764,7 @@ export function TierListPage({ players }: TierListPageProps) {
 
   const renderPlayerChip = (
     player: Player,
-    options: { inTier?: boolean } = {},
+    options: { inTier?: boolean; tierId?: string } = {},
   ) => {
     const selected = selectedPlayerId === player.id;
     const dragging = draggingPlayerId === player.id;
@@ -663,6 +782,8 @@ export function TierListPage({ players }: TierListPageProps) {
             "--team-primary": colors.primary,
           } as CSSProperties
         }
+        data-tier-player={options.inTier ? player.id : undefined}
+        data-tier-id={options.inTier ? options.tierId : undefined}
         onPointerDown={(event) => handlePlayerPointerDown(event, player.id)}
         onContextMenu={(event) => event.preventDefault()}
         onClick={() => {
@@ -730,7 +851,7 @@ export function TierListPage({ players }: TierListPageProps) {
             Create an account to publish public tier lists. Browsing stays open.
           </AccountRequiredNote>
           <TierListHubHome
-            onCreate={handleNew}
+            onCreate={() => void handleNew()}
             onOpenMine={() => setView("mine")}
             onOpenPublic={() => setView("public")}
           />
@@ -742,8 +863,9 @@ export function TierListPage({ players }: TierListPageProps) {
           library={library}
           sort={mineSort}
           onSortChange={setMineSort}
+          likeCountByPublishedId={publishedLikeCounts}
           onOpen={handleOpenSaved}
-          onDelete={handleDeleteSaved}
+          onDelete={(documentId) => void handleDeleteSaved(documentId)}
         />
       ) : null}
 
@@ -753,6 +875,8 @@ export function TierListPage({ players }: TierListPageProps) {
           loading={publicLoading}
           sort={publicSort}
           onSortChange={setPublicSort}
+          filters={publicFilters}
+          onFiltersChange={setPublicFilters}
           onOpen={handleOpenPublic}
           onToggleLike={handleToggleLike}
         />
@@ -770,7 +894,11 @@ export function TierListPage({ players }: TierListPageProps) {
       <section className="hub-feature__panel tier-list">
         <div className="tier-list__toolbar">
           <div className="tier-list__toolbar-actions">
-            <button type="button" className="secondary-button" onClick={handleNew}>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => void handleNew()}
+            >
               New list
             </button>
             <button
@@ -793,11 +921,7 @@ export function TierListPage({ players }: TierListPageProps) {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => {
-                updateState(createDefaultTierListState());
-                setFilters(DEFAULT_TIER_LIST_FILTERS);
-                setSelectedPlayerId(null);
-              }}
+              onClick={() => void handleResetBoardAndFilters()}
             >
               Reset board and filters
             </button>
@@ -863,6 +987,30 @@ export function TierListPage({ players }: TierListPageProps) {
                     }
                   />
                 </label>
+              </div>
+            </div>
+
+            <div className="tier-list__filter-group">
+              <span className="tier-list__filter-label">Height</span>
+              <div className="tier-list__chips">
+                {TIER_LIST_HEIGHT_BANDS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`tier-list__chip${
+                      filters.heightBand === option.id ? " is-active" : ""
+                    }`}
+                    aria-pressed={filters.heightBand === option.id}
+                    onClick={() =>
+                      setFilters((current) => ({
+                        ...current,
+                        heightBand: option.id as TierListHeightBand,
+                      }))
+                    }
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -1121,7 +1269,19 @@ export function TierListPage({ players }: TierListPageProps) {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => updateState(addTier(state))}
+              disabled={state.tiers.length >= TIER_LIST_MAX_TIERS}
+              title={
+                state.tiers.length >= TIER_LIST_MAX_TIERS
+                  ? `Maximum of ${TIER_LIST_MAX_TIERS} tiers`
+                  : "Add another tier row"
+              }
+              onClick={() => {
+                if (state.tiers.length >= TIER_LIST_MAX_TIERS) {
+                  setStatusMessage(`Maximum of ${TIER_LIST_MAX_TIERS} tiers`);
+                  return;
+                }
+                updateState(addTier(state));
+              }}
             >
               Add tier
             </button>
@@ -1129,13 +1289,28 @@ export function TierListPage({ players }: TierListPageProps) {
               Save
             </button>
             {state.publishedId ? (
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => void handleUnpublish()}
-              >
-                Unpublish
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={!accountLinked}
+                  onClick={() => void handlePublish()}
+                  title={
+                    accountLinked
+                      ? "Update the public copy with your latest edits"
+                      : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
+                  }
+                >
+                  Update
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => void handleUnpublish()}
+                >
+                  Unpublish
+                </button>
+              </>
             ) : (
               <button
                 type="button"
@@ -1231,7 +1406,10 @@ export function TierListPage({ players }: TierListPageProps) {
                 >
                   {tierPlayers.length > 0 ? (
                     tierPlayers.map((player) =>
-                      renderPlayerChip(player, { inTier: true }),
+                      renderPlayerChip(player, {
+                        inTier: true,
+                        tierId: tier.id,
+                      }),
                     )
                   ) : (
                     <span className="tier-list__empty">Drop players here</span>

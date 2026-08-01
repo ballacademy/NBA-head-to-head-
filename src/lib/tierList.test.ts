@@ -18,6 +18,9 @@ import {
   playerMatchesTierListFilters,
   renameTier,
   saveTierListToLibrary,
+  addTier,
+  sortTierListLibraryDocuments,
+  TIER_LIST_MAX_TIERS,
   TIER_NAME_MAX_LENGTH,
   DEFAULT_TIER_LIST_FILTERS,
 } from "./tierList";
@@ -283,5 +286,87 @@ describe("tierList", () => {
         draftClass: 2003,
       }),
     ).toBe(true);
+  });
+
+  it("filters the pool by height bands", () => {
+    const short = databasePlayers.find((player) => player.heightInches < 78);
+    const big = databasePlayers.find((player) => player.heightInches >= 84);
+    expect(short && big).toBeTruthy();
+
+    expect(
+      playerMatchesTierListFilters(short!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        heightBand: "under-66",
+      }),
+    ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(short!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        heightBand: "7-plus",
+      }),
+    ).toBe(false);
+    expect(
+      playerMatchesTierListFilters(big!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        heightBand: "7-plus",
+      }),
+    ).toBe(true);
+  });
+
+  it("reorders within a tier using insertBeforePlayerId", () => {
+    const state = createDefaultTierListState();
+    const tierId = state.tiers[0]!.id;
+    let next = movePlayerToTier(state, "a", tierId);
+    next = movePlayerToTier(next, "b", tierId);
+    next = movePlayerToTier(next, "c", tierId);
+    expect(next.tiers[0]!.playerIds).toEqual(["a", "b", "c"]);
+
+    next = movePlayerToTier(next, "c", tierId, "a");
+    expect(next.tiers[0]!.playerIds).toEqual(["c", "a", "b"]);
+  });
+
+  it("caps boards at twelve tiers", () => {
+    let state = createDefaultTierListState();
+    while (state.tiers.length < TIER_LIST_MAX_TIERS) {
+      state = addTier(state);
+    }
+    expect(state.tiers).toHaveLength(TIER_LIST_MAX_TIERS);
+    expect(addTier(state).tiers).toHaveLength(TIER_LIST_MAX_TIERS);
+  });
+
+  it("sorts My lists by published like counts", () => {
+    const documents = [
+      {
+        id: "local-1",
+        title: "Unpublished",
+        tiers: createDefaultTierListState().tiers,
+        savedAt: 300,
+        publishedId: null,
+      },
+      {
+        id: "local-2",
+        title: "Quiet pub",
+        tiers: createDefaultTierListState().tiers,
+        savedAt: 200,
+        publishedId: "pub-quiet",
+      },
+      {
+        id: "local-3",
+        title: "Hot pub",
+        tiers: createDefaultTierListState().tiers,
+        savedAt: 100,
+        publishedId: "pub-hot",
+      },
+    ];
+
+    const sorted = sortTierListLibraryDocuments(documents, "likes", {
+      "pub-quiet": 1,
+      "pub-hot": 9,
+    });
+    expect(sorted.map((doc) => doc.id)).toEqual([
+      "local-3",
+      "local-2",
+      "local-1",
+    ]);
   });
 });

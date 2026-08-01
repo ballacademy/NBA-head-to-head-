@@ -18,10 +18,14 @@ const parsePlayerId = (value: unknown) =>
 const parseSort = (value: string | null) =>
   value === "likes" || value === "recent" ? value : "recent";
 
+const parseDateWindow = (value: string | null) =>
+  value === "week" || value === "month" ? value : "all";
+
 const TITLE_MAX = 48;
 const AUTHOR_NAME_MAX = 32;
 const AUTHOR_TAG_MAX = 8;
 const TIERS_JSON_MAX = 40_000;
+const MAX_TIERS = 12;
 
 interface TierRowInput {
   id?: unknown;
@@ -30,7 +34,7 @@ interface TierRowInput {
 }
 
 const normalizeTiersJson = (tiers: unknown): string | null => {
-  if (!Array.isArray(tiers) || tiers.length === 0 || tiers.length > 16) {
+  if (!Array.isArray(tiers) || tiers.length === 0 || tiers.length > MAX_TIERS) {
     return null;
   }
 
@@ -115,6 +119,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const viewerPlayerId = parsePlayerId(url.searchParams.get("viewerPlayerId"));
   const id = parsePlayerId(url.searchParams.get("id"));
   const sort = parseSort(url.searchParams.get("sort"));
+  const query = (url.searchParams.get("q") ?? "").trim().slice(0, 64);
+  const mineOnly = url.searchParams.get("mineOnly") === "1";
+  const likedByMe = url.searchParams.get("likedByMe") === "1";
+  const minLikes = Math.max(
+    0,
+    Math.min(Number(url.searchParams.get("minLikes") ?? 0) || 0, 10_000),
+  );
+  const dateWindow = parseDateWindow(url.searchParams.get("dateWindow"));
   const limit = Math.min(
     Math.max(Number(url.searchParams.get("limit") ?? 50), 1),
     100,
@@ -164,6 +176,46 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
   }
 
+  if ((mineOnly || likedByMe) && !viewerPlayerId) {
+    return json({ lists: [], sort });
+  }
+
+  const where: string[] = [];
+  const binds: Array<string | number> = [];
+
+  if (mineOnly) {
+    where.push("player_id = ?");
+    binds.push(viewerPlayerId);
+  }
+
+  if (likedByMe) {
+    where.push(
+      `id IN (SELECT tier_list_id FROM tier_list_likes WHERE player_id = ?)`,
+    );
+    binds.push(viewerPlayerId);
+  }
+
+  if (minLikes > 0) {
+    where.push("like_count >= ?");
+    binds.push(minLikes);
+  }
+
+  if (dateWindow === "week" || dateWindow === "month") {
+    const days = dateWindow === "week" ? 7 : 30;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    where.push("created_at >= ?");
+    binds.push(since);
+  }
+
+  if (query) {
+    where.push(
+      `(LOWER(title) LIKE ? OR LOWER(author_name) LIKE ? OR LOWER(author_tag) LIKE ?)`,
+    );
+    const like = `%${query.toLowerCase()}%`;
+    binds.push(like, like, like);
+  }
+
+  const whereSql = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
   const orderClause =
     sort === "likes"
       ? "like_count DESC, created_at DESC"
@@ -173,10 +225,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     `SELECT id, player_id, author_name, author_tag, title, tiers_json,
             like_count, created_at, updated_at
      FROM published_tier_lists
+     ${whereSql}
      ORDER BY ${orderClause}
      LIMIT ?`,
   )
-    .bind(limit)
+    .bind(...binds, limit)
     .all<{
       id: string;
       player_id: string;
@@ -232,7 +285,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       : "0000";
   const tiersJson = normalizeTiersJson(body.tiers);
   if (!tiersJson) {
-    return json({ error: "tiers payload is invalid" }, 400);
+    return json(
+      {
+        error: `tiers payload is invalid (1–${MAX_TIERS} tiers, names ≤12 chars)`,
+      },
+      400,
+    );
   }
 
   const now = new Date().toISOString();

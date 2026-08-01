@@ -1,13 +1,18 @@
 import type { Player } from "../lib/types";
 import {
   formatPublicTierListTime,
+  type PublicTierListBrowseFilters,
+  type PublicTierListDateWindow,
   type PublicTierListDetail,
   type PublicTierListSort,
   type PublicTierListSummary,
 } from "../lib/tierListCommunity";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
-import { displayTierListTitle } from "../lib/tierList";
+import {
+  displayTierListTitle,
+  sortTierListLibraryDocuments,
+} from "../lib/tierList";
 import { getTeamGlowColor } from "../lib/teamColors";
 import type { CSSProperties } from "react";
 
@@ -61,6 +66,7 @@ interface TierListMinePanelProps {
   library: TierListLibrary;
   sort: PublicTierListSort;
   onSortChange: (sort: PublicTierListSort) => void;
+  likeCountByPublishedId: Record<string, number>;
   onOpen: (documentId: string) => void;
   onDelete: (documentId: string) => void;
 }
@@ -69,16 +75,15 @@ export function TierListMinePanel({
   library,
   sort,
   onSortChange,
+  likeCountByPublishedId,
   onOpen,
   onDelete,
 }: TierListMinePanelProps) {
-  const documents = [...library.documents].sort((left, right) => {
-    if (sort === "likes") {
-      // Local library has no likes — fall back to recency.
-      return right.savedAt - left.savedAt;
-    }
-    return right.savedAt - left.savedAt;
-  });
+  const documents = sortTierListLibraryDocuments(
+    library.documents,
+    sort,
+    likeCountByPublishedId,
+  );
 
   return (
     <div className="tier-list-hub__panel" aria-label="My tier lists">
@@ -104,33 +109,43 @@ export function TierListMinePanel({
         </p>
       ) : (
         <ul className="tier-list__library-list">
-          {documents.map((document: TierListSavedDocument) => (
-            <li key={document.id} className="tier-list__library-item">
-              <div className="tier-list__library-copy">
-                <strong>{displayTierListTitle(document.title)}</strong>
-                <span>
-                  Saved {formatSavedAt(document.savedAt)}
-                  {document.publishedId ? " · Published" : ""}
-                </span>
-              </div>
-              <div className="tier-list__library-actions">
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => onOpen(document.id)}
-                >
-                  Open
-                </button>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => onDelete(document.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
+          {documents.map((document: TierListSavedDocument) => {
+            const likes = document.publishedId
+              ? (likeCountByPublishedId[document.publishedId] ?? 0)
+              : null;
+
+            return (
+              <li key={document.id} className="tier-list__library-item">
+                <div className="tier-list__library-copy">
+                  <strong>{displayTierListTitle(document.title)}</strong>
+                  <span>
+                    Saved {formatSavedAt(document.savedAt)}
+                    {document.publishedId
+                      ? ` · Published · ${likes ?? 0} like${
+                          (likes ?? 0) === 1 ? "" : "s"
+                        }`
+                      : ""}
+                  </span>
+                </div>
+                <div className="tier-list__library-actions">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => onOpen(document.id)}
+                  >
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => onDelete(document.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -142,6 +157,8 @@ interface TierListPublicPanelProps {
   loading: boolean;
   sort: PublicTierListSort;
   onSortChange: (sort: PublicTierListSort) => void;
+  filters: PublicTierListBrowseFilters;
+  onFiltersChange: (filters: PublicTierListBrowseFilters) => void;
   onOpen: (id: string) => void;
   onToggleLike: (id: string, liked: boolean) => void;
 }
@@ -151,6 +168,8 @@ export function TierListPublicPanel({
   loading,
   sort,
   onSortChange,
+  filters,
+  onFiltersChange,
   onOpen,
   onToggleLike,
 }: TierListPublicPanelProps) {
@@ -172,11 +191,85 @@ export function TierListPublicPanel({
         </label>
       </div>
 
+      <div className="tier-list-hub__browse-filters" aria-label="Public list filters">
+        <label className="tier-list__search tier-list-hub__browse-search">
+          <span>Search</span>
+          <input
+            type="search"
+            value={filters.query}
+            placeholder="Title or author"
+            onChange={(event) =>
+              onFiltersChange({ ...filters, query: event.target.value })
+            }
+          />
+        </label>
+
+        <div className="tier-list__chips">
+          <button
+            type="button"
+            className={`tier-list__chip${filters.mineOnly ? " is-active" : ""}`}
+            aria-pressed={filters.mineOnly}
+            onClick={() =>
+              onFiltersChange({ ...filters, mineOnly: !filters.mineOnly })
+            }
+          >
+            Mine only
+          </button>
+          <button
+            type="button"
+            className={`tier-list__chip${filters.likedByMe ? " is-active" : ""}`}
+            aria-pressed={filters.likedByMe}
+            onClick={() =>
+              onFiltersChange({ ...filters, likedByMe: !filters.likedByMe })
+            }
+          >
+            Liked by me
+          </button>
+        </div>
+
+        <label className="tier-list-hub__browse-select">
+          <span>Min likes</span>
+          <select
+            value={String(filters.minLikes)}
+            onChange={(event) =>
+              onFiltersChange({
+                ...filters,
+                minLikes: Number(event.target.value) || 0,
+              })
+            }
+          >
+            <option value="0">Any</option>
+            <option value="1">1+</option>
+            <option value="3">3+</option>
+            <option value="5">5+</option>
+            <option value="10">10+</option>
+          </select>
+        </label>
+
+        <label className="tier-list-hub__browse-select">
+          <span>When</span>
+          <select
+            value={filters.dateWindow}
+            onChange={(event) =>
+              onFiltersChange({
+                ...filters,
+                dateWindow: event.target.value as PublicTierListDateWindow,
+              })
+            }
+          >
+            <option value="all">All time</option>
+            <option value="week">Past week</option>
+            <option value="month">Past month</option>
+          </select>
+        </label>
+      </div>
+
       {loading ? (
         <p className="tier-list__hint">Loading public lists…</p>
       ) : lists.length === 0 ? (
         <p className="tier-list__hint">
-          No public lists yet. Publish one from the editor to share it here.
+          No public lists match these filters. Publish one from the editor to
+          share it here.
         </p>
       ) : (
         <ul className="tier-list__library-list">
