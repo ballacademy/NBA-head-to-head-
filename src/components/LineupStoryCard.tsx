@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
-import { formatLineupOvrLabel } from "../lib/scoring";
+import { formatLineupOvrDisplay } from "../lib/scoring";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface LineupStoryCardProps {
@@ -28,10 +28,14 @@ export function LineupStoryCard({
           <h2 id="story-heading">Your five</h2>
           <p>Your lineup</p>
         </div>
-        <div className="score-orb">
+        <div
+          className={`score-orb${
+            score.ovrOverflow > 0 ? " score-orb--overflow" : ""
+          }`}
+        >
           <div className="score-orb__content">
-            <span>{score.total}</span>
-            <small>{formatLineupOvrLabel(score)}</small>
+            <span>{formatLineupOvrDisplay(score)}</span>
+            <small>OVR</small>
           </div>
         </div>
       </div>

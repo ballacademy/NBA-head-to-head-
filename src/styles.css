@@ -6357,8 +6357,25 @@ h1.landing-hub__title {
   height: 64px;
 }
 
+.score-orb--overflow {
+  width: 112px;
+}
+
+.score-orb--compact.score-orb--overflow {
+  width: 92px;
+}
+
 .score-orb--compact span {
   font-size: 1.15rem;
+}
+
+.score-orb--overflow span {
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.score-orb--compact.score-orb--overflow span {
+  font-size: 0.92rem;
 }
 
 .score-orb__content {

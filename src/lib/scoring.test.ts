@@ -1092,7 +1092,7 @@ describe("normalizeLineupTotal", () => {
     expect(formatLineupOvrDisplay({ total: 100, ovrOverflow: 4 })).toBe(
       "100 (+4)",
     );
-    expect(formatLineupOvrLabel({ ovrOverflow: 4 })).toBe("OVR (+4)");
+    expect(formatLineupOvrLabel({ ovrOverflow: 4 })).toBe("OVR");
     expect(formatLineupOvrLabel({ ovrOverflow: 0 })).toBe("OVR");
   });
 });
@@ -1166,7 +1166,7 @@ describe("compareLineups", () => {
     expect(result.margin).toBeGreaterThan(0);
   });
 
-  it("reports a tie when precise totals match", () => {
+  it("reports a tie when uncapped totals match", () => {
     const lineupA = lineup([
       "gilgesh01-okc",
       "whitede01-bos",
@@ -1176,12 +1176,16 @@ describe("compareLineups", () => {
     ]);
     const score = calculateLineupScore(lineupA);
 
-    expect(resolveHeadToHeadResult(score.preciseTotal, score.preciseTotal)).toBe(
-      "tie",
-    );
     expect(
-      compareLineups(lineupA, lineupA).result,
+      resolveHeadToHeadResult(score.uncappedTotal, score.uncappedTotal),
     ).toBe("tie");
+    expect(compareLineups(lineupA, lineupA).result).toBe("tie");
+  });
+
+  it("breaks capped-100 ties using uncapped OVR", () => {
+    expect(resolveHeadToHeadResult(104.2, 101.8)).toBe("win");
+    expect(resolveHeadToHeadResult(101.8, 104.2)).toBe("loss");
+    expect(resolveHeadToHeadResult(100, 100)).toBe("tie");
   });
 
   it("builds two sentences of score context from strengths and warnings", () => {

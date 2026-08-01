@@ -86,44 +86,37 @@ const credentialMatches = (
       isSimilarPriorProduction(player.points, snapshot.points),
   );
 
-/** Prior season first, then peak All-Star season as a multi-year fallback. */
+/**
+ * Credential that actually waives the limited-sample ding: sizable prior/peak
+ * **and** similar current production. Null means do not treat as established.
+ */
 export const getEstablishedProductionCredential = (
-  player: Pick<SamplePlayer, "bbrPlayerId">,
+  player: SamplePlayer,
 ): PriorProductionSnapshot | null => {
   if (!player.bbrPlayerId) {
     return null;
   }
 
   const prior = priorByBbr.get(player.bbrPlayerId);
+  if (credentialMatches(player, prior)) {
+    return prior ?? null;
+  }
+
+  // Only use peak-season fallback when prior season itself was not sizable.
   if (prior && isSizablePriorSample(prior)) {
-    return prior;
+    return null;
   }
 
   const best = bestSeasonByBbr.get(player.bbrPlayerId);
-  if (best && isSizablePriorSample(best)) {
-    return best;
+  if (credentialMatches(player, best)) {
+    return best ?? null;
   }
 
   return null;
 };
 
-export const hasEstablishedPriorProduction = (player: SamplePlayer) => {
-  if (!player.bbrPlayerId) {
-    return false;
-  }
-
-  const prior = priorByBbr.get(player.bbrPlayerId);
-  if (credentialMatches(player, prior)) {
-    return true;
-  }
-
-  // Only use peak-season fallback when prior season itself was not sizable.
-  if (prior && isSizablePriorSample(prior)) {
-    return false;
-  }
-
-  return credentialMatches(player, bestSeasonByBbr.get(player.bbrPlayerId));
-};
+export const hasEstablishedPriorProduction = (player: SamplePlayer) =>
+  getEstablishedProductionCredential(player) != null;
 
 export const hasLimitedSampleSize = (player: SamplePlayer) => {
   if (player.gamesPlayed >= FULL_SAMPLE_MIN_GAMES) {

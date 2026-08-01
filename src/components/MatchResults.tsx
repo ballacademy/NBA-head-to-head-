@@ -97,8 +97,8 @@ export function MatchResults({
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
-    userScore.preciseTotal,
-    opponentScore.preciseTotal,
+    userScore.uncappedTotal,
+    opponentScore.uncappedTotal,
   );
   const isTie = matchResult === "tie";
   const userWon = matchResult === "win";
@@ -196,8 +196,8 @@ export function MatchResults({
               challengerTeamName: user.name,
               challengerWon: userWon,
               challengerElo: challengerEloBefore,
-              userScore: userScore.preciseTotal,
-              opponentScore: opponentScore.preciseTotal,
+              userScore: userScore.uncappedTotal,
+              opponentScore: opponentScore.uncappedTotal,
               challengerLineup: user.lineup.filter(
                 (id): id is string => Boolean(id),
               ),
@@ -233,7 +233,7 @@ export function MatchResults({
     opponent.id,
     opponent.isGhostOpponent,
     opponent.rankedOpponentElo,
-    opponentScore.preciseTotal,
+    opponentScore.uncappedTotal,
     user.allTimeMode,
     user.eventId,
     user.lineup,
@@ -241,7 +241,7 @@ export function MatchResults({
     user.practiceMode,
     user.salaryCapMode,
     userLineup,
-    userScore.preciseTotal,
+    userScore.uncappedTotal,
     userWon,
   ]);
 
@@ -344,12 +344,15 @@ export function MatchResults({
           <p className="matchup-panel__meta">
             Margin{" "}
             {Math.abs(
-              userScore.preciseTotal - opponentScore.preciseTotal,
+              userScore.uncappedTotal - opponentScore.uncappedTotal,
             ).toFixed(1)}{" "}
             • OVR {formatLineupOvrDisplay(userScore)} vs{" "}
             {formatLineupOvrDisplay(opponentScore)}
+            {userScore.ovrOverflow > 0 || opponentScore.ovrOverflow > 0
+              ? " · overflow past 100 counts in matchups"
+              : ""}
             {userScore.total === opponentScore.total && !isTie
-              ? ` · decided by precise OVR (${userScore.preciseTotal.toFixed(1)} vs ${opponentScore.preciseTotal.toFixed(1)})`
+              ? ` · decided by uncapped OVR (${userScore.uncappedTotal.toFixed(1)} vs ${opponentScore.uncappedTotal.toFixed(1)})`
               : ""}
             {isEventMatch && eventProfile
               ? ` · Event record ${eventProfile.wins}-${eventProfile.losses} (${eventProfile.matchesPlayed}/30)`

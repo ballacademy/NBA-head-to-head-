@@ -12,8 +12,11 @@ export {
   PLAYMAKER_ELEVATION_ASSISTS_FULL,
 } from "./playmakerElevation";
 
-/** Extra tax when the only credited star does not create for teammates. */
-export const SOLO_NON_PLAYMAKER_STAR_PENALTY = -4.5;
+/**
+ * Single elevation tax when the only credited star does not create for teammates.
+ * Absorbs the former stacked one-star-reliance ding so thin + solo do not pile on.
+ */
+export const SOLO_NON_PLAYMAKER_STAR_PENALTY = -5.5;
 
 /** Players who currently receive star / elite-impact credit in the score. */
 export const isStarCreditPlayer = (player: Player) =>

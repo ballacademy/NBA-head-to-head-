@@ -10,15 +10,14 @@ import {
   isImpactRankStarPlayer,
   MID_TIER_IMPACT_NO_ELITE_PENALTY,
   MID_TIER_IMPACT_NO_TOP50_PENALTY,
-  MID_TIER_IMPACT_SOFT_CLEAR_PENALTY,
   MID_TIER_NEGATIVE_IMPACT_SCALE,
-  ONE_STAR_RELIANCE_PENALTY,
   THIN_IMPACT_ONE_ELITE_PENALTY,
 } from "./impactRanking";
 import {
   getScrubPlayerIds,
   getSuperScrubPlayerIds,
 } from "./playerTiers";
+import { getSoloStarElevationPenalty } from "./lineupSoloStar";
 import { calculateLineupScore } from "./scoring";
 
 describe("impactRanking", () => {
@@ -116,7 +115,7 @@ describe("impactRanking", () => {
     expect(getImpactRankingAdjustment(lineup)).toBeLessThan(rawBlend);
   });
 
-  it("soft-clears mid-tier when only a lone top-50 / top-30 is present", () => {
+  it("taxes thin depth without soft-clear stacking on a lone top-50", () => {
     const jokic = players.find((player) => player.name === "Nikola Jokić");
     const ware = players.find((player) => player.bbrPlayerId === "wareke01");
     const fears = players.find((player) => player.bbrPlayerId === "fearsje01");
@@ -127,12 +126,11 @@ describe("impactRanking", () => {
 
     const thin = [jokic!, fears!, rollins!, oubre!, ware!];
     expect(getLineupBestImpactRank(thin)).toBe(1);
-    expect(getMidTierImpactLineupPenalty(thin)).toBe(
-      MID_TIER_IMPACT_SOFT_CLEAR_PENALTY,
-    );
-    // Jokic is a full playmaker elevator, so the one-star reliance tax is waived.
+    // Top-50 anchors no longer take a mid-tier soft-clear; depth tax only.
+    expect(getMidTierImpactLineupPenalty(thin)).toBe(0);
     expect(getThinImpactLineupPenalty(thin)).toBe(THIN_IMPACT_ONE_ELITE_PENALTY);
-    expect(ONE_STAR_RELIANCE_PENALTY).toBeLessThan(0);
+    // Jokic is a full playmaker elevator, so the solo elevation tax is waived.
+    expect(getSoloStarElevationPenalty(thin)).toBeCloseTo(0, 5);
 
     const brunson = players.find((player) => player.name === "Jalen Brunson");
     expect(brunson).toBeDefined();

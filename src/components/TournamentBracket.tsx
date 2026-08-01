@@ -1,4 +1,5 @@
 import type { Drafter, MatchupResult } from "../lib/types";
+import { formatLineupOvrDisplay } from "../lib/scoring";
 
 interface TournamentBracketProps {
   rounds: MatchupResult[][];
@@ -20,7 +21,7 @@ export function TournamentBracket({
         <h2 id="bracket-heading">Winner advances bracket</h2>
         <p>
           Each matchup crowns the higher-scoring lineup and sends that drafter
-          into the next round.
+          into the next round. Overflow past 100 OVR counts.
         </p>
       </div>
 
@@ -48,11 +49,11 @@ export function TournamentBracket({
                 >
                   <span>
                     {drafterA.name}
-                    <strong>{matchup.scoreA.total}</strong>
+                    <strong>{formatLineupOvrDisplay(matchup.scoreA)}</strong>
                   </span>
                   <span>
                     {drafterB.name}
-                    <strong>{matchup.scoreB.total}</strong>
+                    <strong>{formatLineupOvrDisplay(matchup.scoreB)}</strong>
                   </span>
                   <small>
                     Winner: {winner.name} by {matchup.margin.toFixed(1)}

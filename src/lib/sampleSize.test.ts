@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ESTABLISHED_PRIOR_MIN_GAMES,
   FULL_SAMPLE_MIN_GAMES,
+  getEstablishedProductionCredential,
   getPlayerStatWeight,
   hasEstablishedPriorProduction,
   hasLimitedSampleSize,
@@ -54,6 +55,7 @@ describe("sampleSize", () => {
       points: 20.4,
     };
     expect(hasEstablishedPriorProduction(anthonyDavis)).toBe(true);
+    expect(getEstablishedProductionCredential(anthonyDavis)).not.toBeNull();
     expect(hasLimitedSampleSize(anthonyDavis)).toBe(false);
     expect(getPlayerStatWeight(anthonyDavis)).toBe(1);
 
@@ -76,6 +78,7 @@ describe("sampleSize", () => {
     };
     // Prior season was a small/low-scoring cup of coffee, not similar production.
     expect(hasEstablishedPriorProduction(hotStreak)).toBe(false);
+    expect(getEstablishedProductionCredential(hotStreak)).toBeNull();
     expect(hasLimitedSampleSize(hotStreak)).toBe(true);
     expect(getPlayerStatWeight(hotStreak)).toBeLessThan(1);
   });
