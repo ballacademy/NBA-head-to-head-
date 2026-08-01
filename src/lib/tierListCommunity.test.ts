@@ -66,7 +66,7 @@ describe("tierListCommunity local fallback", () => {
       viewerPlayerId: "viewer-2",
       sort: "recent",
     });
-    expect(recent.some((entry) => entry.id === published.id)).toBe(true);
+    expect(recent.lists.some((entry) => entry.id === published.id)).toBe(true);
 
     const liked = await setTierListLike({
       id: published.id,
@@ -83,23 +83,23 @@ describe("tierListCommunity local fallback", () => {
       viewerPlayerId: "viewer-2",
       sort: "likes",
     });
-    expect(byLikes[0]?.id).toBe(published.id);
-    expect(byLikes[0]?.likedByViewer).toBe(true);
+    expect(byLikes.lists[0]?.id).toBe(published.id);
+    expect(byLikes.lists[0]?.likedByViewer).toBe(true);
 
     const mineOnly = await fetchPublicTierLists({
       viewerPlayerId: "viewer-1",
       sort: "recent",
       filters: { ...DEFAULT_PUBLIC_TIER_LIST_FILTERS, mineOnly: true },
     });
-    expect(mineOnly).toHaveLength(1);
-    expect(mineOnly[0]?.id).toBe(published.id);
+    expect(mineOnly.lists).toHaveLength(1);
+    expect(mineOnly.lists[0]?.id).toBe(published.id);
 
     const searchMiss = await fetchPublicTierLists({
       viewerPlayerId: "viewer-2",
       sort: "recent",
       filters: { ...DEFAULT_PUBLIC_TIER_LIST_FILTERS, query: "zzzz-nope" },
     });
-    expect(searchMiss).toHaveLength(0);
+    expect(searchMiss.lists).toHaveLength(0);
   });
 
   it("updates an existing published list in the local catalog", async () => {
@@ -137,8 +137,8 @@ describe("tierListCommunity local fallback", () => {
       sort: "recent",
       filters: { ...DEFAULT_PUBLIC_TIER_LIST_FILTERS, mineOnly: true },
     });
-    expect(lists).toHaveLength(1);
-    expect(lists[0]?.title).toBe("Revised");
+    expect(lists.lists).toHaveLength(1);
+    expect(lists.lists[0]?.title).toBe("Revised");
   });
 
   it("blocks publish when the player has no linked account", async () => {

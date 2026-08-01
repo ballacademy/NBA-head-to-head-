@@ -33,9 +33,24 @@ interface TierRowInput {
   playerIds?: unknown;
 }
 
-const normalizeTiersJson = (tiers: unknown): string | null => {
-  if (!Array.isArray(tiers) || tiers.length === 0 || tiers.length > MAX_TIERS) {
-    return null;
+type NormalizeTiersResult =
+  | { ok: true; json: string }
+  | { ok: false; error: string };
+
+const normalizeTiersJson = (tiers: unknown): NormalizeTiersResult => {
+  if (!Array.isArray(tiers)) {
+    return { ok: false, error: "tiers must be an array of tier rows" };
+  }
+
+  if (tiers.length === 0) {
+    return { ok: false, error: "Add at least one tier before publishing" };
+  }
+
+  if (tiers.length > MAX_TIERS) {
+    return {
+      ok: false,
+      error: `Tier lists can have at most ${MAX_TIERS} tiers`,
+    };
   }
 
   const normalized = tiers.map((tier, index) => {
@@ -60,10 +75,13 @@ const normalizeTiersJson = (tiers: unknown): string | null => {
 
   const encoded = JSON.stringify(normalized);
   if (encoded.length > TIERS_JSON_MAX) {
-    return null;
+    return {
+      ok: false,
+      error: "Tier list is too large to publish — remove some players and try again",
+    };
   }
 
-  return encoded;
+  return { ok: true, json: encoded };
 };
 
 interface PublishBody {
@@ -131,6 +149,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     Math.max(Number(url.searchParams.get("limit") ?? 50), 1),
     100,
   );
+  const offset = Math.max(0, Math.floor(Number(url.searchParams.get("offset") ?? 0) || 0));
 
   const likedIds = new Set<string>();
   if (viewerPlayerId) {
@@ -177,7 +196,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   if ((mineOnly || likedByMe) && !viewerPlayerId) {
-    return json({ lists: [], sort });
+    return json({ lists: [], sort, hasMore: false, nextOffset: 0 });
   }
 
   const where: string[] = [];
@@ -227,9 +246,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
      FROM published_tier_lists
      ${whereSql}
      ORDER BY ${orderClause}
-     LIMIT ?`,
+     LIMIT ? OFFSET ?`,
   )
-    .bind(...binds, limit)
+    .bind(...binds, limit, offset)
     .all<{
       id: string;
       player_id: string;
@@ -242,11 +261,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       updated_at: string;
     }>();
 
+  const lists = (rows.results ?? []).map((row) =>
+    mapRow(row, viewerPlayerId, likedIds, false),
+  );
+
   return json({
     sort,
-    lists: (rows.results ?? []).map((row) =>
-      mapRow(row, viewerPlayerId, likedIds, false),
-    ),
+    lists,
+    hasMore: lists.length === limit,
+    nextOffset: offset + lists.length,
   });
 };
 
@@ -283,15 +306,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.authorTag === "string" && body.authorTag.trim()
       ? body.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, AUTHOR_TAG_MAX)
       : "0000";
-  const tiersJson = normalizeTiersJson(body.tiers);
-  if (!tiersJson) {
-    return json(
-      {
-        error: `tiers payload is invalid (1–${MAX_TIERS} tiers, names ≤12 chars)`,
-      },
-      400,
-    );
+  const tiersResult = normalizeTiersJson(body.tiers);
+  if (!tiersResult.ok) {
+    return json({ error: tiersResult.error }, 400);
   }
+  const tiersJson = tiersResult.json;
 
   const now = new Date().toISOString();
   const existingId =

@@ -55,6 +55,7 @@ import {
 import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import {
+  buildPublicTierListShareUrl,
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
   fetchPublishedLikeCounts,
   fetchPublicTierList,
@@ -86,6 +87,8 @@ interface TierListPageProps {
   players: Player[];
   /** Kept for App wiring; leaving the Tiers hub uses bottom nav, not Return. */
   onBack?: () => void;
+  /** Deep-link public id from `?tierList=` — opens the viewer on mount. */
+  initialPublicTierListId?: string | null;
 }
 
 type TierListView = "hub" | "editor" | "mine" | "public" | "viewer";
@@ -175,9 +178,14 @@ type PointerDragSession = {
   activated: boolean;
 };
 
-export function TierListPage({ players }: TierListPageProps) {
+export function TierListPage({
+  players,
+  initialPublicTierListId = null,
+}: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
-  const [view, setView] = useState<TierListView>("hub");
+  const [view, setView] = useState<TierListView>(() =>
+    initialPublicTierListId ? "viewer" : "hub",
+  );
   const [state, setState] = useState<TierListState>(() => loadTierListState());
   const [library, setLibrary] = useState<TierListLibrary>(() =>
     loadTierListLibrary(),
@@ -199,9 +207,13 @@ export function TierListPage({ players }: TierListPageProps) {
   );
   const [publicLists, setPublicLists] = useState<PublicTierListSummary[]>([]);
   const [publicLoading, setPublicLoading] = useState(false);
+  const [publicLoadingMore, setPublicLoadingMore] = useState(false);
+  const [publicHasMore, setPublicHasMore] = useState(false);
+  const [publicNextOffset, setPublicNextOffset] = useState(0);
   const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
     null,
   );
+  const deepLinkHandledRef = useRef(false);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -247,13 +259,18 @@ export function TierListPage({ players }: TierListPageProps) {
 
     let cancelled = false;
     setPublicLoading(true);
+    setPublicHasMore(false);
+    setPublicNextOffset(0);
     void fetchPublicTierLists({
       viewerPlayerId: identity.playerId,
       sort: publicSort,
       filters: publicFilters,
-    }).then((lists) => {
+      offset: 0,
+    }).then((page) => {
       if (!cancelled) {
-        setPublicLists(lists);
+        setPublicLists(page.lists);
+        setPublicHasMore(page.hasMore);
+        setPublicNextOffset(page.nextOffset);
         setPublicLoading(false);
       }
     });
@@ -262,6 +279,34 @@ export function TierListPage({ players }: TierListPageProps) {
       cancelled = true;
     };
   }, [view, publicSort, publicFilters, identity.playerId]);
+
+  useEffect(() => {
+    if (!initialPublicTierListId || deepLinkHandledRef.current) {
+      return;
+    }
+
+    deepLinkHandledRef.current = true;
+    let cancelled = false;
+    void fetchPublicTierList({
+      id: initialPublicTierListId,
+      viewerPlayerId: identity.playerId,
+    }).then((detail) => {
+      if (cancelled) {
+        return;
+      }
+      if (!detail) {
+        setView("public");
+        setStatusMessage("That shared tier list could not be found");
+        return;
+      }
+      setViewerDetail(detail);
+      setView("viewer");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialPublicTierListId, identity.playerId]);
 
   useEffect(() => {
     if (view !== "mine") {
@@ -720,6 +765,91 @@ export function TierListPage({ players }: TierListPageProps) {
     setView("viewer");
   };
 
+  const handleLoadMorePublic = async () => {
+    if (publicLoadingMore || !publicHasMore) {
+      return;
+    }
+
+    setPublicLoadingMore(true);
+    const page = await fetchPublicTierLists({
+      viewerPlayerId: identity.playerId,
+      sort: publicSort,
+      filters: publicFilters,
+      offset: publicNextOffset,
+    });
+    setPublicLists((current) => {
+      const seen = new Set(current.map((entry) => entry.id));
+      const appended = page.lists.filter((entry) => !seen.has(entry.id));
+      return [...current, ...appended];
+    });
+    setPublicHasMore(page.hasMore);
+    setPublicNextOffset(page.nextOffset);
+    setPublicLoadingMore(false);
+  };
+
+  const handleEditOwnedPublic = async (id: string) => {
+    const detail = await fetchPublicTierList({
+      id,
+      viewerPlayerId: identity.playerId,
+    });
+    if (!detail || !detail.isOwner) {
+      setStatusMessage("Could not open that tier list for editing");
+      return;
+    }
+
+    const next: TierListState = {
+      id: `tier-list-edit-${id}`,
+      title: detail.title,
+      tiers: detail.tiers,
+      publishedId: detail.id,
+    };
+    const saved = saveTierListToLibrary(next, library);
+    setState(saved.state);
+    setLibrary(saved.library);
+    setSelectedPlayerId(null);
+    setView("editor");
+    setStatusMessage(`Editing “${displayTierListTitle(detail.title)}”`);
+  };
+
+  const handleUnpublishOwnedPublic = async (id: string) => {
+    const ok = await unpublishPublishedCopy(id);
+    if (!ok) {
+      return;
+    }
+
+    setPublicLists((current) => current.filter((entry) => entry.id !== id));
+    if (viewerDetail?.id === id) {
+      setViewerDetail(null);
+      setView("public");
+    }
+    if (state.publishedId === id) {
+      const nextState = setTierListPublishedId(state, null);
+      const nextSaved = saveTierListToLibrary(nextState, library);
+      setState(nextSaved.state);
+      setLibrary(nextSaved.library);
+    }
+    setStatusMessage("Removed from public tier lists");
+  };
+
+  const handleCopyPublicLink = async (id: string) => {
+    const shareUrl = buildPublicTierListShareUrl(id);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const input = document.createElement("input");
+        input.value = shareUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      setStatusMessage("Link copied");
+    } catch {
+      setStatusMessage(shareUrl);
+    }
+  };
+
   const handleToggleLike = async (id: string, liked: boolean) => {
     const result = await setTierListLike({
       id,
@@ -873,12 +1003,17 @@ export function TierListPage({ players }: TierListPageProps) {
         <TierListPublicPanel
           lists={publicLists}
           loading={publicLoading}
+          loadingMore={publicLoadingMore}
+          hasMore={publicHasMore}
           sort={publicSort}
           onSortChange={setPublicSort}
           filters={publicFilters}
           onFiltersChange={setPublicFilters}
           onOpen={handleOpenPublic}
           onToggleLike={handleToggleLike}
+          onLoadMore={() => void handleLoadMorePublic()}
+          onEditOwned={(id) => void handleEditOwnedPublic(id)}
+          onUnpublishOwned={(id) => void handleUnpublishOwnedPublic(id)}
         />
       ) : null}
 
@@ -887,6 +1022,17 @@ export function TierListPage({ players }: TierListPageProps) {
           detail={viewerDetail}
           playersById={playersById}
           onToggleLike={(liked) => handleToggleLike(viewerDetail.id, liked)}
+          onCopyLink={() => void handleCopyPublicLink(viewerDetail.id)}
+          onEditOwned={
+            viewerDetail.isOwner
+              ? () => void handleEditOwnedPublic(viewerDetail.id)
+              : undefined
+          }
+          onUnpublishOwned={
+            viewerDetail.isOwner
+              ? () => void handleUnpublishOwnedPublic(viewerDetail.id)
+              : undefined
+          }
         />
       ) : null}
 

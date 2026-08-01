@@ -7470,8 +7470,14 @@ h1.landing-hub__title {
 }
 
 .tier-list__row.is-drop-target .tier-list__tier-drop {
-  border-color: rgba(52, 211, 153, 0.7);
-  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.75);
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.28);
+}
+
+.tier-list-hub__load-more {
+  width: 100%;
+  margin-top: 4px;
 }
 
 .tier-list__tier-label {
@@ -7665,16 +7671,29 @@ body.tier-list-dragging {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body.tier-list-dragging * {
   user-select: none !important;
   -webkit-user-select: none !important;
   -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+body.tier-list-dragging::selection,
+body.tier-list-dragging *::selection {
+  background: transparent !important;
+  color: inherit !important;
 }
 
 body.tier-list-dragging .tier-list__player {
   cursor: grabbing;
+}
+
+.tier-list__player {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .tier-list__pool {
@@ -7683,12 +7702,19 @@ body.tier-list-dragging .tier-list__player {
   padding-top: 4px;
   border-top: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 12px;
-  transition: background 120ms ease, box-shadow 120ms ease;
+  transition: box-shadow 120ms ease;
 }
 
+/* Avoid painting the whole (often full-screen) pool green on mobile drag. */
 .tier-list__pool.is-drop-target {
-  background: rgba(16, 185, 129, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45);
+}
+
+.tier-list__pool.is-drop-target .tier-list__pool-header h2::after {
+  content: " · Drop to unrank";
+  color: #6ee7b7;
+  font-weight: 700;
+  font-size: 0.78rem;
 }
 
 .tier-list__pool-header {
