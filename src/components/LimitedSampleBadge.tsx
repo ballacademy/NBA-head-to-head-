@@ -2,7 +2,7 @@ import { hasLimitedSampleSize } from "../lib/sampleSize";
 import type { Player } from "../lib/types";
 
 interface LimitedSampleBadgeProps {
-  player: Pick<Player, "gamesPlayed">;
+  player: Pick<Player, "bbrPlayerId" | "gamesPlayed" | "points">;
   compact?: boolean;
 }
 
