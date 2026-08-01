@@ -197,6 +197,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // Max single-match Elo swing ≈ BASE_K * max placement * max streak (32*2.5*1.6).
   const MAX_ELO_DELTA_PER_UPSERT = 128;
   const MAX_RECORD_DELTA_PER_UPSERT = 1;
+  const MAX_ELO = 4000;
+  const STARTING_ELO = mode === "event" ? 1000 : 500;
+
+  if (elo > MAX_ELO) {
+    return json({ error: "elo exceeds the maximum allowed value" }, 400);
+  }
 
   const existing = await context.env.DB.prepare(
     `SELECT elo, wins, losses, win_streak, loss_streak
@@ -212,7 +218,50 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       loss_streak: number;
     }>();
 
-  if (existing) {
+  if (!existing) {
+    // New rows may only be a fresh profile or the result of a single first match.
+    const games = wins + losses;
+    if (games === 0) {
+      if (elo !== STARTING_ELO || winStreak !== 0 || lossStreak !== 0) {
+        return json(
+          {
+            error:
+              "new leaderboard entries must start at the season default rating with a 0-0 record",
+          },
+          400,
+        );
+      }
+    } else if (games === 1) {
+      if (Math.abs(elo - STARTING_ELO) > MAX_ELO_DELTA_PER_UPSERT) {
+        return json(
+          { error: "elo change exceeds the maximum allowed per update" },
+          400,
+        );
+      }
+      if (wins === 1 && losses === 0) {
+        if (winStreak !== 1 || lossStreak !== 0) {
+          return json({ error: "win streak update is invalid" }, 400);
+        }
+      } else if (wins === 0 && losses === 1) {
+        if (lossStreak !== 1 || winStreak !== 0) {
+          return json({ error: "loss streak update is invalid" }, 400);
+        }
+      } else {
+        return json(
+          { error: "record update must be exactly one win or loss" },
+          400,
+        );
+      }
+    } else {
+      return json(
+        {
+          error:
+            "new leaderboard entries cannot be created with more than one match played",
+        },
+        400,
+      );
+    }
+  } else {
     const eloDelta = Math.abs(elo - existing.elo);
     const winsDelta = wins - existing.wins;
     const lossesDelta = losses - existing.losses;
@@ -236,11 +285,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    if (gamesDelta === 0 && eloDelta > 0) {
-      return json(
-        { error: "elo cannot change without a recorded match" },
-        400,
-      );
+    if (gamesDelta === 0) {
+      if (
+        elo !== existing.elo ||
+        winStreak !== existing.win_streak ||
+        lossStreak !== existing.loss_streak
+      ) {
+        return json(
+          { error: "elo and streaks cannot change without a recorded match" },
+          400,
+        );
+      }
+    } else if (winsDelta === 1 && lossesDelta === 0) {
+      if (lossStreak !== 0 || winStreak !== existing.win_streak + 1) {
+        return json({ error: "win streak update is invalid" }, 400);
+      }
+    } else if (lossesDelta === 1 && winsDelta === 0) {
+      if (winStreak !== 0 || lossStreak !== existing.loss_streak + 1) {
+        return json({ error: "loss streak update is invalid" }, 400);
+      }
+    } else {
+      return json({ error: "record update must be exactly one win or loss" }, 400);
+    }
+
+    if (winStreak > wins || lossStreak > losses) {
+      return json({ error: "streaks cannot exceed wins or losses" }, 400);
     }
   }
 

@@ -1,5 +1,6 @@
 import type { Env } from "../types";
 import { parseDailyLineupJson, parseDailyMode } from "../lib/dailyScoresDb";
+import { isAllowedDailySubmissionDateKey } from "../lib/dailyDateKeys";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -165,6 +166,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "dateKey and goalId are required" }, 400);
   }
 
+  if (!isAllowedDailySubmissionDateKey(dateKey)) {
+    return json(
+      { error: "dateKey must be today's or yesterday's Eastern date" },
+      400,
+    );
+  }
+
   if (!playerId || !teamName || !formattedResult) {
     return json(
       { error: "playerId, teamName, and formattedResult are required" },
@@ -172,8 +180,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (!Number.isFinite(value)) {
-    return json({ error: "value must be a number" }, 400);
+  if (!Number.isFinite(value) || value < -1_000_000 || value > 1_000_000) {
+    return json({ error: "value is out of range" }, 400);
   }
 
   if (lineup.length !== 5) {

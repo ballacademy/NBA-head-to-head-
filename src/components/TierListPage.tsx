@@ -354,7 +354,12 @@ export function TierListPage({ players }: TierListPageProps) {
       return;
     }
 
-    clearDragVisuals();
+    // Tap without drag: keep the selection from pointerdown and suppress the
+    // follow-up click (pointerdown preventDefault can still emit click later).
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
   };
 
   const handlePlayerPointerDown = (
@@ -366,6 +371,10 @@ export function TierListPage({ players }: TierListPageProps) {
     }
 
     const target = event.currentTarget;
+    // Stop mobile long-press callouts / text selection before the drag starts.
+    event.preventDefault();
+    window.getSelection()?.removeAllRanges();
+
     suppressClickRef.current = false;
     dragSessionRef.current = {
       playerId,
@@ -388,6 +397,7 @@ export function TierListPage({ players }: TierListPageProps) {
         return;
       }
 
+      moveEvent.preventDefault();
       const dx = moveEvent.clientX - session.startX;
       const dy = moveEvent.clientY - session.startY;
       const distance = Math.hypot(dx, dy);
@@ -399,12 +409,12 @@ export function TierListPage({ players }: TierListPageProps) {
 
         session.activated = true;
         suppressClickRef.current = true;
+        window.getSelection()?.removeAllRanges();
         document.body.classList.add("tier-list-dragging");
         dragPointRef.current = { x: moveEvent.clientX, y: moveEvent.clientY };
         setDraggingPlayerId(session.playerId);
       }
 
-      moveEvent.preventDefault();
       dragPointRef.current = { x: moveEvent.clientX, y: moveEvent.clientY };
       scheduleDragFrame();
     };
@@ -636,6 +646,7 @@ export function TierListPage({ players }: TierListPageProps) {
           } as CSSProperties
         }
         onPointerDown={(event) => handlePlayerPointerDown(event, player.id)}
+        onContextMenu={(event) => event.preventDefault()}
         onClick={() => {
           if (suppressClickRef.current) {
             suppressClickRef.current = false;
