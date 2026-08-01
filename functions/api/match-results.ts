@@ -47,6 +47,10 @@ export const ownerResultFromScores = (
   return challengerScore > ownerScore ? "loss" : "win";
 };
 
+/** Persist uncapped OVR with stable milli-precision (no integer rounding). */
+export const persistMatchScore = (score: number) =>
+  Math.round(score * 1000) / 1000;
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: MatchResultBody;
 
@@ -202,8 +206,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       challengerTeamName,
       Math.round(challengerElo),
       lineup.lineup_json,
-      Math.round(opponentScore),
-      Math.round(userScore),
+      persistMatchScore(opponentScore),
+      persistMatchScore(userScore),
       now,
     )
     .run();

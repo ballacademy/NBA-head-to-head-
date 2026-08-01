@@ -15,11 +15,11 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 54 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(54);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(54);
+  it("defines 56 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(56);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(56);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      54,
+      56,
     );
   });
 
@@ -203,6 +203,29 @@ describe("achievements", () => {
         "eighty-ovr",
       ]),
     );
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 82,
+        lineupOvr: 100,
+        ovrOverflow: 1,
+      }),
+    ).toContain("ceiling-breaker");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 82,
+        lineupOvr: 100,
+        ovrOverflow: 4,
+      }),
+    ).not.toContain("plus-five");
+    expect(
+      checkLineupAchievements(lineup, {
+        projectedWins: 82,
+        lineupOvr: 100,
+        ovrOverflow: 5,
+      }),
+    ).toEqual(
+      expect.arrayContaining(["ceiling-breaker", "plus-five", "max-ovr"]),
+    );
   });
 
   it("builds achievement context from a completed lineup", () => {
@@ -212,6 +235,7 @@ describe("achievements", () => {
     expect(context.hasSalaryCap).toBe(true);
     expect(context.lineupOvr).toBeGreaterThan(0);
     expect(context.preciseOvr).toBeGreaterThan(0);
+    expect(context.ovrOverflow).toBeGreaterThanOrEqual(0);
     expect(context.projectedWins).toBeGreaterThanOrEqual(0);
   });
 
@@ -239,7 +263,7 @@ describe("achievements", () => {
     });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(53);
+    expect(progress.total).toBe(55);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,

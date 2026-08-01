@@ -105,6 +105,7 @@ export const buildAchievementContext = (
     ...options,
     lineupOvr: score.total,
     preciseOvr: score.preciseTotal,
+    ovrOverflow: score.ovrOverflow,
     projectedWins: score.projectedRecord.wins,
   };
 };
