@@ -2,13 +2,13 @@ import type { Player } from "./types";
 import collegeTeammatesData from "../../data/college-teammates.json";
 import chemistryFamiliesData from "../../data/chemistry-families.json";
 
-export const BROTHER_CHEMISTRY_BONUS = 5;
-export const COUSIN_CHEMISTRY_BONUS = 4;
-export const COLLEGE_TEAMMATE_BONUS_TWO = 4;
-export const COLLEGE_TEAMMATE_BONUS_THREE_PLUS = 6;
+export const BROTHER_CHEMISTRY_BONUS = 3;
+export const COUSIN_CHEMISTRY_BONUS = 3;
+export const COLLEGE_TEAMMATE_BONUS_TWO = 3;
+export const COLLEGE_TEAMMATE_BONUS_THREE_PLUS = 4;
 export const SAME_TEAM_CHEMISTRY_MIN = 3;
-export const SAME_TEAM_CHEMISTRY_BONUS = 5;
-export const FULL_ROSTER_TEAM_BONUS = 8;
+export const SAME_TEAM_CHEMISTRY_BONUS = 3;
+export const FULL_ROSTER_TEAM_BONUS = 5;
 
 interface FamilyGroup {
   id: string;
