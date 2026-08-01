@@ -45,6 +45,8 @@ export interface AchievementCheckContext {
   hasSalaryCap?: boolean;
   lineupOvr?: number;
   preciseOvr?: number;
+  /** Rounded display overflow past 100 (from uncapped OVR). */
+  ovrOverflow?: number;
   projectedWins?: number;
 }
 
@@ -505,6 +507,20 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     description: "Build a lineup that grades out at 100 OVR.",
     emoji: "💯",
     check: (_lineup, context) => (context?.lineupOvr ?? 0) >= 100,
+  },
+  {
+    id: "ceiling-breaker",
+    title: "Ceiling Breaker",
+    description: "Clear the 100 OVR ceiling with uncapped overflow.",
+    emoji: "🚀",
+    check: (_lineup, context) => (context?.ovrOverflow ?? 0) >= 1,
+  },
+  {
+    id: "plus-five",
+    title: "Plus Five",
+    description: "Clear 100 OVR by 5 or more on uncapped strength.",
+    emoji: "💥",
+    check: (_lineup, context) => (context?.ovrOverflow ?? 0) >= 5,
   },
   {
     id: "founding-gm",
