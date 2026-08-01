@@ -5,6 +5,7 @@ import {
   registerAccount,
   resetAccountPassword,
 } from "../lib/accountApi";
+import { markPlayerAccountLinked } from "../lib/accountGate";
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -67,12 +68,14 @@ export function AccountAuthPanel({
     if (result.status.linked && result.status.username) {
       setLinkedUsername(result.status.username);
       setLinkState("linked");
+      markPlayerAccountLinked(playerId, result.status.username);
       syncFoundingGmAchievement(Boolean(result.status.foundingGm));
       return;
     }
 
     setLinkedUsername(null);
     setLinkState("unlinked");
+    markPlayerAccountLinked(playerId, null);
   };
 
   const refreshStatus = async () => {
@@ -148,6 +151,7 @@ export function AccountAuthPanel({
 
     setLinkedUsername(result.username);
     setLinkState("linked");
+    markPlayerAccountLinked(playerId, result.username);
     setMode("closed");
     const { newlyUnlocked } = syncFoundingGmAchievement(
       Boolean(result.foundingGm),
@@ -183,6 +187,7 @@ export function AccountAuthPanel({
       submitLock.current = false;
       setLinkedUsername(result.username);
       setLinkState("linked");
+      markPlayerAccountLinked(playerId, result.username);
       setMode("closed");
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
@@ -266,20 +271,14 @@ export function AccountAuthPanel({
           </span>
         ) : (
           <span className="landing-team-form__account-status">
-            Optional — save this GM code
+            Needed for leaderboards &amp; public tier lists
           </span>
         )}
       </div>
 
       <p className="landing-team-form__account-note">
-        Playing does not require an account. Create one only if you want to
-        restore this GM code after clearing browser data. New accounts need a
-        username, email, and password. Passwords are stored as secure hashes;
-        email is stored for account recovery. Forgot your password? Email{" "}
-        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with your
-        username to get a one-time reset code, then use Forgot password below.
-        Logging in on another device restores online records (like leaderboard
-        rows) but resets on-device collection progress for that browser.
+        You can play without an account. Create one to appear on leaderboards,
+        publish tier lists, and restore this GM code on another device.
       </p>
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">

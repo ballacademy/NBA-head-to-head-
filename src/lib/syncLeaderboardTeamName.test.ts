@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTopLeaderboard, upsertLeaderboardEntry } from "./leaderboard";
 import { recordMatchResult } from "./playerRecord";
 import { saveClassicProfile } from "./classicProfile";
+import { getCurrentSeasonId } from "./rankedSeason";
 import { syncTeamNameToLeaderboards } from "./syncLeaderboardTeamName";
 import { loadTeamProfile, saveTeamProfile } from "./teamProfile";
 
@@ -24,10 +25,16 @@ describe("syncLeaderboardTeamName", () => {
     vi.stubGlobal("crypto", {
       randomUUID: () => "player-sync-test",
     });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(JSON.stringify({ linked: false }), { status: 200 }),
+      ),
+    );
     recordMatchResult("win", "headToHead");
     saveClassicProfile({
       playerId: "player-sync-test",
-      seasonId: "2026-07",
+      seasonId: getCurrentSeasonId(),
       elo: 640,
       peakElo: 640,
       classicGamesPlayed: 1,

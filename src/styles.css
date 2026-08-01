@@ -129,6 +129,12 @@ main.landing-layout {
   box-shadow: 0 12px 30px rgba(248, 250, 252, 0.14);
 }
 
+.secondary-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .hero-actions .ghost-link,
 .secondary-button {
   color: #f8fafc;
@@ -1222,6 +1228,30 @@ h1.landing-hub__title {
   font-size: 0.82rem;
   line-height: 1.55;
   text-align: center;
+}
+
+.account-required-note {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(30, 16, 53, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.account-required-note--inline {
+  margin: 0 0 8px;
+}
+
+.hub-feature__panel .account-required-note,
+.event-leaderboard .account-required-note {
+  border-color: rgba(226, 232, 240, 0.12);
+  background: rgba(15, 23, 42, 0.45);
+  color: var(--text-muted-on-dark, #cbd5e1);
 }
 
 .landing-credit {

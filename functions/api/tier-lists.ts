@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { getAccountByPlayerId } from "../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -207,6 +208,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const playerId = parsePlayerId(body.playerId);
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
+  }
+
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json(
+      { error: "Create an account to publish tier lists." },
+      403,
+    );
   }
 
   const title =

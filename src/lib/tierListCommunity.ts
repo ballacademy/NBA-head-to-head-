@@ -1,4 +1,8 @@
 import { readJson, writeJson } from "./browserStorage";
+import {
+  ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
+  isPlayerAccountLinked,
+} from "./accountGate";
 import type { TierListRow, TierListState } from "./tierList";
 import { displayTierListTitle } from "./tierList";
 
@@ -186,6 +190,10 @@ export const publishTierList = async (params: {
   authorTag: string;
   publishedId?: string | null;
 }): Promise<{ ok: true; id: string } | { ok: false; error: string }> => {
+  if (!(await isPlayerAccountLinked(params.playerId))) {
+    return { ok: false, error: ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE };
+  }
+
   const title = displayTierListTitle(params.state.title);
   const payload = {
     id: params.publishedId ?? undefined,
@@ -220,7 +228,7 @@ export const publishTierList = async (params: {
       }
     }
   } catch {
-    // Local fallback below.
+    // Local fallback below for linked accounts when the API is offline.
   }
 
   const catalog = loadLocalCatalog();

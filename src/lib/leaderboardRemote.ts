@@ -5,6 +5,7 @@ import {
   type LeaderboardSort,
   type RemoteLeaderboardEntry,
 } from "./leaderboardApi";
+import { isPlayerAccountLinked } from "./accountGate";
 import { getOrCreatePlayerId } from "./playerIdentity";
 import { getCurrentSeasonId } from "./rankedSeason";
 
@@ -74,6 +75,10 @@ export const syncLeaderboardEntryToApi = (params: {
   const seasonId = params.seasonId ?? getSeasonIdForMode(params.mode);
 
   void (async () => {
+    if (!(await isPlayerAccountLinked(params.playerId))) {
+      return;
+    }
+
     await submitRemoteLeaderboardEntry({
       mode: params.mode,
       seasonId,

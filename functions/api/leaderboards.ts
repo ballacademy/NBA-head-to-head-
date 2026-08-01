@@ -1,6 +1,7 @@
 import type { Env, LeaderboardEntryRow } from "../types";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import { upsertPlayerLegacyStats } from "../lib/playerLegacy";
+import { getAccountByPlayerId } from "../lib/playerAccounts";
 import {
   isPublicOpaquePlayerId,
   toLeaderboardPublicEntry,
@@ -182,6 +183,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (isPublicOpaquePlayerId(playerId)) {
     return json({ error: "playerId is invalid" }, 400);
+  }
+
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json(
+      { error: "Create an account to appear on leaderboards." },
+      403,
+    );
   }
 
   const profanityError = rejectProfaneTeamName(teamName);
