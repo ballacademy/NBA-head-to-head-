@@ -5,6 +5,7 @@ import {
   publishTierList,
   setTierListLike,
 } from "./tierListCommunity";
+import { clearAccountLinkCache } from "./accountGate";
 
 const memory = new Map<string, string>();
 
@@ -22,10 +23,22 @@ const localStorageMock = {
 describe("tierListCommunity local fallback", () => {
   beforeEach(() => {
     memory.clear();
+    clearAccountLinkCache();
     vi.stubGlobal("localStorage", localStorageMock);
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => {
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/account/status")) {
+          return new Response(
+            JSON.stringify({
+              linked: true,
+              playerId: "viewer-1",
+              username: "tester",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
         throw new Error("offline");
       }),
     );
@@ -70,5 +83,30 @@ describe("tierListCommunity local fallback", () => {
     });
     expect(byLikes[0]?.id).toBe(published.id);
     expect(byLikes[0]?.likedByViewer).toBe(true);
+  });
+
+  it("blocks publish when the player has no linked account", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(JSON.stringify({ linked: false, playerId: "guest-1" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+
+    const state = createDefaultTierListState();
+    const published = await publishTierList({
+      state,
+      playerId: "guest-1",
+      authorName: "Guest",
+      authorTag: "ZZZZ",
+    });
+    expect(published.ok).toBe(false);
+    if (published.ok) {
+      return;
+    }
+    expect(published.error).toMatch(/account/i);
   });
 });

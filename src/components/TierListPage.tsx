@@ -62,7 +62,12 @@ import {
   type PublicTierListSummary,
 } from "../lib/tierListCommunity";
 import { fetchAccountStatus } from "../lib/accountApi";
+import {
+  ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
+  isPlayerAccountLinked,
+} from "../lib/accountGate";
 import type { Player, Position } from "../lib/types";
+import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import {
   TierListHubHome,
@@ -177,6 +182,7 @@ export function TierListPage({ players }: TierListPageProps) {
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authorName, setAuthorName] = useState(`GM ${formatPublicTag(identity.publicTag)}`);
+  const [accountLinked, setAccountLinked] = useState(false);
   const [mineSort, setMineSort] = useState<PublicTierListSort>("recent");
   const [publicSort, setPublicSort] = useState<PublicTierListSort>("recent");
   const [publicLists, setPublicLists] = useState<PublicTierListSummary[]>([]);
@@ -198,10 +204,15 @@ export function TierListPage({ players }: TierListPageProps) {
   useEffect(() => {
     let cancelled = false;
     void fetchAccountStatus(identity.playerId).then((result) => {
-      if (cancelled || !result.ok || !result.status.username) {
+      if (cancelled) {
         return;
       }
-      setAuthorName(result.status.username);
+      if (result.ok && result.status.linked && result.status.username) {
+        setAuthorName(result.status.username);
+        setAccountLinked(true);
+        return;
+      }
+      setAccountLinked(false);
     });
     return () => {
       cancelled = true;
@@ -470,6 +481,13 @@ export function TierListPage({ players }: TierListPageProps) {
   };
 
   const handlePublish = async () => {
+    if (!(await isPlayerAccountLinked(identity.playerId))) {
+      setAccountLinked(false);
+      setStatusMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE);
+      return;
+    }
+
+    setAccountLinked(true);
     const saved = saveTierListToLibrary(state, library);
     setState(saved.state);
     setLibrary(saved.library);
@@ -707,11 +725,16 @@ export function TierListPage({ players }: TierListPageProps) {
       ) : null}
 
       {view === "hub" ? (
-        <TierListHubHome
-          onCreate={handleNew}
-          onOpenMine={() => setView("mine")}
-          onOpenPublic={() => setView("public")}
-        />
+        <>
+          <AccountRequiredNote>
+            Create an account to publish public tier lists. Browsing stays open.
+          </AccountRequiredNote>
+          <TierListHubHome
+            onCreate={handleNew}
+            onOpenMine={() => setView("mine")}
+            onOpenPublic={() => setView("public")}
+          />
+        </>
       ) : null}
 
       {view === "mine" ? (
@@ -1117,7 +1140,13 @@ export function TierListPage({ players }: TierListPageProps) {
               <button
                 type="button"
                 className="secondary-button"
+                disabled={!accountLinked}
                 onClick={() => void handlePublish()}
+                title={
+                  accountLinked
+                    ? "Publish to public tier lists"
+                    : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
+                }
               >
                 Publish
               </button>
@@ -1131,6 +1160,11 @@ export function TierListPage({ players }: TierListPageProps) {
             </button>
           </div>
         </div>
+        {!accountLinked && !state.publishedId ? (
+          <AccountRequiredNote className="account-required-note--inline">
+            Create an account to publish this list.
+          </AccountRequiredNote>
+        ) : null}
 
         <div className="tier-list__board">
           {state.tiers.map((tier, index) => {

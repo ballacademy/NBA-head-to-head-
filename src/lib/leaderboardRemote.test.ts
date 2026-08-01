@@ -4,6 +4,7 @@ import {
   getCachedRemoteLeaderboard,
   refreshLeaderboardFromApi,
 } from "./leaderboardRemote";
+import { clearAccountLinkCache, markPlayerAccountLinked } from "./accountGate";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { RANKED_STARTING_ELO } from "./rankedElo";
 import { getCurrentSeasonId } from "./rankedSeason";
@@ -24,6 +25,7 @@ describe("leaderboard remote integration", () => {
   beforeEach(() => {
     storage.clear();
     clearLeaderboardRemoteCacheForTests();
+    clearAccountLinkCache();
     vi.stubGlobal("localStorage", localStorageMock);
     vi.stubGlobal("crypto", {
       randomUUID: () => "player-test-1",
@@ -31,6 +33,7 @@ describe("leaderboard remote integration", () => {
   });
 
   afterEach(() => {
+    clearAccountLinkCache();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -84,6 +87,7 @@ describe("leaderboard remote integration", () => {
 
   it("submits local classic upserts to the leaderboard API", async () => {
     const seasonId = getCurrentSeasonId();
+    markPlayerAccountLinked("player-test-1", "tester");
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ entry: { playerId: "player-test-1" } }), {
         status: 201,
@@ -117,6 +121,39 @@ describe("leaderboard remote integration", () => {
       expect.objectContaining({
         body: expect.stringContaining(`"seasonId":"${seasonId}"`),
       }),
+    );
+  });
+
+  it("skips remote leaderboard upserts without a linked account", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ linked: false, playerId: "player-test-1" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    upsertLeaderboardEntry({
+      playerId: "player-test-1",
+      name: "Bulls",
+      publicTag: "7F3A",
+      elo: RANKED_STARTING_ELO,
+      wins: 4,
+      losses: 1,
+      winStreak: 2,
+      lossStreak: 0,
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/account/status?playerId=player-test-1",
+      expect.any(Object),
+    );
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/api/leaderboards",
+      expect.objectContaining({ method: "POST" }),
     );
   });
 });

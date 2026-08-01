@@ -32,7 +32,10 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <li>Classic H2H and Pro H2H ranked matchmaking</li>
             <li>Weekly Events (live opponents only)</li>
             <li>Collection, Badges, Leaderboards, Stats, and Tier Lists (bottom nav)</li>
-            <li>Optional accounts for restoring a GM identity across devices</li>
+            <li>
+              Accounts required to appear on leaderboards or publish public tier
+              lists (playing stays open to guests)
+            </li>
           </ul>
 
           <h2>Known limits</h2>

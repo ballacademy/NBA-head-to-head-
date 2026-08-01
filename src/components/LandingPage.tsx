@@ -48,6 +48,7 @@ import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
+import { AccountRequiredNote } from "./AccountRequiredNote";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
 import { HubShell } from "./HubShell";
@@ -795,6 +796,9 @@ export function LandingPage({
                   <p className="event-card__description">
                     Ranked by wins this week. Ties break by fewer losses.
                   </p>
+                  <AccountRequiredNote className="account-required-note--inline">
+                    Create an account to appear on event standings.
+                  </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
                     <p className="event-leaderboard__empty">Loading standings…</p>
                   ) : eventLeaderboard.length === 0 ? (

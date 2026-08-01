@@ -34,6 +34,7 @@ import {
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
 import { GmProfileModal } from "./GmProfileModal";
+import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -288,6 +289,10 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       </div>
 
       {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
+
+      <AccountRequiredNote>
+        Create an account to appear on these leaderboards. Anyone can browse.
+      </AccountRequiredNote>
 
       <section className="hub-feature__panel leaderboard__panel">
         <div className="leaderboard__top">

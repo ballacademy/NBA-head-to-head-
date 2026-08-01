@@ -1,4 +1,5 @@
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
+import { isPlayerAccountLinked } from "./accountGate";
 import type { EventProfile } from "./eventProfile";
 import {
   EVENT_LEADERBOARD_LIMIT,
@@ -35,6 +36,10 @@ export const submitEventLeaderboardEntry = async (params: {
   profile: EventProfile;
 }): Promise<boolean> => {
   const identity = getOrCreatePlayerIdentity();
+
+  if (!(await isPlayerAccountLinked(identity.playerId))) {
+    return false;
+  }
 
   try {
     const response = await fetch(buildUrl("/api/leaderboards"), {
