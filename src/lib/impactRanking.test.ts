@@ -130,9 +130,9 @@ describe("impactRanking", () => {
     expect(getMidTierImpactLineupPenalty(thin)).toBe(
       MID_TIER_IMPACT_SOFT_CLEAR_PENALTY,
     );
-    expect(getThinImpactLineupPenalty(thin)).toBe(
-      THIN_IMPACT_ONE_ELITE_PENALTY + ONE_STAR_RELIANCE_PENALTY,
-    );
+    // Jokic is a full playmaker elevator, so the one-star reliance tax is waived.
+    expect(getThinImpactLineupPenalty(thin)).toBe(THIN_IMPACT_ONE_ELITE_PENALTY);
+    expect(ONE_STAR_RELIANCE_PENALTY).toBeLessThan(0);
 
     const brunson = players.find((player) => player.name === "Jalen Brunson");
     expect(brunson).toBeDefined();

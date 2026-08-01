@@ -16,6 +16,7 @@ import {
   isImpactRankStarPlayer,
 } from "./impactRanking";
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
+import { getSoloStarElevationPenalty } from "./lineupSoloStar";
 import type { HeadToHeadResult } from "./playerRecord";
 import { getPlayerStatWeight } from "./sampleSize";
 import {
@@ -356,7 +357,8 @@ const PROJECTED_WINS_AT_85 = 57;
 const PROJECTED_WINS_AT_90 = 63;
 const PROJECTED_WINS_AT_95 = 71;
 const PROJECTED_WINS_AT_100 = 82;
-const LOW_OVR_CURVE_POWER = 1.35;
+/** Steeper than linear below 80 OVR so weak fives fall into the teens faster. */
+export const LOW_OVR_CURVE_POWER = 1.85;
 
 const interpolate = (value: number, start: number, end: number, from: number, to: number) =>
   from + ((to - from) * (value - start)) / (end - start);
@@ -696,6 +698,12 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     );
   }
 
+  if (getSoloStarElevationPenalty(lineup) < -0.25) {
+    warnings.push(
+      "The lone star is not a playmaker; creation does not elevate the supporting cast.",
+    );
+  }
+
   if (hasNoCenter(roleFitProfile)) {
     warnings.push("No true center makes rebounding and interior size harder.");
   } else if (hasTooManyCenters(roleFitProfile)) {
@@ -762,6 +770,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     noStarPenalty: getNoTrueStarLineupPenalty(lineup),
     midTierImpactPenalty: getMidTierImpactLineupPenalty(lineup),
     thinImpactPenalty: getThinImpactLineupPenalty(lineup),
+    soloStarElevationPenalty: getSoloStarElevationPenalty(lineup),
     eliteOffenseBonus: getEliteOffenseLineupBonus(productionScore, totalPoints),
     superstarStackBonus: getSuperstarStackingLineupBonus(lineup),
   };

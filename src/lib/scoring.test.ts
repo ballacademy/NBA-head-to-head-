@@ -677,11 +677,11 @@ describe("calculateLineupScore", () => {
     expect(score.warnings).toContain(
       `No go-to scorer; nobody in the lineup reaches ${LINEUP_FIRST_OPTION_PPG_THRESHOLD} PPG.`,
     );
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(20);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(12);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(24);
   });
 
-  it("projects a defensive role-player lineup near the play-in instead of the mid-30s", () => {
+  it("projects a defensive role-player lineup in the mid-teens instead of the mid-30s", () => {
     const defensiveLineup = lineup([
       "dunnkr01-lac",
       "meltode01-gsw",
@@ -692,8 +692,8 @@ describe("calculateLineupScore", () => {
 
     const score = calculateLineupScore(defensiveLineup);
 
-    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(20);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
+    expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(10);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(22);
   });
 
   it("uses a softer team fit cap when a lineup has an 18+ PPG option but no 22+ star scorer", () => {
@@ -1089,7 +1089,8 @@ describe("projectRecord", () => {
     expect(projectRecord(85).formatted).toBe("Record: 57-25");
     expect(projectRecord(95).formatted).toBe("Record: 71-11");
     expect(projectedWinsFromOvr(90)).toBe(63);
-    expect(projectedWinsFromOvr(50)).toBe(28);
+    expect(projectedWinsFromOvr(50)).toBe(22);
+    expect(projectedWinsFromOvr(40)).toBe(14);
     expect(projectRecord(100).wins + projectRecord(100).losses).toBe(
       SEASON_LENGTH,
     );
