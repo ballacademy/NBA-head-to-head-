@@ -10,7 +10,6 @@ import {
 } from "./defenseGrade";
 import {
   getImpactRankingAdjustment,
-  getLineupBestImpactRank,
   getMidTierImpactLineupPenalty,
   getThinImpactLineupPenalty,
   isImpactRankStarPlayer,
@@ -356,9 +355,10 @@ export const formatLineupOvrDisplay = (
 ) =>
   score.ovrOverflow > 0 ? `${score.total} (+${score.ovrOverflow})` : `${score.total}`;
 
+/** Orb / share label stays "OVR"; overflow belongs on the number via formatLineupOvrDisplay. */
 export const formatLineupOvrLabel = (
-  score: Pick<LineupScore, "ovrOverflow">,
-) => (score.ovrOverflow > 0 ? `OVR (+${score.ovrOverflow})` : "OVR");
+  _score?: Pick<LineupScore, "ovrOverflow">,
+) => "OVR";
 
 export const displayLineupOvr = (preciseOvr: number) => Math.round(preciseOvr);
 
@@ -700,11 +700,8 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   }
 
   if (getMidTierImpactLineupPenalty(lineup) < 0) {
-    const best = getLineupBestImpactRank(lineup);
     warnings.push(
-      best != null && best <= 50
-        ? "Impact depth is soft; a lone top-50 piece is not enough elite support."
-        : "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
+      "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
     );
   }
 
@@ -849,21 +846,28 @@ export const buildLineupScoreContext = (score: LineupScore): string => {
   return `${firstSentence} ${secondSentence}`;
 };
 
+/**
+ * Compare matchup strength. Prefer uncapped OVR so two capped-100 lineups
+ * still separate when one cleared the ceiling by more.
+ */
 export const resolveHeadToHeadResult = (
-  userPreciseTotal: number,
-  opponentPreciseTotal: number,
+  userTotal: number,
+  opponentTotal: number,
 ): HeadToHeadResult => {
-  if (userPreciseTotal === opponentPreciseTotal) {
+  if (userTotal === opponentTotal) {
     return "tie";
   }
 
-  return userPreciseTotal > opponentPreciseTotal ? "win" : "loss";
+  return userTotal > opponentTotal ? "win" : "loss";
 };
 
 export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
   const scoreA = calculateLineupScore(lineupA);
   const scoreB = calculateLineupScore(lineupB);
-  const result = resolveHeadToHeadResult(scoreA.preciseTotal, scoreB.preciseTotal);
+  const result = resolveHeadToHeadResult(
+    scoreA.uncappedTotal,
+    scoreB.uncappedTotal,
+  );
 
   return {
     scoreA,
@@ -871,6 +875,6 @@ export const compareLineups = (lineupA: Player[], lineupB: Player[]) => {
     result,
     winner:
       result === "tie" ? "tie" : result === "win" ? "A" : "B",
-    margin: round(Math.abs(scoreA.preciseTotal - scoreB.preciseTotal)),
+    margin: round(Math.abs(scoreA.uncappedTotal - scoreB.uncappedTotal)),
   };
 };

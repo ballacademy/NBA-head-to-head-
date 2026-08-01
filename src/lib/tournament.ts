@@ -23,8 +23,8 @@ export const buildTournament = (
         getPlayersById(drafterB.lineup, pool),
       );
       const headToHead = resolveHeadToHeadResult(
-        scoreA.preciseTotal,
-        scoreB.preciseTotal,
+        scoreA.uncappedTotal,
+        scoreB.uncappedTotal,
       );
       // True ties advance the left/higher seed (drafter A) instead of awarding B.
       const winnerId =
@@ -38,7 +38,7 @@ export const buildTournament = (
         scoreA,
         scoreB,
         winnerId,
-        margin: Math.abs(scoreA.total - scoreB.total),
+        margin: Math.abs(scoreA.uncappedTotal - scoreB.uncappedTotal),
       });
     }
 

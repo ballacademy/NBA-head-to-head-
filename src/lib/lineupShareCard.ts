@@ -389,19 +389,17 @@ const drawShareCardHeader = (
   context.save();
   context.shadowColor = rgbaFromHex(input.accent, 0.45);
   context.shadowBlur = 16;
-  context.font = `900 72px ${FONT_STACK}`;
+  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
+  const ovrText =
+    overflow > 0 ? `${input.ovr} (+${overflow})` : String(input.ovr);
+  context.font = `900 ${overflow > 0 ? 52 : 72}px ${FONT_STACK}`;
   context.fillStyle = "#ffffff";
-  context.fillText(String(input.ovr), headerRightX, layout.ovrY);
+  context.fillText(ovrText, headerRightX, layout.ovrY);
   context.restore();
 
   context.font = `700 22px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
-  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
-  context.fillText(
-    overflow > 0 ? `OVR (+${overflow})` : "OVR",
-    headerRightX,
-    layout.ovrLabelY,
-  );
+  context.fillText("OVR", headerRightX, layout.ovrLabelY);
 
   if (input.record && layout.recordY) {
     context.font = `600 20px ${FONT_STACK}`;

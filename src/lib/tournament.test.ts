@@ -61,7 +61,7 @@ describe("buildTournament", () => {
 
     const scoreA = calculateLineupScore(sharedLineup);
     const scoreB = calculateLineupScore(sharedLineup);
-    expect(scoreA.preciseTotal).toBe(scoreB.preciseTotal);
+    expect(scoreA.uncappedTotal).toBe(scoreB.uncappedTotal);
 
     const [finals] = buildTournament([drafterA, drafterB], pool);
     expect(finals?.[0]?.winnerId).toBe("seed-a");

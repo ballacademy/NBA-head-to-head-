@@ -1,5 +1,4 @@
 import impactRankingData from "../../data/impact-ranking-overrides.json";
-import { getPlaymakerElevationStrength } from "./playmakerElevation";
 import type { Player } from "./types";
 
 export const IMPACT_BLEND_MAX_RAW = impactRankingData.blendMaxRaw;
@@ -13,15 +12,11 @@ export const MID_TIER_NEGATIVE_IMPACT_SCALE = 2;
 export const MID_TIER_IMPACT_NO_TOP50_PENALTY = -4;
 export const MID_TIER_IMPACT_NO_ELITE_PENALTY = -7;
 export const MID_TIER_IMPACT_UNRANKED_PENALTY = -7;
-/** Soft ding when only a single top-50 clears mid-tier without elite depth. */
-export const MID_TIER_IMPACT_SOFT_CLEAR_PENALTY = -2.5;
 
 /** Lineups with fewer than this many top-100 impact pieces pay a thin-depth tax. */
 export const THIN_IMPACT_MIN_ELITE_COUNT = 2;
 export const THIN_IMPACT_ONE_ELITE_PENALTY = -3.5;
 export const THIN_IMPACT_ZERO_ELITE_PENALTY = -5;
-/** Extra tax when offense leans on a single top-50 without a second elite piece. */
-export const ONE_STAR_RELIANCE_PENALTY = -3;
 
 const adjustments = impactRankingData.adjustments as Record<string, number>;
 const ranks = impactRankingData.ranks as Record<string, number>;
@@ -111,9 +106,29 @@ export const getPlayerTeamQualityImpactWeight = (
   );
 };
 
+/** Tax thin impact depth only (zero / one elite). Lone-anchor creation lives in lineupSoloStar. */
+export const getThinImpactLineupPenalty = (lineup: Player[]) => {
+  if (lineup.length === 0) {
+    return 0;
+  }
+
+  const eliteCount = countImpactElitePlayers(lineup);
+
+  if (eliteCount === 0) {
+    return THIN_IMPACT_ZERO_ELITE_PENALTY;
+  }
+
+  if (eliteCount < THIN_IMPACT_MIN_ELITE_COUNT) {
+    return THIN_IMPACT_ONE_ELITE_PENALTY;
+  }
+
+  return 0;
+};
+
 /**
  * Lineup ding when the best impact piece is only mid-tier or worse.
- * A lone top-50 without a second top-100 piece only soft-clears.
+ * Lone top-50/elite depth is handled by thin-impact + solo-star elevation
+ * (no soft-clear double tax).
  */
 export const getMidTierImpactLineupPenalty = (lineup: Player[]) => {
   if (lineup.length === 0) {
@@ -121,22 +136,14 @@ export const getMidTierImpactLineupPenalty = (lineup: Player[]) => {
   }
 
   const best = getLineupBestImpactRank(lineup);
-  const eliteCount = countImpactElitePlayers(lineup);
 
   if (best == null) {
     return MID_TIER_IMPACT_UNRANKED_PENALTY;
   }
 
-  if (best <= IMPACT_RANK_STAR_THRESHOLD) {
-    return eliteCount >= THIN_IMPACT_MIN_ELITE_COUNT
-      ? 0
-      : MID_TIER_IMPACT_SOFT_CLEAR_PENALTY;
-  }
-
+  // Top-50+ anchors: depth/creation taxes cover thin supporting casts.
   if (best <= IMPACT_RANK_TOP50_THRESHOLD) {
-    return eliteCount >= THIN_IMPACT_MIN_ELITE_COUNT
-      ? 0
-      : MID_TIER_IMPACT_SOFT_CLEAR_PENALTY;
+    return 0;
   }
 
   if (best <= IMPACT_RANK_ELITE_THRESHOLD) {
@@ -144,35 +151,6 @@ export const getMidTierImpactLineupPenalty = (lineup: Player[]) => {
   }
 
   return MID_TIER_IMPACT_NO_ELITE_PENALTY;
-};
-
-/** Tax thin impact depth and one-man top-50 reliance. */
-export const getThinImpactLineupPenalty = (lineup: Player[]) => {
-  if (lineup.length === 0) {
-    return 0;
-  }
-
-  const eliteCount = countImpactElitePlayers(lineup);
-  const top50Count = countImpactTop50Players(lineup);
-
-  let penalty = 0;
-
-  if (eliteCount === 0) {
-    penalty += THIN_IMPACT_ZERO_ELITE_PENALTY;
-  } else if (eliteCount < THIN_IMPACT_MIN_ELITE_COUNT) {
-    penalty += THIN_IMPACT_ONE_ELITE_PENALTY;
-  }
-
-  if (top50Count === 1 && eliteCount < THIN_IMPACT_MIN_ELITE_COUNT) {
-    const loneTop50 = lineup.find(isImpactRankTop50Player);
-    const elevation = loneTop50
-      ? getPlaymakerElevationStrength(loneTop50)
-      : 0;
-    // Playmaking elevators keep more of a thin supporting cast afloat.
-    penalty += ONE_STAR_RELIANCE_PENALTY * (1 - elevation);
-  }
-
-  return penalty;
 };
 
 export const getImpactRankingAdjustment = (lineup: Player[]) =>
