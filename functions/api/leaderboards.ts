@@ -117,7 +117,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
             le.loss_streak AS loss_streak, le.updated_at AS updated_at,
             pa.username AS username
      FROM leaderboard_entries le
-     LEFT JOIN player_accounts pa ON pa.player_id = le.player_id
+     INNER JOIN player_accounts pa ON pa.player_id = le.player_id
      WHERE le.mode = ? AND le.season_id = ?
      ORDER BY ${sortClause(sort, "le")}
      LIMIT ?`,
