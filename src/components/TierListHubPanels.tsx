@@ -155,23 +155,33 @@ export function TierListMinePanel({
 interface TierListPublicPanelProps {
   lists: PublicTierListSummary[];
   loading: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
   sort: PublicTierListSort;
   onSortChange: (sort: PublicTierListSort) => void;
   filters: PublicTierListBrowseFilters;
   onFiltersChange: (filters: PublicTierListBrowseFilters) => void;
   onOpen: (id: string) => void;
   onToggleLike: (id: string, liked: boolean) => void;
+  onLoadMore: () => void;
+  onEditOwned: (id: string) => void;
+  onUnpublishOwned: (id: string) => void;
 }
 
 export function TierListPublicPanel({
   lists,
   loading,
+  loadingMore,
+  hasMore,
   sort,
   onSortChange,
   filters,
   onFiltersChange,
   onOpen,
   onToggleLike,
+  onLoadMore,
+  onEditOwned,
+  onUnpublishOwned,
 }: TierListPublicPanelProps) {
   return (
     <div className="tier-list-hub__panel" aria-label="Public tier lists">
@@ -284,15 +294,34 @@ export function TierListPublicPanel({
                 </span>
               </div>
               <div className="tier-list__library-actions">
-                <button
-                  type="button"
-                  className={`secondary-button${
-                    entry.likedByViewer ? " is-active-like" : ""
-                  }`}
-                  onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
-                >
-                  {entry.likedByViewer ? "Liked" : "Like"}
-                </button>
+                {entry.isOwner ? (
+                  <>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => onEditOwned(entry.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => onUnpublishOwned(entry.id)}
+                    >
+                      Unpublish
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className={`secondary-button${
+                      entry.likedByViewer ? " is-active-like" : ""
+                    }`}
+                    onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
+                  >
+                    {entry.likedByViewer ? "Liked" : "Like"}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="secondary-button"
@@ -305,6 +334,17 @@ export function TierListPublicPanel({
           ))}
         </ul>
       )}
+
+      {hasMore && !loading ? (
+        <button
+          type="button"
+          className="secondary-button tier-list-hub__load-more"
+          disabled={loadingMore}
+          onClick={onLoadMore}
+        >
+          {loadingMore ? "Loading…" : "Load more"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -338,12 +378,18 @@ interface TierListPublicViewerProps {
   detail: PublicTierListDetail;
   playersById: Map<string, Player>;
   onToggleLike: (liked: boolean) => void;
+  onCopyLink: () => void;
+  onEditOwned?: () => void;
+  onUnpublishOwned?: () => void;
 }
 
 export function TierListPublicViewer({
   detail,
   playersById,
   onToggleLike,
+  onCopyLink,
+  onEditOwned,
+  onUnpublishOwned,
 }: TierListPublicViewerProps) {
   return (
     <div className="tier-list-hub__panel tier-list-hub__viewer">
@@ -355,15 +401,40 @@ export function TierListPublicViewer({
             {detail.likeCount} like{detail.likeCount === 1 ? "" : "s"}
           </span>
         </div>
-        <button
-          type="button"
-          className={`secondary-button${
-            detail.likedByViewer ? " is-active-like" : ""
-          }`}
-          onClick={() => onToggleLike(!detail.likedByViewer)}
-        >
-          {detail.likedByViewer ? "Liked" : "Like"}
-        </button>
+        <div className="tier-list__library-actions">
+          <button type="button" className="secondary-button" onClick={onCopyLink}>
+            Copy link
+          </button>
+          {detail.isOwner && onEditOwned ? (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onEditOwned}
+            >
+              Edit
+            </button>
+          ) : null}
+          {detail.isOwner && onUnpublishOwned ? (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onUnpublishOwned}
+            >
+              Unpublish
+            </button>
+          ) : null}
+          {!detail.isOwner ? (
+            <button
+              type="button"
+              className={`secondary-button${
+                detail.likedByViewer ? " is-active-like" : ""
+              }`}
+              onClick={() => onToggleLike(!detail.likedByViewer)}
+            >
+              {detail.likedByViewer ? "Liked" : "Like"}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="tier-list__board">

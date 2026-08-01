@@ -152,8 +152,22 @@ type FeatureHistoryState = {
   returnTo?: AppPhase;
 };
 
+const readInitialPublicTierListId = () => {
+  try {
+    const id = new URLSearchParams(window.location.search).get("tierList");
+    return id && id.trim() ? id.trim().slice(0, 64) : null;
+  } catch {
+    return null;
+  }
+};
+
 function App() {
-  const [phase, setPhase] = useState<AppPhase>("landing");
+  const [initialPublicTierListId] = useState<string | null>(
+    readInitialPublicTierListId,
+  );
+  const [phase, setPhase] = useState<AppPhase>(() =>
+    initialPublicTierListId ? "tierList" : "landing",
+  );
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
   const [draftOnboardingHasSalaryCap, setDraftOnboardingHasSalaryCap] =
     useState(false);
@@ -208,6 +222,17 @@ function App() {
   } | null>(null);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
+
+  useEffect(() => {
+    if (!initialPublicTierListId) {
+      return;
+    }
+
+    const state = window.history.state as FeatureHistoryState | null;
+    if (!state?.appPhase) {
+      window.history.replaceState({ appPhase: "tierList" }, "");
+    }
+  }, [initialPublicTierListId]);
 
   useEffect(() => {
     if (liveRecoveryAttemptedRef.current || phase !== "landing") {
@@ -1608,7 +1633,11 @@ function App() {
 
   if (phase === "tierList") {
     return renderHubFeature(
-      <TierListPage players={getTierListPlayers()} onBack={exitFeaturePage} />,
+      <TierListPage
+        players={getTierListPlayers()}
+        onBack={exitFeaturePage}
+        initialPublicTierListId={initialPublicTierListId}
+      />,
       "landing-layout--tier-list",
     );
   }

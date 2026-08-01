@@ -173,19 +173,40 @@ export const formatPublicTierListTime = (iso: string) => {
   });
 };
 
+export interface PublicTierListPage {
+  lists: PublicTierListSummary[];
+  hasMore: boolean;
+  nextOffset: number;
+}
+
+/** Canonical share URL that opens the public viewer via deep link. */
+export const buildPublicTierListShareUrl = (id: string) => {
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://www.draftdaygm.com";
+  const url = new URL(origin);
+  url.searchParams.set("tierList", id);
+  return url.toString();
+};
+
 export const fetchPublicTierLists = async (params: {
   viewerPlayerId: string;
   sort: PublicTierListSort;
   filters?: PublicTierListBrowseFilters;
   limit?: number;
-}): Promise<PublicTierListSummary[]> => {
+  offset?: number;
+}): Promise<PublicTierListPage> => {
   const filters = params.filters ?? DEFAULT_PUBLIC_TIER_LIST_FILTERS;
+  const limit = params.limit ?? 50;
+  const offset = Math.max(0, params.offset ?? 0);
 
   try {
     const search = new URLSearchParams({
       sort: params.sort,
       viewerPlayerId: params.viewerPlayerId,
-      limit: String(params.limit ?? 50),
+      limit: String(limit),
+      offset: String(offset),
     });
 
     const query = filters.query.trim();
@@ -213,9 +234,18 @@ export const fetchPublicTierLists = async (params: {
     if (response.ok) {
       const body = (await response.json()) as {
         lists?: PublicTierListSummary[];
+        hasMore?: boolean;
+        nextOffset?: number;
       };
       if (Array.isArray(body.lists)) {
-        return body.lists;
+        return {
+          lists: body.lists,
+          hasMore: Boolean(body.hasMore),
+          nextOffset:
+            typeof body.nextOffset === "number"
+              ? body.nextOffset
+              : offset + body.lists.length,
+        };
       }
     }
   } catch {
@@ -224,27 +254,32 @@ export const fetchPublicTierLists = async (params: {
 
   const catalog = loadLocalCatalog();
   const likedIds = new Set(catalog.likesByPlayer[params.viewerPlayerId] ?? []);
-  const summaries = catalog.lists.map((entry) =>
-    toSummary(entry, params.viewerPlayerId, likedIds),
-  );
-
-  return sortLists(
-    summaries.filter((entry) =>
-      matchesPublicTierListBrowseFilters(
-        entry,
-        filters,
-        params.viewerPlayerId,
+  const summaries = sortLists(
+    catalog.lists
+      .map((entry) => toSummary(entry, params.viewerPlayerId, likedIds))
+      .filter((entry) =>
+        matchesPublicTierListBrowseFilters(
+          entry,
+          filters,
+          params.viewerPlayerId,
+        ),
       ),
-    ),
     params.sort,
-  ).slice(0, params.limit ?? 50);
+  );
+  const lists = summaries.slice(offset, offset + limit);
+
+  return {
+    lists,
+    hasMore: offset + lists.length < summaries.length,
+    nextOffset: offset + lists.length,
+  };
 };
 
 /** Like counts keyed by published id — used to sort My lists. */
 export const fetchPublishedLikeCounts = async (params: {
   viewerPlayerId: string;
 }): Promise<Record<string, number>> => {
-  const lists = await fetchPublicTierLists({
+  const page = await fetchPublicTierLists({
     viewerPlayerId: params.viewerPlayerId,
     sort: "likes",
     filters: {
@@ -255,7 +290,7 @@ export const fetchPublishedLikeCounts = async (params: {
   });
 
   const counts: Record<string, number> = {};
-  for (const entry of lists) {
+  for (const entry of page.lists) {
     counts[entry.id] = entry.likeCount;
   }
   return counts;
