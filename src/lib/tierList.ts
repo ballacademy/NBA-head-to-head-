@@ -49,6 +49,13 @@ export type TierListDraftClassFilter = "all" | DraftClassYear;
 export type TierListTeamFilter = "all" | string;
 export type TierListDivisionFilter = "all" | Division;
 export type TierListConferenceFilter = "all" | Conference;
+/** Discrete height bands for the editor pool (inches). */
+export type TierListHeightBand =
+  | "all"
+  | "under-66"
+  | "66-68"
+  | "69-611"
+  | "7-plus";
 
 export interface TierListFilters {
   query: string;
@@ -57,6 +64,7 @@ export interface TierListFilters {
   ageMin: number | null;
   /** Inclusive upper age bound; null means no maximum. */
   ageMax: number | null;
+  heightBand: TierListHeightBand;
   team: TierListTeamFilter;
   division: TierListDivisionFilter;
   conference: TierListConferenceFilter;
@@ -100,6 +108,7 @@ export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   positions: [],
   ageMin: null,
   ageMax: null,
+  heightBand: "all",
   team: "all",
   division: "all",
   conference: "all",
@@ -126,6 +135,19 @@ const DEFAULT_TIER_NAMES = ["S", "A", "B", "C", "D", "F"] as const;
 
 /** Soft cap so tier labels stay readable in the narrow board column. */
 export const TIER_NAME_MAX_LENGTH = 12;
+/** Max rows on a board (matches publish API). */
+export const TIER_LIST_MAX_TIERS = 12;
+
+export const TIER_LIST_HEIGHT_BANDS: Array<{
+  id: TierListHeightBand;
+  label: string;
+}> = [
+  { id: "all", label: "Any height" },
+  { id: "under-66", label: "Under 6'6\"" },
+  { id: "66-68", label: "6'6\"–6'8\"" },
+  { id: "69-611", label: "6'9\"–6'11\"" },
+  { id: "7-plus", label: "7'0\"+" },
+];
 
 export const createDefaultTier = (): TierListRow[] =>
   DEFAULT_TIER_NAMES.map((name, index) => ({
@@ -345,6 +367,10 @@ export const setTierListTitle = (
 });
 
 export const addTier = (state: TierListState): TierListState => {
+  if (state.tiers.length >= TIER_LIST_MAX_TIERS) {
+    return state;
+  }
+
   const index = state.tiers.length + 1;
   return {
     ...state,
@@ -445,6 +471,33 @@ export const matchesAgeRangeFilter = (
   }
 
   return true;
+};
+
+export const matchesHeightBandFilter = (
+  player: Player,
+  heightBand: TierListHeightBand,
+): boolean => {
+  if (heightBand === "all") {
+    return true;
+  }
+
+  const height = player.heightInches;
+  if (typeof height !== "number" || !Number.isFinite(height)) {
+    return false;
+  }
+
+  switch (heightBand) {
+    case "under-66":
+      return height < 78;
+    case "66-68":
+      return height >= 78 && height <= 80;
+    case "69-611":
+      return height >= 81 && height <= 83;
+    case "7-plus":
+      return height >= 84;
+    default:
+      return true;
+  }
 };
 
 export const matchesAgencyFilter = (
@@ -567,6 +620,10 @@ export const playerMatchesTierListFilters = (
     return false;
   }
 
+  if (!matchesHeightBandFilter(player, filters.heightBand)) {
+    return false;
+  }
+
   if (!matchesTeamFilter(player, filters.team)) {
     return false;
   }
@@ -646,5 +703,27 @@ export const filterTierListPool = (
         playerMatchesTierListFilters(player, filters),
     )
     .sort((left, right) => comparePlayersForTierPool(left, right, filters.sort));
+
+/** Sort My lists using remote like counts for published boards. */
+export const sortTierListLibraryDocuments = (
+  documents: TierListSavedDocument[],
+  sort: "recent" | "likes",
+  likeCountByPublishedId: Record<string, number> = {},
+) =>
+  [...documents].sort((left, right) => {
+    if (sort === "likes") {
+      const leftLikes = left.publishedId
+        ? (likeCountByPublishedId[left.publishedId] ?? 0)
+        : 0;
+      const rightLikes = right.publishedId
+        ? (likeCountByPublishedId[right.publishedId] ?? 0)
+        : 0;
+      if (rightLikes !== leftLikes) {
+        return rightLikes - leftLikes;
+      }
+    }
+
+    return right.savedAt - left.savedAt;
+  });
 
 export const POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];

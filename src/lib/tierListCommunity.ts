@@ -7,6 +7,23 @@ import type { TierListRow, TierListState } from "./tierList";
 import { displayTierListTitle } from "./tierList";
 
 export type PublicTierListSort = "recent" | "likes";
+export type PublicTierListDateWindow = "all" | "week" | "month";
+
+export interface PublicTierListBrowseFilters {
+  query: string;
+  mineOnly: boolean;
+  likedByMe: boolean;
+  minLikes: number;
+  dateWindow: PublicTierListDateWindow;
+}
+
+export const DEFAULT_PUBLIC_TIER_LIST_FILTERS: PublicTierListBrowseFilters = {
+  query: "",
+  mineOnly: false,
+  likedByMe: false,
+  minLikes: 0,
+  dateWindow: "all",
+};
 
 export interface PublicTierListSummary {
   id: string;
@@ -61,6 +78,55 @@ const saveLocalCatalog = (catalog: LocalPublicCatalog) => {
   writeJson(LOCAL_PUBLIC_KEY, catalog);
 };
 
+const dateWindowStartMs = (window: PublicTierListDateWindow) => {
+  if (window === "all") {
+    return null;
+  }
+
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  return window === "week" ? now - 7 * dayMs : now - 30 * dayMs;
+};
+
+export const matchesPublicTierListBrowseFilters = (
+  entry: PublicTierListSummary,
+  filters: PublicTierListBrowseFilters,
+  viewerPlayerId: string,
+) => {
+  const query = filters.query.trim().toLowerCase();
+  if (query) {
+    const haystack =
+      `${entry.title} ${entry.authorName} ${entry.authorTag}`.toLowerCase();
+    if (!haystack.includes(query)) {
+      return false;
+    }
+  }
+
+  if (filters.mineOnly && !entry.isOwner) {
+    return false;
+  }
+
+  if (filters.likedByMe && !entry.likedByViewer) {
+    return false;
+  }
+
+  if (entry.likeCount < Math.max(0, filters.minLikes)) {
+    return false;
+  }
+
+  const sinceMs = dateWindowStartMs(filters.dateWindow);
+  if (sinceMs != null) {
+    const publishedMs = new Date(entry.publishedAt).getTime();
+    if (!Number.isFinite(publishedMs) || publishedMs < sinceMs) {
+      return false;
+    }
+  }
+
+  // mineOnly / likedByMe already use isOwner / likedByViewer from the summary.
+  void viewerPlayerId;
+  return true;
+};
+
 const sortLists = (
   lists: PublicTierListSummary[],
   sort: PublicTierListSort,
@@ -110,13 +176,35 @@ export const formatPublicTierListTime = (iso: string) => {
 export const fetchPublicTierLists = async (params: {
   viewerPlayerId: string;
   sort: PublicTierListSort;
+  filters?: PublicTierListBrowseFilters;
+  limit?: number;
 }): Promise<PublicTierListSummary[]> => {
+  const filters = params.filters ?? DEFAULT_PUBLIC_TIER_LIST_FILTERS;
+
   try {
     const search = new URLSearchParams({
       sort: params.sort,
       viewerPlayerId: params.viewerPlayerId,
-      limit: "50",
+      limit: String(params.limit ?? 50),
     });
+
+    const query = filters.query.trim();
+    if (query) {
+      search.set("q", query);
+    }
+    if (filters.mineOnly) {
+      search.set("mineOnly", "1");
+    }
+    if (filters.likedByMe) {
+      search.set("likedByMe", "1");
+    }
+    if (filters.minLikes > 0) {
+      search.set("minLikes", String(Math.floor(filters.minLikes)));
+    }
+    if (filters.dateWindow !== "all") {
+      search.set("dateWindow", filters.dateWindow);
+    }
+
     const response = await fetch(
       `${buildUrl("/api/tier-lists")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
@@ -136,12 +224,41 @@ export const fetchPublicTierLists = async (params: {
 
   const catalog = loadLocalCatalog();
   const likedIds = new Set(catalog.likesByPlayer[params.viewerPlayerId] ?? []);
+  const summaries = catalog.lists.map((entry) =>
+    toSummary(entry, params.viewerPlayerId, likedIds),
+  );
+
   return sortLists(
-    catalog.lists.map((entry) =>
-      toSummary(entry, params.viewerPlayerId, likedIds),
+    summaries.filter((entry) =>
+      matchesPublicTierListBrowseFilters(
+        entry,
+        filters,
+        params.viewerPlayerId,
+      ),
     ),
     params.sort,
-  );
+  ).slice(0, params.limit ?? 50);
+};
+
+/** Like counts keyed by published id — used to sort My lists. */
+export const fetchPublishedLikeCounts = async (params: {
+  viewerPlayerId: string;
+}): Promise<Record<string, number>> => {
+  const lists = await fetchPublicTierLists({
+    viewerPlayerId: params.viewerPlayerId,
+    sort: "likes",
+    filters: {
+      ...DEFAULT_PUBLIC_TIER_LIST_FILTERS,
+      mineOnly: true,
+    },
+    limit: 100,
+  });
+
+  const counts: Record<string, number> = {};
+  for (const entry of lists) {
+    counts[entry.id] = entry.likeCount;
+  }
+  return counts;
 };
 
 export const fetchPublicTierList = async (params: {
@@ -189,7 +306,7 @@ export const publishTierList = async (params: {
   authorName: string;
   authorTag: string;
   publishedId?: string | null;
-}): Promise<{ ok: true; id: string } | { ok: false; error: string }> => {
+}): Promise<{ ok: true; id: string; updated: boolean } | { ok: false; error: string }> => {
   if (!(await isPlayerAccountLinked(params.playerId))) {
     return { ok: false, error: ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE };
   }
@@ -215,9 +332,12 @@ export const publishTierList = async (params: {
     });
 
     if (response.ok) {
-      const body = (await response.json()) as { id?: string };
+      const body = (await response.json()) as {
+        id?: string;
+        updated?: boolean;
+      };
       if (body.id) {
-        return { ok: true, id: body.id };
+        return { ok: true, id: body.id, updated: Boolean(body.updated) };
       }
     } else {
       const body = (await response.json().catch(() => null)) as {
@@ -233,14 +353,15 @@ export const publishTierList = async (params: {
 
   const catalog = loadLocalCatalog();
   const now = new Date().toISOString();
-  const id =
-    params.publishedId &&
+  const updatingExisting =
+    Boolean(params.publishedId) &&
     catalog.lists.some(
       (entry) =>
         entry.id === params.publishedId && entry.playerId === params.playerId,
-    )
-      ? params.publishedId
-      : `local-pub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    );
+  const id = updatingExisting
+    ? params.publishedId!
+    : `local-pub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
   const nextEntry: PublicTierListDetail & { playerId: string } = {
     id,
@@ -266,7 +387,7 @@ export const publishTierList = async (params: {
     ],
   });
 
-  return { ok: true, id };
+  return { ok: true, id, updated: updatingExisting };
 };
 
 export const unpublishTierList = async (params: {
