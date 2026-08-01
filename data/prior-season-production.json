@@ -1,0 +1,3993 @@
+{
+  "description": "Compact prior-season production used to waive small-sample scoring dings for established players.",
+  "season": "2024-25",
+  "seasonType": "Regular Season",
+  "source": "basketball-reference",
+  "generatedAt": "2026-08-01T04:10:33.848879+00:00",
+  "playerCount": 569,
+  "players": {
+    "gilgesh01": {
+      "gamesPlayed": 76,
+      "points": 32.7,
+      "rebounds": 5.0,
+      "assists": 6.4,
+      "minutes": 34.2
+    },
+    "antetgi01": {
+      "gamesPlayed": 67,
+      "points": 30.4,
+      "rebounds": 11.9,
+      "assists": 6.5,
+      "minutes": 34.2
+    },
+    "jokicni01": {
+      "gamesPlayed": 70,
+      "points": 29.6,
+      "rebounds": 12.7,
+      "assists": 10.2,
+      "minutes": 36.7
+    },
+    "doncilu01": {
+      "gamesPlayed": 50,
+      "points": 28.2,
+      "rebounds": 8.2,
+      "assists": 7.7,
+      "minutes": 35.4
+    },
+    "edwaran01": {
+      "gamesPlayed": 79,
+      "points": 27.6,
+      "rebounds": 5.7,
+      "assists": 4.5,
+      "minutes": 36.3
+    },
+    "tatumja01": {
+      "gamesPlayed": 72,
+      "points": 26.8,
+      "rebounds": 8.7,
+      "assists": 6.0,
+      "minutes": 36.4
+    },
+    "duranke01": {
+      "gamesPlayed": 62,
+      "points": 26.6,
+      "rebounds": 6.0,
+      "assists": 4.2,
+      "minutes": 36.5
+    },
+    "maxeyty01": {
+      "gamesPlayed": 52,
+      "points": 26.3,
+      "rebounds": 3.3,
+      "assists": 6.1,
+      "minutes": 37.7
+    },
+    "cunnica01": {
+      "gamesPlayed": 70,
+      "points": 26.1,
+      "rebounds": 6.1,
+      "assists": 9.1,
+      "minutes": 35.0
+    },
+    "brunsja01": {
+      "gamesPlayed": 65,
+      "points": 26.0,
+      "rebounds": 2.9,
+      "assists": 7.3,
+      "minutes": 35.4
+    },
+    "banchpa01": {
+      "gamesPlayed": 46,
+      "points": 25.9,
+      "rebounds": 7.5,
+      "assists": 4.8,
+      "minutes": 34.4
+    },
+    "bookede01": {
+      "gamesPlayed": 75,
+      "points": 25.6,
+      "rebounds": 4.1,
+      "assists": 7.1,
+      "minutes": 37.3
+    },
+    "ballla01": {
+      "gamesPlayed": 47,
+      "points": 25.2,
+      "rebounds": 4.9,
+      "assists": 7.4,
+      "minutes": 32.0
+    },
+    "lillada01": {
+      "gamesPlayed": 58,
+      "points": 24.9,
+      "rebounds": 4.7,
+      "assists": 7.1,
+      "minutes": 36.1
+    },
+    "davisan02": {
+      "gamesPlayed": 51,
+      "points": 24.7,
+      "rebounds": 11.6,
+      "assists": 3.5,
+      "minutes": 33.5
+    },
+    "irvinky01": {
+      "gamesPlayed": 50,
+      "points": 24.7,
+      "rebounds": 4.8,
+      "assists": 4.6,
+      "minutes": 36.1
+    },
+    "willizi01": {
+      "gamesPlayed": 30,
+      "points": 24.6,
+      "rebounds": 7.2,
+      "assists": 5.3,
+      "minutes": 28.6
+    },
+    "curryst01": {
+      "gamesPlayed": 70,
+      "points": 24.5,
+      "rebounds": 4.4,
+      "assists": 6.0,
+      "minutes": 32.2
+    },
+    "townska01": {
+      "gamesPlayed": 72,
+      "points": 24.4,
+      "rebounds": 12.8,
+      "assists": 3.1,
+      "minutes": 35.0
+    },
+    "jamesle01": {
+      "gamesPlayed": 70,
+      "points": 24.4,
+      "rebounds": 7.8,
+      "assists": 8.2,
+      "minutes": 34.9
+    },
+    "wembavi01": {
+      "gamesPlayed": 46,
+      "points": 24.3,
+      "rebounds": 11.0,
+      "assists": 3.7,
+      "minutes": 33.2
+    },
+    "wagnefr01": {
+      "gamesPlayed": 60,
+      "points": 24.2,
+      "rebounds": 5.7,
+      "assists": 4.7,
+      "minutes": 33.7
+    },
+    "youngtr01": {
+      "gamesPlayed": 76,
+      "points": 24.2,
+      "rebounds": 3.1,
+      "assists": 11.6,
+      "minutes": 36.0
+    },
+    "thomaca02": {
+      "gamesPlayed": 25,
+      "points": 24.0,
+      "rebounds": 3.3,
+      "assists": 3.8,
+      "minutes": 31.2
+    },
+    "mitchdo01": {
+      "gamesPlayed": 71,
+      "points": 24.0,
+      "rebounds": 4.5,
+      "assists": 5.0,
+      "minutes": 31.4
+    },
+    "herroty01": {
+      "gamesPlayed": 77,
+      "points": 23.9,
+      "rebounds": 5.2,
+      "assists": 5.5,
+      "minutes": 35.4
+    },
+    "embiijo01": {
+      "gamesPlayed": 19,
+      "points": 23.8,
+      "rebounds": 8.2,
+      "assists": 4.5,
+      "minutes": 30.2
+    },
+    "foxde01": {
+      "gamesPlayed": 62,
+      "points": 23.5,
+      "rebounds": 4.8,
+      "assists": 6.3,
+      "minutes": 36.1
+    },
+    "lavinza01": {
+      "gamesPlayed": 74,
+      "points": 23.3,
+      "rebounds": 4.3,
+      "assists": 4.2,
+      "minutes": 35.2
+    },
+    "moranja01": {
+      "gamesPlayed": 50,
+      "points": 23.2,
+      "rebounds": 4.1,
+      "assists": 7.3,
+      "minutes": 30.4
+    },
+    "hardeja01": {
+      "gamesPlayed": 79,
+      "points": 22.8,
+      "rebounds": 5.8,
+      "assists": 8.7,
+      "minutes": 35.3
+    },
+    "ingrabr01": {
+      "gamesPlayed": 18,
+      "points": 22.2,
+      "rebounds": 5.6,
+      "assists": 5.2,
+      "minutes": 33.1
+    },
+    "derozde01": {
+      "gamesPlayed": 77,
+      "points": 22.2,
+      "rebounds": 3.9,
+      "assists": 4.4,
+      "minutes": 35.9
+    },
+    "jacksja02": {
+      "gamesPlayed": 74,
+      "points": 22.2,
+      "rebounds": 5.6,
+      "assists": 2.0,
+      "minutes": 29.8
+    },
+    "brownja02": {
+      "gamesPlayed": 63,
+      "points": 22.2,
+      "rebounds": 5.8,
+      "assists": 4.5,
+      "minutes": 34.3
+    },
+    "powelno01": {
+      "gamesPlayed": 60,
+      "points": 21.8,
+      "rebounds": 3.2,
+      "assists": 2.1,
+      "minutes": 32.6
+    },
+    "willija06": {
+      "gamesPlayed": 69,
+      "points": 21.6,
+      "rebounds": 5.3,
+      "assists": 5.1,
+      "minutes": 32.4
+    },
+    "leonaka01": {
+      "gamesPlayed": 37,
+      "points": 21.5,
+      "rebounds": 5.9,
+      "assists": 3.1,
+      "minutes": 31.9
+    },
+    "murraja01": {
+      "gamesPlayed": 67,
+      "points": 21.4,
+      "rebounds": 3.9,
+      "assists": 6.0,
+      "minutes": 36.1
+    },
+    "murphtr02": {
+      "gamesPlayed": 53,
+      "points": 21.2,
+      "rebounds": 5.1,
+      "assists": 3.5,
+      "minutes": 35.0
+    },
+    "mccolcj01": {
+      "gamesPlayed": 56,
+      "points": 21.1,
+      "rebounds": 3.8,
+      "assists": 4.1,
+      "minutes": 32.7
+    },
+    "barrerj01": {
+      "gamesPlayed": 58,
+      "points": 21.1,
+      "rebounds": 6.3,
+      "assists": 5.4,
+      "minutes": 32.2
+    },
+    "millebr02": {
+      "gamesPlayed": 27,
+      "points": 21.0,
+      "rebounds": 4.9,
+      "assists": 3.6,
+      "minutes": 34.2
+    },
+    "greenja05": {
+      "gamesPlayed": 82,
+      "points": 21.0,
+      "rebounds": 4.6,
+      "assists": 3.4,
+      "minutes": 32.9
+    },
+    "garlada01": {
+      "gamesPlayed": 75,
+      "points": 20.6,
+      "rebounds": 2.9,
+      "assists": 6.7,
+      "minutes": 30.7
+    },
+    "poolejo01": {
+      "gamesPlayed": 68,
+      "points": 20.5,
+      "rebounds": 3.0,
+      "assists": 4.5,
+      "minutes": 29.4
+    },
+    "whiteco01": {
+      "gamesPlayed": 74,
+      "points": 20.4,
+      "rebounds": 3.7,
+      "assists": 4.5,
+      "minutes": 33.1
+    },
+    "bridgmi02": {
+      "gamesPlayed": 64,
+      "points": 20.3,
+      "rebounds": 7.5,
+      "assists": 3.9,
+      "minutes": 31.7
+    },
+    "reaveau01": {
+      "gamesPlayed": 73,
+      "points": 20.2,
+      "rebounds": 4.5,
+      "assists": 5.8,
+      "minutes": 34.9
+    },
+    "siakapa01": {
+      "gamesPlayed": 78,
+      "points": 20.2,
+      "rebounds": 6.9,
+      "assists": 3.4,
+      "minutes": 32.7
+    },
+    "porzikr01": {
+      "gamesPlayed": 42,
+      "points": 19.5,
+      "rebounds": 6.8,
+      "assists": 2.1,
+      "minutes": 28.8
+    },
+    "simonan01": {
+      "gamesPlayed": 70,
+      "points": 19.3,
+      "rebounds": 2.7,
+      "assists": 4.8,
+      "minutes": 32.7
+    },
+    "barnesc01": {
+      "gamesPlayed": 65,
+      "points": 19.3,
+      "rebounds": 7.7,
+      "assists": 5.8,
+      "minutes": 32.8
+    },
+    "banede01": {
+      "gamesPlayed": 69,
+      "points": 19.2,
+      "rebounds": 6.1,
+      "assists": 5.3,
+      "minutes": 32.0
+    },
+    "sengual01": {
+      "gamesPlayed": 76,
+      "points": 19.1,
+      "rebounds": 10.3,
+      "assists": 4.9,
+      "minutes": 31.5
+    },
+    "sabondo01": {
+      "gamesPlayed": 70,
+      "points": 19.1,
+      "rebounds": 13.9,
+      "assists": 6.0,
+      "minutes": 34.7
+    },
+    "collijo01": {
+      "gamesPlayed": 40,
+      "points": 19.0,
+      "rebounds": 8.2,
+      "assists": 2.0,
+      "minutes": 30.5
+    },
+    "markkla01": {
+      "gamesPlayed": 47,
+      "points": 19.0,
+      "rebounds": 5.9,
+      "assists": 1.5,
+      "minutes": 31.4
+    },
+    "johnsja05": {
+      "gamesPlayed": 36,
+      "points": 18.9,
+      "rebounds": 10.0,
+      "assists": 5.0,
+      "minutes": 35.7
+    },
+    "johnsca02": {
+      "gamesPlayed": 57,
+      "points": 18.8,
+      "rebounds": 4.3,
+      "assists": 3.4,
+      "minutes": 31.6
+    },
+    "randlju01": {
+      "gamesPlayed": 69,
+      "points": 18.7,
+      "rebounds": 7.1,
+      "assists": 4.7,
+      "minutes": 32.3
+    },
+    "halibty01": {
+      "gamesPlayed": 73,
+      "points": 18.6,
+      "rebounds": 3.5,
+      "assists": 9.2,
+      "minutes": 33.6
+    },
+    "mobleev01": {
+      "gamesPlayed": 71,
+      "points": 18.5,
+      "rebounds": 9.3,
+      "assists": 3.2,
+      "minutes": 30.5
+    },
+    "vucevni01": {
+      "gamesPlayed": 73,
+      "points": 18.5,
+      "rebounds": 10.1,
+      "assists": 3.5,
+      "minutes": 31.2
+    },
+    "sharpsh01": {
+      "gamesPlayed": 72,
+      "points": 18.5,
+      "rebounds": 4.5,
+      "assists": 2.8,
+      "minutes": 31.3
+    },
+    "sextoco01": {
+      "gamesPlayed": 63,
+      "points": 18.4,
+      "rebounds": 2.7,
+      "assists": 4.2,
+      "minutes": 27.9
+    },
+    "portemi01": {
+      "gamesPlayed": 77,
+      "points": 18.2,
+      "rebounds": 7.0,
+      "assists": 2.1,
+      "minutes": 33.7
+    },
+    "adebaba01": {
+      "gamesPlayed": 78,
+      "points": 18.1,
+      "rebounds": 9.6,
+      "assists": 4.3,
+      "minutes": 34.3
+    },
+    "wiggian01": {
+      "gamesPlayed": 60,
+      "points": 18.0,
+      "rebounds": 4.5,
+      "assists": 2.6,
+      "minutes": 30.7
+    },
+    "anunoog01": {
+      "gamesPlayed": 74,
+      "points": 18.0,
+      "rebounds": 4.8,
+      "assists": 2.2,
+      "minutes": 36.6
+    },
+    "iveyja01": {
+      "gamesPlayed": 30,
+      "points": 17.6,
+      "rebounds": 4.1,
+      "assists": 4.0,
+      "minutes": 29.9
+    },
+    "bridgmi01": {
+      "gamesPlayed": 82,
+      "points": 17.6,
+      "rebounds": 3.2,
+      "assists": 3.7,
+      "minutes": 37.0
+    },
+    "murrade01": {
+      "gamesPlayed": 31,
+      "points": 17.5,
+      "rebounds": 6.5,
+      "assists": 7.4,
+      "minutes": 32.6
+    },
+    "butleji01": {
+      "gamesPlayed": 55,
+      "points": 17.5,
+      "rebounds": 5.4,
+      "assists": 5.4,
+      "minutes": 31.7
+    },
+    "monkma01": {
+      "gamesPlayed": 65,
+      "points": 17.2,
+      "rebounds": 3.8,
+      "assists": 5.6,
+      "minutes": 31.6
+    },
+    "quickim01": {
+      "gamesPlayed": 33,
+      "points": 17.1,
+      "rebounds": 3.5,
+      "assists": 5.8,
+      "minutes": 27.8
+    },
+    "bealbr01": {
+      "gamesPlayed": 53,
+      "points": 17.0,
+      "rebounds": 3.3,
+      "assists": 3.7,
+      "minutes": 32.1
+    },
+    "huntede01": {
+      "gamesPlayed": 64,
+      "points": 17.0,
+      "rebounds": 4.0,
+      "assists": 1.4,
+      "minutes": 27.2
+    },
+    "avdijde01": {
+      "gamesPlayed": 72,
+      "points": 16.9,
+      "rebounds": 7.3,
+      "assists": 3.9,
+      "minutes": 30.0
+    },
+    "zubaciv01": {
+      "gamesPlayed": 80,
+      "points": 16.8,
+      "rebounds": 12.6,
+      "assists": 2.7,
+      "minutes": 32.8
+    },
+    "georgke01": {
+      "gamesPlayed": 67,
+      "points": 16.8,
+      "rebounds": 3.8,
+      "assists": 5.6,
+      "minutes": 31.5
+    },
+    "whitede01": {
+      "gamesPlayed": 76,
+      "points": 16.4,
+      "rebounds": 4.5,
+      "assists": 4.8,
+      "minutes": 33.9
+    },
+    "vassede01": {
+      "gamesPlayed": 64,
+      "points": 16.3,
+      "rebounds": 4.0,
+      "assists": 2.9,
+      "minutes": 31.0
+    },
+    "beaslma01": {
+      "gamesPlayed": 82,
+      "points": 16.3,
+      "rebounds": 2.6,
+      "assists": 1.7,
+      "minutes": 27.8
+    },
+    "suggsja01": {
+      "gamesPlayed": 35,
+      "points": 16.2,
+      "rebounds": 4.0,
+      "assists": 3.7,
+      "minutes": 28.6
+    },
+    "clarkjo01": {
+      "gamesPlayed": 37,
+      "points": 16.2,
+      "rebounds": 3.2,
+      "assists": 3.7,
+      "minutes": 26.0
+    },
+    "georgpa01": {
+      "gamesPlayed": 41,
+      "points": 16.2,
+      "rebounds": 5.3,
+      "assists": 4.3,
+      "minutes": 32.5
+    },
+    "mathube01": {
+      "gamesPlayed": 72,
+      "points": 16.1,
+      "rebounds": 5.3,
+      "assists": 1.9,
+      "minutes": 29.8
+    },
+    "turnemy01": {
+      "gamesPlayed": 72,
+      "points": 15.6,
+      "rebounds": 6.5,
+      "assists": 1.5,
+      "minutes": 30.2
+    },
+    "braunch01": {
+      "gamesPlayed": 79,
+      "points": 15.4,
+      "rebounds": 5.2,
+      "assists": 2.6,
+      "minutes": 33.9
+    },
+    "mccaija01": {
+      "gamesPlayed": 23,
+      "points": 15.3,
+      "rebounds": 2.4,
+      "assists": 2.6,
+      "minutes": 25.7
+    },
+    "kuminjo01": {
+      "gamesPlayed": 47,
+      "points": 15.3,
+      "rebounds": 4.6,
+      "assists": 2.2,
+      "minutes": 24.3
+    },
+    "willima07": {
+      "gamesPlayed": 44,
+      "points": 15.3,
+      "rebounds": 10.2,
+      "assists": 2.5,
+      "minutes": 26.6
+    },
+    "oubreke01": {
+      "gamesPlayed": 60,
+      "points": 15.1,
+      "rebounds": 6.1,
+      "assists": 1.8,
+      "minutes": 34.6
+    },
+    "holmgch01": {
+      "gamesPlayed": 32,
+      "points": 15.0,
+      "rebounds": 8.0,
+      "assists": 2.0,
+      "minutes": 27.4
+    },
+    "kuzmaky01": {
+      "gamesPlayed": 65,
+      "points": 14.8,
+      "rebounds": 5.7,
+      "assists": 2.3,
+      "minutes": 29.8
+    },
+    "castlst01": {
+      "gamesPlayed": 81,
+      "points": 14.7,
+      "rebounds": 3.7,
+      "assists": 4.1,
+      "minutes": 26.7
+    },
+    "gordoaa01": {
+      "gamesPlayed": 51,
+      "points": 14.7,
+      "rebounds": 4.8,
+      "assists": 3.2,
+      "minutes": 28.4
+    },
+    "washipj01": {
+      "gamesPlayed": 57,
+      "points": 14.7,
+      "rebounds": 7.8,
+      "assists": 2.3,
+      "minutes": 32.2
+    },
+    "giddejo01": {
+      "gamesPlayed": 70,
+      "points": 14.6,
+      "rebounds": 8.1,
+      "assists": 7.2,
+      "minutes": 30.2
+    },
+    "grimequ01": {
+      "gamesPlayed": 75,
+      "points": 14.6,
+      "rebounds": 4.3,
+      "assists": 3.0,
+      "minutes": 26.8
+    },
+    "poeltja01": {
+      "gamesPlayed": 57,
+      "points": 14.5,
+      "rebounds": 9.6,
+      "assists": 2.8,
+      "minutes": 29.6
+    },
+    "grantje01": {
+      "gamesPlayed": 47,
+      "points": 14.4,
+      "rebounds": 3.5,
+      "assists": 2.1,
+      "minutes": 32.4
+    },
+    "aytonde01": {
+      "gamesPlayed": 40,
+      "points": 14.4,
+      "rebounds": 10.2,
+      "assists": 1.6,
+      "minutes": 30.2
+    },
+    "dickgr01": {
+      "gamesPlayed": 54,
+      "points": 14.4,
+      "rebounds": 3.6,
+      "assists": 1.8,
+      "minutes": 29.4
+    },
+    "pritcpa01": {
+      "gamesPlayed": 80,
+      "points": 14.3,
+      "rebounds": 3.8,
+      "assists": 3.5,
+      "minutes": 28.4
+    },
+    "reidna01": {
+      "gamesPlayed": 80,
+      "points": 14.2,
+      "rebounds": 6.0,
+      "assists": 2.3,
+      "minutes": 27.5
+    },
+    "thompam01": {
+      "gamesPlayed": 69,
+      "points": 14.1,
+      "rebounds": 8.2,
+      "assists": 3.8,
+      "minutes": 32.2
+    },
+    "daniedy01": {
+      "gamesPlayed": 76,
+      "points": 14.1,
+      "rebounds": 5.9,
+      "assists": 4.4,
+      "minutes": 33.8
+    },
+    "vanvlfr01": {
+      "gamesPlayed": 60,
+      "points": 14.1,
+      "rebounds": 3.7,
+      "assists": 5.6,
+      "minutes": 35.2
+    },
+    "manntr01": {
+      "gamesPlayed": 13,
+      "points": 14.1,
+      "rebounds": 2.9,
+      "assists": 3.0,
+      "minutes": 24.5
+    },
+    "brookdi01": {
+      "gamesPlayed": 75,
+      "points": 14.0,
+      "rebounds": 3.7,
+      "assists": 1.7,
+      "minutes": 31.8
+    },
+    "thompkl01": {
+      "gamesPlayed": 72,
+      "points": 14.0,
+      "rebounds": 3.4,
+      "assists": 2.0,
+      "minutes": 27.3
+    },
+    "smithto05": {
+      "gamesPlayed": 1,
+      "points": 14.0,
+      "rebounds": 8.0,
+      "assists": 0.0,
+      "minutes": 22.0
+    },
+    "portibo01": {
+      "gamesPlayed": 49,
+      "points": 13.9,
+      "rebounds": 8.4,
+      "assists": 2.1,
+      "minutes": 25.4
+    },
+    "harrito02": {
+      "gamesPlayed": 73,
+      "points": 13.7,
+      "rebounds": 5.9,
+      "assists": 2.2,
+      "minutes": 31.6
+    },
+    "hartjo01": {
+      "gamesPlayed": 77,
+      "points": 13.6,
+      "rebounds": 9.6,
+      "assists": 5.9,
+      "minutes": 37.6
+    },
+    "allenja01": {
+      "gamesPlayed": 82,
+      "points": 13.5,
+      "rebounds": 9.7,
+      "assists": 1.9,
+      "minutes": 28.0
+    },
+    "okongon01": {
+      "gamesPlayed": 74,
+      "points": 13.4,
+      "rebounds": 8.9,
+      "assists": 2.3,
+      "minutes": 27.9
+    },
+    "westbru01": {
+      "gamesPlayed": 75,
+      "points": 13.3,
+      "rebounds": 4.9,
+      "assists": 6.1,
+      "minutes": 27.9
+    },
+    "marshna01": {
+      "gamesPlayed": 69,
+      "points": 13.2,
+      "rebounds": 4.8,
+      "assists": 3.0,
+      "minutes": 27.8
+    },
+    "schrode01": {
+      "gamesPlayed": 75,
+      "points": 13.1,
+      "rebounds": 2.6,
+      "assists": 5.4,
+      "minutes": 28.1
+    },
+    "hachiru01": {
+      "gamesPlayed": 59,
+      "points": 13.1,
+      "rebounds": 5.0,
+      "assists": 1.4,
+      "minutes": 31.7
+    },
+    "sarral01": {
+      "gamesPlayed": 67,
+      "points": 13.0,
+      "rebounds": 6.5,
+      "assists": 2.4,
+      "minutes": 27.1
+    },
+    "lopezbr01": {
+      "gamesPlayed": 80,
+      "points": 13.0,
+      "rebounds": 5.0,
+      "assists": 1.8,
+      "minutes": 31.8
+    },
+    "wagnemo01": {
+      "gamesPlayed": 30,
+      "points": 12.9,
+      "rebounds": 4.9,
+      "assists": 1.4,
+      "minutes": 18.8
+    },
+    "johnske04": {
+      "gamesPlayed": 77,
+      "points": 12.7,
+      "rebounds": 4.8,
+      "assists": 1.6,
+      "minutes": 23.9
+    },
+    "hendesc01": {
+      "gamesPlayed": 66,
+      "points": 12.7,
+      "rebounds": 3.0,
+      "assists": 5.1,
+      "minutes": 26.7
+    },
+    "brogdma01": {
+      "gamesPlayed": 24,
+      "points": 12.7,
+      "rebounds": 3.8,
+      "assists": 4.1,
+      "minutes": 23.5
+    },
+    "russeda01": {
+      "gamesPlayed": 58,
+      "points": 12.6,
+      "rebounds": 2.8,
+      "assists": 5.1,
+      "minutes": 25.5
+    },
+    "risacza01": {
+      "gamesPlayed": 75,
+      "points": 12.6,
+      "rebounds": 3.6,
+      "assists": 1.2,
+      "minutes": 24.6
+    },
+    "aldamsa01": {
+      "gamesPlayed": 65,
+      "points": 12.5,
+      "rebounds": 6.4,
+      "assists": 2.9,
+      "minutes": 25.5
+    },
+    "jeromty01": {
+      "gamesPlayed": 70,
+      "points": 12.5,
+      "rebounds": 2.5,
+      "assists": 3.4,
+      "minutes": 19.9
+    },
+    "murrake02": {
+      "gamesPlayed": 76,
+      "points": 12.4,
+      "rebounds": 6.7,
+      "assists": 1.4,
+      "minutes": 34.3
+    },
+    "walkelo01": {
+      "gamesPlayed": 20,
+      "points": 12.4,
+      "rebounds": 3.2,
+      "assists": 2.5,
+      "minutes": 23.9
+    },
+    "dosunay01": {
+      "gamesPlayed": 46,
+      "points": 12.3,
+      "rebounds": 3.5,
+      "assists": 4.5,
+      "minutes": 30.3
+    },
+    "coulibi01": {
+      "gamesPlayed": 59,
+      "points": 12.3,
+      "rebounds": 5.0,
+      "assists": 3.4,
+      "minutes": 33.0
+    },
+    "gaffoda01": {
+      "gamesPlayed": 57,
+      "points": 12.3,
+      "rebounds": 6.8,
+      "assists": 1.4,
+      "minutes": 21.5
+    },
+    "barneha02": {
+      "gamesPlayed": 82,
+      "points": 12.3,
+      "rebounds": 3.8,
+      "assists": 1.7,
+      "minutes": 27.2
+    },
+    "smithja05": {
+      "gamesPlayed": 57,
+      "points": 12.2,
+      "rebounds": 7.0,
+      "assists": 1.1,
+      "minutes": 30.1
+    },
+    "mcdanja02": {
+      "gamesPlayed": 82,
+      "points": 12.2,
+      "rebounds": 5.7,
+      "assists": 2.0,
+      "minutes": 31.9
+    },
+    "leverca01": {
+      "gamesPlayed": 64,
+      "points": 12.1,
+      "rebounds": 3.2,
+      "assists": 3.4,
+      "minutes": 24.9
+    },
+    "timmedr01": {
+      "gamesPlayed": 9,
+      "points": 12.1,
+      "rebounds": 7.2,
+      "assists": 2.2,
+      "minutes": 28.2
+    },
+    "nesmiaa01": {
+      "gamesPlayed": 45,
+      "points": 12.0,
+      "rebounds": 4.0,
+      "assists": 1.2,
+      "minutes": 24.9
+    },
+    "wiggiaa01": {
+      "gamesPlayed": 76,
+      "points": 12.0,
+      "rebounds": 3.9,
+      "assists": 1.8,
+      "minutes": 22.9
+    },
+    "goberru01": {
+      "gamesPlayed": 72,
+      "points": 12.0,
+      "rebounds": 10.9,
+      "assists": 1.8,
+      "minutes": 33.2
+    },
+    "easonta01": {
+      "gamesPlayed": 57,
+      "points": 12.0,
+      "rebounds": 6.4,
+      "assists": 1.5,
+      "minutes": 24.9
+    },
+    "middlkh01": {
+      "gamesPlayed": 37,
+      "points": 11.9,
+      "rebounds": 3.7,
+      "assists": 4.1,
+      "minutes": 22.8
+    },
+    "durenja01": {
+      "gamesPlayed": 78,
+      "points": 11.8,
+      "rebounds": 10.3,
+      "assists": 2.7,
+      "minutes": 26.1
+    },
+    "podzibr01": {
+      "gamesPlayed": 64,
+      "points": 11.7,
+      "rebounds": 5.1,
+      "assists": 3.4,
+      "minutes": 26.8
+    },
+    "divindo01": {
+      "gamesPlayed": 62,
+      "points": 11.7,
+      "rebounds": 3.7,
+      "assists": 3.6,
+      "minutes": 25.9
+    },
+    "kispeco01": {
+      "gamesPlayed": 61,
+      "points": 11.6,
+      "rebounds": 3.0,
+      "assists": 1.7,
+      "minutes": 26.3
+    },
+    "sochaje01": {
+      "gamesPlayed": 54,
+      "points": 11.4,
+      "rebounds": 6.5,
+      "assists": 2.4,
+      "minutes": 25.3
+    },
+    "camarto01": {
+      "gamesPlayed": 78,
+      "points": 11.3,
+      "rebounds": 5.8,
+      "assists": 2.2,
+      "minutes": 32.7
+    },
+    "harteis01": {
+      "gamesPlayed": 57,
+      "points": 11.2,
+      "rebounds": 10.7,
+      "assists": 3.8,
+      "minutes": 27.9
+    },
+    "hieldbu01": {
+      "gamesPlayed": 82,
+      "points": 11.1,
+      "rebounds": 3.2,
+      "assists": 1.6,
+      "minutes": 22.7
+    },
+    "trentga02": {
+      "gamesPlayed": 74,
+      "points": 11.1,
+      "rebounds": 2.3,
+      "assists": 1.2,
+      "minutes": 25.6
+    },
+    "holidjr01": {
+      "gamesPlayed": 62,
+      "points": 11.1,
+      "rebounds": 4.3,
+      "assists": 3.9,
+      "minutes": 30.6
+    },
+    "kesslwa01": {
+      "gamesPlayed": 58,
+      "points": 11.1,
+      "rebounds": 12.2,
+      "assists": 1.7,
+      "minutes": 30.0
+    },
+    "robindu01": {
+      "gamesPlayed": 74,
+      "points": 11.0,
+      "rebounds": 2.3,
+      "assists": 2.4,
+      "minutes": 24.1
+    },
+    "yabusgu01": {
+      "gamesPlayed": 70,
+      "points": 11.0,
+      "rebounds": 5.6,
+      "assists": 2.1,
+      "minutes": 27.1
+    },
+    "dinwisp01": {
+      "gamesPlayed": 79,
+      "points": 11.0,
+      "rebounds": 2.6,
+      "assists": 4.4,
+      "minutes": 27.0
+    },
+    "hardati02": {
+      "gamesPlayed": 77,
+      "points": 11.0,
+      "rebounds": 2.4,
+      "assists": 1.6,
+      "minutes": 28.0
+    },
+    "sensabr01": {
+      "gamesPlayed": 71,
+      "points": 10.9,
+      "rebounds": 3.0,
+      "assists": 1.5,
+      "minutes": 20.2
+    },
+    "bogdabo01": {
+      "gamesPlayed": 54,
+      "points": 10.8,
+      "rebounds": 2.9,
+      "assists": 2.7,
+      "minutes": 25.0
+    },
+    "hawkijo01": {
+      "gamesPlayed": 56,
+      "points": 10.8,
+      "rebounds": 2.8,
+      "assists": 1.2,
+      "minutes": 23.6
+    },
+    "bostobr01": {
+      "gamesPlayed": 42,
+      "points": 10.7,
+      "rebounds": 3.2,
+      "assists": 2.2,
+      "minutes": 23.6
+    },
+    "jovicni01": {
+      "gamesPlayed": 46,
+      "points": 10.7,
+      "rebounds": 3.9,
+      "assists": 2.8,
+      "minutes": 25.1
+    },
+    "allengr01": {
+      "gamesPlayed": 64,
+      "points": 10.6,
+      "rebounds": 3.0,
+      "assists": 2.1,
+      "minutes": 24.1
+    },
+    "johnske07": {
+      "gamesPlayed": 79,
+      "points": 10.6,
+      "rebounds": 3.8,
+      "assists": 2.2,
+      "minutes": 24.4
+    },
+    "roziete01": {
+      "gamesPlayed": 64,
+      "points": 10.6,
+      "rebounds": 3.7,
+      "assists": 2.6,
+      "minutes": 25.9
+    },
+    "toppiob01": {
+      "gamesPlayed": 79,
+      "points": 10.5,
+      "rebounds": 4.0,
+      "assists": 1.6,
+      "minutes": 19.6
+    },
+    "willigr01": {
+      "gamesPlayed": 16,
+      "points": 10.4,
+      "rebounds": 5.1,
+      "assists": 2.3,
+      "minutes": 29.9
+    },
+    "wellsja01": {
+      "gamesPlayed": 79,
+      "points": 10.4,
+      "rebounds": 3.4,
+      "assists": 1.7,
+      "minutes": 25.9
+    },
+    "valanjo01": {
+      "gamesPlayed": 81,
+      "points": 10.4,
+      "rebounds": 7.7,
+      "assists": 2.0,
+      "minutes": 18.8
+    },
+    "agbajoc01": {
+      "gamesPlayed": 64,
+      "points": 10.4,
+      "rebounds": 3.8,
+      "assists": 1.5,
+      "minutes": 27.2
+    },
+    "meltode01": {
+      "gamesPlayed": 6,
+      "points": 10.3,
+      "rebounds": 3.3,
+      "assists": 2.8,
+      "minutes": 20.2
+    },
+    "joneshe01": {
+      "gamesPlayed": 20,
+      "points": 10.3,
+      "rebounds": 3.9,
+      "assists": 3.3,
+      "minutes": 32.4
+    },
+    "alvarjo01": {
+      "gamesPlayed": 56,
+      "points": 10.3,
+      "rebounds": 2.4,
+      "assists": 4.6,
+      "minutes": 24.4
+    },
+    "porteke02": {
+      "gamesPlayed": 75,
+      "points": 10.3,
+      "rebounds": 3.7,
+      "assists": 3.4,
+      "minutes": 19.8
+    },
+    "claxtni01": {
+      "gamesPlayed": 70,
+      "points": 10.3,
+      "rebounds": 7.4,
+      "assists": 2.2,
+      "minutes": 26.9
+    },
+    "joeis01": {
+      "gamesPlayed": 74,
+      "points": 10.2,
+      "rebounds": 2.6,
+      "assists": 1.6,
+      "minutes": 21.7
+    },
+    "watfotr01": {
+      "gamesPlayed": 44,
+      "points": 10.2,
+      "rebounds": 3.6,
+      "assists": 2.6,
+      "minutes": 20.8
+    },
+    "jonesty01": {
+      "gamesPlayed": 81,
+      "points": 10.2,
+      "rebounds": 2.4,
+      "assists": 5.3,
+      "minutes": 26.8
+    },
+    "thompau01": {
+      "gamesPlayed": 59,
+      "points": 10.1,
+      "rebounds": 5.1,
+      "assists": 2.3,
+      "minutes": 22.5
+    },
+    "jonesde02": {
+      "gamesPlayed": 77,
+      "points": 10.1,
+      "rebounds": 3.4,
+      "assists": 0.8,
+      "minutes": 24.3
+    },
+    "edwarju01": {
+      "gamesPlayed": 44,
+      "points": 10.1,
+      "rebounds": 3.4,
+      "assists": 1.6,
+      "minutes": 26.3
+    },
+    "brookke02": {
+      "gamesPlayed": 14,
+      "points": 10.1,
+      "rebounds": 4.1,
+      "assists": 0.9,
+      "minutes": 23.7
+    },
+    "dortlu01": {
+      "gamesPlayed": 71,
+      "points": 10.1,
+      "rebounds": 4.1,
+      "assists": 1.6,
+      "minutes": 29.2
+    },
+    "nembhan01": {
+      "gamesPlayed": 65,
+      "points": 10.0,
+      "rebounds": 3.3,
+      "assists": 5.0,
+      "minutes": 28.9
+    },
+    "bouchch01": {
+      "gamesPlayed": 50,
+      "points": 10.0,
+      "rebounds": 4.5,
+      "assists": 0.7,
+      "minutes": 17.2
+    },
+    "willizi02": {
+      "gamesPlayed": 63,
+      "points": 10.0,
+      "rebounds": 4.6,
+      "assists": 1.3,
+      "minutes": 24.5
+    },
+    "niangge01": {
+      "gamesPlayed": 79,
+      "points": 9.9,
+      "rebounds": 3.4,
+      "assists": 1.4,
+      "minutes": 21.5
+    },
+    "champju02": {
+      "gamesPlayed": 82,
+      "points": 9.9,
+      "rebounds": 3.9,
+      "assists": 1.4,
+      "minutes": 23.6
+    },
+    "huertke01": {
+      "gamesPlayed": 69,
+      "points": 9.9,
+      "rebounds": 3.0,
+      "assists": 2.3,
+      "minutes": 24.3
+    },
+    "smithni01": {
+      "gamesPlayed": 60,
+      "points": 9.9,
+      "rebounds": 2.1,
+      "assists": 2.4,
+      "minutes": 22.8
+    },
+    "pippesc02": {
+      "gamesPlayed": 79,
+      "points": 9.9,
+      "rebounds": 3.3,
+      "assists": 4.4,
+      "minutes": 21.3
+    },
+    "carrica01": {
+      "gamesPlayed": 82,
+      "points": 9.8,
+      "rebounds": 4.2,
+      "assists": 4.4,
+      "minutes": 30.0
+    },
+    "moodymo01": {
+      "gamesPlayed": 74,
+      "points": 9.8,
+      "rebounds": 2.6,
+      "assists": 1.3,
+      "minutes": 22.3
+    },
+    "coffeam01": {
+      "gamesPlayed": 72,
+      "points": 9.7,
+      "rebounds": 2.2,
+      "assists": 1.1,
+      "minutes": 24.3
+    },
+    "filipky01": {
+      "gamesPlayed": 72,
+      "points": 9.6,
+      "rebounds": 6.1,
+      "assists": 1.9,
+      "minutes": 21.1
+    },
+    "chrisma02": {
+      "gamesPlayed": 78,
+      "points": 9.6,
+      "rebounds": 3.3,
+      "assists": 1.9,
+      "minutes": 27.3
+    },
+    "wilsoja03": {
+      "gamesPlayed": 79,
+      "points": 9.5,
+      "rebounds": 3.4,
+      "assists": 1.8,
+      "minutes": 25.7
+    },
+    "mcbrimi01": {
+      "gamesPlayed": 64,
+      "points": 9.5,
+      "rebounds": 2.5,
+      "assists": 2.9,
+      "minutes": 24.9
+    },
+    "evbuoto01": {
+      "gamesPlayed": 28,
+      "points": 9.5,
+      "rebounds": 4.3,
+      "assists": 2.0,
+      "minutes": 23.8
+    },
+    "blackan01": {
+      "gamesPlayed": 78,
+      "points": 9.4,
+      "rebounds": 2.9,
+      "assists": 3.1,
+      "minutes": 24.2
+    },
+    "whitmca01": {
+      "gamesPlayed": 51,
+      "points": 9.4,
+      "rebounds": 3.0,
+      "assists": 1.0,
+      "minutes": 16.2
+    },
+    "anthoco01": {
+      "gamesPlayed": 67,
+      "points": 9.4,
+      "rebounds": 3.0,
+      "assists": 2.9,
+      "minutes": 18.4
+    },
+    "strusma01": {
+      "gamesPlayed": 50,
+      "points": 9.4,
+      "rebounds": 4.3,
+      "assists": 3.2,
+      "minutes": 25.5
+    },
+    "alexani01": {
+      "gamesPlayed": 82,
+      "points": 9.4,
+      "rebounds": 3.2,
+      "assists": 2.7,
+      "minutes": 25.3
+    },
+    "vukcetr01": {
+      "gamesPlayed": 35,
+      "points": 9.4,
+      "rebounds": 3.7,
+      "assists": 1.1,
+      "minutes": 14.7
+    },
+    "wareke01": {
+      "gamesPlayed": 64,
+      "points": 9.3,
+      "rebounds": 7.4,
+      "assists": 0.9,
+      "minutes": 22.2
+    },
+    "richani01": {
+      "gamesPlayed": 57,
+      "points": 9.3,
+      "rebounds": 8.2,
+      "assists": 0.9,
+      "minutes": 22.0
+    },
+    "edeyza01": {
+      "gamesPlayed": 66,
+      "points": 9.2,
+      "rebounds": 8.3,
+      "assists": 1.0,
+      "minutes": 21.5
+    },
+    "lawsoaj01": {
+      "gamesPlayed": 26,
+      "points": 9.1,
+      "rebounds": 3.3,
+      "assists": 1.2,
+      "minutes": 18.7
+    },
+    "knechda01": {
+      "gamesPlayed": 78,
+      "points": 9.1,
+      "rebounds": 2.8,
+      "assists": 0.8,
+      "minutes": 19.2
+    },
+    "clownno01": {
+      "gamesPlayed": 46,
+      "points": 9.1,
+      "rebounds": 3.9,
+      "assists": 0.9,
+      "minutes": 22.7
+    },
+    "onealro01": {
+      "gamesPlayed": 75,
+      "points": 9.1,
+      "rebounds": 4.7,
+      "assists": 2.2,
+      "minutes": 24.5
+    },
+    "mccontj01": {
+      "gamesPlayed": 79,
+      "points": 9.1,
+      "rebounds": 2.4,
+      "assists": 4.4,
+      "minutes": 17.9
+    },
+    "cartewe01": {
+      "gamesPlayed": 68,
+      "points": 9.1,
+      "rebounds": 7.2,
+      "assists": 2.0,
+      "minutes": 25.9
+    },
+    "missiyv01": {
+      "gamesPlayed": 73,
+      "points": 9.1,
+      "rebounds": 8.2,
+      "assists": 1.4,
+      "minutes": 26.8
+    },
+    "horfoal01": {
+      "gamesPlayed": 60,
+      "points": 9.0,
+      "rebounds": 6.2,
+      "assists": 2.1,
+      "minutes": 27.7
+    },
+    "greendr01": {
+      "gamesPlayed": 68,
+      "points": 9.0,
+      "rebounds": 6.1,
+      "assists": 5.6,
+      "minutes": 29.2
+    },
+    "butleja02": {
+      "gamesPlayed": 60,
+      "points": 9.0,
+      "rebounds": 1.8,
+      "assists": 3.7,
+      "minutes": 17.4
+    },
+    "strawju01": {
+      "gamesPlayed": 65,
+      "points": 9.0,
+      "rebounds": 2.2,
+      "assists": 1.3,
+      "minutes": 21.3
+    },
+    "hayeski01": {
+      "gamesPlayed": 6,
+      "points": 9.0,
+      "rebounds": 3.0,
+      "assists": 5.2,
+      "minutes": 27.0
+    },
+    "smartma01": {
+      "gamesPlayed": 34,
+      "points": 9.0,
+      "rebounds": 2.1,
+      "assists": 3.2,
+      "minutes": 20.0
+    },
+    "willipa01": {
+      "gamesPlayed": 63,
+      "points": 9.0,
+      "rebounds": 3.8,
+      "assists": 2.0,
+      "minutes": 25.0
+    },
+    "capelca01": {
+      "gamesPlayed": 55,
+      "points": 8.9,
+      "rebounds": 8.5,
+      "assists": 1.1,
+      "minutes": 21.4
+    },
+    "juzanjo01": {
+      "gamesPlayed": 64,
+      "points": 8.9,
+      "rebounds": 2.9,
+      "assists": 1.1,
+      "minutes": 19.8
+    },
+    "nurkiju01": {
+      "gamesPlayed": 51,
+      "points": 8.9,
+      "rebounds": 7.8,
+      "assists": 2.3,
+      "minutes": 20.8
+    },
+    "kennalu01": {
+      "gamesPlayed": 65,
+      "points": 8.9,
+      "rebounds": 2.8,
+      "assists": 3.3,
+      "minutes": 22.6
+    },
+    "paulch01": {
+      "gamesPlayed": 82,
+      "points": 8.8,
+      "rebounds": 3.6,
+      "assists": 7.4,
+      "minutes": 28.0
+    },
+    "champju01": {
+      "gamesPlayed": 62,
+      "points": 8.8,
+      "rebounds": 5.7,
+      "assists": 1.0,
+      "minutes": 21.6
+    },
+    "mykhasv01": {
+      "gamesPlayed": 38,
+      "points": 8.8,
+      "rebounds": 2.4,
+      "assists": 2.0,
+      "minutes": 20.0
+    },
+    "exumda01": {
+      "gamesPlayed": 20,
+      "points": 8.7,
+      "rebounds": 1.7,
+      "assists": 2.8,
+      "minutes": 18.6
+    },
+    "livelde01": {
+      "gamesPlayed": 36,
+      "points": 8.7,
+      "rebounds": 7.5,
+      "assists": 2.4,
+      "minutes": 23.1
+    },
+    "finnedo01": {
+      "gamesPlayed": 63,
+      "points": 8.7,
+      "rebounds": 3.9,
+      "assists": 1.4,
+      "minutes": 28.9
+    },
+    "colliis01": {
+      "gamesPlayed": 71,
+      "points": 8.7,
+      "rebounds": 3.3,
+      "assists": 6.3,
+      "minutes": 25.9
+    },
+    "hardyja02": {
+      "gamesPlayed": 57,
+      "points": 8.7,
+      "rebounds": 1.6,
+      "assists": 1.4,
+      "minutes": 15.9
+    },
+    "olynyke01": {
+      "gamesPlayed": 44,
+      "points": 8.7,
+      "rebounds": 4.7,
+      "assists": 2.9,
+      "minutes": 20.3
+    },
+    "caldwke01": {
+      "gamesPlayed": 77,
+      "points": 8.7,
+      "rebounds": 2.2,
+      "assists": 1.8,
+      "minutes": 29.6
+    },
+    "georgky01": {
+      "gamesPlayed": 68,
+      "points": 8.7,
+      "rebounds": 4.2,
+      "assists": 2.5,
+      "minutes": 26.5
+    },
+    "brissos01": {
+      "gamesPlayed": 6,
+      "points": 8.7,
+      "rebounds": 3.7,
+      "assists": 0.7,
+      "minutes": 23.7
+    },
+    "martity01": {
+      "gamesPlayed": 60,
+      "points": 8.7,
+      "rebounds": 3.7,
+      "assists": 2.0,
+      "minutes": 21.9
+    },
+    "walteja01": {
+      "gamesPlayed": 52,
+      "points": 8.6,
+      "rebounds": 3.1,
+      "assists": 1.6,
+      "minutes": 21.2
+    },
+    "jaqueja01": {
+      "gamesPlayed": 66,
+      "points": 8.6,
+      "rebounds": 4.4,
+      "assists": 2.5,
+      "minutes": 20.7
+    },
+    "buzelma01": {
+      "gamesPlayed": 80,
+      "points": 8.6,
+      "rebounds": 3.5,
+      "assists": 1.0,
+      "minutes": 18.9
+    },
+    "nancela02": {
+      "gamesPlayed": 24,
+      "points": 8.5,
+      "rebounds": 4.3,
+      "assists": 1.6,
+      "minutes": 19.3
+    },
+    "hausesa01": {
+      "gamesPlayed": 71,
+      "points": 8.5,
+      "rebounds": 3.2,
+      "assists": 0.9,
+      "minutes": 21.7
+    },
+    "wallaca01": {
+      "gamesPlayed": 68,
+      "points": 8.4,
+      "rebounds": 3.4,
+      "assists": 2.5,
+      "minutes": 27.6
+    },
+    "rhodeja01": {
+      "gamesPlayed": 14,
+      "points": 8.4,
+      "rebounds": 3.0,
+      "assists": 1.1,
+      "minutes": 16.2
+    },
+    "nowelja01": {
+      "gamesPlayed": 8,
+      "points": 8.4,
+      "rebounds": 2.5,
+      "assists": 2.3,
+      "minutes": 21.0
+    },
+    "clarkbr01": {
+      "gamesPlayed": 64,
+      "points": 8.3,
+      "rebounds": 5.1,
+      "assists": 1.0,
+      "minutes": 18.9
+    },
+    "willibr03": {
+      "gamesPlayed": 33,
+      "points": 8.3,
+      "rebounds": 1.8,
+      "assists": 2.3,
+      "minutes": 14.8
+    },
+    "brownbr01": {
+      "gamesPlayed": 41,
+      "points": 8.3,
+      "rebounds": 4.0,
+      "assists": 2.0,
+      "minutes": 22.5
+    },
+    "bantoda01": {
+      "gamesPlayed": 67,
+      "points": 8.3,
+      "rebounds": 2.0,
+      "assists": 2.4,
+      "minutes": 16.7
+    },
+    "elliske01": {
+      "gamesPlayed": 80,
+      "points": 8.3,
+      "rebounds": 2.7,
+      "assists": 1.5,
+      "minutes": 24.4
+    },
+    "smithja04": {
+      "gamesPlayed": 64,
+      "points": 8.2,
+      "rebounds": 5.6,
+      "assists": 1.0,
+      "minutes": 15.0
+    },
+    "conlemi01": {
+      "gamesPlayed": 71,
+      "points": 8.2,
+      "rebounds": 2.6,
+      "assists": 4.5,
+      "minutes": 24.7
+    },
+    "princta02": {
+      "gamesPlayed": 80,
+      "points": 8.2,
+      "rebounds": 3.6,
+      "assists": 1.9,
+      "minutes": 27.1
+    },
+    "watsope01": {
+      "gamesPlayed": 68,
+      "points": 8.1,
+      "rebounds": 3.4,
+      "assists": 1.4,
+      "minutes": 24.4
+    },
+    "postqu01": {
+      "gamesPlayed": 42,
+      "points": 8.1,
+      "rebounds": 3.5,
+      "assists": 1.3,
+      "minutes": 16.3
+    },
+    "martica02": {
+      "gamesPlayed": 45,
+      "points": 7.9,
+      "rebounds": 3.9,
+      "assists": 2.1,
+      "minutes": 27.1
+    },
+    "mitchda01": {
+      "gamesPlayed": 74,
+      "points": 7.9,
+      "rebounds": 2.3,
+      "assists": 4.9,
+      "minutes": 27.4
+    },
+    "sharpda01": {
+      "gamesPlayed": 50,
+      "points": 7.9,
+      "rebounds": 6.6,
+      "assists": 1.8,
+      "minutes": 18.2
+    },
+    "etienty01": {
+      "gamesPlayed": 7,
+      "points": 7.9,
+      "rebounds": 1.3,
+      "assists": 1.7,
+      "minutes": 21.6
+    },
+    "simpskj01": {
+      "gamesPlayed": 36,
+      "points": 7.8,
+      "rebounds": 3.0,
+      "assists": 3.1,
+      "minutes": 23.4
+    },
+    "matkoka01": {
+      "gamesPlayed": 42,
+      "points": 7.7,
+      "rebounds": 5.0,
+      "assists": 1.1,
+      "minutes": 18.8
+    },
+    "mannte01": {
+      "gamesPlayed": 67,
+      "points": 7.7,
+      "rebounds": 3.0,
+      "assists": 1.8,
+      "minutes": 21.1
+    },
+    "johnsaj01": {
+      "gamesPlayed": 29,
+      "points": 7.6,
+      "rebounds": 2.0,
+      "assists": 2.6,
+      "minutes": 22.0
+    },
+    "balllo01": {
+      "gamesPlayed": 35,
+      "points": 7.6,
+      "rebounds": 3.4,
+      "assists": 3.3,
+      "minutes": 22.2
+    },
+    "tshieos01": {
+      "gamesPlayed": 14,
+      "points": 7.6,
+      "rebounds": 8.7,
+      "assists": 0.6,
+      "minutes": 18.2
+    },
+    "mathega01": {
+      "gamesPlayed": 47,
+      "points": 7.5,
+      "rebounds": 1.9,
+      "assists": 1.3,
+      "minutes": 17.7
+    },
+    "thybuma01": {
+      "gamesPlayed": 15,
+      "points": 7.5,
+      "rebounds": 3.5,
+      "assists": 1.9,
+      "minutes": 20.8
+    },
+    "greenaj01": {
+      "gamesPlayed": 73,
+      "points": 7.4,
+      "rebounds": 2.4,
+      "assists": 1.5,
+      "minutes": 22.7
+    },
+    "greenjo02": {
+      "gamesPlayed": 68,
+      "points": 7.4,
+      "rebounds": 2.5,
+      "assists": 1.6,
+      "minutes": 27.8
+    },
+    "holmeri01": {
+      "gamesPlayed": 31,
+      "points": 7.4,
+      "rebounds": 5.7,
+      "assists": 1.4,
+      "minutes": 17.2
+    },
+    "burksal01": {
+      "gamesPlayed": 49,
+      "points": 7.3,
+      "rebounds": 2.5,
+      "assists": 1.1,
+      "minutes": 17.6
+    },
+    "drumman01": {
+      "gamesPlayed": 40,
+      "points": 7.3,
+      "rebounds": 7.8,
+      "assists": 0.9,
+      "minutes": 18.8
+    },
+    "baughda01": {
+      "gamesPlayed": 15,
+      "points": 7.3,
+      "rebounds": 3.3,
+      "assists": 3.7,
+      "minutes": 24.7
+    },
+    "councri01": {
+      "gamesPlayed": 73,
+      "points": 7.3,
+      "rebounds": 2.9,
+      "assists": 1.3,
+      "minutes": 17.1
+    },
+    "dasiltr01": {
+      "gamesPlayed": 74,
+      "points": 7.2,
+      "rebounds": 3.3,
+      "assists": 1.5,
+      "minutes": 22.0
+    },
+    "plowdda01": {
+      "gamesPlayed": 6,
+      "points": 7.2,
+      "rebounds": 1.8,
+      "assists": 0.3,
+      "minutes": 12.0
+    },
+    "jacksgg01": {
+      "gamesPlayed": 29,
+      "points": 7.2,
+      "rebounds": 3.2,
+      "assists": 1.0,
+      "minutes": 15.8
+    },
+    "bitadgo01": {
+      "gamesPlayed": 70,
+      "points": 7.2,
+      "rebounds": 6.6,
+      "assists": 2.0,
+      "minutes": 20.4
+    },
+    "tomlina01": {
+      "gamesPlayed": 5,
+      "points": 7.2,
+      "rebounds": 4.2,
+      "assists": 0.4,
+      "minutes": 12.6
+    },
+    "merrisa01": {
+      "gamesPlayed": 71,
+      "points": 7.2,
+      "rebounds": 2.2,
+      "assists": 1.5,
+      "minutes": 19.7
+    },
+    "jonestr01": {
+      "gamesPlayed": 46,
+      "points": 7.2,
+      "rebounds": 2.5,
+      "assists": 4.2,
+      "minutes": 19.7
+    },
+    "krejcvi01": {
+      "gamesPlayed": 57,
+      "points": 7.2,
+      "rebounds": 2.7,
+      "assists": 2.6,
+      "minutes": 20.2
+    },
+    "carusal01": {
+      "gamesPlayed": 54,
+      "points": 7.1,
+      "rebounds": 2.9,
+      "assists": 2.5,
+      "minutes": 19.3
+    },
+    "hoodsja01": {
+      "gamesPlayed": 15,
+      "points": 7.1,
+      "rebounds": 1.8,
+      "assists": 2.5,
+      "minutes": 21.0
+    },
+    "sheadja01": {
+      "gamesPlayed": 75,
+      "points": 7.1,
+      "rebounds": 1.5,
+      "assists": 4.2,
+      "minutes": 19.6
+    },
+    "battlja01": {
+      "gamesPlayed": 59,
+      "points": 7.1,
+      "rebounds": 2.7,
+      "assists": 0.9,
+      "minutes": 17.7
+    },
+    "okogijo01": {
+      "gamesPlayed": 40,
+      "points": 7.1,
+      "rebounds": 2.8,
+      "assists": 0.8,
+      "minutes": 15.6
+    },
+    "jacksis01": {
+      "gamesPlayed": 5,
+      "points": 7.0,
+      "rebounds": 5.6,
+      "assists": 1.0,
+      "minutes": 16.8
+    },
+    "simsja01": {
+      "gamesPlayed": 6,
+      "points": 7.0,
+      "rebounds": 1.0,
+      "assists": 2.0,
+      "minutes": 18.7
+    },
+    "dowtije01": {
+      "gamesPlayed": 41,
+      "points": 7.0,
+      "rebounds": 1.5,
+      "assists": 1.9,
+      "minutes": 15.1
+    },
+    "garrema01": {
+      "gamesPlayed": 4,
+      "points": 7.0,
+      "rebounds": 1.5,
+      "assists": 3.3,
+      "minutes": 19.8
+    },
+    "reevean01": {
+      "gamesPlayed": 44,
+      "points": 6.9,
+      "rebounds": 1.4,
+      "assists": 0.9,
+      "minutes": 15.0
+    },
+    "payneca01": {
+      "gamesPlayed": 72,
+      "points": 6.9,
+      "rebounds": 1.4,
+      "assists": 2.8,
+      "minutes": 15.1
+    },
+    "laravja01": {
+      "gamesPlayed": 66,
+      "points": 6.9,
+      "rebounds": 3.9,
+      "assists": 2.4,
+      "minutes": 20.4
+    },
+    "huffja01": {
+      "gamesPlayed": 64,
+      "points": 6.9,
+      "rebounds": 2.0,
+      "assists": 0.6,
+      "minutes": 11.7
+    },
+    "robinor01": {
+      "gamesPlayed": 44,
+      "points": 6.9,
+      "rebounds": 5.0,
+      "assists": 1.8,
+      "minutes": 17.5
+    },
+    "dunnry01": {
+      "gamesPlayed": 74,
+      "points": 6.9,
+      "rebounds": 3.6,
+      "assists": 0.8,
+      "minutes": 19.1
+    },
+    "bolbo01": {
+      "gamesPlayed": 36,
+      "points": 6.8,
+      "rebounds": 2.9,
+      "assists": 0.6,
+      "minutes": 12.4
+    },
+    "martico01": {
+      "gamesPlayed": 53,
+      "points": 6.8,
+      "rebounds": 4.2,
+      "assists": 2.0,
+      "minutes": 22.1
+    },
+    "gordoer01": {
+      "gamesPlayed": 39,
+      "points": 6.8,
+      "rebounds": 1.2,
+      "assists": 1.7,
+      "minutes": 19.7
+    },
+    "hayesja02": {
+      "gamesPlayed": 56,
+      "points": 6.8,
+      "rebounds": 4.8,
+      "assists": 1.0,
+      "minutes": 19.5
+    },
+    "jeffrda01": {
+      "gamesPlayed": 47,
+      "points": 6.7,
+      "rebounds": 2.9,
+      "assists": 1.1,
+      "minutes": 22.8
+    },
+    "baglema02": {
+      "gamesPlayed": 10,
+      "points": 6.7,
+      "rebounds": 7.0,
+      "assists": 1.0,
+      "minutes": 25.3
+    },
+    "quinole01": {
+      "gamesPlayed": 13,
+      "points": 6.6,
+      "rebounds": 1.5,
+      "assists": 1.8,
+      "minutes": 14.1
+    },
+    "sassema01": {
+      "gamesPlayed": 57,
+      "points": 6.6,
+      "rebounds": 1.2,
+      "assists": 2.3,
+      "minutes": 14.2
+    },
+    "achiupr01": {
+      "gamesPlayed": 57,
+      "points": 6.6,
+      "rebounds": 5.6,
+      "assists": 1.0,
+      "minutes": 20.5
+    },
+    "jackstr02": {
+      "gamesPlayed": 62,
+      "points": 6.6,
+      "rebounds": 5.0,
+      "assists": 1.7,
+      "minutes": 15.6
+    },
+    "micicva01": {
+      "gamesPlayed": 41,
+      "points": 6.6,
+      "rebounds": 2.2,
+      "assists": 3.1,
+      "minutes": 19.1
+    },
+    "willivi01": {
+      "gamesPlayed": 27,
+      "points": 6.6,
+      "rebounds": 3.6,
+      "assists": 2.0,
+      "minutes": 18.5
+    },
+    "mitchaj01": {
+      "gamesPlayed": 36,
+      "points": 6.5,
+      "rebounds": 1.9,
+      "assists": 1.8,
+      "minutes": 16.6
+    },
+    "clingdo01": {
+      "gamesPlayed": 67,
+      "points": 6.5,
+      "rebounds": 7.9,
+      "assists": 1.1,
+      "minutes": 19.8
+    },
+    "paytoga02": {
+      "gamesPlayed": 62,
+      "points": 6.5,
+      "rebounds": 3.0,
+      "assists": 1.3,
+      "minutes": 15.0
+    },
+    "highsha01": {
+      "gamesPlayed": 74,
+      "points": 6.5,
+      "rebounds": 3.4,
+      "assists": 1.5,
+      "minutes": 24.6
+    },
+    "curryse01": {
+      "gamesPlayed": 68,
+      "points": 6.5,
+      "rebounds": 1.7,
+      "assists": 0.9,
+      "minutes": 15.6
+    },
+    "hortota01": {
+      "gamesPlayed": 58,
+      "points": 6.5,
+      "rebounds": 1.7,
+      "assists": 1.4,
+      "minutes": 12.5
+    },
+    "bryanth01": {
+      "gamesPlayed": 66,
+      "points": 6.5,
+      "rebounds": 3.8,
+      "assists": 0.8,
+      "minutes": 14.6
+    },
+    "lylestr01": {
+      "gamesPlayed": 69,
+      "points": 6.5,
+      "rebounds": 4.6,
+      "assists": 1.2,
+      "minutes": 19.6
+    },
+    "vincega01": {
+      "gamesPlayed": 72,
+      "points": 6.4,
+      "rebounds": 1.3,
+      "assists": 1.4,
+      "minutes": 21.2
+    },
+    "martike04": {
+      "gamesPlayed": 43,
+      "points": 6.4,
+      "rebounds": 2.9,
+      "assists": 1.1,
+      "minutes": 21.2
+    },
+    "dunnkr01": {
+      "gamesPlayed": 74,
+      "points": 6.4,
+      "rebounds": 3.4,
+      "assists": 2.8,
+      "minutes": 24.1
+    },
+    "colliza01": {
+      "gamesPlayed": 64,
+      "points": 6.4,
+      "rebounds": 4.5,
+      "assists": 1.7,
+      "minutes": 15.3
+    },
+    "hollaro01": {
+      "gamesPlayed": 81,
+      "points": 6.4,
+      "rebounds": 2.7,
+      "assists": 1.0,
+      "minutes": 15.6
+    },
+    "robinje02": {
+      "gamesPlayed": 66,
+      "points": 6.3,
+      "rebounds": 4.8,
+      "assists": 1.3,
+      "minutes": 18.8
+    },
+    "willike04": {
+      "gamesPlayed": 69,
+      "points": 6.3,
+      "rebounds": 3.5,
+      "assists": 1.4,
+      "minutes": 16.4
+    },
+    "mamuksa01": {
+      "gamesPlayed": 61,
+      "points": 6.3,
+      "rebounds": 3.1,
+      "assists": 0.8,
+      "minutes": 11.2
+    },
+    "hylanbo01": {
+      "gamesPlayed": 24,
+      "points": 6.2,
+      "rebounds": 1.0,
+      "assists": 1.3,
+      "minutes": 10.0
+    },
+    "smithdr01": {
+      "gamesPlayed": 14,
+      "points": 6.2,
+      "rebounds": 2.6,
+      "assists": 1.6,
+      "minutes": 19.1
+    },
+    "mogbojo01": {
+      "gamesPlayed": 63,
+      "points": 6.2,
+      "rebounds": 4.9,
+      "assists": 2.3,
+      "minutes": 20.4
+    },
+    "rolliry01": {
+      "gamesPlayed": 56,
+      "points": 6.2,
+      "rebounds": 1.9,
+      "assists": 1.9,
+      "minutes": 14.6
+    },
+    "okorois01": {
+      "gamesPlayed": 55,
+      "points": 6.1,
+      "rebounds": 2.4,
+      "assists": 1.2,
+      "minutes": 19.1
+    },
+    "walkeja02": {
+      "gamesPlayed": 75,
+      "points": 6.1,
+      "rebounds": 3.1,
+      "assists": 1.5,
+      "minutes": 15.8
+    },
+    "mobleis01": {
+      "gamesPlayed": 1,
+      "points": 6.0,
+      "rebounds": 4.0,
+      "assists": 5.0,
+      "minutes": 17.0
+    },
+    "stewais01": {
+      "gamesPlayed": 72,
+      "points": 6.0,
+      "rebounds": 5.5,
+      "assists": 1.7,
+      "minutes": 19.9
+    },
+    "wongis01": {
+      "gamesPlayed": 20,
+      "points": 6.0,
+      "rebounds": 1.6,
+      "assists": 1.4,
+      "minutes": 13.3
+    },
+    "wisemja01": {
+      "gamesPlayed": 1,
+      "points": 6.0,
+      "rebounds": 1.0,
+      "assists": 0.0,
+      "minutes": 5.0
+    },
+    "kornelu01": {
+      "gamesPlayed": 73,
+      "points": 6.0,
+      "rebounds": 5.3,
+      "assists": 1.6,
+      "minutes": 18.6
+    },
+    "gueyemo02": {
+      "gamesPlayed": 33,
+      "points": 6.0,
+      "rebounds": 4.2,
+      "assists": 0.8,
+      "minutes": 16.2
+    },
+    "nfalyda01": {
+      "gamesPlayed": 4,
+      "points": 6.0,
+      "rebounds": 5.3,
+      "assists": 0.5,
+      "minutes": 12.8
+    },
+    "okekech01": {
+      "gamesPlayed": 9,
+      "points": 5.9,
+      "rebounds": 5.2,
+      "assists": 1.7,
+      "minutes": 21.8
+    },
+    "swideco01": {
+      "gamesPlayed": 10,
+      "points": 5.9,
+      "rebounds": 2.7,
+      "assists": 0.3,
+      "minutes": 16.9
+    },
+    "gilleco01": {
+      "gamesPlayed": 33,
+      "points": 5.9,
+      "rebounds": 2.4,
+      "assists": 2.4,
+      "minutes": 14.0
+    },
+    "willija07": {
+      "gamesPlayed": 47,
+      "points": 5.9,
+      "rebounds": 5.6,
+      "assists": 2.6,
+      "minutes": 16.7
+    },
+    "anderky01": {
+      "gamesPlayed": 61,
+      "points": 5.9,
+      "rebounds": 3.4,
+      "assists": 2.4,
+      "minutes": 16.4
+    },
+    "fontesi01": {
+      "gamesPlayed": 75,
+      "points": 5.9,
+      "rebounds": 2.9,
+      "assists": 0.9,
+      "minutes": 16.5
+    },
+    "salauti01": {
+      "gamesPlayed": 60,
+      "points": 5.9,
+      "rebounds": 4.7,
+      "assists": 1.2,
+      "minutes": 20.7
+    },
+    "bonaad01": {
+      "gamesPlayed": 58,
+      "points": 5.8,
+      "rebounds": 4.2,
+      "assists": 0.5,
+      "minutes": 15.6
+    },
+    "brownmo01": {
+      "gamesPlayed": 13,
+      "points": 5.8,
+      "rebounds": 3.4,
+      "assists": 0.2,
+      "minutes": 9.2
+    },
+    "jacksqu01": {
+      "gamesPlayed": 28,
+      "points": 5.8,
+      "rebounds": 1.6,
+      "assists": 1.9,
+      "minutes": 13.6
+    },
+    "williro04": {
+      "gamesPlayed": 20,
+      "points": 5.8,
+      "rebounds": 5.9,
+      "assists": 1.1,
+      "minutes": 17.6
+    },
+    "whiteda01": {
+      "gamesPlayed": 20,
+      "points": 5.7,
+      "rebounds": 1.5,
+      "assists": 0.6,
+      "minutes": 12.3
+    },
+    "shamela01": {
+      "gamesPlayed": 50,
+      "points": 5.7,
+      "rebounds": 1.2,
+      "assists": 0.5,
+      "minutes": 15.2
+    },
+    "diabamo01": {
+      "gamesPlayed": 71,
+      "points": 5.7,
+      "rebounds": 6.2,
+      "assists": 0.8,
+      "minutes": 17.5
+    },
+    "goodwjo01": {
+      "gamesPlayed": 29,
+      "points": 5.6,
+      "rebounds": 3.9,
+      "assists": 1.4,
+      "minutes": 18.7
+    },
+    "holidaa01": {
+      "gamesPlayed": 62,
+      "points": 5.5,
+      "rebounds": 1.3,
+      "assists": 1.3,
+      "minutes": 12.8
+    },
+    "miltosh01": {
+      "gamesPlayed": 57,
+      "points": 5.5,
+      "rebounds": 1.8,
+      "assists": 1.8,
+      "minutes": 14.7
+    },
+    "wadede01": {
+      "gamesPlayed": 59,
+      "points": 5.4,
+      "rebounds": 4.2,
+      "assists": 1.3,
+      "minutes": 21.2
+    },
+    "greenje02": {
+      "gamesPlayed": 32,
+      "points": 5.4,
+      "rebounds": 1.8,
+      "assists": 0.6,
+      "minutes": 12.4
+    },
+    "isaacjo01": {
+      "gamesPlayed": 71,
+      "points": 5.4,
+      "rebounds": 4.4,
+      "assists": 0.6,
+      "minutes": 15.4
+    },
+    "wallake01": {
+      "gamesPlayed": 31,
+      "points": 5.4,
+      "rebounds": 1.6,
+      "assists": 2.6,
+      "minutes": 16.2
+    },
+    "sheppbe01": {
+      "gamesPlayed": 63,
+      "points": 5.3,
+      "rebounds": 2.8,
+      "assists": 1.3,
+      "minutes": 19.5
+    },
+    "cainja01": {
+      "gamesPlayed": 37,
+      "points": 5.3,
+      "rebounds": 2.3,
+      "assists": 0.6,
+      "minutes": 13.6
+    },
+    "loveke01": {
+      "gamesPlayed": 23,
+      "points": 5.3,
+      "rebounds": 4.1,
+      "assists": 1.0,
+      "minutes": 10.9
+    },
+    "bufkiko01": {
+      "gamesPlayed": 10,
+      "points": 5.3,
+      "rebounds": 2.1,
+      "assists": 1.7,
+      "minutes": 12.4
+    },
+    "connapa01": {
+      "gamesPlayed": 41,
+      "points": 5.3,
+      "rebounds": 2.7,
+      "assists": 1.7,
+      "minutes": 14.7
+    },
+    "walkeja01": {
+      "gamesPlayed": 60,
+      "points": 5.2,
+      "rebounds": 3.5,
+      "assists": 0.6,
+      "minutes": 12.5
+    },
+    "morrimo01": {
+      "gamesPlayed": 45,
+      "points": 5.2,
+      "rebounds": 1.5,
+      "assists": 1.6,
+      "minutes": 12.7
+    },
+    "reeseal01": {
+      "gamesPlayed": 15,
+      "points": 5.1,
+      "rebounds": 3.1,
+      "assists": 0.3,
+      "minutes": 14.4
+    },
+    "biyombi01": {
+      "gamesPlayed": 28,
+      "points": 5.1,
+      "rebounds": 5.6,
+      "assists": 1.1,
+      "minutes": 18.9
+    },
+    "greenja02": {
+      "gamesPlayed": 68,
+      "points": 5.1,
+      "rebounds": 3.2,
+      "assists": 0.8,
+      "minutes": 18.5
+    },
+    "robinmi01": {
+      "gamesPlayed": 17,
+      "points": 5.1,
+      "rebounds": 5.9,
+      "assists": 0.8,
+      "minutes": 17.1
+    },
+    "willial06": {
+      "gamesPlayed": 1,
+      "points": 5.0,
+      "rebounds": 0.0,
+      "assists": 1.0,
+      "minutes": 4.0
+    },
+    "simmobe01": {
+      "gamesPlayed": 51,
+      "points": 5.0,
+      "rebounds": 4.7,
+      "assists": 5.6,
+      "minutes": 22.0
+    },
+    "joneska01": {
+      "gamesPlayed": 40,
+      "points": 5.0,
+      "rebounds": 3.1,
+      "assists": 0.6,
+      "minutes": 11.7
+    },
+    "branhma01": {
+      "gamesPlayed": 47,
+      "points": 5.0,
+      "rebounds": 1.1,
+      "assists": 0.8,
+      "minutes": 9.1
+    },
+    "quetane01": {
+      "gamesPlayed": 62,
+      "points": 5.0,
+      "rebounds": 3.8,
+      "assists": 0.7,
+      "minutes": 13.9
+    },
+    "martija02": {
+      "gamesPlayed": 16,
+      "points": 4.9,
+      "rebounds": 2.8,
+      "assists": 1.1,
+      "minutes": 14.9
+    },
+    "waterli01": {
+      "gamesPlayed": 52,
+      "points": 4.9,
+      "rebounds": 2.1,
+      "assists": 1.0,
+      "minutes": 15.0
+    },
+    "queentr01": {
+      "gamesPlayed": 31,
+      "points": 4.9,
+      "rebounds": 1.7,
+      "assists": 1.2,
+      "minutes": 13.9
+    },
+    "landajo01": {
+      "gamesPlayed": 42,
+      "points": 4.8,
+      "rebounds": 3.3,
+      "assists": 0.9,
+      "minutes": 11.9
+    },
+    "castlco01": {
+      "gamesPlayed": 26,
+      "points": 4.7,
+      "rebounds": 4.7,
+      "assists": 1.1,
+      "minutes": 16.6
+    },
+    "hendrta01": {
+      "gamesPlayed": 3,
+      "points": 4.7,
+      "rebounds": 5.0,
+      "assists": 0.7,
+      "minutes": 25.0
+    },
+    "willico04": {
+      "gamesPlayed": 50,
+      "points": 4.6,
+      "rebounds": 2.3,
+      "assists": 1.2,
+      "minutes": 21.2
+    },
+    "roddyda01": {
+      "gamesPlayed": 33,
+      "points": 4.6,
+      "rebounds": 2.5,
+      "assists": 1.1,
+      "minutes": 12.4
+    },
+    "eubandr01": {
+      "gamesPlayed": 61,
+      "points": 4.6,
+      "rebounds": 3.7,
+      "assists": 0.9,
+      "minutes": 12.2
+    },
+    "phillju01": {
+      "gamesPlayed": 79,
+      "points": 4.6,
+      "rebounds": 2.1,
+      "assists": 0.5,
+      "minutes": 14.2
+    },
+    "larsspe01": {
+      "gamesPlayed": 55,
+      "points": 4.6,
+      "rebounds": 1.7,
+      "assists": 1.2,
+      "minutes": 14.2
+    },
+    "terryda01": {
+      "gamesPlayed": 73,
+      "points": 4.5,
+      "rebounds": 1.7,
+      "assists": 1.3,
+      "minutes": 13.5
+    },
+    "howarje01": {
+      "gamesPlayed": 60,
+      "points": 4.5,
+      "rebounds": 1.2,
+      "assists": 0.7,
+      "minutes": 11.7
+    },
+    "looneke01": {
+      "gamesPlayed": 76,
+      "points": 4.5,
+      "rebounds": 6.1,
+      "assists": 1.6,
+      "minutes": 15.0
+    },
+    "plumlma01": {
+      "gamesPlayed": 74,
+      "points": 4.5,
+      "rebounds": 6.1,
+      "assists": 1.8,
+      "minutes": 17.6
+    },
+    "dilliro01": {
+      "gamesPlayed": 49,
+      "points": 4.5,
+      "rebounds": 1.0,
+      "assists": 2.0,
+      "minutes": 10.5
+    },
+    "bassech01": {
+      "gamesPlayed": 36,
+      "points": 4.4,
+      "rebounds": 4.2,
+      "assists": 0.5,
+      "minutes": 10.4
+    },
+    "stevela01": {
+      "gamesPlayed": 17,
+      "points": 4.4,
+      "rebounds": 2.2,
+      "assists": 0.5,
+      "minutes": 9.1
+    },
+    "baglema01": {
+      "gamesPlayed": 31,
+      "points": 4.4,
+      "rebounds": 2.7,
+      "assists": 0.4,
+      "minutes": 8.5
+    },
+    "sheppre01": {
+      "gamesPlayed": 52,
+      "points": 4.4,
+      "rebounds": 1.5,
+      "assists": 1.4,
+      "minutes": 12.6
+    },
+    "jacksre01": {
+      "gamesPlayed": 31,
+      "points": 4.4,
+      "rebounds": 1.4,
+      "assists": 1.5,
+      "minutes": 12.4
+    },
+    "bradlto01": {
+      "gamesPlayed": 14,
+      "points": 4.4,
+      "rebounds": 3.0,
+      "assists": 0.4,
+      "minutes": 8.1
+    },
+    "theisda01": {
+      "gamesPlayed": 38,
+      "points": 4.3,
+      "rebounds": 4.3,
+      "assists": 1.6,
+      "minutes": 16.3
+    },
+    "carteje01": {
+      "gamesPlayed": 36,
+      "points": 4.3,
+      "rebounds": 1.1,
+      "assists": 1.1,
+      "minutes": 8.9
+    },
+    "pottemi01": {
+      "gamesPlayed": 38,
+      "points": 4.3,
+      "rebounds": 4.3,
+      "assists": 0.8,
+      "minutes": 18.6
+    },
+    "bambamo01": {
+      "gamesPlayed": 32,
+      "points": 4.3,
+      "rebounds": 4.5,
+      "assists": 0.6,
+      "minutes": 12.9
+    },
+    "shannte01": {
+      "gamesPlayed": 32,
+      "points": 4.3,
+      "rebounds": 1.5,
+      "assists": 1.0,
+      "minutes": 10.6
+    },
+    "spencca01": {
+      "gamesPlayed": 25,
+      "points": 4.2,
+      "rebounds": 1.2,
+      "assists": 1.4,
+      "minutes": 10.1
+    },
+    "barlodo01": {
+      "gamesPlayed": 35,
+      "points": 4.2,
+      "rebounds": 2.4,
+      "assists": 0.5,
+      "minutes": 10.7
+    },
+    "reathdu01": {
+      "gamesPlayed": 46,
+      "points": 4.2,
+      "rebounds": 2.0,
+      "assists": 0.6,
+      "minutes": 10.2
+    },
+    "edwarke02": {
+      "gamesPlayed": 40,
+      "points": 4.2,
+      "rebounds": 2.9,
+      "assists": 1.1,
+      "minutes": 15.2
+    },
+    "murrakr01": {
+      "gamesPlayed": 69,
+      "points": 4.2,
+      "rebounds": 2.6,
+      "assists": 1.0,
+      "minutes": 15.1
+    },
+    "ighodos01": {
+      "gamesPlayed": 61,
+      "points": 4.2,
+      "rebounds": 3.6,
+      "assists": 1.2,
+      "minutes": 17.1
+    },
+    "craigto01": {
+      "gamesPlayed": 26,
+      "points": 4.2,
+      "rebounds": 2.8,
+      "assists": 0.7,
+      "minutes": 12.1
+    },
+    "moorewe01": {
+      "gamesPlayed": 36,
+      "points": 4.2,
+      "rebounds": 2.6,
+      "assists": 1.2,
+      "minutes": 13.9
+    },
+    "houstca01": {
+      "gamesPlayed": 58,
+      "points": 4.1,
+      "rebounds": 1.3,
+      "assists": 0.6,
+      "minutes": 13.6
+    },
+    "santogu01": {
+      "gamesPlayed": 56,
+      "points": 4.1,
+      "rebounds": 3.1,
+      "assists": 1.4,
+      "minutes": 13.6
+    },
+    "pickeja02": {
+      "gamesPlayed": 49,
+      "points": 4.1,
+      "rebounds": 1.4,
+      "assists": 2.2,
+      "minutes": 13.6
+    },
+    "vandeja01": {
+      "gamesPlayed": 36,
+      "points": 4.1,
+      "rebounds": 5.1,
+      "assists": 1.1,
+      "minutes": 16.1
+    },
+    "clarkja02": {
+      "gamesPlayed": 40,
+      "points": 4.1,
+      "rebounds": 1.3,
+      "assists": 0.7,
+      "minutes": 13.1
+    },
+    "millejo02": {
+      "gamesPlayed": 37,
+      "points": 4.1,
+      "rebounds": 1.6,
+      "assists": 0.9,
+      "minutes": 11.4
+    },
+    "lewisma05": {
+      "gamesPlayed": 28,
+      "points": 4.1,
+      "rebounds": 2.0,
+      "assists": 0.7,
+      "minutes": 11.7
+    },
+    "reedpa01": {
+      "gamesPlayed": 45,
+      "points": 4.1,
+      "rebounds": 2.7,
+      "assists": 1.0,
+      "minutes": 9.7
+    },
+    "jonesco02": {
+      "gamesPlayed": 39,
+      "points": 4.0,
+      "rebounds": 2.2,
+      "assists": 1.1,
+      "minutes": 13.2
+    },
+    "richajo01": {
+      "gamesPlayed": 8,
+      "points": 4.0,
+      "rebounds": 1.5,
+      "assists": 1.5,
+      "minutes": 18.8
+    },
+    "flynnma01": {
+      "gamesPlayed": 4,
+      "points": 4.0,
+      "rebounds": 1.8,
+      "assists": 1.8,
+      "minutes": 11.0
+    },
+    "batumni01": {
+      "gamesPlayed": 78,
+      "points": 4.0,
+      "rebounds": 2.8,
+      "assists": 1.1,
+      "minutes": 17.5
+    },
+    "harpero02": {
+      "gamesPlayed": 1,
+      "points": 4.0,
+      "rebounds": 7.0,
+      "assists": 2.0,
+      "minutes": 17.0
+    },
+    "lowryky01": {
+      "gamesPlayed": 35,
+      "points": 3.9,
+      "rebounds": 1.9,
+      "assists": 2.7,
+      "minutes": 18.8
+    },
+    "adamsst01": {
+      "gamesPlayed": 58,
+      "points": 3.9,
+      "rebounds": 5.6,
+      "assists": 1.1,
+      "minutes": 13.7
+    },
+    "prospol01": {
+      "gamesPlayed": 52,
+      "points": 3.9,
+      "rebounds": 2.4,
+      "assists": 0.8,
+      "minutes": 11.2
+    },
+    "carlsbr01": {
+      "gamesPlayed": 32,
+      "points": 3.8,
+      "rebounds": 1.7,
+      "assists": 0.4,
+      "minutes": 7.7
+    },
+    "diengou01": {
+      "gamesPlayed": 37,
+      "points": 3.8,
+      "rebounds": 2.2,
+      "assists": 0.8,
+      "minutes": 10.9
+    },
+    "millspa02": {
+      "gamesPlayed": 29,
+      "points": 3.8,
+      "rebounds": 0.8,
+      "assists": 0.9,
+      "minutes": 11.1
+    },
+    "cartede02": {
+      "gamesPlayed": 36,
+      "points": 3.8,
+      "rebounds": 2.1,
+      "assists": 1.1,
+      "minutes": 11.0
+    },
+    "roweja01": {
+      "gamesPlayed": 6,
+      "points": 3.7,
+      "rebounds": 1.8,
+      "assists": 0.7,
+      "minutes": 8.7
+    },
+    "weslebl01": {
+      "gamesPlayed": 58,
+      "points": 3.7,
+      "rebounds": 1.1,
+      "assists": 2.0,
+      "minutes": 11.8
+    },
+    "portecr01": {
+      "gamesPlayed": 51,
+      "points": 3.7,
+      "rebounds": 1.3,
+      "assists": 1.4,
+      "minutes": 10.1
+    },
+    "jordade01": {
+      "gamesPlayed": 56,
+      "points": 3.7,
+      "rebounds": 5.1,
+      "assists": 0.9,
+      "minutes": 12.3
+    },
+    "batesem01": {
+      "gamesPlayed": 10,
+      "points": 3.7,
+      "rebounds": 0.7,
+      "assists": 0.8,
+      "minutes": 7.5
+    },
+    "morrima02": {
+      "gamesPlayed": 15,
+      "points": 3.7,
+      "rebounds": 1.5,
+      "assists": 1.4,
+      "minutes": 11.0
+    },
+    "tateja01": {
+      "gamesPlayed": 52,
+      "points": 3.6,
+      "rebounds": 2.3,
+      "assists": 0.9,
+      "minutes": 11.3
+    },
+    "tysonja01": {
+      "gamesPlayed": 47,
+      "points": 3.6,
+      "rebounds": 2.0,
+      "assists": 0.9,
+      "minutes": 9.6
+    },
+    "scheiba01": {
+      "gamesPlayed": 31,
+      "points": 3.6,
+      "rebounds": 2.1,
+      "assists": 1.1,
+      "minutes": 12.4
+    },
+    "thorjt01": {
+      "gamesPlayed": 20,
+      "points": 3.6,
+      "rebounds": 2.4,
+      "assists": 0.3,
+      "minutes": 12.5
+    },
+    "josepco01": {
+      "gamesPlayed": 50,
+      "points": 3.5,
+      "rebounds": 1.5,
+      "assists": 1.4,
+      "minutes": 12.2
+    },
+    "saricda01": {
+      "gamesPlayed": 16,
+      "points": 3.5,
+      "rebounds": 3.1,
+      "assists": 1.4,
+      "minutes": 13.1
+    },
+    "mcderdo01": {
+      "gamesPlayed": 42,
+      "points": 3.5,
+      "rebounds": 0.5,
+      "assists": 0.2,
+      "minutes": 8.1
+    },
+    "paytoel01": {
+      "gamesPlayed": 24,
+      "points": 3.5,
+      "rebounds": 3.3,
+      "assists": 6.9,
+      "minutes": 21.3
+    },
+    "garzalu01": {
+      "gamesPlayed": 39,
+      "points": 3.5,
+      "rebounds": 1.4,
+      "assists": 0.3,
+      "minutes": 5.6
+    },
+    "jacksan01": {
+      "gamesPlayed": 67,
+      "points": 3.4,
+      "rebounds": 2.7,
+      "assists": 1.2,
+      "minutes": 14.6
+    },
+    "fernabr01": {
+      "gamesPlayed": 17,
+      "points": 3.4,
+      "rebounds": 3.0,
+      "assists": 1.1,
+      "minutes": 8.6
+    },
+    "jonesis01": {
+      "gamesPlayed": 40,
+      "points": 3.4,
+      "rebounds": 1.4,
+      "assists": 0.3,
+      "minutes": 7.6
+    },
+    "bouyeja01": {
+      "gamesPlayed": 5,
+      "points": 3.4,
+      "rebounds": 1.0,
+      "assists": 2.0,
+      "minutes": 12.4
+    },
+    "leeda03": {
+      "gamesPlayed": 25,
+      "points": 3.3,
+      "rebounds": 0.8,
+      "assists": 0.4,
+      "minutes": 5.8
+    },
+    "knoxke01": {
+      "gamesPlayed": 14,
+      "points": 3.3,
+      "rebounds": 1.2,
+      "assists": 0.4,
+      "minutes": 6.0
+    },
+    "willije02": {
+      "gamesPlayed": 20,
+      "points": 3.3,
+      "rebounds": 0.7,
+      "assists": 0.5,
+      "minutes": 7.4
+    },
+    "reddica01": {
+      "gamesPlayed": 33,
+      "points": 3.2,
+      "rebounds": 2.0,
+      "assists": 0.7,
+      "minutes": 17.8
+    },
+    "harklej01": {
+      "gamesPlayed": 10,
+      "points": 3.2,
+      "rebounds": 2.1,
+      "assists": 0.8,
+      "minutes": 13.8
+    },
+    "nnajize01": {
+      "gamesPlayed": 57,
+      "points": 3.2,
+      "rebounds": 1.6,
+      "assists": 0.4,
+      "minutes": 10.7
+    },
+    "wrighde01": {
+      "gamesPlayed": 40,
+      "points": 3.1,
+      "rebounds": 1.7,
+      "assists": 1.9,
+      "minutes": 15.9
+    },
+    "kelleky01": {
+      "gamesPlayed": 11,
+      "points": 3.1,
+      "rebounds": 3.5,
+      "assists": 0.5,
+      "minutes": 11.5
+    },
+    "harriga01": {
+      "gamesPlayed": 48,
+      "points": 3.0,
+      "rebounds": 1.3,
+      "assists": 0.6,
+      "minutes": 14.8
+    },
+    "klebima01": {
+      "gamesPlayed": 34,
+      "points": 3.0,
+      "rebounds": 2.8,
+      "assists": 1.3,
+      "minutes": 18.7
+    },
+    "tuckepj01": {
+      "gamesPlayed": 3,
+      "points": 3.0,
+      "rebounds": 2.7,
+      "assists": 0.0,
+      "minutes": 19.3
+    },
+    "ruperra01": {
+      "gamesPlayed": 52,
+      "points": 3.0,
+      "rebounds": 1.3,
+      "assists": 0.5,
+      "minutes": 8.8
+    },
+    "mooreta02": {
+      "gamesPlayed": 2,
+      "points": 3.0,
+      "rebounds": 4.0,
+      "assists": 0.5,
+      "minutes": 10.0
+    },
+    "fultzma01": {
+      "gamesPlayed": 21,
+      "points": 2.9,
+      "rebounds": 1.0,
+      "assists": 1.3,
+      "minutes": 8.8
+    },
+    "nancepe01": {
+      "gamesPlayed": 13,
+      "points": 2.9,
+      "rebounds": 1.6,
+      "assists": 0.8,
+      "minutes": 10.6
+    },
+    "gibsota01": {
+      "gamesPlayed": 37,
+      "points": 2.9,
+      "rebounds": 3.2,
+      "assists": 0.6,
+      "minutes": 11.1
+    },
+    "smithty02": {
+      "gamesPlayed": 23,
+      "points": 2.9,
+      "rebounds": 1.1,
+      "assists": 0.2,
+      "minutes": 5.3
+    },
+    "dukeda01": {
+      "gamesPlayed": 6,
+      "points": 2.7,
+      "rebounds": 0.8,
+      "assists": 0.7,
+      "minutes": 5.7
+    },
+    "johnske10": {
+      "gamesPlayed": 16,
+      "points": 2.7,
+      "rebounds": 1.8,
+      "assists": 0.3,
+      "minutes": 6.1
+    },
+    "dennira01": {
+      "gamesPlayed": 11,
+      "points": 2.7,
+      "rebounds": 1.1,
+      "assists": 1.3,
+      "minutes": 6.4
+    },
+    "tysonhu01": {
+      "gamesPlayed": 51,
+      "points": 2.6,
+      "rebounds": 1.5,
+      "assists": 0.4,
+      "minutes": 7.8
+    },
+    "crowdja01": {
+      "gamesPlayed": 9,
+      "points": 2.6,
+      "rebounds": 2.2,
+      "assists": 0.7,
+      "minutes": 11.4
+    },
+    "minotjo01": {
+      "gamesPlayed": 46,
+      "points": 2.6,
+      "rebounds": 1.0,
+      "assists": 0.4,
+      "minutes": 6.0
+    },
+    "beekmre01": {
+      "gamesPlayed": 36,
+      "points": 2.6,
+      "rebounds": 1.1,
+      "assists": 1.8,
+      "minutes": 13.0
+    },
+    "gillan01": {
+      "gamesPlayed": 51,
+      "points": 2.5,
+      "rebounds": 1.3,
+      "assists": 0.3,
+      "minutes": 7.8
+    },
+    "jonesdi01": {
+      "gamesPlayed": 54,
+      "points": 2.5,
+      "rebounds": 2.2,
+      "assists": 1.1,
+      "minutes": 10.2
+    },
+    "sprinja01": {
+      "gamesPlayed": 43,
+      "points": 2.5,
+      "rebounds": 1.3,
+      "assists": 0.8,
+      "minutes": 8.5
+    },
+    "spencpa01": {
+      "gamesPlayed": 39,
+      "points": 2.5,
+      "rebounds": 1.2,
+      "assists": 1.2,
+      "minutes": 6.4
+    },
+    "jemistr01": {
+      "gamesPlayed": 38,
+      "points": 2.5,
+      "rebounds": 2.8,
+      "assists": 0.4,
+      "minutes": 10.3
+    },
+    "kolokch01": {
+      "gamesPlayed": 37,
+      "points": 2.4,
+      "rebounds": 2.5,
+      "assists": 0.4,
+      "minutes": 9.2
+    },
+    "konchjo01": {
+      "gamesPlayed": 46,
+      "points": 2.4,
+      "rebounds": 3.3,
+      "assists": 0.9,
+      "minutes": 12.1
+    },
+    "davisjo06": {
+      "gamesPlayed": 34,
+      "points": 2.4,
+      "rebounds": 1.1,
+      "assists": 0.3,
+      "minutes": 7.1
+    },
+    "jamesbr02": {
+      "gamesPlayed": 27,
+      "points": 2.3,
+      "rebounds": 0.7,
+      "assists": 0.8,
+      "minutes": 6.7
+    },
+    "beaucma01": {
+      "gamesPlayed": 35,
+      "points": 2.3,
+      "rebounds": 1.3,
+      "assists": 0.3,
+      "minutes": 4.5
+    },
+    "jonesma05": {
+      "gamesPlayed": 10,
+      "points": 2.3,
+      "rebounds": 0.9,
+      "assists": 1.1,
+      "minutes": 4.5
+    },
+    "norrimi01": {
+      "gamesPlayed": 3,
+      "points": 2.3,
+      "rebounds": 3.0,
+      "assists": 0.0,
+      "minutes": 11.7
+    },
+    "peterdr01": {
+      "gamesPlayed": 25,
+      "points": 2.2,
+      "rebounds": 1.6,
+      "assists": 0.5,
+      "minutes": 7.4
+    },
+    "baldwpa01": {
+      "gamesPlayed": 24,
+      "points": 2.2,
+      "rebounds": 1.0,
+      "assists": 0.1,
+      "minutes": 4.5
+    },
+    "washity02": {
+      "gamesPlayed": 16,
+      "points": 2.2,
+      "rebounds": 0.8,
+      "assists": 1.0,
+      "minutes": 7.4
+    },
+    "duartch01": {
+      "gamesPlayed": 17,
+      "points": 2.1,
+      "rebounds": 1.2,
+      "assists": 0.5,
+      "minutes": 4.4
+    },
+    "poweldw01": {
+      "gamesPlayed": 55,
+      "points": 2.1,
+      "rebounds": 2.1,
+      "assists": 1.0,
+      "minutes": 10.0
+    },
+    "freemen01": {
+      "gamesPlayed": 22,
+      "points": 2.1,
+      "rebounds": 1.4,
+      "assists": 0.4,
+      "minutes": 8.2
+    },
+    "davisjd01": {
+      "gamesPlayed": 16,
+      "points": 2.1,
+      "rebounds": 0.8,
+      "assists": 0.8,
+      "minutes": 5.8
+    },
+    "furphjo01": {
+      "gamesPlayed": 50,
+      "points": 2.1,
+      "rebounds": 1.4,
+      "assists": 0.4,
+      "minutes": 7.6
+    },
+    "mclaujo01": {
+      "gamesPlayed": 46,
+      "points": 2.1,
+      "rebounds": 0.7,
+      "assists": 1.1,
+      "minutes": 6.8
+    },
+    "sanogad01": {
+      "gamesPlayed": 4,
+      "points": 2.0,
+      "rebounds": 1.5,
+      "assists": 0.3,
+      "minutes": 5.3
+    },
+    "chrisjo01": {
+      "gamesPlayed": 14,
+      "points": 2.0,
+      "rebounds": 0.6,
+      "assists": 0.6,
+      "minutes": 4.9
+    },
+    "kolekty01": {
+      "gamesPlayed": 41,
+      "points": 2.0,
+      "rebounds": 0.7,
+      "assists": 1.7,
+      "minutes": 7.2
+    },
+    "hukpoar01": {
+      "gamesPlayed": 25,
+      "points": 1.9,
+      "rebounds": 2.0,
+      "assists": 0.4,
+      "minutes": 8.7
+    },
+    "klintbo01": {
+      "gamesPlayed": 8,
+      "points": 1.9,
+      "rebounds": 0.9,
+      "assists": 0.9,
+      "minutes": 5.3
+    },
+    "templga01": {
+      "gamesPlayed": 28,
+      "points": 1.9,
+      "rebounds": 1.0,
+      "assists": 1.1,
+      "minutes": 8.1
+    },
+    "brownko01": {
+      "gamesPlayed": 40,
+      "points": 1.9,
+      "rebounds": 1.6,
+      "assists": 0.6,
+      "minutes": 6.8
+    },
+    "flaglad01": {
+      "gamesPlayed": 37,
+      "points": 1.8,
+      "rebounds": 0.7,
+      "assists": 0.3,
+      "minutes": 5.5
+    },
+    "cancavl01": {
+      "gamesPlayed": 13,
+      "points": 1.8,
+      "rebounds": 2.5,
+      "assists": 0.7,
+      "minutes": 10.5
+    },
+    "liddeej01": {
+      "gamesPlayed": 12,
+      "points": 1.8,
+      "rebounds": 0.8,
+      "assists": 0.3,
+      "minutes": 4.4
+    },
+    "youngja05": {
+      "gamesPlayed": 6,
+      "points": 1.8,
+      "rebounds": 0.5,
+      "assists": 1.0,
+      "minutes": 5.0
+    },
+    "simsje01": {
+      "gamesPlayed": 53,
+      "points": 1.8,
+      "rebounds": 3.7,
+      "assists": 0.6,
+      "minutes": 11.9
+    },
+    "flowetr01": {
+      "gamesPlayed": 6,
+      "points": 1.8,
+      "rebounds": 0.7,
+      "assists": 0.0,
+      "minutes": 4.5
+    },
+    "milleem01": {
+      "gamesPlayed": 6,
+      "points": 1.7,
+      "rebounds": 1.3,
+      "assists": 0.3,
+      "minutes": 4.2
+    },
+    "hallpj01": {
+      "gamesPlayed": 19,
+      "points": 1.7,
+      "rebounds": 1.2,
+      "assists": 0.2,
+      "minutes": 3.5
+    },
+    "dadiepa01": {
+      "gamesPlayed": 18,
+      "points": 1.7,
+      "rebounds": 1.0,
+      "assists": 0.3,
+      "minutes": 6.2
+    },
+    "thomptr01": {
+      "gamesPlayed": 40,
+      "points": 1.7,
+      "rebounds": 3.4,
+      "assists": 0.6,
+      "minutes": 8.2
+    },
+    "ducasal01": {
+      "gamesPlayed": 21,
+      "points": 1.7,
+      "rebounds": 1.2,
+      "assists": 0.2,
+      "minutes": 6.0
+    },
+    "lenal01": {
+      "gamesPlayed": 46,
+      "points": 1.6,
+      "rebounds": 2.1,
+      "assists": 0.8,
+      "minutes": 8.3
+    },
+    "armeltr01": {
+      "gamesPlayed": 9,
+      "points": 1.6,
+      "rebounds": 1.7,
+      "assists": 0.1,
+      "minutes": 7.4
+    },
+    "mcveija01": {
+      "gamesPlayed": 9,
+      "points": 1.6,
+      "rebounds": 0.6,
+      "assists": 0.1,
+      "minutes": 4.8
+    },
+    "walshjo01": {
+      "gamesPlayed": 52,
+      "points": 1.6,
+      "rebounds": 1.3,
+      "assists": 0.4,
+      "minutes": 7.8
+    },
+    "wheelph02": {
+      "gamesPlayed": 5,
+      "points": 1.6,
+      "rebounds": 1.6,
+      "assists": 0.4,
+      "minutes": 8.8
+    },
+    "kawamyu01": {
+      "gamesPlayed": 22,
+      "points": 1.6,
+      "rebounds": 0.5,
+      "assists": 0.9,
+      "minutes": 4.2
+    },
+    "gortmja01": {
+      "gamesPlayed": 16,
+      "points": 1.5,
+      "rebounds": 0.3,
+      "assists": 0.4,
+      "minutes": 3.6
+    },
+    "mcculke01": {
+      "gamesPlayed": 4,
+      "points": 1.5,
+      "rebounds": 2.0,
+      "assists": 0.5,
+      "minutes": 7.3
+    },
+    "millele01": {
+      "gamesPlayed": 13,
+      "points": 1.5,
+      "rebounds": 0.8,
+      "assists": 0.0,
+      "minutes": 2.5
+    },
+    "ryanma01": {
+      "gamesPlayed": 19,
+      "points": 1.5,
+      "rebounds": 0.4,
+      "assists": 0.2,
+      "minutes": 3.6
+    },
+    "olivaqu01": {
+      "gamesPlayed": 2,
+      "points": 1.5,
+      "rebounds": 0.0,
+      "assists": 0.5,
+      "minutes": 5.0
+    },
+    "cissosi01": {
+      "gamesPlayed": 22,
+      "points": 1.5,
+      "rebounds": 1.0,
+      "assists": 0.7,
+      "minutes": 5.2
+    },
+    "chrisca02": {
+      "gamesPlayed": 13,
+      "points": 1.4,
+      "rebounds": 0.9,
+      "assists": 0.5,
+      "minutes": 4.5
+    },
+    "livinch01": {
+      "gamesPlayed": 21,
+      "points": 1.4,
+      "rebounds": 1.7,
+      "assists": 0.2,
+      "minutes": 5.0
+    },
+    "toppija01": {
+      "gamesPlayed": 17,
+      "points": 1.4,
+      "rebounds": 0.9,
+      "assists": 0.4,
+      "minutes": 4.5
+    },
+    "labissk01": {
+      "gamesPlayed": 4,
+      "points": 1.3,
+      "rebounds": 0.8,
+      "assists": 0.3,
+      "minutes": 3.0
+    },
+    "jonessp01": {
+      "gamesPlayed": 20,
+      "points": 1.3,
+      "rebounds": 0.9,
+      "assists": 0.3,
+      "minutes": 6.3
+    },
+    "alexatr01": {
+      "gamesPlayed": 24,
+      "points": 1.3,
+      "rebounds": 0.5,
+      "assists": 0.5,
+      "minutes": 4.9
+    },
+    "bridgja01": {
+      "gamesPlayed": 8,
+      "points": 1.1,
+      "rebounds": 0.5,
+      "assists": 0.0,
+      "minutes": 3.8
+    },
+    "keybr01": {
+      "gamesPlayed": 3,
+      "points": 1.0,
+      "rebounds": 0.7,
+      "assists": 0.0,
+      "minutes": 3.7
+    },
+    "mcgowbr01": {
+      "gamesPlayed": 13,
+      "points": 1.0,
+      "rebounds": 0.2,
+      "assists": 0.2,
+      "minutes": 2.5
+    },
+    "jenkida01": {
+      "gamesPlayed": 7,
+      "points": 1.0,
+      "rebounds": 0.3,
+      "assists": 0.4,
+      "minutes": 3.3
+    },
+    "travelu01": {
+      "gamesPlayed": 12,
+      "points": 1.0,
+      "rebounds": 1.7,
+      "assists": 0.7,
+      "minutes": 7.3
+    },
+    "tillmxa01": {
+      "gamesPlayed": 33,
+      "points": 1.0,
+      "rebounds": 1.3,
+      "assists": 0.2,
+      "minutes": 7.0
+    },
+    "colliyu01": {
+      "gamesPlayed": 2,
+      "points": 1.0,
+      "rebounds": 1.5,
+      "assists": 2.0,
+      "minutes": 8.0
+    },
+    "crawfis01": {
+      "gamesPlayed": 15,
+      "points": 0.9,
+      "rebounds": 0.5,
+      "assists": 0.1,
+      "minutes": 3.1
+    },
+    "minayju01": {
+      "gamesPlayed": 19,
+      "points": 0.9,
+      "rebounds": 0.5,
+      "assists": 0.4,
+      "minutes": 5.3
+    },
+    "watsoan02": {
+      "gamesPlayed": 9,
+      "points": 0.9,
+      "rebounds": 0.3,
+      "assists": 0.2,
+      "minutes": 2.4
+    },
+    "cartodj01": {
+      "gamesPlayed": 4,
+      "points": 0.8,
+      "rebounds": 1.0,
+      "assists": 0.8,
+      "minutes": 8.3
+    },
+    "ingraha01": {
+      "gamesPlayed": 5,
+      "points": 0.8,
+      "rebounds": 1.8,
+      "assists": 0.6,
+      "minutes": 7.0
+    },
+    "inglejo01": {
+      "gamesPlayed": 19,
+      "points": 0.8,
+      "rebounds": 0.6,
+      "assists": 1.2,
+      "minutes": 6.0
+    },
+    "doziepj01": {
+      "gamesPlayed": 9,
+      "points": 0.8,
+      "rebounds": 0.6,
+      "assists": 0.6,
+      "minutes": 3.9
+    },
+    "robbili01": {
+      "gamesPlayed": 13,
+      "points": 0.7,
+      "rebounds": 0.9,
+      "assists": 0.2,
+      "minutes": 4.4
+    },
+    "umudest01": {
+      "gamesPlayed": 22,
+      "points": 0.7,
+      "rebounds": 0.8,
+      "assists": 0.2,
+      "minutes": 3.9
+    },
+    "chomcul01": {
+      "gamesPlayed": 7,
+      "points": 0.7,
+      "rebounds": 1.1,
+      "assists": 0.3,
+      "minutes": 4.6
+    },
+    "johnsja01": {
+      "gamesPlayed": 12,
+      "points": 0.7,
+      "rebounds": 0.5,
+      "assists": 0.3,
+      "minutes": 3.1
+    },
+    "cuiyo01": {
+      "gamesPlayed": 5,
+      "points": 0.6,
+      "rebounds": 0.4,
+      "assists": 0.0,
+      "minutes": 2.0
+    },
+    "newtotr01": {
+      "gamesPlayed": 8,
+      "points": 0.4,
+      "rebounds": 0.5,
+      "assists": 0.3,
+      "minutes": 2.0
+    },
+    "nixda01": {
+      "gamesPlayed": 3,
+      "points": 0.3,
+      "rebounds": 1.3,
+      "assists": 1.0,
+      "minutes": 4.3
+    },
+    "leonsma01": {
+      "gamesPlayed": 6,
+      "points": 0.3,
+      "rebounds": 0.5,
+      "assists": 0.2,
+      "minutes": 3.5
+    },
+    "steveis01": {
+      "gamesPlayed": 3,
+      "points": 0.0,
+      "rebounds": 0.7,
+      "assists": 0.0,
+      "minutes": 2.0
+    },
+    "okafoja01": {
+      "gamesPlayed": 1,
+      "points": 0.0,
+      "rebounds": 1.0,
+      "assists": 1.0,
+      "minutes": 3.0
+    },
+    "mcdanja01": {
+      "gamesPlayed": 4,
+      "points": 0.0,
+      "rebounds": 0.0,
+      "assists": 0.3,
+      "minutes": 1.8
+    },
+    "edwarje01": {
+      "gamesPlayed": 2,
+      "points": 0.0,
+      "rebounds": 0.0,
+      "assists": 0.5,
+      "minutes": 2.5
+    },
+    "mccluma01": {
+      "gamesPlayed": 2,
+      "points": 0.0,
+      "rebounds": 0.5,
+      "assists": 1.5,
+      "minutes": 5.0
+    },
+    "minixri01": {
+      "gamesPlayed": 1,
+      "points": 0.0,
+      "rebounds": 2.0,
+      "assists": 0.0,
+      "minutes": 7.0
+    },
+    "daviste02": {
+      "gamesPlayed": 1,
+      "points": 0.0,
+      "rebounds": 1.0,
+      "assists": 1.0,
+      "minutes": 8.0
+    },
+    "taylote01": {
+      "gamesPlayed": 3,
+      "points": 0.0,
+      "rebounds": 0.3,
+      "assists": 0.7,
+      "minutes": 2.0
+    },
+    "pullizy01": {
+      "gamesPlayed": 3,
+      "points": 0.0,
+      "rebounds": 0.0,
+      "assists": 0.0,
+      "minutes": 1.0
+    }
+  }
+}
