@@ -1,4 +1,5 @@
 import impactRankingData from "../../data/impact-ranking-overrides.json";
+import { getPlaymakerElevationStrength } from "./playmakerElevation";
 import type { Player } from "./types";
 
 export const IMPACT_BLEND_MAX_RAW = impactRankingData.blendMaxRaw;
@@ -163,7 +164,12 @@ export const getThinImpactLineupPenalty = (lineup: Player[]) => {
   }
 
   if (top50Count === 1 && eliteCount < THIN_IMPACT_MIN_ELITE_COUNT) {
-    penalty += ONE_STAR_RELIANCE_PENALTY;
+    const loneTop50 = lineup.find(isImpactRankTop50Player);
+    const elevation = loneTop50
+      ? getPlaymakerElevationStrength(loneTop50)
+      : 0;
+    // Playmaking elevators keep more of a thin supporting cast afloat.
+    penalty += ONE_STAR_RELIANCE_PENALTY * (1 - elevation);
   }
 
   return penalty;

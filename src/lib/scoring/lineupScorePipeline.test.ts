@@ -22,6 +22,7 @@ describe("lineupScorePipeline", () => {
       noStarPenalty: 0,
       midTierImpactPenalty: -2,
       thinImpactPenalty: -1,
+      soloStarElevationPenalty: 0,
       eliteOffenseBonus: 1,
       superstarStackBonus: 0,
     };
@@ -29,7 +30,7 @@ describe("lineupScorePipeline", () => {
     const pipeline = buildLineupScorePipeline(breakdown, modifiers);
 
     expect(pipeline.rawTotal).toBe(70.5);
-    expect(pipeline.layers).toHaveLength(13);
+    expect(pipeline.layers).toHaveLength(14);
     expect(pipeline.layers[0]?.id).toBe("baseStats");
   });
 });
