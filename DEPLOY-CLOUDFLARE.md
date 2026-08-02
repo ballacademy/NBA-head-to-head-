@@ -69,13 +69,37 @@ Use a **separate** Pages project + D1 database so accounts, leaderboards, Daily 
 
 ### One-time QA setup
 
-From a machine with `wrangler` logged in (or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` set):
+From a machine with `wrangler` logged in (or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` set).
+
+**Windows (PowerShell), from the repo root:**
+
+If `npx` fails with “running scripts is disabled”, use `npx.cmd`:
+
+```powershell
+& "C:\Program Files\nodejs\npx.cmd" wrangler pages project create nba-head-to-head-qa --production-branch qa
+& "C:\Program Files\nodejs\npx.cmd" wrangler d1 create draft-day-gm-qa
+```
+
+Or unblock scripts for this PowerShell window only:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+npx wrangler d1 create draft-day-gm-qa
+```
+
+Optional helper (after pulling the Windows QA setup PR):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_qa_cloudflare.ps1
+```
+
+**macOS / Linux (bash):**
 
 ```bash
-# 1) Pages project (production branch = qa)
+./scripts/setup_qa_cloudflare.sh
+# or:
 npx wrangler pages project create nba-head-to-head-qa --production-branch qa
-
-# 2) Separate D1 database
 npx wrangler d1 create draft-day-gm-qa
 ```
 
@@ -83,7 +107,7 @@ Copy the printed `database_id` into GitHub → **Settings** → **Secrets and va
 
 Then apply migrations once (also runs automatically on each QA deploy):
 
-```bash
+```powershell
 # If the id is only in the GitHub secret, paste it into wrangler.qa.toml locally first.
 npx wrangler d1 migrations apply draft-day-gm-qa --remote -c wrangler.qa.toml
 ```
@@ -94,10 +118,10 @@ Optional custom domain: add `qa.draftdaygm.com` on the QA Pages project.
 
 ### Create / update the `qa` branch
 
-```bash
+```powershell
 git checkout main
 git pull
-git checkout -b qa   # first time only; afterwards: git checkout qa && git merge main
+git checkout -b qa   # first time only; afterwards: git checkout qa; git merge main
 git push -u origin qa
 ```
 
@@ -105,7 +129,7 @@ Pushes to **`qa`** run **Deploy QA to Cloudflare Pages** (test → build → app
 
 ### Local QA API
 
-```bash
+```powershell
 npm run build
 npx wrangler pages dev dist -c wrangler.qa.toml
 ```

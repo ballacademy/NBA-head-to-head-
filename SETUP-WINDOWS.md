@@ -47,3 +47,23 @@ Refresh your browser after updating.
 - Always use the folder `current-nba-head-to-head-folder` (no `.zip` in the path).
 - If `npm` is not recognized, use the full path:
   `& "C:\Program Files\nodejs\npm.cmd"`
+
+## One-time QA Cloudflare setup
+
+PowerShell often blocks `npx` / `npm` because they resolve to `.ps1` shims. Call the `.cmd` files instead:
+
+```powershell
+cd $env:USERPROFILE\Downloads\NBA-head-to-head-
+& "C:\Program Files\nodejs\npx.cmd" wrangler pages project create nba-head-to-head-qa --production-branch qa
+& "C:\Program Files\nodejs\npx.cmd" wrangler d1 create draft-day-gm-qa
+```
+
+Or allow scripts for this window only, then use normal `npx`:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+npx wrangler d1 create draft-day-gm-qa
+```
+
+After the D1 create prints a `database_id`, add it as GitHub secret `QA_D1_DATABASE_ID` (or paste into `wrangler.qa.toml`). Full steps: **DEPLOY-CLOUDFLARE.md** → QA / non-production environment.
