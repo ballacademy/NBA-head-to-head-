@@ -264,7 +264,19 @@ export const databasePlayers: Player[] = mapStatsToPlayers([
   ...rosterAdditionPlayers,
 ]);
 
-export const players: Player[] = databasePlayers.filter(isDraftEligiblePlayer);
+/**
+ * Draftable pool for every live mode (daily, H2H, salary cap, practice, etc.).
+ * Upcoming-season rookies/UDFAs with no regular-season sample stay in
+ * `databasePlayers` for Tier List only.
+ */
+export const players: Player[] = databasePlayers.filter(
+  (player) => isDraftEligiblePlayer(player) && player.gamesPlayed > 0,
+);
+
+/** Stats table: season-sample players only (no preseason rookies/UDFAs). */
+export const statsPlayers: Player[] = databasePlayers.filter(
+  (player) => player.gamesPlayed > 0,
+);
 
 export const freeAgentPlayers: Player[] = databasePlayers.filter(isStatsFreeAgent);
 

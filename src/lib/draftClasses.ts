@@ -11,7 +11,7 @@ const curatedYears = Object.keys(draftClassesData.classes)
 
 /** Next draft class still listed as prospects (Tier List “Upcoming”). */
 export const UPCOMING_ROOKIE_DRAFT_YEAR = 2027;
-/** Most recent NBA draft class (playable rookies / UDFAs). */
+/** Most recent NBA draft class (Tier List rookies / UDFAs; not draftable yet). */
 export const CURRENT_ROOKIE_DRAFT_YEAR = 2026;
 
 /** Newest → oldest, including upcoming 2026 prospects. */
@@ -50,7 +50,7 @@ const emptyStats = {
   styles: [] as Player["styles"],
 };
 
-/** Prospects for a future draft (2026 class is playable via roster additions). */
+/** Prospects for a future draft (Tier List “Upcoming” only). */
 export const upcomingRookiePlayers: Player[] = (
   upcomingRookiesData.players as Array<{
     id: string;
