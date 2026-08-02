@@ -203,7 +203,7 @@ describe("tierList", () => {
     expect(intl.some((player) => player.name.includes("Towns"))).toBe(false);
   });
 
-  it("includes ESPN roster rookies/UDFAs in the playable database pool", () => {
+  it("includes ESPN roster rookies/UDFAs in Tier List but not the draft pool", () => {
     const tierPool = getTierListPlayers();
     expect(tierPool.length).toBe(
       databasePlayers.length + upcomingRookiePlayers.length,
@@ -214,6 +214,9 @@ describe("tierList", () => {
     expect(
       databasePlayers.some((player) => player.name === "Cameron Boozer"),
     ).toBe(true);
+    expect(players.some((player) => player.name === "Cameron Boozer")).toBe(
+      false,
+    );
     expect(
       upcomingRookiePlayers.some((player) => player.name === "Cameron Boozer"),
     ).toBe(false);

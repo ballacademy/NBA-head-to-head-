@@ -23,7 +23,7 @@ import { PlayerStatsTable } from "./components/PlayerStatsTable";
 import { TierListPage } from "./components/TierListPage";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool, isCompleteLineupFromActivePool } from "./lib/activePlayerPool";
-import { databasePlayers } from "./lib/playerPool";
+import { statsPlayers } from "./lib/playerPool";
 import { getTierListPlayers } from "./lib/tierList";
 import {
   generateFeasibleDraftSlots,
@@ -1635,7 +1635,7 @@ function App() {
   if (phase === "stats") {
     return renderHubFeature(
       <PlayerStatsTable
-        players={databasePlayers}
+        players={statsPlayers}
         collection={collection}
         onBack={exitFeaturePage}
       />,

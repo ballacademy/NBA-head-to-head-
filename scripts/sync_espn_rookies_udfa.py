@@ -2,7 +2,10 @@
 """
 Pull current ESPN roster athletes missing from the season-stats pool
 (typically brand-new draftees + undrafted free agents) into
-data/espn-roster-additions.json so they can be drafted in-game.
+data/espn-roster-additions.json for Tier List / database coverage.
+
+These players are not draftable in any mode until they have a regular-season
+sample (gamesPlayed > 0) in the stats pool.
 """
 
 from __future__ import annotations
