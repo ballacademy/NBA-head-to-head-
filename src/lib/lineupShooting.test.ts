@@ -117,4 +117,23 @@ describe("lineupShooting", () => {
       scoreLineupThreePointBonus(lowProfile),
     );
   });
+
+  it("does not stack a flat lineup-wide 3PA bonus on already-spaced fives", () => {
+    const spaced = [
+      makePlayer("A", 0.41, 6),
+      makePlayer("B", 0.37, 9),
+      makePlayer("C", 0.4, 4),
+      makePlayer("D", 0.38, 4.5),
+      makePlayer("E", 0.2, 1.5),
+    ];
+    const profile = buildLineupShootingProfile(
+      spaced,
+      uniformWeights(spaced),
+      spaced.length,
+    );
+
+    // High attempt volume is already in volume-weighted % + shooter counts.
+    expect(profile.totalThreePointersAttempted).toBeGreaterThan(20);
+    expect(scoreLineupThreePointBonus(profile)).toBeLessThanOrEqual(14);
+  });
 });

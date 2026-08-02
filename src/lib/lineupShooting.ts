@@ -93,22 +93,13 @@ export const scoreLineupThreePointBonus = (profile: LineupShootingProfile) => {
     0,
     14,
   );
-  // How many real volume shooters are on the floor.
+  // How many real volume shooters are on the floor (passable/elite already
+  // require attempt floors — no separate lineup-wide attempt stack).
   const floorBonus = clamp(profile.passableShooters * 1.9, 0, 9);
   const eliteBonus = clamp(profile.eliteShooters * 1.1, 0, 4);
   const fragilePenalty = clamp(profile.nonShooters * 2.4, 0, 8);
-  // Reward actual attempt volume so low-usage specialists cannot max spacing.
-  const attemptBonus = clamp(
-    (profile.totalThreePointersAttempted - 12) * 0.35,
-    0,
-    4,
-  );
 
-  return clamp(
-    volumeBonus + floorBonus + eliteBonus + attemptBonus - fragilePenalty,
-    0,
-    22,
-  );
+  return clamp(volumeBonus + floorBonus + eliteBonus - fragilePenalty, 0, 22);
 };
 
 export const hasReliableLineupSpacing = (profile: LineupShootingProfile) =>
