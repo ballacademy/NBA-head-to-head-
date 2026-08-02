@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "preview:qa": "npm run build && wrangler pages dev dist -c wrangler.qa.toml",
     "test": "vitest run",
+    "db:migrate:qa": "wrangler d1 migrations apply draft-day-gm-qa --remote -c wrangler.qa.toml",
+    "deploy:qa": "npm run build && wrangler pages deploy dist --project-name=nba-head-to-head-qa --branch=qa --commit-dirty=true -c wrangler.qa.toml",
+
     "build:impact-rankings": "npx tsx scripts/build_impact_ranking_overrides.ts",
     "data:stats:csv": "python3 scripts/csv_to_stats_json.py --output data/nba-stats/nba-player-stats-202526-regular-season.json",
     "data:salaries:export-pool": "python3 scripts/csv_to_salaries_json.py --export-csv data/manual/nba-salaries.csv --from-json data/nba-salaries-202627.json --stats-pool data/nba-stats/nba-player-stats-202526-regular-season.json",

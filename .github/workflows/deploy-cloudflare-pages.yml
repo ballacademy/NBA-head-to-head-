@@ -1,3 +1,4 @@
+# Production deploy (www.draftdaygm.com). QA uses deploy-cloudflare-pages-qa.yml.
 name: Deploy to Cloudflare Pages
 
 on:
