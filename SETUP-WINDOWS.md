@@ -50,16 +50,20 @@ Refresh your browser after updating.
 
 ## One-time QA Cloudflare setup
 
-From the repo root in PowerShell (not bash — `.sh` scripts will not run):
+PowerShell often blocks `npx` / `npm` because they resolve to `.ps1` shims. Call the `.cmd` files instead:
 
 ```powershell
-.\scripts\setup_qa_cloudflare.ps1
+cd $env:USERPROFILE\Downloads\NBA-head-to-head-
+& "C:\Program Files\nodejs\npx.cmd" wrangler pages project create nba-head-to-head-qa --production-branch qa
+& "C:\Program Files\nodejs\npx.cmd" wrangler d1 create draft-day-gm-qa
 ```
 
-If PowerShell blocks the script:
+Or allow scripts for this window only, then use normal `npx`:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\setup_qa_cloudflare.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+npx wrangler d1 create draft-day-gm-qa
 ```
 
-Or run the wrangler commands directly — see **DEPLOY-CLOUDFLARE.md** → QA / non-production environment.
+After the D1 create prints a `database_id`, add it as GitHub secret `QA_D1_DATABASE_ID` (or paste into `wrangler.qa.toml`). Full steps: **DEPLOY-CLOUDFLARE.md** → QA / non-production environment.

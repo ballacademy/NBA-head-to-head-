@@ -73,15 +73,25 @@ From a machine with `wrangler` logged in (or `CLOUDFLARE_API_TOKEN` + `CLOUDFLAR
 
 **Windows (PowerShell), from the repo root:**
 
+If `npx` fails with “running scripts is disabled”, use `npx.cmd`:
+
 ```powershell
-.\scripts\setup_qa_cloudflare.ps1
+& "C:\Program Files\nodejs\npx.cmd" wrangler pages project create nba-head-to-head-qa --production-branch qa
+& "C:\Program Files\nodejs\npx.cmd" wrangler d1 create draft-day-gm-qa
 ```
 
-Or run the two commands directly:
+Or unblock scripts for this PowerShell window only:
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 npx wrangler pages project create nba-head-to-head-qa --production-branch qa
 npx wrangler d1 create draft-day-gm-qa
+```
+
+Optional helper (after pulling the Windows QA setup PR):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_qa_cloudflare.ps1
 ```
 
 **macOS / Linux (bash):**

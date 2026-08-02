@@ -8,8 +8,14 @@ $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 
 Write-Host "==> Creating Pages project nba-head-to-head-qa (production branch: qa)"
+$npx = if (Test-Path "C:\Program Files\nodejs\npx.cmd") {
+  "C:\Program Files\nodejs\npx.cmd"
+} else {
+  "npx.cmd"
+}
+
 try {
-  npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+  & $npx wrangler pages project create nba-head-to-head-qa --production-branch qa
 } catch {
   Write-Host "(project may already exist — continuing)"
 }
@@ -19,7 +25,7 @@ Write-Host "==> Creating D1 database draft-day-gm-qa"
 Write-Host "    Copy the database_id from the output into GitHub secret QA_D1_DATABASE_ID"
 Write-Host "    (or paste it into wrangler.qa.toml)."
 Write-Host ""
-npx wrangler d1 create draft-day-gm-qa
+& $npx wrangler d1 create draft-day-gm-qa
 
 Write-Host ""
 Write-Host "Next:"
