@@ -64,7 +64,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -o pipefail
-          npx wrangler d1 migrations apply draft-day-gm-qa --remote --yes 2>&1 | tee /tmp/qa-d1-migrate.log
+          # Wrangler v4 has no --yes on this command; CI skips the confirm prompt.
+          npx wrangler d1 migrations apply draft-day-gm-qa --remote 2>&1 | tee /tmp/qa-d1-migrate.log
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             echo "::error::QA D1 migrations failed. Confirm (1) database draft-day-gm-qa exists, (2) QA_D1_DATABASE_ID matches it, and (3) CLOUDFLARE_API_TOKEN has Account → D1 → Edit."
             exit 1
