@@ -678,6 +678,7 @@ export function TierListPage({
             name: player.name,
             team: player.team,
             position: player.position,
+            bbrPlayerId: player.bbrPlayerId,
           })),
       }));
 

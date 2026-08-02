@@ -1,10 +1,17 @@
 import { ensureShareCardFonts } from "./lineupShareCard";
+import {
+  arePlayerHeadshotsEnabled,
+  drawCircularPlayerHeadshot,
+  getPlayerHeadshotUrl,
+  loadPlayerHeadshotImages,
+} from "./playerHeadshots";
 import { getTeamGlowColor } from "./teamColors";
 
 export interface TierListSharePlayer {
   name: string;
   team: string;
   position: string;
+  bbrPlayerId?: string;
 }
 
 export interface TierListShareTier {
@@ -27,9 +34,33 @@ const ROW_GAP = 14;
 const CHIP_HEIGHT = 44;
 const CHIP_GAP = 10;
 const CHIP_PAD_X = 14;
+const CHIP_AVATAR_SIZE = 28;
+const CHIP_AVATAR_GAP = 8;
 const FOOTER_GAP = 40;
 const FONT_STACK =
   'Barlow, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+const playerLabel = (player: TierListSharePlayer) =>
+  `${player.name} · ${player.team} ${player.position}`;
+
+const chipUsesHeadshotSlot = (
+  player: TierListSharePlayer,
+  headshotsEnabled: boolean,
+) =>
+  headshotsEnabled && Boolean(getPlayerHeadshotUrl(player.bbrPlayerId));
+
+const measureChipWidth = (
+  context: CanvasRenderingContext2D,
+  player: TierListSharePlayer,
+  headshotsEnabled: boolean,
+) => {
+  const label = player.team ? playerLabel(player) : player.name;
+  const textWidth = context.measureText(label).width;
+  const avatarWidth = chipUsesHeadshotSlot(player, headshotsEnabled)
+    ? CHIP_AVATAR_SIZE + CHIP_AVATAR_GAP
+    : 0;
+  return textWidth + CHIP_PAD_X * 2 + avatarWidth;
+};
 
 const wrapLabelLines = (
   context: CanvasRenderingContext2D,
@@ -144,13 +175,11 @@ const roundRect = (
   context.closePath();
 };
 
-const playerLabel = (player: TierListSharePlayer) =>
-  `${player.name} · ${player.team} ${player.position}`;
-
 const wrapPlayerChips = (
   context: CanvasRenderingContext2D,
   players: TierListSharePlayer[],
   maxWidth: number,
+  headshotsEnabled: boolean,
 ) => {
   context.font = `700 18px ${FONT_STACK}`;
   const rows: TierListSharePlayer[][] = [[]];
@@ -162,10 +191,7 @@ const wrapPlayerChips = (
       : [{ name: "Empty", team: "", position: "" } satisfies TierListSharePlayer];
 
   for (const player of entries) {
-    const label = player.team
-      ? playerLabel(player)
-      : player.name;
-    const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
+    const chipWidth = measureChipWidth(context, player, headshotsEnabled);
     const nextWidth =
       rowWidth === 0 ? chipWidth : rowWidth + CHIP_GAP + chipWidth;
 
@@ -184,12 +210,18 @@ const wrapPlayerChips = (
 const measureCardHeight = (
   context: CanvasRenderingContext2D,
   input: TierListShareCardInput,
+  headshotsEnabled: boolean,
 ) => {
   let y = PAD_TOP + TITLE_SIZE + 36;
   const contentWidth = CARD_WIDTH - PAD_X * 2 - TIER_LABEL_WIDTH - 16;
 
   for (const tier of input.tiers) {
-    const rows = wrapPlayerChips(context, tier.players, contentWidth);
+    const rows = wrapPlayerChips(
+      context,
+      tier.players,
+      contentWidth,
+      headshotsEnabled,
+    );
     const rowHeight = Math.max(
       72,
       rows.length * CHIP_HEIGHT + (rows.length - 1) * CHIP_GAP + 24,
@@ -203,13 +235,15 @@ const measureCardHeight = (
 export const drawTierListShareCard = (
   canvas: HTMLCanvasElement,
   input: TierListShareCardInput,
+  headshots: Map<string, HTMLImageElement> = new Map(),
+  headshotsEnabled = arePlayerHeadshotsEnabled(),
 ) => {
   const context = canvas.getContext("2d");
   if (!context) {
     throw new Error("Could not create tier list share card canvas context.");
   }
 
-  const height = measureCardHeight(context, input);
+  const height = measureCardHeight(context, input, headshotsEnabled);
   canvas.width = CARD_WIDTH;
   canvas.height = height;
 
@@ -234,7 +268,12 @@ export const drawTierListShareCard = (
   const contentWidth = CARD_WIDTH - PAD_X * 2 - TIER_LABEL_WIDTH - 16;
 
   for (const tier of input.tiers) {
-    const chipRows = wrapPlayerChips(context, tier.players, contentWidth);
+    const chipRows = wrapPlayerChips(
+      context,
+      tier.players,
+      contentWidth,
+      headshotsEnabled,
+    );
     const rowHeight = Math.max(
       72,
       chipRows.length * CHIP_HEIGHT + (chipRows.length - 1) * CHIP_GAP + 24,
@@ -267,7 +306,11 @@ export const drawTierListShareCard = (
 
       for (const player of row) {
         const label = player.team ? playerLabel(player) : player.name;
-        const chipWidth = context.measureText(label).width + CHIP_PAD_X * 2;
+        const headshot = player.bbrPlayerId
+          ? headshots.get(player.bbrPlayerId)
+          : undefined;
+        const reserveAvatar = chipUsesHeadshotSlot(player, headshotsEnabled);
+        const chipWidth = measureChipWidth(context, player, headshotsEnabled);
         const primary = player.team
           ? getTeamGlowColor(player.team)
           : "#94a3b8";
@@ -299,8 +342,37 @@ export const drawTierListShareCard = (
         context.stroke();
         context.lineWidth = 1;
 
+        let textX = chipX + CHIP_PAD_X;
+        if (reserveAvatar) {
+          const avatarX = chipX + CHIP_PAD_X - 2;
+          const avatarY = chipY + (CHIP_HEIGHT - CHIP_AVATAR_SIZE) / 2;
+          if (headshot) {
+            drawCircularPlayerHeadshot(
+              context,
+              headshot,
+              avatarX,
+              avatarY,
+              CHIP_AVATAR_SIZE,
+              primary,
+            );
+          } else {
+            // Keep chip layout stable if the image failed to load.
+            context.fillStyle = "rgba(148, 163, 184, 0.28)";
+            context.beginPath();
+            context.arc(
+              avatarX + CHIP_AVATAR_SIZE / 2,
+              avatarY + CHIP_AVATAR_SIZE / 2,
+              CHIP_AVATAR_SIZE / 2,
+              0,
+              Math.PI * 2,
+            );
+            context.fill();
+          }
+          textX += CHIP_AVATAR_SIZE + CHIP_AVATAR_GAP;
+        }
+
         context.fillStyle = "#ffffff";
-        context.fillText(label, chipX + CHIP_PAD_X, chipY + 28);
+        context.fillText(label, textX, chipY + 28);
         chipX += chipWidth + CHIP_GAP;
       }
 
@@ -323,8 +395,15 @@ export const createTierListShareCardBlob = async (
   type: "image/png" | "image/jpeg" = "image/png",
 ) => {
   await ensureShareCardFonts();
+  const headshotsEnabled = arePlayerHeadshotsEnabled();
+  const headshots = await loadPlayerHeadshotImages(
+    input.tiers.flatMap((tier) =>
+      tier.players.map((player) => player.bbrPlayerId),
+    ),
+    { enabled: headshotsEnabled },
+  );
   const canvas = document.createElement("canvas");
-  drawTierListShareCard(canvas, input);
+  drawTierListShareCard(canvas, input, headshots, headshotsEnabled);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

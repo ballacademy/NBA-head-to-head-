@@ -7,6 +7,10 @@ import {
   JERSEY_VIEWBOX_SIZE,
 } from "./jerseySilhouette";
 import { sortLineupByPosition } from "./lineupOrder";
+import {
+  drawCircularPlayerHeadshot,
+  loadPlayerHeadshotImages,
+} from "./playerHeadshots";
 import { getTeamColors, type TeamColors } from "./teamColors";
 import type { Player } from "./types";
 
@@ -201,6 +205,7 @@ const drawPlayerRow = (
   player: Player,
   index: number,
   y: number,
+  headshot?: HTMLImageElement | null,
 ) => {
   const colors = getTeamColors(player.team);
   const rowX = 72;
@@ -233,7 +238,18 @@ const drawPlayerRow = (
   context.stroke();
   context.restore();
 
-  drawJerseyBadge(context, rowX + 10, y + 2, 100, jerseyNumber, colors);
+  if (headshot) {
+    drawCircularPlayerHeadshot(
+      context,
+      headshot,
+      rowX + 18,
+      y + 12,
+      80,
+      colors.secondary,
+    );
+  } else {
+    drawJerseyBadge(context, rowX + 10, y + 2, 100, jerseyNumber, colors);
+  }
 
   context.fillStyle = "#ffffff";
   context.font = `700 30px ${FONT_STACK}`;
@@ -444,6 +460,7 @@ const computeShareCardLayout = (
 export const drawLineupShareCard = (
   canvas: HTMLCanvasElement,
   input: LineupShareCardInput,
+  headshots: Map<string, HTMLImageElement> = new Map(),
 ) => {
   const context = canvas.getContext("2d");
 
@@ -471,7 +488,16 @@ export const drawLineupShareCard = (
   drawShareCardHeader(context, input, headerLayout);
 
   lineup.forEach((player, index) => {
-    drawPlayerRow(context, player, index, headerLayout.firstPlayerY + index * ROW_STEP);
+    const headshot = player.bbrPlayerId
+      ? headshots.get(player.bbrPlayerId)
+      : undefined;
+    drawPlayerRow(
+      context,
+      player,
+      index,
+      headerLayout.firstPlayerY + index * ROW_STEP,
+      headshot,
+    );
   });
 
   context.fillStyle = "#94a3b8";
@@ -486,8 +512,12 @@ export const drawLineupShareCard = (
 export const createLineupShareCardBlob = async (input: LineupShareCardInput) => {
   await ensureShareCardFonts();
 
+  const headshots = await loadPlayerHeadshotImages(
+    input.lineup.map((player) => player.bbrPlayerId),
+  );
+
   const canvas = document.createElement("canvas");
-  drawLineupShareCard(canvas, input);
+  drawLineupShareCard(canvas, input, headshots);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
