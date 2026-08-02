@@ -14,7 +14,7 @@ This app is a Vite SPA (`dist/`) hosted on Cloudflare Pages. Online features (ma
 npx wrangler pages project create nba-head-to-head --production-branch main
 ```
 
-The GitHub Action uses project name **`nba-head-to-head`**. Change the name in `.github/workflows/deploy-cloudflare-pages.yml` if you prefer another.
+The GitHub Action uses project name **`nba-head-to-head`** for production. QA uses **`nba-head-to-head-qa`** (see below). Change the names in the workflow files if you prefer others.
 
 ### 2. Get your Account ID
 
@@ -35,24 +35,80 @@ In GitHub: **Settings** → **Secrets and variables** → **Actions** → **New 
 |--------|--------|
 | `CLOUDFLARE_API_TOKEN` | Token from step 3 |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID from step 2 |
+| `QA_D1_DATABASE_ID` | (QA only) UUID from `wrangler d1 create draft-day-gm-qa` |
 
 `GITHUB_TOKEN` is provided automatically for deployment status on pull requests.
 
 ### 5. Merge feature work into `main`
 
-The deploy workflow runs on pushes to **`main`**. Merge your open PRs (game modes, bugfixes, rankings, etc.) before expecting the live site to match local dev.
+The **production** deploy workflow runs on pushes to **`main`**. Merge your open PRs before expecting the live site to match local dev.
 
-To deploy a branch manually without merging: **Actions** → **Deploy to Cloudflare Pages** → **Run workflow** → choose the branch.
+To deploy production manually: **Actions** → **Deploy to Cloudflare Pages** → **Run workflow** → choose the branch (usually `main`).
 
-## What happens on deploy
+## What happens on production deploy
 
 1. `npm ci`
 2. `npm test`
 3. `npm run build` → `dist/`
 4. `wrangler pages deploy dist --project-name=nba-head-to-head`
 
-- Pushes to **`main`** update the **production** URL
-- Other branches (manual workflow runs) create **preview** deployments
+- Pushes to **`main`** update the **production** URL (`www.draftdaygm.com`)
+- Manual runs of the production workflow from other branches create **preview** deployments on the same project (still potentially bound to prod D1 — prefer the QA project below for non-prod API work)
+
+## QA / non-production environment
+
+Use a **separate** Pages project + D1 database so accounts, leaderboards, Daily Draft scores, and matchmaking never touch production.
+
+| | Production | QA |
+|--|------------|-----|
+| Git branch | `main` | `qa` |
+| Pages project | `nba-head-to-head` | `nba-head-to-head-qa` |
+| Wrangler config | `wrangler.toml` | `wrangler.qa.toml` |
+| D1 database | `draft-day-gm` | `draft-day-gm-qa` |
+| Workflow | `deploy-cloudflare-pages.yml` | `deploy-cloudflare-pages-qa.yml` |
+
+### One-time QA setup
+
+From a machine with `wrangler` logged in (or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` set):
+
+```bash
+# 1) Pages project (production branch = qa)
+npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+
+# 2) Separate D1 database
+npx wrangler d1 create draft-day-gm-qa
+```
+
+Copy the printed `database_id` into GitHub → **Settings** → **Secrets and variables** → **Actions** as secret **`QA_D1_DATABASE_ID`** (recommended), *or* paste it into `wrangler.qa.toml` replacing `REPLACE_WITH_QA_D1_DATABASE_ID`.
+
+Then apply migrations once (also runs automatically on each QA deploy):
+
+```bash
+# If the id is only in the GitHub secret, paste it into wrangler.qa.toml locally first.
+npx wrangler d1 migrations apply draft-day-gm-qa --remote -c wrangler.qa.toml
+```
+
+In the Cloudflare dashboard → **Workers & Pages** → **nba-head-to-head-qa** → **Settings** → **Functions**, confirm D1 binding name **`DB`** → `draft-day-gm-qa` (Production).
+
+Optional custom domain: add `qa.draftdaygm.com` on the QA Pages project.
+
+### Create / update the `qa` branch
+
+```bash
+git checkout main
+git pull
+git checkout -b qa   # first time only; afterwards: git checkout qa && git merge main
+git push -u origin qa
+```
+
+Pushes to **`qa`** run **Deploy QA to Cloudflare Pages** (test → build → apply QA migrations → deploy). Manual: **Actions** → **Deploy QA to Cloudflare Pages** → **Run workflow**.
+
+### Local QA API
+
+```bash
+npm run build
+npx wrangler pages dev dist -c wrangler.qa.toml
+```
 
 ## Local production preview
 

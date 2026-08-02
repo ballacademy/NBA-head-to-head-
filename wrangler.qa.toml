@@ -1,0 +1,21 @@
+# QA / non-production Cloudflare Pages + D1.
+# Production stays in wrangler.toml (nba-head-to-head + draft-day-gm).
+#
+# One-time setup (from a machine with wrangler auth):
+#   npx wrangler pages project create nba-head-to-head-qa --production-branch qa
+#   npx wrangler d1 create draft-day-gm-qa
+#   # paste the new database_id below, then:
+#   npx wrangler d1 migrations apply draft-day-gm-qa --remote -c wrangler.qa.toml
+#
+# Deploy: push to the `qa` branch (see .github/workflows/deploy-cloudflare-pages-qa.yml)
+
+name = "nba-head-to-head-qa"
+compatibility_date = "2026-06-15"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "draft-day-gm-qa"
+# Replace after: npx wrangler d1 create draft-day-gm-qa
+database_id = "REPLACE_WITH_QA_D1_DATABASE_ID"
+migrations_dir = "migrations"

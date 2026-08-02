@@ -6,7 +6,7 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 
 - **Frontend**: Cloudflare Pages (`dist/`)
 - **API**: Cloudflare Pages Functions in `functions/api/`
-- **Database**: Cloudflare D1 (`draft-day-gm`)
+- **Database**: Cloudflare D1 (`draft-day-gm` in production; `draft-day-gm-qa` for the QA Pages project — see `DEPLOY-CLOUDFLARE.md`)
 
 ## Endpoints
 
