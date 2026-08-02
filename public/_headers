@@ -6,9 +6,13 @@
 /index.html
   Cache-Control: no-cache
 
-# Social / messaging preview image — cacheable but easy to refresh.
+# Social / messaging preview images — short TTL so redesigns propagate.
 /og-share.png
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=3600
+  Content-Type: image/png
+
+/og-share-v2.png
+  Cache-Control: public, max-age=3600
   Content-Type: image/png
 
 /draft-day-gm-logo.png

@@ -10,6 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "public" / "og-share.png"
+# Versioned copy referenced by index.html meta tags (cache-bust for crawlers).
+OUT_VERSIONED = ROOT / "public" / "og-share-v2.png"
 LOGO = ROOT / "public" / "draft-day-gm-logo.png"
 FONT_DIR = Path(__file__).resolve().parent / "fonts"
 
@@ -179,7 +181,9 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     image.save(OUT, format="PNG", optimize=True)
+    image.save(OUT_VERSIONED, format="PNG", optimize=True)
     print(f"Wrote {OUT} ({OUT.stat().st_size} bytes)")
+    print(f"Wrote {OUT_VERSIONED} ({OUT_VERSIONED.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":
