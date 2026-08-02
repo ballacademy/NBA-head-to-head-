@@ -203,64 +203,58 @@ describe("tierList", () => {
     expect(intl.some((player) => player.name.includes("Towns"))).toBe(false);
   });
 
-  it("adds upcoming rookies only to the tier list pool", () => {
+  it("includes ESPN roster rookies/UDFAs in the playable database pool", () => {
     const tierPool = getTierListPlayers();
-    expect(upcomingRookiePlayers.length).toBeGreaterThanOrEqual(20);
     expect(tierPool.length).toBe(
       databasePlayers.length + upcomingRookiePlayers.length,
     );
     expect(
       databasePlayers.some((player) => isUpcomingRookiePlayer(player)),
     ).toBe(false);
-    expect(tierPool.some((player) => player.name === "Darryn Peterson")).toBe(
-      true,
-    );
+    expect(
+      databasePlayers.some((player) => player.name === "Cameron Boozer"),
+    ).toBe(true);
+    expect(
+      upcomingRookiePlayers.some((player) => player.name === "Cameron Boozer"),
+    ).toBe(false);
   });
 
   it("filters by experience and draft class", () => {
     const rookies = databasePlayers.filter(isCurrentRookiePlayer);
     expect(rookies.length).toBeGreaterThan(10);
 
-    const cooper = rookies.find((player) => player.name.includes("Flagg"));
-    expect(cooper).toBeTruthy();
+    const boozer = rookies.find((player) => player.name.includes("Boozer"));
+    expect(boozer).toBeTruthy();
     expect(
-      playerMatchesTierListFilters(cooper!, {
+      playerMatchesTierListFilters(boozer!, {
         ...DEFAULT_TIER_LIST_FILTERS,
         experience: "rookies",
       }),
     ).toBe(true);
     expect(
-      playerMatchesTierListFilters(cooper!, {
+      playerMatchesTierListFilters(boozer!, {
         ...DEFAULT_TIER_LIST_FILTERS,
         experience: "veterans",
       }),
     ).toBe(false);
+    expect(
+      playerMatchesTierListFilters(boozer!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2026,
+      }),
+    ).toBe(true);
+
+    const cooper = databasePlayers.find((player) =>
+      player.name.includes("Flagg"),
+    );
+    expect(cooper).toBeTruthy();
     expect(
       playerMatchesTierListFilters(cooper!, {
         ...DEFAULT_TIER_LIST_FILTERS,
         draftClass: 2025,
       }),
     ).toBe(true);
-
-    const prospect = upcomingRookiePlayers[0]!;
-    expect(
-      playerMatchesTierListFilters(prospect, {
-        ...DEFAULT_TIER_LIST_FILTERS,
-        experience: "upcoming",
-      }),
-    ).toBe(true);
-    expect(
-      playerMatchesTierListFilters(prospect, {
-        ...DEFAULT_TIER_LIST_FILTERS,
-        draftClass: 2026,
-      }),
-    ).toBe(true);
-    expect(
-      playerMatchesTierListFilters(prospect, {
-        ...DEFAULT_TIER_LIST_FILTERS,
-        experience: "veterans",
-      }),
-    ).toBe(false);
+    expect(isCurrentRookiePlayer(cooper!)).toBe(false);
 
     const veteran = byName("Jayson Tatum");
     expect(

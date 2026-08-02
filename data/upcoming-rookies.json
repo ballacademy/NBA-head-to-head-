@@ -1,6 +1,6 @@
 {
-  "source": "2026 NBA draft prospects for Tier List only (not available in competitive modes).",
-  "draftYear": 2026,
+  "source": "Future NBA draft prospects for Tier List only. The 2026 class is playable via data/espn-roster-additions.json.",
+  "draftYear": 2027,
   "players": [
     {
       "id": "upcoming-darrynpeterson-2026",
