@@ -56,8 +56,8 @@ ESPN_TO_BBR = {
 
 SUFFIX_PATTERN = re.compile(r"\b(jr|sr|ii|iii|iv|v)\b", re.I)
 
-# Two-way / UDFA floor and first-overall-ish ceiling for draftability.
-DEFAULT_UDFA_SALARY = 1_157_153
+# Keep at/above the app's MINIMUM_PLAYER_SALARY so salary-cap math stays valid.
+DEFAULT_UDFA_SALARY = 1_361_969
 DEFAULT_ROOKIE_SALARY = 2_500_000
 
 POSITION_MAP = {
