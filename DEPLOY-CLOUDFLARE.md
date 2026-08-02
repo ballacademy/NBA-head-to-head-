@@ -33,9 +33,11 @@ In GitHub: **Settings** → **Secrets and variables** → **Actions** → **New 
 
 | Secret | Value |
 |--------|--------|
-| `CLOUDFLARE_API_TOKEN` | Token from step 3 |
+| `CLOUDFLARE_API_TOKEN` | Token from step 3 (**must include Account → D1 → Edit** for QA migrations) |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID from step 2 |
 | `QA_D1_DATABASE_ID` | (QA only) UUID from `wrangler d1 create draft-day-gm-qa` |
+
+If QA deploy fails at **Apply QA D1 migrations** with almost no error text, edit the API token at [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) and add **Account → D1 → Edit** (Pages edit alone is not enough).
 
 `GITHUB_TOKEN` is provided automatically for deployment status on pull requests.
 
