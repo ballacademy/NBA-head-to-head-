@@ -147,9 +147,9 @@ function PrivacyPolicyContent() {
           <strong>Cloudflare</strong> — hosting, Pages, and database services
         </li>
         <li>
-          <strong>Google Fonts</strong> — the site loads the Inter font from
-          Google&apos;s servers, which may receive your IP address and browser
-          information when fonts are requested
+          <strong>Google Fonts</strong> — the site loads the Barlow and Barlow
+          Condensed fonts from Google&apos;s servers, which may receive your IP
+          address and browser information when fonts are requested
         </li>
       </ul>
       <p>

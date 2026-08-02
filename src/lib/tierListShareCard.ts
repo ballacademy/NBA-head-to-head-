@@ -29,7 +29,7 @@ const CHIP_GAP = 10;
 const CHIP_PAD_X = 14;
 const FOOTER_GAP = 40;
 const FONT_STACK =
-  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  'Barlow, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const wrapLabelLines = (
   context: CanvasRenderingContext2D,
