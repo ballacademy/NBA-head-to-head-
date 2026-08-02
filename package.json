@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "preview:qa": "npm run build && wrangler pages dev dist -c wrangler.qa.toml",
     "test": "vitest run",
-    "db:migrate:qa": "wrangler d1 migrations apply draft-day-gm-qa --remote -c wrangler.qa.toml",
+    "db:migrate:qa": "wrangler d1 migrations apply draft-day-gm-qa --remote --yes -c wrangler.qa.toml",
     "deploy:qa": "npm run build && wrangler pages deploy dist --project-name=nba-head-to-head-qa --branch=qa --commit-dirty=true -c wrangler.qa.toml",
 
     "build:impact-rankings": "npx tsx scripts/build_impact_ranking_overrides.ts",
