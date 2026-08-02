@@ -182,7 +182,7 @@ export function PlayerStatsTable({
 
   return (
     <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
-      <div className="landing-hub__top stats-panel__hub-top">
+      <div className="landing-hub__top">
         <h1 className="landing-hub__title" id="stats-heading">
           Season Stats
         </h1>
