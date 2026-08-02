@@ -25,7 +25,7 @@ const ROW_HEIGHT = 104;
 const FOOTER_GAP = 36;
 const FOOTER_BOTTOM = 64;
 const FONT_STACK =
-  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  'Barlow, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const STARTING_FIVE_Y = 220;
 const HEADER_TO_PLAYERS_GAP = 40;
 const CHEMISTRY_PILL_HEIGHT = 26;
