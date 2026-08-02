@@ -71,7 +71,9 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
   return (
     <div className="hub-feature gm-stats-page">
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">{snapshot.teamName}</h1>
+        <h1 className="landing-hub__title landing-hub__title--name">
+          {snapshot.teamName}
+        </h1>
         <p className="landing__lede landing-hub__lede">
           {formatRatingPoints(snapshot.ranked.elo)} this month ·{" "}
           {snapshot.currentSeasonLabel}
