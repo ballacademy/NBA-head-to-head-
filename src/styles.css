@@ -28,6 +28,34 @@
   --text-muted-on-dark: #cbd5e1;
   --text-on-light: #1e1035;
   --text-muted-on-light: #475569;
+  /* Hub chrome: cooler slate than page body (#171b22→#0b0d11), tier-card texture. */
+  --hub-chrome-base: #1a2030;
+  --hub-chrome-mid: #121722;
+  --hub-chrome-deep: #0c1018;
+  --hub-chrome-bg:
+    radial-gradient(rgba(255, 255, 255, 0.055) 0.55px, transparent 0.7px),
+    linear-gradient(
+      165deg,
+      rgba(186, 200, 220, 0.12) 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.38) 100%
+    ),
+    linear-gradient(155deg, var(--hub-chrome-base) 0%, var(--hub-chrome-mid) 52%, var(--hub-chrome-deep) 100%);
+  --hub-chrome-bg-size: 3px 3px, 100% 100%, 100% 100%;
+  --hub-chrome-border: rgba(148, 163, 184, 0.22);
+  --hub-chrome-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -22px 44px rgba(0, 0, 0, 0.32);
+  --hub-chrome-sheen:
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 22%,
+      transparent 48%
+    ),
+    radial-gradient(circle at 92% 8%, rgba(148, 163, 184, 0.14), transparent 26%),
+    radial-gradient(circle at 10% 90%, rgba(56, 90, 140, 0.12), transparent 30%);
 }
 
 * {
@@ -406,13 +434,12 @@ main.landing-layout {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  background: linear-gradient(145deg, #fbcfe8 0%, #ffffff 44%, #dbeafe 100%);
-  box-shadow:
-    0 32px 90px rgba(30, 16, 53, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    inset 0 -24px 48px rgba(191, 219, 254, 0.28);
+  border: 1px solid var(--hub-chrome-border);
+  background: var(--hub-chrome-bg);
+  background-size: var(--hub-chrome-bg-size);
+  box-shadow: var(--hub-chrome-shadow);
   backdrop-filter: none;
+  color: var(--text-on-dark);
 }
 
 .landing--rich::before {
@@ -420,15 +447,7 @@ main.landing-layout {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(
-      118deg,
-      rgba(255, 255, 255, 0.72) 0%,
-      rgba(255, 255, 255, 0.18) 24%,
-      transparent 48%
-    ),
-    radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.5), transparent 22%),
-    radial-gradient(circle at 8% 92%, rgba(251, 207, 232, 0.35), transparent 28%);
+  background: var(--hub-chrome-sheen);
   z-index: 0;
 }
 
@@ -439,10 +458,10 @@ main.landing-layout {
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.22) 0%,
-      transparent 18%,
-      transparent 82%,
-      rgba(219, 234, 254, 0.16) 100%
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 20%,
+      transparent 78%,
+      rgba(56, 90, 140, 0.1) 100%
     );
   z-index: 0;
 }
@@ -468,11 +487,11 @@ main.landing-layout {
   border: 0;
   outline: 0;
   box-shadow: none;
-  filter: drop-shadow(0 8px 20px rgba(30, 16, 53, 0.18));
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.45));
 }
 
 .landing__eyebrow {
-  color: #7c3aed;
+  color: #c4b5fd;
 }
 
 .landing h1 {
@@ -483,13 +502,13 @@ main.landing-layout {
   letter-spacing: -0.045em;
   text-align: center;
   text-wrap: balance;
-  color: #1e1035;
+  color: var(--text-on-dark);
 }
 
 .landing__lede {
   max-width: 640px;
   margin: 0 auto;
-  color: #475569;
+  color: var(--text-muted-on-dark);
   font-size: 1.08rem;
   line-height: 1.7;
   text-align: center;
@@ -523,11 +542,17 @@ main.landing-layout {
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid rgba(124, 58, 237, 0.22);
+  border: 1px solid rgba(196, 181, 253, 0.35);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.86);
-  color: #5b21b6;
-  box-shadow: 0 8px 18px rgba(30, 16, 53, 0.12);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.05) 0.5px, transparent 0.65px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.08) 0%, transparent 45%, rgba(0, 0, 0, 0.28) 100%),
+    #1c2332;
+  background-size: 3px 3px, 100% 100%, 100% 100%;
+  color: #ddd6fe;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 @media (min-width: 900px) {
@@ -542,7 +567,13 @@ main.landing-layout {
 }
 
 .landing--hub > .landing-hub-account-btn:hover {
-  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(196, 181, 253, 0.55);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.06) 0.5px, transparent 0.65px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0%, transparent 45%, rgba(0, 0, 0, 0.22) 100%),
+    #242b3c;
+  background-size: 3px 3px, 100% 100%, 100% 100%;
+  color: #ede9fe;
 }
 
 .landing--hub > .landing-hub-account-btn svg {
@@ -589,7 +620,7 @@ main.landing-layout {
   border: 0;
   outline: 0;
   box-shadow: none;
-  filter: drop-shadow(0 4px 10px rgba(30, 16, 53, 0.16));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
 @media (min-width: 900px) {
@@ -643,18 +674,28 @@ main.landing-layout {
   font-weight: 800;
 }
 
-/* Return sits on the light hub chrome (not the dark panels), so override
-   the translucent light-on-light secondary-button look. */
+/* Return sits on dark hub chrome — keep glassed light-on-dark treatment. */
 .landing--hub .hub-feature__return {
-  color: #1e1035;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(30, 16, 53, 0.14);
-  box-shadow: 0 6px 16px rgba(30, 16, 53, 0.08);
+  color: var(--text-on-dark);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.045) 0.5px, transparent 0.65px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.08) 0%, transparent 48%, rgba(0, 0, 0, 0.25) 100%),
+    rgba(28, 35, 50, 0.92);
+  background-size: 3px 3px, 100% 100%, 100% 100%;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .landing--hub .hub-feature__return:hover {
-  background: #ffffff;
-  border-color: rgba(30, 16, 53, 0.22);
+  color: #ffffff;
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.055) 0.5px, transparent 0.65px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0%, transparent 48%, rgba(0, 0, 0, 0.2) 100%),
+    rgba(36, 44, 62, 0.96);
+  background-size: 3px 3px, 100% 100%, 100% 100%;
+  border-color: rgba(203, 213, 225, 0.4);
 }
 
 .hub-feature__panel {
@@ -761,7 +802,7 @@ h1.landing-hub__title {
   text-align: center;
   white-space: nowrap;
   text-wrap: nowrap;
-  color: #1e1035;
+  color: var(--text-on-dark);
 }
 
 .landing-hub__title-row {
@@ -780,7 +821,7 @@ h1.landing-hub__title {
   margin: 0 auto;
   max-width: 34em;
   width: 100%;
-  color: var(--text-muted-on-light);
+  color: var(--text-muted-on-dark);
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: center;
@@ -997,11 +1038,16 @@ h1.landing-hub__title {
   transform: none;
   margin: 0;
   padding: 10px 4px calc(12px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 0 0 28px 28px;
-  background: rgba(255, 255, 255, 0.92);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.04) 0.5px, transparent 0.65px),
+    linear-gradient(180deg, rgba(26, 32, 48, 0.98) 0%, rgba(10, 14, 22, 0.99) 100%);
+  background-size: 3px 3px, 100% 100%;
   backdrop-filter: blur(14px);
-  box-shadow: 0 -8px 24px rgba(30, 16, 53, 0.08);
+  box-shadow:
+    0 -10px 28px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .landing-bottom-nav__item {
@@ -1015,12 +1061,12 @@ h1.landing-hub__title {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .landing-bottom-nav__item--active {
-  color: #0f172a;
-  background: rgba(15, 23, 42, 0.08);
+  color: #f8fafc;
+  background: rgba(148, 163, 184, 0.14);
 }
 
 .landing-bottom-nav__icon {
@@ -1264,7 +1310,7 @@ h1.landing-hub__title {
 
 .landing-disclaimer {
   margin: 24px 0 0;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.82rem;
   line-height: 1.55;
   text-align: center;
@@ -1274,9 +1320,13 @@ h1.landing-hub__title {
   margin: 0 0 10px;
   padding: 8px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(30, 16, 53, 0.1);
-  background: rgba(255, 255, 255, 0.72);
-  color: #475569;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.04) 0.5px, transparent 0.65px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%, rgba(0, 0, 0, 0.22) 100%),
+    rgba(15, 23, 42, 0.55);
+  background-size: 3px 3px, 100% 100%, 100% 100%;
+  color: var(--text-muted-on-dark);
   font-size: 0.82rem;
   font-weight: 650;
   line-height: 1.4;
@@ -1297,8 +1347,8 @@ h1.landing-hub__title {
 .landing-credit {
   margin: 14px 0 0;
   padding-top: 20px;
-  border-top: 1px solid rgba(148, 163, 184, 0.28);
-  color: #64748b;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  color: #94a3b8;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -1331,7 +1381,7 @@ h1.landing-hub__title {
 }
 
 .landing-footer__sep {
-  color: #475569;
+  color: #64748b;
   font-size: 0.82rem;
 }
 
@@ -6827,15 +6877,15 @@ h1.landing-hub__title {
   width: 22px;
   height: 22px;
   font-size: 0.58rem;
-  color: #475569;
-  border-color: rgba(71, 85, 105, 0.35);
-  background: rgba(255, 255, 255, 0.75);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .hub-feature.stats-panel .mode-card-info__button:hover {
-  color: #0f172a;
-  border-color: rgba(71, 85, 105, 0.55);
-  background: #ffffff;
+  color: #f8fafc;
+  border-color: rgba(203, 213, 225, 0.5);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .sort-button,
