@@ -14,7 +14,7 @@ This app is a Vite SPA (`dist/`) hosted on Cloudflare Pages. Online features (ma
 npx wrangler pages project create nba-head-to-head --production-branch main
 ```
 
-The GitHub Action uses project name **`nba-head-to-head`**. Change the name in `.github/workflows/deploy-cloudflare-pages.yml` if you prefer another.
+The GitHub Action uses project name **`nba-head-to-head`** for production. QA uses **`nba-head-to-head-qa`** (see below). Change the names in the workflow files if you prefer others.
 
 ### 2. Get your Account ID
 
