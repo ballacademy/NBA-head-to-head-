@@ -129,39 +129,49 @@ def main() -> None:
     url = "draftdaygm.com"
 
     title_bbox = draw.textbbox((0, 0), title, font=title_font)
-    title_h = title_bbox[3] - title_bbox[1]
     tag_bbox = draw.textbbox((0, 0), tagline, font=tagline_font)
-    tag_h = tag_bbox[3] - tag_bbox[1]
     url_bbox = draw.textbbox((0, 0), url, font=url_font)
-    url_h = url_bbox[3] - url_bbox[1]
+    # textbbox top can be negative; use ink bottom offsets when stacking.
+    title_ink_h = title_bbox[3] - title_bbox[1]
+    tag_ink_h = tag_bbox[3] - tag_bbox[1]
+    url_ink_h = url_bbox[3] - url_bbox[1]
 
-    gap_title_rule = 16
-    gap_rule_tag = 20
-    gap_tag_url = 26
+    gap_title_rule = 18
+    gap_rule_tag = 22
+    gap_tag_url = 28
     rule_h = 3
-    block_h = title_h + gap_title_rule + rule_h + gap_rule_tag + tag_h + gap_tag_url + url_h
-    y = (HEIGHT - block_h) // 2 - 8
+    block_h = (
+        title_ink_h
+        + gap_title_rule
+        + rule_h
+        + gap_rule_tag
+        + tag_ink_h
+        + gap_tag_url
+        + url_ink_h
+    )
+    y = (HEIGHT - block_h) // 2 - title_bbox[1]
 
     # Open tracking to match hub title treatment.
     title_tracking = 6
     cursor_x = text_x
     for index, char in enumerate(title):
         draw.text((cursor_x, y), char, font=title_font, fill=TEXT)
-        char_w = draw.textbbox((0, 0), char, font=title_font)[2]
+        char_w = draw.textlength(char, font=title_font)
         cursor_x += char_w + (title_tracking if index < len(title) - 1 else 0)
     tracked_title_w = cursor_x - text_x
-    y += title_h + gap_title_rule
 
+    rule_y = y + title_bbox[3] + gap_title_rule
     draw.rounded_rectangle(
-        (text_x, y, text_x + tracked_title_w, y + rule_h),
+        (text_x, rule_y, text_x + tracked_title_w, rule_y + rule_h),
         radius=1,
         fill=RULE,
     )
-    y += rule_h + gap_rule_tag
 
-    draw.text((text_x, y), tagline, font=tagline_font, fill=MUTED)
-    y += tag_h + gap_tag_url
-    draw.text((text_x, y), url, font=url_font, fill=URL)
+    tag_y = rule_y + rule_h + gap_rule_tag - tag_bbox[1]
+    draw.text((text_x, tag_y), tagline, font=tagline_font, fill=MUTED)
+
+    url_y = tag_y + tag_bbox[3] + gap_tag_url - url_bbox[1]
+    draw.text((text_x, url_y), url, font=url_font, fill=URL)
 
     # Quiet slate edge lines instead of yellow top bar.
     draw.rectangle((0, 0, WIDTH, 2), fill=(36, 42, 54))
