@@ -47,3 +47,19 @@ Refresh your browser after updating.
 - Always use the folder `current-nba-head-to-head-folder` (no `.zip` in the path).
 - If `npm` is not recognized, use the full path:
   `& "C:\Program Files\nodejs\npm.cmd"`
+
+## One-time QA Cloudflare setup
+
+From the repo root in PowerShell (not bash — `.sh` scripts will not run):
+
+```powershell
+.\scripts\setup_qa_cloudflare.ps1
+```
+
+If PowerShell blocks the script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_qa_cloudflare.ps1
+```
+
+Or run the wrangler commands directly — see **DEPLOY-CLOUDFLARE.md** → QA / non-production environment.
