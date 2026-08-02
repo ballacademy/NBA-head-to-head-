@@ -14,6 +14,7 @@ import {
 } from "./defenseRating";
 import { isFreeAgentTeam, isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
 import seasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
+import espnRosterAdditions from "../../data/espn-roster-additions.json";
 
 export interface SeasonStatsFile {
   season: string;
@@ -28,6 +29,7 @@ export interface SeasonStatsFile {
 export interface RawSeasonPlayer {
   id: string;
   bbrPlayerId?: string;
+  espnId?: string;
   name: string;
   team: string;
   statsTeam?: string;
@@ -35,6 +37,11 @@ export interface RawSeasonPlayer {
   position?: string;
   positions?: string[];
   age?: number;
+  /** Optional contract override for roster additions without salary-file rows. */
+  salary?: number;
+  draftYear?: number;
+  jerseyNumber?: number | null;
+  isRosterAddition?: boolean;
   gamesPlayed: number;
   gamesStarted?: number;
   minutes: number;
@@ -205,7 +212,10 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     lastTeam: raw.lastTeam,
     position,
     positions,
-    jerseyNumber: lookupJerseyNumber(raw.bbrPlayerId, playerId, team),
+    jerseyNumber:
+      typeof raw.jerseyNumber === "number"
+        ? raw.jerseyNumber
+        : lookupJerseyNumber(raw.bbrPlayerId, playerId, team),
     points: raw.points,
     rebounds: raw.rebounds,
     assists: raw.assists,
@@ -226,14 +236,17 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     defenseGrade: rating?.grade,
     gamesPlayed: raw.gamesPlayed,
     age: raw.age,
+    draftYear: raw.draftYear,
     styles: deriveStyles(raw, position),
-    salary: getPlayerSalary(raw.bbrPlayerId, raw.id),
+    salary: raw.salary ?? getPlayerSalary(raw.bbrPlayerId, raw.id),
   };
 };
 
 const mapStatsToPlayers = (rawPlayers: RawSeasonPlayer[]) =>
   rawPlayers
-    .filter((player) => player.gamesPlayed > 0)
+    .filter(
+      (player) => player.gamesPlayed > 0 || player.isRosterAddition === true,
+    )
     .map(toPlayer)
     .sort(
       (a, b) =>
@@ -242,7 +255,14 @@ const mapStatsToPlayers = (rawPlayers: RawSeasonPlayer[]) =>
         a.team.localeCompare(b.team),
     );
 
-export const databasePlayers: Player[] = mapStatsToPlayers(statsFile.players);
+const rosterAdditionPlayers = (
+  espnRosterAdditions as { players: RawSeasonPlayer[] }
+).players;
+
+export const databasePlayers: Player[] = mapStatsToPlayers([
+  ...statsFile.players,
+  ...rosterAdditionPlayers,
+]);
 
 export const players: Player[] = databasePlayers.filter(isDraftEligiblePlayer);
 

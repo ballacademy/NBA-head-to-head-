@@ -10,6 +10,13 @@ describe("playerHeadshots", () => {
     expect(url).toMatch(/espncdn\.com.*\/\d+\.png/);
   });
 
+  it("maps Jimmy Butler despite ESPN suffix naming", () => {
+    const url = getPlayerHeadshotUrl("butleji01");
+    expect(url).toBe(
+      "https://a.espncdn.com/i/headshots/nba/players/full/6430.png",
+    );
+  });
+
   it("returns null when the player is unmapped", () => {
     expect(getPlayerHeadshotUrl("not-a-real-bbr-id")).toBeNull();
     expect(getPlayerHeadshotUrl(undefined)).toBeNull();

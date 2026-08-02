@@ -9,8 +9,10 @@ const curatedYears = Object.keys(draftClassesData.classes)
   .filter((year) => Number.isFinite(year))
   .sort((left, right) => right - left);
 
-export const UPCOMING_ROOKIE_DRAFT_YEAR = 2026;
-export const CURRENT_ROOKIE_DRAFT_YEAR = 2025;
+/** Next draft class still listed as prospects (Tier List “Upcoming”). */
+export const UPCOMING_ROOKIE_DRAFT_YEAR = 2027;
+/** Most recent NBA draft class (playable rookies / UDFAs). */
+export const CURRENT_ROOKIE_DRAFT_YEAR = 2026;
 
 /** Newest → oldest, including upcoming 2026 prospects. */
 export const DRAFT_CLASS_YEARS: DraftClassYear[] = [
@@ -48,6 +50,7 @@ const emptyStats = {
   styles: [] as Player["styles"],
 };
 
+/** Prospects for a future draft (2026 class is playable via roster additions). */
 export const upcomingRookiePlayers: Player[] = (
   upcomingRookiesData.players as Array<{
     id: string;
@@ -60,18 +63,20 @@ export const upcomingRookiePlayers: Player[] = (
     draftYear: number;
     isUpcomingRookie?: boolean;
   }>
-).map((raw) => ({
-  ...emptyStats,
-  id: raw.id,
-  bbrPlayerId: raw.bbrPlayerId,
-  name: raw.name,
-  team: raw.team,
-  position: raw.position,
-  positions: raw.positions.length > 0 ? raw.positions : [raw.position],
-  age: raw.age,
-  draftYear: raw.draftYear,
-  isUpcomingRookie: true,
-}));
+)
+  .filter((raw) => raw.draftYear >= UPCOMING_ROOKIE_DRAFT_YEAR)
+  .map((raw) => ({
+    ...emptyStats,
+    id: raw.id,
+    bbrPlayerId: raw.bbrPlayerId,
+    name: raw.name,
+    team: raw.team,
+    position: raw.position,
+    positions: raw.positions.length > 0 ? raw.positions : [raw.position],
+    age: raw.age,
+    draftYear: raw.draftYear,
+    isUpcomingRookie: true,
+  }));
 
 const upcomingById = new Map(
   upcomingRookiePlayers.map((player) => [player.id, player]),
@@ -111,7 +116,9 @@ export const isUpcomingRookiePlayer = (
 
 export const isCurrentRookiePlayer = (
   player: Pick<Player, "id" | "bbrPlayerId" | "draftYear" | "isUpcomingRookie">,
-) => getPlayerDraftYear(player) === CURRENT_ROOKIE_DRAFT_YEAR;
+) =>
+  !isUpcomingRookiePlayer(player) &&
+  getPlayerDraftYear(player) === CURRENT_ROOKIE_DRAFT_YEAR;
 
 export const isVeteranPlayer = (
   player: Pick<Player, "id" | "bbrPlayerId" | "draftYear" | "isUpcomingRookie">,
