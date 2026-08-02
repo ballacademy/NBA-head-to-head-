@@ -17,7 +17,7 @@ import {
 import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import { getSoloStarElevationPenalty } from "./lineupSoloStar";
 import type { HeadToHeadResult } from "./playerRecord";
-import { getPlayerStatWeight } from "./sampleSize";
+import { getPlayerStatWeight, resolveLineupForScoring } from "./sampleSize";
 import {
   blendProjectedWinsWithTeamAnchor,
   getLineupTeamQualityRawAdjustment,
@@ -751,7 +751,7 @@ export const calculateLineupStatRawTotal = (lineup: Player[]) => {
     return 0;
   }
 
-  return buildLineupScoreBreakdown(lineup).statRawTotal;
+  return buildLineupScoreBreakdown(resolveLineupForScoring(lineup)).statRawTotal;
 };
 
 export const calculateLineupScore = (lineup: Player[]): LineupScore => {
@@ -772,22 +772,24 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     };
   }
 
+  // Blend limited current-season samples with prior-season games before scoring.
+  const scoringLineup = resolveLineupForScoring(lineup);
   const { categories, strengths, warnings, statRawTotal, productionScore, totalPoints } =
-    buildLineupScoreBreakdown(lineup);
+    buildLineupScoreBreakdown(scoringLineup);
   const modifiers = {
-    tierAdjustment: getLineupTierAdjustment(lineup),
-    impactBlend: getImpactRankingAdjustment(lineup),
-    chemistry: getChemistryAdjustment(lineup),
-    teamQuality: getLineupTeamQualityRawAdjustment(lineup),
-    lowScoringPenalty: getLowScoringLineupPenalty(lineup),
-    primaryScorerPenalty: getPrimaryScorerLineupPenalty(lineup),
-    offenseFloorPenalty: getLineupOffenseFloorPenalty(lineup),
-    noStarPenalty: getNoTrueStarLineupPenalty(lineup),
-    midTierImpactPenalty: getMidTierImpactLineupPenalty(lineup),
-    thinImpactPenalty: getThinImpactLineupPenalty(lineup),
-    soloStarElevationPenalty: getSoloStarElevationPenalty(lineup),
+    tierAdjustment: getLineupTierAdjustment(scoringLineup),
+    impactBlend: getImpactRankingAdjustment(scoringLineup),
+    chemistry: getChemistryAdjustment(scoringLineup),
+    teamQuality: getLineupTeamQualityRawAdjustment(scoringLineup),
+    lowScoringPenalty: getLowScoringLineupPenalty(scoringLineup),
+    primaryScorerPenalty: getPrimaryScorerLineupPenalty(scoringLineup),
+    offenseFloorPenalty: getLineupOffenseFloorPenalty(scoringLineup),
+    noStarPenalty: getNoTrueStarLineupPenalty(scoringLineup),
+    midTierImpactPenalty: getMidTierImpactLineupPenalty(scoringLineup),
+    thinImpactPenalty: getThinImpactLineupPenalty(scoringLineup),
+    soloStarElevationPenalty: getSoloStarElevationPenalty(scoringLineup),
     eliteOffenseBonus: getEliteOffenseLineupBonus(productionScore, totalPoints),
-    superstarStackBonus: getSuperstarStackingLineupBonus(lineup),
+    superstarStackBonus: getSuperstarStackingLineupBonus(scoringLineup),
   };
   const pipeline = buildLineupScorePipeline(
     { categories, strengths, warnings, statRawTotal, productionScore, totalPoints },
@@ -804,6 +806,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     preciseTotal,
     uncappedTotal,
     ovrOverflow,
+    // Same-team win anchors still use the original roster identities/teams.
     projectedRecord: projectLineupRecord(lineup, preciseTotal),
     categories,
     strengths,

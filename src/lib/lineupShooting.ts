@@ -4,6 +4,13 @@ export const PASSABLE_THREE_POINT = 0.36;
 export const ELITE_THREE_POINT = 0.38;
 export const NON_SHOOTER_THREE_POINT = 0.32;
 
+/** Minimum 3PA/game to count as real spacing (not a tiny hot/cold sample). */
+export const PASSABLE_THREE_VOLUME = 2;
+/** Minimum 3PA/game to count as an elite spacing shooter. */
+export const ELITE_THREE_VOLUME = 3.5;
+/** At/under this volume, low 3P% (or any %) is treated as non-spacing. */
+export const NON_SHOOTER_THREE_VOLUME = 1;
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
@@ -15,6 +22,20 @@ export interface LineupShootingProfile {
   nonShooters: number;
   totalThreePointersAttempted: number;
 }
+
+export const isPassableThreePointShooter = (player: Player) =>
+  player.threePoint >= PASSABLE_THREE_POINT &&
+  player.threePointersAttempted >= PASSABLE_THREE_VOLUME;
+
+export const isEliteThreePointShooter = (player: Player) =>
+  player.threePoint >= ELITE_THREE_POINT &&
+  player.threePointersAttempted >= ELITE_THREE_VOLUME;
+
+/** Low-% shooters, plus anyone without enough attempts to space the floor. */
+export const isNonThreePointShooter = (player: Player) =>
+  player.threePointersAttempted < NON_SHOOTER_THREE_VOLUME ||
+  (player.threePoint < NON_SHOOTER_THREE_POINT &&
+    player.threePointersAttempted < PASSABLE_THREE_VOLUME);
 
 export const buildLineupShootingProfile = (
   lineup: Player[],
@@ -58,43 +79,50 @@ export const buildLineupShootingProfile = (
   return {
     volumeWeightedThreePoint,
     simpleAverageThreePoint,
-    passableShooters: countWeighted(
-      (player) => player.threePoint >= PASSABLE_THREE_POINT,
-    ),
-    eliteShooters: countWeighted(
-      (player) => player.threePoint >= ELITE_THREE_POINT,
-    ),
-    nonShooters: countWeighted(
-      (player) => player.threePoint < NON_SHOOTER_THREE_POINT,
-    ),
+    passableShooters: countWeighted(isPassableThreePointShooter),
+    eliteShooters: countWeighted(isEliteThreePointShooter),
+    nonShooters: countWeighted(isNonThreePointShooter),
     totalThreePointersAttempted,
   };
 };
 
 export const scoreLineupThreePointBonus = (profile: LineupShootingProfile) => {
+  // Quality of makes, already attempt-weighted across the lineup.
   const volumeBonus = clamp(
     (profile.volumeWeightedThreePoint - 0.335) * 130,
     0,
     14,
   );
+  // How many real volume shooters are on the floor.
   const floorBonus = clamp(profile.passableShooters * 1.9, 0, 9);
   const eliteBonus = clamp(profile.eliteShooters * 1.1, 0, 4);
   const fragilePenalty = clamp(profile.nonShooters * 2.4, 0, 8);
+  // Reward actual attempt volume so low-usage specialists cannot max spacing.
+  const attemptBonus = clamp(
+    (profile.totalThreePointersAttempted - 12) * 0.35,
+    0,
+    4,
+  );
 
-  return clamp(volumeBonus + floorBonus + eliteBonus - fragilePenalty, 0, 22);
+  return clamp(
+    volumeBonus + floorBonus + eliteBonus + attemptBonus - fragilePenalty,
+    0,
+    22,
+  );
 };
 
 export const hasReliableLineupSpacing = (profile: LineupShootingProfile) =>
   profile.passableShooters >= 3.5 ||
   (profile.volumeWeightedThreePoint >= 0.36 &&
-    profile.passableShooters >= 2.5);
+    profile.passableShooters >= 2.5 &&
+    profile.totalThreePointersAttempted >= 14);
 
 export const formatLineupShootingNote = (profile: LineupShootingProfile) => {
   const passableCount = Math.round(profile.passableShooters);
 
-  return `${passableCount} passable+ shooters (${PASSABLE_THREE_POINT * 100}%+), ${roundPercent(
+  return `${passableCount} passable+ shooters (${PASSABLE_THREE_POINT * 100}%+ on ${PASSABLE_THREE_VOLUME}+ 3PA), ${roundPercent(
     profile.volumeWeightedThreePoint,
-  )}% weighted 3P`;
+  )}% volume-weighted 3P`;
 };
 
 const roundPercent = (value: number) => (value * 100).toFixed(1);

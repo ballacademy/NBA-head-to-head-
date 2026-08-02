@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { findPlayerId, players } from "./playerPool";
 import {
   ESTABLISHED_PRIOR_MIN_GAMES,
   FULL_SAMPLE_MIN_GAMES,
+  getBlendablePriorSnapshot,
   getEstablishedProductionCredential,
   getPlayerStatWeight,
+  getSeasonBlendShares,
   hasEstablishedPriorProduction,
   hasLimitedSampleSize,
   isSimilarPriorProduction,
   LIMITED_SAMPLE_WEIGHT_FLOOR,
+  resolvePlayerForScoring,
 } from "./sampleSize";
 
 describe("sampleSize", () => {
@@ -26,7 +30,7 @@ describe("sampleSize", () => {
     ).toBe(false);
   });
 
-  it("discounts limited-sample players without zeroing them out", () => {
+  it("discounts limited-sample players without prior history", () => {
     expect(
       getPlayerStatWeight({
         gamesPlayed: FULL_SAMPLE_MIN_GAMES,
@@ -47,8 +51,8 @@ describe("sampleSize", () => {
     ).toBe(LIMITED_SAMPLE_WEIGHT_FLOOR);
   });
 
-  it("treats similar prior-season production as an established sample", () => {
-    // Anthony Davis: 20 GP this season, 51 GP at 24.7 PPG last season.
+  it("keeps limited-sample label even when prior production exists", () => {
+    // Anthony Davis: 20 GP this season, sizable prior season.
     const anthonyDavis = {
       bbrPlayerId: "davisan02",
       gamesPlayed: 20,
@@ -56,17 +60,16 @@ describe("sampleSize", () => {
     };
     expect(hasEstablishedPriorProduction(anthonyDavis)).toBe(true);
     expect(getEstablishedProductionCredential(anthonyDavis)).not.toBeNull();
-    expect(hasLimitedSampleSize(anthonyDavis)).toBe(false);
+    expect(hasLimitedSampleSize(anthonyDavis)).toBe(true);
     expect(getPlayerStatWeight(anthonyDavis)).toBe(1);
 
-    // Kristaps Porziņģis: 32 GP this season, 42 GP at 19.5 PPG last season.
     const porzingis = {
       bbrPlayerId: "porzikr01",
       gamesPlayed: 32,
       points: 16.7,
     };
     expect(hasEstablishedPriorProduction(porzingis)).toBe(true);
-    expect(hasLimitedSampleSize(porzingis)).toBe(false);
+    expect(hasLimitedSampleSize(porzingis)).toBe(true);
     expect(getPlayerStatWeight(porzingis)).toBe(1);
   });
 
@@ -80,10 +83,48 @@ describe("sampleSize", () => {
     expect(hasEstablishedPriorProduction(hotStreak)).toBe(false);
     expect(getEstablishedProductionCredential(hotStreak)).toBeNull();
     expect(hasLimitedSampleSize(hotStreak)).toBe(true);
-    expect(getPlayerStatWeight(hotStreak)).toBeLessThan(1);
+    // May still blend if any prior games exist; weight uses effective GP.
+    const shares = getSeasonBlendShares(hotStreak);
+    if (shares) {
+      expect(getPlayerStatWeight(hotStreak)).toBeGreaterThan(
+        LIMITED_SAMPLE_WEIGHT_FLOOR,
+      );
+    } else {
+      expect(getPlayerStatWeight(hotStreak)).toBeLessThan(1);
+    }
   });
 
-  it("requires a sizable prior sample before waiving the ding", () => {
+  it("game-weights current and prior seasons for limited samples", () => {
+    const kessler = players.find(
+      (player) => player.id === findPlayerId("Walker Kessler"),
+    );
+    expect(kessler).toBeTruthy();
+    expect(kessler!.gamesPlayed).toBeLessThan(FULL_SAMPLE_MIN_GAMES);
+
+    const prior = getBlendablePriorSnapshot(kessler!);
+    expect(prior).toBeTruthy();
+    expect(prior!.gamesPlayed).toBeGreaterThanOrEqual(ESTABLISHED_PRIOR_MIN_GAMES);
+
+    const shares = getSeasonBlendShares(kessler!)!;
+    const totalGames = kessler!.gamesPlayed + prior!.gamesPlayed;
+    expect(shares.currentShare).toBeCloseTo(kessler!.gamesPlayed / totalGames, 5);
+    expect(shares.priorShare).toBeCloseTo(prior!.gamesPlayed / totalGames, 5);
+
+    const blended = resolvePlayerForScoring(kessler!);
+    const expectedPoints =
+      kessler!.points * shares.currentShare + prior!.points * shares.priorShare;
+    const expectedTs =
+      kessler!.trueShooting * shares.currentShare +
+      (prior!.trueShooting ?? kessler!.trueShooting) * shares.priorShare;
+
+    expect(blended.points).toBeCloseTo(expectedPoints, 5);
+    expect(blended.trueShooting).toBeCloseTo(expectedTs, 5);
+    // Tiny-sample heater should be pulled toward the larger prior sample.
+    expect(blended.trueShooting).toBeLessThan(kessler!.trueShooting);
+    expect(blended.trueShooting).toBeGreaterThan(prior!.trueShooting! - 0.01);
+  });
+
+  it("requires a sizable prior sample before calling production established", () => {
     expect(ESTABLISHED_PRIOR_MIN_GAMES).toBeGreaterThanOrEqual(35);
     expect(isSimilarPriorProduction(20.4, 24.7)).toBe(true);
     expect(isSimilarPriorProduction(16.3, 5.7)).toBe(false);
