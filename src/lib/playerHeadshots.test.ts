@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   arePlayerHeadshotsEnabled,
   getPlayerHeadshotUrl,
+  loadPlayerHeadshotImages,
 } from "./playerHeadshots";
 
 describe("playerHeadshots", () => {
@@ -31,5 +32,12 @@ describe("playerHeadshots", () => {
     expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "?headshots")).toBe(
       true,
     );
+  });
+
+  it("skips canvas headshot preloads when headshots are disabled", async () => {
+    const loaded = await loadPlayerHeadshotImages(["doncilu01", "butleji01"], {
+      enabled: false,
+    });
+    expect(loaded.size).toBe(0);
   });
 });
