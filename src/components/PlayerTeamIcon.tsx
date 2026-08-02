@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { formatJerseyNumber } from "../lib/jerseyNumbers";
 import {
   getJerseyNumberFontSize,
@@ -7,6 +7,10 @@ import {
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
 } from "../lib/jerseySilhouette";
+import {
+  arePlayerHeadshotsEnabled,
+  getPlayerHeadshotUrl,
+} from "../lib/playerHeadshots";
 import { getTeamColors } from "../lib/teamColors";
 import type { Position } from "../lib/types";
 
@@ -16,11 +20,15 @@ interface PlayerTeamIconProps {
   jerseyNumber?: number;
   label?: string;
   showJersey?: boolean;
+  /** Basketball-Reference id — used to resolve ESPN headshots when enabled. */
+  bbrPlayerId?: string;
+  /** Override host-based headshot gating (tests / forced previews). */
+  preferHeadshot?: boolean;
 }
 
 /**
- * Jersey badge with numbers rebuilt from scratch: a single centered label in a
- * padded chest zone (never edge-flush, still large enough to read).
+ * Jersey badge by default. On QA (and local), prefers ESPN headshots when a
+ * mapping exists, falling back to the jersey if the image fails to load.
  */
 export function PlayerTeamIcon({
   team,
@@ -28,15 +36,28 @@ export function PlayerTeamIcon({
   jerseyNumber,
   label,
   showJersey = false,
+  bbrPlayerId,
+  preferHeadshot,
 }: PlayerTeamIconProps) {
   const colors = getTeamColors(team);
   const numberLabel =
     jerseyNumber === undefined ? "?" : formatJerseyNumber(jerseyNumber);
   const numberFontSize = getJerseyNumberFontSize(numberLabel);
+  const headshotsOn =
+    preferHeadshot ?? arePlayerHeadshotsEnabled();
+  const headshotUrl = headshotsOn ? getPlayerHeadshotUrl(bbrPlayerId) : null;
+  const [headshotFailed, setHeadshotFailed] = useState(false);
+  const showHeadshot = Boolean(headshotUrl) && !headshotFailed;
 
   return (
     <span
-      className={`player-team-icon${showJersey ? " player-team-icon--jersey" : ""}`}
+      className={`player-team-icon${
+        showHeadshot
+          ? " player-team-icon--avatar"
+          : showJersey
+            ? " player-team-icon--jersey"
+            : ""
+      }`}
       style={
         {
           "--team-primary": colors.primary,
@@ -46,7 +67,17 @@ export function PlayerTeamIcon({
       aria-label={label ?? `${team} ${position}`}
       title={label ?? `${team} ${position}`}
     >
-      {showJersey ? (
+      {showHeadshot && headshotUrl ? (
+        <img
+          className="player-team-icon__image"
+          src={headshotUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setHeadshotFailed(true)}
+        />
+      ) : showJersey ? (
         <svg
           className="player-jersey"
           viewBox={`0 0 ${JERSEY_VIEWBOX_SIZE} ${JERSEY_VIEWBOX_SIZE}`}

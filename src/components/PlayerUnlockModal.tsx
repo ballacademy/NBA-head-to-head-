@@ -83,6 +83,7 @@ export function PlayerUnlockModal({
                   team={player.team}
                   position={player.position}
                   jerseyNumber={player.jerseyNumber}
+                  bbrPlayerId={player.bbrPlayerId}
                   showJersey={!isCompact}
                   label={player.name}
                 />

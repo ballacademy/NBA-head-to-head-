@@ -15,6 +15,7 @@ import {
 } from "../lib/tierList";
 import { getTeamGlowColor } from "../lib/teamColors";
 import type { CSSProperties } from "react";
+import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
 const formatSavedAt = (savedAt: number) =>
   new Date(savedAt).toLocaleString(undefined, {
@@ -467,6 +468,14 @@ export function TierListPublicViewer({
                         } as CSSProperties
                       }
                     >
+                      <PlayerTeamIcon
+                        team={player.team}
+                        position={player.position}
+                        jerseyNumber={player.jerseyNumber}
+                        bbrPlayerId={player.bbrPlayerId}
+                        showJersey
+                        label={player.name}
+                      />
                       <span className="tier-list__player-copy">
                         <strong>{player.name}</strong>
                         <span>
