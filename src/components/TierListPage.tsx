@@ -74,6 +74,7 @@ import {
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import {
   TierListHubHome,
   TierListMinePanel,
@@ -942,6 +943,14 @@ export function TierListPage({
         aria-pressed={selected}
         title={`${player.name} · ${player.position} · ${player.points.toFixed(1)} PPG`}
       >
+        <PlayerTeamIcon
+          team={player.team}
+          position={player.position}
+          jerseyNumber={player.jerseyNumber}
+          bbrPlayerId={player.bbrPlayerId}
+          showJersey
+          label={player.name}
+        />
         <span className="tier-list__player-copy">
           <strong>{player.name}</strong>
           <span>
@@ -1687,9 +1696,19 @@ export function TierListPage({
           }
           aria-hidden
         >
-          <strong>{draggingPlayer.name}</strong>
-          <span>
-            {draggingPlayer.team} · {draggingPlayer.position}
+          <PlayerTeamIcon
+            team={draggingPlayer.team}
+            position={draggingPlayer.position}
+            jerseyNumber={draggingPlayer.jerseyNumber}
+            bbrPlayerId={draggingPlayer.bbrPlayerId}
+            showJersey
+            label={draggingPlayer.name}
+          />
+          <span className="tier-list__player-copy">
+            <strong>{draggingPlayer.name}</strong>
+            <span>
+              {draggingPlayer.team} · {draggingPlayer.position}
+            </span>
           </span>
         </div>
       ) : null}

@@ -38,6 +38,7 @@ export function PlayerStatLine({
         team={player.team}
         position={player.position}
         jerseyNumber={player.jerseyNumber}
+        bbrPlayerId={player.bbrPlayerId}
         showJersey
         label={`${player.name}, ${player.team} ${player.position}`}
       />

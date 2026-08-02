@@ -5674,8 +5674,40 @@ h1.landing-hub__title--name {
 }
 
 .player-team-icon--avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
   padding: 0;
-  background: rgba(15, 23, 42, 0.35);
+  border: 1.5px solid color-mix(in srgb, var(--team-primary, #94a3b8) 75%, #0f172a);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.player-pick .player-team-icon--avatar {
+  width: 64px;
+  height: 64px;
+}
+
+.player-stat-line--compact .player-team-icon--avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.player-pick--compact .player-team-icon--avatar {
+  width: 52px;
+  height: 52px;
+}
+
+.tier-list__player .player-team-icon--avatar,
+.tier-list__player .player-team-icon--jersey,
+.tier-list__drag-ghost .player-team-icon--avatar,
+.tier-list__drag-ghost .player-team-icon--jersey {
+  width: 34px;
+  height: 34px;
 }
 
 .player-team-icon--jersey,
@@ -5757,6 +5789,9 @@ h1.landing-hub__title--name {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 18%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .player-stat-line__meta,
@@ -7695,10 +7730,11 @@ h1.landing-hub__title--name {
   top: 0;
   left: 0;
   z-index: 80;
-  display: grid;
-  gap: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-width: 120px;
-  max-width: 220px;
+  max-width: 240px;
   padding: 7px 10px;
   border-radius: 10px;
   border: 1.5px solid var(--team-primary, #94a3b8);

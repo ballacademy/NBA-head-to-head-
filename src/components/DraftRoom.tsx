@@ -483,6 +483,7 @@ export function DraftRoom({
                   team={player.team}
                   position={player.position}
                   jerseyNumber={player.jerseyNumber}
+                  bbrPlayerId={player.bbrPlayerId}
                   showJersey
                   label={player.name}
                 />
