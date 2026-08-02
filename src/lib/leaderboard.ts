@@ -258,14 +258,14 @@ export const getLeaderboardFootnote = (
   sort: LeaderboardSort,
   seasonId = getCurrentSeasonId(),
 ) => {
-  const seasonNote = `${CLASSIC_LEADERBOARD_LABEL} for ${formatSeasonLabel(seasonId)}. Real front offices only — ratings reset at the start of each calendar month.`;
+  const seasonNote = `${CLASSIC_LEADERBOARD_LABEL} · ${formatSeasonLabel(seasonId)} · Monthly reset`;
 
   switch (sort) {
     case "winStreak":
-      return `${seasonNote} Sorted by active win streak.`;
+      return `${seasonNote} · By win streak`;
     case "lossStreak":
-      return `${seasonNote} Sorted by active loss streak.`;
+      return `${seasonNote} · By loss streak`;
     default:
-      return `${seasonNote} Sorted by ${RATING_LABEL}.`;
+      return `${seasonNote} · By ${RATING_LABEL}`;
   }
 };

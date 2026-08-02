@@ -57,8 +57,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             ? ` · ${unlockedSpecial.length} special`
             : ""}
           {eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}
-          {" · "}
-          Locked badges stay hidden until earned
+          {" · Locked until earned"}
         </p>
       </div>
 
@@ -133,7 +132,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
           <p className="eyebrow">Weekly Events</p>
           <h2>Event badges</h2>
           <p className="achievements-page__subtitle">
-            Only your highest badge from each event is shown.
+            Highest badge per event.
           </p>
         </div>
         {eventBadges.length > 0 ? (
@@ -160,8 +159,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
           </ul>
         ) : (
           <p className="achievements-page__subtitle">
-            Play Weekly Events to earn Competitor, Bronze, Silver, and Gold
-            badges.
+            Play Events to earn badges.
           </p>
         )}
       </section>

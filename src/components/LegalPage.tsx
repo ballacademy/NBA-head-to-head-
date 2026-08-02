@@ -425,7 +425,7 @@ export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
     <div className="hub-feature legal-page">
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{title}</h1>
-        <p className="landing__lede landing-hub__lede">Draft Day GM policies</p>
+        <p className="landing__lede landing-hub__lede">Site policies.</p>
       </div>
 
       <HubFeatureReturnButton onBack={onBack} />
