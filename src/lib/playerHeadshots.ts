@@ -12,7 +12,7 @@ const byBbrPlayerId = (
   }
 ).byBbrPlayerId;
 
-const DEFAULT_HEADSHOT_LOAD_TIMEOUT_MS = 4_000;
+const DEFAULT_HEADSHOT_LOAD_TIMEOUT_MS = 8_000;
 
 /** True on the QA Pages host, local dev, or when `?headshots` is in the URL. */
 export const arePlayerHeadshotsEnabled = (
@@ -44,35 +44,121 @@ export const getPlayerHeadshotUrl = (
   return byBbrPlayerId[bbrPlayerId]?.headshotUrl ?? null;
 };
 
-const loadCorsImage = (
-  url: string,
+const withTimeout = async <T>(
+  promise: Promise<T>,
   timeoutMs: number,
-): Promise<HTMLImageElement | null> => {
-  if (typeof Image === "undefined") {
-    return Promise.resolve(null);
+): Promise<T | null> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
   }
+};
 
-  return new Promise((resolve) => {
-    const image = new Image();
-    let settled = false;
-
-    const finish = (result: HTMLImageElement | null) => {
-      if (settled) {
+const imageFromObjectUrl = (objectUrl: string) =>
+  new Promise<HTMLImageElement | null>((resolve) => {
+    const element = new Image();
+    element.onload = () => {
+      if (element.naturalWidth <= 0 || element.naturalHeight <= 0) {
+        resolve(null);
         return;
       }
-      settled = true;
-      clearTimeout(timer);
-      resolve(result);
+      (
+        element as HTMLImageElement & {
+          __headshotObjectUrl?: string;
+        }
+      ).__headshotObjectUrl = objectUrl;
+      resolve(element);
     };
-
-    const timer = setTimeout(() => finish(null), timeoutMs);
-
-    image.crossOrigin = "anonymous";
-    image.decoding = "async";
-    image.onload = () => finish(image);
-    image.onerror = () => finish(null);
-    image.src = url;
+    element.onerror = () => resolve(null);
+    element.src = objectUrl;
   });
+
+const loadImageElementDirect = (url: string) =>
+  new Promise<HTMLImageElement | null>((resolve) => {
+    const element = new Image();
+    element.crossOrigin = "anonymous";
+    element.referrerPolicy = "no-referrer";
+    element.onload = () => {
+      if (element.naturalWidth <= 0 || element.naturalHeight <= 0) {
+        resolve(null);
+        return;
+      }
+      resolve(element);
+    };
+    element.onerror = () => resolve(null);
+    // Cache-bust so we don't reuse a non-CORS HTML <img> cache entry.
+    const separator = url.includes("?") ? "&" : "?";
+    element.src = `${url}${separator}ddgmCanvas=1`;
+  });
+
+/**
+ * Load a headshot as a canvas-safe image.
+ *
+ * Important: the live UI `<img>` tags may already have cached the ESPN URL
+ * without CORS. Reloading that same URL with `crossOrigin="anonymous"` often
+ * fails from cache, which made share cards silently fall back to jerseys.
+ * Prefer `fetch` + object URL; fall back to a cache-busted Image load.
+ */
+export const loadCorsImage = async (
+  url: string,
+  timeoutMs = DEFAULT_HEADSHOT_LOAD_TIMEOUT_MS,
+): Promise<HTMLImageElement | null> => {
+  if (typeof Image === "undefined") {
+    return null;
+  }
+
+  const loadViaFetch = async () => {
+    if (typeof fetch === "undefined") {
+      return null;
+    }
+
+    const response = await fetch(url, {
+      mode: "cors",
+      credentials: "omit",
+      referrerPolicy: "no-referrer",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const blob = await response.blob();
+    if (blob.size === 0) {
+      return null;
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    const image = await imageFromObjectUrl(objectUrl);
+    if (!image) {
+      URL.revokeObjectURL(objectUrl);
+    }
+    return image;
+  };
+
+  try {
+    const viaFetch = await withTimeout(loadViaFetch(), timeoutMs);
+    if (viaFetch) {
+      return viaFetch;
+    }
+  } catch {
+    // Fall through to direct Image load.
+  }
+
+  try {
+    return await withTimeout(loadImageElementDirect(url), timeoutMs);
+  } catch {
+    return null;
+  }
 };
 
 /**

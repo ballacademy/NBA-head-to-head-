@@ -74,6 +74,7 @@ export function PlayerTeamIcon({
           alt=""
           loading="lazy"
           decoding="async"
+          crossOrigin="anonymous"
           referrerPolicy="no-referrer"
           onError={() => setHeadshotFailed(true)}
         />
