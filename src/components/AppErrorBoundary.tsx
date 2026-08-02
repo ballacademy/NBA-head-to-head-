@@ -42,8 +42,7 @@ export class AppErrorBoundary extends Component<
           <p className="eyebrow">Beta error</p>
           <h1>Something broke</h1>
           <p className="landing__lede">
-            Refresh and try again. If it keeps happening, email us a quick bug
-            report — it helps a lot during beta.
+            Refresh to continue. Email a bug report if it keeps happening.
           </p>
           <div className="app-error-screen__actions">
             <button

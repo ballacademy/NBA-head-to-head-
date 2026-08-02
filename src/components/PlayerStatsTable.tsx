@@ -187,7 +187,7 @@ export function PlayerStatsTable({
           Season Stats
         </h1>
         <p className="landing__lede landing-hub__lede stats-panel__lede">
-          <span>Browse the player pool</span>
+          <span>Player pool</span>
           <ModeCardInfo
             details={statsInfoDetails}
             popoverAlign="center"

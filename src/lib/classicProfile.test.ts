@@ -85,12 +85,8 @@ describe("classic profile and leaderboard", () => {
   });
 
   it("matches the Pro-style monthly leaderboard subtitle", () => {
-    expect(getLeaderboardFootnote("elo")).toContain(
-      "ratings reset at the start of each calendar month",
-    );
-    expect(getLeaderboardFootnote("elo")).toContain(`Sorted by ${RATING_LABEL}.`);
-    expect(getLeaderboardFootnote("winStreak")).toContain(
-      "Sorted by active win streak.",
-    );
+    expect(getLeaderboardFootnote("elo")).toContain("Monthly reset");
+    expect(getLeaderboardFootnote("elo")).toContain(`By ${RATING_LABEL}`);
+    expect(getLeaderboardFootnote("winStreak")).toContain("By win streak");
   });
 });

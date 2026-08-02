@@ -974,7 +974,7 @@ export function TierListPage({
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Tier List Builder</h1>
         <p className="landing__lede landing-hub__lede">
-          Create and share your own tier lists
+          Create and share boards.
         </p>
       </div>
 

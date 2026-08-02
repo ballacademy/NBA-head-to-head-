@@ -510,14 +510,14 @@ export function LandingPage({
 
   const hubLede =
     hubTab === "play"
-      ? "Play live against a real opponent. Pick Casual or Pro."
+      ? "Live matchups. Casual or Pro."
       : hubTab === "daily"
-        ? `Draft five with stats hidden. ${DAILY_PICK_TIME_LIMIT_SECONDS} seconds per pick. One attempt per mode each day.`
+        ? `Hidden stats. ${DAILY_PICK_TIME_LIMIT_SECONDS}s picks. One try per mode daily.`
         : hubTab === "events"
-          ? "Weekly live head-to-head with a shared draft board, restricted pool, and $100M cap. Waits until a live opponent joins."
+          ? "Weekly live H2H. Shared board. $100M cap."
           : hubTab === "roster"
-            ? "Browse unlocked players and season stats."
-            : "Sign in to keep your progress, or open GM stats and badges.";
+            ? "Your unlocked players."
+            : "Sign in, GM stats, and badges.";
 
   return (
     <HubShell

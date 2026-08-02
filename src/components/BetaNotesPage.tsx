@@ -17,9 +17,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
     <div className="hub-feature beta-notes-page">
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Beta notes</h1>
-        <p className="landing__lede landing-hub__lede">
-          What works, what doesn&apos;t, and how to reach us
-        </p>
+        <p className="landing__lede landing-hub__lede">Status and contact.</p>
       </div>
 
       <HubFeatureReturnButton onBack={onBack} />
