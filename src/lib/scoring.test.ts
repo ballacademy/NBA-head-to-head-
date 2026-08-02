@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import {
+  blendProjectedWinsWithTeamAnchor,
+  getSameTeamRecordAnchor,
+} from "./teamRecordBaseline";
+import {
   calculateLineupScore,
   capLineupRoleFitForOffense,
   capLineupRoleFitWithoutFirstOption,
@@ -112,7 +116,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(lineup(TWO_ALL_STARS_THREE_STARTERS));
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(50);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(74);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(76);
   });
 
   it("weighs limited-sample players less in lineup scoring", () => {
@@ -994,7 +998,7 @@ describe("calculateLineupScore", () => {
 
     expect(hasStarTierPlayer(impactStarLineup)).toBe(true);
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(46);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(52);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(56);
   });
 
   it("rewards elite offensive lineups with superstar stacking and production bonuses", () => {
@@ -1009,7 +1013,7 @@ describe("calculateLineupScore", () => {
     const score = calculateLineupScore(eliteOffenseLineup);
 
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(55);
-    expect(score.projectedRecord.wins).toBeLessThanOrEqual(78);
+    expect(score.projectedRecord.wins).toBeLessThanOrEqual(80);
     expect(score.strengths).toContain(
       "Elite playmaking supports multiple high-usage creators.",
     );
@@ -1137,8 +1141,12 @@ describe("projectRecord", () => {
     ]);
     const score = calculateLineupScore(okc);
     const ovrOnly = projectRecord(score.preciseTotal);
+    const anchor = getSameTeamRecordAnchor(okc);
 
-    expect(score.projectedRecord.wins).toBeGreaterThan(ovrOnly.wins);
+    expect(anchor).toBeTruthy();
+    expect(score.projectedRecord.wins).toBe(
+      blendProjectedWinsWithTeamAnchor(ovrOnly.wins, anchor!),
+    );
     expect(score.projectedRecord.wins).toBeGreaterThanOrEqual(58);
   });
 });

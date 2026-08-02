@@ -3,6 +3,9 @@ import type { Player } from "./types";
 import {
   buildLineupShootingProfile,
   hasReliableLineupSpacing,
+  isEliteThreePointShooter,
+  isNonThreePointShooter,
+  isPassableThreePointShooter,
   scoreLineupThreePointBonus,
 } from "./lineupShooting";
 
@@ -69,5 +72,49 @@ describe("lineupShooting", () => {
     );
     expect(hasReliableLineupSpacing(balancedProfile)).toBe(true);
     expect(hasReliableLineupSpacing(spikyProfile)).toBe(false);
+  });
+
+  it("requires three-point volume before counting passable or elite shooters", () => {
+    const emptyDiet = makePlayer("Empty Diet", 0.45, 0.4);
+    const realShooter = makePlayer("Real Shooter", 0.37, 5);
+    const eliteVolume = makePlayer("Elite Volume", 0.4, 7);
+
+    expect(isPassableThreePointShooter(emptyDiet)).toBe(false);
+    expect(isEliteThreePointShooter(emptyDiet)).toBe(false);
+    expect(isNonThreePointShooter(emptyDiet)).toBe(true);
+
+    expect(isPassableThreePointShooter(realShooter)).toBe(true);
+    expect(isEliteThreePointShooter(eliteVolume)).toBe(true);
+
+    const lowVolumeLineup = [
+      emptyDiet,
+      makePlayer("A", 0.4, 0.5),
+      makePlayer("B", 0.41, 0.6),
+      makePlayer("C", 0.39, 0.7),
+      makePlayer("D", 0.42, 0.8),
+    ];
+    const realVolumeLineup = [
+      realShooter,
+      makePlayer("A", 0.36, 4),
+      makePlayer("B", 0.37, 5),
+      makePlayer("C", 0.36, 3),
+      makePlayer("D", 0.38, 6),
+    ];
+
+    const lowProfile = buildLineupShootingProfile(
+      lowVolumeLineup,
+      uniformWeights(lowVolumeLineup),
+      lowVolumeLineup.length,
+    );
+    const realProfile = buildLineupShootingProfile(
+      realVolumeLineup,
+      uniformWeights(realVolumeLineup),
+      realVolumeLineup.length,
+    );
+
+    expect(lowProfile.passableShooters).toBe(0);
+    expect(scoreLineupThreePointBonus(realProfile)).toBeGreaterThan(
+      scoreLineupThreePointBonus(lowProfile),
+    );
   });
 });
