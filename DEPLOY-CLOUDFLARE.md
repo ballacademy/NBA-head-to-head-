@@ -37,7 +37,18 @@ In GitHub: **Settings** → **Secrets and variables** → **Actions** → **New 
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID from step 2 |
 | `QA_D1_DATABASE_ID` | (QA only) UUID from `wrangler d1 create draft-day-gm-qa` |
 
-If QA deploy fails at **Apply QA D1 migrations** with almost no error text, edit the API token at [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) and add **Account → D1 → Edit** (Pages edit alone is not enough).
+If QA deploy fails at **Apply QA D1 migrations** with code **7403** / “not authorized”:
+
+1. Token permissions must include **Account → D1 → Edit** (Pages edit alone is not enough).
+2. On the same token, **Account Resources** must include the account where `draft-day-gm-qa` lives (or **All accounts**).
+3. GitHub secret `CLOUDFLARE_ACCOUNT_ID` must match that account’s ID (Workers & Pages sidebar).
+4. GitHub secret `QA_D1_DATABASE_ID` must be the uuid for **`draft-day-gm-qa`** from:
+
+```powershell
+& "C:\Program Files\nodejs\npx.cmd" wrangler d1 list
+```
+
+Edit the token at [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens), then **re-run** the QA workflow (permission changes do not update old failed runs).
 
 `GITHUB_TOKEN` is provided automatically for deployment status on pull requests.
 
