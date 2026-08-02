@@ -798,11 +798,19 @@ h1.landing-hub__title {
   margin: 0 auto 4px;
   font-size: clamp(1.2rem, 5.2vw, 2rem);
   line-height: 1.1;
-  letter-spacing: -0.045em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
   text-wrap: nowrap;
   color: var(--text-on-dark);
+}
+
+/* Keep proper names (team names, etc.) in their authored casing. */
+.landing .landing-hub__title--name,
+h1.landing-hub__title--name {
+  letter-spacing: -0.045em;
+  text-transform: none;
 }
 
 .landing-hub__title-row {
