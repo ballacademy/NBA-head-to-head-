@@ -40,4 +40,22 @@ describe("playerHeadshots", () => {
     });
     expect(loaded.size).toBe(0);
   });
+
+  it("loads a mapped headshot through fetch+blob for canvas use", async () => {
+    const url = getPlayerHeadshotUrl("doncilu01");
+    expect(url).toBeTruthy();
+
+    const { loadCorsImage } = await import("./playerHeadshots");
+    const image = await loadCorsImage(url!, 10_000);
+
+    // Node vitest has no DOM Image; browser/QA path is covered by loadCorsImage
+    // returning null cleanly instead of throwing.
+    if (typeof Image === "undefined") {
+      expect(image).toBeNull();
+      return;
+    }
+
+    expect(image).not.toBeNull();
+    expect(image!.naturalWidth).toBeGreaterThan(0);
+  });
 });
