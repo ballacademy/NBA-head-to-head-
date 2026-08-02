@@ -775,31 +775,37 @@ main.landing-layout {
   gap: 12px;
 }
 
+/* Shared hub title band — identical geometry on every hub page. */
 .landing-hub__top {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100%;
   min-height: 52px;
   margin: 0 0 6px;
   /* Symmetric side padding so title/subtitle stay optically centered. */
-  padding-inline: max(80px, calc(var(--hub-chrome-inset) + 56px));
+  padding-inline: max(80px, calc(var(--hub-chrome-inset, 14px) + 56px));
   text-align: center;
 }
 
 @media (min-width: 900px) {
   .landing-hub__top {
-    /* Clear the doubled desktop logo while keeping titles centered. */
+    /* Clear the doubled desktop logo while keeping titles top-aligned. */
     min-height: 80px;
-    padding-inline: max(112px, calc(var(--hub-chrome-inset) + 88px));
+    padding-top: 10px;
+    padding-inline: max(112px, calc(var(--hub-chrome-inset, 22px) + 88px));
   }
 }
 
 .landing .landing-hub__title,
+.hub-feature .landing-hub__title,
+.landing h1.landing-hub__title,
 h1.landing-hub__title {
   width: 100%;
   max-width: none;
-  margin: 0 auto 4px;
+  margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 5.4vw, 2.2rem);
   font-weight: 800;
@@ -814,6 +820,8 @@ h1.landing-hub__title {
 
 /* Keep proper names (team names, etc.) in their authored casing. */
 .landing .landing-hub__title--name,
+.hub-feature .landing-hub__title--name,
+.landing h1.landing-hub__title--name,
 h1.landing-hub__title--name {
   font-family: var(--font-sans);
   font-size: clamp(1.2rem, 5.2vw, 2rem);
@@ -833,12 +841,16 @@ h1.landing-hub__title--name {
 }
 
 .landing .landing-hub__lede,
+.hub-feature .landing-hub__lede,
+.landing__lede.landing-hub__lede,
 .landing-hub__lede {
-  margin: 0 auto;
+  margin: 0;
   max-width: 34em;
   width: 100%;
+  min-height: calc(1.35em * 2);
   color: var(--text-muted-on-dark);
   font-size: 0.92rem;
+  font-weight: 500;
   line-height: 1.35;
   text-align: center;
 }
@@ -6728,27 +6740,10 @@ h1.landing-hub__title--name {
   min-width: 0;
 }
 
-.stats-panel__hub-top {
-  width: 100%;
-  min-height: 52px;
-  padding-inline: 84px;
-  text-align: center;
-}
-
-.stats-panel__hub-top .landing-hub__title,
-.hub-feature .landing-hub__title {
-  width: 100%;
-  max-width: none;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-  white-space: nowrap;
-  text-wrap: nowrap;
-}
-
+/* Stats keeps the shared hub title band; only the lede row is special. */
 .stats-panel__lede {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
@@ -6991,9 +6986,6 @@ h1.landing-hub__title--name {
     font-size: 0.74rem;
   }
 
-  .hub-feature.stats-panel .stats-panel__hub-top {
-    padding-inline: 84px;
-  }
 }
 
 /* Beta notes + runtime error visibility */
@@ -7815,20 +7807,6 @@ body.tier-list-dragging .tier-list__player {
 }
 
 @media (max-width: 720px) {
-  .tier-list-page .landing-hub__top {
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-
-  .tier-list-page .landing-hub__title {
-    font-size: clamp(1.35rem, 6vw, 1.7rem);
-  }
-
-  .tier-list-page .landing-hub__lede {
-    font-size: 0.88rem;
-    margin: 0;
-  }
-
   .tier-list {
     gap: 10px;
   }
