@@ -49,13 +49,6 @@ export type TierListDraftClassFilter = "all" | DraftClassYear;
 export type TierListTeamFilter = "all" | string;
 export type TierListDivisionFilter = "all" | Division;
 export type TierListConferenceFilter = "all" | Conference;
-/** Discrete height bands for the editor pool (inches). */
-export type TierListHeightBand =
-  | "all"
-  | "under-66"
-  | "66-68"
-  | "69-611"
-  | "7-plus";
 
 export interface TierListFilters {
   query: string;
@@ -64,7 +57,10 @@ export interface TierListFilters {
   ageMin: number | null;
   /** Inclusive upper age bound; null means no maximum. */
   ageMax: number | null;
-  heightBand: TierListHeightBand;
+  /** Inclusive lower height bound in inches; null means no minimum. */
+  heightMin: number | null;
+  /** Inclusive upper height bound in inches; null means no maximum. */
+  heightMax: number | null;
   team: TierListTeamFilter;
   division: TierListDivisionFilter;
   conference: TierListConferenceFilter;
@@ -108,7 +104,8 @@ export const DEFAULT_TIER_LIST_FILTERS: TierListFilters = {
   positions: [],
   ageMin: null,
   ageMax: null,
-  heightBand: "all",
+  heightMin: null,
+  heightMax: null,
   team: "all",
   division: "all",
   conference: "all",
@@ -137,17 +134,6 @@ const DEFAULT_TIER_NAMES = ["S", "A", "B", "C", "D", "F"] as const;
 export const TIER_NAME_MAX_LENGTH = 12;
 /** Max rows on a board (matches publish API). */
 export const TIER_LIST_MAX_TIERS = 12;
-
-export const TIER_LIST_HEIGHT_BANDS: Array<{
-  id: TierListHeightBand;
-  label: string;
-}> = [
-  { id: "all", label: "Any height" },
-  { id: "under-66", label: "Under 6'6\"" },
-  { id: "66-68", label: "6'6\"–6'8\"" },
-  { id: "69-611", label: "6'9\"–6'11\"" },
-  { id: "7-plus", label: "7'0\"+" },
-];
 
 export const createDefaultTier = (): TierListRow[] =>
   DEFAULT_TIER_NAMES.map((name, index) => ({
@@ -473,11 +459,12 @@ export const matchesAgeRangeFilter = (
   return true;
 };
 
-export const matchesHeightBandFilter = (
+export const matchesHeightRangeFilter = (
   player: Player,
-  heightBand: TierListHeightBand,
+  heightMin: number | null,
+  heightMax: number | null,
 ): boolean => {
-  if (heightBand === "all") {
+  if (heightMin == null && heightMax == null) {
     return true;
   }
 
@@ -486,18 +473,15 @@ export const matchesHeightBandFilter = (
     return false;
   }
 
-  switch (heightBand) {
-    case "under-66":
-      return height < 78;
-    case "66-68":
-      return height >= 78 && height <= 80;
-    case "69-611":
-      return height >= 81 && height <= 83;
-    case "7-plus":
-      return height >= 84;
-    default:
-      return true;
+  if (heightMin != null && height < heightMin) {
+    return false;
   }
+
+  if (heightMax != null && height > heightMax) {
+    return false;
+  }
+
+  return true;
 };
 
 export const matchesAgencyFilter = (
@@ -620,7 +604,7 @@ export const playerMatchesTierListFilters = (
     return false;
   }
 
-  if (!matchesHeightBandFilter(player, filters.heightBand)) {
+  if (!matchesHeightRangeFilter(player, filters.heightMin, filters.heightMax)) {
     return false;
   }
 
