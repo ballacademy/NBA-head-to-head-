@@ -12,136 +12,159 @@ import {
 } from "./dailyDraftSolver";
 import { getPlayersById } from "./scoring";
 
+/** CI runners are slower; the solver search regularly exceeds vitest's 5s default. */
+const SOLVER_TEST_TIMEOUT_MS = 30_000;
+const SOLVER_MULTI_PASS_TIMEOUT_MS = 60_000;
+
 describe("solveBestDailyDraftLineup", () => {
-  it("returns a full feasible lineup for a daily board", () => {
-    const setup = getDailyDraftSetup("2026-06-14");
-    const lineup = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
+  it(
+    "returns a full feasible lineup for a daily board",
+    () => {
+      const setup = getDailyDraftSetup("2026-06-14");
+      const lineup = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
 
-    expect(lineup).toHaveLength(5);
-    expect(new Set(lineup.map((player) => player.id)).size).toBe(5);
-  });
+      expect(lineup).toHaveLength(5);
+      expect(new Set(lineup.map((player) => player.id)).size).toBe(5);
+    },
+    SOLVER_TEST_TIMEOUT_MS,
+  );
 
-  it("fills each daily slot with the exact position and division constraint", () => {
-    const setup = getDailyDraftSetup("2026-06-15");
-    const lineup = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
+  it(
+    "fills each daily slot with the exact position and division constraint",
+    () => {
+      const setup = getDailyDraftSetup("2026-06-15");
+      const lineup = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
 
-    expect(lineup).toHaveLength(setup.slots.length);
+      expect(lineup).toHaveLength(setup.slots.length);
 
-    for (let index = 0; index < setup.slots.length; index += 1) {
-      const slot = setup.slots[index]!;
-      const player = lineup[index]!;
+      for (let index = 0; index < setup.slots.length; index += 1) {
+        const slot = setup.slots[index]!;
+        const player = lineup[index]!;
 
-      expect(playerMatchesPosition(player, slot.position)).toBe(true);
-      expect(getDivisionForTeam(player.team)).toBe(slot.division);
-    }
-  });
+        expect(playerMatchesPosition(player, slot.position)).toBe(true);
+        expect(getDivisionForTeam(player.team)).toBe(slot.division);
+      }
+    },
+    SOLVER_TEST_TIMEOUT_MS,
+  );
 
-  it("beats the greedy auto-draft score for the same goal", () => {
-    clearDailyDraftSolverCacheForTests();
-    const setup = getDailyDraftSetup("2026-06-15");
-    const greedy = getPlayersById(autoDraftLineup(players, setup.slots), players);
-    const optimal = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-    );
-    const greedyScore = buildDailyGoalResult(greedy, setup.goal).value;
-    const optimalScore = buildDailyGoalResult(optimal, setup.goal).value;
+  it(
+    "beats the greedy auto-draft score for the same goal",
+    () => {
+      clearDailyDraftSolverCacheForTests();
+      const setup = getDailyDraftSetup("2026-06-15");
+      const greedy = getPlayersById(autoDraftLineup(players, setup.slots), players);
+      const optimal = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+      );
+      const greedyScore = buildDailyGoalResult(greedy, setup.goal).value;
+      const optimalScore = buildDailyGoalResult(optimal, setup.goal).value;
 
-    if (setup.goal.direction === "higher") {
-      expect(optimalScore).toBeGreaterThanOrEqual(greedyScore);
-    } else {
-      expect(optimalScore).toBeLessThanOrEqual(greedyScore);
-    }
-  });
+      if (setup.goal.direction === "higher") {
+        expect(optimalScore).toBeGreaterThanOrEqual(greedyScore);
+      } else {
+        expect(optimalScore).toBeLessThanOrEqual(greedyScore);
+      }
+    },
+    SOLVER_TEST_TIMEOUT_MS,
+  );
 
-  it("reuses cached results for the same date key", () => {
-    clearDailyDraftSolverCacheForTests();
-    const setup = getDailyDraftSetup("2026-06-16");
-    const first = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
-    const second = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
+  it(
+    "reuses cached results for the same date key",
+    () => {
+      clearDailyDraftSolverCacheForTests();
+      const setup = getDailyDraftSetup("2026-06-16");
+      const first = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
+      const second = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
 
-    expect(second.map((player) => player.id)).toEqual(
-      first.map((player) => player.id),
-    );
-  });
+      expect(second.map((player) => player.id)).toEqual(
+        first.map((player) => player.id),
+      );
+    },
+    SOLVER_TEST_TIMEOUT_MS,
+  );
 
   it(
     "does not reuse cached results when the goal changes for the same date key",
     () => {
-    clearDailyDraftSolverCacheForTests();
-    const setup = getDailyDraftSetup("2026-06-17");
-    const alternateGoal = DAILY_DRAFT_GOALS.find((goal) => goal.id !== setup.goal.id)!;
-    const primary = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
-    const alternate = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      alternateGoal,
-      setup.dateKey,
-    );
-    const primaryScore = buildDailyGoalResult(primary, setup.goal).value;
-    const alternateScore = buildDailyGoalResult(alternate, alternateGoal).value;
-    const primaryAsAlternate = buildDailyGoalResult(primary, alternateGoal).value;
+      clearDailyDraftSolverCacheForTests();
+      const setup = getDailyDraftSetup("2026-06-17");
+      const alternateGoal = DAILY_DRAFT_GOALS.find((goal) => goal.id !== setup.goal.id)!;
+      const primary = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
+      const alternate = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        alternateGoal,
+        setup.dateKey,
+      );
+      const alternateScore = buildDailyGoalResult(alternate, alternateGoal).value;
+      const primaryAsAlternate = buildDailyGoalResult(primary, alternateGoal).value;
 
-    expect(buildDailyGoalResult(alternate, alternateGoal).formatted).not.toBe(
-      buildDailyGoalResult(primary, setup.goal).formatted,
-    );
+      expect(buildDailyGoalResult(alternate, alternateGoal).formatted).not.toBe(
+        buildDailyGoalResult(primary, setup.goal).formatted,
+      );
 
-    if (alternateGoal.direction === "higher") {
-      expect(alternateScore).toBeGreaterThanOrEqual(primaryAsAlternate);
-    } else {
-      expect(alternateScore).toBeLessThanOrEqual(primaryAsAlternate);
-    }
-  },
-    15_000,
+      if (alternateGoal.direction === "higher") {
+        expect(alternateScore).toBeGreaterThanOrEqual(primaryAsAlternate);
+      } else {
+        expect(alternateScore).toBeLessThanOrEqual(primaryAsAlternate);
+      }
+    },
+    SOLVER_MULTI_PASS_TIMEOUT_MS,
   );
 
-  it("does not reuse cached results when the player pool changes", () => {
-    clearDailyDraftSolverCacheForTests();
-    const setup = getDailyDraftSetup("2026-06-18");
-    const fullResult = solveBestDailyDraftLineup(
-      players,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
-    const excludedId = fullResult[0]?.id;
-    const reducedPool = players.filter((player) => player.id !== excludedId);
-    const reducedResult = solveBestDailyDraftLineup(
-      reducedPool,
-      setup.slots,
-      setup.goal,
-      setup.dateKey,
-    );
+  it(
+    "does not reuse cached results when the player pool changes",
+    () => {
+      clearDailyDraftSolverCacheForTests();
+      const setup = getDailyDraftSetup("2026-06-18");
+      const fullResult = solveBestDailyDraftLineup(
+        players,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
+      const excludedId = fullResult[0]?.id;
+      const reducedPool = players.filter((player) => player.id !== excludedId);
+      const reducedResult = solveBestDailyDraftLineup(
+        reducedPool,
+        setup.slots,
+        setup.goal,
+        setup.dateKey,
+      );
 
-    expect(reducedResult.map((player) => player.id)).not.toEqual(
-      fullResult.map((player) => player.id),
-    );
-    expect(reducedResult.some((player) => player.id === excludedId)).toBe(false);
-  });
+      expect(reducedResult.map((player) => player.id)).not.toEqual(
+        fullResult.map((player) => player.id),
+      );
+      expect(reducedResult.some((player) => player.id === excludedId)).toBe(false);
+    },
+    SOLVER_TEST_TIMEOUT_MS,
+  );
 });
