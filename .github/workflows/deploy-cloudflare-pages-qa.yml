@@ -57,6 +57,27 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify QA D1 auth
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          QA_D1_DATABASE_ID: ${{ secrets.QA_D1_DATABASE_ID }}
+        run: |
+          set -euo pipefail
+          echo "CLOUDFLARE_ACCOUNT_ID prefix: ${CLOUDFLARE_ACCOUNT_ID:0:6}…"
+          echo "QA_D1_DATABASE_ID prefix: ${QA_D1_DATABASE_ID:0:8}…"
+          npx wrangler whoami
+          echo "--- d1 list ---"
+          npx wrangler d1 list
+          if ! npx wrangler d1 list | grep -q "draft-day-gm-qa"; then
+            echo "::error::Token/account cannot see database draft-day-gm-qa. Create it in this Cloudflare account, or fix CLOUDFLARE_ACCOUNT_ID / token Account Resources."
+            exit 1
+          fi
+          if ! npx wrangler d1 list | grep -qi "${QA_D1_DATABASE_ID}"; then
+            echo "::error::QA_D1_DATABASE_ID is not in this account's D1 list. Re-copy the uuid from \`wrangler d1 list\` / create output into the GitHub secret."
+            exit 1
+          fi
+
       # Shell step (not wrangler-action) so auth/permission errors are not swallowed.
       - name: Apply QA D1 migrations
         env:
@@ -67,7 +88,7 @@ jobs:
           # Wrangler v4 has no --yes on this command; CI skips the confirm prompt.
           npx wrangler d1 migrations apply draft-day-gm-qa --remote 2>&1 | tee /tmp/qa-d1-migrate.log
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-            echo "::error::QA D1 migrations failed. Confirm (1) database draft-day-gm-qa exists, (2) QA_D1_DATABASE_ID matches it, and (3) CLOUDFLARE_API_TOKEN has Account → D1 → Edit."
+            echo "::error::QA D1 migrations failed (API 7403 usually means wrong account id, wrong DB uuid, or token Account Resources not including this account)."
             exit 1
           fi
 
