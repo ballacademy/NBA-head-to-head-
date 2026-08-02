@@ -30,7 +30,6 @@ import {
   saveTierListToLibrary,
   setTierListPublishedId,
   setTierListTitle,
-  TIER_LIST_HEIGHT_BANDS,
   TIER_LIST_MAX_TIERS,
   TIER_NAME_MAX_LENGTH,
   type TierListAgencyFilter,
@@ -40,7 +39,6 @@ import {
   type TierListDraftClassFilter,
   type TierListExperienceFilter,
   type TierListFilters,
-  type TierListHeightBand,
   type TierListLibrary,
   type TierListPoolSort,
   type TierListRoleFilter,
@@ -140,6 +138,21 @@ const parseAgeBound = (value: string): number | null => {
   }
 
   return Math.max(0, Math.min(99, Math.round(parsed)));
+};
+
+/** Height filter bounds in total inches (e.g. 78 = 6'6"). */
+const parseHeightBound = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.max(48, Math.min(108, Math.round(parsed)));
 };
 
 /** Ten distinct accents — cycle only after the 10th unnamed tier. */
@@ -1137,26 +1150,42 @@ export function TierListPage({
             </div>
 
             <div className="tier-list__filter-group">
-              <span className="tier-list__filter-label">Height</span>
-              <div className="tier-list__chips">
-                {TIER_LIST_HEIGHT_BANDS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={`tier-list__chip${
-                      filters.heightBand === option.id ? " is-active" : ""
-                    }`}
-                    aria-pressed={filters.heightBand === option.id}
-                    onClick={() =>
+              <span className="tier-list__filter-label">Height (in)</span>
+              <div className="tier-list__age-range">
+                <label className="tier-list__age-field">
+                  <span>Min</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={48}
+                    max={108}
+                    placeholder="Any"
+                    value={filters.heightMin ?? ""}
+                    onChange={(event) =>
                       setFilters((current) => ({
                         ...current,
-                        heightBand: option.id as TierListHeightBand,
+                        heightMin: parseHeightBound(event.target.value),
                       }))
                     }
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                  />
+                </label>
+                <label className="tier-list__age-field">
+                  <span>Max</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={48}
+                    max={108}
+                    placeholder="Any"
+                    value={filters.heightMax ?? ""}
+                    onChange={(event) =>
+                      setFilters((current) => ({
+                        ...current,
+                        heightMax: parseHeightBound(event.target.value),
+                      }))
+                    }
+                  />
+                </label>
               </div>
             </div>
           </div>

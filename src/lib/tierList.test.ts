@@ -288,7 +288,7 @@ describe("tierList", () => {
     ).toBe(true);
   });
 
-  it("filters the pool by height bands", () => {
+  it("filters the pool by height range", () => {
     const short = databasePlayers.find((player) => player.heightInches < 78);
     const big = databasePlayers.find((player) => player.heightInches >= 84);
     expect(short && big).toBeTruthy();
@@ -296,21 +296,28 @@ describe("tierList", () => {
     expect(
       playerMatchesTierListFilters(short!, {
         ...DEFAULT_TIER_LIST_FILTERS,
-        heightBand: "under-66",
+        heightMax: 77,
       }),
     ).toBe(true);
     expect(
       playerMatchesTierListFilters(short!, {
         ...DEFAULT_TIER_LIST_FILTERS,
-        heightBand: "7-plus",
+        heightMin: 84,
       }),
     ).toBe(false);
     expect(
       playerMatchesTierListFilters(big!, {
         ...DEFAULT_TIER_LIST_FILTERS,
-        heightBand: "7-plus",
+        heightMin: 84,
       }),
     ).toBe(true);
+    expect(
+      playerMatchesTierListFilters(big!, {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        heightMin: 78,
+        heightMax: 83,
+      }),
+    ).toBe(false);
   });
 
   it("reorders within a tier using insertBeforePlayerId", () => {
