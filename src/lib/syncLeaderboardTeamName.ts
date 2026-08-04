@@ -1,16 +1,25 @@
-import { upsertLeaderboardEntry } from "./leaderboard";
+import { upsertLeaderboardEntry, loadLeaderboardEntries } from "./leaderboard";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
-import { getGamesPlayed, loadPlayerRecord } from "./playerRecord";
 import { ensureClassicProfile } from "./classicProfile";
 import { ensureCurrentRankedSeason } from "./rankedProfile";
-import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
+import {
+  upsertRankedLeaderboardEntry,
+  loadRankedLeaderboardEntries,
+} from "./rankedLeaderboard";
 import type { TeamProfile } from "./teamProfile";
 
+/**
+ * Push the current team name onto existing monthly leaderboard rows only.
+ * Do not invent season W–L from career modeRecords — that breaks remote
+ * first-insert validation and collapses multi-player boards.
+ */
 export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
   const { playerId, publicTag } = getOrCreatePlayerIdentity();
-  const classicRecord = loadPlayerRecord("headToHead");
+  const classicEntry = loadLeaderboardEntries().find(
+    (entry) => entry.playerId === playerId,
+  );
 
-  if (getGamesPlayed(classicRecord) > 0) {
+  if (classicEntry) {
     const classicProfile = ensureClassicProfile();
 
     upsertLeaderboardEntry({
@@ -18,16 +27,18 @@ export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
       name: team.name,
       publicTag,
       elo: classicProfile.elo,
-      wins: classicRecord.wins,
-      losses: classicRecord.losses,
-      winStreak: classicRecord.winStreak,
-      lossStreak: classicRecord.lossStreak,
+      wins: classicEntry.wins,
+      losses: classicEntry.losses,
+      winStreak: classicEntry.winStreak,
+      lossStreak: classicEntry.lossStreak,
     });
   }
 
-  const rankedRecord = loadPlayerRecord("ranked");
+  const rankedEntry = loadRankedLeaderboardEntries().find(
+    (entry) => entry.playerId === playerId,
+  );
 
-  if (getGamesPlayed(rankedRecord) > 0) {
+  if (rankedEntry) {
     const rankedProfile = ensureCurrentRankedSeason();
 
     upsertRankedLeaderboardEntry({
@@ -35,10 +46,10 @@ export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
       name: team.name,
       publicTag,
       elo: rankedProfile.elo,
-      wins: rankedRecord.wins,
-      losses: rankedRecord.losses,
-      winStreak: rankedRecord.winStreak,
-      lossStreak: rankedRecord.lossStreak,
+      wins: rankedEntry.wins,
+      losses: rankedEntry.losses,
+      winStreak: rankedEntry.winStreak,
+      lossStreak: rankedEntry.lossStreak,
       isNpc: false,
     });
   }
