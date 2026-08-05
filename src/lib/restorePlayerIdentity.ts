@@ -1,10 +1,14 @@
 import { removeJson } from "./browserStorage";
+import { clearAccountLinkCache } from "./accountGate";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import {
   createStarterCollection,
   savePlayerCollection,
 } from "./playerCollection";
-import { setPlayerIdentity } from "./playerIdentity";
+import {
+  mintAnonymousPlayerIdentity,
+  setPlayerIdentity,
+} from "./playerIdentity";
 import { fetchRemotePlayerProfile } from "./playerProfileApi";
 import {
   clearModePlayerRecords,
@@ -33,6 +37,8 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-last-match-outcome",
   "nba-head-to-head-live-draft-session",
   "nba-head-to-head-draft-deadline",
+  "nba-head-to-head-team-profile",
+  "nba-head-to-head-event-profiles",
 ] as const;
 
 const clearIdentityBoundLocalState = () => {
@@ -47,6 +53,16 @@ const clearIdentityBoundLocalState = () => {
     pendingUnlock: null,
     initialized: true,
   });
+};
+
+/**
+ * Logs out of the linked account on this device by minting a fresh anonymous
+ * GM identity. The account itself remains; log in again to restore it.
+ */
+export const logoutToAnonymousIdentity = () => {
+  clearIdentityBoundLocalState();
+  clearAccountLinkCache();
+  return mintAnonymousPlayerIdentity();
 };
 
 /**

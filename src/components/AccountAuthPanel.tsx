@@ -16,7 +16,7 @@ import {
   FOUNDING_GM_ACHIEVEMENT_ID,
   syncFoundingGmAchievement,
 } from "../lib/foundingGm";
-import { restorePlayerIdentityFromLogin } from "../lib/restorePlayerIdentity";
+import { restorePlayerIdentityFromLogin, logoutToAnonymousIdentity } from "../lib/restorePlayerIdentity";
 import {
   SUPPORT_EMAIL,
   buildPasswordResetMailto,
@@ -211,6 +211,26 @@ export function AccountAuthPanel({
     }
   };
 
+  const handleLogout = () => {
+    if (submitLock.current || busy) {
+      return;
+    }
+
+    submitLock.current = true;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      logoutToAnonymousIdentity();
+      window.location.reload();
+    } catch {
+      submitLock.current = false;
+      setBusy(false);
+      setError("Could not log out. Refresh the page and try again.");
+    }
+  };
+
   const handleReset = async () => {
     if (submitLock.current) {
       return;
@@ -328,6 +348,7 @@ export function AccountAuthPanel({
             type="button"
             className="landing-team-form__account-action"
             onClick={() => openMode("login")}
+            disabled={busy}
           >
             Switch account
           </button>
@@ -337,11 +358,30 @@ export function AccountAuthPanel({
           <button
             type="button"
             className="landing-team-form__account-action"
+            onClick={handleLogout}
+            disabled={busy}
+          >
+            Log out
+          </button>
+          <span className="landing-team-form__account-sep" aria-hidden="true">
+            ·
+          </span>
+          <button
+            type="button"
+            className="landing-team-form__account-action"
             onClick={() => openMode("reset")}
+            disabled={busy}
           >
             Forgot password
           </button>
         </div>
+      ) : null}
+
+      {linkState === "linked" && mode === "closed" ? (
+        <p className="landing-team-form__account-note">
+          Log out starts a fresh anonymous GM on this device. Your account stays
+          active — use Log in anytime to restore it.
+        </p>
       ) : null}
 
       {mode !== "closed" ? (
