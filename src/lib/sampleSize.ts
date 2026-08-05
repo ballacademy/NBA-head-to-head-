@@ -2,6 +2,14 @@ import priorSeasonProduction from "../../data/prior-season-production.json";
 import activeStarBestSeasonsData from "../../data/active-star-best-seasons.json";
 import type { Player } from "./types";
 
+/**
+ * Limited sample size (current season < FULL_SAMPLE_MIN_GAMES games):
+ * 1) Game-weight blend current production with prior/peak season stats for scoring
+ * 2) Down-weight the player in lineup aggregates until combined games reach full sample
+ *
+ * Player-facing summary: Account → Beta notes → Limited sample size.
+ */
+
 /** Current-season games needed before sample size is trusted on its own. */
 export const FULL_SAMPLE_MIN_GAMES = 35;
 export const LIMITED_SAMPLE_WEIGHT_FLOOR = 0.35;
