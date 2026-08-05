@@ -61,6 +61,33 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             </li>
           </ul>
 
+          <h2>Limited sample size</h2>
+          <p>
+            Players under <strong>35 games</strong> this season show a Limited
+            sample badge in draft and stats. That flag is about the{" "}
+            <em>current</em> season only — prior history does not remove it.
+          </p>
+          <ul>
+            <li>
+              <strong>Stat blend</strong> — If they have prior-season (or peak)
+              production on file, the engine game-weights those numbers with
+              current ones before scoring. Example: 5 games now + 70 prior →
+              current stats count 5/75 and prior 70/75. Usage, defense grades,
+              and play styles stay on the current row.
+            </li>
+            <li>
+              <strong>Lineup weight</strong> — Limited players also pull less on
+              lineup totals until their sample is trusted: with a prior, weight
+              scales by (current + prior games) / 35; with no prior, by current
+              games / 35 (floor 0.35). Full-sample players stay at weight 1.
+            </li>
+            <li>
+              Both effects apply in every scored mode (Daily, Classic, Pro,
+              Events). Draft boards sort limited-sample players below
+              full-sample ones when other keys tie.
+            </li>
+          </ul>
+
           <h2>Feedback &amp; bugs</h2>
           <p>
             Something broken, confusing, or unfair? Tell us the mode, what you
