@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
+import { formatUsername } from "../lib/accountCredentials";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { buildLineupScoreContext, formatLineupOvrDisplay } from "../lib/scoring";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
-import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface TeamLineupCardProps {
@@ -18,6 +18,7 @@ interface TeamLineupCardProps {
   compact?: boolean;
   showProjectedRecord?: boolean;
   showScoreContext?: boolean;
+  /** Opens the same GM profile modal as leaderboard username clicks. */
   onNameClick?: () => void;
 }
 
@@ -38,18 +39,18 @@ export function TeamLineupCard({
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
     : null;
+  const teamName = drafter.name.trim() || "Opponent";
+  const username = drafter.username?.trim() || undefined;
 
-  const displayName = formatOpponentDisplayName(drafter.name, drafter.username);
-
-  const nameContent = showStreak ? (
+  const nameLabel = showStreak ? (
     <TeamNameWithStreak
-      name={displayName}
+      name={teamName}
       winStreak={winStreak}
       lossStreak={lossStreak}
       compact={compact}
     />
   ) : (
-    displayName
+    teamName
   );
 
   return (
@@ -60,17 +61,36 @@ export function TeamLineupCard({
       <div className="team-lineup-card__header">
         <div>
           <h3>
-            {onNameClick ? (
-              <button
-                type="button"
-                className="team-lineup-card__name-button"
-                onClick={onNameClick}
-              >
-                {nameContent}
-              </button>
-            ) : (
-              nameContent
-            )}
+            <span className="team-lineup-card__identity">
+              {onNameClick ? (
+                <button
+                  type="button"
+                  className="team-lineup-card__name-button"
+                  onClick={onNameClick}
+                  aria-label={`View profile for ${teamName}`}
+                >
+                  {nameLabel}
+                </button>
+              ) : (
+                nameLabel
+              )}
+              {username ? (
+                onNameClick ? (
+                  <button
+                    type="button"
+                    className="team-lineup-card__username-button"
+                    onClick={onNameClick}
+                    aria-label={`View profile for ${formatUsername(username)}`}
+                  >
+                    {formatUsername(username)}
+                  </button>
+                ) : (
+                  <span className="team-lineup-card__username">
+                    {formatUsername(username)}
+                  </span>
+                )
+              ) : null}
+            </span>
           </h3>
           {showProjectedRecord ? (
             <p className="projected-record">{score.projectedRecord.formatted}</p>

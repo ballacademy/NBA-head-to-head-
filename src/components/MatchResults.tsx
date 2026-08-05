@@ -16,6 +16,7 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
+import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import {
   extractGhostStoredLineupId,
@@ -302,12 +303,12 @@ export function MatchResults({
   const opponentProfileMode: "classic" | "ranked" = user.salaryCapMode
     ? "ranked"
     : "classic";
-  const canOpenOpponentProfile =
-    Boolean(opponentProfileId) &&
-    !user.practiceMode &&
-    !user.privateMatch &&
-    !user.eventId &&
-    !opponentProfileId?.startsWith("npc-");
+  const canOpenOpponentProfile = canOpenOpponentGmProfile({
+    profilePlayerId: opponentProfileId,
+    practiceMode: user.practiceMode,
+    eventId: user.eventId,
+  });
+  const openOpponentProfile = () => setOpponentProfileOpen(true);
 
   return (
     <section
@@ -325,6 +326,7 @@ export function MatchResults({
           playerId={opponentProfileId}
           name={opponent.name}
           publicTag={derivePublicTag(opponentProfileId)}
+          username={opponent.username}
           wins={0}
           losses={0}
           elo={opponent.rankedOpponentElo ?? opponent.classicOpponentElo}
@@ -352,7 +354,23 @@ export function MatchResults({
                 ? "Match ended in a tie"
                 : userWon
                   ? "You won the matchup"
-                  : `${formatOpponentDisplayName(opponent.name, opponent.username)} won the matchup`}
+                  : canOpenOpponentProfile
+                    ? (
+                      <>
+                        <button
+                          type="button"
+                          className="matchup-panel__opponent-link"
+                          onClick={openOpponentProfile}
+                        >
+                          {formatOpponentDisplayName(
+                            opponent.name,
+                            opponent.username,
+                          )}
+                        </button>{" "}
+                        won the matchup
+                      </>
+                      )
+                    : `${formatOpponentDisplayName(opponent.name, opponent.username)} won the matchup`}
             </h2>
           </div>
           <p className="matchup-panel__meta">
@@ -471,9 +489,7 @@ export function MatchResults({
               showScoreContext
               compact
               onNameClick={
-                canOpenOpponentProfile
-                  ? () => setOpponentProfileOpen(true)
-                  : undefined
+                canOpenOpponentProfile ? openOpponentProfile : undefined
               }
             />
           </div>

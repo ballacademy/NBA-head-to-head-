@@ -5500,6 +5500,14 @@ h1.landing-hub__title--name {
   font-size: 1.1rem;
 }
 
+.team-lineup-card__identity {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
 .team-lineup-card__name-button {
   display: inline;
   margin: 0;
@@ -5513,6 +5521,45 @@ h1.landing-hub__title--name {
 }
 
 .team-lineup-card__name-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.team-lineup-card__username-button,
+.team-lineup-card__username {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  font-size: 0.82em;
+  font-weight: 700;
+  text-align: left;
+  cursor: inherit;
+}
+
+.team-lineup-card__username-button {
+  cursor: pointer;
+}
+
+.team-lineup-card__username-button:hover {
+  color: #bfdbfe;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.matchup-panel__opponent-link {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.matchup-panel__opponent-link:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
