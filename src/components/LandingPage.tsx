@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   completeUnlock,
   getCollectionProgress,
@@ -90,6 +90,8 @@ interface LandingPageProps {
   isMatchmakingSearchActive?: boolean;
   matchmakingElapsedSeconds?: number;
   startMatchError?: string | null;
+  /** Host private room code once created (dismisses create modal for overlay). */
+  privateRoomCode?: string | null;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
@@ -132,6 +134,7 @@ export function LandingPage({
   isMatchmakingSearchActive = false,
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
+  privateRoomCode = null,
   onStartDraft,
   onViewDailyLineup,
   onViewYesterdayBestDailyLineup,
@@ -166,6 +169,9 @@ export function LandingPage({
   const [privateMatchMode, setPrivateMatchMode] = useState<
     null | "classic" | "ranked"
   >(null);
+  const closePrivateMatchModal = useCallback(() => {
+    setPrivateMatchMode(null);
+  }, []);
   const teamFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -555,7 +561,8 @@ export function LandingPage({
         <PrivateMatchModal
           salaryCapMode={privateMatchMode === "ranked"}
           startMatchError={startMatchError}
-          onClose={() => setPrivateMatchMode(null)}
+          privateRoomCode={privateRoomCode}
+          onClose={closePrivateMatchModal}
           onStart={handleStart}
         />
       ) : null}

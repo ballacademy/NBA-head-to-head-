@@ -1825,6 +1825,7 @@ function App() {
           landingBasicDaily={landingBasicDaily}
           landingAdvancedDaily={landingAdvancedDaily}
           startMatchError={startMatchError}
+          privateRoomCode={privateRoomCode}
           onStartDraft={startMatch}
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
