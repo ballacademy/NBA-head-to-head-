@@ -16,6 +16,9 @@ export const ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE =
 export const ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE =
   "Create an account to publish tier lists.";
 
+export const ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE =
+  "Create an account to host or join a private match.";
+
 export const clearAccountLinkCache = (playerId?: string) => {
   if (playerId) {
     linkCache.delete(playerId);

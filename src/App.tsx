@@ -95,6 +95,12 @@ import {
   submitLiveMatchLineup,
 } from "./lib/liveMatchmaking";
 import {
+  cancelPrivateRoom,
+  createPrivateRoom,
+  joinPrivateRoom,
+  waitForPrivateRoomGuest,
+} from "./lib/privateMatchmaking";
+import {
   clearLiveDraftSession,
   saveLiveDraftSession,
 } from "./lib/liveDraftSession";
@@ -204,6 +210,7 @@ function App() {
   const [isCancellingMatchmaking, setIsCancellingMatchmaking] = useState(false);
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
+  const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
   );
@@ -219,6 +226,7 @@ function App() {
     mode: GhostMatchmakingMode;
     playerId: string;
     cancelled: boolean;
+    privateRoomCode?: string;
   } | null>(null);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
@@ -526,6 +534,7 @@ function App() {
     options: StartDraftOptions = {},
   ): Promise<StartMatchResult> => {
     const practiceMode = Boolean(options.practiceMode);
+    const privateMatch = Boolean(options.privateMatch);
 
     // Practice can always restart; pending unlocks only block ranked/classic starts.
     if (collection.pendingUnlock && !practiceMode) {
@@ -590,7 +599,117 @@ function App() {
     let isPendingQueue = false;
     let activeMatchmakingGeneration: number | null = null;
 
-    if (!daily && !nextAllTimeMode && !practiceMode) {
+    if (privateMatch) {
+      const privateRoom = options.privateRoom;
+      if (!privateRoom) {
+        setStartMatchError(getStartMatchErrorMessage("setup_failed"));
+        return "failed";
+      }
+
+      const nextMatchmakingMode: GhostMatchmakingMode = salaryCapMode
+        ? "ranked"
+        : "classic";
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      const previousSession = matchmakingSessionRef.current;
+
+      if (previousSession) {
+        previousSession.cancelled = true;
+      }
+
+      const generation = ++matchmakingGenerationRef.current;
+      activeMatchmakingGeneration = generation;
+      const session = {
+        generation,
+        mode: nextMatchmakingMode,
+        playerId,
+        cancelled: false,
+        privateRoomCode: undefined as string | undefined,
+      };
+      matchmakingSessionRef.current = session;
+      setIsMatchmakingInFlight(true);
+      setIsCancellingMatchmaking(false);
+      setMatchmakingStartedAt(Date.now());
+      setMatchmakingMode(nextMatchmakingMode);
+      setMatchedOpponentName(null);
+      setPrivateRoomCode(null);
+
+      const elo = salaryCapMode
+        ? ensureCurrentRankedSeason().elo
+        : ensureClassicProfile().elo;
+
+      try {
+        if (privateRoom.role === "host") {
+          const created = await createPrivateRoom({
+            mode: nextMatchmakingMode,
+            playerId,
+            teamName: team.name,
+            elo,
+          });
+
+          if ("error" in created) {
+            setStartMatchError(created.error);
+            return "failed";
+          }
+
+          session.privateRoomCode = created.roomCode;
+          setPrivateRoomCode(created.roomCode);
+
+          const waited = await waitForPrivateRoomGuest(
+            { roomCode: created.roomCode, playerId },
+            { isCancelled: () => session.cancelled },
+          );
+
+          if (session.cancelled || !waited.ok) {
+            if (waited.ok === false && waited.error === "expired") {
+              setStartMatchError("Private room expired. Create a new one.");
+              return "failed";
+            }
+            return "cancelled";
+          }
+
+          liveOpponent = waited.matched.opponent;
+        } else {
+          const joined = await joinPrivateRoom({
+            roomCode: privateRoom.roomCode,
+            playerId,
+            teamName: team.name,
+            elo,
+          });
+
+          if ("error" in joined) {
+            setStartMatchError(joined.error);
+            return "failed";
+          }
+
+          liveOpponent = joined.opponent;
+        }
+
+        if (liveOpponent && !session.cancelled) {
+          setMatchedOpponentName(liveOpponent.teamName);
+          await new Promise<void>((resolve) => {
+            window.setTimeout(resolve, 1200);
+          });
+        }
+
+        if (session.cancelled) {
+          return "cancelled";
+        }
+      } finally {
+        if (matchmakingSessionRef.current?.generation === generation) {
+          matchmakingSessionRef.current = null;
+          setMatchmakingMode(null);
+          setMatchmakingStartedAt(null);
+          setMatchedOpponentName(null);
+          setPrivateRoomCode(null);
+        }
+
+        setIsCancellingMatchmaking(false);
+
+        if (matchmakingGenerationRef.current === generation) {
+          setIsMatchmakingInFlight(false);
+        }
+      }
+    } else if (!daily && !nextAllTimeMode && !practiceMode) {
       const nextMatchmakingMode: GhostMatchmakingMode = eventMode
         ? "event"
         : salaryCapMode
@@ -808,6 +927,7 @@ function App() {
         salaryCapLimit,
         allTimeMode: nextAllTimeMode,
         practiceMode,
+        privateMatch,
         eventId,
         eventRestriction,
         sharedDraftSlots: sharedSlots,
@@ -886,6 +1006,15 @@ function App() {
     setIsCancellingMatchmaking(true);
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
+    setPrivateRoomCode(null);
+
+    if (session.privateRoomCode) {
+      await cancelPrivateRoom({
+        roomCode: session.privateRoomCode,
+        playerId: session.playerId,
+      });
+      return;
+    }
 
     await leaveMatchmakingQueue({
       mode: session.mode,
@@ -1075,6 +1204,18 @@ function App() {
         salaryCapLimit: user.salaryCapLimit,
       });
       // Stay on results if practice restart fails instead of dumping to home.
+      if (result === "failed") {
+        return;
+      }
+      return;
+    }
+
+    if (user.privateMatch) {
+      const result = await startMatch(team, {
+        privateMatch: true,
+        salaryCapMode: Boolean(user.salaryCapMode),
+        privateRoom: { role: "host" },
+      });
       if (result === "failed") {
         return;
       }
@@ -1694,6 +1835,7 @@ function App() {
             matchedOpponentName={matchedOpponentName}
             onCancel={cancelMatchmaking}
             isCancelling={isCancellingMatchmaking}
+            privateRoomCode={privateRoomCode}
           />
         ) : null}
       </main>
@@ -1818,6 +1960,7 @@ function App() {
           matchedOpponentName={matchedOpponentName}
           onCancel={cancelMatchmaking}
           isCancelling={isCancellingMatchmaking}
+          privateRoomCode={privateRoomCode}
         />
       ) : null}
     </main>

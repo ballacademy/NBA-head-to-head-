@@ -78,6 +78,8 @@ export interface Drafter {
   salaryCapLimit?: number;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  /** Friend private match — live H2H rules, no records/elo. */
+  privateMatch?: boolean;
   /** Weekly Events mode id (e.g. 2026-W30-u25). */
   eventId?: string;
   eventRestriction?: "u25" | "intl";

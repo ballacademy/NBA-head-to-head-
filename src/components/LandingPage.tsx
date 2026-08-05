@@ -43,6 +43,7 @@ import {
   type TeamProfile,
 } from "../lib/teamProfile";
 import { ClassicModeSummary } from "./ClassicModeSummary";
+import { PrivateMatchModal } from "./PrivateMatchModal";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
@@ -162,6 +163,9 @@ export function LandingPage({
   const [collectionTier, setCollectionTier] = useState<CollectionTier | null>(
     null,
   );
+  const [privateMatchMode, setPrivateMatchMode] = useState<
+    null | "classic" | "ranked"
+  >(null);
   const teamFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -542,6 +546,14 @@ export function LandingPage({
         />
       ) : null}
 
+      {privateMatchMode ? (
+        <PrivateMatchModal
+          salaryCapMode={privateMatchMode === "ranked"}
+          onClose={() => setPrivateMatchMode(null)}
+          onStart={handleStart}
+        />
+      ) : null}
+
       {collectionTier ? (
         <CollectionTierModal
           tier={collectionTier}
@@ -596,11 +608,20 @@ export function LandingPage({
                   >
                     Practice
                   </button>
+                  <button
+                    type="button"
+                    className="head-to-head-card__practice-button"
+                    disabled={modesBlocked}
+                    onClick={() => setPrivateMatchMode("classic")}
+                  >
+                    Private match
+                  </button>
                 </div>
                 <p className="mode-card__practice-note">
                   Practice uses the same $
                   {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
-                  cap and bot opponent. Streaks and badges do not change.
+                  cap and bot opponent. Private match needs an account and a
+                  room code for a friend. Streaks and badges do not change.
                 </p>
               </div>
 
@@ -640,11 +661,20 @@ export function LandingPage({
                   >
                     Practice
                   </button>
+                  <button
+                    type="button"
+                    className="ranked-cap-card__practice-button"
+                    disabled={modesBlocked}
+                    onClick={() => setPrivateMatchMode("ranked")}
+                  >
+                    Private match
+                  </button>
                 </div>
                 <p className="mode-card__practice-note">
                   Practice uses the same $
                   {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
-                  opponent. Banners, streaks, and badges do not change.
+                  opponent. Private match needs an account and a room code for a
+                  friend. Banners, streaks, and badges do not change.
                 </p>
               </div>
 

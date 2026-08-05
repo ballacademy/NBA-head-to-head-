@@ -31,6 +31,11 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <li>Weekly Events (live opponents only)</li>
             <li>Collection, Badges, Leaderboards, Stats, and Tier Lists (bottom nav)</li>
             <li>
+              <strong>Private match</strong> (Classic or Pro) — account holders
+              create a room code and invite a friend for live H2H. Same draft
+              rules as that mode; records, Banners, and badges do not change.
+            </li>
+            <li>
               Accounts required to appear on leaderboards or publish public tier
               lists (playing stays open to guests)
             </li>
