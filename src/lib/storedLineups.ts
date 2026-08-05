@@ -27,6 +27,7 @@ export const isValidStoredLineupIds = (lineup: string[]) =>
 
 export interface MatchmakingLineupSource {
   practiceMode?: boolean;
+  privateMatch?: boolean;
   allTimeMode?: boolean;
   isDailyDraft?: boolean;
   salaryCapMode?: boolean;
@@ -52,7 +53,12 @@ export const salaryCapForStoredLineup = (source: {
 export const canStoreLineupForMatchmaking = (
   source: MatchmakingLineupSource,
 ): boolean => {
-  if (source.practiceMode || source.allTimeMode || source.isDailyDraft) {
+  if (
+    source.practiceMode ||
+    source.privateMatch ||
+    source.allTimeMode ||
+    source.isDailyDraft
+  ) {
     return false;
   }
 

@@ -16,6 +16,10 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 | `POST` | `/api/queue` | Join the live matchmaking queue |
 | `GET` | `/api/queue?mode=...&playerId=...` | Poll for a live opponent match |
 | `DELETE` | `/api/queue?mode=...&playerId=...` | Leave the live matchmaking queue |
+| `POST` | `/api/private-room` | Create a private friend room (account required) → room code |
+| `GET` | `/api/private-room?code=...&playerId=...` | Host poll until a friend joins |
+| `DELETE` | `/api/private-room?code=...&playerId=...` | Host cancel while waiting |
+| `POST` | `/api/private-room/join` | Join a private room with a code (account required) |
 | `GET` | `/api/live-match?matchId=...&playerId=...` | Poll a live match for opponent lineup status |
 | `POST` | `/api/live-match` | Submit your lineup for a live match |
 | `POST` | `/api/lineups` | Store your completed lineup for future opponents |
@@ -64,7 +68,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft submissions s
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
-   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, `0010_player_accounts.sql` for optional username/password GM restore, and `0011_stored_lineup_soft_claim.sql` for soft-claim ghost matchmaking.
+   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, `0010_player_accounts.sql` for optional username/password GM restore, `0011_stored_lineup_soft_claim.sql` for soft-claim ghost matchmaking, and `0018_private_rooms.sql` for account-only private friend matches.
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

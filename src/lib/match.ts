@@ -32,6 +32,11 @@ export interface StartDraftOptions {
   salaryCapLimit?: number;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  /** Account-only friend match via room code (Classic or Pro rules). */
+  privateMatch?: boolean;
+  privateRoom?:
+    | { role: "host" }
+    | { role: "guest"; roomCode: string };
   eventId?: string;
   eventRestriction?: "u25" | "intl";
   /** When set, both competitors use these exact draft slots. */
@@ -69,6 +74,7 @@ export const createUserDrafter = (
   const salaryCapMode = Boolean(options.salaryCapMode);
   const allTimeMode = Boolean(options.allTimeMode);
   const practiceMode = Boolean(options.practiceMode);
+  const privateMatch = Boolean(options.privateMatch);
   const isDailyDraft = Boolean(options.isDailyDraft);
   const dailyDraftMode = options.dailyDraftMode ?? "basic";
   const salaryCapLimit =
@@ -92,6 +98,7 @@ export const createUserDrafter = (
     salaryCapLimit,
     allTimeMode,
     practiceMode,
+    privateMatch,
     eventId: options.eventId,
     eventRestriction: options.eventRestriction,
   };

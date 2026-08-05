@@ -131,7 +131,11 @@ export function MatchResults({
 
     recordedRef.current = true;
 
-    if (!user.practiceMode) {
+    const skipCompetitiveRecords = Boolean(
+      user.practiceMode || user.privateMatch,
+    );
+
+    if (!skipCompetitiveRecords) {
       if (user.eventId) {
         const before = loadEventProfile(user.eventId);
         const nextProfile = persistEventMatchOutcome(
@@ -239,6 +243,7 @@ export function MatchResults({
     user.lineup,
     user.name,
     user.practiceMode,
+    user.privateMatch,
     user.salaryCapMode,
     userLineup,
     userScore.uncappedTotal,
@@ -246,7 +251,12 @@ export function MatchResults({
   ]);
 
   useLayoutEffect(() => {
-    if (achievementsCheckedRef.current || userLineup.length !== 5 || user.practiceMode) {
+    if (
+      achievementsCheckedRef.current ||
+      userLineup.length !== 5 ||
+      user.practiceMode ||
+      user.privateMatch
+    ) {
       return;
     }
 
@@ -259,7 +269,7 @@ export function MatchResults({
     );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
-  }, [user.practiceMode, userLineup, user.salaryCapLimit]);
+  }, [user.practiceMode, user.privateMatch, userLineup, user.salaryCapLimit]);
 
   const handleUnlockSelect = (playerId: string) => {
     const next = completeUnlock(playerId, matchCollection);
@@ -294,6 +304,7 @@ export function MatchResults({
   const canOpenOpponentProfile =
     Boolean(opponentProfileId) &&
     !user.practiceMode &&
+    !user.privateMatch &&
     !user.eventId &&
     !opponentProfileId?.startsWith("npc-");
 
@@ -329,9 +340,11 @@ export function MatchResults({
             <p className="eyebrow">
               {user.practiceMode
                 ? "Practice results"
-                : isEventMatch
-                  ? "Event results"
-                  : "Matchup results"}
+                : user.privateMatch
+                  ? "Private match results"
+                  : isEventMatch
+                    ? "Event results"
+                    : "Matchup results"}
             </p>
             <h2 className="matchup-panel__title">
               {isTie
@@ -359,7 +372,8 @@ export function MatchResults({
               : null}
             {((matchRecordMode === "ranked" && rankedOutcome) ||
               (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
-            !user.practiceMode ? (
+            !user.practiceMode &&
+            !user.privateMatch ? (
               <>
                 {" "}
                 •{" "}
@@ -380,7 +394,8 @@ export function MatchResults({
           </p>
           {((matchRecordMode === "ranked" && rankedOutcome) ||
             (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
-          !user.practiceMode ? (
+          !user.practiceMode &&
+          !user.privateMatch ? (
             <div className="matchup-panel__ranked">
               <RankedTierBadge
                 tierLabel={
@@ -492,7 +507,11 @@ export function MatchResults({
                   void onPlayAgain();
                 }}
               >
-                {user.practiceMode ? "Practice again" : "Draft another team"}
+                {user.practiceMode
+                  ? "Practice again"
+                  : user.privateMatch
+                    ? "Private match again"
+                    : "Draft another team"}
               </button>
               <button
                 type="button"
