@@ -15,6 +15,7 @@ export interface LiveDraftSession {
   opponentTeamName: string;
   opponentElo: number;
   opponentPlayerId: string;
+  opponentUsername?: string;
   opponentDraftSlots: DraftSlotConstraint[];
   salaryCapMode: boolean;
   salaryCapLimit?: number;

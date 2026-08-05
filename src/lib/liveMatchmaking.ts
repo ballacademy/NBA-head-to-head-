@@ -12,6 +12,7 @@ export interface LiveOpponentSnapshot {
   teamName: string;
   elo: number;
   playerId: string;
+  username?: string;
 }
 
 export interface LiveMatchState {
@@ -19,6 +20,7 @@ export interface LiveMatchState {
   opponentTeamName: string;
   opponentElo: number;
   opponentPlayerId: string;
+  opponentUsername?: string;
   selfReady: boolean;
   opponentReady: boolean;
   opponentLineup: string[] | null;
@@ -70,6 +72,7 @@ export const joinMatchmakingQueue = async (params: {
         teamName: string;
         elo: number;
         playerId: string;
+        username?: string | null;
       };
     };
 
@@ -81,6 +84,7 @@ export const joinMatchmakingQueue = async (params: {
           teamName: payload.opponent.teamName,
           elo: payload.opponent.elo,
           playerId: payload.opponent.playerId,
+          username: payload.opponent.username?.trim() || undefined,
         },
       };
     }
@@ -118,6 +122,7 @@ export const pollMatchmakingQueue = async (params: {
       teamName?: string;
       elo?: number;
       playerId?: string;
+      username?: string | null;
     };
 
     if (
@@ -132,6 +137,7 @@ export const pollMatchmakingQueue = async (params: {
         teamName: payload.teamName,
         elo: payload.elo,
         playerId: payload.playerId,
+        username: payload.username?.trim() || undefined,
       };
     }
 

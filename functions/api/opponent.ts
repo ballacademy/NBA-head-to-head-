@@ -5,6 +5,7 @@ import {
   matchmakingModeError,
   parseMatchmakingMode,
 } from "../lib/matchmakingMode";
+import { getUsernameByPlayerId } from "../lib/playerAccounts";
 import {
   isValidStoredLineupIds,
   parseStoredLineupJson,
@@ -21,7 +22,7 @@ const json = (body: unknown, status = 200) =>
 
 const parseMode = parseMatchmakingMode;
 
-const rowToPayload = async (row: StoredLineupRow) => {
+const rowToPayload = async (db: D1Database, row: StoredLineupRow) => {
   const lineup = parseStoredLineupJson(row.lineup_json);
 
   if (!isValidStoredLineupIds(lineup)) {
@@ -35,6 +36,7 @@ const rowToPayload = async (row: StoredLineupRow) => {
     elo: row.elo,
     createdAt: row.created_at,
     publicPlayerId: await toPublicLeaderboardPlayerId(row.player_id),
+    username: await getUsernameByPlayerId(db, row.player_id),
   };
 };
 
@@ -99,7 +101,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     playerId,
     elo,
     challengerStarCount,
-    rowToPayload,
+    (row) => rowToPayload(context.env.DB, row),
   );
 
   if (!opponent) {

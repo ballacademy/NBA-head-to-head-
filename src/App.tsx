@@ -100,6 +100,7 @@ import {
   joinPrivateRoom,
   waitForPrivateRoomGuest,
 } from "./lib/privateMatchmaking";
+import { formatOpponentDisplayName } from "./lib/opponentDisplayName";
 import {
   clearLiveDraftSession,
   saveLiveDraftSession,
@@ -293,6 +294,7 @@ function App() {
         opponent.classicOpponentElo ??
         RANKED_STARTING_ELO,
       opponentPlayerId: opponent.liveOpponentPlayerId,
+      opponentUsername: opponent.username,
       opponentDraftSlots: opponent.draftSlots,
       salaryCapMode: Boolean(user.salaryCapMode),
       salaryCapLimit: user.salaryCapLimit,
@@ -685,7 +687,12 @@ function App() {
         }
 
         if (liveOpponent && !session.cancelled) {
-          setMatchedOpponentName(liveOpponent.teamName);
+          setMatchedOpponentName(
+            formatOpponentDisplayName(
+              liveOpponent.teamName,
+              liveOpponent.username,
+            ),
+          );
           await new Promise<void>((resolve) => {
             window.setTimeout(resolve, 1200);
           });
@@ -785,8 +792,17 @@ function App() {
           isPendingQueue = true;
         }
 
-        const foundOpponentName =
-          liveOpponent?.teamName ?? ghostOpponent?.teamName ?? null;
+        const foundOpponentName = liveOpponent
+          ? formatOpponentDisplayName(
+              liveOpponent.teamName,
+              liveOpponent.username,
+            )
+          : ghostOpponent
+            ? formatOpponentDisplayName(
+                ghostOpponent.teamName,
+                ghostOpponent.username,
+              )
+            : null;
 
         if (foundOpponentName && !session.cancelled) {
           setMatchedOpponentName(foundOpponentName);
@@ -983,6 +999,7 @@ function App() {
         opponentTeamName: liveOpponent.teamName,
         opponentElo: liveOpponent.elo,
         opponentPlayerId: liveOpponent.playerId,
+        opponentUsername: liveOpponent.username,
         opponentDraftSlots: opponentSlots,
         salaryCapMode: eventMode || salaryCapMode,
         salaryCapLimit,
@@ -1890,7 +1907,13 @@ function App() {
             dailyChallengeDescription={dailySetup?.challenge.description}
             dailyChallengeTitle={dailySetup?.challenge.title}
             isDailyDraft={isDailyDraft}
-            opponentName={isDailyDraft ? null : opponent?.name}
+            opponentName={
+              isDailyDraft
+                ? null
+                : opponent
+                  ? formatOpponentDisplayName(opponent.name, opponent.username)
+                  : null
+            }
             onPick={handlePick}
             onTimeout={handleTimeout}
           />
@@ -1909,7 +1932,10 @@ function App() {
       {phase === "waiting" && opponent?.isLiveOpponent ? (
         <WaitingRoom
           theme={getMatchModeTheme(user)}
-          opponentName={opponent.name}
+          opponentName={formatOpponentDisplayName(
+            opponent.name,
+            opponent.username,
+          )}
         />
       ) : null}
 

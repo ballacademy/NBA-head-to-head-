@@ -117,6 +117,7 @@ export const joinPrivateRoom = async (params: {
         playerId?: string;
         teamName?: string;
         elo?: number;
+        username?: string | null;
       };
     };
 
@@ -137,6 +138,7 @@ export const joinPrivateRoom = async (params: {
           playerId: payload.opponent.playerId,
           teamName: payload.opponent.teamName,
           elo: Math.round(payload.opponent.elo ?? 500),
+          username: payload.opponent.username?.trim() || undefined,
         },
       };
     }
@@ -184,6 +186,7 @@ export const pollPrivateRoom = async (params: {
         playerId?: string;
         teamName?: string;
         elo?: number;
+        username?: string | null;
       };
     };
 
@@ -208,6 +211,7 @@ export const pollPrivateRoom = async (params: {
           playerId: payload.opponent.playerId,
           teamName: payload.opponent.teamName,
           elo: Math.round(payload.opponent.elo ?? 500),
+          username: payload.opponent.username?.trim() || undefined,
         },
       };
     }

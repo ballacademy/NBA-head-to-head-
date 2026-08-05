@@ -15,6 +15,7 @@ import {
   processMatchUnlock,
   type PlayerCollection,
 } from "../lib/playerCollection";
+import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import {
   extractGhostStoredLineupId,
@@ -351,7 +352,7 @@ export function MatchResults({
                 ? "Match ended in a tie"
                 : userWon
                   ? "You won the matchup"
-                  : `${opponent.name} won the matchup`}
+                  : `${formatOpponentDisplayName(opponent.name, opponent.username)} won the matchup`}
             </h2>
           </div>
           <p className="matchup-panel__meta">

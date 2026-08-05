@@ -10,6 +10,7 @@ export interface GhostOpponentSnapshot {
   elo: number;
   createdAt: string;
   publicPlayerId?: string;
+  username?: string;
 }
 
 export interface StoredLineupSubmission {
