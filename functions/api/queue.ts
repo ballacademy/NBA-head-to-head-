@@ -4,6 +4,7 @@ import {
   matchmakingModeError,
   parseMatchmakingMode,
 } from "../lib/matchmakingMode";
+import { getUsernameByPlayerId } from "../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../lib/profanity";
 
 const QUEUE_TTL_SECONDS = 45;
@@ -73,21 +74,24 @@ const findLiveMatchSince = async (
     .bind(mode, playerId, playerId, sinceIso)
     .first<LiveMatchRow>();
 
-const opponentFromMatch = (match: LiveMatchRow, playerId: string) => {
-  if (match.player_a_id === playerId) {
-    return {
-      matchId: match.id,
-      teamName: match.player_b_team,
-      elo: match.player_b_elo,
-      playerId: match.player_b_id,
-    };
-  }
+const opponentFromMatch = async (
+  db: D1Database,
+  match: LiveMatchRow,
+  playerId: string,
+) => {
+  const opponentPlayerId =
+    match.player_a_id === playerId ? match.player_b_id : match.player_a_id;
+  const teamName =
+    match.player_a_id === playerId ? match.player_b_team : match.player_a_team;
+  const elo =
+    match.player_a_id === playerId ? match.player_b_elo : match.player_a_elo;
 
   return {
     matchId: match.id,
-    teamName: match.player_a_team,
-    elo: match.player_a_elo,
-    playerId: match.player_a_id,
+    teamName,
+    elo,
+    playerId: opponentPlayerId,
+    username: await getUsernameByPlayerId(db, opponentPlayerId),
   };
 };
 
@@ -129,6 +133,7 @@ const createLiveMatch = async (
       teamName: opponent.team_name,
       elo: opponent.elo,
       playerId: opponent.player_id,
+      username: await getUsernameByPlayerId(db, opponent.player_id),
     },
   };
 };
@@ -271,7 +276,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
       return json({
         status: "matched",
-        ...opponentFromMatch(match, playerId),
+        ...(await opponentFromMatch(db, match, playerId)),
       });
     }
 
@@ -290,7 +295,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   if (recentMatch) {
     return json({
       status: "matched",
-      ...opponentFromMatch(recentMatch, playerId),
+      ...(await opponentFromMatch(db, recentMatch, playerId)),
     });
   }
 

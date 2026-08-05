@@ -9,6 +9,7 @@ import {
   normalizeRoomCode,
   parsePrivateRoomMode,
 } from "../../lib/privateRooms";
+import { getUsernameByPlayerId } from "../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -117,6 +118,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       playerId: claimed.host.playerId,
       teamName: claimed.host.teamName,
       elo: claimed.host.elo,
+      username: await getUsernameByPlayerId(db, claimed.host.playerId),
     },
   });
 };

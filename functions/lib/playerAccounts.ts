@@ -116,6 +116,30 @@ export const getAccountByPlayerId = async (
   playerId: string,
 ) => selectAccount(db, "player_id = ?", playerId);
 
+/** Lightweight username lookup for opponent labels (null if unlinked). */
+export const getUsernameByPlayerId = async (
+  db: D1Database,
+  playerId: string,
+): Promise<string | null> => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const row = await db
+      .prepare(
+        `SELECT username FROM player_accounts WHERE player_id = ? LIMIT 1`,
+      )
+      .bind(trimmed)
+      .first<{ username: string }>();
+    const username = row?.username?.trim().toLowerCase();
+    return username || null;
+  } catch {
+    return null;
+  }
+};
+
 export const getAccountByEmail = async (db: D1Database, email: string) =>
   selectAccount(db, "email = ?", email);
 

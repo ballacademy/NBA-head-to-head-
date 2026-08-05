@@ -84,6 +84,7 @@ export const parseGhostOpponentSnapshot = (payload: {
   elo?: unknown;
   createdAt?: unknown;
   publicPlayerId?: unknown;
+  username?: unknown;
 }) => {
   const lineup = sanitizeStoredLineupIds(payload.lineup);
 
@@ -102,6 +103,10 @@ export const parseGhostOpponentSnapshot = (payload: {
     payload.publicPlayerId.trim().length > 0
       ? payload.publicPlayerId.trim()
       : undefined;
+  const username =
+    typeof payload.username === "string" && payload.username.trim().length > 0
+      ? payload.username.trim().toLowerCase()
+      : undefined;
 
   return {
     id: payload.id,
@@ -110,5 +115,6 @@ export const parseGhostOpponentSnapshot = (payload: {
     elo: payload.elo,
     createdAt: payload.createdAt,
     publicPlayerId,
+    username,
   };
 };

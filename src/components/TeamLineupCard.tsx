@@ -4,6 +4,7 @@ import { buildLineupScoreContext, formatLineupOvrDisplay } from "../lib/scoring"
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
+import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface TeamLineupCardProps {
@@ -38,15 +39,17 @@ export function TeamLineupCard({
     ? buildLineupScoreContext(score)
     : null;
 
+  const displayName = formatOpponentDisplayName(drafter.name, drafter.username);
+
   const nameContent = showStreak ? (
     <TeamNameWithStreak
-      name={drafter.name}
+      name={displayName}
       winStreak={winStreak}
       lossStreak={lossStreak}
       compact={compact}
     />
   ) : (
-    drafter.name
+    displayName
   );
 
   return (

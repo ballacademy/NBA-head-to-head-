@@ -1,6 +1,7 @@
 import type { Env, MatchmakingMode } from "../types";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import { parseMatchmakingMode } from "../lib/matchmakingMode";
+import { getUsernameByPlayerId } from "../lib/playerAccounts";
 import {
   isStoredLineupWithinSalaryCap,
   isValidStoredLineupIds,
@@ -53,7 +54,11 @@ const parseLineup = (value: string | null) => {
   }
 };
 
-const buildMatchPayload = (row: LiveMatchRow, playerId: string) => {
+const buildMatchPayload = async (
+  db: D1Database,
+  row: LiveMatchRow,
+  playerId: string,
+) => {
   const isPlayerA = row.player_a_id === playerId;
   const selfLineup = parseLineup(
     isPlayerA ? row.player_a_lineup_json : row.player_b_lineup_json,
@@ -65,13 +70,15 @@ const buildMatchPayload = (row: LiveMatchRow, playerId: string) => {
   const opponentReady = Boolean(opponentLineup && opponentLineup.length === 5);
   // Only reveal opponent picks once both sides have locked a lineup.
   const revealOpponent = selfReady && opponentReady;
+  const opponentPlayerId = isPlayerA ? row.player_b_id : row.player_a_id;
 
   return {
     matchId: row.id,
     mode: row.mode,
     opponentTeamName: isPlayerA ? row.player_b_team : row.player_a_team,
     opponentElo: isPlayerA ? row.player_b_elo : row.player_a_elo,
-    opponentPlayerId: isPlayerA ? row.player_b_id : row.player_a_id,
+    opponentPlayerId,
+    opponentUsername: await getUsernameByPlayerId(db, opponentPlayerId),
     selfReady,
     opponentReady,
     opponentLineup: revealOpponent ? opponentLineup : null,
@@ -113,7 +120,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "player not in match" }, 403);
   }
 
-  return json(buildMatchPayload(row, playerId));
+  return json(await buildMatchPayload(context.env.DB, row, playerId));
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -234,5 +241,5 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "match not found" }, 404);
   }
 
-  return json(buildMatchPayload(updated, playerId));
+  return json(await buildMatchPayload(context.env.DB, updated, playerId));
 };
