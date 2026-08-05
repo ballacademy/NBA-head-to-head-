@@ -97,6 +97,10 @@ export const setPlayerIdentity = (playerId: string): PlayerIdentity => {
   return identity;
 };
 
+/** Replace the current GM identity with a brand-new anonymous one. */
+export const mintAnonymousPlayerIdentity = (): PlayerIdentity =>
+  setPlayerIdentity(createPlayerId());
+
 export const getOrCreatePlayerIdentity = (): PlayerIdentity => {
   const stored = loadStoredIdentity() ?? migrateLegacyPlayerId();
 
