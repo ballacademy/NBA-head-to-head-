@@ -1,3 +1,4 @@
+import { isShareDismissalError } from "./appErrors";
 import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
 import {
   getJerseyNumberFontSize,
@@ -551,11 +552,19 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
       : `${input.teamName} • OVR ${input.ovr}`;
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
-    await navigator.share({
-      title: "Draft Day GM Lineup",
-      text: shareText,
-      files: [file],
-    });
+    try {
+      await navigator.share({
+        title: "Draft Day GM Lineup",
+        text: shareText,
+        files: [file],
+      });
+    } catch (error) {
+      // User closed the share sheet — not a failure.
+      if (isShareDismissalError(error)) {
+        return;
+      }
+      throw error;
+    }
     return;
   }
 

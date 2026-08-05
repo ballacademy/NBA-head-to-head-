@@ -21,3 +21,34 @@ export const reportAppError = (message: string, source = "app") => {
 };
 
 export const APP_ERROR_EVENT_NAME = APP_ERROR_EVENT;
+
+/**
+ * True when the user dismissed a browser prompt (e.g. Web Share cancel).
+ * These should not surface as app errors.
+ */
+export const isUserDismissalError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const name =
+    "name" in error && typeof error.name === "string" ? error.name : "";
+
+  // AbortError: user cancelled share / picker / other transient UI.
+  return name === "AbortError";
+};
+
+/** Share-sheet dismissals (AbortError, or NotAllowedError on some browsers). */
+export const isShareDismissalError = (error: unknown): boolean => {
+  if (isUserDismissalError(error)) {
+    return true;
+  }
+
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const name =
+    "name" in error && typeof error.name === "string" ? error.name : "";
+  return name === "NotAllowedError";
+};

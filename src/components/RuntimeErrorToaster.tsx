@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   APP_ERROR_EVENT_NAME,
+  isUserDismissalError,
   type AppErrorDetail,
 } from "../lib/appErrors";
 import { buildBugReportMailto } from "../lib/support";
@@ -32,6 +33,10 @@ export function RuntimeErrorToaster() {
     };
 
     const onRejection = (event: PromiseRejectionEvent) => {
+      if (isUserDismissalError(event.reason)) {
+        return;
+      }
+
       const reason = event.reason;
       const text =
         reason instanceof Error
