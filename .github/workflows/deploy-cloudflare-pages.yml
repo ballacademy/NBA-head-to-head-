@@ -37,6 +37,21 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Keep production D1 schema in sync (e.g. private_rooms) before shipping
+      # Pages functions that depend on new tables. Shell step so auth/permission
+      # errors are not swallowed by wrangler-action.
+      - name: Apply production D1 migrations
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          npx wrangler d1 migrations apply draft-day-gm --remote 2>&1 | tee /tmp/prod-d1-migrate.log
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            echo "::error::Production D1 migrations failed (API 7403 usually means wrong account id, wrong DB uuid, or token Account Resources not including this account)."
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:

@@ -372,6 +372,8 @@ export const upsertRankedLeaderboardEntry = (
     winStreak: nextEntry.winStreak,
     lossStreak: nextEntry.lossStreak,
   });
+
+  return monthlyRank > 0 ? monthlyRank : null;
 };
 
 export const formatRankedLeaderboardElo = (entry: Pick<RankedLeaderboardEntry, "elo">) =>

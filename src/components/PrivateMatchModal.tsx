@@ -14,12 +14,14 @@ import { AccountRequiredNote } from "./AccountRequiredNote";
 
 interface PrivateMatchModalProps {
   salaryCapMode: boolean;
+  startMatchError?: string | null;
   onClose: () => void;
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
 }
 
 export function PrivateMatchModal({
   salaryCapMode,
+  startMatchError = null,
   onClose,
   onStart,
 }: PrivateMatchModalProps) {
@@ -30,6 +32,8 @@ export function PrivateMatchModal({
   const [error, setError] = useState<string | null>(null);
   const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
+  const accountReady = accountLinked === true;
+  const accountBlocked = accountLinked === false;
 
   useEffect(() => {
     let cancelled = false;
@@ -45,8 +49,11 @@ export function PrivateMatchModal({
 
   const startHost = async () => {
     setError(null);
-    if (accountLinked === false) {
+    if (accountBlocked) {
       setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
+      return;
+    }
+    if (!accountReady) {
       return;
     }
 
@@ -59,9 +66,11 @@ export function PrivateMatchModal({
       });
       if (result === "started" || result === "cancelled") {
         onClose();
-      } else {
+      } else if (result === "failed") {
         setError("Could not create private room. Try again.");
       }
+      // If parent omitted a return value (e.g. cancelled mid-flight without
+      // "cancelled"), stay quiet — startMatchError prop covers real failures.
     } finally {
       setBusy(false);
     }
@@ -69,8 +78,11 @@ export function PrivateMatchModal({
 
   const startGuest = async () => {
     setError(null);
-    if (accountLinked === false) {
+    if (accountBlocked) {
       setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
+      return;
+    }
+    if (!accountReady) {
       return;
     }
 
@@ -89,7 +101,7 @@ export function PrivateMatchModal({
       });
       if (result === "started" || result === "cancelled") {
         onClose();
-      } else {
+      } else if (result === "failed") {
         setError("Could not join that room. Check the code and try again.");
       }
     } finally {
@@ -116,21 +128,27 @@ export function PrivateMatchModal({
           {modeLabel}. Requires an account. Does not affect records or Banners.
         </p>
 
-        {accountLinked === false ? (
+        {accountBlocked ? (
           <AccountRequiredNote>
             {ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE}
           </AccountRequiredNote>
         ) : null}
 
-        {error ? <p className="form-error">{error}</p> : null}
+        {error || startMatchError ? (
+          <p className="form-error">{startMatchError || error}</p>
+        ) : null}
 
         <button
           type="button"
           className="landing__primary-button"
-          disabled={busy || accountLinked === false}
+          disabled={busy || !accountReady}
           onClick={() => void startHost()}
         >
-          {busy ? "Starting…" : "Create room"}
+          {busy
+            ? "Starting…"
+            : accountLinked === null
+              ? "Checking account…"
+              : "Create room"}
         </button>
 
         <div className="private-match-modal__join">
@@ -157,12 +175,12 @@ export function PrivateMatchModal({
               maxLength={6}
               autoComplete="off"
               spellCheck={false}
-              disabled={busy || accountLinked === false}
+              disabled={busy || !accountReady}
             />
             <button
               type="button"
               className="secondary-button"
-              disabled={busy || accountLinked === false}
+              disabled={busy || !accountReady}
               onClick={() => void startGuest()}
             >
               Join

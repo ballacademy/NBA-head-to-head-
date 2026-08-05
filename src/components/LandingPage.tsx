@@ -323,7 +323,7 @@ export function LandingPage({
           setError(
             `You've already completed today's ${formatDailyDraftModeLabel(mode)} Daily Draft. Come back tomorrow.`,
           );
-          return;
+          return result;
         }
       }
 
@@ -331,11 +331,16 @@ export function LandingPage({
         setError(
           "You've used all 30 entries for this week's event. Check back next week.",
         );
-        return;
+        return result;
       }
 
-      setError("Couldn't start this draft. Refresh the page and try again.");
+      // Prefer the specific error from App (private room / queue / account).
+      if (!startMatchError) {
+        setError("Couldn't start this draft. Refresh the page and try again.");
+      }
     }
+
+    return result;
   };
 
   const handleDailyAction = async (mode: DailyDraftMode) => {
@@ -549,6 +554,7 @@ export function LandingPage({
       {privateMatchMode ? (
         <PrivateMatchModal
           salaryCapMode={privateMatchMode === "ranked"}
+          startMatchError={startMatchError}
           onClose={() => setPrivateMatchMode(null)}
           onStart={handleStart}
         />

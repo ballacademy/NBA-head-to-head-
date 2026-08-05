@@ -1003,6 +1003,7 @@ function App() {
     }
 
     session.cancelled = true;
+    setStartMatchError(null);
     setIsCancellingMatchmaking(true);
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
