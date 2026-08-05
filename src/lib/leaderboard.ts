@@ -189,6 +189,11 @@ export const upsertLeaderboardEntry = (
     winStreak: nextEntry.winStreak,
     lossStreak: nextEntry.lossStreak,
   });
+
+  const rank =
+    merged.findIndex((candidate) => candidate.playerId === nextEntry.playerId) +
+    1;
+  return rank > 0 ? rank : null;
 };
 
 export const formatLeaderboardTeam = (

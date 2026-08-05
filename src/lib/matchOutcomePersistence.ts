@@ -21,6 +21,8 @@ export interface PersistedBannersOutcome {
   elo: number;
   tierLabel: string;
   opponentElo: number;
+  /** 1-based Elo leaderboard rank after this match, when on the board. */
+  leaderboardRank: number | null;
 }
 
 /** @deprecated Prefer PersistedBannersOutcome */
@@ -49,7 +51,7 @@ export const persistClassicLeaderboardOutcome = (
   });
   const { publicTag } = getOrCreatePlayerIdentity();
 
-  upsertLeaderboardEntry({
+  const leaderboardRank = upsertLeaderboardEntry({
     playerId: record.playerId,
     name: team.name,
     publicTag,
@@ -65,6 +67,7 @@ export const persistClassicLeaderboardOutcome = (
     elo: classicResult.profile.elo,
     tierLabel: classicResult.profile.tier.label,
     opponentElo: classicResult.opponentElo,
+    leaderboardRank,
   };
 };
 
@@ -90,7 +93,7 @@ export const persistRankedOutcome = (
     priorSeasonGames: before.rankedGamesPlayed,
   });
 
-  upsertRankedLeaderboardEntry({
+  const leaderboardRank = upsertRankedLeaderboardEntry({
     playerId: record.playerId,
     name: team.name,
     publicTag: getOrCreatePlayerIdentity().publicTag,
@@ -107,5 +110,6 @@ export const persistRankedOutcome = (
     elo: rankedResult.profile.elo,
     tierLabel: rankedResult.profile.tier.label,
     opponentElo: rankedResult.opponentElo,
+    leaderboardRank,
   };
 };

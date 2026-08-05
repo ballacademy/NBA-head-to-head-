@@ -418,6 +418,15 @@ export function MatchResults({
                     : classicOutcome)!.opponentElo,
                 )}{" "}
                 opponent
+                {((matchRecordMode === "ranked"
+                  ? rankedOutcome
+                  : classicOutcome)!.leaderboardRank ?? 0) > 0
+                  ? ` · Leaderboard #${
+                      (matchRecordMode === "ranked"
+                        ? rankedOutcome
+                        : classicOutcome)!.leaderboardRank
+                    }`
+                  : null}
               </p>
             </div>
           ) : null}
