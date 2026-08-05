@@ -43,6 +43,7 @@ const buildDraftStateFromSession = (
         teamName: session.opponentTeamName,
         elo: session.opponentElo,
         playerId: session.opponentPlayerId,
+        username: session.opponentUsername,
       },
       { salaryCapMode: session.salaryCapMode },
     ),
@@ -88,11 +89,24 @@ export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState 
 
   if (remote.opponentReady && remote.opponentLineup?.length === 5) {
     return {
-      ...buildDraftStateFromSession(session, remote.opponentLineup),
+      ...buildDraftStateFromSession(
+        {
+          ...session,
+          opponentUsername:
+            session.opponentUsername ?? remote.opponentUsername,
+        },
+        remote.opponentLineup,
+      ),
       phase: "waiting",
       opponentComplete: true,
     };
   }
 
-  return buildDraftStateFromSession(session, null);
+  return buildDraftStateFromSession(
+    {
+      ...session,
+      opponentUsername: session.opponentUsername ?? remote.opponentUsername,
+    },
+    null,
+  );
 };

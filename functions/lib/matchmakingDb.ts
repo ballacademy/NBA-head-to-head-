@@ -13,6 +13,7 @@ export interface GhostOpponentPayload {
   elo: number;
   createdAt: string;
   publicPlayerId?: string;
+  username?: string | null;
 }
 
 export interface QueueEntryRow {

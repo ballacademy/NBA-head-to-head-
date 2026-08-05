@@ -199,6 +199,7 @@ export const createGhostOpponent = (
     classicOpponentElo: options.salaryCapMode ? undefined : ghost.elo,
     isGhostOpponent: true,
     profilePlayerId: ghost.publicPlayerId,
+    username: ghost.username,
   };
 };
 
@@ -222,6 +223,7 @@ export const createLiveOpponent = (
     liveMatchId: live.matchId,
     liveOpponentPlayerId: live.playerId,
     profilePlayerId: live.playerId,
+    username: live.username,
     salaryCapMode: options.salaryCapMode,
     salaryCapLimit: options.salaryCapMode
       ? RANKED_SALARY_CAP
