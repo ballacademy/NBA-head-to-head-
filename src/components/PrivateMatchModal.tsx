@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
@@ -15,6 +15,8 @@ import { AccountRequiredNote } from "./AccountRequiredNote";
 interface PrivateMatchModalProps {
   salaryCapMode: boolean;
   startMatchError?: string | null;
+  /** When the host room is ready, parent shows MatchmakingOverlay with this code. */
+  privateRoomCode?: string | null;
   onClose: () => void;
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
 }
@@ -22,6 +24,7 @@ interface PrivateMatchModalProps {
 export function PrivateMatchModal({
   salaryCapMode,
   startMatchError = null,
+  privateRoomCode = null,
   onClose,
   onStart,
 }: PrivateMatchModalProps) {
@@ -32,8 +35,16 @@ export function PrivateMatchModal({
   const [error, setError] = useState<string | null>(null);
   const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
+  const mountedRef = useRef(true);
   const accountReady = accountLinked === true;
   const accountBlocked = accountLinked === false;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +57,14 @@ export function PrivateMatchModal({
       cancelled = true;
     };
   }, []);
+
+  // Host path: App sets the room code once create succeeds, then waits for a
+  // guest under MatchmakingOverlay. Dismiss this modal so the code is visible.
+  useEffect(() => {
+    if (privateRoomCode) {
+      onClose();
+    }
+  }, [privateRoomCode, onClose]);
 
   const startHost = async () => {
     setError(null);
@@ -64,15 +83,18 @@ export function PrivateMatchModal({
         salaryCapMode,
         privateRoom: { role: "host" },
       });
+      if (!mountedRef.current) {
+        return;
+      }
       if (result === "started" || result === "cancelled") {
         onClose();
       } else if (result === "failed") {
         setError("Could not create private room. Try again.");
       }
-      // If parent omitted a return value (e.g. cancelled mid-flight without
-      // "cancelled"), stay quiet — startMatchError prop covers real failures.
     } finally {
-      setBusy(false);
+      if (mountedRef.current) {
+        setBusy(false);
+      }
     }
   };
 
@@ -99,14 +121,26 @@ export function PrivateMatchModal({
         salaryCapMode,
         privateRoom: { role: "guest", roomCode },
       });
+      if (!mountedRef.current) {
+        return;
+      }
       if (result === "started" || result === "cancelled") {
         onClose();
       } else if (result === "failed") {
         setError("Could not join that room. Check the code and try again.");
       }
     } finally {
-      setBusy(false);
+      if (mountedRef.current) {
+        setBusy(false);
+      }
     }
+  };
+
+  const handleBackdropClose = () => {
+    if (busy) {
+      return;
+    }
+    onClose();
   };
 
   const modal = (
@@ -115,7 +149,7 @@ export function PrivateMatchModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="private-match-title"
-      onClick={onClose}
+      onClick={handleBackdropClose}
     >
       <div
         className="unlock-modal__panel panel unlock-modal__panel--compact private-match-modal__panel"
@@ -145,7 +179,7 @@ export function PrivateMatchModal({
           onClick={() => void startHost()}
         >
           {busy
-            ? "Starting…"
+            ? "Creating room…"
             : accountLinked === null
               ? "Checking account…"
               : "Create room"}
@@ -183,7 +217,7 @@ export function PrivateMatchModal({
               disabled={busy || !accountReady}
               onClick={() => void startGuest()}
             >
-              Join
+              {busy ? "Joining…" : "Join"}
             </button>
           </div>
         </div>
@@ -191,7 +225,7 @@ export function PrivateMatchModal({
         <button
           type="button"
           className="secondary-button private-match-modal__close"
-          onClick={onClose}
+          onClick={handleBackdropClose}
           disabled={busy}
         >
           Close

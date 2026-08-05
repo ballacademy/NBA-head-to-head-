@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
+import { copyToClipboard } from "../lib/copyToClipboard";
 import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
@@ -22,6 +24,7 @@ export function MatchmakingOverlay({
   isCancelling = false,
   privateRoomCode = null,
 }: MatchmakingOverlayProps) {
+  const [copied, setCopied] = useState(false);
   const isPrivate = Boolean(privateRoomCode);
   const modeLabel =
     mode === "event"
@@ -40,6 +43,18 @@ export function MatchmakingOverlay({
           ? "Finding live opponent…"
           : "Finding opponent…";
 
+  const handleCopyCode = async () => {
+    if (!privateRoomCode) {
+      return;
+    }
+    const ok = await copyToClipboard(privateRoomCode);
+    if (!ok) {
+      return;
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="matchmaking-overlay" role="status" aria-live="polite">
       <section className="panel panel--compact matchmaking-overlay__panel">
@@ -57,9 +72,18 @@ export function MatchmakingOverlay({
         </h2>
 
         {isPrivate && privateRoomCode && !isMatched ? (
-          <p className="matchmaking-overlay__room-code" aria-label="Room code">
-            {privateRoomCode}
-          </p>
+          <div className="matchmaking-overlay__room-block">
+            <p className="matchmaking-overlay__room-code" aria-label="Room code">
+              {privateRoomCode}
+            </p>
+            <button
+              type="button"
+              className="secondary-button matchmaking-overlay__copy"
+              onClick={() => void handleCopyCode()}
+            >
+              {copied ? "Copied" : "Copy code"}
+            </button>
+          </div>
         ) : null}
 
         <div className="waiting-indicator matchmaking-overlay__indicator">
