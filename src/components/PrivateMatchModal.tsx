@@ -58,6 +58,12 @@ export function PrivateMatchModal({
     };
   }, []);
 
+  useEffect(() => {
+    if (startMatchError) {
+      setError(null);
+    }
+  }, [startMatchError]);
+
   // Host path: App sets the room code once create succeeds, then waits for a
   // guest under MatchmakingOverlay. Dismiss this modal so the code is visible.
   useEffect(() => {
@@ -89,6 +95,7 @@ export function PrivateMatchModal({
       if (result === "started" || result === "cancelled") {
         onClose();
       } else if (result === "failed") {
+        // Prefer App's startMatchError (shown via prop); keep a local fallback.
         setError("Could not create private room. Try again.");
       }
     } finally {

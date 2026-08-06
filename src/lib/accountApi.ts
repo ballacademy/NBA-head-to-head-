@@ -48,15 +48,31 @@ export type AccountStatusResult =
   | { ok: true; status: AccountStatusResponse }
   | { ok: false; error: string };
 
+export const ACCOUNT_STATUS_TIMEOUT_MS = 10_000;
+
 export const fetchAccountStatus = async (
   playerId: string,
+  options: { timeoutMs?: number } = {},
 ): Promise<AccountStatusResult> => {
+  const timeoutMs = options.timeoutMs ?? ACCOUNT_STATUS_TIMEOUT_MS;
+
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
-      `${API_BASE}/api/account/status?${search.toString()}`,
-      { headers: { accept: "application/json" } },
-    );
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response: Response;
+    try {
+      response = await fetch(
+        `${API_BASE}/api/account/status?${search.toString()}`,
+        {
+          headers: { accept: "application/json" },
+          signal: controller.signal,
+        },
+      );
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!response.ok) {
       return {
@@ -69,10 +85,16 @@ export const fetchAccountStatus = async (
       ok: true,
       status: (await response.json()) as AccountStatusResponse,
     };
-  } catch {
+  } catch (error) {
+    const aborted =
+      (error instanceof DOMException && error.name === "AbortError") ||
+      (error instanceof Error && error.name === "AbortError");
+
     return {
       ok: false,
-      error: "Could not reach the account service.",
+      error: aborted
+        ? "Account check timed out. Tap Retry."
+        : "Could not reach the account service.",
     };
   }
 };

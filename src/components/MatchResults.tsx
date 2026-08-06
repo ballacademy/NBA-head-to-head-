@@ -42,6 +42,7 @@ import {
   unlockAchievements,
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
+import { isShareDismissalError } from "../lib/appErrors";
 import { confirmRemoteLeaderboardRank } from "../lib/leaderboardRemote";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import {
@@ -69,6 +70,7 @@ interface MatchResultsProps {
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
   isMatchmaking?: boolean;
+  startMatchError?: string | null;
 }
 
 export function MatchResults({
@@ -82,6 +84,7 @@ export function MatchResults({
   onPlayAgain,
   onReturnToMenu,
   isMatchmaking = false,
+  startMatchError = null,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
@@ -100,6 +103,9 @@ export function MatchResults({
   );
   const [newEventBadges, setNewEventBadges] = useState<EventBadgeTier[]>([]);
   const [opponentProfileOpen, setOpponentProfileOpen] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "busy" | "error">(
+    "idle",
+  );
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
@@ -305,17 +311,36 @@ export function MatchResults({
   };
 
   const handleShareLineup = async () => {
-    await saveLineupShareCard({
-      teamName: user.name,
-      accent: user.accent,
-      ovr: userScore.total,
-      ovrOverflow: userScore.ovrOverflow,
-      lineup: userLineup,
-      record: formatProjectedSeasonRecord(userScore.projectedRecord),
-    });
+    if (shareState === "busy") {
+      return;
+    }
+
+    setShareState("busy");
+
+    try {
+      await saveLineupShareCard({
+        teamName: user.name,
+        accent: user.accent,
+        ovr: userScore.total,
+        ovrOverflow: userScore.ovrOverflow,
+        lineup: userLineup,
+        record: formatProjectedSeasonRecord(userScore.projectedRecord),
+      });
+      setShareState("idle");
+    } catch (error) {
+      if (isShareDismissalError(error)) {
+        setShareState("idle");
+        return;
+      }
+
+      setShareState("error");
+      window.setTimeout(() => setShareState("idle"), 3000);
+    }
   };
 
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
+  const showCompetitiveStreak =
+    !user.practiceMode && !user.privateMatch;
 
   const unlockButtonLabel =
     matchCollection.pendingUnlock?.kind === "loss"
@@ -493,7 +518,7 @@ export function MatchResults({
               isWinner={userWon}
               winStreak={updatedRecord.winStreak}
               lossStreak={updatedRecord.lossStreak}
-              showStreak
+              showStreak={showCompetitiveStreak}
               showScoreContext
               compact
             />
@@ -517,6 +542,11 @@ export function MatchResults({
 
       {actionsReady ? (
         <div className="panel panel--compact match-results__actions">
+          {startMatchError ? (
+            <p className="form-error" role="alert">
+              {startMatchError}
+            </p>
+          ) : null}
           {hasPendingUnlock ? (
             <>
               <button
@@ -539,10 +569,14 @@ export function MatchResults({
               <button
                 type="button"
                 className="play-again-button match-results__share-button"
-                disabled={isMatchmaking}
+                disabled={isMatchmaking || shareState === "busy"}
                 onClick={() => void handleShareLineup()}
               >
-                Share lineup
+                {shareState === "busy"
+                  ? "Sharing…"
+                  : shareState === "error"
+                    ? "Share failed — try again"
+                    : "Share lineup"}
               </button>
               <button
                 type="button"

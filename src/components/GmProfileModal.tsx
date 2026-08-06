@@ -209,17 +209,19 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">This month</span>
             <strong>
-              {currentSeasonRank
-                ? `#${currentSeasonRank} · ${formatPlayerRecord({
-                    wins: displayWins,
-                    losses: displayLosses,
-                  })}`
-                : formatPlayerRecord({
-                    wins: displayWins,
-                    losses: displayLosses,
-                  })}
+              {loading
+                ? "Loading..."
+                : currentSeasonRank
+                  ? `#${currentSeasonRank} · ${formatPlayerRecord({
+                      wins: displayWins,
+                      losses: displayLosses,
+                    })}`
+                  : formatPlayerRecord({
+                      wins: displayWins,
+                      losses: displayLosses,
+                    })}
             </strong>
-            {typeof currentSeasonElo === "number" ? (
+            {!loading && typeof currentSeasonElo === "number" ? (
               <RankedTierBadge
                 tierLabel={tierLabel}
                 elo={currentSeasonElo}
@@ -230,7 +232,9 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Current streak</span>
             <strong className="gm-profile-modal__value gm-profile-modal__value--streak">
-              {showWinBadge ? (
+              {loading ? (
+                "Loading..."
+              ) : showWinBadge ? (
                 <WinStreakBadge
                   winStreak={displayWinStreak}
                   showTypeLabel={false}

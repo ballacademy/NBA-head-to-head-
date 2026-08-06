@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import {
@@ -15,7 +15,29 @@ interface MatchmakingOverlayProps {
   /** When set, this is a private friend room (host waiting or guest joining). */
   privateRoomCode?: string | null;
   privateRoomRole?: "host" | "guest" | null;
+  /** ISO timestamp when the private room expires (host). */
+  privateRoomExpiresAt?: string | null;
 }
+
+const formatPrivateRoomExpiry = (expiresAt: string, nowMs: number) => {
+  const expiresMs = Date.parse(expiresAt);
+
+  if (!Number.isFinite(expiresMs)) {
+    return null;
+  }
+
+  const remainingMs = expiresMs - nowMs;
+
+  if (remainingMs <= 0) {
+    return "Room expired";
+  }
+
+  const totalSeconds = Math.ceil(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `Expires in ${minutes}:${seconds.toString().padStart(2, "0")}`;
+};
 
 export function MatchmakingOverlay({
   mode,
@@ -25,8 +47,12 @@ export function MatchmakingOverlay({
   isCancelling = false,
   privateRoomCode = null,
   privateRoomRole = null,
+  privateRoomExpiresAt = null,
 }: MatchmakingOverlayProps) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const isPrivate = Boolean(privateRoomCode);
   const isPrivateGuest = isPrivate && privateRoomRole === "guest";
   const modeLabel =
@@ -47,17 +73,30 @@ export function MatchmakingOverlay({
           : mode === "event"
             ? "Finding live opponent…"
             : "Finding opponent…";
+  const expiryLabel =
+    isPrivate && privateRoomExpiresAt && !isMatched
+      ? formatPrivateRoomExpiry(privateRoomExpiresAt, nowMs)
+      : null;
+
+  useEffect(() => {
+    if (!privateRoomExpiresAt || isMatched) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isMatched, privateRoomExpiresAt]);
 
   const handleCopyCode = async () => {
     if (!privateRoomCode) {
       return;
     }
     const ok = await copyToClipboard(privateRoomCode);
-    if (!ok) {
-      return;
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    setCopyState(ok ? "copied" : "failed");
+    window.setTimeout(() => setCopyState("idle"), 2000);
   };
 
   return (
@@ -83,13 +122,20 @@ export function MatchmakingOverlay({
             <p className="matchmaking-overlay__room-code" aria-label="Room code">
               {privateRoomCode}
             </p>
+            {expiryLabel ? (
+              <p className="matchmaking-overlay__expiry">{expiryLabel}</p>
+            ) : null}
             {!isPrivateGuest ? (
               <button
                 type="button"
                 className="secondary-button matchmaking-overlay__copy"
                 onClick={() => void handleCopyCode()}
               >
-                {copied ? "Copied" : "Copy code"}
+                {copyState === "copied"
+                  ? "Copied"
+                  : copyState === "failed"
+                    ? "Copy failed"
+                    : "Copy code"}
               </button>
             ) : null}
           </div>

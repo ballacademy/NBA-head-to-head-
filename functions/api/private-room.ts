@@ -98,7 +98,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       201,
     );
   } catch {
-    return json({ error: "Could not create private room" }, 500);
+    return json(
+      {
+        error:
+          "Private match servers are temporarily unavailable. Try again in a moment.",
+      },
+      500,
+    );
   }
 };
 

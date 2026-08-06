@@ -212,6 +212,9 @@ function App() {
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
+  const [privateRoomExpiresAt, setPrivateRoomExpiresAt] = useState<string | null>(
+    null,
+  );
   const [opponentCollection, setOpponentCollection] = useState<PlayerCollection | null>(
     null,
   );
@@ -549,6 +552,7 @@ function App() {
 
     // Practice can always restart; pending unlocks only block ranked/classic starts.
     if (collection.pendingUnlock && !practiceMode) {
+      setStartMatchError(getStartMatchErrorMessage("pending_unlock"));
       return "failed";
     }
 
@@ -645,6 +649,7 @@ function App() {
       setMatchmakingMode(requestedMode);
       setMatchedOpponentName(null);
       setPrivateRoomCode(null);
+      setPrivateRoomExpiresAt(null);
       setPrivateRoomRole(privateRoom.role);
 
       const elo = salaryCapMode
@@ -667,6 +672,7 @@ function App() {
 
           session.privateRoomCode = created.roomCode;
           setPrivateRoomCode(created.roomCode);
+          setPrivateRoomExpiresAt(created.expiresAt);
 
           const waited = await waitForPrivateRoomGuest(
             { roomCode: created.roomCode, playerId },
@@ -741,6 +747,7 @@ function App() {
           setMatchmakingStartedAt(null);
           setMatchedOpponentName(null);
           setPrivateRoomCode(null);
+          setPrivateRoomExpiresAt(null);
           setPrivateRoomRole(null);
         }
 
@@ -1068,6 +1075,7 @@ function App() {
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
     setPrivateRoomCode(null);
+    setPrivateRoomExpiresAt(null);
     setPrivateRoomRole(null);
 
     if (session.privateRoomCode && session.privateRoomRole === "host") {
@@ -1203,6 +1211,7 @@ function App() {
     setShowDraftOnboarding(false);
     setMatchedOpponentName(null);
     setPrivateRoomCode(null);
+    setPrivateRoomExpiresAt(null);
     setPrivateRoomRole(null);
     draftOnboardingResolverRef.current = null;
     setStartMatchError(null);
@@ -1906,6 +1915,7 @@ function App() {
             isCancelling={isCancellingMatchmaking}
             privateRoomCode={privateRoomCode}
             privateRoomRole={privateRoomRole}
+            privateRoomExpiresAt={privateRoomExpiresAt}
           />
         ) : null}
       </main>
@@ -2030,6 +2040,7 @@ function App() {
           onPlayAgain={replayLastMode}
           onReturnToMenu={resetToLanding}
           isMatchmaking={isMatchmakingSearchActive}
+          startMatchError={startMatchError}
         />
       ) : null}
       {matchmakingMode ? (
@@ -2041,6 +2052,7 @@ function App() {
           isCancelling={isCancellingMatchmaking}
           privateRoomCode={privateRoomCode}
           privateRoomRole={privateRoomRole}
+          privateRoomExpiresAt={privateRoomExpiresAt}
         />
       ) : null}
     </main>
