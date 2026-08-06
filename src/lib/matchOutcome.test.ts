@@ -40,7 +40,7 @@ describe("matchOutcome", () => {
 
     expect(first.record.wins).toBe(1);
     expect(first.classic?.elo).toBeGreaterThan(500);
-    expect(first.classic?.leaderboardRank).toBe(1);
+    expect(first.classic?.leaderboardRank).toBeNull();
     expect(loadPlayerRecord("headToHead").wins).toBe(1);
     expect(getTopLeaderboard("elo")[0]?.elo).toBe(first.classic?.elo);
   });

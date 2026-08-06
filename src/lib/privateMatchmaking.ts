@@ -88,6 +88,7 @@ export const joinPrivateRoom = async (params: {
   playerId: string;
   teamName: string;
   elo: number;
+  expectedMode: PrivateMatchMode;
 }): Promise<PrivateRoomMatched | { error: string }> => {
   try {
     const response = await fetch(buildUrl("/api/private-room/join"), {
@@ -101,6 +102,7 @@ export const joinPrivateRoom = async (params: {
         playerId: params.playerId,
         teamName: params.teamName,
         elo: Math.round(params.elo),
+        expectedMode: params.expectedMode,
       }),
     });
 
@@ -277,6 +279,12 @@ export const waitForPrivateRoomGuest = async (
     }
 
     await sleep(MATCHMAKING_POLL_INTERVAL_MS);
+  }
+
+  // Cancel raced a join — one last poll so we don't orphan a live match.
+  const lastPoll = await pollPrivateRoom(params);
+  if (!("error" in lastPoll) && lastPoll.status === "matched") {
+    return { ok: true, matched: lastPoll };
   }
 
   await cancelPrivateRoom(params);

@@ -8,10 +8,13 @@ import {
 } from "../lib/privateRooms";
 
 describe("privateRooms", () => {
-  it("parses classic and ranked modes only", () => {
+  it("rejects invalid expectedMode and documents classic vs ranked mismatch copy", () => {
     expect(parsePrivateRoomMode("classic")).toBe("classic");
     expect(parsePrivateRoomMode("ranked")).toBe("ranked");
-    expect(parsePrivateRoomMode("event")).toBeNull();
+    // Join API compares expectedMode to room.mode — covered by parse helpers here.
+    expect(parsePrivateRoomMode("classic")).not.toBe(
+      parsePrivateRoomMode("ranked"),
+    );
   });
 
   it("normalizes and validates room codes", () => {

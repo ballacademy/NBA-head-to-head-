@@ -12,8 +12,9 @@ interface MatchmakingOverlayProps {
   matchedOpponentName?: string | null;
   onCancel?: () => void;
   isCancelling?: boolean;
-  /** When set, this is a private friend room wait (show code). */
+  /** When set, this is a private friend room (host waiting or guest joining). */
   privateRoomCode?: string | null;
+  privateRoomRole?: "host" | "guest" | null;
 }
 
 export function MatchmakingOverlay({
@@ -23,9 +24,11 @@ export function MatchmakingOverlay({
   onCancel,
   isCancelling = false,
   privateRoomCode = null,
+  privateRoomRole = null,
 }: MatchmakingOverlayProps) {
   const [copied, setCopied] = useState(false);
   const isPrivate = Boolean(privateRoomCode);
+  const isPrivateGuest = isPrivate && privateRoomRole === "guest";
   const modeLabel =
     mode === "event"
       ? "Weekly Event"
@@ -35,13 +38,15 @@ export function MatchmakingOverlay({
   const isMatched = Boolean(matchedOpponentName);
   const statusLabel = isMatched
     ? `Matched vs ${matchedOpponentName}`
-    : isPrivate
-      ? "Waiting for your friend to join…"
-      : elapsedSeconds > 0
-        ? `Finding live opponent… ${elapsedSeconds}s`
-        : mode === "event"
-          ? "Finding live opponent…"
-          : "Finding opponent…";
+    : isPrivateGuest
+      ? "Connecting to your friend’s room…"
+      : isPrivate
+        ? "Waiting for your friend to join…"
+        : elapsedSeconds > 0
+          ? `Finding live opponent… ${elapsedSeconds}s`
+          : mode === "event"
+            ? "Finding live opponent…"
+            : "Finding opponent…";
 
   const handleCopyCode = async () => {
     if (!privateRoomCode) {
@@ -64,11 +69,13 @@ export function MatchmakingOverlay({
         <h2>
           {isMatched
             ? "Opponent found"
-            : isPrivate
-              ? "Share your room code"
-              : mode === "event"
-                ? "Waiting for a live opponent"
-                : "Searching for an opponent"}
+            : isPrivateGuest
+              ? "Joining private room"
+              : isPrivate
+                ? "Share your room code"
+                : mode === "event"
+                  ? "Waiting for a live opponent"
+                  : "Searching for an opponent"}
         </h2>
 
         {isPrivate && privateRoomCode && !isMatched ? (
@@ -76,13 +83,15 @@ export function MatchmakingOverlay({
             <p className="matchmaking-overlay__room-code" aria-label="Room code">
               {privateRoomCode}
             </p>
-            <button
-              type="button"
-              className="secondary-button matchmaking-overlay__copy"
-              onClick={() => void handleCopyCode()}
-            >
-              {copied ? "Copied" : "Copy code"}
-            </button>
+            {!isPrivateGuest ? (
+              <button
+                type="button"
+                className="secondary-button matchmaking-overlay__copy"
+                onClick={() => void handleCopyCode()}
+              >
+                {copied ? "Copied" : "Copy code"}
+              </button>
+            ) : null}
           </div>
         ) : null}
 
@@ -93,8 +102,9 @@ export function MatchmakingOverlay({
 
         {isPrivate && !isMatched ? (
           <p className="matchmaking-overlay__note">
-            Friend needs an account. They join with this code under the same
-            mode (Classic or Pro). Records and Banners do not change.
+            {isPrivateGuest
+              ? "Stay on this screen while we connect you. Same mode as your friend (Classic or Pro)."
+              : "Friend needs an account. They join with this code under the same mode (Classic or Pro). Records and Banners do not change."}
           </p>
         ) : null}
 
@@ -114,9 +124,11 @@ export function MatchmakingOverlay({
           >
             {isCancelling
               ? "Cancelling…"
-              : isPrivate
-                ? "Cancel room"
-                : "Cancel search"}
+              : isPrivateGuest
+                ? "Cancel join"
+                : isPrivate
+                  ? "Cancel room"
+                  : "Cancel search"}
           </button>
         ) : null}
       </section>

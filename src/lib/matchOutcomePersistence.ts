@@ -21,7 +21,14 @@ export interface PersistedBannersOutcome {
   elo: number;
   tierLabel: string;
   opponentElo: number;
-  /** 1-based Elo leaderboard rank after this match, when on the board. */
+  wins: number;
+  losses: number;
+  winStreak: number;
+  lossStreak: number;
+  /**
+   * 1-based Elo leaderboard rank after remote confirm.
+   * Persist leaves this null; results UI fills it after API sync.
+   */
   leaderboardRank: number | null;
 }
 
@@ -61,13 +68,18 @@ export const persistClassicLeaderboardOutcome = (
     winStreak: seasonStats.winStreak,
     lossStreak: seasonStats.lossStreak,
   });
+  void leaderboardRank;
 
   return {
     delta: classicResult.delta,
     elo: classicResult.profile.elo,
     tierLabel: classicResult.profile.tier.label,
     opponentElo: classicResult.opponentElo,
-    leaderboardRank,
+    wins: seasonStats.wins,
+    losses: seasonStats.losses,
+    winStreak: seasonStats.winStreak,
+    lossStreak: seasonStats.lossStreak,
+    leaderboardRank: null,
   };
 };
 
@@ -104,12 +116,17 @@ export const persistRankedOutcome = (
     lossStreak: seasonStats.lossStreak,
     isNpc: false,
   });
+  void leaderboardRank;
 
   return {
     delta: rankedResult.delta,
     elo: rankedResult.profile.elo,
     tierLabel: rankedResult.profile.tier.label,
     opponentElo: rankedResult.opponentElo,
-    leaderboardRank,
+    wins: seasonStats.wins,
+    losses: seasonStats.losses,
+    winStreak: seasonStats.winStreak,
+    lossStreak: seasonStats.lossStreak,
+    leaderboardRank: null,
   };
 };

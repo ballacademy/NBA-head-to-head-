@@ -228,7 +228,16 @@ function App() {
     playerId: string;
     cancelled: boolean;
     privateRoomCode?: string;
+    privateRoomRole?: "host" | "guest";
+    /** Once set, cancel is ignored — a live match already exists. */
+    matchId?: string;
   } | null>(null);
+  const [privateRoomRole, setPrivateRoomRole] = useState<
+    "host" | "guest" | null
+  >(null);
+  const [pendingPrivateMatchMode, setPendingPrivateMatchMode] = useState<
+    "classic" | "ranked" | null
+  >(null);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
 
@@ -551,7 +560,7 @@ function App() {
 
     const daily = Boolean(options.isDailyDraft);
     const nextDailyDraftMode = options.dailyDraftMode ?? "basic";
-    const salaryCapMode = Boolean(options.salaryCapMode);
+    let salaryCapMode = Boolean(options.salaryCapMode);
     const nextAllTimeMode = Boolean(options.allTimeMode);
     const eventId = options.eventId;
     const eventMode = Boolean(eventId);
@@ -573,7 +582,7 @@ function App() {
     const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
       allTimeMode: nextAllTimeMode,
     });
-    const salaryCapLimit =
+    let salaryCapLimit =
       eventMode
         ? options.salaryCapLimit ?? RANKED_SALARY_CAP
         : practiceMode
@@ -608,7 +617,7 @@ function App() {
         return "failed";
       }
 
-      const nextMatchmakingMode: GhostMatchmakingMode = salaryCapMode
+      const requestedMode: GhostMatchmakingMode = salaryCapMode
         ? "ranked"
         : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
@@ -622,18 +631,21 @@ function App() {
       activeMatchmakingGeneration = generation;
       const session = {
         generation,
-        mode: nextMatchmakingMode,
+        mode: requestedMode,
         playerId,
         cancelled: false,
         privateRoomCode: undefined as string | undefined,
+        privateRoomRole: privateRoom.role as "host" | "guest",
+        matchId: undefined as string | undefined,
       };
       matchmakingSessionRef.current = session;
       setIsMatchmakingInFlight(true);
       setIsCancellingMatchmaking(false);
       setMatchmakingStartedAt(Date.now());
-      setMatchmakingMode(nextMatchmakingMode);
+      setMatchmakingMode(requestedMode);
       setMatchedOpponentName(null);
       setPrivateRoomCode(null);
+      setPrivateRoomRole(privateRoom.role);
 
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
@@ -642,7 +654,7 @@ function App() {
       try {
         if (privateRoom.role === "host") {
           const created = await createPrivateRoom({
-            mode: nextMatchmakingMode,
+            mode: requestedMode,
             playerId,
             teamName: team.name,
             elo,
@@ -658,11 +670,11 @@ function App() {
 
           const waited = await waitForPrivateRoomGuest(
             { roomCode: created.roomCode, playerId },
-            { isCancelled: () => session.cancelled },
+            { isCancelled: () => session.cancelled && !session.matchId },
           );
 
-          if (session.cancelled || !waited.ok) {
-            if (waited.ok === false && waited.error === "expired") {
+          if (!waited.ok) {
+            if (waited.error === "expired") {
               setStartMatchError("Private room expired. Create a new one.");
               return "failed";
             }
@@ -670,12 +682,23 @@ function App() {
           }
 
           liveOpponent = waited.matched.opponent;
+          session.matchId = waited.matched.matchId;
+          salaryCapMode = waited.matched.mode === "ranked";
+          salaryCapLimit = salaryCapMode
+            ? RANKED_SALARY_CAP
+            : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+          session.mode = waited.matched.mode;
+          setMatchmakingMode(waited.matched.mode);
         } else {
+          session.privateRoomCode = privateRoom.roomCode;
+          setPrivateRoomCode(privateRoom.roomCode);
+
           const joined = await joinPrivateRoom({
             roomCode: privateRoom.roomCode,
             playerId,
             teamName: team.name,
             elo,
+            expectedMode: requestedMode,
           });
 
           if ("error" in joined) {
@@ -684,21 +707,31 @@ function App() {
           }
 
           liveOpponent = joined.opponent;
+          session.matchId = joined.matchId;
+          salaryCapMode = joined.mode === "ranked";
+          salaryCapLimit = salaryCapMode
+            ? RANKED_SALARY_CAP
+            : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+          session.mode = joined.mode;
+          setMatchmakingMode(joined.mode);
         }
 
-        if (liveOpponent && !session.cancelled) {
-          setMatchedOpponentName(
-            formatOpponentDisplayName(
-              liveOpponent.teamName,
-              liveOpponent.username,
-            ),
-          );
-          await new Promise<void>((resolve) => {
-            window.setTimeout(resolve, 1200);
-          });
+        if (!liveOpponent) {
+          return session.cancelled ? "cancelled" : "failed";
         }
 
-        if (session.cancelled) {
+        setMatchedOpponentName(
+          formatOpponentDisplayName(
+            liveOpponent.teamName,
+            liveOpponent.username,
+          ),
+        );
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 1200);
+        });
+
+        // Cancel is ignored once a live match exists.
+        if (session.cancelled && !session.matchId) {
           return "cancelled";
         }
       } finally {
@@ -708,6 +741,7 @@ function App() {
           setMatchmakingStartedAt(null);
           setMatchedOpponentName(null);
           setPrivateRoomCode(null);
+          setPrivateRoomRole(null);
         }
 
         setIsCancellingMatchmaking(false);
@@ -736,6 +770,7 @@ function App() {
         mode: nextMatchmakingMode,
         playerId,
         cancelled: false,
+        matchId: undefined as string | undefined,
       };
       matchmakingSessionRef.current = session;
       setIsMatchmakingInFlight(true);
@@ -743,6 +778,7 @@ function App() {
       setMatchmakingStartedAt(Date.now());
       setMatchmakingMode(nextMatchmakingMode);
       setMatchedOpponentName(null);
+      setPrivateRoomRole(null);
 
       const elo = eventMode
         ? loadEventProfile(eventId!).elo
@@ -758,7 +794,7 @@ function App() {
                 playerElo: elo,
                 teamName: team.name,
               },
-              { isCancelled: () => session.cancelled },
+              { isCancelled: () => session.cancelled && !session.matchId },
             )
           : await planHeadToHeadMatchmaking(
               {
@@ -768,12 +804,8 @@ function App() {
                 teamName: team.name,
                 starCount: countUnlockedAllStars(collection),
               },
-              { isCancelled: () => session.cancelled },
+              { isCancelled: () => session.cancelled && !session.matchId },
             );
-
-        if (session.cancelled) {
-          return "cancelled";
-        }
 
         if (!resolution.ok) {
           if (resolution.error === "cancelled") {
@@ -786,10 +818,16 @@ function App() {
 
         if (resolution.plan.kind === "live") {
           liveOpponent = resolution.plan.live;
+          session.matchId = liveOpponent.matchId;
         } else if (resolution.plan.kind === "ghost") {
           ghostOpponent = resolution.plan.ghost;
         } else if (resolution.plan.kind === "queue_for_live") {
           isPendingQueue = true;
+        }
+
+        // Ghost / queue plans can still be abandoned; live matches cannot.
+        if (session.cancelled && !session.matchId) {
+          return "cancelled";
         }
 
         const foundOpponentName = liveOpponent
@@ -804,14 +842,14 @@ function App() {
               )
             : null;
 
-        if (foundOpponentName && !session.cancelled) {
+        if (foundOpponentName) {
           setMatchedOpponentName(foundOpponentName);
           await new Promise<void>((resolve) => {
             window.setTimeout(resolve, 1600);
           });
         }
 
-        if (session.cancelled) {
+        if (session.cancelled && !session.matchId) {
           return "cancelled";
         }
       } finally {
@@ -1019,18 +1057,29 @@ function App() {
       return;
     }
 
+    // A live match already exists — cancelling would orphan the opponent.
+    if (session.matchId) {
+      return;
+    }
+
     session.cancelled = true;
     setStartMatchError(null);
     setIsCancellingMatchmaking(true);
     setMatchmakingMode(null);
     setMatchmakingStartedAt(null);
     setPrivateRoomCode(null);
+    setPrivateRoomRole(null);
 
-    if (session.privateRoomCode) {
+    if (session.privateRoomCode && session.privateRoomRole === "host") {
       await cancelPrivateRoom({
         roomCode: session.privateRoomCode,
         playerId: session.playerId,
       });
+      return;
+    }
+
+    // Guest join is a single POST; aborting locally is enough.
+    if (session.privateRoomRole === "guest") {
       return;
     }
 
@@ -1153,6 +1202,8 @@ function App() {
     setAllTimeMode(false);
     setShowDraftOnboarding(false);
     setMatchedOpponentName(null);
+    setPrivateRoomCode(null);
+    setPrivateRoomRole(null);
     draftOnboardingResolverRef.current = null;
     setStartMatchError(null);
     setModeRecords(loadAllModeRecords());
@@ -1229,14 +1280,9 @@ function App() {
     }
 
     if (user.privateMatch) {
-      const result = await startMatch(team, {
-        privateMatch: true,
-        salaryCapMode: Boolean(user.salaryCapMode),
-        privateRoom: { role: "host" },
-      });
-      if (result === "failed") {
-        return;
-      }
+      // Reopen the private match modal so host/guest can choose create or join.
+      setPendingPrivateMatchMode(user.salaryCapMode ? "ranked" : "classic");
+      resetToLanding();
       return;
     }
 
@@ -1826,6 +1872,10 @@ function App() {
           landingAdvancedDaily={landingAdvancedDaily}
           startMatchError={startMatchError}
           privateRoomCode={privateRoomCode}
+          pendingPrivateMatchMode={pendingPrivateMatchMode}
+          onPendingPrivateMatchModeConsumed={() =>
+            setPendingPrivateMatchMode(null)
+          }
           onStartDraft={startMatch}
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
@@ -1855,6 +1905,7 @@ function App() {
             onCancel={cancelMatchmaking}
             isCancelling={isCancellingMatchmaking}
             privateRoomCode={privateRoomCode}
+            privateRoomRole={privateRoomRole}
           />
         ) : null}
       </main>
@@ -1989,6 +2040,7 @@ function App() {
           onCancel={cancelMatchmaking}
           isCancelling={isCancellingMatchmaking}
           privateRoomCode={privateRoomCode}
+          privateRoomRole={privateRoomRole}
         />
       ) : null}
     </main>

@@ -92,6 +92,9 @@ interface LandingPageProps {
   startMatchError?: string | null;
   /** Host private room code once created (dismisses create modal for overlay). */
   privateRoomCode?: string | null;
+  /** Open the private-match modal after rematch from results. */
+  pendingPrivateMatchMode?: "classic" | "ranked" | null;
+  onPendingPrivateMatchModeConsumed?: () => void;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
@@ -135,6 +138,8 @@ export function LandingPage({
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
   privateRoomCode = null,
+  pendingPrivateMatchMode = null,
+  onPendingPrivateMatchModeConsumed,
   onStartDraft,
   onViewDailyLineup,
   onViewYesterdayBestDailyLineup,
@@ -172,6 +177,15 @@ export function LandingPage({
   const closePrivateMatchModal = useCallback(() => {
     setPrivateMatchMode(null);
   }, []);
+
+  useEffect(() => {
+    if (!pendingPrivateMatchMode) {
+      return;
+    }
+    setPrivateMatchMode(pendingPrivateMatchMode);
+    onPendingPrivateMatchModeConsumed?.();
+  }, [pendingPrivateMatchMode, onPendingPrivateMatchModeConsumed]);
+
   const teamFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
