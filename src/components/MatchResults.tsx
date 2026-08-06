@@ -42,6 +42,7 @@ import {
   unlockAchievements,
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
+import { confirmRemoteLeaderboardRank } from "../lib/leaderboardRemote";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import {
   loadEventProfile,
@@ -91,6 +92,9 @@ export function MatchResults({
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
   const [classicOutcome, setClassicOutcome] = useState<RankedMatchOutcome | null>(null);
+  const [confirmedLeaderboardRank, setConfirmedLeaderboardRank] = useState<
+    number | null
+  >(null);
   const [eventProfile, setEventProfile] = useState<EventProfile | null>(() =>
     user.eventId ? loadEventProfile(user.eventId) : null,
   );
@@ -176,6 +180,26 @@ export function MatchResults({
 
         if (outcome.classic) {
           setClassicOutcome(outcome.classic);
+        }
+
+        const banners = outcome.ranked ?? outcome.classic;
+        if (banners) {
+          const identity = getOrCreatePlayerIdentity();
+          void confirmRemoteLeaderboardRank({
+            mode: matchRecordMode === "ranked" ? "ranked" : "classic",
+            playerId: identity.playerId,
+            teamName: user.name,
+            publicTag: identity.publicTag,
+            elo: banners.elo,
+            wins: banners.wins,
+            losses: banners.losses,
+            winStreak: banners.winStreak,
+            lossStreak: banners.lossStreak,
+          }).then((rank) => {
+            if (rank != null) {
+              setConfirmedLeaderboardRank(rank);
+            }
+          });
         }
 
         if (
@@ -436,14 +460,9 @@ export function MatchResults({
                     : classicOutcome)!.opponentElo,
                 )}{" "}
                 opponent
-                {((matchRecordMode === "ranked"
-                  ? rankedOutcome
-                  : classicOutcome)!.leaderboardRank ?? 0) > 0
-                  ? ` · Leaderboard #${
-                      (matchRecordMode === "ranked"
-                        ? rankedOutcome
-                        : classicOutcome)!.leaderboardRank
-                    }`
+                {confirmedLeaderboardRank != null &&
+                confirmedLeaderboardRank > 0
+                  ? ` · Leaderboard #${confirmedLeaderboardRank}`
                   : null}
               </p>
             </div>

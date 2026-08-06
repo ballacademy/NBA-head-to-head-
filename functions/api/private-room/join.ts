@@ -27,6 +27,7 @@ interface JoinBody {
   playerId?: unknown;
   teamName?: unknown;
   elo?: unknown;
+  expectedMode?: unknown;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -96,6 +97,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const mode = parsePrivateRoomMode(existing.mode);
   if (!mode) {
     return json({ error: "Room mode is invalid" }, 400);
+  }
+
+  const expectedMode = parsePrivateRoomMode(
+    typeof body.expectedMode === "string" ? body.expectedMode : null,
+  );
+  if (!expectedMode) {
+    return json({ error: "expectedMode must be classic or ranked" }, 400);
+  }
+  if (expectedMode !== mode) {
+    return json(
+      {
+        error:
+          mode === "ranked"
+            ? "This room is Pro Head to Head. Open Private match from Pro and try again."
+            : "This room is Classic Head to Head. Open Private match from Classic and try again.",
+      },
+      409,
+    );
   }
 
   const claimed = await claimPrivateRoomAndCreateMatch(db, {
