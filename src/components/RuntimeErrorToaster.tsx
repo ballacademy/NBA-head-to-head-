@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   APP_ERROR_EVENT_NAME,
+  isBenignBrowserError,
   isUserDismissalError,
   type AppErrorDetail,
 } from "../lib/appErrors";
@@ -28,6 +29,10 @@ export function RuntimeErrorToaster() {
     };
 
     const onWindowError = (event: ErrorEvent) => {
+      if (isBenignBrowserError(event)) {
+        return;
+      }
+
       const text = event.message?.trim() || "Unexpected browser error.";
       show(text, text);
     };

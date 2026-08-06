@@ -52,3 +52,29 @@ export const isShareDismissalError = (error: unknown): boolean => {
     "name" in error && typeof error.name === "string" ? error.name : "";
   return name === "NotAllowedError";
 };
+
+/**
+ * Browser / extension noise that should not open the runtime error toaster.
+ */
+export const isBenignBrowserError = (event: ErrorEvent): boolean => {
+  const message = event.message?.trim() ?? "";
+
+  if (!message) {
+    return true;
+  }
+
+  if (message === "Script error." || message === "Script error") {
+    return true;
+  }
+
+  if (/ResizeObserver loop/i.test(message)) {
+    return true;
+  }
+
+  const filename = event.filename ?? "";
+  if (/^(chrome|moz|safari|webkit)-extension:\/\//i.test(filename)) {
+    return true;
+  }
+
+  return false;
+};

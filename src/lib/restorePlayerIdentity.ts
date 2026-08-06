@@ -1,4 +1,4 @@
-import { removeJson } from "./browserStorage";
+import { getBrowserStorage, removeJson } from "./browserStorage";
 import { clearAccountLinkCache } from "./accountGate";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import {
@@ -6,6 +6,7 @@ import {
   savePlayerCollection,
 } from "./playerCollection";
 import {
+  getOrCreatePlayerIdentity,
   mintAnonymousPlayerIdentity,
   setPlayerIdentity,
 } from "./playerIdentity";
@@ -39,9 +40,47 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-draft-deadline",
   "nba-head-to-head-team-profile",
   "nba-head-to-head-event-profiles",
+  "nba-head-to-head-tier-list",
+  "nba-head-to-head-tier-list-library",
+  "nba-head-to-head-tier-list-public",
 ] as const;
 
-const clearIdentityBoundLocalState = () => {
+const PENDING_LINEUP_KEY_PREFIX = "nba-head-to-head-pending-lineup-";
+
+const clearPendingLineupStorage = (playerId: string) => {
+  for (const mode of ["classic", "ranked", "event"] as const) {
+    removeJson(`${PENDING_LINEUP_KEY_PREFIX}${mode}-${playerId}`);
+  }
+
+  const storage = getBrowserStorage() as
+    | (ReturnType<typeof getBrowserStorage> & {
+        length?: number;
+        key?: (index: number) => string | null;
+      })
+    | null;
+
+  if (!storage?.key || typeof storage.length !== "number") {
+    return;
+  }
+
+  const toRemove: string[] = [];
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (key?.startsWith(PENDING_LINEUP_KEY_PREFIX)) {
+      toRemove.push(key);
+    }
+  }
+
+  for (const key of toRemove) {
+    removeJson(key);
+  }
+};
+
+const clearIdentityBoundLocalState = (playerId?: string) => {
+  if (playerId) {
+    clearPendingLineupStorage(playerId);
+  }
+
   for (const key of IDENTITY_BOUND_STORAGE_KEYS) {
     removeJson(key);
   }
@@ -60,7 +99,8 @@ const clearIdentityBoundLocalState = () => {
  * GM identity. The account itself remains; log in again to restore it.
  */
 export const logoutToAnonymousIdentity = () => {
-  clearIdentityBoundLocalState();
+  const previousPlayerId = getOrCreatePlayerIdentity().playerId;
+  clearIdentityBoundLocalState(previousPlayerId);
   clearAccountLinkCache();
   return mintAnonymousPlayerIdentity();
 };
@@ -70,7 +110,8 @@ export const logoutToAnonymousIdentity = () => {
  * local records (which would clobber server leaderboard rows on the next sync).
  */
 export const restorePlayerIdentityFromLogin = async (playerId: string) => {
-  clearIdentityBoundLocalState();
+  const previousPlayerId = getOrCreatePlayerIdentity().playerId;
+  clearIdentityBoundLocalState(previousPlayerId);
   const identity = setPlayerIdentity(playerId);
   const seasonId = getCurrentSeasonId();
 

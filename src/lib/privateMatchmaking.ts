@@ -25,6 +25,11 @@ const sleep = (ms: number) =>
     setTimeout(resolve, ms);
   });
 
+const PRIVATE_ROOM_UNAVAILABLE =
+  "Private match servers are temporarily unavailable. Try again in a moment.";
+const PRIVATE_ROOM_UNREACHABLE =
+  "Could not reach private match servers. Check your connection and try again.";
+
 const readError = async (response: Response) => {
   try {
     const payload = (await response.json()) as { error?: string };
@@ -32,6 +37,14 @@ const readError = async (response: Response) => {
   } catch {
     return `Request failed (${response.status})`;
   }
+};
+
+const mapPrivateRoomFailure = async (response: Response) => {
+  if (response.status >= 500) {
+    return PRIVATE_ROOM_UNAVAILABLE;
+  }
+
+  return readError(response);
 };
 
 export const createPrivateRoom = async (params: {
@@ -56,7 +69,7 @@ export const createPrivateRoom = async (params: {
     });
 
     if (!response.ok) {
-      return { error: await readError(response) };
+      return { error: await mapPrivateRoomFailure(response) };
     }
 
     const payload = (await response.json()) as {
@@ -79,7 +92,7 @@ export const createPrivateRoom = async (params: {
 
     return { error: "Could not create private room" };
   } catch {
-    return { error: "Could not create private room" };
+    return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
 
@@ -107,7 +120,7 @@ export const joinPrivateRoom = async (params: {
     });
 
     if (!response.ok) {
-      return { error: await readError(response) };
+      return { error: await mapPrivateRoomFailure(response) };
     }
 
     const payload = (await response.json()) as {
@@ -147,7 +160,7 @@ export const joinPrivateRoom = async (params: {
 
     return { error: "Could not join private room" };
   } catch {
-    return { error: "Could not join private room" };
+    return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
 
@@ -175,7 +188,7 @@ export const pollPrivateRoom = async (params: {
     }
 
     if (!response.ok) {
-      return { error: await readError(response) };
+      return { error: await mapPrivateRoomFailure(response) };
     }
 
     const payload = (await response.json()) as {
@@ -228,7 +241,7 @@ export const pollPrivateRoom = async (params: {
 
     return { error: "Unexpected private room response" };
   } catch {
-    return { error: "Could not check private room" };
+    return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
 

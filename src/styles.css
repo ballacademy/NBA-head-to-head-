@@ -3590,6 +3590,13 @@ h1.landing-hub__title--name {
   margin: 14px 0 0;
 }
 
+.matchmaking-overlay__expiry {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
 .matchmaking-overlay__copy {
   min-width: 7.5rem;
 }
@@ -4378,7 +4385,8 @@ h1.landing-hub__title--name {
 .draft-onboarding-overlay {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  /* Above hub info popovers (1200) so first-draft tips stay readable. */
+  z-index: 1300;
   display: grid;
   place-items: center;
   padding: 20px;

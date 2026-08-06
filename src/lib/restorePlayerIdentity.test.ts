@@ -45,6 +45,14 @@ describe("logoutToAnonymousIdentity", () => {
       elo: 600,
     });
     writeJson("nba-head-to-head-event-profiles", { "event-1": { wins: 2 } });
+    writeJson("nba-head-to-head-tier-list", { tiers: [] });
+    writeJson("nba-head-to-head-tier-list-library", { lists: [] });
+    writeJson("nba-head-to-head-tier-list-public", { entries: [] });
+    writeJson("nba-head-to-head-pending-lineup-classic-player-linked-old", {
+      storedLineupId: "lineup-1",
+      mode: "classic",
+      submittedAt: "2026-08-01T00:00:00.000Z",
+    });
 
     const next = logoutToAnonymousIdentity();
 
@@ -53,5 +61,11 @@ describe("logoutToAnonymousIdentity", () => {
     expect(readJson("nba-head-to-head-team-profile")).toBeNull();
     expect(readJson("nba-head-to-head-classic-profile")).toBeNull();
     expect(readJson("nba-head-to-head-event-profiles")).toBeNull();
+    expect(readJson("nba-head-to-head-tier-list")).toBeNull();
+    expect(readJson("nba-head-to-head-tier-list-library")).toBeNull();
+    expect(readJson("nba-head-to-head-tier-list-public")).toBeNull();
+    expect(
+      readJson("nba-head-to-head-pending-lineup-classic-player-linked-old"),
+    ).toBeNull();
   });
 });
