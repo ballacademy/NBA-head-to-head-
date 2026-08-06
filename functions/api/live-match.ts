@@ -84,6 +84,7 @@ const buildMatchPayload = async (
     opponentUsername: await getUsernameByPlayerId(db, opponentPlayerId),
     selfReady,
     opponentReady,
+    selfLineup: selfReady ? selfLineup : null,
     opponentLineup: revealOpponent ? opponentLineup : null,
     createdAt: row.created_at,
   };

@@ -263,6 +263,10 @@ export const getDailyDraftPercentile = (
   };
 };
 
+export type DailyDraftSubmitResult = DailyDraftPercentileResult & {
+  remoteSynced: boolean;
+};
+
 export const submitDailyDraftScore = async (
   dateKey: string,
   goal: DailyDraftGoal,
@@ -271,7 +275,7 @@ export const submitDailyDraftScore = async (
   benchmarkValues: number[],
   lineup: string[],
   teamName: string,
-): Promise<DailyDraftPercentileResult> => {
+): Promise<DailyDraftSubmitResult> => {
   const playerId = getOrCreatePlayerId();
   const submittedAt = new Date().toISOString();
   const nextEntry: DailyDraftScoreEntry = {
@@ -287,7 +291,7 @@ export const submitDailyDraftScore = async (
 
   mergeEntryToLocal(dateKey, nextEntry);
 
-  await submitRemoteDailyDraftScore({
+  const remoteEntry = await submitRemoteDailyDraftScore({
     dateKey,
     goalId: goal.id,
     mode: goal.mode,
@@ -297,7 +301,12 @@ export const submitDailyDraftScore = async (
     formattedResult,
     lineup,
   });
-  await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId, goal.mode);
+  const refreshed = await refreshDailyDraftScoresFromApi(
+    dateKey,
+    goal.id,
+    playerId,
+    goal.mode,
+  );
 
   const percentileResult = getDailyDraftPercentile(
     dateKey,
@@ -312,7 +321,10 @@ export const submitDailyDraftScore = async (
     percentile: percentileResult.percentile,
   });
 
-  return percentileResult;
+  return {
+    ...percentileResult,
+    remoteSynced: Boolean(remoteEntry) || refreshed,
+  };
 };
 
 export const resolvePlayerDailyDraftPercentile = (

@@ -4,11 +4,15 @@ import { matchModeThemeClass } from "../lib/matchModeTheme";
 interface WaitingRoomProps {
   theme: MatchModeTheme;
   opponentName?: string | null;
+  opponentAutoDrafted?: boolean;
+  onLeave?: () => void;
 }
 
 export function WaitingRoom({
   theme,
   opponentName = null,
+  opponentAutoDrafted = false,
+  onLeave,
 }: WaitingRoomProps) {
   return (
     <section
@@ -17,25 +21,41 @@ export function WaitingRoom({
     >
       <p className="eyebrow">Draft complete</p>
       <h2>
-        {opponentName
-          ? `Waiting for ${opponentName}`
-          : "Waiting for your opponent"}
+        {opponentAutoDrafted
+          ? "Opponent timed out"
+          : opponentName
+            ? `Waiting for ${opponentName}`
+            : "Waiting for your opponent"}
       </h2>
       <p>
         Your lineup is locked in.
-        {opponentName
-          ? ` ${opponentName} is still drafting and will be revealed once both teams are ready.`
-          : " Your opponent is still drafting and will be revealed once both teams are ready."}
+        {opponentAutoDrafted
+          ? " Their lineup was auto-drafted so the match can be scored."
+          : opponentName
+            ? ` ${opponentName} is still drafting and will be revealed once both teams are ready.`
+            : " Your opponent is still drafting and will be revealed once both teams are ready."}
       </p>
 
       <div className="waiting-indicator">
         <span className="waiting-spinner" aria-hidden="true" />
         <strong>
-          {opponentName
-            ? `Waiting on ${opponentName}…`
-            : "Searching for opponent lineup…"}
+          {opponentAutoDrafted
+            ? "Preparing results…"
+            : opponentName
+              ? `Waiting on ${opponentName}…`
+              : "Searching for opponent lineup…"}
         </strong>
       </div>
+
+      {onLeave ? (
+        <button
+          type="button"
+          className="secondary-button waiting-room__leave"
+          onClick={onLeave}
+        >
+          Return home
+        </button>
+      ) : null}
     </section>
   );
 }

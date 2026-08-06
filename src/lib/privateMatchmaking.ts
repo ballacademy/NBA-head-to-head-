@@ -270,18 +270,32 @@ export const waitForPrivateRoomGuest = async (
     roomCode: string;
     playerId: string;
   },
-  options: { isCancelled?: () => boolean } = {},
+  options: {
+    isCancelled?: () => boolean;
+    pollIntervalMs?: number;
+    maxConsecutiveErrors?: number;
+  } = {},
 ): Promise<
   | { ok: true; matched: PrivateRoomMatched }
   | { ok: false; error: "cancelled" | "expired" | "setup_failed" }
 > => {
+  const pollIntervalMs = options.pollIntervalMs ?? MATCHMAKING_POLL_INTERVAL_MS;
+  const maxConsecutiveErrors = options.maxConsecutiveErrors ?? 5;
+  let consecutiveErrors = 0;
+
   while (!options.isCancelled?.()) {
     const poll = await pollPrivateRoom(params);
 
     if ("error" in poll) {
-      await sleep(MATCHMAKING_POLL_INTERVAL_MS);
+      consecutiveErrors += 1;
+      if (consecutiveErrors >= maxConsecutiveErrors) {
+        return { ok: false, error: "setup_failed" };
+      }
+      await sleep(pollIntervalMs);
       continue;
     }
+
+    consecutiveErrors = 0;
 
     if (poll.status === "matched") {
       return { ok: true, matched: poll };
@@ -291,7 +305,7 @@ export const waitForPrivateRoomGuest = async (
       return { ok: false, error: poll.status };
     }
 
-    await sleep(MATCHMAKING_POLL_INTERVAL_MS);
+    await sleep(pollIntervalMs);
   }
 
   // Cancel raced a join — one last poll so we don't orphan a live match.

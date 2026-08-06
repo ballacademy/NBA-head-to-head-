@@ -29,23 +29,57 @@ interface PendingQueueResultsProps {
   userLineup: Player[];
   starCount: number;
   onDone: () => void;
+  matchmakingNotice?: string | null;
 }
+
+type QueueSubmitState = "submitting" | "queued" | "failed";
 
 export function PendingQueueResults({
   user,
   userLineup,
   starCount,
   onDone,
+  matchmakingNotice = null,
 }: PendingQueueResultsProps) {
   const orderedLineup = sortLineupByPosition(userLineup);
   const submittedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
+  const [submitState, setSubmitState] = useState<QueueSubmitState>("submitting");
   const mode: GhostMatchmakingMode = user.salaryCapMode ? "ranked" : "classic";
   const playerId = getOrCreatePlayerIdentity().playerId;
   const elo = user.salaryCapMode
     ? ensureCurrentRankedSeason().elo
     : ensureClassicProfile().elo;
+
+  const postLineup = async () => {
+    setSubmitState("submitting");
+    const stored = await submitStoredLineup({
+      mode,
+      playerId,
+      teamName: user.name,
+      lineup: user.lineup.filter((id): id is string => Boolean(id)),
+      elo,
+      awaitingLive: true,
+      salaryTotal: getLineupSalaryTotal(userLineup),
+      starCount,
+    });
+
+    if (!stored) {
+      setSubmitState("failed");
+      return;
+    }
+
+    savePendingLineupState(
+      {
+        storedLineupId: stored.id,
+        mode,
+        submittedAt: stored.createdAt,
+      },
+      playerId,
+    );
+    setSubmitState("queued");
+  };
 
   useEffect(() => {
     if (submittedRef.current) {
@@ -53,31 +87,10 @@ export function PendingQueueResults({
     }
 
     submittedRef.current = true;
-
-    void (async () => {
-      const stored = await submitStoredLineup({
-        mode,
-        playerId,
-        teamName: user.name,
-        lineup: user.lineup.filter((id): id is string => Boolean(id)),
-        elo,
-        awaitingLive: true,
-        salaryTotal: getLineupSalaryTotal(userLineup),
-        starCount,
-      });
-
-      if (stored) {
-        savePendingLineupState(
-          {
-            storedLineupId: stored.id,
-            mode,
-            submittedAt: stored.createdAt,
-          },
-          playerId,
-        );
-      }
-    })();
-  }, [elo, mode, playerId, starCount, user.lineup, user.name, userLineup]);
+    void postLineup();
+    // Intentionally once on mount for this queued lineup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (achievementsCheckedRef.current || userLineup.length !== 5) {
@@ -101,16 +114,43 @@ export function PendingQueueResults({
     >
       <AchievementToast achievementIds={newAchievementIds} />
       <div className="panel panel--compact daily-draft-results__header">
-        <p className="eyebrow">Lineup queued</p>
-        <h2>Waiting for a live opponent</h2>
-        <p>
-          At {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}, you only face saved or
-          live opponents. Your lineup is posted at {formatRatingPoints(elo)} until
-          another GM drafts against it.
+        <p className="eyebrow">
+          {submitState === "failed"
+            ? "Queue failed"
+            : submitState === "submitting"
+              ? "Posting lineup"
+              : "Lineup queued"}
         </p>
-        <p>
-          You cannot enter a new lineup until this one receives a score.
-        </p>
+        <h2>
+          {submitState === "failed"
+            ? "Couldn’t queue your lineup"
+            : submitState === "submitting"
+              ? "Posting your lineup…"
+              : "Waiting for a live opponent"}
+        </h2>
+        {matchmakingNotice ? (
+          <p className="form-info" role="status">
+            {matchmakingNotice}
+          </p>
+        ) : null}
+        {submitState === "failed" ? (
+          <p className="form-error" role="alert">
+            Your lineup wasn’t saved. Check your connection and try again.
+          </p>
+        ) : (
+          <>
+            <p>
+              At {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}, you only face saved
+              or live opponents. Your lineup is posted at{" "}
+              {formatRatingPoints(elo)} until another GM drafts against it.
+            </p>
+            {submitState === "queued" ? (
+              <p>
+                You cannot enter a new lineup until this one receives a score.
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
 
       <section className="panel panel--compact daily-draft-results__lineup">
@@ -123,6 +163,15 @@ export function PendingQueueResults({
       </section>
 
       <div className="panel panel--compact daily-draft-results__footer queued-draft-results__footer">
+        {submitState === "failed" ? (
+          <button
+            type="button"
+            className="play-again-button"
+            onClick={() => void postLineup()}
+          >
+            Retry queue
+          </button>
+        ) : null}
         <button type="button" className="play-again-button" onClick={onDone}>
           Back to home
         </button>

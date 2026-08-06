@@ -83,6 +83,7 @@ import {
 import { canPlayEventMatch, loadEventProfile } from "./lib/eventProfile";
 import {
   filterPlayersForEventRestriction,
+  getCurrentWeeklyEvent,
   type EventRestrictionId,
 } from "./lib/weeklyEvents";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
@@ -90,6 +91,7 @@ import type { GhostMatchmakingMode } from "./lib/ghostMatchmaking";
 import type { GhostOpponentSnapshot } from "./lib/ghostMatchmaking";
 import type { LiveOpponentSnapshot } from "./lib/liveMatchmaking";
 import {
+  fetchLiveMatchState,
   leaveMatchmakingQueue,
   resolveLiveOpponentLineup,
   submitLiveMatchLineup,
@@ -187,6 +189,7 @@ function App() {
   const [draftStep, setDraftStep] = useState(0);
   const [opponentPickCount, setOpponentPickCount] = useState(0);
   const [opponentComplete, setOpponentComplete] = useState(false);
+  const [opponentAutoDrafted, setOpponentAutoDrafted] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [draftSessionKey, setDraftSessionKey] = useState<string | null>(null);
   const [isDailyDraft, setIsDailyDraft] = useState(false);
@@ -211,6 +214,7 @@ function App() {
   const [isCancellingMatchmaking, setIsCancellingMatchmaking] = useState(false);
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
+  const [matchmakingNotice, setMatchmakingNotice] = useState<string | null>(null);
   const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
   const [privateRoomExpiresAt, setPrivateRoomExpiresAt] = useState<string | null>(
     null,
@@ -276,6 +280,7 @@ function App() {
       setDraftSessionKey(restored.matchId);
       setOpponentPickCount(restored.opponent.lineup.length);
       setOpponentComplete(restored.opponentComplete);
+      setOpponentAutoDrafted(Boolean(restored.opponentAutoDrafted));
       setIsPendingQueueMatch(false);
       setIsDailyDraft(false);
       setPhase(restored.opponentComplete ? "results" : restored.phase);
@@ -310,6 +315,9 @@ function App() {
       opponentDraftSlots: opponent.draftSlots,
       salaryCapMode: Boolean(user.salaryCapMode),
       salaryCapLimit: user.salaryCapLimit,
+      privateMatch: Boolean(user.privateMatch),
+      eventId: user.eventId,
+      eventRestriction: user.eventRestriction,
       phase: phase === "waiting" ? "waiting" : "drafting",
       savedAt: new Date().toISOString(),
     });
@@ -557,6 +565,7 @@ function App() {
     }
 
     setStartMatchError(null);
+    setMatchmakingNotice(null);
 
     if (options.allTimeMode && !isAllTimeModePlayable()) {
       return "failed";
@@ -682,6 +691,12 @@ function App() {
           if (!waited.ok) {
             if (waited.error === "expired") {
               setStartMatchError("Private room expired. Create a new one.");
+              return "failed";
+            }
+            if (waited.error === "setup_failed") {
+              setStartMatchError(
+                "Private match servers are temporarily unavailable. Try again in a moment.",
+              );
               return "failed";
             }
             return "cancelled";
@@ -828,8 +843,24 @@ function App() {
           session.matchId = liveOpponent.matchId;
         } else if (resolution.plan.kind === "ghost") {
           ghostOpponent = resolution.plan.ghost;
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — playing a recorded lineup.",
+            );
+          }
         } else if (resolution.plan.kind === "queue_for_live") {
           isPendingQueue = true;
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — your lineup will wait in the queue.",
+            );
+          }
+        } else if (resolution.plan.kind === "npc") {
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — matched you with a practice opponent.",
+            );
+          }
         }
 
         // Ghost / queue plans can still be abandoned; live matches cannot.
@@ -1024,6 +1055,7 @@ function App() {
     setDraftStep(0);
     setOpponentPickCount(ghostOpponent ? ghostOpponent.lineup.length : 0);
     setOpponentComplete(daily || isPendingQueue || Boolean(ghostOpponent));
+    setOpponentAutoDrafted(false);
     setMatchId(null);
     setDraftSessionKey(
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -1048,6 +1080,9 @@ function App() {
         opponentDraftSlots: opponentSlots,
         salaryCapMode: eventMode || salaryCapMode,
         salaryCapLimit,
+        privateMatch,
+        eventId,
+        eventRestriction,
         phase: "drafting",
         savedAt: new Date().toISOString(),
       });
@@ -1187,7 +1222,10 @@ function App() {
     [modeRecords.allTime],
   );
 
-  const resetToLanding = () => {
+  const resetToLanding = (options?: {
+    error?: string | null;
+    preserveError?: boolean;
+  }) => {
     clearLiveDraftSession();
     setUser(null);
     setOpponent(null);
@@ -1195,6 +1233,7 @@ function App() {
     setDraftStep(0);
     setOpponentPickCount(0);
     setOpponentComplete(false);
+    setOpponentAutoDrafted(false);
     setMatchId(null);
     setDraftSessionKey(null);
     setIsPendingQueueMatch(false);
@@ -1214,7 +1253,10 @@ function App() {
     setPrivateRoomExpiresAt(null);
     setPrivateRoomRole(null);
     draftOnboardingResolverRef.current = null;
-    setStartMatchError(null);
+    if (!options?.preserveError) {
+      setStartMatchError(options?.error ?? null);
+    }
+    setMatchmakingNotice(null);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
@@ -1269,7 +1311,7 @@ function App() {
           dailyDraftMode: user.dailyDraftMode ?? dailyDraftMode,
         })) === "failed"
       ) {
-        resetToLanding();
+        resetToLanding({ preserveError: true });
       }
       return;
     }
@@ -1295,6 +1337,26 @@ function App() {
       return;
     }
 
+    if (user.eventId) {
+      const event = getCurrentWeeklyEvent(players);
+      if (!event || event.id !== user.eventId) {
+        resetToLanding({
+          error: "This week's event has ended. Check back for the next one.",
+        });
+        return;
+      }
+
+      // On failure, stay on results so MatchResults can show startMatchError.
+      await startMatch(team, {
+        eventId: event.id,
+        eventRestriction: event.restriction,
+        salaryCapMode: true,
+        salaryCapLimit: event.salaryCapLimit,
+        sharedDraftSlots: event.sharedSlots,
+      });
+      return;
+    }
+
     const replayAllTime =
       Boolean(user.allTimeMode) && isAllTimeModePlayable();
 
@@ -1304,7 +1366,7 @@ function App() {
         allTimeMode: replayAllTime,
       })) === "failed"
     ) {
-      resetToLanding();
+      resetToLanding({ preserveError: true });
     }
   };
 
@@ -1441,12 +1503,80 @@ function App() {
   useEffect(() => {
     if (phase === "results" && !isDailyDraft && !isPendingQueueMatch && !matchId) {
       setMatchId(
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `match-${Date.now()}`,
+        opponent?.liveMatchId ??
+          (typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `match-${Date.now()}`),
       );
     }
-  }, [isDailyDraft, isPendingQueueMatch, matchId, phase]);
+  }, [isDailyDraft, isPendingQueueMatch, matchId, opponent?.liveMatchId, phase]);
+
+  useEffect(() => {
+    if (
+      phase !== "drafting" ||
+      !opponent?.isLiveOpponent ||
+      !opponent.liveMatchId ||
+      !user ||
+      opponentComplete
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    const playerId = getOrCreatePlayerIdentity().playerId;
+    const liveMatchId = opponent.liveMatchId;
+
+    const poll = async () => {
+      const state = await fetchLiveMatchState({
+        matchId: liveMatchId,
+        playerId,
+      });
+
+      if (cancelled || !state) {
+        return;
+      }
+
+      // Opponent (or both) already locked — adopt server lineups and finish.
+      if (state.opponentReady && state.opponentLineup?.length === 5) {
+        if (state.selfReady && state.selfLineup?.length === 5) {
+          setUser((current) =>
+            current
+              ? {
+                  ...current,
+                  lineup: state.selfLineup!,
+                }
+              : current,
+          );
+          setDraftStep(5);
+        }
+
+        setOpponent((current) =>
+          current?.liveMatchId === liveMatchId
+            ? { ...current, lineup: state.opponentLineup! }
+            : current,
+        );
+        setOpponentPickCount(state.opponentLineup.length);
+        setOpponentAutoDrafted(false);
+        setOpponentComplete(true);
+        setPhase("waiting");
+      }
+    };
+
+    void poll();
+    const timer = window.setInterval(() => {
+      void poll();
+    }, 3_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [
+    opponent?.isLiveOpponent,
+    opponent?.liveMatchId,
+    opponentComplete,
+    phase,
+  ]);
 
   useEffect(() => {
     if (
@@ -1569,21 +1699,62 @@ function App() {
     }
 
     void (async () => {
-      await submitLiveMatchLineup({
+      let locked = await submitLiveMatchLineup({
         matchId: liveMatchId,
         playerId,
         lineup,
       });
 
+      if (!locked?.selfReady) {
+        locked = await submitLiveMatchLineup({
+          matchId: liveMatchId,
+          playerId,
+          lineup,
+        });
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!locked?.selfReady) {
+        resetToLanding({
+          error:
+            "Couldn't lock your lineup on the server. Check your connection and try again.",
+        });
+        return;
+      }
+
+      // Server may have already autofilled us (timeout) and revealed both lineups.
+      if (locked.opponentReady && locked.opponentLineup?.length === 5) {
+        if (locked.selfLineup?.length === 5) {
+          setUser((current) =>
+            current
+              ? {
+                  ...current,
+                  lineup: locked!.selfLineup!,
+                }
+              : current,
+          );
+        }
+        setOpponent((current) =>
+          current?.liveMatchId === liveMatchId
+            ? { ...current, lineup: locked!.opponentLineup! }
+            : current,
+        );
+        setOpponentPickCount(locked.opponentLineup.length);
+        setOpponentAutoDrafted(false);
+        setOpponentComplete(true);
+        return;
+      }
+
       const opponentPlayerId = opponent.liveOpponentPlayerId;
 
       if (!opponentPlayerId) {
-        if (!cancelled) {
-          setStartMatchError(
+        resetToLanding({
+          error:
             "Your opponent did not finish drafting in time. Return home and try again.",
-          );
-          resetToLanding();
-        }
+        });
         return;
       }
 
@@ -1595,13 +1766,15 @@ function App() {
         salaryCapLimit: opponent.salaryCapLimit,
       });
 
-      if (cancelled || !resolved) {
-        if (!cancelled && !resolved) {
-          setStartMatchError(
+      if (cancelled) {
+        return;
+      }
+
+      if (!resolved) {
+        resetToLanding({
+          error:
             "Your opponent did not finish drafting in time. Return home and try again.",
-          );
-          resetToLanding();
-        }
+        });
         return;
       }
 
@@ -1611,6 +1784,7 @@ function App() {
           : current,
       );
       setOpponentPickCount(resolved.lineup.length);
+      setOpponentAutoDrafted(resolved.autoDrafted);
       setOpponentComplete(true);
     })();
 
@@ -1941,7 +2115,7 @@ function App() {
           <p className="eyebrow">Draft unavailable</p>
           <h2>We couldn&apos;t load your draft.</h2>
           <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={resetToLanding}>
+          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
             Back to home
           </button>
         </section>
@@ -1956,7 +2130,7 @@ function App() {
           <p className="eyebrow">Draft unavailable</p>
           <h2>We couldn&apos;t set up this matchup.</h2>
           <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={resetToLanding}>
+          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
             Back to home
           </button>
         </section>
@@ -1998,7 +2172,7 @@ function App() {
           <p className="eyebrow">Draft unavailable</p>
           <h2>We couldn&apos;t load this draft board.</h2>
           <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={resetToLanding}>
+          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
             Back to home
           </button>
         </section>
@@ -2011,6 +2185,8 @@ function App() {
             opponent.name,
             opponent.username,
           )}
+          opponentAutoDrafted={opponentAutoDrafted}
+          onLeave={() => resetToLanding()}
         />
       ) : null}
 
@@ -2019,7 +2195,8 @@ function App() {
           user={user}
           userLineup={userLineup}
           starCount={countUnlockedAllStars(collection)}
-          onDone={resetToLanding}
+          onDone={() => resetToLanding()}
+          matchmakingNotice={matchmakingNotice}
         />
       ) : null}
 
@@ -2032,7 +2209,7 @@ function App() {
           benchmarkValues={dailyBenchmarkValues}
           reviewOnly={isDailyReview}
           optimalReview={isDailyOptimalReview}
-          onPlayAgain={resetToLanding}
+          onPlayAgain={() => resetToLanding()}
         />
       ) : null}
 
@@ -2050,9 +2227,11 @@ function App() {
           collection={collection}
           onCollectionChange={handleCollectionChange}
           onPlayAgain={replayLastMode}
-          onReturnToMenu={resetToLanding}
+          onReturnToMenu={() => resetToLanding()}
           isMatchmaking={isMatchmakingSearchActive}
           startMatchError={startMatchError}
+          opponentAutoDrafted={opponentAutoDrafted}
+          matchmakingNotice={matchmakingNotice}
         />
       ) : null}
       {matchmakingMode ? (

@@ -291,14 +291,15 @@ export function AccountAuthPanel({
           </span>
         ) : (
           <span className="landing-team-form__account-status">
-            Needed for leaderboards &amp; public tier lists
+            Needed for leaderboards, private matches &amp; public tier lists
           </span>
         )}
       </div>
 
       <p className="landing-team-form__account-note">
         You can play without an account. Create one to appear on leaderboards,
-        publish tier lists, and restore this GM code on another device.
+        host or join private matches, publish tier lists, and restore this GM
+        code on another device.
       </p>
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">

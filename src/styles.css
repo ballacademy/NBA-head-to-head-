@@ -3487,6 +3487,14 @@ h1.landing-hub__title--name {
   font-weight: 700;
 }
 
+.form-info {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .draft-prompt__header {
   display: flex;
   align-items: flex-start;
@@ -3518,6 +3526,11 @@ h1.landing-hub__title--name {
   max-width: 720px;
   margin: 0 auto;
   text-align: center;
+}
+
+.waiting-room__leave {
+  margin-top: 18px;
+  width: min(100%, 16rem);
 }
 
 .waiting-indicator {
@@ -3714,6 +3727,12 @@ h1.landing-hub__title--name {
   margin: 4px 0 0;
   font-size: clamp(1.35rem, 3vw, 1.9rem);
   line-height: 1.05;
+}
+
+.matchup-panel__autodraft-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .matchup-panel__meta {
@@ -5253,6 +5272,28 @@ h1.landing-hub__title--name {
   color: #94a3b8;
   font-size: 0.92rem;
   font-weight: 500;
+}
+
+.daily-draft-results__sync-error {
+  margin-top: 10px;
+}
+
+.daily-draft-results__sync-retry {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.daily-draft-results__sync-retry:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .daily-draft-results__streak {

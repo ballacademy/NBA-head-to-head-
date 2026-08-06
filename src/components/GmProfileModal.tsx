@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { formatUsername } from "../lib/accountCredentials";
 import {
@@ -59,7 +59,10 @@ export function GmProfileModal({
   fetchRemoteProfile = true,
   onClose,
 }: GmProfileModalProps) {
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
   const [loading, setLoading] = useState(fetchRemoteProfile);
+  const [seasonUnavailable, setSeasonUnavailable] = useState(false);
   const [displayName, setDisplayName] = useState(name);
   const [displayTag, setDisplayTag] = useState(publicTag);
   const [displayUsername, setDisplayUsername] = useState(username);
@@ -90,6 +93,7 @@ export function GmProfileModal({
   useEffect(() => {
     if (!fetchRemoteProfile) {
       setLoading(false);
+      setSeasonUnavailable(false);
       return;
     }
 
@@ -97,6 +101,7 @@ export function GmProfileModal({
 
     const load = async () => {
       setLoading(true);
+      setSeasonUnavailable(false);
       const profile = await fetchRemotePlayerProfile({
         playerId,
         seasonId: getCurrentSeasonId(),
@@ -107,18 +112,24 @@ export function GmProfileModal({
         return;
       }
 
-      if (profile?.username) {
+      if (!profile) {
+        setSeasonUnavailable(true);
+        setLoading(false);
+        return;
+      }
+
+      if (profile.username) {
         setDisplayUsername(profile.username);
       }
 
-      if (profile?.legacy) {
+      if (profile.legacy) {
         setLegacyPeakElo(profile.legacy.peakElo);
         setLegacyBestRank(profile.legacy.bestMonthlyRank);
         setLegacyBestRankSeasonId(profile.legacy.bestMonthlyRankSeasonId);
         setLegacyPeakSeasonId(profile.legacy.peakEloSeasonId);
       }
 
-      if (profile?.currentSeason) {
+      if (profile.currentSeason) {
         setDisplayName(profile.currentSeason.teamName || name);
         setDisplayTag(profile.currentSeason.publicTag || publicTag);
         setDisplayWins(profile.currentSeason.wins);
@@ -130,6 +141,9 @@ export function GmProfileModal({
         if (profile.currentSeason.username) {
           setDisplayUsername(profile.currentSeason.username);
         }
+        setSeasonUnavailable(false);
+      } else {
+        setSeasonUnavailable(true);
       }
 
       setLoading(false);
@@ -150,16 +164,55 @@ export function GmProfileModal({
     lossStreak,
   ]);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    closeRef.current?.focus();
+
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   const showWinBadge = hasFireStreak(displayWinStreak);
   const showLossBadge =
     !showWinBadge && hasLossStreakBadge(displayLossStreak);
+
+  const monthRecordLabel = loading
+    ? "Loading..."
+    : seasonUnavailable
+      ? "Stats unavailable"
+      : currentSeasonRank
+        ? `#${currentSeasonRank} · ${formatPlayerRecord({
+            wins: displayWins,
+            losses: displayLosses,
+          })}`
+        : formatPlayerRecord({
+            wins: displayWins,
+            losses: displayLosses,
+          });
+
+  const streakLabel = loading ? (
+    "Loading..."
+  ) : seasonUnavailable ? (
+    "Stats unavailable"
+  ) : showWinBadge ? (
+    <WinStreakBadge winStreak={displayWinStreak} showTypeLabel={false} />
+  ) : showLossBadge ? (
+    <LossStreakBadge lossStreak={displayLossStreak} showTypeLabel={false} />
+  ) : (
+    formatPlainStreak(displayWinStreak, displayLossStreak)
+  );
 
   const modal = (
     <div
       className="unlock-modal gm-profile-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="gm-profile-title"
+      aria-labelledby={titleId}
       onClick={onClose}
     >
       <div
@@ -167,7 +220,7 @@ export function GmProfileModal({
         onClick={(event) => event.stopPropagation()}
       >
         <p className="eyebrow">Legacy rank</p>
-        <h2 id="gm-profile-title">{displayName}</h2>
+        <h2 id={titleId}>{displayName}</h2>
         <p className="gm-profile-modal__identity">
           {displayUsername ? (
             <>
@@ -186,18 +239,26 @@ export function GmProfileModal({
             <strong className="gm-profile-modal__value">
               {loading
                 ? "Loading..."
-                : formatLegacyMonthlyFinish(
-                    legacyBestRank,
-                    legacyBestRankSeasonId,
-                  )}
+                : seasonUnavailable && !legacyBestRank
+                  ? "Stats unavailable"
+                  : formatLegacyMonthlyFinish(
+                      legacyBestRank,
+                      legacyBestRankSeasonId,
+                    )}
             </strong>
           </div>
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Most banners ever</span>
             <strong className="gm-profile-modal__value">
-              {loading ? "Loading..." : formatLegacyPeakBannerCount(legacyPeakElo)}
+              {loading
+                ? "Loading..."
+                : seasonUnavailable && legacyPeakElo == null
+                  ? "Stats unavailable"
+                  : formatLegacyPeakBannerCount(legacyPeakElo)}
             </strong>
-            {!loading && formatLegacyPeakBannerTier(legacyPeakElo) ? (
+            {!loading &&
+            !seasonUnavailable &&
+            formatLegacyPeakBannerTier(legacyPeakElo) ? (
               <span className="gm-profile-modal__meta">
                 {formatLegacyPeakBannerTier(legacyPeakElo)}
                 {legacyPeakSeasonId
@@ -208,20 +269,10 @@ export function GmProfileModal({
           </div>
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">This month</span>
-            <strong>
-              {loading
-                ? "Loading..."
-                : currentSeasonRank
-                  ? `#${currentSeasonRank} · ${formatPlayerRecord({
-                      wins: displayWins,
-                      losses: displayLosses,
-                    })}`
-                  : formatPlayerRecord({
-                      wins: displayWins,
-                      losses: displayLosses,
-                    })}
-            </strong>
-            {!loading && typeof currentSeasonElo === "number" ? (
+            <strong>{monthRecordLabel}</strong>
+            {!loading &&
+            !seasonUnavailable &&
+            typeof currentSeasonElo === "number" ? (
               <RankedTierBadge
                 tierLabel={tierLabel}
                 elo={currentSeasonElo}
@@ -232,26 +283,17 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Current streak</span>
             <strong className="gm-profile-modal__value gm-profile-modal__value--streak">
-              {loading ? (
-                "Loading..."
-              ) : showWinBadge ? (
-                <WinStreakBadge
-                  winStreak={displayWinStreak}
-                  showTypeLabel={false}
-                />
-              ) : showLossBadge ? (
-                <LossStreakBadge
-                  lossStreak={displayLossStreak}
-                  showTypeLabel={false}
-                />
-              ) : (
-                formatPlainStreak(displayWinStreak, displayLossStreak)
-              )}
+              {streakLabel}
             </strong>
           </div>
         </div>
 
-        <button type="button" className="secondary-button" onClick={onClose}>
+        <button
+          ref={closeRef}
+          type="button"
+          className="secondary-button"
+          onClick={onClose}
+        >
           Close
         </button>
       </div>

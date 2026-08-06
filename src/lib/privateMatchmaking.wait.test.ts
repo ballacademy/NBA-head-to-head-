@@ -68,4 +68,21 @@ describe("waitForPrivateRoomGuest", () => {
       expect(result.matched.matchId).toBe("match-1");
     }
   });
+
+  it("fails after repeated poll errors instead of waiting forever", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ error: "down" }), { status: 500 })),
+    );
+
+    const result = await waitForPrivateRoomGuest(
+      {
+        roomCode: "ABC234",
+        playerId: "host-1",
+      },
+      { pollIntervalMs: 1, maxConsecutiveErrors: 3 },
+    );
+
+    expect(result).toEqual({ ok: false, error: "setup_failed" });
+  });
 });
