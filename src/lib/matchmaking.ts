@@ -6,6 +6,7 @@ import {
 } from "./ghostMatchmaking";
 import {
   searchLiveOpponent,
+  searchLiveOpponentDetailed,
   type LiveOpponentSnapshot,
 } from "./liveMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
@@ -33,6 +34,7 @@ export type StartMatchError =
   | "daily_completed"
   | "pending_lineup_locked"
   | "event_limit_reached"
+  | "matchmaking_unavailable"
   | "setup_failed"
   | "cancelled";
 
@@ -166,8 +168,10 @@ export const planEventLiveMatchmaking = async (
   | { ok: true; plan: Extract<HeadToHeadMatchmakingPlan, { kind: "live" }> }
   | { ok: false; error: StartMatchError }
 > => {
+  let consecutiveUnavailable = 0;
+
   while (!options.isCancelled?.()) {
-    const live = await searchLiveOpponent(
+    const outcome = await searchLiveOpponentDetailed(
       {
         mode: "event",
         playerId: params.playerId,
@@ -180,8 +184,21 @@ export const planEventLiveMatchmaking = async (
       },
     );
 
-    if (live) {
-      return { ok: true, plan: { kind: "live", live } };
+    if (outcome.status === "matched") {
+      return { ok: true, plan: { kind: "live", live: outcome.opponent } };
+    }
+
+    if (outcome.status === "cancelled") {
+      break;
+    }
+
+    if (outcome.status === "unavailable") {
+      consecutiveUnavailable += 1;
+      if (consecutiveUnavailable >= 3) {
+        return { ok: false, error: "matchmaking_unavailable" };
+      }
+    } else {
+      consecutiveUnavailable = 0;
     }
 
     if (options.isCancelled?.()) {
@@ -204,6 +221,8 @@ export const getStartMatchErrorMessage = (error: StartMatchError) => {
       return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup is matched.`;
     case "event_limit_reached":
       return "You've used all 30 entries for this week's event. Check back next week.";
+    case "matchmaking_unavailable":
+      return "Live matchmaking is temporarily unavailable. Try again in a moment.";
     case "setup_failed":
     default:
       return "Couldn't start this draft. Refresh the page and try again.";

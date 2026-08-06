@@ -1,5 +1,5 @@
 import { createLiveOpponent, createUserDrafter } from "./match";
-import { fetchLiveMatchState } from "./liveMatchmaking";
+import { fetchLiveMatchStateDetailed } from "./liveMatchmaking";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import type { Drafter } from "./types";
 import {
@@ -15,12 +15,22 @@ export interface RestoredLiveDraftState {
   phase: "drafting" | "waiting";
   matchId: string;
   opponentComplete: boolean;
+  opponentAutoDrafted?: boolean;
 }
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const buildDraftStateFromSession = (
   session: LiveDraftSession,
   opponentLineup: string[] | null,
+  selfLineup?: string[] | null,
 ): RestoredLiveDraftState => {
+  const restoredSelfLineup =
+    selfLineup && selfLineup.length === 5 ? selfLineup : session.lineup;
+
   const user = {
     ...createUserDrafter(
       { name: session.teamName },
@@ -28,11 +38,14 @@ const buildDraftStateFromSession = (
       {
         salaryCapMode: session.salaryCapMode,
         salaryCapLimit: session.salaryCapLimit,
+        privateMatch: session.privateMatch,
+        eventId: session.eventId,
+        eventRestriction: session.eventRestriction,
       },
     ),
     id: "user",
     accent: session.teamAccent,
-    lineup: session.lineup,
+    lineup: restoredSelfLineup,
   };
 
   const opponent = {
@@ -48,6 +61,9 @@ const buildDraftStateFromSession = (
       { salaryCapMode: session.salaryCapMode },
     ),
     lineup: opponentLineup ?? [],
+    privateMatch: session.privateMatch,
+    eventId: session.eventId,
+    eventRestriction: session.eventRestriction,
   };
 
   const opponentComplete = Boolean(opponentLineup && opponentLineup.length === 5);
@@ -56,7 +72,10 @@ const buildDraftStateFromSession = (
   return {
     user,
     opponent,
-    draftStep: session.draftStep,
+    draftStep:
+      restoredSelfLineup.length === 5
+        ? session.draftSlots.length
+        : session.draftStep,
     phase,
     matchId: session.matchId,
     opponentComplete,
@@ -77,25 +96,42 @@ export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState 
     return null;
   }
 
-  const remote = await fetchLiveMatchState({
+  let remote = await fetchLiveMatchStateDetailed({
     matchId: session.matchId,
     playerId,
   });
 
-  if (!remote) {
+  // Transient network/5xx — retry before treating the match as gone.
+  if (!remote.ok && remote.error === "unavailable") {
+    await sleep(750);
+    remote = await fetchLiveMatchStateDetailed({
+      matchId: session.matchId,
+      playerId,
+    });
+  }
+
+  if (!remote.ok) {
+    if (remote.error === "unavailable") {
+      // Keep local session so a later refresh can reconnect.
+      return null;
+    }
+
     clearLiveDraftSession();
     return null;
   }
 
-  if (remote.opponentReady && remote.opponentLineup?.length === 5) {
+  const state = remote.state;
+  const sessionWithMeta: LiveDraftSession = {
+    ...session,
+    opponentUsername: session.opponentUsername ?? state.opponentUsername,
+  };
+
+  if (state.opponentReady && state.opponentLineup?.length === 5) {
     return {
       ...buildDraftStateFromSession(
-        {
-          ...session,
-          opponentUsername:
-            session.opponentUsername ?? remote.opponentUsername,
-        },
-        remote.opponentLineup,
+        sessionWithMeta,
+        state.opponentLineup,
+        state.selfLineup,
       ),
       phase: "waiting",
       opponentComplete: true,
@@ -103,10 +139,8 @@ export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState 
   }
 
   return buildDraftStateFromSession(
-    {
-      ...session,
-      opponentUsername: session.opponentUsername ?? remote.opponentUsername,
-    },
+    sessionWithMeta,
     null,
+    state.selfLineup,
   );
 };

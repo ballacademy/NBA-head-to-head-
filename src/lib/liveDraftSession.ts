@@ -19,6 +19,9 @@ export interface LiveDraftSession {
   opponentDraftSlots: DraftSlotConstraint[];
   salaryCapMode: boolean;
   salaryCapLimit?: number;
+  privateMatch?: boolean;
+  eventId?: string;
+  eventRestriction?: "u25" | "intl";
   phase: "drafting" | "waiting";
   savedAt: string;
 }

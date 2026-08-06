@@ -3520,6 +3520,11 @@ h1.landing-hub__title--name {
   text-align: center;
 }
 
+.waiting-room__leave {
+  margin-top: 18px;
+  width: min(100%, 16rem);
+}
+
 .waiting-indicator {
   display: grid;
   gap: 12px;
@@ -3714,6 +3719,12 @@ h1.landing-hub__title--name {
   margin: 4px 0 0;
   font-size: clamp(1.35rem, 3vw, 1.9rem);
   line-height: 1.05;
+}
+
+.matchup-panel__autodraft-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .matchup-panel__meta {

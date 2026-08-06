@@ -71,6 +71,7 @@ interface MatchResultsProps {
   onReturnToMenu: () => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
+  opponentAutoDrafted?: boolean;
 }
 
 export function MatchResults({
@@ -85,6 +86,7 @@ export function MatchResults({
   onReturnToMenu,
   isMatchmaking = false,
   startMatchError = null,
+  opponentAutoDrafted = false,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
@@ -421,6 +423,11 @@ export function MatchResults({
                       )
                     : `${formatOpponentDisplayName(opponent.name, opponent.username)} won the matchup`}
             </h2>
+            {opponentAutoDrafted ? (
+              <p className="matchup-panel__autodraft-note">
+                Opponent timed out — their lineup was auto-drafted.
+              </p>
+            ) : null}
           </div>
           <p className="matchup-panel__meta">
             Margin{" "}
@@ -590,7 +597,9 @@ export function MatchResults({
                   ? "Practice again"
                   : user.privateMatch
                     ? "Private match again"
-                    : "Draft another team"}
+                    : user.eventId
+                      ? "Play event again"
+                      : "Draft another team"}
               </button>
               <button
                 type="button"

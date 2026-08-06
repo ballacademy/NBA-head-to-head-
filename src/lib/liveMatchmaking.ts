@@ -25,8 +25,24 @@ export interface LiveMatchState {
   opponentUsername?: string;
   selfReady: boolean;
   opponentReady: boolean;
+  selfLineup: string[] | null;
   opponentLineup: string[] | null;
 }
+
+export type FetchLiveMatchResult =
+  | { ok: true; state: LiveMatchState }
+  | { ok: false; error: "not_found" | "forbidden" | "unavailable" };
+
+export type JoinMatchmakingResult =
+  | { status: "matched"; opponent: LiveOpponentSnapshot }
+  | { status: "waiting"; joinedAt: string }
+  | { status: "unavailable" };
+
+export type LiveSearchOutcome =
+  | { status: "matched"; opponent: LiveOpponentSnapshot }
+  | { status: "timeout" }
+  | { status: "cancelled" }
+  | { status: "unavailable" };
 
 const API_BASE = "";
 
@@ -42,11 +58,7 @@ export const joinMatchmakingQueue = async (params: {
   playerId: string;
   teamName: string;
   elo: number;
-}): Promise<
-  | { status: "matched"; opponent: LiveOpponentSnapshot }
-  | { status: "waiting"; joinedAt: string }
-  | null
-> => {
+}): Promise<JoinMatchmakingResult> => {
   try {
     const response = await fetch(buildUrl("/api/queue"), {
       method: "POST",
@@ -63,7 +75,7 @@ export const joinMatchmakingQueue = async (params: {
     });
 
     if (!response.ok) {
-      return null;
+      return { status: "unavailable" };
     }
 
     const payload = (await response.json()) as {
@@ -95,9 +107,9 @@ export const joinMatchmakingQueue = async (params: {
       return { status: "waiting", joinedAt: payload.joinedAt };
     }
 
-    return null;
+    return { status: "unavailable" };
   } catch {
-    return null;
+    return { status: "unavailable" };
   }
 };
 
@@ -167,7 +179,7 @@ export const leaveMatchmakingQueue = async (params: {
   }
 };
 
-export const searchLiveOpponent = async (
+export const searchLiveOpponentDetailed = async (
   params: {
     mode: GhostMatchmakingMode;
     playerId: string;
@@ -179,23 +191,23 @@ export const searchLiveOpponent = async (
     pollIntervalMs?: number;
     isCancelled?: () => boolean;
   } = {},
-): Promise<LiveOpponentSnapshot | null> => {
+): Promise<LiveSearchOutcome> => {
   const searchMs = options.searchMs ?? resolveMatchmakingSearchMs();
   const pollIntervalMs = options.pollIntervalMs ?? MATCHMAKING_POLL_INTERVAL_MS;
   const isCancelled = options.isCancelled ?? (() => false);
 
   if (isCancelled()) {
-    return null;
+    return { status: "cancelled" };
   }
 
   const joined = await joinMatchmakingQueue(params);
 
-  if (!joined) {
-    return null;
+  if (joined.status === "unavailable") {
+    return { status: "unavailable" };
   }
 
   if (joined.status === "matched") {
-    return joined.opponent;
+    return { status: "matched", opponent: joined.opponent };
   }
 
   const deadline = Date.now() + searchMs;
@@ -206,7 +218,7 @@ export const searchLiveOpponent = async (
         mode: params.mode,
         playerId: params.playerId,
       });
-      return null;
+      return { status: "cancelled" };
     }
 
     const opponent = await pollMatchmakingQueue({
@@ -215,7 +227,7 @@ export const searchLiveOpponent = async (
     });
 
     if (opponent) {
-      return opponent;
+      return { status: "matched", opponent };
     }
 
     const remaining = deadline - Date.now();
@@ -234,7 +246,7 @@ export const searchLiveOpponent = async (
   });
 
   if (lateMatch) {
-    return lateMatch;
+    return { status: "matched", opponent: lateMatch };
   }
 
   if (isCancelled()) {
@@ -243,14 +255,14 @@ export const searchLiveOpponent = async (
       playerId: params.playerId,
     });
     if (cancelledMatch) {
-      return cancelledMatch;
+      return { status: "matched", opponent: cancelledMatch };
     }
 
     await leaveMatchmakingQueue({
       mode: params.mode,
       playerId: params.playerId,
     });
-    return null;
+    return { status: "cancelled" };
   }
 
   await leaveMatchmakingQueue({
@@ -260,16 +272,39 @@ export const searchLiveOpponent = async (
 
   // One more check after leave in case DELETE raced with a claim that already
   // created a live match row (GET still finds matches by player id).
-  return pollMatchmakingQueue({
+  const afterLeave = await pollMatchmakingQueue({
     mode: params.mode,
     playerId: params.playerId,
   });
+
+  if (afterLeave) {
+    return { status: "matched", opponent: afterLeave };
+  }
+
+  return { status: "timeout" };
 };
 
-export const fetchLiveMatchState = async (params: {
+export const searchLiveOpponent = async (
+  params: {
+    mode: GhostMatchmakingMode;
+    playerId: string;
+    teamName: string;
+    elo: number;
+  },
+  options: {
+    searchMs?: number;
+    pollIntervalMs?: number;
+    isCancelled?: () => boolean;
+  } = {},
+): Promise<LiveOpponentSnapshot | null> => {
+  const outcome = await searchLiveOpponentDetailed(params, options);
+  return outcome.status === "matched" ? outcome.opponent : null;
+};
+
+export const fetchLiveMatchStateDetailed = async (params: {
   matchId: string;
   playerId: string;
-}): Promise<LiveMatchState | null> => {
+}): Promise<FetchLiveMatchResult> => {
   try {
     const search = new URLSearchParams({
       matchId: params.matchId,
@@ -280,14 +315,33 @@ export const fetchLiveMatchState = async (params: {
       { headers: { accept: "application/json" } },
     );
 
-    if (!response.ok) {
-      return null;
+    if (response.status === 404) {
+      return { ok: false, error: "not_found" };
     }
 
-    return (await response.json()) as LiveMatchState;
+    if (response.status === 403) {
+      return { ok: false, error: "forbidden" };
+    }
+
+    if (!response.ok) {
+      return { ok: false, error: "unavailable" };
+    }
+
+    return {
+      ok: true,
+      state: (await response.json()) as LiveMatchState,
+    };
   } catch {
-    return null;
+    return { ok: false, error: "unavailable" };
   }
+};
+
+export const fetchLiveMatchState = async (params: {
+  matchId: string;
+  playerId: string;
+}): Promise<LiveMatchState | null> => {
+  const result = await fetchLiveMatchStateDetailed(params);
+  return result.ok ? result.state : null;
 };
 
 export const submitLiveMatchLineup = async (params: {
@@ -305,11 +359,16 @@ export const submitLiveMatchLineup = async (params: {
       body: JSON.stringify(params),
     });
 
-    if (!response.ok) {
-      return null;
+    if (response.ok) {
+      return (await response.json()) as LiveMatchState;
     }
 
-    return (await response.json()) as LiveMatchState;
+    // Already locked (including server autofill of this side) — read shared state.
+    if (response.status === 409) {
+      return fetchLiveMatchState(params);
+    }
+
+    return null;
   } catch {
     return null;
   }
