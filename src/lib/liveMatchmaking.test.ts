@@ -76,13 +76,23 @@ describe("resolveLiveOpponentLineup", () => {
 
   it("locks a seeded autofill on the server when the opponent times out", async () => {
     const serverLineup = ["p1", "p2", "p3", "p4", "p5"];
-    let autofillBody: Record<string, unknown> | null = null;
+    let autofillBody: {
+      matchId?: string;
+      playerId?: string;
+      autofillOpponentLineup?: boolean;
+      lineup?: string[];
+    } | null = null;
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
 
       if (url.includes("/api/live-match") && init?.method === "POST") {
-        autofillBody = JSON.parse(String(init.body)) as Record<string, unknown>;
+        autofillBody = JSON.parse(String(init.body)) as {
+          matchId?: string;
+          playerId?: string;
+          autofillOpponentLineup?: boolean;
+          lineup?: string[];
+        };
         return new Response(
           JSON.stringify({
             matchId: "match-1",
@@ -132,13 +142,11 @@ describe("resolveLiveOpponentLineup", () => {
       lineup: serverLineup,
       autoDrafted: true,
     });
-    expect(autofillBody).toMatchObject({
-      matchId: "match-1",
-      playerId: "self-1",
-      autofillOpponentLineup: true,
-    });
-    expect(Array.isArray(autofillBody?.lineup)).toBe(true);
-    expect((autofillBody?.lineup as string[]).length).toBe(5);
+    expect(autofillBody).not.toBeNull();
+    expect(autofillBody!.matchId).toBe("match-1");
+    expect(autofillBody!.playerId).toBe("self-1");
+    expect(autofillBody!.autofillOpponentLineup).toBe(true);
+    expect(autofillBody!.lineup).toHaveLength(5);
   });
 
   it("uses the opponent's real lineup when they finish before timeout", async () => {
