@@ -1,4 +1,4 @@
-import { readJson, writeJson } from "./browserStorage";
+import { readJson, removeJson, writeJson } from "./browserStorage";
 import type { DraftSlotConstraint } from "./types";
 
 const LIVE_DRAFT_SESSION_KEY = "nba-head-to-head-live-draft-session";
@@ -47,5 +47,5 @@ export const loadLiveDraftSession = (): LiveDraftSession | null => {
 };
 
 export const clearLiveDraftSession = () => {
-  writeJson(LIVE_DRAFT_SESSION_KEY, null);
+  removeJson(LIVE_DRAFT_SESSION_KEY);
 };

@@ -12,6 +12,7 @@ import {
 import {
   completeUnlock,
   countUnlockedAllStars,
+  dismissPendingUnlock,
   processMatchUnlock,
   type PlayerCollection,
 } from "../lib/playerCollection";
@@ -110,6 +111,28 @@ export function MatchResults({
   const [shareState, setShareState] = useState<"idle" | "busy" | "error">(
     "idle",
   );
+  const [ghostOutcomeFailed, setGhostOutcomeFailed] = useState(false);
+  const [ghostOutcomeRetryBusy, setGhostOutcomeRetryBusy] = useState(false);
+  const [eventLeaderboardSyncFailed, setEventLeaderboardSyncFailed] =
+    useState(false);
+  const [eventLeaderboardRetryBusy, setEventLeaderboardRetryBusy] =
+    useState(false);
+  const ghostOutcomeSubmissionRef = useRef<{
+    storedLineupId: string;
+    mode: "classic" | "ranked";
+    challengerPlayerId: string;
+    challengerTeamName: string;
+    challengerWon: boolean;
+    challengerElo: number;
+    userScore: number;
+    opponentScore: number;
+    challengerLineup: string[];
+  } | null>(null);
+  const eventLeaderboardSubmissionRef = useRef<{
+    event: NonNullable<ReturnType<typeof getCurrentWeeklyEvent>>;
+    teamName: string;
+    profile: EventProfile;
+  } | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
   const matchResult = resolveHeadToHeadResult(
@@ -150,8 +173,10 @@ export function MatchResults({
     const skipCompetitiveRecords = Boolean(
       user.practiceMode || user.privateMatch,
     );
+    const lineupsComplete =
+      userLineup.length === 5 && opponentLineup.length === 5;
 
-    if (!skipCompetitiveRecords) {
+    if (!skipCompetitiveRecords && lineupsComplete) {
       if (user.eventId) {
         const before = loadEventProfile(user.eventId);
         const nextProfile = persistEventMatchOutcome(
@@ -166,10 +191,19 @@ export function MatchResults({
 
         const event = getCurrentWeeklyEvent(allPlayers);
         if (event && event.id === user.eventId) {
+          eventLeaderboardSubmissionRef.current = {
+            event,
+            teamName: user.name,
+            profile: nextProfile,
+          };
           void submitEventLeaderboardEntry({
             event,
             teamName: user.name,
             profile: nextProfile,
+          }).then((ok) => {
+            if (!ok) {
+              setEventLeaderboardSyncFailed(true);
+            }
           });
         }
       } else {
@@ -229,9 +263,9 @@ export function MatchResults({
           const starCount = countUnlockedAllStars(collection);
 
           if (storedLineupId) {
-            void submitGhostMatchOutcome({
+            const submission = {
               storedLineupId,
-              mode,
+              mode: mode as "classic" | "ranked",
               challengerPlayerId: playerId,
               challengerTeamName: user.name,
               challengerWon: userWon,
@@ -241,6 +275,12 @@ export function MatchResults({
               challengerLineup: user.lineup.filter(
                 (id): id is string => Boolean(id),
               ),
+            };
+            ghostOutcomeSubmissionRef.current = submission;
+            void submitGhostMatchOutcome(submission).then((ok) => {
+              if (!ok) {
+                setGhostOutcomeFailed(true);
+              }
             });
           }
 
@@ -314,6 +354,37 @@ export function MatchResults({
     setShowUnlockModal(false);
   };
 
+  const handleUnlockDismiss = () => {
+    const next = dismissPendingUnlock(matchCollection);
+    setMatchCollection(next);
+    onCollectionChange(next);
+    setShowUnlockModal(false);
+  };
+
+  const retryGhostOutcome = async () => {
+    const submission = ghostOutcomeSubmissionRef.current;
+    if (!submission || ghostOutcomeRetryBusy) {
+      return;
+    }
+
+    setGhostOutcomeRetryBusy(true);
+    const ok = await submitGhostMatchOutcome(submission);
+    setGhostOutcomeFailed(!ok);
+    setGhostOutcomeRetryBusy(false);
+  };
+
+  const retryEventLeaderboardSync = async () => {
+    const submission = eventLeaderboardSubmissionRef.current;
+    if (!submission || eventLeaderboardRetryBusy) {
+      return;
+    }
+
+    setEventLeaderboardRetryBusy(true);
+    const ok = await submitEventLeaderboardEntry(submission);
+    setEventLeaderboardSyncFailed(!ok);
+    setEventLeaderboardRetryBusy(false);
+  };
+
   const handleShareLineup = async () => {
     if (shareState === "busy") {
       return;
@@ -371,6 +442,7 @@ export function MatchResults({
         <PlayerUnlockModal
           offer={matchCollection.pendingUnlock}
           onSelect={handleUnlockSelect}
+          onDismiss={handleUnlockDismiss}
         />
       ) : null}
 
@@ -559,6 +631,32 @@ export function MatchResults({
           {startMatchError ? (
             <p className="form-error" role="alert">
               {startMatchError}
+            </p>
+          ) : null}
+          {ghostOutcomeFailed ? (
+            <p className="form-error" role="alert">
+              Couldn&apos;t report this result to the queued owner.{" "}
+              <button
+                type="button"
+                className="daily-draft-results__sync-retry"
+                disabled={ghostOutcomeRetryBusy}
+                onClick={() => void retryGhostOutcome()}
+              >
+                {ghostOutcomeRetryBusy ? "Retrying…" : "Retry"}
+              </button>
+            </p>
+          ) : null}
+          {eventLeaderboardSyncFailed ? (
+            <p className="form-error" role="alert">
+              Event standings sync failed.{" "}
+              <button
+                type="button"
+                className="daily-draft-results__sync-retry"
+                disabled={eventLeaderboardRetryBusy}
+                onClick={() => void retryEventLeaderboardSync()}
+              >
+                {eventLeaderboardRetryBusy ? "Retrying…" : "Retry sync"}
+              </button>
             </p>
           ) : null}
           {hasPendingUnlock ? (

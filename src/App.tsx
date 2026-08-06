@@ -17,6 +17,7 @@ import {
   type LandingContentTab,
 } from "./lib/landingHub";
 import { PendingQueueResults } from "./components/PendingQueueResults";
+import { PendingOwnerResults } from "./components/PendingOwnerResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
 import { MatchResults } from "./components/MatchResults";
 import { PlayerStatsTable } from "./components/PlayerStatsTable";
@@ -108,6 +109,11 @@ import {
   saveLiveDraftSession,
 } from "./lib/liveDraftSession";
 import { restoreLiveDraftSession } from "./lib/restoreLiveDraftSession";
+import {
+  fetchDeliverableOwnerResult,
+  finalizeDeliveredOwnerResult,
+  type DeliveredOwnerResult,
+} from "./lib/pendingOwnerResults";
 import { RANKED_STARTING_ELO } from "./lib/rankedElo";
 import {
   ensurePlayerCollection,
@@ -215,6 +221,9 @@ function App() {
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [matchmakingNotice, setMatchmakingNotice] = useState<string | null>(null);
+  const [deliveredOwnerResult, setDeliveredOwnerResult] =
+    useState<DeliveredOwnerResult | null>(null);
+  const [liveRestoreNotice, setLiveRestoreNotice] = useState<string | null>(null);
   const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
   const [privateRoomExpiresAt, setPrivateRoomExpiresAt] = useState<string | null>(
     null,
@@ -269,23 +278,67 @@ function App() {
     void (async () => {
       const restored = await restoreLiveDraftSession();
 
-      if (!restored) {
+      if (restored.status === "unavailable") {
+        // Keep session and allow a manual retry — do not permanently burn recovery.
+        liveRecoveryAttemptedRef.current = false;
+        setLiveRestoreNotice(
+          "Couldn't reconnect to your live draft. Check your connection and try again.",
+        );
         return;
       }
 
-      setUser(restored.user);
-      setOpponent(restored.opponent);
-      setDraftStep(restored.draftStep);
-      setMatchId(restored.matchId);
-      setDraftSessionKey(restored.matchId);
-      setOpponentPickCount(restored.opponent.lineup.length);
-      setOpponentComplete(restored.opponentComplete);
-      setOpponentAutoDrafted(Boolean(restored.opponentAutoDrafted));
+      if (restored.status !== "restored") {
+        setLiveRestoreNotice(null);
+        return;
+      }
+
+      setLiveRestoreNotice(null);
+      setUser(restored.state.user);
+      setOpponent(restored.state.opponent);
+      setDraftStep(restored.state.draftStep);
+      setMatchId(restored.state.matchId);
+      setDraftSessionKey(restored.state.matchId);
+      setOpponentPickCount(restored.state.opponent.lineup.length);
+      setOpponentComplete(restored.state.opponentComplete);
+      setOpponentAutoDrafted(Boolean(restored.state.opponentAutoDrafted));
       setIsPendingQueueMatch(false);
       setIsDailyDraft(false);
-      setPhase(restored.opponentComplete ? "results" : restored.phase);
+      setPhase(restored.state.opponentComplete ? "results" : restored.state.phase);
     })();
-  }, [phase]);
+  }, [phase, landingRenderKey]);
+
+  useEffect(() => {
+    if (phase !== "landing" || deliveredOwnerResult) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      const playerId = getOrCreatePlayerIdentity().playerId;
+
+      for (const mode of ["classic", "ranked"] as const) {
+        const delivery = await fetchDeliverableOwnerResult(mode, playerId);
+
+        if (!delivery || cancelled) {
+          continue;
+        }
+
+        await finalizeDeliveredOwnerResult(delivery, playerId);
+
+        if (!cancelled) {
+          setDeliveredOwnerResult(delivery);
+          setModeRecords(loadAllModeRecords());
+        }
+
+        break;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deliveredOwnerResult, phase, landingRenderKey]);
 
   useEffect(() => {
     if (!user || !opponent?.isLiveOpponent || !opponent.liveMatchId) {
@@ -843,11 +896,11 @@ function App() {
           session.matchId = liveOpponent.matchId;
         } else if (resolution.plan.kind === "ghost") {
           ghostOpponent = resolution.plan.ghost;
-          if (resolution.plan.liveUnavailable) {
-            setMatchmakingNotice(
-              "Live search was unavailable — playing a recorded lineup.",
-            );
-          }
+          setMatchmakingNotice(
+            resolution.plan.liveUnavailable
+              ? "Live search was unavailable — playing a recorded lineup."
+              : "Matched with a recorded lineup (not a live opponent).",
+          );
         } else if (resolution.plan.kind === "queue_for_live") {
           isPendingQueue = true;
           if (resolution.plan.liveUnavailable) {
@@ -856,11 +909,11 @@ function App() {
             );
           }
         } else if (resolution.plan.kind === "npc") {
-          if (resolution.plan.liveUnavailable) {
-            setMatchmakingNotice(
-              "Live search was unavailable — matched you with a practice opponent.",
-            );
-          }
+          setMatchmakingNotice(
+            resolution.plan.liveUnavailable
+              ? "Live search was unavailable — matched you with a practice opponent."
+              : "Matched with a practice opponent (not a live player).",
+          );
         }
 
         // Ghost / queue plans can still be abandoned; live matches cannot.
@@ -1056,11 +1109,19 @@ function App() {
     setOpponentPickCount(ghostOpponent ? ghostOpponent.lineup.length : 0);
     setOpponentComplete(daily || isPendingQueue || Boolean(ghostOpponent));
     setOpponentAutoDrafted(false);
-    setMatchId(null);
+    const nextMatchId =
+      liveOpponent?.matchId ??
+      (!daily && !isPendingQueue
+        ? typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `match-${Date.now()}`
+        : null);
+    setMatchId(nextMatchId);
     setDraftSessionKey(
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `draft-${Date.now()}`,
+      liveOpponent?.matchId ??
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `draft-${Date.now()}`),
     );
 
     if (liveOpponent && opponentSlots) {
@@ -1257,10 +1318,14 @@ function App() {
       setStartMatchError(options?.error ?? null);
     }
     setMatchmakingNotice(null);
+    setLiveRestoreNotice(null);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
   };
+
+  const resetToLandingRef = useRef(resetToLanding);
+  resetToLandingRef.current = resetToLanding;
 
   const openFeaturePage = useCallback(
     (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
@@ -1383,9 +1448,10 @@ function App() {
       const nextLineup = [...current.lineup];
       nextLineup[slot] = playerId;
 
+      // Preserve any later autofilled slots (do not slice them away).
       return {
         ...current,
-        lineup: nextLineup.slice(0, slot + 1),
+        lineup: nextLineup,
       };
     });
 
@@ -1395,6 +1461,7 @@ function App() {
   const handleTimeout = useCallback(
     (slot: number) => {
       let nextStep: number | null = null;
+      let failedUnfillable = false;
 
       setUser((current) => {
         if (!current || current.lineup[slot]) {
@@ -1430,7 +1497,7 @@ function App() {
 
           return {
             ...current,
-            lineup: nextLineup.slice(0, slot + 1),
+            lineup: nextLineup,
           };
         }
 
@@ -1452,6 +1519,10 @@ function App() {
               lineup: filled,
             };
           }
+
+          // Never fall through to uncapped picks under a salary cap.
+          failedUnfillable = true;
+          return current;
         }
 
         const nextLineup = [...current.lineup];
@@ -1486,8 +1557,17 @@ function App() {
           };
         }
 
+        failedUnfillable = true;
         return current;
       });
+
+      if (failedUnfillable) {
+        resetToLandingRef.current({
+          error:
+            "Couldn't auto-fill a legal lineup for this draft. Return home and try again.",
+        });
+        return;
+      }
 
       if (nextStep != null) {
         setDraftStep(nextStep);
@@ -1536,20 +1616,20 @@ function App() {
         return;
       }
 
-      // Opponent (or both) already locked — adopt server lineups and finish.
-      if (state.opponentReady && state.opponentLineup?.length === 5) {
-        if (state.selfReady && state.selfLineup?.length === 5) {
-          setUser((current) =>
-            current
-              ? {
-                  ...current,
-                  lineup: state.selfLineup!,
-                }
-              : current,
-          );
-          setDraftStep(5);
-        }
+      // Server may have already autofilled us — adopt whenever selfReady.
+      if (state.selfReady && state.selfLineup?.length === 5) {
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                lineup: state.selfLineup!,
+              }
+            : current,
+        );
+        setDraftStep(5);
+      }
 
+      if (state.opponentReady && state.opponentLineup?.length === 5) {
         setOpponent((current) =>
           current?.liveMatchId === liveMatchId
             ? { ...current, lineup: state.opponentLineup! }
@@ -1725,18 +1805,19 @@ function App() {
         return;
       }
 
-      // Server may have already autofilled us (timeout) and revealed both lineups.
+      // Server may have already autofilled us (timeout) — adopt self lineup whenever ready.
+      if (locked.selfLineup?.length === 5) {
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                lineup: locked!.selfLineup!,
+              }
+            : current,
+        );
+      }
+
       if (locked.opponentReady && locked.opponentLineup?.length === 5) {
-        if (locked.selfLineup?.length === 5) {
-          setUser((current) =>
-            current
-              ? {
-                  ...current,
-                  lineup: locked!.selfLineup!,
-                }
-              : current,
-          );
-        }
         setOpponent((current) =>
           current?.liveMatchId === liveMatchId
             ? { ...current, lineup: locked!.opponentLineup! }
@@ -2054,6 +2135,18 @@ function App() {
     );
   }
 
+  if (phase === "landing" && deliveredOwnerResult) {
+    return (
+      <main className="landing-layout">
+        <PendingOwnerResults
+          delivery={deliveredOwnerResult}
+          modeRecords={modeRecords}
+          onDone={() => setDeliveredOwnerResult(null)}
+        />
+      </main>
+    );
+  }
+
   if (phase === "landing") {
     return (
       <main className="landing-layout" key={landingRenderKey}>
@@ -2066,6 +2159,17 @@ function App() {
           landingBasicDaily={landingBasicDaily}
           landingAdvancedDaily={landingAdvancedDaily}
           startMatchError={startMatchError}
+          liveRestoreNotice={liveRestoreNotice}
+          onRetryLiveRestore={() => {
+            liveRecoveryAttemptedRef.current = false;
+            setLiveRestoreNotice(null);
+            setLandingRenderKey((current) => current + 1);
+          }}
+          onDismissLiveRestore={() => {
+            clearLiveDraftSession();
+            liveRecoveryAttemptedRef.current = true;
+            setLiveRestoreNotice(null);
+          }}
           privateRoomCode={privateRoomCode}
           pendingPrivateMatchMode={pendingPrivateMatchMode}
           onPendingPrivateMatchModeConsumed={() =>

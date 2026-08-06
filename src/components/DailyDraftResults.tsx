@@ -176,6 +176,7 @@ export function DailyDraftResults({
         dailyDateKey,
         dailyGoal.id,
         getOrCreatePlayerId(),
+        dailyGoal.mode,
       );
       setPercentileResult(
         getDailyDraftPercentile(

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 interface TeamNameValidationModalProps {
@@ -9,6 +10,21 @@ export function TeamNameValidationModal({
   message,
   onClose,
 }: TeamNameValidationModalProps) {
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   const modal = (
     <div
       className="unlock-modal unlock-modal--compact team-name-modal"
@@ -28,6 +44,7 @@ export function TeamNameValidationModal({
         <p className="unlock-modal__copy">{message}</p>
         <button
           type="button"
+          ref={closeRef}
           className="landing__primary-button team-name-modal__button"
           onClick={onClose}
         >

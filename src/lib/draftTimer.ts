@@ -8,22 +8,37 @@ export const saveDraftDeadline = (
   slot: number,
   deadlineMs: number,
 ) => {
-  sessionStorage.setItem(getDraftDeadlineKey(matchKey, slot), String(deadlineMs));
+  try {
+    sessionStorage.setItem(
+      getDraftDeadlineKey(matchKey, slot),
+      String(deadlineMs),
+    );
+  } catch {
+    // sessionStorage unavailable / quota
+  }
 };
 
 export const loadDraftDeadline = (matchKey: string, slot: number) => {
-  const raw = sessionStorage.getItem(getDraftDeadlineKey(matchKey, slot));
+  try {
+    const raw = sessionStorage.getItem(getDraftDeadlineKey(matchKey, slot));
 
-  if (!raw) {
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  } catch {
     return null;
   }
-
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : null;
 };
 
 export const clearDraftDeadline = (matchKey: string, slot: number) => {
-  sessionStorage.removeItem(getDraftDeadlineKey(matchKey, slot));
+  try {
+    sessionStorage.removeItem(getDraftDeadlineKey(matchKey, slot));
+  } catch {
+    // ignore
+  }
 };
 
 export const getSecondsUntilDeadline = (deadlineMs: number, now = Date.now()) =>

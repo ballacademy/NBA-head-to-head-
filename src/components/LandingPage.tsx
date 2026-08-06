@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   completeUnlock,
+  dismissPendingUnlock,
   getCollectionProgress,
   getCollectionTierTotal,
   getUnlockedPlayersByTier,
@@ -90,6 +91,9 @@ interface LandingPageProps {
   isMatchmakingSearchActive?: boolean;
   matchmakingElapsedSeconds?: number;
   startMatchError?: string | null;
+  liveRestoreNotice?: string | null;
+  onRetryLiveRestore?: () => void;
+  onDismissLiveRestore?: () => void;
   /** Host private room code once created (dismisses create modal for overlay). */
   privateRoomCode?: string | null;
   /** Open the private-match modal after rematch from results. */
@@ -137,6 +141,9 @@ export function LandingPage({
   isMatchmakingSearchActive = false,
   matchmakingElapsedSeconds = 0,
   startMatchError = null,
+  liveRestoreNotice = null,
+  onRetryLiveRestore,
+  onDismissLiveRestore,
   privateRoomCode = null,
   pendingPrivateMatchMode = null,
   onPendingPrivateMatchModeConsumed,
@@ -165,6 +172,8 @@ export function LandingPage({
     EventLeaderboardEntry[]
   >([]);
   const [eventLeaderboardLoading, setEventLeaderboardLoading] = useState(false);
+  const [eventLeaderboardFailed, setEventLeaderboardFailed] = useState(false);
+  const [eventLeaderboardRetryTick, setEventLeaderboardRetryTick] = useState(0);
   const [showUnlockModal, setShowUnlockModal] = useState(
     () => Boolean(collection.pendingUnlock),
   );
@@ -254,6 +263,12 @@ export function LandingPage({
     setShowUnlockModal(false);
   };
 
+  const handleUnlockDismiss = () => {
+    const next = dismissPendingUnlock(collection);
+    onCollectionChange(next);
+    setShowUnlockModal(false);
+  };
+
   const handleTeamNameBlur = () => {
     const validation = validateTeamProfile(name);
 
@@ -297,10 +312,17 @@ export function LandingPage({
 
     let cancelled = false;
     setEventLeaderboardLoading(true);
+    setEventLeaderboardFailed(false);
 
     void fetchEventLeaderboard(weeklyEvent.id).then((entries) => {
       if (!cancelled) {
-        setEventLeaderboard(entries);
+        if (entries == null) {
+          setEventLeaderboard([]);
+          setEventLeaderboardFailed(true);
+        } else {
+          setEventLeaderboard(entries);
+          setEventLeaderboardFailed(false);
+        }
         setEventLeaderboardLoading(false);
       }
     });
@@ -308,7 +330,7 @@ export function LandingPage({
     return () => {
       cancelled = true;
     };
-  }, [hubTab, weeklyEvent]);
+  }, [hubTab, weeklyEvent, eventLeaderboardRetryTick]);
 
   const handleStart = async (options?: StartDraftOptions) => {
     if (collection.pendingUnlock || isMatchmaking) {
@@ -518,6 +540,32 @@ export function LandingPage({
           }}
         />
       </label>
+      {liveRestoreNotice ? (
+        <p className="form-error" role="alert">
+          {liveRestoreNotice}{" "}
+          {onRetryLiveRestore ? (
+            <button
+              type="button"
+              className="daily-draft-results__sync-retry"
+              onClick={onRetryLiveRestore}
+            >
+              Retry reconnect
+            </button>
+          ) : null}
+          {onDismissLiveRestore ? (
+            <>
+              {" "}
+              <button
+                type="button"
+                className="daily-draft-results__sync-retry"
+                onClick={onDismissLiveRestore}
+              >
+                Dismiss
+              </button>
+            </>
+          ) : null}
+        </p>
+      ) : null}
       {profanityWarning || error || startMatchError ? (
         <p className="form-error" role="alert">
           {profanityWarning || error || startMatchError}
@@ -567,6 +615,7 @@ export function LandingPage({
         <PlayerUnlockModal
           offer={collection.pendingUnlock}
           onSelect={handleUnlockSelect}
+          onDismiss={handleUnlockDismiss}
           variant="compact"
         />
       ) : null}
@@ -858,6 +907,19 @@ export function LandingPage({
                   </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
                     <p className="event-leaderboard__empty">Loading standings…</p>
+                  ) : eventLeaderboardFailed ? (
+                    <p className="form-error" role="alert">
+                      Couldn&apos;t load event standings.{" "}
+                      <button
+                        type="button"
+                        className="daily-draft-results__sync-retry"
+                        onClick={() =>
+                          setEventLeaderboardRetryTick((tick) => tick + 1)
+                        }
+                      >
+                        Retry
+                      </button>
+                    </p>
                   ) : eventLeaderboard.length === 0 ? (
                     <p className="event-leaderboard__empty">
                       No event results yet. Be the first on the board.

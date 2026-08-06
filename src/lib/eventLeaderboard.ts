@@ -70,7 +70,7 @@ export const submitEventLeaderboardEntry = async (params: {
 
 export const fetchEventLeaderboard = async (
   eventId: string,
-): Promise<EventLeaderboardEntry[]> => {
+): Promise<EventLeaderboardEntry[] | null> => {
   const identity = getOrCreatePlayerIdentity();
   const search = new URLSearchParams({
     mode: "event",
@@ -89,7 +89,7 @@ export const fetchEventLeaderboard = async (
     );
 
     if (!response.ok) {
-      return [];
+      return null;
     }
 
     const payload = (await response.json()) as {
@@ -107,6 +107,6 @@ export const fetchEventLeaderboard = async (
       isViewer: Boolean(entry.isViewer),
     }));
   } catch {
-    return [];
+    return null;
   }
 };
