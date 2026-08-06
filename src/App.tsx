@@ -1566,15 +1566,25 @@ function App() {
         lineup,
       });
 
-      const resolved = await resolveLiveOpponentLineup(
-        {
-          matchId: liveMatchId,
-          playerId,
-          opponentDraftSlots: opponent.draftSlots,
-          players: opponentDraftablePlayersRef.current,
-          salaryCapLimit: opponent.salaryCapLimit,
-        },
-      );
+      const opponentPlayerId = opponent.liveOpponentPlayerId;
+
+      if (!opponentPlayerId) {
+        if (!cancelled) {
+          setStartMatchError(
+            "Your opponent did not finish drafting in time. Return home and try again.",
+          );
+          resetToLanding();
+        }
+        return;
+      }
+
+      const resolved = await resolveLiveOpponentLineup({
+        matchId: liveMatchId,
+        playerId,
+        opponentPlayerId,
+        players: opponentDraftablePlayersRef.current,
+        salaryCapLimit: opponent.salaryCapLimit,
+      });
 
       if (cancelled || !resolved) {
         if (!cancelled && !resolved) {
@@ -1602,6 +1612,8 @@ function App() {
     opponent?.id,
     opponent?.isLiveOpponent,
     opponent?.liveMatchId,
+    opponent?.liveOpponentPlayerId,
+    opponent?.salaryCapLimit,
     opponentComplete,
     phase,
     user,

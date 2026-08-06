@@ -9,6 +9,9 @@ import {
   sanitizeStoredLineupIds,
 } from "../lib/storedLineups";
 
+/** Must stay in sync with src/lib/liveAutofillLineup.ts */
+export const LIVE_MATCH_LINEUP_WAIT_MS = 120_000;
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -86,10 +89,51 @@ const buildMatchPayload = async (
   };
 };
 
+const loadLiveMatch = async (db: D1Database, matchId: string) =>
+  db
+    .prepare(
+      `SELECT id, mode,
+            player_a_id, player_a_team, player_a_elo, player_a_lineup_json, player_a_ready_at,
+            player_b_id, player_b_team, player_b_elo, player_b_lineup_json, player_b_ready_at,
+            created_at
+     FROM live_matches
+     WHERE id = ?`,
+    )
+    .bind(matchId)
+    .first<LiveMatchRow>();
+
+const validateLineupForMode = (mode: MatchmakingMode, lineup: string[]) => {
+  if (!isValidStoredLineupIds(lineup)) {
+    return {
+      error: "lineup must contain exactly 5 unique non-empty player ids",
+      status: 400,
+    } as const;
+  }
+
+  const salary = computeLineupSalaryTotal(lineup);
+
+  if (salary.missing > 0) {
+    return {
+      error: "lineup contains players without known contract salaries",
+      status: 400,
+    } as const;
+  }
+
+  if (!isStoredLineupWithinSalaryCap(mode, Math.round(salary.total))) {
+    return {
+      error: `lineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
+      status: 400,
+    } as const;
+  }
+
+  return null;
+};
+
 interface LiveMatchBody {
   matchId?: unknown;
   playerId?: unknown;
   lineup?: unknown;
+  autofillOpponentLineup?: unknown;
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -101,16 +145,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "matchId and playerId are required" }, 400);
   }
 
-  const row = await context.env.DB.prepare(
-    `SELECT id, mode,
-            player_a_id, player_a_team, player_a_elo, player_a_lineup_json, player_a_ready_at,
-            player_b_id, player_b_team, player_b_elo, player_b_lineup_json, player_b_ready_at,
-            created_at
-     FROM live_matches
-     WHERE id = ?`,
-  )
-    .bind(matchId)
-    .first<LiveMatchRow>();
+  const row = await loadLiveMatch(context.env.DB, matchId);
 
   if (!row) {
     return json({ error: "match not found" }, 404);
@@ -136,28 +171,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const playerId =
     typeof body.playerId === "string" ? body.playerId.trim() : "";
   const lineup = sanitizeStoredLineupIds(body.lineup);
+  const autofillOpponent = body.autofillOpponentLineup === true;
 
   if (!matchId || !playerId) {
     return json({ error: "matchId and playerId are required" }, 400);
   }
 
-  if (!isValidStoredLineupIds(lineup)) {
-    return json(
-      { error: "lineup must contain exactly 5 unique non-empty player ids" },
-      400,
-    );
-  }
-
-  const row = await context.env.DB.prepare(
-    `SELECT id, mode,
-            player_a_id, player_a_team, player_a_elo, player_a_lineup_json, player_a_ready_at,
-            player_b_id, player_b_team, player_b_elo, player_b_lineup_json, player_b_ready_at,
-            created_at
-     FROM live_matches
-     WHERE id = ?`,
-  )
-    .bind(matchId)
-    .first<LiveMatchRow>();
+  const row = await loadLiveMatch(context.env.DB, matchId);
 
   if (!row) {
     return json({ error: "match not found" }, 404);
@@ -169,28 +189,104 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "match mode is invalid" }, 400);
   }
 
-  const salary = computeLineupSalaryTotal(lineup);
+  const isPlayerA = row.player_a_id === playerId;
+  const isPlayerB = row.player_b_id === playerId;
 
-  if (salary.missing > 0) {
-    return json(
-      { error: "lineup contains players without known contract salaries" },
-      400,
-    );
+  if (!isPlayerA && !isPlayerB) {
+    return json({ error: "player not in match" }, 403);
   }
 
-  if (!isStoredLineupWithinSalaryCap(mode, Math.round(salary.total))) {
-    return json(
-      {
-        error: `lineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
-      },
-      400,
-    );
+  if (autofillOpponent) {
+    const selfLineupJson = isPlayerA
+      ? row.player_a_lineup_json
+      : row.player_b_lineup_json;
+    const selfReadyAt = isPlayerA
+      ? row.player_a_ready_at
+      : row.player_b_ready_at;
+    const opponentLineupJson = isPlayerA
+      ? row.player_b_lineup_json
+      : row.player_a_lineup_json;
+    const opponentPlayerId = isPlayerA ? row.player_b_id : row.player_a_id;
+
+    if (!selfLineupJson || !selfReadyAt) {
+      return json(
+        { error: "lock your own lineup before autofilling the opponent" },
+        400,
+      );
+    }
+
+    // Already locked (real submit or earlier autofill) — return shared state.
+    if (opponentLineupJson) {
+      return json(await buildMatchPayload(context.env.DB, row, playerId));
+    }
+
+    const readyAtMs = Date.parse(selfReadyAt);
+
+    if (
+      !Number.isFinite(readyAtMs) ||
+      Date.now() - readyAtMs < LIVE_MATCH_LINEUP_WAIT_MS
+    ) {
+      return json(
+        { error: "opponent still has time to finish drafting" },
+        409,
+      );
+    }
+
+    const lineupError = validateLineupForMode(mode, lineup);
+
+    if (lineupError) {
+      return json({ error: lineupError.error }, lineupError.status);
+    }
+
+    const now = new Date().toISOString();
+    const lineupJson = JSON.stringify(lineup);
+
+    const locked = isPlayerA
+      ? await context.env.DB.prepare(
+          `UPDATE live_matches
+           SET player_b_lineup_json = ?, player_b_ready_at = ?
+           WHERE id = ? AND player_b_id = ? AND player_b_lineup_json IS NULL`,
+        )
+          .bind(lineupJson, now, matchId, opponentPlayerId)
+          .run()
+      : await context.env.DB.prepare(
+          `UPDATE live_matches
+           SET player_a_lineup_json = ?, player_a_ready_at = ?
+           WHERE id = ? AND player_a_id = ? AND player_a_lineup_json IS NULL`,
+        )
+          .bind(lineupJson, now, matchId, opponentPlayerId)
+          .run();
+
+    // Race: opponent submitted, or another tab autofilled first.
+    if ((locked.meta?.changes ?? 0) === 0) {
+      const raced = await loadLiveMatch(context.env.DB, matchId);
+
+      if (!raced) {
+        return json({ error: "match not found" }, 404);
+      }
+
+      return json(await buildMatchPayload(context.env.DB, raced, playerId));
+    }
+
+    const updated = await loadLiveMatch(context.env.DB, matchId);
+
+    if (!updated) {
+      return json({ error: "match not found" }, 404);
+    }
+
+    return json(await buildMatchPayload(context.env.DB, updated, playerId));
+  }
+
+  const lineupError = validateLineupForMode(mode, lineup);
+
+  if (lineupError) {
+    return json({ error: lineupError.error }, lineupError.status);
   }
 
   const now = new Date().toISOString();
   const lineupJson = JSON.stringify(lineup);
 
-  if (row.player_a_id === playerId) {
+  if (isPlayerA) {
     if (row.player_a_lineup_json) {
       return json({ error: "lineup is already locked for this match" }, 409);
     }
@@ -206,7 +302,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if ((locked.meta?.changes ?? 0) === 0) {
       return json({ error: "lineup is already locked for this match" }, 409);
     }
-  } else if (row.player_b_id === playerId) {
+  } else {
     if (row.player_b_lineup_json) {
       return json({ error: "lineup is already locked for this match" }, 409);
     }
@@ -222,20 +318,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if ((locked.meta?.changes ?? 0) === 0) {
       return json({ error: "lineup is already locked for this match" }, 409);
     }
-  } else {
-    return json({ error: "player not in match" }, 403);
   }
 
-  const updated = await context.env.DB.prepare(
-    `SELECT id, mode,
-            player_a_id, player_a_team, player_a_elo, player_a_lineup_json, player_a_ready_at,
-            player_b_id, player_b_team, player_b_elo, player_b_lineup_json, player_b_ready_at,
-            created_at
-     FROM live_matches
-     WHERE id = ?`,
-  )
-    .bind(matchId)
-    .first<LiveMatchRow>();
+  const updated = await loadLiveMatch(context.env.DB, matchId);
 
   if (!updated) {
     return json({ error: "match not found" }, 404);

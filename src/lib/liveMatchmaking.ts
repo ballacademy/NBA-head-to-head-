@@ -1,11 +1,13 @@
 import {
-  autoDraftLineup,
-  autoDraftLineupUnderSalaryCap,
-} from "./draft";
+  buildLiveAutofillLineup,
+  LIVE_MATCH_LINEUP_WAIT_MS,
+} from "./liveAutofillLineup";
 import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import type { GhostMatchmakingMode } from "./ghostMatchmaking";
-import type { DraftSlotConstraint, Player } from "./types";
+import type { Player } from "./types";
+
+export { LIVE_MATCH_LINEUP_WAIT_MS } from "./liveAutofillLineup";
 
 export interface LiveOpponentSnapshot {
   matchId: string;
@@ -323,7 +325,7 @@ export const waitForLiveOpponentLineup = async (
     pollIntervalMs?: number;
   } = {},
 ): Promise<string[] | null> => {
-  const timeoutMs = options.timeoutMs ?? 120_000;
+  const timeoutMs = options.timeoutMs ?? LIVE_MATCH_LINEUP_WAIT_MS;
   const pollIntervalMs = options.pollIntervalMs ?? 2_000;
   const deadline = Date.now() + timeoutMs;
 
@@ -346,16 +348,50 @@ export const waitForLiveOpponentLineup = async (
   return null;
 };
 
+export const autofillLiveMatchOpponentLineup = async (params: {
+  matchId: string;
+  playerId: string;
+  lineup: string[];
+}): Promise<LiveMatchState | null> => {
+  try {
+    const response = await fetch(buildUrl("/api/live-match"), {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        matchId: params.matchId,
+        playerId: params.playerId,
+        lineup: params.lineup,
+        autofillOpponentLineup: true,
+      }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as LiveMatchState;
+  } catch {
+    return null;
+  }
+};
+
 export interface ResolvedLiveOpponentLineup {
   lineup: string[];
   autoDrafted: boolean;
 }
 
+/**
+ * Wait for the opponent's locked lineup. If they time out, propose a seeded
+ * autofill and lock it on the server so every client sees the same five.
+ */
 export const resolveLiveOpponentLineup = async (
   params: {
     matchId: string;
     playerId: string;
-    opponentDraftSlots: DraftSlotConstraint[];
+    opponentPlayerId: string;
     players: Player[];
     salaryCapLimit?: number;
   },
@@ -376,17 +412,41 @@ export const resolveLiveOpponentLineup = async (
     return { lineup: polled, autoDrafted: false };
   }
 
-  const autoLineup =
-    params.salaryCapLimit != null
-      ? autoDraftLineupUnderSalaryCap(
-          params.players,
-          params.opponentDraftSlots,
-          params.salaryCapLimit,
-        )
-      : autoDraftLineup(params.players, params.opponentDraftSlots);
+  const proposed = buildLiveAutofillLineup({
+    matchId: params.matchId,
+    opponentPlayerId: params.opponentPlayerId,
+    players: params.players,
+    salaryCapLimit: params.salaryCapLimit,
+  });
 
-  if (autoLineup.length === params.opponentDraftSlots.length) {
-    return { lineup: autoLineup, autoDrafted: true };
+  if (proposed.length !== 5) {
+    return null;
+  }
+
+  const locked = await autofillLiveMatchOpponentLineup({
+    matchId: params.matchId,
+    playerId: params.playerId,
+    lineup: proposed,
+  });
+
+  if (locked?.opponentReady && locked.opponentLineup?.length === 5) {
+    return {
+      lineup: locked.opponentLineup,
+      autoDrafted: true,
+    };
+  }
+
+  // Opponent may have submitted in the race window — read once more.
+  const fallback = await fetchLiveMatchState({
+    matchId: params.matchId,
+    playerId: params.playerId,
+  });
+
+  if (fallback?.opponentReady && fallback.opponentLineup?.length === 5) {
+    return {
+      lineup: fallback.opponentLineup,
+      autoDrafted: false,
+    };
   }
 
   return null;
