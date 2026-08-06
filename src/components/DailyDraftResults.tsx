@@ -62,6 +62,8 @@ export function DailyDraftResults({
   const [percentileReady, setPercentileReady] = useState(
     reviewOnly || optimalReview,
   );
+  const [remoteSyncFailed, setRemoteSyncFailed] = useState(false);
+  const [syncRetryBusy, setSyncRetryBusy] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const goalResult = useMemo(
@@ -123,6 +125,7 @@ export function DailyDraftResults({
         user.name,
       );
       setPercentileResult(result);
+      setRemoteSyncFailed(!result.remoteSynced);
       setPercentileReady(true);
     })();
   }, [
@@ -136,6 +139,32 @@ export function DailyDraftResults({
     user.name,
     userLineup,
   ]);
+
+  const retryRemoteSync = async () => {
+    if (syncRetryBusy) {
+      return;
+    }
+
+    setSyncRetryBusy(true);
+    const refreshed = await refreshDailyDraftScoresFromApi(
+      dailyDateKey,
+      dailyGoal.id,
+      getOrCreatePlayerId(),
+      dailyGoal.mode,
+    );
+    const result = await submitDailyDraftScore(
+      dailyDateKey,
+      dailyGoal,
+      goalResult.value,
+      goalResult.formatted,
+      benchmarkValues,
+      userLineup.map((player) => player.id),
+      user.name,
+    );
+    setPercentileResult(result);
+    setRemoteSyncFailed(!(result.remoteSynced || refreshed));
+    setSyncRetryBusy(false);
+  };
 
   useEffect(() => {
     if (optimalReview || reviewOnly || !percentileReady) {
@@ -247,6 +276,19 @@ export function DailyDraftResults({
               Compared to {percentileResult.sampleSize.toLocaleString()} scores
               today
             </span>
+          </p>
+        ) : null}
+        {!optimalReview && remoteSyncFailed ? (
+          <p className="form-error daily-draft-results__sync-error" role="alert">
+            Score saved on this device; leaderboard sync failed.{" "}
+            <button
+              type="button"
+              className="daily-draft-results__sync-retry"
+              disabled={syncRetryBusy}
+              onClick={() => void retryRemoteSync()}
+            >
+              {syncRetryBusy ? "Retrying…" : "Retry sync"}
+            </button>
           </p>
         ) : null}
         {playStreak && playStreak.current > 0 ? (

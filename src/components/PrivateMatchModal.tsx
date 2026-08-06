@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
@@ -21,6 +21,8 @@ interface PrivateMatchModalProps {
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
 }
 
+type BusyAction = "host" | "guest" | null;
+
 export function PrivateMatchModal({
   salaryCapMode,
   startMatchError = null,
@@ -28,16 +30,19 @@ export function PrivateMatchModal({
   onClose,
   onStart,
 }: PrivateMatchModalProps) {
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
   const modeLabel = salaryCapMode
     ? PRO_HEAD_TO_HEAD_LABEL
     : CLASSIC_HEAD_TO_HEAD_LABEL;
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const mountedRef = useRef(true);
   const accountReady = accountLinked === true;
   const accountBlocked = accountLinked === false;
+  const busy = busyAction != null;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -72,17 +77,30 @@ export function PrivateMatchModal({
     }
   }, [privateRoomCode, onClose]);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    closeRef.current?.focus();
+
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [busy, onClose]);
+
   const startHost = async () => {
     setError(null);
     if (accountBlocked) {
       setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
       return;
     }
-    if (!accountReady) {
+    if (!accountReady || busy) {
       return;
     }
 
-    setBusy(true);
+    setBusyAction("host");
     try {
       const result = await onStart({
         privateMatch: true,
@@ -100,7 +118,7 @@ export function PrivateMatchModal({
       }
     } finally {
       if (mountedRef.current) {
-        setBusy(false);
+        setBusyAction(null);
       }
     }
   };
@@ -111,7 +129,7 @@ export function PrivateMatchModal({
       setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
       return;
     }
-    if (!accountReady) {
+    if (!accountReady || busy) {
       return;
     }
 
@@ -121,7 +139,7 @@ export function PrivateMatchModal({
       return;
     }
 
-    setBusy(true);
+    setBusyAction("guest");
     try {
       const result = await onStart({
         privateMatch: true,
@@ -138,7 +156,7 @@ export function PrivateMatchModal({
       }
     } finally {
       if (mountedRef.current) {
-        setBusy(false);
+        setBusyAction(null);
       }
     }
   };
@@ -155,7 +173,7 @@ export function PrivateMatchModal({
       className="unlock-modal unlock-modal--compact private-match-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="private-match-title"
+      aria-labelledby={titleId}
       onClick={handleBackdropClose}
     >
       <div
@@ -163,7 +181,7 @@ export function PrivateMatchModal({
         onClick={(event) => event.stopPropagation()}
       >
         <p className="eyebrow">{modeLabel}</p>
-        <h2 id="private-match-title">Private match</h2>
+        <h2 id={titleId}>Private match</h2>
         <p className="unlock-modal__copy">
           Play a friend head-to-head with a room code. Same draft rules as{" "}
           {modeLabel}. Requires an account. Does not affect records or Banners.
@@ -176,7 +194,9 @@ export function PrivateMatchModal({
         ) : null}
 
         {error || startMatchError ? (
-          <p className="form-error">{startMatchError || error}</p>
+          <p className="form-error" role="alert">
+            {startMatchError || error}
+          </p>
         ) : null}
 
         <button
@@ -185,7 +205,7 @@ export function PrivateMatchModal({
           disabled={busy || !accountReady}
           onClick={() => void startHost()}
         >
-          {busy
+          {busyAction === "host"
             ? "Creating room…"
             : accountLinked === null
               ? "Checking account…"
@@ -224,12 +244,13 @@ export function PrivateMatchModal({
               disabled={busy || !accountReady}
               onClick={() => void startGuest()}
             >
-              {busy ? "Joining…" : "Join"}
+              {busyAction === "guest" ? "Joining…" : "Join"}
             </button>
           </div>
         </div>
 
         <button
+          ref={closeRef}
           type="button"
           className="secondary-button private-match-modal__close"
           onClick={handleBackdropClose}

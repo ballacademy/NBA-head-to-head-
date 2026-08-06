@@ -29,6 +29,7 @@ interface PendingQueueResultsProps {
   userLineup: Player[];
   starCount: number;
   onDone: () => void;
+  matchmakingNotice?: string | null;
 }
 
 type QueueSubmitState = "submitting" | "queued" | "failed";
@@ -38,6 +39,7 @@ export function PendingQueueResults({
   userLineup,
   starCount,
   onDone,
+  matchmakingNotice = null,
 }: PendingQueueResultsProps) {
   const orderedLineup = sortLineupByPosition(userLineup);
   const submittedRef = useRef(false);
@@ -126,6 +128,11 @@ export function PendingQueueResults({
               ? "Posting your lineup…"
               : "Waiting for a live opponent"}
         </h2>
+        {matchmakingNotice ? (
+          <p className="form-info" role="status">
+            {matchmakingNotice}
+          </p>
+        ) : null}
         {submitState === "failed" ? (
           <p className="form-error" role="alert">
             Your lineup wasn’t saved. Check your connection and try again.

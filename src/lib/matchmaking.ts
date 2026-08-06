@@ -5,7 +5,6 @@ import {
   type GhostOpponentSnapshot,
 } from "./ghostMatchmaking";
 import {
-  searchLiveOpponent,
   searchLiveOpponentDetailed,
   type LiveOpponentSnapshot,
 } from "./liveMatchmaking";
@@ -46,12 +45,15 @@ export type HeadToHeadMatchmakingPlan =
   | {
       kind: "ghost";
       ghost: GhostOpponentSnapshot;
+      liveUnavailable?: boolean;
     }
   | {
       kind: "npc";
+      liveUnavailable?: boolean;
     }
   | {
       kind: "queue_for_live";
+      liveUnavailable?: boolean;
     };
 
 export const syncPendingLineupLock = async (params: {
@@ -118,7 +120,7 @@ export const planHeadToHeadMatchmaking = async (
 
   const searchMs = resolveMatchmakingSearchMs();
 
-  const live = await searchLiveOpponent(
+  const outcome = await searchLiveOpponentDetailed(
     {
       mode: params.mode,
       playerId: params.playerId,
@@ -128,13 +130,15 @@ export const planHeadToHeadMatchmaking = async (
     { searchMs, isCancelled: options.isCancelled },
   );
 
-  if (live) {
-    return { ok: true, plan: { kind: "live", live } };
+  if (outcome.status === "matched") {
+    return { ok: true, plan: { kind: "live", live: outcome.opponent } };
   }
 
-  if (options.isCancelled?.()) {
+  if (outcome.status === "cancelled" || options.isCancelled?.()) {
     return { ok: false, error: "cancelled" };
   }
+
+  const liveUnavailable = outcome.status === "unavailable";
 
   const ghost = await fetchGhostOpponent({
     mode: params.mode,
@@ -144,14 +148,20 @@ export const planHeadToHeadMatchmaking = async (
   });
 
   if (ghost) {
-    return { ok: true, plan: { kind: "ghost", ghost } };
+    return {
+      ok: true,
+      plan: { kind: "ghost", ghost, liveUnavailable },
+    };
   }
 
   if (requiresLiveOpponentOnly(params.playerElo)) {
-    return { ok: true, plan: { kind: "queue_for_live" } };
+    return {
+      ok: true,
+      plan: { kind: "queue_for_live", liveUnavailable },
+    };
   }
 
-  return { ok: true, plan: { kind: "npc" } };
+  return { ok: true, plan: { kind: "npc", liveUnavailable } };
 };
 
 /** Weekly Events only match live opponents; keep searching until found or cancelled. */

@@ -214,6 +214,7 @@ function App() {
   const [isCancellingMatchmaking, setIsCancellingMatchmaking] = useState(false);
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
+  const [matchmakingNotice, setMatchmakingNotice] = useState<string | null>(null);
   const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
   const [privateRoomExpiresAt, setPrivateRoomExpiresAt] = useState<string | null>(
     null,
@@ -564,6 +565,7 @@ function App() {
     }
 
     setStartMatchError(null);
+    setMatchmakingNotice(null);
 
     if (options.allTimeMode && !isAllTimeModePlayable()) {
       return "failed";
@@ -841,8 +843,24 @@ function App() {
           session.matchId = liveOpponent.matchId;
         } else if (resolution.plan.kind === "ghost") {
           ghostOpponent = resolution.plan.ghost;
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — playing a recorded lineup.",
+            );
+          }
         } else if (resolution.plan.kind === "queue_for_live") {
           isPendingQueue = true;
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — your lineup will wait in the queue.",
+            );
+          }
+        } else if (resolution.plan.kind === "npc") {
+          if (resolution.plan.liveUnavailable) {
+            setMatchmakingNotice(
+              "Live search was unavailable — matched you with a practice opponent.",
+            );
+          }
         }
 
         // Ghost / queue plans can still be abandoned; live matches cannot.
@@ -1238,6 +1256,7 @@ function App() {
     if (!options?.preserveError) {
       setStartMatchError(options?.error ?? null);
     }
+    setMatchmakingNotice(null);
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
@@ -2177,6 +2196,7 @@ function App() {
           userLineup={userLineup}
           starCount={countUnlockedAllStars(collection)}
           onDone={() => resetToLanding()}
+          matchmakingNotice={matchmakingNotice}
         />
       ) : null}
 
@@ -2211,6 +2231,7 @@ function App() {
           isMatchmaking={isMatchmakingSearchActive}
           startMatchError={startMatchError}
           opponentAutoDrafted={opponentAutoDrafted}
+          matchmakingNotice={matchmakingNotice}
         />
       ) : null}
       {matchmakingMode ? (

@@ -72,6 +72,7 @@ interface MatchResultsProps {
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
+  matchmakingNotice?: string | null;
 }
 
 export function MatchResults({
@@ -87,6 +88,7 @@ export function MatchResults({
   isMatchmaking = false,
   startMatchError = null,
   opponentAutoDrafted = false,
+  matchmakingNotice = null,
 }: MatchResultsProps) {
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
@@ -549,6 +551,11 @@ export function MatchResults({
 
       {actionsReady ? (
         <div className="panel panel--compact match-results__actions">
+          {matchmakingNotice ? (
+            <p className="form-info" role="status">
+              {matchmakingNotice}
+            </p>
+          ) : null}
           {startMatchError ? (
             <p className="form-error" role="alert">
               {startMatchError}
