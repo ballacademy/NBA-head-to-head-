@@ -26,10 +26,14 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <div className="legal-page__body beta-notes-body">
           <h2>What&apos;s live</h2>
           <ul>
-            <li>Daily Draft (one scored attempt per day for Basic and Advanced)</li>
-            <li>Classic H2H and Pro H2H ranked matchmaking</li>
-            <li>Weekly Events (live opponents only)</li>
-            <li>Collection, Badges, Leaderboards, Stats, and Tier Lists (bottom nav)</li>
+            <li>
+              <strong>Play hub</strong> — Daily Draft (one scored try per mode
+              daily), Classic/Pro H2H, and weekly Events
+            </li>
+            <li>
+              Collection, Badges, and Season Stats (Roster) · Leaderboards
+              (Standings) · Tier Lists · Account
+            </li>
             <li>
               <strong>Private match</strong> (Classic or Pro) — account holders
               create a room code and invite a friend for live H2H. Same draft
