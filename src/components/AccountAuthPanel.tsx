@@ -7,6 +7,10 @@ import {
 } from "../lib/accountApi";
 import { markPlayerAccountLinked } from "../lib/accountGate";
 import {
+  pullAndMergeCollection,
+  pushCollectionIfLinked,
+} from "../lib/collectionRemote";
+import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
@@ -153,6 +157,7 @@ export function AccountAuthPanel({
     setLinkState("linked");
     markPlayerAccountLinked(playerId, result.username);
     setMode("closed");
+    void pushCollectionIfLinked(undefined, playerId);
     const { newlyUnlocked } = syncFoundingGmAchievement(
       Boolean(result.foundingGm),
     );
@@ -189,13 +194,14 @@ export function AccountAuthPanel({
       setLinkState("linked");
       markPlayerAccountLinked(playerId, result.username);
       setMode("closed");
+      await pullAndMergeCollection(playerId);
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
       );
       setMessage(
         newlyUnlocked.includes(FOUNDING_GM_ACHIEVEMENT_ID)
           ? `Signed in as @${result.username}. Founding GM badge unlocked.`
-          : `Signed in as @${result.username}.`,
+          : `Signed in as @${result.username}. Collection synced.`,
       );
       return;
     }
@@ -533,9 +539,9 @@ export function AccountAuthPanel({
             <>
               <p className="landing-team-form__account-warning">
                 Logging in replaces this browser&apos;s GM identity. Local
-                collection, achievements, and device-only progress reset.
-                Leaderboard / online records for the account are restored from the
-                server when available.
+                achievements and device-only progress reset. Your collection
+                unlocks sync from the account when signed in. Leaderboard /
+                online records are restored from the server when available.
               </p>
               <p className="landing-team-form__account-note">
                 <button

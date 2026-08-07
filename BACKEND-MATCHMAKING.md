@@ -23,6 +23,8 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 | `GET` | `/api/live-match?matchId=...&playerId=...` | Poll a live match for opponent lineup status |
 | `POST` | `/api/live-match` | Submit your lineup for a live match |
 | `POST` | `/api/lineups` | Store your completed lineup for future opponents |
+| `GET` | `/api/collection?playerId=...` | Fetch linked-account collection unlocks |
+| `PUT` | `/api/collection` | Union-merge and upsert collection unlocks (account required) |
 | `GET` | `/api/pending?mode=...&playerId=...` | Check queued lineup lock + unacknowledged owner result |
 | `POST` | `/api/pending` | Acknowledge an owner match result (`resultId` + `playerId`) |
 | `POST` | `/api/match-results` | Consume a ghost lineup and write the owner's pending result (server-rescored) |

@@ -173,19 +173,49 @@ const isValidUnlockOffer = (offer: UnlockOffer | null | undefined) => {
   );
 };
 
+export const getCollectibleUnlockIdSet = () =>
+  new Set([
+    ...getWinUnlockPlayerIds(),
+    ...getScrubPlayerIds(),
+    ...getRecentAllStarUnlockPlayerIds(),
+  ]);
+
+export const filterCollectibleUnlockedIds = (ids: string[]) => {
+  const valid = getCollectibleUnlockIdSet();
+  const next: string[] = [];
+  const seen = new Set<string>();
+
+  for (const id of ids) {
+    if (!id || seen.has(id) || !valid.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    next.push(id);
+  }
+
+  return next;
+};
+
 export const sanitizePlayerCollection = (
   collection: PlayerCollection,
 ): PlayerCollection => {
-  if (!isValidUnlockOffer(collection.pendingUnlock)) {
-    if (collection.pendingUnlock) {
-      return {
-        ...collection,
-        pendingUnlock: null,
-      };
-    }
+  const unlockedIds = filterCollectibleUnlockedIds(collection.unlockedIds);
+  const pendingUnlock = isValidUnlockOffer(collection.pendingUnlock)
+    ? collection.pendingUnlock
+    : null;
+
+  if (
+    unlockedIds.length === collection.unlockedIds.length &&
+    pendingUnlock === collection.pendingUnlock
+  ) {
+    return collection;
   }
 
-  return collection;
+  return {
+    ...collection,
+    unlockedIds,
+    pendingUnlock,
+  };
 };
 
 export const savePlayerCollection = (collection: PlayerCollection) => {
@@ -497,6 +527,10 @@ export const completeUnlock = (
     pendingUnlock: null,
   };
   savePlayerCollection(next);
+
+  void import("./collectionRemote").then(({ pushCollectionIfLinked }) => {
+    void pushCollectionIfLinked(next);
+  });
 
   return next;
 };

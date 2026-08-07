@@ -50,9 +50,10 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               New accounts require an email for recovery.
             </li>
             <li>
-              <strong>Guest / local Collection</strong> stays on this device.
-              Logging into an account on another browser restores online records
-              but rebuilds on-device collection there.
+              <strong>Guest / local progress</strong> — Collection unlocks sync
+              to your account when signed in. Achievements stay on this device
+              for now. Logging into an account on another browser restores
+              online records and collection unlocks.
             </li>
             <li>
               <strong>All-Time legends</strong> is coming soon — not part of this
