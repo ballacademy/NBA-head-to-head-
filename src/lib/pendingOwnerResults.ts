@@ -1,5 +1,5 @@
 import {
-  acknowledgePendingOwnerResult,
+  acknowledgePendingOwnerResults,
   fetchPendingMatchmakingStatus,
   type GhostMatchmakingMode,
   type PendingOwnerResult,
@@ -26,22 +26,20 @@ const toMatchRecordMode = (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
 ): MatchRecordMode => (mode === "ranked" ? "ranked" : "headToHead");
 
-export const fetchDeliverableOwnerResult = async (
+const isValidOwnerResult = (
+  pending: PendingOwnerResult,
+): pending is PendingOwnerResult & {
+  ownerResult: "win" | "loss" | "tie";
+} =>
+  pending.ownerResult === "win" ||
+  pending.ownerResult === "loss" ||
+  pending.ownerResult === "tie";
+
+const deliverPendingResult = (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
-  playerId: string,
-): Promise<DeliveredOwnerResult | null> => {
-  const status = await fetchPendingMatchmakingStatus({ mode, playerId });
-
-  if (!status?.pendingResult) {
-    return null;
-  }
-
-  const pending = status.pendingResult;
-  if (
-    pending.ownerResult !== "win" &&
-    pending.ownerResult !== "loss" &&
-    pending.ownerResult !== "tie"
-  ) {
+  pending: PendingOwnerResult,
+): DeliveredOwnerResult | null => {
+  if (!isValidOwnerResult(pending)) {
     return null;
   }
 
@@ -79,13 +77,61 @@ export const fetchDeliverableOwnerResult = async (
   };
 };
 
+export const fetchDeliverableOwnerResults = async (
+  mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
+  playerId: string,
+): Promise<DeliveredOwnerResult[]> => {
+  const status = await fetchPendingMatchmakingStatus({ mode, playerId });
+  const pendingList =
+    status?.pendingResults?.length
+      ? status.pendingResults
+      : status?.pendingResult
+        ? [status.pendingResult]
+        : [];
+
+  const deliveries: DeliveredOwnerResult[] = [];
+
+  for (const pending of pendingList) {
+    const delivery = deliverPendingResult(mode, pending);
+    if (delivery) {
+      deliveries.push(delivery);
+    }
+  }
+
+  return deliveries;
+};
+
+/** @deprecated Prefer fetchDeliverableOwnerResults for batch inbox delivery. */
+export const fetchDeliverableOwnerResult = async (
+  mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
+  playerId: string,
+): Promise<DeliveredOwnerResult | null> => {
+  const deliveries = await fetchDeliverableOwnerResults(mode, playerId);
+  return deliveries[0] ?? null;
+};
+
+export const finalizeDeliveredOwnerResults = async (
+  deliveries: DeliveredOwnerResult[],
+  playerId: string,
+) => {
+  if (deliveries.length === 0) {
+    return;
+  }
+
+  const modes = new Set(deliveries.map((delivery) => delivery.mode));
+  for (const mode of modes) {
+    clearPendingLineupState(mode, playerId);
+  }
+
+  await acknowledgePendingOwnerResults({
+    resultIds: deliveries.map((delivery) => delivery.result.id),
+    playerId,
+  });
+};
+
 export const finalizeDeliveredOwnerResult = async (
   delivery: DeliveredOwnerResult,
   playerId: string,
 ) => {
-  clearPendingLineupState(delivery.mode, playerId);
-  await acknowledgePendingOwnerResult({
-    resultId: delivery.result.id,
-    playerId,
-  });
+  await finalizeDeliveredOwnerResults([delivery], playerId);
 };

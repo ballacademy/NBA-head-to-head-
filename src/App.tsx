@@ -110,8 +110,8 @@ import {
 } from "./lib/liveDraftSession";
 import { restoreLiveDraftSession } from "./lib/restoreLiveDraftSession";
 import {
-  fetchDeliverableOwnerResult,
-  finalizeDeliveredOwnerResult,
+  fetchDeliverableOwnerResults,
+  finalizeDeliveredOwnerResults,
   type DeliveredOwnerResult,
 } from "./lib/pendingOwnerResults";
 import { RANKED_STARTING_ELO } from "./lib/rankedElo";
@@ -223,8 +223,9 @@ function App() {
   const [isMatchmakingInFlight, setIsMatchmakingInFlight] = useState(false);
   const [startMatchError, setStartMatchError] = useState<string | null>(null);
   const [matchmakingNotice, setMatchmakingNotice] = useState<string | null>(null);
-  const [deliveredOwnerResult, setDeliveredOwnerResult] =
-    useState<DeliveredOwnerResult | null>(null);
+  const [deliveredOwnerResults, setDeliveredOwnerResults] = useState<
+    DeliveredOwnerResult[]
+  >([]);
   const [liveRestoreNotice, setLiveRestoreNotice] = useState<string | null>(null);
   const [privateRoomCode, setPrivateRoomCode] = useState<string | null>(null);
   const [privateRoomExpiresAt, setPrivateRoomExpiresAt] = useState<string | null>(
@@ -325,7 +326,7 @@ function App() {
   }, [phase, landingRenderKey]);
 
   useEffect(() => {
-    if (phase !== "landing" || deliveredOwnerResult) {
+    if (phase !== "landing" || deliveredOwnerResults.length > 0) {
       return;
     }
 
@@ -333,29 +334,27 @@ function App() {
 
     void (async () => {
       const playerId = getOrCreatePlayerIdentity().playerId;
+      const deliveries: DeliveredOwnerResult[] = [];
 
       for (const mode of ["classic", "ranked"] as const) {
-        const delivery = await fetchDeliverableOwnerResult(mode, playerId);
-
-        if (!delivery || cancelled) {
-          continue;
+        if (cancelled) {
+          break;
         }
 
-        await finalizeDeliveredOwnerResult(delivery, playerId);
+        const batch = await fetchDeliverableOwnerResults(mode, playerId);
+        deliveries.push(...batch);
+      }
 
-        if (!cancelled) {
-          setDeliveredOwnerResult(delivery);
-          setModeRecords(loadAllModeRecords());
-        }
-
-        break;
+      if (!cancelled && deliveries.length > 0) {
+        setDeliveredOwnerResults(deliveries);
+        setModeRecords(loadAllModeRecords());
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [deliveredOwnerResult, phase, landingRenderKey]);
+  }, [deliveredOwnerResults.length, phase, landingRenderKey]);
 
   useEffect(() => {
     if (!user || !opponent?.isLiveOpponent || !opponent.liveMatchId) {
@@ -2161,13 +2160,18 @@ function App() {
     );
   }
 
-  if (phase === "landing" && deliveredOwnerResult) {
+  if (phase === "landing" && deliveredOwnerResults.length > 0) {
     return (
       <main className="landing-layout">
         <PendingOwnerResults
-          delivery={deliveredOwnerResult}
+          deliveries={deliveredOwnerResults}
           modeRecords={modeRecords}
-          onDone={() => setDeliveredOwnerResult(null)}
+          onDone={() => {
+            const playerId = getOrCreatePlayerIdentity().playerId;
+            const toFinalize = deliveredOwnerResults;
+            setDeliveredOwnerResults([]);
+            void finalizeDeliveredOwnerResults(toFinalize, playerId);
+          }}
         />
       </main>
     );
