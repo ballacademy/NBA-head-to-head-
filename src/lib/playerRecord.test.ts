@@ -66,4 +66,16 @@ describe("playerRecord", () => {
     expect(tied.winStreak).toBe(2);
     expect(tied.lossStreak).toBe(0);
   });
+
+  it("can update W-L without changing streaks", () => {
+    recordMatchResult("win", "headToHead");
+    recordMatchResult("win", "headToHead");
+    const afterGhostLoss = recordMatchResult("loss", "headToHead", {
+      countTowardStreak: false,
+    });
+
+    expect(formatPlayerRecord(afterGhostLoss)).toBe("2-1");
+    expect(afterGhostLoss.winStreak).toBe(2);
+    expect(afterGhostLoss.lossStreak).toBe(0);
+  });
 });

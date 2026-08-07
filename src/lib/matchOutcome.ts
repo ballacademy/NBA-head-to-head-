@@ -58,9 +58,10 @@ export const projectRecordAfterMatch = (
   result: HeadToHeadResult,
   mode: MatchRecordMode = "headToHead",
   current = loadPlayerRecord(mode),
+  options: { countTowardStreak?: boolean } = {},
 ): PlayerRecord => ({
   ...current,
-  ...applyHeadToHeadResultToStats(current, result),
+  ...applyHeadToHeadResultToStats(current, result, options),
 });
 
 export const persistMatchOutcome = (
@@ -68,7 +69,7 @@ export const persistMatchOutcome = (
   team: TeamProfile,
   matchId: string,
   mode: MatchRecordMode = "headToHead",
-  options: { opponentElo?: number } = {},
+  options: { opponentElo?: number; countTowardStreak?: boolean } = {},
 ): {
   record: PlayerRecord;
   ranked?: RankedMatchOutcome;
@@ -84,7 +85,8 @@ export const persistMatchOutcome = (
     };
   }
 
-  const record = recordMatchResult(result, mode);
+  const countTowardStreak = options.countTowardStreak !== false;
+  const record = recordMatchResult(result, mode, { countTowardStreak });
   let ranked: RankedMatchOutcome | undefined;
   let classic: ClassicMatchOutcome | undefined;
   const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
@@ -95,11 +97,14 @@ export const persistMatchOutcome = (
       team,
       record,
       opponentElo,
+      { countTowardStreak },
     );
   }
 
   if (mode === "ranked") {
-    ranked = persistRankedOutcome(result, team, record, opponentElo);
+    ranked = persistRankedOutcome(result, team, record, opponentElo, {
+      countTowardStreak,
+    });
   }
 
   rememberRecordedMatchId(matchId);

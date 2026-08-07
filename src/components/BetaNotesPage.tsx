@@ -36,6 +36,12 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               rules as that mode; records, Banners, and badges do not change.
             </li>
             <li>
+              <strong>Stored lineup results</strong> — when someone drafts
+              against your queued lineup while you&apos;re away, that match still
+              moves your Banners (and W–L). Win/loss streaks only change from
+              matches you play live.
+            </li>
+            <li>
               Accounts required to appear on leaderboards or publish public tier
               lists (playing stays open to guests)
             </li>

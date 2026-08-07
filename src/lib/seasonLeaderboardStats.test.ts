@@ -69,4 +69,24 @@ describe("nextSeasonLeaderboardStats", () => {
       }),
     ).toEqual({ wins: 1, losses: 1, winStreak: 0, lossStreak: 1 });
   });
+
+  it("can update W-L without changing streaks", () => {
+    expect(
+      nextSeasonLeaderboardStats({
+        existing: { wins: 2, losses: 1, winStreak: 2, lossStreak: 0 },
+        result: "loss",
+        priorSeasonGames: 3,
+        countTowardStreak: false,
+      }),
+    ).toEqual({ wins: 2, losses: 2, winStreak: 2, lossStreak: 0 });
+
+    expect(
+      nextSeasonLeaderboardStats({
+        existing: null,
+        result: "win",
+        priorSeasonGames: 0,
+        countTowardStreak: false,
+      }),
+    ).toEqual({ wins: 1, losses: 0, winStreak: 0, lossStreak: 0 });
+  });
 });

@@ -112,7 +112,7 @@ describe("pendingOwnerResults", () => {
       { name: "Test Team" },
       "result-1",
       "headToHead",
-      { opponentElo: 1000 },
+      { opponentElo: 1000, countTowardStreak: false },
     );
   });
 

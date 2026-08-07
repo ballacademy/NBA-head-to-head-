@@ -63,4 +63,31 @@ describe("matchOutcome", () => {
     expect(entry?.losses).toBe(0);
     expect(entry?.winStreak).toBe(1);
   });
+
+  it("updates banners without changing streaks for stored-lineup results", () => {
+    persistMatchOutcome("win", { name: "Bulls" }, "live-1", "headToHead");
+    persistMatchOutcome("win", { name: "Bulls" }, "live-2", "headToHead");
+
+    const before = loadPlayerRecord("headToHead");
+    expect(before.winStreak).toBe(2);
+
+    const ghost = persistMatchOutcome(
+      "loss",
+      { name: "Bulls" },
+      "owner-result-1",
+      "headToHead",
+      { countTowardStreak: false },
+    );
+
+    const after = loadPlayerRecord("headToHead");
+    expect(after.wins).toBe(2);
+    expect(after.losses).toBe(1);
+    expect(after.winStreak).toBe(2);
+    expect(after.lossStreak).toBe(0);
+    expect(ghost.classic?.delta).toBeLessThan(0);
+    expect(ghost.classic?.wins).toBe(2);
+    expect(ghost.classic?.losses).toBe(1);
+    expect(ghost.classic?.winStreak).toBe(2);
+    expect(ghost.classic?.lossStreak).toBe(0);
+  });
 });

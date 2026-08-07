@@ -24,11 +24,19 @@ export const nextSeasonLeaderboardStats = (params: {
   result: HeadToHeadResult;
   /** Season games already played before this match (0 on a fresh monthly board). */
   priorSeasonGames: number;
+  /**
+   * When false (stored-lineup owner results), update W–L only and leave
+   * win/loss streaks unchanged. Live matches keep the default true.
+   */
+  countTowardStreak?: boolean;
 }): SeasonLeaderboardStats => {
   const { result, priorSeasonGames } = params;
+  const countTowardStreak = params.countTowardStreak !== false;
   const existing = params.existing;
   const existingGames = existing ? existing.wins + existing.losses : 0;
   const inSync = Boolean(existing) && existingGames === priorSeasonGames;
+  const preservedWinStreak = existing?.winStreak ?? 0;
+  const preservedLossStreak = existing?.lossStreak ?? 0;
 
   if (result === "tie") {
     if (inSync && existing) {
@@ -50,12 +58,34 @@ export const nextSeasonLeaderboardStats = (params: {
   // that matches the season game count so first-insert catch-up can succeed.
   if (!inSync) {
     if (priorSeasonGames <= 0) {
+      if (!countTowardStreak) {
+        return result === "win"
+          ? { wins: 1, losses: 0, winStreak: 0, lossStreak: 0 }
+          : { wins: 0, losses: 1, winStreak: 0, lossStreak: 0 };
+      }
+
       return result === "win"
         ? { wins: 1, losses: 0, winStreak: 1, lossStreak: 0 }
         : { wins: 0, losses: 1, winStreak: 0, lossStreak: 1 };
     }
 
     const gamesAfter = priorSeasonGames + 1;
+    if (!countTowardStreak) {
+      return result === "win"
+        ? {
+            wins: gamesAfter,
+            losses: 0,
+            winStreak: preservedWinStreak,
+            lossStreak: preservedLossStreak,
+          }
+        : {
+            wins: 0,
+            losses: gamesAfter,
+            winStreak: preservedWinStreak,
+            lossStreak: preservedLossStreak,
+          };
+    }
+
     return result === "win"
       ? {
           wins: gamesAfter,
@@ -75,15 +105,17 @@ export const nextSeasonLeaderboardStats = (params: {
     return {
       wins: existing!.wins + 1,
       losses: existing!.losses,
-      winStreak: existing!.winStreak + 1,
-      lossStreak: 0,
+      winStreak: countTowardStreak ? existing!.winStreak + 1 : existing!.winStreak,
+      lossStreak: countTowardStreak ? 0 : existing!.lossStreak,
     };
   }
 
   return {
     wins: existing!.wins,
     losses: existing!.losses + 1,
-    winStreak: 0,
-    lossStreak: existing!.lossStreak + 1,
+    winStreak: countTowardStreak ? 0 : existing!.winStreak,
+    lossStreak: countTowardStreak
+      ? existing!.lossStreak + 1
+      : existing!.lossStreak,
   };
 };
