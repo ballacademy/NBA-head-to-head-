@@ -38,7 +38,7 @@ On a real phone + desktop browser:
 4. **Classic H2H** — queue, draft, results, record updates.
 5. **Pro H2H** — same with salary cap.
 6. **Weekly Event** — entry available; live queue only; result counts toward event.
-7. **Account** — create account on device A; log in on device B; GM code restores; collection note matches Beta notes.
+7. **Account** — create account on device A; log in on device B; GM code restores; **collection unlocks match** across devices when signed in.
 8. **Collection / Badges / Leaderboards / Stats** — open without crash.
 9. **Beta notes** — Account → Beta notes; feedback mailto opens.
 10. **Support path** — intentionally note any error toast “Email us” link works.

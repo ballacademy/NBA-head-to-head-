@@ -1,0 +1,80 @@
+import { isPlayerAccountLinked } from "./accountGate";
+import {
+  fetchRemoteCollection,
+  pushRemoteCollection,
+} from "./collectionApi";
+import {
+  filterCollectibleUnlockedIds,
+  loadPlayerCollection,
+  savePlayerCollection,
+  withRecentAllStarsUnlocked,
+  type PlayerCollection,
+} from "./playerCollection";
+import { getOrCreatePlayerIdentity } from "./playerIdentity";
+
+export const mergeUnlockedIds = (...lists: string[][]) => {
+  const next: string[] = [];
+  const seen = new Set<string>();
+
+  for (const list of lists) {
+    for (const id of filterCollectibleUnlockedIds(list)) {
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      next.push(id);
+    }
+  }
+
+  return next;
+};
+
+export const pullAndMergeCollection = async (
+  playerId = getOrCreatePlayerIdentity().playerId,
+): Promise<PlayerCollection | null> => {
+  if (!(await isPlayerAccountLinked(playerId))) {
+    return null;
+  }
+
+  const remote = await fetchRemoteCollection(playerId);
+  if (!remote) {
+    return null;
+  }
+
+  const local = loadPlayerCollection();
+  const mergedIds = mergeUnlockedIds(local.unlockedIds, remote.unlockedIds);
+  const next = withRecentAllStarsUnlocked({
+    ...local,
+    unlockedIds: mergedIds,
+    initialized: true,
+  });
+
+  savePlayerCollection(next);
+
+  // If local had unlocks the cloud was missing, push the union back.
+  if (mergedIds.length > remote.unlockedIds.length) {
+    void pushRemoteCollection({
+      playerId,
+      unlockedIds: next.unlockedIds,
+    });
+  }
+
+  return next;
+};
+
+export const pushCollectionIfLinked = async (
+  collection?: PlayerCollection,
+  playerId = getOrCreatePlayerIdentity().playerId,
+): Promise<boolean> => {
+  if (!(await isPlayerAccountLinked(playerId))) {
+    return false;
+  }
+
+  const local = collection ?? loadPlayerCollection();
+  const pushed = await pushRemoteCollection({
+    playerId,
+    unlockedIds: filterCollectibleUnlockedIds(local.unlockedIds),
+  });
+
+  return Boolean(pushed);
+};

@@ -1,5 +1,6 @@
 import { getBrowserStorage, removeJson } from "./browserStorage";
 import { clearAccountLinkCache } from "./accountGate";
+import { pullAndMergeCollection } from "./collectionRemote";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import {
   createStarterCollection,
@@ -192,6 +193,9 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
         }
       : undefined,
   });
+
+  // Restore cloud collection for this account (union with any local starter).
+  await pullAndMergeCollection(playerId);
 
   return identity;
 };

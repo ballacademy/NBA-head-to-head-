@@ -122,6 +122,7 @@ import {
   countUnlockedAllStars,
   type PlayerCollection,
 } from "./lib/playerCollection";
+import { pullAndMergeCollection } from "./lib/collectionRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -209,6 +210,7 @@ function App() {
   const [collection, setCollection] = useState<PlayerCollection>(() =>
     ensurePlayerCollection(),
   );
+  const collectionSyncAttemptedRef = useRef(false);
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
     GhostMatchmakingMode | null
@@ -267,6 +269,21 @@ function App() {
       window.history.replaceState({ appPhase: "tierList" }, "");
     }
   }, [initialPublicTierListId]);
+
+  useEffect(() => {
+    if (collectionSyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    collectionSyncAttemptedRef.current = true;
+
+    void (async () => {
+      const merged = await pullAndMergeCollection();
+      if (merged) {
+        setCollection(merged);
+      }
+    })();
+  }, [phase]);
 
   useEffect(() => {
     if (liveRecoveryAttemptedRef.current || phase !== "landing") {
