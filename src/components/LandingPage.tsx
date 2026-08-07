@@ -53,8 +53,14 @@ import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { HubShell } from "./HubShell";
-import type { LandingContentTab } from "../lib/landingHub";
+import {
+  loadLandingPlaySection,
+  saveLandingPlaySection,
+  type LandingContentTab,
+  type LandingPlaySection,
+} from "../lib/landingHub";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
@@ -183,8 +189,17 @@ export function LandingPage({
   const [privateMatchMode, setPrivateMatchMode] = useState<
     null | "classic" | "ranked"
   >(null);
+  const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
+    loadLandingPlaySection(),
+  );
   const closePrivateMatchModal = useCallback(() => {
     setPrivateMatchMode(null);
+  }, []);
+
+  const updatePlaySection = useCallback((section: LandingPlaySection) => {
+    setPlaySection(section);
+    saveLandingPlaySection(section);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   useEffect(() => {
@@ -306,7 +321,7 @@ export function LandingPage({
     : false;
 
   useEffect(() => {
-    if (hubTab !== "events" || !weeklyEvent) {
+    if (hubTab !== "play" || playSection !== "events" || !weeklyEvent) {
       return;
     }
 
@@ -330,7 +345,7 @@ export function LandingPage({
     return () => {
       cancelled = true;
     };
-  }, [hubTab, weeklyEvent, eventLeaderboardRetryTick]);
+  }, [hubTab, playSection, weeklyEvent, eventLeaderboardRetryTick]);
 
   const handleStart = async (options?: StartDraftOptions) => {
     if (collection.pendingUnlock || isMatchmaking) {
@@ -511,6 +526,12 @@ export function LandingPage({
       return;
     }
 
+    // Re-tapping Play while inside a mode returns to the Play chooser.
+    if (tab === "play" && hubTab === "play" && playSection !== "chooser") {
+      updatePlaySection("chooser");
+      return;
+    }
+
     onHubTabChange(tab);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -576,25 +597,36 @@ export function LandingPage({
 
   const hubTitle =
     hubTab === "play"
-      ? "Head to Head"
-      : hubTab === "daily"
+      ? playSection === "daily"
         ? "Daily Draft"
-        : hubTab === "events"
+        : playSection === "events"
           ? "Events"
-          : hubTab === "roster"
-            ? "Roster"
-            : "Account";
+          : playSection === "headToHead"
+            ? "Head to Head"
+            : "Play"
+      : hubTab === "roster"
+        ? "Roster"
+        : "Account";
 
   const hubLede =
     hubTab === "play"
-      ? "Live matchups. Casual or Pro."
-      : hubTab === "daily"
+      ? playSection === "daily"
         ? `Hidden stats. ${DAILY_PICK_TIME_LIMIT_SECONDS}s picks. One try per mode daily.`
-        : hubTab === "events"
+        : playSection === "events"
           ? "Weekly live H2H. Shared board. $100M cap."
-          : hubTab === "roster"
-            ? "Your unlocked players."
-            : "Sign in, GM stats, and badges.";
+          : playSection === "headToHead"
+            ? "Live matchups. Casual or Pro."
+            : "Pick a mode to draft and compete."
+      : hubTab === "roster"
+        ? "Collection, badges, and season stats."
+        : "Sign in, GM stats, and settings.";
+
+  const playModeBack = (
+    <HubFeatureReturnButton
+      label="Play modes"
+      onBack={() => updatePlaySection("chooser")}
+    />
+  );
 
   return (
     <HubShell
@@ -645,8 +677,47 @@ export function LandingPage({
       </div>
 
       <div className="landing-hub__content">
-        {hubTab === "play" ? (
+        {hubTab === "play" && playSection === "chooser" ? (
+          <div className="play-hub-chooser" role="list">
+            <button
+              type="button"
+              className="play-hub-chooser__option"
+              role="listitem"
+              onClick={() => updatePlaySection("daily")}
+            >
+              <span className="play-hub-chooser__label">Daily Draft</span>
+              <span className="play-hub-chooser__meta">
+                Hidden stats · one scored try per mode each day
+              </span>
+            </button>
+            <button
+              type="button"
+              className="play-hub-chooser__option"
+              role="listitem"
+              onClick={() => updatePlaySection("headToHead")}
+            >
+              <span className="play-hub-chooser__label">Head to Head</span>
+              <span className="play-hub-chooser__meta">
+                Classic or Pro live matchups, practice, and private games
+              </span>
+            </button>
+            <button
+              type="button"
+              className="play-hub-chooser__option"
+              role="listitem"
+              onClick={() => updatePlaySection("events")}
+            >
+              <span className="play-hub-chooser__label">Events</span>
+              <span className="play-hub-chooser__meta">
+                Weekly live H2H with a shared board and $100M cap
+              </span>
+            </button>
+          </div>
+        ) : null}
+
+        {hubTab === "play" && playSection === "headToHead" ? (
           <>
+            {playModeBack}
             {renderTeamNameField()}
             <div className="landing-game-modes">
               <div className="head-to-head-card landing-card landing-card--mode">
@@ -791,8 +862,9 @@ export function LandingPage({
           </>
         ) : null}
 
-        {hubTab === "daily" ? (
+        {hubTab === "play" && playSection === "daily" ? (
           <>
+            {playModeBack}
             {error || startMatchError ? (
               <p className="form-error" role="alert">
                 {error || startMatchError}
@@ -805,8 +877,9 @@ export function LandingPage({
           </>
         ) : null}
 
-        {hubTab === "events" ? (
+        {hubTab === "play" && playSection === "events" ? (
           <>
+            {playModeBack}
             {renderTeamNameField()}
             {weeklyEvent && eventProfile ? (
               <div className="landing-game-modes">
@@ -1081,6 +1154,13 @@ export function LandingPage({
               >
                 Season Stats
               </button>
+              <button
+                type="button"
+                className="landing-hub__link-button"
+                onClick={onViewAchievements}
+              >
+                Badges
+              </button>
             </div>
           </>
         ) : null}
@@ -1117,13 +1197,6 @@ export function LandingPage({
                 onClick={onViewGmStats}
               >
                 GM stats
-              </button>
-              <button
-                type="button"
-                className="landing-hub__link-button"
-                onClick={onViewAchievements}
-              >
-                Badges
               </button>
               <button
                 type="button"
