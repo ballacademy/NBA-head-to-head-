@@ -40,21 +40,25 @@ export const persistClassicLeaderboardOutcome = (
   team: TeamProfile,
   record: PlayerRecord,
   opponentElo: number,
+  options: { countTowardStreak?: boolean } = {},
 ): PersistedBannersOutcome => {
+  const countTowardStreak = options.countTowardStreak !== false;
   const before = ensureCurrentClassicSeason();
   const existing = loadLeaderboardEntries().find(
     (entry) => entry.playerId === record.playerId,
   );
+  // Stored-lineup owner results still move Banners, but do not use or change streaks.
   const classicResult = applyClassicMatchResult({
     result,
     opponentElo,
-    winStreak: record.winStreak,
-    lossStreak: record.lossStreak,
+    winStreak: countTowardStreak ? record.winStreak : 0,
+    lossStreak: countTowardStreak ? record.lossStreak : 0,
   });
   const seasonStats = nextSeasonLeaderboardStats({
     existing,
     result,
     priorSeasonGames: before.classicGamesPlayed,
+    countTowardStreak,
   });
   const { publicTag } = getOrCreatePlayerIdentity();
 
@@ -88,7 +92,9 @@ export const persistRankedOutcome = (
   team: TeamProfile,
   record: PlayerRecord,
   opponentElo: number,
+  options: { countTowardStreak?: boolean } = {},
 ): PersistedBannersOutcome => {
+  const countTowardStreak = options.countTowardStreak !== false;
   const before = ensureCurrentRankedSeason();
   const existing = loadRankedLeaderboardEntries().find(
     (entry) => entry.playerId === record.playerId,
@@ -96,13 +102,14 @@ export const persistRankedOutcome = (
   const rankedResult = applyRankedMatchResult({
     result,
     opponentElo,
-    winStreak: record.winStreak,
-    lossStreak: record.lossStreak,
+    winStreak: countTowardStreak ? record.winStreak : 0,
+    lossStreak: countTowardStreak ? record.lossStreak : 0,
   });
   const seasonStats = nextSeasonLeaderboardStats({
     existing,
     result,
     priorSeasonGames: before.rankedGamesPlayed,
+    countTowardStreak,
   });
 
   const leaderboardRank = upsertRankedLeaderboardEntry({

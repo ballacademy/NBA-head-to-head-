@@ -59,23 +59,30 @@ const normalizeModeStats = (saved?: Partial<ModeRecordStats>): ModeRecordStats =
 export const applyHeadToHeadResultToStats = (
   current: ModeRecordStats,
   result: HeadToHeadResult,
-): ModeRecordStats => ({
-  wins: current.wins + (result === "win" ? 1 : 0),
-  losses: current.losses + (result === "loss" ? 1 : 0),
-  ties: current.ties + (result === "tie" ? 1 : 0),
-  winStreak:
-    result === "win"
-      ? current.winStreak + 1
-      : result === "loss"
-        ? 0
-        : current.winStreak,
-  lossStreak:
-    result === "loss"
-      ? current.lossStreak + 1
-      : result === "win"
-        ? 0
-        : current.lossStreak,
-});
+  options: { countTowardStreak?: boolean } = {},
+): ModeRecordStats => {
+  const countTowardStreak = options.countTowardStreak !== false;
+
+  return {
+    wins: current.wins + (result === "win" ? 1 : 0),
+    losses: current.losses + (result === "loss" ? 1 : 0),
+    ties: current.ties + (result === "tie" ? 1 : 0),
+    winStreak: countTowardStreak
+      ? result === "win"
+        ? current.winStreak + 1
+        : result === "loss"
+          ? 0
+          : current.winStreak
+      : current.winStreak,
+    lossStreak: countTowardStreak
+      ? result === "loss"
+        ? current.lossStreak + 1
+        : result === "win"
+          ? 0
+          : current.lossStreak
+      : current.lossStreak,
+  };
+};
 
 export { getOrCreatePlayerId } from "./playerIdentity";
 
@@ -227,9 +234,10 @@ export const formatWinPercentage = (
 export const recordMatchResult = (
   result: HeadToHeadResult,
   mode: MatchRecordMode = "headToHead",
+  options: { countTowardStreak?: boolean } = {},
 ): PlayerRecord => {
   const current = loadPlayerRecord(mode);
-  const nextStats = applyHeadToHeadResultToStats(current, result);
+  const nextStats = applyHeadToHeadResultToStats(current, result, options);
 
   saveModeStats(mode, nextStats);
 

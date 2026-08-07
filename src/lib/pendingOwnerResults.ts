@@ -50,7 +50,11 @@ const deliverPendingResult = (
     team,
     pending.id,
     recordMode,
-    { opponentElo: pending.opponentElo },
+    {
+      opponentElo: pending.opponentElo,
+      // Live matches only — queued lineup results still move Banners / W–L.
+      countTowardStreak: false,
+    },
   );
 
   const banners = outcome.ranked ?? outcome.classic;
