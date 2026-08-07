@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { validateEventLineupIds } from "../lib/eventLineupValidation";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import { parseMatchmakingMode } from "../lib/matchmakingMode";
 import { getUsernameByPlayerId } from "../lib/playerAccounts";
@@ -125,6 +126,13 @@ const validateLineupForMode = (mode: MatchmakingMode, lineup: string[]) => {
       error: `lineup salary exceeds the ${mode} cap of ${salaryCapForMatchmakingMode(mode)}`,
       status: 400,
     } as const;
+  }
+
+  if (mode === "event") {
+    const eventError = validateEventLineupIds(lineup);
+    if (eventError) {
+      return { error: eventError, status: 400 } as const;
+    }
   }
 
   return null;

@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import { scoreLineupIds } from "../lib/lineupScoring";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
   matchmakingModeError,
@@ -72,8 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       ? body.challengerTeamName.trim().slice(0, 32)
       : "";
   const challengerElo = Number(body.challengerElo ?? 500);
-  const userScore = Number(body.userScore ?? 0);
-  const opponentScore = Number(body.opponentScore ?? 0);
+  // Client userScore/opponentScore are ignored for W/L; server recomputes.
   const challengerLineup = sanitizeStoredLineupIds(body.challengerLineup);
 
   if (!mode) {
@@ -92,10 +92,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!Number.isFinite(challengerElo)) {
     return json({ error: "challengerElo must be a number" }, 400);
-  }
-
-  if (!Number.isFinite(userScore) || !Number.isFinite(opponentScore)) {
-    return json({ error: "userScore and opponentScore must be numbers" }, 400);
   }
 
   if (!isValidStoredLineupIds(challengerLineup)) {
@@ -170,9 +166,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "stored lineup is invalid" }, 400);
   }
 
+  const challengerScore = scoreLineupIds(challengerLineup);
+  const ownerScore = scoreLineupIds(ownerLineup);
+
+  if (challengerScore == null || ownerScore == null) {
+    return json(
+      { error: "could not score lineup; one or more player ids are unknown" },
+      400,
+    );
+  }
+
   const now = new Date(nowMs).toISOString();
-  // Recompute from scores; do not trust client challengerWon.
-  const ownerResult = ownerResultFromScores(userScore, opponentScore);
+  // Server-side scores only; do not trust client userScore/opponentScore/challengerWon.
+  const ownerResult = ownerResultFromScores(challengerScore, ownerScore);
 
   const consume = await db
     .prepare(
@@ -206,8 +212,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       challengerTeamName,
       Math.round(challengerElo),
       lineup.lineup_json,
-      persistMatchScore(opponentScore),
-      persistMatchScore(userScore),
+      persistMatchScore(ownerScore),
+      persistMatchScore(challengerScore),
       now,
     )
     .run();
