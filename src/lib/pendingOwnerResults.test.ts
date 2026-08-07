@@ -1,12 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
   fetchDeliverableOwnerResult,
+  fetchDeliverableOwnerResults,
   finalizeDeliveredOwnerResult,
+  finalizeDeliveredOwnerResults,
 } from "./pendingOwnerResults";
 
 vi.mock("./ghostMatchmaking", () => ({
   fetchPendingMatchmakingStatus: vi.fn(),
   acknowledgePendingOwnerResult: vi.fn(),
+  acknowledgePendingOwnerResults: vi.fn(),
 }));
 
 vi.mock("./pendingLineup", () => ({
@@ -52,7 +55,7 @@ vi.mock("./matchOutcome", async () => {
 });
 
 import {
-  acknowledgePendingOwnerResult,
+  acknowledgePendingOwnerResults,
   fetchPendingMatchmakingStatus,
 } from "./ghostMatchmaking";
 import { clearPendingLineupState } from "./pendingLineup";
@@ -74,6 +77,20 @@ const stubStorage = () => {
   });
 };
 
+const sampleResult = (id: string, overrides: Record<string, unknown> = {}) => ({
+  id,
+  lineupId: `lineup-${id}`,
+  mode: "classic" as const,
+  ownerResult: "win" as const,
+  opponentTeamName: "Challengers",
+  opponentElo: 1000,
+  ownerLineup: ["a", "b", "c", "d", "e"],
+  ownerScore: 101.4,
+  opponentScore: 98.2,
+  createdAt: "2026-08-01T00:00:00.000Z",
+  ...overrides,
+});
+
 describe("pendingOwnerResults", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -83,18 +100,8 @@ describe("pendingOwnerResults", () => {
   it("applies unacked owner results with the result id as matchId", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,
-      pendingResult: {
-        id: "result-1",
-        lineupId: "lineup-1",
-        mode: "classic",
-        ownerResult: "win",
-        opponentTeamName: "Challengers",
-        opponentElo: 1000,
-        ownerLineup: ["a", "b", "c", "d", "e"],
-        ownerScore: 101.4,
-        opponentScore: 98.2,
-        createdAt: "2026-08-01T00:00:00.000Z",
-      },
+      pendingResults: [sampleResult("result-1")],
+      pendingResult: sampleResult("result-1"),
     });
 
     const delivery = await fetchDeliverableOwnerResult("classic", "player-1");
@@ -109,31 +116,76 @@ describe("pendingOwnerResults", () => {
     );
   });
 
+  it("delivers every pending result in order", async () => {
+    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
+      queuedLineup: null,
+      pendingResults: [
+        sampleResult("result-1"),
+        sampleResult("result-2", {
+          ownerResult: "loss",
+          opponentTeamName: "Visitors",
+          ownerScore: 90,
+          opponentScore: 95,
+        }),
+      ],
+      pendingResult: sampleResult("result-1"),
+    });
+
+    const deliveries = await fetchDeliverableOwnerResults("classic", "player-1");
+
+    expect(deliveries.map((delivery) => delivery.result.id)).toEqual([
+      "result-1",
+      "result-2",
+    ]);
+    expect(persistMatchOutcome).toHaveBeenCalledTimes(2);
+  });
+
   it("acks and clears local pending lineup state on finalize", async () => {
-    vi.mocked(acknowledgePendingOwnerResult).mockResolvedValue(true);
+    vi.mocked(acknowledgePendingOwnerResults).mockResolvedValue(true);
 
     await finalizeDeliveredOwnerResult(
       {
         mode: "ranked",
-        result: {
-          id: "result-2",
-          lineupId: "lineup-2",
+        result: sampleResult("result-2", {
           mode: "ranked",
           ownerResult: "loss",
           opponentTeamName: "Visitors",
           opponentElo: 1200,
-          ownerLineup: ["a", "b", "c", "d", "e"],
           ownerScore: 90,
           opponentScore: 95,
-          createdAt: "2026-08-01T00:00:00.000Z",
-        },
+        }),
       },
       "player-1",
     );
 
     expect(clearPendingLineupState).toHaveBeenCalledWith("ranked", "player-1");
-    expect(acknowledgePendingOwnerResult).toHaveBeenCalledWith({
-      resultId: "result-2",
+    expect(acknowledgePendingOwnerResults).toHaveBeenCalledWith({
+      resultIds: ["result-2"],
+      playerId: "player-1",
+    });
+  });
+
+  it("batch-acks every delivered result id on finalize", async () => {
+    vi.mocked(acknowledgePendingOwnerResults).mockResolvedValue(true);
+
+    await finalizeDeliveredOwnerResults(
+      [
+        {
+          mode: "classic",
+          result: sampleResult("result-1"),
+        },
+        {
+          mode: "ranked",
+          result: sampleResult("result-2", { mode: "ranked" }),
+        },
+      ],
+      "player-1",
+    );
+
+    expect(clearPendingLineupState).toHaveBeenCalledWith("classic", "player-1");
+    expect(clearPendingLineupState).toHaveBeenCalledWith("ranked", "player-1");
+    expect(acknowledgePendingOwnerResults).toHaveBeenCalledWith({
+      resultIds: ["result-1", "result-2"],
       playerId: "player-1",
     });
   });

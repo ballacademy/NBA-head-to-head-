@@ -3673,6 +3673,96 @@ h1.landing-hub__title--name {
   margin-bottom: 12px;
 }
 
+.owner-results-inbox__list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.owner-results-inbox__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.45);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.owner-results-inbox__row:hover,
+.owner-results-inbox__row:focus-visible {
+  border-color: rgba(226, 232, 240, 0.55);
+  background: rgba(30, 41, 59, 0.7);
+  outline: none;
+}
+
+.owner-results-inbox__outcome {
+  min-width: 3.25rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+}
+
+.owner-results-inbox__row--win .owner-results-inbox__outcome {
+  color: #86efac;
+}
+
+.owner-results-inbox__row--loss .owner-results-inbox__outcome {
+  color: #fca5a5;
+}
+
+.owner-results-inbox__row--tie .owner-results-inbox__outcome {
+  color: #fde68a;
+}
+
+.owner-results-inbox__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.owner-results-inbox__opponent {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.owner-results-inbox__meta {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.owner-results-inbox__chevron {
+  color: #94a3b8;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.owner-results-inbox__footer--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .owner-results-inbox__footer--split {
+    grid-template-columns: 1fr;
+  }
+}
+
 .match-results__header {
   margin-bottom: 14px;
   text-align: center;

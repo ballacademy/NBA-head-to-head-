@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
@@ -8,16 +9,31 @@ import type { DeliveredOwnerResult } from "../lib/pendingOwnerResults";
 import type { ModePlayerRecords } from "../lib/playerRecord";
 
 interface PendingOwnerResultsProps {
-  delivery: DeliveredOwnerResult;
+  deliveries: DeliveredOwnerResult[];
   modeRecords: ModePlayerRecords;
   onDone: () => void;
 }
 
-export function PendingOwnerResults({
+const outcomeLabel = (result: DeliveredOwnerResult["result"]["ownerResult"]) => {
+  if (result === "win") {
+    return "Win";
+  }
+  if (result === "loss") {
+    return "Loss";
+  }
+  return "Tie";
+};
+
+const modeLabel = (mode: DeliveredOwnerResult["mode"]) =>
+  mode === "ranked" ? "Pro" : "Classic";
+
+function MatchupDetail({
   delivery,
   modeRecords,
-  onDone,
-}: PendingOwnerResultsProps) {
+}: {
+  delivery: DeliveredOwnerResult;
+  modeRecords: ModePlayerRecords;
+}) {
   const { result, mode, classic, ranked } = delivery;
   const allTimeRecord = modeRecords.allTime;
   const lineup = getPlayersByIdFromActivePool(
@@ -31,13 +47,9 @@ export function PendingOwnerResults({
   const outcome = mode === "ranked" ? ranked : classic;
 
   return (
-    <section
-      className={`match-results daily-draft-results match-results--compact ${matchModeThemeClass(
-        mode === "ranked" ? "ranked" : "head-to-head",
-      )}`}
-    >
+    <>
       <div className="panel panel--compact daily-draft-results__header">
-        <p className="eyebrow">Queued lineup result</p>
+        <p className="eyebrow">Matchup preview · {modeLabel(mode)}</p>
         <h2>
           {ownerWon
             ? "Your queued lineup won"
@@ -76,10 +88,101 @@ export function PendingOwnerResults({
           ))}
         </div>
       </section>
+    </>
+  );
+}
 
-      <div className="panel panel--compact daily-draft-results__footer queued-draft-results__footer">
+export function PendingOwnerResults({
+  deliveries,
+  modeRecords,
+  onDone,
+}: PendingOwnerResultsProps) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = deliveries.find((delivery) => delivery.result.id === selectedId);
+  const count = deliveries.length;
+  const themeMode =
+    deliveries.every((delivery) => delivery.mode === "ranked")
+      ? "ranked"
+      : "head-to-head";
+
+  return (
+    <section
+      className={`match-results daily-draft-results match-results--compact owner-results-inbox ${matchModeThemeClass(
+        themeMode,
+      )}`}
+    >
+      {selected ? (
+        <MatchupDetail delivery={selected} modeRecords={modeRecords} />
+      ) : (
+        <>
+          <div className="panel panel--compact daily-draft-results__header">
+            <p className="eyebrow">Queued lineup results</p>
+            <h2>
+              {count === 1
+                ? "1 matchup while you were away"
+                : `${count} matchups while you were away`}
+            </h2>
+            <p>
+              Open any matchup for the full preview, or close all results at once.
+            </p>
+          </div>
+
+          <ul className="owner-results-inbox__list">
+            {deliveries.map((delivery) => {
+              const { result, mode, classic, ranked } = delivery;
+              const outcome = mode === "ranked" ? ranked : classic;
+              const margin = Math.abs(result.ownerScore - result.opponentScore);
+
+              return (
+                <li key={result.id}>
+                  <button
+                    type="button"
+                    className={`owner-results-inbox__row owner-results-inbox__row--${result.ownerResult}`}
+                    onClick={() => setSelectedId(result.id)}
+                  >
+                    <span className="owner-results-inbox__outcome">
+                      {outcomeLabel(result.ownerResult)}
+                    </span>
+                    <span className="owner-results-inbox__body">
+                      <span className="owner-results-inbox__opponent">
+                        {result.opponentTeamName}
+                      </span>
+                      <span className="owner-results-inbox__meta">
+                        {modeLabel(mode)} · {result.ownerScore.toFixed(1)}–
+                        {result.opponentScore.toFixed(1)} · margin{" "}
+                        {margin.toFixed(1)}
+                        {outcome
+                          ? ` · ${formatRatingDelta(outcome.delta)}`
+                          : ""}
+                      </span>
+                    </span>
+                    <span className="owner-results-inbox__chevron" aria-hidden="true">
+                      ›
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+
+      <div
+        className={`panel panel--compact daily-draft-results__footer queued-draft-results__footer${
+          selected ? " owner-results-inbox__footer--split" : ""
+        }`}
+      >
+        {selected ? (
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setSelectedId(null)}
+          >
+            Back to results
+          </button>
+        ) : null}
         <button type="button" className="play-again-button" onClick={onDone}>
-          Back to home
+          Close all results
         </button>
       </div>
     </section>

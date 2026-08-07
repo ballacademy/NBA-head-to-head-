@@ -42,6 +42,9 @@ export interface PendingOwnerResult {
 
 export interface PendingMatchmakingStatus {
   queuedLineup: { id: string; createdAt: string } | null;
+  /** All unacked owner results for this mode (oldest first). */
+  pendingResults: PendingOwnerResult[];
+  /** First pending result — kept for older clients. */
   pendingResult: PendingOwnerResult | null;
 }
 
@@ -172,10 +175,16 @@ export const fetchPendingMatchmakingStatus = async (params: {
       return null;
     }
 
-    const payload = (await response.json()) as PendingMatchmakingStatus;
+    const payload = (await response.json()) as Partial<PendingMatchmakingStatus>;
+    const pendingResults = Array.isArray(payload.pendingResults)
+      ? payload.pendingResults
+      : payload.pendingResult
+        ? [payload.pendingResult]
+        : [];
     return {
       queuedLineup: payload.queuedLineup ?? null,
-      pendingResult: payload.pendingResult ?? null,
+      pendingResults,
+      pendingResult: pendingResults[0] ?? payload.pendingResult ?? null,
     };
   } catch {
     return null;
@@ -185,7 +194,24 @@ export const fetchPendingMatchmakingStatus = async (params: {
 export const acknowledgePendingOwnerResult = async (params: {
   resultId: string;
   playerId: string;
+}): Promise<boolean> =>
+  acknowledgePendingOwnerResults({
+    resultIds: [params.resultId],
+    playerId: params.playerId,
+  });
+
+export const acknowledgePendingOwnerResults = async (params: {
+  resultIds: string[];
+  playerId: string;
 }): Promise<boolean> => {
+  const resultIds = params.resultIds
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+
+  if (resultIds.length === 0) {
+    return true;
+  }
+
   try {
     const response = await fetch(buildUrl("/api/pending"), {
       method: "POST",
@@ -194,7 +220,7 @@ export const acknowledgePendingOwnerResult = async (params: {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        resultId: params.resultId,
+        resultIds,
         playerId: params.playerId,
       }),
     });
