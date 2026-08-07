@@ -108,6 +108,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
 interface AckBody {
   resultId?: unknown;
+  playerId?: unknown;
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -120,17 +121,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const resultId = typeof body.resultId === "string" ? body.resultId.trim() : "";
+  const playerId =
+    typeof body.playerId === "string" ? body.playerId.trim() : "";
 
-  if (!resultId) {
-    return json({ error: "resultId is required" }, 400);
+  if (!resultId || !playerId) {
+    return json({ error: "resultId and playerId are required" }, 400);
   }
 
   await context.env.DB.prepare(
     `UPDATE owner_match_results
      SET acknowledged_at = ?
-     WHERE id = ? AND acknowledged_at IS NULL`,
+     WHERE id = ? AND owner_player_id = ? AND acknowledged_at IS NULL`,
   )
-    .bind(new Date().toISOString(), resultId)
+    .bind(new Date().toISOString(), resultId, playerId)
     .run();
 
   return json({ ok: true });

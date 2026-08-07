@@ -182,9 +182,10 @@ export const fetchPendingMatchmakingStatus = async (params: {
   }
 };
 
-export const acknowledgePendingOwnerResult = async (
-  resultId: string,
-): Promise<boolean> => {
+export const acknowledgePendingOwnerResult = async (params: {
+  resultId: string;
+  playerId: string;
+}): Promise<boolean> => {
   try {
     const response = await fetch(buildUrl("/api/pending"), {
       method: "POST",
@@ -192,8 +193,34 @@ export const acknowledgePendingOwnerResult = async (
         accept: "application/json",
         "content-type": "application/json",
       },
-      body: JSON.stringify({ resultId }),
+      body: JSON.stringify({
+        resultId: params.resultId,
+        playerId: params.playerId,
+      }),
     });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+export const releaseGhostOpponentClaim = async (params: {
+  mode: GhostMatchmakingMode;
+  playerId: string;
+}): Promise<boolean> => {
+  try {
+    const search = new URLSearchParams({
+      mode: params.mode,
+      playerId: params.playerId,
+    });
+    const response = await fetch(
+      `${buildUrl("/api/opponent")}?${search.toString()}`,
+      {
+        method: "DELETE",
+        headers: { accept: "application/json" },
+      },
+    );
 
     return response.ok;
   } catch {

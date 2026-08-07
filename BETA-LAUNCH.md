@@ -14,7 +14,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 ## You must confirm in Cloudflare / production
 
-1. **D1 migrations** — production DB applied through `0012` (Founding GM / signup index).
+1. **D1 migrations** — production DB applied through `0018` (private rooms). Confirm newer migrations are applied before launch.
 2. **Pages binding** — Pages project has D1 binding name **`DB`** for Production.
 3. **Deploy** — latest `main` (or this PR after merge) is live on Pages.
 4. **Apex DNS** — `draftdaygm.com` resolves and redirects to `www` (already looked healthy: apex → 301 www).

@@ -1,7 +1,8 @@
 # Draft Day GM
 
-An NBA-themed web app where eight global challengers draft five-man lineups,
-face one opponent at a time, and advance through a winner-take-all bracket.
+An NBA-themed web app for drafting five-man lineups and playing head-to-head
+matchups: Classic H2H, Pro H2H (salary cap + Banners), Daily Draft, Weekly
+Events, and private friend matches.
 
 Lineups are scored on:
 
@@ -38,17 +39,7 @@ See [SETUP-WINDOWS.md](SETUP-WINDOWS.md) for clone, run, and update steps.
 To compile traditional stats for every NBA player (for use in another site or spreadsheet), run the Python fetch script:
 
 ```bash
-python3 -m pip install -r scripts/requirements.txt
-python3 scripts/fetch_nba_player_stats.py --season 2025-26
+python3 scripts/fetch_nba_player_stats.py
 ```
 
-On Windows:
-
-```powershell
-python -m pip install -r scripts/requirements.txt
-python scripts/fetch_nba_player_stats.py --season 2025-26
-```
-
-This pulls data from Basketball Reference and writes CSV, JSON, and Excel files to `data/nba-stats/`. See `data/nba-stats/README.md` for file formats and usage.
-
-For a compliant refresh workflow that does not scrape Basketball Reference, see `data/manual/README.md` and use `scripts/csv_to_stats_json.py` plus `scripts/csv_to_salaries_json.py`.
+See script `--help` for season and output options.

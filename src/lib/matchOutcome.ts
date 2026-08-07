@@ -20,12 +20,39 @@ export type ClassicMatchOutcome = PersistedBannersOutcome;
 
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
+const RECORDED_MATCH_IDS_KEY = "nba-head-to-head-recorded-match-ids";
+const MAX_RECORDED_MATCH_IDS = 80;
 
 interface CachedMatchOutcome {
   matchId: string;
   ranked?: RankedMatchOutcome;
   classic?: ClassicMatchOutcome;
 }
+
+const loadRecordedMatchIds = (): string[] => {
+  const saved = readJson<string[]>(RECORDED_MATCH_IDS_KEY);
+  return Array.isArray(saved)
+    ? saved.filter((id): id is string => typeof id === "string" && id.length > 0)
+    : [];
+};
+
+const rememberRecordedMatchId = (matchId: string) => {
+  const next = [
+    matchId,
+    ...loadRecordedMatchIds().filter((id) => id !== matchId),
+  ].slice(0, MAX_RECORDED_MATCH_IDS);
+  writeJson(RECORDED_MATCH_IDS_KEY, next);
+  writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
+};
+
+export const hasRecordedMatchId = (matchId: string) => {
+  if (loadRecordedMatchIds().includes(matchId)) {
+    return true;
+  }
+
+  const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
+  return lastRecorded?.matchId === matchId;
+};
 
 export const projectRecordAfterMatch = (
   result: HeadToHeadResult,
@@ -47,9 +74,7 @@ export const persistMatchOutcome = (
   ranked?: RankedMatchOutcome;
   classic?: ClassicMatchOutcome;
 } => {
-  const lastRecorded = readJson<{ matchId: string }>(LAST_RECORDED_MATCH_KEY);
-
-  if (lastRecorded?.matchId === matchId) {
+  if (hasRecordedMatchId(matchId)) {
     const cached = readJson<CachedMatchOutcome>(LAST_MATCH_OUTCOME_KEY);
 
     return {
@@ -77,7 +102,7 @@ export const persistMatchOutcome = (
     ranked = persistRankedOutcome(result, team, record, opponentElo);
   }
 
-  writeJson(LAST_RECORDED_MATCH_KEY, { matchId });
+  rememberRecordedMatchId(matchId);
   writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic });
 
   return { record, ranked, classic };

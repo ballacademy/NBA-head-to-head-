@@ -911,8 +911,8 @@ function App() {
         } else if (resolution.plan.kind === "npc") {
           setMatchmakingNotice(
             resolution.plan.liveUnavailable
-              ? "Live search was unavailable — matched you with a practice opponent."
-              : "Matched with a practice opponent (not a live player).",
+              ? "Live search was unavailable — matched you with a simulated opponent."
+              : "Matched with a simulated opponent (not a live player).",
           );
         }
 
@@ -1843,7 +1843,14 @@ function App() {
         matchId: liveMatchId,
         playerId,
         opponentPlayerId,
-        players: opponentDraftablePlayersRef.current,
+        // Live opponents draft from their own unlocks (unknown here). Autofill
+        // from the full mode pool — never a synthetic collection gap.
+        players: eventRestriction
+          ? filterPlayersForEventRestriction(
+              activePlayers,
+              eventRestriction,
+            )
+          : activePlayers,
         salaryCapLimit: opponent.salaryCapLimit,
       });
 
@@ -1873,6 +1880,8 @@ function App() {
       cancelled = true;
     };
   }, [
+    activePlayers,
+    eventRestriction,
     opponent?.id,
     opponent?.isLiveOpponent,
     opponent?.liveMatchId,
@@ -2290,7 +2299,6 @@ function App() {
             opponent.username,
           )}
           opponentAutoDrafted={opponentAutoDrafted}
-          onLeave={() => resetToLanding()}
         />
       ) : null}
 
@@ -2321,7 +2329,32 @@ function App() {
       !isDailyDraft &&
       !isPendingQueueMatch &&
       opponent &&
-      matchId ? (
+      matchId &&
+      (userLineup.length !== 5 || opponentLineup.length !== 5) ? (
+        <section className="panel landing">
+          <p className="eyebrow">Results unavailable</p>
+          <h2>We couldn&apos;t load both lineups for scoring.</h2>
+          <p>
+            A player id may be missing from the current pool. Return home and try
+            another match.
+          </p>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => resetToLanding()}
+          >
+            Back to home
+          </button>
+        </section>
+      ) : null}
+
+      {phase === "results" &&
+      !isDailyDraft &&
+      !isPendingQueueMatch &&
+      opponent &&
+      matchId &&
+      userLineup.length === 5 &&
+      opponentLineup.length === 5 ? (
         <MatchResults
           user={user}
           opponent={opponent}

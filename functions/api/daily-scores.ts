@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { computeDailySubmissionValue } from "../lib/dailyScoreCompute";
 import { parseDailyLineupJson, parseDailyMode } from "../lib/dailyScoresDb";
 import { isAllowedDailySubmissionDateKey } from "../lib/dailyDateKeys";
 
@@ -153,11 +154,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const playerId = parsePlayerId(body.playerId);
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
-  const formattedResult =
-    typeof body.formattedResult === "string"
-      ? body.formattedResult.trim().slice(0, 120)
-      : "";
-  const value = Number(body.value);
+  // Client value/formattedResult are ignored; server recomputes from lineup.
   const lineup = Array.isArray(body.lineup)
     ? body.lineup.filter((id): id is string => typeof id === "string")
     : [];
@@ -173,21 +170,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (!playerId || !teamName || !formattedResult) {
-    return json(
-      { error: "playerId, teamName, and formattedResult are required" },
-      400,
-    );
-  }
-
-  if (!Number.isFinite(value) || value < -1_000_000 || value > 1_000_000) {
-    return json({ error: "value is out of range" }, 400);
+  if (!playerId || !teamName) {
+    return json({ error: "playerId and teamName are required" }, 400);
   }
 
   if (lineup.length !== 5) {
     return json({ error: "lineup must contain exactly 5 player ids" }, 400);
   }
 
+  const computed = computeDailySubmissionValue(goalId, lineup);
+  if (!computed) {
+    return json(
+      {
+        error:
+          "could not score daily lineup; invalid goalId or unknown player ids",
+      },
+      400,
+    );
+  }
+
+  const { value, formattedResult } = computed;
   const submittedAt = new Date().toISOString();
 
   const existing = await context.env.DB.prepare(

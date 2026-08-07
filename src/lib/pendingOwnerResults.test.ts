@@ -132,6 +132,9 @@ describe("pendingOwnerResults", () => {
     );
 
     expect(clearPendingLineupState).toHaveBeenCalledWith("ranked", "player-1");
-    expect(acknowledgePendingOwnerResult).toHaveBeenCalledWith("result-2");
+    expect(acknowledgePendingOwnerResult).toHaveBeenCalledWith({
+      resultId: "result-2",
+      playerId: "player-1",
+    });
   });
 });
