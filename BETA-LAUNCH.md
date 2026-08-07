@@ -33,8 +33,8 @@ curl -s https://www.draftdaygm.com/api/account/status
 On a real phone + desktop browser:
 
 1. **Landing** — modes load; logo/nav OK; no blank white flash.
-2. **Daily Draft** — start Basic or Advanced, finish once, see results / percentile.
-3. **Practice** — second Daily run does not overwrite the official daily attempt.
+2. **Daily Draft** — start Basic or Advanced, finish once, see results / percentile. Only one scored attempt per mode per day.
+3. **Practice (H2H)** — Practice Classic/Pro does not change records, Banners, or badges.
 4. **Classic H2H** — queue, draft, results, record updates.
 5. **Pro H2H** — same with salary cap.
 6. **Weekly Event** — entry available; live queue only; result counts toward event.
