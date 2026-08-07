@@ -207,18 +207,23 @@ export function LeaderboardPage() {
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
   const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
   const [refreshTick, setRefreshTick] = useState(0);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const [refreshBusy, setRefreshBusy] = useState(false);
   const currentPlayerId = getOrCreatePlayerId();
   const seasonId = getCurrentSeasonId();
   const sort: BoardSort = view === "ranked" ? rankedSort : classicSort;
 
   useEffect(() => {
     const refresh = async () => {
-      await refreshLeaderboardFromApi({
+      setRefreshBusy(true);
+      const ok = await refreshLeaderboardFromApi({
         mode: view,
         sort: sort as LeaderboardSort,
         limit: view === "ranked" ? RANKED_LEADERBOARD_LIMIT : LEADERBOARD_LIMIT,
         seasonId,
       });
+      setRefreshFailed(!ok);
+      setRefreshBusy(false);
       setRefreshTick((current) => current + 1);
     };
 
@@ -286,6 +291,36 @@ export function LeaderboardPage() {
       <AccountRequiredNote>
         Create an account to appear on these leaderboards. Anyone can browse.
       </AccountRequiredNote>
+
+      {refreshFailed ? (
+        <p className="form-error" role="alert">
+          Couldn&apos;t refresh leaderboards.{" "}
+          <button
+            type="button"
+            className="daily-draft-results__sync-retry"
+            disabled={refreshBusy}
+            onClick={() => {
+              void (async () => {
+                setRefreshBusy(true);
+                const ok = await refreshLeaderboardFromApi({
+                  mode: view,
+                  sort: sort as LeaderboardSort,
+                  limit:
+                    view === "ranked"
+                      ? RANKED_LEADERBOARD_LIMIT
+                      : LEADERBOARD_LIMIT,
+                  seasonId,
+                });
+                setRefreshFailed(!ok);
+                setRefreshBusy(false);
+                setRefreshTick((current) => current + 1);
+              })();
+            }}
+          >
+            {refreshBusy ? "Retrying…" : "Retry"}
+          </button>
+        </p>
+      ) : null}
 
       <section className="hub-feature__panel leaderboard__panel">
         <div className="leaderboard__top">

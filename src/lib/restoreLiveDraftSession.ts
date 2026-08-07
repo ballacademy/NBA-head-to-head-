@@ -18,6 +18,11 @@ export interface RestoredLiveDraftState {
   opponentAutoDrafted?: boolean;
 }
 
+export type RestoreLiveDraftResult =
+  | { status: "restored"; state: RestoredLiveDraftState }
+  | { status: "unavailable" }
+  | { status: "none" };
+
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, ms);
@@ -82,18 +87,18 @@ const buildDraftStateFromSession = (
   };
 };
 
-export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState | null> => {
+export const restoreLiveDraftSession = async (): Promise<RestoreLiveDraftResult> => {
   const session = loadLiveDraftSession();
 
   if (!session) {
-    return null;
+    return { status: "none" };
   }
 
   const playerId = getOrCreatePlayerIdentity().playerId;
 
   if (session.playerId !== playerId) {
     clearLiveDraftSession();
-    return null;
+    return { status: "none" };
   }
 
   let remote = await fetchLiveMatchStateDetailed({
@@ -113,11 +118,11 @@ export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState 
   if (!remote.ok) {
     if (remote.error === "unavailable") {
       // Keep local session so a later refresh can reconnect.
-      return null;
+      return { status: "unavailable" };
     }
 
     clearLiveDraftSession();
-    return null;
+    return { status: "none" };
   }
 
   const state = remote.state;
@@ -128,19 +133,25 @@ export const restoreLiveDraftSession = async (): Promise<RestoredLiveDraftState 
 
   if (state.opponentReady && state.opponentLineup?.length === 5) {
     return {
-      ...buildDraftStateFromSession(
-        sessionWithMeta,
-        state.opponentLineup,
-        state.selfLineup,
-      ),
-      phase: "waiting",
-      opponentComplete: true,
+      status: "restored",
+      state: {
+        ...buildDraftStateFromSession(
+          sessionWithMeta,
+          state.opponentLineup,
+          state.selfLineup,
+        ),
+        phase: "waiting",
+        opponentComplete: true,
+      },
     };
   }
 
-  return buildDraftStateFromSession(
-    sessionWithMeta,
-    null,
-    state.selfLineup,
-  );
+  return {
+    status: "restored",
+    state: buildDraftStateFromSession(
+      sessionWithMeta,
+      null,
+      state.selfLineup,
+    ),
+  };
 };

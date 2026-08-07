@@ -39,7 +39,20 @@ export const writeJson = <T>(key: string, value: T) => {
     return;
   }
 
-  storage.setItem(key, JSON.stringify(value));
+  if (value == null) {
+    try {
+      storage.removeItem?.(key);
+    } catch {
+      // ignore quota / private-mode failures
+    }
+    return;
+  }
+
+  try {
+    storage.setItem(key, JSON.stringify(value));
+  } catch {
+    // QuotaExceededError / SecurityError — fail soft
+  }
 };
 
 export const removeJson = (key: string) => {
@@ -49,5 +62,9 @@ export const removeJson = (key: string) => {
     return;
   }
 
-  storage.removeItem(key);
+  try {
+    storage.removeItem(key);
+  } catch {
+    // ignore
+  }
 };
