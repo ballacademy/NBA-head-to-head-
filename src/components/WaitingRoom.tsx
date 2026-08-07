@@ -28,7 +28,8 @@ export function WaitingRoom({
             : "Waiting for your opponent"}
       </h2>
       <p>
-        Your lineup is locked in.
+        Your lineup is locked in. Stay on this screen so the match can finish —
+        leaving early can skip your results.
         {opponentAutoDrafted
           ? " Their lineup was auto-drafted so the match can be scored."
           : opponentName

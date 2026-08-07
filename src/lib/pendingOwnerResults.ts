@@ -84,5 +84,8 @@ export const finalizeDeliveredOwnerResult = async (
   playerId: string,
 ) => {
   clearPendingLineupState(delivery.mode, playerId);
-  await acknowledgePendingOwnerResult(delivery.result.id);
+  await acknowledgePendingOwnerResult({
+    resultId: delivery.result.id,
+    playerId,
+  });
 };

@@ -128,6 +128,7 @@ export function MatchResults({
     opponentScore: number;
     challengerLineup: string[];
   } | null>(null);
+  const applyGhostCompetitiveOutcomeRef = useRef<(() => void) | null>(null);
   const eventLeaderboardSubmissionRef = useRef<{
     event: NonNullable<ReturnType<typeof getCurrentWeeklyEvent>>;
     teamName: string;
@@ -206,10 +207,28 @@ export function MatchResults({
             }
           });
         }
-      } else {
-        const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
-        const rankedEloBefore = ensureCurrentRankedSeason().elo;
-        const classicEloBefore = ensureClassicProfile().elo;
+
+        const next = processMatchUnlock(matchResult, matchId, collection);
+        setMatchCollection(next);
+        onCollectionChange(next);
+        setActionsReady(true);
+        return;
+      }
+
+      const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
+      const rankedEloBefore = ensureCurrentRankedSeason().elo;
+      const classicEloBefore = ensureClassicProfile().elo;
+      const mode = user.salaryCapMode ? "ranked" : "classic";
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      const challengerEloBefore = user.salaryCapMode
+        ? rankedEloBefore
+        : classicEloBefore;
+      const storedLineupId = opponent.isGhostOpponent
+        ? extractGhostStoredLineupId(opponent.id)
+        : null;
+      const starCount = countUnlockedAllStars(collection);
+
+      const applyLocalCompetitiveOutcome = () => {
         const outcome = persistMatchOutcome(
           matchResult,
           { name: user.name },
@@ -246,60 +265,73 @@ export function MatchResults({
           });
         }
 
+        const next = processMatchUnlock(matchResult, matchId, collection);
+        setMatchCollection(next);
+        onCollectionChange(next);
+      };
+      applyGhostCompetitiveOutcomeRef.current = applyLocalCompetitiveOutcome;
+
+      const storeChallengerLineup = () => {
         if (
-          canStoreLineupForMatchmaking({
+          !canStoreLineupForMatchmaking({
             ...user,
             players: userLineup,
           })
         ) {
-          const mode = user.salaryCapMode ? "ranked" : "classic";
-          const playerId = getOrCreatePlayerIdentity().playerId;
-          const challengerEloBefore = user.salaryCapMode
-            ? rankedEloBefore
-            : classicEloBefore;
-          const storedLineupId = opponent.isGhostOpponent
-            ? extractGhostStoredLineupId(opponent.id)
-            : null;
-          const starCount = countUnlockedAllStars(collection);
+          return;
+        }
 
-          if (storedLineupId) {
-            const submission = {
-              storedLineupId,
-              mode: mode as "classic" | "ranked",
-              challengerPlayerId: playerId,
-              challengerTeamName: user.name,
-              challengerWon: userWon,
-              challengerElo: challengerEloBefore,
-              userScore: userScore.uncappedTotal,
-              opponentScore: opponentScore.uncappedTotal,
-              challengerLineup: user.lineup.filter(
-                (id): id is string => Boolean(id),
-              ),
-            };
-            ghostOutcomeSubmissionRef.current = submission;
-            void submitGhostMatchOutcome(submission).then((ok) => {
-              if (!ok) {
-                setGhostOutcomeFailed(true);
-              }
-            });
+        void submitStoredLineup({
+          mode,
+          playerId,
+          teamName: user.name,
+          lineup: user.lineup.filter((id): id is string => Boolean(id)),
+          elo: challengerEloBefore,
+          awaitingLive: false,
+          salaryTotal: getLineupSalaryTotal(userLineup),
+          starCount,
+        });
+      };
+
+      if (
+        storedLineupId &&
+        canStoreLineupForMatchmaking({
+          ...user,
+          players: userLineup,
+        })
+      ) {
+        const submission = {
+          storedLineupId,
+          mode: mode as "classic" | "ranked",
+          challengerPlayerId: playerId,
+          challengerTeamName: user.name,
+          challengerWon: userWon,
+          challengerElo: challengerEloBefore,
+          userScore: userScore.uncappedTotal,
+          opponentScore: opponentScore.uncappedTotal,
+          challengerLineup: user.lineup.filter(
+            (id): id is string => Boolean(id),
+          ),
+        };
+        ghostOutcomeSubmissionRef.current = submission;
+
+        void submitGhostMatchOutcome(submission).then((ok) => {
+          if (!ok) {
+            setGhostOutcomeFailed(true);
+            setActionsReady(true);
+            return;
           }
 
-          void submitStoredLineup({
-            mode,
-            playerId,
-            teamName: user.name,
-            lineup: user.lineup.filter((id): id is string => Boolean(id)),
-            elo: challengerEloBefore,
-            awaitingLive: false,
-            salaryTotal: getLineupSalaryTotal(userLineup),
-            starCount,
-          });
-        }
+          // Only count the match locally after the owner result is persisted.
+          applyLocalCompetitiveOutcome();
+          storeChallengerLineup();
+          setActionsReady(true);
+        });
+        return;
       }
 
-      const next = processMatchUnlock(matchResult, matchId, collection);
-      setMatchCollection(next);
-      onCollectionChange(next);
+      applyLocalCompetitiveOutcome();
+      storeChallengerLineup();
     }
 
     setActionsReady(true);
@@ -369,7 +401,12 @@ export function MatchResults({
 
     setGhostOutcomeRetryBusy(true);
     const ok = await submitGhostMatchOutcome(submission);
-    setGhostOutcomeFailed(!ok);
+    if (ok) {
+      applyGhostCompetitiveOutcomeRef.current?.();
+      setGhostOutcomeFailed(false);
+    } else {
+      setGhostOutcomeFailed(true);
+    }
     setGhostOutcomeRetryBusy(false);
   };
 

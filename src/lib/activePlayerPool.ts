@@ -96,20 +96,21 @@ export const getPlayersByIdFromActivePool = (
   playerIds: string[],
   record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
-) => {
-  const players = playerIds
+) =>
+  playerIds
     .map((id) => getPlayerFromActivePool(id, record, options))
     .filter((player): player is Player => Boolean(player));
-
-  if (playerIds.length > 0 && players.length !== playerIds.length) {
-    return [];
-  }
-
-  return players;
-};
 
 export const isCompleteLineupFromActivePool = (
   playerIds: string[],
   record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
-) => getPlayersByIdFromActivePool(playerIds, record, options).length === 5;
+) => {
+  const ids = playerIds.filter((id): id is string => Boolean(id));
+
+  if (ids.length !== 5) {
+    return false;
+  }
+
+  return ids.every((id) => Boolean(getPlayerFromActivePool(id, record, options)));
+};

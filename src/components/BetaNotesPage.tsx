@@ -26,7 +26,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <div className="legal-page__body beta-notes-body">
           <h2>What&apos;s live</h2>
           <ul>
-            <li>Daily Draft (one attempt per day; Practice for extra runs)</li>
+            <li>Daily Draft (one scored attempt per day for Basic and Advanced)</li>
             <li>Classic H2H and Pro H2H ranked matchmaking</li>
             <li>Weekly Events (live opponents only)</li>
             <li>Collection, Badges, Leaderboards, Stats, and Tier Lists (bottom nav)</li>

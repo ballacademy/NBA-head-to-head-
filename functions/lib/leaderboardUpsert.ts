@@ -99,13 +99,24 @@ export const validateLeaderboardUpsert = (
   }
 
   if (gamesDelta === 0) {
+    // Ties update Elo without changing wins/losses. Allow Elo movement within
+    // the normal per-match bound when streaks are unchanged.
     if (
-      elo !== existing.elo ||
       winStreak !== existing.win_streak ||
       lossStreak !== existing.loss_streak
     ) {
-      return "elo and streaks cannot change without a recorded match";
+      return "streaks cannot change without a recorded win or loss";
     }
+
+    if (elo === existing.elo) {
+      return null;
+    }
+
+    if (eloDelta > MAX_ELO_DELTA_PER_UPSERT) {
+      return "elo change exceeds the maximum allowed per update";
+    }
+
+    return null;
   } else if (winsDelta === 1 && lossesDelta === 0) {
     if (lossStreak !== 0 || winStreak !== existing.win_streak + 1) {
       return "win streak update is invalid";

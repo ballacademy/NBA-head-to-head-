@@ -1,5 +1,8 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
-import { claimGhostOpponent } from "../lib/matchmakingDb";
+import {
+  claimGhostOpponent,
+  releaseGhostOpponentClaim,
+} from "../lib/matchmakingDb";
 import { toPublicLeaderboardPlayerId } from "../lib/leaderboardPublicId";
 import {
   matchmakingModeError,
@@ -44,8 +47,9 @@ const resolveChallengerStarCount = async (
   db: D1Database,
   mode: MatchmakingMode,
   playerId: string,
-  fallback: number,
+  clientStarCount: number,
 ) => {
+  const clampedClient = Math.max(0, Math.round(clientStarCount));
   const recent = await db
     .prepare(
       `SELECT star_count
@@ -58,10 +62,11 @@ const resolveChallengerStarCount = async (
     .first<{ star_count: number }>();
 
   if (recent && Number.isFinite(recent.star_count)) {
-    return Math.max(0, Math.round(recent.star_count));
+    // Prefer the higher count so under-reporting cannot loosen the star gap.
+    return Math.max(clampedClient, Math.max(0, Math.round(recent.star_count)));
   }
 
-  return Math.max(0, Math.round(fallback));
+  return clampedClient;
 };
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -109,4 +114,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   return json(opponent);
+};
+
+export const onRequestDelete: PagesFunction<Env> = async (context) => {
+  const url = new URL(context.request.url);
+  const mode = parseMode(url.searchParams.get("mode"));
+  const playerId = url.searchParams.get("playerId")?.trim();
+
+  if (!mode) {
+    return json({ error: matchmakingModeError() }, 400);
+  }
+
+  if (!playerId) {
+    return json({ error: "playerId is required" }, 400);
+  }
+
+  await releaseGhostOpponentClaim(context.env.DB, mode, playerId);
+  return json({ ok: true });
 };

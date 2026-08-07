@@ -2,7 +2,10 @@ import {
   buildLiveAutofillLineup,
   LIVE_MATCH_LINEUP_WAIT_MS,
 } from "./liveAutofillLineup";
-import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
+import {
+  MATCHMAKING_POLL_INTERVAL_MS,
+  releaseGhostOpponentClaim,
+} from "./ghostMatchmaking";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import type { GhostMatchmakingMode } from "./ghostMatchmaking";
 import type { Player } from "./types";
@@ -177,6 +180,8 @@ export const leaveMatchmakingQueue = async (params: {
   } catch {
     // Ignore cleanup failures; queue entries expire automatically.
   }
+
+  await releaseGhostOpponentClaim(params);
 };
 
 export const searchLiveOpponentDetailed = async (

@@ -26,8 +26,8 @@ export interface QueueEntryRow {
   expires_at: string;
 }
 
-/** Soft claim TTL so abandoned ghost searches release Pro locks. */
-export const GHOST_CLAIM_TTL_MS = 5 * 60 * 1000;
+/** Soft claim TTL so abandoned ghost searches release Pro locks quickly. */
+export const GHOST_CLAIM_TTL_MS = 90 * 1000;
 
 const cutoffIso = (days: number) => {
   const date = new Date();
@@ -143,6 +143,23 @@ export const claimGhostOpponent = async (
   }
 
   return null;
+};
+
+export const releaseGhostOpponentClaim = async (
+  db: D1Database,
+  mode: MatchmakingMode,
+  playerId: string,
+) => {
+  await db
+    .prepare(
+      `UPDATE stored_lineups
+       SET claimed_by = NULL, claim_expires_at = NULL
+       WHERE mode = ?
+         AND claimed_by = ?
+         AND consumed_at IS NULL`,
+    )
+    .bind(mode, playerId)
+    .run();
 };
 
 export const claimQueueOpponent = async (
