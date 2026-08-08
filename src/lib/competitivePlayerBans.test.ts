@@ -59,7 +59,7 @@ describe("competitivePlayerBans", () => {
     expect(shouldApplyRankedEventPlayerBans({})).toBe(false);
   });
 
-  it("filters banned ids from pools and lineups", () => {
+  it("filters banned ids from pickable pools and lineups", () => {
     const poolId = findPlayerId("LeBron James")!;
     const pool = [
       { id: poolId, bbrPlayerId: LEBRON_JAMES_BBR_ID },
@@ -73,5 +73,17 @@ describe("competitivePlayerBans", () => {
     expect(
       lineupContainsRankedEventBannedPlayer(["curryst01", poolId]),
     ).toBe(true);
+  });
+
+  it("still finds LeBron in the visible draft pool when bans apply", () => {
+    const lebron = players.find(
+      (player) => player.bbrPlayerId === LEBRON_JAMES_BBR_ID,
+    );
+    expect(lebron).toBeTruthy();
+    expect(isBannedRankedEventPlayer(lebron!)).toBe(true);
+    // Display boards keep him; only pickable/auto-draft pools strip him.
+    expect(players.some((player) => isBannedRankedEventPlayer(player))).toBe(
+      true,
+    );
   });
 });

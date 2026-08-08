@@ -31,8 +31,9 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               daily), Classic/Pro H2H, and weekly Events
             </li>
             <li>
-              <strong>LeBron James</strong> is unavailable in Pro H2H and
-              Events (salary edge). Still draftable in Classic, practice, and
+              <strong>LeBron James</strong> is banned in Pro H2H and Events
+              (salary edge) — he still appears at the bottom of the draft board
+              with a Banned label. Still draftable in Classic, practice, and
               Daily Draft.
             </li>
             <li>

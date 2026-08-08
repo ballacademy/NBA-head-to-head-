@@ -44,6 +44,7 @@ import {
   getDailyDraftPlayStreak,
 } from "../lib/dailyDraftPlayStreak";
 import { getDailyDateKey } from "../lib/dailyDraft";
+import { isBannedRankedEventPlayer } from "../lib/competitivePlayerBans";
 
 interface DraftRoomProps {
   drafter: Drafter;
@@ -53,6 +54,8 @@ interface DraftRoomProps {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   dailyChallengeDescription?: string;
+  /** Pro / Events: show banned players at the bottom, not pickable. */
+  banRankedEventPlayers?: boolean;
   opponentName?: string | null;
   onPick: (slot: number, playerId: string) => void;
   onTimeout: (slot: number) => void;
@@ -66,6 +69,7 @@ export function DraftRoom({
   isDailyDraft = false,
   dailyChallengeTitle,
   dailyChallengeDescription,
+  banRankedEventPlayers = false,
   opponentName = null,
   onPick,
   onTimeout,
@@ -168,16 +172,39 @@ export function DraftRoom({
       pickedIds,
       salaryCapOptions,
       isDailyDraft ? "alphabetical" : "points",
-    );
+    ).map((entry) => {
+      const banned =
+        banRankedEventPlayers && isBannedRankedEventPlayer(entry.player);
+      return {
+        ...entry,
+        banned,
+        affordable: banned ? false : entry.affordable,
+      };
+    });
+
+    const ordered = banRankedEventPlayers
+      ? [
+          ...listed.filter((entry) => !entry.banned),
+          ...listed.filter((entry) => entry.banned),
+        ]
+      : listed;
 
     if (!normalizedQuery) {
-      return listed;
+      return ordered;
     }
 
-    return listed.filter(({ player }) =>
+    return ordered.filter(({ player }) =>
       `${player.name} ${player.team}`.toLowerCase().includes(normalizedQuery),
     );
-  }, [currentSlot, isDailyDraft, pickedIds, players, query, salaryCapOptions]);
+  }, [
+    banRankedEventPlayers,
+    currentSlot,
+    isDailyDraft,
+    pickedIds,
+    players,
+    query,
+    salaryCapOptions,
+  ]);
 
   const affordableCandidateCount = useMemo(
     () => candidates.filter((entry) => entry.affordable).length,
@@ -445,30 +472,40 @@ export function DraftRoom({
         aria-label="Eligible players"
       >
         {candidates.length > 0 ? (
-          candidates.map(({ player, affordable }) => {
-            const shineClass = affordable
+          candidates.map(({ player, affordable, banned }) => {
+            const shineClass = affordable && !banned
               ? getPlayerPickShineClass(player)
               : "";
             const showTags =
-              hasLimitedSampleSize(player) ||
-              getPlayerRarityBadgeItems(player, {
-                allTimeMode: drafter.allTimeMode,
-              }).length > 0;
+              !banned &&
+              (hasLimitedSampleSize(player) ||
+                getPlayerRarityBadgeItems(player, {
+                  allTimeMode: drafter.allTimeMode,
+                }).length > 0);
+            const pickDisabled = !affordable || banned;
 
             return (
               <button
                 type="button"
                 key={player.id}
-                disabled={!affordable}
-                aria-disabled={!affordable}
+                disabled={pickDisabled}
+                aria-disabled={pickDisabled}
                 title={
-                  affordable
-                    ? undefined
-                    : "Over the remaining salary cap for this pick"
+                  banned
+                    ? "Banned from Pro and Events"
+                    : affordable
+                      ? undefined
+                      : "Over the remaining salary cap for this pick"
                 }
-                className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}${affordable ? "" : " player-pick--unaffordable"}`}
+                className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}${
+                  banned
+                    ? " player-pick--banned"
+                    : affordable
+                      ? ""
+                      : " player-pick--unaffordable"
+                }`}
                 onClick={(event) => {
-                  if (!affordable) {
+                  if (pickDisabled) {
                     return;
                   }
                   if (draftSessionKey) {
@@ -495,7 +532,9 @@ export function DraftRoom({
                         {player.team} · {formatPlayerPositions(player.positions)}
                       </span>
                     </span>
-                    {hasSalaryCap ? (
+                    {banned ? (
+                      <span className="player-pick__banned-label">Banned</span>
+                    ) : hasSalaryCap ? (
                       <span className="player-pick__salary">
                         {formatSalary(estimatePlayerSalary(player))}
                         {!affordable ? (

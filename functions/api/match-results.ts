@@ -12,11 +12,6 @@ import {
   salaryCapForMatchmakingMode,
   sanitizeStoredLineupIds,
 } from "../lib/storedLineups";
-import {
-  lineupContainsRankedEventBannedPlayer,
-  matchmakingModeBansRankedEventPlayers,
-  rankedEventBannedPlayerError,
-} from "../../src/lib/competitivePlayerBans";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -129,12 +124,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  if (
-    matchmakingModeBansRankedEventPlayers(mode) &&
-    lineupContainsRankedEventBannedPlayer(challengerLineup)
-  ) {
-    return json({ error: rankedEventBannedPlayerError() }, 400);
-  }
+  // Do not reject banned players here — the match already finished. Draft-time
+  // bans are enforced on live locks and new stored-lineup posts.
 
   const db = context.env.DB;
   const lineup = await db

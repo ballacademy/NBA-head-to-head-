@@ -124,6 +124,7 @@ import {
 } from "./lib/playerCollection";
 import {
   filterOutRankedEventBannedPlayers,
+  isBannedFromRankedAndEvents,
   shouldApplyRankedEventPlayerBans,
 } from "./lib/competitivePlayerBans";
 import { pullAndMergeCollection } from "./lib/collectionRemote";
@@ -473,25 +474,25 @@ function App() {
     salaryCapMode: user?.salaryCapMode,
   });
 
+  // Full board pool (banned players stay visible with a Banned label in Pro/Events).
   const draftablePlayers = useMemo(() => {
     if (isDailyDraft) {
       return activePlayers;
     }
 
-    const pool = eventRestriction
+    return eventRestriction
       ? filterPlayersForEventRestriction(activePlayers, eventRestriction)
       : getDraftablePlayers(activePlayers, collection);
+  }, [activePlayers, collection, eventRestriction, isDailyDraft]);
 
-    return applyRankedEventBans
-      ? filterOutRankedEventBannedPlayers(pool)
-      : pool;
-  }, [
-    activePlayers,
-    applyRankedEventBans,
-    collection,
-    eventRestriction,
-    isDailyDraft,
-  ]);
+  // Auto-draft / bots never select competitively banned players.
+  const pickableDraftPlayers = useMemo(
+    () =>
+      applyRankedEventBans
+        ? filterOutRankedEventBannedPlayers(draftablePlayers)
+        : draftablePlayers,
+    [applyRankedEventBans, draftablePlayers],
+  );
 
   const opponentDraftablePlayers = useMemo(() => {
     const pool = eventRestriction
@@ -1485,28 +1486,48 @@ function App() {
     }
   };
 
-  const handlePick = useCallback((slot: number, playerId: string) => {
-    setUser((current) => {
-      if (!current) {
-        return current;
+  const handlePick = useCallback(
+    (slot: number, playerId: string) => {
+      if (
+        shouldApplyRankedEventPlayerBans({
+          isDailyDraft,
+          practiceMode: user?.practiceMode,
+          eventId: user?.eventId,
+          salaryCapMode: user?.salaryCapMode,
+        }) &&
+        isBannedFromRankedAndEvents(playerId)
+      ) {
+        return;
       }
 
-      if (current.lineup.includes(playerId)) {
-        return current;
-      }
+      setUser((current) => {
+        if (!current) {
+          return current;
+        }
 
-      const nextLineup = [...current.lineup];
-      nextLineup[slot] = playerId;
+        if (current.lineup.includes(playerId)) {
+          return current;
+        }
 
-      // Preserve any later autofilled slots (do not slice them away).
-      return {
-        ...current,
-        lineup: nextLineup,
-      };
-    });
+        const nextLineup = [...current.lineup];
+        nextLineup[slot] = playerId;
 
-    setDraftStep((current) => Math.min(slot + 1, 5));
-  }, []);
+        // Preserve any later autofilled slots (do not slice them away).
+        return {
+          ...current,
+          lineup: nextLineup,
+        };
+      });
+
+      setDraftStep((current) => Math.min(slot + 1, 5));
+    },
+    [
+      isDailyDraft,
+      user?.eventId,
+      user?.practiceMode,
+      user?.salaryCapMode,
+    ],
+  );
 
   const handleTimeout = useCallback(
     (slot: number) => {
@@ -1524,14 +1545,14 @@ function App() {
         const slotConstraint = current.draftSlots[slot];
         const salaryOptions = getSalaryCapDraftOptions(
           current.lineup,
-          draftablePlayers,
+          pickableDraftPlayers,
           slot,
           current.draftSlots.length,
           current.salaryCapLimit,
           current.draftSlots,
         );
         const autoPick = pickRandomTopCandidateForSlot(
-          draftablePlayers,
+          pickableDraftPlayers,
           slotConstraint,
           pickedIds,
           salaryOptions,
@@ -1556,7 +1577,7 @@ function App() {
             (playerId): playerId is string => Boolean(playerId),
           );
           const filled = completeSalaryCapDraftFromPartial(
-            draftablePlayers,
+            pickableDraftPlayers,
             partialLineupIds,
             current.draftSlots.slice(slot),
             current.salaryCapLimit,
@@ -1583,7 +1604,7 @@ function App() {
             nextLineup.filter((playerId): playerId is string => Boolean(playerId)),
           );
           const selection = pickBestForSlot(
-            draftablePlayers,
+            pickableDraftPlayers,
             current.draftSlots[filledSlot]!,
             filledIds,
           );
@@ -1623,7 +1644,7 @@ function App() {
         setDraftStep(nextStep);
       }
     },
-    [draftablePlayers, isDailyDraft],
+    [isDailyDraft, pickableDraftPlayers],
   );
 
   const handleCollectionChange = useCallback((next: PlayerCollection) => {
@@ -2333,6 +2354,7 @@ function App() {
             dailyChallengeDescription={dailySetup?.challenge.description}
             dailyChallengeTitle={dailySetup?.challenge.title}
             isDailyDraft={isDailyDraft}
+            banRankedEventPlayers={applyRankedEventBans}
             opponentName={
               isDailyDraft
                 ? null
