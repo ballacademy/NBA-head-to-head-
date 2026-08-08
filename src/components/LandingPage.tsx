@@ -681,35 +681,50 @@ export function LandingPage({
           <div className="play-hub-chooser" role="list">
             <button
               type="button"
-              className="play-hub-chooser__option"
+              className="play-hub-chooser__option play-hub-chooser__option--daily"
               role="listitem"
               onClick={() => updatePlaySection("daily")}
             >
-              <span className="play-hub-chooser__label">Daily Draft</span>
-              <span className="play-hub-chooser__meta">
-                Hidden stats · one scored try per mode each day
+              <span className="play-hub-chooser__copy">
+                <span className="play-hub-chooser__label">Daily Draft</span>
+                <span className="play-hub-chooser__meta">
+                  Hidden stats · one scored try per mode each day
+                </span>
+              </span>
+              <span className="play-hub-chooser__chevron" aria-hidden="true">
+                ›
               </span>
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option"
+              className="play-hub-chooser__option play-hub-chooser__option--h2h"
               role="listitem"
               onClick={() => updatePlaySection("headToHead")}
             >
-              <span className="play-hub-chooser__label">Head to Head</span>
-              <span className="play-hub-chooser__meta">
-                Classic or Pro live matchups, practice, and private games
+              <span className="play-hub-chooser__copy">
+                <span className="play-hub-chooser__label">Head to Head</span>
+                <span className="play-hub-chooser__meta">
+                  Classic or Pro live matchups, practice, and private games
+                </span>
+              </span>
+              <span className="play-hub-chooser__chevron" aria-hidden="true">
+                ›
               </span>
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option"
+              className="play-hub-chooser__option play-hub-chooser__option--events"
               role="listitem"
               onClick={() => updatePlaySection("events")}
             >
-              <span className="play-hub-chooser__label">Events</span>
-              <span className="play-hub-chooser__meta">
-                Weekly live H2H with a shared board and $100M cap
+              <span className="play-hub-chooser__copy">
+                <span className="play-hub-chooser__label">Events</span>
+                <span className="play-hub-chooser__meta">
+                  Weekly live H2H with a shared board and $100M cap
+                </span>
+              </span>
+              <span className="play-hub-chooser__chevron" aria-hidden="true">
+                ›
               </span>
             </button>
           </div>
