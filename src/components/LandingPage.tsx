@@ -681,7 +681,7 @@ export function LandingPage({
           <div className="play-hub-chooser" role="list">
             <button
               type="button"
-              className="play-hub-chooser__option play-hub-chooser__option--daily"
+              className="play-hub-chooser__option hub-accent--daily"
               role="listitem"
               onClick={() => updatePlaySection("daily")}
             >
@@ -697,7 +697,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option play-hub-chooser__option--h2h"
+              className="play-hub-chooser__option hub-accent--h2h"
               role="listitem"
               onClick={() => updatePlaySection("headToHead")}
             >
@@ -713,7 +713,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option play-hub-chooser__option--events"
+              className="play-hub-chooser__option hub-accent--event"
               role="listitem"
               onClick={() => updatePlaySection("events")}
             >
@@ -1164,14 +1164,14 @@ export function LandingPage({
             <div className="landing-hub__links">
               <button
                 type="button"
-                className="landing-hub__link-button"
+                className="landing-hub__link-button hub-accent hub-accent--ranked"
                 onClick={onViewStats}
               >
                 Season Stats
               </button>
               <button
                 type="button"
-                className="landing-hub__link-button"
+                className="landing-hub__link-button hub-accent hub-accent--event"
                 onClick={onViewAchievements}
               >
                 Badges
@@ -1208,14 +1208,14 @@ export function LandingPage({
             <div className="landing-hub__links">
               <button
                 type="button"
-                className="landing-hub__link-button"
+                className="landing-hub__link-button hub-accent hub-accent--h2h"
                 onClick={onViewGmStats}
               >
                 GM stats
               </button>
               <button
                 type="button"
-                className="landing-hub__link-button"
+                className="landing-hub__link-button hub-accent hub-accent--practice"
                 onClick={onViewBetaNotes}
               >
                 Beta notes

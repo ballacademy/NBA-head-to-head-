@@ -333,7 +333,9 @@ export function LeaderboardPage() {
               type="button"
               role="tab"
               aria-selected={view === "ranked"}
-              className={view === "ranked" ? "is-active" : undefined}
+              className={`leaderboard__tab leaderboard__tab--ranked hub-accent--ranked${
+                view === "ranked" ? " is-active" : ""
+              }`}
               onClick={() => setView("ranked")}
             >
               {PRO_HEAD_TO_HEAD_LABEL}
@@ -342,7 +344,9 @@ export function LeaderboardPage() {
               type="button"
               role="tab"
               aria-selected={view === "classic"}
-              className={view === "classic" ? "is-active" : undefined}
+              className={`leaderboard__tab leaderboard__tab--classic hub-accent--h2h${
+                view === "classic" ? " is-active" : ""
+              }`}
               onClick={() => setView("classic")}
             >
               {CLASSIC_HEAD_TO_HEAD_LABEL}
