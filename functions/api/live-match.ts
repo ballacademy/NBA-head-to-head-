@@ -9,6 +9,11 @@ import {
   salaryCapForMatchmakingMode,
   sanitizeStoredLineupIds,
 } from "../lib/storedLineups";
+import {
+  lineupContainsRankedEventBannedPlayer,
+  matchmakingModeBansRankedEventPlayers,
+  rankedEventBannedPlayerError,
+} from "../../src/lib/competitivePlayerBans";
 
 /** Must stay in sync with src/lib/liveAutofillLineup.ts */
 export const LIVE_MATCH_LINEUP_WAIT_MS = 120_000;
@@ -133,6 +138,13 @@ const validateLineupForMode = (mode: MatchmakingMode, lineup: string[]) => {
     if (eventError) {
       return { error: eventError, status: 400 } as const;
     }
+  }
+
+  if (
+    matchmakingModeBansRankedEventPlayers(mode) &&
+    lineupContainsRankedEventBannedPlayer(lineup)
+  ) {
+    return { error: rankedEventBannedPlayerError(), status: 400 } as const;
   }
 
   return null;

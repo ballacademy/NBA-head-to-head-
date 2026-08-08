@@ -122,6 +122,10 @@ import {
   countUnlockedAllStars,
   type PlayerCollection,
 } from "./lib/playerCollection";
+import {
+  filterOutRankedEventBannedPlayers,
+  shouldApplyRankedEventPlayerBans,
+} from "./lib/competitivePlayerBans";
 import { pullAndMergeCollection } from "./lib/collectionRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
@@ -462,33 +466,49 @@ function App() {
 
   const eventRestriction = user?.eventRestriction;
 
+  const applyRankedEventBans = shouldApplyRankedEventPlayerBans({
+    isDailyDraft,
+    practiceMode: user?.practiceMode,
+    eventId: user?.eventId,
+    salaryCapMode: user?.salaryCapMode,
+  });
+
   const draftablePlayers = useMemo(() => {
     if (isDailyDraft) {
       return activePlayers;
     }
 
-    if (eventRestriction) {
-      return filterPlayersForEventRestriction(activePlayers, eventRestriction);
-    }
+    const pool = eventRestriction
+      ? filterPlayersForEventRestriction(activePlayers, eventRestriction)
+      : getDraftablePlayers(activePlayers, collection);
 
-    return getDraftablePlayers(activePlayers, collection);
-  }, [activePlayers, collection, eventRestriction, isDailyDraft]);
-
-  const opponentDraftablePlayers = useMemo(() => {
-    if (eventRestriction) {
-      return filterPlayersForEventRestriction(activePlayers, eventRestriction);
-    }
-
-    // Practice bots always mirror the user's unlocked/draftable pool.
-    if (user?.practiceMode) {
-      return getDraftablePlayers(activePlayers, collection);
-    }
-
-    return opponentCollection
-      ? getDraftablePlayers(activePlayers, opponentCollection)
-      : activePlayers;
+    return applyRankedEventBans
+      ? filterOutRankedEventBannedPlayers(pool)
+      : pool;
   }, [
     activePlayers,
+    applyRankedEventBans,
+    collection,
+    eventRestriction,
+    isDailyDraft,
+  ]);
+
+  const opponentDraftablePlayers = useMemo(() => {
+    const pool = eventRestriction
+      ? filterPlayersForEventRestriction(activePlayers, eventRestriction)
+      : user?.practiceMode
+        ? // Practice bots always mirror the user's unlocked/draftable pool.
+          getDraftablePlayers(activePlayers, collection)
+        : opponentCollection
+          ? getDraftablePlayers(activePlayers, opponentCollection)
+          : activePlayers;
+
+    return applyRankedEventBans
+      ? filterOutRankedEventBannedPlayers(pool)
+      : pool;
+  }, [
+    activePlayers,
+    applyRankedEventBans,
     collection,
     eventRestriction,
     opponentCollection,
@@ -678,15 +698,27 @@ function App() {
     // Show first-draft instructions before matchmaking or the pick timer starts.
     await ensureDraftOnboarding(salaryCapLimit != null);
 
+    const applyStartBans = shouldApplyRankedEventPlayerBans({
+      isDailyDraft: daily,
+      practiceMode,
+      eventId,
+      salaryCapMode,
+    });
+    const withStartBans = <T extends { id: string }>(candidatePool: T[]) =>
+      applyStartBans
+        ? filterOutRankedEventBannedPlayers(candidatePool)
+        : candidatePool;
     const eventPool =
       eventMode && eventRestriction
-        ? filterPlayersForEventRestriction(pool, eventRestriction)
+        ? withStartBans(
+            filterPlayersForEventRestriction(pool, eventRestriction),
+          )
         : null;
     const draftPool = daily
       ? pool
       : eventPool
         ? eventPool
-        : getDraftablePlayers(pool, collection);
+        : withStartBans(getDraftablePlayers(pool, collection));
     let ghostOpponent: GhostOpponentSnapshot | null = null;
     let liveOpponent: LiveOpponentSnapshot | null = null;
     let isPendingQueue = false;
@@ -994,9 +1026,11 @@ function App() {
     });
     const opponentPool = eventPool
       ? eventPool
-      : nextOpponentCollection
-        ? getDraftablePlayers(pool, nextOpponentCollection)
-        : pool;
+      : withStartBans(
+          nextOpponentCollection
+            ? getDraftablePlayers(pool, nextOpponentCollection)
+            : pool,
+        );
     const setupSlots = setup?.slots;
     const sharedSlots = options.sharedDraftSlots;
     const slotsAreFeasible = (
@@ -1861,12 +1895,21 @@ function App() {
         opponentPlayerId,
         // Live opponents draft from their own unlocks (unknown here). Autofill
         // from the full mode pool — never a synthetic collection gap.
-        players: eventRestriction
-          ? filterPlayersForEventRestriction(
-              activePlayers,
-              eventRestriction,
-            )
-          : activePlayers,
+        players: (() => {
+          const autofillPool = eventRestriction
+            ? filterPlayersForEventRestriction(
+                activePlayers,
+                eventRestriction,
+              )
+            : activePlayers;
+          return shouldApplyRankedEventPlayerBans({
+            practiceMode: user?.practiceMode,
+            eventId: user?.eventId,
+            salaryCapMode: user?.salaryCapMode,
+          })
+            ? filterOutRankedEventBannedPlayers(autofillPool)
+            : autofillPool;
+        })(),
         salaryCapLimit: opponent.salaryCapLimit,
       });
 
