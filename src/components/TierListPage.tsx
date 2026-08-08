@@ -24,8 +24,10 @@ import {
   movePlayerToTier,
   openTierListFromLibrary,
   POSITIONS,
+  recommendTierListTitle,
   removeTier,
   renameTier,
+  resolveTierListTitle,
   saveTierListState,
   saveTierListToLibrary,
   setTierListPublishedId,
@@ -365,6 +367,11 @@ export function TierListPage({
     [assignedIds, filters, players],
   );
 
+  const recommendedTitle = useMemo(
+    () => recommendTierListTitle(filters),
+    [filters],
+  );
+
   const updateState = (next: TierListState) => {
     setState(next);
   };
@@ -600,11 +607,24 @@ export function TierListPage({
     return true;
   };
 
+  const withResolvedTitle = (current: TierListState): TierListState => {
+    const resolved = resolveTierListTitle(current.title, filters);
+    if (!resolved || resolved === current.title.trim()) {
+      return current;
+    }
+    return setTierListTitle(current, resolved);
+  };
+
   const handleSave = () => {
-    const result = saveTierListToLibrary(state, library);
+    const titled = withResolvedTitle(state);
+    const result = saveTierListToLibrary(titled, library);
     setState(result.state);
     setLibrary(result.library);
-    setStatusMessage("Tier list saved");
+    setStatusMessage(
+      titled.title !== state.title.trim() && titled.title
+        ? `Saved as “${titled.title}”`
+        : "Tier list saved",
+    );
   };
 
   const handlePublish = async () => {
@@ -615,7 +635,8 @@ export function TierListPage({
     }
 
     setAccountLinked(true);
-    const saved = saveTierListToLibrary(state, library);
+    const titled = withResolvedTitle(state);
+    const saved = saveTierListToLibrary(titled, library);
     setState(saved.state);
     setLibrary(saved.library);
 
@@ -668,7 +689,12 @@ export function TierListPage({
 
   const handleDownload = async () => {
     try {
-      const tiers = state.tiers.map((tier, index) => ({
+      const titled = withResolvedTitle(state);
+      if (titled.title && titled.title !== state.title.trim()) {
+        setState(titled);
+      }
+
+      const tiers = titled.tiers.map((tier, index) => ({
         name: tier.name,
         accent: accentForTier(index, tier.name),
         players: tier.playerIds
@@ -684,7 +710,7 @@ export function TierListPage({
 
       await downloadTierListImage(
         {
-          title: displayTierListTitle(state.title),
+          title: displayTierListTitle(titled.title),
           tiers,
         },
         "png",
@@ -1443,7 +1469,7 @@ export function TierListPage({
               className="tier-list__page-title-input"
               value={state.title}
               maxLength={48}
-              placeholder={DEFAULT_TIER_LIST_TITLE}
+              placeholder={recommendedTitle || DEFAULT_TIER_LIST_TITLE}
               aria-label="Tier list name"
               onChange={(event) =>
                 updateState(setTierListTitle(state, event.target.value))
