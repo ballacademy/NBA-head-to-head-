@@ -6791,6 +6791,45 @@ h1.landing-hub__title--name {
   color: #fca5a5;
 }
 
+.player-pick--banned,
+.player-pick--banned:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  filter: none;
+  box-shadow: none;
+  animation: none;
+  border-color: rgba(248, 113, 113, 0.45);
+  background:
+    linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, transparent 45%),
+    rgba(15, 23, 42, 0.62);
+  transform: none;
+}
+
+.player-pick--banned:hover,
+.player-pick--banned:focus-visible {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.player-pick__banned-label {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  background: rgba(127, 29, 29, 0.45);
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.player-pick--banned .player-pick__name {
+  color: #fecaca;
+}
+
 /* Daily drafts hide stats, so center the single content block vs. jersey. */
 .player-pick--compact.player-pick--daily {
   align-items: center;
