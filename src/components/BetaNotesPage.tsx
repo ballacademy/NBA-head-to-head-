@@ -31,6 +31,11 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               daily), Classic/Pro H2H, and weekly Events
             </li>
             <li>
+              <strong>LeBron James</strong> is unavailable in Pro H2H and
+              Events (salary edge). Still draftable in Classic, practice, and
+              Daily Draft.
+            </li>
+            <li>
               Collection, Badges, and Season Stats (Roster) · Leaderboards
               (Standings) · Tier Lists · Account
             </li>

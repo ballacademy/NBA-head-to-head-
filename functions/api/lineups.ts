@@ -12,6 +12,11 @@ import {
   sanitizeStoredLineupIds,
   salaryCapForMatchmakingMode,
 } from "../lib/storedLineups";
+import {
+  lineupContainsRankedEventBannedPlayer,
+  matchmakingModeBansRankedEventPlayers,
+  rankedEventBannedPlayerError,
+} from "../../src/lib/competitivePlayerBans";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -107,6 +112,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
       400,
     );
+  }
+
+  if (
+    matchmakingModeBansRankedEventPlayers(mode) &&
+    lineupContainsRankedEventBannedPlayer(lineup)
+  ) {
+    return json({ error: rankedEventBannedPlayerError() }, 400);
   }
 
   if (!Number.isFinite(clientStarCount) || clientStarCount < 0) {
