@@ -40,21 +40,21 @@ export function TierListHubHome({
     <div className="landing-hub__links tier-list-hub__links">
       <button
         type="button"
-        className="landing-hub__link-button"
+        className="landing-hub__link-button hub-accent hub-accent--tiers"
         onClick={onCreate}
       >
         Create a new tier list
       </button>
       <button
         type="button"
-        className="landing-hub__link-button"
+        className="landing-hub__link-button hub-accent hub-accent--ranked"
         onClick={onOpenMine}
       >
         My tier lists
       </button>
       <button
         type="button"
-        className="landing-hub__link-button"
+        className="landing-hub__link-button hub-accent hub-accent--neutral"
         onClick={onOpenPublic}
       >
         Public tier lists

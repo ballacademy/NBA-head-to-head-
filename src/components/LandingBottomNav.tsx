@@ -98,7 +98,7 @@ export function LandingBottomNav({ activeTab, onSelect }: LandingBottomNavProps)
           <button
             key={tab.id}
             type="button"
-            className={`landing-bottom-nav__item${
+            className={`landing-bottom-nav__item landing-bottom-nav__item--${tab.id}${
               isActive ? " landing-bottom-nav__item--active" : ""
             }`}
             aria-current={isActive ? "page" : undefined}
