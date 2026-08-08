@@ -178,6 +178,191 @@ const normalizeTierListTitle = (title: unknown): string => {
 export const displayTierListTitle = (title: string) =>
   title.trim() || DEFAULT_TIER_LIST_TITLE;
 
+const TIER_LIST_TITLE_MAX = 48;
+
+const POSITION_LABELS: Record<Position, string> = {
+  PG: "PG",
+  SG: "SG",
+  SF: "SF",
+  PF: "PF",
+  C: "C",
+};
+
+const CLASS_TITLE_LABELS: Record<
+  Exclude<TierListClassFilter, "all">,
+  string
+> = {
+  superstar: "Superstars",
+  "all-star": "All-Stars",
+  "recent-all-star": "Recent All-Stars",
+  scrub: "Scrubs",
+  "super-scrub": "Super Scrubs",
+};
+
+const formatTierListHeightShort = (inches: number) => {
+  const feet = Math.floor(inches / 12);
+  const remaining = Math.round(inches % 12);
+  return `${feet}'${remaining}"`;
+};
+
+const formatTierListPositionsTitle = (positions: Position[]): string | null => {
+  if (positions.length === 0) {
+    return null;
+  }
+
+  const unique = [...new Set(positions)];
+  if (unique.length >= 5) {
+    return null;
+  }
+
+  const set = new Set(unique);
+  const onlyGuards =
+    unique.every((position) => position === "PG" || position === "SG") &&
+    set.has("PG") &&
+    set.has("SG") &&
+    unique.length === 2;
+  if (onlyGuards) {
+    return "Guards";
+  }
+
+  const onlyForwards =
+    unique.every((position) => position === "SF" || position === "PF") &&
+    set.has("SF") &&
+    set.has("PF") &&
+    unique.length === 2;
+  if (onlyForwards) {
+    return "Forwards";
+  }
+
+  if (unique.length === 1 && unique[0] === "C") {
+    return "Centers";
+  }
+
+  return unique.map((position) => POSITION_LABELS[position]).join("/");
+};
+
+const formatTierListAgeTitle = (
+  ageMin: number | null,
+  ageMax: number | null,
+): string | null => {
+  if (ageMin != null && ageMax != null) {
+    return ageMin === ageMax ? `Age ${ageMin}` : `Ages ${ageMin}–${ageMax}`;
+  }
+  if (ageMax != null) {
+    return `${ageMax} & Under`;
+  }
+  if (ageMin != null) {
+    return `${ageMin}+`;
+  }
+  return null;
+};
+
+const formatTierListHeightTitle = (
+  heightMin: number | null,
+  heightMax: number | null,
+): string | null => {
+  if (heightMin != null && heightMax != null) {
+    return `${formatTierListHeightShort(heightMin)}–${formatTierListHeightShort(heightMax)}`;
+  }
+  if (heightMin != null) {
+    return `${formatTierListHeightShort(heightMin)}+`;
+  }
+  if (heightMax != null) {
+    return `${formatTierListHeightShort(heightMax)} & Under`;
+  }
+  return null;
+};
+
+/**
+ * Build a short board title from active pool filters (ignores search/sort).
+ * Returns "" when filters are all defaults so the UI can keep the placeholder.
+ */
+export const recommendTierListTitle = (filters: TierListFilters): string => {
+  const parts: string[] = [];
+
+  if (filters.team !== "all") {
+    parts.push(filters.team);
+  } else if (filters.division !== "all") {
+    parts.push(filters.division);
+  } else if (filters.conference !== "all") {
+    parts.push(filters.conference);
+  }
+
+  const positions = formatTierListPositionsTitle(filters.positions);
+  if (positions) {
+    parts.push(positions);
+  }
+
+  if (filters.playerClass !== "all") {
+    parts.push(CLASS_TITLE_LABELS[filters.playerClass]);
+  }
+
+  if (filters.draftClass !== "all") {
+    if (filters.experience === "rookies") {
+      parts.push(`${filters.draftClass} Rookies`);
+    } else if (filters.experience === "upcoming") {
+      parts.push(`${filters.draftClass} Upcoming`);
+    } else {
+      parts.push(`${filters.draftClass} Class`);
+    }
+  } else if (filters.experience === "rookies") {
+    parts.push("Rookies");
+  } else if (filters.experience === "veterans") {
+    parts.push("Veterans");
+  } else if (filters.experience === "upcoming") {
+    parts.push("Upcoming");
+  }
+
+  if (filters.agency === "free-agent") {
+    parts.push("Free Agents");
+  } else if (filters.agency === "rostered") {
+    parts.push("Rostered");
+  }
+
+  if (filters.role === "starter") {
+    parts.push("Starters");
+  } else if (filters.role === "bench") {
+    parts.push("Bench");
+  }
+
+  if (filters.internationalOnly) {
+    parts.push("International");
+  }
+
+  const age = formatTierListAgeTitle(filters.ageMin, filters.ageMax);
+  if (age) {
+    parts.push(age);
+  }
+
+  const height = formatTierListHeightTitle(filters.heightMin, filters.heightMax);
+  if (height) {
+    parts.push(height);
+  }
+
+  // Prefer a tight phrase: geography/identity first, then up to two more traits.
+  const compact =
+    parts.length <= 3 ? parts : [parts[0]!, parts[1]!, parts[2]!].filter(Boolean);
+
+  if (compact.length === 0) {
+    return "";
+  }
+
+  return compact.join(" ").slice(0, TIER_LIST_TITLE_MAX).trim();
+};
+
+/** Use the typed title when set; otherwise recommend from filters. */
+export const resolveTierListTitle = (
+  title: string,
+  filters: TierListFilters,
+): string => {
+  const normalized = normalizeTierListTitle(title);
+  if (normalized) {
+    return normalized.slice(0, TIER_LIST_TITLE_MAX);
+  }
+
+  return recommendTierListTitle(filters);
+};
+
 export const normalizeTierListState = (
   saved: Partial<TierListState> | null | undefined,
 ): TierListState => {
@@ -349,7 +534,7 @@ export const setTierListTitle = (
   title: string,
 ): TierListState => ({
   ...state,
-  title: title.slice(0, 48),
+  title: title.slice(0, TIER_LIST_TITLE_MAX),
 });
 
 export const addTier = (state: TierListState): TierListState => {

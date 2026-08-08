@@ -16,7 +16,9 @@ import {
   normalizeTierListState,
   openTierListFromLibrary,
   playerMatchesTierListFilters,
+  recommendTierListTitle,
   renameTier,
+  resolveTierListTitle,
   saveTierListToLibrary,
   addTier,
   sortTierListLibraryDocuments,
@@ -71,6 +73,79 @@ describe("tierList", () => {
         tiers: state.tiers,
       }).title,
     ).toBe("");
+  });
+
+  it("recommends a board title from active filters", () => {
+    expect(recommendTierListTitle(DEFAULT_TIER_LIST_FILTERS)).toBe("");
+
+    expect(
+      recommendTierListTitle({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "West",
+        positions: ["PG", "SG"],
+      }),
+    ).toBe("West Guards");
+
+    expect(
+      recommendTierListTitle({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        team: "BOS",
+        playerClass: "superstar",
+      }),
+    ).toBe("BOS Superstars");
+
+    expect(
+      recommendTierListTitle({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        draftClass: 2025,
+        experience: "rookies",
+        internationalOnly: true,
+      }),
+    ).toBe("2025 Rookies International");
+
+    expect(
+      recommendTierListTitle({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        agency: "free-agent",
+        role: "starter",
+        ageMax: 25,
+      }),
+    ).toBe("Free Agents Starters 25 & Under");
+
+    expect(
+      recommendTierListTitle({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "East",
+        positions: ["C"],
+        playerClass: "all-star",
+        agency: "rostered",
+        role: "bench",
+      }).length,
+    ).toBeLessThanOrEqual(48);
+  });
+
+  it("resolves blank titles to a filter recommendation", () => {
+    expect(
+      resolveTierListTitle("", {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        division: "Pacific",
+        positions: ["SF", "PF"],
+      }),
+    ).toBe("Pacific Forwards");
+
+    expect(
+      resolveTierListTitle("My custom board", {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "West",
+      }),
+    ).toBe("My custom board");
+
+    expect(
+      resolveTierListTitle("Name your tier list", {
+        ...DEFAULT_TIER_LIST_FILTERS,
+        playerClass: "scrub",
+      }),
+    ).toBe("Scrubs");
   });
 
   it("filters by position, age range, team, conference, and agency", () => {
