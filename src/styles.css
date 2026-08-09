@@ -1,11 +1,14 @@
 :root {
   color: #f8fafc;
   background: #0b0d11;
+  /* Montserrat weights in use:
+     500 Medium · 600 SemiBold · 700 Bold · 800 ExtraBold · 900 Black */
   --font-sans:
-    Barlow, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   --font-display:
-    "Barlow Condensed", Barlow, ui-sans-serif, system-ui, sans-serif;
+    Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -3855,9 +3858,9 @@ h1.landing-hub__title--name {
 .matchmaking-overlay__room-code {
   margin: 14px 0 0;
   text-align: center;
-  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-family: var(--font-display);
   font-size: 2.4rem;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.28em;
   color: #f8fafc;
 }
@@ -6761,7 +6764,7 @@ h1.landing-hub__title--name {
 
 .player-jersey__number {
   fill: #f8fafc;
-  font-family: "Arial Black", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 900;
   letter-spacing: normal;
   font-kerning: none;
