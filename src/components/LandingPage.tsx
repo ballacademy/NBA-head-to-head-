@@ -1027,28 +1027,10 @@ export function LandingPage({
           <>
             <div className="landing-profile-strip landing-card landing-card--profile">
               <div className="landing-profile-strip__header">
-                <div className="landing-profile-strip__heading">
-                  <p className="landing-profile-strip__title">Your collection</p>
-                  <p className="landing-profile-strip__hint">
-                    Tap a category to view unlocked players
-                  </p>
-                </div>
-                <div className="landing-profile-strip__links">
-                  <button
-                    type="button"
-                    className="landing-profile-strip__link hub-accent hub-accent--ranked"
-                    onClick={onViewStats}
-                  >
-                    Stats
-                  </button>
-                  <button
-                    type="button"
-                    className="landing-profile-strip__link hub-accent hub-accent--event"
-                    onClick={onViewAchievements}
-                  >
-                    Badges
-                  </button>
-                </div>
+                <p className="landing-profile-strip__title">Your collection</p>
+                <p className="landing-profile-strip__hint">
+                  Tap a category to view unlocked players
+                </p>
               </div>
               <div
                 className="landing-profile-strip__stats"
@@ -1120,9 +1102,27 @@ export function LandingPage({
                   </strong>
                 </button>
               </div>
-              <p className="landing-profile-strip__meta">
-                Win to unlock All-Stars, lose to unlock Scrubs.
-              </p>
+              <div className="landing-profile-strip__footer">
+                <p className="landing-profile-strip__meta">
+                  Win to unlock All-Stars, lose to unlock Scrubs.
+                </p>
+                <div className="landing-profile-strip__links">
+                  <button
+                    type="button"
+                    className="landing-profile-strip__link"
+                    onClick={onViewStats}
+                  >
+                    Season Stats
+                  </button>
+                  <button
+                    type="button"
+                    className="landing-profile-strip__link"
+                    onClick={onViewAchievements}
+                  >
+                    Badges
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         ) : null}
