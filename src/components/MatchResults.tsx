@@ -470,6 +470,14 @@ export function MatchResults({
     eventId: user.eventId,
   });
   const openOpponentProfile = () => setOpponentProfileOpen(true);
+  const competitiveOutcome =
+    !user.practiceMode && !user.privateMatch
+      ? matchRecordMode === "ranked"
+        ? rankedOutcome
+        : matchRecordMode === "headToHead" && !isEventMatch
+          ? classicOutcome
+          : null
+      : null;
 
   return (
     <section
@@ -540,73 +548,69 @@ export function MatchResults({
               </p>
             ) : null}
           </div>
-          <p className="matchup-panel__meta">
-            Margin{" "}
-            {Math.abs(
-              userScore.uncappedTotal - opponentScore.uncappedTotal,
-            ).toFixed(1)}{" "}
-            • OVR {formatLineupOvrDisplay(userScore)} vs{" "}
-            {formatLineupOvrDisplay(opponentScore)}
-            {userScore.ovrOverflow > 0 || opponentScore.ovrOverflow > 0
-              ? " · overflow past 100 counts in matchups"
-              : ""}
-            {userScore.total === opponentScore.total && !isTie
-              ? ` · decided by uncapped OVR (${userScore.uncappedTotal.toFixed(1)} vs ${opponentScore.uncappedTotal.toFixed(1)})`
-              : ""}
-            {isEventMatch && eventProfile
-              ? ` · Event record ${eventProfile.wins}-${eventProfile.losses} (${eventProfile.matchesPlayed}/30)`
-              : null}
-            {((matchRecordMode === "ranked" && rankedOutcome) ||
-              (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
-            !user.practiceMode &&
-            !user.privateMatch ? (
-              <>
-                {" "}
-                •{" "}
-                {formatRatingDelta(
-                  (matchRecordMode === "ranked"
-                    ? rankedOutcome
-                    : classicOutcome)!.delta,
-                )}{" "}
-                (
-                {formatRatingPoints(
-                  (matchRecordMode === "ranked"
-                    ? rankedOutcome
-                    : classicOutcome)!.elo,
-                )}
-                )
-              </>
+          <ul className="matchup-panel__facts" aria-label="Match facts">
+            <li className="matchup-panel__fact">
+              <span className="matchup-panel__fact-label">Margin</span>
+              <span className="matchup-panel__fact-value">
+                {Math.abs(
+                  userScore.uncappedTotal - opponentScore.uncappedTotal,
+                ).toFixed(1)}
+              </span>
+            </li>
+            <li className="matchup-panel__fact">
+              <span className="matchup-panel__fact-label">OVR</span>
+              <span className="matchup-panel__fact-value">
+                {formatLineupOvrDisplay(userScore)}–{formatLineupOvrDisplay(opponentScore)}
+              </span>
+            </li>
+            {competitiveOutcome ? (
+              <li className="matchup-panel__fact">
+                <span className="matchup-panel__fact-label">Rating</span>
+                <span className="matchup-panel__fact-value">
+                  {formatRatingDelta(competitiveOutcome.delta)} (
+                  {formatRatingPoints(competitiveOutcome.elo)})
+                </span>
+              </li>
             ) : null}
-          </p>
-          {((matchRecordMode === "ranked" && rankedOutcome) ||
-            (matchRecordMode === "headToHead" && classicOutcome && !isEventMatch)) &&
-          !user.practiceMode &&
-          !user.privateMatch ? (
+            {isEventMatch && eventProfile ? (
+              <li className="matchup-panel__fact">
+                <span className="matchup-panel__fact-label">Event</span>
+                <span className="matchup-panel__fact-value">
+                  {eventProfile.wins}-{eventProfile.losses} (
+                  {eventProfile.matchesPlayed}/30)
+                </span>
+              </li>
+            ) : null}
+            {confirmedLeaderboardRank != null && confirmedLeaderboardRank > 0 ? (
+              <li className="matchup-panel__fact">
+                <span className="matchup-panel__fact-label">Board</span>
+                <span className="matchup-panel__fact-value">
+                  #{confirmedLeaderboardRank}
+                </span>
+              </li>
+            ) : null}
+          </ul>
+          {userScore.ovrOverflow > 0 ||
+          opponentScore.ovrOverflow > 0 ||
+          (userScore.total === opponentScore.total && !isTie) ? (
+            <p className="matchup-panel__meta-note">
+              {userScore.total === opponentScore.total && !isTie
+                ? `Decided by uncapped OVR (${userScore.uncappedTotal.toFixed(1)} vs ${opponentScore.uncappedTotal.toFixed(1)}).`
+                : null}
+              {userScore.ovrOverflow > 0 || opponentScore.ovrOverflow > 0
+                ? `${userScore.total === opponentScore.total && !isTie ? " " : ""}Overflow past 100 still counts.`
+                : null}
+            </p>
+          ) : null}
+          {competitiveOutcome ? (
             <div className="matchup-panel__ranked">
               <RankedTierBadge
-                tierLabel={
-                  (matchRecordMode === "ranked"
-                    ? rankedOutcome
-                    : classicOutcome)!.tierLabel
-                }
-                elo={
-                  (matchRecordMode === "ranked"
-                    ? rankedOutcome
-                    : classicOutcome)!.elo
-                }
+                tierLabel={competitiveOutcome.tierLabel}
+                elo={competitiveOutcome.elo}
               />
               <p className="matchup-panel__ranked-note">
-                Matched vs{" "}
-                {formatRatingPoints(
-                  (matchRecordMode === "ranked"
-                    ? rankedOutcome
-                    : classicOutcome)!.opponentElo,
-                )}{" "}
+                Matched vs {formatRatingPoints(competitiveOutcome.opponentElo)}{" "}
                 opponent
-                {confirmedLeaderboardRank != null &&
-                confirmedLeaderboardRank > 0
-                  ? ` · Leaderboard #${confirmedLeaderboardRank}`
-                  : null}
               </p>
             </div>
           ) : null}
@@ -717,19 +721,7 @@ export function MatchResults({
             <div className="match-results__action-row">
               <button
                 type="button"
-                className="play-again-button match-results__share-button"
-                disabled={isMatchmaking || shareState === "busy"}
-                onClick={() => void handleShareLineup()}
-              >
-                {shareState === "busy"
-                  ? "Sharing…"
-                  : shareState === "error"
-                    ? "Share failed — try again"
-                    : "Share lineup"}
-              </button>
-              <button
-                type="button"
-                className="play-again-button"
+                className="play-again-button match-results__primary-action"
                 disabled={isMatchmaking}
                 onClick={() => {
                   void onPlayAgain();
@@ -745,7 +737,19 @@ export function MatchResults({
               </button>
               <button
                 type="button"
-                className="play-again-button match-results__menu-button"
+                className="secondary-button match-results__share-button"
+                disabled={isMatchmaking || shareState === "busy"}
+                onClick={() => void handleShareLineup()}
+              >
+                {shareState === "busy"
+                  ? "Sharing…"
+                  : shareState === "error"
+                    ? "Share failed — try again"
+                    : "Share lineup"}
+              </button>
+              <button
+                type="button"
+                className="secondary-button match-results__menu-button"
                 disabled={isMatchmaking}
                 onClick={onReturnToMenu}
               >
