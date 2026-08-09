@@ -86,4 +86,26 @@ describe("competitivePlayerBans", () => {
       true,
     );
   });
+
+  it("keeps Classic open without needing an All-Star unlock", async () => {
+    const { getDraftablePlayers } = await import("./playerCollection");
+    const poolId = findPlayerId("LeBron James")!;
+    const lockedCollection = {
+      unlockedIds: [] as string[],
+      pendingUnlock: null,
+      initialized: true as const,
+    };
+
+    expect(
+      getDraftablePlayers(players, lockedCollection).some(
+        (player) => player.id === poolId,
+      ),
+    ).toBe(true);
+    expect(shouldApplyRankedEventPlayerBans({ salaryCapMode: false })).toBe(
+      false,
+    );
+    expect(shouldApplyRankedEventPlayerBans({ salaryCapMode: true })).toBe(
+      true,
+    );
+  });
 });

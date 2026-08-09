@@ -61,7 +61,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
         </p>
       </div>
 
-      <HubFeatureReturnButton onBack={onBack} />
+      <HubFeatureReturnButton onBack={onBack} visible={false} />
 
       <section className="hub-feature__panel">
         <div className="achievements-page__section-heading">

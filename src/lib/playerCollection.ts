@@ -24,6 +24,7 @@ import {
   SCRUB_POOL_SIZE,
 } from "./playerTiers";
 import { isEraPlayer } from "./eraUnlocks";
+import { isBannedRankedEventPlayer } from "./competitivePlayerBans";
 import type { Player } from "./types";
 
 const COLLECTION_KEY = "nba-head-to-head-player-collection";
@@ -267,6 +268,9 @@ export const getDraftablePlayers = (
     (player) =>
       isEraPlayer(player) ||
       isRegularDraftPlayer(player) ||
+      // Competitive bans (e.g. LeBron in Pro/Events) still leave the player
+      // freely draftable in Classic / practice / Daily without an unlock.
+      isBannedRankedEventPlayer(player) ||
       unlocked.has(player.id),
   );
 };

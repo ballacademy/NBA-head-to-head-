@@ -138,21 +138,23 @@ function LeaderboardEntryRow({
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
+          <span className="leaderboard-row__record">{formatRecord(entry)}</span>
           <strong>{formatMetric(entry)}</strong>
         </button>
       </div>
       {expanded ? (
         <div className="leaderboard-row__details">
-          <div className="leaderboard-row__detail">
-            <span className="leaderboard-row__detail-label">Record</span>
-            <strong>{formatRecord(entry)}</strong>
-          </div>
           {showTier ? (
             <div className="leaderboard-row__detail">
               <span className="leaderboard-row__detail-label">Tier</span>
               <RankedTierBadge tierLabel={entry.tierLabel} elo={entry.elo} compact />
             </div>
-          ) : null}
+          ) : (
+            <div className="leaderboard-row__detail">
+              <span className="leaderboard-row__detail-label">Record</span>
+              <strong>{formatRecord(entry)}</strong>
+            </div>
+          )}
         </div>
       ) : null}
       {profileOpen ? (

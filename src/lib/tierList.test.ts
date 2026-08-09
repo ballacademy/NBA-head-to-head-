@@ -8,6 +8,7 @@ import { isStatsFreeAgent } from "./freeAgents";
 import { databasePlayers, findPlayerId, freeAgentPlayers, players } from "./playerPool";
 import {
   createDefaultTierListState,
+  countActiveTierListFilters,
   DEFAULT_TIER_LIST_TITLE,
   displayTierListTitle,
   filterTierListPool,
@@ -77,6 +78,7 @@ describe("tierList", () => {
 
   it("recommends a board title from active filters", () => {
     expect(recommendTierListTitle(DEFAULT_TIER_LIST_FILTERS)).toBe("");
+    expect(countActiveTierListFilters(DEFAULT_TIER_LIST_FILTERS)).toBe(0);
 
     expect(
       recommendTierListTitle({
@@ -85,6 +87,13 @@ describe("tierList", () => {
         positions: ["PG", "SG"],
       }),
     ).toBe("West Guards");
+    expect(
+      countActiveTierListFilters({
+        ...DEFAULT_TIER_LIST_FILTERS,
+        conference: "West",
+        positions: ["PG", "SG"],
+      }),
+    ).toBe(2);
 
     expect(
       recommendTierListTitle({

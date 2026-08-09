@@ -80,7 +80,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         </p>
       </div>
 
-      <HubFeatureReturnButton onBack={onBack} />
+      <HubFeatureReturnButton onBack={onBack} visible={false} />
 
       <section className="hub-feature__panel">
       <div className="gm-stats-page__summary">
