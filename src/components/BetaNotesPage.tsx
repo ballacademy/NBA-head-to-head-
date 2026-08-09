@@ -20,7 +20,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <p className="landing__lede landing-hub__lede">Status and contact.</p>
       </div>
 
-      <HubFeatureReturnButton onBack={onBack} />
+      <HubFeatureReturnButton onBack={onBack} visible={false} />
 
       <section className="hub-feature__panel">
         <div className="legal-page__body beta-notes-body">

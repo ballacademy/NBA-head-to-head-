@@ -3,11 +3,14 @@ import { useEffect } from "react";
 interface HubFeatureReturnButtonProps {
   onBack: () => void;
   label?: string;
+  /** When false, only Escape triggers onBack (no visible control). */
+  visible?: boolean;
 }
 
 export function HubFeatureReturnButton({
   onBack,
   label = "Return",
+  visible = true,
 }: HubFeatureReturnButtonProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -22,6 +25,10 @@ export function HubFeatureReturnButton({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onBack]);
+
+  if (!visible) {
+    return null;
+  }
 
   const displayLabel = label.startsWith("←") ? label : `← ${label}`;
 

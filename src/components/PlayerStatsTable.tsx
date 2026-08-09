@@ -196,7 +196,7 @@ export function PlayerStatsTable({
         </p>
       </div>
 
-      {onBack ? <HubFeatureReturnButton onBack={onBack} /> : null}
+      {onBack ? <HubFeatureReturnButton onBack={onBack} visible={false} /> : null}
 
       <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">

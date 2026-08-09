@@ -2126,10 +2126,6 @@ function App() {
     [goToLandingHub, openFeaturePage, phase],
   );
 
-  const goToAccountHub = useCallback(() => {
-    goToLandingHub("account");
-  }, [goToLandingHub]);
-
   const hubNavForPhase = ((): LandingHubTab => {
     if (phase === "leaderboard") {
       return "standings";
@@ -2157,11 +2153,7 @@ function App() {
 
   const renderHubFeature = (content: ReactNode, layoutClass = "") => (
     <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
-      <HubShell
-        activeTab={hubNavForPhase}
-        onSelectTab={handleHubNav}
-        onAccountClick={goToAccountHub}
-      >
+      <HubShell activeTab={hubNavForPhase} onSelectTab={handleHubNav}>
         {content}
       </HubShell>
     </main>

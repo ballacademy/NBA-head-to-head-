@@ -538,11 +538,6 @@ export function LandingPage({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const openAccountTab = () => {
-    onHubTabChange("account");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const renderTeamNameField = () => (
     <div
       ref={teamFormRef}
@@ -631,11 +626,7 @@ export function LandingPage({
   );
 
   return (
-    <HubShell
-      activeTab={hubTab}
-      onSelectTab={handleHubSelect}
-      onAccountClick={openAccountTab}
-    >
+    <HubShell activeTab={hubTab} onSelectTab={handleHubSelect}>
       {showTeamNameModal ? (
         <TeamNameValidationModal
           message={teamNameModalMessage}
@@ -891,26 +882,11 @@ export function LandingPage({
                   </div>
                   <h2 className="event-card__title">{weeklyEvent.title}</h2>
                   <p className="event-card__description">
-                    {weeklyEvent.description} Both GMs draft the same five
-                    position/division slots under a $
-                    {(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M cap.{" "}
-                    {PICK_TIME_LIMIT_SECONDS} seconds per pick. 30 entries
-                    available max.
+                    <strong>{weeklyEvent.restrictionLabel}</strong>
+                    {" · "}${(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M shared
+                    board · {PICK_TIME_LIMIT_SECONDS}s picks · {eventMatchesLeft}{" "}
+                    of {weeklyEvent.maxMatches} left
                   </p>
-                  <ul className="event-card__rules">
-                    <li>
-                      Pool: <strong>{weeklyEvent.restrictionLabel}</strong>
-                    </li>
-                    <li>
-                      Badges: Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins ·
-                      Silver {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
-                      {EVENT_BADGE_THRESHOLDS.gold}+
-                    </li>
-                    <li>
-                      Competitor badge at {EVENT_BADGE_THRESHOLDS.participation}+
-                      matches played
-                    </li>
-                  </ul>
                   <div className="event-card__record">
                     <RecordWithStreak
                       record={{
@@ -924,9 +900,6 @@ export function LandingPage({
                       align="right"
                       className="ranked-mode-summary__record"
                     />
-                    <p className="event-card__matches">
-                      {eventMatchesLeft} of {weeklyEvent.maxMatches} matches left
-                    </p>
                   </div>
                   <div className="event-card__badges" aria-label="Event badges">
                     {(
@@ -945,6 +918,20 @@ export function LandingPage({
                       );
                     })}
                   </div>
+                  <details className="event-card__details">
+                    <summary>Badge rules</summary>
+                    <ul className="event-card__rules">
+                      <li>
+                        Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins · Silver{" "}
+                        {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
+                        {EVENT_BADGE_THRESHOLDS.gold}+
+                      </li>
+                      <li>
+                        Competitor badge at{" "}
+                        {EVENT_BADGE_THRESHOLDS.participation}+ matches played
+                      </li>
+                    </ul>
+                  </details>
                   <div className="mode-card__actions">
                     <button
                       type="button"
@@ -969,11 +956,13 @@ export function LandingPage({
                   </div>
                 </div>
 
-                <div className="event-leaderboard landing-card">
-                  <div className="mode-card__header">
-                    <p className="eyebrow">Event standings</p>
-                  </div>
-                  <h2 className="event-card__title">Top 100 wins</h2>
+                <details className="event-leaderboard landing-card">
+                  <summary className="event-leaderboard__summary">
+                    <span className="eyebrow">Event standings</span>
+                    <span className="event-leaderboard__summary-title">
+                      Top 100 wins
+                    </span>
+                  </summary>
                   <p className="event-card__description">
                     Ranked by wins this week. Ties break by fewer losses.
                   </p>
@@ -1024,7 +1013,7 @@ export function LandingPage({
                       ))}
                     </ol>
                   )}
-                </div>
+                </details>
               </div>
             ) : (
               <p className="form-error" role="alert">
@@ -1038,10 +1027,28 @@ export function LandingPage({
           <>
             <div className="landing-profile-strip landing-card landing-card--profile">
               <div className="landing-profile-strip__header">
-                <p className="landing-profile-strip__title">Your collection</p>
-                <p className="landing-profile-strip__hint">
-                  Tap a category to view unlocked players
-                </p>
+                <div className="landing-profile-strip__heading">
+                  <p className="landing-profile-strip__title">Your collection</p>
+                  <p className="landing-profile-strip__hint">
+                    Tap a category to view unlocked players
+                  </p>
+                </div>
+                <div className="landing-profile-strip__links">
+                  <button
+                    type="button"
+                    className="landing-profile-strip__link hub-accent hub-accent--ranked"
+                    onClick={onViewStats}
+                  >
+                    Stats
+                  </button>
+                  <button
+                    type="button"
+                    className="landing-profile-strip__link hub-accent hub-accent--event"
+                    onClick={onViewAchievements}
+                  >
+                    Badges
+                  </button>
+                </div>
               </div>
               <div
                 className="landing-profile-strip__stats"
@@ -1057,12 +1064,6 @@ export function LandingPage({
                   <strong>
                     {collectionProgress.unlocked}/{collectionProgress.total}
                   </strong>
-                  <span
-                    className="landing-profile-strip__action"
-                    aria-hidden="true"
-                  >
-                    View ›
-                  </span>
                 </button>
                 <button
                   type="button"
@@ -1077,12 +1078,6 @@ export function LandingPage({
                     {collectionProgress.superstarUnlocked}/
                     {collectionProgress.superstarTotal}
                   </strong>
-                  <span
-                    className="landing-profile-strip__action"
-                    aria-hidden="true"
-                  >
-                    View ›
-                  </span>
                 </button>
                 <button
                   type="button"
@@ -1095,12 +1090,6 @@ export function LandingPage({
                     {collectionProgress.unlockedScrubs}/
                     {collectionProgress.scrubPool}
                   </strong>
-                  <span
-                    className="landing-profile-strip__action"
-                    aria-hidden="true"
-                  >
-                    View ›
-                  </span>
                 </button>
                 <button
                   type="button"
@@ -1115,12 +1104,6 @@ export function LandingPage({
                     {collectionProgress.unlockedSuperScrubs}/
                     {collectionProgress.superScrubPool}
                   </strong>
-                  <span
-                    className="landing-profile-strip__action"
-                    aria-hidden="true"
-                  >
-                    View ›
-                  </span>
                 </button>
                 <button
                   type="button"
@@ -1135,34 +1118,11 @@ export function LandingPage({
                     {collectionProgress.recentUnlocked}/
                     {collectionProgress.recentTotal}
                   </strong>
-                  <span
-                    className="landing-profile-strip__action"
-                    aria-hidden="true"
-                  >
-                    View ›
-                  </span>
                 </button>
               </div>
               <p className="landing-profile-strip__meta">
                 Win to unlock All-Stars, lose to unlock Scrubs.
               </p>
-            </div>
-
-            <div className="landing-hub__links">
-              <button
-                type="button"
-                className="landing-hub__link-button hub-accent hub-accent--ranked"
-                onClick={onViewStats}
-              >
-                Season Stats
-              </button>
-              <button
-                type="button"
-                className="landing-hub__link-button hub-accent hub-accent--event"
-                onClick={onViewAchievements}
-              >
-                Badges
-              </button>
             </div>
           </>
         ) : null}
@@ -1199,13 +1159,6 @@ export function LandingPage({
                 onClick={onViewGmStats}
               >
                 GM stats
-              </button>
-              <button
-                type="button"
-                className="landing-hub__link-button hub-accent hub-accent--practice"
-                onClick={onViewBetaNotes}
-              >
-                Beta notes
               </button>
             </div>
 

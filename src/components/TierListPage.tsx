@@ -25,6 +25,7 @@ import {
   openTierListFromLibrary,
   POSITIONS,
   recommendTierListTitle,
+  countActiveTierListFilters,
   removeTier,
   renameTier,
   resolveTierListTitle,
@@ -207,6 +208,7 @@ export function TierListPage({
     loadTierListLibrary(),
   );
   const [filters, setFilters] = useState<TierListFilters>(DEFAULT_TIER_LIST_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
@@ -1005,6 +1007,25 @@ export function TierListPage({
     return map;
   }, [players]);
 
+  const activeFilterCount = countActiveTierListFilters(filters);
+  const activeFilterSummary =
+    recommendTierListTitle(filters) || "All players";
+
+  useEffect(() => {
+    if (!filtersOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setFiltersOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [filtersOpen]);
+
   return (
     <div className="hub-feature tier-list-page">
       <div className="landing-hub__top">
@@ -1123,7 +1144,58 @@ export function TierListPage({
           </div>
         </div>
 
-        <div className="tier-list__filters" aria-label="Player filters">
+        <div className="tier-list__filter-bar">
+          <button
+            type="button"
+            className="tier-list__filter-bar-button"
+            aria-expanded={filtersOpen}
+            aria-controls="tier-list-filters-sheet"
+            onClick={() => setFiltersOpen(true)}
+          >
+            Filters
+            {activeFilterCount > 0 ? (
+              <span className="tier-list__filter-bar-count">
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </button>
+          <p className="tier-list__filter-bar-summary">{activeFilterSummary}</p>
+          {activeFilterCount > 0 ? (
+            <button
+              type="button"
+              className="tier-list__filter-bar-clear"
+              onClick={() => setFilters(DEFAULT_TIER_LIST_FILTERS)}
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+
+        {filtersOpen ? (
+          <div
+            className="tier-list__filter-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tier-list-filters-title"
+            id="tier-list-filters-sheet"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                setFiltersOpen(false);
+              }
+            }}
+          >
+            <div className="tier-list__filter-sheet__panel">
+              <div className="tier-list__filter-sheet__header">
+                <h2 id="tier-list-filters-title">Player filters</h2>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setFiltersOpen(false)}
+                >
+                  Done
+                </button>
+              </div>
+              <div className="tier-list__filters" aria-label="Player filters">
           <div className="tier-list__filter-row">
             <div className="tier-list__filter-group">
               <span className="tier-list__filter-label">Position</span>
@@ -1447,7 +1519,26 @@ export function TierListPage({
               ))}
             </div>
           </div>
-        </div>
+              </div>
+              <div className="tier-list__filter-sheet__footer">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setFilters(DEFAULT_TIER_LIST_FILTERS)}
+                >
+                  Reset filters
+                </button>
+                <button
+                  type="button"
+                  className="landing__primary-button"
+                  onClick={() => setFiltersOpen(false)}
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {selectedPlayerId && !draggingPlayerId ? (
           <p className="tier-list__hint">

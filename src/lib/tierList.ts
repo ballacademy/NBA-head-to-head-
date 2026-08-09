@@ -273,6 +273,24 @@ const formatTierListHeightTitle = (
   return null;
 };
 
+/** Count non-default pool filters (ignores search/sort). */
+export const countActiveTierListFilters = (filters: TierListFilters): number => {
+  let count = 0;
+  if (filters.positions.length > 0) count += 1;
+  if (filters.ageMin != null || filters.ageMax != null) count += 1;
+  if (filters.heightMin != null || filters.heightMax != null) count += 1;
+  if (filters.team !== "all") count += 1;
+  if (filters.division !== "all") count += 1;
+  if (filters.conference !== "all") count += 1;
+  if (filters.agency !== "all") count += 1;
+  if (filters.role !== "all") count += 1;
+  if (filters.internationalOnly) count += 1;
+  if (filters.experience !== "all") count += 1;
+  if (filters.draftClass !== "all") count += 1;
+  if (filters.playerClass !== "all") count += 1;
+  return count;
+};
+
 /**
  * Build a short board title from active pool filters (ignores search/sort).
  * Returns "" when filters are all defaults so the UI can keep the placeholder.
