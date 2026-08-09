@@ -3,7 +3,7 @@ interface DraftDayGmLogoProps {
   title?: string;
 }
 
-const LOGO_SRC = "/draft-day-gm-logo.png";
+const LOGO_SRC = "/draft-day-gm-logo-v4.png";
 
 /**
  * Renders as a CSS background mark (not &lt;img&gt;) so mobile Safari never

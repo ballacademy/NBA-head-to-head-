@@ -11,8 +11,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "public" / "og-share.png"
 # Versioned copy referenced by index.html meta tags (cache-bust for crawlers).
-OUT_VERSIONED = ROOT / "public" / "og-share-v2.png"
-LOGO = ROOT / "public" / "draft-day-gm-logo.png"
+OUT_VERSIONED = ROOT / "public" / "og-share-v3.png"
+LOGO = ROOT / "public" / "draft-day-gm-logo-v4.png"
 FONT_DIR = Path(__file__).resolve().parent / "fonts"
 
 WIDTH, HEIGHT = 1200, 630
