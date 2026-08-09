@@ -15,8 +15,19 @@
   Cache-Control: public, max-age=3600
   Content-Type: image/png
 
+/og-share-v3.png
+  Cache-Control: public, max-age=3600
+  Content-Type: image/png
+
+# Versioned logo mark — long-cache is OK because the filename changes on redesign.
+/draft-day-gm-logo-v4.png
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+
+# Legacy unversioned path — short TTL so old bookmarks pick up replacements.
 /draft-day-gm-logo.png
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=3600
+  Content-Type: image/png
 
 # Only long-cache real hashed bundles — not /assets/404.html.
 /assets/*.js
