@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "public" / "og-share.png"
 # Versioned copy referenced by index.html meta tags (cache-bust for crawlers).
-OUT_VERSIONED = ROOT / "public" / "og-share-v3.png"
+OUT_VERSIONED = ROOT / "public" / "og-share-v4.png"
 LOGO = ROOT / "public" / "draft-day-gm-logo-v4.png"
 FONT_DIR = Path(__file__).resolve().parent / "fonts"
 
@@ -26,15 +26,18 @@ RULE = (148, 163, 184)  # #94a3b8
 URL = (226, 232, 240)  # #e2e8f0
 
 FONT_SOURCES = {
-    "BarlowCondensed-ExtraBold.ttf": (
-        "https://github.com/google/fonts/raw/main/ofl/barlowcondensed/"
-        "BarlowCondensed-ExtraBold.ttf"
+    # Static TTFs (variable-font weight picking is awkward in Pillow).
+    "Montserrat-Black.ttf": (
+        "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/"
+        "Montserrat-Black.ttf"
     ),
-    "Barlow-SemiBold.ttf": (
-        "https://github.com/google/fonts/raw/main/ofl/barlow/Barlow-SemiBold.ttf"
+    "Montserrat-SemiBold.ttf": (
+        "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/"
+        "Montserrat-SemiBold.ttf"
     ),
-    "Barlow-Bold.ttf": (
-        "https://github.com/google/fonts/raw/main/ofl/barlow/Barlow-Bold.ttf"
+    "Montserrat-Bold.ttf": (
+        "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/"
+        "Montserrat-Bold.ttf"
     ),
 }
 
@@ -111,9 +114,9 @@ def load_font(path: Path, size: int) -> ImageFont.FreeTypeFont:
 
 def main() -> None:
     fonts = ensure_fonts()
-    title_font = load_font(fonts["BarlowCondensed-ExtraBold.ttf"], 92)
-    tagline_font = load_font(fonts["Barlow-SemiBold.ttf"], 34)
-    url_font = load_font(fonts["Barlow-Bold.ttf"], 28)
+    title_font = load_font(fonts["Montserrat-Black.ttf"], 84)
+    tagline_font = load_font(fonts["Montserrat-SemiBold.ttf"], 32)
+    url_font = load_font(fonts["Montserrat-Bold.ttf"], 26)
 
     image = vertical_gradient((WIDTH, HEIGHT), BG_TOP, BG_BOTTOM)
     add_site_texture(image)

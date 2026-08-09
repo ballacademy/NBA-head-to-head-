@@ -38,7 +38,7 @@ const CHIP_AVATAR_SIZE = 28;
 const CHIP_AVATAR_GAP = 8;
 const FOOTER_GAP = 40;
 const FONT_STACK =
-  'Barlow, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  'Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 const playerLabel = (player: TierListSharePlayer) =>
   `${player.name} · ${player.team} ${player.position}`;
