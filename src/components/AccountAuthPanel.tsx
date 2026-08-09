@@ -277,7 +277,7 @@ export function AccountAuthPanel({
   return (
     <div className="landing-team-form__account">
       <div className="landing-team-form__account-header">
-        <span className="landing-team-form__account-label">Account</span>
+        <span className="landing-team-form__account-label">Sign in</span>
         {linkState === "loading" ? (
           <span className="landing-team-form__account-status">Checking…</span>
         ) : linkState === "unknown" ? (
