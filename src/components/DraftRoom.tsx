@@ -310,33 +310,31 @@ export function DraftRoom({
       ) : null}
 
       {hasSalaryCap ? (
-        <div className="salary-cap-banner" role="status">
-          <p className="eyebrow">
-            {isPracticeMode
-              ? "Practice mode"
-              : drafter.eventId
-                ? "Weekly Event"
-                : drafter.salaryCapMode
-                  ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
-                  : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label ?? "Casual"}`}
-          </p>
-          {isPracticeMode ? (
-            <p className="salary-cap-banner__rating">
-              Bot opponent • ratings do not change
+        <div className="salary-cap-banner salary-cap-banner--compact" role="status">
+          <div className="salary-cap-banner__topline">
+            <p className="eyebrow">
+              {isPracticeMode
+                ? "Practice mode"
+                : drafter.eventId
+                  ? "Weekly Event"
+                  : drafter.salaryCapMode
+                    ? `${PRO_HEAD_TO_HEAD_LABEL} • ${rankedProfile?.tier.label ?? "Pro"}`
+                    : `${CLASSIC_HEAD_TO_HEAD_LABEL} • ${classicProfile?.tier.label ?? "Casual"}`}
             </p>
-          ) : drafter.eventId ? (
-            <p className="salary-cap-banner__rating">
-              Shared board • event record only
-            </p>
-          ) : rankedProfile ? (
-            <p className="salary-cap-banner__rating">
-              {formatRatingPoints(rankedProfile.elo)}
-            </p>
-          ) : classicProfile ? (
-            <p className="salary-cap-banner__rating">
-              {formatRatingPoints(classicProfile.elo)}
-            </p>
-          ) : null}
+            {isPracticeMode ? (
+              <p className="salary-cap-banner__rating">Bot · no rating change</p>
+            ) : drafter.eventId ? (
+              <p className="salary-cap-banner__rating">Shared board</p>
+            ) : rankedProfile ? (
+              <p className="salary-cap-banner__rating">
+                {formatRatingPoints(rankedProfile.elo)}
+              </p>
+            ) : classicProfile ? (
+              <p className="salary-cap-banner__rating">
+                {formatRatingPoints(classicProfile.elo)}
+              </p>
+            ) : null}
+          </div>
           <p className="salary-cap-banner__cap">
             <span className="salary-cap-banner__spent">
               {formatSalary(getLineupSalaryTotal(pickedLineup))}

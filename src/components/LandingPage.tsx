@@ -234,6 +234,7 @@ export function LandingPage({
           "Real 2026-27 salaries.",
           "Banner matchmaking pairs similar front offices.",
           "Monthly seasons reset the Top 500.",
+          "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
         ],
         collection.unlockedIds.length,
       ),
@@ -246,6 +247,7 @@ export function LandingPage({
           "Real 2026-27 salaries.",
           "Banner matchmaking pairs similar front offices.",
           "Monthly seasons reset the Top 500.",
+          "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
         ],
         collection.unlockedIds.length,
       ),
@@ -734,19 +736,18 @@ export function LandingPage({
           <>
             {playModeBack}
             {renderTeamNameField()}
-            <div className="landing-game-modes">
+            <div className="landing-game-modes landing-game-modes--h2h">
               <div className="head-to-head-card landing-card landing-card--mode">
                 <div className="mode-card__header">
                   <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
                   <ModeCardInfo details={classicModeDetails} variant="corner" />
                 </div>
                 <p className="head-to-head-card__description">
-                  Draft a five-player lineup under a $
-                  {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
-                  cap with {CLASSIC_PICK_TIME_LIMIT_SECONDS} seconds per pick.
+                  ${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
+                  cap · {CLASSIC_PICK_TIME_LIMIT_SECONDS}s picks · casual banners
                 </p>
                 <ClassicModeSummary record={modeRecords.headToHead} />
-                <div className="mode-card__actions">
+                <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
                     className="landing__primary-button"
@@ -776,15 +777,9 @@ export function LandingPage({
                     disabled={modesBlocked}
                     onClick={() => setPrivateMatchMode("classic")}
                   >
-                    Private match
+                    Private
                   </button>
                 </div>
-                <p className="mode-card__practice-note">
-                  Practice uses the same $
-                  {(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
-                  cap and bot opponent. Private match needs an account and a
-                  room code for a friend. Streaks and badges do not change.
-                </p>
               </div>
 
               <div className="ranked-cap-card landing-card landing-card--mode">
@@ -793,12 +788,11 @@ export function LandingPage({
                   <ModeCardInfo details={proModeDetails} variant="corner" />
                 </div>
                 <p className="ranked-cap-card__description">
-                  Draft a five-player lineup under a $
-                  {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap with{" "}
-                  {PICK_TIME_LIMIT_SECONDS} seconds per pick.
+                  ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap ·{" "}
+                  {PICK_TIME_LIMIT_SECONDS}s picks · ranked rating
                 </p>
                 <RankedModeSummary record={modeRecords.ranked} />
-                <div className="mode-card__actions">
+                <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
                     className="ranked-cap-card__button"
@@ -829,50 +823,43 @@ export function LandingPage({
                     disabled={modesBlocked}
                     onClick={() => setPrivateMatchMode("ranked")}
                   >
-                    Private match
+                    Private
                   </button>
                 </div>
-                <p className="mode-card__practice-note">
-                  Practice uses the same $
-                  {(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap and bot
-                  opponent. Private match needs an account and a room code for a
-                  friend. Banners, streaks, and badges do not change.
-                </p>
               </div>
 
-              <div className="all-time-card landing-card landing-card--mode">
-                <p className="eyebrow">{ALL_TIME_LABEL}</p>
-                <h2 className="all-time-card__title">Peak seasons &amp; legends</h2>
-                <p className="all-time-card__description">
-                  Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS}{" "}
-                  seconds per pick from active stars at peak seasons plus
-                  legendary All-Stars from every era.
-                  {allTimePlayable
-                    ? ""
-                    : " This mode is in development and will launch soon."}
-                </p>
-                {allTimePlayable ? (
-                  <>
-                    <MatchModeRecord record={modeRecords.allTime} />
-                    <button
-                      type="button"
-                      className="all-time-card__button"
-                      disabled={modesBlocked}
-                      onClick={() => void handleStart({ allTimeMode: true })}
-                    >
-                      Play All-Time Draft
-                    </button>
-                  </>
-                ) : (
+              {allTimePlayable ? (
+                <div className="all-time-card landing-card landing-card--mode">
+                  <p className="eyebrow">{ALL_TIME_LABEL}</p>
+                  <h2 className="all-time-card__title">
+                    Peak seasons &amp; legends
+                  </h2>
+                  <p className="all-time-card__description">
+                    Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS}{" "}
+                    seconds per pick from active stars at peak seasons plus
+                    legendary All-Stars from every era.
+                  </p>
+                  <MatchModeRecord record={modeRecords.allTime} />
                   <button
                     type="button"
-                    className="all-time-card__button all-time-card__button--locked"
-                    disabled
+                    className="all-time-card__button"
+                    disabled={modesBlocked}
+                    onClick={() => void handleStart({ allTimeMode: true })}
                   >
-                    Coming soon
+                    Play All-Time Draft
                   </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div
+                  className="all-time-card all-time-card--teaser landing-card landing-card--mode"
+                  aria-label={`${ALL_TIME_LABEL} coming soon`}
+                >
+                  <p className="eyebrow">{ALL_TIME_LABEL}</p>
+                  <p className="all-time-card__teaser-copy">
+                    Peak seasons &amp; legends — coming soon
+                  </p>
+                </div>
+              )}
             </div>
           </>
         ) : null}
