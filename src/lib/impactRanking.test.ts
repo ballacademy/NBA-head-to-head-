@@ -72,10 +72,15 @@ describe("impactRanking", () => {
   it("exposes impact ranks for ranked players", () => {
     const butler = players.find((player) => player.name === "Jimmy Butler");
     const pritchard = players.find((player) => player.name === "Payton Pritchard");
+    const porzingis = players.find((player) =>
+      player.name.includes("Porzi"),
+    );
 
     expect(butler).toBeDefined();
     expect(pritchard).toBeDefined();
+    expect(porzingis).toBeDefined();
     expect(getPlayerImpactRank(butler!)).toBe(23);
+    expect(getPlayerImpactRank(porzingis!)).toBe(70);
     expect(isImpactRankStarPlayer(butler!)).toBe(true);
     expect(isImpactRankStarPlayer(pritchard!)).toBe(false);
   });
