@@ -6315,7 +6315,7 @@ h1.landing-hub__title--name {
 }
 
 .event-card__details {
-  margin: 0 0 12px;
+  margin: 10px 0 0;
 }
 
 .event-card__details > summary {
@@ -6392,7 +6392,7 @@ h1.landing-hub__title--name {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 14px;
+  margin: 4px 0 10px;
 }
 
 .event-badge {
