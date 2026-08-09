@@ -18,7 +18,7 @@ const TABS: {
   { id: "play", label: "Play", icon: "play" },
   { id: "roster", label: "Roster", icon: "roster" },
   { id: "tiers", label: "Tiers", icon: "tiers" },
-  { id: "standings", label: "Standings", icon: "standings" },
+  { id: "standings", label: "Ranks", icon: "standings" },
   { id: "account", label: "Account", icon: "account" },
 ];
 

@@ -741,7 +741,7 @@ export function LandingPage({
                 <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
-                    className="landing__primary-button"
+                    className="mode-card__cta mode-card__cta--primary"
                     disabled={modesBlocked}
                     onClick={() => void handleStart()}
                   >
@@ -751,7 +751,7 @@ export function LandingPage({
                   </button>
                   <button
                     type="button"
-                    className="head-to-head-card__practice-button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
                     onClick={() =>
                       void handleStart({
@@ -764,7 +764,7 @@ export function LandingPage({
                   </button>
                   <button
                     type="button"
-                    className="head-to-head-card__practice-button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
                     onClick={() => setPrivateMatchMode("classic")}
                   >
@@ -786,7 +786,7 @@ export function LandingPage({
                 <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
-                    className="ranked-cap-card__button"
+                    className="mode-card__cta mode-card__cta--primary"
                     disabled={modesBlocked}
                     onClick={() => void handleStart({ salaryCapMode: true })}
                   >
@@ -796,7 +796,7 @@ export function LandingPage({
                   </button>
                   <button
                     type="button"
-                    className="ranked-cap-card__practice-button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
                     onClick={() =>
                       void handleStart({
@@ -810,7 +810,7 @@ export function LandingPage({
                   </button>
                   <button
                     type="button"
-                    className="ranked-cap-card__practice-button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
                     onClick={() => setPrivateMatchMode("ranked")}
                   >

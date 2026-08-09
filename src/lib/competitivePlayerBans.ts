@@ -1,6 +1,8 @@
 /**
  * Players banned from Pro (ranked) and Events — usually an unfair salary edge.
- * Still eligible for Classic H2H, practice, Daily Draft, stats, and collection.
+ * Still freely draftable in Classic H2H, practice, and Daily Draft (no unlock
+ * required). In Pro/Events they stay visible at the bottom of the board with a
+ * Banned label and cannot be picked.
  *
  * LeBron's basketball-reference id is `jamesle01`; the active pool row may be
  * team-suffixed (e.g. `jamesle01-phi` after the Philly signing).
