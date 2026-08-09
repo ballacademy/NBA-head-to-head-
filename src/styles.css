@@ -18,7 +18,6 @@
   --muted: #94a3b8;
   --orange: #f97316;
   --blue: #2563eb;
-  --lightsaber-purple: #b56cff;
   --bg-deep: #0b0d11;
   --hub-subbox-bg: linear-gradient(180deg, #171b22 0%, #0b0d11 100%);
   --hub-subbox-border: rgba(226, 232, 240, 0.12);
@@ -32,7 +31,7 @@
   --hub-subbox-active-border: rgba(203, 213, 225, 0.35);
   --text-on-dark: #f8fafc;
   --text-muted-on-dark: #cbd5e1;
-  --text-on-light: #1e1035;
+  --text-on-light: #0f172a;
   --text-muted-on-light: #475569;
   /* Hub chrome: cooler slate than page body (#171b22→#0b0d11), tier-card texture. */
   --hub-chrome-base: #1a2030;
@@ -217,7 +216,7 @@ main.landing-layout {
   color: #fb923c;
   font-family: var(--font-display);
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -498,7 +497,7 @@ main.landing-layout {
 }
 
 .landing__eyebrow {
-  color: #c4b5fd;
+  color: #fdba74;
 }
 
 .landing h1 {
@@ -767,7 +766,7 @@ h1.landing-hub__title {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 5.4vw, 2.2rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1035,7 +1034,7 @@ h1.landing-hub__title--name {
 
 .play-hub-chooser__label {
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
   color: var(--hub-accent-bright);
 }
@@ -1322,7 +1321,7 @@ h1.landing-hub__title--name {
   text-overflow: clip;
   white-space: nowrap;
   font-size: 0.62rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1.1;
 }
@@ -1545,11 +1544,66 @@ h1.landing-hub__title--name {
 }
 
 .landing-disclaimer {
-  margin: 24px 0 0;
+  margin: 0;
   color: #94a3b8;
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: 0.8rem;
+  line-height: 1.5;
   text-align: center;
+}
+
+.account-section {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--hub-subbox-border);
+  border-radius: 16px;
+  background: var(--hub-subbox-bg);
+  box-shadow: var(--hub-subbox-shadow);
+}
+
+.account-section.landing-card--form {
+  padding: 14px 16px;
+}
+
+.account-section--legal {
+  gap: 8px;
+  padding: 12px 14px;
+  border-color: rgba(148, 163, 184, 0.14);
+  background: transparent;
+  box-shadow: none;
+}
+
+.account-section__eyebrow {
+  margin: 0;
+  color: #94a3b8;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-section .landing-hub__links {
+  margin: 0;
+}
+
+.account-section .landing-team-form__account {
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.account-section .landing-team-form__account-note--support {
+  margin-top: 4px;
+}
+
+.account-section .landing-footer {
+  margin: 2px 0 0;
+}
+
+.account-section .landing-credit {
+  margin: 4px 0 0;
+  padding-top: 10px;
 }
 
 .account-required-note {
@@ -1586,7 +1640,7 @@ h1.landing-hub__title--name {
   border-top: 1px solid rgba(148, 163, 184, 0.18);
   color: #94a3b8;
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-align: center;
   text-transform: uppercase;
@@ -1670,7 +1724,7 @@ h1.landing-hub__title--name {
   margin: 0;
   color: #fde68a;
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1764,7 +1818,7 @@ h1.landing-hub__title--name {
 .landing-profile-strip__label {
   color: #94a3b8;
   font-size: 0.58rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1.2;
@@ -1773,7 +1827,7 @@ h1.landing-hub__title--name {
 .landing-profile-strip__stat strong {
   color: #fde68a;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.15;
 }
 
@@ -1885,7 +1939,7 @@ h1.landing-hub__title--name {
 .collection-progress-card__label {
   color: #94a3b8;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.25;
@@ -1894,13 +1948,13 @@ h1.landing-hub__title--name {
 .collection-progress-card__value {
   margin: 0;
   font-size: clamp(1.35rem, 3vw, 1.85rem);
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.04em;
   color: #fde68a;
 }
 
 .collection-progress-card__value--superstar {
-  color: #c4b5fd;
+  color: #fde68a;
 }
 
 .collection-progress-card__value--recent {
@@ -2563,7 +2617,7 @@ h1.landing-hub__title--name {
 
 .unlock-option__name {
   color: #ffffff;
-  font-weight: 900;
+  font-weight: 800;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
 }
 
@@ -2725,7 +2779,7 @@ h1.landing-hub__title--name {
   padding: 3px 8px;
   border-radius: 999px;
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -2738,9 +2792,9 @@ h1.landing-hub__title--name {
 }
 
 .player-rarity-badge--recent-all-star {
-  border: 1px solid rgba(129, 140, 248, 0.45);
-  background: rgba(99, 102, 241, 0.18);
-  color: #c7d2fe;
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
 }
 
 .player-rarity-badge--superstar {
@@ -3136,7 +3190,7 @@ h1.landing-hub__title--name {
 
 .leaderboard__header .eyebrow {
   margin: 0;
-  color: #c4b5fd;
+  color: #fdba74;
 }
 
 .leaderboard__brand {
@@ -3151,7 +3205,7 @@ h1.landing-hub__title--name {
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(30, 16, 53, 0.16));
+  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.28));
 }
 
 .leaderboard__subtitle {
@@ -3362,7 +3416,7 @@ h1.landing-hub__title--name {
 
 .landing-team-form__account-label {
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #94a3b8;
@@ -3544,7 +3598,7 @@ h1.landing-hub__title--name {
 .gm-profile-modal__label {
   color: #94a3b8;
   font-size: 0.76rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -4307,24 +4361,24 @@ h1.landing-hub__title--name {
 }
 
 .landing-game-modes--daily-split .daily-draft-card__description {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 0.82rem;
   line-height: 1.35;
 }
 
 .landing-game-modes--daily-split .daily-draft-card__challenge-title {
+  margin-bottom: 4px;
   font-size: 0.95rem;
 }
 
-.landing-game-modes--daily-split .daily-draft-card__challenge-copy {
+.landing-game-modes--daily-split .daily-draft-card__status {
   margin: 0 0 8px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
 .landing-game-modes--daily-split .daily-draft-card__actions {
-  grid-template-columns: 1fr;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .landing-game-modes--daily-split .daily-draft-card__button {
@@ -4351,8 +4405,8 @@ h1.landing-hub__title--name {
     font-size: 1.05rem;
   }
 
-  .landing-game-modes--daily-split .daily-draft-card__challenge-copy {
-    font-size: 0.88rem;
+  .landing-game-modes--daily-split .daily-draft-card__status {
+    font-size: 0.84rem;
   }
 
   .landing-game-modes--daily-split .daily-draft-card__button {
@@ -5299,8 +5353,9 @@ h1.landing-hub__title--name {
 }
 
 .player-rarity-badge--era {
-  background: rgba(168, 85, 247, 0.2);
-  color: #e9d5ff;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(245, 158, 11, 0.18);
+  color: #fde68a;
 }
 
 .achievements-page__item--masked strong,
@@ -5443,18 +5498,18 @@ h1.landing-hub__title--name {
   }
 
   .draft-room.panel--compact {
-    padding: 10px 12px;
+    padding: 8px 10px;
   }
 
   .draft-room .daily-draft-banner {
-    margin-bottom: 8px;
-    padding: 8px 10px;
-    border-radius: 12px;
+    margin-bottom: 6px;
+    padding: 6px 8px;
+    border-radius: 10px;
   }
 
   .draft-room .daily-draft-banner h3 {
     margin: 2px 0 0;
-    font-size: 1.02rem;
+    font-size: 0.95rem;
     line-height: 1.2;
   }
 
@@ -5463,80 +5518,97 @@ h1.landing-hub__title--name {
   }
 
   .draft-room .daily-draft-banner__note {
-    margin: 4px 0 0;
-    font-size: 0.78rem;
+    margin: 2px 0 0;
+    font-size: 0.72rem;
   }
 
   .draft-room .salary-cap-banner,
   .draft-room .all-time-banner {
-    margin-bottom: 8px;
-    padding: 8px 10px;
+    margin-bottom: 6px;
+    padding: 6px 8px;
+  }
+
+  .draft-room .salary-cap-banner__topline .eyebrow {
+    font-size: 0.7rem;
+  }
+
+  .draft-room .salary-cap-banner__rating {
+    font-size: 0.72rem;
   }
 
   .draft-room .salary-cap-banner__cap {
-    margin-top: 4px;
-    font-size: 0.98rem;
+    margin-top: 2px;
+    font-size: 0.9rem;
+    line-height: 1.25;
   }
 
   .draft-room .all-time-banner p {
     margin: 2px 0 0;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     line-height: 1.3;
   }
 
   .draft-page-header {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+  }
+
+  .draft-page-header .eyebrow {
+    font-size: 0.72rem;
   }
 
   .draft-page-header__matchup {
-    margin-top: 2px;
-    font-size: 0.84rem;
+    margin-top: 1px;
+    font-size: 0.78rem;
   }
 
   .draft-progress {
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 3px;
+    margin-bottom: 6px;
   }
 
   .draft-progress__slot {
-    min-height: 38px;
-    padding: 4px 2px;
+    min-height: 34px;
+    padding: 3px 2px;
     border-radius: 8px;
-    gap: 1px;
+    gap: 0;
   }
 
   .draft-progress__name {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
   }
 
   .draft-progress__position,
   .draft-progress__slot-label {
-    font-size: 0.58rem;
+    font-size: 0.55rem;
   }
 
   .draft-prompt--compact {
-    margin-bottom: 8px;
-    padding: 6px 10px;
+    margin-bottom: 6px;
+    padding: 5px 8px;
+  }
+
+  .draft-prompt--compact .draft-prompt__eyebrow {
+    display: none;
   }
 
   .draft-prompt--compact .draft-prompt__title {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
 
   .draft-prompt--compact .draft-prompt__eligible {
-    font-size: 0.74rem;
+    font-size: 0.7rem;
   }
 
   .draft-prompt--compact .draft-timer {
-    padding: 3px 6px;
+    padding: 2px 5px;
   }
 
   .draft-prompt--compact .draft-timer span {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
 
   .draft-room .stats-search {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .draft-room .stats-search > span {
@@ -5544,14 +5616,15 @@ h1.landing-hub__title--name {
   }
 
   .draft-room .stats-search input {
-    padding: 9px 11px;
-    font-size: 0.92rem;
+    padding: 7px 10px;
+    font-size: 0.88rem;
+    border-radius: 10px;
   }
 
   .player-pick-list {
-    max-height: min(64vh, 560px);
-    gap: 4px;
-    margin-bottom: 8px;
+    max-height: min(68vh, 580px);
+    gap: 3px;
+    margin-bottom: 6px;
   }
 
   .player-pick--compact {
@@ -5631,7 +5704,7 @@ h1.landing-hub__title--name {
   }
 
   .player-pick--superstar {
-    box-shadow: 0 0 0 1px rgba(192, 132, 252, 0.45);
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.45);
   }
 
   .queued-draft-results__footer {
@@ -5663,8 +5736,9 @@ h1.landing-hub__title--name {
 }
 
 .daily-draft-card__challenge-title {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 1.05rem;
+  font-weight: 700;
   color: #f8fafc;
 }
 
@@ -5672,6 +5746,14 @@ h1.landing-hub__title--name {
   margin: 0 0 10px;
   color: #cbd5e1;
   font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.daily-draft-card__status {
+  margin: 0 0 10px;
+  color: #86efac;
+  font-size: 0.84rem;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -5759,9 +5841,8 @@ h1.landing-hub__title--name {
 
 .daily-draft-card__actions {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .daily-draft-card__actions .daily-draft-card__button {
@@ -5770,10 +5851,28 @@ h1.landing-hub__title--name {
   margin-top: 0;
 }
 
-@media (max-width: 640px) {
-  .daily-draft-card__actions {
-    grid-template-columns: 1fr;
-  }
+.daily-draft-card__text-link {
+  margin: 0;
+  padding: 4px 0 0;
+  border: 0;
+  background: none;
+  color: #86efac;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.daily-draft-card__text-link:hover:not(:disabled) {
+  color: #bbf7d0;
+}
+
+.daily-draft-card__text-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
 }
 
 .daily-draft-card__button--secondary {
@@ -5800,7 +5899,7 @@ h1.landing-hub__title--name {
   border-radius: 999px;
   padding: 14px 22px;
   color: #0f172a;
-  font-weight: 900;
+  font-weight: 800;
   background: linear-gradient(135deg, #bbf7d0 0%, #22c55e 100%);
   box-shadow: 0 14px 34px rgba(34, 197, 94, 0.3);
   transition:
@@ -5987,7 +6086,7 @@ h1.landing-hub__title--name {
   flex-shrink: 0;
   color: #64748b;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -7377,10 +7476,10 @@ h1.landing-hub__title--name {
   }
 
   .player-pick--superstar:hover {
-    border-color: #e9d5ff;
+    border-color: #fde68a;
     box-shadow:
-      0 0 24px rgba(168, 85, 247, 0.45),
-      0 0 36px rgba(217, 70, 239, 0.22);
+      0 0 24px rgba(245, 158, 11, 0.4),
+      0 0 36px rgba(251, 191, 36, 0.2);
   }
 }
 
@@ -7405,11 +7504,11 @@ h1.landing-hub__title--name {
 }
 
 .player-pick--superstar {
-  border-color: rgba(192, 132, 252, 0.85);
+  border-color: rgba(251, 191, 36, 0.85);
   background: linear-gradient(
     135deg,
-    rgba(168, 85, 247, 0.24) 0%,
-    rgba(217, 70, 239, 0.12) 42%,
+    rgba(245, 158, 11, 0.24) 0%,
+    rgba(251, 191, 36, 0.12) 42%,
     rgba(15, 23, 42, 0.92) 100%
   );
   animation: player-pick-superstar-glow 2s ease-in-out infinite;
@@ -7449,14 +7548,14 @@ h1.landing-hub__title--name {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(192, 132, 252, 0.45),
-      0 8px 26px rgba(168, 85, 247, 0.28);
+      0 0 0 1px rgba(251, 191, 36, 0.45),
+      0 8px 26px rgba(245, 158, 11, 0.28);
   }
 
   50% {
     box-shadow:
-      0 0 0 1px rgba(233, 213, 255, 0.7),
-      0 12px 32px rgba(217, 70, 239, 0.38);
+      0 0 0 1px rgba(253, 230, 138, 0.7),
+      0 12px 32px rgba(251, 191, 36, 0.35);
   }
 }
 
@@ -8332,7 +8431,7 @@ h1.landing-hub__title--name {
 
 .tier-list-page .landing-hub__eyebrow {
   margin: 0 0 4px;
-  color: #5b4b72;
+  color: #94a3b8;
 }
 
 .tier-list__toolbar {

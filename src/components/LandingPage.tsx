@@ -452,6 +452,19 @@ export function LandingPage({
     const mode = snapshot.setup.mode;
     const dailyCompleted = Boolean(snapshot.entry);
     const playStreak = getDailyDraftPlayStreak(mode, getDailyDateKey());
+    const statusParts = [
+      snapshot.entry
+        ? snapshot.entry.formattedResult
+        : "Not played today",
+      snapshot.entry
+        ? snapshot.percentileLabel
+        : null,
+      playStreak.current > 0
+        ? formatDailyDraftPlayStreak(playStreak)
+        : snapshot.entry
+          ? null
+          : "Start a streak",
+    ].filter((part): part is string => Boolean(part));
 
     return (
       <section
@@ -472,27 +485,7 @@ export function LandingPage({
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
         </h3>
-        <p className="daily-draft-card__challenge-copy">
-          {snapshot.goal.description}
-        </p>
-        <div className="landing-mode-card__record-block">
-          <p className="landing-mode-card__record">
-            <span className="landing-mode-card__record-label">Today</span>
-            <span className="landing-mode-card__record-value landing-mode-card__record-value--daily">
-              {snapshot.entry?.formattedResult ?? "—"}
-            </span>
-          </p>
-          <p className="landing-mode-card__record-meta">
-            {snapshot.entry
-              ? snapshot.percentileLabel ?? "Daily draft complete"
-              : "Not played yet today"}
-          </p>
-          <p className="landing-mode-card__record-meta">
-            {playStreak.current > 0
-              ? formatDailyDraftPlayStreak(playStreak)
-              : "Play today to start a streak"}
-          </p>
-        </div>
+        <p className="daily-draft-card__status">{statusParts.join(" · ")}</p>
         <div className="daily-draft-card__actions">
           <button
             type="button"
@@ -502,11 +495,11 @@ export function LandingPage({
           >
             {dailyCompleted
               ? `View ${formatDailyDraftModeLabel(mode)} lineup`
-              : `Play ${formatDailyDraftModeLabel(mode)} Today`}
+              : `Play ${formatDailyDraftModeLabel(mode)}`}
           </button>
           <button
             type="button"
-            className="daily-draft-card__button daily-draft-card__button--secondary"
+            className="daily-draft-card__text-link"
             disabled={!onViewYesterdayBestDailyLineup || modesBlocked}
             onClick={() => void handleYesterdayBestAction(mode)}
           >
@@ -1129,7 +1122,13 @@ export function LandingPage({
 
         {hubTab === "account" ? (
           <>
-            <div className="landing-team-form landing-card landing-card--form">
+            <section
+              className="account-section landing-team-form landing-card landing-card--form"
+              aria-labelledby="account-identity-heading"
+            >
+              <p className="account-section__eyebrow" id="account-identity-heading">
+                Identity
+              </p>
               <p className="landing-team-form__identity">
                 <span className="landing-team-form__identity-label">
                   GM code
@@ -1140,8 +1139,7 @@ export function LandingPage({
                   showName={false}
                 />
                 <span className="landing-team-form__identity-note">
-                  Shown on leaderboards. Tap your code to verify or copy your
-                  full ID.
+                  Shown on leaderboards. Tap to verify or copy your full ID.
                 </span>
               </p>
 
@@ -1150,56 +1148,71 @@ export function LandingPage({
                 onViewPrivacy={onViewPrivacy}
                 onViewTerms={onViewTerms}
               />
-            </div>
+            </section>
 
-            <div className="landing-hub__links">
-              <button
-                type="button"
-                className="landing-hub__link-button hub-accent hub-accent--h2h"
-                onClick={onViewGmStats}
-              >
-                GM stats
-              </button>
-            </div>
+            <section
+              className="account-section landing-card"
+              aria-labelledby="account-records-heading"
+            >
+              <p className="account-section__eyebrow" id="account-records-heading">
+                Records
+              </p>
+              <div className="landing-hub__links">
+                <button
+                  type="button"
+                  className="landing-hub__link-button hub-accent hub-accent--h2h"
+                  onClick={onViewGmStats}
+                >
+                  GM stats
+                </button>
+              </div>
+            </section>
 
-            <p className="landing-disclaimer">
-              Draft Day GM is an independent project. It is not affiliated with,
-              endorsed by, or connected to the NBA, its teams, players, or
-              partners. Team names, player names, and statistics are used for
-              informational purposes only.
-            </p>
+            <section
+              className="account-section account-section--legal"
+              aria-labelledby="account-legal-heading"
+            >
+              <p className="account-section__eyebrow" id="account-legal-heading">
+                Legal
+              </p>
+              <p className="landing-disclaimer">
+                Draft Day GM is an independent project. It is not affiliated with,
+                endorsed by, or connected to the NBA, its teams, players, or
+                partners.
+              </p>
 
-            <nav className="landing-footer" aria-label="Legal">
-              <button
-                type="button"
-                className="landing-footer__link"
-                onClick={onViewBetaNotes}
-              >
-                Beta notes
-              </button>
-              <span className="landing-footer__sep" aria-hidden="true">
-                ·
-              </span>
-              <button
-                type="button"
-                className="landing-footer__link"
-                onClick={onViewPrivacy}
-              >
-                Privacy Policy
-              </button>
-              <span className="landing-footer__sep" aria-hidden="true">
-                ·
-              </span>
-              <button
-                type="button"
-                className="landing-footer__link"
-                onClick={onViewTerms}
-              >
-                Terms of Use
-              </button>
-            </nav>
+              <nav className="landing-footer" aria-label="Legal">
+                <button
+                  type="button"
+                  className="landing-footer__link"
+                  onClick={onViewBetaNotes}
+                >
+                  Beta notes
+                </button>
+                <span className="landing-footer__sep" aria-hidden="true">
+                  ·
+                </span>
+                <button
+                  type="button"
+                  className="landing-footer__link"
+                  onClick={onViewPrivacy}
+                >
+                  Privacy
+                </button>
+                <span className="landing-footer__sep" aria-hidden="true">
+                  ·
+                </span>
+                <button
+                  type="button"
+                  className="landing-footer__link"
+                  onClick={onViewTerms}
+                >
+                  Terms
+                </button>
+              </nav>
 
-            <p className="landing-credit">Powered by BALLACADEMY</p>
+              <p className="landing-credit">Powered by BALLACADEMY</p>
+            </section>
           </>
         ) : null}
       </div>
