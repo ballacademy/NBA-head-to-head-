@@ -7,6 +7,7 @@ import {
   formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
+import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
@@ -148,14 +149,18 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
                 snapshot.records.ranked.ties,
               ),
             },
-            {
-              label: "All-Time",
-              value: formatGmRecordLine(
-                snapshot.records.allTime.wins,
-                snapshot.records.allTime.losses,
-                snapshot.records.allTime.ties,
-              ),
-            },
+            ...(isAllTimeModePlayable()
+              ? [
+                  {
+                    label: "All-Time",
+                    value: formatGmRecordLine(
+                      snapshot.records.allTime.wins,
+                      snapshot.records.allTime.losses,
+                      snapshot.records.allTime.ties,
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       </section>

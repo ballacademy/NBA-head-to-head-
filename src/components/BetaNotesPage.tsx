@@ -28,9 +28,9 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <div className="legal-page__body beta-notes-body">
           <div className="beta-notes-summary">
             <p>
-              Daily Draft, Classic/Pro H2H, and weekly Events are live.
+              Daily Draft, Casual/Pro H2H, and weekly Events are live.
               Accounts unlock leaderboards and public tier lists. Roster,
-              badges, stats, and standings sit in the bottom nav.
+              badges, stats, and ranks sit in the bottom nav.
             </p>
             <p className="beta-notes-summary__meta">
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
@@ -43,20 +43,20 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <ul>
               <li>
                 <strong>Play hub</strong> — Daily Draft (one scored try per mode
-                daily), Classic/Pro H2H, and weekly Events
+                daily), Casual/Pro H2H, and weekly Events
               </li>
               <li>
                 <strong>LeBron James</strong> is banned in Pro H2H and Events
                 (salary edge) — he still appears at the bottom of the draft
-                board with a Banned label. Freely draftable in Classic,
+                board with a Banned label. Freely draftable in Casual,
                 practice, and Daily Draft without an All-Star unlock.
               </li>
               <li>
-                Collection, Badges, and Season Stats (Roster) · Leaderboards
-                (Ranks) · Tier Lists · Account
+                Collection, Badges, and Season Stats (Roster) · Ranks · Tier
+                Lists · Account
               </li>
               <li>
-                <strong>Private match</strong> (Classic or Pro) — account
+                <strong>Private match</strong> (Casual or Pro) — account
                 holders create a room code and invite a friend for live H2H.
                 Same draft rules as that mode; records, Banners, and badges do
                 not change.
@@ -123,7 +123,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 weight 1.
               </li>
               <li>
-                Both effects apply in every scored mode (Daily, Classic, Pro,
+                Both effects apply in every scored mode (Daily, Casual, Pro,
                 Events). Draft boards sort limited-sample players below
                 full-sample ones when other keys tie.
               </li>

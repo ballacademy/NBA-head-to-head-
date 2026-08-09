@@ -25,7 +25,7 @@ const outcomeLabel = (result: DeliveredOwnerResult["result"]["ownerResult"]) => 
 };
 
 const modeLabel = (mode: DeliveredOwnerResult["mode"]) =>
-  mode === "ranked" ? "Pro" : "Classic";
+  mode === "ranked" ? "Pro" : "Casual";
 
 function MatchupDetail({
   delivery,

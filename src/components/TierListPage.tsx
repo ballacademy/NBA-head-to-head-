@@ -166,7 +166,7 @@ const TIER_ACCENTS = [
   "#cd7f32", // bronze
   "#22c55e", // green
   "#3b82f6", // blue
-  "#a855f7", // violet
+  "#f97316", // orange
   "#ef4444", // red
   "#14b8a6", // teal
   "#ec4899", // pink
@@ -1029,7 +1029,7 @@ export function TierListPage({
   return (
     <div className="hub-feature tier-list-page">
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Tier List Builder</h1>
+        <h1 className="landing-hub__title">Tiers</h1>
         <p className="landing__lede landing-hub__lede">
           Create and share boards.
         </p>
