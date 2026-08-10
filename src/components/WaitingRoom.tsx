@@ -28,13 +28,13 @@ export function WaitingRoom({
             : "Waiting for your opponent"}
       </h2>
       <p>
-        Your lineup is locked in. Stay on this screen so the match can finish —
-        leaving early can skip your results.
+        Your lineup is locked in.
         {opponentAutoDrafted
           ? " Their lineup was auto-drafted so the match can be scored."
           : opponentName
             ? ` ${opponentName} is still drafting and will be revealed once both teams are ready.`
-            : " Your opponent is still drafting and will be revealed once both teams are ready."}
+            : " Your opponent is still drafting and will be revealed once both teams are ready."}{" "}
+        Stay here to see the result — leaving abandons this match screen.
       </p>
 
       <div className="waiting-indicator">
@@ -54,7 +54,7 @@ export function WaitingRoom({
           className="secondary-button waiting-room__leave"
           onClick={onLeave}
         >
-          Return home
+          Leave match
         </button>
       ) : null}
     </section>

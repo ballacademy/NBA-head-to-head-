@@ -716,6 +716,28 @@ export function MatchResults({
               <p className="match-results__unlock-note">
                 Choose your unlocked player before drafting again.
               </p>
+              <div className="match-results__action-row match-results__action-row--unlock">
+                <button
+                  type="button"
+                  className="secondary-button match-results__share-button"
+                  disabled={isMatchmaking || shareState === "busy"}
+                  onClick={() => void handleShareLineup()}
+                >
+                  {shareState === "busy"
+                    ? "Sharing…"
+                    : shareState === "error"
+                      ? "Share failed — try again"
+                      : "Share lineup"}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button match-results__menu-button"
+                  disabled={isMatchmaking}
+                  onClick={onReturnToMenu}
+                >
+                  Back to home
+                </button>
+              </div>
             </>
           ) : (
             <div className="match-results__action-row">

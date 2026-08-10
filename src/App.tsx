@@ -600,22 +600,32 @@ function App() {
     );
   }, [activePlayers, dailyDateKey, dailySetup]);
 
-  const userLineup = isCompleteLineupFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
-    allTimeMode,
-  })
-    ? getPlayersByIdFromActivePool(user?.lineup ?? [], modeRecords.allTime, {
-        allTimeMode,
-      })
-    : [];
-  const opponentLineup = isCompleteLineupFromActivePool(
-    opponent?.lineup ?? [],
+  const userLineupIds = (user?.lineup ?? []).filter(
+    (playerId): playerId is string => Boolean(playerId),
+  );
+  const opponentLineupIds = (opponent?.lineup ?? []).filter(
+    (playerId): playerId is string => Boolean(playerId),
+  );
+  const userLineup = getPlayersByIdFromActivePool(
+    userLineupIds,
     modeRecords.allTime,
     { allTimeMode },
-  )
-    ? getPlayersByIdFromActivePool(opponent?.lineup ?? [], modeRecords.allTime, {
-        allTimeMode,
-      })
-    : [];
+  );
+  const opponentLineup = getPlayersByIdFromActivePool(
+    opponentLineupIds,
+    modeRecords.allTime,
+    { allTimeMode },
+  );
+  const userLineupComplete = isCompleteLineupFromActivePool(
+    userLineupIds,
+    modeRecords.allTime,
+    { allTimeMode },
+  );
+  const opponentLineupComplete = isCompleteLineupFromActivePool(
+    opponentLineupIds,
+    modeRecords.allTime,
+    { allTimeMode },
+  );
   const userDraftComplete =
     draftStep >= 5 &&
     (user?.lineup.filter((playerId): playerId is string => Boolean(playerId))
@@ -2408,21 +2418,34 @@ function App() {
       !isPendingQueueMatch &&
       opponent &&
       matchId &&
-      (userLineup.length !== 5 || opponentLineup.length !== 5) ? (
+      (!userLineupComplete || !opponentLineupComplete) ? (
         <section className="panel landing">
           <p className="eyebrow">Results unavailable</p>
           <h2>We couldn&apos;t load both lineups for scoring.</h2>
           <p>
-            A player id may be missing from the current pool. Return home and try
-            another match.
+            {userLineup.length}/{Math.max(userLineupIds.length, 5)} of your
+            players and {opponentLineup.length}/
+            {Math.max(opponentLineupIds.length, 5)} of theirs resolved from the
+            current pool. A roster update may have removed a drafted id.
           </p>
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => resetToLanding()}
-          >
-            Back to home
-          </button>
+          <div className="match-results__action-row">
+            <button
+              type="button"
+              className="play-again-button match-results__primary-action"
+              onClick={() => {
+                void replayLastMode();
+              }}
+            >
+              Draft another team
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => resetToLanding()}
+            >
+              Back to home
+            </button>
+          </div>
         </section>
       ) : null}
 
@@ -2431,8 +2454,8 @@ function App() {
       !isPendingQueueMatch &&
       opponent &&
       matchId &&
-      userLineup.length === 5 &&
-      opponentLineup.length === 5 ? (
+      userLineupComplete &&
+      opponentLineupComplete ? (
         <MatchResults
           user={user}
           opponent={opponent}

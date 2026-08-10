@@ -110,6 +110,7 @@ function LeaderboardEntryRow({
           <button
             type="button"
             className="leaderboard-row__name"
+            aria-label={`Open profile for ${entry.name}`}
             onClick={() => setProfileOpen(true)}
           >
             {entry.name}
@@ -118,6 +119,7 @@ function LeaderboardEntryRow({
             <button
               type="button"
               className="leaderboard-row__username"
+              aria-label={`Open profile for ${formatUsername(entry.username)}`}
               onClick={() => setProfileOpen(true)}
             >
               {formatUsername(entry.username)}
@@ -127,6 +129,7 @@ function LeaderboardEntryRow({
             type="button"
             className="leaderboard-row__tag"
             aria-expanded={expanded}
+            aria-label={`${expanded ? "Hide" : "Show"} details for ${formatPublicTag(entry.publicTag)}`}
             onClick={() => setExpanded((current) => !current)}
           >
             {formatPublicTag(entry.publicTag)}
@@ -136,6 +139,7 @@ function LeaderboardEntryRow({
           type="button"
           className="leaderboard-row__metric"
           aria-expanded={expanded}
+          aria-label={`${expanded ? "Hide" : "Show"} details for ${entry.name}, ${formatRecord(entry)}, ${formatMetric(entry)}`}
           onClick={() => setExpanded((current) => !current)}
         >
           <span className="leaderboard-row__record">{formatRecord(entry)}</span>
@@ -286,7 +290,7 @@ export function LeaderboardPage() {
   return (
     <div className="hub-feature leaderboard">
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Leaderboards</h1>
+        <h1 className="landing-hub__title">Ranks</h1>
         <p className="landing__lede landing-hub__lede">{subtitle}</p>
       </div>
 
@@ -401,7 +405,12 @@ export function LeaderboardPage() {
           </div>
         </div>
 
-        {view === "ranked" ? (
+        {refreshBusy &&
+        (view === "ranked" ? rankedEntries.length === 0 : classicEntries.length === 0) ? (
+          <p className="draft-empty" aria-live="polite">
+            Loading ranks…
+          </p>
+        ) : view === "ranked" ? (
           rankedEntries.length > 0 ? (
             <LeaderboardBoard
               entries={rankedEntries}

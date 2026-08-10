@@ -80,6 +80,11 @@ import {
   formatEventBadgeLabel,
   getCurrentWeeklyEvent,
 } from "../lib/weeklyEvents";
+import { ensureClassicProfile } from "../lib/classicProfile";
+import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
+import { isHeadToHeadLineupLocked } from "../lib/matchmaking";
+import { loadPendingLineupState } from "../lib/pendingLineup";
+import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "../lib/rankedElo";
 
 const buildHeadToHeadModeDetails = (
   baseDetails: string[],
@@ -192,6 +197,13 @@ export function LandingPage({
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
+  const [queuedLineupLock, setQueuedLineupLock] = useState(() => {
+    const playerId = getOrCreatePlayerIdentity().playerId;
+    return {
+      classic: Boolean(loadPendingLineupState("classic", playerId)),
+      ranked: Boolean(loadPendingLineupState("ranked", playerId)),
+    };
+  });
   const closePrivateMatchModal = useCallback(() => {
     setPrivateMatchMode(null);
   }, []);
@@ -223,6 +235,10 @@ export function LandingPage({
   const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
+  const classicPlayBlocked = modesBlocked || queuedLineupLock.classic;
+  const rankedPlayBlocked = modesBlocked || queuedLineupLock.ranked;
+  const anyQueuedLineupLock =
+    queuedLineupLock.classic || queuedLineupLock.ranked;
   const profanityWarning =
     teamValidation.ok === false && teamValidation.error === "profanity"
       ? getTeamProfileValidationMessage("profanity")
@@ -254,6 +270,38 @@ export function LandingPage({
     [collection.unlockedIds.length],
   );
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const playerId = playerIdentity.playerId;
+
+    void (async () => {
+      const [classicLocked, rankedLocked] = await Promise.all([
+        isHeadToHeadLineupLocked({
+          mode: "classic",
+          playerId,
+          playerElo: ensureClassicProfile().elo,
+        }),
+        isHeadToHeadLineupLocked({
+          mode: "ranked",
+          playerId,
+          playerElo: ensureCurrentRankedSeason().elo,
+        }),
+      ]);
+
+      if (!cancelled) {
+        setQueuedLineupLock({
+          classic: classicLocked,
+          ranked: rankedLocked,
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [playerIdentity.playerId, hubTab, playSection, startMatchError]);
+
   const matchmakingLabel =
     matchmakingElapsedSeconds > 0
       ? `Finding opponent… ${matchmakingElapsedSeconds}s`
@@ -690,7 +738,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Head to Head</span>
                 <span className="play-hub-chooser__meta">
-                  Classic or Pro live matchups, practice, and private games
+                  Casual or Pro live matchups, practice, and private games
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -720,6 +768,19 @@ export function LandingPage({
           <>
             {playModeBack}
             {renderTeamNameField()}
+            {anyQueuedLineupLock ? (
+              <p className="account-required-note" role="status">
+                Queued lineup waiting for a live opponent at{" "}
+                {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}
+                {queuedLineupLock.classic && queuedLineupLock.ranked
+                  ? " (Casual and Pro)"
+                  : queuedLineupLock.classic
+                    ? " (Casual)"
+                    : " (Pro)"}
+                . Live Play stays locked until that match finishes — Practice and
+                Private still work.
+              </p>
+            ) : null}
             <div className="landing-game-modes landing-game-modes--h2h">
               <div className="head-to-head-card landing-card landing-card--mode">
                 <div className="mode-card__header">
@@ -735,12 +796,14 @@ export function LandingPage({
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
-                    disabled={modesBlocked}
+                    disabled={classicPlayBlocked}
                     onClick={() => void handleStart()}
                   >
                     {matchmakingMode === "classic"
                       ? matchmakingLabel
-                      : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
+                      : queuedLineupLock.classic
+                        ? "Lineup queued"
+                        : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
                   </button>
                   <button
                     type="button"
@@ -780,12 +843,14 @@ export function LandingPage({
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
-                    disabled={modesBlocked}
+                    disabled={rankedPlayBlocked}
                     onClick={() => void handleStart({ salaryCapMode: true })}
                   >
                     {matchmakingMode === "ranked"
                       ? matchmakingLabel
-                      : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
+                      : queuedLineupLock.ranked
+                        ? "Lineup queued"
+                        : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
                   </button>
                   <button
                     type="button"
@@ -876,9 +941,8 @@ export function LandingPage({
                   <h2 className="event-card__title">{weeklyEvent.title}</h2>
                   <p className="event-card__description">
                     <strong>{weeklyEvent.restrictionLabel}</strong>
-                    {" · "}${(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M shared
-                    board · {PICK_TIME_LIMIT_SECONDS}s picks · {eventMatchesLeft}{" "}
-                    of {weeklyEvent.maxMatches} left
+                    {" · "}${(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M ·{" "}
+                    {eventMatchesLeft}/{weeklyEvent.maxMatches} left
                   </p>
                   <div className="event-card__record">
                     <RecordWithStreak
@@ -894,37 +958,6 @@ export function LandingPage({
                       className="ranked-mode-summary__record"
                     />
                   </div>
-                  <div className="event-card__badges" aria-label="Event badges">
-                    {(
-                      ["participation", "bronze", "silver", "gold"] as const
-                    ).map((tier) => {
-                      const earned = eventProfile.badges.includes(tier);
-                      return (
-                        <span
-                          key={tier}
-                          className={`event-badge event-badge--${tier}${
-                            earned ? " event-badge--earned" : ""
-                          }`}
-                        >
-                          {formatEventBadgeLabel(tier)}
-                        </span>
-                      );
-                    })}
-                  </div>
-                  <details className="event-card__details">
-                    <summary>Badge rules</summary>
-                    <ul className="event-card__rules">
-                      <li>
-                        Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins · Silver{" "}
-                        {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
-                        {EVENT_BADGE_THRESHOLDS.gold}+
-                      </li>
-                      <li>
-                        Competitor badge at{" "}
-                        {EVENT_BADGE_THRESHOLDS.participation}+ matches played
-                      </li>
-                    </ul>
-                  </details>
                   <div className="mode-card__actions">
                     <button
                       type="button"
@@ -947,6 +980,37 @@ export function LandingPage({
                           : "Event matches used up"}
                     </button>
                   </div>
+                  <details className="event-card__details">
+                    <summary>Badges &amp; rules</summary>
+                    <div className="event-card__badges" aria-label="Event badges">
+                      {(
+                        ["participation", "bronze", "silver", "gold"] as const
+                      ).map((tier) => {
+                        const earned = eventProfile.badges.includes(tier);
+                        return (
+                          <span
+                            key={tier}
+                            className={`event-badge event-badge--${tier}${
+                              earned ? " event-badge--earned" : ""
+                            }`}
+                          >
+                            {formatEventBadgeLabel(tier)}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <ul className="event-card__rules">
+                      <li>
+                        Bronze {EVENT_BADGE_THRESHOLDS.bronze}+ wins · Silver{" "}
+                        {EVENT_BADGE_THRESHOLDS.silver}+ · Gold{" "}
+                        {EVENT_BADGE_THRESHOLDS.gold}+
+                      </li>
+                      <li>
+                        Competitor badge at{" "}
+                        {EVENT_BADGE_THRESHOLDS.participation}+ matches played
+                      </li>
+                    </ul>
+                  </details>
                 </div>
 
                 <details className="event-leaderboard landing-card">

@@ -305,7 +305,8 @@ export function AccountAuthPanel({
       <p className="landing-team-form__account-note">
         You can play without an account. Create one to appear on leaderboards,
         host or join private matches, publish tier lists, and restore this GM
-        code on another device.
+        code on another device. Badges stay on this device even after you sign
+        in.
       </p>
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">

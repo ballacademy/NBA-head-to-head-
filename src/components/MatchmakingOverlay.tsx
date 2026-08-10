@@ -149,8 +149,8 @@ export function MatchmakingOverlay({
         {isPrivate && !isMatched ? (
           <p className="matchmaking-overlay__note">
             {isPrivateGuest
-              ? "Stay on this screen while we connect you. Same mode as your friend (Classic or Pro)."
-              : "Friend needs an account. They join with this code under the same mode (Classic or Pro). Records and Banners do not change."}
+              ? "Stay on this screen while we connect you. Same mode as your friend (Casual or Pro)."
+              : "Friend needs an account. They join with this code under the same mode (Casual or Pro). Records and Banners do not change."}
           </p>
         ) : null}
 
