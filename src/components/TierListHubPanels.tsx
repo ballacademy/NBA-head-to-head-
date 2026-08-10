@@ -47,14 +47,14 @@ export function TierListHubHome({
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--ranked"
+        className="landing-hub__link-button hub-accent hub-accent--tiers"
         onClick={onOpenMine}
       >
         My tier lists
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--neutral"
+        className="landing-hub__link-button hub-accent hub-accent--tiers"
         onClick={onOpenPublic}
       >
         Public tier lists
