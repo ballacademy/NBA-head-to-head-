@@ -36,7 +36,7 @@ function PrivacyPolicyContent() {
         <li>A random anonymous player ID and derived GM code</li>
         <li>Your chosen team name</li>
         <li>Win/loss records, ratings, streaks, and mode progress</li>
-        <li>Badge progress and local gameplay caches</li>
+        <li>Badge progress (also synced to your account when signed in)</li>
         <li>Unlocked players / collection state (also synced to your account when signed in)</li>
         <li>Daily Draft progress and cached score data</li>
         <li>Draft timer deadlines for the current session</li>
@@ -86,10 +86,10 @@ function PrivacyPolicyContent() {
         the Account tab. New accounts store an email address for recovery. Older
         accounts created before email was required may not have one on file. If
         you forget your username, contact us to request help or account
-        deletion. Collection unlocks sync to your linked account so you can use
-        them on another signed-in device. Achievements stay on-device for now.
-        Logging into an account on a new browser restores the GM identity,
-        online competitive records, and collection unlocks when available.
+        deletion. Collection unlocks and badges sync to your linked account so
+        you can use them on another signed-in device. Logging into an account on
+        a new browser restores the GM identity, online competitive records,
+        collection unlocks, and badge progress when available.
       </p>
       <p>
         Public leaderboards show team names and GM codes, not full private

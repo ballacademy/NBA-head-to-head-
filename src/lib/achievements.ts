@@ -63,6 +63,10 @@ const normalizeUnlockedAchievements = (unlocked: string[]) => {
   return [...next];
 };
 
+/** Normalize + filter achievement ids (legacy migrations, removed ids). */
+export const normalizeUnlockedAchievementIds = (unlocked: string[]) =>
+  normalizeUnlockedAchievements(unlocked);
+
 export interface AchievementDefinition {
   id: string;
   title: string;
@@ -165,6 +169,12 @@ export const unlockAchievements = (
 
   const next = { unlocked: [...unlocked] };
   saveAchievementState(next);
+
+  if (newlyUnlocked.length > 0) {
+    void import("./achievementsRemote").then(({ pushAchievementsIfLinked }) => {
+      void pushAchievementsIfLinked(next);
+    });
+  }
 
   return {
     state: next,

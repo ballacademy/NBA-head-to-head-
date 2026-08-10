@@ -64,8 +64,8 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
       <HubFeatureReturnButton onBack={onBack} visible={false} />
 
       <p className="account-required-note account-required-note--inline">
-        Badges stay on this device. Signing in syncs collection and leaderboards,
-        but not badge progress across browsers.
+        Sign in to sync badge progress across browsers. Guests keep badges on
+        this device only.
       </p>
 
       <section className="hub-feature__panel">

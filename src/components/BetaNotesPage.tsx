@@ -84,10 +84,10 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 password. New accounts require an email for recovery.
               </li>
               <li>
-                <strong>Guest / local progress</strong> — Collection unlocks
-                sync to your account when signed in. Achievements stay on this
-                device for now. Logging into an account on another browser
-                restores online records and collection unlocks.
+                <strong>Guest / local progress</strong> — Collection unlocks and
+                badges sync to your account when signed in. Logging into an
+                account on another browser restores online records, collection,
+                and badge progress.
               </li>
               <li>
                 <strong>All-Time legends</strong> is coming soon — not part of
