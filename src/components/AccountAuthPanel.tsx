@@ -11,6 +11,10 @@ import {
   pushCollectionIfLinked,
 } from "../lib/collectionRemote";
 import {
+  pullAndMergeAchievements,
+  pushAchievementsIfLinked,
+} from "../lib/achievementsRemote";
+import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
@@ -158,6 +162,7 @@ export function AccountAuthPanel({
     markPlayerAccountLinked(playerId, result.username);
     setMode("closed");
     void pushCollectionIfLinked(undefined, playerId);
+    void pushAchievementsIfLinked(undefined, playerId);
     const { newlyUnlocked } = syncFoundingGmAchievement(
       Boolean(result.foundingGm),
     );
@@ -195,13 +200,14 @@ export function AccountAuthPanel({
       markPlayerAccountLinked(playerId, result.username);
       setMode("closed");
       await pullAndMergeCollection(playerId);
+      await pullAndMergeAchievements(playerId);
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
       );
       setMessage(
         newlyUnlocked.includes(FOUNDING_GM_ACHIEVEMENT_ID)
           ? `Signed in as @${result.username}. Founding GM badge unlocked.`
-          : `Signed in as @${result.username}. Collection synced.`,
+          : `Signed in as @${result.username}. Collection and badges synced.`,
       );
       return;
     }
@@ -305,8 +311,7 @@ export function AccountAuthPanel({
       <p className="landing-team-form__account-note">
         You can play without an account. Create one to appear on leaderboards,
         host or join private matches, publish tier lists, and restore this GM
-        code on another device. Badges stay on this device even after you sign
-        in.
+        code on another device. Signing in syncs collection and badge progress.
       </p>
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">
@@ -539,10 +544,10 @@ export function AccountAuthPanel({
           {mode === "login" ? (
             <>
               <p className="landing-team-form__account-warning">
-                Logging in replaces this browser&apos;s GM identity. Local
-                achievements and device-only progress reset. Your collection
-                unlocks sync from the account when signed in. Leaderboard /
-                online records are restored from the server when available.
+                Logging in replaces this browser&apos;s GM identity. Device-only
+                progress resets. Your collection and badges sync from the
+                account when signed in. Leaderboard / online records are restored
+                from the server when available.
               </p>
               <p className="landing-team-form__account-note">
                 <button

@@ -128,6 +128,7 @@ import {
   shouldApplyRankedEventPlayerBans,
 } from "./lib/competitivePlayerBans";
 import { pullAndMergeCollection } from "./lib/collectionRemote";
+import { pullAndMergeAchievements } from "./lib/achievementsRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -216,6 +217,7 @@ function App() {
     ensurePlayerCollection(),
   );
   const collectionSyncAttemptedRef = useRef(false);
+  const achievementsSyncAttemptedRef = useRef(false);
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
     GhostMatchmakingMode | null
@@ -289,6 +291,15 @@ function App() {
         setCollection(merged);
       }
     })();
+  }, [phase]);
+
+  useEffect(() => {
+    if (achievementsSyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    achievementsSyncAttemptedRef.current = true;
+    void pullAndMergeAchievements();
   }, [phase]);
 
   useEffect(() => {
