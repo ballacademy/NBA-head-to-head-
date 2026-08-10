@@ -187,16 +187,18 @@ export function PlayerStatsTable({
           Season Stats
         </h1>
         <p className="landing__lede landing-hub__lede stats-panel__lede">
-          <span>Player pool</span>
-          <ModeCardInfo
-            details={statsInfoDetails}
-            popoverAlign="center"
-            ariaLabel="Season Stats details"
-          />
+          <span className="stats-panel__lede-text">Player pool</span>
+          <span className="stats-panel__lede-info">
+            <ModeCardInfo
+              details={statsInfoDetails}
+              popoverAlign="end"
+              ariaLabel="Season Stats details"
+            />
+          </span>
         </p>
       </div>
 
-      {onBack ? <HubFeatureReturnButton onBack={onBack} visible={false} /> : null}
+      {onBack ? <HubFeatureReturnButton onBack={onBack} label="Roster" /> : null}
 
       <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">

@@ -299,9 +299,9 @@ export function DraftRoom({
           <p className="eyebrow">
             {formatDailyDraftProductName(drafter.dailyDraftMode ?? "basic")}
           </p>
-          <h3>{dailyChallengeTitle}</h3>
+          <h3 className="daily-draft-banner__title">{dailyChallengeTitle}</h3>
           {dailyChallengeDescription ? (
-            <p>{dailyChallengeDescription}</p>
+            <p className="daily-draft-banner__goal">{dailyChallengeDescription}</p>
           ) : null}
           <p className="daily-draft-banner__note">
             Player stats are hidden. Draft from memory.

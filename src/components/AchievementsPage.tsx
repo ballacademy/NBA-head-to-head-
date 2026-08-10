@@ -61,7 +61,7 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
         </p>
       </div>
 
-      <HubFeatureReturnButton onBack={onBack} visible={false} />
+      <HubFeatureReturnButton onBack={onBack} label="Roster" />
 
       <p className="account-required-note account-required-note--inline">
         Sign in to sync badge progress across browsers. Guests keep badges on
