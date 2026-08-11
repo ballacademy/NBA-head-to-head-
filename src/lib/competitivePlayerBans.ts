@@ -1,8 +1,8 @@
 /**
- * Players banned from Pro (ranked) and Events — usually an unfair salary edge.
- * Still freely draftable in Classic H2H, practice, and Daily Draft (no unlock
- * required). In Pro/Events they stay visible at the bottom of the board with a
- * Banned label and cannot be picked.
+ * Players banned from competitive Casual H2H, Pro H2H, and Events —
+ * usually an unfair salary / impact edge. Still freely draftable in practice
+ * and Daily Draft (no unlock required). In banned modes they stay visible at
+ * the bottom of the board with a Banned label and cannot be picked.
  *
  * LeBron's basketball-reference id is `jamesle01`; the active pool row may be
  * team-suffixed (e.g. `jamesle01-phi` after the Philly signing).
@@ -20,23 +20,52 @@ export const isBannedRankedEventPlayer = (player: {
   player.bbrPlayerId === LEBRON_JAMES_BBR_ID ||
   isBannedFromRankedAndEvents(player.id);
 
+/** Live Casual, Pro, and Events reject banned players on the server. */
 export const matchmakingModeBansRankedEventPlayers = (
   mode: string | null | undefined,
-) => mode === "ranked" || mode === "event";
+) => mode === "classic" || mode === "ranked" || mode === "event";
 
-/** Client match flags that should hide banned players from the draft pool. */
+/**
+ * Client match flags that ban players from the pickable draft pool.
+ * Daily Draft and practice stay open; live Casual / Pro / Events ban.
+ */
 export const shouldApplyRankedEventPlayerBans = (options: {
   isDailyDraft?: boolean;
   practiceMode?: boolean;
   eventId?: string | null;
-  /** Pro H2H / private Pro (not Classic). */
+  /** Pro H2H / private Pro. */
   salaryCapMode?: boolean;
+  /**
+   * Live Casual H2H (not practice). When omitted, classic live is inferred
+   * for competitive drafts that are not Daily / practice / Pro / Events.
+   */
+  classicLive?: boolean;
 }) => {
   if (options.isDailyDraft || options.practiceMode) {
     return false;
   }
 
-  return Boolean(options.eventId) || Boolean(options.salaryCapMode);
+  if (Boolean(options.eventId) || Boolean(options.salaryCapMode)) {
+    return true;
+  }
+
+  if (options.classicLive === true) {
+    return true;
+  }
+
+  // Infer classic live when callers pass the usual match flags without
+  // marking Daily / practice / Pro / Events (App draft + startMatch paths).
+  if (
+    options.classicLive === undefined &&
+    options.isDailyDraft === false &&
+    options.practiceMode === false &&
+    !options.eventId &&
+    options.salaryCapMode === false
+  ) {
+    return true;
+  }
+
+  return false;
 };
 
 export const filterOutRankedEventBannedPlayers = <
@@ -50,4 +79,4 @@ export const lineupContainsRankedEventBannedPlayer = (
 ) => lineup.some((playerId) => isBannedFromRankedAndEvents(playerId));
 
 export const rankedEventBannedPlayerError = () =>
-  "lineup contains a player who is not eligible for Pro or Events";
+  "lineup contains a player who is not eligible for Casual H2H, Pro, or Events";

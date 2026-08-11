@@ -213,7 +213,7 @@ function LeaderboardBoard({
 }
 
 export function LeaderboardPage() {
-  const [view, setView] = useState<LeaderboardView>("ranked");
+  const [view, setView] = useState<LeaderboardView>("classic");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
   const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
   const [refreshTick, setRefreshTick] = useState(0);
@@ -336,17 +336,6 @@ export function LeaderboardPage() {
             <button
               type="button"
               role="tab"
-              aria-selected={view === "ranked"}
-              className={`leaderboard__tab leaderboard__tab--ranked hub-accent--ranked${
-                view === "ranked" ? " is-active" : ""
-              }`}
-              onClick={() => setView("ranked")}
-            >
-              {PRO_HEAD_TO_HEAD_LABEL}
-            </button>
-            <button
-              type="button"
-              role="tab"
               aria-selected={view === "classic"}
               className={`leaderboard__tab leaderboard__tab--classic hub-accent--h2h${
                 view === "classic" ? " is-active" : ""
@@ -354,6 +343,17 @@ export function LeaderboardPage() {
               onClick={() => setView("classic")}
             >
               {CLASSIC_HEAD_TO_HEAD_LABEL}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "ranked"}
+              className={`leaderboard__tab leaderboard__tab--ranked hub-accent--ranked${
+                view === "ranked" ? " is-active" : ""
+              }`}
+              onClick={() => setView("ranked")}
+            >
+              {PRO_HEAD_TO_HEAD_LABEL}
             </button>
           </div>
 

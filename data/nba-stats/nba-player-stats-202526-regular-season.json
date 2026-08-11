@@ -6216,10 +6216,10 @@
       "statsTeam": "SAC"
     },
     {
-      "id": "walkelo01-fa",
+      "id": "walkelo01-den",
       "bbrPlayerId": "walkelo01",
       "name": "Lonnie Walker IV",
-      "team": "FA",
+      "team": "DEN",
       "position": "SG",
       "positions": [
         "SG"
@@ -12476,10 +12476,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "paytoga02-fa",
+      "id": "paytoga02-gsw",
       "bbrPlayerId": "paytoga02",
       "name": "Gary Payton II",
-      "team": "FA",
+      "team": "GSW",
       "position": "SG",
       "positions": [
         "SG"
@@ -19469,10 +19469,10 @@
       "statsTeam": "DEN"
     },
     {
-      "id": "sochaje01-fa",
+      "id": "sochaje01-por",
       "bbrPlayerId": "sochaje01",
       "name": "Jeremy Sochan",
-      "team": "FA",
+      "team": "POR",
       "position": "PF",
       "positions": [
         "PF"
@@ -21830,10 +21830,10 @@
       "lastTeam": "SAS"
     },
     {
-      "id": "houstca01-fa",
+      "id": "houstca01-nop",
       "bbrPlayerId": "houstca01",
       "name": "Caleb Houstan",
-      "team": "FA",
+      "team": "NOP",
       "position": "SF",
       "positions": [
         "SF"

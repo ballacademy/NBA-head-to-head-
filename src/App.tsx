@@ -483,9 +483,15 @@ function App() {
     practiceMode: user?.practiceMode,
     eventId: user?.eventId,
     salaryCapMode: user?.salaryCapMode,
+    classicLive:
+      Boolean(user) &&
+      !isDailyDraft &&
+      !user?.practiceMode &&
+      !user?.eventId &&
+      !user?.salaryCapMode,
   });
 
-  // Full board pool (banned players stay visible with a Banned label in Pro/Events).
+  // Full board pool (banned players stay visible with a Banned label).
   const draftablePlayers = useMemo(() => {
     if (isDailyDraft) {
       return activePlayers;
@@ -725,6 +731,8 @@ function App() {
       practiceMode,
       eventId,
       salaryCapMode,
+      classicLive:
+        !daily && !practiceMode && !eventId && !salaryCapMode && !nextAllTimeMode,
     });
     const withStartBans = <T extends { id: string }>(candidatePool: T[]) =>
       applyStartBans
@@ -1515,6 +1523,11 @@ function App() {
           practiceMode: user?.practiceMode,
           eventId: user?.eventId,
           salaryCapMode: user?.salaryCapMode,
+          classicLive:
+            !isDailyDraft &&
+            !user?.practiceMode &&
+            !user?.eventId &&
+            !user?.salaryCapMode,
         }) &&
         isBannedFromRankedAndEvents(playerId)
       ) {
@@ -1948,6 +1961,10 @@ function App() {
             practiceMode: user?.practiceMode,
             eventId: user?.eventId,
             salaryCapMode: user?.salaryCapMode,
+            classicLive:
+              !user?.practiceMode &&
+              !user?.eventId &&
+              !user?.salaryCapMode,
           })
             ? filterOutRankedEventBannedPlayers(autofillPool)
             : autofillPool;

@@ -2,7 +2,7 @@
   "season": "2025-26",
   "source": "basketball-reference",
   "generatedAt": "2026-07-31T00:55:46.294751+00:00",
-  "updatedAt": "2026-07-31T00:57:11.201019+00:00",
+  "updatedAt": "2026-08-11T23:33:39.371648+00:00",
   "rosterSource": "espn",
   "playerCount": 603,
   "byPlayerId": {
@@ -28,7 +28,7 @@
     },
     "houstca01": {
       "jerseyNumber": 33,
-      "team": "FA",
+      "team": "NOP",
       "name": "Caleb Houstan"
     },
     "kolokch01": {
@@ -1053,7 +1053,7 @@
     },
     "walkelo01": {
       "jerseyNumber": 0,
-      "team": "FA",
+      "team": "DEN",
       "name": "Lonnie Walker IV"
     },
     "balllo01": {
@@ -1193,7 +1193,7 @@
     },
     "paytoga02": {
       "jerseyNumber": 0,
-      "team": "FA",
+      "team": "GSW",
       "name": "Gary Payton II"
     },
     "santogu01": {
@@ -2058,7 +2058,7 @@
     },
     "sochaje01": {
       "jerseyNumber": 10,
-      "team": "FA",
+      "team": "POR",
       "name": "Jeremy Sochan"
     },
     "clarkjo01": {
