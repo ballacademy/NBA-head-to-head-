@@ -2135,7 +2135,7 @@ function App() {
         return;
       }
 
-      if (tab === "tiers") {
+      if (tab === "community") {
         if (phase !== "tierList") {
           openFeaturePage("tierList");
         }
@@ -2153,7 +2153,7 @@ function App() {
     }
 
     if (phase === "tierList") {
-      return "tiers";
+      return "community";
     }
 
     if (

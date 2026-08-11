@@ -564,7 +564,7 @@ export function LandingPage({
       return;
     }
 
-    if (tab === "tiers") {
+    if (tab === "community") {
       onViewTierList();
       return;
     }
@@ -1095,8 +1095,11 @@ export function LandingPage({
               >
                 <button
                   type="button"
-                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+                    collectionTier === "all-star" ? " is-active" : ""
+                  }`}
                   onClick={() => setCollectionTier("all-star")}
+                  aria-pressed={collectionTier === "all-star"}
                   aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
                 >
                   <span className="landing-profile-strip__label">All-Stars</span>
@@ -1106,8 +1109,11 @@ export function LandingPage({
                 </button>
                 <button
                   type="button"
-                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+                    collectionTier === "superstar" ? " is-active" : ""
+                  }`}
                   onClick={() => setCollectionTier("superstar")}
+                  aria-pressed={collectionTier === "superstar"}
                   aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
                 >
                   <span className="landing-profile-strip__label">
@@ -1120,8 +1126,11 @@ export function LandingPage({
                 </button>
                 <button
                   type="button"
-                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+                    collectionTier === "scrub" ? " is-active" : ""
+                  }`}
                   onClick={() => setCollectionTier("scrub")}
+                  aria-pressed={collectionTier === "scrub"}
                   aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
                 >
                   <span className="landing-profile-strip__label">Scrubs</span>
@@ -1132,8 +1141,11 @@ export function LandingPage({
                 </button>
                 <button
                   type="button"
-                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+                    collectionTier === "super-scrub" ? " is-active" : ""
+                  }`}
                   onClick={() => setCollectionTier("super-scrub")}
+                  aria-pressed={collectionTier === "super-scrub"}
                   aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
                 >
                   <span className="landing-profile-strip__label">
@@ -1146,8 +1158,11 @@ export function LandingPage({
                 </button>
                 <button
                   type="button"
-                  className="landing-profile-strip__stat landing-profile-strip__stat--btn"
+                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+                    collectionTier === "recent-all-star" ? " is-active" : ""
+                  }`}
                   onClick={() => setCollectionTier("recent-all-star")}
+                  aria-pressed={collectionTier === "recent-all-star"}
                   aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
                 >
                   <span className="landing-profile-strip__label">

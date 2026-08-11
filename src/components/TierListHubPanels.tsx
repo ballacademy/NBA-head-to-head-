@@ -40,24 +40,33 @@ export function TierListHubHome({
     <div className="landing-hub__links tier-list-hub__links">
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--tiers"
-        onClick={onCreate}
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        onClick={onOpenPublic}
       >
-        Create a new tier list
+        Public tier lists
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--tiers"
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
         onClick={onOpenMine}
       >
         My tier lists
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--tiers"
-        onClick={onOpenPublic}
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--emphasized"
+        onClick={onCreate}
       >
-        Public tier lists
+        Create a list
+      </button>
+      <button
+        type="button"
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--soon"
+        disabled
+        aria-disabled="true"
+      >
+        Posts
+        <span className="hub-select__soon-label">Coming soon</span>
       </button>
     </div>
   );
