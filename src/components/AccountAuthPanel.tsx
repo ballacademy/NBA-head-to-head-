@@ -213,6 +213,7 @@ export function AccountAuthPanel({
     }
 
     try {
+      markPlayerAccountLinked(result.playerId, result.username);
       await restorePlayerIdentityFromLogin(result.playerId);
       syncFoundingGmAchievement(Boolean(result.foundingGm));
       window.location.reload();

@@ -334,6 +334,7 @@ export const upsertRankedLeaderboardEntry = (
   entry: Omit<RankedLeaderboardEntry, "tierLabel" | "updatedAt" | "publicTag"> & {
     publicTag?: string;
   },
+  options: { sync?: boolean } = {},
 ) => {
   const seasonId = getCurrentSeasonId();
   const current = loadRankedLeaderboardEntries().filter(
@@ -360,18 +361,20 @@ export const upsertRankedLeaderboardEntry = (
     monthlyRank: monthlyRank > 0 ? monthlyRank : null,
   });
 
-  syncLeaderboardEntryToApi({
-    mode: "ranked",
-    seasonId,
-    playerId: nextEntry.playerId,
-    teamName: nextEntry.name,
-    publicTag: nextEntry.publicTag,
-    elo: nextEntry.elo,
-    wins: nextEntry.wins,
-    losses: nextEntry.losses,
-    winStreak: nextEntry.winStreak,
-    lossStreak: nextEntry.lossStreak,
-  });
+  if (options.sync !== false) {
+    syncLeaderboardEntryToApi({
+      mode: "ranked",
+      seasonId,
+      playerId: nextEntry.playerId,
+      teamName: nextEntry.name,
+      publicTag: nextEntry.publicTag,
+      elo: nextEntry.elo,
+      wins: nextEntry.wins,
+      losses: nextEntry.losses,
+      winStreak: nextEntry.winStreak,
+      lossStreak: nextEntry.lossStreak,
+    });
+  }
 
   return monthlyRank > 0 ? monthlyRank : null;
 };

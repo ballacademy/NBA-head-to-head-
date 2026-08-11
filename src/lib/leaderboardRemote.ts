@@ -60,6 +60,19 @@ export const getCachedRemoteLeaderboard = (
   seasonId = getSeasonIdForMode(mode),
 ) => remoteCache.get(cacheKey(mode, seasonId, sort))?.entries;
 
+/** Seed the in-memory remote cache after login restore (no extra network). */
+export const seedRemoteLeaderboardCache = (params: {
+  mode: LeaderboardMode;
+  seasonId: string;
+  sort: LeaderboardSort;
+  entries: RemoteLeaderboardEntry[];
+}) => {
+  remoteCache.set(cacheKey(params.mode, params.seasonId, params.sort), {
+    entries: params.entries,
+    fetchedAt: Date.now(),
+  });
+};
+
 export const syncLeaderboardEntryToApi = (params: {
   mode: LeaderboardMode;
   playerId: string;

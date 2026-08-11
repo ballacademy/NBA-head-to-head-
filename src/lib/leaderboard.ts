@@ -155,6 +155,7 @@ export const upsertLeaderboardEntry = (
     publicTag?: string;
     tierLabel?: string;
   },
+  options: { sync?: boolean } = {},
 ) => {
   const seasonId = getCurrentSeasonId();
   const current = loadLeaderboardEntries();
@@ -177,18 +178,21 @@ export const upsertLeaderboardEntry = (
     .slice(0, LEADERBOARD_LIMIT);
 
   saveLeaderboard(seasonId, merged);
-  syncLeaderboardEntryToApi({
-    mode: "classic",
-    seasonId,
-    playerId: nextEntry.playerId,
-    teamName: nextEntry.name,
-    publicTag: nextEntry.publicTag,
-    elo: nextEntry.elo,
-    wins: nextEntry.wins,
-    losses: nextEntry.losses,
-    winStreak: nextEntry.winStreak,
-    lossStreak: nextEntry.lossStreak,
-  });
+
+  if (options.sync !== false) {
+    syncLeaderboardEntryToApi({
+      mode: "classic",
+      seasonId,
+      playerId: nextEntry.playerId,
+      teamName: nextEntry.name,
+      publicTag: nextEntry.publicTag,
+      elo: nextEntry.elo,
+      wins: nextEntry.wins,
+      losses: nextEntry.losses,
+      winStreak: nextEntry.winStreak,
+      lossStreak: nextEntry.lossStreak,
+    });
+  }
 
   const rank =
     merged.findIndex((candidate) => candidate.playerId === nextEntry.playerId) +
