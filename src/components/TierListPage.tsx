@@ -87,7 +87,7 @@ import {
 
 interface TierListPageProps {
   players: Player[];
-  /** Kept for App wiring; leaving the Tiers hub uses bottom nav, not Return. */
+  /** Kept for App wiring; leaving the Community hub uses bottom nav, not Return. */
   onBack?: () => void;
   /** Deep-link public id from `?tierList=` — opens the viewer on mount. */
   initialPublicTierListId?: string | null;
@@ -1029,9 +1029,9 @@ export function TierListPage({
   return (
     <div className="hub-feature tier-list-page">
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Tiers</h1>
+        <h1 className="landing-hub__title">Community</h1>
         <p className="landing__lede landing-hub__lede">
-          Create and share boards.
+          Browse and share tier lists.
         </p>
       </div>
 

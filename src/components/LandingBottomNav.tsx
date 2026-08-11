@@ -1,7 +1,7 @@
 export type LandingHubTab =
   | "play"
   | "roster"
-  | "tiers"
+  | "community"
   | "standings"
   | "account";
 
@@ -17,7 +17,7 @@ const TABS: {
 }[] = [
   { id: "play", label: "Play", icon: "play" },
   { id: "roster", label: "Roster", icon: "roster" },
-  { id: "tiers", label: "Tiers", icon: "tiers" },
+  { id: "community", label: "Community", icon: "community" },
   { id: "standings", label: "Ranks", icon: "standings" },
   { id: "account", label: "Account", icon: "account" },
 ];
@@ -46,11 +46,20 @@ function NavIcon({ name }: { name: string }) {
           <circle cx="12" cy="13" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
         </svg>
       );
-    case "tiers":
+    case "community":
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="9" cy="9" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <circle cx="16" cy="10" r="2.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
           <path
-            d="M4 7h16M6 12h12M8 17h8"
+            d="M4.5 18.5c1.2-2.4 3.1-3.6 4.5-3.6s3.3 1.2 4.5 3.6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M13.2 18.5c.7-1.5 1.8-2.4 2.8-2.4 1.2 0 2.3.8 3.2 2.4"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
