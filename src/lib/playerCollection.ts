@@ -268,8 +268,8 @@ export const getDraftablePlayers = (
     (player) =>
       isEraPlayer(player) ||
       isRegularDraftPlayer(player) ||
-      // Competitive bans (e.g. LeBron in Pro/Events) still leave the player
-      // freely draftable in Classic / practice / Daily without an unlock.
+      // Competitive bans (e.g. LeBron) still leave the player on the board
+      // without an All-Star unlock; live Casual/Pro/Events mark him Banned.
       isBannedRankedEventPlayer(player) ||
       unlocked.has(player.id),
   );

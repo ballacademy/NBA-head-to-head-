@@ -27,10 +27,11 @@ describe("competitivePlayerBans", () => {
     expect(playersById.get(poolId!)?.name).toContain("LeBron");
   });
 
-  it("applies only to Pro and Events matchmaking modes", () => {
+  it("applies to Casual, Pro, and Events matchmaking modes", () => {
+    expect(matchmakingModeBansRankedEventPlayers("classic")).toBe(true);
     expect(matchmakingModeBansRankedEventPlayers("ranked")).toBe(true);
     expect(matchmakingModeBansRankedEventPlayers("event")).toBe(true);
-    expect(matchmakingModeBansRankedEventPlayers("classic")).toBe(false);
+    expect(matchmakingModeBansRankedEventPlayers("daily")).toBe(false);
   });
 
   it("keeps Daily and practice pools open", () => {
@@ -57,6 +58,24 @@ describe("competitivePlayerBans", () => {
       }),
     ).toBe(true);
     expect(shouldApplyRankedEventPlayerBans({})).toBe(false);
+  });
+
+  it("bans LeBron in live Casual H2H as well as Pro", () => {
+    expect(
+      shouldApplyRankedEventPlayerBans({
+        isDailyDraft: false,
+        practiceMode: false,
+        salaryCapMode: false,
+        classicLive: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldApplyRankedEventPlayerBans({
+        isDailyDraft: false,
+        practiceMode: false,
+        salaryCapMode: false,
+      }),
+    ).toBe(true);
   });
 
   it("filters banned ids from pickable pools and lineups", () => {
@@ -87,7 +106,7 @@ describe("competitivePlayerBans", () => {
     );
   });
 
-  it("keeps Classic open without needing an All-Star unlock", async () => {
+  it("keeps Classic practice and Daily open without an All-Star unlock", async () => {
     const { getDraftablePlayers } = await import("./playerCollection");
     const poolId = findPlayerId("LeBron James")!;
     const lockedCollection = {
@@ -101,11 +120,23 @@ describe("competitivePlayerBans", () => {
         (player) => player.id === poolId,
       ),
     ).toBe(true);
-    expect(shouldApplyRankedEventPlayerBans({ salaryCapMode: false })).toBe(
-      false,
-    );
-    expect(shouldApplyRankedEventPlayerBans({ salaryCapMode: true })).toBe(
-      true,
-    );
+    expect(
+      shouldApplyRankedEventPlayerBans({
+        practiceMode: true,
+        salaryCapMode: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyRankedEventPlayerBans({
+        isDailyDraft: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyRankedEventPlayerBans({
+        isDailyDraft: false,
+        practiceMode: false,
+        salaryCapMode: true,
+      }),
+    ).toBe(true);
   });
 });

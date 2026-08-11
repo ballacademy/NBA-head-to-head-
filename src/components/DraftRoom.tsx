@@ -54,7 +54,7 @@ interface DraftRoomProps {
   isDailyDraft?: boolean;
   dailyChallengeTitle?: string;
   dailyChallengeDescription?: string;
-  /** Pro / Events: show banned players at the bottom, not pickable. */
+  /** Competitive modes: show banned players at the bottom, not pickable. */
   banRankedEventPlayers?: boolean;
   opponentName?: string | null;
   onPick: (slot: number, playerId: string) => void;
@@ -490,7 +490,7 @@ export function DraftRoom({
                 aria-disabled={pickDisabled}
                 title={
                   banned
-                    ? "Banned from Pro and Events"
+                    ? "Banned from Casual H2H, Pro, and Events"
                     : affordable
                       ? undefined
                       : "Over the remaining salary cap for this pick"

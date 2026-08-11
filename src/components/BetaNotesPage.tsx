@@ -46,14 +46,14 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 daily), Casual/Pro H2H, and weekly Events
               </li>
               <li>
-                <strong>LeBron James</strong> is banned in Pro H2H and Events
-                (salary edge) — he still appears at the bottom of the draft
-                board with a Banned label. Freely draftable in Casual,
-                practice, and Daily Draft without an All-Star unlock.
+                <strong>LeBron James</strong> is banned in Casual H2H, Pro H2H,
+                and Events (salary / impact edge) — he still appears at the
+                bottom of the draft board with a Banned label. Freely draftable
+                in practice and Daily Draft without an All-Star unlock.
               </li>
               <li>
-                Collection, Badges, and Season Stats (Roster) · Ranks · Tier
-                Lists · Account
+                Collection, Badges, and Season Stats (Roster) · Ranks ·
+                Community · Account
               </li>
               <li>
                 <strong>Private match</strong> (Casual or Pro) — account
