@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
+import { getCachedLinkedUsername } from "./accountGate";
 import {
   getCachedRemoteLeaderboard,
   mergeLocalSelfIntoRemoteEntries,
@@ -354,11 +355,19 @@ export const upsertRankedLeaderboardEntry = (
   options: { sync?: boolean } = {},
 ) => {
   const seasonId = getCurrentSeasonId();
+  const existing = loadRankedLeaderboardEntries().find(
+    (candidate) => candidate.playerId === entry.playerId,
+  );
   const current = loadRankedLeaderboardEntries().filter(
     (candidate) => candidate.playerId !== entry.playerId,
   );
   const nextEntry = normalizeEntry({
     ...entry,
+    username:
+      entry.username?.trim() ||
+      existing?.username ||
+      getCachedLinkedUsername(entry.playerId) ||
+      undefined,
     publicTag: resolvePublicTag(entry.playerId, entry.publicTag),
     tierLabel: getTierForElo(entry.elo).label,
     updatedAt: new Date().toISOString(),

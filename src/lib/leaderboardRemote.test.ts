@@ -247,4 +247,83 @@ describe("leaderboard remote integration", () => {
       }),
     ]);
   });
+
+  it("does not let a fabricated multi-game local row override remote", () => {
+    const remote = [
+      {
+        playerId: "player-test-1",
+        isYou: true,
+        name: "Bulls",
+        publicTag: "7F3A",
+        elo: 700,
+        wins: 40,
+        losses: 25,
+        winStreak: 2,
+        lossStreak: 0,
+        updatedAt: "2026-08-10T00:00:00.000Z",
+      },
+    ];
+    const merged = mergeLocalSelfIntoRemoteEntries(
+      remote,
+      {
+        playerId: "player-test-1",
+        name: "Bulls",
+        publicTag: "7F3A",
+        elo: 900,
+        wins: 63,
+        losses: 1,
+        winStreak: 0,
+        lossStreak: 1,
+        updatedAt: "2026-08-11T00:00:00.000Z",
+      },
+      "player-test-1",
+    );
+
+    expect(merged).toEqual([
+      expect.objectContaining({
+        wins: 40,
+        losses: 25,
+      }),
+    ]);
+  });
+
+  it("keeps remote username when a newer local name-only row omits it", () => {
+    const merged = mergeLocalSelfIntoRemoteEntries(
+      [
+        {
+          playerId: "player-test-1",
+          isYou: true,
+          name: "Old Name",
+          publicTag: "7F3A",
+          username: "ballacademy",
+          elo: 500,
+          wins: 2,
+          losses: 1,
+          winStreak: 1,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+      ],
+      {
+        playerId: "player-test-1",
+        name: "New Name",
+        publicTag: "7F3A",
+        elo: 500,
+        wins: 2,
+        losses: 1,
+        winStreak: 1,
+        lossStreak: 0,
+        updatedAt: "2026-08-11T00:00:00.000Z",
+      },
+      "player-test-1",
+    );
+
+    expect(merged).toEqual([
+      expect.objectContaining({
+        name: "New Name",
+        username: "ballacademy",
+        isYou: true,
+      }),
+    ]);
+  });
 });

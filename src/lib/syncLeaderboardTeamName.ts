@@ -1,3 +1,4 @@
+import { getCachedLinkedUsername } from "./accountGate";
 import { upsertLeaderboardEntry, loadLeaderboardEntries } from "./leaderboard";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import { ensureClassicProfile } from "./classicProfile";
@@ -12,9 +13,11 @@ import type { TeamProfile } from "./teamProfile";
  * Push the current team name onto existing monthly leaderboard rows only.
  * Do not invent season W–L from career modeRecords — that breaks remote
  * first-insert validation and collapses multi-player boards.
+ * Preserve the linked account username so Ranks keeps @user beside the new name.
  */
 export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
   const { playerId, publicTag } = getOrCreatePlayerIdentity();
+  const linkedUsername = getCachedLinkedUsername(playerId) ?? undefined;
   const classicEntry = loadLeaderboardEntries().find(
     (entry) => entry.playerId === playerId,
   );
@@ -26,6 +29,7 @@ export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
       playerId,
       name: team.name,
       publicTag,
+      username: classicEntry.username ?? linkedUsername,
       elo: classicProfile.elo,
       wins: classicEntry.wins,
       losses: classicEntry.losses,
@@ -45,6 +49,7 @@ export const syncTeamNameToLeaderboards = (team: TeamProfile) => {
       playerId,
       name: team.name,
       publicTag,
+      username: rankedEntry.username ?? linkedUsername,
       elo: rankedProfile.elo,
       wins: rankedEntry.wins,
       losses: rankedEntry.losses,

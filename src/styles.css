@@ -1,6 +1,6 @@
 :root {
   color: #f8fafc;
-  background: #0b0d11;
+  background: #171b22;
   /* Montserrat weights in use:
      500 Medium · 600 SemiBold · 700 Bold · 800 ExtraBold · 900 Black */
   --font-sans:
@@ -18,6 +18,7 @@
   --muted: #94a3b8;
   --orange: #f97316;
   --bg-deep: #0b0d11;
+  --bg-page: #171b22;
   --hub-subbox-bg: linear-gradient(180deg, #171b22 0%, #0b0d11 100%);
   --hub-subbox-border: rgba(226, 232, 240, 0.12);
   --hub-subbox-shadow:
@@ -60,6 +61,7 @@
     ),
     radial-gradient(circle at 92% 8%, rgba(148, 163, 184, 0.14), transparent 26%),
     radial-gradient(circle at 10% 90%, rgba(56, 90, 140, 0.12), transparent 30%);
+  color-scheme: dark;
 }
 
 * {
@@ -67,14 +69,23 @@
 }
 
 html {
-  background: var(--bg-deep);
+  background-color: var(--bg-page);
+  background: var(--bg-page);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #171b22 0%, #0b0d11 100%);
+  min-height: 100dvh;
+  background-color: var(--bg-page);
+  background-image: linear-gradient(180deg, #171b22 0%, #0b0d11 100%);
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: transparent;
 }
 
 button,
@@ -3245,23 +3256,28 @@ h1.landing-hub__title--name {
 }
 
 .leaderboard__tabs--views .leaderboard__tab {
-  border-color: var(--hub-accent-border, var(--hub-subbox-inset-border));
-  background:
-    linear-gradient(180deg, var(--hub-accent-soft, transparent) 0%, transparent 70%),
-    var(--hub-subbox-inset-bg);
-  color: var(--hub-accent-bright, #e2e8f0);
-  box-shadow: inset 0 -2px 0 var(--hub-accent, transparent);
+  border: 1.5px solid var(--hub-subbox-inset-border);
+  background: var(--hub-subbox-inset-bg);
+  color: #94a3b8;
+  box-shadow: none;
+  opacity: 0.78;
 }
 
 .leaderboard__tabs--views .leaderboard__tab.is-active {
-  border-color: var(--hub-accent-border);
+  opacity: 1;
+  border-color: var(--hub-accent-bright);
   background:
-    linear-gradient(180deg, var(--hub-accent-soft) 0%, transparent 75%),
-    var(--hub-subbox-active-bg);
-  color: #f8fafc;
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--hub-accent-soft) 100%, transparent) 0%,
+      color-mix(in srgb, var(--hub-accent) 22%, var(--hub-subbox-active-bg)) 100%
+    );
+  color: #ffffff;
   box-shadow:
-    inset 0 -2px 0 var(--hub-accent-bright),
-    0 0 18px var(--hub-accent-glow);
+    inset 0 -3px 0 var(--hub-accent-bright),
+    0 0 0 1px color-mix(in srgb, var(--hub-accent-border) 80%, transparent),
+    0 10px 24px var(--hub-accent-glow);
+  font-weight: 800;
 }
 
 .leaderboard-table-wrap {

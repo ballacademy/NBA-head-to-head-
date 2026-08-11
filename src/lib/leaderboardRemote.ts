@@ -103,29 +103,30 @@ const sortRemoteEntries = (
   }
 };
 
+type LeaderboardSelfLike = {
+  playerId: string;
+  name: string;
+  publicTag: string;
+  username?: string;
+  elo: number;
+  wins: number;
+  losses: number;
+  winStreak: number;
+  lossStreak: number;
+  updatedAt: string;
+  isYou?: boolean;
+};
+
 /**
- * Overlay the viewer's local season row onto a remote board when local is
- * ahead (more games, or same games with a newer timestamp). Prevents Ranks
+ * Overlay the viewer's local season row onto a remote board only when local
+ * is a plausible one-match (or cosmetic) ahead of remote. Prevents Ranks
  * from showing a stale remote cache after a successful local upsert whose
- * POST failed or has not refreshed the UI yet.
+ * POST failed — without letting a fabricated multi-game local row (e.g.
+ * desync catch-up writing 63-0) override the real remote record.
  */
-export const mergeLocalSelfIntoRemoteEntries = <
-  T extends {
-    playerId: string;
-    isYou?: boolean;
-    name: string;
-    publicTag: string;
-    username?: string;
-    elo: number;
-    wins: number;
-    losses: number;
-    winStreak: number;
-    lossStreak: number;
-    updatedAt: string;
-  },
->(
+export const mergeLocalSelfIntoRemoteEntries = <T extends LeaderboardSelfLike>(
   remoteEntries: T[],
-  localSelf: T | null | undefined,
+  localSelf: LeaderboardSelfLike | null | undefined,
   viewerPlayerId: string,
 ): T[] => {
   if (!localSelf || !viewerPlayerId) {
@@ -141,21 +142,35 @@ export const mergeLocalSelfIntoRemoteEntries = <
   const remoteGames = remoteSelf
     ? remoteSelf.wins + remoteSelf.losses
     : -1;
-  const localNewer =
-    Boolean(remoteSelf) &&
-    localGames === remoteGames &&
-    localSelf.updatedAt > remoteSelf!.updatedAt;
-  const localAhead = localGames > remoteGames || localNewer;
 
-  if (!localAhead && remoteSelf) {
+  // No remote self yet — show the local season row.
+  if (!remoteSelf) {
+    const mergedSelf = {
+      ...localSelf,
+      playerId: viewerPlayerId,
+      isYou: true as const,
+    } as T;
+    return [...remoteEntries, mergedSelf];
+  }
+
+  const localOneMatchAhead = localGames === remoteGames + 1;
+  const localNewerSameGames =
+    localGames === remoteGames &&
+    localSelf.updatedAt > remoteSelf.updatedAt;
+
+  if (!localOneMatchAhead && !localNewerSameGames) {
     return remoteEntries;
   }
 
+  // Keep the account username from remote when a local name-only upsert
+  // omitted it (team rename should not drop @username on Ranks).
   const mergedSelf = {
+    ...remoteSelf,
     ...localSelf,
     playerId: viewerPlayerId,
     isYou: true as const,
-  };
+    username: localSelf.username ?? remoteSelf.username,
+  } as T;
   const without = remoteEntries.filter(
     (entry) =>
       entry.isYou !== true && entry.playerId !== viewerPlayerId,
@@ -170,10 +185,6 @@ export const patchCachedRemoteLeaderboardSelf = (params: {
   entry: RemoteLeaderboardEntry;
 }) => {
   const seasonId = params.seasonId ?? getSeasonIdForMode(params.mode);
-  const selfEntry: RemoteLeaderboardEntry = {
-    ...params.entry,
-    isYou: true,
-  };
 
   for (const sort of ["elo", "winStreak", "lossStreak"] as const) {
     const key = cacheKey(params.mode, seasonId, sort);
@@ -181,6 +192,16 @@ export const patchCachedRemoteLeaderboardSelf = (params: {
     if (!cached?.entries.length) {
       continue;
     }
+
+    const previousSelf = cached.entries.find(
+      (entry) =>
+        entry.isYou === true || entry.playerId === params.entry.playerId,
+    );
+    const selfEntry: RemoteLeaderboardEntry = {
+      ...params.entry,
+      username: params.entry.username ?? previousSelf?.username,
+      isYou: true,
+    };
 
     const without = cached.entries.filter(
       (entry) =>

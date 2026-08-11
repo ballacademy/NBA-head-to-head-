@@ -70,3 +70,18 @@ export const markPlayerAccountLinked = (
     checkedAt: Date.now(),
   });
 };
+
+/** Sync username for leaderboard rows without an extra network round-trip. */
+export const getCachedLinkedUsername = (playerId: string): string | null => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const cached = linkCache.get(trimmed);
+  if (!cached?.linked || !cached.username) {
+    return null;
+  }
+
+  return cached.username;
+};
