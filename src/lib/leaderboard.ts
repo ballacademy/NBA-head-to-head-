@@ -1,9 +1,15 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
   getCachedRemoteLeaderboard,
+  mergeLocalSelfIntoRemoteEntries,
+  patchCachedRemoteLeaderboardSelf,
   syncLeaderboardEntryToApi,
 } from "./leaderboardRemote";
-import { formatGmDisplayName, resolvePublicTag } from "./playerIdentity";
+import {
+  formatGmDisplayName,
+  getOrCreatePlayerId,
+  resolvePublicTag,
+} from "./playerIdentity";
 import { CLASSIC_LEADERBOARD_LABEL } from "./modeLabels";
 import {
   RANKED_STARTING_ELO,
@@ -179,6 +185,24 @@ export const upsertLeaderboardEntry = (
 
   saveLeaderboard(seasonId, merged);
 
+  patchCachedRemoteLeaderboardSelf({
+    mode: "classic",
+    seasonId,
+    entry: {
+      playerId: nextEntry.playerId,
+      isYou: true,
+      name: nextEntry.name,
+      publicTag: nextEntry.publicTag,
+      username: nextEntry.username,
+      elo: nextEntry.elo,
+      wins: nextEntry.wins,
+      losses: nextEntry.losses,
+      winStreak: nextEntry.winStreak,
+      lossStreak: nextEntry.lossStreak,
+      updatedAt: nextEntry.updatedAt,
+    },
+  });
+
   if (options.sync !== false) {
     syncLeaderboardEntryToApi({
       mode: "classic",
@@ -246,21 +270,30 @@ export const getTopLeaderboard = (
 ) => {
   const seasonId = getCurrentSeasonId();
   const remoteEntries = getCachedRemoteLeaderboard("classic", sort, seasonId);
+  const localEntries = loadLeaderboardEntries();
+  const viewerPlayerId = getOrCreatePlayerId();
+  const localSelf =
+    localEntries.find((entry) => entry.playerId === viewerPlayerId) ?? null;
 
   if (remoteEntries && remoteEntries.length > 0) {
-    return remoteEntries
+    const mergedRemote = mergeLocalSelfIntoRemoteEntries(
+      remoteEntries,
+      localSelf,
+      viewerPlayerId,
+    );
+
+    return mergedRemote
       .map((entry) =>
         normalizeEntry({
           ...entry,
           tierLabel: getTierForElo(entry.elo).label,
         }),
       )
+      .sort(leaderboardSorters[sort])
       .slice(0, limit);
   }
 
-  const entries = loadLeaderboardEntries();
-
-  return [...entries].sort(leaderboardSorters[sort]).slice(0, limit);
+  return [...localEntries].sort(leaderboardSorters[sort]).slice(0, limit);
 };
 
 export const getLeaderboardFootnote = (

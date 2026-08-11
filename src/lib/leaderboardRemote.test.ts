@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearLeaderboardRemoteCacheForTests,
   getCachedRemoteLeaderboard,
+  mergeLocalSelfIntoRemoteEntries,
+  patchCachedRemoteLeaderboardSelf,
   refreshLeaderboardFromApi,
+  seedRemoteLeaderboardCache,
 } from "./leaderboardRemote";
 import { clearAccountLinkCache, markPlayerAccountLinked } from "./accountGate";
 import { upsertLeaderboardEntry } from "./leaderboard";
@@ -34,6 +37,7 @@ describe("leaderboard remote integration", () => {
 
   afterEach(() => {
     clearAccountLinkCache();
+    clearLeaderboardRemoteCacheForTests();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -155,5 +159,92 @@ describe("leaderboard remote integration", () => {
       "/api/leaderboards",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("patches remote cache on local upsert so Ranks is not stuck on stale GET", () => {
+    const seasonId = getCurrentSeasonId();
+    seedRemoteLeaderboardCache({
+      mode: "classic",
+      seasonId,
+      sort: "elo",
+      entries: [
+        {
+          playerId: "player-test-1",
+          isYou: true,
+          name: "Bulls",
+          publicTag: "7F3A",
+          elo: 500,
+          wins: 1,
+          losses: 0,
+          winStreak: 1,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    patchCachedRemoteLeaderboardSelf({
+      mode: "classic",
+      seasonId,
+      entry: {
+        playerId: "player-test-1",
+        name: "Bulls",
+        publicTag: "7F3A",
+        elo: 520,
+        wins: 2,
+        losses: 0,
+        winStreak: 2,
+        lossStreak: 0,
+        updatedAt: "2026-08-11T00:00:00.000Z",
+      },
+    });
+
+    expect(getCachedRemoteLeaderboard("classic", "elo", seasonId)?.[0]).toEqual(
+      expect.objectContaining({
+        wins: 2,
+        winStreak: 2,
+        elo: 520,
+        isYou: true,
+      }),
+    );
+  });
+
+  it("merges a local-ahead self row into remote entries", () => {
+    const merged = mergeLocalSelfIntoRemoteEntries(
+      [
+        {
+          playerId: "player-test-1",
+          isYou: true,
+          name: "Bulls",
+          publicTag: "7F3A",
+          elo: 500,
+          wins: 1,
+          losses: 0,
+          winStreak: 1,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+      ],
+      {
+        playerId: "player-test-1",
+        name: "Bulls",
+        publicTag: "7F3A",
+        elo: 530,
+        wins: 2,
+        losses: 0,
+        winStreak: 2,
+        lossStreak: 0,
+        updatedAt: "2026-08-11T00:00:00.000Z",
+      },
+      "player-test-1",
+    );
+
+    expect(merged).toEqual([
+      expect.objectContaining({
+        wins: 2,
+        winStreak: 2,
+        isYou: true,
+      }),
+    ]);
   });
 });

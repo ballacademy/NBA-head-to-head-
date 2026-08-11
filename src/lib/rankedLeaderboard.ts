@@ -2,10 +2,16 @@ import { readJson, writeJson } from "./browserStorage";
 import { initialDrafterBlueprints } from "../data/drafterBlueprints";
 import {
   getCachedRemoteLeaderboard,
+  mergeLocalSelfIntoRemoteEntries,
+  patchCachedRemoteLeaderboardSelf,
   syncLeaderboardEntryToApi,
 } from "./leaderboardRemote";
 import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
-import { derivePublicTag, resolvePublicTag } from "./playerIdentity";
+import {
+  derivePublicTag,
+  getOrCreatePlayerId,
+  resolvePublicTag,
+} from "./playerIdentity";
 import { RATING_LABEL, formatRankedElo, getTierForElo } from "./rankedElo";
 import { PRO_LEADERBOARD_LABEL } from "./modeLabels";
 import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
@@ -312,9 +318,19 @@ export const getTopRankedLeaderboard = (
 ): RankedLeaderboardEntry[] => {
   const seasonId = getCurrentSeasonId();
   const remoteEntries = getCachedRemoteLeaderboard("ranked", sort, seasonId);
+  const localEntries = loadRankedLeaderboardEntries();
+  const viewerPlayerId = getOrCreatePlayerId();
+  const localSelf =
+    localEntries.find((entry) => entry.playerId === viewerPlayerId) ?? null;
 
   if (remoteEntries && remoteEntries.length > 0) {
-    return remoteEntries
+    const mergedRemote = mergeLocalSelfIntoRemoteEntries(
+      remoteEntries,
+      localSelf,
+      viewerPlayerId,
+    );
+
+    return mergedRemote
       .map((entry) =>
         normalizeEntry({
           ...entry,
@@ -322,10 +338,11 @@ export const getTopRankedLeaderboard = (
           isNpc: false,
         }),
       )
+      .sort(rankedLeaderboardSorters[sort])
       .slice(0, limit);
   }
 
-  return [...loadRankedLeaderboardEntries()]
+  return [...localEntries]
     .sort(rankedLeaderboardSorters[sort])
     .slice(0, limit);
 };
@@ -359,6 +376,24 @@ export const upsertRankedLeaderboardEntry = (
     elo: nextEntry.elo,
     seasonId,
     monthlyRank: monthlyRank > 0 ? monthlyRank : null,
+  });
+
+  patchCachedRemoteLeaderboardSelf({
+    mode: "ranked",
+    seasonId,
+    entry: {
+      playerId: nextEntry.playerId,
+      isYou: true,
+      name: nextEntry.name,
+      publicTag: nextEntry.publicTag,
+      username: nextEntry.username,
+      elo: nextEntry.elo,
+      wins: nextEntry.wins,
+      losses: nextEntry.losses,
+      winStreak: nextEntry.winStreak,
+      lossStreak: nextEntry.lossStreak,
+      updatedAt: nextEntry.updatedAt,
+    },
   });
 
   if (options.sync !== false) {

@@ -5,7 +5,12 @@ import {
   getTopLeaderboard,
   upsertLeaderboardEntry,
 } from "./leaderboard";
+import {
+  clearLeaderboardRemoteCacheForTests,
+  seedRemoteLeaderboardCache,
+} from "./leaderboardRemote";
 import { RANKED_STARTING_ELO } from "./rankedElo";
+import { getCurrentSeasonId } from "./rankedSeason";
 
 const storage = new Map<string, string>();
 
@@ -29,6 +34,7 @@ const baseEntry = {
 describe("leaderboard", () => {
   beforeEach(() => {
     storage.clear();
+    clearLeaderboardRemoteCacheForTests();
     vi.stubGlobal("localStorage", localStorageMock);
     vi.stubGlobal("crypto", {
       randomUUID: () => "player-test-1",
@@ -36,6 +42,7 @@ describe("leaderboard", () => {
   });
 
   afterEach(() => {
+    clearLeaderboardRemoteCacheForTests();
     vi.unstubAllGlobals();
   });
 
@@ -127,5 +134,63 @@ describe("leaderboard", () => {
     expect(entry?.publicTag).toBe("7F3A");
     expect(formatLeaderboardTeam(entry!)).toBe("hoopers · #7F3A");
     expect(formatLeaderboardElo(entry!)).toBe("540");
+  });
+
+  it("overlays a local-ahead self row over a stale remote cache", () => {
+    const seasonId = getCurrentSeasonId();
+    seedRemoteLeaderboardCache({
+      mode: "classic",
+      seasonId,
+      sort: "elo",
+      entries: [
+        {
+          playerId: "player-test-1",
+          isYou: true,
+          name: "Bulls",
+          publicTag: "7F3A",
+          elo: 520,
+          wins: 2,
+          losses: 1,
+          winStreak: 1,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+        {
+          playerId: "p_other",
+          name: "Other",
+          publicTag: "ABCD",
+          elo: 600,
+          wins: 5,
+          losses: 0,
+          winStreak: 5,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    upsertLeaderboardEntry(
+      {
+        playerId: "player-test-1",
+        name: "Bulls",
+        publicTag: "7F3A",
+        elo: 540,
+        wins: 3,
+        losses: 1,
+        winStreak: 2,
+        lossStreak: 0,
+      },
+      { sync: false },
+    );
+
+    const self = getTopLeaderboard("elo").find(
+      (entry) => entry.isYou || entry.playerId === "player-test-1",
+    );
+    expect(self).toMatchObject({
+      wins: 3,
+      losses: 1,
+      winStreak: 2,
+      elo: 540,
+    });
   });
 });

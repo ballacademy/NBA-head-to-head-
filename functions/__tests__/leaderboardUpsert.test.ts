@@ -87,4 +87,62 @@ describe("validateLeaderboardUpsert", () => {
       ),
     ).toMatch(/record change exceeds one match/);
   });
+
+  it("allows streak-frozen W-L updates for stored-lineup owner results", () => {
+    expect(
+      validateLeaderboardUpsert(
+        "classic",
+        {
+          elo: 530,
+          wins: 3,
+          losses: 1,
+          winStreak: 2,
+          lossStreak: 0,
+        },
+        {
+          elo: 520,
+          wins: 2,
+          losses: 1,
+          win_streak: 2,
+          loss_streak: 0,
+        },
+      ),
+    ).toBeNull();
+
+    expect(
+      validateLeaderboardUpsert(
+        "ranked",
+        {
+          elo: 510,
+          wins: 2,
+          losses: 2,
+          winStreak: 2,
+          lossStreak: 0,
+        },
+        {
+          elo: 520,
+          wins: 2,
+          losses: 1,
+          win_streak: 2,
+          loss_streak: 0,
+        },
+      ),
+    ).toBeNull();
+  });
+
+  it("allows a streak-frozen first-match insert", () => {
+    expect(
+      validateLeaderboardUpsert(
+        "classic",
+        {
+          elo: 520,
+          wins: 1,
+          losses: 0,
+          winStreak: 0,
+          lossStreak: 0,
+        },
+        null,
+      ),
+    ).toBeNull();
+  });
 });

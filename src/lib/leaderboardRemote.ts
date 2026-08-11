@@ -73,6 +73,126 @@ export const seedRemoteLeaderboardCache = (params: {
   });
 };
 
+const sortRemoteEntries = (
+  entries: RemoteLeaderboardEntry[],
+  sort: LeaderboardSort,
+) => {
+  const copy = [...entries];
+  switch (sort) {
+    case "winStreak":
+      return copy.sort(
+        (left, right) =>
+          right.winStreak - left.winStreak ||
+          right.wins - left.wins ||
+          left.name.localeCompare(right.name),
+      );
+    case "lossStreak":
+      return copy.sort(
+        (left, right) =>
+          right.lossStreak - left.lossStreak ||
+          right.losses - left.losses ||
+          left.name.localeCompare(right.name),
+      );
+    default:
+      return copy.sort(
+        (left, right) =>
+          right.elo - left.elo ||
+          right.wins - left.wins ||
+          left.name.localeCompare(right.name),
+      );
+  }
+};
+
+/**
+ * Overlay the viewer's local season row onto a remote board when local is
+ * ahead (more games, or same games with a newer timestamp). Prevents Ranks
+ * from showing a stale remote cache after a successful local upsert whose
+ * POST failed or has not refreshed the UI yet.
+ */
+export const mergeLocalSelfIntoRemoteEntries = <
+  T extends {
+    playerId: string;
+    isYou?: boolean;
+    name: string;
+    publicTag: string;
+    username?: string;
+    elo: number;
+    wins: number;
+    losses: number;
+    winStreak: number;
+    lossStreak: number;
+    updatedAt: string;
+  },
+>(
+  remoteEntries: T[],
+  localSelf: T | null | undefined,
+  viewerPlayerId: string,
+): T[] => {
+  if (!localSelf || !viewerPlayerId) {
+    return remoteEntries;
+  }
+
+  const remoteIndex = remoteEntries.findIndex(
+    (entry) =>
+      entry.isYou === true || entry.playerId === viewerPlayerId,
+  );
+  const remoteSelf = remoteIndex >= 0 ? remoteEntries[remoteIndex] : null;
+  const localGames = localSelf.wins + localSelf.losses;
+  const remoteGames = remoteSelf
+    ? remoteSelf.wins + remoteSelf.losses
+    : -1;
+  const localNewer =
+    Boolean(remoteSelf) &&
+    localGames === remoteGames &&
+    localSelf.updatedAt > remoteSelf!.updatedAt;
+  const localAhead = localGames > remoteGames || localNewer;
+
+  if (!localAhead && remoteSelf) {
+    return remoteEntries;
+  }
+
+  const mergedSelf = {
+    ...localSelf,
+    playerId: viewerPlayerId,
+    isYou: true as const,
+  };
+  const without = remoteEntries.filter(
+    (entry) =>
+      entry.isYou !== true && entry.playerId !== viewerPlayerId,
+  );
+  return [...without, mergedSelf];
+};
+
+/** Patch every sort cache so Ranks reflects a local upsert immediately. */
+export const patchCachedRemoteLeaderboardSelf = (params: {
+  mode: LeaderboardMode;
+  seasonId?: string;
+  entry: RemoteLeaderboardEntry;
+}) => {
+  const seasonId = params.seasonId ?? getSeasonIdForMode(params.mode);
+  const selfEntry: RemoteLeaderboardEntry = {
+    ...params.entry,
+    isYou: true,
+  };
+
+  for (const sort of ["elo", "winStreak", "lossStreak"] as const) {
+    const key = cacheKey(params.mode, seasonId, sort);
+    const cached = remoteCache.get(key);
+    if (!cached?.entries.length) {
+      continue;
+    }
+
+    const without = cached.entries.filter(
+      (entry) =>
+        entry.isYou !== true && entry.playerId !== selfEntry.playerId,
+    );
+    remoteCache.set(key, {
+      entries: sortRemoteEntries([...without, selfEntry], sort),
+      fetchedAt: Date.now(),
+    });
+  }
+};
+
 export const syncLeaderboardEntryToApi = (params: {
   mode: LeaderboardMode;
   playerId: string;

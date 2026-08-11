@@ -61,11 +61,17 @@ export const validateLeaderboardUpsert = (
 
     if (games === 1) {
       if (wins === 1 && losses === 0) {
-        if (winStreak !== 1 || lossStreak !== 0) {
+        // Live match: streak becomes 1. Stored-lineup owner results may
+        // update W–L without touching streaks (both remain 0).
+        const liveWin = winStreak === 1 && lossStreak === 0;
+        const streakFrozen = winStreak === 0 && lossStreak === 0;
+        if (!liveWin && !streakFrozen) {
           return "win streak update is invalid";
         }
       } else if (wins === 0 && losses === 1) {
-        if (lossStreak !== 1 || winStreak !== 0) {
+        const liveLoss = lossStreak === 1 && winStreak === 0;
+        const streakFrozen = winStreak === 0 && lossStreak === 0;
+        if (!liveLoss && !streakFrozen) {
           return "loss streak update is invalid";
         }
       } else {
@@ -118,11 +124,23 @@ export const validateLeaderboardUpsert = (
 
     return null;
   } else if (winsDelta === 1 && lossesDelta === 0) {
-    if (lossStreak !== 0 || winStreak !== existing.win_streak + 1) {
+    // Live: win streak increments and loss streak clears.
+    // Owner stored-lineup results: W–L moves, streaks stay frozen.
+    const liveWin =
+      lossStreak === 0 && winStreak === existing.win_streak + 1;
+    const streakFrozen =
+      winStreak === existing.win_streak &&
+      lossStreak === existing.loss_streak;
+    if (!liveWin && !streakFrozen) {
       return "win streak update is invalid";
     }
   } else if (lossesDelta === 1 && winsDelta === 0) {
-    if (winStreak !== 0 || lossStreak !== existing.loss_streak + 1) {
+    const liveLoss =
+      winStreak === 0 && lossStreak === existing.loss_streak + 1;
+    const streakFrozen =
+      winStreak === existing.win_streak &&
+      lossStreak === existing.loss_streak;
+    if (!liveLoss && !streakFrozen) {
       return "loss streak update is invalid";
     }
   } else {
