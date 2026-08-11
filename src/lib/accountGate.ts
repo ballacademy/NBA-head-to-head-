@@ -85,3 +85,20 @@ export const getCachedLinkedUsername = (playerId: string): string | null => {
 
   return cached.username;
 };
+
+/** Fresh cache hit only — null means unknown / expired. */
+export const peekCachedAccountLinked = (
+  playerId: string,
+): boolean | null => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const cached = linkCache.get(trimmed);
+  if (!cached || Date.now() - cached.checkedAt >= CACHE_TTL_MS) {
+    return null;
+  }
+
+  return cached.linked;
+};
