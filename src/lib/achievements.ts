@@ -171,9 +171,11 @@ export const unlockAchievements = (
   saveAchievementState(next);
 
   if (newlyUnlocked.length > 0) {
-    void import("./achievementsRemote").then(({ pushAchievementsIfLinked }) => {
-      void pushAchievementsIfLinked(next);
-    });
+    void import("./achievementsRemote")
+      .then(({ pushAchievementsIfLinked }) => pushAchievementsIfLinked(next))
+      .catch(() => {
+        /* Ignore offline / test teardown. */
+      });
   }
 
   return {

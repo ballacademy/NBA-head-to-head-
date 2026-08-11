@@ -114,31 +114,29 @@ const drawJerseyBadge = (
   context.translate(x, y);
   context.scale(scale, scale);
 
-  context.shadowColor = rgbaFromHex(colors.primary, 0.85);
-  context.shadowBlur = 14;
+  context.shadowColor = rgbaFromHex(colors.primary, 0.28);
+  context.shadowBlur = 8;
   context.fillStyle = colors.primary;
   context.fill(jerseyPath, "evenodd");
 
-  context.shadowBlur = 8;
-  context.shadowColor = rgbaFromHex(colors.secondary, 0.75);
-  context.strokeStyle = colors.secondary;
-  context.lineWidth = 1.5;
+  context.shadowBlur = 0;
+  context.strokeStyle = rgbaFromHex(colors.secondary, 0.55);
+  context.lineWidth = 1.35;
   context.lineJoin = "round";
   context.stroke(jerseyPath);
 
-  context.shadowBlur = 0;
-  context.strokeStyle = rgbaFromHex(colors.secondary, 0.85);
+  context.strokeStyle = rgbaFromHex(colors.secondary, 0.7);
   context.lineWidth = 0.85;
   context.lineCap = "round";
   context.stroke(collarPath);
 
   const fontSize = getJerseyNumberFontSize(number);
-  context.font = `900 ${fontSize}px ${FONT_STACK}`;
+  context.font = `800 ${fontSize}px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.lineWidth = 0.9;
-  context.strokeStyle = "rgba(8,8,10,0.55)";
-  context.fillStyle = "#ffffff";
+  context.lineWidth = 0.85;
+  context.strokeStyle = "rgba(8,8,10,0.45)";
+  context.fillStyle = "#f8fafc";
   const numberX = JERSEY_NUMBER_ZONE.centerX;
   const numberY = JERSEY_NUMBER_ZONE.centerY;
   const maxWidth = JERSEY_NUMBER_ZONE.width - 1;
@@ -163,40 +161,40 @@ const drawTexturedBackground = (
   cardHeight: number,
 ) => {
   const baseGradient = context.createLinearGradient(0, 0, CARD_WIDTH, cardHeight);
-  baseGradient.addColorStop(0, "#0b0b0d");
-  baseGradient.addColorStop(0.55, "#08080a");
-  baseGradient.addColorStop(1, "#111114");
+  baseGradient.addColorStop(0, "#121722");
+  baseGradient.addColorStop(0.5, "#0b0d11");
+  baseGradient.addColorStop(1, "#0c1018");
   context.fillStyle = baseGradient;
   context.fillRect(0, 0, CARD_WIDTH, cardHeight);
 
-  context.strokeStyle = "rgba(255,255,255,0.018)";
+  context.strokeStyle = "rgba(226,232,240,0.03)";
   context.lineWidth = 1;
 
-  for (let offset = -cardHeight; offset < CARD_WIDTH + cardHeight; offset += 28) {
+  for (let offset = -cardHeight; offset < CARD_WIDTH + cardHeight; offset += 36) {
     context.beginPath();
     context.moveTo(offset, 0);
     context.lineTo(offset + cardHeight, cardHeight);
     context.stroke();
   }
 
-  for (let index = 0; index < 5200; index += 1) {
+  for (let index = 0; index < 2800; index += 1) {
     const x = Math.random() * CARD_WIDTH;
     const y = Math.random() * cardHeight;
-    const alpha = Math.random() * 0.05;
+    const alpha = Math.random() * 0.035;
     context.fillStyle = `rgba(255,255,255,${alpha})`;
     context.fillRect(x, y, 1, 1);
   }
 
   const vignette = context.createRadialGradient(
     CARD_WIDTH / 2,
-    cardHeight * 0.42,
-    120,
+    cardHeight * 0.38,
+    140,
     CARD_WIDTH / 2,
     cardHeight * 0.42,
-    CARD_WIDTH * 0.78,
+    CARD_WIDTH * 0.82,
   );
-  vignette.addColorStop(0, "rgba(255,255,255,0.03)");
-  vignette.addColorStop(1, "rgba(0,0,0,0.55)");
+  vignette.addColorStop(0, "rgba(255,255,255,0.02)");
+  vignette.addColorStop(1, "rgba(0,0,0,0.42)");
   context.fillStyle = vignette;
   context.fillRect(0, 0, CARD_WIDTH, cardHeight);
 };
@@ -206,6 +204,7 @@ const drawPlayerRow = (
   player: Player,
   index: number,
   y: number,
+  accent: string,
   headshot?: HTMLImageElement | null,
 ) => {
   const colors = getTeamColors(player.team);
@@ -213,60 +212,57 @@ const drawPlayerRow = (
   const rowWidth = CARD_WIDTH - 144;
   const rowHeight = 104;
   const jerseyNumber = String(player.jerseyNumber || index + 1);
+  const accentColor = colors.primary || accent;
 
-  context.save();
-  context.shadowColor = rgbaFromHex(colors.primary, 0.7);
-  context.shadowBlur = 22;
-  roundRect(context, rowX, y, rowWidth, rowHeight, 20);
-  context.strokeStyle = rgbaFromHex(colors.primary, 0.95);
-  context.lineWidth = 2;
-  context.stroke();
-  context.restore();
-
-  roundRect(context, rowX, y, rowWidth, rowHeight, 20);
-  const rowGradient = context.createLinearGradient(rowX, y, rowX + rowWidth, y + rowHeight);
-  rowGradient.addColorStop(0, colors.primary);
-  rowGradient.addColorStop(0.55, rgbaFromHex(colors.primary, 0.92));
-  rowGradient.addColorStop(1, colors.secondary);
+  roundRect(context, rowX, y, rowWidth, rowHeight, 18);
+  const rowGradient = context.createLinearGradient(rowX, y, rowX, y + rowHeight);
+  rowGradient.addColorStop(0, "#1a2030");
+  rowGradient.addColorStop(1, "#12151a");
   context.fillStyle = rowGradient;
   context.fill();
 
-  context.save();
-  context.shadowColor = rgbaFromHex(colors.secondary, 0.45);
-  context.shadowBlur = 10;
-  context.strokeStyle = rgbaFromHex(colors.secondary, 0.85);
-  context.lineWidth = 2;
+  // Soft team wash from the left — accent, not a full color flood.
+  const wash = context.createLinearGradient(rowX, y, rowX + rowWidth * 0.55, y);
+  wash.addColorStop(0, rgbaFromHex(accentColor, 0.18));
+  wash.addColorStop(0.55, rgbaFromHex(accentColor, 0.05));
+  wash.addColorStop(1, "rgba(0,0,0,0)");
+  context.fillStyle = wash;
+  context.fill();
+
+  context.strokeStyle = "rgba(226,232,240,0.12)";
+  context.lineWidth = 1.25;
   context.stroke();
-  context.restore();
+
+  // Left accent rail (matches hub mode-card inset).
+  context.fillStyle = rgbaFromHex(accentColor, 0.85);
+  context.fillRect(rowX, y + 14, 3, rowHeight - 28);
 
   if (headshot) {
     drawCircularPlayerHeadshot(
       context,
       headshot,
-      rowX + 18,
-      y + 12,
-      80,
-      colors.secondary,
+      rowX + 20,
+      y + 14,
+      76,
+      rgbaFromHex(accentColor, 0.45),
     );
   } else {
-    drawJerseyBadge(context, rowX + 10, y + 2, 100, jerseyNumber, colors);
+    drawJerseyBadge(context, rowX + 12, y + 4, 96, jerseyNumber, colors);
   }
 
-  context.fillStyle = "#ffffff";
-  context.font = `700 30px ${FONT_STACK}`;
+  context.shadowBlur = 0;
+  context.fillStyle = "#f8fafc";
+  context.font = `700 28px ${FONT_STACK}`;
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
-  context.shadowColor = "rgba(0, 0, 0, 0.45)";
-  context.shadowBlur = 8;
-  context.fillText(player.name, 210, y + 46);
-  context.shadowBlur = 0;
+  context.fillText(player.name, 214, y + 46);
 
-  context.fillStyle = "rgba(255, 255, 255, 0.88)";
-  context.font = `500 22px ${FONT_STACK}`;
+  context.fillStyle = "rgba(203, 213, 225, 0.88)";
+  context.font = `500 20px ${FONT_STACK}`;
   context.fillText(
-    `${player.position} • ${player.team} • ${player.points.toFixed(1)} PTS`,
-    210,
-    y + 78,
+    `${player.position} · ${player.team} · ${player.points.toFixed(1)} PTS`,
+    214,
+    y + 76,
   );
 };
 
@@ -360,13 +356,13 @@ const drawChemistryBonusRow = (
     }
 
     roundRect(context, x, y, pillWidth, CHEMISTRY_PILL_HEIGHT, 13);
-    context.fillStyle = rgbaFromHex(accent, 0.14);
+    context.fillStyle = rgbaFromHex(accent, 0.1);
     context.fill();
-    context.strokeStyle = rgbaFromHex(accent, 0.34);
+    context.strokeStyle = rgbaFromHex(accent, 0.28);
     context.lineWidth = 1;
     context.stroke();
 
-    context.fillStyle = "#d1fae5";
+    context.fillStyle = "#cbd5e1";
     context.textAlign = "left";
     context.fillText(label, x + 10, y + CHEMISTRY_PILL_HEIGHT / 2);
 
@@ -385,36 +381,36 @@ const drawShareCardHeader = (
   context.textBaseline = "alphabetic";
 
   context.textAlign = "left";
-  context.font = `900 22px ${FONT_STACK}`;
-  context.fillStyle = "#fb923c";
-  context.letterSpacing = "3.6px";
+  context.font = `700 20px ${FONT_STACK}`;
+  context.fillStyle = "#fdba74";
+  context.letterSpacing = "3.2px";
   context.fillText("DRAFT DAY GM", headerX, 98);
   context.letterSpacing = "0px";
 
-  context.font = `800 54px ${FONT_STACK}`;
+  context.font = `700 52px ${FONT_STACK}`;
   context.fillStyle = "#f8fafc";
   context.fillText(input.teamName, headerX, 168);
 
-  context.font = `900 20px ${FONT_STACK}`;
-  context.fillStyle = "rgba(148, 163, 184, 0.92)";
-  context.letterSpacing = "2.8px";
+  context.font = `700 18px ${FONT_STACK}`;
+  context.fillStyle = "rgba(148, 163, 184, 0.9)";
+  context.letterSpacing = "2.4px";
   context.fillText("STARTING FIVE", headerX, STARTING_FIVE_Y);
   context.letterSpacing = "0px";
 
   context.textAlign = "right";
 
   context.save();
-  context.shadowColor = rgbaFromHex(input.accent, 0.45);
-  context.shadowBlur = 16;
+  context.shadowColor = rgbaFromHex(input.accent, 0.22);
+  context.shadowBlur = 10;
   const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
   const ovrText =
     overflow > 0 ? `${input.ovr} (+${overflow})` : String(input.ovr);
-  context.font = `900 ${overflow > 0 ? 52 : 72}px ${FONT_STACK}`;
-  context.fillStyle = "#ffffff";
+  context.font = `800 ${overflow > 0 ? 50 : 68}px ${FONT_STACK}`;
+  context.fillStyle = "#f8fafc";
   context.fillText(ovrText, headerRightX, layout.ovrY);
   context.restore();
 
-  context.font = `700 22px ${FONT_STACK}`;
+  context.font = `600 20px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
   context.fillText("OVR", headerRightX, layout.ovrLabelY);
 
@@ -481,9 +477,9 @@ export const drawLineupShareCard = (
 
   drawTexturedBackground(context, cardHeight);
 
-  context.strokeStyle = "rgba(255,255,255,0.08)";
-  context.lineWidth = 2;
-  roundRect(context, 40, 40, CARD_WIDTH - 80, cardHeight - 80, 32);
+  context.strokeStyle = rgbaFromHex(input.accent, 0.22);
+  context.lineWidth = 1.5;
+  roundRect(context, 40, 40, CARD_WIDTH - 80, cardHeight - 80, 28);
   context.stroke();
 
   drawShareCardHeader(context, input, headerLayout);
@@ -497,12 +493,13 @@ export const drawLineupShareCard = (
       player,
       index,
       headerLayout.firstPlayerY + index * ROW_STEP,
+      input.accent,
       headshot,
     );
   });
 
   context.fillStyle = "#94a3b8";
-  context.font = `600 20px ${FONT_STACK}`;
+  context.font = `600 18px ${FONT_STACK}`;
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
