@@ -33,6 +33,10 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
+import {
+  reconcileLocalClassicLeaderboardFromRemote,
+  reconcileLocalRankedLeaderboardFromRemote,
+} from "../lib/reconcileLeaderboardSelf";
 import { GmProfileModal } from "./GmProfileModal";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ModeCardInfo } from "./ModeCardInfo";
@@ -219,21 +223,29 @@ export function LeaderboardPage() {
   const seasonId = getCurrentSeasonId();
   const sort: BoardSort = view === "ranked" ? rankedSort : classicSort;
 
-  useEffect(() => {
-    const refresh = async () => {
-      setRefreshBusy(true);
-      const ok = await refreshLeaderboardFromApi({
-        mode: view,
-        sort: sort as LeaderboardSort,
-        limit: view === "ranked" ? RANKED_LEADERBOARD_LIMIT : LEADERBOARD_LIMIT,
-        seasonId,
-      });
-      setRefreshFailed(!ok);
-      setRefreshBusy(false);
-      setRefreshTick((current) => current + 1);
-    };
+  const refreshBoard = async () => {
+    setRefreshBusy(true);
+    const ok = await refreshLeaderboardFromApi({
+      mode: view,
+      sort: sort as LeaderboardSort,
+      limit: view === "ranked" ? RANKED_LEADERBOARD_LIMIT : LEADERBOARD_LIMIT,
+      seasonId,
+    });
+    if (ok) {
+      if (view === "ranked") {
+        reconcileLocalRankedLeaderboardFromRemote(seasonId);
+      } else {
+        reconcileLocalClassicLeaderboardFromRemote(seasonId);
+      }
+    }
+    setRefreshFailed(!ok);
+    setRefreshBusy(false);
+    setRefreshTick((current) => current + 1);
+  };
 
-    void refresh();
+  useEffect(() => {
+    void refreshBoard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when board identity changes
   }, [seasonId, sort, view]);
 
   const classicEntries = useMemo(
@@ -306,21 +318,7 @@ export function LeaderboardPage() {
             className="daily-draft-results__sync-retry"
             disabled={refreshBusy}
             onClick={() => {
-              void (async () => {
-                setRefreshBusy(true);
-                const ok = await refreshLeaderboardFromApi({
-                  mode: view,
-                  sort: sort as LeaderboardSort,
-                  limit:
-                    view === "ranked"
-                      ? RANKED_LEADERBOARD_LIMIT
-                      : LEADERBOARD_LIMIT,
-                  seasonId,
-                });
-                setRefreshFailed(!ok);
-                setRefreshBusy(false);
-                setRefreshTick((current) => current + 1);
-              })();
+              void refreshBoard();
             }}
           >
             {refreshBusy ? "Retrying…" : "Retry"}

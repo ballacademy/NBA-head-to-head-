@@ -80,11 +80,10 @@ export const validateLeaderboardUpsert = (
       return null;
     }
 
-    if (winStreak === 0 && lossStreak === 0) {
-      return "streaks cannot both be zero after matches";
-    }
-
-    return null;
+    // Never accept multi-game first inserts. Clients used to synthesize
+    // all-wins / all-losses catch-up rows (e.g. 63-0) from games-played,
+    // which poisoned Casual H2H boards.
+    return "new leaderboard entries must be 0-0 or a single match";
   }
 
   const eloDelta = Math.abs(elo - existing.elo);

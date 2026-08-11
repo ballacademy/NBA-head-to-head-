@@ -104,10 +104,11 @@ const sortRemoteEntries = (
 };
 
 /**
- * Overlay the viewer's local season row onto a remote board when local is
- * ahead (more games, or same games with a newer timestamp). Prevents Ranks
+ * Overlay the viewer's local season row onto a remote board only when local
+ * is a plausible one-match (or cosmetic) ahead of remote. Prevents Ranks
  * from showing a stale remote cache after a successful local upsert whose
- * POST failed or has not refreshed the UI yet.
+ * POST failed — without letting a fabricated multi-game local row (e.g.
+ * desync catch-up writing 63-0) override the real remote record.
  */
 export const mergeLocalSelfIntoRemoteEntries = <
   T extends {
@@ -141,13 +142,23 @@ export const mergeLocalSelfIntoRemoteEntries = <
   const remoteGames = remoteSelf
     ? remoteSelf.wins + remoteSelf.losses
     : -1;
-  const localNewer =
-    Boolean(remoteSelf) &&
-    localGames === remoteGames &&
-    localSelf.updatedAt > remoteSelf!.updatedAt;
-  const localAhead = localGames > remoteGames || localNewer;
 
-  if (!localAhead && remoteSelf) {
+  // No remote self yet — show the local season row.
+  if (!remoteSelf) {
+    const mergedSelf = {
+      ...localSelf,
+      playerId: viewerPlayerId,
+      isYou: true as const,
+    };
+    return [...remoteEntries, mergedSelf];
+  }
+
+  const localOneMatchAhead = localGames === remoteGames + 1;
+  const localNewerSameGames =
+    localGames === remoteGames &&
+    localSelf.updatedAt > remoteSelf.updatedAt;
+
+  if (!localOneMatchAhead && !localNewerSameGames) {
     return remoteEntries;
   }
 

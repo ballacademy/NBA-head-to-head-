@@ -38,26 +38,36 @@ describe("nextSeasonLeaderboardStats", () => {
     ).toEqual({ wins: 2, losses: 2, winStreak: 0, lossStreak: 1 });
   });
 
-  it("does not post career totals when the season row is missing mid-season", () => {
-    // priorSeasonGames=4 with no local season row — catch-up synthesize,
-    // not career modeRecords (e.g. 40-12).
+  it("does not invent an all-wins catch-up when the season row is missing", () => {
+    // priorSeasonGames=4 with no local season row — start from this match,
+    // never synthesize 5-0 from games played (that produced boards like 63-1).
     expect(
       nextSeasonLeaderboardStats({
         existing: null,
         result: "win",
         priorSeasonGames: 4,
       }),
-    ).toEqual({ wins: 5, losses: 0, winStreak: 5, lossStreak: 0 });
+    ).toEqual({ wins: 1, losses: 0, winStreak: 1, lossStreak: 0 });
   });
 
-  it("rebases when career stats leaked into the season board", () => {
+  it("rebases career-leaked boards to this match only", () => {
     expect(
       nextSeasonLeaderboardStats({
         existing: { wins: 40, losses: 12, winStreak: 3, lossStreak: 0 },
         result: "loss",
         priorSeasonGames: 2,
       }),
-    ).toEqual({ wins: 0, losses: 3, winStreak: 0, lossStreak: 3 });
+    ).toEqual({ wins: 0, losses: 1, winStreak: 0, lossStreak: 1 });
+  });
+
+  it("advances a behind season row by one match without filling the gap", () => {
+    expect(
+      nextSeasonLeaderboardStats({
+        existing: { wins: 2, losses: 1, winStreak: 1, lossStreak: 0 },
+        result: "loss",
+        priorSeasonGames: 10,
+      }),
+    ).toEqual({ wins: 2, losses: 2, winStreak: 0, lossStreak: 1 });
   });
 
   it("keeps record unchanged on ties when in sync", () => {
