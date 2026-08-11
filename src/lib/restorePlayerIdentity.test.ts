@@ -5,7 +5,30 @@ import {
   getOrCreatePlayerIdentity,
   setPlayerIdentity,
 } from "./playerIdentity";
-import { logoutToAnonymousIdentity } from "./restorePlayerIdentity";
+import {
+  logoutToAnonymousIdentity,
+  restorePlayerIdentityFromLogin,
+} from "./restorePlayerIdentity";
+import { loadLeaderboardEntries } from "./leaderboard";
+import { loadRankedLeaderboardEntries } from "./rankedLeaderboard";
+import { loadTeamProfile } from "./teamProfile";
+import { getCurrentSeasonId } from "./rankedSeason";
+
+vi.mock("./leaderboardApi", () => ({
+  fetchRemoteLeaderboard: vi.fn(),
+}));
+
+vi.mock("./playerProfileApi", () => ({
+  fetchRemotePlayerProfile: vi.fn(),
+}));
+
+vi.mock("./collectionRemote", () => ({
+  pullAndMergeCollection: vi.fn(async () => null),
+}));
+
+vi.mock("./achievementsRemote", () => ({
+  pullAndMergeAchievements: vi.fn(async () => null),
+}));
 
 const storage = new Map<string, string>();
 
@@ -67,5 +90,116 @@ describe("logoutToAnonymousIdentity", () => {
     expect(
       readJson("nba-head-to-head-pending-lineup-classic-player-linked-old"),
     ).toBeNull();
+  });
+});
+
+describe("restorePlayerIdentityFromLogin", () => {
+  beforeEach(() => {
+    storage.clear();
+    clearAccountLinkCache();
+    vi.restoreAllMocks();
+    vi.stubGlobal("localStorage", localStorageMock);
+    vi.stubGlobal("crypto", {
+      randomUUID: () => "player-anonymous-new",
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("restores team name and seeds local season leaderboard rows", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+    writeJson("nba-head-to-head-team-profile", { name: "Guest Team" });
+
+    vi.mocked(fetchRemoteLeaderboard).mockImplementation(async ({ mode }) => {
+      if (mode === "classic") {
+        return {
+          mode: "classic" as const,
+          seasonId,
+          sort: "elo" as const,
+          entries: [
+            {
+              playerId: "player-linked",
+              isYou: true,
+              name: "Night Owls",
+              publicTag: "ABCD",
+              elo: 520,
+              wins: 3,
+              losses: 1,
+              winStreak: 2,
+              lossStreak: 0,
+              updatedAt: "2026-08-01T00:00:00.000Z",
+            },
+          ],
+        };
+      }
+
+      return {
+        mode: "ranked" as const,
+        seasonId,
+        sort: "elo" as const,
+        entries: [
+          {
+            playerId: "player-linked",
+            isYou: true,
+            name: "Night Owls",
+            publicTag: "ABCD",
+            elo: 1510,
+            wins: 4,
+            losses: 2,
+            winStreak: 1,
+            lossStreak: 0,
+            updatedAt: "2026-08-01T00:00:00.000Z",
+          },
+        ],
+      };
+    });
+
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+      currentSeason: {
+        seasonId,
+        mode: "ranked",
+        elo: 1510,
+        rank: 12,
+        wins: 4,
+        losses: 2,
+        winStreak: 1,
+        lossStreak: 0,
+        teamName: "Night Owls",
+        publicTag: "ABCD",
+      },
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(getOrCreatePlayerIdentity().playerId).toBe("player-linked");
+    expect(loadTeamProfile()?.name).toBe("Night Owls");
+
+    const classic = loadLeaderboardEntries().find(
+      (entry) => entry.playerId === "player-linked",
+    );
+    expect(classic).toMatchObject({
+      name: "Night Owls",
+      wins: 3,
+      losses: 1,
+      winStreak: 2,
+    });
+
+    const ranked = loadRankedLeaderboardEntries().find(
+      (entry) => entry.playerId === "player-linked",
+    );
+    expect(ranked).toMatchObject({
+      name: "Night Owls",
+      wins: 4,
+      losses: 2,
+      elo: 1510,
+    });
   });
 });

@@ -3,6 +3,8 @@ import { clearAccountLinkCache } from "./accountGate";
 import { pullAndMergeCollection } from "./collectionRemote";
 import { pullAndMergeAchievements } from "./achievementsRemote";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
+import { upsertLeaderboardEntry } from "./leaderboard";
+import { seedRemoteLeaderboardCache } from "./leaderboardRemote";
 import {
   createStarterCollection,
   savePlayerCollection,
@@ -19,7 +21,9 @@ import {
 } from "./playerRecord";
 import { saveClassicProfile } from "./classicProfile";
 import { saveRankedProfile } from "./rankedProfile";
+import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
 import { getCurrentSeasonId } from "./rankedSeason";
+import { saveTeamProfile, validateTeamProfile } from "./teamProfile";
 import { resetUnlockProgress } from "./unlockProgress";
 
 const IDENTITY_BOUND_STORAGE_KEYS = [
@@ -173,6 +177,83 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
         classicEntry.wins + classicEntry.losses,
       ),
     });
+
+    // Seed the local season row so the next match upserts from the real W–L
+    // instead of synthesizing a catch-up record that remote rejects.
+    upsertLeaderboardEntry(
+      {
+        playerId,
+        name: classicEntry.name,
+        publicTag: classicEntry.publicTag,
+        username: classicEntry.username,
+        elo: classicEntry.elo,
+        wins: classicEntry.wins,
+        losses: classicEntry.losses,
+        winStreak: classicEntry.winStreak,
+        lossStreak: classicEntry.lossStreak,
+        isYou: true,
+      },
+      { sync: false },
+    );
+  }
+
+  if (rankedEntry) {
+    upsertRankedLeaderboardEntry(
+      {
+        playerId,
+        name: rankedEntry.name,
+        publicTag: rankedEntry.publicTag,
+        username: rankedEntry.username,
+        elo: rankedEntry.elo,
+        wins: rankedEntry.wins,
+        losses: rankedEntry.losses,
+        winStreak: rankedEntry.winStreak,
+        lossStreak: rankedEntry.lossStreak,
+        isNpc: false,
+        isYou: true,
+      },
+      { sync: false },
+    );
+  } else if (
+    profile?.currentSeason &&
+    currentElo != null &&
+    currentWins + currentLosses > 0
+  ) {
+    // Off the published Top 500 but still has a season row via profile.
+    upsertRankedLeaderboardEntry(
+      {
+        playerId,
+        name: profile.currentSeason.teamName || "My Team",
+        publicTag: profile.currentSeason.publicTag || identity.publicTag,
+        username: profile.currentSeason.username ?? profile.username,
+        elo: currentElo,
+        wins: currentWins,
+        losses: currentLosses,
+        winStreak: profile.currentSeason.winStreak ?? 0,
+        lossStreak: profile.currentSeason.lossStreak ?? 0,
+        isNpc: false,
+        isYou: true,
+      },
+      { sync: false },
+    );
+  }
+
+  if (rankedBoard) {
+    seedRemoteLeaderboardCache({
+      mode: "ranked",
+      seasonId,
+      sort: "elo",
+      entries: rankedBoard.entries,
+    });
+  }
+
+  if (classicBoard) {
+    seedRemoteLeaderboardCache({
+      mode: "classic",
+      seasonId,
+      sort: "elo",
+      entries: classicBoard.entries,
+    });
   }
 
   replaceModePlayerRecords({
@@ -194,6 +275,18 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
         }
       : undefined,
   });
+
+  const restoredTeamName =
+    classicEntry?.name?.trim() ||
+    rankedEntry?.name?.trim() ||
+    profile?.currentSeason?.teamName?.trim() ||
+    "";
+  const validatedTeam = restoredTeamName
+    ? validateTeamProfile(restoredTeamName)
+    : null;
+  if (validatedTeam?.ok) {
+    saveTeamProfile(validatedTeam.profile, { syncLeaderboards: false });
+  }
 
   // Restore cloud collection + badges for this account (union with any local).
   await pullAndMergeCollection(playerId);

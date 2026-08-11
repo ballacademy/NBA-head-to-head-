@@ -665,7 +665,7 @@ export function MatchResults({
       {actionsReady ? (
         <div className="panel panel--compact match-results__actions">
           {matchmakingNotice ? (
-            <p className="form-info" role="status">
+            <p className="match-results__matchmaking-notice" role="status">
               {matchmakingNotice}
             </p>
           ) : null}

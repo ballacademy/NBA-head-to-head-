@@ -98,7 +98,10 @@ export const loadTeamProfile = (): TeamProfile | null => {
   }
 };
 
-export const saveTeamProfile = (profile: TeamProfile) => {
+export const saveTeamProfile = (
+  profile: TeamProfile,
+  options: { syncLeaderboards?: boolean } = {},
+) => {
   const storage = getStorage();
 
   if (!storage) {
@@ -112,5 +115,8 @@ export const saveTeamProfile = (profile: TeamProfile) => {
   }
 
   storage.setItem(STORAGE_KEY, JSON.stringify(validated.profile));
-  syncTeamNameToLeaderboards(validated.profile);
+
+  if (options.syncLeaderboards !== false) {
+    syncTeamNameToLeaderboards(validated.profile);
+  }
 };

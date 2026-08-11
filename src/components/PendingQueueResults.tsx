@@ -129,7 +129,7 @@ export function PendingQueueResults({
               : "Waiting for a live opponent"}
         </h2>
         {matchmakingNotice ? (
-          <p className="form-info" role="status">
+          <p className="match-results__matchmaking-notice" role="status">
             {matchmakingNotice}
           </p>
         ) : null}
