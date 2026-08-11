@@ -286,4 +286,44 @@ describe("leaderboard remote integration", () => {
       }),
     ]);
   });
+
+  it("keeps remote username when a newer local name-only row omits it", () => {
+    const merged = mergeLocalSelfIntoRemoteEntries(
+      [
+        {
+          playerId: "player-test-1",
+          isYou: true,
+          name: "Old Name",
+          publicTag: "7F3A",
+          username: "ballacademy",
+          elo: 500,
+          wins: 2,
+          losses: 1,
+          winStreak: 1,
+          lossStreak: 0,
+          updatedAt: "2026-08-01T00:00:00.000Z",
+        },
+      ],
+      {
+        playerId: "player-test-1",
+        name: "New Name",
+        publicTag: "7F3A",
+        elo: 500,
+        wins: 2,
+        losses: 1,
+        winStreak: 1,
+        lossStreak: 0,
+        updatedAt: "2026-08-11T00:00:00.000Z",
+      },
+      "player-test-1",
+    );
+
+    expect(merged).toEqual([
+      expect.objectContaining({
+        name: "New Name",
+        username: "ballacademy",
+        isYou: true,
+      }),
+    ]);
+  });
 });
