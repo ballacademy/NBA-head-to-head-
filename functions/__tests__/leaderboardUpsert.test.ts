@@ -34,7 +34,7 @@ describe("validateLeaderboardUpsert", () => {
     ).toBeNull();
   });
 
-  it("allows catch-up inserts with more than one season game", () => {
+  it("rejects multi-game first inserts that used to poison boards", () => {
     expect(
       validateLeaderboardUpsert(
         "classic",
@@ -47,7 +47,21 @@ describe("validateLeaderboardUpsert", () => {
         },
         null,
       ),
-    ).toBeNull();
+    ).toMatch(/single match/);
+
+    expect(
+      validateLeaderboardUpsert(
+        "classic",
+        {
+          elo: 900,
+          wins: 63,
+          losses: 0,
+          winStreak: 63,
+          lossStreak: 0,
+        },
+        null,
+      ),
+    ).toMatch(/single match/);
   });
 
   it("rejects catch-up inserts with impossible elo for the game count", () => {
@@ -63,7 +77,7 @@ describe("validateLeaderboardUpsert", () => {
         },
         null,
       ),
-    ).toMatch(/elo change exceeds/);
+    ).toMatch(/single match|elo change exceeds/);
   });
 
   it("still enforces one-match deltas on updates", () => {
