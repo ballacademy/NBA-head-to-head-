@@ -62,11 +62,11 @@
   --accent-roster-border: rgba(56, 189, 248, 0.34);
   --accent-roster-glow: rgba(125, 211, 252, 0.12);
 
-  --accent-community: #f43f5e;
-  --accent-community-bright: #fb7185;
-  --accent-community-soft: rgba(244, 63, 94, 0.14);
-  --accent-community-border: rgba(244, 63, 94, 0.34);
-  --accent-community-glow: rgba(251, 113, 133, 0.12);
+  --accent-community: #22c55e;
+  --accent-community-bright: #86efac;
+  --accent-community-soft: rgba(34, 197, 94, 0.14);
+  --accent-community-border: rgba(34, 197, 94, 0.34);
+  --accent-community-glow: rgba(74, 222, 128, 0.12);
 
   --accent-account: #94a3b8;
   --accent-account-bright: #e2e8f0;
@@ -1050,7 +1050,8 @@ h1.landing-hub__title--name {
 .hub-select--soon {
   opacity: 0.55;
   cursor: not-allowed;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 10px;
   color: #94a3b8;
 }
 
@@ -1258,6 +1259,15 @@ h1.landing-hub__title--name {
 
 .tier-list-hub__links {
   margin-top: 8px;
+}
+
+.tier-list-hub__coming-soon {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .tier-list-hub__panel {
