@@ -18,6 +18,7 @@ import {
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
+import { getPlayersById } from "../lib/scoring";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import {
@@ -31,6 +32,7 @@ import {
 } from "../lib/dailyDraftPlayStreak";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
+import { players } from "../data/players";
 
 const LIVE_PERCENTILE_REFRESH_MS = 15_000;
 
@@ -66,15 +68,22 @@ export function DailyDraftResults({
   const [syncRetryBusy, setSyncRetryBusy] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
-  const goalResult = useMemo(
-    () => buildDailyGoalResult(userLineup, dailyGoal),
-    [dailyGoal, userLineup],
+  const [canonicalLineup, setCanonicalLineup] = useState<Player[] | null>(null);
+  const [canonicalFormatted, setCanonicalFormatted] = useState<string | null>(
+    null,
   );
+  const [adoptedExistingAttempt, setAdoptedExistingAttempt] = useState(false);
+  const displayLineup = canonicalLineup ?? userLineup;
+  const goalResult = useMemo(
+    () => buildDailyGoalResult(displayLineup, dailyGoal),
+    [dailyGoal, displayLineup],
+  );
+  const displayFormatted = canonicalFormatted ?? goalResult.formatted;
   const dailyShareText = useMemo(
     () =>
       buildDailyDraftShareText(
         dailyGoal.title,
-        goalResult.formatted,
+        displayFormatted,
         dailyDateKey,
         percentileResult?.percentile,
         user.dailyDraftMode ?? dailyGoal.mode,
@@ -82,15 +91,29 @@ export function DailyDraftResults({
     [
       dailyDateKey,
       dailyGoal.title,
-      goalResult.formatted,
+      displayFormatted,
       percentileResult?.percentile,
       user.dailyDraftMode ?? dailyGoal.mode,
     ],
   );
   const orderedLineup = useMemo(
-    () => sortLineupByPosition(userLineup),
-    [userLineup],
+    () => sortLineupByPosition(displayLineup),
+    [displayLineup],
   );
+
+  const adoptCanonicalEntry = (entry: {
+    value: number;
+    formattedResult: string;
+    lineup?: string[];
+  }) => {
+    setCanonicalFormatted(entry.formattedResult);
+    if (entry.lineup && entry.lineup.length >= 5) {
+      const resolved = getPlayersById(entry.lineup, players);
+      if (resolved.length === entry.lineup.length) {
+        setCanonicalLineup(resolved);
+      }
+    }
+  };
 
   useLayoutEffect(() => {
     if (!reviewOnly || optimalReview) {
@@ -124,6 +147,10 @@ export function DailyDraftResults({
         userLineup.map((player) => player.id),
         user.name,
       );
+      if (result.adoptedExisting) {
+        adoptCanonicalEntry(result.entry);
+        setAdoptedExistingAttempt(true);
+      }
       setPercentileResult(result);
       setRemoteSyncFailed(!result.remoteSynced);
       setPercentileReady(true);
@@ -158,9 +185,13 @@ export function DailyDraftResults({
       goalResult.value,
       goalResult.formatted,
       benchmarkValues,
-      userLineup.map((player) => player.id),
+      displayLineup.map((player) => player.id),
       user.name,
     );
+    if (result.adoptedExisting) {
+      adoptCanonicalEntry(result.entry);
+      setAdoptedExistingAttempt(true);
+    }
     setPercentileResult(result);
     setRemoteSyncFailed(!(result.remoteSynced || refreshed));
     setSyncRetryBusy(false);
@@ -208,18 +239,23 @@ export function DailyDraftResults({
   ]);
 
   useLayoutEffect(() => {
-    if (reviewOnly || optimalReview || achievementsCheckedRef.current || userLineup.length !== 5) {
+    if (
+      reviewOnly ||
+      optimalReview ||
+      achievementsCheckedRef.current ||
+      displayLineup.length !== 5
+    ) {
       return;
     }
 
     achievementsCheckedRef.current = true;
     const earned = checkLineupAchievements(
-      userLineup,
-      buildAchievementContext(userLineup),
+      displayLineup,
+      buildAchievementContext(displayLineup),
     );
     const { newlyUnlocked } = unlockAchievements(earned);
     setNewAchievementIds(newlyUnlocked);
-  }, [optimalReview, reviewOnly, userLineup]);
+  }, [displayLineup, optimalReview, reviewOnly]);
 
   const handleCopyShareText = async () => {
     const copied = await copyToClipboard(dailyShareText);
@@ -259,7 +295,12 @@ export function DailyDraftResults({
             ? `${formatDailyDateLabel(dailyDateKey)} · ${dailyGoal.description}`
             : dailyGoal.description}
         </p>
-        <p className="daily-draft-results__stat">{goalResult.formatted}</p>
+        <p className="daily-draft-results__stat">{displayFormatted}</p>
+        {adoptedExistingAttempt ? (
+          <p className="daily-draft-results__adopted" role="status">
+            Showing your first scored attempt for today.
+          </p>
+        ) : null}
         {!optimalReview && !percentileResult && !reviewOnly ? (
           <p className="daily-draft-results__percentile daily-draft-results__percentile--loading">
             Calculating rank…

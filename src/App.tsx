@@ -115,6 +115,10 @@ import {
   type DeliveredOwnerResult,
 } from "./lib/pendingOwnerResults";
 import { RANKED_STARTING_ELO } from "./lib/rankedElo";
+import { LEADERBOARD_LIMIT } from "./lib/leaderboard";
+import { RANKED_LEADERBOARD_LIMIT } from "./lib/rankedLeaderboard";
+import { refreshLeaderboardFromApi } from "./lib/leaderboardRemote";
+import { getCurrentSeasonId } from "./lib/rankedSeason";
 import {
   ensurePlayerCollection,
   getDraftablePlayers,
@@ -455,13 +459,37 @@ function App() {
           const goalId =
             entry?.goalId ?? getDailyDraftSetup(todayKey, mode).goal.id;
 
-          await refreshDailyDraftScoresFromApi(todayKey, goalId, playerId);
+          await refreshDailyDraftScoresFromApi(
+            todayKey,
+            goalId,
+            playerId,
+            mode,
+          );
         }),
       );
       setDailyScoresRefreshTick((current) => current + 1);
     };
 
+    const refreshSeasonLeaderboards = async () => {
+      const seasonId = getCurrentSeasonId();
+      await Promise.all([
+        refreshLeaderboardFromApi({
+          mode: "classic",
+          sort: "elo",
+          limit: LEADERBOARD_LIMIT,
+          seasonId,
+        }),
+        refreshLeaderboardFromApi({
+          mode: "ranked",
+          sort: "elo",
+          limit: RANKED_LEADERBOARD_LIMIT,
+          seasonId,
+        }),
+      ]);
+    };
+
     void refreshDailyScores();
+    void refreshSeasonLeaderboards();
     const intervalId = window.setInterval(() => {
       void refreshDailyScores();
     }, 15_000);
@@ -1248,11 +1276,9 @@ function App() {
     session.cancelled = true;
     setStartMatchError(null);
     setIsCancellingMatchmaking(true);
-    setMatchmakingMode(null);
-    setMatchmakingStartedAt(null);
-    setPrivateRoomCode(null);
-    setPrivateRoomExpiresAt(null);
-    setPrivateRoomRole(null);
+    // Keep the overlay visible until search resolves to cancelled or matched.
+    // Clearing matchmakingMode here made cancel look done while a late match
+    // could still drop the player into draft.
 
     if (session.privateRoomCode && session.privateRoomRole === "host") {
       await cancelPrivateRoom({

@@ -51,6 +51,18 @@ export const refreshLeaderboardFromApi = async (params: {
     fetchedAt: Date.now(),
   });
 
+  // Align local season rows with remote after every successful fetch — not only
+  // when the Ranks page mounts.
+  const {
+    reconcileLocalClassicLeaderboardFromRemote,
+    reconcileLocalRankedLeaderboardFromRemote,
+  } = await import("./reconcileLeaderboardSelf");
+  if (params.mode === "ranked") {
+    reconcileLocalRankedLeaderboardFromRemote(seasonId);
+  } else {
+    reconcileLocalClassicLeaderboardFromRemote(seasonId);
+  }
+
   return true;
 };
 

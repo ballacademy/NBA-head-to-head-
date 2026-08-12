@@ -54,6 +54,20 @@ const normalizeEntry = (entry: DailyDraftScoreEntry): DailyDraftScoreEntry => ({
   mode: resolveEntryMode(entry),
 });
 
+const isUsableDailyEntry = (
+  entry: DailyDraftScoreEntry | null | undefined,
+): entry is DailyDraftScoreEntry =>
+  Boolean(
+    entry &&
+      typeof entry.playerId === "string" &&
+      entry.playerId.length > 0 &&
+      typeof entry.goalId === "string" &&
+      entry.goalId.length > 0 &&
+      typeof entry.value === "number" &&
+      Number.isFinite(entry.value) &&
+      typeof entry.formattedResult === "string",
+  );
+
 const loadDailyScoreStore = (): DailyScoreStore => {
   const saved = readJson<DailyScoreStore>(DAILY_SCORES_KEY);
 
@@ -200,7 +214,7 @@ export const refreshDailyDraftScoresFromApi = async (
   dateKey: string,
   goalId: string,
   playerId = getOrCreatePlayerId(),
-  mode = "basic",
+  mode: DailyDraftMode = getDailyDraftModeForGoalId(goalId),
 ) => {
   const remote = await fetchRemoteDailyDraftScores({
     dateKey,
@@ -265,6 +279,9 @@ export const getDailyDraftPercentile = (
 
 export type DailyDraftSubmitResult = DailyDraftPercentileResult & {
   remoteSynced: boolean;
+  entry: DailyDraftScoreEntry;
+  /** True when the server already had a first attempt (409) we adopted. */
+  adoptedExisting: boolean;
 };
 
 export const submitDailyDraftScore = async (
@@ -289,8 +306,6 @@ export const submitDailyDraftScore = async (
     submittedAt,
   };
 
-  mergeEntryToLocal(dateKey, nextEntry);
-
   const remoteEntry = await submitRemoteDailyDraftScore({
     dateKey,
     goalId: goal.id,
@@ -308,22 +323,42 @@ export const submitDailyDraftScore = async (
     goal.mode,
   );
 
+  const usableRemote = isUsableDailyEntry(remoteEntry) ? remoteEntry : null;
+  const storedAfterRefresh = findPlayerDailyDraftEntry(
+    dateKey,
+    playerId,
+    goal.mode,
+  );
+  // Prefer the canonical server entry (including 409 first-attempt), then a
+  // refresh-hydrated local row, and only then this attempt (offline / first save).
+  const canonicalEntry = normalizeEntry(
+    usableRemote ?? storedAfterRefresh ?? nextEntry,
+  );
+  const sameAttempt =
+    canonicalEntry.value === value &&
+    JSON.stringify(canonicalEntry.lineup ?? []) === JSON.stringify(lineup);
+  const adoptedExisting =
+    !sameAttempt && Boolean(usableRemote ?? storedAfterRefresh);
+
   const percentileResult = getDailyDraftPercentile(
     dateKey,
-    value,
+    canonicalEntry.value,
     goal,
     benchmarkValues,
     playerId,
   );
 
-  mergeEntryToLocal(dateKey, {
-    ...nextEntry,
+  const entryWithPercentile: DailyDraftScoreEntry = {
+    ...canonicalEntry,
     percentile: percentileResult.percentile,
-  });
+  };
+  mergeEntryToLocal(dateKey, entryWithPercentile);
 
   return {
     ...percentileResult,
-    remoteSynced: Boolean(remoteEntry) || refreshed,
+    remoteSynced: Boolean(usableRemote) || refreshed,
+    entry: entryWithPercentile,
+    adoptedExisting,
   };
 };
 

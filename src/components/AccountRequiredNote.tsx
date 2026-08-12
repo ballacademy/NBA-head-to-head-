@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   isPlayerAccountLinked,
   peekCachedAccountLinked,
+  subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { getOrCreatePlayerId } from "../lib/playerIdentity";
 
@@ -27,14 +28,25 @@ export function AccountRequiredNote({
   useEffect(() => {
     let cancelled = false;
 
-    void isPlayerAccountLinked(playerId).then((linked) => {
-      if (!cancelled) {
-        setVisible(!linked);
+    const refresh = () => {
+      const cached = peekCachedAccountLinked(playerId);
+      if (cached != null) {
+        setVisible(!cached);
       }
-    });
+
+      void isPlayerAccountLinked(playerId).then((linked) => {
+        if (!cancelled) {
+          setVisible(!linked);
+        }
+      });
+    };
+
+    refresh();
+    const unsubscribe = subscribeAccountLinkChanged(refresh);
 
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, [playerId]);
 
