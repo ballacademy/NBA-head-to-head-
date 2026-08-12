@@ -21,6 +21,9 @@ export const ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE =
 export const ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE =
   "Create an account to host or join a private match.";
 
+export const ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE =
+  "Create an account to post in Community.";
+
 const emitAccountLinkChanged = () => {
   for (const listener of [...linkListeners]) {
     listener();

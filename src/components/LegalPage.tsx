@@ -103,6 +103,7 @@ function PrivacyPolicyContent() {
         <li>Payment or billing information</li>
         <li>Precise location</li>
         <li>Advertising or analytics tracking cookies</li>
+        <li>Third-party advertising or tracker scripts</li>
       </ul>
 
       <h2>How we use information</h2>
@@ -116,6 +117,11 @@ function PrivacyPolicyContent() {
         </li>
         <li>Contact you about account recovery when you request a reset</li>
         <li>Maintain and protect the service, including login rate limiting</li>
+        <li>
+          Count anonymous first-party product events (for example finishes,
+          shares, and mode opens) so we can understand feature usage — no
+          advertising cookies and no third-party trackers
+        </li>
       </ul>
       <p>We do not sell your personal information.</p>
 
@@ -123,7 +129,8 @@ function PrivacyPolicyContent() {
       <ul>
         <li>
           <strong>Your browser:</strong> local storage and session storage on
-          your device
+          your device (including an anonymous session id used only for
+          first-party product counters)
         </li>
         <li>
           <strong>Our backend:</strong> Cloudflare D1 databases that power the
@@ -148,12 +155,11 @@ function PrivacyPolicyContent() {
         <li>
           <strong>Cloudflare</strong> — hosting, Pages, and database services
         </li>
-        <li>
-          <strong>Google Fonts</strong> — the site loads the Montserrat font
-          family from Google&apos;s servers, which may receive your IP address
-          and browser information when fonts are requested
-        </li>
       </ul>
+      <p>
+        UI fonts (Montserrat and Archivo) are self-hosted with the app and are
+        not loaded from Google Fonts or other third-party font CDNs.
+      </p>
       <p>
         Player statistics and salary figures shown in the game come from
         third-party sources such as Basketball Reference and Spotrac. Those

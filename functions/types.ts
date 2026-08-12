@@ -2,6 +2,10 @@ export interface Env {
   DB: D1Database;
   /** Optional support secret for POST /api/account/issue-reset */
   ACCOUNT_RESET_SECRET?: string;
+  /** Optional Resend API key for self-serve password reset emails */
+  RESEND_API_KEY?: string;
+  /** Optional From header for reset emails (defaults to Resend onboarding sender) */
+  RESET_EMAIL_FROM?: string;
 }
 
 export type MatchmakingMode = "classic" | "ranked" | "event";

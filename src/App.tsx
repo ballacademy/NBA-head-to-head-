@@ -1,27 +1,31 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { players } from "./data/players";
-import { DailyDraftResults } from "./components/DailyDraftResults";
 import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { HubShell } from "./components/HubShell";
 import type { LandingHubTab } from "./components/LandingBottomNav";
-import { LeaderboardPage } from "./components/LeaderboardPage";
-import { AchievementsPage } from "./components/AchievementsPage";
-import { GmStatsPage } from "./components/GmStatsPage";
-import { LegalPage } from "./components/LegalPage";
-import { BetaNotesPage } from "./components/BetaNotesPage";
 import {
+  applyLandingDeepLinksFromSearch,
   loadLandingHubTab,
   saveLandingHubTab,
+  syncLandingDeepLinkUrl,
   type LandingContentTab,
 } from "./lib/landingHub";
+import { trackProductEvent } from "./lib/productAnalytics";
 import { PendingQueueResults } from "./components/PendingQueueResults";
 import { PendingOwnerResults } from "./components/PendingOwnerResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
-import { MatchResults } from "./components/MatchResults";
-import { PlayerStatsTable } from "./components/PlayerStatsTable";
-import { TierListPage } from "./components/TierListPage";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { getActivePlayerPool, getPlayersByIdFromActivePool, isCompleteLineupFromActivePool } from "./lib/activePlayerPool";
 import { statsPlayers } from "./lib/playerPool";
@@ -148,6 +152,54 @@ import type { TeamProfile } from "./lib/teamProfile";
 import { getMatchmakingElapsedSeconds } from "./lib/matchmakingTiming";
 import type { Drafter } from "./lib/types";
 
+const LeaderboardPage = lazy(() =>
+  import("./components/LeaderboardPage").then((m) => ({
+    default: m.LeaderboardPage,
+  })),
+);
+const AchievementsPage = lazy(() =>
+  import("./components/AchievementsPage").then((m) => ({
+    default: m.AchievementsPage,
+  })),
+);
+const GmStatsPage = lazy(() =>
+  import("./components/GmStatsPage").then((m) => ({ default: m.GmStatsPage })),
+);
+const LegalPage = lazy(() =>
+  import("./components/LegalPage").then((m) => ({ default: m.LegalPage })),
+);
+const BetaNotesPage = lazy(() =>
+  import("./components/BetaNotesPage").then((m) => ({
+    default: m.BetaNotesPage,
+  })),
+);
+const PlayerStatsTable = lazy(() =>
+  import("./components/PlayerStatsTable").then((m) => ({
+    default: m.PlayerStatsTable,
+  })),
+);
+const TierListPage = lazy(() =>
+  import("./components/TierListPage").then((m) => ({
+    default: m.TierListPage,
+  })),
+);
+const DailyDraftResults = lazy(() =>
+  import("./components/DailyDraftResults").then((m) => ({
+    default: m.DailyDraftResults,
+  })),
+);
+const MatchResults = lazy(() =>
+  import("./components/MatchResults").then((m) => ({
+    default: m.MatchResults,
+  })),
+);
+
+const FeaturePageFallback = () => (
+  <div className="panel panel--compact" role="status" aria-live="polite">
+    <p>Loading…</p>
+  </div>
+);
+
 type AppPhase =
   | "landing"
   | "drafting"
@@ -187,13 +239,35 @@ const readInitialPublicTierListId = () => {
   }
 };
 
+const readInitialLandingDeepLinks = () => {
+  try {
+    return applyLandingDeepLinksFromSearch(window.location.search);
+  } catch {
+    return {
+      contentTab: null,
+      playSection: null,
+      feature: null,
+    };
+  }
+};
+
 function App() {
   const [initialPublicTierListId] = useState<string | null>(
     readInitialPublicTierListId,
   );
-  const [phase, setPhase] = useState<AppPhase>(() =>
-    initialPublicTierListId ? "tierList" : "landing",
-  );
+  const [initialLandingDeepLinks] = useState(readInitialLandingDeepLinks);
+  const [phase, setPhase] = useState<AppPhase>(() => {
+    if (initialPublicTierListId) {
+      return "tierList";
+    }
+    if (initialLandingDeepLinks.feature === "tierList") {
+      return "tierList";
+    }
+    if (initialLandingDeepLinks.feature === "leaderboard") {
+      return "leaderboard";
+    }
+    return "landing";
+  });
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
   const [draftOnboardingHasSalaryCap, setDraftOnboardingHasSalaryCap] =
     useState(false);
@@ -247,7 +321,7 @@ function App() {
   );
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() =>
-    loadLandingHubTab(),
+    initialLandingDeepLinks.contentTab ?? loadLandingHubTab(),
   );
   const skipPopStateResetRef = useRef(false);
   const pendingFeatureNavigationRef = useRef(false);
@@ -281,6 +355,44 @@ function App() {
       window.history.replaceState({ appPhase: "tierList" }, "");
     }
   }, [initialPublicTierListId]);
+
+  useEffect(() => {
+    if (initialPublicTierListId) {
+      return;
+    }
+
+    if (initialLandingDeepLinks.feature === "tierList") {
+      const state = window.history.state as FeatureHistoryState | null;
+      if (!state?.appPhase) {
+        window.history.replaceState({ appPhase: "tierList" }, "");
+      }
+      syncLandingDeepLinkUrl({ hub: "community" });
+      return;
+    }
+
+    if (initialLandingDeepLinks.feature === "leaderboard") {
+      const state = window.history.state as FeatureHistoryState | null;
+      if (!state?.appPhase) {
+        window.history.replaceState({ appPhase: "leaderboard" }, "");
+      }
+      syncLandingDeepLinkUrl({ hub: "ranks" });
+      return;
+    }
+
+    if (
+      initialLandingDeepLinks.contentTab ||
+      initialLandingDeepLinks.playSection
+    ) {
+      syncLandingDeepLinkUrl({
+        hub: initialLandingDeepLinks.contentTab ?? "play",
+        play:
+          initialLandingDeepLinks.contentTab === "play" ||
+          initialLandingDeepLinks.playSection
+            ? initialLandingDeepLinks.playSection ?? undefined
+            : undefined,
+      });
+    }
+  }, [initialLandingDeepLinks, initialPublicTierListId]);
 
   useEffect(() => {
     if (collectionSyncAttemptedRef.current || phase !== "landing") {
@@ -1276,6 +1388,7 @@ function App() {
     session.cancelled = true;
     setStartMatchError(null);
     setIsCancellingMatchmaking(true);
+    trackProductEvent("matchmaking_cancel", { mode: session.mode });
     // Keep the overlay visible until search resolves to cancelled or matched.
     // Clearing matchmakingMode here made cancel look done while a late match
     // could still drop the player into draft.
@@ -2167,6 +2280,10 @@ function App() {
   const updateLandingHubTab = useCallback((tab: LandingContentTab) => {
     setLandingHubTab(tab);
     saveLandingHubTab(tab);
+    syncLandingDeepLinkUrl({
+      hub: tab,
+      play: tab === "play" ? undefined : null,
+    });
   }, []);
 
   const goToLandingHub = useCallback(
@@ -2197,6 +2314,7 @@ function App() {
         if (phase !== "leaderboard") {
           openFeaturePage("leaderboard");
         }
+        syncLandingDeepLinkUrl({ hub: "ranks" });
         return;
       }
 
@@ -2204,6 +2322,7 @@ function App() {
         if (phase !== "tierList") {
           openFeaturePage("tierList");
         }
+        syncLandingDeepLinkUrl({ hub: "community" });
         return;
       }
 
@@ -2240,7 +2359,7 @@ function App() {
   const renderHubFeature = (content: ReactNode, layoutClass = "") => (
     <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
       <HubShell activeTab={hubNavForPhase} onSelectTab={handleHubNav}>
-        {content}
+        <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
       </HubShell>
     </main>
   );
@@ -2501,16 +2620,18 @@ function App() {
       isDailyDraft &&
       dailySetup &&
       userLineupComplete ? (
-        <DailyDraftResults
-          user={user}
-          userLineup={userLineup}
-          dailyDateKey={dailyDateKey}
-          dailyGoal={dailySetup.goal}
-          benchmarkValues={dailyBenchmarkValues}
-          reviewOnly={isDailyReview}
-          optimalReview={isDailyOptimalReview}
-          onPlayAgain={() => resetToLanding()}
-        />
+        <Suspense fallback={<FeaturePageFallback />}>
+          <DailyDraftResults
+            user={user}
+            userLineup={userLineup}
+            dailyDateKey={dailyDateKey}
+            dailyGoal={dailySetup.goal}
+            benchmarkValues={dailyBenchmarkValues}
+            reviewOnly={isDailyReview}
+            optimalReview={isDailyOptimalReview}
+            onPlayAgain={() => resetToLanding()}
+          />
+        </Suspense>
       ) : null}
 
       {phase === "results" &&
@@ -2567,21 +2688,23 @@ function App() {
       matchId &&
       userLineupComplete &&
       opponentLineupComplete ? (
-        <MatchResults
-          user={user}
-          opponent={opponent}
-          userLineup={userLineup}
-          opponentLineup={opponentLineup}
-          matchId={matchId}
-          collection={collection}
-          onCollectionChange={handleCollectionChange}
-          onPlayAgain={replayLastMode}
-          onReturnToMenu={() => resetToLanding()}
-          isMatchmaking={isMatchmakingSearchActive}
-          startMatchError={startMatchError}
-          opponentAutoDrafted={opponentAutoDrafted}
-          matchmakingNotice={matchmakingNotice}
-        />
+        <Suspense fallback={<FeaturePageFallback />}>
+          <MatchResults
+            user={user}
+            opponent={opponent}
+            userLineup={userLineup}
+            opponentLineup={opponentLineup}
+            matchId={matchId}
+            collection={collection}
+            onCollectionChange={handleCollectionChange}
+            onPlayAgain={replayLastMode}
+            onReturnToMenu={() => resetToLanding()}
+            isMatchmaking={isMatchmakingSearchActive}
+            startMatchError={startMatchError}
+            opponentAutoDrafted={opponentAutoDrafted}
+            matchmakingNotice={matchmakingNotice}
+          />
+        </Suspense>
       ) : null}
       {matchmakingMode ? (
         <MatchmakingOverlay

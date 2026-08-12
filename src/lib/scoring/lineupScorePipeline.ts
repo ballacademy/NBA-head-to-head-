@@ -1,10 +1,7 @@
 import type { LineupScoreBreakdown } from "../scoring";
+import type { LineupScoreLayer } from "../types";
 
-export interface LineupScoreLayer {
-  id: string;
-  label: string;
-  value: number;
-}
+export type { LineupScoreLayer };
 
 export interface LineupScoreModifiers {
   tierAdjustment: number;

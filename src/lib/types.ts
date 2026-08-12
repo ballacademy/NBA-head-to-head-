@@ -107,6 +107,12 @@ export interface ProjectedRecord {
   formatted: string;
 }
 
+export interface LineupScoreLayer {
+  id: string;
+  label: string;
+  value: number;
+}
+
 export interface LineupScore {
   total: number;
   preciseTotal: number;
@@ -118,6 +124,8 @@ export interface LineupScore {
   categories: ScoreCategory[];
   strengths: string[];
   warnings: string[];
+  /** Scoring pipeline layers that contributed to raw OVR (non-zero + base). */
+  layers?: LineupScoreLayer[];
 }
 
 export interface Matchup {

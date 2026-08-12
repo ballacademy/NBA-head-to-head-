@@ -6,7 +6,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 - [x] Scoring fairness pass merged (`#214`)
 - [x] Support email + feedback/bug mailto links in Account + Beta notes
-- [x] Explicit copy: password reset via support code, local collection, All-Time coming soon
+- [x] Explicit copy: password reset (self-serve email code + support fallback), local collection, All-Time live with legend unlock rules
 - [x] In-product **Beta notes** page (Account tab)
 - [x] Runtime error toast + React error boundary with email report path
 - [x] All-Time legends testing unlock set to **off** for release

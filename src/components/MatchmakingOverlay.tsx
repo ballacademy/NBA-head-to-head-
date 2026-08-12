@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import {
@@ -49,6 +49,7 @@ export function MatchmakingOverlay({
   privateRoomRole = null,
   privateRoomExpiresAt = null,
 }: MatchmakingOverlayProps) {
+  const titleId = useId();
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
     "idle",
   );
@@ -92,6 +93,22 @@ export function MatchmakingOverlay({
     return () => window.clearInterval(timer);
   }, [isMatched, privateRoomExpiresAt]);
 
+  useEffect(() => {
+    if (!onCancel || isMatched || isCancelling) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCancel();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isCancelling, isMatched, onCancel]);
+
   const handleCopyCode = async () => {
     if (!privateRoomCode) {
       return;
@@ -102,12 +119,18 @@ export function MatchmakingOverlay({
   };
 
   return (
-    <div className="matchmaking-overlay" role="status" aria-live="polite">
+    <div
+      className="matchmaking-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-live="polite"
+    >
       <section className="panel panel--compact matchmaking-overlay__panel">
         <p className="eyebrow">
           {isPrivate ? `${modeLabel} private match` : `${modeLabel} matchmaking`}
         </p>
-        <h2>
+        <h2 id={titleId}>
           {isMatched
             ? "Opponent found"
             : isCancelling

@@ -44,6 +44,7 @@ import {
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { isShareDismissalError } from "../lib/appErrors";
+import { trackProductEvent } from "../lib/productAnalytics";
 import { confirmRemoteLeaderboardRank } from "../lib/leaderboardRemote";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import {
@@ -437,6 +438,9 @@ export function MatchResults({
         ovrOverflow: userScore.ovrOverflow,
         lineup: userLineup,
         record: formatProjectedSeasonRecord(userScore.projectedRecord),
+      });
+      trackProductEvent("share_lineup", {
+        surface: "match_results",
       });
       setShareState("idle");
     } catch (error) {

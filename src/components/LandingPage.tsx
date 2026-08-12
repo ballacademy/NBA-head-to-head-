@@ -21,7 +21,7 @@ import {
   getDailyDraftPlayStreak,
 } from "../lib/dailyDraftPlayStreak";
 import { getDailyDateKey } from "../lib/dailyDraft";
-import { isAllTimeModePlayable } from "../lib/eraUnlocks";
+import { isAllTimeModePlayable, ALL_TIME_WIN_THRESHOLD, getAllTimeWinsRemaining, areLegendsUnlocked } from "../lib/eraUnlocks";
 import {
   type ModePlayerRecords,
   type PlayerRecord,
@@ -51,6 +51,7 @@ import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import { HubOnboardingOverlay } from "./HubOnboardingOverlay";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -58,9 +59,15 @@ import { HubShell } from "./HubShell";
 import {
   loadLandingPlaySection,
   saveLandingPlaySection,
+  syncLandingDeepLinkUrl,
   type LandingContentTab,
   type LandingPlaySection,
 } from "../lib/landingHub";
+import { trackProductEvent } from "../lib/productAnalytics";
+import {
+  hasSeenHubGuide,
+  markHubGuideSeen,
+} from "../lib/hubOnboarding";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
@@ -197,6 +204,7 @@ export function LandingPage({
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
+  const [showHubGuide, setShowHubGuide] = useState(false);
   const [queuedLineupLock, setQueuedLineupLock] = useState(() => {
     const playerId = getOrCreatePlayerIdentity().playerId;
     return {
@@ -211,7 +219,26 @@ export function LandingPage({
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
     setPlaySection(section);
     saveLandingPlaySection(section);
+    syncLandingDeepLinkUrl({ hub: "play", play: section });
+    if (section !== "chooser") {
+      trackProductEvent("play_mode_open", { section });
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (
+      hubTab === "play" &&
+      playSection === "chooser" &&
+      !hasSeenHubGuide()
+    ) {
+      setShowHubGuide(true);
+    }
+  }, [hubTab, playSection]);
+
+  const dismissHubGuide = useCallback(() => {
+    markHubGuideSeen();
+    setShowHubGuide(false);
   }, []);
 
   useEffect(() => {
@@ -232,6 +259,8 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
+  const allTimeLegendsUnlocked = areLegendsUnlocked(modeRecords.allTime);
+  const allTimeWinsRemaining = getAllTimeWinsRemaining(modeRecords.allTime);
   const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
@@ -247,9 +276,9 @@ export function LandingPage({
     () =>
       buildHeadToHeadModeDetails(
         [
-          "Real 2026-27 salaries.",
-          "Banner matchmaking pairs similar front offices.",
-          "Monthly seasons reset the Top 500.",
+          `$${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
+          "Banner / soft matchmaking pairs similar front offices.",
+          "Casual banners track your Front Office.",
           "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
         ],
         collection.unlockedIds.length,
@@ -260,9 +289,9 @@ export function LandingPage({
     () =>
       buildHeadToHeadModeDetails(
         [
-          "Real 2026-27 salaries.",
-          "Banner matchmaking pairs similar front offices.",
-          "Monthly seasons reset the Top 500.",
+          `$${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
+          "Elo / ranked matchmaking pairs competitive Front Offices.",
+          "Monthly seasons crown the Top 500.",
           "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
         ],
         collection.unlockedIds.length,
@@ -705,6 +734,10 @@ export function LandingPage({
         />
       ) : null}
 
+      {showHubGuide ? (
+        <HubOnboardingOverlay onDismiss={dismissHubGuide} />
+      ) : null}
+
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">{hubTitle}</h1>
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
@@ -884,9 +917,11 @@ export function LandingPage({
                     Peak seasons &amp; legends
                   </h2>
                   <p className="all-time-card__description">
-                    Draft a five-player lineup with {PICK_TIME_LIMIT_SECONDS}{" "}
-                    seconds per pick from active stars at peak seasons plus
-                    legendary All-Stars from every era.
+                    Draft a five with {PICK_TIME_LIMIT_SECONDS} seconds per pick
+                    from active stars at their peak seasons
+                    {allTimeLegendsUnlocked
+                      ? ", plus legendary All-Stars from every era."
+                      : `. Unlock era legends after ${ALL_TIME_WIN_THRESHOLD} All-Time wins (${allTimeWinsRemaining} to go).`}
                   </p>
                   <MatchModeRecord record={modeRecords.allTime} />
                   <button
@@ -901,11 +936,12 @@ export function LandingPage({
               ) : (
                 <div
                   className="all-time-card all-time-card--teaser landing-card landing-card--mode"
-                  aria-label={`${ALL_TIME_LABEL} coming soon`}
+                  aria-label={`${ALL_TIME_LABEL} unlocks with ${ALL_TIME_WIN_THRESHOLD} All-Time wins for era legends`}
                 >
                   <p className="eyebrow">{ALL_TIME_LABEL}</p>
                   <p className="all-time-card__teaser-copy">
-                    Peak seasons &amp; legends — coming soon
+                    Peak seasons live — era legends unlock at{" "}
+                    {ALL_TIME_WIN_THRESHOLD} All-Time wins
                   </p>
                 </div>
               )}

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useId, useState, type CSSProperties } from "react";
 import { formatUsername } from "../lib/accountCredentials";
 import { sortLineupByPosition } from "../lib/lineupOrder";
 import { buildLineupScoreContext, formatLineupOvrDisplay } from "../lib/scoring";
@@ -22,6 +22,14 @@ interface TeamLineupCardProps {
   onNameClick?: () => void;
 }
 
+const formatLayerValue = (value: number) => {
+  const rounded = Math.round(value * 10) / 10;
+  if (rounded > 0) {
+    return `+${rounded}`;
+  }
+  return String(rounded);
+};
+
 export function TeamLineupCard({
   drafter,
   lineup,
@@ -39,6 +47,13 @@ export function TeamLineupCard({
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
     : null;
+  const layers = showScoreContext
+    ? (score.layers ?? []).filter(
+        (layer) => layer.id === "baseStats" || layer.value !== 0,
+      )
+    : [];
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const breakdownId = useId();
   const teamName = drafter.name.trim() || "Opponent";
   const username = drafter.username?.trim() || undefined;
 
@@ -110,6 +125,41 @@ export function TeamLineupCard({
 
       {scoreContext ? (
         <p className="team-lineup-card__score-context">{scoreContext}</p>
+      ) : null}
+
+      {layers.length > 0 ? (
+        <div className="score-breakdown">
+          <button
+            type="button"
+            className="score-breakdown__toggle"
+            aria-expanded={breakdownOpen}
+            aria-controls={breakdownId}
+            onClick={() => setBreakdownOpen((open) => !open)}
+          >
+            Score breakdown
+            <span aria-hidden="true">{breakdownOpen ? "−" : "+"}</span>
+          </button>
+          {breakdownOpen ? (
+            <ul id={breakdownId} className="score-breakdown__list">
+              {layers.map((layer) => (
+                <li key={layer.id} className="score-breakdown__row">
+                  <span className="score-breakdown__label">{layer.label}</span>
+                  <span
+                    className={`score-breakdown__value${
+                      layer.value > 0
+                        ? " score-breakdown__value--pos"
+                        : layer.value < 0
+                          ? " score-breakdown__value--neg"
+                          : ""
+                    }`}
+                  >
+                    {formatLayerValue(layer.value)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
 
       <LineupChemistryBadges lineup={lineup} />

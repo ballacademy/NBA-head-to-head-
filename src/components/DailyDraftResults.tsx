@@ -30,11 +30,16 @@ import {
   formatDailyDraftPlayStreak,
   getDailyDraftPlayStreak,
 } from "../lib/dailyDraftPlayStreak";
+import { saveLineupShareCard } from "../lib/lineupShareCard";
+import { isShareDismissalError } from "../lib/appErrors";
+import { trackProductEvent } from "../lib/productAnalytics";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 import { players } from "../data/players";
 
 const LIVE_PERCENTILE_REFRESH_MS = 15_000;
+/** Daily Draft green accent token (`--accent-daily`). */
+const DAILY_SHARE_ACCENT = "#22c55e";
 
 interface DailyDraftResultsProps {
   user: Drafter;
@@ -58,6 +63,7 @@ export function DailyDraftResults({
   onPlayAgain,
 }: DailyDraftResultsProps) {
   const submittedRef = useRef(reviewOnly || optimalReview);
+  const analyticsFinishRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
   const [percentileResult, setPercentileResult] =
     useState<DailyDraftPercentileResult | null>(null);
@@ -67,6 +73,9 @@ export function DailyDraftResults({
   const [remoteSyncFailed, setRemoteSyncFailed] = useState(false);
   const [syncRetryBusy, setSyncRetryBusy] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [shareState, setShareState] = useState<"idle" | "busy" | "error">(
+    "idle",
+  );
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [canonicalLineup, setCanonicalLineup] = useState<Player[] | null>(null);
   const [canonicalFormatted, setCanonicalFormatted] = useState<string | null>(
@@ -158,6 +167,15 @@ export function DailyDraftResults({
       setPercentileResult(result);
       setRemoteSyncFailed(!result.remoteSynced);
       setPercentileReady(true);
+
+      if (!analyticsFinishRef.current) {
+        analyticsFinishRef.current = true;
+        trackProductEvent("daily_finish", {
+          mode: user.dailyDraftMode ?? dailyGoal.mode,
+          goalId: dailyGoal.id,
+          remoteSynced: result.remoteSynced,
+        });
+      }
     })();
   }, [
     benchmarkValues,
@@ -167,6 +185,7 @@ export function DailyDraftResults({
     goalResult.value,
     optimalReview,
     reviewOnly,
+    user.dailyDraftMode,
     user.name,
     userLineup,
   ]);
@@ -270,12 +289,58 @@ export function DailyDraftResults({
     }, 2200);
   };
 
+  const handleShareImage = async () => {
+    if (shareState === "busy" || displayLineup.length === 0) {
+      return;
+    }
+
+    setShareState("busy");
+
+    try {
+      await saveLineupShareCard({
+        teamName: user.name,
+        headline: dailyGoal.title,
+        accent: DAILY_SHARE_ACCENT,
+        ovr: 0,
+        lineup: displayLineup,
+        statValue: displayFormatted,
+        statLabel: percentileResult
+          ? formatDailyPercentile(percentileResult)
+          : "RESULT",
+      });
+      trackProductEvent("share_lineup", {
+        surface: "daily",
+        mode: user.dailyDraftMode ?? dailyGoal.mode,
+      });
+      setShareState("idle");
+    } catch (error) {
+      if (isShareDismissalError(error)) {
+        setShareState("idle");
+        return;
+      }
+
+      setShareState("error");
+      const copied = await copyToClipboard(dailyShareText);
+      if (copied) {
+        setCopyState("copied");
+        window.setTimeout(() => setCopyState("idle"), 2200);
+      }
+      window.setTimeout(() => setShareState("idle"), 3000);
+    }
+  };
+
   const copyButtonLabel =
     copyState === "copied"
       ? "Copied!"
       : copyState === "error"
         ? "Copy failed — try again"
         : "Copy share text";
+  const shareButtonLabel =
+    shareState === "busy"
+      ? "Preparing image…"
+      : shareState === "error"
+        ? "Share failed — text copied"
+        : "Share image";
   const playStreak = optimalReview
     ? null
     : getDailyDraftPlayStreak(
@@ -365,13 +430,23 @@ export function DailyDraftResults({
 
       <div className="panel panel--compact daily-draft-results__footer">
         {!optimalReview ? (
-          <button
-            type="button"
-            className="play-again-button match-results__share-button"
-            onClick={() => void handleCopyShareText()}
-          >
-            {copyButtonLabel}
-          </button>
+          <>
+            <button
+              type="button"
+              className="play-again-button match-results__share-button"
+              disabled={shareState === "busy"}
+              onClick={() => void handleShareImage()}
+            >
+              {shareButtonLabel}
+            </button>
+            <button
+              type="button"
+              className="secondary-button match-results__share-button"
+              onClick={() => void handleCopyShareText()}
+            >
+              {copyButtonLabel}
+            </button>
+          </>
         ) : null}
         <button
           type="button"

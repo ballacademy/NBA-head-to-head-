@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -69,6 +70,11 @@ import {
   type PublicTierListSort,
   type PublicTierListSummary,
 } from "../lib/tierListCommunity";
+import {
+  createCommunityPost,
+  listCommunityPosts,
+  type CommunityPost,
+} from "../lib/communityPosts";
 import { fetchAccountStatus } from "../lib/accountApi";
 import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
@@ -86,6 +92,7 @@ import {
   TierListMinePanel,
   TierListPublicPanel,
   TierListPublicViewer,
+  CommunityPostsPanel,
 } from "./TierListHubPanels";
 
 interface TierListPageProps {
@@ -96,7 +103,7 @@ interface TierListPageProps {
   initialPublicTierListId?: string | null;
 }
 
-type TierListView = "hub" | "editor" | "mine" | "public" | "viewer";
+type TierListView = "hub" | "editor" | "mine" | "public" | "viewer" | "posts";
 
 const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
   { id: "all", label: "Any role" },
@@ -232,6 +239,13 @@ export function TierListPage({
   const [publicHasMore, setPublicHasMore] = useState(false);
   const [publicNextOffset, setPublicNextOffset] = useState(0);
   const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
+    null,
+  );
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
+  const [communityPostsLoading, setCommunityPostsLoading] = useState(false);
+  const [communityPostDraft, setCommunityPostDraft] = useState("");
+  const [communityPostSubmitting, setCommunityPostSubmitting] = useState(false);
+  const [communityPostError, setCommunityPostError] = useState<string | null>(
     null,
   );
   const deepLinkHandledRef = useRef(false);
@@ -954,6 +968,47 @@ export function TierListPage({
     setView("hub");
   };
 
+  const loadCommunityPosts = useCallback(async () => {
+    setCommunityPostsLoading(true);
+    setCommunityPostError(null);
+    try {
+      const posts = await listCommunityPosts();
+      setCommunityPosts(posts);
+    } finally {
+      setCommunityPostsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view !== "posts") {
+      return;
+    }
+    void loadCommunityPosts();
+  }, [loadCommunityPosts, view]);
+
+  const handleCreateCommunityPost = async () => {
+    setCommunityPostSubmitting(true);
+    setCommunityPostError(null);
+    const result = await createCommunityPost({
+      playerId: identity.playerId,
+      authorName,
+      authorTag: identity.publicTag,
+      body: communityPostDraft,
+    });
+    setCommunityPostSubmitting(false);
+
+    if (!result.ok) {
+      setCommunityPostError(result.error);
+      return;
+    }
+
+    setCommunityPostDraft("");
+    setCommunityPosts((current) => [
+      result.post,
+      ...current.filter((post) => post.id !== result.post.id),
+    ]);
+  };
+
   const renderPlayerChip = (
     player: Player,
     options: { inTier?: boolean; tierId?: string } = {},
@@ -1073,6 +1128,7 @@ export function TierListPage({
             onCreate={() => void handleNew()}
             onOpenMine={() => setView("mine")}
             onOpenPublic={() => setView("public")}
+            onOpenPosts={() => setView("posts")}
           />
         </>
       ) : null}
@@ -1122,6 +1178,19 @@ export function TierListPage({
               ? () => void handleUnpublishOwnedPublic(viewerDetail.id)
               : undefined
           }
+        />
+      ) : null}
+
+      {view === "posts" ? (
+        <CommunityPostsPanel
+          posts={communityPosts}
+          loading={communityPostsLoading}
+          draft={communityPostDraft}
+          onDraftChange={setCommunityPostDraft}
+          submitting={communityPostSubmitting}
+          error={communityPostError}
+          onSubmit={() => void handleCreateCommunityPost()}
+          accountLinked={accountLinked}
         />
       ) : null}
 
