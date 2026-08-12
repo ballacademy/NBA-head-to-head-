@@ -715,7 +715,7 @@ export function LandingPage({
           <div className="play-hub-chooser" role="list">
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent--daily"
+              className="play-hub-chooser__option hub-accent hub-accent--play"
               role="listitem"
               onClick={() => updatePlaySection("daily")}
             >
@@ -731,7 +731,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent--h2h"
+              className="play-hub-chooser__option hub-accent hub-accent--play"
               role="listitem"
               onClick={() => updatePlaySection("headToHead")}
             >
@@ -747,7 +747,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent--event"
+              className="play-hub-chooser__option hub-accent hub-accent--play"
               role="listitem"
               onClick={() => updatePlaySection("events")}
             >
