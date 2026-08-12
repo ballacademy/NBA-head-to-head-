@@ -855,6 +855,10 @@ h1.landing-hub__title {
   color: var(--text-on-dark);
 }
 
+.landing-hub__title--roster {
+  color: var(--accent-roster-bright);
+}
+
 /* Keep proper names (team names, etc.) in their authored casing. */
 .landing .landing-hub__title--name,
 .hub-feature .landing-hub__title--name,
@@ -1906,10 +1910,10 @@ h1.landing-hub__title--name {
 }
 
 .landing-card--profile {
-  --hub-accent: #eab308;
-  --hub-accent-bright: #fde68a;
-  --hub-accent-soft: rgba(234, 179, 8, 0.12);
-  --hub-accent-border: rgba(253, 230, 138, 0.28);
+  --hub-accent: var(--accent-roster);
+  --hub-accent-bright: var(--accent-roster-bright);
+  --hub-accent-soft: var(--accent-roster-soft);
+  --hub-accent-border: var(--accent-roster-border);
   margin-top: 0;
   padding: 12px 14px;
   border: 1px solid var(--hub-accent-border);
@@ -1942,7 +1946,7 @@ h1.landing-hub__title--name {
 
 .landing-profile-strip__title {
   margin: 0;
-  color: #fde68a;
+  color: var(--accent-roster-bright);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -2179,11 +2183,11 @@ h1.landing-hub__title--name {
   font-size: clamp(1.35rem, 3vw, 1.85rem);
   font-weight: 800;
   letter-spacing: -0.04em;
-  color: #fde68a;
+  color: var(--accent-roster-bright);
 }
 
 .collection-progress-card__value--superstar {
-  color: #fde68a;
+  color: var(--accent-roster-bright);
 }
 
 .collection-progress-card__value--recent {

@@ -756,7 +756,13 @@ export function LandingPage({
       ) : null}
 
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">{hubTitle}</h1>
+        <h1
+          className={`landing-hub__title${
+            hubTab === "roster" ? " landing-hub__title--roster" : ""
+          }`}
+        >
+          {hubTitle}
+        </h1>
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
 
