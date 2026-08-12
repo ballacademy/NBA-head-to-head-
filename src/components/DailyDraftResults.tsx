@@ -18,7 +18,7 @@ import {
   submitDailyDraftScore,
   type DailyDraftPercentileResult,
 } from "../lib/dailyDraftScores";
-import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
+import { getPlayersById } from "../lib/scoring";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import {
@@ -32,6 +32,7 @@ import {
 } from "../lib/dailyDraftPlayStreak";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
+import { players } from "../data/players";
 
 const LIVE_PERCENTILE_REFRESH_MS = 15_000;
 
@@ -107,7 +108,7 @@ export function DailyDraftResults({
   }) => {
     setCanonicalFormatted(entry.formattedResult);
     if (entry.lineup && entry.lineup.length >= 5) {
-      const resolved = getPlayersByIdFromActivePool(entry.lineup);
+      const resolved = getPlayersById(entry.lineup, players);
       if (resolved.length === entry.lineup.length) {
         setCanonicalLineup(resolved);
       }
