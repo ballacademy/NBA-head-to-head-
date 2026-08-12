@@ -14,6 +14,8 @@ import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { HubShell } from "./components/HubShell";
+import { LeaderboardPage } from "./components/LeaderboardPage";
+import { TierListPage } from "./components/TierListPage";
 import type { LandingHubTab } from "./components/LandingBottomNav";
 import {
   applyLandingDeepLinksFromSearch,
@@ -152,11 +154,6 @@ import type { TeamProfile } from "./lib/teamProfile";
 import { getMatchmakingElapsedSeconds } from "./lib/matchmakingTiming";
 import type { Drafter } from "./lib/types";
 
-const LeaderboardPage = lazy(() =>
-  import("./components/LeaderboardPage").then((m) => ({
-    default: m.LeaderboardPage,
-  })),
-);
 const AchievementsPage = lazy(() =>
   import("./components/AchievementsPage").then((m) => ({
     default: m.AchievementsPage,
@@ -178,11 +175,6 @@ const PlayerStatsTable = lazy(() =>
     default: m.PlayerStatsTable,
   })),
 );
-const TierListPage = lazy(() =>
-  import("./components/TierListPage").then((m) => ({
-    default: m.TierListPage,
-  })),
-);
 const DailyDraftResults = lazy(() =>
   import("./components/DailyDraftResults").then((m) => ({
     default: m.DailyDraftResults,
@@ -201,12 +193,8 @@ const FeaturePageFallback = () => (
 );
 
 const prefetchHubFeatureTab = (tab: LandingHubTab) => {
-  if (tab === "standings") {
-    void import("./components/LeaderboardPage");
-    return;
-  }
-  if (tab === "community") {
-    void import("./components/TierListPage");
+  if (tab === "standings" || tab === "community") {
+    // Eagerly bundled with App — nothing to prefetch.
     return;
   }
   if (tab === "roster") {
@@ -622,26 +610,8 @@ function App() {
       void refreshDailyScores();
     }, 15_000);
 
-    // Warm Community / Ranks chunks so first open isn't a multi-second wait.
-    const warmHubChunks = () => {
-      prefetchHubFeatureTab("standings");
-      prefetchHubFeatureTab("community");
-    };
-    const idleId =
-      typeof window.requestIdleCallback === "function"
-        ? window.requestIdleCallback(warmHubChunks, { timeout: 2000 })
-        : null;
-    const warmTimer = window.setTimeout(warmHubChunks, 700);
-
     return () => {
       window.clearInterval(intervalId);
-      window.clearTimeout(warmTimer);
-      if (
-        idleId != null &&
-        typeof window.cancelIdleCallback === "function"
-      ) {
-        window.cancelIdleCallback(idleId);
-      }
     };
   }, [phase]);
 
