@@ -19,29 +19,74 @@ const BODY_MAX = 400;
 const AUTHOR_NAME_MAX = 32;
 const AUTHOR_TAG_MAX = 8;
 const LIST_LIMIT = 50;
+const ATTACHMENT_JSON_MAX = 4_000;
 
 interface CreateBody {
   playerId?: unknown;
   authorName?: unknown;
   authorTag?: unknown;
   body?: unknown;
+  attachment?: unknown;
 }
 
-const mapRow = (row: {
-  id: string;
-  player_id: string;
-  author_name: string;
-  author_tag: string;
-  body: string;
-  created_at: string;
-}) => ({
-  id: row.id,
-  playerId: row.player_id,
-  authorName: row.author_name,
-  authorTag: row.author_tag,
-  body: row.body,
-  createdAt: row.created_at,
-});
+interface LikeBody {
+  playerId?: unknown;
+  postId?: unknown;
+  liked?: unknown;
+}
+
+const parseAttachmentJson = (value: unknown): string | null => {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value !== "object") {
+    return null;
+  }
+  try {
+    const encoded = JSON.stringify(value);
+    if (encoded.length > ATTACHMENT_JSON_MAX) {
+      return null;
+    }
+    return encoded;
+  } catch {
+    return null;
+  }
+};
+
+const mapRow = (
+  row: {
+    id: string;
+    player_id: string;
+    author_name: string;
+    author_tag: string;
+    body: string;
+    created_at: string;
+    like_count?: number | null;
+    attachment_json?: string | null;
+  },
+  likedByViewer = false,
+) => {
+  let attachment: unknown = null;
+  if (row.attachment_json) {
+    try {
+      attachment = JSON.parse(row.attachment_json);
+    } catch {
+      attachment = null;
+    }
+  }
+
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    authorName: row.author_name,
+    authorTag: row.author_tag,
+    body: row.body,
+    createdAt: row.created_at,
+    likeCount: Math.max(0, Math.round(Number(row.like_count ?? 0)) || 0),
+    likedByViewer,
+    attachment,
+  };
+};
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
@@ -49,11 +94,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const limit = Number.isFinite(rawLimit)
     ? Math.max(1, Math.min(LIST_LIMIT, Math.floor(rawLimit)))
     : LIST_LIMIT;
+  const sort =
+    url.searchParams.get("sort") === "popular" ? "popular" : "recent";
+  const viewerPlayerId = parsePlayerId(url.searchParams.get("playerId"));
+
+  const orderSql =
+    sort === "popular"
+      ? "like_count DESC, created_at DESC"
+      : "created_at DESC";
 
   const rows = await context.env.DB.prepare(
-    `SELECT id, player_id, author_name, author_tag, body, created_at
+    `SELECT id, player_id, author_name, author_tag, body, created_at,
+            like_count, attachment_json
      FROM community_posts
-     ORDER BY created_at DESC
+     ORDER BY ${orderSql}
      LIMIT ?`,
   )
     .bind(limit)
@@ -64,18 +118,99 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       author_tag: string;
       body: string;
       created_at: string;
+      like_count: number | null;
+      attachment_json: string | null;
     }>();
 
-  const posts = (rows.results ?? []).map(mapRow);
-  return json({ posts });
+  const results = rows.results ?? [];
+  let likedIds = new Set<string>();
+
+  if (viewerPlayerId && results.length > 0) {
+    const placeholders = results.map(() => "?").join(", ");
+    const likedRows = await context.env.DB.prepare(
+      `SELECT post_id
+       FROM community_post_likes
+       WHERE player_id = ?
+         AND post_id IN (${placeholders})`,
+    )
+      .bind(viewerPlayerId, ...results.map((row) => row.id))
+      .all<{ post_id: string }>();
+    likedIds = new Set((likedRows.results ?? []).map((row) => row.post_id));
+  }
+
+  const posts = results.map((row) => mapRow(row, likedIds.has(row.id)));
+  return json({ posts, sort });
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  let body: CreateBody;
+  let body: CreateBody & LikeBody & { action?: unknown };
   try {
-    body = (await context.request.json()) as CreateBody;
+    body = (await context.request.json()) as typeof body;
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
+  }
+
+  if (body.action === "like") {
+    const playerId = parsePlayerId(body.playerId);
+    const postId =
+      typeof body.postId === "string" && body.postId.trim()
+        ? body.postId.trim().slice(0, 80)
+        : "";
+    const liked = body.liked === true;
+
+    if (!playerId || !postId) {
+      return json({ error: "playerId and postId are required" }, 400);
+    }
+
+    const account = await getAccountByPlayerId(context.env.DB, playerId);
+    if (!account) {
+      return json({ error: "Create an account to like posts." }, 403);
+    }
+
+    const existing = await context.env.DB.prepare(
+      `SELECT id FROM community_posts WHERE id = ?`,
+    )
+      .bind(postId)
+      .first<{ id: string }>();
+
+    if (!existing) {
+      return json({ error: "Post not found" }, 404);
+    }
+
+    const now = new Date().toISOString();
+
+    if (liked) {
+      await context.env.DB.prepare(
+        `INSERT OR IGNORE INTO community_post_likes (post_id, player_id, created_at)
+         VALUES (?, ?, ?)`,
+      )
+        .bind(postId, playerId, now)
+        .run();
+    } else {
+      await context.env.DB.prepare(
+        `DELETE FROM community_post_likes
+         WHERE post_id = ? AND player_id = ?`,
+      )
+        .bind(postId, playerId)
+        .run();
+    }
+
+    const countRow = await context.env.DB.prepare(
+      `SELECT COUNT(*) AS count
+       FROM community_post_likes
+       WHERE post_id = ?`,
+    )
+      .bind(postId)
+      .first<{ count: number }>();
+    const likeCount = Math.max(0, Math.round(Number(countRow?.count ?? 0)));
+
+    await context.env.DB.prepare(
+      `UPDATE community_posts SET like_count = ? WHERE id = ?`,
+    )
+      .bind(likeCount, postId)
+      .run();
+
+    return json({ ok: true, postId, liked, likeCount });
   }
 
   const playerId = parsePlayerId(body.playerId);
@@ -103,6 +238,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
+  const attachmentJson = parseAttachmentJson(body.attachment);
+  if (body.attachment != null && attachmentJson == null) {
+    return json({ error: "Attachment is too large or invalid" }, 400);
+  }
+
   const authorName =
     typeof body.authorName === "string" && body.authorName.trim()
       ? body.authorName.trim().slice(0, AUTHOR_NAME_MAX)
@@ -117,11 +257,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   await context.env.DB.prepare(
     `INSERT INTO community_posts
-      (id, player_id, author_name, author_tag, body, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+      (id, player_id, author_name, author_tag, body, created_at, like_count, attachment_json)
+     VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
   )
-    .bind(id, playerId, authorName, authorTag, text, now)
+    .bind(id, playerId, authorName, authorTag, text, now, attachmentJson)
     .run();
+
+  let attachment: unknown = null;
+  if (attachmentJson) {
+    try {
+      attachment = JSON.parse(attachmentJson);
+    } catch {
+      attachment = null;
+    }
+  }
 
   return json(
     {
@@ -133,6 +282,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         authorTag,
         body: text,
         createdAt: now,
+        likeCount: 0,
+        likedByViewer: false,
+        attachment,
       },
     },
     201,

@@ -11,7 +11,12 @@ import {
   COMMUNITY_POST_BODY_MAX,
   formatCommunityPostTime,
   type CommunityPost,
+  type CommunityPostSort,
 } from "../lib/communityPosts";
+import {
+  formatCommunityAttachmentSummary,
+  type CommunityPostAttachment,
+} from "../lib/communityShareables";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
@@ -32,18 +37,45 @@ const formatSavedAt = (savedAt: number) =>
   });
 
 interface TierListHubHomeProps {
-  onCreate: () => void;
-  onOpenMine: () => void;
-  onOpenPublic: () => void;
   onOpenPosts: () => void;
+  onOpenTiers: () => void;
 }
 
 export function TierListHubHome({
+  onOpenPosts,
+  onOpenTiers,
+}: TierListHubHomeProps) {
+  return (
+    <div className="landing-hub__links tier-list-hub__links">
+      <button
+        type="button"
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--emphasized"
+        onClick={onOpenPosts}
+      >
+        Posts
+      </button>
+      <button
+        type="button"
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        onClick={onOpenTiers}
+      >
+        Tier lists
+      </button>
+    </div>
+  );
+}
+
+interface TierListTiersHubProps {
+  onCreate: () => void;
+  onOpenMine: () => void;
+  onOpenPublic: () => void;
+}
+
+export function TierListTiersHub({
   onCreate,
   onOpenMine,
   onOpenPublic,
-  onOpenPosts,
-}: TierListHubHomeProps) {
+}: TierListTiersHubProps) {
   return (
     <div className="landing-hub__links tier-list-hub__links">
       <button
@@ -67,14 +99,6 @@ export function TierListHubHome({
       >
         Create a list
       </button>
-      <button
-        type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
-        onClick={onOpenPosts}
-      >
-        Posts
-      </button>
-      <p className="tier-list-hub__coming-soon">Other features coming soon</p>
     </div>
   );
 }
@@ -375,6 +399,12 @@ interface CommunityPostsPanelProps {
   error: string | null;
   onSubmit: () => void;
   accountLinked: boolean;
+  sort: CommunityPostSort;
+  onSortChange: (sort: CommunityPostSort) => void;
+  shareables: CommunityPostAttachment[];
+  selectedAttachment: CommunityPostAttachment | null;
+  onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
+  onToggleLike: (postId: string, liked: boolean) => void;
 }
 
 export function CommunityPostsPanel({
@@ -386,6 +416,12 @@ export function CommunityPostsPanel({
   error,
   onSubmit,
   accountLinked,
+  sort,
+  onSortChange,
+  shareables,
+  selectedAttachment,
+  onSelectAttachment,
+  onToggleLike,
 }: CommunityPostsPanelProps) {
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
 
@@ -398,11 +434,23 @@ export function CommunityPostsPanel({
     <div className="tier-list-hub__panel community-posts-panel" aria-label="Community posts">
       <div className="tier-list-hub__panel-header">
         <h2>Posts</h2>
+        <label className="tier-list-hub__sort">
+          <span>Sort</span>
+          <select
+            value={sort}
+            onChange={(event) =>
+              onSortChange(event.target.value as CommunityPostSort)
+            }
+          >
+            <option value="recent">Most recent</option>
+            <option value="popular">Most popular</option>
+          </select>
+        </label>
       </div>
 
       {!accountLinked ? (
         <AccountRequiredNote className="account-required-note--inline">
-          Create an account to post. Anyone can browse.
+          Create an account to post or like. Anyone can browse.
         </AccountRequiredNote>
       ) : null}
 
@@ -418,6 +466,44 @@ export function CommunityPostsPanel({
             disabled={!accountLinked || submitting}
           />
         </label>
+
+        {shareables.length > 0 ? (
+          <label className="tier-list-hub__sort community-posts-panel__attach">
+            <span>Attach a recent result</span>
+            <select
+              value={
+                selectedAttachment
+                  ? `${selectedAttachment.kind}:${selectedAttachment.savedAt}`
+                  : ""
+              }
+              onChange={(event) => {
+                const value = event.target.value;
+                const match = shareables.find(
+                  (entry) => `${entry.kind}:${entry.savedAt}` === value,
+                );
+                onSelectAttachment(match ?? null);
+              }}
+              disabled={!accountLinked || submitting}
+            >
+              <option value="">No attachment</option>
+              {shareables.map((entry) => (
+                <option
+                  key={`${entry.kind}:${entry.savedAt}`}
+                  value={`${entry.kind}:${entry.savedAt}`}
+                >
+                  {formatCommunityAttachmentSummary(entry)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {selectedAttachment ? (
+          <p className="community-posts-panel__attachment-preview" role="status">
+            Attaching: {formatCommunityAttachmentSummary(selectedAttachment)}
+          </p>
+        ) : null}
+
         <div className="community-posts-panel__compose-meta">
           <span className={remaining < 40 ? "is-tight" : undefined}>
             {remaining} left
@@ -453,6 +539,34 @@ export function CommunityPostsPanel({
                 </strong>
                 <span>{formatCommunityPostTime(post.createdAt)}</span>
                 <p className="community-posts-panel__body">{post.body}</p>
+                {post.attachment ? (
+                  <p className="community-posts-panel__attachment">
+                    {formatCommunityAttachmentSummary(post.attachment)}
+                    {post.attachment.kind === "matchup" ? (
+                      <span>
+                        {" "}
+                        · Your five: {post.attachment.userLineupNames.join(", ")}
+                      </span>
+                    ) : (
+                      <span>
+                        {" "}
+                        · Lineup: {post.attachment.lineupNames.join(", ")}
+                      </span>
+                    )}
+                  </p>
+                ) : null}
+              </div>
+              <div className="tier-list__library-actions">
+                <button
+                  type="button"
+                  className={`secondary-button${
+                    post.likedByViewer ? " is-active-like" : ""
+                  }`}
+                  disabled={!accountLinked}
+                  onClick={() => onToggleLike(post.id, !post.likedByViewer)}
+                >
+                  {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
+                </button>
               </div>
             </li>
           ))}

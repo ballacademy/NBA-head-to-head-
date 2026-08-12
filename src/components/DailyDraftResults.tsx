@@ -33,6 +33,7 @@ import {
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { isShareDismissalError } from "../lib/appErrors";
 import { trackProductEvent } from "../lib/productAnalytics";
+import { rememberCommunityShareable } from "../lib/communityShareables";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 import { players } from "../data/players";
@@ -163,6 +164,18 @@ export function DailyDraftResults({
       if (result.adoptedExisting) {
         adoptCanonicalEntry(result.entry);
         setAdoptedExistingAttempt(true);
+      }
+      if (!result.adoptedExisting && userLineup.length === 5) {
+        rememberCommunityShareable({
+          kind: "lineup",
+          title: dailyGoal.title,
+          modeLabel: formatDailyDraftProductName(
+            user.dailyDraftMode ?? dailyGoal.mode,
+          ),
+          resultLabel: result.entry.formattedResult,
+          lineupNames: userLineup.map((player) => player.name),
+          savedAt: new Date().toISOString(),
+        });
       }
       setPercentileResult(result);
       setRemoteSyncFailed(!result.remoteSynced);

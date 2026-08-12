@@ -195,10 +195,26 @@ const MatchResults = lazy(() =>
 );
 
 const FeaturePageFallback = () => (
-  <div className="panel panel--compact" role="status" aria-live="polite">
+  <div className="panel panel--compact feature-page-fallback" role="status" aria-live="polite">
     <p>Loading…</p>
   </div>
 );
+
+const prefetchHubFeatureTab = (tab: LandingHubTab) => {
+  if (tab === "standings") {
+    void import("./components/LeaderboardPage");
+    return;
+  }
+  if (tab === "community") {
+    void import("./components/TierListPage");
+    return;
+  }
+  if (tab === "roster") {
+    void import("./components/PlayerStatsTable");
+    void import("./components/AchievementsPage");
+    void import("./components/GmStatsPage");
+  }
+};
 
 type AppPhase =
   | "landing"
@@ -606,8 +622,26 @@ function App() {
       void refreshDailyScores();
     }, 15_000);
 
+    // Warm Community / Ranks chunks so first open isn't a multi-second wait.
+    const warmHubChunks = () => {
+      prefetchHubFeatureTab("standings");
+      prefetchHubFeatureTab("community");
+    };
+    const idleId =
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback(warmHubChunks, { timeout: 2000 })
+        : null;
+    const warmTimer = window.setTimeout(warmHubChunks, 700);
+
     return () => {
       window.clearInterval(intervalId);
+      window.clearTimeout(warmTimer);
+      if (
+        idleId != null &&
+        typeof window.cancelIdleCallback === "function"
+      ) {
+        window.cancelIdleCallback(idleId);
+      }
     };
   }, [phase]);
 
@@ -2358,7 +2392,11 @@ function App() {
 
   const renderHubFeature = (content: ReactNode, layoutClass = "") => (
     <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
-      <HubShell activeTab={hubNavForPhase} onSelectTab={handleHubNav}>
+      <HubShell
+        activeTab={hubNavForPhase}
+        onSelectTab={handleHubNav}
+        onPrefetchTab={prefetchHubFeatureTab}
+      >
         <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
       </HubShell>
     </main>
@@ -2480,6 +2518,7 @@ function App() {
           onViewBetaNotes={() => openFeaturePage("beta")}
           hubTab={landingHubTab}
           onHubTabChange={updateLandingHubTab}
+          onPrefetchHubTab={prefetchHubFeatureTab}
         />
         {showDraftOnboarding ? (
           <DraftOnboardingOverlay
