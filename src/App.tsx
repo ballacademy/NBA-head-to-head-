@@ -1722,6 +1722,20 @@ function App() {
     }
   }, [isDailyDraft, isPendingQueueMatch, matchId, opponent?.liveMatchId, phase]);
 
+  const ensureResultsMatchId = useCallback((liveMatchId?: string | null) => {
+    setMatchId((current) => {
+      if (current) {
+        return current;
+      }
+
+      return (
+        liveMatchId ??
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `match-${Date.now()}`)
+      );
+    });
+  }, []);
   useEffect(() => {
     if (
       phase !== "drafting" ||
@@ -2053,7 +2067,12 @@ function App() {
     }
 
     if (opponent?.isLiveOpponent) {
-      setPhase(opponentComplete ? "results" : "waiting");
+      if (opponentComplete) {
+        ensureResultsMatchId(opponent.liveMatchId);
+        setPhase("results");
+      } else {
+        setPhase("waiting");
+      }
       return;
     }
 
@@ -2067,8 +2086,10 @@ function App() {
       setOpponentComplete(true);
     }
 
+    ensureResultsMatchId(opponent?.liveMatchId);
     setPhase("results");
   }, [
+    ensureResultsMatchId,
     isDailyDraft,
     isPendingQueueMatch,
     opponent,
@@ -2079,9 +2100,10 @@ function App() {
 
   useEffect(() => {
     if (phase === "waiting" && opponentComplete) {
+      ensureResultsMatchId(opponent?.liveMatchId);
       setPhase("results");
     }
-  }, [phase, opponentComplete]);
+  }, [ensureResultsMatchId, opponent?.liveMatchId, opponentComplete, phase]);
 
   useLayoutEffect(() => {
     if (phase !== "landing") {
@@ -2454,7 +2476,31 @@ function App() {
         />
       ) : null}
 
-      {phase === "results" && isDailyDraft && dailySetup ? (
+      {phase === "results" && isDailyDraft && dailySetup && !userLineupComplete ? (
+        <section className="panel landing">
+          <p className="eyebrow">Results unavailable</p>
+          <h2>We couldn&apos;t load your Daily Draft lineup for scoring.</h2>
+          <p>
+            {userLineup.length}/{Math.max(userLineupIds.length, 5)} players
+            resolved from the current pool. A roster update may have removed a
+            drafted id.
+          </p>
+          <div className="match-results__action-row">
+            <button
+              type="button"
+              className="play-again-button match-results__primary-action"
+              onClick={() => resetToLanding()}
+            >
+              Back to home
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {phase === "results" &&
+      isDailyDraft &&
+      dailySetup &&
+      userLineupComplete ? (
         <DailyDraftResults
           user={user}
           userLineup={userLineup}
@@ -2465,6 +2511,17 @@ function App() {
           optimalReview={isDailyOptimalReview}
           onPlayAgain={() => resetToLanding()}
         />
+      ) : null}
+
+      {phase === "results" &&
+      !isDailyDraft &&
+      !isPendingQueueMatch &&
+      opponent &&
+      !matchId ? (
+        <section className="panel landing" role="status" aria-live="polite">
+          <p className="eyebrow">Loading results</p>
+          <h2>Preparing match results…</h2>
+        </section>
       ) : null}
 
       {phase === "results" &&

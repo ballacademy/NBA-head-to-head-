@@ -11,6 +11,7 @@ import {
   formatEventBadgeLabel,
   getTopEventBadgeTier,
 } from "../lib/weeklyEvents";
+import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
 interface AchievementsPageProps {
@@ -63,10 +64,10 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
 
       <HubFeatureReturnButton onBack={onBack} label="Roster" />
 
-      <p className="account-required-note account-required-note--inline">
+      <AccountRequiredNote className="account-required-note--inline">
         Sign in to sync badge progress across browsers. Guests keep badges on
         this device only.
-      </p>
+      </AccountRequiredNote>
 
       <section className="hub-feature__panel">
         <div className="achievements-page__section-heading">

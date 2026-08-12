@@ -73,6 +73,9 @@ import { fetchAccountStatus } from "../lib/accountApi";
 import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   isPlayerAccountLinked,
+  peekCachedAccountLinked,
+  getCachedLinkedUsername,
+  subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
@@ -245,19 +248,35 @@ export function TierListPage({
 
   useEffect(() => {
     let cancelled = false;
-    void fetchAccountStatus(identity.playerId).then((result) => {
-      if (cancelled) {
-        return;
-      }
-      if (result.ok && result.status.linked && result.status.username) {
-        setAuthorName(result.status.username);
+
+    const refresh = () => {
+      const cached = peekCachedAccountLinked(identity.playerId);
+      const cachedUsername = getCachedLinkedUsername(identity.playerId);
+      if (cached === true && cachedUsername) {
         setAccountLinked(true);
-        return;
+        setAuthorName(cachedUsername);
+      } else if (cached === false) {
+        setAccountLinked(false);
       }
-      setAccountLinked(false);
-    });
+
+      void fetchAccountStatus(identity.playerId).then((result) => {
+        if (cancelled) {
+          return;
+        }
+        if (result.ok && result.status.linked && result.status.username) {
+          setAuthorName(result.status.username);
+          setAccountLinked(true);
+          return;
+        }
+        setAccountLinked(false);
+      });
+    };
+
+    refresh();
+    const unsubscribe = subscribeAccountLinkChanged(refresh);
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, [identity.playerId]);
 
