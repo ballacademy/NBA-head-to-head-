@@ -3,6 +3,7 @@ import {
   clearAccountLinkCache,
   isPlayerAccountLinked,
   markPlayerAccountLinked,
+  peekCachedAccountLinked,
 } from "./accountGate";
 
 describe("accountGate", () => {
@@ -45,5 +46,13 @@ describe("accountGate", () => {
     await expect(isPlayerAccountLinked("p3")).resolves.toBe(true);
     markPlayerAccountLinked("p3", null);
     await expect(isPlayerAccountLinked("p3")).resolves.toBe(false);
+  });
+
+  it("peeks cached link state without a network round-trip", () => {
+    expect(peekCachedAccountLinked("p4")).toBeNull();
+    markPlayerAccountLinked("p4", "nova");
+    expect(peekCachedAccountLinked("p4")).toBe(true);
+    markPlayerAccountLinked("p4", null);
+    expect(peekCachedAccountLinked("p4")).toBe(false);
   });
 });
