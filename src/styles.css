@@ -50,11 +50,12 @@
   --accent-event-border: rgba(234, 179, 8, 0.34);
   --accent-event-glow: rgba(250, 204, 21, 0.12);
 
-  --accent-all-time: #f59e0b;
+  /* Distinct from Event yellow — deeper amber/bronze. */
+  --accent-all-time: #d97706;
   --accent-all-time-bright: #fbbf24;
-  --accent-all-time-soft: rgba(245, 158, 11, 0.14);
-  --accent-all-time-border: rgba(245, 158, 11, 0.34);
-  --accent-all-time-glow: rgba(251, 191, 36, 0.12);
+  --accent-all-time-soft: rgba(217, 119, 6, 0.14);
+  --accent-all-time-border: rgba(217, 119, 6, 0.36);
+  --accent-all-time-glow: rgba(245, 158, 11, 0.12);
 
   --accent-practice: #14b8a6;
   --accent-practice-bright: #5eead4;
@@ -68,11 +69,12 @@
   --accent-roster-border: rgba(56, 189, 248, 0.34);
   --accent-roster-glow: rgba(125, 211, 252, 0.12);
 
-  --accent-community: #22c55e;
-  --accent-community-bright: #86efac;
-  --accent-community-soft: rgba(34, 197, 94, 0.14);
-  --accent-community-border: rgba(34, 197, 94, 0.34);
-  --accent-community-glow: rgba(74, 222, 128, 0.12);
+  /* Rose — distinct from Daily green so nav accents don't collide. */
+  --accent-community: #fb7185;
+  --accent-community-bright: #fda4af;
+  --accent-community-soft: rgba(251, 113, 133, 0.14);
+  --accent-community-border: rgba(251, 113, 133, 0.36);
+  --accent-community-glow: rgba(251, 113, 133, 0.14);
 
   --accent-account: #94a3b8;
   --accent-account-bright: #e2e8f0;
@@ -229,7 +231,7 @@ main.landing-layout {
 .story-footer button,
 .secondary-button {
   border: 0;
-  border-radius: 999px;
+  border-radius: 12px;
   padding: 13px 18px;
   color: #0f172a;
   background: #f8fafc;
@@ -1049,18 +1051,7 @@ h1.landing-hub__title--name {
     opacity 0.16s ease;
 }
 
-.hub-select--emphasized {
-  opacity: 1;
-  border-color: var(--hub-accent-border);
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 52%),
-    var(--hub-subbox-active-bg);
-  box-shadow:
-    var(--hub-subbox-shadow),
-    inset 3px 0 0 var(--hub-accent-bright);
-  color: #ffffff;
-  font-weight: 800;
-}
+/* Emphasized/pre-selected chooser look removed — idle controls stay neutral. */
 
 .hub-select--soon {
   opacity: 0.55;
@@ -1155,14 +1146,12 @@ h1.landing-hub__title--name {
 }
 
 .landing-hub__link-button.hub-accent {
-  border-color: var(--hub-accent-border);
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 48%),
-    var(--hub-subbox-bg);
+  border-color: var(--hub-subbox-border);
+  background: var(--hub-subbox-bg);
   box-shadow:
     var(--hub-subbox-shadow),
-    inset 3px 0 0 var(--hub-accent);
-  color: var(--hub-accent-bright);
+    inset 3px 0 0 color-mix(in srgb, var(--hub-accent) 42%, transparent);
+  color: #e2e8f0;
   transition:
     border-color 0.16s ease,
     background-color 0.16s ease,
@@ -1202,13 +1191,11 @@ h1.landing-hub__title--name {
   padding: 16px 18px 16px 20px;
   overflow: hidden;
   border-radius: 14px;
-  border: 1px solid var(--hub-accent-border);
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 42%),
-    var(--hub-subbox-bg);
+  border: 1px solid var(--hub-subbox-border);
+  background: var(--hub-subbox-bg);
   box-shadow:
     var(--hub-subbox-shadow),
-    inset 3px 0 0 var(--hub-accent);
+    inset 3px 0 0 color-mix(in srgb, var(--hub-accent) 42%, transparent);
   color: #e2e8f0;
   text-align: left;
   cursor: pointer;
@@ -1538,10 +1525,10 @@ h1.landing-hub__title--name {
   overflow: hidden;
   text-overflow: clip;
   white-space: nowrap;
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.1;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
 }
 
 .landing-cards {
@@ -2584,7 +2571,7 @@ h1.landing-hub__title--name {
   margin-top: 16px;
   padding: 15px 30px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #fdba74 0%, #f97316 100%);
   color: #0f172a;
   font-size: 1.02rem;
@@ -6408,7 +6395,7 @@ h1.landing-hub__title--name {
   margin: 10px 0 0;
   font-size: 1.6rem;
   font-weight: 900;
-  color: #fde68a;
+  color: var(--mode-accent-bright, var(--accent-daily-bright));
 }
 
 .daily-draft-results__adopted {
@@ -6525,6 +6512,12 @@ h1.landing-hub__title--name {
   color: #fbbf24;
 }
 
+.community-posts-panel__compose-meta .hub-cta {
+  width: auto;
+  min-width: 96px;
+  margin: 0;
+}
+
 .community-posts-panel__body {
   margin: 6px 0 0;
   color: #e2e8f0;
@@ -6536,20 +6529,60 @@ h1.landing-hub__title--name {
   margin-top: 8px;
 }
 
+.community-posts-panel__attach-hint {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .community-posts-panel__attachment-preview,
 .community-posts-panel__attachment {
   margin: 8px 0 0;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(34, 197, 94, 0.28);
-  background: rgba(34, 197, 94, 0.1);
-  color: #bbf7d0;
+  border: 1px solid var(--accent-community-border);
+  background: var(--accent-community-soft);
+  color: var(--accent-community-bright);
   font-size: 0.82rem;
   line-height: 1.4;
 }
 
 .community-posts-panel__attachment span {
-  color: #86efac;
+  color: color-mix(in srgb, var(--accent-community-bright) 80%, #fff);
+}
+
+.community-posts-panel__list .tier-list__library-item {
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.community-posts-panel__list .tier-list__library-item:last-child {
+  border-bottom: 0;
+}
+
+.community-posts-panel__like-error {
+  margin: 0 0 8px;
+}
+
+.hub-empty,
+.draft-empty {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(148, 163, 184, 0.08);
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.hub-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .feature-page-fallback {
