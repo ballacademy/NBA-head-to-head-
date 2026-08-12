@@ -255,8 +255,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/UNIQUE/i.test(message)) {
+      const raced = await context.env.DB.prepare(
+        `SELECT date_key, goal_id, mode, player_id, team_name, value,
+                formatted_result, lineup_json, submitted_at
+         FROM daily_draft_scores
+         WHERE date_key = ? AND goal_id = ? AND player_id = ?`,
+      )
+        .bind(dateKey, goalId, playerId)
+        .first<DailyScoreRow>();
+      const racedEntry = raced ? rowToEntry(raced) : null;
+
       return json(
-        { error: "daily draft already submitted for this goal" },
+        {
+          error: "daily draft already submitted for this goal",
+          dateKey,
+          goalId,
+          mode: raced ? parseMode(raced.mode) : mode,
+          ...(racedEntry ? { entry: racedEntry } : {}),
+        },
         409,
       );
     }

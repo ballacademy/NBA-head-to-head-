@@ -1,6 +1,7 @@
 import { fetchAccountStatus } from "./accountApi";
 
 const CACHE_TTL_MS = 60_000;
+export const ACCOUNT_LINK_CHANGED_EVENT = "ddgm:account-link-changed";
 
 type AccountLinkCache = {
   linked: boolean;
@@ -9,6 +10,7 @@ type AccountLinkCache = {
 };
 
 const linkCache = new Map<string, AccountLinkCache>();
+const linkListeners = new Set<() => void>();
 
 export const ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE =
   "Create an account to appear on leaderboards.";
@@ -19,12 +21,30 @@ export const ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE =
 export const ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE =
   "Create an account to host or join a private match.";
 
+const emitAccountLinkChanged = () => {
+  for (const listener of [...linkListeners]) {
+    listener();
+  }
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(ACCOUNT_LINK_CHANGED_EVENT));
+  }
+};
+
+export const subscribeAccountLinkChanged = (listener: () => void) => {
+  linkListeners.add(listener);
+  return () => {
+    linkListeners.delete(listener);
+  };
+};
+
 export const clearAccountLinkCache = (playerId?: string) => {
   if (playerId) {
     linkCache.delete(playerId);
-    return;
+  } else {
+    linkCache.clear();
   }
-  linkCache.clear();
+  emitAccountLinkChanged();
 };
 
 export const isPlayerAccountLinked = async (
@@ -69,6 +89,7 @@ export const markPlayerAccountLinked = (
     username,
     checkedAt: Date.now(),
   });
+  emitAccountLinkChanged();
 };
 
 /** Sync username for leaderboard rows without an extra network round-trip. */

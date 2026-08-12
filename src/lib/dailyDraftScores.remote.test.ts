@@ -97,5 +97,87 @@ describe("dailyDraftScores remote integration", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.totalDrafters).toBe(3);
     expect(result.sampleSize).toBe(6);
+    expect(result.adoptedExisting).toBe(false);
+    expect(result.entry.value).toBe(40);
+  });
+
+  it("passes mode when refreshing remote daily scores", async () => {
+    stubPlayerStorage();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        dateKey: "2099-01-03",
+        goalId: "adv-example",
+        values: [],
+        totalDrafters: 1,
+        entry: null,
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await refreshDailyDraftScoresFromApi(
+      "2099-01-03",
+      "adv-example",
+      "player-test-1",
+      "advanced",
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const url = String(fetchMock.mock.calls[0]?.[0] ?? "");
+    expect(url).toContain("mode=advanced");
+    expect(url).toContain("goalId=adv-example");
+  });
+
+  it("adopts the first attempt when the API returns 409", async () => {
+    const storage = stubPlayerStorage();
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    const firstEntry = {
+      playerId: "player-test-1",
+      goalId: goal.id,
+      mode: "basic",
+      value: 55,
+      formattedResult: "55.0",
+      lineup: ["p1", "p2", "p3", "p4", "p5"],
+      teamName: "First Team",
+      submittedAt: "2026-06-26T00:00:00.000Z",
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ entry: firstEntry }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          dateKey: "2099-01-04",
+          goalId: goal.id,
+          values: [10, 20],
+          totalDrafters: 2,
+          entry: firstEntry,
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await submitDailyDraftScore(
+      "2099-01-04",
+      goal,
+      12,
+      "12.0",
+      [10, 20, 30],
+      ["a", "b", "c", "d", "e"],
+      "Second Team",
+    );
+
+    expect(result.adoptedExisting).toBe(true);
+    expect(result.entry.value).toBe(55);
+    expect(result.entry.lineup).toEqual(["p1", "p2", "p3", "p4", "p5"]);
+
+    const saved = JSON.parse(
+      storage.get("nba-head-to-head-daily-scores") ?? "{}",
+    )["2099-01-04"][0];
+    expect(saved.value).toBe(55);
+    expect(saved.lineup).toEqual(["p1", "p2", "p3", "p4", "p5"]);
   });
 });

@@ -64,15 +64,17 @@ export function MatchmakingOverlay({
   const isMatched = Boolean(matchedOpponentName);
   const statusLabel = isMatched
     ? `Matched vs ${matchedOpponentName}`
-    : isPrivateGuest
-      ? "Connecting to your friend’s room…"
-      : isPrivate
-        ? "Waiting for your friend to join…"
-        : elapsedSeconds > 0
-          ? `Finding live opponent… ${elapsedSeconds}s`
-          : mode === "event"
-            ? "Finding live opponent…"
-            : "Finding opponent…";
+    : isCancelling
+      ? "Finalizing…"
+      : isPrivateGuest
+        ? "Connecting to your friend’s room…"
+        : isPrivate
+          ? "Waiting for your friend to join…"
+          : elapsedSeconds > 0
+            ? `Finding live opponent… ${elapsedSeconds}s`
+            : mode === "event"
+              ? "Finding live opponent…"
+              : "Finding opponent…";
   const expiryLabel =
     isPrivate && privateRoomExpiresAt && !isMatched
       ? formatPrivateRoomExpiry(privateRoomExpiresAt, nowMs)
@@ -108,13 +110,15 @@ export function MatchmakingOverlay({
         <h2>
           {isMatched
             ? "Opponent found"
-            : isPrivateGuest
-              ? "Joining private room"
-              : isPrivate
-                ? "Share your room code"
-                : mode === "event"
-                  ? "Waiting for a live opponent"
-                  : "Searching for an opponent"}
+            : isCancelling
+              ? "Cancelling search"
+              : isPrivateGuest
+                ? "Joining private room"
+                : isPrivate
+                  ? "Share your room code"
+                  : mode === "event"
+                    ? "Waiting for a live opponent"
+                    : "Searching for an opponent"}
         </h2>
 
         {isPrivate && privateRoomCode && !isMatched ? (

@@ -4,6 +4,7 @@ import {
   isPlayerAccountLinked,
   markPlayerAccountLinked,
   peekCachedAccountLinked,
+  subscribeAccountLinkChanged,
 } from "./accountGate";
 
 describe("accountGate", () => {
@@ -54,5 +55,16 @@ describe("accountGate", () => {
     expect(peekCachedAccountLinked("p4")).toBe(true);
     markPlayerAccountLinked("p4", null);
     expect(peekCachedAccountLinked("p4")).toBe(false);
+  });
+
+  it("notifies subscribers when link cache changes", () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribeAccountLinkChanged(listener);
+
+    markPlayerAccountLinked("p5", "nova");
+    clearAccountLinkCache("p5");
+
+    expect(listener).toHaveBeenCalledTimes(2);
+    unsubscribe();
   });
 });

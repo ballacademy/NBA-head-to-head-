@@ -89,7 +89,7 @@ export const refreshCanonicalDailyGoalData = async (
 
   await Promise.all(
     [...refreshGoalIds].map((goalId) =>
-      refreshDailyDraftScoresFromApi(dateKey, goalId, playerId),
+      refreshDailyDraftScoresFromApi(dateKey, goalId, playerId, mode),
     ),
   );
 
