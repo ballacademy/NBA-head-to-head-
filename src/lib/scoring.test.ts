@@ -96,6 +96,24 @@ describe("calculateLineupScore", () => {
     );
   });
 
+  it("attaches non-zero scoring pipeline layers", () => {
+    const score = calculateLineupScore(
+      lineup([
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
+      ]),
+    );
+
+    expect(score.layers?.length).toBeGreaterThan(0);
+    expect(score.layers?.some((layer) => layer.id === "baseStats")).toBe(true);
+    expect(score.layers?.every((layer) => layer.id === "baseStats" || layer.value !== 0)).toBe(
+      true,
+    );
+  });
+
   it("flags high-usage lineups with fragile defensive fit", () => {
     const score = calculateLineupScore(
       lineup([

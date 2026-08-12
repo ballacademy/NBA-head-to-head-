@@ -28,7 +28,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <div className="legal-page__body beta-notes-body">
           <div className="beta-notes-summary">
             <p>
-              Daily Draft, Casual/Pro H2H, and weekly Events are live.
+              Daily Draft, Casual/Pro H2H, weekly Events, and All-Time are live.
               Accounts unlock leaderboards and public tier lists. Roster,
               badges, stats, and ranks sit in the bottom nav.
             </p>
@@ -43,7 +43,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <ul>
               <li>
                 <strong>Play hub</strong> — Daily Draft (one scored try per mode
-                daily), Casual/Pro H2H, and weekly Events
+                daily), Casual/Pro H2H, weekly Events, and All-Time Draft
               </li>
               <li>
                 <strong>LeBron James</strong> is banned in Casual H2H, Pro H2H,
@@ -62,6 +62,10 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 not change.
               </li>
               <li>
+                <strong>All-Time Draft</strong> — live with active stars at peak
+                seasons. Era legends unlock after 50 All-Time wins.
+              </li>
+              <li>
                 <strong>Stored lineup results</strong> — when someone drafts
                 against your queued lineup while you&apos;re away, that match
                 still moves your Banners (and W–L). Win/loss streaks only change
@@ -78,20 +82,17 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <summary>Known limits</summary>
             <ul>
               <li>
-                <strong>Password reset</strong> is support-assisted: email{" "}
-                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with
-                your username, get a one-time code, then use Account → Forgot
-                password. New accounts require an email for recovery.
+                <strong>Password reset</strong> — use Account → Forgot password
+                to email yourself a one-time code (when email delivery is
+                configured). Support-assisted codes via{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> still
+                work. New accounts require an email for recovery.
               </li>
               <li>
                 <strong>Guest / local progress</strong> — Collection unlocks and
                 badges sync to your account when signed in. Logging into an
                 account on another browser restores online records, collection,
                 and badge progress.
-              </li>
-              <li>
-                <strong>All-Time legends</strong> is coming soon — not part of
-                this beta build.
               </li>
               <li>
                 A few players may still be missing salary rows until the next

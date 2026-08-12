@@ -15,9 +15,9 @@ import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
 describe("all-time mode availability", () => {
-  it("keeps all-time mode disabled on the home screen until launch", () => {
-    expect(ALL_TIME_MODE_PLAYABLE).toBe(false);
-    expect(isAllTimeModePlayable()).toBe(false);
+  it("exposes all-time mode on the home screen when playable", () => {
+    expect(ALL_TIME_MODE_PLAYABLE).toBe(true);
+    expect(isAllTimeModePlayable()).toBe(true);
   });
 });
 

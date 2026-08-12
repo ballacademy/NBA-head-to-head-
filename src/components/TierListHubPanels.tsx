@@ -7,6 +7,11 @@ import {
   type PublicTierListSort,
   type PublicTierListSummary,
 } from "../lib/tierListCommunity";
+import {
+  COMMUNITY_POST_BODY_MAX,
+  formatCommunityPostTime,
+  type CommunityPost,
+} from "../lib/communityPosts";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
@@ -14,8 +19,9 @@ import {
   sortTierListLibraryDocuments,
 } from "../lib/tierList";
 import { getTeamGlowColor } from "../lib/teamColors";
-import type { CSSProperties } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
+import { AccountRequiredNote } from "./AccountRequiredNote";
 
 const formatSavedAt = (savedAt: number) =>
   new Date(savedAt).toLocaleString(undefined, {
@@ -29,12 +35,14 @@ interface TierListHubHomeProps {
   onCreate: () => void;
   onOpenMine: () => void;
   onOpenPublic: () => void;
+  onOpenPosts: () => void;
 }
 
 export function TierListHubHome({
   onCreate,
   onOpenMine,
   onOpenPublic,
+  onOpenPosts,
 }: TierListHubHomeProps) {
   return (
     <div className="landing-hub__links tier-list-hub__links">
@@ -61,12 +69,10 @@ export function TierListHubHome({
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--soon"
-        disabled
-        aria-disabled="true"
+        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        onClick={onOpenPosts}
       >
-        <span>Posts</span>
-        <span className="hub-select__soon-label">Coming soon</span>
+        Posts
       </button>
       <p className="tier-list-hub__coming-soon">Other features coming soon</p>
     </div>
@@ -356,6 +362,102 @@ export function TierListPublicPanel({
           {loadingMore ? "Loading…" : "Load more"}
         </button>
       ) : null}
+    </div>
+  );
+}
+
+interface CommunityPostsPanelProps {
+  posts: CommunityPost[];
+  loading: boolean;
+  draft: string;
+  onDraftChange: (value: string) => void;
+  submitting: boolean;
+  error: string | null;
+  onSubmit: () => void;
+  accountLinked: boolean;
+}
+
+export function CommunityPostsPanel({
+  posts,
+  loading,
+  draft,
+  onDraftChange,
+  submitting,
+  error,
+  onSubmit,
+  accountLinked,
+}: CommunityPostsPanelProps) {
+  const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    onSubmit();
+  };
+
+  return (
+    <div className="tier-list-hub__panel community-posts-panel" aria-label="Community posts">
+      <div className="tier-list-hub__panel-header">
+        <h2>Posts</h2>
+      </div>
+
+      {!accountLinked ? (
+        <AccountRequiredNote className="account-required-note--inline">
+          Create an account to post. Anyone can browse.
+        </AccountRequiredNote>
+      ) : null}
+
+      <form className="community-posts-panel__compose" onSubmit={handleSubmit}>
+        <label className="tier-list__search">
+          <span>New post</span>
+          <textarea
+            value={draft}
+            maxLength={COMMUNITY_POST_BODY_MAX}
+            rows={3}
+            placeholder="Share a short take (tier lists, Daily, matchups…)"
+            onChange={(event) => onDraftChange(event.target.value)}
+            disabled={!accountLinked || submitting}
+          />
+        </label>
+        <div className="community-posts-panel__compose-meta">
+          <span className={remaining < 40 ? "is-tight" : undefined}>
+            {remaining} left
+          </span>
+          <button
+            type="submit"
+            className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+            disabled={!accountLinked || submitting || draft.trim().length === 0}
+          >
+            {submitting ? "Posting…" : "Post"}
+          </button>
+        </div>
+        {error ? (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+      </form>
+
+      {loading ? (
+        <p className="tier-list__hint">Loading posts…</p>
+      ) : posts.length === 0 ? (
+        <p className="tier-list__hint">
+          No posts yet. Be the first to share something short.
+        </p>
+      ) : (
+        <ul className="tier-list__library-list community-posts-panel__list">
+          {posts.map((post) => (
+            <li key={post.id} className="tier-list__library-item">
+              <div className="tier-list__library-copy">
+                <strong>
+                  {post.authorName} · {formatPublicTag(post.authorTag)}
+                </strong>
+                <span>{formatCommunityPostTime(post.createdAt)}</span>
+                <p className="community-posts-panel__body">{post.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

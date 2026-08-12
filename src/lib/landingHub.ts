@@ -7,6 +7,21 @@ export type LandingPlaySection =
   | "daily"
   | "events";
 
+/** Hub deep-link targets, including feature pages opened from the bottom nav. */
+export type LandingHubDeepLink =
+  | LandingContentTab
+  | "community"
+  | "ranks"
+  | "standings";
+
+export type LandingDeepLinkFeature = "tierList" | "leaderboard";
+
+export interface LandingDeepLinkBoot {
+  contentTab: LandingContentTab | null;
+  playSection: LandingPlaySection | null;
+  feature: LandingDeepLinkFeature | null;
+}
+
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
 const LANDING_PLAY_SECTION_KEY = "ddgm:landing-play-section";
 
@@ -25,6 +40,87 @@ export const isLandingPlaySection = (
   value === "headToHead" ||
   value === "daily" ||
   value === "events";
+
+const normalizeQueryToken = (value: string) =>
+  value.trim().toLowerCase().replace(/[\s_]+/g, "-");
+
+/** Parse `?hub=` including community / ranks aliases. */
+export const parseLandingHubParam = (
+  value: string | null | undefined,
+): LandingHubDeepLink | null => {
+  if (!value) {
+    return null;
+  }
+
+  const token = normalizeQueryToken(value);
+  if (token === "play") return "play";
+  if (token === "roster" || token === "collection") return "roster";
+  if (token === "account" || token === "profile" || token === "settings") {
+    return "account";
+  }
+  if (
+    token === "community" ||
+    token === "tiers" ||
+    token === "tier-list" ||
+    token === "tierlist"
+  ) {
+    return "community";
+  }
+  if (
+    token === "ranks" ||
+    token === "rank" ||
+    token === "standings" ||
+    token === "leaderboard" ||
+    token === "lb"
+  ) {
+    return "ranks";
+  }
+
+  return null;
+};
+
+/** Parse `?play=` with sensible aliases (h2h, daily-draft, etc.). */
+export const parseLandingPlayParam = (
+  value: string | null | undefined,
+): LandingPlaySection | null => {
+  if (!value) {
+    return null;
+  }
+
+  const token = normalizeQueryToken(value);
+  if (
+    token === "chooser" ||
+    token === "home" ||
+    token === "modes" ||
+    token === "play" ||
+    token === "menu"
+  ) {
+    return "chooser";
+  }
+  if (
+    token === "daily" ||
+    token === "dailydraft" ||
+    token === "daily-draft" ||
+    token === "draft"
+  ) {
+    return "daily";
+  }
+  if (
+    token === "headtohead" ||
+    token === "head-to-head" ||
+    token === "h2h" ||
+    token === "classic" ||
+    token === "ranked" ||
+    token === "pro"
+  ) {
+    return "headToHead";
+  }
+  if (token === "events" || token === "event" || token === "weekly") {
+    return "events";
+  }
+
+  return null;
+};
 
 export const loadLandingHubTab = (): LandingContentTab => {
   try {
@@ -76,5 +172,94 @@ export const saveLandingPlaySection = (section: LandingPlaySection) => {
     sessionStorage.setItem(LANDING_PLAY_SECTION_KEY, section);
   } catch {
     // Ignore storage failures (private mode, quota, etc.).
+  }
+};
+
+/**
+ * Read `?hub=` / `?play=` from a search string, persist content/play to
+ * sessionStorage, and report any feature-page deep link (community/ranks).
+ * Existing `?tierList=` handling stays in App and is preserved by URL sync.
+ */
+export const applyLandingDeepLinksFromSearch = (
+  search: string,
+): LandingDeepLinkBoot => {
+  const params = new URLSearchParams(
+    search.startsWith("?") ? search.slice(1) : search,
+  );
+  const hub = parseLandingHubParam(params.get("hub"));
+  const play = parseLandingPlayParam(params.get("play"));
+
+  let contentTab: LandingContentTab | null = null;
+  let playSection: LandingPlaySection | null = play;
+  let feature: LandingDeepLinkFeature | null = null;
+
+  if (hub === "play" || hub === "roster" || hub === "account") {
+    contentTab = hub;
+    saveLandingHubTab(hub);
+  } else if (hub === "community") {
+    feature = "tierList";
+  } else if (hub === "ranks" || hub === "standings") {
+    feature = "leaderboard";
+  }
+
+  if (playSection) {
+    saveLandingPlaySection(playSection);
+    // Play deep links land on the Play hub unless a feature hub won.
+    if (!feature) {
+      contentTab = contentTab ?? "play";
+      saveLandingHubTab(contentTab);
+    }
+  }
+
+  return { contentTab, playSection, feature };
+};
+
+export interface SyncLandingDeepLinkUrlOptions {
+  hub?: LandingHubDeepLink | null;
+  play?: LandingPlaySection | null;
+  /** When false, drop hub/play params (e.g. leaving the landing surface). */
+  clearLandingParams?: boolean;
+}
+
+/** Sync hub/play query params via replaceState; preserves `tierList` and other params. */
+export const syncLandingDeepLinkUrl = (
+  options: SyncLandingDeepLinkUrlOptions,
+) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const url = new URL(window.location.href);
+
+    if (options.clearLandingParams) {
+      url.searchParams.delete("hub");
+      url.searchParams.delete("play");
+    } else {
+      if (options.hub != null) {
+        const hubParam =
+          options.hub === "standings" ? "ranks" : options.hub;
+        url.searchParams.set("hub", hubParam);
+        if (hubParam !== "play" && options.play === undefined) {
+          url.searchParams.delete("play");
+        }
+      }
+      if (options.play === null) {
+        url.searchParams.delete("play");
+      } else if (options.play != null) {
+        url.searchParams.set("play", options.play);
+        if (options.hub == null && !url.searchParams.get("hub")) {
+          url.searchParams.set("hub", "play");
+        }
+      }
+    }
+
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (next !== current) {
+      window.history.replaceState(window.history.state, "", next);
+    }
+  } catch {
+    // Ignore URL sync failures.
   }
 };

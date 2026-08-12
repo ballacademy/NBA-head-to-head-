@@ -223,6 +223,54 @@ export const loginAccount = async (params: {
   }
 };
 
+export type RequestPasswordResetResult =
+  | { ok: true; message: string }
+  | { ok: false; error: string; status: number };
+
+export const requestPasswordReset = async (
+  username: string,
+): Promise<RequestPasswordResetResult> => {
+  const usernameError = getUsernameValidationError(username);
+  if (usernameError) {
+    return { ok: false, error: usernameError, status: 400 };
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/account/request-reset`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username: normalizeUsername(username),
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: await readError(response),
+        status: response.status,
+      };
+    }
+
+    const body = (await response.json()) as { message?: string };
+    return {
+      ok: true,
+      message:
+        body.message?.trim() ||
+        "If that username has an email on file, a reset code is on the way. Check your inbox (and spam folder).",
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the account service.",
+      status: 0,
+    };
+  }
+};
+
 export const resetAccountPassword = async (params: {
   username: string;
   resetCode: string;

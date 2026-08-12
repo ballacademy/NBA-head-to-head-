@@ -3,9 +3,11 @@ import {
   fetchAccountStatus,
   loginAccount,
   registerAccount,
+  requestPasswordReset,
   resetAccountPassword,
 } from "../lib/accountApi";
 import { markPlayerAccountLinked } from "../lib/accountGate";
+import { trackProductEvent } from "../lib/productAnalytics";
 import {
   pullAndMergeCollection,
   pushCollectionIfLinked,
@@ -32,6 +34,7 @@ import {
 } from "../lib/support";
 
 type AccountPanelMode = "closed" | "register" | "login" | "reset";
+type ResetStep = "request" | "enter-code";
 type AccountLinkState = "loading" | "unknown" | "linked" | "unlinked";
 
 interface AccountAuthPanelProps {
@@ -55,6 +58,7 @@ export function AccountAuthPanel({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetCode, setResetCode] = useState("");
+  const [resetStep, setResetStep] = useState<ResetStep>("request");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -117,6 +121,7 @@ export function AccountAuthPanel({
     setPassword("");
     setConfirmPassword("");
     setResetCode("");
+    setResetStep("request");
     setAcceptedTerms(false);
     setError(null);
     setMessage(null);
@@ -161,6 +166,9 @@ export function AccountAuthPanel({
     setLinkState("linked");
     markPlayerAccountLinked(playerId, result.username);
     setMode("closed");
+    trackProductEvent("account_create", {
+      foundingGm: Boolean(result.foundingGm),
+    });
     void pushCollectionIfLinked(undefined, playerId);
     void pushAchievementsIfLinked(undefined, playerId);
     const { newlyUnlocked } = syncFoundingGmAchievement(
@@ -244,6 +252,28 @@ export function AccountAuthPanel({
     }
   };
 
+  const handleRequestResetEmail = async () => {
+    if (submitLock.current) {
+      return;
+    }
+
+    setError(null);
+    setMessage(null);
+    submitLock.current = true;
+    setBusy(true);
+    const result = await requestPasswordReset(username);
+    setBusy(false);
+    submitLock.current = false;
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    setResetStep("enter-code");
+    setMessage(result.message);
+  };
+
   const handleReset = async () => {
     if (submitLock.current) {
       return;
@@ -276,6 +306,7 @@ export function AccountAuthPanel({
     setPassword("");
     setConfirmPassword("");
     setResetCode("");
+    setResetStep("request");
     setMessage(
       `Password updated for @${result.username}. Log in with your new password.`,
     );
@@ -406,7 +437,11 @@ export function AccountAuthPanel({
             if (mode === "register") {
               void handleRegister();
             } else if (mode === "reset") {
-              void handleReset();
+              if (resetStep === "request") {
+                void handleRequestResetEmail();
+              } else {
+                void handleReset();
+              }
             } else {
               void handleLogin();
             }
@@ -444,7 +479,7 @@ export function AccountAuthPanel({
             </label>
           ) : null}
 
-          {mode === "reset" ? (
+          {mode === "reset" && resetStep === "enter-code" ? (
             <label className="field">
               <span>Reset code</span>
               <input
@@ -456,36 +491,39 @@ export function AccountAuthPanel({
                 maxLength={12}
                 value={resetCode}
                 onChange={(event) => setResetCode(event.target.value)}
-                placeholder="8-character code from support"
+                placeholder="8-character code from email or support"
                 disabled={busy}
               />
             </label>
           ) : null}
 
-          <label className="field">
-            <span>{mode === "reset" ? "New password" : "Password"}</span>
-            <input
-              type="password"
-              autoComplete={
-                mode === "login" ? "current-password" : "new-password"
-              }
-              required
-              minLength={
-                mode === "login" ? undefined : PASSWORD_MIN_LENGTH
-              }
-              maxLength={PASSWORD_MAX_LENGTH}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={
-                mode === "login"
-                  ? undefined
-                  : `At least ${PASSWORD_MIN_LENGTH} characters`
-              }
-              disabled={busy}
-            />
-          </label>
+          {mode !== "reset" || resetStep === "enter-code" ? (
+            <label className="field">
+              <span>{mode === "reset" ? "New password" : "Password"}</span>
+              <input
+                type="password"
+                autoComplete={
+                  mode === "login" ? "current-password" : "new-password"
+                }
+                required
+                minLength={
+                  mode === "login" ? undefined : PASSWORD_MIN_LENGTH
+                }
+                maxLength={PASSWORD_MAX_LENGTH}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={
+                  mode === "login"
+                    ? undefined
+                    : `At least ${PASSWORD_MIN_LENGTH} characters`
+                }
+                disabled={busy}
+              />
+            </label>
+          ) : null}
 
-          {mode === "register" || mode === "reset" ? (
+          {(mode === "register" ||
+            (mode === "reset" && resetStep === "enter-code")) ? (
             <label className="field">
               <span>Confirm {mode === "reset" ? "new password" : "password"}</span>
               <input
@@ -536,8 +574,7 @@ export function AccountAuthPanel({
                 </button>
                 . I understand my password is stored only as a secure hash
                 linked to this GM identity, and that my email may be used for
-                account recovery. Password resets currently use a one-time code
-                from support.
+                account recovery (including password reset codes).
               </label>
             </div>
           ) : null}
@@ -562,14 +599,55 @@ export function AccountAuthPanel({
             </>
           ) : null}
 
-          {mode === "reset" ? (
+          {mode === "reset" && resetStep === "request" ? (
+            <>
+              <p className="landing-team-form__account-note">
+                We&apos;ll email a one-time code if this username has an email
+                on file. Codes expire in 1 hour.
+              </p>
+              <p className="landing-team-form__account-note">
+                Already have a code from support?{" "}
+                <button
+                  type="button"
+                  className="landing-team-form__account-action"
+                  onClick={() => {
+                    setError(null);
+                    setMessage(null);
+                    setResetStep("enter-code");
+                  }}
+                  disabled={busy}
+                >
+                  Enter it here
+                </button>
+                .
+              </p>
+            </>
+          ) : null}
+
+          {mode === "reset" && resetStep === "enter-code" ? (
             <p className="landing-team-form__account-note">
-              Email{" "}
+              Enter the 8-character code from your email (or from support). Need
+              a code emailed?{" "}
+              <button
+                type="button"
+                className="landing-team-form__account-action"
+                onClick={() => {
+                  setError(null);
+                  setMessage(null);
+                  setResetCode("");
+                  setPassword("");
+                  setConfirmPassword("");
+                  setResetStep("request");
+                }}
+                disabled={busy}
+              >
+                Email me a reset code
+              </button>
+              . Still stuck? Email{" "}
               <a href={buildPasswordResetMailto(username)}>
                 {SUPPORT_EMAIL}
-              </a>{" "}
-              with your username. We&apos;ll reply with an 8-character code
-              (expires in 1 hour). Enter it here with a new password.
+              </a>
+              .
             </p>
           ) : null}
 
@@ -591,7 +669,9 @@ export function AccountAuthPanel({
                 : mode === "register"
                   ? "Create account"
                   : mode === "reset"
-                    ? "Set new password"
+                    ? resetStep === "request"
+                      ? "Email me a reset code"
+                      : "Set new password"
                     : "Log in"}
             </button>
             <button

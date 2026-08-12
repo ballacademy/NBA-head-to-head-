@@ -800,6 +800,9 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
   const preciseTotal = preciseLineupOvr(rawTotal);
   const total = displayLineupOvr(preciseTotal);
   const ovrOverflow = lineupOvrOverflow(uncappedTotal);
+  const layers = pipeline.layers.filter(
+    (layer) => layer.id === "baseStats" || layer.value !== 0,
+  );
 
   return {
     total,
@@ -811,6 +814,7 @@ export const calculateLineupScore = (lineup: Player[]): LineupScore => {
     categories,
     strengths,
     warnings,
+    layers,
   };
 };
 

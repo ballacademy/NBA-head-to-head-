@@ -22,7 +22,37 @@ export interface LineupShareCardInput {
   ovrOverflow?: number;
   lineup: Player[];
   record?: string;
+  /** When set, replaces the large left title (defaults to teamName). */
+  headline?: string;
+  /** When set with statValue, replaces the "OVR" label. */
+  statLabel?: string;
+  /** When set, replaces the OVR number on the right. */
+  statValue?: string;
 }
+
+export const resolveShareCardTitle = (input: LineupShareCardInput) => {
+  const headline = input.headline?.trim();
+  return headline || input.teamName;
+};
+
+export const resolveShareCardStatDisplay = (input: LineupShareCardInput) => {
+  const customValue = input.statValue?.trim();
+  if (customValue) {
+    return {
+      custom: true as const,
+      value: customValue,
+      label: input.statLabel?.trim() || "RESULT",
+    };
+  }
+
+  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
+  return {
+    custom: false as const,
+    value: overflow > 0 ? `${input.ovr} (+${overflow})` : String(input.ovr),
+    label: "OVR",
+    overflow,
+  };
+};
 
 const CARD_WIDTH = 1080;
 const ROW_STEP = 118;
@@ -304,9 +334,11 @@ const getShareCardHeaderLayout = (
   lineup: Player[],
 ) => {
   const bonuses = getActiveChemistryBonuses(lineup);
+  const stat = resolveShareCardStatDisplay(input);
   const ovrY = 168;
-  const ovrLabelY = ovrY + 30;
-  const recordY = input.record ? ovrLabelY + 30 : null;
+  const ovrLabelY = ovrY + (stat.custom ? 28 : 30);
+  const recordY =
+    !stat.custom && input.record ? ovrLabelY + 30 : null;
   const rightBottom = recordY ? recordY + 10 : ovrLabelY + 10;
   const leftBottom = STARTING_FIVE_Y + 12;
   const chemistryRows = layoutChemistryPillRows(
@@ -332,6 +364,7 @@ const getShareCardHeaderLayout = (
     ovrLabelY,
     ovrY,
     recordY,
+    stat,
   };
 };
 
@@ -389,7 +422,8 @@ const drawShareCardHeader = (
 
   context.font = `700 52px ${FONT_STACK}`;
   context.fillStyle = "#f8fafc";
-  context.fillText(input.teamName, headerX, 168);
+  const title = resolveShareCardTitle(input);
+  context.fillText(title, headerX, 168);
 
   context.font = `700 18px ${FONT_STACK}`;
   context.fillStyle = "rgba(148, 163, 184, 0.9)";
@@ -399,22 +433,25 @@ const drawShareCardHeader = (
 
   context.textAlign = "right";
 
+  const { stat } = layout;
   context.save();
   context.shadowColor = rgbaFromHex(input.accent, 0.22);
   context.shadowBlur = 10;
-  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
-  const ovrText =
-    overflow > 0 ? `${input.ovr} (+${overflow})` : String(input.ovr);
-  context.font = `800 ${overflow > 0 ? 50 : 68}px ${FONT_STACK}`;
+  const valueFontSize = stat.custom
+    ? Math.min(48, Math.max(28, 56 - Math.max(0, stat.value.length - 8) * 2))
+    : !stat.custom && stat.overflow > 0
+      ? 50
+      : 68;
+  context.font = `800 ${valueFontSize}px ${FONT_STACK}`;
   context.fillStyle = "#f8fafc";
-  context.fillText(ovrText, headerRightX, layout.ovrY);
+  context.fillText(stat.value, headerRightX, layout.ovrY);
   context.restore();
 
-  context.font = `600 20px ${FONT_STACK}`;
+  context.font = `600 ${stat.custom ? 18 : 20}px ${FONT_STACK}`;
   context.fillStyle = "#94a3b8";
-  context.fillText("OVR", headerRightX, layout.ovrLabelY);
+  context.fillText(stat.label, headerRightX, layout.ovrLabelY);
 
-  if (input.record && layout.recordY) {
+  if (!stat.custom && input.record && layout.recordY) {
     context.font = `600 20px ${FONT_STACK}`;
     context.fillStyle = "#94a3b8";
     context.fillText(`Projected ${input.record}`, headerRightX, layout.recordY);
@@ -538,15 +575,20 @@ const downloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export const buildLineupShareCardText = (input: LineupShareCardInput) => {
+  const title = resolveShareCardTitle(input);
+  const stat = resolveShareCardStatDisplay(input);
+  if (stat.custom) {
+    return `${title} • ${stat.value} · ${stat.label}`;
+  }
+  return `${title} • ${stat.label} ${stat.value}`;
+};
+
 export const saveLineupShareCard = async (input: LineupShareCardInput) => {
   const blob = await createLineupShareCardBlob(input);
   const filename = "draft-day-gm-lineup.png";
   const file = new File([blob], filename, { type: "image/png" });
-  const overflow = Math.max(0, Math.round(input.ovrOverflow ?? 0));
-  const shareText =
-    overflow > 0
-      ? `${input.teamName} • OVR ${input.ovr} (+${overflow})`
-      : `${input.teamName} • OVR ${input.ovr}`;
+  const shareText = buildLineupShareCardText(input);
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     try {
