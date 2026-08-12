@@ -20,6 +20,12 @@
   --bg-page: #171b22;
 
   /* Shared mode / hub accent palette (one source of truth). */
+  --accent-play: #a855f7;
+  --accent-play-bright: #d8b4fe;
+  --accent-play-soft: rgba(168, 85, 247, 0.14);
+  --accent-play-border: rgba(168, 85, 247, 0.36);
+  --accent-play-glow: rgba(192, 132, 252, 0.14);
+
   --accent-daily: #22c55e;
   --accent-daily-bright: #86efac;
   --accent-daily-soft: rgba(34, 197, 94, 0.14);
@@ -920,6 +926,7 @@ h1.landing-hub__title--name {
 
 /* Shared hub accent tokens — values come from :root --accent-* palette. */
 .hub-accent,
+.hub-accent--play,
 .hub-accent--daily,
 .hub-accent--h2h,
 .hub-accent--ranked,
@@ -936,6 +943,14 @@ h1.landing-hub__title--name {
   --hub-accent-soft: var(--accent-neutral-soft);
   --hub-accent-border: var(--accent-neutral-border);
   --hub-accent-glow: var(--accent-neutral-glow);
+}
+
+.hub-accent--play {
+  --hub-accent: var(--accent-play);
+  --hub-accent-bright: var(--accent-play-bright);
+  --hub-accent-soft: var(--accent-play-soft);
+  --hub-accent-border: var(--accent-play-border);
+  --hub-accent-glow: var(--accent-play-glow);
 }
 
 .hub-accent--daily {
