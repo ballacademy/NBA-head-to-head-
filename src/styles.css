@@ -1491,9 +1491,9 @@ h1.landing-hub__title--name {
 }
 
 .landing-bottom-nav__item--play.landing-bottom-nav__item--active {
-  color: var(--accent-daily-bright);
-  background: var(--accent-daily-soft);
-  box-shadow: inset 0 2px 0 var(--accent-daily);
+  color: var(--accent-play-bright);
+  background: var(--accent-play-soft);
+  box-shadow: inset 0 2px 0 var(--accent-play);
 }
 
 .landing-bottom-nav__item--roster.landing-bottom-nav__item--active {
