@@ -257,11 +257,18 @@ export function TierListPage({
   );
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [communityPostsLoading, setCommunityPostsLoading] = useState(false);
+  const [communityPostsLoadingMore, setCommunityPostsLoadingMore] =
+    useState(false);
+  const [communityPostsHasMore, setCommunityPostsHasMore] = useState(false);
+  const [communityPostsNextOffset, setCommunityPostsNextOffset] = useState(0);
   const [communityPostDraft, setCommunityPostDraft] = useState("");
   const [communityPostSubmitting, setCommunityPostSubmitting] = useState(false);
   const [communityPostError, setCommunityPostError] = useState<string | null>(
     null,
   );
+  const [communityPostLikeError, setCommunityPostLikeError] = useState<
+    string | null
+  >(null);
   const [communityPostSort, setCommunityPostSort] =
     useState<CommunityPostSort>("recent");
   const [communityShareables, setCommunityShareables] = useState<
@@ -269,6 +276,11 @@ export function TierListPage({
   >(() => loadCommunityShareables());
   const [communityAttachment, setCommunityAttachment] =
     useState<CommunityPostAttachment | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(
+    Boolean(initialPublicTierListId),
+  );
+  const [publicFiltersDraft, setPublicFiltersDraft] =
+    useState<PublicTierListBrowseFilters>(DEFAULT_PUBLIC_TIER_LIST_FILTERS);
   const deepLinkHandledRef = useRef(false);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
@@ -329,6 +341,26 @@ export function TierListPage({
       return;
     }
 
+    const timer = window.setTimeout(() => {
+      setPublicFilters((current) => {
+        const same =
+          current.query === publicFiltersDraft.query &&
+          current.mineOnly === publicFiltersDraft.mineOnly &&
+          current.likedByMe === publicFiltersDraft.likedByMe &&
+          current.minLikes === publicFiltersDraft.minLikes &&
+          current.dateWindow === publicFiltersDraft.dateWindow;
+        return same ? current : publicFiltersDraft;
+      });
+    }, 280);
+
+    return () => window.clearTimeout(timer);
+  }, [publicFiltersDraft, view]);
+
+  useEffect(() => {
+    if (view !== "public") {
+      return;
+    }
+
     let cancelled = false;
     setPublicLoading(true);
     setPublicHasMore(false);
@@ -359,6 +391,8 @@ export function TierListPage({
 
     deepLinkHandledRef.current = true;
     let cancelled = false;
+    setViewerLoading(true);
+    setView("viewer");
     void fetchPublicTierList({
       id: initialPublicTierListId,
       viewerPlayerId: identity.playerId,
@@ -367,11 +401,14 @@ export function TierListPage({
         return;
       }
       if (!detail) {
+        setViewerDetail(null);
+        setViewerLoading(false);
         setView("public");
         setStatusMessage("That shared tier list could not be found");
         return;
       }
       setViewerDetail(detail);
+      setViewerLoading(false);
       setView("viewer");
     });
 
@@ -726,6 +763,10 @@ export function TierListPage({
       return;
     }
 
+    if (!window.confirm("Unpublish this tier list from Community?")) {
+      return;
+    }
+
     const result = await unpublishTierList({
       id: state.publishedId,
       playerId: identity.playerId,
@@ -809,6 +850,14 @@ export function TierListPage({
 
   const handleDeleteSaved = async (documentId: string) => {
     const document = library.documents.find((entry) => entry.id === documentId);
+    const confirmed = window.confirm(
+      document?.publishedId
+        ? "Delete this tier list and remove its public copy?"
+        : "Delete this saved tier list?",
+    );
+    if (!confirmed) {
+      return;
+    }
     const ok = await unpublishPublishedCopy(document?.publishedId);
     if (!ok) {
       return;
@@ -850,16 +899,21 @@ export function TierListPage({
   };
 
   const handleOpenPublic = async (id: string) => {
+    setViewerLoading(true);
+    setViewerDetail(null);
+    setView("viewer");
     const detail = await fetchPublicTierList({
       id,
       viewerPlayerId: identity.playerId,
     });
     if (!detail) {
+      setViewerLoading(false);
+      setView("public");
       setStatusMessage("Could not open that tier list");
       return;
     }
     setViewerDetail(detail);
-    setView("viewer");
+    setViewerLoading(false);
   };
 
   const handleLoadMorePublic = async () => {
@@ -909,6 +963,9 @@ export function TierListPage({
   };
 
   const handleUnpublishOwnedPublic = async (id: string) => {
+    if (!window.confirm("Unpublish this tier list from Community?")) {
+      return;
+    }
     const ok = await unpublishPublishedCopy(id);
     if (!ok) {
       return;
@@ -983,6 +1040,7 @@ export function TierListPage({
   const handleBack = () => {
     if (view === "viewer") {
       setViewerDetail(null);
+      setViewerLoading(false);
       setView("public");
       return;
     }
@@ -997,27 +1055,116 @@ export function TierListPage({
     setView("hub");
   };
 
+  const communityChrome = (() => {
+    switch (view) {
+      case "posts":
+        return {
+          title: "Posts",
+          lede: "Share takes and attach recent results or published lists.",
+          back: "Community",
+        };
+      case "tiersHub":
+        return {
+          title: "Tier lists",
+          lede: "Browse public boards, open yours, or create a new list.",
+          back: "Community",
+        };
+      case "public":
+        return {
+          title: "Public tier lists",
+          lede: "Browse and like lists shared by the community.",
+          back: "Tier lists",
+        };
+      case "mine":
+        return {
+          title: "My tier lists",
+          lede: "Open or delete lists saved on this device.",
+          back: "Tier lists",
+        };
+      case "editor":
+        return {
+          title: "Create a list",
+          lede: "Build a board and publish it when you are ready.",
+          back: "Tier lists",
+        };
+      case "viewer":
+        return {
+          title: "Public tier lists",
+          lede: "Browse and like lists shared by the community.",
+          back: "Public lists",
+        };
+      default:
+        return {
+          title: "Community",
+          lede: "Share takes, attach results, and publish tier lists.",
+          back: "Back",
+        };
+    }
+  })();
+
   const loadCommunityPosts = useCallback(async () => {
     setCommunityPostsLoading(true);
     setCommunityPostError(null);
+    setCommunityPostLikeError(null);
     try {
-      const posts = await listCommunityPosts({
+      const page = await listCommunityPosts({
         sort: communityPostSort,
         playerId: identity.playerId,
+        offset: 0,
       });
-      setCommunityPosts(posts);
+      setCommunityPosts(page.posts);
+      setCommunityPostsHasMore(page.hasMore);
+      setCommunityPostsNextOffset(page.nextOffset);
     } finally {
       setCommunityPostsLoading(false);
     }
   }, [communityPostSort, identity.playerId]);
 
+  const handleLoadMoreCommunityPosts = async () => {
+    if (communityPostsLoadingMore || !communityPostsHasMore) {
+      return;
+    }
+    setCommunityPostsLoadingMore(true);
+    try {
+      const page = await listCommunityPosts({
+        sort: communityPostSort,
+        playerId: identity.playerId,
+        offset: communityPostsNextOffset,
+      });
+      setCommunityPosts((current) => {
+        const seen = new Set(current.map((post) => post.id));
+        return [
+          ...current,
+          ...page.posts.filter((post) => !seen.has(post.id)),
+        ];
+      });
+      setCommunityPostsHasMore(page.hasMore);
+      setCommunityPostsNextOffset(page.nextOffset);
+    } finally {
+      setCommunityPostsLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
     if (view !== "posts") {
       return;
     }
-    setCommunityShareables(loadCommunityShareables());
+    const recent = loadCommunityShareables();
+    const publishedLists = library.documents
+      .filter((document) => Boolean(document.publishedId))
+      .map((document) => ({
+        kind: "tierList" as const,
+        title: displayTierListTitle(document.title),
+        publishedId: document.publishedId!,
+        savedAt: new Date(document.savedAt).toISOString(),
+      }));
+    const merged = [
+      ...publishedLists,
+      ...recent.filter((entry) => entry.kind !== "tierList"),
+    ];
+    setCommunityShareables(merged);
     void loadCommunityPosts();
-  }, [loadCommunityPosts, view]);
+  }, [library.documents, loadCommunityPosts, view]);
 
   const handleCreateCommunityPost = async () => {
     setCommunityPostSubmitting(true);
@@ -1048,13 +1195,14 @@ export function TierListPage({
     postId: string,
     liked: boolean,
   ) => {
+    setCommunityPostLikeError(null);
     const result = await setCommunityPostLike({
       playerId: identity.playerId,
       postId,
       liked,
     });
     if (!result.ok) {
-      setCommunityPostError(result.error);
+      setCommunityPostLikeError(result.error);
       return;
     }
     setCommunityPosts((current) =>
@@ -1147,6 +1295,16 @@ export function TierListPage({
     recommendTierListTitle(filters) || "All players";
 
   useEffect(() => {
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLElement &&
+      active.matches("button, [href], input, select, textarea")
+    ) {
+      active.blur();
+    }
+  }, [view]);
+
+  useEffect(() => {
     if (!filtersOpen) {
       return;
     }
@@ -1164,14 +1322,14 @@ export function TierListPage({
   return (
     <div className="hub-feature tier-list-page">
       <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Community</h1>
+        <h1 className="landing-hub__title">{communityChrome.title}</h1>
         <p className="landing__lede landing-hub__lede">
-          Browse and share tier lists.
+          {communityChrome.lede}
         </p>
       </div>
 
       {view !== "hub" ? (
-        <HubFeatureReturnButton onBack={handleBack} label="Back" />
+        <HubFeatureReturnButton onBack={handleBack} label={communityChrome.back} />
       ) : null}
 
       {statusMessage ? (
@@ -1208,6 +1366,7 @@ export function TierListPage({
           likeCountByPublishedId={publishedLikeCounts}
           onOpen={handleOpenSaved}
           onDelete={(documentId) => void handleDeleteSaved(documentId)}
+          onCreate={() => void handleNew()}
         />
       ) : null}
 
@@ -1219,17 +1378,27 @@ export function TierListPage({
           hasMore={publicHasMore}
           sort={publicSort}
           onSortChange={setPublicSort}
-          filters={publicFilters}
-          onFiltersChange={setPublicFilters}
-          onOpen={handleOpenPublic}
+          filters={publicFiltersDraft}
+          onFiltersChange={setPublicFiltersDraft}
+          onOpen={(id) => void handleOpenPublic(id)}
           onToggleLike={handleToggleLike}
           onLoadMore={() => void handleLoadMorePublic()}
           onEditOwned={(id) => void handleEditOwnedPublic(id)}
           onUnpublishOwned={(id) => void handleUnpublishOwnedPublic(id)}
+          onClearFilters={() =>
+            setPublicFiltersDraft(DEFAULT_PUBLIC_TIER_LIST_FILTERS)
+          }
+          onCreate={() => void handleNew()}
         />
       ) : null}
 
-      {view === "viewer" && viewerDetail ? (
+      {view === "viewer" && viewerLoading ? (
+        <p className="hub-empty" role="status">
+          Loading…
+        </p>
+      ) : null}
+
+      {view === "viewer" && viewerDetail && !viewerLoading ? (
         <TierListPublicViewer
           detail={viewerDetail}
           playersById={playersById}
@@ -1252,10 +1421,14 @@ export function TierListPage({
         <CommunityPostsPanel
           posts={communityPosts}
           loading={communityPostsLoading}
+          loadingMore={communityPostsLoadingMore}
+          hasMore={communityPostsHasMore}
+          onLoadMore={() => void handleLoadMoreCommunityPosts()}
           draft={communityPostDraft}
           onDraftChange={setCommunityPostDraft}
           submitting={communityPostSubmitting}
           error={communityPostError}
+          likeError={communityPostLikeError}
           onSubmit={() => void handleCreateCommunityPost()}
           accountLinked={accountLinked}
           sort={communityPostSort}
@@ -1266,6 +1439,7 @@ export function TierListPage({
           onToggleLike={(postId, liked) =>
             void handleToggleCommunityPostLike(postId, liked)
           }
+          onOpenTiers={() => setView("tiersHub")}
         />
       ) : null}
 

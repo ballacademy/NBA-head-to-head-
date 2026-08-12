@@ -406,7 +406,7 @@ export function LeaderboardPage() {
         {refreshBusy &&
         (view === "ranked" ? rankedEntries.length === 0 : classicEntries.length === 0) ? (
           <p className="draft-empty" aria-live="polite">
-            Loading ranks…
+            Loading…
           </p>
         ) : view === "ranked" ? (
           rankedEntries.length > 0 ? (

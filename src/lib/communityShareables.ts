@@ -1,6 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 
-export type CommunityShareableKind = "matchup" | "lineup";
+export type CommunityShareableKind = "matchup" | "lineup" | "tierList";
 
 export interface CommunityMatchupAttachment {
   kind: "matchup";
@@ -25,9 +25,17 @@ export interface CommunityLineupAttachment {
   savedAt: string;
 }
 
+export interface CommunityTierListAttachment {
+  kind: "tierList";
+  title: string;
+  publishedId: string;
+  savedAt: string;
+}
+
 export type CommunityPostAttachment =
   | CommunityMatchupAttachment
-  | CommunityLineupAttachment;
+  | CommunityLineupAttachment
+  | CommunityTierListAttachment;
 
 const SHAREABLES_KEY = "nba-head-to-head-community-shareables";
 const MAX_SHAREABLES = 8;
@@ -63,9 +71,23 @@ const isLineup = (value: unknown): value is CommunityLineupAttachment => {
   );
 };
 
+const isTierList = (value: unknown): value is CommunityTierListAttachment => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const entry = value as CommunityTierListAttachment;
+  return (
+    entry.kind === "tierList" &&
+    typeof entry.title === "string" &&
+    typeof entry.publishedId === "string" &&
+    entry.publishedId.trim().length > 0
+  );
+};
+
 export const isCommunityPostAttachment = (
   value: unknown,
-): value is CommunityPostAttachment => isMatchup(value) || isLineup(value);
+): value is CommunityPostAttachment =>
+  isMatchup(value) || isLineup(value) || isTierList(value);
 
 export const loadCommunityShareables = (): CommunityPostAttachment[] => {
   const saved = readJson<unknown>(SHAREABLES_KEY);
@@ -104,6 +126,9 @@ export const rememberCommunityShareable = (
           candidate.savedAt === entry.savedAt
         );
       }
+      if (candidate.kind === "tierList" && entry.kind === "tierList") {
+        return candidate.publishedId !== entry.publishedId;
+      }
       return true;
     }),
   ];
@@ -121,6 +146,10 @@ export const formatCommunityAttachmentSummary = (
           ? "lost to"
           : "tied";
     return `${attachment.modeLabel}: ${attachment.userTeam} ${verb} ${attachment.opponentTeam} (${attachment.userOvr}–${attachment.opponentOvr} OVR)`;
+  }
+
+  if (attachment.kind === "tierList") {
+    return `Tier list: ${attachment.title}`;
   }
 
   const result = attachment.resultLabel

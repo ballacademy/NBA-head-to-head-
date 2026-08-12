@@ -94,6 +94,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const limit = Number.isFinite(rawLimit)
     ? Math.max(1, Math.min(LIST_LIMIT, Math.floor(rawLimit)))
     : LIST_LIMIT;
+  const rawOffset = Number(url.searchParams.get("offset") ?? 0);
+  const offset = Number.isFinite(rawOffset)
+    ? Math.max(0, Math.floor(rawOffset))
+    : 0;
   const sort =
     url.searchParams.get("sort") === "popular" ? "popular" : "recent";
   const viewerPlayerId = parsePlayerId(url.searchParams.get("playerId"));
@@ -108,9 +112,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
             like_count, attachment_json
      FROM community_posts
      ORDER BY ${orderSql}
-     LIMIT ?`,
+     LIMIT ? OFFSET ?`,
   )
-    .bind(limit)
+    .bind(limit + 1, offset)
     .all<{
       id: string;
       player_id: string;
@@ -123,23 +127,30 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }>();
 
   const results = rows.results ?? [];
+  const hasMore = results.length > limit;
+  const pageRows = hasMore ? results.slice(0, limit) : results;
   let likedIds = new Set<string>();
 
-  if (viewerPlayerId && results.length > 0) {
-    const placeholders = results.map(() => "?").join(", ");
+  if (viewerPlayerId && pageRows.length > 0) {
+    const placeholders = pageRows.map(() => "?").join(", ");
     const likedRows = await context.env.DB.prepare(
       `SELECT post_id
        FROM community_post_likes
        WHERE player_id = ?
          AND post_id IN (${placeholders})`,
     )
-      .bind(viewerPlayerId, ...results.map((row) => row.id))
+      .bind(viewerPlayerId, ...pageRows.map((row) => row.id))
       .all<{ post_id: string }>();
     likedIds = new Set((likedRows.results ?? []).map((row) => row.post_id));
   }
 
-  const posts = results.map((row) => mapRow(row, likedIds.has(row.id)));
-  return json({ posts, sort });
+  const posts = pageRows.map((row) => mapRow(row, likedIds.has(row.id)));
+  return json({
+    posts,
+    sort,
+    hasMore,
+    nextOffset: offset + pageRows.length,
+  });
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

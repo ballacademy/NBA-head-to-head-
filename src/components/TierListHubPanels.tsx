@@ -46,20 +46,38 @@ export function TierListHubHome({
   onOpenTiers,
 }: TierListHubHomeProps) {
   return (
-    <div className="landing-hub__links tier-list-hub__links">
+    <div className="play-hub-chooser tier-list-hub__chooser" role="list">
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--emphasized"
+        className="play-hub-chooser__option hub-accent hub-accent--community"
+        role="listitem"
         onClick={onOpenPosts}
       >
-        Posts
+        <span className="play-hub-chooser__copy">
+          <span className="play-hub-chooser__label">Posts</span>
+          <span className="play-hub-chooser__meta">
+            Share takes and attach recent results or published lists
+          </span>
+        </span>
+        <span className="play-hub-chooser__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        className="play-hub-chooser__option hub-accent hub-accent--community"
+        role="listitem"
         onClick={onOpenTiers}
       >
-        Tier lists
+        <span className="play-hub-chooser__copy">
+          <span className="play-hub-chooser__label">Tier lists</span>
+          <span className="play-hub-chooser__meta">
+            Browse public boards, open yours, or create a new list
+          </span>
+        </span>
+        <span className="play-hub-chooser__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
     </div>
   );
@@ -77,27 +95,54 @@ export function TierListTiersHub({
   onOpenPublic,
 }: TierListTiersHubProps) {
   return (
-    <div className="landing-hub__links tier-list-hub__links">
+    <div className="play-hub-chooser tier-list-hub__chooser" role="list">
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        className="play-hub-chooser__option hub-accent hub-accent--community"
+        role="listitem"
         onClick={onOpenPublic}
       >
-        Public tier lists
+        <span className="play-hub-chooser__copy">
+          <span className="play-hub-chooser__label">Public tier lists</span>
+          <span className="play-hub-chooser__meta">
+            Browse and like lists shared by the community
+          </span>
+        </span>
+        <span className="play-hub-chooser__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+        className="play-hub-chooser__option hub-accent hub-accent--community"
+        role="listitem"
         onClick={onOpenMine}
       >
-        My tier lists
+        <span className="play-hub-chooser__copy">
+          <span className="play-hub-chooser__label">My tier lists</span>
+          <span className="play-hub-chooser__meta">
+            Open or delete lists saved on this device
+          </span>
+        </span>
+        <span className="play-hub-chooser__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
       <button
         type="button"
-        className="landing-hub__link-button hub-accent hub-accent--community hub-select hub-select--emphasized"
+        className="play-hub-chooser__option hub-accent hub-accent--community"
+        role="listitem"
         onClick={onCreate}
       >
-        Create a list
+        <span className="play-hub-chooser__copy">
+          <span className="play-hub-chooser__label">Create a list</span>
+          <span className="play-hub-chooser__meta">
+            Build a board and publish it when you are ready
+          </span>
+        </span>
+        <span className="play-hub-chooser__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
     </div>
   );
@@ -110,6 +155,7 @@ interface TierListMinePanelProps {
   likeCountByPublishedId: Record<string, number>;
   onOpen: (documentId: string) => void;
   onDelete: (documentId: string) => void;
+  onCreate: () => void;
 }
 
 export function TierListMinePanel({
@@ -119,6 +165,7 @@ export function TierListMinePanel({
   likeCountByPublishedId,
   onOpen,
   onDelete,
+  onCreate,
 }: TierListMinePanelProps) {
   const documents = sortTierListLibraryDocuments(
     library.documents,
@@ -145,9 +192,14 @@ export function TierListMinePanel({
       </div>
 
       {documents.length === 0 ? (
-        <p className="tier-list__hint">
-          No saved lists yet. Create one and tap Save to keep it here.
-        </p>
+        <div className="hub-empty">
+          <p>No saved lists yet.</p>
+          <div className="hub-empty__actions">
+            <button type="button" className="hub-cta" onClick={onCreate}>
+              Create a list
+            </button>
+          </div>
+        </div>
       ) : (
         <ul className="tier-list__library-list">
           {documents.map((document: TierListSavedDocument) => {
@@ -207,6 +259,8 @@ interface TierListPublicPanelProps {
   onLoadMore: () => void;
   onEditOwned: (id: string) => void;
   onUnpublishOwned: (id: string) => void;
+  onClearFilters?: () => void;
+  onCreate?: () => void;
 }
 
 export function TierListPublicPanel({
@@ -223,7 +277,16 @@ export function TierListPublicPanel({
   onLoadMore,
   onEditOwned,
   onUnpublishOwned,
+  onClearFilters,
+  onCreate,
 }: TierListPublicPanelProps) {
+  const hasActiveFilters =
+    filters.query.trim().length > 0 ||
+    filters.mineOnly ||
+    filters.likedByMe ||
+    filters.minLikes > 0 ||
+    filters.dateWindow !== "all";
+
   return (
     <div className="tier-list-hub__panel" aria-label="Public tier lists">
       <div className="tier-list-hub__panel-header">
@@ -315,13 +378,34 @@ export function TierListPublicPanel({
         </label>
       </div>
 
-      {loading ? (
-        <p className="tier-list__hint">Loading public lists…</p>
-      ) : lists.length === 0 ? (
-        <p className="tier-list__hint">
-          No public lists match these filters. Publish one from the editor to
-          share it here.
+      {loading && lists.length === 0 ? (
+        <p className="hub-empty" role="status">
+          Loading…
         </p>
+      ) : lists.length === 0 ? (
+        <div className="hub-empty">
+          <p>
+            {hasActiveFilters
+              ? "No public lists match these filters."
+              : "No public lists yet. Publish one from the editor to share it here."}
+          </p>
+          <div className="hub-empty__actions">
+            {hasActiveFilters && onClearFilters ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={onClearFilters}
+              >
+                Clear filters
+              </button>
+            ) : null}
+            {onCreate ? (
+              <button type="button" className="hub-cta" onClick={onCreate}>
+                Create a list
+              </button>
+            ) : null}
+          </div>
+        </div>
       ) : (
         <ul className="tier-list__library-list">
           {lists.map((entry) => (
@@ -332,6 +416,7 @@ export function TierListPublicPanel({
                   {entry.authorName} · {formatPublicTag(entry.authorTag)} ·{" "}
                   {formatPublicTierListTime(entry.publishedAt)} ·{" "}
                   {entry.likeCount} like{entry.likeCount === 1 ? "" : "s"}
+                  {entry.isOwner ? " · Yours" : ""}
                 </span>
               </div>
               <div className="tier-list__library-actions">
@@ -358,9 +443,10 @@ export function TierListPublicPanel({
                     className={`secondary-button${
                       entry.likedByViewer ? " is-active-like" : ""
                     }`}
+                    aria-pressed={entry.likedByViewer}
                     onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
                   >
-                    {entry.likedByViewer ? "Liked" : "Like"}
+                    {entry.likedByViewer ? "Liked" : "Like"} · {entry.likeCount}
                   </button>
                 )}
                 <button
@@ -375,6 +461,12 @@ export function TierListPublicPanel({
           ))}
         </ul>
       )}
+
+      {loading && lists.length > 0 ? (
+        <p className="tier-list__hint" role="status">
+          Updating…
+        </p>
+      ) : null}
 
       {hasMore && !loading ? (
         <button
@@ -393,10 +485,14 @@ export function TierListPublicPanel({
 interface CommunityPostsPanelProps {
   posts: CommunityPost[];
   loading: boolean;
+  loadingMore?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
   draft: string;
   onDraftChange: (value: string) => void;
   submitting: boolean;
   error: string | null;
+  likeError?: string | null;
   onSubmit: () => void;
   accountLinked: boolean;
   sort: CommunityPostSort;
@@ -405,15 +501,20 @@ interface CommunityPostsPanelProps {
   selectedAttachment: CommunityPostAttachment | null;
   onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
   onToggleLike: (postId: string, liked: boolean) => void;
+  onOpenTiers?: () => void;
 }
 
 export function CommunityPostsPanel({
   posts,
   loading,
+  loadingMore = false,
+  hasMore = false,
+  onLoadMore,
   draft,
   onDraftChange,
   submitting,
   error,
+  likeError = null,
   onSubmit,
   accountLinked,
   sort,
@@ -422,6 +523,7 @@ export function CommunityPostsPanel({
   selectedAttachment,
   onSelectAttachment,
   onToggleLike,
+  onOpenTiers,
 }: CommunityPostsPanelProps) {
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
 
@@ -430,8 +532,13 @@ export function CommunityPostsPanel({
     onSubmit();
   };
 
+  const attachmentKey = (entry: CommunityPostAttachment) =>
+    entry.kind === "tierList"
+      ? `${entry.kind}:${entry.publishedId}`
+      : `${entry.kind}:${entry.savedAt}`;
+
   return (
-    <div className="tier-list-hub__panel community-posts-panel" aria-label="Community posts">
+    <div className="tier-list-hub__panel community-posts-panel hub-accent hub-accent--community" aria-label="Community posts">
       <div className="tier-list-hub__panel-header">
         <h2>Posts</h2>
         <label className="tier-list-hub__sort">
@@ -443,7 +550,7 @@ export function CommunityPostsPanel({
             }
           >
             <option value="recent">Most recent</option>
-            <option value="popular">Most popular</option>
+            <option value="popular">Most liked</option>
           </select>
         </label>
       </div>
@@ -467,35 +574,34 @@ export function CommunityPostsPanel({
           />
         </label>
 
-        {shareables.length > 0 ? (
-          <label className="tier-list-hub__sort community-posts-panel__attach">
-            <span>Attach a recent result</span>
-            <select
-              value={
-                selectedAttachment
-                  ? `${selectedAttachment.kind}:${selectedAttachment.savedAt}`
-                  : ""
-              }
-              onChange={(event) => {
-                const value = event.target.value;
-                const match = shareables.find(
-                  (entry) => `${entry.kind}:${entry.savedAt}` === value,
-                );
-                onSelectAttachment(match ?? null);
-              }}
-              disabled={!accountLinked || submitting}
-            >
-              <option value="">No attachment</option>
-              {shareables.map((entry) => (
-                <option
-                  key={`${entry.kind}:${entry.savedAt}`}
-                  value={`${entry.kind}:${entry.savedAt}`}
-                >
-                  {formatCommunityAttachmentSummary(entry)}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label className="tier-list-hub__sort community-posts-panel__attach">
+          <span>Attach a recent result or list</span>
+          <select
+            value={
+              selectedAttachment ? attachmentKey(selectedAttachment) : ""
+            }
+            onChange={(event) => {
+              const value = event.target.value;
+              const match = shareables.find(
+                (entry) => attachmentKey(entry) === value,
+              );
+              onSelectAttachment(match ?? null);
+            }}
+            disabled={!accountLinked || submitting || shareables.length === 0}
+          >
+            <option value="">No attachment</option>
+            {shareables.map((entry) => (
+              <option key={attachmentKey(entry)} value={attachmentKey(entry)}>
+                {formatCommunityAttachmentSummary(entry)}
+              </option>
+            ))}
+          </select>
+        </label>
+        {shareables.length === 0 ? (
+          <p className="community-posts-panel__attach-hint">
+            Finish a Daily or H2H matchup, or publish a tier list, to attach it
+            here.
+          </p>
         ) : null}
 
         {selectedAttachment ? (
@@ -510,7 +616,7 @@ export function CommunityPostsPanel({
           </span>
           <button
             type="submit"
-            className="landing-hub__link-button hub-accent hub-accent--community hub-select"
+            className="hub-cta"
             disabled={!accountLinked || submitting || draft.trim().length === 0}
           >
             {submitting ? "Posting…" : "Post"}
@@ -523,12 +629,31 @@ export function CommunityPostsPanel({
         ) : null}
       </form>
 
-      {loading ? (
-        <p className="tier-list__hint">Loading posts…</p>
-      ) : posts.length === 0 ? (
-        <p className="tier-list__hint">
-          No posts yet. Be the first to share something short.
+      {likeError ? (
+        <p className="form-error community-posts-panel__like-error" role="alert">
+          {likeError}
         </p>
+      ) : null}
+
+      {loading && posts.length === 0 ? (
+        <p className="hub-empty" role="status">
+          Loading…
+        </p>
+      ) : posts.length === 0 ? (
+        <div className="hub-empty">
+          <p>No posts yet. Be the first to share something short.</p>
+          {onOpenTiers ? (
+            <div className="hub-empty__actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={onOpenTiers}
+              >
+                Browse tier lists
+              </button>
+            </div>
+          ) : null}
+        </div>
       ) : (
         <ul className="tier-list__library-list community-posts-panel__list">
           {posts.map((post) => (
@@ -545,14 +670,17 @@ export function CommunityPostsPanel({
                     {post.attachment.kind === "matchup" ? (
                       <span>
                         {" "}
-                        · Your five: {post.attachment.userLineupNames.join(", ")}
+                        · Your five:{" "}
+                        {post.attachment.userLineupNames.join(", ")}
+                        {" · Their five: "}
+                        {post.attachment.opponentLineupNames.join(", ")}
                       </span>
-                    ) : (
+                    ) : post.attachment.kind === "lineup" ? (
                       <span>
                         {" "}
                         · Lineup: {post.attachment.lineupNames.join(", ")}
                       </span>
-                    )}
+                    ) : null}
                   </p>
                 ) : null}
               </div>
@@ -562,7 +690,11 @@ export function CommunityPostsPanel({
                   className={`secondary-button${
                     post.likedByViewer ? " is-active-like" : ""
                   }`}
+                  aria-pressed={post.likedByViewer}
                   disabled={!accountLinked}
+                  title={
+                    accountLinked ? undefined : "Create an account to like"
+                  }
                   onClick={() => onToggleLike(post.id, !post.likedByViewer)}
                 >
                   {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
@@ -572,6 +704,23 @@ export function CommunityPostsPanel({
           ))}
         </ul>
       )}
+
+      {loading && posts.length > 0 ? (
+        <p className="tier-list__hint" role="status">
+          Updating…
+        </p>
+      ) : null}
+
+      {hasMore && onLoadMore && !loading ? (
+        <button
+          type="button"
+          className="secondary-button"
+          disabled={loadingMore}
+          onClick={onLoadMore}
+        >
+          {loadingMore ? "Loading…" : "Load more"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -625,7 +774,9 @@ export function TierListPublicViewer({
           <h2>{detail.title}</h2>
           <span>
             {detail.authorName} · {formatPublicTag(detail.authorTag)} ·{" "}
+            {formatPublicTierListTime(detail.publishedAt)} ·{" "}
             {detail.likeCount} like{detail.likeCount === 1 ? "" : "s"}
+            {detail.isOwner ? " · Yours" : ""}
           </span>
         </div>
         <div className="tier-list__library-actions">
@@ -656,9 +807,10 @@ export function TierListPublicViewer({
               className={`secondary-button${
                 detail.likedByViewer ? " is-active-like" : ""
               }`}
+              aria-pressed={detail.likedByViewer}
               onClick={() => onToggleLike(!detail.likedByViewer)}
             >
-              {detail.likedByViewer ? "Liked" : "Like"}
+              {detail.likedByViewer ? "Liked" : "Like"} · {detail.likeCount}
             </button>
           ) : null}
         </div>

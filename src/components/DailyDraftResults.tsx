@@ -443,18 +443,25 @@ export function DailyDraftResults({
 
       <div className="panel panel--compact match-results__actions daily-draft-results__footer">
         <div className="match-results__action-row">
+          <button
+            type="button"
+            className="play-again-button match-results__primary-action"
+            onClick={onPlayAgain}
+          >
+            Back to home
+          </button>
           {!optimalReview ? (
             <>
               <button
                 type="button"
-                className="play-again-button match-results__primary-action"
+                className="secondary-button match-results__share-button"
                 onClick={() => void handleCopyShareText()}
               >
                 {copyButtonLabel}
               </button>
               <button
                 type="button"
-                className="secondary-button match-results__share-button"
+                className="secondary-button match-results__menu-button"
                 disabled={shareState === "busy"}
                 onClick={() => void handleShareImage()}
               >
@@ -462,17 +469,6 @@ export function DailyDraftResults({
               </button>
             </>
           ) : null}
-          <button
-            type="button"
-            className={
-              optimalReview
-                ? "play-again-button match-results__primary-action"
-                : "secondary-button match-results__menu-button"
-            }
-            onClick={onPlayAgain}
-          >
-            Back to home
-          </button>
         </div>
       </div>
     </section>

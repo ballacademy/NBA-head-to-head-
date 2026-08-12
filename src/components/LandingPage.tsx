@@ -238,6 +238,17 @@ export function LandingPage({
     }
   }, [hubTab, playSection]);
 
+  useEffect(() => {
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLElement &&
+      active.matches("button, [href], input, select, textarea") &&
+      active.closest(".landing--hub, .hub-feature")
+    ) {
+      active.blur();
+    }
+  }, [hubTab, playSection]);
+
   const dismissHubGuide = useCallback(() => {
     markHubGuideSeen();
     setShowHubGuide(false);
@@ -754,7 +765,7 @@ export function LandingPage({
           <div className="play-hub-chooser" role="list">
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent hub-accent--play"
+              className="play-hub-chooser__option hub-accent hub-accent--daily"
               role="listitem"
               onClick={() => updatePlaySection("daily")}
             >
@@ -770,7 +781,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent hub-accent--play"
+              className="play-hub-chooser__option hub-accent hub-accent--h2h"
               role="listitem"
               onClick={() => updatePlaySection("headToHead")}
             >
@@ -786,7 +797,7 @@ export function LandingPage({
             </button>
             <button
               type="button"
-              className="play-hub-chooser__option hub-accent hub-accent--play"
+              className="play-hub-chooser__option hub-accent hub-accent--event"
               role="listitem"
               onClick={() => updatePlaySection("events")}
             >
@@ -1003,7 +1014,7 @@ export function LandingPage({
                   <div className="mode-card__actions">
                     <button
                       type="button"
-                      className="landing__primary-button"
+                      className="mode-card__cta mode-card__cta--primary"
                       disabled={modesBlocked || !eventPlayable}
                       onClick={() =>
                         void handleStart({
@@ -1069,7 +1080,9 @@ export function LandingPage({
                     Create an account to appear on event standings.
                   </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
-                    <p className="event-leaderboard__empty">Loading standings…</p>
+                    <p className="event-leaderboard__empty hub-empty" role="status">
+                      Loading…
+                    </p>
                   ) : eventLeaderboardFailed ? (
                     <p className="form-error" role="alert">
                       Couldn&apos;t load event standings.{" "}
@@ -1281,7 +1294,7 @@ export function LandingPage({
               <div className="landing-hub__links">
                 <button
                   type="button"
-                  className="landing-hub__link-button hub-accent hub-accent--h2h"
+                  className="landing-hub__link-button hub-accent hub-accent--account"
                   onClick={onViewGmStats}
                 >
                   GM stats

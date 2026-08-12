@@ -116,10 +116,19 @@ export const formatCommunityPostTime = (iso: string) => {
 export const listCommunityPosts = async (params?: {
   sort?: CommunityPostSort;
   playerId?: string;
-}): Promise<CommunityPost[]> => {
+  offset?: number;
+  limit?: number;
+}): Promise<{
+  posts: CommunityPost[];
+  hasMore: boolean;
+  nextOffset: number;
+}> => {
   const sort = params?.sort ?? "recent";
+  const offset = Math.max(0, Math.floor(params?.offset ?? 0));
+  const limit = Math.max(1, Math.min(50, Math.floor(params?.limit ?? 50)));
   const search = new URLSearchParams({
-    limit: "50",
+    limit: String(limit),
+    offset: String(offset),
     sort,
   });
   if (params?.playerId) {
@@ -136,21 +145,40 @@ export const listCommunityPosts = async (params?: {
     );
 
     if (response.ok) {
-      const payload = (await response.json()) as { posts?: unknown[] };
+      const payload = (await response.json()) as {
+        posts?: unknown[];
+        hasMore?: boolean;
+        nextOffset?: number;
+      };
       if (Array.isArray(payload.posts)) {
         const posts = payload.posts
           .map((entry) => normalizePost(entry as Partial<CommunityPost>))
           .filter((entry): entry is CommunityPost => Boolean(entry))
-          .slice(0, 50);
-        saveLocalFeed({ posts });
-        return posts;
+          .slice(0, limit);
+        if (offset === 0) {
+          saveLocalFeed({ posts });
+        }
+        return {
+          posts,
+          hasMore: Boolean(payload.hasMore),
+          nextOffset:
+            typeof payload.nextOffset === "number"
+              ? payload.nextOffset
+              : offset + posts.length,
+        };
       }
     }
   } catch {
     // Fall through to local cache.
   }
 
-  return sortLocalPosts(loadLocalFeed().posts, sort);
+  const local = sortLocalPosts(loadLocalFeed().posts, sort);
+  const page = local.slice(offset, offset + limit);
+  return {
+    posts: page,
+    hasMore: offset + page.length < local.length,
+    nextOffset: offset + page.length,
+  };
 };
 
 export type CreateCommunityPostResult =
@@ -226,21 +254,10 @@ export const createCommunityPost = async (params: {
     saveLocalFeed(feed);
     return { ok: true, post };
   } catch {
-    const post: CommunityPost = {
-      id: `local-cpost-${Date.now().toString(36)}`,
-      playerId: params.playerId,
-      authorName: params.authorName,
-      authorTag: params.authorTag,
-      body,
-      createdAt: new Date().toISOString(),
-      likeCount: 0,
-      likedByViewer: false,
-      attachment: params.attachment ?? null,
+    return {
+      ok: false,
+      error: "Could not reach the server. Try again.",
     };
-    const feed = loadLocalFeed();
-    feed.posts = [post, ...feed.posts];
-    saveLocalFeed(feed);
-    return { ok: true, post };
   }
 };
 
