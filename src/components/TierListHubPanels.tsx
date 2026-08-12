@@ -65,9 +65,10 @@ export function TierListHubHome({
         disabled
         aria-disabled="true"
       >
-        Posts
+        <span>Posts</span>
         <span className="hub-select__soon-label">Coming soon</span>
       </button>
+      <p className="tier-list-hub__coming-soon">Other features coming soon</p>
     </div>
   );
 }
