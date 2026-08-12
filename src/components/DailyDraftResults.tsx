@@ -441,33 +441,39 @@ export function DailyDraftResults({
         </div>
       </section>
 
-      <div className="panel panel--compact daily-draft-results__footer">
-        {!optimalReview ? (
-          <>
-            <button
-              type="button"
-              className="play-again-button match-results__share-button"
-              disabled={shareState === "busy"}
-              onClick={() => void handleShareImage()}
-            >
-              {shareButtonLabel}
-            </button>
-            <button
-              type="button"
-              className="secondary-button match-results__share-button"
-              onClick={() => void handleCopyShareText()}
-            >
-              {copyButtonLabel}
-            </button>
-          </>
-        ) : null}
-        <button
-          type="button"
-          className="play-again-button match-results__menu-button"
-          onClick={onPlayAgain}
-        >
-          Back to home
-        </button>
+      <div className="panel panel--compact match-results__actions daily-draft-results__footer">
+        <div className="match-results__action-row">
+          {!optimalReview ? (
+            <>
+              <button
+                type="button"
+                className="play-again-button match-results__primary-action"
+                onClick={() => void handleCopyShareText()}
+              >
+                {copyButtonLabel}
+              </button>
+              <button
+                type="button"
+                className="secondary-button match-results__share-button"
+                disabled={shareState === "busy"}
+                onClick={() => void handleShareImage()}
+              >
+                {shareButtonLabel}
+              </button>
+            </>
+          ) : null}
+          <button
+            type="button"
+            className={
+              optimalReview
+                ? "play-again-button match-results__primary-action"
+                : "secondary-button match-results__menu-button"
+            }
+            onClick={onPlayAgain}
+          >
+            Back to home
+          </button>
+        </div>
       </div>
     </section>
   );
