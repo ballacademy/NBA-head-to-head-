@@ -769,7 +769,7 @@ export function LandingPage({
             {playModeBack}
             {renderTeamNameField()}
             {anyQueuedLineupLock ? (
-              <p className="account-required-note" role="status">
+              <p className="queue-lock-note" role="status">
                 Queued lineup waiting for a live opponent at{" "}
                 {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}
                 {queuedLineupLock.classic && queuedLineupLock.ranked

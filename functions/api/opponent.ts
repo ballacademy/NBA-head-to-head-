@@ -13,6 +13,7 @@ import {
   isValidStoredLineupIds,
   parseStoredLineupJson,
 } from "../lib/storedLineups";
+import { isGhostClaimLineupEligible } from "../../src/lib/competitivePlayerBans";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -29,6 +30,11 @@ const rowToPayload = async (db: D1Database, row: StoredLineupRow) => {
   const lineup = parseStoredLineupJson(row.lineup_json);
 
   if (!isValidStoredLineupIds(lineup)) {
+    return null;
+  }
+
+  // Skip (and purge via claimGhostOpponent) pre-ban ghosts with banned players.
+  if (!isGhostClaimLineupEligible(row.mode, lineup)) {
     return null;
   }
 

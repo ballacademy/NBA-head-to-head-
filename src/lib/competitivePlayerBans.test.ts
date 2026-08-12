@@ -3,6 +3,7 @@ import {
   filterOutRankedEventBannedPlayers,
   isBannedFromRankedAndEvents,
   isBannedRankedEventPlayer,
+  isGhostClaimLineupEligible,
   LEBRON_JAMES_BBR_ID,
   lineupContainsRankedEventBannedPlayer,
   matchmakingModeBansRankedEventPlayers,
@@ -92,6 +93,20 @@ describe("competitivePlayerBans", () => {
     expect(
       lineupContainsRankedEventBannedPlayer(["curryst01", poolId]),
     ).toBe(true);
+  });
+
+  it("rejects ghost claims that still include banned players", () => {
+    const poolId = findPlayerId("LeBron James")!;
+    expect(isGhostClaimLineupEligible("classic", ["curryst01", poolId])).toBe(
+      false,
+    );
+    expect(isGhostClaimLineupEligible("ranked", [poolId, "jokicni01"])).toBe(
+      false,
+    );
+    expect(isGhostClaimLineupEligible("event", ["curryst01", "jokicni01"])).toBe(
+      true,
+    );
+    expect(isGhostClaimLineupEligible("daily", [poolId])).toBe(true);
   });
 
   it("still finds LeBron in the visible draft pool when bans apply", () => {

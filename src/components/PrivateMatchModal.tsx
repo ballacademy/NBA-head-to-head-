@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import {
   ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
   isPlayerAccountLinked,
+  peekCachedAccountLinked,
+  subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { getOrCreatePlayerId } from "../lib/playerIdentity";
 import {
@@ -53,13 +55,27 @@ export function PrivateMatchModal({
 
   useEffect(() => {
     let cancelled = false;
-    void isPlayerAccountLinked(getOrCreatePlayerId()).then((linked) => {
-      if (!cancelled) {
-        setAccountLinked(linked);
+
+    const refresh = () => {
+      const playerId = getOrCreatePlayerId();
+      const cached = peekCachedAccountLinked(playerId);
+      if (cached != null) {
+        setAccountLinked(cached);
       }
-    });
+
+      void isPlayerAccountLinked(playerId).then((linked) => {
+        if (!cancelled) {
+          setAccountLinked(linked);
+        }
+      });
+    };
+
+    refresh();
+    const unsubscribe = subscribeAccountLinkChanged(refresh);
+
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, []);
 

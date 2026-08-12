@@ -78,5 +78,15 @@ export const lineupContainsRankedEventBannedPlayer = (
   lineup: readonly string[],
 ) => lineup.some((playerId) => isBannedFromRankedAndEvents(playerId));
 
+/** Ghost claims skip / purge lineups that include players banned in that mode. */
+export const isGhostClaimLineupEligible = (
+  mode: string | null | undefined,
+  lineup: readonly string[],
+) =>
+  !(
+    matchmakingModeBansRankedEventPlayers(mode) &&
+    lineupContainsRankedEventBannedPlayer(lineup)
+  );
+
 export const rankedEventBannedPlayerError = () =>
   "lineup contains a player who is not eligible for Casual H2H, Pro, or Events";

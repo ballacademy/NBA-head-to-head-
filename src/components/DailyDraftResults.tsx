@@ -135,6 +135,10 @@ export function DailyDraftResults({
       return;
     }
 
+    if (userLineup.length !== 5) {
+      return;
+    }
+
     submittedRef.current = true;
 
     void (async () => {
