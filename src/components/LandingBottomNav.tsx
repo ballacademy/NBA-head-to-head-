@@ -8,6 +8,7 @@ export type LandingHubTab =
 interface LandingBottomNavProps {
   activeTab: LandingHubTab;
   onSelect: (tab: LandingHubTab) => void;
+  onPrefetchTab?: (tab: LandingHubTab) => void;
 }
 
 const TABS: {
@@ -97,7 +98,11 @@ function NavIcon({ name }: { name: string }) {
   }
 }
 
-export function LandingBottomNav({ activeTab, onSelect }: LandingBottomNavProps) {
+export function LandingBottomNav({
+  activeTab,
+  onSelect,
+  onPrefetchTab,
+}: LandingBottomNavProps) {
   return (
     <nav className="landing-bottom-nav" aria-label="Main sections">
       {TABS.map((tab) => {
@@ -112,6 +117,8 @@ export function LandingBottomNav({ activeTab, onSelect }: LandingBottomNavProps)
             }`}
             aria-current={isActive ? "page" : undefined}
             onClick={() => onSelect(tab.id)}
+            onPointerEnter={() => onPrefetchTab?.(tab.id)}
+            onFocus={() => onPrefetchTab?.(tab.id)}
           >
             <span className="landing-bottom-nav__icon">
               <NavIcon name={tab.icon} />

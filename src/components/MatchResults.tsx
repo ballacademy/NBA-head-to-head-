@@ -19,6 +19,11 @@ import {
 import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
+import { rememberCommunityShareable } from "../lib/communityShareables";
+import {
+  CLASSIC_HEAD_TO_HEAD_LABEL,
+  PRO_HEAD_TO_HEAD_LABEL,
+} from "../lib/modeLabels";
 import {
   extractGhostStoredLineupId,
   submitGhostMatchOutcome,
@@ -177,6 +182,31 @@ export function MatchResults({
     );
     const lineupsComplete =
       userLineup.length === 5 && opponentLineup.length === 5;
+
+    if (lineupsComplete) {
+      const modeLabel = user.eventId
+        ? "Weekly Event"
+        : user.salaryCapMode
+          ? PRO_HEAD_TO_HEAD_LABEL
+          : user.practiceMode
+            ? "Practice"
+            : CLASSIC_HEAD_TO_HEAD_LABEL;
+      rememberCommunityShareable({
+        kind: "matchup",
+        modeLabel,
+        result: matchResult,
+        userTeam: user.name,
+        opponentTeam: formatOpponentDisplayName(
+          opponent.name,
+          opponent.username,
+        ),
+        userOvr: userScore.total,
+        opponentOvr: opponentScore.total,
+        userLineupNames: userLineup.map((player) => player.name),
+        opponentLineupNames: opponentLineup.map((player) => player.name),
+        savedAt: new Date().toISOString(),
+      });
+    }
 
     if (!skipCompetitiveRecords && lineupsComplete) {
       if (user.eventId) {

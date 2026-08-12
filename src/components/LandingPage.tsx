@@ -138,6 +138,7 @@ interface LandingPageProps {
   onViewBetaNotes: () => void;
   hubTab: LandingContentTab;
   onHubTabChange: (tab: LandingContentTab) => void;
+  onPrefetchHubTab?: (tab: LandingHubTab) => void;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -181,6 +182,7 @@ export function LandingPage({
   onViewBetaNotes,
   hubTab,
   onHubTabChange,
+  onPrefetchHubTab,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -696,7 +698,11 @@ export function LandingPage({
   );
 
   return (
-    <HubShell activeTab={hubTab} onSelectTab={handleHubSelect}>
+    <HubShell
+      activeTab={hubTab}
+      onSelectTab={handleHubSelect}
+      onPrefetchTab={onPrefetchHubTab}
+    >
       {showTeamNameModal ? (
         <TeamNameValidationModal
           message={teamNameModalMessage}

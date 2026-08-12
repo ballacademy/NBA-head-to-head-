@@ -73,8 +73,14 @@ import {
 import {
   createCommunityPost,
   listCommunityPosts,
+  setCommunityPostLike,
   type CommunityPost,
+  type CommunityPostSort,
 } from "../lib/communityPosts";
+import {
+  loadCommunityShareables,
+  type CommunityPostAttachment,
+} from "../lib/communityShareables";
 import { fetchAccountStatus } from "../lib/accountApi";
 import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
@@ -92,6 +98,7 @@ import {
   TierListMinePanel,
   TierListPublicPanel,
   TierListPublicViewer,
+  TierListTiersHub,
   CommunityPostsPanel,
 } from "./TierListHubPanels";
 
@@ -103,7 +110,14 @@ interface TierListPageProps {
   initialPublicTierListId?: string | null;
 }
 
-type TierListView = "hub" | "editor" | "mine" | "public" | "viewer" | "posts";
+type TierListView =
+  | "hub"
+  | "tiersHub"
+  | "editor"
+  | "mine"
+  | "public"
+  | "viewer"
+  | "posts";
 
 const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
   { id: "all", label: "Any role" },
@@ -248,6 +262,13 @@ export function TierListPage({
   const [communityPostError, setCommunityPostError] = useState<string | null>(
     null,
   );
+  const [communityPostSort, setCommunityPostSort] =
+    useState<CommunityPostSort>("recent");
+  const [communityShareables, setCommunityShareables] = useState<
+    CommunityPostAttachment[]
+  >(() => loadCommunityShareables());
+  const [communityAttachment, setCommunityAttachment] =
+    useState<CommunityPostAttachment | null>(null);
   const deepLinkHandledRef = useRef(false);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
@@ -965,6 +986,14 @@ export function TierListPage({
       setView("public");
       return;
     }
+    if (view === "mine" || view === "public" || view === "editor") {
+      setView("tiersHub");
+      return;
+    }
+    if (view === "tiersHub" || view === "posts") {
+      setView("hub");
+      return;
+    }
     setView("hub");
   };
 
@@ -972,17 +1001,21 @@ export function TierListPage({
     setCommunityPostsLoading(true);
     setCommunityPostError(null);
     try {
-      const posts = await listCommunityPosts();
+      const posts = await listCommunityPosts({
+        sort: communityPostSort,
+        playerId: identity.playerId,
+      });
       setCommunityPosts(posts);
     } finally {
       setCommunityPostsLoading(false);
     }
-  }, []);
+  }, [communityPostSort, identity.playerId]);
 
   useEffect(() => {
     if (view !== "posts") {
       return;
     }
+    setCommunityShareables(loadCommunityShareables());
     void loadCommunityPosts();
   }, [loadCommunityPosts, view]);
 
@@ -994,6 +1027,7 @@ export function TierListPage({
       authorName,
       authorTag: identity.publicTag,
       body: communityPostDraft,
+      attachment: communityAttachment,
     });
     setCommunityPostSubmitting(false);
 
@@ -1003,10 +1037,37 @@ export function TierListPage({
     }
 
     setCommunityPostDraft("");
+    setCommunityAttachment(null);
     setCommunityPosts((current) => [
       result.post,
       ...current.filter((post) => post.id !== result.post.id),
     ]);
+  };
+
+  const handleToggleCommunityPostLike = async (
+    postId: string,
+    liked: boolean,
+  ) => {
+    const result = await setCommunityPostLike({
+      playerId: identity.playerId,
+      postId,
+      liked,
+    });
+    if (!result.ok) {
+      setCommunityPostError(result.error);
+      return;
+    }
+    setCommunityPosts((current) =>
+      current.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              likedByViewer: result.liked,
+              likeCount: result.likeCount,
+            }
+          : post,
+      ),
+    );
   };
 
   const renderPlayerChip = (
@@ -1120,15 +1181,21 @@ export function TierListPage({
       ) : null}
 
       {view === "hub" ? (
+        <TierListHubHome
+          onOpenPosts={() => setView("posts")}
+          onOpenTiers={() => setView("tiersHub")}
+        />
+      ) : null}
+
+      {view === "tiersHub" ? (
         <>
           <AccountRequiredNote>
             Create an account to publish public tier lists. Browsing stays open.
           </AccountRequiredNote>
-          <TierListHubHome
+          <TierListTiersHub
             onCreate={() => void handleNew()}
             onOpenMine={() => setView("mine")}
             onOpenPublic={() => setView("public")}
-            onOpenPosts={() => setView("posts")}
           />
         </>
       ) : null}
@@ -1191,6 +1258,14 @@ export function TierListPage({
           error={communityPostError}
           onSubmit={() => void handleCreateCommunityPost()}
           accountLinked={accountLinked}
+          sort={communityPostSort}
+          onSortChange={setCommunityPostSort}
+          shareables={communityShareables}
+          selectedAttachment={communityAttachment}
+          onSelectAttachment={setCommunityAttachment}
+          onToggleLike={(postId, liked) =>
+            void handleToggleCommunityPostLike(postId, liked)
+          }
         />
       ) : null}
 

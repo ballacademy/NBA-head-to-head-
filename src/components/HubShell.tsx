@@ -8,6 +8,7 @@ import {
 interface HubShellProps {
   activeTab: LandingHubTab;
   onSelectTab: (tab: LandingHubTab) => void;
+  onPrefetchTab?: (tab: LandingHubTab) => void;
   children: ReactNode;
   className?: string;
 }
@@ -15,6 +16,7 @@ interface HubShellProps {
 export function HubShell({
   activeTab,
   onSelectTab,
+  onPrefetchTab,
   children,
   className = "",
 }: HubShellProps) {
@@ -36,7 +38,11 @@ export function HubShell({
         {children}
       </div>
 
-      <LandingBottomNav activeTab={activeTab} onSelect={onSelectTab} />
+      <LandingBottomNav
+        activeTab={activeTab}
+        onSelect={onSelectTab}
+        onPrefetchTab={onPrefetchTab}
+      />
     </section>
   );
 }
