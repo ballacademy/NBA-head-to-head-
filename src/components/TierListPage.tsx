@@ -1440,6 +1440,7 @@ export function TierListPage({
             void handleToggleCommunityPostLike(postId, liked)
           }
           onOpenTiers={() => setView("tiersHub")}
+          playersById={playersById}
         />
       ) : null}
 

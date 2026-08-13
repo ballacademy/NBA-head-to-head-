@@ -174,6 +174,8 @@ export function DailyDraftResults({
           ),
           resultLabel: result.entry.formattedResult,
           lineupNames: userLineup.map((player) => player.name),
+          lineupIds: userLineup.map((player) => player.id),
+          accent: DAILY_SHARE_ACCENT,
           savedAt: new Date().toISOString(),
         });
       }

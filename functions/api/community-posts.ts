@@ -19,7 +19,8 @@ const BODY_MAX = 400;
 const AUTHOR_NAME_MAX = 32;
 const AUTHOR_TAG_MAX = 8;
 const LIST_LIMIT = 50;
-const ATTACHMENT_JSON_MAX = 4_000;
+/** Compact attachment metadata only (ids/names) — images are rebuilt client-side. */
+const ATTACHMENT_JSON_MAX = 8_000;
 
 interface CreateBody {
   playerId?: unknown;
