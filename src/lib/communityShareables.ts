@@ -266,6 +266,17 @@ const resolvePlayersByIds = (
     .filter((player): player is Player => player != null);
 };
 
+const formatSavedFooterNote = (savedAt: string) => {
+  const date = new Date(savedAt);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return `Saved ${date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })}`;
+};
+
 /** Build a share-card input from a post attachment for on-demand image view. */
 export const buildShareCardInputFromAttachment = (
   attachment: CommunityPostAttachment,
@@ -293,6 +304,8 @@ export const buildShareCardInputFromAttachment = (
       ovr: attachment.userOvr,
       ovrOverflow: attachment.ovrOverflow,
       lineup,
+      subhead: attachment.modeLabel,
+      footerNote: formatSavedFooterNote(attachment.savedAt),
       record: projectedRecord || winRecord || undefined,
       recordLabel: projectedRecord
         ? "Projected"
@@ -318,6 +331,8 @@ export const buildShareCardInputFromAttachment = (
     ovr: attachment.ovr ?? 0,
     lineup,
     headline: attachment.title,
+    subhead: attachment.modeLabel,
+    footerNote: formatSavedFooterNote(attachment.savedAt),
     statLabel: percentile || "RESULT",
     statValue: attachment.resultLabel || undefined,
   };
@@ -350,6 +365,8 @@ export const buildMatchupShareCardInputsFromAttachment = (
       ovr: attachment.opponentOvr,
       lineup: opponentLineup,
       headline: attachment.opponentTeam,
+      subhead: attachment.modeLabel,
+      footerNote: formatSavedFooterNote(attachment.savedAt),
     },
   };
 };

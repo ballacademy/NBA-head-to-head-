@@ -1,10 +1,15 @@
-import { useEffect, useId, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
-import {
-  CLASSIC_HEAD_TO_HEAD_LABEL,
-  PRO_HEAD_TO_HEAD_LABEL,
-} from "../lib/modeLabels";
+import { useDialogA11y } from "../hooks/useDialogA11y";
+import { MODE_COPY } from "../lib/modeCopy";
 
 interface MatchmakingOverlayProps {
   mode: GhostMatchmakingMode;
@@ -54,15 +59,24 @@ export function MatchmakingOverlay({
     "idle",
   );
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
   const isPrivate = Boolean(privateRoomCode);
   const isPrivateGuest = isPrivate && privateRoomRole === "guest";
-  const modeLabel =
+  const modeCopy =
     mode === "event"
-      ? "Weekly Event"
+      ? MODE_COPY.weeklyEvent
       : mode === "ranked"
-        ? PRO_HEAD_TO_HEAD_LABEL
-        : CLASSIC_HEAD_TO_HEAD_LABEL;
+        ? MODE_COPY.proH2h
+        : MODE_COPY.classicH2h;
+  const modeLabel = modeCopy.title;
   const isMatched = Boolean(matchedOpponentName);
+  const canCancelWithEscape = Boolean(onCancel && !isMatched && !isCancelling);
+  const handleDialogClose = useCallback(() => {
+    if (canCancelWithEscape) {
+      onCancel?.();
+    }
+  }, [canCancelWithEscape, onCancel]);
   const statusLabel = isMatched
     ? `Matched vs ${matchedOpponentName}`
     : isCancelling
@@ -93,21 +107,13 @@ export function MatchmakingOverlay({
     return () => window.clearInterval(timer);
   }, [isMatched, privateRoomExpiresAt]);
 
-  useEffect(() => {
-    if (!onCancel || isMatched || isCancelling) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isCancelling, isMatched, onCancel]);
+  useDialogA11y({
+    onClose: handleDialogClose,
+    closeOnEscape: canCancelWithEscape,
+    disableClose: !canCancelWithEscape,
+    initialFocusRef: onCancel && !isMatched ? cancelButtonRef : undefined,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   const handleCopyCode = async () => {
     if (!privateRoomCode) {
@@ -126,7 +132,10 @@ export function MatchmakingOverlay({
       aria-labelledby={titleId}
       aria-live="polite"
     >
-      <section className="panel panel--compact matchmaking-overlay__panel">
+      <section
+        ref={panelRef}
+        className="panel panel--compact matchmaking-overlay__panel"
+      >
         <p className="eyebrow">
           {isPrivate ? `${modeLabel} private match` : `${modeLabel} matchmaking`}
         </p>
@@ -176,8 +185,8 @@ export function MatchmakingOverlay({
         {isPrivate && !isMatched ? (
           <p className="matchmaking-overlay__note">
             {isPrivateGuest
-              ? "Stay on this screen while we connect you. Same mode as your friend (Casual or Pro)."
-              : "Friend needs an account. They join with this code under the same mode (Casual or Pro). Records and Banners do not change."}
+              ? `Stay on this screen while we connect you. Same mode as your friend (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}).`
+              : `Friend needs an account. They join with this code under the same mode (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}). Records and Banners do not change.`}
           </p>
         ) : null}
 
@@ -191,6 +200,7 @@ export function MatchmakingOverlay({
         {onCancel && !isMatched ? (
           <button
             type="button"
+            ref={cancelButtonRef}
             className="secondary-button matchmaking-overlay__cancel"
             onClick={onCancel}
             disabled={isCancelling}

@@ -1,24 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useRef, type RefObject } from "react";
+import { useDialogA11y } from "../hooks/useDialogA11y";
+import { HUB_ONBOARDING_BULLETS, HUB_PLAY_INTENTS } from "../lib/modeCopy";
+import type { LandingPlaySection } from "../lib/landingHub";
 
 interface HubOnboardingOverlayProps {
   onDismiss: () => void;
+  onChooseIntent?: (intent: {
+    playSection: LandingPlaySection;
+    h2hMode?: "classic" | "ranked";
+  }) => void;
 }
 
-export function HubOnboardingOverlay({ onDismiss }: HubOnboardingOverlayProps) {
+export function HubOnboardingOverlay({
+  onDismiss,
+  onChooseIntent,
+}: HubOnboardingOverlayProps) {
   const dismissRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    dismissRef.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onDismiss();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onDismiss]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useDialogA11y({
+    onClose: onDismiss,
+    initialFocusRef: dismissRef,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   return (
     <div
@@ -27,30 +30,53 @@ export function HubOnboardingOverlay({ onDismiss }: HubOnboardingOverlayProps) {
       aria-modal="true"
       aria-labelledby="hub-onboarding-title"
     >
-      <div className="draft-onboarding-overlay__panel panel panel--compact">
+      <div
+        ref={panelRef}
+        className="draft-onboarding-overlay__panel panel panel--compact"
+      >
         <p className="eyebrow">Play hub</p>
-        <h2 id="hub-onboarding-title">Pick your mode</h2>
+        <h2 id="hub-onboarding-title">What should I play?</h2>
         <ul className="draft-onboarding-overlay__list">
-          <li>
-            <strong>Daily Draft</strong> — one shared puzzle per day. Chase rank
-            without a salary cap.
-          </li>
-          <li>
-            <strong>Head to Head</strong> — draft five and duel Casual or Pro
-            opponents.
-          </li>
-          <li>
-            <strong>Events</strong> — limited weekly challenges with their own
-            standings.
-          </li>
+          {HUB_ONBOARDING_BULLETS.map((item) => (
+            <li key={item.title}>
+              <strong>{item.title}</strong> — {item.body}
+            </li>
+          ))}
         </ul>
+
+        {onChooseIntent ? (
+          <div
+            className="hub-onboarding-overlay__intents"
+            role="group"
+            aria-label="Pick a starting path"
+          >
+            {HUB_PLAY_INTENTS.map((intent) => (
+              <button
+                key={intent.id}
+                type="button"
+                className="hub-onboarding-overlay__intent"
+                onClick={() => {
+                  onChooseIntent({
+                    playSection: intent.playSection,
+                    h2hMode: intent.h2hMode,
+                  });
+                  onDismiss();
+                }}
+              >
+                <strong>{intent.title}</strong>
+                <span>{intent.body}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <button
           type="button"
           ref={dismissRef}
           className="landing__primary-button"
           onClick={onDismiss}
         >
-          Got it
+          {onChooseIntent ? "Browse Play hub" : "Got it"}
         </button>
       </div>
     </div>

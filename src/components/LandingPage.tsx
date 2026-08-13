@@ -53,6 +53,7 @@ import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
 import { HubOnboardingOverlay } from "./HubOnboardingOverlay";
+import { InlineAlert } from "./InlineAlert";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -93,6 +94,7 @@ import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { isHeadToHeadLineupLocked } from "../lib/matchmaking";
 import { loadPendingLineupState } from "../lib/pendingLineup";
 import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "../lib/rankedElo";
+import { MODE_COPY } from "../lib/modeCopy";
 
 const buildHeadToHeadModeDetails = (
   baseDetails: string[],
@@ -254,6 +256,16 @@ export function LandingPage({
     markHubGuideSeen();
     setShowHubGuide(false);
   }, []);
+
+  const handleHubGuideIntent = useCallback(
+    (intent: { playSection: LandingPlaySection; h2hMode?: "classic" | "ranked" }) => {
+      if (hubTab !== "play") {
+        onHubTabChange("play");
+      }
+      updatePlaySection(intent.playSection);
+    },
+    [hubTab, onHubTabChange, updatePlaySection],
+  );
 
   useEffect(() => {
     if (!pendingPrivateMatchMode) {
@@ -643,35 +655,36 @@ export function LandingPage({
         />
       </label>
       {liveRestoreNotice ? (
-        <p className="form-error" role="alert">
-          {liveRestoreNotice}{" "}
-          {onRetryLiveRestore ? (
-            <button
-              type="button"
-              className="daily-draft-results__sync-retry"
-              onClick={onRetryLiveRestore}
-            >
-              Retry reconnect
-            </button>
-          ) : null}
-          {onDismissLiveRestore ? (
+        <InlineAlert
+          message={
             <>
-              {" "}
-              <button
-                type="button"
-                className="daily-draft-results__sync-retry"
-                onClick={onDismissLiveRestore}
-              >
-                Dismiss
-              </button>
+              {liveRestoreNotice}
+              {onDismissLiveRestore ? (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="daily-draft-results__sync-retry"
+                    onClick={onDismissLiveRestore}
+                  >
+                    Dismiss
+                  </button>
+                </>
+              ) : null}
             </>
-          ) : null}
-        </p>
+          }
+          action={
+            onRetryLiveRestore
+              ? {
+                  label: "Retry reconnect",
+                  onClick: onRetryLiveRestore,
+                }
+              : undefined
+          }
+        />
       ) : null}
       {profanityWarning || error || startMatchError ? (
-        <p className="form-error" role="alert">
-          {profanityWarning || error || startMatchError}
-        </p>
+        <InlineAlert message={profanityWarning || error || startMatchError} />
       ) : null}
     </div>
   );
@@ -753,7 +766,10 @@ export function LandingPage({
       ) : null}
 
       {showHubGuide ? (
-        <HubOnboardingOverlay onDismiss={dismissHubGuide} />
+        <HubOnboardingOverlay
+          onDismiss={dismissHubGuide}
+          onChooseIntent={handleHubGuideIntent}
+        />
       ) : null}
 
       <div className="landing-hub__top">
@@ -818,6 +834,13 @@ export function LandingPage({
                 ›
               </span>
             </button>
+            <button
+              type="button"
+              className="play-hub-chooser__guide"
+              onClick={() => setShowHubGuide(true)}
+            >
+              What should I play?
+            </button>
           </div>
         ) : null}
 
@@ -845,8 +868,8 @@ export function LandingPage({
                   <ModeCardInfo details={classicModeDetails} variant="corner" />
                 </div>
                 <p className="head-to-head-card__description">
-                  ${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M
-                  cap · {CLASSIC_PICK_TIME_LIMIT_SECONDS}s picks · casual banners
+                  {MODE_COPY.classicH2h.blurb} {CLASSIC_PICK_TIME_LIMIT_SECONDS}s
+                  picks.
                 </p>
                 <ClassicModeSummary record={modeRecords.headToHead} />
                 <div className="mode-card__actions mode-card__actions--split">
@@ -892,8 +915,7 @@ export function LandingPage({
                   <ModeCardInfo details={proModeDetails} variant="corner" />
                 </div>
                 <p className="ranked-cap-card__description">
-                  ${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M cap ·{" "}
-                  {PICK_TIME_LIMIT_SECONDS}s picks · ranked rating
+                  {MODE_COPY.proH2h.blurb} {PICK_TIME_LIMIT_SECONDS}s picks.
                 </p>
                 <RankedModeSummary record={modeRecords.ranked} />
                 <div className="mode-card__actions mode-card__actions--split">
@@ -977,9 +999,7 @@ export function LandingPage({
           <>
             {playModeBack}
             {error || startMatchError ? (
-              <p className="form-error" role="alert">
-                {error || startMatchError}
-              </p>
+              <InlineAlert message={error || startMatchError} />
             ) : null}
             <div className="landing-game-modes landing-game-modes--daily-split">
               {renderDailyModeCard(landingBasicDaily)}
@@ -1091,18 +1111,14 @@ export function LandingPage({
                       Loading…
                     </p>
                   ) : eventLeaderboardFailed ? (
-                    <p className="form-error" role="alert">
-                      Couldn&apos;t load event standings.{" "}
-                      <button
-                        type="button"
-                        className="daily-draft-results__sync-retry"
-                        onClick={() =>
-                          setEventLeaderboardRetryTick((tick) => tick + 1)
-                        }
-                      >
-                        Retry
-                      </button>
-                    </p>
+                    <InlineAlert
+                      message="Couldn't load event standings."
+                      action={{
+                        label: "Retry",
+                        onClick: () =>
+                          setEventLeaderboardRetryTick((tick) => tick + 1),
+                      }}
+                    />
                   ) : eventLeaderboard.length === 0 ? (
                     <p className="event-leaderboard__empty hub-empty">
                       No event results yet. Be the first on the board.
@@ -1135,9 +1151,7 @@ export function LandingPage({
                 </details>
               </div>
             ) : (
-              <p className="form-error" role="alert">
-                This week&apos;s event is unavailable. Check back soon.
-              </p>
+              <InlineAlert message="This week's event is unavailable. Check back soon." />
             )}
           </>
         ) : null}

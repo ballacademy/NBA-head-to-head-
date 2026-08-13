@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { isSuperstarPlayer } from "../lib/allStars";
 import { playersById } from "../lib/playerPool";
 import type { UnlockOffer } from "../lib/playerCollection";
 import { isSuperScrubPlayer } from "../lib/playerTiers";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 
@@ -23,6 +24,7 @@ export function PlayerUnlockModal({
 }: PlayerUnlockModalProps) {
   const firstOptionRef = useRef<HTMLButtonElement | null>(null);
   const dismissRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const options = useMemo(() => {
     const uniqueIds = [...new Set([offer.optionA, offer.optionB])];
 
@@ -34,20 +36,15 @@ export function PlayerUnlockModal({
   const isWinOffer = offer.kind === "win";
   const isCompact = variant === "compact";
   const hasOptions = options.length > 0;
+  const canDismiss = Boolean(onDismiss) && !hasOptions;
 
-  useEffect(() => {
-    const focusTarget = hasOptions ? firstOptionRef.current : dismissRef.current;
-    focusTarget?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && onDismiss && !hasOptions) {
-        onDismiss();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasOptions, onDismiss]);
+  useDialogA11y({
+    onClose: onDismiss ?? (() => undefined),
+    closeOnEscape: canDismiss,
+    disableClose: !canDismiss,
+    initialFocusRef: hasOptions ? firstOptionRef : dismissRef,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   const modal = (
     <div
@@ -56,7 +53,10 @@ export function PlayerUnlockModal({
       aria-modal="true"
       aria-labelledby="unlock-title"
     >
-      <div className={`unlock-modal__panel panel${isCompact ? " unlock-modal__panel--compact" : ""}`}>
+      <div
+        ref={panelRef}
+        className={`unlock-modal__panel panel${isCompact ? " unlock-modal__panel--compact" : ""}`}
+      >
         <p className="eyebrow">
           {isWinOffer ? "New star unlocked" : "New Scrub unlocked"}
         </p>

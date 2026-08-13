@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   COLLECTION_TIER_LABELS,
@@ -6,6 +6,8 @@ import {
 } from "../lib/playerCollection";
 import type { Player } from "../lib/types";
 import { formatPlayerPositions } from "../lib/playerPool";
+import { useDialogA11y } from "../hooks/useDialogA11y";
+import { EmptyState } from "./EmptyState";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
@@ -22,21 +24,17 @@ export function CollectionTierModal({
   total,
   onClose,
 }: CollectionTierModalProps) {
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const { containerRef } = useDialogA11y({
+    onClose,
+    initialFocusRef: closeRef,
+  });
 
   const label = COLLECTION_TIER_LABELS[tier];
 
   const modal = (
     <div
+      ref={containerRef as React.RefObject<HTMLDivElement>}
       className="unlock-modal collection-tier-modal"
       role="dialog"
       aria-modal="true"
@@ -78,12 +76,18 @@ export function CollectionTierModal({
             ))}
           </ul>
         ) : (
-          <p className="collection-tier-modal__empty hub-empty">
-            No unlocked {label} yet.
-          </p>
+          <EmptyState
+            className="collection-tier-modal__empty"
+            message={`No unlocked ${label} yet.`}
+          />
         )}
 
-        <button type="button" className="secondary-button" onClick={onClose}>
+        <button
+          type="button"
+          ref={closeRef}
+          className="secondary-button"
+          onClick={onClose}
+        >
           Close
         </button>
       </div>

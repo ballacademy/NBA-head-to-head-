@@ -39,6 +39,7 @@ import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
+import { EmptyState } from "./EmptyState";
 import {
   formatDailyDraftPlayStreak,
   getDailyDraftPlayStreak,
@@ -454,7 +455,7 @@ export function DraftRoom({
       </div>
 
       <label className="field stats-search">
-        <span>Search eligible players</span>
+        <span>Search players for this slot</span>
         <input
           type="search"
           value={query}
@@ -471,6 +472,22 @@ export function DraftRoom({
       >
         {candidates.length > 0 ? (
           candidates.map(({ player, affordable, banned }) => {
+            const playerSalary = hasSalaryCap ? estimatePlayerSalary(player) : 0;
+            const remainingSalary =
+              hasSalaryCap && salaryCapLimit != null
+                ? getRemainingSalaryCap(pickedLineup, salaryCapLimit)
+                : null;
+            const overage =
+              remainingSalary != null
+                ? Math.max(0, playerSalary - remainingSalary)
+                : 0;
+            const disabledReason = banned
+              ? "Banned from Casual H2H, Pro, and Events"
+              : !affordable
+                ? overage > 0
+                  ? `Over by ${formatSalary(overage)}`
+                  : "Over the remaining salary cap for this pick"
+                : null;
             const shineClass = affordable && !banned
               ? getPlayerPickShineClass(player)
               : "";
@@ -488,12 +505,11 @@ export function DraftRoom({
                 key={player.id}
                 disabled={pickDisabled}
                 aria-disabled={pickDisabled}
+                aria-label={`${player.name}, ${player.team}, ${formatPlayerPositions(player.positions)}${
+                  disabledReason ? `. Disabled: ${disabledReason}` : ""
+                }`}
                 title={
-                  banned
-                    ? "Banned from Casual H2H, Pro, and Events"
-                    : affordable
-                      ? undefined
-                      : "Over the remaining salary cap for this pick"
+                  disabledReason ?? undefined
                 }
                 className={`player-pick player-pick--compact${isDailyDraft ? " player-pick--daily" : ""}${shineClass ? ` ${shineClass}` : ""}${
                   banned
@@ -534,9 +550,13 @@ export function DraftRoom({
                       <span className="player-pick__banned-label">Banned</span>
                     ) : hasSalaryCap ? (
                       <span className="player-pick__salary">
-                        {formatSalary(estimatePlayerSalary(player))}
+                        {formatSalary(playerSalary)}
                         {!affordable ? (
-                          <span className="player-pick__over-cap">Over cap</span>
+                          <span className="player-pick__over-cap">
+                            {overage > 0
+                              ? `Over by ${formatSalary(overage)}`
+                              : "Over cap"}
+                          </span>
                         ) : null}
                       </span>
                     ) : null}
@@ -559,10 +579,10 @@ export function DraftRoom({
             );
           })
         ) : (
-          <p className="draft-empty">
-            No eligible players for this slot. The timer will auto-fill your
-            remaining picks when it runs out.
-          </p>
+          <EmptyState
+            variant="draft"
+            message="No eligible players for this slot. The timer will auto-fill your remaining picks when it runs out."
+          />
         )}
       </div>
     </section>

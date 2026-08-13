@@ -3,6 +3,8 @@ import { sortLineupByPosition } from "../lib/lineupOrder";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { AchievementToast } from "./AchievementToast";
+import { InlineAlert } from "./InlineAlert";
+import { PostGameNextActions } from "./PostGameNextActions";
 import { buildDailyDraftShareText } from "../lib/draftGrade";
 import { buildDailyGoalResult } from "../lib/dailyGoalScoring";
 import {
@@ -316,6 +318,7 @@ export function DailyDraftResults({
       await saveLineupShareCard({
         teamName: user.name,
         headline: dailyGoal.title,
+        footerNote: formatDailyDraftProductName(user.dailyDraftMode ?? dailyGoal.mode),
         accent: DAILY_SHARE_ACCENT,
         ovr: 0,
         lineup: displayLineup,
@@ -406,17 +409,16 @@ export function DailyDraftResults({
           </p>
         ) : null}
         {!optimalReview && remoteSyncFailed ? (
-          <p className="form-error daily-draft-results__sync-error" role="alert">
-            Score saved on this device; leaderboard sync failed.{" "}
-            <button
-              type="button"
-              className="daily-draft-results__sync-retry"
-              disabled={syncRetryBusy}
-              onClick={() => void retryRemoteSync()}
-            >
-              {syncRetryBusy ? "Retrying…" : "Retry sync"}
-            </button>
-          </p>
+          <InlineAlert
+            className="daily-draft-results__sync-error"
+            message="Score saved on this device; leaderboard sync failed."
+            action={{
+              label: "Retry sync",
+              busyLabel: "Retrying…",
+              busy: syncRetryBusy,
+              onClick: () => void retryRemoteSync(),
+            }}
+          />
         ) : null}
         {playStreak && playStreak.current > 0 ? (
           <p className="daily-draft-results__streak">
@@ -445,34 +447,31 @@ export function DailyDraftResults({
       </section>
 
       <div className="panel panel--compact match-results__actions daily-draft-results__footer">
-        <div className="match-results__action-row">
-          <button
-            type="button"
-            className="play-again-button match-results__primary-action"
-            onClick={onPlayAgain}
-          >
-            Back to home
-          </button>
-          {!optimalReview ? (
-            <>
-              <button
-                type="button"
-                className="secondary-button match-results__share-button"
-                onClick={() => void handleCopyShareText()}
-              >
-                {copyButtonLabel}
-              </button>
-              <button
-                type="button"
-                className="secondary-button match-results__menu-button"
-                disabled={shareState === "busy"}
-                onClick={() => void handleShareImage()}
-              >
-                {shareButtonLabel}
-              </button>
-            </>
-          ) : null}
-        </div>
+        <PostGameNextActions
+          primary={{
+            id: "home",
+            label: "Back to home",
+            onClick: onPlayAgain,
+          }}
+          secondary={
+            optimalReview
+              ? []
+              : [
+                  {
+                    id: "copy",
+                    label: copyButtonLabel,
+                    onClick: () => void handleCopyShareText(),
+                  },
+                  {
+                    id: "share",
+                    label: shareState === "error" ? shareButtonLabel : "Share image",
+                    busyLabel: "Preparing image…",
+                    busy: shareState === "busy",
+                    onClick: () => void handleShareImage(),
+                  },
+                ]
+          }
+        />
       </div>
     </section>
   );

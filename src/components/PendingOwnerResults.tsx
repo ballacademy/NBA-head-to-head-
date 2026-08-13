@@ -5,6 +5,7 @@ import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
+import { shortLabelForH2hMode } from "../lib/modeCopy";
 import type { DeliveredOwnerResult } from "../lib/pendingOwnerResults";
 import type { ModePlayerRecords } from "../lib/playerRecord";
 
@@ -25,7 +26,7 @@ const outcomeLabel = (result: DeliveredOwnerResult["result"]["ownerResult"]) => 
 };
 
 const modeLabel = (mode: DeliveredOwnerResult["mode"]) =>
-  mode === "ranked" ? "Pro" : "Casual";
+  shortLabelForH2hMode(mode);
 
 function MatchupDetail({
   delivery,

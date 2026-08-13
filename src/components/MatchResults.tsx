@@ -5,6 +5,8 @@ import { GmIdentityBadge } from "./GmIdentityBadge";
 import { GmProfileModal } from "./GmProfileModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
+import { InlineAlert } from "./InlineAlert";
+import { PostGameNextActions } from "./PostGameNextActions";
 import {
   getMatchRecordMode,
   formatPlayerRecord,
@@ -21,10 +23,6 @@ import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
 import { rememberCommunityShareable } from "../lib/communityShareables";
-import {
-  CLASSIC_HEAD_TO_HEAD_LABEL,
-  PRO_HEAD_TO_HEAD_LABEL,
-} from "../lib/modeLabels";
 import {
   extractGhostStoredLineupId,
   submitGhostMatchOutcome,
@@ -64,6 +62,7 @@ import {
   getCurrentWeeklyEvent,
   type EventBadgeTier,
 } from "../lib/weeklyEvents";
+import { MODE_COPY } from "../lib/modeCopy";
 import type { Drafter, Player } from "../lib/types";
 import { players as allPlayers } from "../data/players";
 
@@ -150,6 +149,13 @@ export function MatchResults({
   const isTie = matchResult === "tie";
   const userWon = matchResult === "win";
   const isEventMatch = Boolean(user.eventId);
+  const resultModeLabel = user.eventId
+    ? MODE_COPY.weeklyEvent.title
+    : user.salaryCapMode
+      ? MODE_COPY.proH2h.title
+      : user.practiceMode
+        ? MODE_COPY.practice.title
+        : MODE_COPY.classicH2h.title;
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(() => {
@@ -185,17 +191,10 @@ export function MatchResults({
       userLineup.length === 5 && opponentLineup.length === 5;
 
     if (lineupsComplete) {
-      const modeLabel = user.eventId
-        ? "Weekly Event"
-        : user.salaryCapMode
-          ? PRO_HEAD_TO_HEAD_LABEL
-          : user.practiceMode
-            ? "Practice"
-            : CLASSIC_HEAD_TO_HEAD_LABEL;
       try {
         rememberCommunityShareable({
           kind: "matchup",
-          modeLabel,
+          modeLabel: resultModeLabel,
           result: matchResult,
           userTeam: user.name,
           opponentTeam: formatOpponentDisplayName(
@@ -401,6 +400,7 @@ export function MatchResults({
     userLineup,
     userScore.uncappedTotal,
     userWon,
+    resultModeLabel,
   ]);
 
   useLayoutEffect(() => {
@@ -477,6 +477,7 @@ export function MatchResults({
     try {
       await saveLineupShareCard({
         teamName: user.name,
+        subhead: resultModeLabel,
         accent: user.accent,
         ovr: userScore.total,
         ovrOverflow: userScore.ovrOverflow,
@@ -506,6 +507,15 @@ export function MatchResults({
     matchCollection.pendingUnlock?.kind === "loss"
       ? "New Scrub unlocked — choose one"
       : "New star unlocked — click to choose";
+  const shareButtonLabel =
+    shareState === "error" ? "Share failed — try again" : "Share lineup";
+  const playAgainLabel = user.practiceMode
+    ? "Practice again"
+    : user.privateMatch
+      ? "Private match again"
+      : user.eventId
+        ? "Play event again"
+        : "Draft another team";
   const playerIdentity = getOrCreatePlayerIdentity();
   const opponentProfileId =
     opponent.profilePlayerId ?? opponent.liveOpponentPlayerId ?? null;
@@ -718,114 +728,82 @@ export function MatchResults({
             </p>
           ) : null}
           {startMatchError ? (
-            <p className="form-error" role="alert">
-              {startMatchError}
-            </p>
+            <InlineAlert message={startMatchError} />
           ) : null}
           {ghostOutcomeFailed ? (
-            <p className="form-error" role="alert">
-              Couldn&apos;t report this result to the queued owner.{" "}
-              <button
-                type="button"
-                className="daily-draft-results__sync-retry"
-                disabled={ghostOutcomeRetryBusy}
-                onClick={() => void retryGhostOutcome()}
-              >
-                {ghostOutcomeRetryBusy ? "Retrying…" : "Retry"}
-              </button>
-            </p>
+            <InlineAlert
+              message="Couldn't report this result to the queued owner."
+              action={{
+                label: "Retry",
+                busyLabel: "Retrying…",
+                busy: ghostOutcomeRetryBusy,
+                onClick: () => void retryGhostOutcome(),
+              }}
+            />
           ) : null}
           {eventLeaderboardSyncFailed ? (
-            <p className="form-error" role="alert">
-              Event standings sync failed.{" "}
-              <button
-                type="button"
-                className="daily-draft-results__sync-retry"
-                disabled={eventLeaderboardRetryBusy}
-                onClick={() => void retryEventLeaderboardSync()}
-              >
-                {eventLeaderboardRetryBusy ? "Retrying…" : "Retry sync"}
-              </button>
-            </p>
+            <InlineAlert
+              message="Event standings sync failed."
+              action={{
+                label: "Retry sync",
+                busyLabel: "Retrying…",
+                busy: eventLeaderboardRetryBusy,
+                onClick: () => void retryEventLeaderboardSync(),
+              }}
+            />
           ) : null}
           {hasPendingUnlock ? (
-            <>
-              <button
-                type="button"
-                className={`unlock-reward-button${
-                  matchCollection.pendingUnlock!.kind === "loss"
-                    ? " unlock-reward-button--loss"
-                    : ""
-                }`}
-                onClick={() => setShowUnlockModal(true)}
-              >
-                {unlockButtonLabel}
-              </button>
-              <p className="match-results__unlock-note">
-                Choose your unlocked player before drafting again.
-              </p>
-              <div className="match-results__action-row match-results__action-row--unlock">
-                <button
-                  type="button"
-                  className="secondary-button match-results__share-button"
-                  disabled={isMatchmaking || shareState === "busy"}
-                  onClick={() => void handleShareLineup()}
-                >
-                  {shareState === "busy"
-                    ? "Sharing…"
-                    : shareState === "error"
-                      ? "Share failed — try again"
-                      : "Share lineup"}
-                </button>
-                <button
-                  type="button"
-                  className="secondary-button match-results__menu-button"
-                  disabled={isMatchmaking}
-                  onClick={onReturnToMenu}
-                >
-                  Back to home
-                </button>
-              </div>
-            </>
+            <PostGameNextActions
+              requiredMessage="Choose your unlocked player before drafting again."
+              primary={{
+                id: "unlock",
+                label: unlockButtonLabel,
+                onClick: () => setShowUnlockModal(true),
+              }}
+              secondary={[
+                {
+                  id: "share",
+                  label: shareButtonLabel,
+                  busyLabel: "Sharing…",
+                  disabled: isMatchmaking,
+                  busy: shareState === "busy",
+                  onClick: () => void handleShareLineup(),
+                },
+                {
+                  id: "home",
+                  label: "Back to home",
+                  disabled: isMatchmaking,
+                  onClick: onReturnToMenu,
+                },
+              ]}
+            />
           ) : (
-            <div className="match-results__action-row">
-              <button
-                type="button"
-                className="play-again-button match-results__primary-action"
-                disabled={isMatchmaking}
-                onClick={() => {
+            <PostGameNextActions
+              primary={{
+                id: "play-again",
+                label: playAgainLabel,
+                disabled: isMatchmaking,
+                onClick: () => {
                   void onPlayAgain();
-                }}
-              >
-                {user.practiceMode
-                  ? "Practice again"
-                  : user.privateMatch
-                    ? "Private match again"
-                    : user.eventId
-                      ? "Play event again"
-                      : "Draft another team"}
-              </button>
-              <button
-                type="button"
-                className="secondary-button match-results__share-button"
-                disabled={isMatchmaking || shareState === "busy"}
-                onClick={() => void handleShareLineup()}
-              >
-                {shareState === "busy"
-                  ? "Sharing…"
-                  : shareState === "error"
-                    ? "Share failed — try again"
-                    : "Share lineup"}
-              </button>
-              <button
-                type="button"
-                className="secondary-button match-results__menu-button"
-                disabled={isMatchmaking}
-                onClick={onReturnToMenu}
-              >
-                Back to home
-              </button>
-            </div>
+                },
+              }}
+              secondary={[
+                {
+                  id: "share",
+                  label: shareButtonLabel,
+                  busyLabel: "Sharing…",
+                  disabled: isMatchmaking,
+                  busy: shareState === "busy",
+                  onClick: () => void handleShareLineup(),
+                },
+                {
+                  id: "home",
+                  label: "Back to home",
+                  disabled: isMatchmaking,
+                  onClick: onReturnToMenu,
+                },
+              ]}
+            />
           )}
         </div>
       ) : null}
