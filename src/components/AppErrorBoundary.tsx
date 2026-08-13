@@ -1,6 +1,10 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { buildBugReportMailto } from "../lib/support";
 import { reportAppError } from "../lib/appErrors";
+import {
+  isChunkLoadError,
+  reloadOnceForStaleAssets,
+} from "../lib/lazyChunk";
 
 interface AppErrorBoundaryProps {
   children: ReactNode;
@@ -17,10 +21,17 @@ export class AppErrorBoundary extends Component<
   state: AppErrorBoundaryState = { error: null };
 
   static getDerivedStateFromError(error: Error) {
+    if (isChunkLoadError(error) && reloadOnceForStaleAssets()) {
+      // Keep rendering children while the reload starts.
+      return { error: null };
+    }
     return { error };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    if (isChunkLoadError(error)) {
+      return;
+    }
     reportAppError(error.message || "Unexpected render error", "react");
     console.error("Draft Day GM render error", error, info);
   }

@@ -44,26 +44,60 @@
       // asset requests can fail. Reload once to pick up the new shell.
       (function () {
         var key = "ddgm-asset-reload";
+        var chunkMessage =
+          /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|ChunkLoadError|Loading chunk [\d]+ failed/i;
+
+        function reloadOnce() {
+          try {
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, "1");
+            window.location.reload();
+          } catch (_) {
+            // Ignore storage failures.
+          }
+        }
+
         window.addEventListener(
           "error",
           function (event) {
             var target = event && event.target;
-            if (!target || !target.tagName) return;
-            var tag = String(target.tagName).toUpperCase();
-            var isStylesheet =
-              tag === "LINK" &&
-              String(target.rel || "").toLowerCase() === "stylesheet";
-            var isScript = tag === "SCRIPT";
-            if (!isStylesheet && !isScript) return;
-            if (sessionStorage.getItem(key)) return;
-            sessionStorage.setItem(key, "1");
-            window.location.reload();
+            if (target && target.tagName) {
+              var tag = String(target.tagName).toUpperCase();
+              var isStylesheet =
+                tag === "LINK" &&
+                String(target.rel || "").toLowerCase() === "stylesheet";
+              var isScript = tag === "SCRIPT";
+              if (isStylesheet || isScript) {
+                reloadOnce();
+                return;
+              }
+            }
+            var message = (event && event.message) || "";
+            if (chunkMessage.test(String(message))) {
+              reloadOnce();
+            }
           },
           true,
         );
+
+        window.addEventListener("unhandledrejection", function (event) {
+          var reason = event && event.reason;
+          var message =
+            reason && typeof reason === "object" && "message" in reason
+              ? String(reason.message || "")
+              : String(reason || "");
+          if (!chunkMessage.test(message)) return;
+          try {
+            event.preventDefault();
+          } catch (_) {}
+          reloadOnce();
+        });
+
         window.addEventListener("load", function () {
           window.setTimeout(function () {
-            sessionStorage.removeItem(key);
+            try {
+              sessionStorage.removeItem(key);
+            } catch (_) {}
           }, 2500);
         });
       })();
