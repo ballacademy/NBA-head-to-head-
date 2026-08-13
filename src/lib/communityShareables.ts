@@ -16,7 +16,9 @@ export interface CommunityMatchupAttachment {
   opponentLineupNames: string[];
   /** Player ids used to rebuild the share-card image on demand. */
   userLineupIds?: string[];
+  opponentLineupIds?: string[];
   userAccent?: string;
+  opponentAccent?: string;
   userRecord?: string;
   /** Competitive W-L (or W-L-T) after the match, e.g. "12-5". */
   userWinRecord?: string;
@@ -30,6 +32,8 @@ export interface CommunityLineupAttachment {
   modeLabel: string;
   ovr?: number;
   resultLabel?: string;
+  /** e.g. "Top 12%" when a Daily percentile is known. */
+  percentileLabel?: string;
   lineupNames: string[];
   lineupIds?: string[];
   accent?: string;
@@ -188,11 +192,16 @@ export const formatCommunityAttachmentSummary = (
     return `Tier list: ${attachment.title}`;
   }
 
-  const result = attachment.resultLabel
-    ? ` · ${attachment.resultLabel}`
-    : attachment.ovr != null
-      ? ` · ${attachment.ovr} OVR`
-      : "";
+  const parts: string[] = [];
+  if (attachment.resultLabel) {
+    parts.push(attachment.resultLabel);
+  } else if (attachment.ovr != null) {
+    parts.push(`${attachment.ovr} OVR`);
+  }
+  if (attachment.percentileLabel) {
+    parts.push(attachment.percentileLabel);
+  }
+  const result = parts.length > 0 ? ` · ${parts.join(" · ")}` : "";
   return `${attachment.modeLabel}: ${attachment.title}${result}`;
 };
 
@@ -256,13 +265,48 @@ export const buildShareCardInputFromAttachment = (
     return null;
   }
 
+  const percentile = attachment.percentileLabel?.trim();
   return {
     teamName: attachment.title,
     accent: attachment.accent?.trim() || "#22c55e",
     ovr: attachment.ovr ?? 0,
     lineup,
     headline: attachment.title,
-    statLabel: "RESULT",
+    statLabel: percentile || "RESULT",
     statValue: attachment.resultLabel || undefined,
   };
 };
+
+/** Build both sides of a matchup for the dual-team share image. */
+export const buildMatchupShareCardInputsFromAttachment = (
+  attachment: CommunityMatchupAttachment,
+  playersById: Map<string, Player>,
+): { user: LineupShareCardInput; opponent: LineupShareCardInput } | null => {
+  const user = buildShareCardInputFromAttachment(attachment, playersById);
+  if (!user) {
+    return null;
+  }
+
+  const opponentLineup = resolvePlayersByIds(
+    attachment.opponentLineupIds,
+    attachment.opponentLineupNames,
+    playersById,
+  );
+  if (opponentLineup.length === 0) {
+    return null;
+  }
+
+  return {
+    user,
+    opponent: {
+      teamName: attachment.opponentTeam,
+      accent: attachment.opponentAccent?.trim() || "#38bdf8",
+      ovr: attachment.opponentOvr,
+      lineup: opponentLineup,
+      headline: attachment.opponentTeam,
+    },
+  };
+};
+
+/** Alias used by newer community post helpers. */
+export type CommunityShareableAttachment = CommunityPostAttachment;

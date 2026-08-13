@@ -16,10 +16,14 @@ export type LandingHubDeepLink =
 
 export type LandingDeepLinkFeature = "tierList" | "leaderboard";
 
+export type LandingCommunityView = "posts" | "tiers";
+
 export interface LandingDeepLinkBoot {
   contentTab: LandingContentTab | null;
   playSection: LandingPlaySection | null;
   feature: LandingDeepLinkFeature | null;
+  communityView: LandingCommunityView | null;
+  communityPostId: string | null;
 }
 
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
@@ -176,9 +180,10 @@ export const saveLandingPlaySection = (section: LandingPlaySection) => {
 };
 
 /**
- * Read `?hub=` / `?play=` from a search string, persist content/play to
- * sessionStorage, and report any feature-page deep link (community/ranks).
- * Existing `?tierList=` handling stays in App and is preserved by URL sync.
+ * Read `?hub=` / `?play=` / `?view=` / `?post=` from a search string, persist
+ * content/play to sessionStorage, and report any feature-page deep link
+ * (community/ranks). Existing `?tierList=` handling stays in App and is
+ * preserved by URL sync.
  */
 export const applyLandingDeepLinksFromSearch = (
   search: string,
@@ -188,10 +193,14 @@ export const applyLandingDeepLinksFromSearch = (
   );
   const hub = parseLandingHubParam(params.get("hub"));
   const play = parseLandingPlayParam(params.get("play"));
+  const viewToken = normalizeQueryToken(params.get("view") ?? "");
+  const postRaw = params.get("post")?.trim() ?? "";
+  const communityPostId = postRaw ? postRaw.slice(0, 80) : null;
 
   let contentTab: LandingContentTab | null = null;
   let playSection: LandingPlaySection | null = play;
   let feature: LandingDeepLinkFeature | null = null;
+  let communityView: LandingCommunityView | null = null;
 
   if (hub === "play" || hub === "roster" || hub === "account") {
     contentTab = hub;
@@ -200,6 +209,28 @@ export const applyLandingDeepLinksFromSearch = (
     feature = "tierList";
   } else if (hub === "ranks" || hub === "standings") {
     feature = "leaderboard";
+  }
+
+  if (
+    viewToken === "posts" ||
+    viewToken === "post" ||
+    viewToken === "feed"
+  ) {
+    communityView = "posts";
+    feature = feature ?? "tierList";
+  } else if (
+    viewToken === "tiers" ||
+    viewToken === "tier" ||
+    viewToken === "tier-lists" ||
+    viewToken === "tierlists"
+  ) {
+    communityView = "tiers";
+    feature = feature ?? "tierList";
+  }
+
+  if (communityPostId) {
+    communityView = "posts";
+    feature = feature ?? "tierList";
   }
 
   if (playSection) {
@@ -211,17 +242,19 @@ export const applyLandingDeepLinksFromSearch = (
     }
   }
 
-  return { contentTab, playSection, feature };
+  return { contentTab, playSection, feature, communityView, communityPostId };
 };
 
 export interface SyncLandingDeepLinkUrlOptions {
   hub?: LandingHubDeepLink | null;
   play?: LandingPlaySection | null;
+  view?: LandingCommunityView | null;
+  post?: string | null;
   /** When false, drop hub/play params (e.g. leaving the landing surface). */
   clearLandingParams?: boolean;
 }
 
-/** Sync hub/play query params via replaceState; preserves `tierList` and other params. */
+/** Sync hub/play/view/post query params via replaceState; preserves `tierList`. */
 export const syncLandingDeepLinkUrl = (
   options: SyncLandingDeepLinkUrlOptions,
 ) => {
@@ -235,6 +268,8 @@ export const syncLandingDeepLinkUrl = (
     if (options.clearLandingParams) {
       url.searchParams.delete("hub");
       url.searchParams.delete("play");
+      url.searchParams.delete("view");
+      url.searchParams.delete("post");
     } else {
       if (options.hub != null) {
         const hubParam =
@@ -251,6 +286,16 @@ export const syncLandingDeepLinkUrl = (
         if (options.hub == null && !url.searchParams.get("hub")) {
           url.searchParams.set("hub", "play");
         }
+      }
+      if (options.view === null) {
+        url.searchParams.delete("view");
+      } else if (options.view != null) {
+        url.searchParams.set("view", options.view);
+      }
+      if (options.post === null) {
+        url.searchParams.delete("post");
+      } else if (options.post != null && options.post.trim()) {
+        url.searchParams.set("post", options.post.trim().slice(0, 80));
       }
     }
 

@@ -9,17 +9,30 @@ import {
 } from "../lib/tierListCommunity";
 import {
   COMMUNITY_POST_BODY_MAX,
+  COMMUNITY_REPLY_BODY_MAX,
+  createCommunityPostReply,
   formatCommunityPostTime,
+  listCommunityPostReplies,
+  reportCommunityPost,
   type CommunityPost,
+  type CommunityPostReply,
   type CommunityPostSort,
 } from "../lib/communityPosts";
 import {
+  loadMutedPlayerIds,
+  mutePlayerId,
+} from "../lib/communityMute";
+import {
+  buildMatchupShareCardInputsFromAttachment,
   buildShareCardInputFromAttachment,
   formatCommunityAttachmentSummary,
   formatCommunityMatchupDetails,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
-import { createLineupShareCardBlob } from "../lib/lineupShareCard";
+import {
+  createLineupShareCardBlob,
+  createMatchupShareCardBlob,
+} from "../lib/lineupShareCard";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
@@ -27,9 +40,17 @@ import {
   sortTierListLibraryDocuments,
 } from "../lib/tierList";
 import { getTeamGlowColor } from "../lib/teamColors";
-import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import { RankedTierBadge } from "./RankedTierBadge";
 
 const formatSavedAt = (savedAt: number) =>
   new Date(savedAt).toLocaleString(undefined, {
@@ -42,46 +63,56 @@ const formatSavedAt = (savedAt: number) =>
 interface TierListHubHomeProps {
   onOpenPosts: () => void;
   onOpenTiers: () => void;
+  postsToday?: number | null;
 }
 
 export function TierListHubHome({
   onOpenPosts,
   onOpenTiers,
+  postsToday = null,
 }: TierListHubHomeProps) {
   return (
-    <div className="play-hub-chooser tier-list-hub__chooser" role="list">
-      <button
-        type="button"
-        className="play-hub-chooser__option hub-accent hub-accent--community"
-        role="listitem"
-        onClick={onOpenPosts}
-      >
-        <span className="play-hub-chooser__copy">
-          <span className="play-hub-chooser__label">Posts</span>
-          <span className="play-hub-chooser__meta">
-            Share takes and attach recent results or published lists
+    <div className="tier-list-hub__home">
+      {postsToday != null && postsToday > 0 ? (
+        <p className="community-activity-strip" role="status">
+          <strong>{postsToday}</strong> new post
+          {postsToday === 1 ? "" : "s"} today
+        </p>
+      ) : null}
+      <div className="play-hub-chooser tier-list-hub__chooser" role="list">
+        <button
+          type="button"
+          className="play-hub-chooser__option hub-accent hub-accent--community"
+          role="listitem"
+          onClick={onOpenPosts}
+        >
+          <span className="play-hub-chooser__copy">
+            <span className="play-hub-chooser__label">Posts</span>
+            <span className="play-hub-chooser__meta">
+              Share takes and attach recent results or published lists
+            </span>
           </span>
-        </span>
-        <span className="play-hub-chooser__chevron" aria-hidden="true">
-          ›
-        </span>
-      </button>
-      <button
-        type="button"
-        className="play-hub-chooser__option hub-accent hub-accent--community"
-        role="listitem"
-        onClick={onOpenTiers}
-      >
-        <span className="play-hub-chooser__copy">
-          <span className="play-hub-chooser__label">Tier lists</span>
-          <span className="play-hub-chooser__meta">
-            Browse public boards, open yours, or create a new list
+          <span className="play-hub-chooser__chevron" aria-hidden="true">
+            ›
           </span>
-        </span>
-        <span className="play-hub-chooser__chevron" aria-hidden="true">
-          ›
-        </span>
-      </button>
+        </button>
+        <button
+          type="button"
+          className="play-hub-chooser__option hub-accent hub-accent--community"
+          role="listitem"
+          onClick={onOpenTiers}
+        >
+          <span className="play-hub-chooser__copy">
+            <span className="play-hub-chooser__label">Tier lists</span>
+            <span className="play-hub-chooser__meta">
+              Browse public boards, open yours, or create a new list
+            </span>
+          </span>
+          <span className="play-hub-chooser__chevron" aria-hidden="true">
+            ›
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -503,11 +534,19 @@ interface CommunityPostsPanelProps {
   shareables: CommunityPostAttachment[];
   selectedAttachment: CommunityPostAttachment | null;
   onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
+  quotePostId: string | null;
+  onSelectQuote: (postId: string | null) => void;
   onToggleLike: (postId: string, liked: boolean) => void;
   onDeletePost?: (postId: string) => void;
+  onMuteAuthor?: (playerId: string) => void;
   viewerPlayerId?: string;
+  authorName: string;
+  authorTag: string;
   onOpenTiers?: () => void;
+  onOpenPublishedTierList?: (publishedId: string) => void;
   playersById: Map<string, Player>;
+  focusPostId?: string | null;
+  postsToday?: number | null;
 }
 
 export function CommunityPostsPanel({
@@ -528,11 +567,19 @@ export function CommunityPostsPanel({
   shareables,
   selectedAttachment,
   onSelectAttachment,
+  quotePostId,
+  onSelectQuote,
   onToggleLike,
   onDeletePost,
+  onMuteAuthor,
   viewerPlayerId = "",
+  authorName,
+  authorTag,
   onOpenTiers,
+  onOpenPublishedTierList,
   playersById,
+  focusPostId = null,
+  postsToday = null,
 }: CommunityPostsPanelProps) {
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
   const [viewingPostId, setViewingPostId] = useState<string | null>(null);
@@ -542,6 +589,22 @@ export function CommunityPostsPanel({
   const [viewBusy, setViewBusy] = useState(false);
   const [viewError, setViewError] = useState<string | null>(null);
   const [showMatchupDetails, setShowMatchupDetails] = useState(false);
+  const [showingFullMatchup, setShowingFullMatchup] = useState(false);
+  const [expandedReplies, setExpandedReplies] = useState<string | null>(null);
+  const [repliesByPost, setRepliesByPost] = useState<
+    Record<string, CommunityPostReply[]>
+  >({});
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [replyBusy, setReplyBusy] = useState<string | null>(null);
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const [muteEpoch, setMuteEpoch] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const focusRef = useRef<HTMLLIElement | null>(null);
+
+  const quotedPost = quotePostId
+    ? posts.find((post) => post.id === quotePostId) ?? null
+    : null;
 
   useEffect(() => {
     return () => {
@@ -551,10 +614,38 @@ export function CommunityPostsPanel({
     };
   }, [viewImageUrl]);
 
+  useEffect(() => {
+    if (!focusPostId || !focusRef.current) {
+      return;
+    }
+    focusRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusPostId, posts]);
+
+  useEffect(() => {
+    if (!hasMore || !onLoadMore || loading || loadingMore) {
+      return;
+    }
+    const node = sentinelRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: "240px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, onLoadMore, posts.length]);
+
   const closeAttachmentViewer = () => {
     setViewingPostId(null);
     setViewingAttachment(null);
     setShowMatchupDetails(false);
+    setShowingFullMatchup(false);
     setViewBusy(false);
     setViewError(null);
     setViewImageUrl((current) => {
@@ -565,17 +656,46 @@ export function CommunityPostsPanel({
     });
   };
 
+  const renderShareImage = useCallback(
+    async (
+      attachment: CommunityPostAttachment,
+      mode: "lineup" | "matchup",
+    ) => {
+      if (attachment.kind === "tierList") {
+        return null;
+      }
+      if (mode === "matchup" && attachment.kind === "matchup") {
+        const inputs = buildMatchupShareCardInputsFromAttachment(
+          attachment,
+          playersById,
+        );
+        if (!inputs) {
+          return null;
+        }
+        return createMatchupShareCardBlob(inputs);
+      }
+      const input = buildShareCardInputFromAttachment(attachment, playersById);
+      if (!input) {
+        return null;
+      }
+      return createLineupShareCardBlob(input);
+    },
+    [playersById],
+  );
+
   const handleViewAttachment = async (
     postId: string,
     attachment: CommunityPostAttachment,
   ) => {
     if (attachment.kind === "tierList") {
+      onOpenPublishedTierList?.(attachment.publishedId);
       return;
     }
 
     setViewingPostId(postId);
     setViewingAttachment(attachment);
     setShowMatchupDetails(false);
+    setShowingFullMatchup(false);
     setViewBusy(true);
     setViewError(null);
     setViewImageUrl((current) => {
@@ -586,19 +706,122 @@ export function CommunityPostsPanel({
     });
 
     try {
-      const input = buildShareCardInputFromAttachment(attachment, playersById);
-      if (!input) {
+      const blob = await renderShareImage(attachment, "lineup");
+      if (!blob) {
         setViewError("Could not rebuild that lineup image.");
         setViewBusy(false);
         return;
       }
-      const blob = await createLineupShareCardBlob(input);
       setViewImageUrl(URL.createObjectURL(blob));
     } catch {
       setViewError("Could not open that lineup image.");
     } finally {
       setViewBusy(false);
     }
+  };
+
+  const handleToggleFullMatchup = async () => {
+    if (!viewingAttachment || viewingAttachment.kind !== "matchup") {
+      return;
+    }
+    const next = !showingFullMatchup;
+    setShowingFullMatchup(next);
+    setShowMatchupDetails(next);
+    setViewBusy(true);
+    setViewError(null);
+    setViewImageUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return null;
+    });
+    try {
+      const blob = await renderShareImage(
+        viewingAttachment,
+        next ? "matchup" : "lineup",
+      );
+      if (!blob) {
+        setViewError(
+          next
+            ? "Could not rebuild the full matchup image."
+            : "Could not rebuild that lineup image.",
+        );
+        return;
+      }
+      setViewImageUrl(URL.createObjectURL(blob));
+    } catch {
+      setViewError("Could not update the matchup image.");
+    } finally {
+      setViewBusy(false);
+    }
+  };
+
+  const handleToggleReplies = async (postId: string) => {
+    if (expandedReplies === postId) {
+      setExpandedReplies(null);
+      return;
+    }
+    setExpandedReplies(postId);
+    setReplyError(null);
+    if (repliesByPost[postId]) {
+      return;
+    }
+    const replies = await listCommunityPostReplies({ postId });
+    setRepliesByPost((current) => ({ ...current, [postId]: replies }));
+  };
+
+  const handleSubmitReply = async (postId: string) => {
+    const body = (replyDrafts[postId] ?? "").trim();
+    if (!body || replyBusy) {
+      return;
+    }
+    setReplyBusy(postId);
+    setReplyError(null);
+    const result = await createCommunityPostReply({
+      playerId: viewerPlayerId,
+      postId,
+      authorName,
+      authorTag,
+      body,
+    });
+    setReplyBusy(null);
+    if (!result.ok) {
+      setReplyError(result.error);
+      return;
+    }
+    setReplyDrafts((current) => ({ ...current, [postId]: "" }));
+    setRepliesByPost((current) => ({
+      ...current,
+      [postId]: [...(current[postId] ?? []), result.reply],
+    }));
+  };
+
+  const handleReport = async (postId: string) => {
+    if (!accountLinked || actionBusy) {
+      return;
+    }
+    const reason = window.prompt("Optional note for this report:") ?? "";
+    setActionBusy(postId);
+    const result = await reportCommunityPost({
+      playerId: viewerPlayerId,
+      postId,
+      reason,
+    });
+    setActionBusy(null);
+    if (!result.ok) {
+      setReplyError(result.error);
+      return;
+    }
+    window.alert("Thanks — report submitted.");
+  };
+
+  const handleMute = (playerId: string) => {
+    if (!playerId || playerId === viewerPlayerId) {
+      return;
+    }
+    mutePlayerId(playerId);
+    setMuteEpoch((value) => value + 1);
+    onMuteAuthor?.(playerId);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -610,6 +833,10 @@ export function CommunityPostsPanel({
     entry.kind === "tierList"
       ? `${entry.kind}:${entry.publishedId}`
       : `${entry.kind}:${entry.savedAt}`;
+
+  const muted = new Set(loadMutedPlayerIds());
+  void muteEpoch;
+  const visiblePosts = posts.filter((post) => !muted.has(post.playerId));
 
   return (
     <div
@@ -632,9 +859,15 @@ export function CommunityPostsPanel({
         </label>
       </div>
 
+      {postsToday != null && postsToday > 0 ? (
+        <p className="community-activity-strip" role="status">
+          <strong>{postsToday}</strong> new today
+        </p>
+      ) : null}
+
       {!accountLinked ? (
         <AccountRequiredNote className="account-required-note--inline">
-          Create an account to post or like. Anyone can browse.
+          Create an account to post, reply, or like. Anyone can browse.
         </AccountRequiredNote>
       ) : null}
 
@@ -650,6 +883,25 @@ export function CommunityPostsPanel({
             disabled={!accountLinked || submitting}
           />
         </label>
+
+        {quotedPost ? (
+          <div className="community-posts-panel__quote-compose" role="status">
+            <div className="community-posts-panel__quote-compose-head">
+              <span>
+                Quoting {quotedPost.authorName} ·{" "}
+                {formatPublicTag(quotedPost.authorTag)}
+              </span>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => onSelectQuote(null)}
+              >
+                Clear
+              </button>
+            </div>
+            <p>{quotedPost.body}</p>
+          </div>
+        ) : null}
 
         <label className="tier-list-hub__sort community-posts-panel__attach">
           <span>Attach a recent result or list</span>
@@ -706,17 +958,17 @@ export function CommunityPostsPanel({
         ) : null}
       </form>
 
-      {likeError ? (
+      {likeError || replyError ? (
         <p className="form-error community-posts-panel__like-error" role="alert">
-          {likeError}
+          {likeError || replyError}
         </p>
       ) : null}
 
-      {loading && posts.length === 0 ? (
+      {loading && visiblePosts.length === 0 ? (
         <p className="hub-empty" role="status">
           Loading…
         </p>
-      ) : posts.length === 0 ? (
+      ) : visiblePosts.length === 0 ? (
         <div className="hub-empty">
           <p>No posts yet. Be the first to share something short.</p>
           {onOpenTiers ? (
@@ -733,81 +985,249 @@ export function CommunityPostsPanel({
         </div>
       ) : (
         <ul className="tier-list__library-list community-posts-panel__list">
-          {posts.map((post) => (
-            <li key={post.id} className="tier-list__library-item community-posts-panel__item">
-              <div className="tier-list__library-copy">
-                <strong>
-                  {post.authorName} · {formatPublicTag(post.authorTag)}
-                </strong>
-                <span>{formatCommunityPostTime(post.createdAt)}</span>
-                <p className="community-posts-panel__body">{post.body}</p>
-                {post.attachment ? (
-                  <div className="community-posts-panel__attachment">
-                    <p className="community-posts-panel__attachment-summary">
-                      {formatCommunityAttachmentSummary(post.attachment)}
-                    </p>
-                    {post.attachment.kind === "matchup" ||
-                    post.attachment.kind === "lineup" ? (
-                      <button
-                        type="button"
-                        className="secondary-button community-posts-panel__view-attach"
-                        onClick={() =>
-                          void handleViewAttachment(post.id, post.attachment!)
-                        }
-                      >
-                        View lineup
-                      </button>
+          {visiblePosts.map((post) => {
+            const isOwn = Boolean(
+              viewerPlayerId && post.playerId === viewerPlayerId,
+            );
+            const replyRemaining =
+              COMMUNITY_REPLY_BODY_MAX - (replyDrafts[post.id]?.length ?? 0);
+            return (
+              <li
+                key={post.id}
+                ref={focusPostId === post.id ? focusRef : undefined}
+                className={`tier-list__library-item community-posts-panel__item${
+                  focusPostId === post.id
+                    ? " community-posts-panel__item--focus"
+                    : ""
+                }`}
+              >
+                <div className="tier-list__library-copy">
+                  <div className="community-posts-panel__author">
+                    <strong>
+                      {post.authorName} · {formatPublicTag(post.authorTag)}
+                    </strong>
+                    <span className="community-posts-panel__author-meta">
+                      {formatCommunityPostTime(post.createdAt)}
+                    </span>
+                    {post.authorRankedElo != null ||
+                    post.authorClassicElo != null ? (
+                      <span className="community-posts-panel__flair">
+                        {post.authorRankedElo != null ? (
+                          <RankedTierBadge
+                            elo={post.authorRankedElo}
+                            compact
+                          />
+                        ) : null}
+                        {post.authorClassicElo != null ? (
+                          <RankedTierBadge
+                            elo={post.authorClassicElo}
+                            tierLabel="Classic"
+                            compact
+                          />
+                        ) : null}
+                      </span>
                     ) : null}
                   </div>
-                ) : null}
-              </div>
-              <div className="tier-list__library-actions">
-                <button
-                  type="button"
-                  className={`secondary-button${
-                    post.likedByViewer ? " is-active-like" : ""
-                  }`}
-                  aria-pressed={post.likedByViewer}
-                  disabled={!accountLinked}
-                  title={
-                    accountLinked ? undefined : "Create an account to like"
-                  }
-                  onClick={() => onToggleLike(post.id, !post.likedByViewer)}
-                >
-                  {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
-                </button>
-                {onDeletePost &&
-                viewerPlayerId &&
-                post.playerId === viewerPlayerId ? (
+                  <p className="community-posts-panel__body">{post.body}</p>
+                  {post.quote ? (
+                    <blockquote className="community-posts-panel__quote">
+                      <span>
+                        {post.quote.authorName} ·{" "}
+                        {formatPublicTag(post.quote.authorTag)}
+                      </span>
+                      <p>{post.quote.bodyPreview}</p>
+                    </blockquote>
+                  ) : null}
+                  {post.attachment ? (
+                    <div className="community-posts-panel__attachment">
+                      <p className="community-posts-panel__attachment-summary">
+                        {formatCommunityAttachmentSummary(post.attachment)}
+                      </p>
+                      {post.attachment.kind === "matchup" ||
+                      post.attachment.kind === "lineup" ? (
+                        <button
+                          type="button"
+                          className="secondary-button community-posts-panel__view-attach"
+                          onClick={() => {
+                            if (!post.attachment) {
+                              return;
+                            }
+                            void handleViewAttachment(post.id, post.attachment);
+                          }}
+                        >
+                          View lineup
+                        </button>
+                      ) : null}
+                      {post.attachment.kind === "tierList" ? (
+                        <button
+                          type="button"
+                          className="secondary-button community-posts-panel__view-attach"
+                          onClick={() => {
+                            if (
+                              !post.attachment ||
+                              post.attachment.kind !== "tierList"
+                            ) {
+                              return;
+                            }
+                            onOpenPublishedTierList?.(
+                              post.attachment.publishedId,
+                            );
+                          }}
+                        >
+                          View tier list
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {expandedReplies === post.id ? (
+                    <div className="community-posts-panel__replies">
+                      {(repliesByPost[post.id] ?? []).length === 0 ? (
+                        <p className="community-posts-panel__replies-empty">
+                          No replies yet.
+                        </p>
+                      ) : (
+                        <ul className="community-posts-panel__replies-list">
+                          {(repliesByPost[post.id] ?? []).map((reply) => (
+                            <li key={reply.id}>
+                              <strong>
+                                {reply.authorName} ·{" "}
+                                {formatPublicTag(reply.authorTag)}
+                              </strong>
+                              <span>
+                                {formatCommunityPostTime(reply.createdAt)}
+                              </span>
+                              <p>{reply.body}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {accountLinked ? (
+                        <div className="community-posts-panel__reply-compose">
+                          <textarea
+                            rows={2}
+                            maxLength={COMMUNITY_REPLY_BODY_MAX}
+                            value={replyDrafts[post.id] ?? ""}
+                            placeholder="Write a reply…"
+                            onChange={(event) =>
+                              setReplyDrafts((current) => ({
+                                ...current,
+                                [post.id]: event.target.value,
+                              }))
+                            }
+                            disabled={replyBusy === post.id}
+                          />
+                          <div className="community-posts-panel__compose-meta">
+                            <span
+                              className={
+                                replyRemaining < 40 ? "is-tight" : undefined
+                              }
+                            >
+                              {replyRemaining} left
+                            </span>
+                            <button
+                              type="button"
+                              className="secondary-button"
+                              disabled={
+                                replyBusy === post.id ||
+                                !(replyDrafts[post.id] ?? "").trim()
+                              }
+                              onClick={() => void handleSubmitReply(post.id)}
+                            >
+                              {replyBusy === post.id ? "Sending…" : "Reply"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="tier-list__library-actions community-posts-panel__actions">
+                  <button
+                    type="button"
+                    className={`secondary-button${
+                      post.likedByViewer ? " is-active-like" : ""
+                    }`}
+                    aria-pressed={post.likedByViewer}
+                    disabled={!accountLinked}
+                    title={
+                      accountLinked ? undefined : "Create an account to like"
+                    }
+                    onClick={() => onToggleLike(post.id, !post.likedByViewer)}
+                  >
+                    {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
+                  </button>
                   <button
                     type="button"
                     className="secondary-button"
-                    onClick={() => onDeletePost(post.id)}
+                    onClick={() => void handleToggleReplies(post.id)}
                   >
-                    Delete
+                    {expandedReplies === post.id ? "Hide" : "Replies"} ·{" "}
+                    {Math.max(
+                      post.replyCount,
+                      (repliesByPost[post.id] ?? []).length,
+                    )}
                   </button>
-                ) : null}
-              </div>
-            </li>
-          ))}
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={!accountLinked}
+                    onClick={() => onSelectQuote(post.id)}
+                  >
+                    Quote
+                  </button>
+                  {!isOwn ? (
+                    <>
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        disabled={!accountLinked || actionBusy === post.id}
+                        onClick={() => void handleReport(post.id)}
+                      >
+                        Report
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => handleMute(post.playerId)}
+                      >
+                        Mute
+                      </button>
+                    </>
+                  ) : null}
+                  {onDeletePost && isOwn ? (
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => onDeletePost(post.id)}
+                    >
+                      Delete
+                    </button>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      {loading && posts.length > 0 ? (
+      {loading && visiblePosts.length > 0 ? (
         <p className="tier-list__hint" role="status">
           Updating…
         </p>
       ) : null}
 
-      {hasMore && onLoadMore && !loading ? (
-        <button
-          type="button"
-          className="secondary-button"
-          disabled={loadingMore}
-          onClick={onLoadMore}
+      {hasMore ? (
+        <div
+          ref={sentinelRef}
+          className="community-posts-panel__sentinel"
+          aria-hidden="true"
         >
-          {loadingMore ? "Loading…" : "Load more"}
-        </button>
+          {loadingMore ? (
+            <p className="tier-list__hint" role="status">
+              Loading more…
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {viewingPostId ? (
@@ -823,7 +1243,9 @@ export function CommunityPostsPanel({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="community-posts-panel__viewer-header">
-              <h3>Shared lineup</h3>
+              <h3>
+                {showingFullMatchup ? "Shared matchup" : "Shared lineup"}
+              </h3>
               <button
                 type="button"
                 className="secondary-button"
@@ -846,7 +1268,7 @@ export function CommunityPostsPanel({
               <img
                 className="community-posts-panel__viewer-image"
                 src={viewImageUrl}
-                alt="Shared lineup"
+                alt={showingFullMatchup ? "Shared matchup" : "Shared lineup"}
               />
             ) : null}
             {viewingAttachment?.kind === "matchup" ? (
@@ -854,10 +1276,11 @@ export function CommunityPostsPanel({
                 <button
                   type="button"
                   className="secondary-button"
-                  aria-expanded={showMatchupDetails}
-                  onClick={() => setShowMatchupDetails((current) => !current)}
+                  aria-expanded={showingFullMatchup}
+                  onClick={() => void handleToggleFullMatchup()}
+                  disabled={viewBusy}
                 >
-                  {showMatchupDetails ? "Hide matchup" : "Show matchup"}
+                  {showingFullMatchup ? "Show my lineup" : "Show matchup"}
                 </button>
                 {showMatchupDetails ? (
                   (() => {

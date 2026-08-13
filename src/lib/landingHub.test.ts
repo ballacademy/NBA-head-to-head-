@@ -110,6 +110,18 @@ describe("landingHub", () => {
     );
   });
 
+  it("maps view/post params into community deep links", () => {
+    const posts = applyLandingDeepLinksFromSearch("?hub=community&view=posts");
+    expect(posts.feature).toBe("tierList");
+    expect(posts.communityView).toBe("posts");
+    expect(posts.communityPostId).toBeNull();
+
+    const focused = applyLandingDeepLinksFromSearch("?post=cpost-abc");
+    expect(focused.feature).toBe("tierList");
+    expect(focused.communityView).toBe("posts");
+    expect(focused.communityPostId).toBe("cpost-abc");
+  });
+
   it("syncs hub/play into the URL while preserving tierList", () => {
     const replaceState = vi.fn();
     vi.stubGlobal("window", {
