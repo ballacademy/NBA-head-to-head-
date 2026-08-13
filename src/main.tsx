@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { RuntimeErrorToaster } from "./components/RuntimeErrorToaster";
-import { clearStaleAssetReloadFlag } from "./lib/lazyChunk";
 import "@fontsource/archivo/latin-600.css";
 import "@fontsource/archivo/latin-700.css";
 import "@fontsource/archivo/latin-800.css";
@@ -19,8 +18,6 @@ const root = document.getElementById("root");
 if (!root) {
   throw new Error("Root element not found");
 }
-
-clearStaleAssetReloadFlag();
 
 createRoot(root).render(
   <StrictMode>
