@@ -26,6 +26,7 @@ import {
   buildMatchupShareCardInputsFromAttachment,
   buildShareCardInputFromAttachment,
   formatCommunityAttachmentChip,
+  formatCommunityAttachmentSummary,
   formatCommunityMatchupDetails,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
@@ -37,6 +38,9 @@ import { buildCommunityPostShareUrl } from "../lib/landingHub";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE } from "../lib/accountGate";
 import { formatPublicTag } from "../lib/playerIdentity";
+import { useDialogA11y } from "../hooks/useDialogA11y";
+import { EmptyState } from "./EmptyState";
+import { ReportPostDialog } from "./ReportPostDialog";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
   displayTierListTitle,
@@ -50,6 +54,7 @@ import {
   useState,
   type CSSProperties,
   type FormEvent,
+  type RefObject,
 } from "react";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { AccountRequiredNote } from "./AccountRequiredNote";
@@ -653,6 +658,11 @@ export function CommunityPostsPanel({
   const [expandedAuthorId, setExpandedAuthorId] = useState<string | null>(null);
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const viewerCloseRef = useRef<HTMLButtonElement | null>(null);
+  const viewerPanelRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const focusRef = useRef<HTMLLIElement | null>(null);
 
@@ -691,7 +701,7 @@ export function CommunityPostsPanel({
     return () => observer.disconnect();
   }, [hasMore, loading, loadingMore, onLoadMore, posts.length]);
 
-  const closeAttachmentViewer = () => {
+  const closeAttachmentViewer = useCallback(() => {
     setViewingPostId(null);
     setViewingAttachment(null);
     setShowMatchupDetails(false);
@@ -704,7 +714,14 @@ export function CommunityPostsPanel({
       }
       return null;
     });
-  };
+  }, []);
+
+  useDialogA11y({
+    open: Boolean(viewingPostId),
+    onClose: closeAttachmentViewer,
+    initialFocusRef: viewerCloseRef,
+    containerRef: viewerPanelRef as RefObject<HTMLElement | null>,
+  });
 
   const renderShareImage = useCallback(
     async (
@@ -850,20 +867,30 @@ export function CommunityPostsPanel({
     if (!accountLinked || actionBusy) {
       return;
     }
-    const reason = window.prompt("Optional note for this report:") ?? "";
-    setActionBusy(postId);
+    setReportError(null);
+    setReportPostId(postId);
+    setOpenMenuPostId(null);
+  };
+
+  const handleSubmitReport = async (reason: string) => {
+    if (!reportPostId || actionBusy) {
+      return;
+    }
+    setActionBusy(reportPostId);
+    setReportError(null);
     const result = await reportCommunityPost({
       playerId: viewerPlayerId,
-      postId,
+      postId: reportPostId,
       reason,
     });
     setActionBusy(null);
     if (!result.ok) {
-      setReplyError(result.error);
+      setReportError(result.error);
       return;
     }
-    setOpenMenuPostId(null);
-    window.alert("Thanks — report submitted.");
+    setReportPostId(null);
+    setReportStatus("Thanks — report submitted.");
+    window.setTimeout(() => setReportStatus(null), 2500);
   };
 
   const handleMute = (playerId: string) => {
@@ -980,9 +1007,43 @@ export function CommunityPostsPanel({
         ) : null}
 
         {selectedAttachment ? (
-          <p className="community-posts-panel__attachment-preview" role="status">
-            Attaching: {formatCommunityAttachmentChip(selectedAttachment)}
-          </p>
+          <div
+            className="community-posts-panel__attach-preview-card"
+            role="status"
+          >
+            <div className="community-posts-panel__attach-preview-top">
+              <span className="community-posts-panel__attachment-chip">
+                {formatCommunityAttachmentChip(selectedAttachment)}
+              </span>
+              <button
+                type="button"
+                className="community-posts-panel__text-action"
+                onClick={() => onSelectAttachment(null)}
+              >
+                Remove
+              </button>
+            </div>
+            <p className="community-posts-panel__attach-preview-summary">
+              {formatCommunityAttachmentSummary(selectedAttachment)}
+            </p>
+            {selectedAttachment.kind === "matchup" ? (
+              <p className="community-posts-panel__attach-preview-meta">
+                {[
+                  selectedAttachment.userRecord
+                    ? `Projected ${selectedAttachment.userRecord}`
+                    : null,
+                  selectedAttachment.userLineupNames.slice(0, 5).join(", "),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            ) : null}
+            {selectedAttachment.kind === "lineup" ? (
+              <p className="community-posts-panel__attach-preview-meta">
+                {selectedAttachment.lineupNames.slice(0, 5).join(", ")}
+              </p>
+            ) : null}
+          </div>
         ) : null}
 
         <div className="community-posts-panel__compose-meta">
@@ -1010,15 +1071,19 @@ export function CommunityPostsPanel({
         </p>
       ) : null}
 
-      {loading && visiblePosts.length === 0 ? (
-        <p className="hub-empty" role="status">
-          Loading…
+      {reportStatus ? (
+        <p className="tier-list__status" role="status">
+          {reportStatus}
         </p>
+      ) : null}
+
+      {loading && visiblePosts.length === 0 ? (
+        <EmptyState message="Loading…" loading />
       ) : visiblePosts.length === 0 ? (
-        <div className="hub-empty">
-          <p>No posts yet. Be the first to share something short.</p>
-          {onOpenTiers ? (
-            <div className="hub-empty__actions">
+        <EmptyState
+          message="No posts yet. Be the first to share something short."
+          actions={
+            onOpenTiers ? (
               <button
                 type="button"
                 className="secondary-button"
@@ -1026,9 +1091,9 @@ export function CommunityPostsPanel({
               >
                 Browse tier lists
               </button>
-            </div>
-          ) : null}
-        </div>
+            ) : undefined
+          }
+        />
       ) : (
         <ul className="tier-list__library-list community-posts-panel__list">
           {visiblePosts.map((post) => {
@@ -1351,6 +1416,7 @@ export function CommunityPostsPanel({
           onClick={closeAttachmentViewer}
         >
           <div
+            ref={viewerPanelRef}
             className="community-posts-panel__viewer-card"
             onClick={(event) => event.stopPropagation()}
           >
@@ -1360,6 +1426,7 @@ export function CommunityPostsPanel({
               </h3>
               <button
                 type="button"
+                ref={viewerCloseRef}
                 className="secondary-button"
                 onClick={closeAttachmentViewer}
               >
@@ -1367,9 +1434,7 @@ export function CommunityPostsPanel({
               </button>
             </div>
             {viewBusy ? (
-              <p className="hub-empty" role="status">
-                Loading…
-              </p>
+              <EmptyState message="Loading…" loading />
             ) : null}
             {viewError ? (
               <p className="form-error" role="alert">
@@ -1414,6 +1479,22 @@ export function CommunityPostsPanel({
             ) : null}
           </div>
         </div>
+      ) : null}
+
+      {reportPostId ? (
+        <ReportPostDialog
+          postId={reportPostId}
+          busy={actionBusy === reportPostId}
+          error={reportError}
+          onSubmit={handleSubmitReport}
+          onClose={() => {
+            if (actionBusy === reportPostId) {
+              return;
+            }
+            setReportPostId(null);
+            setReportError(null);
+          }}
+        />
       ) : null}
     </div>
   );

@@ -8744,6 +8744,25 @@ h1.landing-hub__title--name {
   color: #e2e8f0;
 }
 
+.community-posts-panel__attach-preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.community-posts-panel__attach-preview-summary,
+.community-posts-panel__attach-preview-meta {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.community-posts-panel__attach-preview-meta {
+  color: #94a3b8;
+}
+
 .inline-alert {
   margin: 0;
   color: #cbd5e1;
