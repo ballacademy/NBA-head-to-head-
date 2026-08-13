@@ -868,6 +868,7 @@ export function CommunityPostsPanel({
                       <div className="community-posts-panel__matchup-copy">
                         <strong>{details.headline}</strong>
                         <span>{details.score}</span>
+                        {details.record ? <span>{details.record}</span> : null}
                         <span>Your five: {details.yourFive}</span>
                         <span>Their five: {details.theirFive}</span>
                       </div>

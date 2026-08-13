@@ -18,6 +18,8 @@ export interface CommunityMatchupAttachment {
   userLineupIds?: string[];
   userAccent?: string;
   userRecord?: string;
+  /** Competitive W-L (or W-L-T) after the match, e.g. "12-5". */
+  userWinRecord?: string;
   ovrOverflow?: number;
   savedAt: string;
 }
@@ -159,6 +161,11 @@ export const formatCommunityMatchupDetails = (
   return {
     headline: `${attachment.userTeam} ${verb} ${attachment.opponentTeam}`,
     score: `${attachment.userOvr}–${attachment.opponentOvr} OVR · ${attachment.modeLabel}`,
+    record: attachment.userWinRecord
+      ? `Record ${attachment.userWinRecord}`
+      : attachment.userRecord
+        ? `Projected ${attachment.userRecord}`
+        : null,
     yourFive: attachment.userLineupNames.join(", "),
     theirFive: attachment.opponentLineupNames.join(", "),
   };
@@ -227,13 +234,16 @@ export const buildShareCardInputFromAttachment = (
       return null;
     }
     // Default view matches H2H "Share lineup": your five only.
+    const winRecord = attachment.userWinRecord?.trim();
+    const projectedRecord = attachment.userRecord?.trim();
     return {
       teamName: attachment.userTeam,
       accent: attachment.userAccent?.trim() || "#fb7185",
       ovr: attachment.userOvr,
       ovrOverflow: attachment.ovrOverflow,
       lineup,
-      record: attachment.userRecord,
+      record: winRecord || projectedRecord || undefined,
+      recordLabel: winRecord ? "Record" : projectedRecord ? "Projected" : undefined,
     };
   }
 
