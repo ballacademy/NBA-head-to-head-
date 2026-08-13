@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { formatCommunityAttachmentChip } from "./communityShareables";
+import {
+  buildShareCardInputFromAttachment,
+  formatCommunityAttachmentChip,
+  formatCommunityMatchupDetails,
+} from "./communityShareables";
+import type { Player } from "./types";
+
+const stubPlayer = (id: string, name: string): Player =>
+  ({
+    id,
+    name,
+    team: "BOS",
+    position: "PG",
+    positions: ["PG"],
+  }) as Player;
 
 describe("formatCommunityAttachmentChip", () => {
   it("shortens matchup attachments", () => {
@@ -41,5 +55,77 @@ describe("formatCommunityAttachmentChip", () => {
         savedAt: "2026-07-01T00:00:00.000Z",
       }),
     ).toBe("Tier · Best shooters in the East t…");
+  });
+});
+
+describe("matchup share card record", () => {
+  const playersById = new Map<string, Player>([
+    ["p1", stubPlayer("p1", "Guard")],
+  ]);
+
+  it("prefers projected team W-L on the lineup share card", () => {
+    const input = buildShareCardInputFromAttachment(
+      {
+        kind: "matchup",
+        modeLabel: "Classic Head-to-Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 91,
+        opponentOvr: 87,
+        userLineupNames: ["Guard"],
+        opponentLineupNames: ["Other"],
+        userLineupIds: ["p1"],
+        userRecord: "50-32",
+        userWinRecord: "12-5",
+        savedAt: "2026-07-01T00:00:00.000Z",
+      },
+      playersById,
+    );
+
+    expect(input?.record).toBe("50-32");
+    expect(input?.recordLabel).toBe("Projected");
+  });
+
+  it("falls back to competitive record when projected is missing", () => {
+    const input = buildShareCardInputFromAttachment(
+      {
+        kind: "matchup",
+        modeLabel: "Classic Head-to-Head",
+        result: "loss",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 80,
+        opponentOvr: 90,
+        userLineupNames: ["Guard"],
+        opponentLineupNames: ["Other"],
+        userLineupIds: ["p1"],
+        userWinRecord: "12-5",
+        savedAt: "2026-07-01T00:00:00.000Z",
+      },
+      playersById,
+    );
+
+    expect(input?.record).toBe("12-5");
+    expect(input?.recordLabel).toBe("Record");
+  });
+
+  it("surfaces projected team W-L in matchup details", () => {
+    expect(
+      formatCommunityMatchupDetails({
+        kind: "matchup",
+        modeLabel: "Classic Head-to-Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 91,
+        opponentOvr: 87,
+        userLineupNames: ["A"],
+        opponentLineupNames: ["B"],
+        userRecord: "50-32",
+        userWinRecord: "12-5",
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }).record,
+    ).toBe("Projected 50-32");
   });
 });
