@@ -165,10 +165,10 @@ export const formatCommunityMatchupDetails = (
   return {
     headline: `${attachment.userTeam} ${verb} ${attachment.opponentTeam}`,
     score: `${attachment.userOvr}–${attachment.opponentOvr} OVR · ${attachment.modeLabel}`,
-    record: attachment.userWinRecord
-      ? `Record ${attachment.userWinRecord}`
-      : attachment.userRecord
-        ? `Projected ${attachment.userRecord}`
+    record: attachment.userRecord
+      ? `Projected ${attachment.userRecord}`
+      : attachment.userWinRecord
+        ? `Record ${attachment.userWinRecord}`
         : null,
     yourFive: attachment.userLineupNames.join(", "),
     theirFive: attachment.opponentLineupNames.join(", "),
@@ -284,17 +284,21 @@ export const buildShareCardInputFromAttachment = (
     if (lineup.length === 0) {
       return null;
     }
-    // Default view matches H2H "Share lineup": your five only.
-    const winRecord = attachment.userWinRecord?.trim();
+    // Default view matches H2H "Share lineup": your five + projected team W-L.
     const projectedRecord = attachment.userRecord?.trim();
+    const winRecord = attachment.userWinRecord?.trim();
     return {
       teamName: attachment.userTeam,
       accent: attachment.userAccent?.trim() || "#fb7185",
       ovr: attachment.userOvr,
       ovrOverflow: attachment.ovrOverflow,
       lineup,
-      record: winRecord || projectedRecord || undefined,
-      recordLabel: winRecord ? "Record" : projectedRecord ? "Projected" : undefined,
+      record: projectedRecord || winRecord || undefined,
+      recordLabel: projectedRecord
+        ? "Projected"
+        : winRecord
+          ? "Record"
+          : undefined,
     };
   }
 
