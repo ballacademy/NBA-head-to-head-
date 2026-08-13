@@ -192,30 +192,34 @@ export function MatchResults({
           : user.practiceMode
             ? "Practice"
             : CLASSIC_HEAD_TO_HEAD_LABEL;
-      rememberCommunityShareable({
-        kind: "matchup",
-        modeLabel,
-        result: matchResult,
-        userTeam: user.name,
-        opponentTeam: formatOpponentDisplayName(
-          opponent.name,
-          opponent.username,
-        ),
-        userOvr: userScore.total,
-        opponentOvr: opponentScore.total,
-        userLineupNames: userLineup.map((player) => player.name),
-        opponentLineupNames: opponentLineup.map((player) => player.name),
-        userLineupIds: userLineup.map((player) => player.id),
-        opponentLineupIds: opponentLineup.map((player) => player.id),
-        userAccent: user.accent,
-        opponentAccent: opponent.accent,
-        userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
-        userWinRecord: skipCompetitiveRecords
-          ? undefined
-          : formatPlayerRecord(updatedRecord),
-        ovrOverflow: userScore.ovrOverflow,
-        savedAt: new Date().toISOString(),
-      });
+      try {
+        rememberCommunityShareable({
+          kind: "matchup",
+          modeLabel,
+          result: matchResult,
+          userTeam: user.name,
+          opponentTeam: formatOpponentDisplayName(
+            opponent.name,
+            opponent.username,
+          ),
+          userOvr: userScore.total,
+          opponentOvr: opponentScore.total,
+          userLineupNames: userLineup.map((player) => player.name),
+          opponentLineupNames: opponentLineup.map((player) => player.name),
+          userLineupIds: userLineup.map((player) => player.id),
+          opponentLineupIds: opponentLineup.map((player) => player.id),
+          userAccent: user.accent,
+          opponentAccent: opponent.accent,
+          userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+          userWinRecord: skipCompetitiveRecords
+            ? undefined
+            : formatPlayerRecord(updatedRecord),
+          ovrOverflow: userScore.ovrOverflow,
+          savedAt: new Date().toISOString(),
+        });
+      } catch {
+        // Never block match results on local shareable storage failures.
+      }
     }
 
     if (!skipCompetitiveRecords && lineupsComplete) {

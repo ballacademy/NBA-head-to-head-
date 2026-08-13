@@ -5,6 +5,10 @@ import {
   isUserDismissalError,
   type AppErrorDetail,
 } from "../lib/appErrors";
+import {
+  isChunkLoadError,
+  reloadOnceForStaleAssets,
+} from "../lib/lazyChunk";
 import { buildBugReportMailto } from "../lib/support";
 
 const AUTO_DISMISS_MS = 12_000;
@@ -25,6 +29,9 @@ export function RuntimeErrorToaster() {
       if (!text) {
         return;
       }
+      if (isChunkLoadError(text) && reloadOnceForStaleAssets()) {
+        return;
+      }
       show(text, `${custom.detail?.source ?? "app"}: ${text}`);
     };
 
@@ -34,11 +41,19 @@ export function RuntimeErrorToaster() {
       }
 
       const text = event.message?.trim() || "Unexpected browser error.";
+      if (isChunkLoadError(text) && reloadOnceForStaleAssets()) {
+        return;
+      }
       show(text, text);
     };
 
     const onRejection = (event: PromiseRejectionEvent) => {
       if (isUserDismissalError(event.reason)) {
+        return;
+      }
+
+      if (isChunkLoadError(event.reason) && reloadOnceForStaleAssets()) {
+        event.preventDefault?.();
         return;
       }
 

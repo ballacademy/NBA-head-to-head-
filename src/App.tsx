@@ -1,5 +1,4 @@
 import {
-  lazy,
   Suspense,
   useCallback,
   useEffect,
@@ -9,6 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { lazyWithChunkReload } from "./lib/lazyChunk";
+import { DailyDraftResults } from "./components/DailyDraftResults";
+import { MatchResults } from "./components/MatchResults";
 import { players } from "./data/players";
 import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
@@ -154,35 +156,25 @@ import type { TeamProfile } from "./lib/teamProfile";
 import { getMatchmakingElapsedSeconds } from "./lib/matchmakingTiming";
 import type { Drafter } from "./lib/types";
 
-const AchievementsPage = lazy(() =>
+const AchievementsPage = lazyWithChunkReload(() =>
   import("./components/AchievementsPage").then((m) => ({
     default: m.AchievementsPage,
   })),
 );
-const GmStatsPage = lazy(() =>
+const GmStatsPage = lazyWithChunkReload(() =>
   import("./components/GmStatsPage").then((m) => ({ default: m.GmStatsPage })),
 );
-const LegalPage = lazy(() =>
+const LegalPage = lazyWithChunkReload(() =>
   import("./components/LegalPage").then((m) => ({ default: m.LegalPage })),
 );
-const BetaNotesPage = lazy(() =>
+const BetaNotesPage = lazyWithChunkReload(() =>
   import("./components/BetaNotesPage").then((m) => ({
     default: m.BetaNotesPage,
   })),
 );
-const PlayerStatsTable = lazy(() =>
+const PlayerStatsTable = lazyWithChunkReload(() =>
   import("./components/PlayerStatsTable").then((m) => ({
     default: m.PlayerStatsTable,
-  })),
-);
-const DailyDraftResults = lazy(() =>
-  import("./components/DailyDraftResults").then((m) => ({
-    default: m.DailyDraftResults,
-  })),
-);
-const MatchResults = lazy(() =>
-  import("./components/MatchResults").then((m) => ({
-    default: m.MatchResults,
   })),
 );
 
@@ -198,9 +190,10 @@ const prefetchHubFeatureTab = (tab: LandingHubTab) => {
     return;
   }
   if (tab === "roster") {
-    void import("./components/PlayerStatsTable");
-    void import("./components/AchievementsPage");
-    void import("./components/GmStatsPage");
+    // Prefetch is best-effort; never surface a toast if a stale chunk 404s.
+    void import("./components/PlayerStatsTable").catch(() => undefined);
+    void import("./components/AchievementsPage").catch(() => undefined);
+    void import("./components/GmStatsPage").catch(() => undefined);
   }
 };
 
