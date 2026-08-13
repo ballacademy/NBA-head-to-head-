@@ -204,6 +204,10 @@ export function MatchResults({
         opponentOvr: opponentScore.total,
         userLineupNames: userLineup.map((player) => player.name),
         opponentLineupNames: opponentLineup.map((player) => player.name),
+        userLineupIds: userLineup.map((player) => player.id),
+        userAccent: user.accent,
+        userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+        ovrOverflow: userScore.ovrOverflow,
         savedAt: new Date().toISOString(),
       });
     }

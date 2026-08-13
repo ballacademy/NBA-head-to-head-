@@ -697,7 +697,13 @@ main.landing-layout {
   display: grid;
   gap: 8px;
   width: 100%;
+  min-width: 0;
   margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.hub-feature.tier-list-page {
+  padding-inline: 2px;
 }
 
 .hub-feature__return-row {
@@ -6485,14 +6491,53 @@ h1.landing-hub__title--name {
   justify-self: start;
 }
 
+.community-posts-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px;
+  overflow-x: clip;
+}
+
+.community-posts-panel .tier-list-hub__panel-header {
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.community-posts-panel__sort {
+  flex: 0 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
 .community-posts-panel__compose {
   display: grid;
   gap: 10px;
   margin-bottom: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.community-posts-panel__field,
+.community-posts-panel__attach {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.community-posts-panel__compose textarea,
+.community-posts-panel__attach select,
+.community-posts-panel__sort select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .community-posts-panel__compose textarea {
-  width: 100%;
   resize: vertical;
   min-height: 84px;
   border-radius: 10px;
@@ -6520,6 +6565,7 @@ h1.landing-hub__title--name {
   width: auto;
   min-width: 96px;
   margin: 0;
+  flex: 0 0 auto;
 }
 
 .community-posts-panel__body {
@@ -6527,10 +6573,7 @@ h1.landing-hub__title--name {
   color: #e2e8f0;
   line-height: 1.45;
   white-space: pre-wrap;
-}
-
-.community-posts-panel__attach {
-  margin-top: 8px;
+  overflow-wrap: anywhere;
 }
 
 .community-posts-panel__attach-hint {
@@ -6550,16 +6593,36 @@ h1.landing-hub__title--name {
   color: var(--accent-community-bright);
   font-size: 0.82rem;
   line-height: 1.4;
+  min-width: 0;
 }
 
-.community-posts-panel__attachment span {
-  color: color-mix(in srgb, var(--accent-community-bright) 80%, #fff);
+.community-posts-panel__attachment {
+  display: grid;
+  gap: 8px;
 }
 
-.community-posts-panel__list .tier-list__library-item {
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 0;
+.community-posts-panel__attachment-summary {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.community-posts-panel__view-attach {
+  justify-self: start;
+  width: auto;
+}
+
+.community-posts-panel__list {
+  width: 100%;
+  min-width: 0;
+}
+
+.community-posts-panel__list .tier-list__library-item,
+.community-posts-panel__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  padding: 12px 10px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
@@ -6567,8 +6630,87 @@ h1.landing-hub__title--name {
   border-bottom: 0;
 }
 
+.community-posts-panel__list .tier-list__library-copy {
+  min-width: 0;
+}
+
+.community-posts-panel__list .tier-list__library-actions {
+  width: 100%;
+}
+
+.community-posts-panel__list .tier-list__library-actions .secondary-button {
+  width: 100%;
+}
+
 .community-posts-panel__like-error {
   margin: 0 0 8px;
+}
+
+.community-posts-panel__viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 6, 23, 0.72);
+  box-sizing: border-box;
+}
+
+.community-posts-panel__viewer-card {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 420px);
+  max-height: min(88vh, 720px);
+  overflow: auto;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #12151a;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.community-posts-panel__viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.community-posts-panel__viewer-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.community-posts-panel__viewer-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #0b0d11;
+}
+
+@media (min-width: 640px) {
+  .community-posts-panel {
+    padding: 14px 16px;
+  }
+
+  .community-posts-panel__list .tier-list__library-item,
+  .community-posts-panel__item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .community-posts-panel__list .tier-list__library-actions {
+    width: auto;
+  }
+
+  .community-posts-panel__list .tier-list__library-actions .secondary-button {
+    width: auto;
+  }
 }
 
 .hub-empty,

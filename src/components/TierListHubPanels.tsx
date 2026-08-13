@@ -14,9 +14,11 @@ import {
   type CommunityPostSort,
 } from "../lib/communityPosts";
 import {
+  buildShareCardInputFromAttachment,
   formatCommunityAttachmentSummary,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
+import { createLineupShareCardBlob } from "../lib/lineupShareCard";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
@@ -24,7 +26,7 @@ import {
   sortTierListLibraryDocuments,
 } from "../lib/tierList";
 import { getTeamGlowColor } from "../lib/teamColors";
-import type { CSSProperties, FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 
@@ -502,6 +504,7 @@ interface CommunityPostsPanelProps {
   onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
   onToggleLike: (postId: string, liked: boolean) => void;
   onOpenTiers?: () => void;
+  playersById: Map<string, Player>;
 }
 
 export function CommunityPostsPanel({
@@ -524,8 +527,67 @@ export function CommunityPostsPanel({
   onSelectAttachment,
   onToggleLike,
   onOpenTiers,
+  playersById,
 }: CommunityPostsPanelProps) {
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
+  const [viewingPostId, setViewingPostId] = useState<string | null>(null);
+  const [viewImageUrl, setViewImageUrl] = useState<string | null>(null);
+  const [viewBusy, setViewBusy] = useState(false);
+  const [viewError, setViewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (viewImageUrl) {
+        URL.revokeObjectURL(viewImageUrl);
+      }
+    };
+  }, [viewImageUrl]);
+
+  const closeAttachmentViewer = () => {
+    setViewingPostId(null);
+    setViewBusy(false);
+    setViewError(null);
+    setViewImageUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return null;
+    });
+  };
+
+  const handleViewAttachment = async (
+    postId: string,
+    attachment: CommunityPostAttachment,
+  ) => {
+    if (attachment.kind === "tierList") {
+      return;
+    }
+
+    setViewingPostId(postId);
+    setViewBusy(true);
+    setViewError(null);
+    setViewImageUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return null;
+    });
+
+    try {
+      const input = buildShareCardInputFromAttachment(attachment, playersById);
+      if (!input) {
+        setViewError("Could not rebuild that result image.");
+        setViewBusy(false);
+        return;
+      }
+      const blob = await createLineupShareCardBlob(input);
+      setViewImageUrl(URL.createObjectURL(blob));
+    } catch {
+      setViewError("Could not open that result image.");
+    } finally {
+      setViewBusy(false);
+    }
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -538,10 +600,13 @@ export function CommunityPostsPanel({
       : `${entry.kind}:${entry.savedAt}`;
 
   return (
-    <div className="tier-list-hub__panel community-posts-panel hub-accent hub-accent--community" aria-label="Community posts">
+    <div
+      className="tier-list-hub__panel community-posts-panel hub-accent hub-accent--community"
+      aria-label="Community posts"
+    >
       <div className="tier-list-hub__panel-header">
         <h2>Posts</h2>
-        <label className="tier-list-hub__sort">
+        <label className="tier-list-hub__sort community-posts-panel__sort">
           <span>Sort</span>
           <select
             value={sort}
@@ -562,7 +627,7 @@ export function CommunityPostsPanel({
       ) : null}
 
       <form className="community-posts-panel__compose" onSubmit={handleSubmit}>
-        <label className="tier-list__search">
+        <label className="tier-list__search community-posts-panel__field">
           <span>New post</span>
           <textarea
             value={draft}
@@ -657,7 +722,7 @@ export function CommunityPostsPanel({
       ) : (
         <ul className="tier-list__library-list community-posts-panel__list">
           {posts.map((post) => (
-            <li key={post.id} className="tier-list__library-item">
+            <li key={post.id} className="tier-list__library-item community-posts-panel__item">
               <div className="tier-list__library-copy">
                 <strong>
                   {post.authorName} · {formatPublicTag(post.authorTag)}
@@ -665,23 +730,25 @@ export function CommunityPostsPanel({
                 <span>{formatCommunityPostTime(post.createdAt)}</span>
                 <p className="community-posts-panel__body">{post.body}</p>
                 {post.attachment ? (
-                  <p className="community-posts-panel__attachment">
-                    {formatCommunityAttachmentSummary(post.attachment)}
-                    {post.attachment.kind === "matchup" ? (
-                      <span>
-                        {" "}
-                        · Your five:{" "}
-                        {post.attachment.userLineupNames.join(", ")}
-                        {" · Their five: "}
-                        {post.attachment.opponentLineupNames.join(", ")}
-                      </span>
-                    ) : post.attachment.kind === "lineup" ? (
-                      <span>
-                        {" "}
-                        · Lineup: {post.attachment.lineupNames.join(", ")}
-                      </span>
+                  <div className="community-posts-panel__attachment">
+                    <p className="community-posts-panel__attachment-summary">
+                      {formatCommunityAttachmentSummary(post.attachment)}
+                    </p>
+                    {post.attachment.kind === "matchup" ||
+                    post.attachment.kind === "lineup" ? (
+                      <button
+                        type="button"
+                        className="secondary-button community-posts-panel__view-attach"
+                        onClick={() =>
+                          void handleViewAttachment(post.id, post.attachment!)
+                        }
+                      >
+                        {post.attachment.kind === "matchup"
+                          ? "View matchup"
+                          : "View lineup"}
+                      </button>
                     ) : null}
-                  </p>
+                  </div>
                 ) : null}
               </div>
               <div className="tier-list__library-actions">
@@ -720,6 +787,49 @@ export function CommunityPostsPanel({
         >
           {loadingMore ? "Loading…" : "Load more"}
         </button>
+      ) : null}
+
+      {viewingPostId ? (
+        <div
+          className="community-posts-panel__viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Attached result"
+          onClick={closeAttachmentViewer}
+        >
+          <div
+            className="community-posts-panel__viewer-card"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="community-posts-panel__viewer-header">
+              <h3>Attached result</h3>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={closeAttachmentViewer}
+              >
+                Close
+              </button>
+            </div>
+            {viewBusy ? (
+              <p className="hub-empty" role="status">
+                Loading…
+              </p>
+            ) : null}
+            {viewError ? (
+              <p className="form-error" role="alert">
+                {viewError}
+              </p>
+            ) : null}
+            {viewImageUrl ? (
+              <img
+                className="community-posts-panel__viewer-image"
+                src={viewImageUrl}
+                alt="Attached matchup or lineup result"
+              />
+            ) : null}
+          </div>
+        </div>
       ) : null}
     </div>
   );

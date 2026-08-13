@@ -1,4 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
+import type { LineupShareCardInput } from "./lineupShareCard";
+import type { Player } from "./types";
 
 export type CommunityShareableKind = "matchup" | "lineup" | "tierList";
 
@@ -12,6 +14,11 @@ export interface CommunityMatchupAttachment {
   opponentOvr: number;
   userLineupNames: string[];
   opponentLineupNames: string[];
+  /** Player ids used to rebuild the share-card image on demand. */
+  userLineupIds?: string[];
+  userAccent?: string;
+  userRecord?: string;
+  ovrOverflow?: number;
   savedAt: string;
 }
 
@@ -22,6 +29,8 @@ export interface CommunityLineupAttachment {
   ovr?: number;
   resultLabel?: string;
   lineupNames: string[];
+  lineupIds?: string[];
+  accent?: string;
   savedAt: string;
 }
 
@@ -40,6 +49,9 @@ export type CommunityPostAttachment =
 const SHAREABLES_KEY = "nba-head-to-head-community-shareables";
 const MAX_SHAREABLES = 8;
 
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((entry) => typeof entry === "string");
+
 const isMatchup = (value: unknown): value is CommunityMatchupAttachment => {
   if (!value || typeof value !== "object") {
     return false;
@@ -53,8 +65,8 @@ const isMatchup = (value: unknown): value is CommunityMatchupAttachment => {
       entry.result === "tie") &&
     typeof entry.userTeam === "string" &&
     typeof entry.opponentTeam === "string" &&
-    Array.isArray(entry.userLineupNames) &&
-    Array.isArray(entry.opponentLineupNames)
+    isStringArray(entry.userLineupNames) &&
+    isStringArray(entry.opponentLineupNames)
   );
 };
 
@@ -67,7 +79,7 @@ const isLineup = (value: unknown): value is CommunityLineupAttachment => {
     entry.kind === "lineup" &&
     typeof entry.title === "string" &&
     typeof entry.modeLabel === "string" &&
-    Array.isArray(entry.lineupNames)
+    isStringArray(entry.lineupNames)
   );
 };
 
@@ -158,4 +170,74 @@ export const formatCommunityAttachmentSummary = (
       ? ` · ${attachment.ovr} OVR`
       : "";
   return `${attachment.modeLabel}: ${attachment.title}${result}`;
+};
+
+const resolvePlayersByIds = (
+  ids: string[] | undefined,
+  names: string[],
+  playersById: Map<string, Player>,
+): Player[] => {
+  if (ids && ids.length > 0) {
+    return ids
+      .map((id) => playersById.get(id))
+      .filter((player): player is Player => player != null);
+  }
+
+  const byName = new Map(
+    [...playersById.values()].map((player) => [player.name, player]),
+  );
+  return names
+    .map((name) => byName.get(name))
+    .filter((player): player is Player => player != null);
+};
+
+/** Build a share-card input from a post attachment for on-demand image view. */
+export const buildShareCardInputFromAttachment = (
+  attachment: CommunityPostAttachment,
+  playersById: Map<string, Player>,
+): LineupShareCardInput | null => {
+  if (attachment.kind === "tierList") {
+    return null;
+  }
+
+  if (attachment.kind === "matchup") {
+    const lineup = resolvePlayersByIds(
+      attachment.userLineupIds,
+      attachment.userLineupNames,
+      playersById,
+    );
+    if (lineup.length === 0) {
+      return null;
+    }
+    return {
+      teamName: attachment.userTeam,
+      accent: attachment.userAccent?.trim() || "#fb7185",
+      ovr: attachment.userOvr,
+      ovrOverflow: attachment.ovrOverflow,
+      lineup,
+      record: attachment.userRecord,
+      headline: `${attachment.userTeam} vs ${attachment.opponentTeam}`,
+      statLabel: attachment.result.toUpperCase(),
+      statValue: `${attachment.userOvr}–${attachment.opponentOvr}`,
+    };
+  }
+
+  const lineup = resolvePlayersByIds(
+    attachment.lineupIds,
+    attachment.lineupNames,
+    playersById,
+  );
+  if (lineup.length === 0) {
+    return null;
+  }
+
+  return {
+    teamName: attachment.title,
+    accent: attachment.accent?.trim() || "#22c55e",
+    ovr: attachment.ovr ?? 0,
+    lineup,
+    headline: attachment.title,
+    statLabel: "RESULT",
+    statValue: attachment.resultLabel || undefined,
+  };
 };
