@@ -647,6 +647,7 @@ export function CommunityPostsPanel({
   const [replyError, setReplyError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [muteEpoch, setMuteEpoch] = useState(0);
+  const [expandedAuthorId, setExpandedAuthorId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const focusRef = useRef<HTMLLIElement | null>(null);
 
@@ -1033,14 +1034,26 @@ export function CommunityPostsPanel({
                 <div className="community-posts-panel__card">
                   <div className="community-posts-panel__card-top">
                     <div className="community-posts-panel__author">
-                      <strong>
-                        {post.authorName} · {formatPublicTag(post.authorTag)}
-                      </strong>
+                      <button
+                        type="button"
+                        className="community-posts-panel__author-button"
+                        aria-expanded={expandedAuthorId === post.id}
+                        onClick={() =>
+                          setExpandedAuthorId((current) =>
+                            current === post.id ? null : post.id,
+                          )
+                        }
+                      >
+                        <strong>
+                          {post.authorName} · {formatPublicTag(post.authorTag)}
+                        </strong>
+                      </button>
                       <span className="community-posts-panel__author-meta">
                         {formatCommunityPostTime(post.createdAt)}
                       </span>
-                      {post.authorRankedElo != null ||
-                      post.authorClassicElo != null ? (
+                      {expandedAuthorId === post.id &&
+                      (post.authorRankedElo != null ||
+                        post.authorClassicElo != null) ? (
                         <span className="community-posts-panel__flair">
                           {post.authorRankedElo != null ? (
                             <RankedTierBadge
