@@ -205,6 +205,48 @@ export const formatCommunityAttachmentSummary = (
   return `${attachment.modeLabel}: ${attachment.title}${result}`;
 };
 
+/** Compact chip label for post cards and attach dropdowns. */
+export const formatCommunityAttachmentChip = (
+  attachment: CommunityPostAttachment,
+) => {
+  if (attachment.kind === "matchup") {
+    const result =
+      attachment.result === "win"
+        ? "W"
+        : attachment.result === "loss"
+          ? "L"
+          : "T";
+    const mode =
+      /pro|salary|ranked/i.test(attachment.modeLabel)
+        ? "Pro"
+        : /classic|casual|h2h|head/i.test(attachment.modeLabel)
+          ? "H2H"
+          : /event/i.test(attachment.modeLabel)
+            ? "Event"
+            : /practice/i.test(attachment.modeLabel)
+              ? "Practice"
+              : attachment.modeLabel.slice(0, 12);
+    return `${mode} · ${result} · ${attachment.userOvr}–${attachment.opponentOvr}`;
+  }
+
+  if (attachment.kind === "tierList") {
+    const title =
+      attachment.title.trim().length > 28
+        ? `${attachment.title.trim().slice(0, 27)}…`
+        : attachment.title.trim();
+    return `Tier · ${title || "List"}`;
+  }
+
+  const mode = /daily/i.test(attachment.modeLabel)
+    ? "Daily"
+    : attachment.modeLabel.slice(0, 12);
+  const detail =
+    attachment.percentileLabel?.trim() ||
+    attachment.resultLabel?.trim() ||
+    (attachment.ovr != null ? `${attachment.ovr} OVR` : null);
+  return detail ? `${mode} · ${detail}` : mode;
+};
+
 const resolvePlayersByIds = (
   ids: string[] | undefined,
   names: string[],

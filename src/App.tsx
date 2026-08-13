@@ -2426,8 +2426,9 @@ function App() {
         onBack={exitFeaturePage}
         initialPublicTierListId={initialPublicTierListId}
         initialCommunityView={
-          initialLandingDeepLinks.communityView === "posts"
-            ? "posts"
+          initialLandingDeepLinks.communityView === "posts" ||
+          initialLandingDeepLinks.communityView === "tiers"
+            ? initialLandingDeepLinks.communityView
             : null
         }
         initialCommunityPostId={initialLandingDeepLinks.communityPostId}

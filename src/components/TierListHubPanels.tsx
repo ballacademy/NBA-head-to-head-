@@ -25,7 +25,7 @@ import {
 import {
   buildMatchupShareCardInputsFromAttachment,
   buildShareCardInputFromAttachment,
-  formatCommunityAttachmentSummary,
+  formatCommunityAttachmentChip,
   formatCommunityMatchupDetails,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
@@ -33,6 +33,9 @@ import {
   createLineupShareCardBlob,
   createMatchupShareCardBlob,
 } from "../lib/lineupShareCard";
+import { buildCommunityPostShareUrl } from "../lib/landingHub";
+import { copyToClipboard } from "../lib/copyToClipboard";
+import { ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE } from "../lib/accountGate";
 import { formatPublicTag } from "../lib/playerIdentity";
 import type { TierListLibrary, TierListSavedDocument } from "../lib/tierList";
 import {
@@ -648,6 +651,8 @@ export function CommunityPostsPanel({
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [muteEpoch, setMuteEpoch] = useState(0);
   const [expandedAuthorId, setExpandedAuthorId] = useState<string | null>(null);
+  const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
+  const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const focusRef = useRef<HTMLLIElement | null>(null);
 
@@ -857,6 +862,7 @@ export function CommunityPostsPanel({
       setReplyError(result.error);
       return;
     }
+    setOpenMenuPostId(null);
     window.alert("Thanks — report submitted.");
   };
 
@@ -866,7 +872,21 @@ export function CommunityPostsPanel({
     }
     mutePlayerId(playerId);
     setMuteEpoch((value) => value + 1);
+    setOpenMenuPostId(null);
     onMuteAuthor?.(playerId);
+  };
+
+  const handleCopyPostLink = async (postId: string) => {
+    const ok = await copyToClipboard(buildCommunityPostShareUrl(postId));
+    setOpenMenuPostId(null);
+    if (!ok) {
+      setReplyError("Could not copy link.");
+      return;
+    }
+    setCopiedPostId(postId);
+    window.setTimeout(() => {
+      setCopiedPostId((current) => (current === postId ? null : current));
+    }, 2000);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -912,7 +932,7 @@ export function CommunityPostsPanel({
 
       {!accountLinked ? (
         <AccountRequiredNote className="account-required-note--inline">
-          Create an account to post, reply, or like. Anyone can browse.
+          {`${ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE} Anyone can browse.`}
         </AccountRequiredNote>
       ) : null}
 
@@ -947,7 +967,7 @@ export function CommunityPostsPanel({
             <option value="">No attachment</option>
             {shareables.map((entry) => (
               <option key={attachmentKey(entry)} value={attachmentKey(entry)}>
-                {formatCommunityAttachmentSummary(entry)}
+                {formatCommunityAttachmentChip(entry)}
               </option>
             ))}
           </select>
@@ -961,7 +981,7 @@ export function CommunityPostsPanel({
 
         {selectedAttachment ? (
           <p className="community-posts-panel__attachment-preview" role="status">
-            Attaching: {formatCommunityAttachmentSummary(selectedAttachment)}
+            Attaching: {formatCommunityAttachmentChip(selectedAttachment)}
           </p>
         ) : null}
 
@@ -1096,8 +1116,8 @@ export function CommunityPostsPanel({
                   ) : null}
                   {post.attachment ? (
                     <div className="community-posts-panel__attachment">
-                      <p className="community-posts-panel__attachment-summary">
-                        {formatCommunityAttachmentSummary(post.attachment)}
+                      <p className="community-posts-panel__attachment-chip">
+                        {formatCommunityAttachmentChip(post.attachment)}
                       </p>
                       {post.attachment.kind === "matchup" ||
                       post.attachment.kind === "lineup" ? (
@@ -1176,32 +1196,64 @@ export function CommunityPostsPanel({
                         {replyCount === 1 ? "reply" : "replies"}
                       </span>
                     </button>
-                    {!isOwn ? (
-                      <div className="community-posts-panel__more">
-                        <button
-                          type="button"
-                          className="community-posts-panel__text-action"
-                          disabled={!accountLinked || actionBusy === post.id}
-                          onClick={() => void handleReport(post.id)}
+                    <div className="community-posts-panel__more">
+                      <details
+                        className="community-posts-panel__menu"
+                        open={openMenuPostId === post.id}
+                        onToggle={(event) => {
+                          const open = (
+                            event.currentTarget as HTMLDetailsElement
+                          ).open;
+                          setOpenMenuPostId(open ? post.id : null);
+                        }}
+                      >
+                        <summary
+                          className="community-posts-panel__menu-trigger"
+                          aria-label="More actions"
                         >
-                          Report
-                        </button>
-                        <button
-                          type="button"
-                          className="community-posts-panel__text-action"
-                          onClick={() => handleMute(post.playerId)}
-                        >
-                          Mute
-                        </button>
-                      </div>
-                    ) : null}
+                          …
+                        </summary>
+                        <div className="community-posts-panel__menu-panel">
+                          <button
+                            type="button"
+                            className="community-posts-panel__text-action"
+                            onClick={() => void handleCopyPostLink(post.id)}
+                          >
+                            {copiedPostId === post.id
+                              ? "Link copied"
+                              : "Copy link"}
+                          </button>
+                          {!isOwn ? (
+                            <>
+                              <button
+                                type="button"
+                                className="community-posts-panel__text-action"
+                                disabled={
+                                  !accountLinked || actionBusy === post.id
+                                }
+                                onClick={() => void handleReport(post.id)}
+                              >
+                                Report
+                              </button>
+                              <button
+                                type="button"
+                                className="community-posts-panel__text-action"
+                                onClick={() => handleMute(post.playerId)}
+                              >
+                                Mute
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
+                      </details>
+                    </div>
                   </div>
 
                   {expandedReplies === post.id ? (
                     <div className="community-posts-panel__replies">
                       {(repliesByPost[post.id] ?? []).length === 0 ? (
                         <p className="community-posts-panel__replies-empty">
-                          No replies yet.
+                          Be the first to reply
                         </p>
                       ) : (
                         <ul className="community-posts-panel__replies-list">
@@ -1225,7 +1277,11 @@ export function CommunityPostsPanel({
                             rows={2}
                             maxLength={COMMUNITY_REPLY_BODY_MAX}
                             value={replyDrafts[post.id] ?? ""}
-                            placeholder="Write a reply…"
+                            placeholder={
+                              (repliesByPost[post.id] ?? []).length === 0
+                                ? "Be the first to reply…"
+                                : "Write a reply…"
+                            }
                             onChange={(event) =>
                               setReplyDrafts((current) => ({
                                 ...current,

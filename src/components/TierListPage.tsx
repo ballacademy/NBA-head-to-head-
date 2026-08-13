@@ -94,6 +94,7 @@ import {
   getCachedLinkedUsername,
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
+import { syncLandingDeepLinkUrl } from "../lib/landingHub";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -113,8 +114,8 @@ interface TierListPageProps {
   onBack?: () => void;
   /** Deep-link public id from `?tierList=` — opens the viewer on mount. */
   initialPublicTierListId?: string | null;
-  /** Deep-link community view (`posts`) from `?view=`. */
-  initialCommunityView?: "posts" | null;
+  /** Deep-link community view from `?view=`. */
+  initialCommunityView?: "posts" | "tiers" | null;
   /** Deep-link post id from `?post=` — opens Posts and focuses that item. */
   initialCommunityPostId?: string | null;
   /** Bumped when Community nav is selected — returns to the hub chooser. */
@@ -245,6 +246,9 @@ export function TierListPage({
     if (initialCommunityPostId || initialCommunityView === "posts") {
       return "posts";
     }
+    if (initialCommunityView === "tiers") {
+      return "tiersHub";
+    }
     return "hub";
   });
   const [state, setState] = useState<TierListState>(() => loadTierListState());
@@ -325,6 +329,7 @@ export function TierListPage({
     setViewerDetail(null);
     setViewerLoading(false);
     setView("hub");
+    syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
   }, [hubReturnToken]);
 
   useEffect(() => {
@@ -1075,22 +1080,61 @@ export function TierListPage({
     );
   };
 
+  const syncCommunityDeepLink = useCallback(
+    (next: TierListView, postId: string | null = null) => {
+      if (next === "hub") {
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: null,
+          post: null,
+        });
+        return;
+      }
+      if (next === "posts") {
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: "posts",
+          post: postId,
+        });
+        return;
+      }
+      if (
+        next === "tiersHub" ||
+        next === "mine" ||
+        next === "public" ||
+        next === "editor" ||
+        next === "viewer"
+      ) {
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: "tiers",
+          post: null,
+        });
+      }
+    },
+    [],
+  );
+
   const handleBack = () => {
     if (view === "viewer") {
       setViewerDetail(null);
       setViewerLoading(false);
       setView("public");
+      syncCommunityDeepLink("public");
       return;
     }
     if (view === "mine" || view === "public" || view === "editor") {
       setView("tiersHub");
+      syncCommunityDeepLink("tiersHub");
       return;
     }
     if (view === "tiersHub" || view === "posts") {
       setView("hub");
+      syncCommunityDeepLink("hub");
       return;
     }
     setView("hub");
+    syncCommunityDeepLink("hub");
   };
 
   const openCommunityView = (next: TierListView) => {
@@ -1099,6 +1143,10 @@ export function TierListPage({
       active.blur();
     }
     setView(next);
+    if (next !== "posts") {
+      setCommunityFocusPostId(null);
+    }
+    syncCommunityDeepLink(next, next === "posts" ? communityFocusPostId : null);
   };
 
   const communityChrome = (() => {
@@ -1170,6 +1218,11 @@ export function TierListPage({
     postDeepLinkHandledRef.current = true;
     setView("posts");
     setCommunityFocusPostId(initialCommunityPostId);
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: "posts",
+      post: initialCommunityPostId,
+    });
     void getCommunityPost({
       postId: initialCommunityPostId,
       playerId: identity.playerId,
@@ -1462,7 +1515,7 @@ export function TierListPage({
       {view === "tiersHub" ? (
         <>
           <AccountRequiredNote>
-            Create an account to publish public tier lists. Browsing stays open.
+            {`${ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE} Browsing stays open.`}
           </AccountRequiredNote>
           <TierListTiersHub
             onCreate={() => void handleNew()}
@@ -2100,7 +2153,7 @@ export function TierListPage({
         </div>
         {!accountLinked && !state.publishedId ? (
           <AccountRequiredNote className="account-required-note--inline">
-            Create an account to publish this list.
+            {ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE}
           </AccountRequiredNote>
         ) : null}
 

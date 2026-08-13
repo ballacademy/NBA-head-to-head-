@@ -1,5 +1,8 @@
 import {
+  ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
+  ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
+  ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
 import { readJson, writeJson } from "./browserStorage";
@@ -10,6 +13,68 @@ import {
 
 export const COMMUNITY_POST_BODY_MAX = 400;
 export const COMMUNITY_REPLY_BODY_MAX = 280;
+
+/** Soft client-side spacing between posts/replies (not a hard server limit). */
+const COMMUNITY_RATE_KEY = "nba-head-to-head-community-rate";
+const COMMUNITY_POST_MIN_GAP_MS = 15_000;
+const COMMUNITY_REPLY_MIN_GAP_MS = 8_000;
+
+type CommunityRateBucket = {
+  lastPostAt?: number;
+  lastReplyAt?: number;
+};
+
+type CommunityRateStore = Record<string, CommunityRateBucket>;
+
+const loadCommunityRateStore = (): CommunityRateStore => {
+  const raw = readJson<CommunityRateStore>(COMMUNITY_RATE_KEY);
+  return raw && typeof raw === "object" ? raw : {};
+};
+
+const saveCommunityRateStore = (store: CommunityRateStore) => {
+  writeJson(COMMUNITY_RATE_KEY, store);
+};
+
+const checkCommunityRateLimit = (
+  playerId: string,
+  kind: "post" | "reply",
+): string | null => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const store = loadCommunityRateStore();
+  const bucket = store[trimmed] ?? {};
+  const lastAt = kind === "post" ? bucket.lastPostAt : bucket.lastReplyAt;
+  const gap =
+    kind === "post" ? COMMUNITY_POST_MIN_GAP_MS : COMMUNITY_REPLY_MIN_GAP_MS;
+  if (typeof lastAt === "number" && Date.now() - lastAt < gap) {
+    const seconds = Math.ceil((gap - (Date.now() - lastAt)) / 1000);
+    return kind === "post"
+      ? `Wait ${seconds}s before posting again.`
+      : `Wait ${seconds}s before replying again.`;
+  }
+  return null;
+};
+
+const markCommunityRateLimit = (
+  playerId: string,
+  kind: "post" | "reply",
+) => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return;
+  }
+  const store = loadCommunityRateStore();
+  const bucket = { ...(store[trimmed] ?? {}) };
+  if (kind === "post") {
+    bucket.lastPostAt = Date.now();
+  } else {
+    bucket.lastReplyAt = Date.now();
+  }
+  store[trimmed] = bucket;
+  saveCommunityRateStore(store);
+};
 
 export type CommunityPostSort = "recent" | "popular";
 
@@ -303,6 +368,11 @@ export const createCommunityPost = async (params: {
     };
   }
 
+  const rateError = checkCommunityRateLimit(params.playerId, "post");
+  if (rateError) {
+    return { ok: false, error: rateError };
+  }
+
   try {
     const response = await fetch(buildUrl("/api/community-posts"), {
       method: "POST",
@@ -343,6 +413,7 @@ export const createCommunityPost = async (params: {
       };
     }
 
+    markCommunityRateLimit(params.playerId, "post");
     const feed = loadLocalFeed();
     feed.posts = [post, ...feed.posts.filter((p) => p.id !== post.id)];
     saveLocalFeed(feed);
@@ -368,7 +439,7 @@ export const setCommunityPostLike = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: "Create an account to like posts.",
+      error: ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
       accountRequired: true,
     };
   }
@@ -401,7 +472,7 @@ export const setCommunityPostLike = async (params: {
     if (response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? "Create an account to like posts.",
+        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
         accountRequired: true,
       };
     }
@@ -632,9 +703,14 @@ export const createCommunityPostReply = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: "Create an account to reply.",
+      error: ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
       accountRequired: true,
     };
+  }
+
+  const rateError = checkCommunityRateLimit(params.playerId, "reply");
+  if (rateError) {
+    return { ok: false, error: rateError };
   }
 
   try {
@@ -661,7 +737,7 @@ export const createCommunityPostReply = async (params: {
     if (response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? "Create an account to reply.",
+        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
         accountRequired: true,
       };
     }
@@ -674,6 +750,7 @@ export const createCommunityPostReply = async (params: {
       };
     }
 
+    markCommunityRateLimit(params.playerId, "reply");
     return { ok: true, reply };
   } catch {
     return {
@@ -696,7 +773,7 @@ export const reportCommunityPost = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: "Create an account to report posts.",
+      error: ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
       accountRequired: true,
     };
   }
@@ -723,7 +800,7 @@ export const reportCommunityPost = async (params: {
     if (response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? "Create an account to report posts.",
+        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
         accountRequired: true,
       };
     }

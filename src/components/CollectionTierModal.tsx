@@ -78,7 +78,7 @@ export function CollectionTierModal({
             ))}
           </ul>
         ) : (
-          <p className="collection-tier-modal__empty">
+          <p className="collection-tier-modal__empty hub-empty">
             No unlocked {label} yet.
           </p>
         )}
