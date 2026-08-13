@@ -173,6 +173,7 @@ export function DailyDraftResults({
             user.dailyDraftMode ?? dailyGoal.mode,
           ),
           resultLabel: result.entry.formattedResult,
+          percentileLabel: formatDailyPercentile(result),
           lineupNames: userLineup.map((player) => player.name),
           lineupIds: userLineup.map((player) => player.id),
           accent: DAILY_SHARE_ACCENT,

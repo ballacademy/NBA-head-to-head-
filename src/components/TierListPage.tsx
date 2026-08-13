@@ -73,6 +73,8 @@ import {
 import {
   createCommunityPost,
   deleteCommunityPost,
+  fetchCommunityActivity,
+  getCommunityPost,
   listCommunityPosts,
   setCommunityPostLike,
   type CommunityPost,
@@ -82,6 +84,8 @@ import {
   loadCommunityShareables,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
+import { ensureClassicProfile } from "../lib/classicProfile";
+import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { fetchAccountStatus } from "../lib/accountApi";
 import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
@@ -109,6 +113,10 @@ interface TierListPageProps {
   onBack?: () => void;
   /** Deep-link public id from `?tierList=` — opens the viewer on mount. */
   initialPublicTierListId?: string | null;
+  /** Deep-link community view (`posts`) from `?view=`. */
+  initialCommunityView?: "posts" | null;
+  /** Deep-link post id from `?post=` — opens Posts and focuses that item. */
+  initialCommunityPostId?: string | null;
 }
 
 type TierListView =
@@ -223,11 +231,20 @@ type PointerDragSession = {
 export function TierListPage({
   players,
   initialPublicTierListId = null,
+  initialCommunityView = null,
+  initialCommunityPostId = null,
 }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
-  const [view, setView] = useState<TierListView>(() =>
-    initialPublicTierListId ? "viewer" : "hub",
-  );
+  const [view, setView] = useState<TierListView>(() => {
+    if (initialPublicTierListId) {
+      return "viewer";
+    }
+    if (initialCommunityPostId || initialCommunityView === "posts") {
+      return "posts";
+    }
+    // Community opens on Posts by default.
+    return "posts";
+  });
   const [state, setState] = useState<TierListState>(() => loadTierListState());
   const [library, setLibrary] = useState<TierListLibrary>(() =>
     loadTierListLibrary(),
@@ -277,12 +294,22 @@ export function TierListPage({
   >(() => loadCommunityShareables());
   const [communityAttachment, setCommunityAttachment] =
     useState<CommunityPostAttachment | null>(null);
+  const [communityQuotePostId, setCommunityQuotePostId] = useState<string | null>(
+    null,
+  );
+  const [communityPostsToday, setCommunityPostsToday] = useState<number | null>(
+    null,
+  );
+  const [communityFocusPostId, setCommunityFocusPostId] = useState<string | null>(
+    initialCommunityPostId,
+  );
   const [viewerLoading, setViewerLoading] = useState(
     Boolean(initialPublicTierListId),
   );
   const [publicFiltersDraft, setPublicFiltersDraft] =
     useState<PublicTierListBrowseFilters>(DEFAULT_PUBLIC_TIER_LIST_FILTERS);
   const deepLinkHandledRef = useRef(false);
+  const postDeepLinkHandledRef = useRef(false);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -1103,6 +1130,44 @@ export function TierListPage({
     }
   })();
 
+  useEffect(() => {
+    if (view !== "posts" && view !== "hub") {
+      return;
+    }
+    let cancelled = false;
+    void fetchCommunityActivity().then((activity) => {
+      if (!cancelled) {
+        setCommunityPostsToday(activity.postsToday);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [view]);
+
+  useEffect(() => {
+    if (!initialCommunityPostId || postDeepLinkHandledRef.current) {
+      return;
+    }
+    postDeepLinkHandledRef.current = true;
+    setView("posts");
+    setCommunityFocusPostId(initialCommunityPostId);
+    void getCommunityPost({
+      postId: initialCommunityPostId,
+      playerId: identity.playerId,
+    }).then((post) => {
+      if (!post) {
+        return;
+      }
+      setCommunityPosts((current) => {
+        if (current.some((entry) => entry.id === post.id)) {
+          return current;
+        }
+        return [post, ...current];
+      });
+    });
+  }, [identity.playerId, initialCommunityPostId]);
+
   const loadCommunityPosts = useCallback(async () => {
     setCommunityPostsLoading(true);
     setCommunityPostError(null);
@@ -1121,7 +1186,7 @@ export function TierListPage({
     }
   }, [communityPostSort, identity.playerId]);
 
-  const handleLoadMoreCommunityPosts = async () => {
+  const handleLoadMoreCommunityPosts = useCallback(async () => {
     if (communityPostsLoadingMore || !communityPostsHasMore) {
       return;
     }
@@ -1144,7 +1209,13 @@ export function TierListPage({
     } finally {
       setCommunityPostsLoadingMore(false);
     }
-  };
+  }, [
+    communityPostSort,
+    communityPostsHasMore,
+    communityPostsLoadingMore,
+    communityPostsNextOffset,
+    identity.playerId,
+  ]);
 
   useEffect(() => {
     if (view !== "posts") {
@@ -1170,12 +1241,17 @@ export function TierListPage({
   const handleCreateCommunityPost = async () => {
     setCommunityPostSubmitting(true);
     setCommunityPostError(null);
+    const classicElo = ensureClassicProfile().elo;
+    const rankedElo = ensureCurrentRankedSeason().elo;
     const result = await createCommunityPost({
       playerId: identity.playerId,
       authorName,
       authorTag: identity.publicTag,
       body: communityPostDraft,
       attachment: communityAttachment,
+      quotePostId: communityQuotePostId,
+      authorClassicElo: classicElo,
+      authorRankedElo: rankedElo,
     });
     setCommunityPostSubmitting(false);
 
@@ -1186,6 +1262,7 @@ export function TierListPage({
 
     setCommunityPostDraft("");
     setCommunityAttachment(null);
+    setCommunityQuotePostId(null);
     setCommunityPosts((current) => [
       result.post,
       ...current.filter((post) => post.id !== result.post.id),
@@ -1362,6 +1439,7 @@ export function TierListPage({
         <TierListHubHome
           onOpenPosts={() => setView("posts")}
           onOpenTiers={() => setView("tiersHub")}
+          postsToday={communityPostsToday}
         />
       ) : null}
 
@@ -1443,7 +1521,7 @@ export function TierListPage({
           loading={communityPostsLoading}
           loadingMore={communityPostsLoadingMore}
           hasMore={communityPostsHasMore}
-          onLoadMore={() => void handleLoadMoreCommunityPosts()}
+          onLoadMore={handleLoadMoreCommunityPosts}
           draft={communityPostDraft}
           onDraftChange={setCommunityPostDraft}
           submitting={communityPostSubmitting}
@@ -1456,13 +1534,22 @@ export function TierListPage({
           shareables={communityShareables}
           selectedAttachment={communityAttachment}
           onSelectAttachment={setCommunityAttachment}
+          quotePostId={communityQuotePostId}
+          onSelectQuote={setCommunityQuotePostId}
           onToggleLike={(postId, liked) =>
             void handleToggleCommunityPostLike(postId, liked)
           }
           onDeletePost={(postId) => void handleDeleteCommunityPost(postId)}
           viewerPlayerId={identity.playerId}
+          authorName={authorName}
+          authorTag={identity.publicTag}
           onOpenTiers={() => setView("tiersHub")}
+          onOpenPublishedTierList={(publishedId) =>
+            void handleOpenPublic(publishedId)
+          }
           playersById={playersById}
+          focusPostId={communityFocusPostId}
+          postsToday={communityPostsToday}
         />
       ) : null}
 

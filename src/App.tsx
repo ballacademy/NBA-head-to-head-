@@ -251,6 +251,8 @@ const readInitialLandingDeepLinks = () => {
       contentTab: null,
       playSection: null,
       feature: null,
+      communityView: null,
+      communityPostId: null,
     };
   }
 };
@@ -370,7 +372,11 @@ function App() {
       if (!state?.appPhase) {
         window.history.replaceState({ appPhase: "tierList" }, "");
       }
-      syncLandingDeepLinkUrl({ hub: "community" });
+      syncLandingDeepLinkUrl({
+        hub: "community",
+        view: initialLandingDeepLinks.communityView,
+        post: initialLandingDeepLinks.communityPostId,
+      });
       return;
     }
 
@@ -2326,7 +2332,7 @@ function App() {
         if (phase !== "tierList") {
           openFeaturePage("tierList");
         }
-        syncLandingDeepLinkUrl({ hub: "community" });
+        syncLandingDeepLinkUrl({ hub: "community", view: "posts" });
         return;
       }
 
@@ -2424,6 +2430,12 @@ function App() {
         players={getTierListPlayers()}
         onBack={exitFeaturePage}
         initialPublicTierListId={initialPublicTierListId}
+        initialCommunityView={
+          initialLandingDeepLinks.communityView === "posts"
+            ? "posts"
+            : null
+        }
+        initialCommunityPostId={initialLandingDeepLinks.communityPostId}
       />,
       "landing-layout--tier-list",
     );

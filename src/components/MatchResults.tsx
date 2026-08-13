@@ -206,7 +206,9 @@ export function MatchResults({
         userLineupNames: userLineup.map((player) => player.name),
         opponentLineupNames: opponentLineup.map((player) => player.name),
         userLineupIds: userLineup.map((player) => player.id),
+        opponentLineupIds: opponentLineup.map((player) => player.id),
         userAccent: user.accent,
+        opponentAccent: opponent.accent,
         userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
         userWinRecord: skipCompetitiveRecords
           ? undefined

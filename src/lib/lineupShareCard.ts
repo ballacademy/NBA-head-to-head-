@@ -573,6 +573,51 @@ export const createLineupShareCardBlob = async (input: LineupShareCardInput) => 
   });
 };
 
+const canvasToBlob = (canvas: HTMLCanvasElement) =>
+  new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Could not create share image."));
+        return;
+      }
+      resolve(blob);
+    }, "image/png");
+  });
+
+/** Stack two lineup cards into one matchup image (your five + theirs). */
+export const createMatchupShareCardBlob = async (inputs: {
+  user: LineupShareCardInput;
+  opponent: LineupShareCardInput;
+}) => {
+  await ensureShareCardFonts();
+
+  const allBbrIds = [
+    ...inputs.user.lineup.map((player) => player.bbrPlayerId),
+    ...inputs.opponent.lineup.map((player) => player.bbrPlayerId),
+  ];
+  const headshots = await loadPlayerHeadshotImages(allBbrIds);
+
+  const userCanvas = document.createElement("canvas");
+  const opponentCanvas = document.createElement("canvas");
+  drawLineupShareCard(userCanvas, inputs.user, headshots);
+  drawLineupShareCard(opponentCanvas, inputs.opponent, headshots);
+
+  const gap = 28;
+  const combined = document.createElement("canvas");
+  combined.width = CARD_WIDTH;
+  combined.height = userCanvas.height + gap + opponentCanvas.height;
+  const context = combined.getContext("2d");
+  if (!context) {
+    throw new Error("Could not create matchup share card canvas context.");
+  }
+
+  drawTexturedBackground(context, combined.height);
+  context.drawImage(userCanvas, 0, 0);
+  context.drawImage(opponentCanvas, 0, userCanvas.height + gap);
+
+  return canvasToBlob(combined);
+};
+
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
