@@ -6693,6 +6693,27 @@ h1.landing-hub__title--name {
   background: #0b0d11;
 }
 
+.community-posts-panel__matchup-details {
+  display: grid;
+  gap: 10px;
+}
+
+.community-posts-panel__matchup-copy {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.55);
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.community-posts-panel__matchup-copy strong {
+  color: #f8fafc;
+}
+
 @media (min-width: 640px) {
   .community-posts-panel {
     padding: 14px 16px;

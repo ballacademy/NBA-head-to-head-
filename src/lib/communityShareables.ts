@@ -147,6 +147,23 @@ export const rememberCommunityShareable = (
   saveCommunityShareables(next);
 };
 
+export const formatCommunityMatchupDetails = (
+  attachment: CommunityMatchupAttachment,
+) => {
+  const verb =
+    attachment.result === "win"
+      ? "beat"
+      : attachment.result === "loss"
+        ? "lost to"
+        : "tied";
+  return {
+    headline: `${attachment.userTeam} ${verb} ${attachment.opponentTeam}`,
+    score: `${attachment.userOvr}–${attachment.opponentOvr} OVR · ${attachment.modeLabel}`,
+    yourFive: attachment.userLineupNames.join(", "),
+    theirFive: attachment.opponentLineupNames.join(", "),
+  };
+};
+
 export const formatCommunityAttachmentSummary = (
   attachment: CommunityPostAttachment,
 ) => {
@@ -209,6 +226,7 @@ export const buildShareCardInputFromAttachment = (
     if (lineup.length === 0) {
       return null;
     }
+    // Default view matches H2H "Share lineup": your five only.
     return {
       teamName: attachment.userTeam,
       accent: attachment.userAccent?.trim() || "#fb7185",
@@ -216,9 +234,6 @@ export const buildShareCardInputFromAttachment = (
       ovrOverflow: attachment.ovrOverflow,
       lineup,
       record: attachment.userRecord,
-      headline: `${attachment.userTeam} vs ${attachment.opponentTeam}`,
-      statLabel: attachment.result.toUpperCase(),
-      statValue: `${attachment.userOvr}–${attachment.opponentOvr}`,
     };
   }
 

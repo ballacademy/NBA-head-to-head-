@@ -72,6 +72,7 @@ import {
 } from "../lib/tierListCommunity";
 import {
   createCommunityPost,
+  deleteCommunityPost,
   listCommunityPosts,
   setCommunityPostLike,
   type CommunityPost,
@@ -1218,6 +1219,25 @@ export function TierListPage({
     );
   };
 
+  const handleDeleteCommunityPost = async (postId: string) => {
+    if (!window.confirm("Delete this post?")) {
+      return;
+    }
+    setCommunityPostLikeError(null);
+    const result = await deleteCommunityPost({
+      playerId: identity.playerId,
+      postId,
+    });
+    if (!result.ok) {
+      setCommunityPostLikeError(result.error);
+      return;
+    }
+    setCommunityPosts((current) =>
+      current.filter((post) => post.id !== postId),
+    );
+    setStatusMessage("Post deleted");
+  };
+
   const renderPlayerChip = (
     player: Player,
     options: { inTier?: boolean; tierId?: string } = {},
@@ -1439,6 +1459,8 @@ export function TierListPage({
           onToggleLike={(postId, liked) =>
             void handleToggleCommunityPostLike(postId, liked)
           }
+          onDeletePost={(postId) => void handleDeleteCommunityPost(postId)}
+          viewerPlayerId={identity.playerId}
           onOpenTiers={() => setView("tiersHub")}
           playersById={playersById}
         />

@@ -16,6 +16,7 @@ import {
 import {
   buildShareCardInputFromAttachment,
   formatCommunityAttachmentSummary,
+  formatCommunityMatchupDetails,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
 import { createLineupShareCardBlob } from "../lib/lineupShareCard";
@@ -503,6 +504,8 @@ interface CommunityPostsPanelProps {
   selectedAttachment: CommunityPostAttachment | null;
   onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
   onToggleLike: (postId: string, liked: boolean) => void;
+  onDeletePost?: (postId: string) => void;
+  viewerPlayerId?: string;
   onOpenTiers?: () => void;
   playersById: Map<string, Player>;
 }
@@ -526,14 +529,19 @@ export function CommunityPostsPanel({
   selectedAttachment,
   onSelectAttachment,
   onToggleLike,
+  onDeletePost,
+  viewerPlayerId = "",
   onOpenTiers,
   playersById,
 }: CommunityPostsPanelProps) {
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
   const [viewingPostId, setViewingPostId] = useState<string | null>(null);
+  const [viewingAttachment, setViewingAttachment] =
+    useState<CommunityPostAttachment | null>(null);
   const [viewImageUrl, setViewImageUrl] = useState<string | null>(null);
   const [viewBusy, setViewBusy] = useState(false);
   const [viewError, setViewError] = useState<string | null>(null);
+  const [showMatchupDetails, setShowMatchupDetails] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -545,6 +553,8 @@ export function CommunityPostsPanel({
 
   const closeAttachmentViewer = () => {
     setViewingPostId(null);
+    setViewingAttachment(null);
+    setShowMatchupDetails(false);
     setViewBusy(false);
     setViewError(null);
     setViewImageUrl((current) => {
@@ -564,6 +574,8 @@ export function CommunityPostsPanel({
     }
 
     setViewingPostId(postId);
+    setViewingAttachment(attachment);
+    setShowMatchupDetails(false);
     setViewBusy(true);
     setViewError(null);
     setViewImageUrl((current) => {
@@ -576,14 +588,14 @@ export function CommunityPostsPanel({
     try {
       const input = buildShareCardInputFromAttachment(attachment, playersById);
       if (!input) {
-        setViewError("Could not rebuild that result image.");
+        setViewError("Could not rebuild that lineup image.");
         setViewBusy(false);
         return;
       }
       const blob = await createLineupShareCardBlob(input);
       setViewImageUrl(URL.createObjectURL(blob));
     } catch {
-      setViewError("Could not open that result image.");
+      setViewError("Could not open that lineup image.");
     } finally {
       setViewBusy(false);
     }
@@ -743,9 +755,7 @@ export function CommunityPostsPanel({
                           void handleViewAttachment(post.id, post.attachment!)
                         }
                       >
-                        {post.attachment.kind === "matchup"
-                          ? "View matchup"
-                          : "View lineup"}
+                        View lineup
                       </button>
                     ) : null}
                   </div>
@@ -766,6 +776,17 @@ export function CommunityPostsPanel({
                 >
                   {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
                 </button>
+                {onDeletePost &&
+                viewerPlayerId &&
+                post.playerId === viewerPlayerId ? (
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => onDeletePost(post.id)}
+                  >
+                    Delete
+                  </button>
+                ) : null}
               </div>
             </li>
           ))}
@@ -794,7 +815,7 @@ export function CommunityPostsPanel({
           className="community-posts-panel__viewer"
           role="dialog"
           aria-modal="true"
-          aria-label="Attached result"
+          aria-label="Attached lineup"
           onClick={closeAttachmentViewer}
         >
           <div
@@ -802,7 +823,7 @@ export function CommunityPostsPanel({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="community-posts-panel__viewer-header">
-              <h3>Attached result</h3>
+              <h3>Shared lineup</h3>
               <button
                 type="button"
                 className="secondary-button"
@@ -825,8 +846,35 @@ export function CommunityPostsPanel({
               <img
                 className="community-posts-panel__viewer-image"
                 src={viewImageUrl}
-                alt="Attached matchup or lineup result"
+                alt="Shared lineup"
               />
+            ) : null}
+            {viewingAttachment?.kind === "matchup" ? (
+              <div className="community-posts-panel__matchup-details">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  aria-expanded={showMatchupDetails}
+                  onClick={() => setShowMatchupDetails((current) => !current)}
+                >
+                  {showMatchupDetails ? "Hide matchup" : "Show matchup"}
+                </button>
+                {showMatchupDetails ? (
+                  (() => {
+                    const details = formatCommunityMatchupDetails(
+                      viewingAttachment,
+                    );
+                    return (
+                      <div className="community-posts-panel__matchup-copy">
+                        <strong>{details.headline}</strong>
+                        <span>{details.score}</span>
+                        <span>Your five: {details.yourFive}</span>
+                        <span>Their five: {details.theirFive}</span>
+                      </div>
+                    );
+                  })()
+                ) : null}
+              </div>
             ) : null}
           </div>
         </div>

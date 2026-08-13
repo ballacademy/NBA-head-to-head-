@@ -36,6 +36,11 @@ interface LikeBody {
   liked?: unknown;
 }
 
+interface DeleteBody {
+  playerId?: unknown;
+  postId?: unknown;
+}
+
 const parseAttachmentJson = (value: unknown): string | null => {
   if (value == null) {
     return null;
@@ -155,11 +160,54 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  let body: CreateBody & LikeBody & { action?: unknown };
+  let body: CreateBody & LikeBody & DeleteBody & { action?: unknown };
   try {
     body = (await context.request.json()) as typeof body;
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
+  }
+
+  if (body.action === "delete") {
+    const playerId = parsePlayerId(body.playerId);
+    const postId =
+      typeof body.postId === "string" && body.postId.trim()
+        ? body.postId.trim().slice(0, 80)
+        : "";
+
+    if (!playerId || !postId) {
+      return json({ error: "playerId and postId are required" }, 400);
+    }
+
+    const account = await getAccountByPlayerId(context.env.DB, playerId);
+    if (!account) {
+      return json({ error: "Create an account to delete posts." }, 403);
+    }
+
+    const existing = await context.env.DB.prepare(
+      `SELECT id, player_id FROM community_posts WHERE id = ?`,
+    )
+      .bind(postId)
+      .first<{ id: string; player_id: string }>();
+
+    if (!existing) {
+      return json({ error: "Post not found" }, 404);
+    }
+
+    if (existing.player_id !== playerId) {
+      return json({ error: "You can only delete your own posts." }, 403);
+    }
+
+    await context.env.DB.prepare(
+      `DELETE FROM community_post_likes WHERE post_id = ?`,
+    )
+      .bind(postId)
+      .run();
+
+    await context.env.DB.prepare(`DELETE FROM community_posts WHERE id = ?`)
+      .bind(postId)
+      .run();
+
+    return json({ ok: true, postId });
   }
 
   if (body.action === "like") {
