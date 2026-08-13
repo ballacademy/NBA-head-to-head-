@@ -12,7 +12,9 @@ import {
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import type { RefObject } from "react";
 
 interface PrivateMatchModalProps {
   salaryCapMode: boolean;
@@ -93,18 +95,13 @@ export function PrivateMatchModal({
     }
   }, [privateRoomCode, onClose]);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busy) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    closeRef.current?.focus();
-
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [busy, onClose]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useDialogA11y({
+    onClose,
+    disableClose: busy,
+    initialFocusRef: closeRef,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   const startHost = async () => {
     setError(null);
@@ -193,6 +190,7 @@ export function PrivateMatchModal({
       onClick={handleBackdropClose}
     >
       <div
+        ref={panelRef}
         className="unlock-modal__panel panel unlock-modal__panel--compact private-match-modal__panel"
         onClick={(event) => event.stopPropagation()}
       >

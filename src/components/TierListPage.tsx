@@ -6,6 +6,7 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type RefObject,
 } from "react";
 import {
   addTier,
@@ -99,6 +100,7 @@ import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 import {
   TierListHubHome,
   TierListMinePanel,
@@ -320,6 +322,19 @@ export function TierListPage({
   const dragPointRef = useRef<{ x: number; y: number } | null>(null);
   const dropTargetRef = useRef<string | null>(null);
   const dragFrameRef = useRef<number | null>(null);
+  const filterSheetPanelRef = useRef<HTMLDivElement | null>(null);
+  const filterSheetDoneRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeFilters = useCallback(() => {
+    setFiltersOpen(false);
+  }, []);
+
+  useDialogA11y({
+    open: filtersOpen,
+    onClose: closeFilters,
+    initialFocusRef: filterSheetDoneRef,
+    containerRef: filterSheetPanelRef as RefObject<HTMLElement | null>,
+  });
 
   useEffect(() => {
     if (hubReturnToken === hubReturnSeenRef.current) {
@@ -1470,21 +1485,6 @@ export function TierListPage({
     }
   }, [view]);
 
-  useEffect(() => {
-    if (!filtersOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setFiltersOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [filtersOpen]);
-
   return (
     <div className="hub-feature tier-list-page">
       <div className="landing-hub__top">
@@ -1694,17 +1694,21 @@ export function TierListPage({
             id="tier-list-filters-sheet"
             onClick={(event) => {
               if (event.target === event.currentTarget) {
-                setFiltersOpen(false);
+                closeFilters();
               }
             }}
           >
-            <div className="tier-list__filter-sheet__panel">
+            <div
+              ref={filterSheetPanelRef}
+              className="tier-list__filter-sheet__panel"
+            >
               <div className="tier-list__filter-sheet__header">
                 <h2 id="tier-list-filters-title">Player filters</h2>
                 <button
                   type="button"
+                  ref={filterSheetDoneRef}
                   className="secondary-button"
-                  onClick={() => setFiltersOpen(false)}
+                  onClick={closeFilters}
                 >
                   Done
                 </button>
@@ -2045,7 +2049,7 @@ export function TierListPage({
                 <button
                   type="button"
                   className="landing__primary-button"
-                  onClick={() => setFiltersOpen(false)}
+                  onClick={closeFilters}
                 >
                   Apply
                 </button>

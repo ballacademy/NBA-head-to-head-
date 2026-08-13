@@ -44,6 +44,8 @@ import {
 } from "../lib/accountGate";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { EmptyState } from "./EmptyState";
+import { InlineAlert } from "./InlineAlert";
 
 type LeaderboardView = "classic" | "ranked";
 type RankedSort = RankedLeaderboardSort;
@@ -314,19 +316,17 @@ export function LeaderboardPage() {
       </AccountRequiredNote>
 
       {refreshFailed ? (
-        <p className="form-error" role="alert">
-          Couldn&apos;t refresh leaderboards.{" "}
-          <button
-            type="button"
-            className="daily-draft-results__sync-retry"
-            disabled={refreshBusy}
-            onClick={() => {
+        <InlineAlert
+          message="Couldn't refresh leaderboards."
+          action={{
+            label: "Retry",
+            busyLabel: "Retrying…",
+            busy: refreshBusy,
+            onClick: () => {
               void refreshBoard();
-            }}
-          >
-            {refreshBusy ? "Retrying…" : "Retry"}
-          </button>
-        </p>
+            },
+          }}
+        />
       ) : null}
 
       <section className="hub-feature__panel leaderboard__panel">
@@ -408,9 +408,7 @@ export function LeaderboardPage() {
 
         {refreshBusy &&
         (view === "ranked" ? rankedEntries.length === 0 : classicEntries.length === 0) ? (
-          <p className="hub-empty" aria-live="polite">
-            Loading…
-          </p>
+          <EmptyState message="Loading…" loading />
         ) : view === "ranked" ? (
           rankedEntries.length > 0 ? (
             <LeaderboardBoard
@@ -423,10 +421,9 @@ export function LeaderboardPage() {
               profileMode="ranked"
             />
           ) : (
-            <p className="hub-empty">
-              No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the
-              ladder.
-            </p>
+            <EmptyState
+              message={`No ${PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the ladder.`}
+            />
           )
         ) : classicEntries.length > 0 ? (
           <LeaderboardBoard
@@ -439,10 +436,9 @@ export function LeaderboardPage() {
             profileMode="classic"
           />
         ) : (
-          <p className="hub-empty">
-            No casual entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the
-            first spot.
-          </p>
+          <EmptyState
+            message={`No casual entries yet. Play ${CLASSIC_HEAD_TO_HEAD_LABEL} to claim the first spot.`}
+          />
         )}
       </section>
     </div>

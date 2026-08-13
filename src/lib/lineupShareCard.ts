@@ -21,6 +21,12 @@ export interface LineupShareCardInput {
   ovr: number;
   ovrOverflow?: number;
   lineup: Player[];
+  /** Small uppercase label above the title (defaults to "DRAFT DAY GM"). */
+  eyebrow?: string;
+  /** Optional muted context drawn under the title. */
+  subhead?: string;
+  /** Optional right-side footer context (defaults to "POWERED BY BALLACADEMY"). */
+  footerNote?: string;
   record?: string;
   /** Prefix drawn before `record` (defaults to "Projected"). */
   recordLabel?: string;
@@ -419,13 +425,20 @@ const drawShareCardHeader = (
   context.font = `700 20px ${FONT_STACK}`;
   context.fillStyle = "#fdba74";
   context.letterSpacing = "3.2px";
-  context.fillText("DRAFT DAY GM", headerX, 98);
+  context.fillText(input.eyebrow?.trim() || "DRAFT DAY GM", headerX, 98);
   context.letterSpacing = "0px";
 
   context.font = `700 52px ${FONT_STACK}`;
   context.fillStyle = "#f8fafc";
   const title = resolveShareCardTitle(input);
   context.fillText(title, headerX, 168);
+
+  const subhead = input.subhead?.trim();
+  if (subhead) {
+    context.font = `600 21px ${FONT_STACK}`;
+    context.fillStyle = "rgba(203, 213, 225, 0.88)";
+    context.fillText(subhead, headerX, 198);
+  }
 
   context.font = `700 18px ${FONT_STACK}`;
   context.fillStyle = "rgba(148, 163, 184, 0.9)";
@@ -547,7 +560,11 @@ export const drawLineupShareCard = (
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
-  context.fillText("POWERED BY BALLACADEMY", CARD_WIDTH - 88, footerY);
+  context.fillText(
+    input.footerNote?.trim() || "POWERED BY BALLACADEMY",
+    CARD_WIDTH - 88,
+    footerY,
+  );
   context.textAlign = "left";
 };
 

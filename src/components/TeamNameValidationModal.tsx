@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface TeamNameValidationModalProps {
   message: string;
@@ -11,19 +12,12 @@ export function TeamNameValidationModal({
   onClose,
 }: TeamNameValidationModalProps) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useDialogA11y({
+    onClose,
+    initialFocusRef: closeRef,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   const modal = (
     <div
@@ -34,6 +28,7 @@ export function TeamNameValidationModal({
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         className="unlock-modal__panel panel unlock-modal__panel--compact team-name-modal__panel"
         onClick={(event) => {
           event.stopPropagation();
@@ -48,7 +43,7 @@ export function TeamNameValidationModal({
           className="landing__primary-button team-name-modal__button"
           onClick={onClose}
         >
-          OK
+          Got it
         </button>
       </div>
     </div>

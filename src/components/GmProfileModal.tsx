@@ -12,6 +12,7 @@ import { formatPlayerRecord } from "../lib/playerRecord";
 import { formatSeasonLabel, getCurrentSeasonId } from "../lib/rankedSeason";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 import { hasFireStreak } from "../lib/winStreak";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 import { LossStreakBadge } from "./LossStreakBadge";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { WinStreakBadge } from "./WinStreakBadge";
@@ -61,6 +62,10 @@ export function GmProfileModal({
 }: GmProfileModalProps) {
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
+  const { containerRef } = useDialogA11y({
+    onClose,
+    initialFocusRef: closeRef,
+  });
   const [loading, setLoading] = useState(fetchRemoteProfile);
   const [seasonUnavailable, setSeasonUnavailable] = useState(false);
   const [displayName, setDisplayName] = useState(name);
@@ -164,19 +169,6 @@ export function GmProfileModal({
     lossStreak,
   ]);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    closeRef.current?.focus();
-
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
   const showWinBadge = hasFireStreak(displayWinStreak);
   const showLossBadge =
     !showWinBadge && hasLossStreakBadge(displayLossStreak);
@@ -209,6 +201,7 @@ export function GmProfileModal({
 
   const modal = (
     <div
+      ref={containerRef as React.RefObject<HTMLDivElement>}
       className="unlock-modal gm-profile-modal"
       role="dialog"
       aria-modal="true"

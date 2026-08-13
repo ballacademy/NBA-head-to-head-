@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useRef, type RefObject } from "react";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface DraftOnboardingOverlayProps {
   hasSalaryCap: boolean;
@@ -10,23 +11,24 @@ export function DraftOnboardingOverlay({
   onDismiss,
 }: DraftOnboardingOverlayProps) {
   const dismissRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    dismissRef.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onDismiss();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onDismiss]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useDialogA11y({
+    onClose: onDismiss,
+    initialFocusRef: dismissRef,
+    containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
 
   return (
-    <div className="draft-onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="draft-onboarding-title">
-      <div className="draft-onboarding-overlay__panel panel panel--compact">
+    <div
+      className="draft-onboarding-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="draft-onboarding-title"
+    >
+      <div
+        ref={panelRef}
+        className="draft-onboarding-overlay__panel panel panel--compact"
+      >
         <p className="eyebrow">First draft</p>
         <h2 id="draft-onboarding-title">How drafting works</h2>
         <ul className="draft-onboarding-overlay__list">
