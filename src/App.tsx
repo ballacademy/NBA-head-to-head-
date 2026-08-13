@@ -319,6 +319,7 @@ function App() {
     null,
   );
   const [landingRenderKey, setLandingRenderKey] = useState(0);
+  const [communityHubReturnToken, setCommunityHubReturnToken] = useState(0);
   const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() =>
     initialLandingDeepLinks.contentTab ?? loadLandingHubTab(),
   );
@@ -2325,7 +2326,8 @@ function App() {
         if (phase !== "tierList") {
           openFeaturePage("tierList");
         }
-        syncLandingDeepLinkUrl({ hub: "community", view: "posts" });
+        setCommunityHubReturnToken((current) => current + 1);
+        syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
         return;
       }
 
@@ -2429,6 +2431,7 @@ function App() {
             : null
         }
         initialCommunityPostId={initialLandingDeepLinks.communityPostId}
+        hubReturnToken={communityHubReturnToken}
       />,
       "landing-layout--tier-list",
     );

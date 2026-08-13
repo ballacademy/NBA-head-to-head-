@@ -117,6 +117,8 @@ interface TierListPageProps {
   initialCommunityView?: "posts" | null;
   /** Deep-link post id from `?post=` — opens Posts and focuses that item. */
   initialCommunityPostId?: string | null;
+  /** Bumped when Community nav is selected — returns to the hub chooser. */
+  hubReturnToken?: number;
 }
 
 type TierListView =
@@ -233,6 +235,7 @@ export function TierListPage({
   initialPublicTierListId = null,
   initialCommunityView = null,
   initialCommunityPostId = null,
+  hubReturnToken = 0,
 }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const [view, setView] = useState<TierListView>(() => {
@@ -242,8 +245,7 @@ export function TierListPage({
     if (initialCommunityPostId || initialCommunityView === "posts") {
       return "posts";
     }
-    // Community opens on Posts by default.
-    return "posts";
+    return "hub";
   });
   const [state, setState] = useState<TierListState>(() => loadTierListState());
   const [library, setLibrary] = useState<TierListLibrary>(() =>
@@ -294,9 +296,6 @@ export function TierListPage({
   >(() => loadCommunityShareables());
   const [communityAttachment, setCommunityAttachment] =
     useState<CommunityPostAttachment | null>(null);
-  const [communityQuotePostId, setCommunityQuotePostId] = useState<string | null>(
-    null,
-  );
   const [communityPostsToday, setCommunityPostsToday] = useState<number | null>(
     null,
   );
@@ -310,12 +309,23 @@ export function TierListPage({
     useState<PublicTierListBrowseFilters>(DEFAULT_PUBLIC_TIER_LIST_FILTERS);
   const deepLinkHandledRef = useRef(false);
   const postDeepLinkHandledRef = useRef(false);
+  const hubReturnSeenRef = useRef(hubReturnToken);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
   const dragPointRef = useRef<{ x: number; y: number } | null>(null);
   const dropTargetRef = useRef<string | null>(null);
   const dragFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (hubReturnToken === hubReturnSeenRef.current) {
+      return;
+    }
+    hubReturnSeenRef.current = hubReturnToken;
+    setViewerDetail(null);
+    setViewerLoading(false);
+    setView("hub");
+  }, [hubReturnToken]);
 
   useEffect(() => {
     saveTierListState(state);
@@ -1249,7 +1259,6 @@ export function TierListPage({
       authorTag: identity.publicTag,
       body: communityPostDraft,
       attachment: communityAttachment,
-      quotePostId: communityQuotePostId,
       authorClassicElo: classicElo,
       authorRankedElo: rankedElo,
     });
@@ -1262,7 +1271,6 @@ export function TierListPage({
 
     setCommunityPostDraft("");
     setCommunityAttachment(null);
-    setCommunityQuotePostId(null);
     setCommunityPosts((current) => [
       result.post,
       ...current.filter((post) => post.id !== result.post.id),
@@ -1297,7 +1305,7 @@ export function TierListPage({
   };
 
   const handleDeleteCommunityPost = async (postId: string) => {
-    if (!window.confirm("Delete this post?")) {
+    if (!window.confirm("Delete this post? This can’t be undone.")) {
       return;
     }
     setCommunityPostLikeError(null);
@@ -1534,8 +1542,6 @@ export function TierListPage({
           shareables={communityShareables}
           selectedAttachment={communityAttachment}
           onSelectAttachment={setCommunityAttachment}
-          quotePostId={communityQuotePostId}
-          onSelectQuote={setCommunityQuotePostId}
           onToggleLike={(postId, liked) =>
             void handleToggleCommunityPostLike(postId, liked)
           }
