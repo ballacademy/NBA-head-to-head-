@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyLandingDeepLinksFromSearch,
+  buildCommunityHubShareUrl,
+  buildCommunityPostShareUrl,
+  buildRanksHubShareUrl,
   isLandingContentTab,
   isLandingPlaySection,
   loadLandingHubTab,
@@ -144,5 +147,21 @@ describe("landingHub", () => {
     expect(nextUrl).toContain("hub=play");
     expect(nextUrl).toContain("play=events");
     expect(nextUrl).toContain("tierList=abc123");
+  });
+
+  it("builds community and ranks share URLs", () => {
+    vi.stubGlobal("window", {
+      location: {
+        origin: "https://example.test",
+      },
+    });
+
+    expect(buildCommunityPostShareUrl("post-123")).toBe(
+      "https://example.test/?hub=community&view=posts&post=post-123",
+    );
+    expect(buildCommunityHubShareUrl("tiers")).toBe(
+      "https://example.test/?hub=community&view=tiers",
+    );
+    expect(buildRanksHubShareUrl()).toBe("https://example.test/?hub=ranks");
   });
 });

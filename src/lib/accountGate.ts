@@ -24,6 +24,21 @@ export const ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE =
 export const ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE =
   "Create an account to post in Community.";
 
+export const ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE =
+  "Create an account to post, reply, or like.";
+
+export const ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE =
+  "Create an account to like posts.";
+
+export const ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE =
+  "Create an account to reply.";
+
+export const ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE =
+  "Create an account to report posts.";
+
+export const ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE =
+  "Create an account to appear on event standings.";
+
 const emitAccountLinkChanged = () => {
   for (const listener of [...linkListeners]) {
     listener();

@@ -51,6 +51,7 @@ import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
 import { HubOnboardingOverlay } from "./HubOnboardingOverlay";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
@@ -1083,7 +1084,7 @@ export function LandingPage({
                     Ranked by wins this week. Ties break by fewer losses.
                   </p>
                   <AccountRequiredNote className="account-required-note--inline">
-                    Create an account to appear on event standings.
+                    {ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE}
                   </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
                     <p className="event-leaderboard__empty hub-empty" role="status">
@@ -1103,7 +1104,7 @@ export function LandingPage({
                       </button>
                     </p>
                   ) : eventLeaderboard.length === 0 ? (
-                    <p className="event-leaderboard__empty">
+                    <p className="event-leaderboard__empty hub-empty">
                       No event results yet. Be the first on the board.
                     </p>
                   ) : (

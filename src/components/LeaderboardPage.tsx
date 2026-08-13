@@ -39,6 +39,9 @@ import {
 } from "../lib/reconcileLeaderboardSelf";
 import { GmProfileModal } from "./GmProfileModal";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import {
+  ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE,
+} from "../lib/accountGate";
 import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 
@@ -307,7 +310,7 @@ export function LeaderboardPage() {
       </div>
 
       <AccountRequiredNote>
-        Create an account to appear on these leaderboards. Anyone can browse.
+        {`${ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE} Anyone can browse.`}
       </AccountRequiredNote>
 
       {refreshFailed ? (
@@ -405,7 +408,7 @@ export function LeaderboardPage() {
 
         {refreshBusy &&
         (view === "ranked" ? rankedEntries.length === 0 : classicEntries.length === 0) ? (
-          <p className="draft-empty" aria-live="polite">
+          <p className="hub-empty" aria-live="polite">
             Loading…
           </p>
         ) : view === "ranked" ? (
@@ -420,7 +423,7 @@ export function LeaderboardPage() {
               profileMode="ranked"
             />
           ) : (
-            <p className="draft-empty">
+            <p className="hub-empty">
               No {PRO_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the
               ladder.
             </p>
@@ -436,7 +439,7 @@ export function LeaderboardPage() {
             profileMode="classic"
           />
         ) : (
-          <p className="draft-empty">
+          <p className="hub-empty">
             No casual entries yet. Play {CLASSIC_HEAD_TO_HEAD_LABEL} to claim the
             first spot.
           </p>

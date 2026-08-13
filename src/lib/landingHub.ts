@@ -308,3 +308,46 @@ export const syncLandingDeepLinkUrl = (
     // Ignore URL sync failures.
   }
 };
+
+/** Absolute share URL for a community post deep link. */
+export const buildCommunityPostShareUrl = (postId: string) => {
+  const id = postId.trim().slice(0, 80);
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://www.draftdaygm.com";
+  const url = new URL(origin);
+  url.searchParams.set("hub", "community");
+  url.searchParams.set("view", "posts");
+  if (id) {
+    url.searchParams.set("post", id);
+  }
+  return url.toString();
+};
+
+/** Absolute share URL for the Community hub or a nested view. */
+export const buildCommunityHubShareUrl = (
+  view: LandingCommunityView | null = null,
+) => {
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://www.draftdaygm.com";
+  const url = new URL(origin);
+  url.searchParams.set("hub", "community");
+  if (view) {
+    url.searchParams.set("view", view);
+  }
+  return url.toString();
+};
+
+/** Absolute share URL for Ranks / leaderboard hub. */
+export const buildRanksHubShareUrl = () => {
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://www.draftdaygm.com";
+  const url = new URL(origin);
+  url.searchParams.set("hub", "ranks");
+  return url.toString();
+};

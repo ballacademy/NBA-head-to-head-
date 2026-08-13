@@ -930,10 +930,19 @@ h1.landing-hub__title--name {
   font-weight: 700;
 }
 
-.landing-hub__link-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .landing-hub__link-button:hover {
+    border-color: var(--hub-subbox-active-border);
+    background: var(--hub-subbox-active-bg);
+    color: #f8fafc;
+  }
+}
+
+.landing-hub__link-button:focus-visible {
   border-color: var(--hub-subbox-active-border);
   background: var(--hub-subbox-active-bg);
   color: #f8fafc;
+  outline: none;
 }
 
 /* Shared hub accent tokens — values come from :root --accent-* palette. */
@@ -1127,15 +1136,29 @@ h1.landing-hub__title--name {
     filter 140ms ease;
 }
 
-.hub-cta:hover:not(:disabled),
-.landing-card--mode .landing__primary-button:hover:not(:disabled),
-.landing-card--mode .daily-draft-card__button:hover:not(:disabled),
-.landing-card--mode .ranked-cap-card__button:hover:not(:disabled),
-.landing-card--mode .all-time-card__button:hover:not(:disabled),
-.landing-card--mode .mode-card__cta:hover:not(:disabled) {
+.hub-cta:focus-visible:not(:disabled),
+.landing-card--mode .landing__primary-button:focus-visible:not(:disabled),
+.landing-card--mode .daily-draft-card__button:focus-visible:not(:disabled),
+.landing-card--mode .ranked-cap-card__button:focus-visible:not(:disabled),
+.landing-card--mode .all-time-card__button:focus-visible:not(:disabled),
+.landing-card--mode .mode-card__cta:focus-visible:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow: 0 14px 28px var(--hub-accent-glow, rgba(249, 115, 22, 0.34));
+  outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hub-cta:hover:not(:disabled),
+  .landing-card--mode .landing__primary-button:hover:not(:disabled),
+  .landing-card--mode .daily-draft-card__button:hover:not(:disabled),
+  .landing-card--mode .ranked-cap-card__button:hover:not(:disabled),
+  .landing-card--mode .all-time-card__button:hover:not(:disabled),
+  .landing-card--mode .mode-card__cta:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    box-shadow: 0 14px 28px var(--hub-accent-glow, rgba(249, 115, 22, 0.34));
+  }
 }
 
 .hub-cta--secondary,
@@ -1170,7 +1193,6 @@ h1.landing-hub__title--name {
     transform 0.16s ease;
 }
 
-.landing-hub__link-button.hub-accent:hover,
 .landing-hub__link-button.hub-accent:focus-visible {
   border-color: var(--hub-accent-border);
   background:
@@ -1182,6 +1204,22 @@ h1.landing-hub__title--name {
     0 0 20px var(--hub-accent-glow);
   color: #f8fafc;
   transform: translateY(-1px);
+  outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-hub__link-button.hub-accent:hover {
+    border-color: var(--hub-accent-border);
+    background:
+      linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 58%),
+      var(--hub-subbox-active-bg);
+    box-shadow:
+      var(--hub-subbox-shadow),
+      inset 3px 0 0 var(--hub-accent-bright),
+      0 0 20px var(--hub-accent-glow);
+    color: #f8fafc;
+    transform: translateY(-1px);
+  }
 }
 
 .play-hub-chooser {
@@ -2054,7 +2092,6 @@ h1.landing-hub__title--name {
     background 120ms ease;
 }
 
-.landing-profile-strip__stat--btn:hover,
 .landing-profile-strip__stat--btn:focus-visible {
   border-color: transparent;
   background: var(--accent-roster-soft);
@@ -2064,7 +2101,20 @@ h1.landing-hub__title--name {
   opacity: 1;
 }
 
-.landing-profile-strip__stat--btn:hover .landing-profile-strip__label,
+@media (hover: hover) and (pointer: fine) {
+  .landing-profile-strip__stat--btn:hover {
+    border-color: transparent;
+    background: var(--accent-roster-soft);
+    box-shadow: none;
+    transform: none;
+    opacity: 1;
+  }
+
+  .landing-profile-strip__stat--btn:hover .landing-profile-strip__label {
+    color: #e2e8f0;
+  }
+}
+
 .landing-profile-strip__stat--btn:focus-visible .landing-profile-strip__label {
   color: #e2e8f0;
 }
@@ -2169,6 +2219,10 @@ h1.landing-hub__title--name {
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.collection-tier-modal__empty.hub-empty {
+  color: #cbd5e1;
 }
 
 .daily-draft-card__yesterday {
@@ -6634,6 +6688,22 @@ h1.landing-hub__title--name {
   overflow-wrap: anywhere;
 }
 
+.community-posts-panel__attachment-chip {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-community-border) 70%, transparent);
+  background: color-mix(in srgb, var(--accent-community-soft) 80%, transparent);
+  color: var(--accent-community-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+}
+
 .community-posts-panel__view-attach {
   justify-self: start;
   width: auto;
@@ -6913,6 +6983,69 @@ h1.landing-hub__title--name {
   flex-wrap: wrap;
   gap: 8px;
   margin-left: auto;
+  position: relative;
+}
+
+.community-posts-panel__menu {
+  position: relative;
+}
+
+.community-posts-panel__menu-trigger {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.35);
+  color: #94a3b8;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.community-posts-panel__menu-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.community-posts-panel__menu[open] .community-posts-panel__menu-trigger,
+.community-posts-panel__menu-trigger:focus-visible {
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.4);
+  outline: none;
+}
+
+.community-posts-panel__menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  display: grid;
+  gap: 2px;
+  min-width: 124px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #0f172a;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.45);
+}
+
+.community-posts-panel__menu-panel .community-posts-panel__text-action {
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.community-posts-panel__menu-panel .community-posts-panel__text-action:hover,
+.community-posts-panel__menu-panel .community-posts-panel__text-action:focus-visible {
+  background: rgba(148, 163, 184, 0.12);
 }
 
 .community-posts-panel__text-action {
@@ -6926,7 +7059,12 @@ h1.landing-hub__title--name {
   cursor: pointer;
 }
 
-.community-posts-panel__text-action:hover,
+@media (hover: hover) and (pointer: fine) {
+  .community-posts-panel__text-action:hover {
+    color: #e2e8f0;
+  }
+}
+
 .community-posts-panel__text-action:focus-visible {
   color: #e2e8f0;
   outline: none;
