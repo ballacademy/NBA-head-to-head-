@@ -364,3 +364,66 @@ export const setCommunityPostLike = async (params: {
     };
   }
 };
+
+export type DeleteCommunityPostResult =
+  | { ok: true; postId: string }
+  | { ok: false; error: string; accountRequired?: boolean };
+
+export const deleteCommunityPost = async (params: {
+  playerId: string;
+  postId: string;
+}): Promise<DeleteCommunityPostResult> => {
+  const linked = await isPlayerAccountLinked(params.playerId);
+  if (!linked) {
+    return {
+      ok: false,
+      error: "Create an account to delete posts.",
+      accountRequired: true,
+    };
+  }
+
+  try {
+    const response = await fetch(buildUrl("/api/community-posts"), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        action: "delete",
+        playerId: params.playerId,
+        postId: params.postId,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { ok?: boolean; postId?: string; error?: string }
+      | null;
+
+    if (response.status === 403) {
+      return {
+        ok: false,
+        error: payload?.error ?? "You can only delete your own posts.",
+        accountRequired: payload?.error?.includes("account") || undefined,
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload?.error ?? "Could not delete post. Try again.",
+      };
+    }
+
+    const feed = loadLocalFeed();
+    feed.posts = feed.posts.filter((post) => post.id !== params.postId);
+    saveLocalFeed(feed);
+
+    return { ok: true, postId: params.postId };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Try again.",
+    };
+  }
+};
