@@ -534,8 +534,6 @@ interface CommunityPostsPanelProps {
   shareables: CommunityPostAttachment[];
   selectedAttachment: CommunityPostAttachment | null;
   onSelectAttachment: (attachment: CommunityPostAttachment | null) => void;
-  quotePostId: string | null;
-  onSelectQuote: (postId: string | null) => void;
   onToggleLike: (postId: string, liked: boolean) => void;
   onDeletePost?: (postId: string) => void;
   onMuteAuthor?: (playerId: string) => void;
@@ -548,6 +546,58 @@ interface CommunityPostsPanelProps {
   focusPostId?: string | null;
   postsToday?: number | null;
 }
+
+const TrashIcon = () => (
+  <svg
+    className="community-posts-panel__icon"
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      fill="currentColor"
+      d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm-1 12h12a1 1 0 0 0 1-1V7H5v13a1 1 0 0 0 1 1z"
+    />
+  </svg>
+);
+
+const LikeIcon = ({ filled = false }: { filled?: boolean }) => (
+  <svg
+    className="community-posts-panel__icon"
+    viewBox="0 0 24 24"
+    width="15"
+    height="15"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.8"
+      d="M12 20s-7-4.35-7-9.2A3.8 3.8 0 0 1 12 7.2 3.8 3.8 0 0 1 19 10.8C19 15.65 12 20 12 20z"
+    />
+  </svg>
+);
+
+const ReplyIcon = () => (
+  <svg
+    className="community-posts-panel__icon"
+    viewBox="0 0 24 24"
+    width="15"
+    height="15"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H11l-4 3v-3H5A1.5 1.5 0 0 1 3.5 15V8A1.5 1.5 0 0 1 5 6.5z"
+    />
+  </svg>
+);
 
 export function CommunityPostsPanel({
   posts,
@@ -567,8 +617,6 @@ export function CommunityPostsPanel({
   shareables,
   selectedAttachment,
   onSelectAttachment,
-  quotePostId,
-  onSelectQuote,
   onToggleLike,
   onDeletePost,
   onMuteAuthor,
@@ -601,10 +649,6 @@ export function CommunityPostsPanel({
   const [muteEpoch, setMuteEpoch] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const focusRef = useRef<HTMLLIElement | null>(null);
-
-  const quotedPost = quotePostId
-    ? posts.find((post) => post.id === quotePostId) ?? null
-    : null;
 
   useEffect(() => {
     return () => {
@@ -884,25 +928,6 @@ export function CommunityPostsPanel({
           />
         </label>
 
-        {quotedPost ? (
-          <div className="community-posts-panel__quote-compose" role="status">
-            <div className="community-posts-panel__quote-compose-head">
-              <span>
-                Quoting {quotedPost.authorName} ·{" "}
-                {formatPublicTag(quotedPost.authorTag)}
-              </span>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => onSelectQuote(null)}
-              >
-                Clear
-              </button>
-            </div>
-            <p>{quotedPost.body}</p>
-          </div>
-        ) : null}
-
         <label className="tier-list-hub__sort community-posts-panel__attach">
           <span>Attach a recent result or list</span>
           <select
@@ -989,6 +1014,10 @@ export function CommunityPostsPanel({
             const isOwn = Boolean(
               viewerPlayerId && post.playerId === viewerPlayerId,
             );
+            const replyCount = Math.max(
+              post.replyCount,
+              (repliesByPost[post.id] ?? []).length,
+            );
             const replyRemaining =
               COMMUNITY_REPLY_BODY_MAX - (replyDrafts[post.id]?.length ?? 0);
             return (
@@ -1001,33 +1030,47 @@ export function CommunityPostsPanel({
                     : ""
                 }`}
               >
-                <div className="tier-list__library-copy">
-                  <div className="community-posts-panel__author">
-                    <strong>
-                      {post.authorName} · {formatPublicTag(post.authorTag)}
-                    </strong>
-                    <span className="community-posts-panel__author-meta">
-                      {formatCommunityPostTime(post.createdAt)}
-                    </span>
-                    {post.authorRankedElo != null ||
-                    post.authorClassicElo != null ? (
-                      <span className="community-posts-panel__flair">
-                        {post.authorRankedElo != null ? (
-                          <RankedTierBadge
-                            elo={post.authorRankedElo}
-                            compact
-                          />
-                        ) : null}
-                        {post.authorClassicElo != null ? (
-                          <RankedTierBadge
-                            elo={post.authorClassicElo}
-                            tierLabel="Classic"
-                            compact
-                          />
-                        ) : null}
+                <div className="community-posts-panel__card">
+                  <div className="community-posts-panel__card-top">
+                    <div className="community-posts-panel__author">
+                      <strong>
+                        {post.authorName} · {formatPublicTag(post.authorTag)}
+                      </strong>
+                      <span className="community-posts-panel__author-meta">
+                        {formatCommunityPostTime(post.createdAt)}
                       </span>
+                      {post.authorRankedElo != null ||
+                      post.authorClassicElo != null ? (
+                        <span className="community-posts-panel__flair">
+                          {post.authorRankedElo != null ? (
+                            <RankedTierBadge
+                              elo={post.authorRankedElo}
+                              compact
+                            />
+                          ) : null}
+                          {post.authorClassicElo != null ? (
+                            <RankedTierBadge
+                              elo={post.authorClassicElo}
+                              tierLabel="Classic"
+                              compact
+                            />
+                          ) : null}
+                        </span>
+                      ) : null}
+                    </div>
+                    {onDeletePost && isOwn ? (
+                      <button
+                        type="button"
+                        className="community-posts-panel__delete"
+                        aria-label="Delete post"
+                        title="Delete post"
+                        onClick={() => onDeletePost(post.id)}
+                      >
+                        <TrashIcon />
+                      </button>
                     ) : null}
                   </div>
+
                   <p className="community-posts-panel__body">{post.body}</p>
                   {post.quote ? (
                     <blockquote className="community-posts-panel__quote">
@@ -1079,6 +1122,68 @@ export function CommunityPostsPanel({
                       ) : null}
                     </div>
                   ) : null}
+
+                  <div className="community-posts-panel__engagement">
+                    <button
+                      type="button"
+                      className={`community-posts-panel__stat${
+                        post.likedByViewer ? " is-active" : ""
+                      }`}
+                      aria-pressed={post.likedByViewer}
+                      disabled={!accountLinked}
+                      title={
+                        accountLinked ? "Like" : "Create an account to like"
+                      }
+                      onClick={() =>
+                        onToggleLike(post.id, !post.likedByViewer)
+                      }
+                    >
+                      <span aria-hidden="true">
+                        <LikeIcon filled={post.likedByViewer} />
+                      </span>
+                      <span>{post.likeCount}</span>
+                      <span className="community-posts-panel__stat-label">
+                        {post.likeCount === 1 ? "like" : "likes"}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`community-posts-panel__stat${
+                        expandedReplies === post.id ? " is-active" : ""
+                      }`}
+                      aria-expanded={expandedReplies === post.id}
+                      title="Replies"
+                      onClick={() => void handleToggleReplies(post.id)}
+                    >
+                      <span aria-hidden="true">
+                        <ReplyIcon />
+                      </span>
+                      <span>{replyCount}</span>
+                      <span className="community-posts-panel__stat-label">
+                        {replyCount === 1 ? "reply" : "replies"}
+                      </span>
+                    </button>
+                    {!isOwn ? (
+                      <div className="community-posts-panel__more">
+                        <button
+                          type="button"
+                          className="community-posts-panel__text-action"
+                          disabled={!accountLinked || actionBusy === post.id}
+                          onClick={() => void handleReport(post.id)}
+                        >
+                          Report
+                        </button>
+                        <button
+                          type="button"
+                          className="community-posts-panel__text-action"
+                          onClick={() => handleMute(post.playerId)}
+                        >
+                          Mute
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+
                   {expandedReplies === post.id ? (
                     <div className="community-posts-panel__replies">
                       {(repliesByPost[post.id] ?? []).length === 0 ? (
@@ -1141,74 +1246,12 @@ export function CommunityPostsPanel({
                     </div>
                   ) : null}
                 </div>
-                <div className="tier-list__library-actions community-posts-panel__actions">
-                  <button
-                    type="button"
-                    className={`secondary-button${
-                      post.likedByViewer ? " is-active-like" : ""
-                    }`}
-                    aria-pressed={post.likedByViewer}
-                    disabled={!accountLinked}
-                    title={
-                      accountLinked ? undefined : "Create an account to like"
-                    }
-                    onClick={() => onToggleLike(post.id, !post.likedByViewer)}
-                  >
-                    {post.likedByViewer ? "Liked" : "Like"} · {post.likeCount}
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => void handleToggleReplies(post.id)}
-                  >
-                    {expandedReplies === post.id ? "Hide" : "Replies"} ·{" "}
-                    {Math.max(
-                      post.replyCount,
-                      (repliesByPost[post.id] ?? []).length,
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    disabled={!accountLinked}
-                    onClick={() => onSelectQuote(post.id)}
-                  >
-                    Quote
-                  </button>
-                  {!isOwn ? (
-                    <>
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        disabled={!accountLinked || actionBusy === post.id}
-                        onClick={() => void handleReport(post.id)}
-                      >
-                        Report
-                      </button>
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={() => handleMute(post.playerId)}
-                      >
-                        Mute
-                      </button>
-                    </>
-                  ) : null}
-                  {onDeletePost && isOwn ? (
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={() => onDeletePost(post.id)}
-                    >
-                      Delete
-                    </button>
-                  ) : null}
-                </div>
               </li>
             );
           })}
         </ul>
       )}
+
 
       {loading && visiblePosts.length > 0 ? (
         <p className="tier-list__hint" role="status">
