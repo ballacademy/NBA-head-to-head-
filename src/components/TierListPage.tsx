@@ -1093,6 +1093,14 @@ export function TierListPage({
     setView("hub");
   };
 
+  const openCommunityView = (next: TierListView) => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) {
+      active.blur();
+    }
+    setView(next);
+  };
+
   const communityChrome = (() => {
     switch (view) {
       case "posts":
@@ -1445,8 +1453,8 @@ export function TierListPage({
 
       {view === "hub" ? (
         <TierListHubHome
-          onOpenPosts={() => setView("posts")}
-          onOpenTiers={() => setView("tiersHub")}
+          onOpenPosts={() => openCommunityView("posts")}
+          onOpenTiers={() => openCommunityView("tiersHub")}
           postsToday={communityPostsToday}
         />
       ) : null}
@@ -1458,8 +1466,8 @@ export function TierListPage({
           </AccountRequiredNote>
           <TierListTiersHub
             onCreate={() => void handleNew()}
-            onOpenMine={() => setView("mine")}
-            onOpenPublic={() => setView("public")}
+            onOpenMine={() => openCommunityView("mine")}
+            onOpenPublic={() => openCommunityView("public")}
           />
         </>
       ) : null}
@@ -1549,7 +1557,7 @@ export function TierListPage({
           viewerPlayerId={identity.playerId}
           authorName={authorName}
           authorTag={identity.publicTag}
-          onOpenTiers={() => setView("tiersHub")}
+          onOpenTiers={() => openCommunityView("tiersHub")}
           onOpenPublishedTierList={(publishedId) =>
             void handleOpenPublic(publishedId)
           }
