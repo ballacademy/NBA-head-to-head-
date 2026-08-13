@@ -22,6 +22,8 @@ export interface LineupShareCardInput {
   ovrOverflow?: number;
   lineup: Player[];
   record?: string;
+  /** Prefix drawn before `record` (defaults to "Projected"). */
+  recordLabel?: string;
   /** When set, replaces the large left title (defaults to teamName). */
   headline?: string;
   /** When set with statValue, replaces the "OVR" label. */
@@ -454,7 +456,12 @@ const drawShareCardHeader = (
   if (!stat.custom && input.record && layout.recordY) {
     context.font = `600 20px ${FONT_STACK}`;
     context.fillStyle = "#94a3b8";
-    context.fillText(`Projected ${input.record}`, headerRightX, layout.recordY);
+    const recordLabel = input.recordLabel?.trim() || "Projected";
+    context.fillText(
+      `${recordLabel} ${input.record}`,
+      headerRightX,
+      layout.recordY,
+    );
   }
 
   if (layout.chemistryRows.length > 0) {

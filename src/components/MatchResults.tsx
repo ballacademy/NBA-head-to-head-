@@ -7,6 +7,7 @@ import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import {
   getMatchRecordMode,
+  formatPlayerRecord,
   loadPlayerRecord,
 } from "../lib/playerRecord";
 import {
@@ -207,6 +208,9 @@ export function MatchResults({
         userLineupIds: userLineup.map((player) => player.id),
         userAccent: user.accent,
         userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+        userWinRecord: skipCompetitiveRecords
+          ? undefined
+          : formatPlayerRecord(updatedRecord),
         ovrOverflow: userScore.ovrOverflow,
         savedAt: new Date().toISOString(),
       });
