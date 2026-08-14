@@ -102,7 +102,7 @@ export const shortLabelForH2hMode = (
 
 /** Hub onboarding bullets — single source for Play hub first-run. */
 export const HUB_ONBOARDING_LEDE =
-  "Pick a path — you can switch anytime from Play.";
+  "Tap a mode to jump in — or close anytime. You can switch from Play whenever you want.";
 
 /** Intent cards after hub onboarding — routes new users by goal. */
 export const HUB_PLAY_INTENTS: Array<{
@@ -114,28 +114,28 @@ export const HUB_PLAY_INTENTS: Array<{
 }> = [
   {
     id: "daily",
-    title: MODE_COPY.daily.title,
-    body: MODE_COPY.daily.blurb,
+    title: "Daily Draft",
+    body: "Shared puzzle each day (Basic & Advanced). No salary cap — chase percentile.",
     playSection: "daily",
   },
   {
     id: "casual",
-    title: `${MODE_COPY.classicH2h.short} Head to Head`,
-    body: MODE_COPY.classicH2h.blurb,
+    title: "Casual Head to Head",
+    body: "Softer salary cap and banner matchmaking. Earn Front Office banners.",
     playSection: "headToHead",
     h2hMode: "classic",
   },
   {
     id: "pro",
-    title: `${MODE_COPY.proH2h.short} Head to Head`,
-    body: MODE_COPY.proH2h.blurb,
+    title: "Pro Head to Head",
+    body: "Tighter salary cap and Elo ladder. Monthly seasons crown Top 500.",
     playSection: "headToHead",
     h2hMode: "ranked",
   },
   {
     id: "events",
-    title: MODE_COPY.weeklyEvent.title,
-    body: MODE_COPY.weeklyEvent.blurb,
+    title: "Weekly Event",
+    body: "Limited challenge this week with its own standings.",
     playSection: "events",
   },
 ];

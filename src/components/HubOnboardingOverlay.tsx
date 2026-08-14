@@ -83,17 +83,8 @@ export function HubOnboardingOverlay({
             className="secondary-button"
             onClick={onDismiss}
           >
-            Close
+            Maybe later
           </button>
-          {onChooseIntent ? (
-            <button
-              type="button"
-              className="secondary-button hub-onboarding-overlay__secondary"
-              onClick={onDismiss}
-            >
-              Not now
-            </button>
-          ) : null}
         </div>
       </div>
     </div>
