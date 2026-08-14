@@ -71,6 +71,11 @@ describe("logoutToAnonymousIdentity", () => {
     writeJson("nba-head-to-head-tier-list", { tiers: [] });
     writeJson("nba-head-to-head-tier-list-library", { lists: [] });
     writeJson("nba-head-to-head-tier-list-public", { entries: [] });
+    writeJson("nba-head-to-head-community-shareables", [{ kind: "lineup" }]);
+    writeJson("nba-head-to-head-community-muted-players", ["player-2"]);
+    writeJson("nba-head-to-head-community-posts", { posts: [] });
+    writeJson("nba-head-to-head-community-rate", { "player-linked-old": 1 });
+    writeJson("ddgm:weekly-recap-seen", { "2026-08-11": true });
     writeJson("nba-head-to-head-pending-lineup-classic-player-linked-old", {
       storedLineupId: "lineup-1",
       mode: "classic",
@@ -87,6 +92,11 @@ describe("logoutToAnonymousIdentity", () => {
     expect(readJson("nba-head-to-head-tier-list")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list-library")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list-public")).toBeNull();
+    expect(readJson("nba-head-to-head-community-shareables")).toBeNull();
+    expect(readJson("nba-head-to-head-community-muted-players")).toBeNull();
+    expect(readJson("nba-head-to-head-community-posts")).toBeNull();
+    expect(readJson("nba-head-to-head-community-rate")).toBeNull();
+    expect(readJson("ddgm:weekly-recap-seen")).toBeNull();
     expect(
       readJson("nba-head-to-head-pending-lineup-classic-player-linked-old"),
     ).toBeNull();

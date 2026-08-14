@@ -5,11 +5,15 @@ import {
   buildCommunityPostShareUrl,
   buildRanksHubShareUrl,
   isLandingContentTab,
+  isLandingH2hMode,
   isLandingPlaySection,
+  loadLandingH2hMode,
   loadLandingHubTab,
   loadLandingPlaySection,
   parseLandingHubParam,
   parseLandingPlayParam,
+  parseLandingPlayWithH2h,
+  saveLandingH2hMode,
   saveLandingHubTab,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
@@ -61,6 +65,34 @@ describe("landingHub", () => {
     expect(parseLandingPlayParam("daily-draft")).toBe("daily");
     expect(parseLandingPlayParam("weekly")).toBe("events");
     expect(parseLandingPlayParam("modes")).toBe("chooser");
+    expect(parseLandingPlayWithH2h("ranked")).toEqual({
+      section: "headToHead",
+      h2hMode: "ranked",
+    });
+    expect(parseLandingPlayWithH2h("pro")).toEqual({
+      section: "headToHead",
+      h2hMode: "ranked",
+    });
+    expect(parseLandingPlayWithH2h("classic")).toEqual({
+      section: "headToHead",
+      h2hMode: "classic",
+    });
+    expect(parseLandingPlayWithH2h("casual")).toEqual({
+      section: "headToHead",
+      h2hMode: "classic",
+    });
+  });
+
+  it("persists and restores H2H mode aliases", () => {
+    expect(isLandingH2hMode("classic")).toBe(true);
+    expect(isLandingH2hMode("ranked")).toBe(true);
+    expect(isLandingH2hMode("pro")).toBe(false);
+
+    saveLandingH2hMode("ranked");
+    expect(loadLandingH2hMode()).toBe("ranked");
+
+    saveLandingPlaySection("daily");
+    expect(loadLandingH2hMode()).toBeNull();
   });
 
   it("defaults to play when nothing is stored", () => {
@@ -99,9 +131,23 @@ describe("landingHub", () => {
     const boot = applyLandingDeepLinksFromSearch("?hub=play&play=daily");
     expect(boot.contentTab).toBe("play");
     expect(boot.playSection).toBe("daily");
+    expect(boot.h2hMode).toBeNull();
     expect(boot.feature).toBeNull();
     expect(loadLandingHubTab()).toBe("play");
     expect(loadLandingPlaySection()).toBe("daily");
+  });
+
+  it("maps ranked/classic play aliases to H2H mode", () => {
+    const ranked = applyLandingDeepLinksFromSearch("?hub=play&play=ranked");
+    expect(ranked.playSection).toBe("headToHead");
+    expect(ranked.h2hMode).toBe("ranked");
+    expect(loadLandingH2hMode()).toBe("ranked");
+
+    sessionStorageMock.clear();
+    const classic = applyLandingDeepLinksFromSearch("?hub=play&play=classic");
+    expect(classic.playSection).toBe("headToHead");
+    expect(classic.h2hMode).toBe("classic");
+    expect(loadLandingH2hMode()).toBe("classic");
   });
 
   it("maps community/ranks hubs to feature deep links", () => {
@@ -140,13 +186,34 @@ describe("landingHub", () => {
       },
     });
 
-    syncLandingDeepLinkUrl({ hub: "play", play: "events" });
+    syncLandingDeepLinkUrl({ hub: "play", play: "headToHead", h2hMode: "ranked" });
 
     expect(replaceState).toHaveBeenCalled();
     const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
     expect(nextUrl).toContain("hub=play");
-    expect(nextUrl).toContain("play=events");
+    expect(nextUrl).toContain("play=ranked");
     expect(nextUrl).toContain("tierList=abc123");
+  });
+
+  it("syncs classic alias for casual H2H deep links", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/",
+        pathname: "/",
+        search: "",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    syncLandingDeepLinkUrl({ hub: "play", play: "headToHead", h2hMode: "classic" });
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("play=classic");
   });
 
   it("builds community and ranks share URLs", () => {

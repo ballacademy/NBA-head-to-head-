@@ -36,17 +36,27 @@ export const getWeeklyRecapWeekKey = (date = new Date()) => {
   return subtractDaysFromDateKey(today, daysSinceMonday);
 };
 
-const countDailyDaysInLastSeven = (playerId = getOrCreatePlayerId()) => {
+/** Count distinct calendar days with a Daily score from weekKey through today (in-week). */
+export const countDailyDaysThisWeek = (
+  playerId = getOrCreatePlayerId(),
+  weekKey = getWeeklyRecapWeekKey(),
+) => {
   const today = getDailyDateKey();
+  const weekEnd = subtractDaysFromDateKey(weekKey, -6);
+  const endKey = today < weekEnd ? today : weekEnd;
   const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
   let count = 0;
+  let cursor = weekKey;
 
-  for (let offset = 0; offset < 7; offset += 1) {
-    const dateKey = subtractDaysFromDateKey(today, offset);
-    const entries = store[dateKey] ?? [];
+  while (cursor <= endKey) {
+    const entries = store[cursor] ?? [];
     if (entries.some((entry) => entry.playerId === playerId)) {
       count += 1;
     }
+    if (cursor === endKey) {
+      break;
+    }
+    cursor = subtractDaysFromDateKey(cursor, -1);
   }
 
   return count;
@@ -84,16 +94,14 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
   const legacy = loadGmLegacyStats();
   const ranked = getRankedProfileView();
   const peakElo = Math.max(legacy.peakElo, ranked.peakElo);
-  const careerWins =
-    records.headToHead.wins + records.ranked.wins + records.allTime.wins;
-  const careerLosses =
-    records.headToHead.losses + records.ranked.losses + records.allTime.losses;
-  const careerTies =
-    records.headToHead.ties + records.ranked.ties + records.allTime.ties;
+  const careerWins = records.headToHead.wins + records.ranked.wins;
+  const careerLosses = records.headToHead.losses + records.ranked.losses;
+  const careerTies = records.headToHead.ties + records.ranked.ties;
+  const weekKey = getWeeklyRecapWeekKey();
 
   return {
-    weekKey: getWeeklyRecapWeekKey(),
-    dailyDaysThisWeek: countDailyDaysInLastSeven(),
+    weekKey,
+    dailyDaysThisWeek: countDailyDaysThisWeek(undefined, weekKey),
     bestStreakLabel: formatBestStreakLabel(),
     collectionUnlocked: collection.unlocked,
     collectionTotal: collection.total,

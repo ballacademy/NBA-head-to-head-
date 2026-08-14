@@ -55,11 +55,13 @@ export function CollectionTierModal({
   onClose,
 }: CollectionTierModalProps) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<CollectionSort>("name");
+  const initialFocusRef = players.length > 0 ? searchRef : closeRef;
   const { containerRef } = useDialogA11y({
     onClose,
-    initialFocusRef: closeRef,
+    initialFocusRef,
   });
 
   const label = COLLECTION_TIER_LABELS[tier];
@@ -93,6 +95,7 @@ export function CollectionTierModal({
               <label className="collection-tier-modal__search">
                 <span>Search</span>
                 <input
+                  ref={searchRef}
                   type="search"
                   value={query}
                   placeholder="Name, team, position…"

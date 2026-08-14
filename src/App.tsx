@@ -23,6 +23,7 @@ import {
   applyLandingDeepLinksFromSearch,
   loadLandingHubTab,
   saveLandingHubTab,
+  saveLandingH2hMode,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
   type LandingContentTab,
@@ -2391,6 +2392,9 @@ function App() {
         onBack={exitFeaturePage}
         onPlayIntent={(intent) => {
           saveLandingPlaySection(intent.playSection);
+          if (intent.h2hMode) {
+            saveLandingH2hMode(intent.h2hMode);
+          }
           goToLandingHub("play");
         }}
       />,

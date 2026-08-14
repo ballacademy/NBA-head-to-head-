@@ -60,10 +60,13 @@ import { type LandingHubTab } from "./LandingBottomNav";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { HubShell } from "./HubShell";
 import {
+  loadLandingH2hMode,
   loadLandingPlaySection,
+  saveLandingH2hMode,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
   type LandingContentTab,
+  type LandingH2hMode,
   type LandingPlaySection,
 } from "../lib/landingHub";
 import { trackProductEvent } from "../lib/productAnalytics";
@@ -210,6 +213,12 @@ export function LandingPage({
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
+  const [h2hIntentTarget, setH2hIntentTarget] = useState<LandingH2hMode | null>(
+    () =>
+      loadLandingPlaySection() === "headToHead" ? loadLandingH2hMode() : null,
+  );
+  const classicH2hCardRef = useRef<HTMLDivElement | null>(null);
+  const proH2hCardRef = useRef<HTMLDivElement | null>(null);
   const [showHubGuide, setShowHubGuide] = useState(false);
   const [queuedLineupLock, setQueuedLineupLock] = useState(() => {
     const playerId = getOrCreatePlayerIdentity().playerId;
@@ -225,7 +234,14 @@ export function LandingPage({
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
     setPlaySection(section);
     saveLandingPlaySection(section);
-    syncLandingDeepLinkUrl({ hub: "play", play: section });
+    syncLandingDeepLinkUrl({
+      hub: "play",
+      play: section,
+      h2hMode: section === "headToHead" ? loadLandingH2hMode() : null,
+    });
+    if (section !== "headToHead") {
+      setH2hIntentTarget(null);
+    }
     if (section !== "chooser") {
       trackProductEvent("play_mode_open", { section });
     }
@@ -263,10 +279,28 @@ export function LandingPage({
       if (hubTab !== "play") {
         onHubTabChange("play");
       }
+      if (intent.h2hMode) {
+        saveLandingH2hMode(intent.h2hMode);
+        setH2hIntentTarget(intent.h2hMode);
+      }
       updatePlaySection(intent.playSection);
     },
     [hubTab, onHubTabChange, updatePlaySection],
   );
+
+  useEffect(() => {
+    if (hubTab !== "play" || playSection !== "headToHead" || !h2hIntentTarget) {
+      return;
+    }
+
+    const node =
+      h2hIntentTarget === "classic"
+        ? classicH2hCardRef.current
+        : proH2hCardRef.current;
+    node?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const timer = window.setTimeout(() => setH2hIntentTarget(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [hubTab, h2hIntentTarget, playSection]);
 
   useEffect(() => {
     if (!pendingPrivateMatchMode) {
@@ -863,7 +897,12 @@ export function LandingPage({
               </p>
             ) : null}
             <div className="landing-game-modes landing-game-modes--h2h">
-              <div className="head-to-head-card landing-card landing-card--mode">
+              <div
+                ref={classicH2hCardRef}
+                className={`head-to-head-card landing-card landing-card--mode${
+                  h2hIntentTarget === "classic" ? " is-intent-target" : ""
+                }`}
+              >
                 <div className="mode-card__header">
                   <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
                   <ModeCardInfo details={classicModeDetails} variant="corner" />
@@ -910,7 +949,12 @@ export function LandingPage({
                 </div>
               </div>
 
-              <div className="ranked-cap-card landing-card landing-card--mode">
+              <div
+                ref={proH2hCardRef}
+                className={`ranked-cap-card landing-card landing-card--mode${
+                  h2hIntentTarget === "ranked" ? " is-intent-target" : ""
+                }`}
+              >
                 <div className="mode-card__header">
                   <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
                   <ModeCardInfo details={proModeDetails} variant="corner" />

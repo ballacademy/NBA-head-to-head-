@@ -246,14 +246,16 @@
   box-shadow: 0 14px 34px color-mix(in srgb, var(--mode-accent) 35%, transparent);
 }
 
-.mode-theme .match-results__actions .play-again-button:hover:not(:disabled),
-.mode-theme .match-results__primary-action:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--mode-accent-bright) 88%, white) 0%,
-    var(--mode-accent-bright) 100%
-  );
-  box-shadow: 0 16px 38px color-mix(in srgb, var(--mode-accent) 42%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .mode-theme .match-results__actions .play-again-button:hover:not(:disabled),
+  .mode-theme .match-results__primary-action:hover:not(:disabled) {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--mode-accent-bright) 88%, white) 0%,
+      var(--mode-accent-bright) 100%
+    );
+    box-shadow: 0 16px 38px color-mix(in srgb, var(--mode-accent) 42%, transparent);
+  }
 }
 
 .mode-theme .match-results__actions .play-again-button:disabled,
@@ -642,19 +644,39 @@
   box-shadow: 0 14px 34px color-mix(in srgb, var(--hub-accent) 35%, transparent);
 }
 
-.mode-card__cta--primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 40px color-mix(in srgb, var(--hub-accent) 42%, transparent);
-}
-
 .mode-card__cta--secondary {
   border: 1px solid var(--hub-accent-border);
   color: var(--hub-accent-bright);
   background: var(--hub-accent-soft);
 }
 
-.mode-card__cta--secondary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--hub-accent-soft) 70%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .mode-card__cta--primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 40px color-mix(in srgb, var(--hub-accent) 42%, transparent);
+  }
+
+  .mode-card__cta--secondary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--hub-accent-soft) 70%, transparent);
+  }
+
+  .head-to-head-card__practice-button:hover:not(:disabled) {
+    background: rgba(249, 115, 22, 0.18);
+  }
+
+  .ranked-cap-card__practice-button:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.18);
+  }
+}
+
+.landing-card--mode.is-intent-target,
+.head-to-head-card.is-intent-target,
+.ranked-cap-card.is-intent-target {
+  outline: 2px solid color-mix(in srgb, var(--hub-accent-bright) 85%, white);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--hub-accent) 35%, transparent),
+    0 18px 40px color-mix(in srgb, var(--hub-accent) 28%, transparent);
 }
 
 .mode-card__cta:disabled {
@@ -682,10 +704,6 @@
   color: #fdba74;
   font-weight: 800;
   background: rgba(249, 115, 22, 0.1);
-}
-
-.head-to-head-card__practice-button:hover:not(:disabled) {
-  background: rgba(249, 115, 22, 0.18);
 }
 
 .era-progress-card {
@@ -842,10 +860,6 @@
   color: #93c5fd;
   font-weight: 800;
   background: rgba(59, 130, 246, 0.1);
-}
-
-.ranked-cap-card__practice-button:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.18);
 }
 
 .leaderboard__tabs--views {

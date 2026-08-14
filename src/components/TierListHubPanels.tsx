@@ -931,6 +931,7 @@ export function CommunityPostsPanel({
 
   const muted = new Set(loadMutedPlayerIds());
   void muteEpoch;
+  const isFeedFiltered = feedFilter !== "all";
   const visiblePosts = posts
     .filter((post) => !muted.has(post.playerId))
     .filter((post) => {
@@ -1138,9 +1139,21 @@ export function CommunityPostsPanel({
         <EmptyState message="Loading…" loading />
       ) : visiblePosts.length === 0 ? (
         <EmptyState
-          message="No posts yet. Be the first to share something short."
+          message={
+            isFeedFiltered
+              ? "No posts match this filter."
+              : "No posts yet. Be the first to share something short."
+          }
           actions={
-            onOpenTiers ? (
+            isFeedFiltered ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setFeedFilter("all")}
+              >
+                Show all posts
+              </button>
+            ) : onOpenTiers ? (
               <button
                 type="button"
                 className="secondary-button"
@@ -1443,6 +1456,12 @@ export function CommunityPostsPanel({
         </ul>
       )}
 
+
+      {isFeedFiltered && visiblePosts.length === 0 && hasMore && !loading ? (
+        <p className="tier-list__hint community-posts-panel__filter-hint" role="status">
+          Scroll for more — older posts may match this filter.
+        </p>
+      ) : null}
 
       {loading && visiblePosts.length > 0 ? (
         <p className="tier-list__hint" role="status">
