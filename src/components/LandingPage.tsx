@@ -10,6 +10,7 @@ import {
 } from "../lib/playerCollection";
 import { CollectionTierModal } from "./CollectionTierModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
+import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 import type { DailyDraftMode } from "../lib/dailyDraftMode";
 import {
   formatDailyDraftModeLabel,
@@ -1158,6 +1159,7 @@ export function LandingPage({
 
         {hubTab === "roster" ? (
           <>
+            <WeeklyGmRecapCard onViewGmStats={onViewGmStats} />
             <div className="landing-profile-strip landing-card landing-card--profile">
               <div className="landing-profile-strip__header">
                 <p className="landing-profile-strip__title">Your collection</p>

@@ -1,9 +1,14 @@
 import { useMemo } from "react";
 import { getAchievementProgress } from "../lib/achievements";
 import {
+  getAchievementPlayHint,
+  getNearestLockedAchievement,
+} from "../lib/achievementPlayHints";
+import {
   loadAllEventProfiles,
   type EventProfile,
 } from "../lib/eventProfile";
+import type { LandingPlaySection } from "../lib/landingHub";
 import {
   describeEventFromId,
   formatEventBadgeDescription,
@@ -16,6 +21,10 @@ import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
 interface AchievementsPageProps {
   onBack: () => void;
+  onPlayIntent?: (intent: {
+    playSection: LandingPlaySection;
+    h2hMode?: "classic" | "ranked";
+  }) => void;
 }
 
 const buildTopEventBadge = (profile: EventProfile) => {
@@ -35,7 +44,7 @@ const buildTopEventBadge = (profile: EventProfile) => {
   };
 };
 
-export function AchievementsPage({ onBack }: AchievementsPageProps) {
+export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps) {
   const progress = useMemo(() => getAchievementProgress(), []);
   const eventBadges = useMemo(() => {
     return loadAllEventProfiles()
@@ -47,6 +56,11 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
   const unlockedSpecial = progress.special.achievements.filter(
     (achievement) => achievement.isUnlocked,
   );
+
+  const nextBadge = getNearestLockedAchievement(progress.achievements);
+  const nextBadgeHint = nextBadge
+    ? getAchievementPlayHint(nextBadge.id)
+    : null;
 
   return (
     <div className="hub-feature achievements-page">
@@ -74,6 +88,34 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
           <p className="eyebrow">Career</p>
           <h2>Lineup badges</h2>
         </div>
+
+        {nextBadge && nextBadgeHint && onPlayIntent ? (
+          <div className="achievements-page__next-badge">
+            <p className="achievements-page__next-badge-label">Next badge</p>
+            <div className="achievements-page__next-badge-row">
+              <span className="achievements-page__emoji" aria-hidden="true">
+                {nextBadge.emoji}
+              </span>
+              <div className="achievements-page__next-badge-copy">
+                <strong>{nextBadge.title}</strong>
+                <span>{nextBadge.description}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() =>
+                onPlayIntent({
+                  playSection: nextBadgeHint.playSection,
+                  h2hMode: nextBadgeHint.h2hMode,
+                })
+              }
+            >
+              {nextBadgeHint.ctaLabel}
+            </button>
+          </div>
+        ) : null}
+
         <ul className="achievements-page__list">
           {progress.achievements.map((achievement) => (
             <li
@@ -164,9 +206,20 @@ export function AchievementsPage({ onBack }: AchievementsPageProps) {
             ))}
           </ul>
         ) : (
-          <p className="achievements-page__subtitle">
-            Play Events to earn badges.
-          </p>
+          <div className="achievements-page__event-empty">
+            <p className="achievements-page__subtitle">
+              Play Events to earn badges.
+            </p>
+            {onPlayIntent ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => onPlayIntent({ playSection: "events" })}
+              >
+                Play Events
+              </button>
+            ) : null}
+          </div>
         )}
       </section>
     </div>

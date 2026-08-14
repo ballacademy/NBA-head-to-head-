@@ -661,6 +661,9 @@ export function CommunityPostsPanel({
   const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<
+    "all" | "mine" | "matchup" | "lineup" | "tierList" | "text"
+  >("all");
   const viewerCloseRef = useRef<HTMLButtonElement | null>(null);
   const viewerPanelRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -928,7 +931,41 @@ export function CommunityPostsPanel({
 
   const muted = new Set(loadMutedPlayerIds());
   void muteEpoch;
-  const visiblePosts = posts.filter((post) => !muted.has(post.playerId));
+  const visiblePosts = posts
+    .filter((post) => !muted.has(post.playerId))
+    .filter((post) => {
+      if (feedFilter === "all") {
+        return true;
+      }
+      if (feedFilter === "mine") {
+        return post.playerId === viewerPlayerId;
+      }
+      if (feedFilter === "text") {
+        return !post.attachment;
+      }
+      if (feedFilter === "matchup") {
+        return post.attachment?.kind === "matchup";
+      }
+      if (feedFilter === "lineup") {
+        return post.attachment?.kind === "lineup";
+      }
+      if (feedFilter === "tierList") {
+        return post.attachment?.kind === "tierList";
+      }
+      return true;
+    });
+
+  const feedFilterOptions: Array<{
+    value: typeof feedFilter;
+    label: string;
+  }> = [
+    { value: "all", label: "All" },
+    { value: "mine", label: "Mine" },
+    { value: "matchup", label: "Matchups" },
+    { value: "lineup", label: "Lineups" },
+    { value: "tierList", label: "Tier lists" },
+    { value: "text", label: "Text only" },
+  ];
 
   return (
     <div
@@ -949,6 +986,26 @@ export function CommunityPostsPanel({
             <option value="popular">Most liked</option>
           </select>
         </label>
+      </div>
+
+      <div
+        className="community-posts-panel__filters"
+        role="toolbar"
+        aria-label="Filter posts"
+      >
+        {feedFilterOptions.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`community-posts-panel__filter-chip${
+              feedFilter === option.value ? " is-active" : ""
+            }`}
+            aria-pressed={feedFilter === option.value}
+            onClick={() => setFeedFilter(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       {postsToday != null && postsToday > 0 ? (

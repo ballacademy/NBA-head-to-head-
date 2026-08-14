@@ -23,6 +23,7 @@ import {
   applyLandingDeepLinksFromSearch,
   loadLandingHubTab,
   saveLandingHubTab,
+  saveLandingPlaySection,
   syncLandingDeepLinkUrl,
   type LandingContentTab,
 } from "./lib/landingHub";
@@ -2385,7 +2386,15 @@ function App() {
   }
 
   if (phase === "achievements") {
-    return renderHubFeature(<AchievementsPage onBack={exitFeaturePage} />);
+    return renderHubFeature(
+      <AchievementsPage
+        onBack={exitFeaturePage}
+        onPlayIntent={(intent) => {
+          saveLandingPlaySection(intent.playSection);
+          goToLandingHub("play");
+        }}
+      />,
+    );
   }
 
   if (phase === "privacy") {
