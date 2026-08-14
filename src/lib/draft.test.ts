@@ -240,6 +240,59 @@ describe("draft constraints", () => {
     ]);
   });
 
+  it("sorts draft candidates by salary when requested", () => {
+    const makeSalariedCandidate = (
+      name: string,
+      points: number,
+      salary: number,
+      gamesPlayed = 40,
+    ): Player => ({
+      id: name,
+      name,
+      team: "LAL",
+      position: "SG",
+      positions: ["SG"],
+      jerseyNumber: 1,
+      points,
+      rebounds: 5,
+      assists: 3,
+      steals: 1,
+      blocks: 0.5,
+      turnovers: 2,
+      trueShooting: 0.58,
+      threePoint: 0.36,
+      threePointersAttempted: 5,
+      fieldGoalsAttempted: 12,
+      freeThrowsAttempted: 3,
+      freeThrowPct: 0.75,
+      personalFouls: 2,
+      minutes: 30,
+      heightInches: 76,
+      usage: 24,
+      defense: 7,
+      gamesPlayed,
+      salary,
+      styles: ["connector"],
+    });
+
+    const sorted = sortDraftCandidates(
+      [
+        makeSalariedCandidate("Mid Cap", 22, 18_000_000),
+        makeSalariedCandidate("Max Cap", 16, 40_000_000),
+        makeSalariedCandidate("Min Cap", 28, 4_000_000),
+        makeSalariedCandidate("Tiny Sample Max", 30, 45_000_000, 4),
+      ],
+      "salary",
+    );
+
+    expect(sorted.map((player) => player.name)).toEqual([
+      "Max Cap",
+      "Mid Cap",
+      "Min Cap",
+      "Tiny Sample Max",
+    ]);
+  });
+
   it("favors two guards, two forwards, and one center", () => {
     const simulations = 5000;
     let balancedCount = 0;

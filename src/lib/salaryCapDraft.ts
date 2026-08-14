@@ -3,9 +3,12 @@ import {
   filterPlayersForSlot,
   sortDraftCandidates,
   type DraftFilterOptions,
+  type DraftSortMode,
 } from "./draft";
 import type { DraftSlotConstraint, Player } from "./types";
 import { estimatePlayerSalary, getMaxAffordableSalary } from "./salaryCap";
+
+export type { DraftSortMode };
 
 export const filterSalaryCapPlayersForSlot = (
   lineupIds: Array<string | undefined>,
@@ -126,7 +129,7 @@ export const buildDraftCandidateList = (
   slot: DraftSlotConstraint,
   pickedIds: Set<string>,
   options: DraftFilterOptions,
-  sortMode: "points" | "alphabetical" = "points",
+  sortMode: DraftSortMode = "points",
 ) => {
   const eligible = filterPlayersForSlot(pool, slot, pickedIds, {});
   const hasCapFilter =

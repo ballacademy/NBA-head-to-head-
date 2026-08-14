@@ -776,3 +776,28 @@
   font-size: 16px;
 }
 
+.draft-pool-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 9.5rem);
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.draft-pool-toolbar .stats-search {
+  margin-bottom: 0;
+}
+
+.draft-pool-toolbar__sort select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+@media (max-width: 520px) {
+  .draft-pool-toolbar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
