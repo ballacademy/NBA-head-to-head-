@@ -33,21 +33,24 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "classic",
     short: "Casual",
     title: CLASSIC_HEAD_TO_HEAD_LABEL,
-    blurb: "Draft five and duel under a softer salary cap — banner matchmaking.",
+    blurb:
+      "Softer salary cap with banner matchmaking — Front Office banners track your run.",
   },
   proH2h: {
     id: "proH2h",
     internalMode: "ranked",
     short: "Pro",
     title: PRO_HEAD_TO_HEAD_LABEL,
-    blurb: "Tighter salary cap and Elo matchmaking — monthly seasons crown Top 500.",
+    blurb:
+      "Tighter salary cap, Elo ladder matchmaking, and a monthly Top 500 season.",
   },
   daily: {
     id: "daily",
     internalMode: "daily",
     short: "Daily",
     title: "Daily Draft",
-    blurb: "One shared puzzle per day. Chase rank without a salary cap.",
+    blurb:
+      "One shared puzzle per day (Basic & Advanced) — no salary cap, chase percentile rank.",
   },
   dailyBasic: {
     id: "dailyBasic",
@@ -68,7 +71,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "event",
     short: "Event",
     title: "Weekly Event",
-    blurb: "Limited weekly challenges with their own standings.",
+    blurb: "Limited weekly H2H challenge with its own standings board.",
   },
   allTime: {
     id: "allTime",
@@ -98,20 +101,8 @@ export const shortLabelForH2hMode = (
 };
 
 /** Hub onboarding bullets — single source for Play hub first-run. */
-export const HUB_ONBOARDING_BULLETS: Array<{ title: string; body: string }> = [
-  {
-    title: MODE_COPY.daily.title,
-    body: MODE_COPY.daily.blurb,
-  },
-  {
-    title: "Head to Head",
-    body: `Draft five and duel ${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short} opponents.`,
-  },
-  {
-    title: "Events",
-    body: MODE_COPY.weeklyEvent.blurb,
-  },
-];
+export const HUB_ONBOARDING_LEDE =
+  "Pick a path — you can switch anytime from Play.";
 
 /** Intent cards after hub onboarding — routes new users by goal. */
 export const HUB_PLAY_INTENTS: Array<{
@@ -123,27 +114,27 @@ export const HUB_PLAY_INTENTS: Array<{
 }> = [
   {
     id: "daily",
-    title: "Quick puzzle",
+    title: MODE_COPY.daily.title,
     body: MODE_COPY.daily.blurb,
     playSection: "daily",
   },
   {
     id: "casual",
-    title: "Casual duel",
+    title: `${MODE_COPY.classicH2h.short} Head to Head`,
     body: MODE_COPY.classicH2h.blurb,
     playSection: "headToHead",
     h2hMode: "classic",
   },
   {
     id: "pro",
-    title: "Climb the ladder",
+    title: `${MODE_COPY.proH2h.short} Head to Head`,
     body: MODE_COPY.proH2h.blurb,
     playSection: "headToHead",
     h2hMode: "ranked",
   },
   {
     id: "events",
-    title: "This week’s challenge",
+    title: MODE_COPY.weeklyEvent.title,
     body: MODE_COPY.weeklyEvent.blurb,
     playSection: "events",
   },

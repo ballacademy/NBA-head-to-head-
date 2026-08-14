@@ -98,6 +98,7 @@ import {
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -132,6 +133,11 @@ type TierListView =
   | "public"
   | "viewer"
   | "posts";
+
+type PendingConfirmAction =
+  | { kind: "unpublish"; publishedId: string }
+  | { kind: "deleteSaved"; documentId: string }
+  | { kind: "deletePost"; postId: string };
 
 const ROLE_OPTIONS: { id: TierListRoleFilter; label: string }[] = [
   { id: "all", label: "Any role" },
@@ -308,6 +314,10 @@ export function TierListPage({
   const [communityFocusPostId, setCommunityFocusPostId] = useState<string | null>(
     initialCommunityPostId,
   );
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirmAction | null>(
+    null,
+  );
+  const [confirmBusy, setConfirmBusy] = useState(false);
   const [viewerLoading, setViewerLoading] = useState(
     Boolean(initialPublicTierListId),
   );
@@ -315,6 +325,8 @@ export function TierListPage({
     useState<PublicTierListBrowseFilters>(DEFAULT_PUBLIC_TIER_LIST_FILTERS);
   const deepLinkHandledRef = useRef(false);
   const postDeepLinkHandledRef = useRef(false);
+  const communityPostsLoadGenRef = useRef(0);
+  const communityFocusPostIdRef = useRef(communityFocusPostId);
   const hubReturnSeenRef = useRef(hubReturnToken);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
@@ -384,6 +396,27 @@ export function TierListPage({
       unsubscribe();
     };
   }, [identity.playerId]);
+
+  useEffect(() => {
+    communityFocusPostIdRef.current = communityFocusPostId;
+  }, [communityFocusPostId]);
+
+  const mergeCommunityPostsWithFocus = useCallback(
+    (pagePosts: CommunityPost[], current: CommunityPost[]) => {
+      const focusedId = communityFocusPostIdRef.current;
+      if (!focusedId) {
+        return pagePosts;
+      }
+
+      if (pagePosts.some((post) => post.id === focusedId)) {
+        return pagePosts;
+      }
+
+      const focusedPost = current.find((post) => post.id === focusedId);
+      return focusedPost ? [focusedPost, ...pagePosts] : pagePosts;
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!statusMessage) {
@@ -816,30 +849,12 @@ export function TierListPage({
     );
   };
 
-  const handleUnpublish = async () => {
+  const handleUnpublish = () => {
     if (!state.publishedId) {
       return;
     }
 
-    if (!window.confirm("Unpublish this tier list from Community?")) {
-      return;
-    }
-
-    const result = await unpublishTierList({
-      id: state.publishedId,
-      playerId: identity.playerId,
-    });
-
-    if (!result.ok) {
-      setStatusMessage(result.error);
-      return;
-    }
-
-    const nextState = setTierListPublishedId(state, null);
-    const nextSaved = saveTierListToLibrary(nextState, library);
-    setState(nextSaved.state);
-    setLibrary(nextSaved.library);
-    setStatusMessage("Removed from public tier lists");
+    setPendingConfirm({ kind: "unpublish", publishedId: state.publishedId });
   };
 
   const handleDownload = async () => {
@@ -906,38 +921,8 @@ export function TierListPage({
     setView("editor");
   };
 
-  const handleDeleteSaved = async (documentId: string) => {
-    const document = library.documents.find((entry) => entry.id === documentId);
-    const confirmed = window.confirm(
-      document?.publishedId
-        ? "Delete this tier list and remove its public copy?"
-        : "Delete this saved tier list?",
-    );
-    if (!confirmed) {
-      return;
-    }
-    const ok = await unpublishPublishedCopy(document?.publishedId);
-    if (!ok) {
-      return;
-    }
-
-    const nextLibrary = deleteTierListFromLibrary(documentId, library);
-    setLibrary(nextLibrary);
-
-    if (state.id === documentId) {
-      updateState(createDefaultTierListState());
-    } else if (
-      document?.publishedId &&
-      state.publishedId === document.publishedId
-    ) {
-      updateState(setTierListPublishedId(state, null));
-    }
-
-    setStatusMessage(
-      document?.publishedId
-        ? "Removed saved tier list and its public copy"
-        : "Removed saved tier list",
-    );
+  const handleDeleteSaved = (documentId: string) => {
+    setPendingConfirm({ kind: "deleteSaved", documentId });
   };
 
   const handleResetBoardAndFilters = async () => {
@@ -1020,27 +1005,8 @@ export function TierListPage({
     setStatusMessage(`Editing “${displayTierListTitle(detail.title)}”`);
   };
 
-  const handleUnpublishOwnedPublic = async (id: string) => {
-    if (!window.confirm("Unpublish this tier list from Community?")) {
-      return;
-    }
-    const ok = await unpublishPublishedCopy(id);
-    if (!ok) {
-      return;
-    }
-
-    setPublicLists((current) => current.filter((entry) => entry.id !== id));
-    if (viewerDetail?.id === id) {
-      setViewerDetail(null);
-      setView("public");
-    }
-    if (state.publishedId === id) {
-      const nextState = setTierListPublishedId(state, null);
-      const nextSaved = saveTierListToLibrary(nextState, library);
-      setState(nextSaved.state);
-      setLibrary(nextSaved.library);
-    }
-    setStatusMessage("Removed from public tier lists");
+  const handleUnpublishOwnedPublic = (id: string) => {
+    setPendingConfirm({ kind: "unpublish", publishedId: id });
   };
 
   const handleCopyPublicLink = async (id: string) => {
@@ -1243,6 +1209,7 @@ export function TierListPage({
       playerId: identity.playerId,
     }).then((post) => {
       if (!post) {
+        setStatusMessage("Post not found");
         return;
       }
       setCommunityPosts((current) => {
@@ -1255,6 +1222,8 @@ export function TierListPage({
   }, [identity.playerId, initialCommunityPostId]);
 
   const loadCommunityPosts = useCallback(async () => {
+    const generation = communityPostsLoadGenRef.current + 1;
+    communityPostsLoadGenRef.current = generation;
     setCommunityPostsLoading(true);
     setCommunityPostError(null);
     setCommunityPostLikeError(null);
@@ -1264,13 +1233,24 @@ export function TierListPage({
         playerId: identity.playerId,
         offset: 0,
       });
-      setCommunityPosts(page.posts);
+      if (generation !== communityPostsLoadGenRef.current) {
+        return;
+      }
+      setCommunityPosts((current) =>
+        mergeCommunityPostsWithFocus(page.posts, current),
+      );
       setCommunityPostsHasMore(page.hasMore);
       setCommunityPostsNextOffset(page.nextOffset);
     } finally {
-      setCommunityPostsLoading(false);
+      if (generation === communityPostsLoadGenRef.current) {
+        setCommunityPostsLoading(false);
+      }
     }
-  }, [communityPostSort, identity.playerId]);
+  }, [
+    communityPostSort,
+    identity.playerId,
+    mergeCommunityPostsWithFocus,
+  ]);
 
   const handleLoadMoreCommunityPosts = useCallback(async () => {
     if (communityPostsLoadingMore || !communityPostsHasMore) {
@@ -1380,23 +1360,101 @@ export function TierListPage({
     );
   };
 
-  const handleDeleteCommunityPost = async (postId: string) => {
-    if (!window.confirm("Delete this post? This can’t be undone.")) {
+  const handleDeleteCommunityPost = (postId: string) => {
+    setPendingConfirm({ kind: "deletePost", postId });
+  };
+
+  const runPendingConfirm = async () => {
+    if (!pendingConfirm || confirmBusy) {
       return;
     }
-    setCommunityPostLikeError(null);
-    const result = await deleteCommunityPost({
-      playerId: identity.playerId,
-      postId,
-    });
-    if (!result.ok) {
-      setCommunityPostLikeError(result.error);
-      return;
+
+    setConfirmBusy(true);
+    try {
+      if (pendingConfirm.kind === "deletePost") {
+        setCommunityPostLikeError(null);
+        const result = await deleteCommunityPost({
+          playerId: identity.playerId,
+          postId: pendingConfirm.postId,
+        });
+        if (!result.ok) {
+          setCommunityPostLikeError(result.error);
+          return;
+        }
+        setCommunityPosts((current) =>
+          current.filter((post) => post.id !== pendingConfirm.postId),
+        );
+        if (communityFocusPostId === pendingConfirm.postId) {
+          setCommunityFocusPostId(null);
+        }
+        setStatusMessage("Post deleted");
+        setPendingConfirm(null);
+        return;
+      }
+
+      if (pendingConfirm.kind === "unpublish") {
+        const publishedId = pendingConfirm.publishedId;
+        const result = await unpublishTierList({
+          id: publishedId,
+          playerId: identity.playerId,
+        });
+
+        if (!result.ok) {
+          setStatusMessage(result.error);
+          return;
+        }
+
+        if (state.publishedId === publishedId) {
+          const nextState = setTierListPublishedId(state, null);
+          const nextSaved = saveTierListToLibrary(nextState, library);
+          setState(nextSaved.state);
+          setLibrary(nextSaved.library);
+        }
+
+        setPublicLists((current) =>
+          current.filter((entry) => entry.id !== publishedId),
+        );
+        if (viewerDetail?.id === publishedId) {
+          setViewerDetail(null);
+          setView("public");
+        }
+        setStatusMessage("Removed from public tier lists");
+        setPendingConfirm(null);
+        return;
+      }
+
+      const document = library.documents.find(
+        (entry) => entry.id === pendingConfirm.documentId,
+      );
+      const ok = await unpublishPublishedCopy(document?.publishedId);
+      if (!ok) {
+        return;
+      }
+
+      const nextLibrary = deleteTierListFromLibrary(
+        pendingConfirm.documentId,
+        library,
+      );
+      setLibrary(nextLibrary);
+
+      if (state.id === pendingConfirm.documentId) {
+        updateState(createDefaultTierListState());
+      } else if (
+        document?.publishedId &&
+        state.publishedId === document.publishedId
+      ) {
+        updateState(setTierListPublishedId(state, null));
+      }
+
+      setStatusMessage(
+        document?.publishedId
+          ? "Removed saved tier list and its public copy"
+          : "Removed saved tier list",
+      );
+      setPendingConfirm(null);
+    } finally {
+      setConfirmBusy(false);
     }
-    setCommunityPosts((current) =>
-      current.filter((post) => post.id !== postId),
-    );
-    setStatusMessage("Post deleted");
   };
 
   const renderPlayerChip = (
@@ -2313,6 +2371,48 @@ export function TierListPage({
           </div>
         </div>
       </section>
+      ) : null}
+
+      {pendingConfirm ? (
+        <ConfirmDialog
+          title={
+            pendingConfirm.kind === "deletePost"
+              ? "Delete post?"
+              : pendingConfirm.kind === "deleteSaved"
+                ? library.documents.find(
+                    (entry) => entry.id === pendingConfirm.documentId,
+                  )?.publishedId
+                  ? "Delete tier list?"
+                  : "Delete saved list?"
+                : "Unpublish tier list?"
+          }
+          message={
+            pendingConfirm.kind === "deletePost"
+              ? "This can’t be undone."
+              : pendingConfirm.kind === "deleteSaved"
+                ? library.documents.find(
+                    (entry) => entry.id === pendingConfirm.documentId,
+                  )?.publishedId
+                  ? "Delete this tier list and remove its public copy?"
+                  : "Delete this saved tier list?"
+                : "Unpublish this tier list from Community?"
+          }
+          confirmLabel={
+            pendingConfirm.kind === "deletePost"
+              ? "Delete post"
+              : pendingConfirm.kind === "deleteSaved"
+                ? "Delete"
+                : "Unpublish"
+          }
+          danger
+          busy={confirmBusy}
+          onConfirm={() => void runPendingConfirm()}
+          onClose={() => {
+            if (!confirmBusy) {
+              setPendingConfirm(null);
+            }
+          }}
+        />
       ) : null}
 
       {draggingPlayer ? (

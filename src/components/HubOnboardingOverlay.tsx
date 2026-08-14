@@ -1,6 +1,6 @@
 import { useRef, type RefObject } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
-import { HUB_ONBOARDING_BULLETS, HUB_PLAY_INTENTS } from "../lib/modeCopy";
+import { HUB_ONBOARDING_LEDE, HUB_PLAY_INTENTS } from "../lib/modeCopy";
 import type { LandingPlaySection } from "../lib/landingHub";
 
 interface HubOnboardingOverlayProps {
@@ -29,20 +29,26 @@ export function HubOnboardingOverlay({
       role="dialog"
       aria-modal="true"
       aria-labelledby="hub-onboarding-title"
+      onClick={onDismiss}
     >
       <div
         ref={panelRef}
-        className="draft-onboarding-overlay__panel panel panel--compact"
+        className="draft-onboarding-overlay__panel panel panel--compact hub-onboarding-overlay__panel"
+        onClick={(event) => event.stopPropagation()}
       >
-        <p className="eyebrow">Play hub</p>
+        <div className="hub-onboarding-overlay__header">
+          <p className="eyebrow">Play hub</p>
+          <button
+            type="button"
+            className="hub-onboarding-overlay__close"
+            aria-label="Close"
+            onClick={onDismiss}
+          >
+            ×
+          </button>
+        </div>
         <h2 id="hub-onboarding-title">What should I play?</h2>
-        <ul className="draft-onboarding-overlay__list">
-          {HUB_ONBOARDING_BULLETS.map((item) => (
-            <li key={item.title}>
-              <strong>{item.title}</strong> — {item.body}
-            </li>
-          ))}
-        </ul>
+        <p className="hub-onboarding-overlay__lede">{HUB_ONBOARDING_LEDE}</p>
 
         {onChooseIntent ? (
           <div
@@ -70,14 +76,25 @@ export function HubOnboardingOverlay({
           </div>
         ) : null}
 
-        <button
-          type="button"
-          ref={dismissRef}
-          className="landing__primary-button"
-          onClick={onDismiss}
-        >
-          {onChooseIntent ? "Browse Play hub" : "Got it"}
-        </button>
+        <div className="hub-onboarding-overlay__footer">
+          <button
+            type="button"
+            ref={dismissRef}
+            className="secondary-button"
+            onClick={onDismiss}
+          >
+            Close
+          </button>
+          {onChooseIntent ? (
+            <button
+              type="button"
+              className="secondary-button hub-onboarding-overlay__secondary"
+              onClick={onDismiss}
+            >
+              Not now
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

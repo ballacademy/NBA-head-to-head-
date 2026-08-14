@@ -14,8 +14,8 @@ export const ACHIEVEMENT_PLAY_HINTS: Record<string, AchievementPlayHint> = {
   },
   "poverty-line": {
     playSection: "headToHead",
-    h2hMode: "ranked",
-    ctaLabel: "Play Pro Head to Head",
+    h2hMode: "classic",
+    ctaLabel: "Play Casual Head to Head",
   },
   "seventy-wins": {
     playSection: "headToHead",
@@ -69,6 +69,16 @@ export function getAchievementPlayHint(id: string): AchievementPlayHint {
   );
 }
 
+export const PRIORITY_ACHIEVEMENT_IDS = [
+  "ballin-on-budget",
+  "seventy-wins",
+  "eighty-ovr",
+  "eighty-two-wins",
+  "max-ovr",
+  "ceiling-breaker",
+  "plus-five",
+] as const;
+
 export function getNearestLockedAchievement(
   achievements: Array<{
     id: string;
@@ -78,5 +88,16 @@ export function getNearestLockedAchievement(
     isUnlocked: boolean;
   }>,
 ) {
-  return achievements.find((achievement) => !achievement.isUnlocked) ?? null;
+  const locked = achievements.filter(
+    (achievement) => !achievement.isUnlocked && achievement.id !== "founding-gm",
+  );
+
+  for (const id of PRIORITY_ACHIEVEMENT_IDS) {
+    const match = locked.find((achievement) => achievement.id === id);
+    if (match) {
+      return match;
+    }
+  }
+
+  return locked[0] ?? null;
 }

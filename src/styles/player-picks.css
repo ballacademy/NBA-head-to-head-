@@ -377,6 +377,47 @@
   margin: 0 0 16px;
 }
 
+.hub-onboarding-overlay__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hub-onboarding-overlay__header .eyebrow {
+  margin: 0;
+}
+
+.hub-onboarding-overlay__close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hub-onboarding-overlay__lede {
+  margin: 0 0 14px;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.hub-onboarding-overlay__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.hub-onboarding-overlay__secondary {
+  opacity: 0.92;
+}
+
 .hub-onboarding-overlay__intent {
   display: grid;
   gap: 3px;

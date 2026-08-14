@@ -7,6 +7,8 @@ export type LandingPlaySection =
   | "daily"
   | "events";
 
+export type LandingH2hMode = "classic" | "ranked";
+
 /** Hub deep-link targets, including feature pages opened from the bottom nav. */
 export type LandingHubDeepLink =
   | LandingContentTab
@@ -21,6 +23,7 @@ export type LandingCommunityView = "posts" | "tiers";
 export interface LandingDeepLinkBoot {
   contentTab: LandingContentTab | null;
   playSection: LandingPlaySection | null;
+  h2hMode: LandingH2hMode | null;
   feature: LandingDeepLinkFeature | null;
   communityView: LandingCommunityView | null;
   communityPostId: string | null;
@@ -28,6 +31,7 @@ export interface LandingDeepLinkBoot {
 
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
 const LANDING_PLAY_SECTION_KEY = "ddgm:landing-play-section";
+const LANDING_H2H_MODE_KEY = "ddgm:landing-h2h-mode";
 
 /** Legacy content-tab ids from the 7-item bottom nav. */
 const LEGACY_PLAY_SECTIONS = new Set(["daily", "events", "play"]);
@@ -83,15 +87,30 @@ export const parseLandingHubParam = (
   return null;
 };
 
-/** Parse `?play=` with sensible aliases (h2h, daily-draft, etc.). */
+export const isLandingH2hMode = (
+  value: string | null | undefined,
+): value is LandingH2hMode => value === "classic" || value === "ranked";
+
+/** Parse `?play=` with sensible aliases (h2h, daily-draft, ranked/classic, etc.). */
 export const parseLandingPlayParam = (
   value: string | null | undefined,
-): LandingPlaySection | null => {
+): LandingPlaySection | null => parseLandingPlayWithH2h(value).section;
+
+export const parseLandingPlayWithH2h = (
+  value: string | null | undefined,
+): { section: LandingPlaySection | null; h2hMode: LandingH2hMode | null } => {
   if (!value) {
-    return null;
+    return { section: null, h2hMode: null };
   }
 
   const token = normalizeQueryToken(value);
+  let h2hMode: LandingH2hMode | null = null;
+  if (token === "ranked" || token === "pro") {
+    h2hMode = "ranked";
+  } else if (token === "classic" || token === "casual") {
+    h2hMode = "classic";
+  }
+
   if (
     token === "chooser" ||
     token === "home" ||
@@ -99,7 +118,7 @@ export const parseLandingPlayParam = (
     token === "play" ||
     token === "menu"
   ) {
-    return "chooser";
+    return { section: "chooser", h2hMode: null };
   }
   if (
     token === "daily" ||
@@ -107,23 +126,24 @@ export const parseLandingPlayParam = (
     token === "daily-draft" ||
     token === "draft"
   ) {
-    return "daily";
+    return { section: "daily", h2hMode: null };
   }
   if (
     token === "headtohead" ||
     token === "head-to-head" ||
     token === "h2h" ||
     token === "classic" ||
+    token === "casual" ||
     token === "ranked" ||
     token === "pro"
   ) {
-    return "headToHead";
+    return { section: "headToHead", h2hMode };
   }
   if (token === "events" || token === "event" || token === "weekly") {
-    return "events";
+    return { section: "events", h2hMode: null };
   }
 
-  return null;
+  return { section: null, h2hMode: null };
 };
 
 export const loadLandingHubTab = (): LandingContentTab => {
@@ -174,6 +194,38 @@ export const loadLandingPlaySection = (): LandingPlaySection => {
 export const saveLandingPlaySection = (section: LandingPlaySection) => {
   try {
     sessionStorage.setItem(LANDING_PLAY_SECTION_KEY, section);
+    if (section !== "headToHead") {
+      sessionStorage.removeItem(LANDING_H2H_MODE_KEY);
+    }
+  } catch {
+    // Ignore storage failures (private mode, quota, etc.).
+  }
+};
+
+export const loadLandingH2hMode = (): LandingH2hMode | null => {
+  try {
+    const stored = sessionStorage.getItem(LANDING_H2H_MODE_KEY);
+    if (isLandingH2hMode(stored)) {
+      return stored;
+    }
+  } catch {
+    // Ignore storage failures (private mode, quota, etc.).
+  }
+
+  return null;
+};
+
+export const saveLandingH2hMode = (mode: LandingH2hMode) => {
+  try {
+    sessionStorage.setItem(LANDING_H2H_MODE_KEY, mode);
+  } catch {
+    // Ignore storage failures (private mode, quota, etc.).
+  }
+};
+
+export const clearLandingH2hMode = () => {
+  try {
+    sessionStorage.removeItem(LANDING_H2H_MODE_KEY);
   } catch {
     // Ignore storage failures (private mode, quota, etc.).
   }
@@ -192,15 +244,20 @@ export const applyLandingDeepLinksFromSearch = (
     search.startsWith("?") ? search.slice(1) : search,
   );
   const hub = parseLandingHubParam(params.get("hub"));
-  const play = parseLandingPlayParam(params.get("play"));
+  const { section: playSection, h2hMode } = parseLandingPlayWithH2h(
+    params.get("play"),
+  );
   const viewToken = normalizeQueryToken(params.get("view") ?? "");
   const postRaw = params.get("post")?.trim() ?? "";
   const communityPostId = postRaw ? postRaw.slice(0, 80) : null;
 
   let contentTab: LandingContentTab | null = null;
-  let playSection: LandingPlaySection | null = play;
   let feature: LandingDeepLinkFeature | null = null;
   let communityView: LandingCommunityView | null = null;
+
+  if (h2hMode) {
+    saveLandingH2hMode(h2hMode);
+  }
 
   if (hub === "play" || hub === "roster" || hub === "account") {
     contentTab = hub;
@@ -242,12 +299,13 @@ export const applyLandingDeepLinksFromSearch = (
     }
   }
 
-  return { contentTab, playSection, feature, communityView, communityPostId };
+  return { contentTab, playSection, h2hMode, feature, communityView, communityPostId };
 };
 
 export interface SyncLandingDeepLinkUrlOptions {
   hub?: LandingHubDeepLink | null;
   play?: LandingPlaySection | null;
+  h2hMode?: LandingH2hMode | null;
   view?: LandingCommunityView | null;
   post?: string | null;
   /** When false, drop hub/play params (e.g. leaving the landing surface). */
@@ -282,7 +340,11 @@ export const syncLandingDeepLinkUrl = (
       if (options.play === null) {
         url.searchParams.delete("play");
       } else if (options.play != null) {
-        url.searchParams.set("play", options.play);
+        const playParam =
+          options.play === "headToHead" && options.h2hMode
+            ? options.h2hMode
+            : options.play;
+        url.searchParams.set("play", playParam);
         if (options.hub == null && !url.searchParams.get("hub")) {
           url.searchParams.set("hub", "play");
         }
