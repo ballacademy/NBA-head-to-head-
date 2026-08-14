@@ -1,6 +1,28 @@
 # Design tokens
 
-Shared visual tokens live in `:root` inside `src/styles.css`. Hub surfaces also use `hub-accent--*` utility classes for mode-colored chrome.
+Shared visual tokens live in `:root` inside `src/styles/tokens.css` (imported from `src/styles.css`). Hub surfaces also use `hub-accent--*` utility classes for mode-colored chrome.
+
+## Styles layout
+
+`src/styles.css` is a barrel that `@import`s feature sections under `src/styles/`:
+
+| File | Contents |
+| --- | --- |
+| `tokens.css` | `:root` accents, hub chrome, CTA/danger/modal tokens |
+| `base.css` | Reset, page shell, early shared primitives |
+| `hub.css` | Landing hub chrome, accents, hub CTAs |
+| `landing.css` | Landing forms and primary buttons |
+| `roster-collection.css` | Collection progress / tier modal |
+| `modals.css` | Unlock / shared modal shells (+ some badge/streak UI) |
+| `forms-alerts.css` | `.form-error`, inline alerts |
+| `play-match.css` | Match results / matchup panels |
+| `draft.css` | Daily draft results and draft-room chrome |
+| `community.css` | Community posts + retry alias |
+| `events-ranks.css` | Events and ranks |
+| `player-picks.css` | Draft pick list |
+| `stats.css` | Stats tables |
+| `tier-list.css` | Tier list builder |
+| `utilities.css` | `.u-scroll-region`, shared utilities |
 
 ## Accent palette
 
@@ -39,7 +61,7 @@ Apply accents in markup with `hub-accent hub-accent--<mode>` (for example `hub-a
 | `--modal-scrim` | Modal overlay backdrop |
 | `--scroll-fade` | Bottom fade on scroll regions |
 
-Secondary buttons use `--secondary-bg` and `--secondary-border`. Form errors use `--danger-bright` (alias of readable danger text).
+Secondary buttons use `--secondary-bg` and `--secondary-border`. Form errors use `--danger-bright`.
 
 ## Scroll utilities
 

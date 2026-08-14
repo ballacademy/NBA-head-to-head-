@@ -1,0 +1,189 @@
+/* src/styles/forms-alerts.css — extracted from styles.css L4207-4394 */
+.form-error {
+  margin: 0;
+  color: var(--danger-bright);
+  font-weight: 700;
+}
+
+.form-info {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.draft-prompt__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.draft-timer {
+  flex-shrink: 0;
+  min-width: 68px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  text-align: center;
+}
+
+.draft-timer span {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.draft-timer.urgent {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+}
+
+.waiting-room {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.waiting-room__leave {
+  margin-top: 18px;
+  width: min(100%, 16rem);
+}
+
+.waiting-indicator {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  margin-top: 24px;
+}
+
+.waiting-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(148, 163, 184, 0.25);
+  border-top-color: #fb923c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.matchmaking-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.matchmaking-overlay__panel {
+  width: min(100%, 420px);
+  margin: 0;
+  text-align: center;
+}
+
+.matchmaking-overlay__panel h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+}
+
+.matchmaking-overlay__indicator {
+  margin-top: 16px;
+}
+
+.matchmaking-overlay__note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.matchmaking-overlay__room-code {
+  margin: 14px 0 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: #f8fafc;
+}
+
+.matchmaking-overlay__room-block {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.matchmaking-overlay__room-block .matchmaking-overlay__room-code {
+  margin: 14px 0 0;
+}
+
+.matchmaking-overlay__expiry {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.matchmaking-overlay__copy {
+  min-width: 7.5rem;
+}
+
+.matchmaking-overlay__cancel {
+  margin-top: 18px;
+  width: 100%;
+}
+
+.private-match-modal__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.private-match-modal__join {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.private-match-modal__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.private-match-modal__join-row {
+  display: flex;
+  gap: 8px;
+}
+
+.private-match-modal__input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+}
+
+.private-match-modal__close {
+  width: 100%;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
