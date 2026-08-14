@@ -14,6 +14,7 @@ import { loadTeamProfile } from "../lib/teamProfile";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
 interface GmStatsPageProps {
   onBack: () => void;
@@ -82,6 +83,8 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       </div>
 
       <HubFeatureReturnButton onBack={onBack} label="Account" />
+
+      <WeeklyGmRecapCard />
 
       <section className="hub-feature__panel">
       <div className="gm-stats-page__summary">

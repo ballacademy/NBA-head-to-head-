@@ -1,0 +1,145 @@
+/* src/styles/tokens.css — extracted from styles.css L1-144 */
+:root {
+  color: #f8fafc;
+  background: #171b22;
+  /* Montserrat = UI body; Archivo = hub display titles */
+  --font-sans:
+    Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-display:
+    Archivo, Montserrat, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --panel: rgba(15, 23, 42, 0.78);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --muted: #94a3b8;
+  --orange: #f97316;
+  --bg-deep: #0b0d11;
+  --bg-page: #171b22;
+
+  /* Shared mode / hub accent palette (one source of truth). */
+  --accent-play: #a855f7;
+  --accent-play-bright: #d8b4fe;
+  --accent-play-soft: rgba(168, 85, 247, 0.14);
+  --accent-play-border: rgba(168, 85, 247, 0.36);
+  --accent-play-glow: rgba(192, 132, 252, 0.14);
+
+  --accent-daily: #22c55e;
+  --accent-daily-bright: #86efac;
+  --accent-daily-soft: rgba(34, 197, 94, 0.14);
+  --accent-daily-border: rgba(34, 197, 94, 0.34);
+  --accent-daily-glow: rgba(74, 222, 128, 0.12);
+
+  --accent-h2h: #f97316;
+  --accent-h2h-bright: #fdba74;
+  --accent-h2h-soft: rgba(249, 115, 22, 0.14);
+  --accent-h2h-border: rgba(249, 115, 22, 0.34);
+  --accent-h2h-glow: rgba(251, 146, 60, 0.12);
+
+  --accent-ranked: #3b82f6;
+  --accent-ranked-bright: #93c5fd;
+  --accent-ranked-soft: rgba(59, 130, 246, 0.14);
+  --accent-ranked-border: rgba(59, 130, 246, 0.34);
+  --accent-ranked-glow: rgba(96, 165, 250, 0.12);
+
+  --accent-event: #eab308;
+  --accent-event-bright: #fde047;
+  --accent-event-soft: rgba(234, 179, 8, 0.14);
+  --accent-event-border: rgba(234, 179, 8, 0.34);
+  --accent-event-glow: rgba(250, 204, 21, 0.12);
+
+  /* Distinct from Event yellow — deeper amber/bronze. */
+  --accent-all-time: #d97706;
+  --accent-all-time-bright: #fbbf24;
+  --accent-all-time-soft: rgba(217, 119, 6, 0.14);
+  --accent-all-time-border: rgba(217, 119, 6, 0.36);
+  --accent-all-time-glow: rgba(245, 158, 11, 0.12);
+
+  --accent-practice: #14b8a6;
+  --accent-practice-bright: #5eead4;
+  --accent-practice-soft: rgba(20, 184, 166, 0.14);
+  --accent-practice-border: rgba(20, 184, 166, 0.34);
+  --accent-practice-glow: rgba(45, 212, 191, 0.12);
+
+  --accent-roster: #38bdf8;
+  --accent-roster-bright: #7dd3fc;
+  --accent-roster-soft: rgba(56, 189, 248, 0.14);
+  --accent-roster-border: rgba(56, 189, 248, 0.34);
+  --accent-roster-glow: rgba(125, 211, 252, 0.12);
+
+  /* Rose — distinct from Daily green so nav accents don't collide. */
+  --accent-community: #fb7185;
+  --accent-community-bright: #fda4af;
+  --accent-community-soft: rgba(251, 113, 133, 0.14);
+  --accent-community-border: rgba(251, 113, 133, 0.36);
+  --accent-community-glow: rgba(251, 113, 133, 0.14);
+
+  --accent-account: #94a3b8;
+  --accent-account-bright: #e2e8f0;
+  --accent-account-soft: rgba(148, 163, 184, 0.14);
+  --accent-account-border: rgba(148, 163, 184, 0.3);
+  --accent-account-glow: rgba(226, 232, 240, 0.08);
+
+  --accent-neutral: #94a3b8;
+  --accent-neutral-bright: #cbd5e1;
+  --accent-neutral-soft: rgba(148, 163, 184, 0.12);
+  --accent-neutral-border: rgba(148, 163, 184, 0.28);
+  --accent-neutral-glow: rgba(148, 163, 184, 0.1);
+  --hub-subbox-bg: #141820;
+  --hub-subbox-border: rgba(226, 232, 240, 0.12);
+  --hub-subbox-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 20px rgba(0, 0, 0, 0.18);
+  --hub-subbox-inset-bg: #12151a;
+  --hub-subbox-inset-border: rgba(226, 232, 240, 0.1);
+  --hub-subbox-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --hub-subbox-active-bg: #1c222b;
+  --hub-subbox-active-border: rgba(203, 213, 225, 0.35);
+  --text-on-dark: #f8fafc;
+  --text-muted-on-dark: #cbd5e1;
+  --text-on-light: #0f172a;
+  --text-muted-on-light: #475569;
+  --btn-radius: 12px;
+  --btn-min-height: 44px;
+  --cta-fg: #0b1220;
+  --danger: #ef4444;
+  --danger-bright: #fecaca;
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --danger-text: #fecaca;
+  --modal-scrim: rgba(2, 6, 23, 0.72);
+  --secondary-bg: rgba(255, 255, 255, 0.1);
+  --secondary-border: rgba(255, 255, 255, 0.16);
+  --scroll-fade: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.85));
+  /* Hub chrome: cooler slate than page body (#171b22→#0b0d11), tier-card texture. */
+  --hub-chrome-base: #1a2030;
+  --hub-chrome-mid: #121722;
+  --hub-chrome-deep: #0c1018;
+  --hub-chrome-bg:
+    radial-gradient(rgba(255, 255, 255, 0.055) 0.55px, transparent 0.7px),
+    linear-gradient(
+      165deg,
+      rgba(186, 200, 220, 0.12) 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.38) 100%
+    ),
+    linear-gradient(155deg, var(--hub-chrome-base) 0%, var(--hub-chrome-mid) 52%, var(--hub-chrome-deep) 100%);
+  --hub-chrome-bg-size: 3px 3px, 100% 100%, 100% 100%;
+  --hub-chrome-border: rgba(148, 163, 184, 0.22);
+  --hub-chrome-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -22px 44px rgba(0, 0, 0, 0.32);
+  --hub-chrome-sheen:
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 22%,
+      transparent 48%
+    ),
+    radial-gradient(circle at 92% 8%, rgba(148, 163, 184, 0.14), transparent 26%),
+    radial-gradient(circle at 10% 90%, rgba(56, 90, 140, 0.12), transparent 30%);
+  color-scheme: dark;
+}
