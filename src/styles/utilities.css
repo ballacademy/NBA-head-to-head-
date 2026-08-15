@@ -33,7 +33,7 @@
     padding: 6px 10px;
     font-size: 0.78rem;
     font-weight: 750;
-    border-radius: 999px;
+    border-radius: var(--btn-radius, 12px);
   }
 
   .tier-list__board-header {

@@ -33,45 +33,42 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "classic",
     short: "Casual",
     title: CLASSIC_HEAD_TO_HEAD_LABEL,
-    blurb:
-      "$150M salary cap. Banners matchmaking, Front Office tiers, and a monthly Top 500.",
+    blurb: "$150M cap. Banners matchmaking.",
   },
   proH2h: {
     id: "proH2h",
     internalMode: "ranked",
     short: "Pro",
     title: PRO_HEAD_TO_HEAD_LABEL,
-    blurb:
-      "$100M salary cap. Banners matchmaking, Front Office tiers, and a monthly Top 500.",
+    blurb: "$100M cap. Banners matchmaking.",
   },
   daily: {
     id: "daily",
     internalMode: "daily",
     short: "Daily",
     title: "Daily Draft",
-    blurb:
-      "One shared puzzle per day in Basic and Advanced — no salary cap; chase your percentile.",
+    blurb: "One shared puzzle per day — chase your percentile.",
   },
   dailyBasic: {
     id: "dailyBasic",
     internalMode: "daily",
     short: "Basic",
     title: "Daily Draft · Basic",
-    blurb: "Today’s shared lineup puzzle with a simpler goal.",
+    blurb: "Season per-game goal.",
   },
   dailyAdvanced: {
     id: "dailyAdvanced",
     internalMode: "daily",
     short: "Advanced",
     title: "Daily Draft · Advanced",
-    blurb: "Today’s shared lineup puzzle with a tougher goal.",
+    blurb: "Per-minute and rate goal.",
   },
   weeklyEvent: {
     id: "weeklyEvent",
     internalMode: "event",
     short: "Event",
     title: "Weekly Event",
-    blurb: "Limited weekly H2H challenge with its own standings board.",
+    blurb: "Limited weekly H2H with its own board.",
   },
   allTime: {
     id: "allTime",
