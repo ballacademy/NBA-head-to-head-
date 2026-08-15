@@ -1,7 +1,11 @@
 import { getBrowserStorage, removeJson } from "./browserStorage";
 import { clearAccountLinkCache } from "./accountGate";
-import { pullAndMergeCollection } from "./collectionRemote";
-import { pullAndMergeAchievements } from "./achievementsRemote";
+import { pullAndMergeCollection, resetCollectionPullGate } from "./collectionRemote";
+import { pullAndMergeAchievements, resetAchievementsPullGate } from "./achievementsRemote";
+import {
+  pullAndMergeCareerStats,
+  resetCareerPullGate,
+} from "./careerStatsRemote";
 import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
 import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
@@ -118,6 +122,9 @@ const clearIdentityBoundLocalState = (
 
   clearModePlayerRecords();
   resetUnlockProgress();
+  resetCollectionPullGate();
+  resetAchievementsPullGate();
+  resetCareerPullGate();
   savePlayerCollection({
     // Login restore + merge must not mint random All-Stars into the cloud union.
     unlockedIds: seedStarterCollection
@@ -301,8 +308,9 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     });
   }
 
-  // Career mode records are local-only — do not seed them from monthly boards.
-  // They stay empty after a cross-identity restore until new matches are played.
+  // Career mode records + All-Time banners sync from the cloud (not monthly boards).
+  // Collection / achievements / career pull set gates so we never push a thin
+  // local snapshot before a successful remote read.
 
   const restoredTeamName =
     classicEntry?.name?.trim() ||
@@ -316,9 +324,9 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     saveTeamProfile(validatedTeam.profile, { syncLeaderboards: false });
   }
 
-  // Restore cloud collection + badges for this account (union with any local).
   await pullAndMergeCollection(playerId);
   await pullAndMergeAchievements(playerId);
+  await pullAndMergeCareerStats(playerId);
 
   const dateKey = getDailyDateKey();
   await Promise.all([
