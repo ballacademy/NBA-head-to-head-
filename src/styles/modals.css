@@ -1052,7 +1052,7 @@
 }
 
 .landing-team-form__account-sep {
-  color: #64748b;
+  color: var(--muted);
 }
 
 .landing-team-form__account-form {

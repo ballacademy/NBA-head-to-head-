@@ -64,7 +64,7 @@
 }
 
 .stats-table__class--na {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.04em;

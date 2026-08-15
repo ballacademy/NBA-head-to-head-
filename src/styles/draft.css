@@ -6,14 +6,17 @@
 
 @media (max-width: 720px) {
   .landing-profile-strip__stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 6px;
   }
 
-  .landing-profile-strip__stats > :nth-child(4),
-  .landing-profile-strip__stats > :nth-child(5) {
+  .landing-profile-strip__stat:nth-child(-n + 3) {
+    grid-column: span 2;
+  }
+
+  .landing-profile-strip__stat:nth-child(n + 4) {
     /* Keep the second row even: Super Scrubs + Recent All-Stars */
-    grid-column: auto;
+    grid-column: span 3;
   }
 
   .landing-profile-strip__label {

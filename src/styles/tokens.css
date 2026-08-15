@@ -15,7 +15,7 @@
   -webkit-font-smoothing: antialiased;
   --panel: rgba(15, 23, 42, 0.78);
   --panel-border: rgba(148, 163, 184, 0.22);
-  --muted: #94a3b8;
+  --muted: #aab4c3;
   /* Legacy alias — prefer mode accents; kept for NPC/blueprint swatches. */
   --orange: #f97316;
   --bg-deep: #0b0d11;
@@ -80,11 +80,12 @@
   --accent-community-border: rgba(251, 113, 133, 0.36);
   --accent-community-glow: rgba(251, 113, 133, 0.14);
 
-  --accent-account: #94a3b8;
-  --accent-account-bright: #e2e8f0;
-  --accent-account-soft: rgba(148, 163, 184, 0.14);
-  --accent-account-border: rgba(148, 163, 184, 0.3);
-  --accent-account-glow: rgba(226, 232, 240, 0.08);
+  /* Account — brighter platinum so active nav isn't gray-on-gray. */
+  --accent-account: #cbd5e1;
+  --accent-account-bright: #f8fafc;
+  --accent-account-soft: rgba(203, 213, 225, 0.2);
+  --accent-account-border: rgba(226, 232, 240, 0.42);
+  --accent-account-glow: rgba(248, 250, 252, 0.14);
 
   --accent-neutral: #94a3b8;
   --accent-neutral-bright: #cbd5e1;
@@ -102,7 +103,7 @@
   --hub-subbox-active-bg: #1c222b;
   --hub-subbox-active-border: rgba(203, 213, 225, 0.35);
   --text-on-dark: #f8fafc;
-  --text-muted-on-dark: #cbd5e1;
+  --text-muted-on-dark: #d0d7e2;
   --text-on-light: #0f172a;
   --text-muted-on-light: #475569;
   --btn-radius: 12px;

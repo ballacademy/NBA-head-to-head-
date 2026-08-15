@@ -560,7 +560,7 @@
 }
 
 .tier-list__empty {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.78rem;
   align-self: center;
 }

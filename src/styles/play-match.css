@@ -1094,7 +1094,7 @@
 }
 
 .leaderboard-row__metric-label {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -1124,7 +1124,7 @@
 }
 
 .leaderboard-row__detail-label {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
