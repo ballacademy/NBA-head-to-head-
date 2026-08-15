@@ -167,7 +167,7 @@
 }
 
 .collection-progress-card__value--recent {
-  color: #a5b4fc;
+  color: var(--accent-roster-bright);
 }
 
 .collection-progress-card__value--scrubs {

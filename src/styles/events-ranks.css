@@ -830,16 +830,24 @@
 }
 
 .feature-page--stats .section-heading .eyebrow,
+.stats-panel__heading .eyebrow,
+.hub-feature.stats-panel .landing-hub__title {
+  color: inherit;
+}
+
+.feature-page--stats .section-heading .eyebrow,
 .stats-panel__heading .eyebrow {
-  color: #a5b4fc;
+  color: var(--accent-roster-bright);
 }
 
-.feature-page--stats .stats-search {
-  color: #c7d2fe;
+.feature-page--stats .stats-search,
+.hub-feature.stats-panel .stats-search {
+  color: var(--accent-roster-bright);
 }
 
-.feature-page--stats .stats-table-wrap {
-  border-color: rgba(129, 140, 248, 0.28);
+.feature-page--stats .stats-table-wrap,
+.hub-feature.stats-panel .stats-table-wrap {
+  border-color: var(--accent-roster-border);
   max-width: 100%;
   width: 100%;
   min-width: 0;
@@ -849,8 +857,9 @@
   background: rgba(15, 23, 42, 0.94);
 }
 
-.feature-page--stats .sort-button.active {
-  color: #a5b4fc;
+.feature-page--stats .sort-button.active,
+.hub-feature.stats-panel .sort-button.active {
+  color: var(--accent-roster-bright);
   font-weight: 800;
 }
 

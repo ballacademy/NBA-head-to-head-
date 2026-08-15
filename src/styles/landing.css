@@ -126,11 +126,11 @@
   margin: 0 0 10px;
   padding: 8px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  border: 1px solid var(--accent-roster-border);
   background:
-    linear-gradient(90deg, rgba(56, 189, 248, 0.12) 0%, transparent 55%),
+    linear-gradient(90deg, var(--accent-roster-soft) 0%, transparent 55%),
     rgba(15, 23, 42, 0.55);
-  color: #bae6fd;
+  color: var(--accent-roster-bright);
   font-size: 0.82rem;
   font-weight: 650;
   line-height: 1.4;
