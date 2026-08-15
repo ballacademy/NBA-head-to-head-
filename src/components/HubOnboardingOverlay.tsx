@@ -37,7 +37,7 @@ export function HubOnboardingOverlay({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="hub-onboarding-overlay__header">
-          <p className="eyebrow">Play hub</p>
+          <h2 id="hub-onboarding-title">What should I play?</h2>
           <button
             type="button"
             className="hub-onboarding-overlay__close"
@@ -47,7 +47,6 @@ export function HubOnboardingOverlay({
             ×
           </button>
         </div>
-        <h2 id="hub-onboarding-title">What should I play?</h2>
         <p className="hub-onboarding-overlay__lede">{HUB_ONBOARDING_LEDE}</p>
 
         {onChooseIntent ? (
@@ -60,7 +59,7 @@ export function HubOnboardingOverlay({
               <button
                 key={intent.id}
                 type="button"
-                className="hub-onboarding-overlay__intent"
+                className={`hub-onboarding-overlay__intent hub-accent hub-accent--${intent.accent}`}
                 onClick={() => {
                   onChooseIntent({
                     playSection: intent.playSection,

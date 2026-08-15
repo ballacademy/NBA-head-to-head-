@@ -1134,12 +1134,17 @@
   z-index: 1300;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 16px;
   background: rgba(2, 6, 23, 0.72);
 }
 
 .draft-onboarding-overlay__panel {
   width: min(420px, 100%);
+}
+
+.hub-onboarding-overlay .draft-onboarding-overlay__panel,
+.hub-onboarding-overlay__panel.draft-onboarding-overlay__panel {
+  width: min(380px, 100%);
 }
 
 .draft-onboarding-overlay__list {
