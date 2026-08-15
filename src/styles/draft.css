@@ -40,11 +40,11 @@
   }
 
   .leaderboard-row__rank-button {
-    flex-basis: 2rem;
+    flex-basis: 2.4rem;
   }
 
   .leaderboard-row__identity {
-    gap: 6px;
+    gap: 2px;
   }
 }
 

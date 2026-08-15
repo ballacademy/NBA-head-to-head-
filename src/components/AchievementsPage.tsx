@@ -67,12 +67,11 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Badges</h1>
         <p className="landing__lede landing-hub__lede">
-          {progress.unlocked}/{progress.total} career
+          {progress.unlocked}/{progress.total} unlocked
           {unlockedSpecial.length > 0
             ? ` · ${unlockedSpecial.length} special`
             : ""}
           {eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}
-          {" · Locked until earned"}
         </p>
       </div>
 

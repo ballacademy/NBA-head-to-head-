@@ -219,7 +219,21 @@
 
 .leaderboard__panel {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+}
+
+.leaderboard__panel--classic {
+  --leaderboard-you-accent: var(--accent-h2h);
+  --leaderboard-you-accent-bright: var(--accent-h2h-bright);
+  --leaderboard-you-accent-soft: var(--accent-h2h-soft);
+  --leaderboard-you-accent-border: var(--accent-h2h-border);
+}
+
+.leaderboard__panel--ranked {
+  --leaderboard-you-accent: var(--accent-ranked);
+  --leaderboard-you-accent-bright: var(--accent-ranked-bright);
+  --leaderboard-you-accent-soft: var(--accent-ranked-soft);
+  --leaderboard-you-accent-border: var(--accent-ranked-border);
 }
 
 /* Shared hub title band — identical geometry on every hub page. */
@@ -227,21 +241,30 @@
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 4px;
+  gap: 6px;
   box-sizing: border-box;
   width: 100%;
-  min-height: 52px;
-  margin: 0 0 6px;
+  min-height: 0;
+  margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis. */
   padding-inline: max(64px, calc(var(--hub-chrome-inset, 14px) + 48px));
+  padding-bottom: 10px;
   text-align: center;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.08);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      transparent 72%
+    );
 }
 
 @media (min-width: 900px) {
   .landing-hub__top {
     /* Clear the doubled desktop logo while keeping titles top-aligned. */
-    min-height: 80px;
-    padding-top: 10px;
+    padding-top: 8px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
     padding-inline: max(96px, calc(var(--hub-chrome-inset, 22px) + 72px));
   }
 }
@@ -254,16 +277,17 @@ h1.landing-hub__title {
   max-width: 100%;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.35rem, 5.2vw, 2.15rem);
+  font-size: clamp(1.48rem, 5.6vw, 2.28rem);
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: 0.04em;
-  padding-left: 0.04em;
+  line-height: 1.02;
+  letter-spacing: 0.055em;
+  padding-left: 0.055em;
   text-transform: uppercase;
   text-align: center;
   white-space: normal;
   text-wrap: balance;
   color: var(--text-on-dark);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .landing-hub__title--roster {
@@ -276,9 +300,10 @@ h1.landing-hub__title {
 .landing h1.landing-hub__title--name,
 h1.landing-hub__title--name {
   font-family: var(--font-sans);
-  font-size: clamp(1.2rem, 5.2vw, 2rem);
+  font-size: clamp(1.28rem, 5.4vw, 2.05rem);
   letter-spacing: -0.02em;
   text-transform: none;
+  text-shadow: none;
 }
 
 .landing-hub__title-row {
@@ -297,14 +322,16 @@ h1.landing-hub__title--name {
 .landing__lede.landing-hub__lede,
 .landing-hub__lede {
   margin: 0;
-  max-width: 34em;
+  max-width: 28em;
   width: 100%;
-  min-height: calc(1.35em * 2);
+  min-height: 0;
   color: var(--text-muted-on-dark);
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-size: 0.86rem;
+  font-weight: 550;
   line-height: 1.35;
+  letter-spacing: 0.01em;
   text-align: center;
+  text-wrap: balance;
 }
 
 .landing-hub__content {
