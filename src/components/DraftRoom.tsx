@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   formatSlotConstraint,
+  type DraftSortMode,
 } from "../lib/draft";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
@@ -76,6 +77,9 @@ export function DraftRoom({
   onTimeout,
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
+  const [sortMode, setSortMode] = useState<DraftSortMode>(() =>
+    isDailyDraft ? "alphabetical" : "points",
+  );
   const [secondsLeft, setSecondsLeft] = useState(() =>
     getPickTimeLimitSeconds(isDailyDraft, drafter.salaryCapMode),
   );
@@ -172,7 +176,7 @@ export function DraftRoom({
       currentSlot,
       pickedIds,
       salaryCapOptions,
-      isDailyDraft ? "alphabetical" : "points",
+      sortMode,
     ).map((entry) => {
       const banned =
         banRankedEventPlayers && isBannedRankedEventPlayer(entry.player);
@@ -200,11 +204,11 @@ export function DraftRoom({
   }, [
     banRankedEventPlayers,
     currentSlot,
-    isDailyDraft,
     pickedIds,
     players,
     query,
     salaryCapOptions,
+    sortMode,
   ]);
 
   const affordableCandidateCount = useMemo(
@@ -454,15 +458,31 @@ export function DraftRoom({
         </div>
       </div>
 
-      <label className="field stats-search">
-        <span>Search players for this slot</span>
-        <input
-          type="search"
-          value={query}
-          placeholder="Search by name or team"
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </label>
+      <div className="draft-pool-toolbar">
+        <label className="field stats-search draft-pool-toolbar__search">
+          <span>Search players for this slot</span>
+          <input
+            type="search"
+            value={query}
+            placeholder="Search by name or team"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <label className="field draft-pool-toolbar__sort">
+          <span>Sort by</span>
+          <select
+            value={sortMode}
+            aria-label="Sort draft pool"
+            onChange={(event) =>
+              setSortMode(event.target.value as DraftSortMode)
+            }
+          >
+            <option value="points">Points</option>
+            <option value="alphabetical">Name</option>
+            <option value="salary">Salary</option>
+          </select>
+        </label>
+      </div>
 
       <div
         ref={playerPickListRef}

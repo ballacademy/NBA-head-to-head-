@@ -509,9 +509,11 @@ export const filterPlayersForSlot = (
         estimatePlayerSalary(player) <= options.maxAffordableSalary),
   );
 
+export type DraftSortMode = "points" | "alphabetical" | "salary";
+
 export const sortDraftCandidates = (
   players: Player[],
-  sortMode: "points" | "alphabetical" = "points",
+  sortMode: DraftSortMode = "points",
 ) =>
   [...players].sort((a, b) => {
     const aLimited = hasLimitedSampleSize(a);
@@ -522,6 +524,14 @@ export const sortDraftCandidates = (
     }
 
     if (sortMode === "alphabetical") {
+      return a.name.localeCompare(b.name);
+    }
+
+    if (sortMode === "salary") {
+      const salaryDiff = estimatePlayerSalary(b) - estimatePlayerSalary(a);
+      if (salaryDiff !== 0) {
+        return salaryDiff;
+      }
       return a.name.localeCompare(b.name);
     }
 
@@ -575,7 +585,7 @@ export const pickRandomTopCandidateForSlot = (
   options: DraftFilterOptions = {},
   topCount = 5,
   random: RandomSource = defaultRandom,
-  sortMode: "points" | "alphabetical" = "points",
+  sortMode: DraftSortMode = "points",
 ) => {
   const candidates = sortDraftCandidates(
     filterPlayersForSlot(players, slot, pickedIds, options),
@@ -595,7 +605,7 @@ export const autoDraftLineupWithVariance = (
   draftSlots: DraftSlotConstraint[],
   random: RandomSource = defaultRandom,
   varianceDepth = 3,
-  sortMode: "points" | "alphabetical" = "points",
+  sortMode: DraftSortMode = "points",
 ) => {
   const lineup: string[] = [];
   const pickedIds = new Set<string>();

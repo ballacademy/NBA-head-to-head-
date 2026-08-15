@@ -511,11 +511,18 @@
     margin-bottom: 4px;
   }
 
-  .draft-room .stats-search > span {
+  .draft-room .draft-pool-toolbar {
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .draft-room .stats-search > span,
+  .draft-room .draft-pool-toolbar__sort > span {
     display: none;
   }
 
-  .draft-room .stats-search input {
+  .draft-room .stats-search input,
+  .draft-room .draft-pool-toolbar__sort select {
     padding: 7px 10px;
     font-size: 0.88rem;
     border-radius: 10px;
