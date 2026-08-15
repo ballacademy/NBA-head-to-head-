@@ -2,7 +2,6 @@ import {
   ALL_STAR_COUNT,
   getAllStarPlayerIds,
   getPlayerById,
-  getRecentAllStarPlayerIds,
   getRecentAllStarUnlockPlayerIds,
   getSuperstarPlayerIds,
   getSuperstarPlayersInAllStarPool,
@@ -66,8 +65,13 @@ export const createTieredUnlockPair = (
   isPremium: (playerId: string) => boolean,
   premiumChance = PREMIUM_UNLOCK_CHANCE,
 ): [string, string] | null => {
-  if (available.length < 2) {
+  if (available.length === 0) {
     return null;
+  }
+
+  // Last remaining unlock — offer it as both options so the pool can finish.
+  if (available.length === 1) {
+    return [available[0]!, available[0]!];
   }
 
   const premium = available.filter(isPremium);
@@ -324,22 +328,32 @@ export const resolveOpponentCollectionForMatch = (params: {
 export const createOpponentCollection = (
   userCollection: PlayerCollection,
 ): PlayerCollection => {
-  const userAllStarCount = countUnlockedAllStars(userCollection);
-  const pool = [
+  const freeRecentIds = getRecentAllStarUnlockPlayerIds();
+  const freeRecentSet = new Set(freeRecentIds);
+  const competitivePool = [
     ...new Set([...getAllStarPlayerIds(), ...getSuperstarPlayerIds()]),
-  ];
+  ].filter((playerId) => !freeRecentSet.has(playerId));
+  const userCompetitiveCount = userCollection.unlockedIds.filter((playerId) => {
+    if (freeRecentSet.has(playerId)) {
+      return false;
+    }
+    const player = getPlayerById(playerId);
+    return Boolean(
+      player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+    );
+  }).length;
   const maxCount = Math.min(
-    userAllStarCount + MAX_OPPONENT_ALL_STAR_UNLOCK_GAP,
-    pool.length,
+    userCompetitiveCount + MAX_OPPONENT_ALL_STAR_UNLOCK_GAP,
+    competitivePool.length,
   );
-  const minCount = Math.min(userAllStarCount, maxCount);
+  const minCount = Math.min(userCompetitiveCount, maxCount);
   const targetCount =
     minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
   const unlockedIds = Array.from(
     new Set([
-      ...shuffle(pool).slice(0, targetCount),
-      // Non-super recent all-stars are free for everyone; supers already sit in `pool`.
-      ...getRecentAllStarPlayerIds(),
+      ...shuffle(competitivePool).slice(0, targetCount),
+      // Same free Recent All-Star unlocks the user gets (incl. recent-only supers).
+      ...freeRecentIds,
     ]),
   );
 
@@ -484,7 +498,12 @@ export const grantLossUnlock = (
 
   if (!offer) {
     writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
-    return collection;
+    const next = {
+      ...collection,
+      pendingUnlock: null,
+    };
+    savePlayerCollection(next);
+    return next;
   }
 
   const next = {

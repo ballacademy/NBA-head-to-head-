@@ -253,6 +253,38 @@ describe("playerCollection", () => {
     expect(next.pendingUnlock).toBeNull();
   });
 
+  it("clears a stale pending unlock when a loss reward has no scrubs left", () => {
+    const collection = loadPlayerCollection();
+    const starId = getWinUnlockPlayerIds()[0]!;
+    const withWinPending = {
+      ...collection,
+      pendingUnlock: {
+        kind: "win" as const,
+        optionA: starId,
+        optionB: starId,
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    const fullyUnlocked = {
+      ...withWinPending,
+      unlockedIds: [
+        ...new Set([...withWinPending.unlockedIds, ...getScrubPlayerIds()]),
+      ],
+    };
+
+    saveUnlockProgress({
+      winsSinceUnlock: 0,
+      lossesSinceUnlock: 3,
+      winStreak: 0,
+      lossStreak: 1,
+    });
+
+    const next = grantLossUnlock("match-clear-win-pending", fullyUnlocked);
+
+    expect(next.pendingUnlock).toBeNull();
+  });
+
   it("tracks progress against the full 2026 all-star pool", () => {
     const collection = loadPlayerCollection();
 
@@ -330,7 +362,11 @@ describe("playerCollection", () => {
 
   it("caps opponent all-star unlocks to ten above the user", () => {
     const collection = loadPlayerCollection();
-    const userAllStarCount = collection.unlockedIds.filter((playerId) => {
+    const freeRecent = new Set(getRecentAllStarUnlockPlayerIds());
+    const userCompetitiveCount = collection.unlockedIds.filter((playerId) => {
+      if (freeRecent.has(playerId)) {
+        return false;
+      }
       const player = getPlayerById(playerId);
       return Boolean(
         player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
@@ -339,15 +375,27 @@ describe("playerCollection", () => {
 
     for (let index = 0; index < 25; index += 1) {
       const opponent = createOpponentCollection(collection);
-      const opponentAllStarCount = opponent.unlockedIds.filter((playerId) => {
-        const player = getPlayerById(playerId);
-        return Boolean(
-          player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
-        );
-      }).length;
+      const opponentCompetitiveCount = opponent.unlockedIds.filter(
+        (playerId) => {
+          if (freeRecent.has(playerId)) {
+            return false;
+          }
+          const player = getPlayerById(playerId);
+          return Boolean(
+            player && (isAllStarPlayer(player) || isSuperstarPlayer(player)),
+          );
+        },
+      ).length;
 
-      expect(opponentAllStarCount).toBeGreaterThanOrEqual(userAllStarCount);
-      expect(opponentAllStarCount).toBeLessThanOrEqual(userAllStarCount + 10);
+      expect(opponentCompetitiveCount).toBeGreaterThanOrEqual(
+        userCompetitiveCount,
+      );
+      expect(opponentCompetitiveCount).toBeLessThanOrEqual(
+        userCompetitiveCount + 10,
+      );
+      for (const playerId of freeRecent) {
+        expect(opponent.unlockedIds).toContain(playerId);
+      }
     }
   });
 
@@ -397,10 +445,13 @@ describe("playerCollection", () => {
     expect(premiumPair?.some((id) => isPremium(id))).toBe(true);
   });
 
-  it("does not offer a duplicate unlock choice when fewer than two players remain", () => {
+  it("offers the final remaining unlock as both choices", () => {
     const isPremium = () => false;
     expect(createTieredUnlockPair([], isPremium)).toBeNull();
-    expect(createTieredUnlockPair(["only-one"], isPremium)).toBeNull();
+    expect(createTieredUnlockPair(["only-one"], isPremium)).toEqual([
+      "only-one",
+      "only-one",
+    ]);
   });
 
   it("can offer super scrubs when the premium roll hits on a loss offer", () => {

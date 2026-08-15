@@ -390,9 +390,12 @@ export const loadReviewDailyDraftPercentile = async (
 
   await refreshDailyDraftScoresFromApi(dateKey, goal.id, playerId, goal.mode);
 
+  const refreshedEntry =
+    findPlayerDailyDraftEntry(dateKey, playerId, goal.mode) ?? entry;
+
   return resolvePlayerDailyDraftPercentile(
     dateKey,
-    entry,
+    refreshedEntry,
     goal,
     benchmarkValues,
   );

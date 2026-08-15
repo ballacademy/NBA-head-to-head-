@@ -226,6 +226,64 @@ describe("dailyDraftScores", () => {
     );
   });
 
+  it("uses the refreshed entry value for review percentiles", async () => {
+    const storage = stubPlayerStorage("player-review-refresh");
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-04-02": [
+          {
+            playerId: "player-review-refresh",
+            goalId: goal.id,
+            value: 10,
+            formattedResult: "10.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-04-02T12:00:00.000Z",
+          },
+        ],
+      }),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          dateKey: "2099-04-02",
+          goalId: goal.id,
+          values: [10, 20, 30, 50],
+          totalDrafters: 4,
+          entry: {
+            playerId: "player-review-refresh",
+            goalId: goal.id,
+            value: 50,
+            formattedResult: "50.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-04-02T12:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    const result = await loadReviewDailyDraftPercentile(
+      "2099-04-02",
+      goal,
+      [10, 20, 30],
+      "player-review-refresh",
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.percentile).toBe(
+      getDailyDraftPercentile(
+        "2099-04-02",
+        50,
+        goal,
+        [10, 20, 30],
+        "player-review-refresh",
+      ).percentile,
+    );
+  });
+
   it("tracks basic and advanced daily drafts separately", () => {
     const storage = stubPlayerStorage("dual-mode-player");
     const basicGoal = DAILY_DRAFT_GOALS[0]!;

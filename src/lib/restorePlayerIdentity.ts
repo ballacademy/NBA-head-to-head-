@@ -27,6 +27,7 @@ import {
   mergeGmLegacyStats,
   saveGmLegacyStats,
 } from "./gmLegacyStats";
+import { getRecentAllStarUnlockPlayerIds } from "./allStars";
 import { saveTeamProfile, validateTeamProfile } from "./teamProfile";
 import { resetUnlockProgress } from "./unlockProgress";
 
@@ -93,9 +94,14 @@ const clearPendingLineupStorage = (playerId: string) => {
 
 const clearIdentityBoundLocalState = (
   playerId?: string,
-  options: { clearDailyScores?: boolean } = {},
+  options: {
+    clearDailyScores?: boolean;
+    /** Fresh anonymous GMs get a random starter; login restore must not. */
+    seedStarterCollection?: boolean;
+  } = {},
 ) => {
   const clearDailyScores = options.clearDailyScores !== false;
+  const seedStarterCollection = options.seedStarterCollection !== false;
 
   if (playerId) {
     clearPendingLineupStorage(playerId);
@@ -111,7 +117,10 @@ const clearIdentityBoundLocalState = (
   clearModePlayerRecords();
   resetUnlockProgress();
   savePlayerCollection({
-    unlockedIds: createStarterCollection(),
+    // Login restore + merge must not mint random All-Stars into the cloud union.
+    unlockedIds: seedStarterCollection
+      ? createStarterCollection()
+      : [...getRecentAllStarUnlockPlayerIds()],
     pendingUnlock: null,
     initialized: true,
   });
@@ -136,7 +145,12 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   const previousPlayerId = getOrCreatePlayerIdentity().playerId;
   // Keep Daily history on login — entries are playerId-tagged, and logout is
   // the path that should wipe them. Season boards are not career W–L.
-  clearIdentityBoundLocalState(previousPlayerId, { clearDailyScores: false });
+  // Do not seed a random starter collection — that would farm All-Stars into
+  // the cloud on every logout→login merge.
+  clearIdentityBoundLocalState(previousPlayerId, {
+    clearDailyScores: false,
+    seedStarterCollection: false,
+  });
   const identity = setPlayerIdentity(playerId);
   const seasonId = getCurrentSeasonId();
 
