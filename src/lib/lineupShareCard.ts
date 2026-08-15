@@ -423,7 +423,7 @@ const drawShareCardHeader = (
 
   context.textAlign = "left";
   context.font = `700 20px ${FONT_STACK}`;
-  context.fillStyle = "#fdba74";
+  context.fillStyle = "#67e8f9";
   context.letterSpacing = "3.2px";
   context.fillText(input.eyebrow?.trim() || "DRAFT DAY GM", headerX, 98);
   context.letterSpacing = "0px";

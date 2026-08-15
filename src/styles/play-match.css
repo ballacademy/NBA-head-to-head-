@@ -279,7 +279,7 @@
 .matchup-panel__team .team-lineup-card--compact {
   padding: 12px 14px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  border-top: 4px solid var(--accent, var(--orange));
+  border-top: 4px solid var(--accent, var(--accent-h2h));
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.55);
 }
@@ -311,11 +311,11 @@
 .daily-draft-banner {
   margin-bottom: 20px;
   padding: 18px 20px;
-  border: 1px solid rgba(251, 146, 60, 0.35);
+  border: 1px solid rgba(34, 197, 94, 0.35);
   border-radius: 18px;
   background: linear-gradient(
     135deg,
-    rgba(251, 146, 60, 0.16) 0%,
+    rgba(34, 197, 94, 0.16) 0%,
     rgba(15, 23, 42, 0.72) 100%
   );
 }
@@ -621,7 +621,7 @@
 
 .mode-card__cta {
   margin: 0;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 13px 18px;
   font-weight: 800;
   line-height: 1.2;
@@ -699,7 +699,7 @@
 
 .head-to-head-card__practice-button {
   border: 1px solid var(--hub-accent-border);
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 12px 22px;
   color: var(--hub-accent-bright);
   font-weight: 800;
@@ -763,7 +763,7 @@
 .all-time-card__button {
   margin-top: 8px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 14px 22px;
   color: #0f172a;
   font-weight: 900;
@@ -837,7 +837,7 @@
 .ranked-cap-card__button {
   margin-top: 8px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 14px 22px;
   color: #0f172a;
   font-weight: 900;
@@ -859,7 +859,7 @@
 
 .ranked-cap-card__practice-button {
   border: 1px solid var(--hub-accent-border);
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 12px 22px;
   color: var(--hub-accent-bright);
   font-weight: 800;
@@ -1043,7 +1043,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #93c5fd;
+  color: #a5b4fc;
   font-size: 0.78rem;
   font-weight: 700;
   text-align: left;
@@ -1053,7 +1053,7 @@
 }
 
 .leaderboard-row__username:hover {
-  color: #bfdbfe;
+  color: #c7d2fe;
   text-decoration: underline;
 }
 

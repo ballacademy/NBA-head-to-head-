@@ -229,8 +229,8 @@
   }
 
   .player-pick--recent-all-star:hover {
-    border-color: #93c5fd;
-    box-shadow: 0 0 22px rgba(59, 130, 246, 0.35);
+    border-color: #a5b4fc;
+    box-shadow: 0 0 22px rgba(129, 140, 248, 0.35);
   }
 
   .player-pick--superstar:hover {
@@ -252,10 +252,10 @@
 }
 
 .player-pick--recent-all-star {
-  border-color: rgba(96, 165, 250, 0.75);
+  border-color: rgba(167, 139, 250, 0.75);
   background: linear-gradient(
     135deg,
-    rgba(59, 130, 246, 0.2) 0%,
+    rgba(129, 140, 248, 0.2) 0%,
     rgba(15, 23, 42, 0.9) 58%
   );
   animation: player-pick-recent-all-star-glow 2.6s ease-in-out infinite;
@@ -437,7 +437,7 @@
 }
 
 .inline-alert--info {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .inline-alert--success {
@@ -445,7 +445,7 @@
 }
 
 .story-card {
-  --accent: var(--orange);
+  --accent: var(--accent-h2h);
   min-height: 600px;
   padding: 28px;
   overflow: hidden;

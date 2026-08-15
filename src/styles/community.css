@@ -662,13 +662,13 @@
 }
 
 .team-lineup-card {
-  border-top: 4px solid var(--accent, var(--orange));
+  border-top: 4px solid var(--accent, var(--accent-h2h));
 }
 
 .team-lineup-card--compact {
   padding: 0;
   border: 0;
-  border-top: 4px solid var(--accent, var(--orange));
+  border-top: 4px solid var(--accent, var(--accent-h2h));
   border-radius: 0;
   background: transparent;
   box-shadow: none;

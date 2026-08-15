@@ -167,7 +167,7 @@
 }
 
 .collection-progress-card__value--recent {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .collection-progress-card__value--scrubs {
@@ -355,7 +355,7 @@
 }
 
 .win-streak-badge--blue .streak-icon__flame--inner {
-  fill: #93c5fd;
+  fill: #a5b4fc;
 }
 
 .win-streak-badge--blue .streak-icon__flame--core {
@@ -372,7 +372,7 @@
 
 .win-streak-badge--blue .streak-badge__count,
 .win-streak-badge--blue .win-streak-badge__count {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .win-streak-badge--purple .win-streak-badge__icon {
@@ -505,7 +505,7 @@
 
 .loss-streak-badge--blue .streak-badge__count,
 .loss-streak-badge--blue .loss-streak-badge__count {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .loss-streak-badge--purple .loss-streak-badge__icon {
@@ -551,13 +551,13 @@
   margin-top: 16px;
   padding: 15px 30px;
   border: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #fdba74 0%, #f97316 100%);
+  border-radius: var(--btn-radius, 12px);
+  background: linear-gradient(135deg, #67e8f9 0%, #06b6d4 100%);
   color: #0f172a;
   font-size: 1.02rem;
   font-weight: 900;
   letter-spacing: -0.03em;
-  box-shadow: 0 16px 36px rgba(249, 115, 22, 0.32);
+  box-shadow: 0 16px 36px rgba(6, 182, 212, 0.32);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
@@ -566,8 +566,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .play-again-button:hover {
-    background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%);
-    box-shadow: 0 18px 40px rgba(249, 115, 22, 0.4);
+    background: linear-gradient(135deg, #a5f3fc 0%, #22d3ee 100%);
+    box-shadow: 0 18px 40px rgba(6, 182, 212, 0.4);
     transform: translateY(-1px);
   }
 }
