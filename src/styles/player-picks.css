@@ -318,8 +318,8 @@
 }
 
 .player-pick.selected {
-  border-color: #fb923c;
-  background: rgba(249, 115, 22, 0.12);
+  border-color: var(--mode-accent-bright, #22d3ee);
+  background: var(--mode-accent-soft, rgba(6, 182, 212, 0.12));
 }
 
 .player-pick .player-team-icon {
@@ -336,13 +336,13 @@
 .player-pick span.player-pick__cta {
   display: block;
   margin-top: 4px;
-  color: #fb923c;
+  color: var(--mode-accent-bright, #67e8f9);
   font-weight: 700;
   white-space: nowrap;
 }
 
 .player-pick__cta {
-  color: #fb923c;
+  color: var(--mode-accent-bright, #67e8f9);
   font-weight: 700;
   white-space: nowrap;
 }

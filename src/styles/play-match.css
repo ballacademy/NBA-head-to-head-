@@ -661,11 +661,11 @@
   }
 
   .head-to-head-card__practice-button:hover:not(:disabled) {
-    background: rgba(249, 115, 22, 0.18);
+    background: color-mix(in srgb, var(--hub-accent-soft) 85%, transparent);
   }
 
   .ranked-cap-card__practice-button:hover:not(:disabled) {
-    background: rgba(59, 130, 246, 0.18);
+    background: color-mix(in srgb, var(--hub-accent-soft) 85%, transparent);
   }
 }
 
@@ -698,12 +698,12 @@
 }
 
 .head-to-head-card__practice-button {
-  border: 1px solid rgba(249, 115, 22, 0.45);
+  border: 1px solid var(--hub-accent-border);
   border-radius: 999px;
   padding: 12px 22px;
-  color: #fdba74;
+  color: var(--hub-accent-bright);
   font-weight: 800;
-  background: rgba(249, 115, 22, 0.1);
+  background: var(--hub-accent-soft);
 }
 
 .era-progress-card {
@@ -841,8 +841,12 @@
   padding: 14px 22px;
   color: #0f172a;
   font-weight: 900;
-  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
-  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.35);
+  background: linear-gradient(
+    135deg,
+    var(--hub-accent-bright) 0%,
+    var(--hub-accent) 100%
+  );
+  box-shadow: 0 14px 34px var(--hub-accent-glow);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease;
@@ -850,16 +854,16 @@
 
 .ranked-cap-card__button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.42);
+  box-shadow: 0 18px 40px var(--hub-accent-glow);
 }
 
 .ranked-cap-card__practice-button {
-  border: 1px solid rgba(59, 130, 246, 0.45);
+  border: 1px solid var(--hub-accent-border);
   border-radius: 999px;
   padding: 12px 22px;
-  color: #93c5fd;
+  color: var(--hub-accent-bright);
   font-weight: 800;
-  background: rgba(59, 130, 246, 0.1);
+  background: var(--hub-accent-soft);
 }
 
 .leaderboard__tabs--views {
