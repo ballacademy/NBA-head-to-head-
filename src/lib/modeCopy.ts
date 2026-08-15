@@ -78,7 +78,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "allTime",
     short: ALL_TIME_LABEL,
     title: ALL_TIME_LABEL,
-    blurb: "Era-locked legends and all-time stars — unlock as you climb.",
+    blurb: "Peak seasons and era legends — coming soon.",
   },
   practice: {
     id: "practice",

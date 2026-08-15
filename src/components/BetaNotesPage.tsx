@@ -28,9 +28,10 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
         <div className="legal-page__body beta-notes-body">
           <div className="beta-notes-summary">
             <p>
-              Daily Draft, Casual/Pro H2H, weekly Events, and All-Time are live.
-              Accounts unlock leaderboards and public tier lists. Roster,
-              badges, stats, and ranks sit in the bottom nav.
+              Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
+              Draft is coming soon. Accounts unlock leaderboards and public
+              tier lists. Roster, badges, stats, and ranks sit in the bottom
+              nav.
             </p>
             <p className="beta-notes-summary__meta">
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
@@ -43,7 +44,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <ul>
               <li>
                 <strong>Play hub</strong> — Daily Draft (one scored try per mode
-                daily), Casual/Pro H2H, weekly Events, and All-Time Draft
+                daily), Casual/Pro H2H, and weekly Events
               </li>
               <li>
                 <strong>LeBron James</strong> is banned in Casual H2H, Pro H2H,
@@ -62,8 +63,8 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 not change.
               </li>
               <li>
-                <strong>All-Time Draft</strong> — live with active stars at peak
-                seasons. Era legends unlock after 50 All-Time wins.
+                <strong>All-Time Draft</strong> — coming soon (peak seasons and
+                era legends). Not playable in this beta build.
               </li>
               <li>
                 <strong>Stored lineup results</strong> — when someone drafts

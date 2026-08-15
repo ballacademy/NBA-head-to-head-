@@ -22,7 +22,7 @@ import {
   getDailyDraftPlayStreak,
 } from "../lib/dailyDraftPlayStreak";
 import { getDailyDateKey } from "../lib/dailyDraft";
-import { isAllTimeModePlayable, ALL_TIME_WIN_THRESHOLD, getAllTimeWinsRemaining, areLegendsUnlocked } from "../lib/eraUnlocks";
+import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   type ModePlayerRecords,
   type PlayerRecord,
@@ -100,12 +100,8 @@ import { loadPendingLineupState } from "../lib/pendingLineup";
 import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "../lib/rankedElo";
 import { MODE_COPY } from "../lib/modeCopy";
 
-const buildHeadToHeadModeDetails = (
-  baseDetails: string[],
-  unlockedCount: number,
-) => [
+const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
-  `Your draft pool has ${unlockedCount} unlocked players.`,
   "Win to unlock All-Stars, lose to unlock Scrubs.",
 ];
 
@@ -320,8 +316,6 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
-  const allTimeLegendsUnlocked = areLegendsUnlocked(modeRecords.allTime);
-  const allTimeWinsRemaining = getAllTimeWinsRemaining(modeRecords.allTime);
   const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
@@ -335,29 +329,23 @@ export function LandingPage({
       : null;
   const classicModeDetails = useMemo(
     () =>
-      buildHeadToHeadModeDetails(
-        [
-          `$${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
-          "Banner / soft matchmaking pairs similar front offices.",
-          "Casual banners track your Front Office.",
-          "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
-        ],
-        collection.unlockedIds.length,
-      ),
-    [collection.unlockedIds.length],
+      buildHeadToHeadModeDetails([
+        `$${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
+        "Banner / soft matchmaking pairs similar front offices.",
+        "Casual banners track your Front Office.",
+        "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
+      ]),
+    [],
   );
   const proModeDetails = useMemo(
     () =>
-      buildHeadToHeadModeDetails(
-        [
-          `$${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
-          "Elo / ranked matchmaking pairs competitive Front Offices.",
-          "Monthly seasons crown the Top 500.",
-          "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
-        ],
-        collection.unlockedIds.length,
-      ),
-    [collection.unlockedIds.length],
+      buildHeadToHeadModeDetails([
+        `$${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
+        "Elo / ranked matchmaking pairs competitive Front Offices.",
+        "Monthly seasons crown the Top 500.",
+        "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
+      ]),
+    [],
   );
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
 
@@ -1009,10 +997,8 @@ export function LandingPage({
                   </h2>
                   <p className="all-time-card__description">
                     Draft a five with {PICK_TIME_LIMIT_SECONDS} seconds per pick
-                    from active stars at their peak seasons
-                    {allTimeLegendsUnlocked
-                      ? ", plus legendary All-Stars from every era."
-                      : `. Unlock era legends after ${ALL_TIME_WIN_THRESHOLD} All-Time wins (${allTimeWinsRemaining} to go).`}
+                    from active stars at their peak seasons, plus legendary
+                    All-Stars from every era.
                   </p>
                   <MatchModeRecord record={modeRecords.allTime} />
                   <button
@@ -1027,13 +1013,24 @@ export function LandingPage({
               ) : (
                 <div
                   className="all-time-card all-time-card--teaser landing-card landing-card--mode"
-                  aria-label={`${ALL_TIME_LABEL} unlocks with ${ALL_TIME_WIN_THRESHOLD} All-Time wins for era legends`}
+                  aria-label={`${ALL_TIME_LABEL} coming soon`}
                 >
                   <p className="eyebrow">{ALL_TIME_LABEL}</p>
-                  <p className="all-time-card__teaser-copy">
-                    Peak seasons live — era legends unlock at{" "}
-                    {ALL_TIME_WIN_THRESHOLD} All-Time wins
+                  <h2 className="all-time-card__title">
+                    Peak seasons &amp; legends
+                  </h2>
+                  <p className="all-time-card__description">
+                    Draft active stars at their peak seasons plus legendary
+                    All-Stars from every era. This mode is in development and
+                    will launch soon.
                   </p>
+                  <button
+                    type="button"
+                    className="all-time-card__button all-time-card__button--locked"
+                    disabled
+                  >
+                    Coming soon
+                  </button>
                 </div>
               )}
             </div>
