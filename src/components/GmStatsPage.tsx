@@ -77,7 +77,8 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
           {snapshot.teamName}
         </h1>
         <p className="landing__lede landing-hub__lede">
-          {formatRatingPoints(snapshot.ranked.elo)} this month ·{" "}
+          Pro {formatRatingPoints(snapshot.ranked.elo)} · Casual{" "}
+          {formatRatingPoints(snapshot.classic.elo)} ·{" "}
           {snapshot.currentSeasonLabel}
         </p>
       </div>
@@ -117,7 +118,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       </div>
 
       <section className="gm-stats-page__section">
-        <h2>Front office</h2>
+        <h2>Front Office</h2>
         <div className="gm-stats-page__tier-row">
           <RankedTierBadge
             tier={snapshot.ranked.tier}
@@ -125,8 +126,10 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
             compact
           />
           <p className="gm-stats-page__section-copy">
-            Peak this month: {formatRatingPoints(snapshot.ranked.peakElo)} ·{" "}
-            {snapshot.ranked.rankedGamesPlayed} ranked games played
+            Pro peak: {formatRatingPoints(snapshot.ranked.peakElo)} · Casual
+            peak: {formatRatingPoints(snapshot.classic.peakElo)} ·{" "}
+            {snapshot.ranked.rankedGamesPlayed} Pro games ·{" "}
+            {snapshot.classic.classicGamesPlayed} Casual games
           </p>
         </div>
         <FrontOfficeBadgeGrid peakElo={snapshot.legacy.peakElo} />

@@ -4,6 +4,7 @@ import {
   getDailyDraftPlayStreak,
 } from "./dailyDraftPlayStreak";
 import { getDailyDateKey } from "./dailyDraft";
+import { getClassicProfileView } from "./classicProfile";
 import { getCollectionProgress } from "./playerCollection";
 import {
   formatPlayerRecord,
@@ -44,6 +45,7 @@ export interface GmStatsSnapshot {
   records: ModePlayerRecords;
   totalWins: number;
   totalLosses: number;
+  classic: ReturnType<typeof getClassicProfileView>;
   ranked: ReturnType<typeof getRankedProfileView>;
   legacy: GmLegacyStats;
   dailyDraft: GmDailyDraftStats;
@@ -72,32 +74,35 @@ export const buildLocalGmStatsSnapshot = (
   collection = getCollectionProgress(),
 ): GmStatsSnapshot => {
   const records = loadAllModeRecords();
+  const classic = getClassicProfileView();
   const ranked = getRankedProfileView();
   const legacy = loadGmLegacyStats();
   const totalWins =
     records.headToHead.wins + records.ranked.wins + records.allTime.wins;
   const totalLosses =
     records.headToHead.losses + records.ranked.losses + records.allTime.losses;
+  const peakElo = Math.max(legacy.peakElo, classic.peakElo, ranked.peakElo);
 
   return {
     teamName,
     records,
     totalWins,
     totalLosses,
+    classic,
     ranked,
     legacy: mergeGmLegacyStats(legacy, {
       ...legacy,
-      peakElo: Math.max(legacy.peakElo, ranked.peakElo),
+      peakElo,
       peakEloSeasonId:
-        ranked.peakElo >= legacy.peakElo
+        ranked.peakElo >= legacy.peakElo && ranked.peakElo >= classic.peakElo
           ? ranked.seasonId
-          : legacy.peakEloSeasonId,
+          : classic.peakElo >= legacy.peakElo
+            ? classic.seasonId
+            : legacy.peakEloSeasonId,
     }),
     dailyDraft: summarizeDailyDraftStats(),
     collection,
-    frontOfficeBadgesUnlocked: getUnlockedFrontOfficeBadges(
-      Math.max(legacy.peakElo, ranked.peakElo),
-    ),
+    frontOfficeBadgesUnlocked: getUnlockedFrontOfficeBadges(peakElo),
     currentSeasonLabel: formatSeasonLabel(getCurrentSeasonId()),
   };
 };
@@ -129,7 +134,7 @@ export const formatGmModeRecord = (
 ) => `${label}: ${formatGmRecordLine(wins, losses, ties)}`;
 
 export const formatGmStatsHeadline = (snapshot: GmStatsSnapshot) =>
-  `${snapshot.teamName} · ${formatRatingPoints(snapshot.ranked.elo)}`;
+  `${snapshot.teamName} · Pro ${formatRatingPoints(snapshot.ranked.elo)} · Casual ${formatRatingPoints(snapshot.classic.elo)}`;
 
 export const formatCurrentRankedTier = (elo: number) =>
   getTierForElo(elo).label;

@@ -296,8 +296,9 @@ export function LandingPage({
     () =>
       buildHeadToHeadModeDetails([
         `$${(CLASSIC_HEAD_TO_HEAD_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
-        "Banner / soft matchmaking pairs similar front offices.",
-        "Casual banners track your Front Office.",
+        `${CLASSIC_PICK_TIME_LIMIT_SECONDS}-second picks.`,
+        `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
+        "Monthly Top 500 on the Casual board.",
         "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
       ]),
     [],
@@ -306,8 +307,9 @@ export function LandingPage({
     () =>
       buildHeadToHeadModeDetails([
         `$${(RANKED_SALARY_CAP / 1_000_000).toFixed(0)}M salary cap.`,
-        "Elo / ranked matchmaking pairs competitive Front Offices.",
-        "Monthly seasons crown the Top 500.",
+        `${PICK_TIME_LIMIT_SECONDS}-second picks.`,
+        `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
+        "Monthly Top 500 on the Pro board.",
         "Practice vs a bot, or private match with a room code — neither changes streaks or badges.",
       ]),
     [],
@@ -570,8 +572,8 @@ export function LandingPage({
         </div>
         <p className="daily-draft-card__description">
           {mode === "advanced"
-            ? "Per-minute and rate stats."
-            : "Season per-game stats."}
+            ? "Uses per-minute and rate stats for today’s puzzle."
+            : "Uses season per-game stats for today’s puzzle."}
         </p>
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
@@ -972,8 +974,7 @@ export function LandingPage({
                   </h2>
                   <p className="all-time-card__description">
                     Draft active stars at their peak seasons plus legendary
-                    All-Stars from every era. This mode is in development and
-                    will launch soon.
+                    All-Stars from every era. Coming soon.
                   </p>
                   <button
                     type="button"

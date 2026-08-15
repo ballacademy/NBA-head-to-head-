@@ -1034,10 +1034,6 @@
   margin: 0;
 }
 
-.weekly-gm-recap__group:first-child .weekly-gm-recap__stats {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .weekly-gm-recap__stat {
   display: grid;
   gap: 2px;
@@ -1054,6 +1050,14 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 800;
+}
+
+.weekly-gm-recap__stat-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .weekly-gm-recap__actions {

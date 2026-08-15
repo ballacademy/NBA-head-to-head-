@@ -28,11 +28,6 @@ export function WeeklyGmRecapCard({
     setDismissed(true);
   };
 
-  const dailyDaysLabel =
-    recap.dailyDaysThisWeek === 1
-      ? "1 day played"
-      : `${recap.dailyDaysThisWeek} days played`;
-
   return (
     <section
       className={`weekly-gm-recap${className ? ` ${className}` : ""}`}
@@ -44,7 +39,7 @@ export function WeeklyGmRecapCard({
             Weekly GM recap
           </h2>
           <p className="weekly-gm-recap__lede">
-            Daily Draft activity this week, plus a quick career snapshot.
+            This week’s Daily Draft progress, plus your Casual and Pro snapshot.
           </p>
         </div>
         <button
@@ -61,8 +56,12 @@ export function WeeklyGmRecapCard({
           <h3 className="weekly-gm-recap__group-title">This week</h3>
           <dl className="weekly-gm-recap__stats">
             <div className="weekly-gm-recap__stat">
-              <dt>Daily Draft</dt>
-              <dd>{dailyDaysLabel}</dd>
+              <dt>Daily days played</dt>
+              <dd>{recap.dailyDaysSplitLabel}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Best Daily finish</dt>
+              <dd>{recap.bestDailyFinishLabel}</dd>
             </div>
           </dl>
         </div>
@@ -71,8 +70,30 @@ export function WeeklyGmRecapCard({
           <h3 className="weekly-gm-recap__group-title">Career snapshot</h3>
           <dl className="weekly-gm-recap__stats">
             <div className="weekly-gm-recap__stat">
-              <dt>Daily streak</dt>
-              <dd>{recap.bestStreakLabel}</dd>
+              <dt>Casual H2H</dt>
+              <dd>
+                {recap.casualRecord}
+                <span className="weekly-gm-recap__stat-meta">
+                  {recap.casualBannersLabel}
+                </span>
+              </dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Pro H2H</dt>
+              <dd>
+                {recap.proRecord}
+                <span className="weekly-gm-recap__stat-meta">
+                  {recap.proBannersLabel}
+                </span>
+              </dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Basic Daily streak</dt>
+              <dd>{recap.basicStreakLabel}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Advanced Daily streak</dt>
+              <dd>{recap.advancedStreakLabel}</dd>
             </div>
             <div className="weekly-gm-recap__stat">
               <dt>All-Stars unlocked</dt>
@@ -81,11 +102,7 @@ export function WeeklyGmRecapCard({
               </dd>
             </div>
             <div className="weekly-gm-recap__stat">
-              <dt>H2H record</dt>
-              <dd>{recap.careerH2hRecord}</dd>
-            </div>
-            <div className="weekly-gm-recap__stat">
-              <dt>Front Office badges</dt>
+              <dt>Lifetime FO badges</dt>
               <dd>{recap.frontOfficeBadgesUnlocked} unlocked</dd>
             </div>
           </dl>

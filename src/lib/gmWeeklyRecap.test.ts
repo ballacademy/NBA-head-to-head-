@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { writeJson } from "./browserStorage";
 import {
   countDailyDaysThisWeek,
+  countDailyModeDaysThisWeek,
+  getBestDailyPercentileThisWeek,
   getWeeklyRecapWeekKey,
 } from "./gmWeeklyRecap";
 import { getDailyDateKey } from "./dailyDraft";
@@ -57,6 +59,32 @@ describe("gmWeeklyRecap", () => {
 
     expect(countDailyDaysThisWeek(playerId, weekKey)).toBe(2);
     expect(getDailyDateKey()).toBe("2026-08-13");
+
+    vi.useRealTimers();
+  });
+
+  it("splits Daily days by Basic/Advanced and tracks best percentile", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-13T16:00:00.000Z"));
+
+    const playerId = "player-test";
+    const weekKey = getWeeklyRecapWeekKey();
+
+    writeJson("nba-head-to-head-daily-scores", {
+      "2026-08-10": [
+        { playerId, goalId: "pts", mode: "basic", percentile: 70 },
+        { playerId, goalId: "adv-ast", mode: "advanced", percentile: 88 },
+      ],
+      "2026-08-12": [
+        { playerId, goalId: "pts", mode: "basic", percentile: 55 },
+      ],
+    });
+
+    expect(countDailyModeDaysThisWeek(playerId, weekKey)).toEqual({
+      basic: 2,
+      advanced: 1,
+    });
+    expect(getBestDailyPercentileThisWeek(playerId, weekKey)).toBe(88);
 
     vi.useRealTimers();
   });
