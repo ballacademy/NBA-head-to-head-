@@ -75,7 +75,7 @@ const formatBestStreakLabel = () => {
     return "No active streak";
   }
 
-  return `${best.label}: ${formatDailyDraftPlayStreak(best.streak)}`;
+  return `${best.label} Daily · ${formatDailyDraftPlayStreak(best.streak)}`;
 };
 
 export interface WeeklyGmRecap {
