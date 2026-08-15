@@ -223,6 +223,14 @@ export const searchLiveOpponentDetailed = async (
         mode: params.mode,
         playerId: params.playerId,
       });
+      // DELETE can race a concurrent claim that already created a live match.
+      const afterCancelLeave = await pollMatchmakingQueue({
+        mode: params.mode,
+        playerId: params.playerId,
+      });
+      if (afterCancelLeave) {
+        return { status: "matched", opponent: afterCancelLeave };
+      }
       return { status: "cancelled" };
     }
 

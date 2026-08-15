@@ -2,6 +2,8 @@ import { getBrowserStorage, removeJson } from "./browserStorage";
 import { clearAccountLinkCache } from "./accountGate";
 import { pullAndMergeCollection } from "./collectionRemote";
 import { pullAndMergeAchievements } from "./achievementsRemote";
+import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
+import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { seedRemoteLeaderboardCache } from "./leaderboardRemote";
@@ -15,14 +17,16 @@ import {
   setPlayerIdentity,
 } from "./playerIdentity";
 import { fetchRemotePlayerProfile } from "./playerProfileApi";
-import {
-  clearModePlayerRecords,
-  replaceModePlayerRecords,
-} from "./playerRecord";
+import { clearModePlayerRecords } from "./playerRecord";
 import { saveClassicProfile } from "./classicProfile";
 import { saveRankedProfile } from "./rankedProfile";
 import { upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
 import { getCurrentSeasonId } from "./rankedSeason";
+import {
+  loadGmLegacyStats,
+  mergeGmLegacyStats,
+  saveGmLegacyStats,
+} from "./gmLegacyStats";
 import { saveTeamProfile, validateTeamProfile } from "./teamProfile";
 import { resetUnlockProgress } from "./unlockProgress";
 
@@ -87,12 +91,20 @@ const clearPendingLineupStorage = (playerId: string) => {
   }
 };
 
-const clearIdentityBoundLocalState = (playerId?: string) => {
+const clearIdentityBoundLocalState = (
+  playerId?: string,
+  options: { clearDailyScores?: boolean } = {},
+) => {
+  const clearDailyScores = options.clearDailyScores !== false;
+
   if (playerId) {
     clearPendingLineupStorage(playerId);
   }
 
   for (const key of IDENTITY_BOUND_STORAGE_KEYS) {
+    if (key === "nba-head-to-head-daily-scores" && !clearDailyScores) {
+      continue;
+    }
     removeJson(key);
   }
 
@@ -122,7 +134,9 @@ export const logoutToAnonymousIdentity = () => {
  */
 export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   const previousPlayerId = getOrCreatePlayerIdentity().playerId;
-  clearIdentityBoundLocalState(previousPlayerId);
+  // Keep Daily history on login — entries are playerId-tagged, and logout is
+  // the path that should wipe them. Season boards are not career W–L.
+  clearIdentityBoundLocalState(previousPlayerId, { clearDailyScores: false });
   const identity = setPlayerIdentity(playerId);
   const seasonId = getCurrentSeasonId();
 
@@ -159,14 +173,24 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     profile?.currentSeason?.wins ?? rankedEntry?.wins ?? 0;
   const currentLosses =
     profile?.currentSeason?.losses ?? rankedEntry?.losses ?? 0;
-  const legacyPeak = profile?.legacy?.peakElo ?? null;
+
+  if (profile?.legacy) {
+    saveGmLegacyStats(
+      mergeGmLegacyStats(loadGmLegacyStats(), {
+        ...profile.legacy,
+        playerId,
+      }),
+    );
+  }
 
   if (currentElo != null) {
+    // Season peak is not published remotely — seed from current Elo only.
+    // All-time peak lives in gm-legacy-stats (merged above).
     saveRankedProfile({
       playerId,
       seasonId,
       elo: currentElo,
-      peakElo: Math.max(currentElo, legacyPeak ?? currentElo),
+      peakElo: currentElo,
       rankedGamesPlayed: Math.max(0, currentWins + currentLosses),
     });
   }
@@ -261,25 +285,8 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
     });
   }
 
-  replaceModePlayerRecords({
-    ranked:
-      rankedEntry || profile?.currentSeason
-        ? {
-            wins: currentWins,
-            losses: currentLosses,
-            winStreak: rankedEntry?.winStreak ?? 0,
-            lossStreak: rankedEntry?.lossStreak ?? 0,
-          }
-        : undefined,
-    headToHead: classicEntry
-      ? {
-          wins: classicEntry.wins,
-          losses: classicEntry.losses,
-          winStreak: classicEntry.winStreak,
-          lossStreak: classicEntry.lossStreak,
-        }
-      : undefined,
-  });
+  // Career mode records are local-only — do not seed them from monthly boards.
+  // They stay empty after a cross-identity restore until new matches are played.
 
   const restoredTeamName =
     classicEntry?.name?.trim() ||
@@ -296,6 +303,22 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   // Restore cloud collection + badges for this account (union with any local).
   await pullAndMergeCollection(playerId);
   await pullAndMergeAchievements(playerId);
+
+  const dateKey = getDailyDateKey();
+  await Promise.all([
+    refreshDailyDraftScoresFromApi(
+      dateKey,
+      getDailyGoal(dateKey, "basic").id,
+      playerId,
+      "basic",
+    ),
+    refreshDailyDraftScoresFromApi(
+      dateKey,
+      getDailyGoal(dateKey, "advanced").id,
+      playerId,
+      "advanced",
+    ),
+  ]);
 
   return identity;
 };

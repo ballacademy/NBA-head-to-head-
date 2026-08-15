@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import { getCachedLinkedUsername } from "./accountGate";
+import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
 import {
   getCachedRemoteLeaderboard,
   mergeLocalSelfIntoRemoteEntries,
@@ -212,6 +213,10 @@ export const upsertLeaderboardEntry = (
     },
   });
 
+  const rank =
+    merged.findIndex((candidate) => candidate.playerId === nextEntry.playerId) +
+    1;
+
   if (options.sync !== false) {
     syncLeaderboardEntryToApi({
       mode: "classic",
@@ -225,11 +230,16 @@ export const upsertLeaderboardEntry = (
       winStreak: nextEntry.winStreak,
       lossStreak: nextEntry.lossStreak,
     });
+
+    // Skip on restore seeds (sync: false) — a local-only board would falsely
+    // report monthly rank #1 and clobber career best-finish legacy.
+    recordLocalGmLegacySnapshot({
+      elo: nextEntry.elo,
+      seasonId,
+      monthlyRank: rank > 0 ? rank : null,
+    });
   }
 
-  const rank =
-    merged.findIndex((candidate) => candidate.playerId === nextEntry.playerId) +
-    1;
   return rank > 0 ? rank : null;
 };
 
