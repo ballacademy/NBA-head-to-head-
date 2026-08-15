@@ -1,5 +1,9 @@
 import priorSeasonProduction from "../../data/prior-season-production.json";
 import activeStarBestSeasonsData from "../../data/active-star-best-seasons.json";
+import {
+  getPlayerDefenseGradeRank,
+  rankToDefenseGrade,
+} from "./defenseGrade";
 import type { Player } from "./types";
 
 /**
@@ -300,6 +304,11 @@ export const resolvePlayerForScoring = (player: Player): Player => {
       prior.personalFouls,
       currentShare,
       priorShare,
+    ),
+    // Soft-regress extreme current DEF grades toward average (C) with the same
+    // game weights used for box stats — prior snapshots do not store grades.
+    defenseGrade: rankToDefenseGrade(
+      getPlayerDefenseGradeRank(player) * currentShare + 5 * priorShare,
     ),
   };
 };

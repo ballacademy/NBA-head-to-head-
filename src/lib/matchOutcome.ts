@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
+  persistAllTimeOutcome,
   persistClassicLeaderboardOutcome,
   persistRankedOutcome,
   type PersistedBannersOutcome,
@@ -17,6 +18,7 @@ import type { TeamProfile } from "./teamProfile";
 
 export type RankedMatchOutcome = PersistedBannersOutcome;
 export type ClassicMatchOutcome = PersistedBannersOutcome;
+export type AllTimeMatchOutcome = PersistedBannersOutcome;
 
 const LAST_RECORDED_MATCH_KEY = "nba-head-to-head-last-recorded-match";
 const LAST_MATCH_OUTCOME_KEY = "nba-head-to-head-last-match-outcome";
@@ -27,6 +29,7 @@ interface CachedMatchOutcome {
   matchId: string;
   ranked?: RankedMatchOutcome;
   classic?: ClassicMatchOutcome;
+  allTime?: AllTimeMatchOutcome;
 }
 
 const loadRecordedMatchIds = (): string[] => {
@@ -74,6 +77,7 @@ export const persistMatchOutcome = (
   record: PlayerRecord;
   ranked?: RankedMatchOutcome;
   classic?: ClassicMatchOutcome;
+  allTime?: AllTimeMatchOutcome;
 } => {
   if (hasRecordedMatchId(matchId)) {
     const cached = readJson<CachedMatchOutcome>(LAST_MATCH_OUTCOME_KEY);
@@ -82,6 +86,7 @@ export const persistMatchOutcome = (
       record: loadPlayerRecord(mode),
       ranked: cached?.matchId === matchId ? cached.ranked : undefined,
       classic: cached?.matchId === matchId ? cached.classic : undefined,
+      allTime: cached?.matchId === matchId ? cached.allTime : undefined,
     };
   }
 
@@ -89,6 +94,7 @@ export const persistMatchOutcome = (
   const record = recordMatchResult(result, mode, { countTowardStreak });
   let ranked: RankedMatchOutcome | undefined;
   let classic: ClassicMatchOutcome | undefined;
+  let allTime: AllTimeMatchOutcome | undefined;
   const opponentElo = options.opponentElo ?? RANKED_STARTING_ELO;
 
   if (mode === "headToHead") {
@@ -107,8 +113,14 @@ export const persistMatchOutcome = (
     });
   }
 
-  rememberRecordedMatchId(matchId);
-  writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic });
+  if (mode === "allTime") {
+    allTime = persistAllTimeOutcome(result, record, opponentElo, {
+      countTowardStreak,
+    });
+  }
 
-  return { record, ranked, classic };
+  rememberRecordedMatchId(matchId);
+  writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic, allTime });
+
+  return { record, ranked, classic, allTime };
 };

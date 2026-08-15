@@ -20,8 +20,9 @@ describe("frontOfficeBadges", () => {
   });
 
   it("unlocks front office badges by peak elo", () => {
-    expect(getUnlockedFrontOfficeBadges(499)).toHaveLength(1);
-    expect(getUnlockedFrontOfficeBadges(1500)).toHaveLength(4);
-    expect(getUnlockedFrontOfficeBadges(2100)).toHaveLength(5);
+    expect(getUnlockedFrontOfficeBadges(499)).toHaveLength(0);
+    expect(getUnlockedFrontOfficeBadges(500)).toHaveLength(1);
+    expect(getUnlockedFrontOfficeBadges(1500)).toHaveLength(3);
+    expect(getUnlockedFrontOfficeBadges(2100)).toHaveLength(4);
   });
 });

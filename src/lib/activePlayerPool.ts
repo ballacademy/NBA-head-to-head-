@@ -1,4 +1,5 @@
 import { getActiveStarPlayers } from "./activeStars";
+import { loadAllTimeProfile } from "./allTimeProfile";
 import { getEraPlayerPool } from "./eraPlayers";
 import { getUnlockedEras } from "./eraUnlocks";
 import { players, playersById } from "./playerPool";
@@ -7,6 +8,8 @@ import type { Player } from "./types";
 
 export interface PlayerPoolOptions {
   allTimeMode?: boolean;
+  /** Override All-Time peak banners used for legends unlock. */
+  peakBanners?: number;
 }
 
 const dedupeEraPlayersByFranchise = (eraPlayers: Player[]) => {
@@ -36,8 +39,10 @@ export const getActivePlayerPool = (
     return players;
   }
 
+  const peakBanners =
+    options.peakBanners ?? loadAllTimeProfile().peakElo;
   const eraPlayers = dedupeEraPlayersByFranchise(
-    getEraPlayerPool(getUnlockedEras(record)),
+    getEraPlayerPool(getUnlockedEras(record, { peakBanners })),
   );
   const activeStars = getActiveStarPlayers();
   const eraIds = new Set(eraPlayers.map((player) => player.id));

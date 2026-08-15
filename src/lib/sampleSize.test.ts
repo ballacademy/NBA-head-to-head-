@@ -132,6 +132,8 @@ describe("sampleSize", () => {
     // Tiny-sample heater should be pulled toward the larger prior sample.
     expect(blended.trueShooting).toBeLessThan(kessler!.trueShooting);
     expect(blended.trueShooting).toBeGreaterThan(prior!.trueShooting! - 0.01);
+    // Defense grades soft-regress toward average with the same game weights.
+    expect(blended.defenseGrade).toBeDefined();
   });
 
   it("requires a sizable prior sample before calling production established", () => {

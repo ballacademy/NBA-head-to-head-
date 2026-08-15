@@ -57,7 +57,11 @@ export const getFrontOfficeBadgeForTier = (tier: RankedTier) =>
   FRONT_OFFICE_BADGES.find((badge) => badge.id === tier.id) ?? FRONT_OFFICE_BADGES[0]!;
 
 export const getUnlockedFrontOfficeBadges = (peakElo: number) =>
-  FRONT_OFFICE_BADGES.filter((badge) => peakElo >= badge.minElo);
+  // Tank Commander is the floor tier (minElo 0) — always "reached", so it does
+  // not count as an unlocked Front Office achievement.
+  FRONT_OFFICE_BADGES.filter(
+    (badge) => badge.minElo > 0 && peakElo >= badge.minElo,
+  );
 
 export const formatLegacyMonthlyFinish = (
   rank: number | null | undefined,

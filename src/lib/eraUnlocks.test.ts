@@ -3,9 +3,11 @@ import { getActivePlayerPool } from "./activePlayerPool";
 import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
 import {
   ALL_ERA_IDS,
+  ALL_TIME_BANNER_UNLOCK_THRESHOLD,
   ALL_TIME_LEGENDS_TESTING_UNLOCK,
   ALL_TIME_MODE_PLAYABLE,
   ALL_TIME_WIN_THRESHOLD,
+  areLegendsUnlocked,
   getAllTimeWinsRemaining,
   getUnlockedEras,
   isAllTimeModePlayable,
@@ -67,6 +69,34 @@ describe("active player pool", () => {
 
     expect(getUnlockedEras({ wins: 49 })).toEqual([]);
     expect(getUnlockedEras({ wins: 50 })).toEqual(ALL_ERA_IDS);
+  });
+
+  it("unlocks legends via All-Time peak banners without 50 wins", () => {
+    if (ALL_TIME_LEGENDS_TESTING_UNLOCK) {
+      return;
+    }
+
+    expect(
+      areLegendsUnlocked(
+        { wins: 0 },
+        { peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD - 1 },
+      ),
+    ).toBe(false);
+    expect(
+      areLegendsUnlocked(
+        { wins: 0 },
+        { peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD },
+      ),
+    ).toBe(true);
+    expect(
+      getActivePlayerPool(
+        { wins: 0 },
+        {
+          allTimeMode: true,
+          peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD,
+        },
+      ).some((player) => player.name === "Michael Jordan"),
+    ).toBe(true);
   });
 
   it("unlocks all-time mode at 50 wins", () => {

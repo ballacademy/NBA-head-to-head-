@@ -32,6 +32,7 @@ import { canStoreLineupForMatchmaking } from "../lib/storedLineups";
 import { getLineupSalaryTotal } from "../lib/salaryCap";
 import { getOrCreatePlayerIdentity, derivePublicTag } from "../lib/playerIdentity";
 import { ensureClassicProfile } from "../lib/classicProfile";
+import { loadAllTimeProfile } from "../lib/allTimeProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
@@ -106,6 +107,7 @@ export function MatchResults({
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
   const [classicOutcome, setClassicOutcome] = useState<RankedMatchOutcome | null>(null);
+  const [allTimeOutcome, setAllTimeOutcome] = useState<RankedMatchOutcome | null>(null);
   const [confirmedLeaderboardRank, setConfirmedLeaderboardRank] = useState<
     number | null
   >(null);
@@ -151,11 +153,13 @@ export function MatchResults({
   const isEventMatch = Boolean(user.eventId);
   const resultModeLabel = user.eventId
     ? MODE_COPY.weeklyEvent.title
-    : user.salaryCapMode
-      ? MODE_COPY.proH2h.title
-      : user.practiceMode
-        ? MODE_COPY.practice.title
-        : MODE_COPY.classicH2h.title;
+    : user.allTimeMode
+      ? MODE_COPY.allTime.title
+      : user.salaryCapMode
+        ? MODE_COPY.proH2h.title
+        : user.practiceMode
+          ? MODE_COPY.practice.title
+          : MODE_COPY.classicH2h.title;
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(() => {
@@ -262,11 +266,14 @@ export function MatchResults({
       const opponentElo = opponent.rankedOpponentElo ?? opponent.classicOpponentElo;
       const rankedEloBefore = ensureCurrentRankedSeason().elo;
       const classicEloBefore = ensureClassicProfile().elo;
+      const allTimeEloBefore = loadAllTimeProfile().elo;
       const mode = user.salaryCapMode ? "ranked" : "classic";
       const playerId = getOrCreatePlayerIdentity().playerId;
-      const challengerEloBefore = user.salaryCapMode
-        ? rankedEloBefore
-        : classicEloBefore;
+      const challengerEloBefore = user.allTimeMode
+        ? allTimeEloBefore
+        : user.salaryCapMode
+          ? rankedEloBefore
+          : classicEloBefore;
       const storedLineupId = opponent.isGhostOpponent
         ? extractGhostStoredLineupId(opponent.id)
         : null;
@@ -287,6 +294,10 @@ export function MatchResults({
 
         if (outcome.classic) {
           setClassicOutcome(outcome.classic);
+        }
+
+        if (outcome.allTime) {
+          setAllTimeOutcome(outcome.allTime);
         }
 
         const banners = outcome.ranked ?? outcome.classic;
@@ -532,9 +543,11 @@ export function MatchResults({
     !user.practiceMode && !user.privateMatch
       ? matchRecordMode === "ranked"
         ? rankedOutcome
-        : matchRecordMode === "headToHead" && !isEventMatch
-          ? classicOutcome
-          : null
+        : matchRecordMode === "allTime"
+          ? allTimeOutcome
+          : matchRecordMode === "headToHead" && !isEventMatch
+            ? classicOutcome
+            : null
       : null;
 
   return (
