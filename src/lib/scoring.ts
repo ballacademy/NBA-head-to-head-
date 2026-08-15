@@ -853,6 +853,93 @@ export const buildLineupScoreContext = (score: LineupScore): string => {
   return `${firstSentence} ${secondSentence}`;
 };
 
+const LAYER_INSIGHT_COPY: Record<
+  string,
+  { helped?: string; hurt?: string }
+> = {
+  tierAdjustment: {
+    helped: "Star and rarity tiers raise the ceiling.",
+    hurt: "Scrub-heavy tiers cap how high the OVR can climb.",
+  },
+  impactBlend: {
+    helped: "Impact rankings support the box-score profile.",
+    hurt: "Impact rankings pull the raw production down.",
+  },
+  chemistry: {
+    helped: "Lineup chemistry bonuses are boosting the OVR.",
+  },
+  teamQuality: {
+    helped: "Shared team / win anchors help the construction.",
+    hurt: "Team quality anchors hold the OVR back.",
+  },
+  lowScoringPenalty: {
+    hurt: "Low-usage scorers without enough defense drag the floor.",
+  },
+  primaryScorerPenalty: {
+    hurt: "The lead scorer band is soft; the offense lacks a clear alpha.",
+  },
+  offenseFloorPenalty: {
+    hurt: "The offense floor is soft; scoring creation is thin.",
+  },
+  noStarPenalty: {
+    hurt: "No true star to hang a halfcourt offense on.",
+  },
+  midTierImpactPenalty: {
+    hurt: "Impact profile is mid-tier without a top-50 anchor.",
+  },
+  thinImpactPenalty: {
+    hurt: "Impact depth is thin; the lineup leans too hard on one piece.",
+  },
+  soloStarElevationPenalty: {
+    hurt: "The lone star is not a playmaker, so the supporting cast stays flat.",
+  },
+  eliteOffenseBonus: {
+    helped: "Elite offensive production lifts the OVR.",
+  },
+  superstarStackBonus: {
+    helped: "Multiple superstars stack for an extra boost.",
+  },
+};
+
+const insightAlreadyCovered = (list: string[], text: string) => {
+  const needle = text.toLowerCase().slice(0, 28);
+  return list.some((item) => item.toLowerCase().includes(needle.slice(0, 18)));
+};
+
+/**
+ * Human help/hurt notes for the score breakdown — strengths/warnings plus
+ * meaningful modifier layers, without the numeric little-stat rows.
+ */
+export const buildLineupScoreInsights = (
+  score: LineupScore,
+): { helped: string[]; hurt: string[] } => {
+  const helped = [...score.strengths];
+  const hurt = [...score.warnings];
+
+  for (const layer of score.layers ?? []) {
+    if (layer.id === "baseStats" || Math.abs(layer.value) < 0.75) {
+      continue;
+    }
+
+    const copy = LAYER_INSIGHT_COPY[layer.id];
+    if (!copy) {
+      continue;
+    }
+
+    const text = layer.value > 0 ? copy.helped : copy.hurt;
+    if (!text) {
+      continue;
+    }
+
+    const target = layer.value > 0 ? helped : hurt;
+    if (!insightAlreadyCovered(target, text)) {
+      target.push(text);
+    }
+  }
+
+  return { helped, hurt };
+};
+
 /**
  * Compare matchup strength. Prefer uncapped OVR so two capped-100 lineups
  * still separate when one cleared the ceiling by more.
