@@ -1,7 +1,11 @@
 import { useId, useState, type CSSProperties } from "react";
 import { formatUsername } from "../lib/accountCredentials";
 import { sortLineupByPosition } from "../lib/lineupOrder";
-import { buildLineupScoreContext, formatLineupOvrDisplay } from "../lib/scoring";
+import {
+  buildLineupScoreContext,
+  buildLineupScoreInsights,
+  formatLineupOvrDisplay,
+} from "../lib/scoring";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
 import { TeamNameWithStreak } from "./TeamNameWithStreak";
@@ -22,14 +26,6 @@ interface TeamLineupCardProps {
   onNameClick?: () => void;
 }
 
-const formatLayerValue = (value: number) => {
-  const rounded = Math.round(value * 10) / 10;
-  if (rounded > 0) {
-    return `+${rounded}`;
-  }
-  return String(rounded);
-};
-
 export function TeamLineupCard({
   drafter,
   lineup,
@@ -47,11 +43,10 @@ export function TeamLineupCard({
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
     : null;
-  const layers = showScoreContext
-    ? (score.layers ?? []).filter(
-        (layer) => layer.id === "baseStats" || layer.value !== 0,
-      )
-    : [];
+  const insights = showScoreContext ? buildLineupScoreInsights(score) : null;
+  const hasInsights =
+    Boolean(insights) &&
+    ((insights?.helped.length ?? 0) > 0 || (insights?.hurt.length ?? 0) > 0);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const breakdownId = useId();
   const teamName = drafter.name.trim() || "Opponent";
@@ -127,7 +122,7 @@ export function TeamLineupCard({
         <p className="team-lineup-card__score-context">{scoreContext}</p>
       ) : null}
 
-      {layers.length > 0 ? (
+      {hasInsights && insights ? (
         <div className="score-breakdown">
           <button
             type="button"
@@ -136,28 +131,46 @@ export function TeamLineupCard({
             aria-controls={breakdownId}
             onClick={() => setBreakdownOpen((open) => !open)}
           >
-            Score breakdown
+            What helped / hurt
             <span aria-hidden="true">{breakdownOpen ? "−" : "+"}</span>
           </button>
           {breakdownOpen ? (
-            <ul id={breakdownId} className="score-breakdown__list">
-              {layers.map((layer) => (
-                <li key={layer.id} className="score-breakdown__row">
-                  <span className="score-breakdown__label">{layer.label}</span>
-                  <span
-                    className={`score-breakdown__value${
-                      layer.value > 0
-                        ? " score-breakdown__value--pos"
-                        : layer.value < 0
-                          ? " score-breakdown__value--neg"
-                          : ""
-                    }`}
-                  >
-                    {formatLayerValue(layer.value)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div id={breakdownId} className="score-breakdown__panels">
+              {insights.helped.length > 0 ? (
+                <div className="score-breakdown__group">
+                  <h4 className="score-breakdown__group-title score-breakdown__group-title--helped">
+                    Helped
+                  </h4>
+                  <ul className="score-breakdown__insights">
+                    {insights.helped.map((note) => (
+                      <li
+                        key={`helped-${note}`}
+                        className="score-breakdown__insight score-breakdown__insight--helped"
+                      >
+                        {note}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {insights.hurt.length > 0 ? (
+                <div className="score-breakdown__group">
+                  <h4 className="score-breakdown__group-title score-breakdown__group-title--hurt">
+                    Hurt
+                  </h4>
+                  <ul className="score-breakdown__insights">
+                    {insights.hurt.map((note) => (
+                      <li
+                        key={`hurt-${note}`}
+                        className="score-breakdown__insight score-breakdown__insight--hurt"
+                      >
+                        {note}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}

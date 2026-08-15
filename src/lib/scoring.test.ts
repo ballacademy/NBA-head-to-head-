@@ -28,6 +28,7 @@ import {
   isLowScoringNonEliteDefender,
   isPlusDefenderByGrade,
   buildLineupScoreContext,
+  buildLineupScoreInsights,
   lineupOvrOverflow,
   LINEUP_FIRST_OPTION_PPG_THRESHOLD,
   LINEUP_RAW_CEILING,
@@ -112,6 +113,26 @@ describe("calculateLineupScore", () => {
     expect(score.layers?.every((layer) => layer.id === "baseStats" || layer.value !== 0)).toBe(
       true,
     );
+  });
+
+  it("builds help/hurt insights without exposing base-stat layer math", () => {
+    const score = calculateLineupScore(
+      lineup([
+        "gilgesh01-okc",
+        "whitede01-bos",
+        "tatumja01-bos",
+        "gordoaa01-den",
+        "jokicni01-den",
+      ]),
+    );
+    const insights = buildLineupScoreInsights(score);
+
+    expect(insights.helped.length + insights.hurt.length).toBeGreaterThan(0);
+    expect(
+      [...insights.helped, ...insights.hurt].some((note) =>
+        /base stats|\+\d|-\d/i.test(note),
+      ),
+    ).toBe(false);
   });
 
   it("flags high-usage lineups with fragile defensive fit", () => {
