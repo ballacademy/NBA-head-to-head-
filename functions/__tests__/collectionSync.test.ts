@@ -4,7 +4,12 @@ import {
   unionUnlockedIds,
 } from "../lib/collectionSync";
 import { getWinUnlockPlayerIds } from "../../src/lib/allStars";
-import { getScrubPlayerIds } from "../../src/lib/playerTiers";
+import { players } from "../../src/lib/playerPool";
+import {
+  getScrubPlayerIds,
+  isScrubPlayer,
+  SCRUB_POOL_EXCLUDED_BBR_IDS,
+} from "../../src/lib/playerTiers";
 
 describe("collectionSync", () => {
   it("filters unknown and duplicate unlock ids", () => {
@@ -25,5 +30,22 @@ describe("collectionSync", () => {
       b!,
       c!,
     ]);
+  });
+
+  it("preserves former scrub unlock ids that left the current pool", () => {
+    const former = players.find(
+      (player) =>
+        player.bbrPlayerId &&
+        (SCRUB_POOL_EXCLUDED_BBR_IDS as readonly string[]).includes(
+          player.bbrPlayerId,
+        ),
+    );
+    expect(former).toBeDefined();
+    expect(isScrubPlayer(former!)).toBe(false);
+
+    const validScrub = getScrubPlayerIds()[0]!;
+    expect(
+      filterUnlockedIds([former!.id, validScrub, "not-a-player"]),
+    ).toEqual([former!.id, validScrub]);
   });
 });
