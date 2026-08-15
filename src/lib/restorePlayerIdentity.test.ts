@@ -420,4 +420,31 @@ describe("restorePlayerIdentityFromLogin", () => {
     expect(loadGmLegacyStats().peakElo).toBe(2100);
     expect(loadGmLegacyStats().bestMonthlyRank).toBe(3);
   });
+
+  it("does not mint a random starter collection during login restore", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const { loadPlayerCollection } = await import("./playerCollection");
+    const { getRecentAllStarUnlockPlayerIds } = await import("./allStars");
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+
+    vi.mocked(fetchRemoteLeaderboard).mockResolvedValue({
+      mode: "ranked",
+      seasonId,
+      sort: "elo",
+      entries: [],
+    });
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(new Set(loadPlayerCollection().unlockedIds)).toEqual(
+      new Set(getRecentAllStarUnlockPlayerIds()),
+    );
+  });
 });
