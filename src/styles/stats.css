@@ -84,6 +84,10 @@
   line-height: 1.2;
 }
 
+.hub-feature.stats-panel .sort-button.active {
+  color: var(--accent-roster-bright);
+}
+
 .hub-feature.stats-panel .stats-footnote {
   margin-top: 8px;
   font-size: 0.78rem;

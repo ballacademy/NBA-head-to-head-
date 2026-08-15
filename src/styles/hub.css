@@ -179,6 +179,10 @@
   color: var(--text-muted-on-dark);
 }
 
+.hub-feature__panel .achievements-page__item--unlocked .achievements-page__status {
+  color: var(--accent-h2h-bright);
+}
+
 .hub-feature__panel .legal-page__body,
 .hub-feature__panel .legal-page__body p,
 .hub-feature__panel .legal-page__body li,
@@ -511,8 +515,7 @@ h1.landing-hub__title--name {
 .landing-card--mode .landing__primary-button,
 .landing-card--mode .daily-draft-card__button,
 .landing-card--mode .ranked-cap-card__button,
-.landing-card--mode .all-time-card__button,
-.landing-card--mode .mode-card__cta {
+.landing-card--mode .all-time-card__button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -537,12 +540,42 @@ h1.landing-hub__title--name {
     filter 140ms ease;
 }
 
+.landing-card--mode .mode-card__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.landing-card--mode .mode-card__cta--primary {
+  border: 0;
+  color: #0b1220;
+  background: linear-gradient(
+    135deg,
+    var(--hub-accent-bright, #67e8f9) 0%,
+    var(--hub-accent, #06b6d4) 100%
+  );
+  box-shadow: 0 10px 24px var(--hub-accent-glow, rgba(6, 182, 212, 0.28));
+}
+
 .hub-cta:focus-visible:not(:disabled),
 .landing-card--mode .landing__primary-button:focus-visible:not(:disabled),
 .landing-card--mode .daily-draft-card__button:focus-visible:not(:disabled),
 .landing-card--mode .ranked-cap-card__button:focus-visible:not(:disabled),
 .landing-card--mode .all-time-card__button:focus-visible:not(:disabled),
-.landing-card--mode .mode-card__cta:focus-visible:not(:disabled) {
+.landing-card--mode .mode-card__cta--primary:focus-visible:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow: 0 14px 28px var(--hub-accent-glow, rgba(6, 182, 212, 0.34));
@@ -555,7 +588,7 @@ h1.landing-hub__title--name {
   .landing-card--mode .daily-draft-card__button:hover:not(:disabled),
   .landing-card--mode .ranked-cap-card__button:hover:not(:disabled),
   .landing-card--mode .all-time-card__button:hover:not(:disabled),
-  .landing-card--mode .mode-card__cta:hover:not(:disabled) {
+  .landing-card--mode .mode-card__cta--primary:hover:not(:disabled) {
     transform: translateY(-1px);
     filter: brightness(1.04);
     box-shadow: 0 14px 28px var(--hub-accent-glow, rgba(6, 182, 212, 0.34));
@@ -563,6 +596,7 @@ h1.landing-hub__title--name {
 }
 
 .hub-cta--secondary,
+.landing-card--mode .mode-card__cta--secondary,
 .landing-card--mode .head-to-head-card__practice-button,
 .landing-card--mode .ranked-cap-card__practice-button {
   display: inline-flex;
@@ -573,10 +607,22 @@ h1.landing-hub__title--name {
   padding: 10px 16px;
   border-radius: 12px;
   border: 1px solid var(--hub-accent-border, var(--hub-subbox-inset-border));
-  background: color-mix(in srgb, var(--hub-accent-soft, transparent) 70%, var(--hub-subbox-inset-bg));
+  background: color-mix(in srgb, var(--hub-accent-soft, transparent) 55%, var(--hub-subbox-inset-bg));
   color: var(--hub-accent-bright, #e2e8f0);
   font-weight: 700;
   box-shadow: none;
+  filter: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-card--mode .mode-card__cta--secondary:hover:not(:disabled),
+  .landing-card--mode .head-to-head-card__practice-button:hover:not(:disabled),
+  .landing-card--mode .ranked-cap-card__practice-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--hub-accent-soft) 80%, var(--hub-subbox-active-bg));
+    transform: translateY(-1px);
+    filter: none;
+    box-shadow: none;
+  }
 }
 
 .landing-hub__link-button.hub-accent {
@@ -1029,7 +1075,7 @@ h1.landing-hub__title--name {
 }
 
 .landing-mode-card__record-block {
-  margin-bottom: 8px;
+  margin: 4px 0 14px;
 }
 
 .landing-mode-card__record-stats {
@@ -1062,9 +1108,11 @@ h1.landing-hub__title--name {
 .ranked-mode-summary {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.9fr);
-  column-gap: 12px;
-  row-gap: 8px;
-  align-items: start;
+  column-gap: 14px;
+  row-gap: 10px;
+  align-items: end;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(226, 232, 240, 0.08);
 }
 
 .ranked-mode-summary .landing-mode-card__record {

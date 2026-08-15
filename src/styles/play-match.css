@@ -445,7 +445,7 @@
   --hub-accent-border: var(--accent-h2h-border);
   --hub-accent-glow: var(--accent-h2h-glow);
   margin-top: 0;
-  padding: 14px 16px;
+  padding: 16px 16px 14px;
   border: 1px solid var(--hub-accent-border);
   border-radius: 18px;
   background:
@@ -460,8 +460,10 @@
 }
 
 .head-to-head-card__description {
-  margin: 2px 0 10px;
+  margin: 4px 0 6px;
   color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .mode-card-info {
@@ -600,13 +602,13 @@
 
 .mode-card__actions {
   display: grid;
-  gap: 10px;
-  margin-top: 0;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .mode-card__actions--split {
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
 }
 
 .mode-card__actions--split > :first-child {
@@ -614,8 +616,9 @@
 }
 
 .mode-card__actions--split .mode-card__cta--secondary {
-  padding: 9px 12px;
-  font-size: 0.82rem;
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -816,7 +819,7 @@
   --hub-accent-border: var(--accent-ranked-border);
   --hub-accent-glow: var(--accent-ranked-glow);
   margin-top: 0;
-  padding: 14px 16px;
+  padding: 16px 16px 14px;
   border: 1px solid var(--hub-accent-border);
   border-radius: 18px;
   background:
@@ -830,8 +833,10 @@
 }
 
 .ranked-cap-card__description {
-  margin: 0 0 10px;
+  margin: 4px 0 6px;
   color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .ranked-cap-card__button {
