@@ -256,18 +256,18 @@
   text-decoration: none;
 }
 
-/* High-contrast on the dark hub panel (default orange gradient washes out). */
+/* High-contrast on the dark hub panel. */
 .beta-notes-actions .landing__primary-button {
-  color: #fff7ed;
+  color: #0b1220;
   font-weight: 800;
   letter-spacing: 0.01em;
-  background: #9a3412;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #67e8f9 0%, #06b6d4 100%);
+  box-shadow: 0 8px 22px rgba(6, 182, 212, 0.28);
 }
 
 .beta-notes-actions .landing__primary-button:hover {
-  background: #c2410c;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(135deg, #a5f3fc 0%, #22d3ee 100%);
+  box-shadow: 0 10px 26px rgba(6, 182, 212, 0.36);
   transform: translateY(-1px);
 }
 

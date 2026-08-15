@@ -1,7 +1,7 @@
 /* src/styles/landing.css — extracted from styles.css L1795-2172 */
 .landing__primary-button {
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   padding: 14px 22px;
   color: #0f172a;
   font-weight: 900;

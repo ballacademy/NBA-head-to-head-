@@ -341,15 +341,15 @@
 }
 
 .player-rarity-badge--all-star {
-  border: 1px solid rgba(96, 165, 250, 0.45);
-  background: rgba(59, 130, 246, 0.18);
-  color: #bfdbfe;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  background: rgba(129, 140, 248, 0.18);
+  color: #c7d2fe;
 }
 
 .player-rarity-badge--recent-all-star {
-  border: 1px solid rgba(96, 165, 250, 0.5);
-  background: rgba(59, 130, 246, 0.2);
-  color: #93c5fd;
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  background: rgba(129, 140, 248, 0.2);
+  color: #a5b4fc;
 }
 
 .player-rarity-badge--superstar {
@@ -465,12 +465,12 @@
 
 .legal-page__body a,
 .legal-page__inline-link {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .legal-page__body a:hover,
 .legal-page__inline-link:hover {
-  color: #bfdbfe;
+  color: #c7d2fe;
 }
 
 .legal-page__inline-link {
@@ -752,7 +752,7 @@
 
 .leaderboard__header .eyebrow {
   margin: 0;
-  color: #fdba74;
+  color: #67e8f9;
 }
 
 .leaderboard__brand {
@@ -867,7 +867,7 @@
 }
 
 .leaderboard-table__row--you {
-  background: rgba(59, 130, 246, 0.14);
+  background: rgba(129, 140, 248, 0.14);
 }
 
 .gm-identity {
@@ -891,7 +891,7 @@
 }
 
 .gm-identity__trigger:hover {
-  color: #93c5fd;
+  color: #a5b4fc;
 }
 
 .gm-identity__details {
@@ -1283,11 +1283,13 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  opacity: 0.72;
+  border-radius: 12px;
+  opacity: 1;
+  filter: grayscale(0.7) brightness(0.78);
 }
 
 .front-office-badges__item--unlocked {
-  opacity: 1;
+  filter: none;
 }
 
 .front-office-badges__emoji {
