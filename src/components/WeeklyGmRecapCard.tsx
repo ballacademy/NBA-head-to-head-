@@ -28,15 +28,25 @@ export function WeeklyGmRecapCard({
     setDismissed(true);
   };
 
+  const dailyDaysLabel =
+    recap.dailyDaysThisWeek === 1
+      ? "1 day played"
+      : `${recap.dailyDaysThisWeek} days played`;
+
   return (
     <section
       className={`weekly-gm-recap${className ? ` ${className}` : ""}`}
       aria-labelledby="weekly-gm-recap-title"
     >
       <div className="weekly-gm-recap__header">
-        <h2 className="weekly-gm-recap__title" id="weekly-gm-recap-title">
-          Weekly GM recap
-        </h2>
+        <div className="weekly-gm-recap__heading">
+          <h2 className="weekly-gm-recap__title" id="weekly-gm-recap-title">
+            Weekly GM recap
+          </h2>
+          <p className="weekly-gm-recap__lede">
+            Daily Draft activity this week, plus a quick career snapshot.
+          </p>
+        </div>
         <button
           type="button"
           className="weekly-gm-recap__dismiss"
@@ -46,30 +56,41 @@ export function WeeklyGmRecapCard({
         </button>
       </div>
 
-      <dl className="weekly-gm-recap__stats">
-        <div className="weekly-gm-recap__stat">
-          <dt>Daily this week</dt>
-          <dd>{recap.dailyDaysThisWeek} day{recap.dailyDaysThisWeek === 1 ? "" : "s"}</dd>
+      <div className="weekly-gm-recap__groups">
+        <div className="weekly-gm-recap__group">
+          <h3 className="weekly-gm-recap__group-title">This week</h3>
+          <dl className="weekly-gm-recap__stats">
+            <div className="weekly-gm-recap__stat">
+              <dt>Daily Draft</dt>
+              <dd>{dailyDaysLabel}</dd>
+            </div>
+          </dl>
         </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Best streak</dt>
-          <dd>{recap.bestStreakLabel}</dd>
+
+        <div className="weekly-gm-recap__group">
+          <h3 className="weekly-gm-recap__group-title">Career snapshot</h3>
+          <dl className="weekly-gm-recap__stats">
+            <div className="weekly-gm-recap__stat">
+              <dt>Daily streak</dt>
+              <dd>{recap.bestStreakLabel}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>All-Stars unlocked</dt>
+              <dd>
+                {recap.collectionUnlocked} of {recap.collectionTotal}
+              </dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>H2H record</dt>
+              <dd>{recap.careerH2hRecord}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Front Office badges</dt>
+              <dd>{recap.frontOfficeBadgesUnlocked} unlocked</dd>
+            </div>
+          </dl>
         </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Collection</dt>
-          <dd>
-            {recap.collectionUnlocked}/{recap.collectionTotal}
-          </dd>
-        </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Career H2H</dt>
-          <dd>{recap.careerH2hRecord}</dd>
-        </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Front office badges</dt>
-          <dd>{recap.frontOfficeBadgesUnlocked}</dd>
-        </div>
-      </dl>
+      </div>
 
       {onViewGmStats ? (
         <div className="weekly-gm-recap__actions">

@@ -977,9 +977,23 @@
   gap: 10px;
 }
 
+.weekly-gm-recap__heading {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
 .weekly-gm-recap__title {
   margin: 0;
   font-size: 1rem;
+}
+
+.weekly-gm-recap__lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .weekly-gm-recap__dismiss {
@@ -994,11 +1008,34 @@
   cursor: pointer;
 }
 
+.weekly-gm-recap__groups {
+  display: grid;
+  gap: 12px;
+}
+
+.weekly-gm-recap__group {
+  display: grid;
+  gap: 6px;
+}
+
+.weekly-gm-recap__group-title {
+  margin: 0;
+  color: var(--text-muted-on-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .weekly-gm-recap__stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
+}
+
+.weekly-gm-recap__group:first-child .weekly-gm-recap__stats {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .weekly-gm-recap__stat {
