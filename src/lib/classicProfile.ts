@@ -1,4 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
+import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
 import { getOrCreatePlayerId } from "./playerRecord";
 import {
   RANKED_STARTING_ELO,
@@ -151,6 +152,11 @@ export const applyClassicMatchResult = ({
   };
 
   saveClassicProfile(nextProfile);
+
+  recordLocalGmLegacySnapshot({
+    elo: nextProfile.peakElo,
+    seasonId: nextProfile.seasonId,
+  });
 
   return {
     profile: {

@@ -66,6 +66,77 @@ describe("searchLiveOpponent", () => {
       expect.objectContaining({ method: "DELETE" }),
     );
   });
+
+  it("treats a post-cancel leave match as matched", async () => {
+    let deleted = false;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+
+      if (url.endsWith("/api/queue") && init?.method === "POST") {
+        return new Response(
+          JSON.stringify({ status: "waiting", joinedAt: "2026-06-26T00:00:00.000Z" }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      if (url.includes("/api/queue") && init?.method === "DELETE") {
+        deleted = true;
+        return new Response(JSON.stringify({ status: "left" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      if (url.includes("/api/queue")) {
+        if (deleted) {
+          return new Response(
+            JSON.stringify({
+              status: "matched",
+              matchId: "match-cancel-race",
+              teamName: "Away",
+              elo: 1180,
+              playerId: "opp-1",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+
+        return new Response(JSON.stringify({ status: "waiting" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url} ${init?.method ?? "GET"}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    let cancelChecks = 0;
+    const result = await searchLiveOpponent(
+      {
+        mode: "classic",
+        playerId: "player-1",
+        teamName: "Lakers",
+        elo: 1200,
+      },
+      {
+        searchMs: 5_000,
+        pollIntervalMs: 50,
+        isCancelled: () => {
+          cancelChecks += 1;
+          return cancelChecks > 1;
+        },
+      },
+    );
+
+    expect(result).toEqual({
+      matchId: "match-cancel-race",
+      teamName: "Away",
+      elo: 1180,
+      playerId: "opp-1",
+    });
+  });
 });
 
 describe("resolveLiveOpponentLineup", () => {

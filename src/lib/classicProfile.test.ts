@@ -4,6 +4,7 @@ import {
   ensureCurrentClassicSeason,
   saveClassicProfile,
 } from "./classicProfile";
+import { loadGmLegacyStats } from "./gmLegacyStats";
 import {
   getLeaderboardFootnote,
   getTopLeaderboard,
@@ -82,6 +83,18 @@ describe("classic profile and leaderboard", () => {
         (entry) => entry.playerId === "player-classic-1",
       ),
     ).toBe(true);
+  });
+
+  it("records Casual peak banners into GM legacy stats", () => {
+    const result = applyClassicMatchResult({
+      result: "win",
+      opponentElo: 500,
+      winStreak: 1,
+      lossStreak: 0,
+    });
+
+    expect(loadGmLegacyStats().peakElo).toBe(result.profile.peakElo);
+    expect(loadGmLegacyStats().peakEloSeasonId).toBe(getCurrentSeasonId());
   });
 
   it("matches the Pro-style monthly leaderboard subtitle", () => {

@@ -11,6 +11,10 @@ import {
 } from "./restorePlayerIdentity";
 import { loadLeaderboardEntries } from "./leaderboard";
 import { loadRankedLeaderboardEntries } from "./rankedLeaderboard";
+import { loadAllModeRecords } from "./playerRecord";
+import { loadClassicProfile } from "./classicProfile";
+import { loadRankedProfile } from "./rankedProfile";
+import { loadGmLegacyStats } from "./gmLegacyStats";
 import { loadTeamProfile } from "./teamProfile";
 import { getCurrentSeasonId } from "./rankedSeason";
 
@@ -29,6 +33,16 @@ vi.mock("./collectionRemote", () => ({
 vi.mock("./achievementsRemote", () => ({
   pullAndMergeAchievements: vi.fn(async () => null),
 }));
+
+vi.mock("./dailyDraftScores", async () => {
+  const actual = await vi.importActual<typeof import("./dailyDraftScores")>(
+    "./dailyDraftScores",
+  );
+  return {
+    ...actual,
+    refreshDailyDraftScoresFromApi: vi.fn(async () => true),
+  };
+});
 
 const storage = new Map<string, string>();
 
@@ -67,6 +81,17 @@ describe("logoutToAnonymousIdentity", () => {
       playerId: "player-linked-old",
       elo: 600,
     });
+    writeJson("nba-head-to-head-daily-scores", {
+      "2099-01-01": [
+        {
+          playerId: "player-linked-old",
+          goalId: "pts",
+          value: 120,
+          formattedResult: "120.0 PTS",
+          submittedAt: "2099-01-01T12:00:00.000Z",
+        },
+      ],
+    });
     writeJson("nba-head-to-head-event-profiles", { "event-1": { wins: 2 } });
     writeJson("nba-head-to-head-tier-list", { tiers: [] });
     writeJson("nba-head-to-head-tier-list-library", { lists: [] });
@@ -88,6 +113,7 @@ describe("logoutToAnonymousIdentity", () => {
     expect(getOrCreatePlayerIdentity().playerId).toBe("player-anonymous-new");
     expect(readJson("nba-head-to-head-team-profile")).toBeNull();
     expect(readJson("nba-head-to-head-classic-profile")).toBeNull();
+    expect(readJson("nba-head-to-head-daily-scores")).toBeNull();
     expect(readJson("nba-head-to-head-event-profiles")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list-library")).toBeNull();
@@ -211,5 +237,187 @@ describe("restorePlayerIdentityFromLogin", () => {
       losses: 2,
       elo: 1510,
     });
+  });
+
+  it("does not seed career mode records from monthly boards", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+    writeJson("nba-head-to-head-player-records-by-mode", {
+      headToHead: { wins: 40, losses: 10, winStreak: 3, lossStreak: 0 },
+      ranked: { wins: 25, losses: 8, winStreak: 1, lossStreak: 0 },
+      allTime: { wins: 5, losses: 2, winStreak: 0, lossStreak: 1 },
+    });
+
+    vi.mocked(fetchRemoteLeaderboard).mockImplementation(async ({ mode }) => {
+      if (mode === "classic") {
+        return {
+          mode: "classic" as const,
+          seasonId,
+          sort: "elo" as const,
+          entries: [
+            {
+              playerId: "player-linked",
+              isYou: true,
+              name: "Night Owls",
+              publicTag: "ABCD",
+              elo: 520,
+              wins: 3,
+              losses: 1,
+              winStreak: 2,
+              lossStreak: 0,
+              updatedAt: "2026-08-01T00:00:00.000Z",
+            },
+          ],
+        };
+      }
+
+      return {
+        mode: "ranked" as const,
+        seasonId,
+        sort: "elo" as const,
+        entries: [
+          {
+            playerId: "player-linked",
+            isYou: true,
+            name: "Night Owls",
+            publicTag: "ABCD",
+            elo: 1510,
+            wins: 4,
+            losses: 2,
+            winStreak: 1,
+            lossStreak: 0,
+            updatedAt: "2026-08-01T00:00:00.000Z",
+          },
+        ],
+      };
+    });
+
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+      currentSeason: {
+        seasonId,
+        mode: "ranked",
+        elo: 1510,
+        rank: 12,
+        wins: 4,
+        losses: 2,
+        teamName: "Night Owls",
+        publicTag: "ABCD",
+      },
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    const records = loadAllModeRecords();
+    expect(records.headToHead).toMatchObject({ wins: 0, losses: 0 });
+    expect(records.ranked).toMatchObject({ wins: 0, losses: 0 });
+    expect(records.allTime).toMatchObject({ wins: 0, losses: 0 });
+  });
+
+  it("keeps daily scores on login and seeds season peak from current Elo only", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const { refreshDailyDraftScoresFromApi } = await import("./dailyDraftScores");
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+    writeJson("nba-head-to-head-daily-scores", {
+      "2099-01-01": [
+        {
+          playerId: "player-linked",
+          goalId: "pts",
+          value: 99,
+          formattedResult: "99.0 PTS",
+          percentile: 88,
+          submittedAt: "2099-01-01T12:00:00.000Z",
+        },
+      ],
+    });
+
+    vi.mocked(fetchRemoteLeaderboard).mockImplementation(async ({ mode }) => {
+      if (mode === "classic") {
+        return {
+          mode: "classic" as const,
+          seasonId,
+          sort: "elo" as const,
+          entries: [
+            {
+              playerId: "player-linked",
+              isYou: true,
+              name: "Night Owls",
+              publicTag: "ABCD",
+              elo: 480,
+              wins: 2,
+              losses: 3,
+              winStreak: 0,
+              lossStreak: 1,
+              updatedAt: "2026-08-01T00:00:00.000Z",
+            },
+          ],
+        };
+      }
+
+      return {
+        mode: "ranked" as const,
+        seasonId,
+        sort: "elo" as const,
+        entries: [
+          {
+            playerId: "player-linked",
+            isYou: true,
+            name: "Night Owls",
+            publicTag: "ABCD",
+            elo: 1400,
+            wins: 4,
+            losses: 2,
+            winStreak: 0,
+            lossStreak: 1,
+            updatedAt: "2026-08-01T00:00:00.000Z",
+          },
+        ],
+      };
+    });
+
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: {
+        playerId: "player-linked",
+        peakElo: 2100,
+        peakEloSeasonId: "2026-01",
+        bestMonthlyRank: 3,
+        bestMonthlyRankSeasonId: "2026-01",
+        updatedAt: "2026-01-15T00:00:00.000Z",
+      },
+      currentSeason: {
+        seasonId,
+        mode: "ranked",
+        elo: 1400,
+        rank: 40,
+        wins: 4,
+        losses: 2,
+        teamName: "Night Owls",
+        publicTag: "ABCD",
+      },
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(readJson("nba-head-to-head-daily-scores")).toMatchObject({
+      "2099-01-01": [
+        expect.objectContaining({
+          playerId: "player-linked",
+          value: 99,
+        }),
+      ],
+    });
+    expect(refreshDailyDraftScoresFromApi).toHaveBeenCalled();
+    expect(loadRankedProfile().peakElo).toBe(1400);
+    expect(loadClassicProfile().peakElo).toBe(480);
+    expect(loadGmLegacyStats().peakElo).toBe(2100);
+    expect(loadGmLegacyStats().bestMonthlyRank).toBe(3);
   });
 });

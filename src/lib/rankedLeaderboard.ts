@@ -381,12 +381,6 @@ export const upsertRankedLeaderboardEntry = (
   const monthlyRank =
     limited.findIndex((candidate) => candidate.playerId === entry.playerId) + 1;
 
-  recordLocalGmLegacySnapshot({
-    elo: nextEntry.elo,
-    seasonId,
-    monthlyRank: monthlyRank > 0 ? monthlyRank : null,
-  });
-
   patchCachedRemoteLeaderboardSelf({
     mode: "ranked",
     seasonId,
@@ -417,6 +411,12 @@ export const upsertRankedLeaderboardEntry = (
       losses: nextEntry.losses,
       winStreak: nextEntry.winStreak,
       lossStreak: nextEntry.lossStreak,
+    });
+
+    recordLocalGmLegacySnapshot({
+      elo: nextEntry.elo,
+      seasonId,
+      monthlyRank: monthlyRank > 0 ? monthlyRank : null,
     });
   }
 
