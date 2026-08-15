@@ -99,38 +99,3 @@ export const shortLabelForH2hMode = (
   if (mode === "classic") return MODE_COPY.classicH2h.short;
   return mode;
 };
-
-/** Hub onboarding bullets — single source for Play hub first-run. */
-export const HUB_ONBOARDING_LEDE = "Pick a path — you can switch anytime from Play.";
-
-/** Intent cards after hub onboarding — routes new users by goal. */
-export const HUB_PLAY_INTENTS: Array<{
-  id: "daily" | "h2h" | "events";
-  title: string;
-  body: string;
-  accent: "daily" | "h2h" | "event";
-  playSection: "daily" | "headToHead" | "events";
-  h2hMode?: "classic" | "ranked";
-}> = [
-  {
-    id: "daily",
-    title: "Daily Draft",
-    body: "One shared puzzle a day. No salary cap.",
-    accent: "daily",
-    playSection: "daily",
-  },
-  {
-    id: "h2h",
-    title: "Head to Head",
-    body: "Casual or Pro live matchups.",
-    accent: "h2h",
-    playSection: "headToHead",
-  },
-  {
-    id: "events",
-    title: "Weekly Event",
-    body: "Limited challenge with its own board.",
-    accent: "event",
-    playSection: "events",
-  },
-];

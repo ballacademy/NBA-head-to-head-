@@ -53,7 +53,6 @@ import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
-import { HubOnboardingOverlay } from "./HubOnboardingOverlay";
 import { InlineAlert } from "./InlineAlert";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
@@ -70,10 +69,6 @@ import {
   type LandingPlaySection,
 } from "../lib/landingHub";
 import { trackProductEvent } from "../lib/productAnalytics";
-import {
-  hasSeenHubGuide,
-  markHubGuideSeen,
-} from "../lib/hubOnboarding";
 import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import type { StartDraftOptions, StartMatchResult } from "../lib/match";
@@ -215,7 +210,6 @@ export function LandingPage({
   );
   const classicH2hCardRef = useRef<HTMLDivElement | null>(null);
   const proH2hCardRef = useRef<HTMLDivElement | null>(null);
-  const [showHubGuide, setShowHubGuide] = useState(false);
   const [queuedLineupLock, setQueuedLineupLock] = useState(() => {
     const playerId = getOrCreatePlayerIdentity().playerId;
     return {
@@ -245,16 +239,6 @@ export function LandingPage({
   }, []);
 
   useEffect(() => {
-    if (
-      hubTab === "play" &&
-      playSection === "chooser" &&
-      !hasSeenHubGuide()
-    ) {
-      setShowHubGuide(true);
-    }
-  }, [hubTab, playSection]);
-
-  useEffect(() => {
     const active = document.activeElement;
     if (
       active instanceof HTMLElement &&
@@ -264,25 +248,6 @@ export function LandingPage({
       active.blur();
     }
   }, [hubTab, playSection]);
-
-  const dismissHubGuide = useCallback(() => {
-    markHubGuideSeen();
-    setShowHubGuide(false);
-  }, []);
-
-  const handleHubGuideIntent = useCallback(
-    (intent: { playSection: LandingPlaySection; h2hMode?: "classic" | "ranked" }) => {
-      if (hubTab !== "play") {
-        onHubTabChange("play");
-      }
-      if (intent.h2hMode) {
-        saveLandingH2hMode(intent.h2hMode);
-        setH2hIntentTarget(intent.h2hMode);
-      }
-      updatePlaySection(intent.playSection);
-    },
-    [hubTab, onHubTabChange, updatePlaySection],
-  );
 
   useEffect(() => {
     if (hubTab !== "play" || playSection !== "headToHead" || !h2hIntentTarget) {
@@ -788,13 +753,6 @@ export function LandingPage({
         />
       ) : null}
 
-      {showHubGuide ? (
-        <HubOnboardingOverlay
-          onDismiss={dismissHubGuide}
-          onChooseIntent={handleHubGuideIntent}
-        />
-      ) : null}
-
       <div className="landing-hub__top">
         <h1
           className={`landing-hub__title${
@@ -856,13 +814,6 @@ export function LandingPage({
               <span className="play-hub-chooser__chevron" aria-hidden="true">
                 ›
               </span>
-            </button>
-            <button
-              type="button"
-              className="play-hub-chooser__guide"
-              onClick={() => setShowHubGuide(true)}
-            >
-              What should I play?
             </button>
           </div>
         ) : null}
