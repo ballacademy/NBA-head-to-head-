@@ -21,7 +21,6 @@ import {
   getSuperScrubPlayerIds,
   isScrubPlayer,
   isSuperScrubPlayer,
-  SCRUB_POOL_SIZE,
 } from "./playerTiers";
 import { isEraPlayer } from "./eraUnlocks";
 import { isBannedRankedEventPlayer } from "./competitivePlayerBans";
@@ -636,7 +635,10 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     starsUnlocked,
     starPool: winUnlockIds.size,
     // Scrubs collection excludes super scrubs (same split as All-Stars vs Superstars).
-    scrubPool: SCRUB_POOL_SIZE - getSuperScrubPlayerIds().length,
+    scrubPool: Math.max(
+      0,
+      getScrubPlayerIds().length - getSuperScrubPlayerIds().length,
+    ),
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,
     unlockedSuperScrubs,

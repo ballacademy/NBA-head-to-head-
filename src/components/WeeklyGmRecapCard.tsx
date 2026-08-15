@@ -96,9 +96,12 @@ export function WeeklyGmRecapCard({
               <dd>{recap.advancedStreakLabel}</dd>
             </div>
             <div className="weekly-gm-recap__stat">
-              <dt>All-Stars unlocked</dt>
+              <dt>Stars unlocked</dt>
               <dd>
                 {recap.collectionUnlocked} of {recap.collectionTotal}
+                <span className="weekly-gm-recap__stat-meta">
+                  All-Stars + Superstars
+                </span>
               </dd>
             </div>
             <div className="weekly-gm-recap__stat">

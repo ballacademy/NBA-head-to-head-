@@ -105,9 +105,11 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
           <details className="beta-notes-details">
             <summary>Limited sample size</summary>
             <p>
-              Players under <strong>35 games</strong> this season show a Limited
-              sample badge in draft and stats. That flag is about the{" "}
+              Players with <strong>29 or fewer games</strong> this season show a
+              Limited sample badge in draft and stats. That flag is about the{" "}
               <em>current</em> season only — prior history does not remove it.
+              At <strong>30+ games</strong>, scoring uses this season’s stats
+              only.
             </p>
             <ul>
               <li>
@@ -120,9 +122,9 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               <li>
                 <strong>Lineup weight</strong> — Limited players also pull less
                 on lineup totals until their sample is trusted: with a prior,
-                weight scales by (current + prior games) / 35; with no prior, by
-                current games / 35 (floor 0.35). Full-sample players stay at
-                weight 1.
+                weight scales by (current + prior games) / 30; with no prior, by
+                current games / 30 (floor 0.35). Full-sample players (30+) stay
+                at weight 1.
               </li>
               <li>
                 Both effects apply in every scored mode (Daily, Casual, Pro,
