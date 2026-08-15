@@ -151,7 +151,7 @@
   border-radius: 18px;
   background: var(--hub-subbox-bg);
   box-shadow: var(--hub-subbox-shadow);
-  color: #e2e8f0;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .eyebrow {
@@ -197,7 +197,7 @@
 
 .hub-feature__panel .legal-page__body a,
 .hub-feature__panel .legal-page__body a:hover {
-  color: #e2e8f0;
+  color: var(--text-muted-on-dark);
 }
 
 .hub-feature__panel .stats-search span {
@@ -206,14 +206,14 @@
 
 .hub-feature__panel .stats-search input,
 .hub-feature__panel .sort-button {
-  color: #e2e8f0;
+  color: var(--text-muted-on-dark);
 }
 
 /* Dark-panel secondary buttons stay light-on-dark (not the light-chrome return style). */
 .hub-feature__panel .secondary-button {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-on-dark);
+  background: var(--secondary-bg);
+  border: 1px solid var(--secondary-border);
   box-shadow: none;
 }
 
