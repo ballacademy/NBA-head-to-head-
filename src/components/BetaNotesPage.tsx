@@ -116,7 +116,8 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 <strong>Stat blend</strong> — If they have prior-season (or peak)
                 production on file, the engine game-weights those numbers with
                 current ones before scoring. Example: 5 games now + 70 prior →
-                current stats count 5/75 and prior 70/75. Usage, defense grades,
+                current stats count 5/75 and prior 70/75. Defense grades soft-
+                regress toward average (C) with those same game weights. Usage
                 and play styles stay on the current row.
               </li>
               <li>

@@ -78,7 +78,8 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "allTime",
     short: ALL_TIME_LABEL,
     title: ALL_TIME_LABEL,
-    blurb: "Peak seasons and era legends — coming soon.",
+    blurb:
+      "Peak seasons and era legends. Unlock legends with 50 All-Time wins or 1000 All-Time banners.",
   },
   practice: {
     id: "practice",

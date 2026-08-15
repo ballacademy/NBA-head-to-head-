@@ -6,6 +6,7 @@ import {
   upsertRankedLeaderboardEntry,
   loadRankedLeaderboardEntries,
 } from "./rankedLeaderboard";
+import { applyAllTimeMatchResult } from "./allTimeProfile";
 import { applyClassicMatchResult, ensureCurrentClassicSeason } from "./classicProfile";
 import { applyRankedMatchResult, ensureCurrentRankedSeason } from "./rankedProfile";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
@@ -134,6 +135,34 @@ export const persistRankedOutcome = (
     losses: seasonStats.losses,
     winStreak: seasonStats.winStreak,
     lossStreak: seasonStats.lossStreak,
+    leaderboardRank: null,
+  };
+};
+
+/** All-Time career banners (local only — no monthly board). */
+export const persistAllTimeOutcome = (
+  result: HeadToHeadResult,
+  record: PlayerRecord,
+  opponentElo: number,
+  options: { countTowardStreak?: boolean } = {},
+): PersistedBannersOutcome => {
+  const countTowardStreak = options.countTowardStreak !== false;
+  const allTimeResult = applyAllTimeMatchResult({
+    result,
+    opponentElo,
+    winStreak: countTowardStreak ? record.winStreak : 0,
+    lossStreak: countTowardStreak ? record.lossStreak : 0,
+  });
+
+  return {
+    delta: allTimeResult.delta,
+    elo: allTimeResult.profile.elo,
+    tierLabel: allTimeResult.profile.tier.label,
+    opponentElo: allTimeResult.opponentElo,
+    wins: record.wins,
+    losses: record.losses,
+    winStreak: record.winStreak,
+    lossStreak: record.lossStreak,
     leaderboardRank: null,
   };
 };

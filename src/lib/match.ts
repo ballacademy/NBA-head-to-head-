@@ -6,6 +6,7 @@ import {
   pickBestForSlot,
 } from "./draft";
 import { pickOpponentElo } from "./rankedElo";
+import { loadAllTimeProfile } from "./allTimeProfile";
 import {
   ensureNpcOpponentPool,
   findRankedOpponentFromLeaderboard,
@@ -121,6 +122,21 @@ export const createRandomOpponent = (
     accent: blueprint.accent,
     draftSlots,
     lineup: [],
+  };
+};
+
+/** Bot opponent for All-Time — streak-aware banners from the career All-Time profile. */
+export const createAllTimeOpponent = (
+  draftSlots: DraftSlotConstraint[],
+): Drafter => {
+  const playerElo = loadAllTimeProfile().elo;
+  const opponentElo = pickOpponentElo(playerElo);
+  const opponent = createRandomOpponent(draftSlots);
+
+  return {
+    ...opponent,
+    allTimeMode: true,
+    classicOpponentElo: opponentElo,
   };
 };
 

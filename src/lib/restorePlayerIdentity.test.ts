@@ -92,6 +92,13 @@ describe("logoutToAnonymousIdentity", () => {
         },
       ],
     });
+    writeJson("nba-head-to-head-recorded-match-ids", ["match-old-1"]);
+    writeJson("nba-head-to-head-all-time-profile", {
+      playerId: "player-linked-old",
+      elo: 900,
+      peakElo: 1100,
+      gamesPlayed: 12,
+    });
     writeJson("nba-head-to-head-event-profiles", { "event-1": { wins: 2 } });
     writeJson("nba-head-to-head-tier-list", { tiers: [] });
     writeJson("nba-head-to-head-tier-list-library", { lists: [] });
@@ -114,6 +121,8 @@ describe("logoutToAnonymousIdentity", () => {
     expect(readJson("nba-head-to-head-team-profile")).toBeNull();
     expect(readJson("nba-head-to-head-classic-profile")).toBeNull();
     expect(readJson("nba-head-to-head-daily-scores")).toBeNull();
+    expect(readJson("nba-head-to-head-recorded-match-ids")).toBeNull();
+    expect(readJson("nba-head-to-head-all-time-profile")).toBeNull();
     expect(readJson("nba-head-to-head-event-profiles")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list")).toBeNull();
     expect(readJson("nba-head-to-head-tier-list-library")).toBeNull();

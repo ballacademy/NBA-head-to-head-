@@ -14,7 +14,13 @@ import {
   SUPERSTAR_COUNT,
 } from "./allStars";
 import { readJson, writeJson } from "./browserStorage";
-import { advanceUnlockProgress } from "./unlockProgress";
+import {
+  advanceUnlockProgress,
+  loadUnlockProgress,
+  saveUnlockProgress,
+  UNLOCK_EVERY_LOSSES,
+  UNLOCK_EVERY_WINS,
+} from "./unlockProgress";
 import {
   getScrubPlayerIds,
   getSuperScrubPlayerIds,
@@ -163,18 +169,27 @@ export const loadPlayerCollection = (): PlayerCollection => {
   };
 };
 
+const isValidLossUnlockOption = (playerId: string) =>
+  playersById.has(playerId) && !new Set(getWinUnlockPlayerIds()).has(playerId);
+
 const isValidUnlockOffer = (offer: UnlockOffer | null | undefined) => {
   if (!offer) {
     return false;
   }
 
-  const validIds =
-    offer.kind === "win" ? getWinUnlockPlayerIds() : getScrubPlayerIds();
+  if (typeof offer.createdAt !== "string") {
+    return false;
+  }
 
+  if (offer.kind === "win") {
+    const validIds = getWinUnlockPlayerIds();
+    return validIds.includes(offer.optionA) && validIds.includes(offer.optionB);
+  }
+
+  // Loss options may be former scrub-pool members after a pool rebuild.
   return (
-    validIds.includes(offer.optionA) &&
-    validIds.includes(offer.optionB) &&
-    typeof offer.createdAt === "string"
+    isValidLossUnlockOption(offer.optionA) &&
+    isValidLossUnlockOption(offer.optionB)
   );
 };
 
@@ -459,12 +474,8 @@ export const grantWinUnlock = (
   writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
 
   if (!offer) {
-    const next = {
-      ...collection,
-      pendingUnlock: null,
-    };
-    savePlayerCollection(next);
-    return next;
+    // Keep an existing pending loss offer when the star pool is exhausted.
+    return collection;
   }
 
   const next = {
@@ -498,12 +509,8 @@ export const grantLossUnlock = (
 
   if (!offer) {
     writeJson(LAST_UNLOCK_MATCH_KEY, { matchId });
-    const next = {
-      ...collection,
-      pendingUnlock: null,
-    };
-    savePlayerCollection(next);
-    return next;
+    // Keep an existing pending win offer when the scrub pool is exhausted.
+    return collection;
   }
 
   const next = {
@@ -549,7 +556,7 @@ export const completeUnlock = (
   const isValidSelection =
     offer.kind === "win"
       ? getWinUnlockPlayerIds().includes(playerId)
-      : getScrubPlayerIds().includes(playerId);
+      : isValidLossUnlockOption(playerId);
 
   if (!isValidSelection) {
     return collection;
@@ -574,11 +581,28 @@ export const completeUnlock = (
 };
 
 export const dismissPendingUnlock = (collection = ensurePlayerCollection()) => {
+  const pending = collection.pendingUnlock;
   const next = {
     ...collection,
     pendingUnlock: null,
   };
   savePlayerCollection(next);
+
+  // Progress was reset when the offer was granted — put the player one step
+  // from re-earning so dismiss does not permanently burn the unlock cycle.
+  if (pending?.kind === "win") {
+    saveUnlockProgress({
+      ...loadUnlockProgress(),
+      winsSinceUnlock: Math.max(0, UNLOCK_EVERY_WINS - 1),
+      winStreak: 0,
+    });
+  } else if (pending?.kind === "loss") {
+    saveUnlockProgress({
+      ...loadUnlockProgress(),
+      lossesSinceUnlock: Math.max(0, UNLOCK_EVERY_LOSSES - 1),
+      lossStreak: 0,
+    });
+  }
 
   return next;
 };

@@ -18,6 +18,7 @@ import {
   createStarterCollection,
   createTieredUnlockPair,
   createWinUnlockOffer,
+  dismissPendingUnlock,
   filterCollectibleUnlockedIds,
   getCollectionProgress,
   getCollectionTierTotal,
@@ -41,7 +42,11 @@ import {
 } from "./playerTiers";
 import { writeJson } from "./browserStorage";
 import { players } from "./playerPool";
-import { resetUnlockProgress, saveUnlockProgress } from "./unlockProgress";
+import {
+  loadUnlockProgress,
+  resetUnlockProgress,
+  saveUnlockProgress,
+} from "./unlockProgress";
 
 const storage = new Map<string, string>();
 
@@ -222,7 +227,7 @@ describe("playerCollection", () => {
     expect(next.pendingUnlock).toEqual(withInvalidOffer.pendingUnlock);
   });
 
-  it("clears a stale loss unlock when a win reward has no stars left", () => {
+  it("keeps a pending loss unlock when a win reward has no stars left", () => {
     const collection = loadPlayerCollection();
     const scrubId = getScrubPlayerIds()[0]!;
     const withLossPending = {
@@ -250,10 +255,10 @@ describe("playerCollection", () => {
 
     const next = grantWinUnlock("match-clear-loss", fullyUnlocked);
 
-    expect(next.pendingUnlock).toBeNull();
+    expect(next.pendingUnlock).toEqual(withLossPending.pendingUnlock);
   });
 
-  it("clears a stale pending unlock when a loss reward has no scrubs left", () => {
+  it("keeps a pending win unlock when a loss reward has no scrubs left", () => {
     const collection = loadPlayerCollection();
     const starId = getWinUnlockPlayerIds()[0]!;
     const withWinPending = {
@@ -282,7 +287,60 @@ describe("playerCollection", () => {
 
     const next = grantLossUnlock("match-clear-win-pending", fullyUnlocked);
 
+    expect(next.pendingUnlock).toEqual(withWinPending.pendingUnlock);
+  });
+
+  it("refunds unlock progress when a pending offer is dismissed", () => {
+    const collection = loadPlayerCollection();
+    const scrubId = getScrubPlayerIds()[0]!;
+    const withPending = {
+      ...collection,
+      pendingUnlock: {
+        kind: "loss" as const,
+        optionA: scrubId,
+        optionB: scrubId,
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    saveUnlockProgress({
+      winsSinceUnlock: 0,
+      lossesSinceUnlock: 0,
+      winStreak: 0,
+      lossStreak: 0,
+    });
+
+    const next = dismissPendingUnlock(withPending);
     expect(next.pendingUnlock).toBeNull();
+    expect(loadUnlockProgress().lossesSinceUnlock).toBe(2);
+  });
+
+  it("keeps pending loss offers for former scrub-pool players", () => {
+    const formerScrub = players.find(
+      (player) =>
+        player.bbrPlayerId &&
+        (SCRUB_POOL_EXCLUDED_BBR_IDS as readonly string[]).includes(
+          player.bbrPlayerId,
+        ),
+    );
+    expect(formerScrub).toBeDefined();
+    expect(isScrubPlayer(formerScrub!)).toBe(false);
+
+    const withPending = sanitizePlayerCollection({
+      unlockedIds: createStarterCollection(),
+      pendingUnlock: {
+        kind: "loss",
+        optionA: formerScrub!.id,
+        optionB: formerScrub!.id,
+        createdAt: new Date().toISOString(),
+      },
+      initialized: true,
+    });
+
+    expect(withPending.pendingUnlock?.optionA).toBe(formerScrub!.id);
+    const claimed = completeUnlock(formerScrub!.id, withPending);
+    expect(claimed.unlockedIds).toContain(formerScrub!.id);
+    expect(claimed.pendingUnlock).toBeNull();
   });
 
   it("tracks progress against the full 2026 all-star pool", () => {

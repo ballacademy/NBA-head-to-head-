@@ -75,6 +75,7 @@ import { useDailyDateKey } from "./lib/useDailyDateKey";
 import {
   createOpponentDraftSlots,
   createRandomOpponent,
+  createAllTimeOpponent,
   createClassicOpponent,
   createRankedOpponent,
   createGhostOpponent,
@@ -1326,7 +1327,7 @@ function App() {
                 : salaryCapMode
                   ? createRankedOpponent(opponentSlots)
                   : nextAllTimeMode
-                    ? { ...createRandomOpponent(opponentSlots), allTimeMode: true }
+                    ? createAllTimeOpponent(opponentSlots)
                     : createClassicOpponent(opponentSlots)
               : null,
     );

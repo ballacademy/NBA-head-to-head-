@@ -34,6 +34,7 @@ import { resetUnlockProgress } from "./unlockProgress";
 const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-classic-profile",
   "nba-head-to-head-ranked-profile",
+  "nba-head-to-head-all-time-profile",
   "nba-head-to-head-player-records-by-mode",
   "nba-head-to-head-player-record",
   "nba-head-to-head-player-collection",
@@ -47,6 +48,7 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-achievements",
   "nba-head-to-head-last-recorded-match",
   "nba-head-to-head-last-match-outcome",
+  "nba-head-to-head-recorded-match-ids",
   "nba-head-to-head-live-draft-session",
   "nba-head-to-head-draft-deadline",
   "nba-head-to-head-team-profile",
