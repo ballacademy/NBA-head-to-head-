@@ -205,6 +205,11 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
 
       <section className="gm-stats-page__section">
         <h2>Collection</h2>
+        <p className="gm-stats-page__section-copy">
+          Scrub totals are the current 30-player pool only (24 Scrubs + 6 Super
+          Scrubs). Older unlocks from previous pool versions stay unlocked but
+          no longer count here.
+        </p>
         <GmStatsFactRows
           rows={[
             {
@@ -219,6 +224,13 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
               value: formatCollectionCount(
                 snapshot.collection.superstarUnlocked,
                 snapshot.collection.superstarTotal,
+              ),
+            },
+            {
+              label: "Scrub pool",
+              value: formatCollectionCount(
+                snapshot.collection.scrubPoolUnlocked,
+                snapshot.collection.scrubPoolTotal,
               ),
             },
             {

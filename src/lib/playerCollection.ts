@@ -24,6 +24,7 @@ import {
 } from "./playerTiers";
 import { isEraPlayer } from "./eraUnlocks";
 import { isBannedRankedEventPlayer } from "./competitivePlayerBans";
+import { playersById } from "./playerPool";
 import type { Player } from "./types";
 
 const COLLECTION_KEY = "nba-head-to-head-player-collection";
@@ -180,15 +181,30 @@ export const getCollectibleUnlockIdSet = () =>
     ...getRecentAllStarUnlockPlayerIds(),
   ]);
 
+/**
+ * Keep current collectibles, and also preserve non-star unlock IDs that still
+ * map to real players (e.g. former scrub-pool members after a pool rebuild).
+ * Never grandfather All-Star / Superstar / Recent unlocks through this path.
+ */
 export const filterCollectibleUnlockedIds = (ids: string[]) => {
-  const valid = getCollectibleUnlockIdSet();
+  const collectible = getCollectibleUnlockIdSet();
+  const starUnlockIds = new Set(getWinUnlockPlayerIds());
   const next: string[] = [];
   const seen = new Set<string>();
 
   for (const id of ids) {
-    if (!id || seen.has(id) || !valid.has(id)) {
+    if (!id || seen.has(id)) {
       continue;
     }
+
+    const keep =
+      collectible.has(id) ||
+      (playersById.has(id) && !starUnlockIds.has(id));
+
+    if (!keep) {
+      continue;
+    }
+
     seen.add(id);
     next.push(id);
   }
@@ -642,6 +658,9 @@ export const getCollectionProgress = (collection = ensurePlayerCollection()) => 
     superScrubPool: getSuperScrubPlayerIds().length,
     unlockedScrubs,
     unlockedSuperScrubs,
+    // Whole current scrub ecosystem (regular + super).
+    scrubPoolUnlocked: unlockedScrubs + unlockedSuperScrubs,
+    scrubPoolTotal: getScrubPlayerIds().length,
   };
 };
 

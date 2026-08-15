@@ -18,6 +18,7 @@ import {
   createStarterCollection,
   createTieredUnlockPair,
   createWinUnlockOffer,
+  filterCollectibleUnlockedIds,
   getCollectionProgress,
   getCollectionTierTotal,
   getDraftablePlayers,
@@ -35,6 +36,7 @@ import {
   getScrubPlayerIds,
   isScrubPlayer,
   isSuperScrubPlayer,
+  SCRUB_POOL_EXCLUDED_BBR_IDS,
   SCRUB_POOL_SIZE,
 } from "./playerTiers";
 import { writeJson } from "./browserStorage";
@@ -451,8 +453,45 @@ describe("playerCollection", () => {
       progress.superScrubPool,
     );
     expect(progress.scrubPool + progress.superScrubPool).toBe(SCRUB_POOL_SIZE);
+    expect(progress.scrubPoolUnlocked).toBe(
+      progress.unlockedScrubs + progress.unlockedSuperScrubs,
+    );
+    expect(progress.scrubPoolTotal).toBe(SCRUB_POOL_SIZE);
     expect(getCollectionTierTotal("recent-all-star", progress)).toBe(
       progress.recentTotal,
     );
+  });
+
+  it("preserves former scrub unlocks after they leave the current pool", () => {
+    const formerScrub = players.find(
+      (player) =>
+        player.bbrPlayerId &&
+        (SCRUB_POOL_EXCLUDED_BBR_IDS as readonly string[]).includes(
+          player.bbrPlayerId,
+        ),
+    );
+    expect(formerScrub).toBeDefined();
+    expect(isScrubPlayer(formerScrub!)).toBe(false);
+
+    const currentScrub = getScrubPlayerIds().find(
+      (playerId) => !isSuperScrubPlayer({ id: playerId }),
+    )!;
+    const filtered = filterCollectibleUnlockedIds([
+      formerScrub!.id,
+      currentScrub,
+      "not-a-real-player",
+    ]);
+
+    expect(filtered).toContain(formerScrub!.id);
+    expect(filtered).toContain(currentScrub);
+    expect(filtered).not.toContain("not-a-real-player");
+
+    const progress = getCollectionProgress({
+      unlockedIds: filtered,
+      pendingUnlock: null,
+      initialized: true,
+    });
+    expect(progress.unlockedScrubs).toBe(1);
+    expect(progress.scrubPoolUnlocked).toBe(1);
   });
 });

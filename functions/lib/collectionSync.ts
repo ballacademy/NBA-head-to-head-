@@ -2,30 +2,46 @@ import {
   getRecentAllStarUnlockPlayerIds,
   getWinUnlockPlayerIds,
 } from "../../src/lib/allStars";
+import { playersById } from "../../src/lib/playerPool";
 import { getScrubPlayerIds } from "../../src/lib/playerTiers";
 
-let cachedValidIds: Set<string> | null = null;
+let cachedCollectibleIds: Set<string> | null = null;
+let cachedStarUnlockIds: Set<string> | null = null;
 
 export const getValidCollectibleIdSet = (): Set<string> => {
-  if (cachedValidIds) {
-    return cachedValidIds;
+  if (cachedCollectibleIds) {
+    return cachedCollectibleIds;
   }
 
-  cachedValidIds = new Set([
+  cachedCollectibleIds = new Set([
     ...getWinUnlockPlayerIds(),
     ...getScrubPlayerIds(),
     ...getRecentAllStarUnlockPlayerIds(),
   ]);
 
-  return cachedValidIds;
+  return cachedCollectibleIds;
 };
 
+const getStarUnlockIdSet = (): Set<string> => {
+  if (cachedStarUnlockIds) {
+    return cachedStarUnlockIds;
+  }
+
+  cachedStarUnlockIds = new Set(getWinUnlockPlayerIds());
+  return cachedStarUnlockIds;
+};
+
+/**
+ * Accept current collectibles. Also keep non-star player IDs that still exist
+ * (former scrub-pool unlocks after a pool rebuild) so sync does not wipe them.
+ */
 export const filterUnlockedIds = (ids: unknown): string[] => {
   if (!Array.isArray(ids)) {
     return [];
   }
 
-  const valid = getValidCollectibleIdSet();
+  const collectible = getValidCollectibleIdSet();
+  const starUnlockIds = getStarUnlockIdSet();
   const next: string[] = [];
   const seen = new Set<string>();
 
@@ -35,14 +51,22 @@ export const filterUnlockedIds = (ids: unknown): string[] => {
     }
 
     const id = value.trim();
-    if (!id || seen.has(id) || !valid.has(id)) {
+    if (!id || seen.has(id)) {
+      continue;
+    }
+
+    const keep =
+      collectible.has(id) ||
+      (playersById.has(id) && !starUnlockIds.has(id));
+
+    if (!keep) {
       continue;
     }
 
     seen.add(id);
     next.push(id);
 
-    if (next.length >= valid.size) {
+    if (next.length >= collectible.size + 500) {
       break;
     }
   }
@@ -51,13 +75,17 @@ export const filterUnlockedIds = (ids: unknown): string[] => {
 };
 
 export const unionUnlockedIds = (...lists: string[][]) => {
-  const valid = getValidCollectibleIdSet();
+  const collectible = getValidCollectibleIdSet();
+  const starUnlockIds = getStarUnlockIdSet();
   const next: string[] = [];
   const seen = new Set<string>();
 
   for (const list of lists) {
     for (const id of list) {
-      if (!valid.has(id) || seen.has(id)) {
+      const keep =
+        collectible.has(id) ||
+        (playersById.has(id) && !starUnlockIds.has(id));
+      if (!keep || seen.has(id)) {
         continue;
       }
       seen.add(id);
