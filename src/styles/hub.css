@@ -490,7 +490,7 @@ h1.landing-hub__title--name {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .hub-select.is-active {
@@ -780,7 +780,7 @@ h1.landing-hub__title--name {
 }
 
 .play-hub-chooser__chevron {
-  color: #64748b;
+  color: var(--muted);
   font-size: 1.35rem;
   font-weight: 500;
   line-height: 1;
@@ -1001,7 +1001,7 @@ h1.landing-hub__title--name {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .landing-bottom-nav__item--active {
@@ -1038,7 +1038,9 @@ h1.landing-hub__title--name {
 .landing-bottom-nav__item--account.landing-bottom-nav__item--active {
   color: var(--accent-account-bright);
   background: var(--accent-account-soft);
-  box-shadow: inset 0 2px 0 var(--accent-account);
+  box-shadow:
+    inset 0 2px 0 var(--accent-account-bright),
+    0 0 16px var(--accent-account-glow);
 }
 
 .landing-bottom-nav__icon {

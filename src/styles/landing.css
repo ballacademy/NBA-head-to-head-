@@ -185,7 +185,7 @@
 }
 
 .landing-footer__sep {
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -220,6 +220,22 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
+}
+
+@media (max-width: 720px) {
+  /* 5 stats → 3+2 equal columns (no orphan full-width cell). */
+  .landing-profile-strip__stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .landing-profile-strip__stat:nth-child(-n + 3) {
+    grid-column: span 2;
+  }
+
+  .landing-profile-strip__stat:nth-child(n + 4) {
+    grid-column: span 3;
+  }
 }
 
 .landing-profile-strip__header {
@@ -351,7 +367,7 @@
 }
 
 .landing-profile-strip__label {
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -372,7 +388,7 @@
 
 .landing-profile-strip__meta {
   margin: 0;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.4;
 }

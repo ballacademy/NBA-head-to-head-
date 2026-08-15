@@ -146,7 +146,7 @@
 }
 
 .collection-progress-card__label {
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -179,12 +179,17 @@
 }
 
 @media (max-width: 720px) {
+  /* 5 columns → 3+2 equal cells (no orphan spanning the full row). */
   .collection-progress-card__split {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
-  .collection-progress-card__column:last-child {
+  .collection-progress-card__column:nth-child(-n + 3) {
     grid-column: span 2;
+  }
+
+  .collection-progress-card__column:nth-child(n + 4) {
+    grid-column: span 3;
   }
 }
 
