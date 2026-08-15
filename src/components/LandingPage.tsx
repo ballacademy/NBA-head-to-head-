@@ -695,15 +695,15 @@ export function LandingPage({
   const hubLede =
     hubTab === "play"
       ? playSection === "daily"
-        ? `Hidden stats. ${DAILY_PICK_TIME_LIMIT_SECONDS}s picks. One try per mode daily.`
+        ? `Hidden stats. ${DAILY_PICK_TIME_LIMIT_SECONDS}s picks. One try daily.`
         : playSection === "events"
           ? "Weekly live H2H. Shared board. $100M cap."
           : playSection === "headToHead"
             ? "Live matchups. Casual or Pro."
-            : "Pick a mode to draft and compete."
+            : "Draft and compete."
       : hubTab === "roster"
-        ? "Collection, badges, and season stats."
-        : "Sign in, GM stats, and settings.";
+        ? "Collection, badges, and stats."
+        : "Sign in, stats, and settings.";
 
   const playModeBack = (
     <HubFeatureReturnButton

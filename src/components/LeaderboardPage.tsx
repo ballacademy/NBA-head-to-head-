@@ -5,7 +5,6 @@ import {
   formatLeaderboardLossStreak,
   formatLeaderboardRecord,
   formatLeaderboardWinStreak,
-  getLeaderboardFootnote,
   getTopLeaderboard,
   LEADERBOARD_LIMIT,
   type LeaderboardSort,
@@ -15,7 +14,6 @@ import {
   formatRankedLeaderboardLossStreak,
   formatRankedLeaderboardRecord,
   formatRankedLeaderboardWinStreak,
-  getRankedLeaderboardFootnote,
   getTopRankedLeaderboard,
   RANKED_LEADERBOARD_LIMIT,
   type RankedLeaderboardSort,
@@ -26,7 +24,7 @@ import {
   RANKED_TIERS,
   RATING_LABEL,
 } from "../lib/rankedElo";
-import { getCurrentSeasonId } from "../lib/rankedSeason";
+import { getCurrentSeasonId, formatSeasonLabel } from "../lib/rankedSeason";
 import { formatPublicTag } from "../lib/playerIdentity";
 import { getOrCreatePlayerId } from "../lib/playerRecord";
 import {
@@ -98,12 +96,23 @@ function LeaderboardEntryRow({
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const isYou = entry.isYou === true || entry.playerId === currentPlayerId;
+  const podiumClass =
+    rank === 1
+      ? " leaderboard-row--podium-1"
+      : rank === 2
+        ? " leaderboard-row--podium-2"
+        : rank === 3
+          ? " leaderboard-row--podium-3"
+          : "";
+  const rankToneClass =
+    rank <= 3 ? ` leaderboard-row__rank--${rank}` : "";
+  const toggleExpanded = () => setExpanded((current) => !current);
 
   return (
     <li
       className={`leaderboard-row${
         isYou ? " leaderboard-row--you" : ""
-      }${expanded ? " leaderboard-row--expanded" : ""}`}
+      }${podiumClass}${expanded ? " leaderboard-row--expanded" : ""}`}
     >
       <div className="leaderboard-row__main">
         <button
@@ -111,9 +120,9 @@ function LeaderboardEntryRow({
           className="leaderboard-row__rank-button"
           aria-expanded={expanded}
           aria-label={`${expanded ? "Hide" : "Show"} details for ${entry.name}`}
-          onClick={() => setExpanded((current) => !current)}
+          onClick={toggleExpanded}
         >
-          <span className="leaderboard-row__rank">{rank}</span>
+          <span className={`leaderboard-row__rank${rankToneClass}`}>{rank}</span>
         </button>
         <div className="leaderboard-row__identity">
           <button
@@ -124,35 +133,35 @@ function LeaderboardEntryRow({
           >
             {entry.name}
           </button>
-          {entry.username ? (
-            <button
-              type="button"
-              className="leaderboard-row__username"
-              aria-label={`Open profile for ${formatUsername(entry.username)}`}
-              onClick={() => setProfileOpen(true)}
-            >
-              {formatUsername(entry.username)}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="leaderboard-row__tag"
-            aria-expanded={expanded}
-            aria-label={`${expanded ? "Hide" : "Show"} details for ${formatPublicTag(entry.publicTag)}`}
-            onClick={() => setExpanded((current) => !current)}
-          >
-            {formatPublicTag(entry.publicTag)}
-          </button>
+          <div className="leaderboard-row__secondary">
+            {entry.username ? (
+              <button
+                type="button"
+                className="leaderboard-row__username"
+                aria-label={`Open profile for ${formatUsername(entry.username)}`}
+                onClick={() => setProfileOpen(true)}
+              >
+                {formatUsername(entry.username)}
+              </button>
+            ) : null}
+            <span className="leaderboard-row__tag">
+              {formatPublicTag(entry.publicTag)}
+            </span>
+            {isYou ? <span className="leaderboard-row__you-chip">You</span> : null}
+          </div>
         </div>
         <button
           type="button"
           className="leaderboard-row__metric"
           aria-expanded={expanded}
           aria-label={`${expanded ? "Hide" : "Show"} details for ${entry.name}, ${formatRecord(entry)}, ${formatMetric(entry)}`}
-          onClick={() => setExpanded((current) => !current)}
+          onClick={toggleExpanded}
         >
           <span className="leaderboard-row__record">{formatRecord(entry)}</span>
-          <strong>{formatMetric(entry)}</strong>
+          <span className="leaderboard-row__metric-value">
+            {formatMetric(entry)}
+            <span className="leaderboard-row__chevron" aria-hidden="true" />
+          </span>
         </button>
       </div>
       {expanded ? (
@@ -299,19 +308,18 @@ export function LeaderboardPage() {
     setClassicSort(nextSort as ClassicSort);
   };
 
-  const subtitle =
-    view === "ranked"
-      ? getRankedLeaderboardFootnote(rankedSort, seasonId)
-      : getLeaderboardFootnote(classicSort, seasonId);
+  const seasonMeta = `${formatSeasonLabel(seasonId)} · Monthly reset`;
 
   return (
     <div className="hub-feature leaderboard">
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Ranks</h1>
-        <p className="landing__lede landing-hub__lede">{subtitle}</p>
+        <p className="landing__lede landing-hub__lede">
+          Classic and Pro ladders.
+        </p>
       </div>
 
-      <AccountRequiredNote>
+      <AccountRequiredNote className="account-required-note--inline">
         {`${ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE} Anyone can browse.`}
       </AccountRequiredNote>
 
@@ -329,7 +337,11 @@ export function LeaderboardPage() {
         />
       ) : null}
 
-      <section className="hub-feature__panel leaderboard__panel">
+      <section
+        className={`hub-feature__panel leaderboard__panel leaderboard__panel--${
+          view === "ranked" ? "ranked" : "classic"
+        }`}
+      >
         <div className="leaderboard__top">
           <div
             className="leaderboard__tabs leaderboard__tabs--views"
@@ -359,6 +371,8 @@ export function LeaderboardPage() {
               {PRO_HEAD_TO_HEAD_LABEL}
             </button>
           </div>
+
+          <p className="leaderboard__meta">{seasonMeta}</p>
 
           <div
             className={`leaderboard__toolbar${
