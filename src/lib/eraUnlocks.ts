@@ -1,5 +1,6 @@
 import type { Player } from "./types";
 import type { PlayerRecord } from "./playerRecord";
+import { isQaRuntimeHost } from "./qaRuntime";
 
 export type EraId = "1970s" | "1980s" | "1990s" | "2000s" | "2010s";
 
@@ -11,13 +12,19 @@ export const ALL_TIME_WIN_THRESHOLD = 50;
  */
 export const ALL_TIME_BANNER_UNLOCK_THRESHOLD = 1000;
 
-/** Set to true to show and launch All-Time mode from the home screen. */
+/**
+ * Production default: All-Time stays “coming soon” on www.
+ * QA / local hosts still expose the mode via `isAllTimeModePlayable()`.
+ */
 export const ALL_TIME_MODE_PLAYABLE = false;
 
 /** Set to false before release to require 50 wins / banner threshold for legends. */
 export const ALL_TIME_LEGENDS_TESTING_UNLOCK = false;
 
-export const isAllTimeModePlayable = () => ALL_TIME_MODE_PLAYABLE;
+/** Playable on prod only when the flag is true; always playable on QA/local. */
+export const isAllTimeModePlayable = (
+  hostname = typeof window !== "undefined" ? window.location.hostname : "",
+) => ALL_TIME_MODE_PLAYABLE || isQaRuntimeHost(hostname);
 
 export const ALL_ERA_IDS: EraId[] = [
   "1970s",

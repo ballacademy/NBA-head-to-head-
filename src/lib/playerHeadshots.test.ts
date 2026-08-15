@@ -27,6 +27,7 @@ describe("playerHeadshots", () => {
     expect(arePlayerHeadshotsEnabled("nba-head-to-head-qa.pages.dev", "")).toBe(
       true,
     );
+    expect(arePlayerHeadshotsEnabled("qa.draftdaygm.com", "")).toBe(true);
     expect(arePlayerHeadshotsEnabled("localhost", "")).toBe(true);
     expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "")).toBe(false);
     expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "?headshots")).toBe(

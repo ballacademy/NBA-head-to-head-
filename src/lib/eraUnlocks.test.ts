@@ -17,9 +17,16 @@ import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
 describe("all-time mode availability", () => {
-  it("keeps all-time mode behind coming soon on the home screen", () => {
+  it("keeps all-time mode behind coming soon on production", () => {
     expect(ALL_TIME_MODE_PLAYABLE).toBe(false);
-    expect(isAllTimeModePlayable()).toBe(false);
+    expect(isAllTimeModePlayable("www.draftdaygm.com")).toBe(false);
+    expect(isAllTimeModePlayable("")).toBe(false);
+  });
+
+  it("exposes all-time mode on QA and local hosts", () => {
+    expect(isAllTimeModePlayable("nba-head-to-head-qa.pages.dev")).toBe(true);
+    expect(isAllTimeModePlayable("qa.draftdaygm.com")).toBe(true);
+    expect(isAllTimeModePlayable("localhost")).toBe(true);
   });
 });
 
