@@ -140,6 +140,15 @@ git push -u origin qa
 
 Pushes to **`qa`** run **Deploy QA to Cloudflare Pages** (test → build → apply QA migrations → deploy). Manual: **Actions** → **Deploy QA to Cloudflare Pages** → **Run workflow**.
 
+Keep **`qa` in sync with `main`** for almost everything. Product and bugfix land on `main` first, then merge `main` → `qa` so QA is not a long-lived fork. Intentional **QA-only** client exceptions (hostname gated in `src/lib/qaRuntime.ts`):
+
+| Exception | Prod | QA / local |
+|-----------|------|------------|
+| All-Time mode | Coming soon (`ALL_TIME_MODE_PLAYABLE = false`) | Playable |
+| Player headshots | Jerseys | ESPN headshots (also `?headshots` anywhere) |
+
+Anything else called out specifically for QA can stay QA-only the same way; default new work to both environments.
+
 ### Local QA API
 
 ```powershell

@@ -573,9 +573,13 @@ export const completeUnlock = (
   };
   savePlayerCollection(next);
 
-  void import("./collectionRemote").then(({ pushCollectionIfLinked }) => {
-    void pushCollectionIfLinked(next);
-  });
+  void import("./collectionRemote")
+    .then(({ pushCollectionIfLinked }) => {
+      void pushCollectionIfLinked(next);
+    })
+    .catch(() => {
+      /* Ignore offline / Vitest environment teardown. */
+    });
 
   return next;
 };
