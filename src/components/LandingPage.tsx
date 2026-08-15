@@ -54,6 +54,7 @@ import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
 import { InlineAlert } from "./InlineAlert";
+import { EmptyState } from "./EmptyState";
 import { RecordWithStreak } from "./RecordWithStreak";
 import { type LandingHubTab } from "./LandingBottomNav";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
@@ -1101,9 +1102,7 @@ export function LandingPage({
                     {ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE}
                   </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
-                    <p className="event-leaderboard__empty hub-empty" role="status">
-                      Loading…
-                    </p>
+                    <EmptyState message="Loading…" loading />
                   ) : eventLeaderboardFailed ? (
                     <InlineAlert
                       message="Couldn't load event standings."
@@ -1114,32 +1113,47 @@ export function LandingPage({
                       }}
                     />
                   ) : eventLeaderboard.length === 0 ? (
-                    <p className="event-leaderboard__empty hub-empty">
-                      No event results yet. Be the first on the board.
-                    </p>
+                    <EmptyState message="No event results yet. Be the first on the board." />
                   ) : (
                     <ol className="event-leaderboard__list">
-                      {eventLeaderboard.map((entry) => (
-                        <li
-                          key={`${entry.playerId}-${entry.rank}`}
-                          className={`event-leaderboard__row${
-                            entry.isViewer
-                              ? " event-leaderboard__row--you"
-                              : ""
-                          }`}
-                        >
-                          <span className="event-leaderboard__rank">
-                            #{entry.rank}
-                          </span>
-                          <span className="event-leaderboard__team">
-                            {entry.teamName}
-                            {entry.isViewer ? " (you)" : ""}
-                          </span>
-                          <span className="event-leaderboard__wins">
-                            {entry.wins}-{entry.losses}
-                          </span>
-                        </li>
-                      ))}
+                      {eventLeaderboard.map((entry) => {
+                        const podiumClass =
+                          entry.rank === 1
+                            ? " event-leaderboard__row--podium-1"
+                            : entry.rank === 2
+                              ? " event-leaderboard__row--podium-2"
+                              : entry.rank === 3
+                                ? " event-leaderboard__row--podium-3"
+                                : "";
+
+                        return (
+                          <li
+                            key={`${entry.playerId}-${entry.rank}`}
+                            className={`event-leaderboard__row${
+                              entry.isViewer
+                                ? " event-leaderboard__row--you"
+                                : ""
+                            }${podiumClass}`}
+                          >
+                            <span className="event-leaderboard__rank">
+                              {entry.rank}
+                            </span>
+                            <span className="event-leaderboard__identity">
+                              <span className="event-leaderboard__team">
+                                {entry.teamName}
+                              </span>
+                              {entry.isViewer ? (
+                                <span className="leaderboard-row__you-chip">
+                                  You
+                                </span>
+                              ) : null}
+                            </span>
+                            <span className="event-leaderboard__wins">
+                              {entry.wins}-{entry.losses}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ol>
                   )}
                 </details>
