@@ -82,36 +82,35 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
         this device only.
       </AccountRequiredNote>
 
-      <section className="hub-feature__panel">
+      <section className="hub-feature__panel achievements-page__panel">
         <div className="achievements-page__section-heading">
-          <p className="eyebrow">Career</p>
           <h2>Lineup badges</h2>
         </div>
 
         {nextBadge && nextBadgeHint && onPlayIntent ? (
           <div className="achievements-page__next-badge">
-            <p className="achievements-page__next-badge-label">Next badge</p>
             <div className="achievements-page__next-badge-row">
               <span className="achievements-page__emoji" aria-hidden="true">
                 {nextBadge.emoji}
               </span>
               <div className="achievements-page__next-badge-copy">
+                <p className="achievements-page__next-badge-label">Next</p>
                 <strong>{nextBadge.title}</strong>
                 <span>{nextBadge.description}</span>
               </div>
+              <button
+                type="button"
+                className="secondary-button achievements-page__next-badge-cta"
+                onClick={() =>
+                  onPlayIntent({
+                    playSection: nextBadgeHint.playSection,
+                    h2hMode: nextBadgeHint.h2hMode,
+                  })
+                }
+              >
+                {nextBadgeHint.ctaLabel}
+              </button>
             </div>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() =>
-                onPlayIntent({
-                  playSection: nextBadgeHint.playSection,
-                  h2hMode: nextBadgeHint.h2hMode,
-                })
-              }
-            >
-              {nextBadgeHint.ctaLabel}
-            </button>
           </div>
         ) : null}
 
@@ -131,9 +130,9 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
               <div className="achievements-page__copy">
                 <div className="achievements-page__title-row">
                   <strong>{achievement.title}</strong>
-                  <span className="achievements-page__status">
-                    {achievement.isUnlocked ? "Unlocked" : "Locked"}
-                  </span>
+                  {achievement.isUnlocked ? (
+                    <span className="achievements-page__status">Unlocked</span>
+                  ) : null}
                 </div>
                 <span className="achievements-page__description">
                   {achievement.description}
@@ -142,45 +141,39 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
             </li>
           ))}
         </ul>
-      </section>
 
-      {unlockedSpecial.length > 0 ? (
-        <section className="hub-feature__panel">
-          <div className="achievements-page__section-heading">
-            <p className="eyebrow">Special</p>
-            <h2>Account badges</h2>
-          </div>
-          <ul className="achievements-page__list">
-            {unlockedSpecial.map((achievement) => (
-              <li
-                key={achievement.id}
-                className="achievements-page__item achievements-page__item--unlocked"
-              >
-                <span className="achievements-page__emoji" aria-hidden="true">
-                  {achievement.emoji}
-                </span>
-                <div className="achievements-page__copy">
-                  <div className="achievements-page__title-row">
-                    <strong>{achievement.title}</strong>
-                    <span className="achievements-page__status">Unlocked</span>
-                  </div>
-                  <span className="achievements-page__description">
-                    {achievement.description}
+        {unlockedSpecial.length > 0 ? (
+          <>
+            <div className="achievements-page__section-heading achievements-page__section-heading--spaced">
+              <h2>Account badges</h2>
+            </div>
+            <ul className="achievements-page__list">
+              {unlockedSpecial.map((achievement) => (
+                <li
+                  key={achievement.id}
+                  className="achievements-page__item achievements-page__item--unlocked"
+                >
+                  <span className="achievements-page__emoji" aria-hidden="true">
+                    {achievement.emoji}
                   </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+                  <div className="achievements-page__copy">
+                    <div className="achievements-page__title-row">
+                      <strong>{achievement.title}</strong>
+                      <span className="achievements-page__status">Unlocked</span>
+                    </div>
+                    <span className="achievements-page__description">
+                      {achievement.description}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
 
-      <section className="hub-feature__panel achievements-page__event-panel">
-        <div className="achievements-page__section-heading">
-          <p className="eyebrow">Weekly Events</p>
+        <div className="achievements-page__section-heading achievements-page__section-heading--spaced">
           <h2>Event badges</h2>
-          <p className="achievements-page__subtitle">
-            Highest badge per event.
-          </p>
+          <p className="achievements-page__subtitle">Highest badge per event.</p>
         </div>
         {eventBadges.length > 0 ? (
           <ul className="achievements-page__list">

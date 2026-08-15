@@ -315,7 +315,7 @@ export function LeaderboardPage() {
       <div className="landing-hub__top">
         <h1 className="landing-hub__title">Ranks</h1>
         <p className="landing__lede landing-hub__lede">
-          Classic and Pro ladders.
+          Classic and Pro.
         </p>
       </div>
 

@@ -77,7 +77,8 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
           {snapshot.teamName}
         </h1>
         <p className="landing__lede landing-hub__lede">
-          Pro {formatRatingPoints(snapshot.ranked.elo)} · Casual{" "}
+          {snapshot.totalWins}–{snapshot.totalLosses} · Pro{" "}
+          {formatRatingPoints(snapshot.ranked.elo)} · Casual{" "}
           {formatRatingPoints(snapshot.classic.elo)} ·{" "}
           {snapshot.currentSeasonLabel}
         </p>
@@ -89,14 +90,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
 
       <section className="hub-feature__panel">
       <div className="gm-stats-page__summary">
-        <div className="gm-stats-page__summary-card">
-          <span className="gm-stats-page__label">Total wins</span>
-          <strong>{snapshot.totalWins}</strong>
-        </div>
-        <div className="gm-stats-page__summary-card">
-          <span className="gm-stats-page__label">Total losses</span>
-          <strong>{snapshot.totalLosses}</strong>
-        </div>
         <div className="gm-stats-page__summary-card">
           <span className="gm-stats-page__label">Best monthly finish</span>
           <strong className="gm-stats-page__value">
@@ -125,12 +118,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
             elo={snapshot.ranked.elo}
             compact
           />
-          <p className="gm-stats-page__section-copy">
-            Pro peak: {formatRatingPoints(snapshot.ranked.peakElo)} · Casual
-            peak: {formatRatingPoints(snapshot.classic.peakElo)} ·{" "}
-            {snapshot.ranked.rankedGamesPlayed} Pro games ·{" "}
-            {snapshot.classic.classicGamesPlayed} Casual games
-          </p>
         </div>
         <FrontOfficeBadgeGrid peakElo={snapshot.legacy.peakElo} />
       </section>
@@ -222,20 +209,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
               value: formatCollectionCount(
                 snapshot.collection.scrubPoolUnlocked,
                 snapshot.collection.scrubPoolTotal,
-              ),
-            },
-            {
-              label: "Scrubs",
-              value: formatCollectionCount(
-                snapshot.collection.unlockedScrubs,
-                snapshot.collection.scrubPool,
-              ),
-            },
-            {
-              label: "Super Scrubs",
-              value: formatCollectionCount(
-                snapshot.collection.unlockedSuperScrubs,
-                snapshot.collection.superScrubPool,
               ),
             },
           ]}

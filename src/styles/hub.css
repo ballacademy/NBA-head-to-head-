@@ -149,7 +149,16 @@
   padding: 14px 16px;
   border: 1px solid var(--hub-subbox-border);
   border-radius: 18px;
-  background: var(--hub-subbox-bg);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.035) 0.55px, transparent 0.7px),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.035) 0%,
+      transparent 42%,
+      rgba(0, 0, 0, 0.16) 100%
+    ),
+    var(--hub-subbox-bg);
+  background-size: 3px 3px, 100% 100%, 100% 100%;
   box-shadow: var(--hub-subbox-shadow);
   color: var(--text-muted-on-dark);
 }
@@ -241,30 +250,24 @@
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 6px;
+  gap: 4px;
   box-sizing: border-box;
   width: 100%;
   min-height: 0;
-  margin: 0 0 10px;
-  /* Equal side inset so title/lede sit on the true center axis. */
+  margin: 0 0 8px;
+  /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(64px, calc(var(--hub-chrome-inset, 14px) + 48px));
-  padding-bottom: 10px;
+  padding-bottom: 0;
   text-align: center;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.08);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 72%
-    );
+  border-bottom: 0;
+  background: none;
 }
 
 @media (min-width: 900px) {
   .landing-hub__top {
     /* Clear the doubled desktop logo while keeping titles top-aligned. */
-    padding-top: 8px;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
+    padding-top: 6px;
+    margin-bottom: 10px;
     padding-inline: max(96px, calc(var(--hub-chrome-inset, 22px) + 72px));
   }
 }
@@ -277,17 +280,17 @@ h1.landing-hub__title {
   max-width: 100%;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.48rem, 5.6vw, 2.28rem);
-  font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: 0.055em;
-  padding-left: 0.055em;
-  text-transform: uppercase;
+  font-size: clamp(1.28rem, 4.6vw, 1.85rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  padding-left: 0;
+  text-transform: none;
   text-align: center;
   white-space: normal;
   text-wrap: balance;
   color: var(--text-on-dark);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  text-shadow: none;
 }
 
 .landing-hub__title--roster {
@@ -300,8 +303,9 @@ h1.landing-hub__title {
 .landing h1.landing-hub__title--name,
 h1.landing-hub__title--name {
   font-family: var(--font-sans);
-  font-size: clamp(1.28rem, 5.4vw, 2.05rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(1.2rem, 4.8vw, 1.75rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
   text-transform: none;
   text-shadow: none;
 }
@@ -322,14 +326,14 @@ h1.landing-hub__title--name {
 .landing__lede.landing-hub__lede,
 .landing-hub__lede {
   margin: 0;
-  max-width: 28em;
+  max-width: 26em;
   width: 100%;
   min-height: 0;
-  color: var(--text-muted-on-dark);
-  font-size: 0.86rem;
-  font-weight: 550;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
   line-height: 1.35;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   text-align: center;
   text-wrap: balance;
 }

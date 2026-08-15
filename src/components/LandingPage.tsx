@@ -32,7 +32,7 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
-import { PICK_TIME_LIMIT_SECONDS, CLASSIC_PICK_TIME_LIMIT_SECONDS, DAILY_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
+import { PICK_TIME_LIMIT_SECONDS, CLASSIC_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
   RANKED_SALARY_CAP,
@@ -547,17 +547,9 @@ export function LandingPage({
     const dailyCompleted = Boolean(snapshot.entry);
     const playStreak = getDailyDraftPlayStreak(mode, getDailyDateKey());
     const statusParts = [
-      snapshot.entry
-        ? snapshot.entry.formattedResult
-        : "Not played today",
-      snapshot.entry
-        ? snapshot.percentileLabel
-        : null,
-      playStreak.current > 0
-        ? formatDailyDraftPlayStreak(playStreak)
-        : snapshot.entry
-          ? null
-          : "Start a streak",
+      snapshot.entry ? snapshot.entry.formattedResult : "Not played",
+      snapshot.entry ? snapshot.percentileLabel : null,
+      playStreak.current > 0 ? formatDailyDraftPlayStreak(playStreak) : null,
     ].filter((part): part is string => Boolean(part));
 
     return (
@@ -571,11 +563,6 @@ export function LandingPage({
             {formatDailyDraftProductName(mode)}
           </p>
         </div>
-        <p className="daily-draft-card__description">
-          {mode === "advanced"
-            ? "Uses per-minute and rate stats for today’s puzzle."
-            : "Uses season per-game stats for today’s puzzle."}
-        </p>
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
         </h3>
@@ -696,12 +683,12 @@ export function LandingPage({
   const hubLede =
     hubTab === "play"
       ? playSection === "daily"
-        ? `Hidden stats. ${DAILY_PICK_TIME_LIMIT_SECONDS}s picks. One try daily.`
+        ? "Hidden stats. One try per mode."
         : playSection === "events"
-          ? "Weekly live H2H. Shared board. $100M cap."
+          ? "Weekly live H2H · $100M cap."
           : playSection === "headToHead"
-            ? "Live matchups. Casual or Pro."
-            : "Draft and compete."
+            ? "Live matchups · Casual or Pro."
+            : "Choose a mode."
       : hubTab === "roster"
         ? "Collection, badges, and stats."
         : "Sign in, stats, and settings.";

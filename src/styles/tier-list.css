@@ -72,7 +72,7 @@
   margin: 0;
   padding: 7px 12px;
   border: 1px solid rgba(52, 211, 153, 0.4);
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   background: rgba(16, 185, 129, 0.12);
   color: #6ee7b7;
   font-size: 0.82rem;
@@ -112,7 +112,7 @@
   margin: 0;
   padding: 6px 10px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   background: transparent;
   color: #94a3b8;
   font-size: 0.78rem;
@@ -441,7 +441,7 @@
 .tier-list__chip {
   min-height: 28px;
   padding: 4px 9px;
-  border-radius: 999px;
+  border-radius: var(--btn-radius, 12px);
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.4);
   color: #cbd5e1;
