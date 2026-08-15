@@ -44,7 +44,7 @@
 
 .landing-disclaimer {
   margin: 0;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.5;
   text-align: center;
@@ -75,7 +75,7 @@
 
 .account-section__eyebrow {
   margin: 0;
-  color: #94a3b8;
+  color: var(--muted);
   font-family: var(--font-display);
   font-size: 0.72rem;
   font-weight: 600;
@@ -152,7 +152,7 @@
   margin: 14px 0 0;
   padding-top: 20px;
   border-top: 1px solid rgba(148, 163, 184, 0.18);
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -172,7 +172,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: underline;
@@ -181,7 +181,7 @@
 }
 
 .landing-footer__link:hover {
-  color: #cbd5e1;
+  color: var(--text-muted-on-dark);
 }
 
 .landing-footer__sep {

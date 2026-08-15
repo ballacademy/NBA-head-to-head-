@@ -90,7 +90,7 @@
 }
 
 .community-posts-panel__compose-meta .is-tight {
-  color: #fbbf24;
+  color: var(--accent-community-bright);
 }
 
 .community-posts-panel__compose-meta .hub-cta {
