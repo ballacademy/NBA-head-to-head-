@@ -200,8 +200,10 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
     bestDailyFinishLabel: formatBestDailyFinishLabel(bestPercentile),
     basicStreakLabel: formatStreakLabel("basic"),
     advancedStreakLabel: formatStreakLabel("advanced"),
-    collectionUnlocked: collection.unlocked,
-    collectionTotal: collection.total,
+    // All-Stars and Superstars are disjoint unlock pools — combine for the recap.
+    collectionUnlocked:
+      collection.unlocked + collection.superstarUnlocked,
+    collectionTotal: collection.total + collection.superstarTotal,
     frontOfficeBadgesUnlocked: getUnlockedFrontOfficeBadges(peakElo).length,
     casualRecord: formatPlayerRecord({
       wins: records.headToHead.wins,

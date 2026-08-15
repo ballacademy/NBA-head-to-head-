@@ -63,14 +63,24 @@ describe("sampleSize", () => {
     expect(hasLimitedSampleSize(anthonyDavis)).toBe(true);
     expect(getPlayerStatWeight(anthonyDavis)).toBe(1);
 
-    const porzingis = {
+    // Still limited at 29 GP even with strong prior; 30+ clears the flag.
+    const porzingisLimited = {
       bbrPlayerId: "porzikr01",
-      gamesPlayed: 32,
+      gamesPlayed: 29,
       points: 16.7,
     };
-    expect(hasEstablishedPriorProduction(porzingis)).toBe(true);
-    expect(hasLimitedSampleSize(porzingis)).toBe(true);
-    expect(getPlayerStatWeight(porzingis)).toBe(1);
+    expect(hasEstablishedPriorProduction(porzingisLimited)).toBe(true);
+    expect(hasLimitedSampleSize(porzingisLimited)).toBe(true);
+    expect(getPlayerStatWeight(porzingisLimited)).toBe(1);
+
+    const porzingisFull = {
+      bbrPlayerId: "porzikr01",
+      gamesPlayed: 30,
+      points: 16.7,
+    };
+    expect(hasLimitedSampleSize(porzingisFull)).toBe(false);
+    expect(getPlayerStatWeight(porzingisFull)).toBe(1);
+    expect(getBlendablePriorSnapshot(porzingisFull)).toBeNull();
   });
 
   it("still dings tiny hot streaks without matching prior production", () => {

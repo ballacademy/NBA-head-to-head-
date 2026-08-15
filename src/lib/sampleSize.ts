@@ -7,11 +7,12 @@ import type { Player } from "./types";
  * 1) Game-weight blend current production with prior/peak season stats for scoring
  * 2) Down-weight the player in lineup aggregates until combined games reach full sample
  *
+ * At FULL_SAMPLE_MIN_GAMES+ (30+), scoring uses current-season stats only.
  * Player-facing summary: Account → Beta notes → Limited sample size.
  */
 
-/** Current-season games needed before sample size is trusted on its own. */
-export const FULL_SAMPLE_MIN_GAMES = 35;
+/** Current-season games needed before sample size is trusted on its own (30+ = full). */
+export const FULL_SAMPLE_MIN_GAMES = 30;
 export const LIMITED_SAMPLE_WEIGHT_FLOOR = 0.35;
 
 /** Prior / peak season games needed to count as a useful blend partner. */
