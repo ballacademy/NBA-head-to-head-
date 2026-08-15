@@ -34,7 +34,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     short: "Casual",
     title: CLASSIC_HEAD_TO_HEAD_LABEL,
     blurb:
-      "Softer salary cap with banner matchmaking — Front Office banners track your run.",
+      "$150M salary cap. Banners matchmaking, Front Office tiers, and a monthly Top 500.",
   },
   proH2h: {
     id: "proH2h",
@@ -42,7 +42,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     short: "Pro",
     title: PRO_HEAD_TO_HEAD_LABEL,
     blurb:
-      "Tighter salary cap, Elo ladder matchmaking, and a monthly Top 500 season.",
+      "$100M salary cap. Banners matchmaking, Front Office tiers, and a monthly Top 500.",
   },
   daily: {
     id: "daily",
@@ -50,21 +50,21 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     short: "Daily",
     title: "Daily Draft",
     blurb:
-      "One shared puzzle per day (Basic & Advanced) — no salary cap, chase percentile rank.",
+      "One shared puzzle per day in Basic and Advanced — no salary cap; chase your percentile.",
   },
   dailyBasic: {
     id: "dailyBasic",
     internalMode: "daily",
     short: "Basic",
     title: "Daily Draft · Basic",
-    blurb: "Today’s shared lineup puzzle — simpler goal.",
+    blurb: "Today’s shared lineup puzzle with a simpler goal.",
   },
   dailyAdvanced: {
     id: "dailyAdvanced",
     internalMode: "daily",
     short: "Advanced",
     title: "Daily Draft · Advanced",
-    blurb: "Today’s shared lineup puzzle — tougher goal.",
+    blurb: "Today’s shared lineup puzzle with a tougher goal.",
   },
   weeklyEvent: {
     id: "weeklyEvent",

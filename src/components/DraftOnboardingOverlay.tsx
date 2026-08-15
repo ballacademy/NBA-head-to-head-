@@ -35,7 +35,7 @@ export function DraftOnboardingOverlay({
           <li>Make five timed draft picks for your lineup.</li>
           {hasSalaryCap ? (
             <li>
-              Stay under the salary cap — your banner shows spent vs remaining.
+              Stay under the salary cap — the salary bar shows spent vs remaining.
             </li>
           ) : null}
           <li>If the timer hits zero, remaining picks auto-fill.</li>

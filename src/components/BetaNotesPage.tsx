@@ -30,7 +30,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <p>
               Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
               Draft is coming soon. Accounts unlock leaderboards and public
-              tier lists. Roster, badges, stats, and ranks sit in the bottom
+              tier lists. Roster, Badges, Stats, and Ranks sit in the bottom
               nav.
             </p>
             <p className="beta-notes-summary__meta">
