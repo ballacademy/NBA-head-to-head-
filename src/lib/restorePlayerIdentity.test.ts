@@ -28,10 +28,17 @@ vi.mock("./playerProfileApi", () => ({
 
 vi.mock("./collectionRemote", () => ({
   pullAndMergeCollection: vi.fn(async () => null),
+  resetCollectionPullGate: vi.fn(),
 }));
 
 vi.mock("./achievementsRemote", () => ({
   pullAndMergeAchievements: vi.fn(async () => null),
+  resetAchievementsPullGate: vi.fn(),
+}));
+
+vi.mock("./careerStatsRemote", () => ({
+  pullAndMergeCareerStats: vi.fn(async () => null),
+  resetCareerPullGate: vi.fn(),
 }));
 
 vi.mock("./dailyDraftScores", async () => {
@@ -325,6 +332,69 @@ describe("restorePlayerIdentityFromLogin", () => {
     expect(records.headToHead).toMatchObject({ wins: 0, losses: 0 });
     expect(records.ranked).toMatchObject({ wins: 0, losses: 0 });
     expect(records.allTime).toMatchObject({ wins: 0, losses: 0 });
+  });
+
+  it("restores career mode records from cloud career stats", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const { pullAndMergeCareerStats } = await import("./careerStatsRemote");
+    const { replaceModePlayerRecords } = await import("./playerRecord");
+    const { saveAllTimeProfile } = await import("./allTimeProfile");
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+
+    vi.mocked(fetchRemoteLeaderboard).mockResolvedValue({
+      mode: "ranked",
+      seasonId,
+      sort: "elo",
+      entries: [],
+    });
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+    });
+    vi.mocked(pullAndMergeCareerStats).mockImplementation(async () => {
+      replaceModePlayerRecords({
+        headToHead: {
+          wins: 40,
+          losses: 10,
+          ties: 0,
+          winStreak: 3,
+          lossStreak: 0,
+        },
+        ranked: {
+          wins: 25,
+          losses: 8,
+          ties: 0,
+          winStreak: 1,
+          lossStreak: 0,
+        },
+        allTime: {
+          wins: 5,
+          losses: 2,
+          ties: 0,
+          winStreak: 0,
+          lossStreak: 1,
+        },
+      });
+      saveAllTimeProfile({
+        playerId: "player-linked",
+        elo: 900,
+        peakElo: 1200,
+        gamesPlayed: 7,
+      });
+      return null;
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(loadAllModeRecords().headToHead).toMatchObject({
+      wins: 40,
+      losses: 10,
+    });
+    expect(loadAllModeRecords().ranked).toMatchObject({ wins: 25, losses: 8 });
+    expect(loadAllModeRecords().allTime).toMatchObject({ wins: 5, losses: 2 });
   });
 
   it("keeps daily scores on login and seeds season peak from current Elo only", async () => {

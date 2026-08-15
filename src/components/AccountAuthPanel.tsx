@@ -17,6 +17,10 @@ import {
   pushAchievementsIfLinked,
 } from "../lib/achievementsRemote";
 import {
+  pullAndMergeCareerStats,
+  pushCareerStatsIfLinked,
+} from "../lib/careerStatsRemote";
+import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
@@ -169,8 +173,9 @@ export function AccountAuthPanel({
     trackProductEvent("account_create", {
       foundingGm: Boolean(result.foundingGm),
     });
-    void pushCollectionIfLinked(undefined, playerId);
-    void pushAchievementsIfLinked(undefined, playerId);
+    void pushCollectionIfLinked(undefined, playerId, { force: true });
+    void pushAchievementsIfLinked(undefined, playerId, { force: true });
+    void pushCareerStatsIfLinked(playerId, { force: true });
     const { newlyUnlocked } = syncFoundingGmAchievement(
       Boolean(result.foundingGm),
     );
@@ -209,13 +214,14 @@ export function AccountAuthPanel({
       setMode("closed");
       await pullAndMergeCollection(playerId);
       await pullAndMergeAchievements(playerId);
+      await pullAndMergeCareerStats(playerId);
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
       );
       setMessage(
         newlyUnlocked.includes(FOUNDING_GM_ACHIEVEMENT_ID)
           ? `Signed in as @${result.username}. Founding GM badge unlocked.`
-          : `Signed in as @${result.username}. Collection and badges synced.`,
+          : `Signed in as @${result.username}. Collection, badges, and career records synced.`,
       );
       return;
     }

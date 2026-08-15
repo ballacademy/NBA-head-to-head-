@@ -83,12 +83,21 @@ describe("achievementsRemote", () => {
     expect(pushRemoteAchievements).toHaveBeenCalled();
   });
 
-  it("pushes local unlocks when linked", async () => {
+  it("pushes local unlocks when linked after a successful pull", async () => {
     const { isPlayerAccountLinked } = await import("./accountGate");
-    const { pushRemoteAchievements } = await import("./achievementsApi");
+    const { fetchRemoteAchievements, pushRemoteAchievements } = await import(
+      "./achievementsApi"
+    );
     const { saveAchievementState } = await import("./achievements");
+    const { resetAchievementsPullGate } = await import("./achievementsRemote");
 
+    resetAchievementsPullGate();
     vi.mocked(isPlayerAccountLinked).mockResolvedValue(true);
+    vi.mocked(fetchRemoteAchievements).mockResolvedValue({
+      playerId: "player-1",
+      unlockedIds: [],
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
     vi.mocked(pushRemoteAchievements).mockResolvedValue({
       playerId: "player-1",
       unlockedIds: ["nepotism"],
@@ -96,6 +105,9 @@ describe("achievementsRemote", () => {
     });
 
     saveAchievementState({ unlocked: ["nepotism"] });
+    await expect(pushAchievementsIfLinked()).resolves.toBe(false);
+
+    await pullAndMergeAchievements("player-1");
     await expect(pushAchievementsIfLinked()).resolves.toBe(true);
     expect(pushRemoteAchievements).toHaveBeenCalledWith({
       playerId: "player-1",

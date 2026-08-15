@@ -12,6 +12,14 @@ import {
 } from "./playerCollection";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 
+let collectionPullSucceeded = false;
+
+export const resetCollectionPullGate = () => {
+  collectionPullSucceeded = false;
+};
+
+export const hasSuccessfulCollectionPull = () => collectionPullSucceeded;
+
 export const mergeUnlockedIds = (...lists: string[][]) => {
   const next: string[] = [];
   const seen = new Set<string>();
@@ -41,6 +49,8 @@ export const pullAndMergeCollection = async (
     return null;
   }
 
+  collectionPullSucceeded = true;
+
   const local = loadPlayerCollection();
   const mergedIds = mergeUnlockedIds(local.unlockedIds, remote.unlockedIds);
   const next = withRecentAllStarsUnlocked({
@@ -65,8 +75,14 @@ export const pullAndMergeCollection = async (
 export const pushCollectionIfLinked = async (
   collection?: PlayerCollection,
   playerId = getOrCreatePlayerIdentity().playerId,
+  options: { force?: boolean } = {},
 ): Promise<boolean> => {
   if (!(await isPlayerAccountLinked(playerId))) {
+    return false;
+  }
+
+  // Never upload a thin post-login local set before we've read the cloud.
+  if (!options.force && !collectionPullSucceeded) {
     return false;
   }
 
@@ -75,6 +91,10 @@ export const pushCollectionIfLinked = async (
     playerId,
     unlockedIds: filterCollectibleUnlockedIds(local.unlockedIds),
   });
+
+  if (pushed) {
+    collectionPullSucceeded = true;
+  }
 
   return Boolean(pushed);
 };

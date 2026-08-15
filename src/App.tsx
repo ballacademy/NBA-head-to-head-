@@ -144,6 +144,7 @@ import {
 } from "./lib/competitivePlayerBans";
 import { pullAndMergeCollection } from "./lib/collectionRemote";
 import { pullAndMergeAchievements } from "./lib/achievementsRemote";
+import { pullAndMergeCareerStats } from "./lib/careerStatsRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -298,6 +299,7 @@ function App() {
   );
   const collectionSyncAttemptedRef = useRef(false);
   const achievementsSyncAttemptedRef = useRef(false);
+  const careerSyncAttemptedRef = useRef(false);
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
     GhostMatchmakingMode | null
@@ -423,6 +425,20 @@ function App() {
 
     achievementsSyncAttemptedRef.current = true;
     void pullAndMergeAchievements();
+  }, [phase]);
+
+  useEffect(() => {
+    if (careerSyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    careerSyncAttemptedRef.current = true;
+    void (async () => {
+      const merged = await pullAndMergeCareerStats();
+      if (merged) {
+        setModeRecords(loadAllModeRecords());
+      }
+    })();
   }, [phase]);
 
   useEffect(() => {

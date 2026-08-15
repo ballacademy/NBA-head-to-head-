@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mergeUnlockedIds } from "./collectionRemote";
+import {
+  mergeUnlockedIds,
+  pullAndMergeCollection,
+  pushCollectionIfLinked,
+  resetCollectionPullGate,
+} from "./collectionRemote";
 
 vi.mock("./accountGate", () => ({
   isPlayerAccountLinked: vi.fn(),
@@ -31,10 +36,11 @@ const stubStorage = () => {
   return storage;
 };
 
-describe("collectionRemote mergeUnlockedIds", () => {
+describe("collectionRemote", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     stubStorage();
+    resetCollectionPullGate();
   });
 
   it("merges collectible ids from multiple lists", async () => {
@@ -44,5 +50,32 @@ describe("collectionRemote mergeUnlockedIds", () => {
     const [b] = getScrubPlayerIds();
 
     expect(mergeUnlockedIds([a!, "nope"], [a!, b!])).toEqual([a!, b!]);
+  });
+
+  it("blocks collection push until a successful pull unless forced", async () => {
+    const { isPlayerAccountLinked } = await import("./accountGate");
+    const { pushRemoteCollection, fetchRemoteCollection } = await import(
+      "./collectionApi"
+    );
+    const { getWinUnlockPlayerIds } = await import("./allStars");
+    const [a] = getWinUnlockPlayerIds();
+
+    vi.mocked(isPlayerAccountLinked).mockResolvedValue(true);
+    vi.mocked(pushRemoteCollection).mockResolvedValue({
+      playerId: "player-1",
+      unlockedIds: [a!],
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    await expect(pushCollectionIfLinked()).resolves.toBe(false);
+    expect(pushRemoteCollection).not.toHaveBeenCalled();
+
+    vi.mocked(fetchRemoteCollection).mockResolvedValue({
+      playerId: "player-1",
+      unlockedIds: [a!],
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    await pullAndMergeCollection("player-1");
+    await expect(pushCollectionIfLinked()).resolves.toBe(true);
   });
 });

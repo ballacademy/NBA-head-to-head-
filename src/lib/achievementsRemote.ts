@@ -11,6 +11,12 @@ import {
 } from "./achievements";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 
+let achievementsPullSucceeded = false;
+
+export const resetAchievementsPullGate = () => {
+  achievementsPullSucceeded = false;
+};
+
 export const mergeUnlockedAchievementIds = (...lists: string[][]) =>
   normalizeUnlockedAchievementIds(lists.flat());
 
@@ -25,6 +31,8 @@ export const pullAndMergeAchievements = async (
   if (!remote) {
     return null;
   }
+
+  achievementsPullSucceeded = true;
 
   const local = loadAchievementState();
   const mergedIds = mergeUnlockedAchievementIds(
@@ -48,8 +56,13 @@ export const pullAndMergeAchievements = async (
 export const pushAchievementsIfLinked = async (
   state?: AchievementState,
   playerId = getOrCreatePlayerIdentity().playerId,
+  options: { force?: boolean } = {},
 ): Promise<boolean> => {
   if (!(await isPlayerAccountLinked(playerId))) {
+    return false;
+  }
+
+  if (!options.force && !achievementsPullSucceeded) {
     return false;
   }
 
@@ -58,6 +71,10 @@ export const pushAchievementsIfLinked = async (
     playerId,
     unlockedIds: normalizeUnlockedAchievementIds(local.unlocked),
   });
+
+  if (pushed) {
+    achievementsPullSucceeded = true;
+  }
 
   return Boolean(pushed);
 };

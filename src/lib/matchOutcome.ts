@@ -122,5 +122,9 @@ export const persistMatchOutcome = (
   rememberRecordedMatchId(matchId);
   writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic, allTime });
 
+  void import("./careerStatsRemote").then(({ pushCareerStatsIfLinked }) => {
+    void pushCareerStatsIfLinked();
+  });
+
   return { record, ranked, classic, allTime };
 };
