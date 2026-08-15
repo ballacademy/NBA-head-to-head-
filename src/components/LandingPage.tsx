@@ -818,7 +818,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Daily Draft</span>
                 <span className="play-hub-chooser__meta">
-                  Hidden stats · one scored try per mode each day
+                  One scored try per mode each day
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -834,7 +834,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Head to Head</span>
                 <span className="play-hub-chooser__meta">
-                  Casual or Pro live matchups, practice, and private games
+                  Casual · Pro · practice · private
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -850,7 +850,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Events</span>
                 <span className="play-hub-chooser__meta">
-                  Weekly live H2H with a shared board and $100M cap
+                  Weekly shared board · $100M cap
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">

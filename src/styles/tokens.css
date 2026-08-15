@@ -33,17 +33,18 @@
   --accent-daily-border: rgba(34, 197, 94, 0.34);
   --accent-daily-glow: rgba(74, 222, 128, 0.12);
 
-  --accent-h2h: #f97316;
-  --accent-h2h-bright: #fdba74;
-  --accent-h2h-soft: rgba(249, 115, 22, 0.14);
-  --accent-h2h-border: rgba(249, 115, 22, 0.34);
-  --accent-h2h-glow: rgba(251, 146, 60, 0.12);
+  /* Cool H2H family — cyan Casual + indigo Pro (avoid orange/blue clash). */
+  --accent-h2h: #06b6d4;
+  --accent-h2h-bright: #67e8f9;
+  --accent-h2h-soft: rgba(6, 182, 212, 0.14);
+  --accent-h2h-border: rgba(6, 182, 212, 0.36);
+  --accent-h2h-glow: rgba(34, 211, 238, 0.14);
 
-  --accent-ranked: #3b82f6;
-  --accent-ranked-bright: #93c5fd;
-  --accent-ranked-soft: rgba(59, 130, 246, 0.14);
-  --accent-ranked-border: rgba(59, 130, 246, 0.34);
-  --accent-ranked-glow: rgba(96, 165, 250, 0.12);
+  --accent-ranked: #818cf8;
+  --accent-ranked-bright: #c4b5fd;
+  --accent-ranked-soft: rgba(129, 140, 248, 0.14);
+  --accent-ranked-border: rgba(129, 140, 248, 0.36);
+  --accent-ranked-glow: rgba(167, 139, 250, 0.14);
 
   --accent-event: #eab308;
   --accent-event-bright: #fde047;
