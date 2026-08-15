@@ -855,49 +855,46 @@ export const buildLineupScoreContext = (score: LineupScore): string => {
 
 const LAYER_INSIGHT_COPY: Record<
   string,
-  { helped?: string; hurt?: string }
+  { boost?: string; drag?: string }
 > = {
   tierAdjustment: {
-    helped: "Star and rarity tiers raise the ceiling.",
-    hurt: "Scrub-heavy tiers cap how high the OVR can climb.",
+    boost: "Star and rarity tiers raise the ceiling.",
+    drag: "Scrub-heavy tiers cap how high the OVR can climb.",
   },
   impactBlend: {
-    helped: "Impact rankings support the box-score profile.",
-    hurt: "Impact rankings pull the raw production down.",
+    boost: "Impact rankings support the box-score profile.",
+    drag: "Impact rankings pull the raw production down.",
   },
   chemistry: {
-    helped: "Lineup chemistry bonuses are boosting the OVR.",
+    boost: "Lineup chemistry bonuses are boosting the OVR.",
   },
-  teamQuality: {
-    helped: "Shared team / win anchors help the construction.",
-    hurt: "Team quality anchors hold the OVR back.",
-  },
+  // teamQuality intentionally omitted — keep that adjustment internal.
   lowScoringPenalty: {
-    hurt: "Low-usage scorers without enough defense drag the floor.",
+    drag: "Low-usage scorers without enough defense drag the floor.",
   },
   primaryScorerPenalty: {
-    hurt: "The lead scorer band is soft; the offense lacks a clear alpha.",
+    drag: "The lead scorer band is soft; the offense lacks a clear alpha.",
   },
   offenseFloorPenalty: {
-    hurt: "The offense floor is soft; scoring creation is thin.",
+    drag: "The offense floor is soft; scoring creation is thin.",
   },
   noStarPenalty: {
-    hurt: "No true star to hang a halfcourt offense on.",
+    drag: "No true star to hang a halfcourt offense on.",
   },
   midTierImpactPenalty: {
-    hurt: "Impact profile is mid-tier without a top-50 anchor.",
+    drag: "Impact profile is mid-tier without a top-50 anchor.",
   },
   thinImpactPenalty: {
-    hurt: "Impact depth is thin; the lineup leans too hard on one piece.",
+    drag: "Impact depth is thin; the lineup leans too hard on one piece.",
   },
   soloStarElevationPenalty: {
-    hurt: "The lone star is not a playmaker, so the supporting cast stays flat.",
+    drag: "The lone star is not a playmaker, so the supporting cast stays flat.",
   },
   eliteOffenseBonus: {
-    helped: "Elite offensive production lifts the OVR.",
+    boost: "Elite offensive production lifts the OVR.",
   },
   superstarStackBonus: {
-    helped: "Multiple superstars stack for an extra boost.",
+    boost: "Multiple superstars stack for an extra boost.",
   },
 };
 
@@ -907,17 +904,21 @@ const insightAlreadyCovered = (list: string[], text: string) => {
 };
 
 /**
- * Human help/hurt notes for the score breakdown — strengths/warnings plus
- * meaningful modifier layers, without the numeric little-stat rows.
+ * Plain-language score factors — strengths/warnings plus meaningful modifiers,
+ * without numeric little-stat rows or internal team-anchor jargon.
  */
 export const buildLineupScoreInsights = (
   score: LineupScore,
-): { helped: string[]; hurt: string[] } => {
-  const helped = [...score.strengths];
-  const hurt = [...score.warnings];
+): { boosts: string[]; detractors: string[] } => {
+  const boosts = [...score.strengths];
+  const detractors = [...score.warnings];
 
   for (const layer of score.layers ?? []) {
-    if (layer.id === "baseStats" || Math.abs(layer.value) < 0.75) {
+    if (
+      layer.id === "baseStats" ||
+      layer.id === "teamQuality" ||
+      Math.abs(layer.value) < 0.75
+    ) {
       continue;
     }
 
@@ -926,18 +927,18 @@ export const buildLineupScoreInsights = (
       continue;
     }
 
-    const text = layer.value > 0 ? copy.helped : copy.hurt;
+    const text = layer.value > 0 ? copy.boost : copy.drag;
     if (!text) {
       continue;
     }
 
-    const target = layer.value > 0 ? helped : hurt;
+    const target = layer.value > 0 ? boosts : detractors;
     if (!insightAlreadyCovered(target, text)) {
       target.push(text);
     }
   }
 
-  return { helped, hurt };
+  return { boosts, detractors };
 };
 
 /**

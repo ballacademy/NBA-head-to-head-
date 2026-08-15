@@ -745,11 +745,11 @@
   text-transform: uppercase;
 }
 
-.score-breakdown__group-title--helped {
+.score-breakdown__group-title--boost {
   color: #86efac;
 }
 
-.score-breakdown__group-title--hurt {
+.score-breakdown__group-title--drag {
   color: #fda4af;
 }
 
@@ -768,11 +768,11 @@
   color: rgba(226, 232, 240, 0.9);
 }
 
-.score-breakdown__insight--helped {
+.score-breakdown__insight--boost {
   color: rgba(187, 247, 208, 0.92);
 }
 
-.score-breakdown__insight--hurt {
+.score-breakdown__insight--drag {
   color: rgba(254, 202, 202, 0.92);
 }
 

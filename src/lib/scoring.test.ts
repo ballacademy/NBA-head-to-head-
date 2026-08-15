@@ -127,10 +127,10 @@ describe("calculateLineupScore", () => {
     );
     const insights = buildLineupScoreInsights(score);
 
-    expect(insights.helped.length + insights.hurt.length).toBeGreaterThan(0);
+    expect(insights.boosts.length + insights.detractors.length).toBeGreaterThan(0);
     expect(
-      [...insights.helped, ...insights.hurt].some((note) =>
-        /base stats|\+\d|-\d/i.test(note),
+      [...insights.boosts, ...insights.detractors].some((note) =>
+        /base stats|\+\d|-\d|win anchor|shared team/i.test(note),
       ),
     ).toBe(false);
   });
