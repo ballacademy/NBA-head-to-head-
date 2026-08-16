@@ -213,6 +213,32 @@
   font-size: 0.8rem !important;
 }
 
+.beta-notes-summary__links {
+  margin: 10px 0 0 !important;
+  color: #94a3b8 !important;
+  font-size: 0.84rem !important;
+  line-height: 1.45;
+}
+
+.beta-notes-inline-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #93c5fd;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.beta-notes-inline-link:hover,
+.beta-notes-inline-link:focus-visible {
+  color: #e2e8f0;
+  outline: none;
+}
+
 .beta-notes-details {
   margin: 0 0 10px;
   padding: 10px 12px;

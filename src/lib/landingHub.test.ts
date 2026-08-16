@@ -178,6 +178,11 @@ describe("landingHub", () => {
     expect(gm.contentTab).toBe("roster");
     expect(loadLandingHubTab()).toBe("roster");
 
+    sessionStorageMock.clear();
+    const beta = applyLandingDeepLinksFromSearch("?hub=beta&section=sample");
+    expect(beta.feature).toBe("beta");
+    expect(beta.betaSection).toBe("sample");
+
     expect(parseLandingHubParam("season-stats")).toBe("stats");
     expect(parseLandingHubParam("achievements")).toBe("badges");
     expect(parseLandingHubParam("privacy")).toBe("privacy");

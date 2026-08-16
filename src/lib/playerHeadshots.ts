@@ -1,5 +1,4 @@
 import headshotData from "../../data/espn-player-headshots.json";
-import { isQaRuntimeHost } from "./qaRuntime";
 
 type HeadshotEntry = {
   espnId: string;
@@ -15,16 +14,24 @@ const byBbrPlayerId = (
 
 const DEFAULT_HEADSHOT_LOAD_TIMEOUT_MS = 8_000;
 
-/** True on QA / local hosts, or when `?headshots` is in the URL (prod stays jerseys). */
+/** True when ESPN headshots should render (prod + QA). Opt out with `?noheadshots` / `?jerseys`. */
 export const arePlayerHeadshotsEnabled = (
   hostname = typeof window !== "undefined" ? window.location.hostname : "",
   search = typeof window !== "undefined" ? window.location.search : "",
 ): boolean => {
-  if (search.includes("headshots")) {
+  const query = search.toLowerCase();
+  if (query.includes("noheadshots") || query.includes("jerseys=1")) {
+    return false;
+  }
+
+  if (query.includes("headshots")) {
     return true;
   }
 
-  return isQaRuntimeHost(hostname);
+  // Assets mapped in data/espn-player-headshots.json — enable everywhere;
+  // unmapped / failed loads still fall back to jerseys in PlayerTeamIcon.
+  void hostname;
+  return true;
 };
 
 export const getPlayerHeadshotUrl = (
@@ -156,7 +163,7 @@ export const loadCorsImage = async (
 
 /**
  * Preload ESPN headshots for canvas share/download cards.
- * Only runs when headshots are enabled (QA / local / ?headshots).
+ * Only runs when headshots are enabled (default on; opt out with ?noheadshots).
  * Failed or unmapped players are omitted so callers can fall back to jerseys.
  */
 export const loadPlayerHeadshotImages = async (

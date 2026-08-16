@@ -41,6 +41,7 @@ export interface LandingDeepLinkBoot {
   feature: LandingDeepLinkFeature | null;
   communityView: LandingCommunityView | null;
   communityPostId: string | null;
+  betaSection: string | null;
 }
 
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
@@ -356,6 +357,8 @@ export const applyLandingDeepLinksFromSearch = (
   const viewToken = normalizeQueryToken(params.get("view") ?? "");
   const postRaw = params.get("post")?.trim() ?? "";
   const communityPostId = postRaw ? postRaw.slice(0, 80) : null;
+  const betaSectionRaw = params.get("section")?.trim() ?? "";
+  const betaSection = betaSectionRaw ? betaSectionRaw.slice(0, 40) : null;
 
   let contentTab: LandingContentTab | null = null;
   let feature: LandingDeepLinkFeature | null = null;
@@ -408,7 +411,15 @@ export const applyLandingDeepLinksFromSearch = (
     }
   }
 
-  return { contentTab, playSection, h2hMode, feature, communityView, communityPostId };
+  return {
+    contentTab,
+    playSection,
+    h2hMode,
+    feature,
+    communityView,
+    communityPostId,
+    betaSection: feature === "beta" ? betaSection : null,
+  };
 };
 
 export interface SyncLandingDeepLinkUrlOptions {
@@ -417,6 +428,7 @@ export interface SyncLandingDeepLinkUrlOptions {
   h2hMode?: LandingH2hMode | null;
   view?: LandingCommunityView | null;
   post?: string | null;
+  section?: string | null;
   /** When false, drop hub/play params (e.g. leaving the landing surface). */
   clearLandingParams?: boolean;
 }
@@ -437,6 +449,7 @@ export const syncLandingDeepLinkUrl = (
       url.searchParams.delete("play");
       url.searchParams.delete("view");
       url.searchParams.delete("post");
+      url.searchParams.delete("section");
     } else {
       if (options.hub != null) {
         const hubParam =
@@ -457,6 +470,9 @@ export const syncLandingDeepLinkUrl = (
         ) {
           url.searchParams.delete("view");
           url.searchParams.delete("post");
+        }
+        if (hubParam !== "beta" && options.section === undefined) {
+          url.searchParams.delete("section");
         }
       }
       if (options.play === null) {
@@ -480,6 +496,11 @@ export const syncLandingDeepLinkUrl = (
         url.searchParams.delete("post");
       } else if (options.post != null && options.post.trim()) {
         url.searchParams.set("post", options.post.trim().slice(0, 80));
+      }
+      if (options.section === null) {
+        url.searchParams.delete("section");
+      } else if (options.section != null && options.section.trim()) {
+        url.searchParams.set("section", options.section.trim().slice(0, 40));
       }
     }
 

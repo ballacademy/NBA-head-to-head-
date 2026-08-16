@@ -437,3 +437,27 @@ export const getMostDraftedNbaPlayersForMode = (
 
 export const formatNbaPlayerWinPct = (winPct: number | null) =>
   winPct == null ? "—" : `${Math.round(winPct * 1000) / 10}%`;
+
+/** Min decided (W+L) games before showing personal hit rate on Most Drafted. */
+export const MIN_DECIDED_FOR_PERSONAL_HIT_RATE = 3;
+
+/** Personal hit rate is Casual/Pro only — Daily has no W/L. */
+export const canShowPersonalHitRate = (
+  mode: MostDraftedBoardMode,
+  row: Pick<MostDraftedModeRow, "wins" | "losses" | "winPct">,
+) =>
+  mode !== "daily" &&
+  row.winPct != null &&
+  row.wins + row.losses >= MIN_DECIDED_FOR_PERSONAL_HIT_RATE;
+
+export const formatPersonalHitRateMeta = (
+  mode: MostDraftedBoardMode,
+  row: Pick<MostDraftedModeRow, "drafts" | "wins" | "losses" | "winPct">,
+) => {
+  const draftsLabel = `${row.drafts} draft${row.drafts === 1 ? "" : "s"}`;
+  if (!canShowPersonalHitRate(mode, row)) {
+    return draftsLabel;
+  }
+
+  return `${draftsLabel} · Your hit rate ${formatNbaPlayerWinPct(row.winPct)}`;
+};

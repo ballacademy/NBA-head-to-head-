@@ -2639,7 +2639,22 @@ function App() {
   }
 
   if (phase === "beta") {
-    return renderHubFeature(<BetaNotesPage onBack={exitFeaturePage} />);
+    return renderHubFeature(
+      <BetaNotesPage
+        onBack={exitFeaturePage}
+        initialSection={initialLandingDeepLinks.betaSection}
+        onPlayIntent={(intent) => {
+          saveLandingPlaySection(intent.playSection);
+          if (intent.h2hMode) {
+            saveLandingH2hMode(intent.h2hMode);
+          }
+          goToLandingHub("play");
+        }}
+        onOpenHub={(tab) => goToLandingHub(tab)}
+        onOpenRanks={() => openFeaturePage("leaderboard")}
+        onOpenCommunity={() => openCommunityHub()}
+      />,
+    );
   }
 
   if (phase === "stats") {
@@ -2964,6 +2979,12 @@ function App() {
             onPlayAgain={replayLastMode}
             onReturnToMenu={() => resetToLanding()}
             onPostToCommunity={openCommunityCompose}
+            onInviteFriend={() => {
+              setPendingPrivateMatchMode(
+                user.salaryCapMode ? "ranked" : "classic",
+              );
+              resetToLanding();
+            }}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}
             opponentAutoDrafted={opponentAutoDrafted}
