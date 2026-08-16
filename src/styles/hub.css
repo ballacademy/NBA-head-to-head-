@@ -158,31 +158,22 @@
   padding-inline: 2px;
 }
 
-/* Keep return in the title band so the first content box never jumps. */
+/*
+ * Return stays in document flow under the title band so it never covers
+ * the title/lede (or the logo). Keep a compact control; Escape still works
+ * via HubFeatureReturnButton.
+ */
 .hub-feature > .landing-hub__top + .hub-feature__return-row,
 .landing-hub__content > .hub-feature__return-row:first-child {
-  position: absolute;
-  z-index: 6;
-  /* Clear the logo: logo sits in the outer gutter; return is inside scroll padding. */
-  left: max(
-    0px,
-    calc(
-      var(--hub-logo-inset, 6px) + var(--hub-logo-size, 44px) + 8px -
-        var(--hub-chrome-inset, 14px)
-    )
-  );
-  margin: 0;
+  position: static;
+  z-index: auto;
+  left: auto;
+  top: auto;
+  margin: 0 0 8px;
   padding: 0;
-  height: var(--hub-title-band-height, 52px);
-  pointer-events: none;
-}
-
-.hub-feature > .landing-hub__top + .hub-feature__return-row {
-  top: 0;
-}
-
-.landing-hub__content > .hub-feature__return-row:first-child {
-  top: calc(-1 * (var(--hub-title-band-height, 52px) + 10px));
+  height: auto;
+  min-height: 0;
+  pointer-events: auto;
 }
 
 .hub-feature > .landing-hub__top + .hub-feature__return-row .hub-feature__return,
