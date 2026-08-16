@@ -28,6 +28,9 @@ describe("nbaPlayerUsage", () => {
   beforeEach(() => {
     storage.clear();
     vi.stubGlobal("localStorage", localStorageMock);
+    vi.stubGlobal("crypto", {
+      randomUUID: () => "gm-current",
+    });
   });
 
   afterEach(() => {
@@ -86,27 +89,63 @@ describe("nbaPlayerUsage", () => {
     expect(top.map((row) => row.playerId)).toEqual(["star", "role", "bench"]);
   });
 
-  it("backfills daily lineup history once", () => {
+  it("backfills only the current GM identity's daily history", () => {
     localStorage.setItem(
       "nba-head-to-head-daily-scores",
       JSON.stringify({
         "2026-08-01": [
           {
-            playerId: "gm-1",
+            playerId: "gm-other",
             goalId: "pts",
             mode: "basic",
             value: 100,
             formattedResult: "100",
-            lineup: ["p1", "p2", "p3", "p4", "p5"],
+            lineup: ["x1", "x2", "x3", "x4", "x5"],
             submittedAt: "2026-08-01T12:00:00.000Z",
+          },
+          {
+            playerId: "gm-current",
+            goalId: "pts",
+            mode: "basic",
+            value: 110,
+            formattedResult: "110",
+            lineup: ["p1", "p2", "p3", "p4", "p5"],
+            submittedAt: "2026-08-01T13:00:00.000Z",
           },
         ],
       }),
     );
 
-    expect(backfillNbaPlayerUsageFromDailyScores()).toBe(1);
-    expect(backfillNbaPlayerUsageFromDailyScores()).toBe(0);
-    expect(getMostDraftedNbaPlayers(5)).toHaveLength(5);
-    expect(getMostDraftedNbaPlayers(5)[0]?.byMode.daily?.drafts).toBe(1);
+    expect(backfillNbaPlayerUsageFromDailyScores("gm-current")).toBe(1);
+    expect(backfillNbaPlayerUsageFromDailyScores("gm-current")).toBe(0);
+    expect(getMostDraftedNbaPlayers(10).map((row) => row.playerId)).toEqual([
+      "p1",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+    ]);
+  });
+
+  it("replaces daily usage when the canonical lineup changes", () => {
+    expect(
+      recordNbaPlayerDailyDraftUsage({
+        recordKey: "daily:2026-08-01:basic:gm-current",
+        playerIds: ["a", "b", "c", "d", "e"],
+      }),
+    ).toBe(true);
+    expect(
+      recordNbaPlayerDailyDraftUsage({
+        recordKey: "daily:2026-08-01:basic:gm-current",
+        playerIds: ["a", "b", "c", "d", "z"],
+      }),
+    ).toBe(true);
+
+    const rows = Object.fromEntries(
+      listNbaPlayerUsageRows().map((row) => [row.playerId, row.drafts]),
+    );
+    expect(rows.e).toBeUndefined();
+    expect(rows.z).toBe(1);
+    expect(rows.a).toBe(1);
   });
 });

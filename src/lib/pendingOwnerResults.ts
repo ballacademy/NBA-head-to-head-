@@ -10,6 +10,7 @@ import {
   type ClassicMatchOutcome,
   type RankedMatchOutcome,
 } from "./matchOutcome";
+import { recordNbaPlayerMatchUsage } from "./nbaPlayerUsage";
 import { clearPendingLineupState } from "./pendingLineup";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import type { MatchRecordMode } from "./playerRecord";
@@ -56,6 +57,13 @@ const deliverPendingResult = (
       countTowardStreak: false,
     },
   );
+
+  recordNbaPlayerMatchUsage({
+    recordKey: pending.id,
+    playerIds: pending.ownerLineup,
+    mode: recordMode === "ranked" ? "ranked" : "headToHead",
+    result: pending.ownerResult,
+  });
 
   const banners = outcome.ranked ?? outcome.classic;
   if (banners) {

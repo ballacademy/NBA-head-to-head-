@@ -54,12 +54,17 @@ vi.mock("./matchOutcome", async () => {
   };
 });
 
+vi.mock("./nbaPlayerUsage", () => ({
+  recordNbaPlayerMatchUsage: vi.fn(() => true),
+}));
+
 import {
   acknowledgePendingOwnerResults,
   fetchPendingMatchmakingStatus,
 } from "./ghostMatchmaking";
 import { clearPendingLineupState } from "./pendingLineup";
 import { persistMatchOutcome } from "./matchOutcome";
+import { recordNbaPlayerMatchUsage } from "./nbaPlayerUsage";
 
 const stubStorage = () => {
   const storage = new Map<string, string>();
@@ -114,6 +119,12 @@ describe("pendingOwnerResults", () => {
       "headToHead",
       { opponentElo: 1000, countTowardStreak: false },
     );
+    expect(recordNbaPlayerMatchUsage).toHaveBeenCalledWith({
+      recordKey: "result-1",
+      playerIds: ["a", "b", "c", "d", "e"],
+      mode: "headToHead",
+      result: "win",
+    });
   });
 
   it("delivers every pending result in order", async () => {

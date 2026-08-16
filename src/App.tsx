@@ -429,6 +429,20 @@ function App() {
   const todaysDailyDateKey = useDailyDateKey();
 
   useEffect(() => {
+    if (phase === "playerUsage" && !isQaRuntimeHost()) {
+      setLandingHubTab("account");
+      saveLandingHubTab("account");
+      setPhase("landing");
+      syncLandingDeepLinkUrl({
+        hub: "account",
+        play: null,
+        view: null,
+        post: null,
+      });
+    }
+  }, [phase]);
+
+  useEffect(() => {
     if (!initialPublicTierListId) {
       return;
     }
@@ -2559,6 +2573,9 @@ function App() {
   }
 
   if (phase === "playerUsage") {
+    if (!isQaRuntimeHost()) {
+      return renderHubFeature(<FeaturePageFallback />);
+    }
     return renderHubFeature(
       <InternalPlayerUsagePage onBack={exitFeaturePage} />,
     );
