@@ -11,6 +11,7 @@ import {
   getMatchRecordMode,
   formatPlayerRecord,
   loadPlayerRecord,
+  type PlayerRecord,
 } from "../lib/playerRecord";
 import {
   completeUnlock,
@@ -21,7 +22,10 @@ import {
 } from "../lib/playerCollection";
 import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
-import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
+import {
+  persistMatchOutcome,
+  resolveRecordForMatchDisplay,
+} from "../lib/matchOutcome";
 import { recordNbaPlayerMatchUsage } from "../lib/nbaPlayerUsage";
 import { rememberCommunityShareable } from "../lib/communityShareables";
 import {
@@ -121,6 +125,8 @@ export function MatchResults({
   const [eventProfile, setEventProfile] = useState<EventProfile | null>(() =>
     user.eventId ? loadEventProfile(user.eventId) : null,
   );
+  const [persistedMatchRecord, setPersistedMatchRecord] =
+    useState<PlayerRecord | null>(null);
   const [newEventBadges, setNewEventBadges] = useState<EventBadgeTier[]>([]);
   const [opponentProfileOpen, setOpponentProfileOpen] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "busy" | "error">(
@@ -181,12 +187,23 @@ export function MatchResults({
       };
     }
 
-    return projectRecordAfterMatch(
+    if (persistedMatchRecord) {
+      return persistedMatchRecord;
+    }
+
+    return resolveRecordForMatchDisplay(
       matchResult,
+      matchId,
       matchRecordMode,
-      loadPlayerRecord(matchRecordMode),
     );
-  }, [eventProfile, isEventMatch, matchRecordMode, matchResult]);
+  }, [
+    eventProfile,
+    isEventMatch,
+    matchId,
+    matchRecordMode,
+    matchResult,
+    persistedMatchRecord,
+  ]);
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -300,6 +317,7 @@ export function MatchResults({
           matchRecordMode,
           { opponentElo },
         );
+        setPersistedMatchRecord(outcome.record);
         recordNbaPlayerMatchUsage({
           recordKey: matchId,
           playerIds: userLineup.map((player) => player.id),

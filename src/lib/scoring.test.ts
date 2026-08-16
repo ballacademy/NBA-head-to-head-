@@ -561,9 +561,15 @@ describe("calculateLineupScore", () => {
     expect(score.strengths).not.toContain(
       "Multiple plus defenders with a back-line anchor.",
     );
+    expect(score.strengths).not.toContain(
+      "Enough shooting to keep the floor spaced.",
+    );
     expect(
       score.warnings.some((warning) => /only one plus defender/i.test(warning)),
     ).toBe(true);
+    expect(score.warnings).toContain(
+      "Spacing is fragile; defenses can load the paint.",
+    );
     expect(score.categories[3]?.note).toMatch(/1 plus defender \(B\+\)/);
   });
 
