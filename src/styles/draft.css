@@ -6,25 +6,21 @@
 
 @media (max-width: 720px) {
   .landing-profile-strip__stats {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 
-  .landing-profile-strip__stat:nth-child(-n + 3) {
-    grid-column: span 2;
-  }
-
+  .landing-profile-strip__stat:nth-child(-n + 3),
   .landing-profile-strip__stat:nth-child(n + 4) {
-    /* Keep the second row even: Super Scrubs + Recent All-Stars */
-    grid-column: span 3;
+    grid-column: auto;
   }
 
   .landing-profile-strip__label {
-    font-size: 0.54rem;
+    font-size: 0.86rem;
   }
 
   .landing-profile-strip__stat strong {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
   }
 
   .leaderboard__toolbar--with-tier-info {
