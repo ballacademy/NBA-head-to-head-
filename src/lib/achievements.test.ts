@@ -274,7 +274,9 @@ describe("achievements", () => {
       ),
     ).toBeUndefined();
     expect(
-      progress.achievements.find((achievement) => achievement.id === "ten-wins"),
+      progress.achievements.find(
+        (achievement) => achievement.id === "hundred-wins",
+      ),
     ).toBeUndefined();
     expect(progress.careerProgress).toHaveLength(6);
     expect(progress.special.unlocked).toBe(1);
