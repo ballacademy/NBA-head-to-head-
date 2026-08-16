@@ -6,7 +6,7 @@ import {
   buildSupportMailto,
 } from "../lib/support";
 import { ACTIVE_ROSTER_AS_OF_LABEL } from "../lib/playerPool";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 
 interface BetaNotesPageProps {
   onBack: () => void;
@@ -14,16 +14,13 @@ interface BetaNotesPageProps {
 
 export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
   return (
-    <div className="hub-feature beta-notes-page">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Beta notes</h1>
-        <p className="landing__lede landing-hub__lede">
-          Live modes, known limits, and how to reach us.
-        </p>
-      </div>
-
-      <HubFeatureReturnButton onBack={onBack} visible={false} />
-
+    <HubPageChrome
+      className="beta-notes-page"
+      title="Beta notes"
+      lede="Live modes, known limits, and how to reach us."
+      onBack={onBack}
+      backVisible={false}
+    >
       <section className="hub-feature__panel">
         <div className="legal-page__body beta-notes-body">
           <div className="beta-notes-summary">
@@ -155,6 +152,6 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
           </details>
         </div>
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

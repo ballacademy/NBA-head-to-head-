@@ -44,6 +44,7 @@ import { ModeCardInfo } from "./ModeCardInfo";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { EmptyState } from "./EmptyState";
 import { InlineAlert } from "./InlineAlert";
+import { HubPageChrome } from "./HubPageChrome";
 
 type LeaderboardView = "classic" | "ranked";
 type RankedSort = RankedLeaderboardSort;
@@ -311,14 +312,11 @@ export function LeaderboardPage() {
   const seasonMeta = `${formatSeasonLabel(seasonId)} · Monthly reset`;
 
   return (
-    <div className="hub-feature leaderboard">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Ranks</h1>
-        <p className="landing__lede landing-hub__lede">
-          Classic and Pro.
-        </p>
-      </div>
-
+    <HubPageChrome
+      className="leaderboard"
+      title="Ranks"
+      lede="Classic and Pro."
+    >
       {refreshFailed ? (
         <InlineAlert
           message="Couldn't refresh leaderboards."
@@ -455,6 +453,6 @@ export function LeaderboardPage() {
           />
         )}
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

@@ -92,6 +92,15 @@
   --accent-neutral-soft: rgba(148, 163, 184, 0.12);
   --accent-neutral-border: rgba(148, 163, 184, 0.28);
   --accent-neutral-glow: rgba(148, 163, 184, 0.1);
+
+  /*
+   * Accent application tiers (see utilities.css):
+   *   .accent-rail  — left inset only (mode cards, chooser rows)
+   *   .accent-cta   — filled primary button glow
+   *   .accent-chip  — soft fill + border (filters, tags)
+   *   .accent-nav   — soft pill + bottom bar (bottom nav active)
+   * Prefer rail/border for hover; reserve glow for CTAs.
+   */
   --hub-subbox-bg: #141820;
   --hub-subbox-border: rgba(226, 232, 240, 0.12);
   --hub-subbox-shadow:

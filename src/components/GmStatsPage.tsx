@@ -12,7 +12,7 @@ import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
@@ -71,21 +71,14 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
   const peakBannerTier = formatLegacyPeakBannerTier(snapshot.legacy.peakElo);
 
   return (
-    <div className="hub-feature gm-stats-page">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title landing-hub__title--name">
-          {snapshot.teamName}
-        </h1>
-        <p className="landing__lede landing-hub__lede">
-          {snapshot.totalWins}–{snapshot.totalLosses} · Pro{" "}
-          {formatRatingPoints(snapshot.ranked.elo)} · Casual{" "}
-          {formatRatingPoints(snapshot.classic.elo)} ·{" "}
-          {snapshot.currentSeasonLabel}
-        </p>
-      </div>
-
-      <HubFeatureReturnButton onBack={onBack} label="Account" />
-
+    <HubPageChrome
+      className="gm-stats-page"
+      title={snapshot.teamName}
+      titleClassName="landing-hub__title--name"
+      lede={`${snapshot.totalWins}–${snapshot.totalLosses} · Pro ${formatRatingPoints(snapshot.ranked.elo)} · Casual ${formatRatingPoints(snapshot.classic.elo)} · ${snapshot.currentSeasonLabel}`}
+      onBack={onBack}
+      backLabel="Account"
+    >
       <WeeklyGmRecapCard />
 
       <section className="hub-feature__panel">
@@ -215,6 +208,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         />
       </section>
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

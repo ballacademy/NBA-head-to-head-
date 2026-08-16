@@ -1,5 +1,5 @@
 import { SUPPORT_EMAIL } from "../lib/support";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 
 type LegalPageKind = "privacy" | "terms";
 
@@ -430,14 +430,12 @@ export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
   const title = kind === "privacy" ? "Privacy Policy" : "Terms of Use";
 
   return (
-    <div className="hub-feature legal-page">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title">{title}</h1>
-        <p className="landing__lede landing-hub__lede">Site policies</p>
-      </div>
-
-      <HubFeatureReturnButton onBack={onBack} />
-
+    <HubPageChrome
+      className="legal-page"
+      title={title}
+      lede="Site policies"
+      onBack={onBack}
+    >
       <section className="hub-feature__panel">
         <div className="legal-page__body">
           {kind === "privacy" ? (
@@ -447,6 +445,6 @@ export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
           )}
         </div>
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

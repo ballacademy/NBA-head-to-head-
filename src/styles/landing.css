@@ -75,27 +75,28 @@
 
 .account-section__legal-strip {
   display: grid;
-  gap: 8px;
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  gap: 2px;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.account-section__legal-strip .landing-disclaimer {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .account-section__legal-strip .landing-footer {
-  margin: 2px 0 0;
+  margin: 0;
+  justify-content: flex-start;
 }
 
 .account-section__legal-strip .landing-credit {
-  margin: 4px 0 0;
-  padding-top: 10px;
-}
-
-.account-section--legal {
-  gap: 8px;
-  padding: 12px 14px;
-  border-color: rgba(148, 163, 184, 0.14);
-  background: transparent;
-  box-shadow: none;
+  margin: 2px 0 0;
+  padding-top: 0;
+  font-size: 0.68rem;
+  opacity: 0.85;
 }
 
 .account-section__eyebrow {
@@ -296,11 +297,11 @@
   --hub-accent-soft: var(--accent-roster-soft);
   --hub-accent-border: var(--accent-roster-border);
   margin-top: 0;
-  padding: 12px 14px;
-  border: 1px solid var(--hub-subbox-border);
-  border-radius: 16px;
-  background: var(--hub-subbox-bg);
-  box-shadow: inset 3px 0 0 var(--hub-accent);
+  padding: 2px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .landing-profile-strip__stats {
