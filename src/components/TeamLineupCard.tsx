@@ -24,6 +24,14 @@ interface TeamLineupCardProps {
   compact?: boolean;
   showProjectedRecord?: boolean;
   showScoreContext?: boolean;
+  /**
+   * Matchup compare layout: side-by-side friendly denser rows, with a
+   * stats expand control on narrow viewports.
+   */
+  compareLayout?: boolean;
+  /** Controlled expand for compare-layout player stats (shared across both cards). */
+  playerStatsOpen?: boolean;
+  onPlayerStatsOpenChange?: (open: boolean) => void;
   /** Opens the same GM profile modal as leaderboard username clicks. */
   onNameClick?: () => void;
 }
@@ -40,6 +48,9 @@ export function TeamLineupCard({
   compact = false,
   showProjectedRecord = true,
   showScoreContext = false,
+  compareLayout = false,
+  playerStatsOpen: playerStatsOpenProp,
+  onPlayerStatsOpenChange,
   onNameClick,
 }: TeamLineupCardProps) {
   const resolvedOutcome = outcome ?? (isWinner ? "win" : undefined);
@@ -53,7 +64,11 @@ export function TeamLineupCard({
     ((insights?.boosts.length ?? 0) > 0 ||
       (insights?.detractors.length ?? 0) > 0);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const [uncontrolledStatsOpen, setUncontrolledStatsOpen] = useState(false);
+  const playerStatsOpen = playerStatsOpenProp ?? uncontrolledStatsOpen;
+  const setPlayerStatsOpen = onPlayerStatsOpenChange ?? setUncontrolledStatsOpen;
   const breakdownId = useId();
+  const playerStatsId = useId();
   const teamName = drafter.name.trim() || "Opponent";
   const username = drafter.username?.trim() || undefined;
 
@@ -73,6 +88,8 @@ export function TeamLineupCard({
       className={[
         "team-lineup-card",
         compact ? "team-lineup-card--compact" : "panel",
+        compareLayout ? "team-lineup-card--compare" : "",
+        playerStatsOpen ? "team-lineup-card--stats-open" : "",
         resolvedOutcome === "win" || isWinner ? "winner" : "",
         resolvedOutcome === "loss" ? "team-lineup-card--loss" : "",
         resolvedOutcome === "tie" ? "team-lineup-card--tie" : "",
@@ -208,7 +225,20 @@ export function TeamLineupCard({
 
       <LineupChemistryBadges lineup={lineup} />
 
-      <div className="team-lineup-card__players">
+      {compareLayout ? (
+        <button
+          type="button"
+          className="team-lineup-card__stats-toggle"
+          aria-expanded={playerStatsOpen}
+          aria-controls={playerStatsId}
+          onClick={() => setPlayerStatsOpen((open) => !open)}
+        >
+          {playerStatsOpen ? "Hide player stats" : "Show player stats"}
+          <span aria-hidden="true">{playerStatsOpen ? "−" : "+"}</span>
+        </button>
+      ) : null}
+
+      <div className="team-lineup-card__players" id={playerStatsId}>
         {orderedLineup.length > 0 ? (
           orderedLineup.map((player) => (
             <PlayerStatLine

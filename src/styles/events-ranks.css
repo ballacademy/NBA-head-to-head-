@@ -603,6 +603,10 @@
   font-weight: 600;
 }
 
+.player-stat-line__meta--dense {
+  display: none;
+}
+
 .player-stat-line__goal-stat {
   flex: 0 0 auto;
   margin-left: 4px;

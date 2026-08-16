@@ -137,6 +137,7 @@ export function MatchResults({
   );
   const [ghostOutcomeFailed, setGhostOutcomeFailed] = useState(false);
   const [ghostOutcomeRetryBusy, setGhostOutcomeRetryBusy] = useState(false);
+  const [compareStatsOpen, setCompareStatsOpen] = useState(false);
   const [eventLeaderboardSyncFailed, setEventLeaderboardSyncFailed] =
     useState(false);
   const [eventLeaderboardRetryBusy, setEventLeaderboardRetryBusy] =
@@ -831,6 +832,9 @@ export function MatchResults({
               showStreak={showCompetitiveStreak}
               showScoreContext
               compact
+              compareLayout
+              playerStatsOpen={compareStatsOpen}
+              onPlayerStatsOpenChange={setCompareStatsOpen}
             />
           </div>
 
@@ -851,6 +855,9 @@ export function MatchResults({
               outcome={isTie ? "tie" : userWon ? "loss" : "win"}
               showScoreContext
               compact
+              compareLayout
+              playerStatsOpen={compareStatsOpen}
+              onPlayerStatsOpenChange={setCompareStatsOpen}
               onNameClick={
                 canOpenOpponentProfile ? openOpponentProfile : undefined
               }
