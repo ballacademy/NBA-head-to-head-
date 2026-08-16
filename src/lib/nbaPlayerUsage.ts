@@ -1,5 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
-import type { HeadToHeadResult } from "./playerRecord";
+import { getOrCreatePlayerId, type HeadToHeadResult } from "./playerRecord";
 
 const USAGE_KEY = "nba-head-to-head-nba-player-usage";
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
@@ -25,6 +25,8 @@ export interface NbaPlayerUsageStore {
   /** Match / daily attempt keys already applied (dedupe). */
   recordedKeys: string[];
   dailyBackfillDone?: boolean;
+  /** Last lineup attributed per daily record key (canonical replace). */
+  dailyLineups?: Record<string, string[]>;
 }
 
 export interface NbaPlayerUsageRow {
@@ -49,6 +51,7 @@ const emptyStore = (): NbaPlayerUsageStore => ({
   byPlayerId: {},
   recordedKeys: [],
   dailyBackfillDone: false,
+  dailyLineups: {},
 });
 
 const sanitizeMode = (value: unknown): NbaPlayerModeUsage => {
@@ -63,6 +66,17 @@ const sanitizeMode = (value: unknown): NbaPlayerModeUsage => {
     losses: Math.max(0, Math.floor(Number(row.losses) || 0)),
     ties: Math.max(0, Math.floor(Number(row.ties) || 0)),
   };
+};
+
+const uniquePlayerIds = (playerIds: string[]) =>
+  [...new Set(playerIds.filter((id) => typeof id === "string" && id.length > 0))];
+
+const sameIdSet = (left: string[], right: string[]) => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  const rightSet = new Set(right);
+  return left.every((id) => rightSet.has(id));
 };
 
 export const loadNbaPlayerUsageStore = (): NbaPlayerUsageStore => {
@@ -99,11 +113,21 @@ export const loadNbaPlayerUsageStore = (): NbaPlayerUsageStore => {
       )
     : [];
 
+  const dailyLineups: Record<string, string[]> = {};
+  if (saved.dailyLineups && typeof saved.dailyLineups === "object") {
+    for (const [key, lineup] of Object.entries(saved.dailyLineups)) {
+      if (typeof key === "string" && Array.isArray(lineup)) {
+        dailyLineups[key] = uniquePlayerIds(lineup);
+      }
+    }
+  }
+
   return {
     version: 1,
     byPlayerId,
     recordedKeys,
     dailyBackfillDone: Boolean(saved.dailyBackfillDone),
+    dailyLineups,
   };
 };
 
@@ -127,16 +151,21 @@ const bumpMode = (
   const modes = store.byPlayerId[playerId] ?? {};
   const current = modes[mode] ?? emptyMode();
   modes[mode] = {
-    drafts: current.drafts + (patch.drafts ?? 0),
-    wins: current.wins + (patch.wins ?? 0),
-    losses: current.losses + (patch.losses ?? 0),
-    ties: current.ties + (patch.ties ?? 0),
+    drafts: Math.max(0, current.drafts + (patch.drafts ?? 0)),
+    wins: Math.max(0, current.wins + (patch.wins ?? 0)),
+    losses: Math.max(0, current.losses + (patch.losses ?? 0)),
+    ties: Math.max(0, current.ties + (patch.ties ?? 0)),
   };
-  store.byPlayerId[playerId] = modes;
+  const next = modes[mode]!;
+  if (next.drafts === 0 && next.wins === 0 && next.losses === 0 && next.ties === 0) {
+    delete modes[mode];
+  }
+  if (Object.keys(modes).length === 0) {
+    delete store.byPlayerId[playerId];
+  } else {
+    store.byPlayerId[playerId] = modes;
+  }
 };
-
-const uniquePlayerIds = (playerIds: string[]) =>
-  [...new Set(playerIds.filter((id) => typeof id === "string" && id.length > 0))];
 
 const resultPatch = (
   result: HeadToHeadResult,
@@ -176,7 +205,9 @@ export const recordNbaPlayerMatchUsage = (params: {
 };
 
 /**
- * Daily Draft: draft counts only (no W/L). Deduped by date+mode key.
+ * Daily Draft: draft counts only (no W/L).
+ * Deduped by date+mode+gm key. If the canonical lineup later changes
+ * (409 adopt), reverse the prior attribution and apply the new one.
  */
 export const recordNbaPlayerDailyDraftUsage = (params: {
   recordKey: string;
@@ -188,30 +219,52 @@ export const recordNbaPlayerDailyDraftUsage = (params: {
   }
 
   const store = loadNbaPlayerUsageStore();
-  if (store.recordedKeys.includes(params.recordKey)) {
+  const previous = store.dailyLineups?.[params.recordKey];
+  if (previous && sameIdSet(previous, playerIds)) {
     return false;
+  }
+
+  if (previous) {
+    for (const playerId of previous) {
+      bumpMode(store, playerId, "daily", { drafts: -1 });
+    }
   }
 
   for (const playerId of playerIds) {
     bumpMode(store, playerId, "daily", { drafts: 1 });
   }
+
+  store.dailyLineups = {
+    ...(store.dailyLineups ?? {}),
+    [params.recordKey]: playerIds,
+  };
   rememberKey(store, params.recordKey);
   saveNbaPlayerUsageStore(store);
   return true;
 };
 
-/** One-time seed from local Daily Draft lineup history. */
-export const backfillNbaPlayerUsageFromDailyScores = (): number => {
+/**
+ * One-time seed from local Daily Draft lineup history for the **current** GM
+ * identity only (ignores leftover rows from other identities on this device).
+ */
+export const backfillNbaPlayerUsageFromDailyScores = (
+  gmPlayerId = getOrCreatePlayerId(),
+): number => {
   const store = loadNbaPlayerUsageStore();
   if (store.dailyBackfillDone) {
     return 0;
   }
 
-  const allScores = readJson<Record<string, Array<{
-    playerId?: string;
-    mode?: string;
-    lineup?: string[];
-  }>>>(DAILY_SCORES_KEY);
+  const allScores = readJson<
+    Record<
+      string,
+      Array<{
+        playerId?: string;
+        mode?: string;
+        lineup?: string[];
+      }>
+    >
+  >(DAILY_SCORES_KEY);
   let applied = 0;
 
   for (const [dateKey, entries] of Object.entries(allScores ?? {})) {
@@ -223,14 +276,38 @@ export const backfillNbaPlayerUsageFromDailyScores = (): number => {
       if (!Array.isArray(lineup) || lineup.length === 0) {
         continue;
       }
-      const mode = entry.mode === "advanced" ? "advanced" : "basic";
-      const recordKey = `daily:${dateKey}:${mode}:${entry.playerId ?? "local"}`;
-      if (store.recordedKeys.includes(recordKey)) {
+
+      const entryGmId =
+        typeof entry.playerId === "string" && entry.playerId.length > 0
+          ? entry.playerId
+          : gmPlayerId;
+      if (entryGmId !== gmPlayerId) {
         continue;
       }
-      for (const playerId of uniquePlayerIds(lineup)) {
+
+      const mode = entry.mode === "advanced" ? "advanced" : "basic";
+      const recordKey = `daily:${dateKey}:${mode}:${gmPlayerId}`;
+      const playerIds = uniquePlayerIds(lineup);
+      const previous = store.dailyLineups?.[recordKey];
+      if (previous && sameIdSet(previous, playerIds)) {
+        continue;
+      }
+      if (store.recordedKeys.includes(recordKey) && !previous) {
+        // Legacy key without lineup snapshot — don't double-count.
+        continue;
+      }
+      if (previous) {
+        for (const playerId of previous) {
+          bumpMode(store, playerId, "daily", { drafts: -1 });
+        }
+      }
+      for (const playerId of playerIds) {
         bumpMode(store, playerId, "daily", { drafts: 1 });
       }
+      store.dailyLineups = {
+        ...(store.dailyLineups ?? {}),
+        [recordKey]: playerIds,
+      };
       rememberKey(store, recordKey);
       applied += 1;
     }
