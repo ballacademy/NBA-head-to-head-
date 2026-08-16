@@ -82,7 +82,7 @@ export interface Drafter {
   privateMatch?: boolean;
   /** Weekly Events mode id (e.g. 2026-W30-u25). */
   eventId?: string;
-  eventRestriction?: "u25" | "intl";
+  eventRestriction?: "u25" | "intl" | "nostars" | "bargain";
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
   isGhostOpponent?: boolean;

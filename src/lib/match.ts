@@ -39,7 +39,7 @@ export interface StartDraftOptions {
     | { role: "host" }
     | { role: "guest"; roomCode: string };
   eventId?: string;
-  eventRestriction?: "u25" | "intl";
+  eventRestriction?: "u25" | "intl" | "nostars" | "bargain";
   /** When set, both competitors use these exact draft slots. */
   sharedDraftSlots?: DraftSlotConstraint[];
 }

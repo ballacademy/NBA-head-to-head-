@@ -1,12 +1,13 @@
 import internationalPlayerIds from "../../data/international-player-ids.json";
+import { isAllStarPlayer, isSuperstarPlayer } from "./allStars";
 import {
   generateFeasibleDraftSlotsUnderSalaryCap,
 } from "./draft";
 import { createSeededRandom } from "./seededRandom";
-import { RANKED_SALARY_CAP } from "./salaryCap";
+import { BUDGET_BADGE_SALARY_MAX, RANKED_SALARY_CAP } from "./salaryCap";
 import type { DraftSlotConstraint, Player } from "./types";
 
-export type EventRestrictionId = "u25" | "intl";
+export type EventRestrictionId = "u25" | "intl" | "nostars" | "bargain";
 
 export type EventBadgeTier = "participation" | "bronze" | "silver" | "gold";
 
@@ -23,8 +24,18 @@ export interface WeeklyEventDefinition {
 }
 
 export const EVENT_SALARY_CAP = RANKED_SALARY_CAP;
+/** Bargain Bin runs a tighter team cap than other weekly events. */
+export const EVENT_BARGAIN_SALARY_CAP = BUDGET_BADGE_SALARY_MAX;
 export const EVENT_MAX_MATCHES = 30;
 export const EVENT_LEADERBOARD_LIMIT = 100;
+
+/** Weekly rotation order (ISO week number % length). */
+export const EVENT_RESTRICTION_ROTATION = [
+  "u25",
+  "intl",
+  "nostars",
+  "bargain",
+] as const satisfies readonly EventRestrictionId[];
 
 export const EVENT_BADGE_THRESHOLDS: Record<EventBadgeTier, number> = {
   participation: 10,
@@ -36,6 +47,8 @@ export const EVENT_BADGE_THRESHOLDS: Record<EventBadgeTier, number> = {
 const INTERNATIONAL_BBR_IDS = new Set(
   (internationalPlayerIds as { playerIds: string[] }).playerIds,
 );
+
+const EVENT_ID_PATTERN = /^(\d{4}-W\d{2})-(u25|intl|nostars|bargain)$/;
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
 
@@ -60,14 +73,17 @@ export const formatEventWeekLabel = (weekId: string) => {
   return `Week ${Number(match[2])} · ${match[1]}`;
 };
 
-export const isValidEventId = (value: string) =>
-  /^\d{4}-W\d{2}-(u25|intl)$/.test(value);
+export const isValidEventId = (value: string) => EVENT_ID_PATTERN.test(value);
 
 export const getEventRestrictionForWeek = (
   weekId: string,
 ): EventRestrictionId => {
   const weekNumber = Number(weekId.slice(-2));
-  return weekNumber % 2 === 0 ? "u25" : "intl";
+  const index =
+    ((weekNumber % EVENT_RESTRICTION_ROTATION.length) +
+      EVENT_RESTRICTION_ROTATION.length) %
+    EVENT_RESTRICTION_ROTATION.length;
+  return EVENT_RESTRICTION_ROTATION[index]!;
 };
 
 export const buildEventId = (
@@ -90,26 +106,86 @@ export const isInternationalEventPlayer = (player: Player) =>
 export const isUnder25EventPlayer = (player: Player) =>
   typeof player.age === "number" && player.age <= 25;
 
+/** Role-player pool: no current All-Stars or superstars. */
+export const isNoStarsEventPlayer = (player: Player) =>
+  !isAllStarPlayer(player) && !isSuperstarPlayer(player);
+
+/** Full pool under a tighter salary cap — eligibility is everyone. */
+export const isBargainBinEventPlayer = (_player: Player) => true;
+
 export const filterPlayersForEventRestriction = (
   players: Player[],
   restriction: EventRestrictionId,
-) =>
-  players.filter((player) =>
-    restriction === "u25"
-      ? isUnder25EventPlayer(player)
-      : isInternationalEventPlayer(player),
-  );
+) => {
+  switch (restriction) {
+    case "u25":
+      return players.filter(isUnder25EventPlayer);
+    case "intl":
+      return players.filter(isInternationalEventPlayer);
+    case "nostars":
+      return players.filter(isNoStarsEventPlayer);
+    case "bargain":
+      return players.filter(isBargainBinEventPlayer);
+    default: {
+      const _exhaustive: never = restriction;
+      return _exhaustive;
+    }
+  }
+};
 
-export const getEventRestrictionLabel = (restriction: EventRestrictionId) =>
-  restriction === "u25" ? "25 & Under" : "International Only";
+export const getEventSalaryCap = (restriction: EventRestrictionId) =>
+  restriction === "bargain" ? EVENT_BARGAIN_SALARY_CAP : EVENT_SALARY_CAP;
 
-export const getEventTitle = (restriction: EventRestrictionId) =>
-  restriction === "u25" ? "Rising Stars Gauntlet" : "World Squad Challenge";
+export const getEventRestrictionLabel = (restriction: EventRestrictionId) => {
+  switch (restriction) {
+    case "u25":
+      return "25 & Under";
+    case "intl":
+      return "International Only";
+    case "nostars":
+      return "No Stars Allowed";
+    case "bargain":
+      return "Bargain Bin · $50M Cap";
+    default: {
+      const _exhaustive: never = restriction;
+      return _exhaustive;
+    }
+  }
+};
 
-export const getEventDescription = (restriction: EventRestrictionId) =>
-  restriction === "u25"
-    ? "Head-to-head with a shared board. Only players age 25 and under are eligible."
-    : "Head-to-head with a shared board. Only international players are eligible.";
+export const getEventTitle = (restriction: EventRestrictionId) => {
+  switch (restriction) {
+    case "u25":
+      return "Young and Coming";
+    case "intl":
+      return "World Squad Challenge";
+    case "nostars":
+      return "No Stars Allowed";
+    case "bargain":
+      return "Bargain Bin";
+    default: {
+      const _exhaustive: never = restriction;
+      return _exhaustive;
+    }
+  }
+};
+
+export const getEventDescription = (restriction: EventRestrictionId) => {
+  switch (restriction) {
+    case "u25":
+      return "Head-to-head with a shared board. Only players age 25 and under are eligible.";
+    case "intl":
+      return "Head-to-head with a shared board. Only international players are eligible.";
+    case "nostars":
+      return "Head-to-head with a shared board. All-Stars and superstars are locked out.";
+    case "bargain":
+      return "Head-to-head with a shared board and a strict $50M salary cap.";
+    default: {
+      const _exhaustive: never = restriction;
+      return _exhaustive;
+    }
+  }
+};
 
 export const buildSharedEventDraftSlots = (
   pool: Player[],
@@ -127,13 +203,14 @@ export const getCurrentWeeklyEvent = (
   const weekId = getIsoWeekId(date);
   const restriction = getEventRestrictionForWeek(weekId);
   const id = buildEventId(weekId, restriction);
+  const salaryCapLimit = getEventSalaryCap(restriction);
   const pool = filterPlayersForEventRestriction(players, restriction);
 
   if (pool.length < 25) {
     return null;
   }
 
-  const sharedSlots = buildSharedEventDraftSlots(pool, id);
+  const sharedSlots = buildSharedEventDraftSlots(pool, id, salaryCapLimit);
 
   if (sharedSlots.length !== 5) {
     return null;
@@ -146,7 +223,7 @@ export const getCurrentWeeklyEvent = (
     description: getEventDescription(restriction),
     restriction,
     restrictionLabel: getEventRestrictionLabel(restriction),
-    salaryCapLimit: EVENT_SALARY_CAP,
+    salaryCapLimit,
     maxMatches: EVENT_MAX_MATCHES,
     sharedSlots,
   };
@@ -254,7 +331,7 @@ export const getCurrentEventMeta = (date: Date = new Date()) => {
 };
 
 export const describeEventFromId = (eventId: string) => {
-  const match = /^(\d{4}-W\d{2})-(u25|intl)$/.exec(eventId);
+  const match = EVENT_ID_PATTERN.exec(eventId);
 
   if (!match) {
     return {
