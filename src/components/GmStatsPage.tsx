@@ -7,19 +7,13 @@ import {
   formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
-import {
-  canShowMostDraftedBoards,
-  getMostDraftedNbaPlayersForMode,
-  MOST_DRAFTED_BOARD_LABELS,
-  type MostDraftedBoardMode,
-} from "../lib/nbaPlayerUsage";
-import { players as allPlayers } from "../data/players";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { HubPageChrome } from "./HubPageChrome";
+import { MostDraftedBoards } from "./MostDraftedBoards";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
@@ -50,17 +44,9 @@ const formatPercentileStat = (value: number | null) =>
 const formatCollectionCount = (unlocked: number, total: number) =>
   `${unlocked} of ${total}`;
 
-const MOST_DRAFTED_MODES: MostDraftedBoardMode[] = [
-  "headToHead",
-  "ranked",
-  "daily",
-];
-
 export function GmStatsPage({ onBack }: GmStatsPageProps) {
   const teamName = loadTeamProfile()?.name ?? "Your team";
   const [legacyTick, setLegacyTick] = useState(0);
-  const [mostDraftedMode, setMostDraftedMode] =
-    useState<MostDraftedBoardMode | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,41 +70,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
     [teamName, legacyTick],
   );
   const peakBannerTier = formatLegacyPeakBannerTier(snapshot.legacy.peakElo);
-  const nameById = useMemo(
-    () => new Map(allPlayers.map((player) => [player.id, player.name])),
-    [],
-  );
-  const showMostDrafted = useMemo(
-    () => canShowMostDraftedBoards(),
-    [legacyTick],
-  );
-  const mostDraftedSummaries = useMemo(() => {
-    if (!showMostDrafted) {
-      return [];
-    }
-    return MOST_DRAFTED_MODES.map((mode) => {
-      const top = getMostDraftedNbaPlayersForMode(mode, 10);
-      const leader = top[0] ?? null;
-      return {
-        mode,
-        label: MOST_DRAFTED_BOARD_LABELS[mode],
-        count: top.length,
-        leaderName: leader
-          ? (nameById.get(leader.playerId) ?? leader.playerId)
-          : null,
-        leaderDrafts: leader?.drafts ?? 0,
-      };
-    });
-  }, [legacyTick, nameById, showMostDrafted]);
-  const mostDraftedDetail = useMemo(() => {
-    if (!mostDraftedMode) {
-      return [];
-    }
-    return getMostDraftedNbaPlayersForMode(mostDraftedMode, 10).map((row) => ({
-      ...row,
-      name: nameById.get(row.playerId) ?? row.playerId,
-    }));
-  }, [mostDraftedMode, nameById, legacyTick]);
 
   return (
     <HubPageChrome
@@ -243,79 +194,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
           />
         </section>
 
-        {showMostDrafted ? (
-          <section className="gm-stats-page__section">
-            <div className="gm-stats-page__section-heading">
-              <h2>
-                {mostDraftedMode
-                  ? `Most drafted · ${MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]}`
-                  : "Most drafted"}
-              </h2>
-              {mostDraftedMode ? (
-                <button
-                  type="button"
-                  className="gm-stats-page__section-back"
-                  onClick={() => setMostDraftedMode(null)}
-                >
-                  All modes
-                </button>
-              ) : null}
-            </div>
-
-            {mostDraftedMode ? (
-              mostDraftedDetail.length === 0 ? (
-                <p className="gm-stats-page__section-copy">
-                  No {MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]} drafts yet.
-                </p>
-              ) : (
-                <ol className="gm-stats-page__most-drafted">
-                  {mostDraftedDetail.map((row, index) => (
-                    <li
-                      key={row.playerId}
-                      className="gm-stats-page__most-drafted-row"
-                    >
-                      <span className="gm-stats-page__most-drafted-rank">
-                        {index + 1}.
-                      </span>
-                      <span className="gm-stats-page__most-drafted-name">
-                        {row.name}
-                      </span>
-                      <span className="gm-stats-page__most-drafted-meta">
-                        {row.drafts} draft{row.drafts === 1 ? "" : "s"}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              )
-            ) : (
-              <div className="gm-stats-page__most-drafted-boards">
-                {mostDraftedSummaries.map((board) => (
-                  <button
-                    key={board.mode}
-                    type="button"
-                    className="gm-stats-page__most-drafted-board"
-                    onClick={() => setMostDraftedMode(board.mode)}
-                  >
-                    <span className="gm-stats-page__most-drafted-board-label">
-                      {board.label}
-                    </span>
-                    <span className="gm-stats-page__most-drafted-board-meta">
-                      {board.leaderName
-                        ? `${board.leaderName} · ${board.leaderDrafts}`
-                        : "No drafts yet"}
-                    </span>
-                    <span
-                      className="gm-stats-page__most-drafted-board-chevron"
-                      aria-hidden="true"
-                    >
-                      ›
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        ) : null}
+        <MostDraftedBoards refreshKey={legacyTick} />
 
         <section className="gm-stats-page__section">
           <h2>Collection</h2>

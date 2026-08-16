@@ -1,0 +1,190 @@
+import { useEffect, useMemo } from "react";
+import { evaluateCareerProgressAchievements } from "../lib/achievements";
+import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
+import { formatOrdinal } from "../lib/ordinal";
+import type { CollectionTier } from "../lib/playerCollection";
+import { loadTeamProfile } from "../lib/teamProfile";
+import { MostDraftedBoards } from "./MostDraftedBoards";
+import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
+
+type CollectionProgress = ReturnType<
+  typeof import("../lib/playerCollection").getCollectionProgress
+>;
+
+interface FranchiseHubPanelProps {
+  collectionProgress: CollectionProgress;
+  collectionTier: CollectionTier | null;
+  onSelectTier: (tier: CollectionTier) => void;
+  onViewStats: () => void;
+  onViewAchievements: () => void;
+  onViewGmStats: () => void;
+  onPlayDaily: () => void;
+}
+
+const formatPercentile = (value: number | null) =>
+  value != null ? formatOrdinal(Math.round(value)) : "—";
+
+export function FranchiseHubPanel({
+  collectionProgress,
+  collectionTier,
+  onSelectTier,
+  onViewStats,
+  onViewAchievements,
+  onViewGmStats,
+  onPlayDaily,
+}: FranchiseHubPanelProps) {
+  const dailyDraft = useMemo(() => {
+    const teamName = loadTeamProfile()?.name ?? "Your team";
+    return buildLocalGmStatsSnapshot(teamName).dailyDraft;
+  }, []);
+
+  return (
+    <div className="franchise-home">
+      <WeeklyGmRecapCard variant="compact" onViewGmStats={onViewGmStats} />
+
+      <section
+        className="franchise-home__daily landing-card"
+        aria-label="Daily Draft progress"
+      >
+        <div className="franchise-home__daily-copy">
+          <p className="franchise-home__eyebrow">Daily Draft</p>
+          <p className="franchise-home__daily-line">
+            {dailyDraft.daysPlayed} day{dailyDraft.daysPlayed === 1 ? "" : "s"}{" "}
+            · Basic {dailyDraft.basicStreakLabel} · Adv{" "}
+            {dailyDraft.advancedStreakLabel}
+          </p>
+          <p className="franchise-home__daily-meta">
+            Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
+            {formatPercentile(dailyDraft.averagePercentile)}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="franchise-home__daily-cta secondary-button"
+          onClick={onPlayDaily}
+        >
+          Play Daily
+        </button>
+      </section>
+
+      <div className="landing-profile-strip landing-card landing-card--profile">
+        <div className="landing-profile-strip__header">
+          <p className="landing-profile-strip__title">Collection</p>
+          <p className="landing-profile-strip__hint">
+            Tap a category to view unlocked players
+          </p>
+        </div>
+        <div
+          className="landing-profile-strip__stats"
+          aria-label="Player collection by category"
+        >
+          <button
+            type="button"
+            className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+              collectionTier === "all-star" ? " is-active" : ""
+            }`}
+            onClick={() => onSelectTier("all-star")}
+            aria-pressed={collectionTier === "all-star"}
+            aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
+          >
+            <span className="landing-profile-strip__label">All-Stars</span>
+            <strong>
+              {collectionProgress.unlocked}/{collectionProgress.total}
+            </strong>
+          </button>
+          <button
+            type="button"
+            className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+              collectionTier === "superstar" ? " is-active" : ""
+            }`}
+            onClick={() => onSelectTier("superstar")}
+            aria-pressed={collectionTier === "superstar"}
+            aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
+          >
+            <span className="landing-profile-strip__label">Superstars</span>
+            <strong>
+              {collectionProgress.superstarUnlocked}/
+              {collectionProgress.superstarTotal}
+            </strong>
+          </button>
+          <button
+            type="button"
+            className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+              collectionTier === "scrub" ? " is-active" : ""
+            }`}
+            onClick={() => onSelectTier("scrub")}
+            aria-pressed={collectionTier === "scrub"}
+            aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
+          >
+            <span className="landing-profile-strip__label">Scrubs</span>
+            <strong>
+              {collectionProgress.unlockedScrubs}/
+              {collectionProgress.scrubPool}
+            </strong>
+          </button>
+          <button
+            type="button"
+            className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+              collectionTier === "super-scrub" ? " is-active" : ""
+            }`}
+            onClick={() => onSelectTier("super-scrub")}
+            aria-pressed={collectionTier === "super-scrub"}
+            aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
+          >
+            <span className="landing-profile-strip__label">Super Scrubs</span>
+            <strong>
+              {collectionProgress.unlockedSuperScrubs}/
+              {collectionProgress.superScrubPool}
+            </strong>
+          </button>
+          <button
+            type="button"
+            className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
+              collectionTier === "recent-all-star" ? " is-active" : ""
+            }`}
+            onClick={() => onSelectTier("recent-all-star")}
+            aria-pressed={collectionTier === "recent-all-star"}
+            aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
+          >
+            <span className="landing-profile-strip__label">
+              Recent All-Stars
+            </span>
+            <strong>
+              {collectionProgress.recentUnlocked}/
+              {collectionProgress.recentTotal}
+            </strong>
+          </button>
+        </div>
+        <p className="landing-profile-strip__meta franchise-home__collection-meta">
+          Win to unlock All-Stars, lose to unlock Scrubs.
+        </p>
+      </div>
+
+      <nav className="franchise-home__links" aria-label="Franchise pages">
+        <button
+          type="button"
+          className="franchise-home__link"
+          onClick={onViewAchievements}
+        >
+          Badges
+        </button>
+        <button
+          type="button"
+          className="franchise-home__link"
+          onClick={onViewStats}
+        >
+          Season Stats
+        </button>
+        <button
+          type="button"
+          className="franchise-home__link"
+          onClick={onViewGmStats}
+        >
+          GM Stats
+        </button>
+      </nav>
+
+      <MostDraftedBoards />
+    </div>
+  );
+}

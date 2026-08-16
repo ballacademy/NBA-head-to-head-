@@ -6,70 +6,68 @@ export type AchievementPlayHint = {
   ctaLabel: string;
 };
 
+const CASUAL_H2H: AchievementPlayHint = {
+  playSection: "headToHead",
+  h2hMode: "classic",
+  ctaLabel: "Play Casual Head to Head",
+};
+
+const PRO_H2H: AchievementPlayHint = {
+  playSection: "headToHead",
+  h2hMode: "ranked",
+  ctaLabel: "Play Pro Head to Head",
+};
+
+const DAILY: AchievementPlayHint = {
+  playSection: "daily",
+  ctaLabel: "Play Daily Draft",
+};
+
 export const ACHIEVEMENT_PLAY_HINTS: Record<string, AchievementPlayHint> = {
-  "ballin-on-budget": {
-    playSection: "headToHead",
-    h2hMode: "ranked",
-    ctaLabel: "Play Pro Head to Head",
-  },
-  "poverty-line": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "seventy-wins": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "eighty-ovr": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "eighty-two-wins": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "max-ovr": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "ceiling-breaker": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "plus-five": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "rebuild": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
-  "winless": {
-    playSection: "headToHead",
-    h2hMode: "classic",
-    ctaLabel: "Play Casual Head to Head",
-  },
+  "ballin-on-budget": PRO_H2H,
+  "poverty-line": CASUAL_H2H,
+  "seventy-wins": CASUAL_H2H,
+  "eighty-ovr": CASUAL_H2H,
+  "eighty-two-wins": CASUAL_H2H,
+  "max-ovr": CASUAL_H2H,
+  "ceiling-breaker": CASUAL_H2H,
+  "plus-five": CASUAL_H2H,
+  rebuild: CASUAL_H2H,
+  winless: CASUAL_H2H,
+
+  // Chemistry / theme lineups — Casual has the widest pool.
+  nepotism: CASUAL_H2H,
+  "family-ties": CASUAL_H2H,
+  "college-roommates": CASUAL_H2H,
+  "team-core": CASUAL_H2H,
+  "same-jersey-club": CASUAL_H2H,
+  "pacific-pact": CASUAL_H2H,
+  "free-agents": CASUAL_H2H,
+  "recent-heat": CASUAL_H2H,
+  "scrub-life": CASUAL_H2H,
+  "gutter-gang": CASUAL_H2H,
+  "five-superstars": CASUAL_H2H,
+  "retirement-home": CASUAL_H2H,
+  daycare: CASUAL_H2H,
+  "alphabet-squad": CASUAL_H2H,
+
+  // Career progress
+  "ten-wins": CASUAL_H2H,
+  "twenty-five-wins": CASUAL_H2H,
+  "ten-drafts": CASUAL_H2H,
+  "twenty-five-drafts": CASUAL_H2H,
+  "daily-streak-3": DAILY,
+  "daily-streak-7": DAILY,
 };
 
 export function getAchievementPlayHint(id: string): AchievementPlayHint {
-  return (
-    ACHIEVEMENT_PLAY_HINTS[id] ?? {
-      playSection: "headToHead",
-      h2hMode: "classic",
-      ctaLabel: "Play Casual Head to Head",
-    }
-  );
+  return ACHIEVEMENT_PLAY_HINTS[id] ?? CASUAL_H2H;
 }
 
 export const PRIORITY_ACHIEVEMENT_IDS = [
+  "ten-wins",
+  "daily-streak-3",
+  "ten-drafts",
   "ballin-on-budget",
   "seventy-wins",
   "eighty-ovr",

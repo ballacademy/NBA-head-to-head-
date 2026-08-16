@@ -46,6 +46,7 @@ import {
 import {
   buildAchievementContext,
   checkLineupAchievements,
+  evaluateCareerProgressAchievements,
   unlockAchievements,
 } from "../lib/achievements";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
@@ -449,8 +450,12 @@ export function MatchResults({
         hasSalaryCap: user.salaryCapLimit != null,
       }),
     );
-    const { newlyUnlocked } = unlockAchievements(earned);
-    setNewAchievementIds(newlyUnlocked);
+    const lineupUnlock = unlockAchievements(earned);
+    const careerUnlock = evaluateCareerProgressAchievements();
+    setNewAchievementIds([
+      ...lineupUnlock.newlyUnlocked,
+      ...careerUnlock.newlyUnlocked,
+    ]);
   }, [user.practiceMode, user.privateMatch, userLineup, user.salaryCapLimit]);
 
   const handleUnlockSelect = (playerId: string) => {

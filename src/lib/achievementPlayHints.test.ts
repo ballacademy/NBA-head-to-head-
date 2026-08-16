@@ -15,6 +15,20 @@ describe("achievementPlayHints", () => {
     expect(getAchievementPlayHint("poverty-line").h2hMode).toBe("classic");
   });
 
+  it("routes daily streak career badges to Daily Draft", () => {
+    expect(getAchievementPlayHint("daily-streak-3")).toMatchObject({
+      playSection: "daily",
+      ctaLabel: "Play Daily Draft",
+    });
+  });
+
+  it("routes chemistry badges to Casual Head to Head", () => {
+    expect(getAchievementPlayHint("family-ties").h2hMode).toBe("classic");
+    expect(getAchievementPlayHint("college-roommates").playSection).toBe(
+      "headToHead",
+    );
+  });
+
   it("prefers priority locked badges before other locked badges", () => {
     const achievements = [
       {

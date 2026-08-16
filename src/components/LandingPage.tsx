@@ -9,8 +9,8 @@ import {
   type PlayerCollection,
 } from "../lib/playerCollection";
 import { CollectionTierModal } from "./CollectionTierModal";
+import { FranchiseHubPanel } from "./FranchiseHubPanel";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
-import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 import type { DailyDraftMode } from "../lib/dailyDraftMode";
 import {
   formatDailyDraftModeLabel,
@@ -725,7 +725,7 @@ export function LandingPage({
             ? "Live matchups · Casual or Pro."
             : "Choose a mode."
       : hubTab === "roster"
-        ? "Collection, badges, and stats."
+        ? "Your collection and career."
         : "Sign in, stats, and settings.";
 
   const playModeBack = (
@@ -1151,126 +1151,18 @@ export function LandingPage({
         ) : null}
 
         {hubTab === "roster" ? (
-          <>
-            <WeeklyGmRecapCard
-              variant="compact"
-              onViewGmStats={onViewGmStats}
-            />
-            <div className="landing-profile-strip landing-card landing-card--profile">
-              <div className="landing-profile-strip__header">
-                <p className="landing-profile-strip__title">Your collection</p>
-                <p className="landing-profile-strip__hint">
-                  Tap a category to view unlocked players
-                </p>
-              </div>
-              <div
-                className="landing-profile-strip__stats"
-                aria-label="Player collection by category"
-              >
-                <button
-                  type="button"
-                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
-                    collectionTier === "all-star" ? " is-active" : ""
-                  }`}
-                  onClick={() => setCollectionTier("all-star")}
-                  aria-pressed={collectionTier === "all-star"}
-                  aria-label={`View unlocked All-Stars, ${collectionProgress.unlocked} of ${collectionProgress.total}`}
-                >
-                  <span className="landing-profile-strip__label">All-Stars</span>
-                  <strong>
-                    {collectionProgress.unlocked}/{collectionProgress.total}
-                  </strong>
-                </button>
-                <button
-                  type="button"
-                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
-                    collectionTier === "superstar" ? " is-active" : ""
-                  }`}
-                  onClick={() => setCollectionTier("superstar")}
-                  aria-pressed={collectionTier === "superstar"}
-                  aria-label={`View unlocked Superstars, ${collectionProgress.superstarUnlocked} of ${collectionProgress.superstarTotal}`}
-                >
-                  <span className="landing-profile-strip__label">
-                    Superstars
-                  </span>
-                  <strong>
-                    {collectionProgress.superstarUnlocked}/
-                    {collectionProgress.superstarTotal}
-                  </strong>
-                </button>
-                <button
-                  type="button"
-                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
-                    collectionTier === "scrub" ? " is-active" : ""
-                  }`}
-                  onClick={() => setCollectionTier("scrub")}
-                  aria-pressed={collectionTier === "scrub"}
-                  aria-label={`View unlocked Scrubs, ${collectionProgress.unlockedScrubs} of ${collectionProgress.scrubPool}`}
-                >
-                  <span className="landing-profile-strip__label">Scrubs</span>
-                  <strong>
-                    {collectionProgress.unlockedScrubs}/
-                    {collectionProgress.scrubPool}
-                  </strong>
-                </button>
-                <button
-                  type="button"
-                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
-                    collectionTier === "super-scrub" ? " is-active" : ""
-                  }`}
-                  onClick={() => setCollectionTier("super-scrub")}
-                  aria-pressed={collectionTier === "super-scrub"}
-                  aria-label={`View unlocked Super Scrubs, ${collectionProgress.unlockedSuperScrubs} of ${collectionProgress.superScrubPool}`}
-                >
-                  <span className="landing-profile-strip__label">
-                    Super Scrubs
-                  </span>
-                  <strong>
-                    {collectionProgress.unlockedSuperScrubs}/
-                    {collectionProgress.superScrubPool}
-                  </strong>
-                </button>
-                <button
-                  type="button"
-                  className={`landing-profile-strip__stat landing-profile-strip__stat--btn${
-                    collectionTier === "recent-all-star" ? " is-active" : ""
-                  }`}
-                  onClick={() => setCollectionTier("recent-all-star")}
-                  aria-pressed={collectionTier === "recent-all-star"}
-                  aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
-                >
-                  <span className="landing-profile-strip__label">
-                    Recent All-Stars
-                  </span>
-                  <strong>
-                    {collectionProgress.recentUnlocked}/
-                    {collectionProgress.recentTotal}
-                  </strong>
-                </button>
-              </div>
-              <div className="landing-profile-strip__footer">
-                <p className="landing-profile-strip__meta">
-                  Win to unlock All-Stars, lose to unlock Scrubs.
-                </p>
-                <div className="landing-profile-strip__links">
-                  <button
-                    type="button"
-                    className="landing-profile-strip__link"
-                    onClick={onViewStats}
-                  >
-                    Season Stats
-                  </button>
-                  <button
-                    type="button"
-                    className="landing-profile-strip__link"
-                    onClick={onViewAchievements}
-                  >
-                    Badges
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
+          <FranchiseHubPanel
+            collectionProgress={collectionProgress}
+            collectionTier={collectionTier}
+            onSelectTier={setCollectionTier}
+            onViewStats={onViewStats}
+            onViewAchievements={onViewAchievements}
+            onViewGmStats={onViewGmStats}
+            onPlayDaily={() => {
+              updatePlaySection("daily");
+              onHubTabChange("play");
+            }}
+          />
         ) : null}
 
         {hubTab === "account" ? (

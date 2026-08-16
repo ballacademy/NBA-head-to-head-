@@ -15,11 +15,11 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 56 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(56);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(56);
+  it("defines 62 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(62);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(62);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      56,
+      62,
     );
   });
 
@@ -263,7 +263,7 @@ describe("achievements", () => {
     });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(55);
+    expect(progress.total).toBe(61);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
@@ -273,6 +273,10 @@ describe("achievements", () => {
         (achievement) => achievement.id === "founding-gm",
       ),
     ).toBeUndefined();
+    expect(
+      progress.achievements.find((achievement) => achievement.id === "ten-wins"),
+    ).toBeUndefined();
+    expect(progress.careerProgress).toHaveLength(6);
     expect(progress.special.unlocked).toBe(1);
     expect(progress.special.total).toBe(1);
     expect(progress.special.achievements[0]?.id).toBe("founding-gm");
