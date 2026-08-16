@@ -94,7 +94,7 @@ describe("calculateLineupScore", () => {
       "Team fit",
     ]);
     expect(score.strengths).toContain(
-      "Creation and connective passing should travel well.",
+      "Reliable playmaking and connective passing.",
     );
   });
 
@@ -648,7 +648,7 @@ describe("calculateLineupScore", () => {
     const withPrimaryScore = calculateLineupScore(withPrimary);
 
     expect(withoutPrimaryScore.warnings).toContain(
-      `No clear first option; the offense lacks a ${PRIMARY_SCORER_PPG_THRESHOLD} PPG scorer.`,
+      "The offense lacks a clear alpha.",
     );
     expect(withPrimaryScore.preciseTotal).toBeGreaterThan(
       withoutPrimaryScore.preciseTotal,
@@ -1060,7 +1060,7 @@ describe("calculateLineupScore", () => {
 
     expect(score.projectedRecord.wins).toBeLessThanOrEqual(30);
     expect(score.warnings).toContain(
-      "Impact depth is thin; the lineup leans too hard on one ranked piece.",
+      "Impact depth is thin; the lineup leans too hard on one star.",
     );
   });
 

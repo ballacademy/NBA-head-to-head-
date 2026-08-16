@@ -231,7 +231,7 @@ export function TeamLineupCard({
           className="team-lineup-card__stats-toggle"
           aria-expanded={playerStatsOpen}
           aria-controls={playerStatsId}
-          onClick={() => setPlayerStatsOpen((open) => !open)}
+          onClick={() => setPlayerStatsOpen(!playerStatsOpen)}
         >
           {playerStatsOpen ? "Hide player stats" : "Show player stats"}
           <span aria-hidden="true">{playerStatsOpen ? "−" : "+"}</span>
