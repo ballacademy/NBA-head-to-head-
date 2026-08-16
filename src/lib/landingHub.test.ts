@@ -61,6 +61,8 @@ describe("landingHub", () => {
     expect(parseLandingHubParam("leaderboard")).toBe("ranks");
     expect(parseLandingHubParam("community")).toBe("community");
     expect(parseLandingHubParam("tier-list")).toBe("community");
+    expect(parseLandingHubParam("franchise")).toBe("roster");
+    expect(parseLandingHubParam("roster")).toBe("roster");
     expect(parseLandingPlayParam("h2h")).toBe("headToHead");
     expect(parseLandingPlayParam("daily-draft")).toBe("daily");
     expect(parseLandingPlayParam("weekly")).toBe("events");
@@ -201,6 +203,28 @@ describe("landingHub", () => {
     expect(nextUrl).toContain("hub=stats");
     expect(nextUrl).not.toContain("view=");
     expect(nextUrl).not.toContain("post=");
+  });
+
+  it("writes franchise for the roster hub URL", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/",
+        pathname: "/",
+        search: "",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    syncLandingDeepLinkUrl({ hub: "roster" });
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("hub=franchise");
+    expect(nextUrl).not.toContain("hub=roster");
   });
 
   it("maps view/post params into community deep links", () => {

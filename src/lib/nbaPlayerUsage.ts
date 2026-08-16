@@ -367,5 +367,73 @@ export const getMostDraftedNbaPlayers = (
   limit = 10,
 ): NbaPlayerUsageRow[] => listNbaPlayerUsageRows().slice(0, Math.max(0, limit));
 
+/** Modes shown on the public Most drafted boards. */
+export type MostDraftedBoardMode = "headToHead" | "ranked" | "daily";
+
+export const MOST_DRAFTED_BOARD_LABELS: Record<MostDraftedBoardMode, string> = {
+  headToHead: "Casual",
+  ranked: "Pro",
+  daily: "Daily",
+};
+
+const MIN_LINEUPS_FOR_MOST_DRAFTED = 2;
+
+/** How many distinct drafted lineups have been recorded for this GM. */
+export const getRecordedDraftLineupCount = (): number => {
+  backfillNbaPlayerUsageFromDailyScores();
+  return loadNbaPlayerUsageStore().recordedKeys.length;
+};
+
+export const canShowMostDraftedBoards = () =>
+  getRecordedDraftLineupCount() >= MIN_LINEUPS_FOR_MOST_DRAFTED;
+
+export interface MostDraftedModeRow {
+  playerId: string;
+  drafts: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  winPct: number | null;
+}
+
+/** Top drafted NBA players within one mode (Casual / Pro / Daily). */
+export const getMostDraftedNbaPlayersForMode = (
+  mode: MostDraftedBoardMode,
+  limit = 10,
+): MostDraftedModeRow[] => {
+  backfillNbaPlayerUsageFromDailyScores();
+  const store = loadNbaPlayerUsageStore();
+
+  return Object.entries(store.byPlayerId)
+    .map(([playerId, byMode]) => {
+      const modeRow = byMode?.[mode];
+      if (!modeRow || modeRow.drafts <= 0) {
+        return null;
+      }
+      const decided = modeRow.wins + modeRow.losses;
+      return {
+        playerId,
+        drafts: modeRow.drafts,
+        wins: modeRow.wins,
+        losses: modeRow.losses,
+        ties: modeRow.ties,
+        winPct: decided > 0 ? modeRow.wins / decided : null,
+      } satisfies MostDraftedModeRow;
+    })
+    .filter((row): row is MostDraftedModeRow => row != null)
+    .sort((left, right) => {
+      if (right.drafts !== left.drafts) {
+        return right.drafts - left.drafts;
+      }
+      const leftPct = left.winPct ?? -1;
+      const rightPct = right.winPct ?? -1;
+      if (rightPct !== leftPct) {
+        return rightPct - leftPct;
+      }
+      return left.playerId.localeCompare(right.playerId);
+    })
+    .slice(0, Math.max(0, limit));
+};
+
 export const formatNbaPlayerWinPct = (winPct: number | null) =>
   winPct == null ? "—" : `${Math.round(winPct * 1000) / 10}%`;

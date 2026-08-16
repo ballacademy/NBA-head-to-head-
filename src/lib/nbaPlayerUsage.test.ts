@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   backfillNbaPlayerUsageFromDailyScores,
+  canShowMostDraftedBoards,
   formatNbaPlayerWinPct,
   getMostDraftedNbaPlayers,
+  getMostDraftedNbaPlayersForMode,
+  getRecordedDraftLineupCount,
   listNbaPlayerUsageRows,
   loadNbaPlayerUsageStore,
   recordNbaPlayerDailyDraftUsage,
@@ -125,6 +128,67 @@ describe("nbaPlayerUsage", () => {
       "p4",
       "p5",
     ]);
+  });
+
+  it("gates most drafted boards until two lineups are recorded", () => {
+    expect(canShowMostDraftedBoards()).toBe(false);
+    expect(getRecordedDraftLineupCount()).toBe(0);
+
+    recordNbaPlayerMatchUsage({
+      recordKey: "m1",
+      playerIds: ["a"],
+      mode: "headToHead",
+      result: "win",
+    });
+    expect(getRecordedDraftLineupCount()).toBe(1);
+    expect(canShowMostDraftedBoards()).toBe(false);
+
+    recordNbaPlayerDailyDraftUsage({
+      recordKey: "daily:1",
+      playerIds: ["b"],
+    });
+    expect(getRecordedDraftLineupCount()).toBe(2);
+    expect(canShowMostDraftedBoards()).toBe(true);
+  });
+
+  it("ranks most drafted separately for Casual, Pro, and Daily", () => {
+    recordNbaPlayerMatchUsage({
+      recordKey: "c1",
+      playerIds: ["casual-star", "shared"],
+      mode: "headToHead",
+      result: "win",
+    });
+    recordNbaPlayerMatchUsage({
+      recordKey: "c2",
+      playerIds: ["casual-star"],
+      mode: "headToHead",
+      result: "loss",
+    });
+    recordNbaPlayerMatchUsage({
+      recordKey: "p1",
+      playerIds: ["pro-star", "shared"],
+      mode: "ranked",
+      result: "win",
+    });
+    recordNbaPlayerDailyDraftUsage({
+      recordKey: "daily:1",
+      playerIds: ["daily-star", "shared"],
+    });
+    recordNbaPlayerDailyDraftUsage({
+      recordKey: "daily:2",
+      playerIds: ["daily-star"],
+    });
+
+    expect(
+      getMostDraftedNbaPlayersForMode("headToHead", 10).map((row) => row.playerId),
+    ).toEqual(["casual-star", "shared"]);
+    expect(
+      getMostDraftedNbaPlayersForMode("ranked", 10).map((row) => row.playerId),
+    ).toEqual(["pro-star", "shared"]);
+    expect(
+      getMostDraftedNbaPlayersForMode("daily", 10).map((row) => row.playerId),
+    ).toEqual(["daily-star", "shared"]);
+    expect(getMostDraftedNbaPlayersForMode("headToHead", 10)[0]?.drafts).toBe(2);
   });
 
   it("replaces daily usage when the canonical lineup changes", () => {

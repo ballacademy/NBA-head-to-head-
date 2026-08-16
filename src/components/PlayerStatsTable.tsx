@@ -194,7 +194,7 @@ export function PlayerStatsTable({
       }
       lede="Player pool"
       onBack={onBack}
-      backLabel="Roster"
+      backLabel="Franchise"
     >
       <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">

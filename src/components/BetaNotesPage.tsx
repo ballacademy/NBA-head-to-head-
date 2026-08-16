@@ -27,7 +27,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             <p>
               Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
               Draft is coming soon. Accounts unlock leaderboards and public
-              tier lists. Roster, Badges, Stats, and Ranks sit in the bottom
+              tier lists. Franchise, Badges, Stats, and Ranks sit in the bottom
               nav.
             </p>
             <p className="beta-notes-summary__meta">
@@ -50,7 +50,7 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 in practice and Daily Draft without an All-Star unlock.
               </li>
               <li>
-                Collection, Badges, and Season Stats (Roster) · Ranks ·
+                Collection, Badges, and Season Stats (Franchise) · Ranks ·
                 Community · Account
               </li>
               <li>

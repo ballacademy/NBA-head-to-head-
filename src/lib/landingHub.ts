@@ -76,7 +76,9 @@ export const parseLandingHubParam = (
 
   const token = normalizeQueryToken(value);
   if (token === "play") return "play";
-  if (token === "roster" || token === "collection") return "roster";
+  if (token === "roster" || token === "franchise" || token === "collection") {
+    return "roster";
+  }
   if (token === "account" || token === "profile" || token === "settings") {
     return "account";
   }
@@ -438,7 +440,11 @@ export const syncLandingDeepLinkUrl = (
     } else {
       if (options.hub != null) {
         const hubParam =
-          options.hub === "standings" ? "ranks" : options.hub;
+          options.hub === "standings"
+            ? "ranks"
+            : options.hub === "roster"
+              ? "franchise"
+              : options.hub;
         url.searchParams.set("hub", hubParam);
         if (hubParam !== "play" && options.play === undefined) {
           url.searchParams.delete("play");
