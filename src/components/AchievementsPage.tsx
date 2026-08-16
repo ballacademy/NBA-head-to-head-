@@ -17,7 +17,7 @@ import {
   getTopEventBadgeTier,
 } from "../lib/weeklyEvents";
 import { AccountRequiredNote } from "./AccountRequiredNote";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 
 interface AchievementsPageProps {
   onBack: () => void;
@@ -63,20 +63,17 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
     : null;
 
   return (
-    <div className="hub-feature achievements-page">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title">Badges</h1>
-        <p className="landing__lede landing-hub__lede">
-          {progress.unlocked}/{progress.total} unlocked
-          {unlockedSpecial.length > 0
-            ? ` · ${unlockedSpecial.length} special`
-            : ""}
-          {eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}
-        </p>
-      </div>
-
-      <HubFeatureReturnButton onBack={onBack} label="Roster" />
-
+    <HubPageChrome
+      className="achievements-page"
+      title="Badges"
+      lede={`${progress.unlocked}/${progress.total} unlocked${
+        unlockedSpecial.length > 0
+          ? ` · ${unlockedSpecial.length} special`
+          : ""
+      }${eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}`}
+      onBack={onBack}
+      backLabel="Roster"
+    >
       <section className="hub-feature__panel achievements-page__panel">
         <AccountRequiredNote className="account-required-note--inline">
           Sign in to sync badge progress across browsers. Guests keep badges on
@@ -214,6 +211,6 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
           </div>
         )}
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

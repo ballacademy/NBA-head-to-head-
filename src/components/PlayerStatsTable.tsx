@@ -22,7 +22,7 @@ import {
   isSuperstarPlayer,
 } from "../lib/allStars";
 import { isScrubPlayer, isSuperScrubPlayer } from "../lib/playerTiers";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 import { ModeCardInfo } from "./ModeCardInfo";
 import type { Player } from "../lib/types";
 
@@ -181,12 +181,13 @@ export function PlayerStatsTable({
   };
 
   return (
-    <div className="hub-feature stats-panel" aria-labelledby="stats-heading">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title" id="stats-heading">
-          Season Stats
-        </h1>
-        <p className="landing__lede landing-hub__lede stats-panel__lede">
+    <HubPageChrome
+      className="stats-panel"
+      title="Season Stats"
+      titleId="stats-heading"
+      ledeClassName="stats-panel__lede"
+      lede={
+        <>
           <span className="stats-panel__lede-text">Player pool</span>
           <span className="stats-panel__lede-info">
             <ModeCardInfo
@@ -195,11 +196,11 @@ export function PlayerStatsTable({
               ariaLabel="Season Stats details"
             />
           </span>
-        </p>
-      </div>
-
-      {onBack ? <HubFeatureReturnButton onBack={onBack} label="Roster" /> : null}
-
+        </>
+      }
+      onBack={onBack}
+      backLabel="Roster"
+    >
       <section className="hub-feature__panel stats-panel__body">
       <label className="field stats-search">
         <span>Search players</span>
@@ -286,6 +287,6 @@ export function PlayerStatsTable({
         Showing {filteredPlayers.length} of {players.length} players.
       </p>
       </section>
-    </div>
+    </HubPageChrome>
   );
 }

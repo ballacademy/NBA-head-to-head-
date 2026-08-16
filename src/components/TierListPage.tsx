@@ -99,7 +99,7 @@ import { syncLandingDeepLinkUrl } from "../lib/landingHub";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
+import { HubPageChrome } from "./HubPageChrome";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import {
@@ -1560,18 +1560,13 @@ export function TierListPage({
   }, [view]);
 
   return (
-    <div className="hub-feature tier-list-page">
-      <div className="landing-hub__top">
-        <h1 className="landing-hub__title">{communityChrome.title}</h1>
-        <p className="landing__lede landing-hub__lede">
-          {communityChrome.lede}
-        </p>
-      </div>
-
-      {view !== "hub" ? (
-        <HubFeatureReturnButton onBack={handleBack} label={communityChrome.back} />
-      ) : null}
-
+    <HubPageChrome
+      className="tier-list-page"
+      title={communityChrome.title}
+      lede={communityChrome.lede}
+      onBack={view !== "hub" ? handleBack : undefined}
+      backLabel={communityChrome.back}
+    >
       {statusMessage ? (
         <p className="tier-list__status" role="status">
           {statusMessage}
@@ -2464,6 +2459,6 @@ export function TierListPage({
           </span>
         </div>
       ) : null}
-    </div>
+    </HubPageChrome>
   );
 }

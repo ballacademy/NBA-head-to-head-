@@ -150,9 +150,15 @@
 }
 
 /*
- * Shared contract: title band, then optional return. When a return follows the
- * title (Play modes, Stats, Badges, Community drill-ins), clear the floating
- * logo so every back page uses the same geometry.
+ * Hub title / logo geometry
+ * -------------------------
+ * Root tabs (Play / Roster / Community / Ranks / Account): title band sits
+ * beside the floating logo — no return row, no extra top clearance.
+ *
+ * Back / feature pages (Stats, Badges, GM Stats, Legal, Play modes,
+ * Community drill-ins): render title → `.hub-feature__return-row` as siblings.
+ * Logo clearance applies whenever that pattern is present so every back page
+ * uses the same geometry. Prefer `HubPageChrome` for new feature pages.
  */
 .landing-hub-scroll > .landing-hub__top:has(+ .hub-feature__return-row) {
   margin-top: calc(var(--hub-logo-size) + 8px);
@@ -210,28 +216,19 @@
   font-weight: 700;
 }
 
-/* Return sits on dark hub chrome — keep glassed light-on-dark treatment. */
+/* Return sits on dark hub chrome — flat, no grain/glow. */
 .landing--hub .hub-feature__return {
-  color: var(--text-on-dark);
-  background:
-    radial-gradient(rgba(255, 255, 255, 0.045) 0.5px, transparent 0.65px),
-    linear-gradient(165deg, rgba(255, 255, 255, 0.08) 0%, transparent 48%, rgba(0, 0, 0, 0.25) 100%),
-    rgba(28, 35, 50, 0.92);
-  background-size: 3px 3px, 100% 100%, 100% 100%;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--text-muted-on-dark);
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: none;
 }
 
 .landing--hub .hub-feature__return:hover {
-  color: #ffffff;
-  background:
-    radial-gradient(rgba(255, 255, 255, 0.055) 0.5px, transparent 0.65px),
-    linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0%, transparent 48%, rgba(0, 0, 0, 0.2) 100%),
-    rgba(36, 44, 62, 0.96);
-  background-size: 3px 3px, 100% 100%, 100% 100%;
-  border-color: rgba(203, 213, 225, 0.4);
+  color: var(--text-on-dark);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(203, 213, 225, 0.34);
+  box-shadow: none;
 }
 
 .hub-feature__panel {
@@ -777,30 +774,22 @@ h1.landing-hub__title--name {
 
 .landing-hub__link-button.hub-accent:focus-visible {
   border-color: var(--hub-accent-border);
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 58%),
-    var(--hub-subbox-active-bg);
+  background: var(--hub-subbox-active-bg);
   box-shadow:
     var(--hub-subbox-shadow),
-    inset 3px 0 0 var(--hub-accent-bright),
-    0 0 20px var(--hub-accent-glow);
+    inset 3px 0 0 var(--hub-accent-bright);
   color: #f8fafc;
-  transform: translateY(-1px);
   outline: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .landing-hub__link-button.hub-accent:hover {
     border-color: var(--hub-accent-border);
-    background:
-      linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 58%),
-      var(--hub-subbox-active-bg);
+    background: var(--hub-subbox-bg);
     box-shadow:
       var(--hub-subbox-shadow),
-      inset 3px 0 0 var(--hub-accent-bright),
-      0 0 20px var(--hub-accent-glow);
+      inset 3px 0 0 var(--hub-accent-bright);
     color: #f8fafc;
-    transform: translateY(-1px);
   }
 }
 
@@ -841,9 +830,7 @@ h1.landing-hub__title--name {
 
 .play-hub-chooser__option:focus-visible {
   border-color: color-mix(in srgb, var(--hub-accent-border) 70%, var(--hub-subbox-border));
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 58%),
-    var(--hub-subbox-active-bg);
+  background: var(--hub-subbox-active-bg);
   box-shadow: inset 3px 0 0 var(--hub-accent-bright);
   color: #f8fafc;
   outline: none;
@@ -852,9 +839,7 @@ h1.landing-hub__title--name {
 @media (hover: hover) and (pointer: fine) {
   .play-hub-chooser__option:hover {
     border-color: color-mix(in srgb, var(--hub-accent-border) 70%, var(--hub-subbox-border));
-    background:
-      linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 58%),
-      var(--hub-subbox-active-bg);
+    background: var(--hub-subbox-bg);
     box-shadow: inset 3px 0 0 var(--hub-accent-bright);
     color: #f8fafc;
   }
