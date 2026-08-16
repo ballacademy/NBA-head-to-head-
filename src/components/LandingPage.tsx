@@ -47,6 +47,7 @@ import {
 import { ClassicModeSummary } from "./ClassicModeSummary";
 import { PrivateMatchModal } from "./PrivateMatchModal";
 import { ModeCardInfo } from "./ModeCardInfo";
+import { ModeCardMoreMenu } from "./ModeCardMoreMenu";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
@@ -94,7 +95,6 @@ import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { isHeadToHeadLineupLocked } from "../lib/matchmaking";
 import { loadPendingLineupState } from "../lib/pendingLineup";
 import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "../lib/rankedElo";
-import { MODE_COPY } from "../lib/modeCopy";
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
@@ -202,6 +202,7 @@ export function LandingPage({
   const [privateMatchMode, setPrivateMatchMode] = useState<
     null | "classic" | "ranked"
   >(null);
+  const [teamNameExpanded, setTeamNameExpanded] = useState(false);
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
@@ -361,6 +362,7 @@ export function LandingPage({
       setError(message);
       setTeamNameModalMessage(message);
       setShowTeamNameModal(true);
+      setTeamNameExpanded(true);
       teamFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return null;
     }
@@ -612,60 +614,93 @@ export function LandingPage({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const renderTeamNameField = () => (
-    <div
-      ref={teamFormRef}
-      className="landing-team-form landing-card landing-card--form landing-team-form--compact"
-    >
-      <label className="field">
-        <span>Team Name</span>
-        <input
-          type="text"
-          value={name}
-          placeholder="e.g. Bulls"
-          onBlur={handleTeamNameBlur}
-          onChange={(event) => {
-            setName(event.target.value);
-            if (error) {
-              setError("");
+  const renderTeamNameField = () => {
+    const forceExpanded =
+      Boolean(liveRestoreNotice) ||
+      Boolean(profanityWarning || error || startMatchError);
+    const showCompactChip =
+      teamValidation.ok && !teamNameExpanded && !forceExpanded;
+
+    if (showCompactChip) {
+      return (
+        <div
+          ref={teamFormRef}
+          className="landing-team-chip"
+          data-testid="landing-team-chip"
+        >
+          <span className="landing-team-chip__label">Team</span>
+          <strong className="landing-team-chip__name">{name.trim()}</strong>
+          <button
+            type="button"
+            className="landing-team-chip__edit"
+            onClick={() => setTeamNameExpanded(true)}
+          >
+            Edit
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={teamFormRef}
+        className="landing-team-form landing-card landing-card--form landing-team-form--compact"
+      >
+        <label className="field">
+          <span>Team Name</span>
+          <input
+            type="text"
+            value={name}
+            placeholder="e.g. Bulls"
+            onBlur={() => {
+              handleTeamNameBlur();
+              if (validateTeamProfile(name).ok) {
+                setTeamNameExpanded(false);
+              }
+            }}
+            onChange={(event) => {
+              setName(event.target.value);
+              if (error) {
+                setError("");
+              }
+            }}
+          />
+        </label>
+        {liveRestoreNotice ? (
+          <InlineAlert
+            message={
+              <>
+                {liveRestoreNotice}
+                {onDismissLiveRestore ? (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      className="daily-draft-results__sync-retry"
+                      onClick={onDismissLiveRestore}
+                    >
+                      Dismiss
+                    </button>
+                  </>
+                ) : null}
+              </>
             }
-          }}
-        />
-      </label>
-      {liveRestoreNotice ? (
-        <InlineAlert
-          message={
-            <>
-              {liveRestoreNotice}
-              {onDismissLiveRestore ? (
-                <>
-                  {" "}
-                  <button
-                    type="button"
-                    className="daily-draft-results__sync-retry"
-                    onClick={onDismissLiveRestore}
-                  >
-                    Dismiss
-                  </button>
-                </>
-              ) : null}
-            </>
-          }
-          action={
-            onRetryLiveRestore
-              ? {
-                  label: "Retry reconnect",
-                  onClick: onRetryLiveRestore,
-                }
-              : undefined
-          }
-        />
-      ) : null}
-      {profanityWarning || error || startMatchError ? (
-        <InlineAlert message={profanityWarning || error || startMatchError} />
-      ) : null}
-    </div>
-  );
+            action={
+              onRetryLiveRestore
+                ? {
+                    label: "Retry reconnect",
+                    onClick: onRetryLiveRestore,
+                  }
+                : undefined
+            }
+          />
+        ) : null}
+        {profanityWarning || error || startMatchError ? (
+          <InlineAlert message={profanityWarning || error || startMatchError} />
+        ) : null}
+      </div>
+    );
+  };
 
   const hubTitle =
     hubTab === "play"
@@ -836,12 +871,8 @@ export function LandingPage({
                   <p className="eyebrow">{CLASSIC_HEAD_TO_HEAD_LABEL}</p>
                   <ModeCardInfo details={classicModeDetails} variant="corner" />
                 </div>
-                <p className="head-to-head-card__description">
-                  {MODE_COPY.classicH2h.blurb} {CLASSIC_PICK_TIME_LIMIT_SECONDS}s
-                  picks.
-                </p>
                 <ClassicModeSummary record={modeRecords.headToHead} />
-                <div className="mode-card__actions mode-card__actions--split">
+                <div className="mode-card__actions mode-card__actions--primary-row">
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
@@ -854,27 +885,16 @@ export function LandingPage({
                         ? "Lineup queued"
                         : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
                   </button>
-                  <button
-                    type="button"
-                    className="mode-card__cta mode-card__cta--secondary"
+                  <ModeCardMoreMenu
                     disabled={modesBlocked}
-                    onClick={() =>
+                    onPractice={() =>
                       void handleStart({
                         practiceMode: true,
                         salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
                       })
                     }
-                  >
-                    Practice
-                  </button>
-                  <button
-                    type="button"
-                    className="mode-card__cta mode-card__cta--secondary"
-                    disabled={modesBlocked}
-                    onClick={() => setPrivateMatchMode("classic")}
-                  >
-                    Private
-                  </button>
+                    onPrivate={() => setPrivateMatchMode("classic")}
+                  />
                 </div>
               </div>
 
@@ -888,11 +908,8 @@ export function LandingPage({
                   <p className="eyebrow">{PRO_HEAD_TO_HEAD_LABEL}</p>
                   <ModeCardInfo details={proModeDetails} variant="corner" />
                 </div>
-                <p className="ranked-cap-card__description">
-                  {MODE_COPY.proH2h.blurb} {PICK_TIME_LIMIT_SECONDS}s picks.
-                </p>
                 <RankedModeSummary record={modeRecords.ranked} />
-                <div className="mode-card__actions mode-card__actions--split">
+                <div className="mode-card__actions mode-card__actions--primary-row">
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
@@ -905,28 +922,17 @@ export function LandingPage({
                         ? "Lineup queued"
                         : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
                   </button>
-                  <button
-                    type="button"
-                    className="mode-card__cta mode-card__cta--secondary"
+                  <ModeCardMoreMenu
                     disabled={modesBlocked}
-                    onClick={() =>
+                    onPractice={() =>
                       void handleStart({
                         practiceMode: true,
                         salaryCapMode: true,
                         salaryCapLimit: RANKED_SALARY_CAP,
                       })
                     }
-                  >
-                    Practice
-                  </button>
-                  <button
-                    type="button"
-                    className="mode-card__cta mode-card__cta--secondary"
-                    disabled={modesBlocked}
-                    onClick={() => setPrivateMatchMode("ranked")}
-                  >
-                    Private
-                  </button>
+                    onPrivate={() => setPrivateMatchMode("ranked")}
+                  />
                 </div>
               </div>
 

@@ -12,11 +12,9 @@
   --leaderboard-you-accent-border: var(--accent-event-border);
   margin-top: 0;
   padding: 14px 16px;
-  border: 1px solid var(--hub-accent-border);
+  border: 1px solid var(--hub-subbox-border);
   border-radius: 18px;
-  background:
-    linear-gradient(90deg, var(--hub-accent-soft) 0%, transparent 40%),
-    var(--hub-subbox-bg);
+  background: var(--hub-subbox-bg);
   box-shadow: inset 3px 0 0 var(--hub-accent);
   color: var(--text-muted-on-dark);
 }
