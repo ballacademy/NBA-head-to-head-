@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortLineupByPosition } from "./lineupOrder";
+import { pairLineupsByPosition, sortLineupByPosition } from "./lineupOrder";
 import type { Player } from "./types";
 
 const makePlayer = (
@@ -120,6 +120,49 @@ describe("sortLineupByPosition", () => {
     expect(sortLineupByPosition(lineup).map((player) => player.name)).toEqual([
       "Naz Reid",
       "Rudy Gobert",
+    ]);
+  });
+});
+
+describe("pairLineupsByPosition", () => {
+  it("pairs opposing players by sorted position order", () => {
+    const left = [
+      makePlayer("Big", "C"),
+      makePlayer("Point", "PG"),
+      makePlayer("Wing", "SF"),
+    ];
+    const right = [
+      makePlayer("Rim", "C"),
+      makePlayer("Floor", "PG"),
+      makePlayer("Three", "SF"),
+    ];
+
+    expect(
+      pairLineupsByPosition(left, right).map((pair) => [
+        pair.left?.name,
+        pair.position,
+        pair.right?.name,
+      ]),
+    ).toEqual([
+      ["Point", "PG", "Floor"],
+      ["Wing", "SF", "Three"],
+      ["Big", "C", "Rim"],
+    ]);
+  });
+
+  it("pads missing slots when lineups differ in length", () => {
+    const left = [makePlayer("Point", "PG"), makePlayer("Big", "C")];
+    const right = [makePlayer("Floor", "PG")];
+
+    expect(
+      pairLineupsByPosition(left, right).map((pair) => [
+        pair.left?.name ?? null,
+        pair.right?.name ?? null,
+        pair.position,
+      ]),
+    ).toEqual([
+      ["Point", "Floor", "PG"],
+      ["Big", null, "C"],
     ]);
   });
 });
