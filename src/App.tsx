@@ -322,9 +322,11 @@ const readInitialLandingDeepLinks = () => {
     return {
       contentTab: null,
       playSection: null,
+      h2hMode: null,
       feature: null,
       communityView: null,
       communityPostId: null,
+      betaSection: null,
     };
   }
 };

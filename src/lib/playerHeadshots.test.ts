@@ -23,23 +23,16 @@ describe("playerHeadshots", () => {
     expect(getPlayerHeadshotUrl(undefined)).toBeNull();
   });
 
-  it("enables headshots on prod and QA by default", () => {
+  it("enables headshots on QA / local hosts only (not prod)", () => {
     expect(arePlayerHeadshotsEnabled("nba-head-to-head-qa.pages.dev", "")).toBe(
       true,
     );
     expect(arePlayerHeadshotsEnabled("qa.draftdaygm.com", "")).toBe(true);
     expect(arePlayerHeadshotsEnabled("localhost", "")).toBe(true);
-    expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "")).toBe(true);
+    expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "")).toBe(false);
     expect(arePlayerHeadshotsEnabled("www.draftdaygm.com", "?headshots")).toBe(
       true,
     );
-  });
-
-  it("opts out with noheadshots or jerseys=1", () => {
-    expect(
-      arePlayerHeadshotsEnabled("www.draftdaygm.com", "?noheadshots"),
-    ).toBe(false);
-    expect(arePlayerHeadshotsEnabled("localhost", "?jerseys=1")).toBe(false);
   });
 
   it("skips canvas headshot preloads when headshots are disabled", async () => {
