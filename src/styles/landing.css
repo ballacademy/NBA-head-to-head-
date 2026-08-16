@@ -474,6 +474,12 @@
   gap: 12px;
 }
 
+.franchise-home__next-badge {
+  padding: 12px 14px;
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
 .franchise-home__daily {
   display: flex;
   align-items: center;

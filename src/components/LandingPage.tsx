@@ -77,9 +77,14 @@ import type { StartDraftOptions, StartMatchResult } from "../lib/match";
 import { players as allPlayers } from "../data/players";
 import {
   canPlayEventMatch,
+  loadAllEventProfiles,
   loadEventProfile,
   remainingEventMatches,
 } from "../lib/eventProfile";
+import {
+  buildEventHistoryRows,
+  formatEventPresenceLabel,
+} from "../lib/eventHistory";
 import {
   fetchEventLeaderboard,
   type EventLeaderboardEntry,
@@ -94,7 +99,13 @@ import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { isHeadToHeadLineupLocked } from "../lib/matchmaking";
 import { loadPendingLineupState } from "../lib/pendingLineup";
-import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "../lib/rankedElo";
+import { RATING_LABEL } from "../lib/rankedElo";
+import { getHighBannerQueueLockNote } from "../lib/highBannerQueueWait";
+import {
+  hasSeenFirstSessionGuide,
+  markFirstSessionGuideSeen,
+} from "../lib/firstSessionOnboarding";
+import { FirstSessionOnboardingOverlay } from "./FirstSessionOnboardingOverlay";
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
@@ -209,6 +220,9 @@ export function LandingPage({
   const [h2hIntentTarget, setH2hIntentTarget] = useState<LandingH2hMode | null>(
     () =>
       loadLandingPlaySection() === "headToHead" ? loadLandingH2hMode() : null,
+  );
+  const [showFirstSessionGuide, setShowFirstSessionGuide] = useState(
+    () => !hasSeenFirstSessionGuide(),
   );
   const classicH2hCardRef = useRef<HTMLDivElement | null>(null);
   const proH2hCardRef = useRef<HTMLDivElement | null>(null);
@@ -417,6 +431,42 @@ export function LandingPage({
   const eventPlayable = weeklyEvent
     ? canPlayEventMatch(weeklyEvent.id)
     : false;
+  const eventPresenceLabel = weeklyEvent
+    ? formatEventPresenceLabel({
+        matchesPlayed: eventProfile?.matchesPlayed ?? 0,
+        matchesLeft: eventMatchesLeft,
+        maxMatches: weeklyEvent.maxMatches,
+      })
+    : null;
+  const eventHistory = useMemo(
+    () =>
+      buildEventHistoryRows(
+        loadAllEventProfiles(),
+        weeklyEvent?.id ?? null,
+      ),
+    [weeklyEvent?.id],
+  );
+
+  const dismissFirstSessionGuide = useCallback(() => {
+    markFirstSessionGuideSeen();
+    setShowFirstSessionGuide(false);
+  }, []);
+
+  const handlePlayIntent = useCallback(
+    (intent: {
+      playSection: LandingPlaySection;
+      h2hMode?: "classic" | "ranked";
+    }) => {
+      saveLandingPlaySection(intent.playSection);
+      setPlaySection(intent.playSection);
+      if (intent.h2hMode) {
+        saveLandingH2hMode(intent.h2hMode);
+        setH2hIntentTarget(intent.h2hMode);
+      }
+      onHubTabChange("play");
+    },
+    [onHubTabChange],
+  );
 
   useEffect(() => {
     if (hubTab !== "play" || playSection !== "events" || !weeklyEvent) {
@@ -844,15 +894,13 @@ export function LandingPage({
             {renderTeamNameField()}
             {anyQueuedLineupLock ? (
               <p className="queue-lock-note" role="status">
-                Queued lineup waiting for a live opponent at{" "}
-                {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}
-                {queuedLineupLock.classic && queuedLineupLock.ranked
-                  ? " (Casual and Pro)"
-                  : queuedLineupLock.classic
-                    ? " (Casual)"
-                    : " (Pro)"}
-                . Live Play stays locked until that match finishes — Practice and
-                Private still work.
+                {getHighBannerQueueLockNote(
+                  queuedLineupLock.classic && queuedLineupLock.ranked
+                    ? " (Casual and Pro)"
+                    : queuedLineupLock.classic
+                      ? " (Casual)"
+                      : " (Pro)",
+                )}
               </p>
             ) : null}
             <div className="landing-game-modes landing-game-modes--h2h">
@@ -1005,6 +1053,11 @@ export function LandingPage({
                     {" · "}${(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M ·{" "}
                     {eventMatchesLeft}/{weeklyEvent.maxMatches} left
                   </p>
+                  {eventPresenceLabel ? (
+                    <p className="event-card__presence" role="status">
+                      {eventPresenceLabel}
+                    </p>
+                  ) : null}
                   <div className="event-card__record">
                     <RecordWithStreak
                       record={{
@@ -1143,6 +1196,53 @@ export function LandingPage({
                     </ol>
                   )}
                 </details>
+
+                {eventHistory.length > 0 ? (
+                  <section
+                    className="event-history landing-card"
+                    aria-label="Event history"
+                  >
+                    <p className="eyebrow">Your event history</p>
+                    <p className="event-history__lede">
+                      Past weekly events beyond this week&apos;s card.
+                    </p>
+                    <ul className="event-history__list">
+                      {eventHistory.map((row) => (
+                        <li
+                          key={row.eventId}
+                          className={`event-history__row${
+                            row.isCurrent ? " event-history__row--current" : ""
+                          }`}
+                        >
+                          <div className="event-history__copy">
+                            <strong>
+                              {row.title}
+                              {row.isCurrent ? " · This week" : ""}
+                            </strong>
+                            <span>
+                              {row.weekLabel} · {row.restrictionLabel}
+                            </span>
+                          </div>
+                          <div className="event-history__meta">
+                            <span>
+                              {row.wins}-{row.losses}
+                              {row.ties > 0 ? `-${row.ties}` : ""}
+                            </span>
+                            {row.topBadgeLabel ? (
+                              <span className="event-history__badge">
+                                {row.topBadgeEmoji} {row.topBadgeLabel}
+                              </span>
+                            ) : (
+                              <span className="event-history__badge">
+                                {row.matchesPlayed} played
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
               </div>
             ) : (
               <InlineAlert message="This week's event is unavailable. Check back soon." />
@@ -1162,6 +1262,7 @@ export function LandingPage({
               updatePlaySection("daily");
               onHubTabChange("play");
             }}
+            onPlayIntent={handlePlayIntent}
           />
         ) : null}
 
@@ -1254,6 +1355,15 @@ export function LandingPage({
           </section>
         ) : null}
       </div>
+
+      {showFirstSessionGuide ? (
+        <FirstSessionOnboardingOverlay
+          onDismiss={dismissFirstSessionGuide}
+          onGoToHub={(tab) => {
+            onHubTabChange(tab);
+          }}
+        />
+      ) : null}
     </HubShell>
   );
 }

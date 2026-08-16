@@ -129,7 +129,7 @@ import {
   finalizeDeliveredOwnerResults,
   type DeliveredOwnerResult,
 } from "./lib/pendingOwnerResults";
-import { RANKED_STARTING_ELO } from "./lib/rankedElo";
+import { RANKED_STARTING_ELO, requiresLiveOpponentOnly } from "./lib/rankedElo";
 import { LEADERBOARD_LIMIT } from "./lib/leaderboard";
 import { RANKED_LEADERBOARD_LIMIT } from "./lib/rankedLeaderboard";
 import { refreshLeaderboardFromApi } from "./lib/leaderboardRemote";
@@ -2577,6 +2577,19 @@ function App() {
   const isMatchmakingSearchActive =
     matchmakingMode != null || isMatchmakingInFlight;
 
+  const matchmakingLiveOnlySearch = useMemo(() => {
+    if (!matchmakingMode || matchmakingMode === "event") {
+      return matchmakingMode === "event";
+    }
+
+    const elo =
+      matchmakingMode === "ranked"
+        ? ensureCurrentRankedSeason().elo
+        : ensureClassicProfile().elo;
+
+    return requiresLiveOpponentOnly(elo);
+  }, [matchmakingMode]);
+
   if (phase === "leaderboard") {
     return renderHubFeature(<LeaderboardPage />);
   }
@@ -2742,6 +2755,7 @@ function App() {
             privateRoomCode={privateRoomCode}
             privateRoomRole={privateRoomRole}
             privateRoomExpiresAt={privateRoomExpiresAt}
+            liveOnlySearch={matchmakingLiveOnlySearch}
           />
         ) : null}
       </main>
@@ -2967,6 +2981,7 @@ function App() {
           privateRoomCode={privateRoomCode}
           privateRoomRole={privateRoomRole}
           privateRoomExpiresAt={privateRoomExpiresAt}
+          liveOnlySearch={matchmakingLiveOnlySearch}
         />
       ) : null}
     </main>

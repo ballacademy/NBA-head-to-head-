@@ -5,6 +5,8 @@ import {
   getCareerProgressCounters,
 } from "../lib/careerProgressAchievements";
 import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
+import type { LandingPlaySection } from "../lib/landingHub";
+import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import { formatOrdinal } from "../lib/ordinal";
 import type { CollectionTier } from "../lib/playerCollection";
 import { loadTeamProfile } from "../lib/teamProfile";
@@ -23,6 +25,10 @@ interface FranchiseHubPanelProps {
   onViewAchievements: () => void;
   onViewGmStats: () => void;
   onPlayDaily: () => void;
+  onPlayIntent?: (intent: {
+    playSection: LandingPlaySection;
+    h2hMode?: "classic" | "ranked";
+  }) => void;
 }
 
 const formatPercentile = (value: number | null) =>
@@ -36,6 +42,7 @@ export function FranchiseHubPanel({
   onViewAchievements,
   onViewGmStats,
   onPlayDaily,
+  onPlayIntent,
 }: FranchiseHubPanelProps) {
   useEffect(() => {
     evaluateCareerProgressAchievements();
@@ -50,10 +57,41 @@ export function FranchiseHubPanel({
     () => getNextDailyStreakGoal(streakCounters),
     [streakCounters],
   );
+  const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
 
   return (
     <div className="franchise-home">
       <WeeklyGmRecapCard variant="compact" onViewGmStats={onViewGmStats} />
+
+      {nextBadge && onPlayIntent ? (
+        <section
+          className="franchise-home__next-badge achievements-page__next-badge landing-card"
+          aria-label="Next badge"
+        >
+          <div className="achievements-page__next-badge-row">
+            <span className="achievements-page__emoji" aria-hidden="true">
+              {nextBadge.emoji}
+            </span>
+            <div className="achievements-page__next-badge-copy">
+              <p className="achievements-page__next-badge-label">Next badge</p>
+              <strong>{nextBadge.title}</strong>
+              <span>{nextBadge.description}</span>
+            </div>
+            <button
+              type="button"
+              className="secondary-button achievements-page__next-badge-cta"
+              onClick={() =>
+                onPlayIntent({
+                  playSection: nextBadge.hint.playSection,
+                  h2hMode: nextBadge.hint.h2hMode,
+                })
+              }
+            >
+              {nextBadge.hint.ctaLabel}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section
         className="franchise-home__daily landing-card"

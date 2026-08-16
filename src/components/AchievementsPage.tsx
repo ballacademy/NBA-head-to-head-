@@ -3,10 +3,7 @@ import {
   evaluateCareerProgressAchievements,
   getAchievementProgress,
 } from "../lib/achievements";
-import {
-  getAchievementPlayHint,
-  getNearestLockedAchievement,
-} from "../lib/achievementPlayHints";
+import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import {
   loadAllEventProfiles,
   type EventProfile,
@@ -70,24 +67,8 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
     (achievement) => achievement.isUnlocked,
   );
 
-  const nextCandidates = useMemo(
-    () => [
-      ...progress.careerProgress.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: `${row.description} (${Math.min(row.current, row.target)}/${row.target})`,
-        emoji: row.emoji,
-        isUnlocked: row.isUnlocked,
-      })),
-      ...progress.achievements,
-    ],
-    [progress.achievements, progress.careerProgress],
-  );
-
-  const nextBadge = getNearestLockedAchievement(nextCandidates);
-  const nextBadgeHint = nextBadge
-    ? getAchievementPlayHint(nextBadge.id)
-    : null;
+  const nextBadge = useMemo(() => getNextBadgeTeaser(), [progressTick]);
+  const nextBadgeHint = nextBadge?.hint ?? null;
 
   return (
     <HubPageChrome
@@ -114,7 +95,7 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
                 {nextBadge.emoji}
               </span>
               <div className="achievements-page__next-badge-copy">
-                <p className="achievements-page__next-badge-label">Next</p>
+                <p className="achievements-page__next-badge-label">Next badge</p>
                 <strong>{nextBadge.title}</strong>
                 <span>{nextBadge.description}</span>
               </div>
