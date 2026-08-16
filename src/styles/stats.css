@@ -139,9 +139,13 @@
 
   .hero,
   .layout-grid,
-  .match-results__lineups,
-  .matchup-panel__grid {
+  .match-results__lineups {
     grid-template-columns: 1fr;
+  }
+
+  /* Keep matchup results side-by-side on mobile for position comparison. */
+  .matchup-panel__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .hero {

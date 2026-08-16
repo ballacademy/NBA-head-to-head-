@@ -702,16 +702,18 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     );
   } else if (plusDefenderCount === 1) {
     warnings.push(
-      "Only one plus defender; the other matchups are soft against elite scorers.",
+      "Only one plus defender; the other matchups are vulnerable against elite scorers.",
     );
   } else {
     warnings.push("Not enough defenders to survive elite scorers.");
   }
 
   if (hasLineupCreation(roleFitProfile, { assists: totals.assists })) {
-    strengths.push("Creation and connective passing should travel well.");
+    strengths.push("Reliable playmaking and connective passing.");
   } else {
-    warnings.push("The lineup lacks a reliable table-setter.");
+    warnings.push(
+      "No true primary playmaker; the offense lacks a clear passer to run the group.",
+    );
   }
 
   const eliteCreation = hasEliteLineupCreation(roleFitProfile, {
@@ -728,9 +730,7 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
   }
 
   if (!hasPrimaryScorer(lineup)) {
-    warnings.push(
-      `No clear first option; the offense lacks a ${PRIMARY_SCORER_PPG_THRESHOLD} PPG scorer.`,
-    );
+    warnings.push("The offense lacks a clear alpha.");
   }
 
   if (!hasLineupFirstOption(lineup)) {
@@ -745,19 +745,19 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
 
   if (getMidTierImpactLineupPenalty(lineup) < 0) {
     warnings.push(
-      "Impact profile is mid-tier; the lineup lacks a top-50 impact anchor.",
+      "The lineup lacks a clear impact star to hang the offense on.",
     );
   }
 
   if (getThinImpactLineupPenalty(lineup) < 0) {
     warnings.push(
-      "Impact depth is thin; the lineup leans too hard on one ranked piece.",
+      "Impact depth is thin; the lineup leans too hard on one star.",
     );
   }
 
   if (getSoloStarElevationPenalty(lineup) < -0.25) {
     warnings.push(
-      "The lone star is not a playmaker; creation does not elevate the supporting cast.",
+      "The lone star is not a playmaker, so the supporting cast stays flat.",
     );
   }
 
@@ -917,19 +917,19 @@ const LAYER_INSIGHT_COPY: Record<
     drag: "Low-usage scorers without enough defense drag the floor.",
   },
   primaryScorerPenalty: {
-    drag: "The lead scorer band is soft; the offense lacks a clear alpha.",
+    drag: "The offense lacks a clear alpha.",
   },
   offenseFloorPenalty: {
-    drag: "The offense floor is soft; scoring creation is thin.",
+    drag: "Shot creation is thin; the offense lacks enough scorers to run a halfcourt set.",
   },
   noStarPenalty: {
     drag: "No true star to hang a halfcourt offense on.",
   },
   midTierImpactPenalty: {
-    drag: "Impact profile is mid-tier without a top-50 anchor.",
+    drag: "The lineup lacks a clear impact star to hang the offense on.",
   },
   thinImpactPenalty: {
-    drag: "Impact depth is thin; the lineup leans too hard on one piece.",
+    drag: "Impact depth is thin; the lineup leans too hard on one star.",
   },
   soloStarElevationPenalty: {
     drag: "The lone star is not a playmaker, so the supporting cast stays flat.",

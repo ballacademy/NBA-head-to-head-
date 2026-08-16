@@ -343,6 +343,154 @@
   border-top-color: #94a3b8;
 }
 
+.team-lineup-card__stats-toggle {
+  display: none;
+}
+
+.player-stat-line__meta--dense {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .matchup-panel__grid {
+    gap: 8px;
+  }
+
+  .matchup-panel__team .team-lineup-card--compact {
+    padding: 8px 8px 10px;
+    border-radius: 12px;
+  }
+
+  .matchup-panel__team .team-lineup-card__header {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .matchup-panel__team .team-lineup-card__header h3 {
+    font-size: 0.92rem;
+  }
+
+  .matchup-panel__team .team-lineup-card__header .projected-record,
+  .matchup-panel__team .team-lineup-card__username,
+  .matchup-panel__team .team-lineup-card__username-button {
+    display: none;
+  }
+
+  .matchup-panel__team .score-orb--compact {
+    width: 48px;
+    height: 48px;
+  }
+
+  .matchup-panel__team .score-orb--compact span {
+    font-size: 0.95rem;
+  }
+
+  .matchup-panel__team .score-orb--compact small {
+    font-size: 0.58rem;
+  }
+
+  .team-lineup-card--compare .team-lineup-card__stats-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    margin: 0 0 8px;
+    padding: 7px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.72);
+    color: #e2e8f0;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  /* One shared control: keep it on your lineup card only. */
+  .matchup-panel__team--opponent .team-lineup-card__stats-toggle {
+    display: none;
+  }
+
+  .team-lineup-card--compare .team-lineup-card__stats-toggle span {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .team-lineup-card--compare:not(.team-lineup-card--stats-open)
+    .team-lineup-card__score-context,
+  .team-lineup-card--compare:not(.team-lineup-card--stats-open)
+    .score-breakdown,
+  .team-lineup-card--compare:not(.team-lineup-card--stats-open)
+    .lineup-chemistry-badges,
+  .team-lineup-card--compare:not(.team-lineup-card--stats-open)
+    .player-draft-stats {
+    display: none;
+  }
+
+  .matchup-panel .player-stat-line--compact {
+    padding: 5px 6px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+
+  .matchup-panel .player-stat-line--compact .player-team-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .matchup-panel .player-stat-line__name {
+    font-size: 0.78rem;
+  }
+
+  .matchup-panel .player-stat-line__meta--full {
+    display: none;
+  }
+
+  .matchup-panel .player-stat-line__meta--dense {
+    display: inline;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+  }
+
+  .matchup-panel .player-stat-line__badges {
+    display: none;
+  }
+
+  .matchup-panel .team-lineup-card__players {
+    gap: 4px;
+  }
+
+  .matchup-panel .team-lineup-card__outcome {
+    margin-bottom: 4px;
+    padding: 2px 6px;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .matchup-panel__grid {
+    gap: 6px;
+  }
+
+  .matchup-panel__team .team-lineup-card--compact {
+    padding: 7px 6px 8px;
+  }
+
+  .matchup-panel .player-stat-line--compact .player-team-icon,
+  .matchup-panel .player-stat-line--compact .player-team-icon--jersey {
+    display: none;
+  }
+
+  .matchup-panel .player-stat-line--compact {
+    grid-template-columns: 1fr;
+    padding: 5px 6px;
+  }
+}
+
 .matchup-panel__footer {
   display: flex;
   justify-content: flex-start;

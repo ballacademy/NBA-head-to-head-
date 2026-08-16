@@ -11,6 +11,8 @@ interface PlayerStatLineProps {
   player: Player;
   pickNumber?: number;
   compact?: boolean;
+  /** When false, hide PTS/REB/… draft stats (used for mobile compare). */
+  showDraftStats?: boolean;
   dailyGoal?: DailyDraftGoal;
   allTimeMode?: boolean;
 }
@@ -19,20 +21,23 @@ export function PlayerStatLine({
   player,
   pickNumber,
   compact = false,
+  showDraftStats = true,
   dailyGoal,
   allTimeMode = false,
 }: PlayerStatLineProps) {
   const goalStat = dailyGoal ? formatPlayerGoalStat(player, dailyGoal) : null;
   const isDaily = Boolean(dailyGoal);
-  const meta = `${player.team} · ${formatPlayerPositions(player.positions)}${
+  const positions = formatPlayerPositions(player.positions);
+  const meta = `${player.team} · ${positions}${
     pickNumber ? ` · Pick ${pickNumber}` : ""
   }`;
+  const denseMeta = positions;
 
   return (
     <div
       className={`player-stat-line${compact ? " player-stat-line--compact" : ""}${
         isDaily ? " player-stat-line--daily" : ""
-      }`}
+      }${!showDraftStats ? " player-stat-line--stats-collapsed" : ""}`}
     >
       <PlayerTeamIcon
         team={player.team}
@@ -70,7 +75,14 @@ export function PlayerStatLine({
             <div className="player-stat-line__title-row">
               <strong className="player-stat-line__name">
                 {player.name}
-                <span className="player-stat-line__meta"> {meta}</span>
+                <span className="player-stat-line__meta player-stat-line__meta--full">
+                  {" "}
+                  {meta}
+                </span>
+                <span className="player-stat-line__meta player-stat-line__meta--dense">
+                  {" "}
+                  {denseMeta}
+                </span>
               </strong>
               <span className="player-stat-line__badges">
                 <LimitedSampleBadge player={player} compact={compact} />
@@ -81,10 +93,12 @@ export function PlayerStatLine({
                 />
               </span>
             </div>
-            <PlayerDraftStats
-              player={player}
-              variant={compact ? "inline" : "pills"}
-            />
+            {showDraftStats ? (
+              <PlayerDraftStats
+                player={player}
+                variant={compact ? "inline" : "pills"}
+              />
+            ) : null}
           </>
         )}
       </div>
