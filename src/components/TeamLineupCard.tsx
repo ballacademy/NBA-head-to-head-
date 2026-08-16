@@ -8,7 +8,7 @@ import {
 } from "../lib/scoring";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
-import { TeamNameWithStreak } from "./TeamNameWithStreak";
+import { TeamStreakBadge } from "./TeamNameWithStreak";
 import type { Drafter, LineupScore, Player } from "../lib/types";
 
 interface TeamLineupCardProps {
@@ -57,17 +57,6 @@ export function TeamLineupCard({
   const teamName = drafter.name.trim() || "Opponent";
   const username = drafter.username?.trim() || undefined;
 
-  const nameLabel = showStreak ? (
-    <TeamNameWithStreak
-      name={teamName}
-      winStreak={winStreak}
-      lossStreak={lossStreak}
-      compact={compact}
-    />
-  ) : (
-    teamName
-  );
-
   return (
     <article
       className={[
@@ -104,10 +93,10 @@ export function TeamLineupCard({
                   onClick={onNameClick}
                   aria-label={`View profile for ${teamName}`}
                 >
-                  {nameLabel}
+                  {teamName}
                 </button>
               ) : (
-                nameLabel
+                teamName
               )}
               {username ? (
                 onNameClick ? (
@@ -131,21 +120,30 @@ export function TeamLineupCard({
             <p className="projected-record">{score.projectedRecord.formatted}</p>
           ) : null}
         </div>
-        <div
-          className={`score-orb${compact ? " score-orb--compact" : ""}${
-            score.ovrOverflow > 0 ? " score-orb--overflow" : ""
-          }${
-            resolvedOutcome === "win"
-              ? " score-orb--win"
-              : resolvedOutcome === "loss"
-                ? " score-orb--loss"
-                : ""
-          }`}
-        >
-          <div className="score-orb__content">
-            <span>{formatLineupOvrDisplay(score)}</span>
-            <small>OVR</small>
+        <div className="team-lineup-card__score">
+          <div
+            className={`score-orb${compact ? " score-orb--compact" : ""}${
+              score.ovrOverflow > 0 ? " score-orb--overflow" : ""
+            }${
+              resolvedOutcome === "win"
+                ? " score-orb--win"
+                : resolvedOutcome === "loss"
+                  ? " score-orb--loss"
+                  : ""
+            }`}
+          >
+            <div className="score-orb__content">
+              <span>{formatLineupOvrDisplay(score)}</span>
+              <small>OVR</small>
+            </div>
           </div>
+          {showStreak ? (
+            <TeamStreakBadge
+              winStreak={winStreak}
+              lossStreak={lossStreak}
+              compact={compact}
+            />
+          ) : null}
         </div>
       </div>
 

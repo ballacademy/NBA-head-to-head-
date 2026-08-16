@@ -298,7 +298,7 @@ const drawPlayerRow = (
   context.fillStyle = "rgba(203, 213, 225, 0.88)";
   context.font = `500 20px ${FONT_STACK}`;
   context.fillText(
-    `${player.position} · ${player.team} · ${player.points.toFixed(1)} PTS`,
+    `${player.position} · ${player.team}`,
     214,
     y + 76,
   );

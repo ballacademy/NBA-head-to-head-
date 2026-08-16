@@ -3,6 +3,31 @@ import { WinStreakBadge } from "./WinStreakBadge";
 import { hasFireStreak } from "../lib/winStreak";
 import { hasLossStreakBadge } from "../lib/lossStreak";
 
+interface TeamStreakBadgeProps {
+  winStreak?: number;
+  lossStreak?: number;
+  compact?: boolean;
+}
+
+/** Win/loss streak badge without the team name (e.g. under OVR). */
+export function TeamStreakBadge({
+  winStreak = 0,
+  lossStreak = 0,
+  compact = false,
+}: TeamStreakBadgeProps) {
+  const streakLayout = compact ? "inline" : "default";
+
+  if (hasFireStreak(winStreak)) {
+    return <WinStreakBadge winStreak={winStreak} layout={streakLayout} />;
+  }
+
+  if (hasLossStreakBadge(lossStreak)) {
+    return <LossStreakBadge lossStreak={lossStreak} layout={streakLayout} />;
+  }
+
+  return null;
+}
+
 interface TeamNameWithStreakProps {
   name: string;
   winStreak?: number;
@@ -18,8 +43,6 @@ export function TeamNameWithStreak({
   className,
   compact = false,
 }: TeamNameWithStreakProps) {
-  const streakLayout = compact ? "inline" : "default";
-
   return (
     <span
       className={[
@@ -31,12 +54,11 @@ export function TeamNameWithStreak({
         .join(" ")}
     >
       <span className="team-name-with-streak__name">{name}</span>
-      {hasFireStreak(winStreak) ? (
-        <WinStreakBadge winStreak={winStreak} layout={streakLayout} />
-      ) : null}
-      {!hasFireStreak(winStreak) && hasLossStreakBadge(lossStreak) ? (
-        <LossStreakBadge lossStreak={lossStreak} layout={streakLayout} />
-      ) : null}
+      <TeamStreakBadge
+        winStreak={winStreak}
+        lossStreak={lossStreak}
+        compact={compact}
+      />
     </span>
   );
 }
