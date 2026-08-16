@@ -315,7 +315,7 @@ export function LandingPage({
         `${CLASSIC_PICK_TIME_LIMIT_SECONDS}-second picks.`,
         `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
         "Monthly Top 500 on the Casual board.",
-        "Practice vs a bot, or invite a friend with a room code — neither changes streaks or badges.",
+        "Practice vs a bot, or start a private match with a room code — neither changes streaks or badges.",
       ]),
     [],
   );
@@ -326,7 +326,7 @@ export function LandingPage({
         `${PICK_TIME_LIMIT_SECONDS}-second picks.`,
         `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
         "Monthly Top 500 on the Pro board.",
-        "Practice vs a bot, or invite a friend with a room code — neither changes streaks or badges.",
+        "Practice vs a bot, or start a private match with a room code — neither changes streaks or badges.",
       ]),
     [],
   );
@@ -863,7 +863,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Head to Head</span>
                 <span className="play-hub-chooser__meta">
-                  Casual · Pro · practice · invite a friend
+                  Casual · Pro · practice · private match
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">

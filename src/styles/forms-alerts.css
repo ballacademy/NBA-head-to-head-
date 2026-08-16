@@ -36,7 +36,12 @@
 }
 
 .draft-timer.urgent {
-  background: rgba(239, 68, 68, 0.18);
+  background: rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.35);
+}
+
+.draft-timer.urgent span {
   color: #fecaca;
 }
 
