@@ -17,7 +17,7 @@ const TABS: {
   icon: string;
 }[] = [
   { id: "play", label: "Play", icon: "play" },
-  { id: "roster", label: "Roster", icon: "roster" },
+  { id: "roster", label: "Franchise", icon: "roster" },
   { id: "community", label: "Community", icon: "community" },
   { id: "standings", label: "Ranks", icon: "standings" },
   { id: "account", label: "Account", icon: "account" },

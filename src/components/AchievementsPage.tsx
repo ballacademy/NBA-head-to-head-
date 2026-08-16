@@ -72,7 +72,7 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
           : ""
       }${eventBadges.length > 0 ? ` · ${eventBadges.length} event` : ""}`}
       onBack={onBack}
-      backLabel="Roster"
+      backLabel="Franchise"
     >
       <section className="hub-feature__panel achievements-page__panel">
         <AccountRequiredNote className="account-required-note--inline">

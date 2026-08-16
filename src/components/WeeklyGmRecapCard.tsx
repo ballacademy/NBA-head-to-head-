@@ -8,7 +8,7 @@ import {
 interface WeeklyGmRecapCardProps {
   onViewGmStats?: () => void;
   className?: string;
-  /** Compact one-line teaser (Roster); full card stays on GM Stats. */
+  /** Compact one-line teaser (Franchise); full card stays on GM Stats. */
   variant?: "full" | "compact";
 }
 

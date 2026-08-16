@@ -1196,6 +1196,88 @@
   font-size: 0.88rem;
 }
 
+.gm-stats-page__section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.gm-stats-page__section-heading h2 {
+  margin: 0;
+}
+
+.gm-stats-page__section-back {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-roster-bright);
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.gm-stats-page__section-back:hover {
+  color: #e2e8f0;
+}
+
+.gm-stats-page__most-drafted-boards {
+  display: grid;
+  gap: 0;
+}
+
+.gm-stats-page__most-drafted-board {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  width: 100%;
+  margin: 0;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--accent-neutral-border);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gm-stats-page__most-drafted-board:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.gm-stats-page__most-drafted-board:hover .gm-stats-page__most-drafted-board-label,
+.gm-stats-page__most-drafted-board:hover .gm-stats-page__most-drafted-board-chevron {
+  color: var(--accent-roster-bright);
+}
+
+.gm-stats-page__most-drafted-board-label {
+  color: var(--accent-neutral-bright);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.gm-stats-page__most-drafted-board-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.gm-stats-page__most-drafted-board-chevron {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .gm-stats-page__most-drafted {
   margin: 0;
   padding: 0;

@@ -712,7 +712,7 @@ export function LandingPage({
             ? "Head to Head"
             : "Play"
       : hubTab === "roster"
-        ? "Roster"
+        ? "Franchise"
         : "Account";
 
   const hubLede =
