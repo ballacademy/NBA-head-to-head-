@@ -691,14 +691,43 @@
   margin-bottom: 10px;
 }
 
+.stats-search > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .stats-search input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.9);
-  color: #f8fafc;
+  min-height: 44px;
+  padding: 11px 14px;
+  border: 1px solid var(--hub-subbox-inset-border);
+  border-radius: var(--btn-radius, 12px);
+  background: rgba(10, 14, 20, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  color: var(--text-on-dark);
   font-size: 16px;
+  font-weight: 600;
+  outline: none;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.stats-search input::placeholder {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  font-weight: 500;
+}
+
+.stats-search input:focus {
+  border-color: color-mix(in srgb, var(--accent-roster) 55%, var(--hub-subbox-inset-border));
+  background: rgba(10, 14, 20, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 3px color-mix(in srgb, var(--accent-roster-soft) 80%, transparent);
 }
 
 .draft-pool-toolbar {

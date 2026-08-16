@@ -117,33 +117,30 @@
   --secondary-bg: rgba(255, 255, 255, 0.1);
   --secondary-border: rgba(255, 255, 255, 0.16);
   --scroll-fade: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.85));
-  /* Hub chrome: cooler slate than page body (#171b22→#0b0d11), tier-card texture. */
+  /* Hub chrome: quieter grain — soft depth without busy dots. */
   --hub-chrome-base: #1a2030;
   --hub-chrome-mid: #121722;
   --hub-chrome-deep: #0c1018;
   --hub-chrome-bg:
-    radial-gradient(rgba(255, 255, 255, 0.055) 0.55px, transparent 0.7px),
     linear-gradient(
       165deg,
-      rgba(186, 200, 220, 0.12) 0%,
-      transparent 40%,
-      rgba(0, 0, 0, 0.38) 100%
+      rgba(186, 200, 220, 0.08) 0%,
+      transparent 38%,
+      rgba(0, 0, 0, 0.28) 100%
     ),
     linear-gradient(155deg, var(--hub-chrome-base) 0%, var(--hub-chrome-mid) 52%, var(--hub-chrome-deep) 100%);
-  --hub-chrome-bg-size: 3px 3px, 100% 100%, 100% 100%;
+  --hub-chrome-bg-size: 100% 100%, 100% 100%;
   --hub-chrome-border: rgba(148, 163, 184, 0.22);
   --hub-chrome-shadow:
     0 28px 70px rgba(0, 0, 0, 0.48),
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    inset 0 -22px 44px rgba(0, 0, 0, 0.32);
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -22px 44px rgba(0, 0, 0, 0.28);
   --hub-chrome-sheen:
     linear-gradient(
       118deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.03) 22%,
-      transparent 48%
-    ),
-    radial-gradient(circle at 92% 8%, rgba(148, 163, 184, 0.14), transparent 26%),
-    radial-gradient(circle at 10% 90%, rgba(56, 90, 140, 0.12), transparent 30%);
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 18%,
+      transparent 46%
+    );
   color-scheme: dark;
 }

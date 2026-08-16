@@ -77,12 +77,12 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
 
       <HubFeatureReturnButton onBack={onBack} label="Roster" />
 
-      <AccountRequiredNote className="account-required-note--inline">
-        Sign in to sync badge progress across browsers. Guests keep badges on
-        this device only.
-      </AccountRequiredNote>
-
       <section className="hub-feature__panel achievements-page__panel">
+        <AccountRequiredNote className="account-required-note--inline">
+          Sign in to sync badge progress across browsers. Guests keep badges on
+          this device only.
+        </AccountRequiredNote>
+
         <div className="achievements-page__section-heading">
           <h2>Lineup badges</h2>
         </div>

@@ -319,10 +319,6 @@ export function LeaderboardPage() {
         </p>
       </div>
 
-      <AccountRequiredNote className="account-required-note--inline">
-        {`${ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE} Anyone can browse.`}
-      </AccountRequiredNote>
-
       {refreshFailed ? (
         <InlineAlert
           message="Couldn't refresh leaderboards."
@@ -342,6 +338,10 @@ export function LeaderboardPage() {
           view === "ranked" ? "ranked" : "classic"
         }`}
       >
+        <AccountRequiredNote className="account-required-note--inline">
+          {`${ACCOUNT_REQUIRED_LEADERBOARD_MESSAGE} Anyone can browse.`}
+        </AccountRequiredNote>
+
         <div className="leaderboard__top">
           <div
             className="leaderboard__tabs leaderboard__tabs--views"
