@@ -83,6 +83,36 @@ export const getStreakMultiplier = (streak: number) => {
   );
 };
 
+/**
+ * Softens the climb below Generational GM: wins move banners more than losses
+ * until 2000, with the strongest advantage in Tank Commander.
+ * Streak / placement multipliers still apply on top of this.
+ */
+const CLIMB_OUTCOME_SCALES = [
+  { maxElo: 499, win: 1.35, loss: 0.75 },
+  { maxElo: 999, win: 1.25, loss: 0.8 },
+  { maxElo: 1499, win: 1.15, loss: 0.85 },
+  { maxElo: 1999, win: 1.08, loss: 0.92 },
+  { maxElo: null, win: 1, loss: 1 },
+] as const;
+
+export const getClimbOutcomeMultiplier = (
+  playerElo: number,
+  result: HeadToHeadResult,
+) => {
+  if (result === "tie") {
+    return 1;
+  }
+
+  const elo = Math.max(0, Math.round(playerElo));
+  const band =
+    CLIMB_OUTCOME_SCALES.find(
+      (entry) => entry.maxElo === null || elo <= entry.maxElo,
+    ) ?? CLIMB_OUTCOME_SCALES[CLIMB_OUTCOME_SCALES.length - 1]!;
+
+  return result === "win" ? band.win : band.loss;
+};
+
 const getExpectedScore = (playerElo: number, opponentElo: number) =>
   1 / (1 + 10 ** ((opponentElo - playerElo) / 400));
 
@@ -91,6 +121,7 @@ export interface EloChangeResult {
   nextElo: number;
   placementMultiplier: number;
   streakMultiplier: number;
+  climbMultiplier: number;
 }
 
 export interface EloChangeInput {
@@ -124,7 +155,9 @@ export const calculateEloChange = ({
   const actual = getActualScore(result);
   const placementMultiplier = getPlacementMultiplier(rankedGamesPlayed);
   const streakMultiplier = getStreakMultiplier(activeStreak);
-  const kFactor = BASE_K_FACTOR * placementMultiplier * streakMultiplier;
+  const climbMultiplier = getClimbOutcomeMultiplier(playerElo, result);
+  const kFactor =
+    BASE_K_FACTOR * placementMultiplier * streakMultiplier * climbMultiplier;
   const delta = Math.round(kFactor * (actual - expected));
   const nextElo = Math.max(0, Math.round(playerElo + delta));
 
@@ -133,6 +166,7 @@ export const calculateEloChange = ({
     nextElo,
     placementMultiplier,
     streakMultiplier,
+    climbMultiplier,
   };
 };
 

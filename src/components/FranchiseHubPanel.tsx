@@ -34,6 +34,8 @@ interface FranchiseHubPanelProps {
 const formatPercentile = (value: number | null) =>
   value != null ? formatOrdinal(Math.round(value)) : "—";
 
+const isDailyStreakBadge = (id: string) => id.startsWith("daily-streak-");
+
 export function FranchiseHubPanel({
   collectionProgress,
   collectionTier,
@@ -58,12 +60,17 @@ export function FranchiseHubPanel({
     [streakCounters],
   );
   const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
+  const nextBadgeIsDaily =
+    nextBadge != null && isDailyStreakBadge(nextBadge.id);
+  /** Separate card only when the next goal is not already Daily Draft. */
+  const showStandaloneNextBadge =
+    Boolean(nextBadge && onPlayIntent && !nextBadgeIsDaily);
 
   return (
     <div className="franchise-home">
       <WeeklyGmRecapCard variant="compact" onViewGmStats={onViewGmStats} />
 
-      {nextBadge && onPlayIntent ? (
+      {showStandaloneNextBadge && nextBadge && onPlayIntent ? (
         <section
           className="franchise-home__next-badge achievements-page__next-badge landing-card"
           aria-label="Next badge"
@@ -94,7 +101,9 @@ export function FranchiseHubPanel({
       ) : null}
 
       <section
-        className="franchise-home__daily landing-card"
+        className={`franchise-home__daily landing-card${
+          nextBadgeIsDaily ? " franchise-home__daily--with-badge" : ""
+        }`}
         aria-label="Daily Draft progress"
       >
         <div className="franchise-home__daily-copy">
@@ -108,9 +117,20 @@ export function FranchiseHubPanel({
             Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
             {formatPercentile(dailyDraft.averagePercentile)}
           </p>
-          {nextDailyGoal ? (
+          {nextBadgeIsDaily && nextBadge ? (
+            <div className="franchise-home__daily-badge">
+              <span className="franchise-home__daily-badge-emoji" aria-hidden="true">
+                {nextBadge.emoji}
+              </span>
+              <div className="franchise-home__daily-badge-copy">
+                <p className="franchise-home__daily-badge-label">Next badge</p>
+                <strong>{nextBadge.title}</strong>
+                <span>{nextBadge.description}</span>
+              </div>
+            </div>
+          ) : nextDailyGoal ? (
             <p className="franchise-home__daily-next">
-              Next badge: {nextDailyGoal.title} (
+              Streak goal: {nextDailyGoal.title} (
               {Math.min(streakCounters.dailyStreak, nextDailyGoal.target)}/
               {nextDailyGoal.target})
             </p>
@@ -123,9 +143,19 @@ export function FranchiseHubPanel({
         <button
           type="button"
           className="franchise-home__daily-cta secondary-button"
-          onClick={onPlayDaily}
+          onClick={
+            nextBadgeIsDaily && nextBadge && onPlayIntent
+              ? () =>
+                  onPlayIntent({
+                    playSection: nextBadge.hint.playSection,
+                    h2hMode: nextBadge.hint.h2hMode,
+                  })
+              : onPlayDaily
+          }
         >
-          Play Daily
+          {nextBadgeIsDaily && nextBadge
+            ? nextBadge.hint.ctaLabel
+            : "Play Daily"}
         </button>
       </section>
 
