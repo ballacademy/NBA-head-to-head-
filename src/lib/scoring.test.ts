@@ -9,6 +9,7 @@ import {
   capLineupRoleFitForOffense,
   capLineupRoleFitWithoutFirstOption,
   compareLineups,
+  countPlusDefenders,
   formatLineupOvrDisplay,
   formatLineupOvrLabel,
   getLineupOffenseFloorPenalty,
@@ -530,7 +531,40 @@ describe("calculateLineupScore", () => {
       inflatedNumericDefender,
     ]);
 
-    expect(score.categories[3]?.note).toContain("1 B-or-better defenders");
+    expect(score.categories[3]?.note).toContain("1 plus defender (B+)");
+    expect(score.strengths).not.toContain(
+      "Multiple plus defenders with a back-line anchor.",
+    );
+  });
+
+  it("does not credit multiple plus defenders from soft C+/C grade sums", () => {
+    const byName = (needle: string) => {
+      const hit = players.find((player) =>
+        player.name.toLowerCase().includes(needle.toLowerCase()),
+      );
+      if (!hit) {
+        throw new Error(`Missing player ${needle}`);
+      }
+      return hit;
+    };
+
+    const talentHeavy = [
+      byName("James Harden"),
+      byName("Tyrese Maxey"),
+      byName("Deni Avdija"),
+      byName("Giannis Antetokounmpo"),
+      byName("Maxime Raynaud"),
+    ];
+    const score = calculateLineupScore(talentHeavy);
+
+    expect(countPlusDefenders(talentHeavy)).toBe(1);
+    expect(score.strengths).not.toContain(
+      "Multiple plus defenders with a back-line anchor.",
+    );
+    expect(
+      score.warnings.some((warning) => /only one plus defender/i.test(warning)),
+    ).toBe(true);
+    expect(score.categories[3]?.note).toMatch(/1 plus defender \(B\+\)/);
   });
 
   it("penalizes lineups without a 20 PPG primary scorer", () => {

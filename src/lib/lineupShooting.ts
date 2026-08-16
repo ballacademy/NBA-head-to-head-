@@ -108,10 +108,19 @@ export const hasReliableLineupSpacing = (profile: LineupShootingProfile) =>
     profile.passableShooters >= 2.5 &&
     profile.totalThreePointersAttempted >= 14);
 
-export const formatLineupShootingNote = (profile: LineupShootingProfile) => {
-  const passableCount = Math.round(profile.passableShooters);
+export const formatLineupShootingNote = (
+  profile: LineupShootingProfile,
+  counts?: {
+    passableShooters: number;
+    eliteShooters?: number;
+  },
+) => {
+  const passableCount =
+    counts?.passableShooters ?? Math.round(profile.passableShooters);
 
-  return `${passableCount} passable+ shooters (${PASSABLE_THREE_POINT * 100}%+ on ${PASSABLE_THREE_VOLUME}+ 3PA), ${roundPercent(
+  return `${passableCount} passable+ shooter${
+    passableCount === 1 ? "" : "s"
+  } (${PASSABLE_THREE_POINT * 100}%+ on ${PASSABLE_THREE_VOLUME}+ 3PA), ${roundPercent(
     profile.volumeWeightedThreePoint,
   )}% volume-weighted 3P`;
 };
