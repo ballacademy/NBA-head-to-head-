@@ -65,6 +65,7 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-community-posts",
   "nba-head-to-head-community-rate",
   "ddgm:weekly-recap-seen",
+  "nba-head-to-head-nba-player-usage",
 ] as const;
 
 const PENDING_LINEUP_KEY_PREFIX = "nba-head-to-head-pending-lineup-";

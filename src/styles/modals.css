@@ -1209,6 +1209,49 @@
   font-size: 0.88rem;
 }
 
+.gm-stats-page__most-drafted {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.gm-stats-page__most-drafted-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.gm-stats-page__most-drafted-row:last-child {
+  border-bottom: 0;
+}
+
+.gm-stats-page__most-drafted-rank {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gm-stats-page__most-drafted-name {
+  color: #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.gm-stats-page__most-drafted-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .gm-profile-modal__meta {
   margin: 0;
   color: var(--muted);

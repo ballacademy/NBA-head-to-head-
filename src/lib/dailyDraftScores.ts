@@ -14,6 +14,7 @@ import {
   type DailyGoalDirection,
 } from "./dailyDraftGoals";
 import { getOrCreatePlayerId } from "./playerRecord";
+import { recordNbaPlayerDailyDraftUsage } from "./nbaPlayerUsage";
 import { getPlayersById } from "./scoring";
 import type { DraftSlotConstraint, Player } from "./types";
 
@@ -353,6 +354,14 @@ export const submitDailyDraftScore = async (
     percentile: percentileResult.percentile,
   };
   mergeEntryToLocal(dateKey, entryWithPercentile);
+
+  const usageLineup = entryWithPercentile.lineup ?? lineup;
+  if (Array.isArray(usageLineup) && usageLineup.length > 0) {
+    recordNbaPlayerDailyDraftUsage({
+      recordKey: `daily:${dateKey}:${resolveEntryMode(entryWithPercentile)}:${entryWithPercentile.playerId}`,
+      playerIds: usageLineup,
+    });
+  }
 
   return {
     ...percentileResult,
