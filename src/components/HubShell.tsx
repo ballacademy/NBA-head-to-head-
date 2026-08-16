@@ -20,11 +20,19 @@ export function HubShell({
   children,
   className = "",
 }: HubShellProps) {
+  const tabAccent =
+    activeTab === "standings"
+      ? "ranked"
+      : activeTab === "community"
+        ? "community"
+        : activeTab;
+
   return (
     <section
-      className={`landing panel landing--rich landing--hub${
+      className={`landing panel landing--rich landing--hub landing--hub-tab-${tabAccent}${
         className ? ` ${className}` : ""
       }`}
+      data-hub-tab={activeTab}
     >
       <div className="landing__glow" aria-hidden="true" />
 

@@ -3,6 +3,13 @@
   --hub-chrome-inset: 14px;
   /* Logo sits tighter to the left edge than the account inset on the right. */
   --hub-logo-inset: 6px;
+  --hub-logo-size: 44px;
+  --hub-title-band-height: 52px;
+  --hub-tab-accent: var(--accent-play);
+  --hub-tab-accent-bright: var(--accent-play-bright);
+  --hub-tab-accent-soft: var(--accent-play-soft);
+  --hub-tab-accent-border: var(--accent-play-border);
+  --hub-tab-accent-glow: var(--accent-play-glow);
   display: flex;
   flex-direction: column;
   width: min(760px, 100%);
@@ -13,12 +20,60 @@
   max-height: calc(100dvh - 4px);
   padding: 0;
   overflow: hidden;
+  /* Soft tab-colored rim — color without a heavy outer glow. */
+  border-color: color-mix(in srgb, var(--hub-tab-accent-border) 70%, var(--hub-chrome-border));
+  box-shadow:
+    var(--hub-chrome-shadow),
+    0 0 0 1px color-mix(in srgb, var(--hub-tab-accent) 22%, transparent),
+    0 0 28px color-mix(in srgb, var(--hub-tab-accent-glow) 55%, transparent);
+}
+
+.landing--hub-tab-play {
+  --hub-tab-accent: var(--accent-play);
+  --hub-tab-accent-bright: var(--accent-play-bright);
+  --hub-tab-accent-soft: var(--accent-play-soft);
+  --hub-tab-accent-border: var(--accent-play-border);
+  --hub-tab-accent-glow: var(--accent-play-glow);
+}
+
+.landing--hub-tab-roster {
+  --hub-tab-accent: var(--accent-roster);
+  --hub-tab-accent-bright: var(--accent-roster-bright);
+  --hub-tab-accent-soft: var(--accent-roster-soft);
+  --hub-tab-accent-border: var(--accent-roster-border);
+  --hub-tab-accent-glow: var(--accent-roster-glow);
+}
+
+.landing--hub-tab-community {
+  --hub-tab-accent: var(--accent-community);
+  --hub-tab-accent-bright: var(--accent-community-bright);
+  --hub-tab-accent-soft: var(--accent-community-soft);
+  --hub-tab-accent-border: var(--accent-community-border);
+  --hub-tab-accent-glow: var(--accent-community-glow);
+}
+
+.landing--hub-tab-ranked {
+  --hub-tab-accent: var(--accent-ranked);
+  --hub-tab-accent-bright: var(--accent-ranked-bright);
+  --hub-tab-accent-soft: var(--accent-ranked-soft);
+  --hub-tab-accent-border: var(--accent-ranked-border);
+  --hub-tab-accent-glow: var(--accent-ranked-glow);
+}
+
+.landing--hub-tab-account {
+  --hub-tab-accent: var(--accent-account);
+  --hub-tab-accent-bright: var(--accent-account-bright);
+  --hub-tab-accent-soft: var(--accent-account-soft);
+  --hub-tab-accent-border: var(--accent-account-border);
+  --hub-tab-accent-glow: var(--accent-account-glow);
 }
 
 @media (min-width: 900px) {
   .landing--hub {
     --hub-chrome-inset: 22px;
     --hub-logo-inset: 10px;
+    --hub-logo-size: 56px;
+    --hub-title-band-height: 58px;
   }
 }
 
@@ -43,25 +98,24 @@
 
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
-  top: 6px;
+  top: 12px;
   left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 48px;
+  height: var(--hub-title-band-height);
   margin: 0;
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
-  /* ~20% larger than prior 40px on mobile. */
-  width: 48px;
-  height: 48px;
+  width: var(--hub-logo-size);
+  height: var(--hub-logo-size);
   flex-shrink: 0;
   background-color: transparent;
   border: 0;
   outline: 0;
   box-shadow: none;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.4));
 }
 
 @media (min-width: 900px) {
@@ -70,15 +124,7 @@
   }
 
   .landing-hub-chrome .landing-hub-brand {
-    /* Center the 80px mark between panel top and the hub title band. */
-    top: -8px;
-    height: 80px;
-  }
-
-  .landing-hub-chrome .landing-hub-brand__logo {
-    /* Double the prior 40px size on laptop/PC. */
-    width: 80px;
-    height: 80px;
+    top: 16px;
   }
 }
 
@@ -101,6 +147,7 @@
   min-width: 0;
   margin-inline: auto;
   box-sizing: border-box;
+  position: relative;
 }
 
 .hub-feature.tier-list-page {
@@ -110,8 +157,37 @@
 .hub-feature__return-row {
   display: flex;
   justify-content: flex-start;
+  align-items: center;
   margin: 0 0 8px;
   padding-inline: 2px;
+}
+
+/* Keep return in the title band so the first content box never jumps. */
+.hub-feature > .landing-hub__top + .hub-feature__return-row,
+.landing-hub__content > .hub-feature__return-row:first-child {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  height: var(--hub-title-band-height, 52px);
+  pointer-events: none;
+}
+
+.hub-feature > .landing-hub__top + .hub-feature__return-row {
+  top: 0;
+}
+
+.landing-hub__content > .hub-feature__return-row:first-child {
+  top: calc(-1 * (var(--hub-title-band-height, 52px) + 10px));
+}
+
+.hub-feature > .landing-hub__top + .hub-feature__return-row .hub-feature__return,
+.landing-hub__content > .hub-feature__return-row:first-child .hub-feature__return {
+  pointer-events: auto;
+  min-height: 30px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
 }
 
 .hub-feature__return {
@@ -150,15 +226,13 @@
   border: 1px solid var(--hub-subbox-border);
   border-radius: 18px;
   background:
-    radial-gradient(rgba(255, 255, 255, 0.035) 0.55px, transparent 0.7px),
     linear-gradient(
       165deg,
-      rgba(255, 255, 255, 0.035) 0%,
-      transparent 42%,
-      rgba(0, 0, 0, 0.16) 100%
+      rgba(255, 255, 255, 0.03) 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.12) 100%
     ),
     var(--hub-subbox-bg);
-  background-size: 3px 3px, 100% 100%, 100% 100%;
   box-shadow: var(--hub-subbox-shadow);
   color: var(--text-muted-on-dark);
 }
@@ -249,14 +323,18 @@
 .landing-hub__top {
   display: grid;
   justify-items: center;
-  align-content: start;
-  gap: 4px;
+  align-content: center;
+  gap: 3px;
   box-sizing: border-box;
   width: 100%;
-  min-height: 0;
-  margin: 0 0 8px;
+  min-height: var(--hub-title-band-height, 52px);
+  height: var(--hub-title-band-height, 52px);
+  margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
-  padding-inline: max(64px, calc(var(--hub-chrome-inset, 14px) + 48px));
+  padding-inline: max(
+    calc(var(--hub-logo-inset, 6px) + var(--hub-logo-size, 44px) + 10px),
+    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-size, 44px) + 8px)
+  );
   padding-bottom: 0;
   text-align: center;
   border-bottom: 0;
@@ -265,10 +343,11 @@
 
 @media (min-width: 900px) {
   .landing-hub__top {
-    /* Clear the doubled desktop logo while keeping titles top-aligned. */
-    padding-top: 6px;
-    margin-bottom: 10px;
-    padding-inline: max(96px, calc(var(--hub-chrome-inset, 22px) + 72px));
+    margin-bottom: 12px;
+    padding-inline: max(
+      calc(var(--hub-logo-inset, 10px) + var(--hub-logo-size, 56px) + 14px),
+      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-size, 56px) + 12px)
+    );
   }
 }
 
@@ -280,7 +359,7 @@ h1.landing-hub__title {
   max-width: 100%;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.28rem, 4.6vw, 1.85rem);
+  font-size: clamp(1.22rem, 4.4vw, 1.72rem);
   font-weight: 750;
   line-height: 1.1;
   letter-spacing: -0.015em;
@@ -303,7 +382,7 @@ h1.landing-hub__title {
 .landing h1.landing-hub__title--name,
 h1.landing-hub__title--name {
   font-family: var(--font-sans);
-  font-size: clamp(1.2rem, 4.8vw, 1.75rem);
+  font-size: clamp(1.12rem, 4.4vw, 1.55rem);
   font-weight: 750;
   letter-spacing: -0.025em;
   text-transform: none;
@@ -328,14 +407,25 @@ h1.landing-hub__title--name {
   margin: 0;
   max-width: 26em;
   width: 100%;
-  min-height: 0;
+  min-height: 1.08em;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: 0;
   text-align: center;
   text-wrap: balance;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stats lede carries an info control — allow the shared grid layout. */
+.landing-hub__lede.stats-panel__lede {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  max-width: 100%;
 }
 
 .landing-hub__content {
@@ -343,7 +433,8 @@ h1.landing-hub__title--name {
   gap: 10px;
   width: 100%;
   margin-inline: auto;
-  margin-top: 4px;
+  margin-top: 0;
+  position: relative;
 }
 
 .landing-team-form--compact {
@@ -1262,9 +1353,9 @@ h1.landing-hub__title--name {
 
 .landing-card--form {
   margin: 0;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border: 1px solid var(--hub-subbox-border);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--hub-subbox-bg);
   box-shadow: var(--hub-subbox-shadow);
 }

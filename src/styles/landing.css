@@ -191,12 +191,26 @@
 
 .landing-team-form {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   margin: 0;
 }
 
 .landing-card--form.landing-team-form {
   margin-top: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--hub-subbox-border);
+  border-radius: 14px;
+  background: var(--hub-subbox-bg);
+  box-shadow: var(--hub-subbox-shadow);
+}
+
+.landing-team-form--compact.landing-card--form {
+  padding: 12px 14px;
+  gap: 8px;
+}
+
+.landing-team-form--compact .field {
+  gap: 5px;
 }
 
 .landing-card--profile {
