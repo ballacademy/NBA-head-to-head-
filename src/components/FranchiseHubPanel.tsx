@@ -222,28 +222,49 @@ export function FranchiseHubPanel({
         </p>
       </div>
 
-      <nav className="franchise-home__links" aria-label="Franchise pages">
-        <button
-          type="button"
-          className="franchise-home__link"
-          onClick={onViewAchievements}
-        >
-          Badges
-        </button>
-        <button
-          type="button"
-          className="franchise-home__link"
-          onClick={onViewStats}
-        >
-          Season Stats
-        </button>
-        <button
-          type="button"
-          className="franchise-home__link"
-          onClick={onViewGmStats}
-        >
-          GM Stats
-        </button>
+      <nav className="franchise-home__links landing-card" aria-label="Franchise pages">
+        <p className="franchise-home__links-label">Career pages</p>
+        <div className="franchise-home__link-grid">
+          <button
+            type="button"
+            className="franchise-home__link-btn hub-accent hub-accent--roster"
+            onClick={onViewAchievements}
+          >
+            <span className="franchise-home__link-copy">
+              <strong>Badges</strong>
+              <span>Unlocks and career goals</span>
+            </span>
+            <span className="franchise-home__link-chevron" aria-hidden="true">
+              ›
+            </span>
+          </button>
+          <button
+            type="button"
+            className="franchise-home__link-btn hub-accent hub-accent--roster"
+            onClick={onViewStats}
+          >
+            <span className="franchise-home__link-copy">
+              <strong>Season Stats</strong>
+              <span>Player production this season</span>
+            </span>
+            <span className="franchise-home__link-chevron" aria-hidden="true">
+              ›
+            </span>
+          </button>
+          <button
+            type="button"
+            className="franchise-home__link-btn hub-accent hub-accent--roster"
+            onClick={onViewGmStats}
+          >
+            <span className="franchise-home__link-copy">
+              <strong>GM Stats</strong>
+              <span>Your Front Office record</span>
+            </span>
+            <span className="franchise-home__link-chevron" aria-hidden="true">
+              ›
+            </span>
+          </button>
+        </div>
       </nav>
 
       <MostDraftedBoards />
