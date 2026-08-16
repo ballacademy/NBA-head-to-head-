@@ -7,6 +7,10 @@ import {
   formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
+import {
+  getMostDraftedNbaPlayers,
+} from "../lib/nbaPlayerUsage";
+import { players as allPlayers } from "../data/players";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
@@ -69,6 +73,13 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
     [teamName, legacyTick],
   );
   const peakBannerTier = formatLegacyPeakBannerTier(snapshot.legacy.peakElo);
+  const mostDrafted = useMemo(() => {
+    const nameById = new Map(allPlayers.map((player) => [player.id, player.name]));
+    return getMostDraftedNbaPlayers(10).map((row) => ({
+      ...row,
+      name: nameById.get(row.playerId) ?? row.playerId,
+    }));
+  }, [legacyTick]);
 
   return (
     <HubPageChrome
@@ -177,6 +188,31 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
             },
           ]}
         />
+      </section>
+
+      <section className="gm-stats-page__section">
+        <h2>Most drafted</h2>
+        {mostDrafted.length === 0 ? (
+          <p className="gm-stats-page__section-copy">
+            Play Daily or H2H to build your top drafted players.
+          </p>
+        ) : (
+          <ol className="gm-stats-page__most-drafted">
+            {mostDrafted.map((row, index) => (
+              <li key={row.playerId} className="gm-stats-page__most-drafted-row">
+                <span className="gm-stats-page__most-drafted-rank">
+                  {index + 1}.
+                </span>
+                <span className="gm-stats-page__most-drafted-name">
+                  {row.name}
+                </span>
+                <span className="gm-stats-page__most-drafted-meta">
+                  {row.drafts} draft{row.drafts === 1 ? "" : "s"}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       <section className="gm-stats-page__section">

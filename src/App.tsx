@@ -32,6 +32,7 @@ import {
   type LandingDeepLinkFeature,
 } from "./lib/landingHub";
 import { trackProductEvent } from "./lib/productAnalytics";
+import { isQaRuntimeHost } from "./lib/qaRuntime";
 import { PendingQueueResults } from "./components/PendingQueueResults";
 import { PendingOwnerResults } from "./components/PendingOwnerResults";
 import { MatchmakingOverlay } from "./components/MatchmakingOverlay";
@@ -171,6 +172,11 @@ const AchievementsPage = lazyWithChunkReload(() =>
 const GmStatsPage = lazyWithChunkReload(() =>
   import("./components/GmStatsPage").then((m) => ({ default: m.GmStatsPage })),
 );
+const InternalPlayerUsagePage = lazyWithChunkReload(() =>
+  import("./components/InternalPlayerUsagePage").then((m) => ({
+    default: m.InternalPlayerUsagePage,
+  })),
+);
 const LegalPage = lazyWithChunkReload(() =>
   import("./components/LegalPage").then((m) => ({ default: m.LegalPage })),
 );
@@ -212,6 +218,7 @@ type AppPhase =
   | "stats"
   | "tierList"
   | "gmStats"
+  | "playerUsage"
   | "leaderboard"
   | "achievements"
   | "privacy"
@@ -222,12 +229,26 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
   "tierList",
   "gmStats",
+  "playerUsage",
   "leaderboard",
   "achievements",
   "privacy",
   "terms",
   "beta",
 ]);
+
+const readInitialInternalPlayerUsage = () => {
+  try {
+    if (!isQaRuntimeHost()) {
+      return false;
+    }
+    const hub = new URLSearchParams(window.location.search).get("hub");
+    const token = hub?.trim().toLowerCase();
+    return token === "player-rates" || token === "player-usage";
+  } catch {
+    return false;
+  }
+};
 
 const featurePhaseFromDeepLink = (
   feature: LandingDeepLinkFeature | null | undefined,
@@ -316,6 +337,9 @@ function App() {
   const [phase, setPhase] = useState<AppPhase>(() => {
     if (initialPublicTierListId) {
       return "tierList";
+    }
+    if (readInitialInternalPlayerUsage()) {
+      return "playerUsage";
     }
     const fromDeepLink = featurePhaseFromDeepLink(
       initialLandingDeepLinks.feature,
@@ -417,6 +441,27 @@ function App() {
 
   useEffect(() => {
     if (initialPublicTierListId) {
+      return;
+    }
+
+    if (readInitialInternalPlayerUsage()) {
+      const state = window.history.state as FeatureHistoryState | null;
+      if (!state?.appPhase) {
+        window.history.replaceState({ appPhase: "playerUsage" }, "");
+      }
+      setLandingHubTab("account");
+      saveLandingHubTab("account");
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("hub", "player-rates");
+        window.history.replaceState(
+          { appPhase: "playerUsage" },
+          "",
+          `${url.pathname}${url.search}${url.hash}`,
+        );
+      } catch {
+        // Ignore URL rewrite failures.
+      }
       return;
     }
 
@@ -1675,9 +1720,12 @@ function App() {
     const shouldNavigateBack =
       FEATURE_PHASES.has(phase) && Boolean(state?.appPhase);
 
-    const parentTab = leavingFeature
-      ? parentTabForFeature(leavingFeature)
-      : landingHubTab;
+    const parentTab =
+      phase === "playerUsage"
+        ? "account"
+        : leavingFeature
+          ? parentTabForFeature(leavingFeature)
+          : landingHubTab;
     setLandingHubTab(parentTab);
     saveLandingHubTab(parentTab);
     resetToLanding();
@@ -2472,6 +2520,7 @@ function App() {
 
     if (
       phase === "gmStats" ||
+      phase === "playerUsage" ||
       phase === "privacy" ||
       phase === "terms" ||
       phase === "beta"
@@ -2507,6 +2556,12 @@ function App() {
 
   if (phase === "gmStats") {
     return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
+  }
+
+  if (phase === "playerUsage") {
+    return renderHubFeature(
+      <InternalPlayerUsagePage onBack={exitFeaturePage} />,
+    );
   }
 
   if (phase === "achievements") {

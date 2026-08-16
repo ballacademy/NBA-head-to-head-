@@ -22,6 +22,7 @@ import {
 import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
 import { persistMatchOutcome, projectRecordAfterMatch } from "../lib/matchOutcome";
+import { recordNbaPlayerMatchUsage } from "../lib/nbaPlayerUsage";
 import { rememberCommunityShareable } from "../lib/communityShareables";
 import {
   extractGhostStoredLineupId,
@@ -233,6 +234,12 @@ export function MatchResults({
           matchResult,
           matchId,
         );
+        recordNbaPlayerMatchUsage({
+          recordKey: matchId,
+          playerIds: userLineup.map((player) => player.id),
+          mode: "event",
+          result: matchResult,
+        });
         setEventProfile(nextProfile);
         setNewEventBadges(
           nextProfile.badges.filter((badge) => !before.badges.includes(badge)),
@@ -287,6 +294,17 @@ export function MatchResults({
           matchRecordMode,
           { opponentElo },
         );
+        recordNbaPlayerMatchUsage({
+          recordKey: matchId,
+          playerIds: userLineup.map((player) => player.id),
+          mode:
+            matchRecordMode === "ranked"
+              ? "ranked"
+              : matchRecordMode === "allTime"
+                ? "allTime"
+                : "headToHead",
+          result: matchResult,
+        });
 
         if (outcome.ranked) {
           setRankedOutcome(outcome.ranked);
