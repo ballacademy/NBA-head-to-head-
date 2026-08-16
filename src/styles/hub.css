@@ -393,14 +393,36 @@ h1.landing-hub__title--name {
 }
 
 .landing-hub__title-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .landing-hub__title-row .landing-hub__title {
+  grid-column: 2;
+  justify-self: center;
   margin-bottom: 0;
+}
+
+.landing-hub__title-accessory {
+  grid-column: 3;
+  justify-self: start;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  line-height: 0;
+}
+
+/* Keep accessory controls from stretching the shared title band. */
+.landing-hub__title-accessory .mode-card-info__button {
+  width: 26px;
+  height: 26px;
+  font-size: 0.62rem;
+  border-radius: 9px;
 }
 
 .landing .landing-hub__lede,
@@ -420,14 +442,6 @@ h1.landing-hub__title--name {
   text-wrap: balance;
   overflow: visible;
   white-space: normal;
-}
-
-/* Stats lede carries an info control — allow the shared grid layout. */
-.landing-hub__lede.stats-panel__lede {
-  overflow: visible;
-  text-overflow: unset;
-  white-space: normal;
-  max-width: 100%;
 }
 
 .landing-hub__content {

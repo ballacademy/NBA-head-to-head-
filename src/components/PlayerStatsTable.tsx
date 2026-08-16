@@ -185,19 +185,14 @@ export function PlayerStatsTable({
       className="stats-panel"
       title="Season Stats"
       titleId="stats-heading"
-      ledeClassName="stats-panel__lede"
-      lede={
-        <>
-          <span className="stats-panel__lede-text">Player pool</span>
-          <span className="stats-panel__lede-info">
-            <ModeCardInfo
-              details={statsInfoDetails}
-              popoverAlign="end"
-              ariaLabel="Season Stats details"
-            />
-          </span>
-        </>
+      titleAccessory={
+        <ModeCardInfo
+          details={statsInfoDetails}
+          popoverAlign="end"
+          ariaLabel="Season Stats details"
+        />
       }
+      lede="Player pool"
       onBack={onBack}
       backLabel="Roster"
     >

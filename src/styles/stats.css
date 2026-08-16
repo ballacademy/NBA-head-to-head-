@@ -93,16 +93,13 @@
   font-size: 0.78rem;
 }
 
-.hub-feature.stats-panel .mode-card-info__button {
-  width: 32px;
-  height: 32px;
-  font-size: 0.68rem;
+.hub-feature.stats-panel .landing-hub__title-accessory .mode-card-info__button {
   color: #cbd5e1;
   border-color: rgba(148, 163, 184, 0.35);
   background: rgba(255, 255, 255, 0.08);
 }
 
-.hub-feature.stats-panel .mode-card-info__button:hover {
+.hub-feature.stats-panel .landing-hub__title-accessory .mode-card-info__button:hover {
   color: #f8fafc;
   border-color: rgba(203, 213, 225, 0.5);
   background: rgba(255, 255, 255, 0.14);
