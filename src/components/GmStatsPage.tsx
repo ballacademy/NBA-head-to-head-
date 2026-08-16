@@ -208,9 +208,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
                 </span>
                 <span className="gm-stats-page__most-drafted-meta">
                   {row.drafts} draft{row.drafts === 1 ? "" : "s"}
-                  {row.wins + row.losses > 0
-                    ? ` · ${formatNbaPlayerWinPct(row.winPct)} W`
-                    : ""}
                 </span>
               </li>
             ))}
