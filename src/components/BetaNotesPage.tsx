@@ -184,7 +184,7 @@ export function BetaNotesPage({
                 <strong>Account</strong> (sign-in, settings)
               </li>
               <li>
-                <strong>Invite a friend</strong> (Casual or Pro) — account
+                <strong>Private match</strong> (Casual or Pro) — account
                 holders create a room code for live H2H. Same draft rules as
                 that mode; records, Banners, and badges do not change.
               </li>

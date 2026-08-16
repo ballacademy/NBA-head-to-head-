@@ -1,17 +1,23 @@
 import { useMemo } from "react";
 import { getClassicProfileView } from "../lib/classicProfile";
+import { loadSelfSeasonBoardRecord } from "../lib/seasonBoardRecord";
 import type { PlayerRecord } from "../lib/playerRecord";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { RecordWithStreak } from "./RecordWithStreak";
 
 interface ClassicModeSummaryProps {
+  /** Career record — used as a refresh signal after matches. */
   record: PlayerRecord;
 }
 
 export function ClassicModeSummary({ record }: ClassicModeSummaryProps) {
   const classic = useMemo(
     () => getClassicProfileView(),
-    [record.wins, record.losses],
+    [record.wins, record.losses, record.winStreak, record.lossStreak],
+  );
+  const seasonRecord = useMemo(
+    () => loadSelfSeasonBoardRecord("classic"),
+    [record.wins, record.losses, record.winStreak, record.lossStreak],
   );
 
   return (
@@ -23,7 +29,7 @@ export function ClassicModeSummary({ record }: ClassicModeSummaryProps) {
         </span>
       </p>
       <RecordWithStreak
-        record={record}
+        record={{ ...record, ...seasonRecord, playerId: record.playerId }}
         align="right"
         className="ranked-mode-summary__record"
       />

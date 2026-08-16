@@ -23,9 +23,15 @@ import {
 import { formatOpponentDisplayName } from "../lib/opponentDisplayName";
 import { canOpenOpponentGmProfile } from "../lib/opponentGmProfile";
 import {
+  hasRecordedMatchId,
   persistMatchOutcome,
   resolveRecordForMatchDisplay,
 } from "../lib/matchOutcome";
+import {
+  loadSelfSeasonBoardRecord,
+  projectSelfSeasonBoardRecordAfterMatch,
+  type SeasonBoardMode,
+} from "../lib/seasonBoardRecord";
 import { recordNbaPlayerMatchUsage } from "../lib/nbaPlayerUsage";
 import { rememberCommunityShareable } from "../lib/communityShareables";
 import {
@@ -84,8 +90,6 @@ interface MatchResultsProps {
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
   onPostToCommunity?: () => void;
-  /** Opens private-match invite modal for this mode (Casual/Pro). */
-  onInviteFriend?: () => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
@@ -103,7 +107,6 @@ export function MatchResults({
   onPlayAgain,
   onReturnToMenu,
   onPostToCommunity,
-  onInviteFriend,
   isMatchmaking = false,
   startMatchError = null,
   opponentAutoDrafted = false,
@@ -204,6 +207,15 @@ export function MatchResults({
     matchResult,
     persistedMatchRecord,
   ]);
+
+  const seasonBoardMode: SeasonBoardMode | null =
+    isEventMatch || user.practiceMode || user.privateMatch || user.allTimeMode
+      ? null
+      : matchRecordMode === "ranked"
+        ? "ranked"
+        : matchRecordMode === "headToHead"
+          ? "classic"
+          : null;
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -569,15 +581,10 @@ export function MatchResults({
   const playAgainLabel = user.practiceMode
     ? "Practice again"
     : user.privateMatch
-      ? "Invite a friend again"
+      ? "Private match again"
       : user.eventId
         ? "Play event again"
         : "Draft another team";
-  const canInviteFriend =
-    Boolean(onInviteFriend) &&
-    !user.privateMatch &&
-    !user.eventId &&
-    !user.allTimeMode;
   const playerIdentity = getOrCreatePlayerIdentity();
   const opponentProfileId =
     opponent.profilePlayerId ?? opponent.liveOpponentPlayerId ?? null;
@@ -600,6 +607,48 @@ export function MatchResults({
             ? classicOutcome
             : null
       : null;
+
+  /** Classic/Pro badges use monthly board streaks (same as Play cards + Ranks). */
+  const displayStreaks = useMemo(() => {
+    if (isEventMatch && eventProfile) {
+      return {
+        winStreak: eventProfile.winStreak,
+        lossStreak: eventProfile.lossStreak,
+      };
+    }
+
+    if (competitiveOutcome) {
+      return {
+        winStreak: competitiveOutcome.winStreak,
+        lossStreak: competitiveOutcome.lossStreak,
+      };
+    }
+
+    if (seasonBoardMode) {
+      if (hasRecordedMatchId(matchId)) {
+        return loadSelfSeasonBoardRecord(seasonBoardMode);
+      }
+
+      return projectSelfSeasonBoardRecordAfterMatch(
+        seasonBoardMode,
+        matchResult,
+      );
+    }
+
+    return {
+      winStreak: updatedRecord.winStreak,
+      lossStreak: updatedRecord.lossStreak,
+    };
+  }, [
+    competitiveOutcome,
+    eventProfile,
+    isEventMatch,
+    matchId,
+    matchResult,
+    seasonBoardMode,
+    updatedRecord.lossStreak,
+    updatedRecord.winStreak,
+  ]);
 
   return (
     <section
@@ -760,8 +809,8 @@ export function MatchResults({
               lineup={userLineup}
               score={userScore}
               isWinner={userWon}
-              winStreak={updatedRecord.winStreak}
-              lossStreak={updatedRecord.lossStreak}
+              winStreak={displayStreaks.winStreak}
+              lossStreak={displayStreaks.lossStreak}
               showStreak={showCompetitiveStreak}
               showScoreContext
               compact
@@ -843,16 +892,6 @@ export function MatchResults({
                       },
                     ]
                   : []),
-                ...(canInviteFriend
-                  ? [
-                      {
-                        id: "invite",
-                        label: "Invite a friend",
-                        disabled: isMatchmaking,
-                        onClick: () => onInviteFriend?.(),
-                      },
-                    ]
-                  : []),
                 {
                   id: "home",
                   label: "Back to home",
@@ -887,16 +926,6 @@ export function MatchResults({
                         label: "Post to Community",
                         disabled: isMatchmaking,
                         onClick: onPostToCommunity,
-                      },
-                    ]
-                  : []),
-                ...(canInviteFriend
-                  ? [
-                      {
-                        id: "invite",
-                        label: "Invite a friend",
-                        disabled: isMatchmaking,
-                        onClick: () => onInviteFriend?.(),
                       },
                     ]
                   : []),

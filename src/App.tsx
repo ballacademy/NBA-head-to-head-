@@ -2981,12 +2981,6 @@ function App() {
             onPlayAgain={replayLastMode}
             onReturnToMenu={() => resetToLanding()}
             onPostToCommunity={openCommunityCompose}
-            onInviteFriend={() => {
-              setPendingPrivateMatchMode(
-                user.salaryCapMode ? "ranked" : "classic",
-              );
-              resetToLanding();
-            }}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}
             opponentAutoDrafted={opponentAutoDrafted}

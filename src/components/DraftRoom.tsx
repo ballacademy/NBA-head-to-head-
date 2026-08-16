@@ -14,6 +14,9 @@ import {
 } from "../lib/draftTimer";
 import { formatCompactPlayerName, formatPlayerPositions } from "../lib/playerPool";
 import { getMatchRecordMode, loadPlayerRecord } from "../lib/playerRecord";
+import { loadEventProfile } from "../lib/eventProfile";
+import { loadSelfSeasonBoardRecord } from "../lib/seasonBoardRecord";
+import { playDraftClockPing } from "../lib/draftClockSound";
 import {
   estimatePlayerSalary,
   formatSalary,
@@ -88,11 +91,54 @@ export function DraftRoom({
     drafter.salaryCapMode,
   );
   const timeoutFiredRef = useRef(false);
+  const lastClockPingSecondRef = useRef<number | null>(null);
   const playerPickListRef = useRef<HTMLDivElement | null>(null);
 
   const currentSlot = drafter.draftSlots[activeStep];
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
   const isPracticeMode = Boolean(drafter.practiceMode);
+  const displayStreaks = useMemo(() => {
+    if (isPracticeMode || isDailyDraft) {
+      return { winStreak: 0, lossStreak: 0 };
+    }
+
+    if (drafter.eventId) {
+      const profile = loadEventProfile(drafter.eventId);
+      return {
+        winStreak: profile.winStreak,
+        lossStreak: profile.lossStreak,
+      };
+    }
+
+    if (drafter.allTimeMode) {
+      return {
+        winStreak: playerRecord.winStreak,
+        lossStreak: playerRecord.lossStreak,
+      };
+    }
+
+    if (drafter.salaryCapMode) {
+      return loadSelfSeasonBoardRecord("ranked");
+    }
+
+    if (drafter.salaryCapLimit != null) {
+      return loadSelfSeasonBoardRecord("classic");
+    }
+
+    return {
+      winStreak: playerRecord.winStreak,
+      lossStreak: playerRecord.lossStreak,
+    };
+  }, [
+    drafter.allTimeMode,
+    drafter.eventId,
+    drafter.salaryCapLimit,
+    drafter.salaryCapMode,
+    isDailyDraft,
+    isPracticeMode,
+    playerRecord.lossStreak,
+    playerRecord.winStreak,
+  ]);
   const dailyPlayStreak = isDailyDraft
     ? getDailyDraftPlayStreak(
         drafter.dailyDraftMode ?? "basic",
@@ -220,6 +266,7 @@ export function DraftRoom({
     setQuery("");
     setSecondsLeft(pickTimeLimitSeconds);
     timeoutFiredRef.current = false;
+    lastClockPingSecondRef.current = null;
     // Reset the pick list so each new slot starts from the top of the pool.
     playerPickListRef.current?.scrollTo({ top: 0 });
   }, [activeStep, currentSlot?.division, currentSlot?.position, pickTimeLimitSeconds]);
@@ -246,6 +293,16 @@ export function DraftRoom({
 
     const syncTimer = () => {
       const remaining = getSecondsUntilDeadline(deadlineMs!);
+      if (remaining > 5) {
+        lastClockPingSecondRef.current = null;
+      } else if (
+        remaining >= 1 &&
+        remaining <= 5 &&
+        lastClockPingSecondRef.current !== remaining
+      ) {
+        lastClockPingSecondRef.current = remaining;
+        playDraftClockPing(remaining);
+      }
       setSecondsLeft(remaining);
 
       if (remaining <= 0 && !timeoutFiredRef.current) {
@@ -284,7 +341,7 @@ export function DraftRoom({
   }
 
   const timerClass =
-    secondsLeft <= 5 ? "draft-timer urgent" : "draft-timer";
+    secondsLeft <= 10 ? "draft-timer urgent" : "draft-timer";
   const totalPicks = drafter.draftSlots.length;
   const modeTheme = getMatchModeTheme({
     isDailyDraft,
@@ -377,8 +434,8 @@ export function DraftRoom({
           ) : (
             <TeamNameWithStreak
               name={drafter.name}
-              winStreak={isPracticeMode ? 0 : playerRecord.winStreak}
-              lossStreak={isPracticeMode ? 0 : playerRecord.lossStreak}
+              winStreak={displayStreaks.winStreak}
+              lossStreak={displayStreaks.lossStreak}
             />
           )}
         </p>

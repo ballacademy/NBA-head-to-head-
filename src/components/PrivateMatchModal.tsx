@@ -195,7 +195,7 @@ export function PrivateMatchModal({
         onClick={(event) => event.stopPropagation()}
       >
         <p className="eyebrow">{modeLabel}</p>
-        <h2 id={titleId}>Invite a friend</h2>
+        <h2 id={titleId}>Private match</h2>
         <p className="unlock-modal__copy">
           Play a friend head-to-head with a room code. Same draft rules as{" "}
           {modeLabel}. Requires an account. Does not affect records or Banners.

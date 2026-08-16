@@ -267,7 +267,7 @@
 .tier-list__select-shell::after {
   content: "";
   position: absolute;
-  right: 14px;
+  right: 10px;
   top: 50%;
   width: 7px;
   height: 7px;
@@ -287,7 +287,7 @@
   background:
     linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
   color: #f8fafc;
-  padding: 0 36px 0 12px;
+  padding: 0 32px 0 12px;
   font-size: 0.86rem;
   font-weight: 650;
   letter-spacing: 0.01em;

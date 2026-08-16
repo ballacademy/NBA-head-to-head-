@@ -522,6 +522,11 @@
     border-radius: 10px;
   }
 
+  .draft-room .draft-pool-toolbar__sort select {
+    padding-right: 1.75rem;
+    background-position: right 0.55rem center;
+  }
+
   .player-pick-list {
     max-height: min(68vh, 580px);
     gap: 3px;
