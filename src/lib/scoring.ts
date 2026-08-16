@@ -27,6 +27,7 @@ import {
   buildLineupShootingProfile,
   formatLineupShootingNote,
   hasReliableLineupSpacing,
+  isPassableThreePointShooter,
   scoreLineupThreePointBonus,
 } from "./lineupShooting";
 import {
@@ -650,7 +651,9 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     {
       label: "Three-point bonus",
       value: round(threePointBonus),
-      note: formatLineupShootingNote(shootingProfile),
+      note: formatLineupShootingNote(shootingProfile, {
+        passableShooters: lineup.filter(isPassableThreePointShooter).length,
+      }),
     },
     {
       label: "Team fit",
