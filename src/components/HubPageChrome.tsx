@@ -19,9 +19,8 @@ export interface HubPageChromeProps {
 
 /**
  * Shared hub feature chrome: title band → optional return → body.
- * Logo clearance is CSS-driven whenever `.landing-hub__top` is followed by
- * `.hub-feature__return-row` (see hub.css). Root tabs omit `onBack` so the
- * title stays beside the logo.
+ * Title vertical position matches root hub tabs (beside the logo); return
+ * sits under the title when `onBack` is set (see hub.css).
  */
 export function HubPageChrome({
   className = "",
