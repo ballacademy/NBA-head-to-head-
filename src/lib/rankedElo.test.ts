@@ -4,6 +4,7 @@ import {
   formatRatingDelta,
   formatRatingPoints,
   formatTierBannerRange,
+  getClimbOutcomeMultiplier,
   getPlacementMultiplier,
   RANKED_TIERS,
   getStreakMultiplier,
@@ -43,6 +44,48 @@ describe("rankedElo", () => {
     expect(formatTierBannerRange(RANKED_TIERS[4]!)).toBe("2000+ Banners");
   });
 
+  it("eases banner climb below Generational GM", () => {
+    expect(getClimbOutcomeMultiplier(250, "win")).toBeGreaterThan(
+      getClimbOutcomeMultiplier(250, "loss"),
+    );
+    expect(getClimbOutcomeMultiplier(250, "win")).toBeGreaterThan(
+      getClimbOutcomeMultiplier(750, "win"),
+    );
+    expect(getClimbOutcomeMultiplier(750, "win")).toBeGreaterThan(
+      getClimbOutcomeMultiplier(1200, "win"),
+    );
+    expect(getClimbOutcomeMultiplier(1200, "win")).toBeGreaterThan(
+      getClimbOutcomeMultiplier(1700, "win"),
+    );
+    expect(getClimbOutcomeMultiplier(1700, "win")).toBeGreaterThan(
+      getClimbOutcomeMultiplier(2100, "win"),
+    );
+    expect(getClimbOutcomeMultiplier(2100, "win")).toBe(1);
+    expect(getClimbOutcomeMultiplier(2100, "loss")).toBe(1);
+    expect(getClimbOutcomeMultiplier(1200, "tie")).toBe(1);
+  });
+
+  it("awards more banners on equal wins than it docks on equal losses until 2000", () => {
+    const settledEqual = (elo: number, result: "win" | "loss") =>
+      calculateEloChange({
+        playerElo: elo,
+        opponentElo: elo,
+        result,
+        rankedGamesPlayed: 10,
+        activeStreak: 0,
+      });
+
+    for (const elo of [250, 750, 1200, 1700]) {
+      const win = settledEqual(elo, "win");
+      const loss = settledEqual(elo, "loss");
+      expect(win.delta).toBeGreaterThan(Math.abs(loss.delta));
+    }
+
+    const generationalWin = settledEqual(2100, "win");
+    const generationalLoss = settledEqual(2100, "loss");
+    expect(generationalWin.delta).toBe(Math.abs(generationalLoss.delta));
+  });
+
   it("gives larger swings during placement and on streaks", () => {
     const settled = calculateEloChange({
       playerElo: RANKED_STARTING_ELO,
@@ -70,6 +113,25 @@ describe("rankedElo", () => {
     expect(streak.delta).toBeGreaterThan(settled.delta);
     expect(getPlacementMultiplier(0)).toBeGreaterThan(getPlacementMultiplier(9));
     expect(getStreakMultiplier(5)).toBeGreaterThan(getStreakMultiplier(2));
+  });
+
+  it("keeps streak multipliers on losses while climb softens the dock", () => {
+    const baseLoss = calculateEloChange({
+      playerElo: 750,
+      opponentElo: 750,
+      result: "loss",
+      rankedGamesPlayed: 10,
+      activeStreak: 0,
+    });
+    const streakLoss = calculateEloChange({
+      playerElo: 750,
+      opponentElo: 750,
+      result: "loss",
+      rankedGamesPlayed: 10,
+      activeStreak: 5,
+    });
+
+    expect(Math.abs(streakLoss.delta)).toBeGreaterThan(Math.abs(baseLoss.delta));
   });
 
   it("treats equal precise totals as a tie", () => {
