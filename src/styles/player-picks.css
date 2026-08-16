@@ -630,33 +630,7 @@
   min-width: 0;
 }
 
-/* Stats keeps the shared hub title band; lede text stays centered with info at end. */
-.stats-panel__lede {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  text-align: center;
-}
-
-.stats-panel__lede-text {
-  grid-column: 2;
-  justify-self: center;
-}
-
-.stats-panel__lede-info {
-  grid-column: 3;
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-}
-
-.stats-panel__lede .mode-card-info {
-  margin-left: 0;
-}
-
+/* Stats uses the shared title band; info sits in `.landing-hub__title-row`. */
 .stats-panel__body {
   min-width: 0;
   max-width: 100%;

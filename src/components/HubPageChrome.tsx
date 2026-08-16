@@ -7,6 +7,8 @@ export interface HubPageChromeProps {
   title: ReactNode;
   titleId?: string;
   titleClassName?: string;
+  /** Optional control beside the title (e.g. Season Stats info). */
+  titleAccessory?: ReactNode;
   lede?: ReactNode;
   ledeClassName?: string;
   /** When set, renders the shared return row under the title band. */
@@ -27,6 +29,7 @@ export function HubPageChrome({
   title,
   titleId,
   titleClassName = "",
+  titleAccessory,
   lede,
   ledeClassName = "",
   onBack,
@@ -42,12 +45,23 @@ export function HubPageChrome({
     ? `landing__lede landing-hub__lede ${ledeClassName}`
     : "landing__lede landing-hub__lede";
 
+  const titleNode = (
+    <h1 className={titleClass} id={titleId}>
+      {title}
+    </h1>
+  );
+
   return (
     <div className={rootClass} aria-labelledby={titleId}>
       <div className="landing-hub__top">
-        <h1 className={titleClass} id={titleId}>
-          {title}
-        </h1>
+        {titleAccessory ? (
+          <div className="landing-hub__title-row">
+            {titleNode}
+            <span className="landing-hub__title-accessory">{titleAccessory}</span>
+          </div>
+        ) : (
+          titleNode
+        )}
         {lede != null ? <p className={ledeClass}>{lede}</p> : null}
       </div>
 
