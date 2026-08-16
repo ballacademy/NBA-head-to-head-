@@ -2331,6 +2331,15 @@ function App() {
     [phase, updateLandingHubTab],
   );
 
+  /** Open Community at the hub chooser (not Posts / Tier lists). */
+  const openCommunityHub = useCallback(() => {
+    if (phase !== "tierList") {
+      openFeaturePage("tierList");
+    }
+    setCommunityHubReturnToken((current) => current + 1);
+    syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
+  }, [openFeaturePage, phase]);
+
   const handleHubNav = useCallback(
     (tab: LandingHubTab) => {
       if (tab === "standings") {
@@ -2342,17 +2351,13 @@ function App() {
       }
 
       if (tab === "community") {
-        if (phase !== "tierList") {
-          openFeaturePage("tierList");
-        }
-        setCommunityHubReturnToken((current) => current + 1);
-        syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
+        openCommunityHub();
         return;
       }
 
       goToLandingHub(tab);
     },
-    [goToLandingHub, openFeaturePage, phase],
+    [goToLandingHub, openCommunityHub, openFeaturePage, phase],
   );
 
   const hubNavForPhase = ((): LandingHubTab => {
@@ -2456,12 +2461,17 @@ function App() {
         onBack={exitFeaturePage}
         initialPublicTierListId={initialPublicTierListId}
         initialCommunityView={
-          initialLandingDeepLinks.communityView === "posts" ||
-          initialLandingDeepLinks.communityView === "tiers"
+          communityHubReturnToken === 0 &&
+          (initialLandingDeepLinks.communityView === "posts" ||
+            initialLandingDeepLinks.communityView === "tiers")
             ? initialLandingDeepLinks.communityView
             : null
         }
-        initialCommunityPostId={initialLandingDeepLinks.communityPostId}
+        initialCommunityPostId={
+          communityHubReturnToken === 0
+            ? initialLandingDeepLinks.communityPostId
+            : null
+        }
         hubReturnToken={communityHubReturnToken}
       />,
       "landing-layout--tier-list",
@@ -2518,7 +2528,7 @@ function App() {
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
           onCollectionChange={setCollection}
           onViewStats={() => openFeaturePage("stats")}
-          onViewTierList={() => openFeaturePage("tierList")}
+          onViewTierList={openCommunityHub}
           onViewGmStats={() => openFeaturePage("gmStats")}
           onViewAchievements={() => openFeaturePage("achievements")}
           onViewLeaderboard={() => openFeaturePage("leaderboard")}

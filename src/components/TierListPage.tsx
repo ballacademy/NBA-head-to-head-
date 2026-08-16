@@ -327,7 +327,9 @@ export function TierListPage({
   const postDeepLinkHandledRef = useRef(false);
   const communityPostsLoadGenRef = useRef(0);
   const communityFocusPostIdRef = useRef(communityFocusPostId);
-  const hubReturnSeenRef = useRef(hubReturnToken);
+  // null until first effect — avoids skipping reset when nav bumps the token
+  // in the same render that mounts this page.
+  const hubReturnSeenRef = useRef<number | null>(null);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -349,6 +351,19 @@ export function TierListPage({
   });
 
   useEffect(() => {
+    if (hubReturnSeenRef.current === null) {
+      hubReturnSeenRef.current = hubReturnToken;
+      // Nav open bumps the token before mount — land on the hub chooser,
+      // not a stale Posts/Tiers deep link from the first page load.
+      if (hubReturnToken > 0) {
+        setViewerDetail(null);
+        setViewerLoading(false);
+        setView("hub");
+        setCommunityFocusPostId(null);
+        syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
+      }
+      return;
+    }
     if (hubReturnToken === hubReturnSeenRef.current) {
       return;
     }
@@ -356,6 +371,7 @@ export function TierListPage({
     setViewerDetail(null);
     setViewerLoading(false);
     setView("hub");
+    setCommunityFocusPostId(null);
     syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
   }, [hubReturnToken]);
 
