@@ -159,6 +159,50 @@ describe("landingHub", () => {
     );
   });
 
+  it("maps feature hub aliases for refresh-stable pages", () => {
+    const stats = applyLandingDeepLinksFromSearch("?hub=stats");
+    expect(stats.feature).toBe("stats");
+    expect(stats.contentTab).toBe("roster");
+    expect(loadLandingHubTab()).toBe("roster");
+
+    sessionStorageMock.clear();
+    const badges = applyLandingDeepLinksFromSearch("?hub=badges");
+    expect(badges.feature).toBe("achievements");
+    expect(badges.contentTab).toBe("roster");
+
+    sessionStorageMock.clear();
+    const gm = applyLandingDeepLinksFromSearch("?hub=gm-stats");
+    expect(gm.feature).toBe("gmStats");
+    expect(gm.contentTab).toBe("account");
+
+    expect(parseLandingHubParam("season-stats")).toBe("stats");
+    expect(parseLandingHubParam("achievements")).toBe("badges");
+    expect(parseLandingHubParam("privacy")).toBe("privacy");
+  });
+
+  it("syncs feature hubs and clears community view params", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/?hub=community&view=posts&post=abc",
+        pathname: "/",
+        search: "?hub=community&view=posts&post=abc",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    syncLandingDeepLinkUrl({ hub: "stats" });
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("hub=stats");
+    expect(nextUrl).not.toContain("view=");
+    expect(nextUrl).not.toContain("post=");
+  });
+
   it("maps view/post params into community deep links", () => {
     const posts = applyLandingDeepLinksFromSearch("?hub=community&view=posts");
     expect(posts.feature).toBe("tierList");
