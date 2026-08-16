@@ -16,6 +16,8 @@ interface TeamLineupCardProps {
   lineup: Player[];
   score: LineupScore;
   isWinner?: boolean;
+  /** Match outcome for this card — drives WIN/LOSS/TIE badge + color. */
+  outcome?: "win" | "loss" | "tie";
   winStreak?: number;
   lossStreak?: number;
   showStreak?: boolean;
@@ -31,6 +33,7 @@ export function TeamLineupCard({
   lineup,
   score,
   isWinner = false,
+  outcome,
   winStreak = 0,
   lossStreak = 0,
   showStreak = false,
@@ -39,6 +42,7 @@ export function TeamLineupCard({
   showScoreContext = false,
   onNameClick,
 }: TeamLineupCardProps) {
+  const resolvedOutcome = outcome ?? (isWinner ? "win" : undefined);
   const orderedLineup = sortLineupByPosition(lineup);
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
@@ -66,11 +70,31 @@ export function TeamLineupCard({
 
   return (
     <article
-      className={`team-lineup-card ${compact ? "team-lineup-card--compact" : "panel"} ${isWinner ? "winner" : ""}`}
+      className={[
+        "team-lineup-card",
+        compact ? "team-lineup-card--compact" : "panel",
+        resolvedOutcome === "win" || isWinner ? "winner" : "",
+        resolvedOutcome === "loss" ? "team-lineup-card--loss" : "",
+        resolvedOutcome === "tie" ? "team-lineup-card--tie" : "",
+        resolvedOutcome ? `team-lineup-card--outcome-${resolvedOutcome}` : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{ "--accent": drafter.accent } as CSSProperties}
     >
       <div className="team-lineup-card__header">
         <div>
+          {resolvedOutcome ? (
+            <p
+              className={`team-lineup-card__outcome team-lineup-card__outcome--${resolvedOutcome}`}
+            >
+              {resolvedOutcome === "win"
+                ? "Win"
+                : resolvedOutcome === "loss"
+                  ? "Loss"
+                  : "Tie"}
+            </p>
+          ) : null}
           <h3>
             <span className="team-lineup-card__identity">
               {onNameClick ? (
@@ -110,6 +134,12 @@ export function TeamLineupCard({
         <div
           className={`score-orb${compact ? " score-orb--compact" : ""}${
             score.ovrOverflow > 0 ? " score-orb--overflow" : ""
+          }${
+            resolvedOutcome === "win"
+              ? " score-orb--win"
+              : resolvedOutcome === "loss"
+                ? " score-orb--loss"
+                : ""
           }`}
         >
           <div className="score-orb__content">
