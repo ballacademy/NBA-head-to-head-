@@ -6,7 +6,7 @@ interface ModeCardMoreMenuProps {
   onPrivate: () => void;
 }
 
-/** Overflow control for secondary H2H actions (Practice / Private). */
+/** Overflow control for secondary H2H actions (Practice / Invite a friend). */
 export function ModeCardMoreMenu({
   disabled = false,
   onPractice,
@@ -88,7 +88,7 @@ export function ModeCardMoreMenu({
               onPrivate();
             }}
           >
-            Private
+            Invite a friend
           </button>
         </div>
       ) : null}

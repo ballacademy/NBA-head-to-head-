@@ -5,14 +5,21 @@ import { loadAllModeRecords } from "./playerRecord";
 /** Lifetime / multi-session badges (not single-lineup checks). */
 export const CAREER_PROGRESS_ACHIEVEMENT_IDS = new Set([
   "fifty-wins",
+  "wins-100",
+  "wins-250",
   "five-hundred-wins",
   "hundred-plays",
+  "plays-250",
+  "plays-500",
   "thousand-plays",
   "ten-drafts",
   "twenty-five-drafts",
+  "drafts-50",
+  "drafts-100",
   "daily-streak-3",
   "daily-streak-7",
   "daily-streak-14",
+  "daily-streak-30",
 ]);
 
 export type CareerProgressMetric = "wins" | "plays" | "drafts" | "dailyStreak";
@@ -36,6 +43,22 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
     target: 50,
   },
   {
+    id: "wins-100",
+    title: "100 Wins",
+    description: "Win 100 competitive matches.",
+    emoji: "🎖️",
+    metric: "wins",
+    target: 100,
+  },
+  {
+    id: "wins-250",
+    title: "250 Wins",
+    description: "Win 250 competitive matches.",
+    emoji: "🥇",
+    metric: "wins",
+    target: 250,
+  },
+  {
     id: "five-hundred-wins",
     title: "500 Wins",
     description: "Win 500 competitive matches.",
@@ -50,6 +73,22 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
     emoji: "🎮",
     metric: "plays",
     target: 100,
+  },
+  {
+    id: "plays-250",
+    title: "250 Plays",
+    description: "Play 250 competitive matches.",
+    emoji: "🕹️",
+    metric: "plays",
+    target: 250,
+  },
+  {
+    id: "plays-500",
+    title: "500 Plays",
+    description: "Play 500 competitive matches.",
+    emoji: "🎯",
+    metric: "plays",
+    target: 500,
   },
   {
     id: "thousand-plays",
@@ -76,6 +115,22 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
     target: 25,
   },
   {
+    id: "drafts-50",
+    title: "50 Drafts",
+    description: "Record 50 competitive or Daily lineups.",
+    emoji: "📚",
+    metric: "drafts",
+    target: 50,
+  },
+  {
+    id: "drafts-100",
+    title: "100 Drafts",
+    description: "Record 100 competitive or Daily lineups.",
+    emoji: "🗄️",
+    metric: "drafts",
+    target: 100,
+  },
+  {
     id: "daily-streak-3",
     title: "Daily Habit",
     description: "Play Daily Draft three days in a row.",
@@ -98,6 +153,14 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
     emoji: "🔥",
     metric: "dailyStreak",
     target: 14,
+  },
+  {
+    id: "daily-streak-30",
+    title: "Month of Drafts",
+    description: "Play Daily Draft thirty days in a row.",
+    emoji: "🌙",
+    metric: "dailyStreak",
+    target: 30,
   },
 ];
 

@@ -3,6 +3,7 @@ import {
   backfillNbaPlayerUsageFromDailyScores,
   canShowMostDraftedBoards,
   formatNbaPlayerWinPct,
+  formatPersonalHitRateMeta,
   getMostDraftedNbaPlayers,
   getMostDraftedNbaPlayersForMode,
   getRecordedDraftLineupCount,
@@ -211,5 +212,34 @@ describe("nbaPlayerUsage", () => {
     expect(rows.e).toBeUndefined();
     expect(rows.z).toBe(1);
     expect(rows.a).toBe(1);
+  });
+
+  it("formats personal hit rate only for Casual/Pro with enough decided games", () => {
+    expect(
+      formatPersonalHitRateMeta("daily", {
+        drafts: 4,
+        wins: 0,
+        losses: 0,
+        winPct: null,
+      }),
+    ).toBe("4 drafts");
+
+    expect(
+      formatPersonalHitRateMeta("headToHead", {
+        drafts: 5,
+        wins: 1,
+        losses: 1,
+        winPct: 0.5,
+      }),
+    ).toBe("5 drafts");
+
+    expect(
+      formatPersonalHitRateMeta("ranked", {
+        drafts: 6,
+        wins: 2,
+        losses: 1,
+        winPct: 2 / 3,
+      }),
+    ).toBe("6 drafts · Your hit rate 66.7%");
   });
 });

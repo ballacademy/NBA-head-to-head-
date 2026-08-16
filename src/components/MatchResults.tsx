@@ -80,6 +80,8 @@ interface MatchResultsProps {
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
   onPostToCommunity?: () => void;
+  /** Opens private-match invite modal for this mode (Casual/Pro). */
+  onInviteFriend?: () => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
@@ -97,6 +99,7 @@ export function MatchResults({
   onPlayAgain,
   onReturnToMenu,
   onPostToCommunity,
+  onInviteFriend,
   isMatchmaking = false,
   startMatchError = null,
   opponentAutoDrafted = false,
@@ -548,10 +551,15 @@ export function MatchResults({
   const playAgainLabel = user.practiceMode
     ? "Practice again"
     : user.privateMatch
-      ? "Private match again"
+      ? "Invite a friend again"
       : user.eventId
         ? "Play event again"
         : "Draft another team";
+  const canInviteFriend =
+    Boolean(onInviteFriend) &&
+    !user.privateMatch &&
+    !user.eventId &&
+    !user.allTimeMode;
   const playerIdentity = getOrCreatePlayerIdentity();
   const opponentProfileId =
     opponent.profilePlayerId ?? opponent.liveOpponentPlayerId ?? null;
@@ -817,6 +825,16 @@ export function MatchResults({
                       },
                     ]
                   : []),
+                ...(canInviteFriend
+                  ? [
+                      {
+                        id: "invite",
+                        label: "Invite a friend",
+                        disabled: isMatchmaking,
+                        onClick: () => onInviteFriend?.(),
+                      },
+                    ]
+                  : []),
                 {
                   id: "home",
                   label: "Back to home",
@@ -851,6 +869,16 @@ export function MatchResults({
                         label: "Post to Community",
                         disabled: isMatchmaking,
                         onClick: onPostToCommunity,
+                      },
+                    ]
+                  : []),
+                ...(canInviteFriend
+                  ? [
+                      {
+                        id: "invite",
+                        label: "Invite a friend",
+                        disabled: isMatchmaking,
+                        onClick: () => onInviteFriend?.(),
                       },
                     ]
                   : []),

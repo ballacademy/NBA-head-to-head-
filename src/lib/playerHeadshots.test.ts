@@ -23,7 +23,7 @@ describe("playerHeadshots", () => {
     expect(getPlayerHeadshotUrl(undefined)).toBeNull();
   });
 
-  it("enables headshots on QA / local hosts", () => {
+  it("enables headshots on QA / local hosts only (not prod)", () => {
     expect(arePlayerHeadshotsEnabled("nba-head-to-head-qa.pages.dev", "")).toBe(
       true,
     );

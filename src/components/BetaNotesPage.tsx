@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   SALARIES_DATA_AS_OF_LABEL,
   STATS_DATA_AS_OF_LABEL,
@@ -6,13 +7,52 @@ import {
   buildSupportMailto,
 } from "../lib/support";
 import { ACTIVE_ROSTER_AS_OF_LABEL } from "../lib/playerPool";
+import {
+  parseBetaNotesSection,
+  type BetaNotesSection,
+} from "../lib/betaNotes";
+import type { LandingContentTab, LandingPlaySection } from "../lib/landingHub";
 import { HubPageChrome } from "./HubPageChrome";
 
 interface BetaNotesPageProps {
   onBack: () => void;
+  initialSection?: string | null;
+  onPlayIntent?: (intent: {
+    playSection: LandingPlaySection;
+    h2hMode?: "classic" | "ranked";
+  }) => void;
+  onOpenHub?: (tab: LandingContentTab) => void;
+  onOpenRanks?: () => void;
+  onOpenCommunity?: () => void;
 }
 
-export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
+export function BetaNotesPage({
+  onBack,
+  initialSection = null,
+  onPlayIntent,
+  onOpenHub,
+  onOpenRanks,
+  onOpenCommunity,
+}: BetaNotesPageProps) {
+  const section = parseBetaNotesSection(initialSection);
+  const sectionRefs = useRef<Partial<Record<BetaNotesSection, HTMLDetailsElement | null>>>(
+    {},
+  );
+
+  useEffect(() => {
+    if (!section) {
+      return;
+    }
+
+    const node = sectionRefs.current[section];
+    if (!node) {
+      return;
+    }
+
+    node.open = true;
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [section]);
+
   return (
     <HubPageChrome
       className="beta-notes-page"
@@ -34,14 +74,102 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
               {STATS_DATA_AS_OF_LABEL} · Salaries {SALARIES_DATA_AS_OF_LABEL}
             </p>
+            {(onPlayIntent || onOpenHub || onOpenRanks || onOpenCommunity) && (
+              <p className="beta-notes-summary__links" role="navigation">
+                Jump to{" "}
+                {onPlayIntent ? (
+                  <button
+                    type="button"
+                    className="beta-notes-inline-link"
+                    onClick={() => onPlayIntent({ playSection: "daily" })}
+                  >
+                    Daily
+                  </button>
+                ) : null}
+                {onPlayIntent ? (
+                  <>
+                    {" · "}
+                    <button
+                      type="button"
+                      className="beta-notes-inline-link"
+                      onClick={() =>
+                        onPlayIntent({
+                          playSection: "headToHead",
+                          h2hMode: "classic",
+                        })
+                      }
+                    >
+                      Casual H2H
+                    </button>
+                  </>
+                ) : null}
+                {onOpenHub ? (
+                  <>
+                    {" · "}
+                    <button
+                      type="button"
+                      className="beta-notes-inline-link"
+                      onClick={() => onOpenHub("roster")}
+                    >
+                      Franchise
+                    </button>
+                  </>
+                ) : null}
+                {onOpenRanks ? (
+                  <>
+                    {" · "}
+                    <button
+                      type="button"
+                      className="beta-notes-inline-link"
+                      onClick={onOpenRanks}
+                    >
+                      Ranks
+                    </button>
+                  </>
+                ) : null}
+                {onOpenCommunity ? (
+                  <>
+                    {" · "}
+                    <button
+                      type="button"
+                      className="beta-notes-inline-link"
+                      onClick={onOpenCommunity}
+                    >
+                      Community
+                    </button>
+                  </>
+                ) : null}
+              </p>
+            )}
           </div>
 
-          <details className="beta-notes-details">
+          <details
+            className="beta-notes-details"
+            id="beta-live"
+            open={section === "live"}
+            ref={(node) => {
+              sectionRefs.current.live = node;
+            }}
+          >
             <summary>What&apos;s live</summary>
             <ul>
               <li>
                 <strong>Play hub</strong> — Daily Draft (one scored try per mode
                 daily), Casual/Pro H2H, and weekly Events
+                {onPlayIntent ? (
+                  <>
+                    {" "}
+                    (
+                    <button
+                      type="button"
+                      className="beta-notes-inline-link"
+                      onClick={() => onPlayIntent({ playSection: "chooser" })}
+                    >
+                      open Play
+                    </button>
+                    )
+                  </>
+                ) : null}
               </li>
               <li>
                 <strong>LeBron James</strong> is banned in Casual H2H, Pro H2H,
@@ -53,13 +181,12 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
                 <strong>Franchise</strong> — Collection, Badges, Season Stats,
                 Daily progress, and Most drafted ·{" "}
                 <strong>Ranks</strong> · <strong>Community</strong> ·{" "}
-                <strong>Account</strong> (sign-in, GM Stats, settings)
+                <strong>Account</strong> (sign-in, settings)
               </li>
               <li>
-                <strong>Private match</strong> (Casual or Pro) — account
-                holders create a room code and invite a friend for live H2H.
-                Same draft rules as that mode; records, Banners, and badges do
-                not change.
+                <strong>Invite a friend</strong> (Casual or Pro) — account
+                holders create a room code for live H2H. Same draft rules as
+                that mode; records, Banners, and badges do not change.
               </li>
               <li>
                 <strong>All-Time Draft</strong> — coming soon (peak seasons and
@@ -78,7 +205,14 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             </ul>
           </details>
 
-          <details className="beta-notes-details">
+          <details
+            className="beta-notes-details"
+            id="beta-limits"
+            open={section === "limits"}
+            ref={(node) => {
+              sectionRefs.current.limits = node;
+            }}
+          >
             <summary>Known limits</summary>
             <ul>
               <li>
@@ -101,7 +235,14 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             </ul>
           </details>
 
-          <details className="beta-notes-details">
+          <details
+            className="beta-notes-details"
+            id="beta-sample"
+            open={section === "sample"}
+            ref={(node) => {
+              sectionRefs.current.sample = node;
+            }}
+          >
             <summary>Limited sample size</summary>
             <p>
               Players with <strong>29 or fewer games</strong> this season show a
@@ -134,7 +275,14 @@ export function BetaNotesPage({ onBack }: BetaNotesPageProps) {
             </ul>
           </details>
 
-          <details className="beta-notes-details" open>
+          <details
+            className="beta-notes-details"
+            id="beta-feedback"
+            open={section == null || section === "feedback"}
+            ref={(node) => {
+              sectionRefs.current.feedback = node;
+            }}
+          >
             <summary>Feedback &amp; bugs</summary>
             <p>
               Something broken, confusing, or unfair? Tell us the mode, what you

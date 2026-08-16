@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { players as allPlayers } from "../data/players";
 import {
   canShowMostDraftedBoards,
+  formatPersonalHitRateMeta,
   getMostDraftedNbaPlayersForMode,
   MOST_DRAFTED_BOARD_LABELS,
   type MostDraftedBoardMode,
@@ -99,7 +100,7 @@ export function MostDraftedBoards({ refreshKey = 0 }: MostDraftedBoardsProps) {
                   {row.name}
                 </span>
                 <span className="gm-stats-page__most-drafted-meta">
-                  {row.drafts} draft{row.drafts === 1 ? "" : "s"}
+                  {formatPersonalHitRateMeta(mostDraftedMode, row)}
                 </span>
               </li>
             ))}

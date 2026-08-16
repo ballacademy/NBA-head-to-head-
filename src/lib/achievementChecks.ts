@@ -538,6 +538,20 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: () => false,
   },
   {
+    id: "wins-100",
+    title: "100 Wins",
+    description: "Win 100 competitive matches.",
+    emoji: "🎖️",
+    check: () => false,
+  },
+  {
+    id: "wins-250",
+    title: "250 Wins",
+    description: "Win 250 competitive matches.",
+    emoji: "🥇",
+    check: () => false,
+  },
+  {
     id: "five-hundred-wins",
     title: "500 Wins",
     description: "Win 500 competitive matches.",
@@ -549,6 +563,20 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     title: "100 Plays",
     description: "Play 100 competitive matches.",
     emoji: "🎮",
+    check: () => false,
+  },
+  {
+    id: "plays-250",
+    title: "250 Plays",
+    description: "Play 250 competitive matches.",
+    emoji: "🕹️",
+    check: () => false,
+  },
+  {
+    id: "plays-500",
+    title: "500 Plays",
+    description: "Play 500 competitive matches.",
+    emoji: "🎯",
     check: () => false,
   },
   {
@@ -573,6 +601,20 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: () => false,
   },
   {
+    id: "drafts-50",
+    title: "50 Drafts",
+    description: "Record 50 competitive or Daily lineups.",
+    emoji: "📚",
+    check: () => false,
+  },
+  {
+    id: "drafts-100",
+    title: "100 Drafts",
+    description: "Record 100 competitive or Daily lineups.",
+    emoji: "🗄️",
+    check: () => false,
+  },
+  {
     id: "daily-streak-3",
     title: "Daily Habit",
     description: "Play Daily Draft three days in a row.",
@@ -591,6 +633,13 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     title: "Two-Week Run",
     description: "Play Daily Draft fourteen days in a row.",
     emoji: "🔥",
+    check: () => false,
+  },
+  {
+    id: "daily-streak-30",
+    title: "Month of Drafts",
+    description: "Play Daily Draft thirty days in a row.",
+    emoji: "🌙",
     check: () => false,
   },
   {
