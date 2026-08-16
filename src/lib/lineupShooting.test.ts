@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Player } from "./types";
 import {
+  assessLineupSpacingFeedback,
   buildLineupShootingProfile,
   hasReliableLineupSpacing,
   isEliteThreePointShooter,
@@ -135,5 +136,43 @@ describe("lineupShooting", () => {
     // High attempt volume is already in volume-weighted % + shooter counts.
     expect(profile.totalThreePointersAttempted).toBeGreaterThan(20);
     expect(scoreLineupThreePointBonus(profile)).toBeLessThanOrEqual(14);
+  });
+
+  it("only praises clearly spaced lineups; average stays silent", () => {
+    expect(
+      assessLineupSpacingFeedback({
+        passableShooters: 5,
+        eliteShooters: 1,
+        nonShooters: 0,
+        volumeWeightedThreePoint: 0.37,
+      }),
+    ).toBe("strength");
+
+    expect(
+      assessLineupSpacingFeedback({
+        passableShooters: 3,
+        eliteShooters: 0,
+        nonShooters: 1,
+        volumeWeightedThreePoint: 0.35,
+      }),
+    ).toBe("silent");
+
+    expect(
+      assessLineupSpacingFeedback({
+        passableShooters: 2,
+        eliteShooters: 0,
+        nonShooters: 2,
+        volumeWeightedThreePoint: 0.35,
+      }),
+    ).toBe("warning");
+
+    expect(
+      assessLineupSpacingFeedback({
+        passableShooters: 1,
+        eliteShooters: 0,
+        nonShooters: 2,
+        volumeWeightedThreePoint: 0.33,
+      }),
+    ).toBe("warning");
   });
 });

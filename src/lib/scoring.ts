@@ -24,9 +24,11 @@ import {
   getSameTeamRecordAnchor,
 } from "./teamRecordBaseline";
 import {
+  assessLineupSpacingFeedback,
   buildLineupShootingProfile,
   formatLineupShootingNote,
-  hasReliableLineupSpacing,
+  isEliteThreePointShooter,
+  isNonThreePointShooter,
   isPassableThreePointShooter,
   scoreLineupThreePointBonus,
 } from "./lineupShooting";
@@ -672,9 +674,21 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     strengths.push("Elite shot quality and true shooting across the lineup.");
   }
 
-  if (hasReliableLineupSpacing(shootingProfile)) {
+  const discretePassableShooters = lineup.filter(
+    isPassableThreePointShooter,
+  ).length;
+  const discreteEliteShooters = lineup.filter(isEliteThreePointShooter).length;
+  const discreteNonShooters = lineup.filter(isNonThreePointShooter).length;
+  const spacingFeedback = assessLineupSpacingFeedback({
+    passableShooters: discretePassableShooters,
+    eliteShooters: discreteEliteShooters,
+    nonShooters: discreteNonShooters,
+    volumeWeightedThreePoint: shootingProfile.volumeWeightedThreePoint,
+  });
+
+  if (spacingFeedback === "strength") {
     strengths.push("Enough shooting to keep the floor spaced.");
-  } else {
+  } else if (spacingFeedback === "warning") {
     warnings.push("Spacing is fragile; defenses can load the paint.");
   }
 
