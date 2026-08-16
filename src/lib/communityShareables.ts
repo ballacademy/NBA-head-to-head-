@@ -9,6 +9,8 @@ export interface CommunityMatchupAttachment {
   modeLabel: string;
   result: "win" | "loss" | "tie";
   userTeam: string;
+  /** Linked account username for share-card rebuilds. */
+  username?: string;
   opponentTeam: string;
   userOvr: number;
   opponentOvr: number;
@@ -37,6 +39,8 @@ export interface CommunityLineupAttachment {
   lineupNames: string[];
   lineupIds?: string[];
   accent?: string;
+  /** Linked account username for share-card rebuilds. */
+  username?: string;
   savedAt: string;
 }
 
@@ -304,6 +308,7 @@ export const buildShareCardInputFromAttachment = (
     const winRecord = attachment.userWinRecord?.trim();
     return {
       teamName: attachment.userTeam,
+      username: attachment.username,
       accent: attachment.userAccent?.trim() || "#fb7185",
       ovr: attachment.userOvr,
       ovrOverflow: attachment.ovrOverflow,
@@ -331,6 +336,7 @@ export const buildShareCardInputFromAttachment = (
   const percentile = attachment.percentileLabel?.trim();
   return {
     teamName: attachment.title,
+    username: attachment.username,
     accent: attachment.accent?.trim() || "#22c55e",
     ovr: attachment.ovr ?? 0,
     lineup,
