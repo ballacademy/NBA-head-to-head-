@@ -1237,6 +1237,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
 .achievements-page__item--unlocked .achievements-page__status {

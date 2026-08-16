@@ -8,7 +8,6 @@ import type { Player } from "../lib/types";
 import { formatPlayerPositions } from "../lib/playerPool";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { EmptyState } from "./EmptyState";
-import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
 interface CollectionTierModalProps {
@@ -65,6 +64,7 @@ export function CollectionTierModal({
   });
 
   const label = COLLECTION_TIER_LABELS[tier];
+  const trimmedQuery = query.trim();
   const filteredPlayers = useMemo(() => {
     const matched = players.filter((player) => matchesQuery(player, query));
     return sortPlayers(matched, sort);
@@ -83,90 +83,105 @@ export function CollectionTierModal({
         className="unlock-modal__panel panel collection-tier-modal__panel"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="eyebrow">Collection</p>
-        <h2 id="collection-tier-title">{label}</h2>
-        <p className="collection-tier-modal__summary">
-          {players.length} unlocked · {total} in pool
-        </p>
+        <header className="collection-tier-modal__header">
+          <div className="collection-tier-modal__heading">
+            <p className="eyebrow">Collection</p>
+            <h2 id="collection-tier-title">{label}</h2>
+          </div>
+          <p className="collection-tier-modal__summary">
+            <span className="collection-tier-modal__summary-count">
+              {players.length}
+            </span>
+            <span className="collection-tier-modal__summary-sep">/</span>
+            <span>{total}</span>
+            <span className="collection-tier-modal__summary-label">
+              unlocked
+            </span>
+          </p>
+        </header>
 
         {players.length > 0 ? (
-          <div className="collection-tier-modal__filters">
-            <div className="collection-tier-modal__search-row">
-              <label className="collection-tier-modal__search">
-                <span>Search</span>
-                <input
-                  ref={searchRef}
-                  type="search"
-                  value={query}
-                  placeholder="Name, team, position…"
-                  onChange={(event) => setQuery(event.target.value)}
-                />
-              </label>
-              <label className="collection-tier-modal__sort">
-                <span>Sort</span>
-                <select
-                  value={sort}
-                  onChange={(event) =>
-                    setSort(event.target.value as CollectionSort)
-                  }
-                >
-                  <option value="name">Name</option>
-                  <option value="team">Team</option>
-                </select>
-              </label>
-            </div>
-            <p className="collection-tier-modal__count">
-              Showing {filteredPlayers.length} of {players.length}
-            </p>
+          <div className="collection-tier-modal__toolbar">
+            <input
+              ref={searchRef}
+              className="collection-tier-modal__search"
+              type="search"
+              value={query}
+              placeholder="Search name, team, position…"
+              aria-label="Search players"
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <select
+              className="collection-tier-modal__sort"
+              value={sort}
+              aria-label="Sort players"
+              onChange={(event) =>
+                setSort(event.target.value as CollectionSort)
+              }
+            >
+              <option value="name">Name</option>
+              <option value="team">Team</option>
+            </select>
           </div>
         ) : null}
 
-        {players.length > 0 ? (
-          filteredPlayers.length > 0 ? (
-            <ul className="collection-tier-modal__list">
-              {filteredPlayers.map((player) => (
-                <li key={player.id} className="collection-tier-modal__row">
-                  <PlayerTeamIcon
-                    team={player.team}
-                    position={player.position}
-                    jerseyNumber={player.jerseyNumber}
-                    bbrPlayerId={player.bbrPlayerId}
-                    showJersey
-                    label={player.name}
-                  />
-                  <div className="collection-tier-modal__body">
-                    <strong className="collection-tier-modal__name">
-                      {player.name}
-                    </strong>
-                    <span className="collection-tier-modal__meta">
-                      {player.team} · {formatPlayerPositions(player.positions)}
-                    </span>
-                  </div>
-                  <PlayerRarityBadge player={player} compact />
-                </li>
-              ))}
-            </ul>
+        {players.length > 0 && trimmedQuery ? (
+          <p className="collection-tier-modal__count" aria-live="polite">
+            {filteredPlayers.length} match
+            {filteredPlayers.length === 1 ? "" : "es"}
+          </p>
+        ) : null}
+
+        <div className="collection-tier-modal__body-scroll">
+          {players.length > 0 ? (
+            filteredPlayers.length > 0 ? (
+              <ul className="collection-tier-modal__list">
+                {filteredPlayers.map((player) => (
+                  <li key={player.id} className="collection-tier-modal__row">
+                    <PlayerTeamIcon
+                      team={player.team}
+                      position={player.position}
+                      jerseyNumber={player.jerseyNumber}
+                      bbrPlayerId={player.bbrPlayerId}
+                      showJersey
+                      label={player.name}
+                    />
+                    <div className="collection-tier-modal__copy">
+                      <strong className="collection-tier-modal__name">
+                        {player.name}
+                      </strong>
+                      <span className="collection-tier-modal__meta">
+                        {player.team} ·{" "}
+                        {formatPlayerPositions(player.positions)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState
+                className="collection-tier-modal__empty"
+                message="No players match your search."
+              />
+            )
           ) : (
             <EmptyState
               className="collection-tier-modal__empty"
-              message="No players match your search."
+              message={`No unlocked ${label} yet.`}
             />
-          )
-        ) : (
-          <EmptyState
-            className="collection-tier-modal__empty"
-            message={`No unlocked ${label} yet.`}
-          />
-        )}
+          )}
+        </div>
 
-        <button
-          type="button"
-          ref={closeRef}
-          className="secondary-button"
-          onClick={onClose}
-        >
-          Close
-        </button>
+        <footer className="collection-tier-modal__footer">
+          <button
+            type="button"
+            ref={closeRef}
+            className="secondary-button collection-tier-modal__close"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </footer>
       </div>
     </div>
   );
