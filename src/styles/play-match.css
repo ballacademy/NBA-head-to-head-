@@ -475,6 +475,14 @@
   flex-shrink: 0;
 }
 
+.matchup-compare__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .matchup-compare__team-header .score-orb--compact span {
   font-size: 0.9rem;
 }
