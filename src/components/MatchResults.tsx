@@ -679,7 +679,15 @@ export function MatchResults({
       <AchievementToast achievementIds={newAchievementIds} />
 
       <div className="panel panel--compact matchup-panel">
-        <div className="matchup-panel__banner">
+        <div
+          className={`matchup-panel__banner${
+            isTie
+              ? " matchup-panel__banner--tie"
+              : userWon
+                ? " matchup-panel__banner--win"
+                : " matchup-panel__banner--loss"
+          }`}
+        >
           <div>
             <p className="eyebrow">
               {user.practiceMode
@@ -803,12 +811,21 @@ export function MatchResults({
         </div>
 
         <div className="matchup-panel__grid">
-          <div className="matchup-panel__team">
+          <div
+            className={`matchup-panel__team${
+              isTie
+                ? " matchup-panel__team--tie"
+                : userWon
+                  ? " matchup-panel__team--won"
+                  : " matchup-panel__team--lost"
+            }`}
+          >
             <TeamLineupCard
               drafter={user}
               lineup={userLineup}
               score={userScore}
               isWinner={userWon}
+              outcome={isTie ? "tie" : userWon ? "win" : "loss"}
               winStreak={displayStreaks.winStreak}
               lossStreak={displayStreaks.lossStreak}
               showStreak={showCompetitiveStreak}
@@ -817,12 +834,21 @@ export function MatchResults({
             />
           </div>
 
-          <div className="matchup-panel__team matchup-panel__team--opponent">
+          <div
+            className={`matchup-panel__team matchup-panel__team--opponent${
+              isTie
+                ? " matchup-panel__team--tie"
+                : userWon
+                  ? " matchup-panel__team--lost"
+                  : " matchup-panel__team--won"
+            }`}
+          >
             <TeamLineupCard
               drafter={opponent}
               lineup={opponentLineup}
               score={opponentScore}
               isWinner={matchResult === "loss"}
+              outcome={isTie ? "tie" : userWon ? "loss" : "win"}
               showScoreContext
               compact
               onNameClick={

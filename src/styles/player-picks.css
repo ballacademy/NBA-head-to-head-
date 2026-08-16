@@ -491,6 +491,17 @@
   height: 64px;
 }
 
+.score-orb--win {
+  border-color: rgba(74, 222, 128, 0.65);
+  background: rgba(22, 101, 52, 0.45);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
+}
+
+.score-orb--loss {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(127, 29, 29, 0.35);
+}
+
 .score-orb--overflow {
   width: 112px;
 }
