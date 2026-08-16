@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RankedTierBadge } from "./RankedTierBadge";
+import { MatchupCompareBoard } from "./MatchupCompareBoard";
 import { TeamLineupCard } from "./TeamLineupCard";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { GmProfileModal } from "./GmProfileModal";
@@ -137,7 +138,6 @@ export function MatchResults({
   );
   const [ghostOutcomeFailed, setGhostOutcomeFailed] = useState(false);
   const [ghostOutcomeRetryBusy, setGhostOutcomeRetryBusy] = useState(false);
-  const [compareStatsOpen, setCompareStatsOpen] = useState(false);
   const [eventLeaderboardSyncFailed, setEventLeaderboardSyncFailed] =
     useState(false);
   const [eventLeaderboardRetryBusy, setEventLeaderboardRetryBusy] =
@@ -811,7 +811,7 @@ export function MatchResults({
           </p>
         </div>
 
-        <div className="matchup-panel__grid">
+        <div className="matchup-panel__grid matchup-panel__grid--desktop">
           <div
             className={`matchup-panel__team${
               isTie
@@ -832,9 +832,6 @@ export function MatchResults({
               showStreak={showCompetitiveStreak}
               showScoreContext
               compact
-              compareLayout
-              playerStatsOpen={compareStatsOpen}
-              onPlayerStatsOpenChange={setCompareStatsOpen}
             />
           </div>
 
@@ -855,14 +852,30 @@ export function MatchResults({
               outcome={isTie ? "tie" : userWon ? "loss" : "win"}
               showScoreContext
               compact
-              compareLayout
-              playerStatsOpen={compareStatsOpen}
-              onPlayerStatsOpenChange={setCompareStatsOpen}
               onNameClick={
                 canOpenOpponentProfile ? openOpponentProfile : undefined
               }
             />
           </div>
+        </div>
+
+        <div className="matchup-panel__compare">
+          <MatchupCompareBoard
+            user={user}
+            opponent={opponent}
+            userLineup={userLineup}
+            opponentLineup={opponentLineup}
+            userScore={userScore}
+            opponentScore={opponentScore}
+            userOutcome={isTie ? "tie" : userWon ? "win" : "loss"}
+            opponentOutcome={isTie ? "tie" : userWon ? "loss" : "win"}
+            winStreak={displayStreaks.winStreak}
+            lossStreak={displayStreaks.lossStreak}
+            showStreak={showCompetitiveStreak}
+            onOpponentNameClick={
+              canOpenOpponentProfile ? openOpponentProfile : undefined
+            }
+          />
         </div>
       </div>
 

@@ -44,3 +44,24 @@ export const sortLineupByPosition = (lineup: Player[]) =>
 
     return left.name.localeCompare(right.name);
   });
+
+/** Zip two lineups by position order so matchup rows can align vertically. */
+export const pairLineupsByPosition = (
+  leftLineup: Player[],
+  rightLineup: Player[],
+) => {
+  const left = sortLineupByPosition(leftLineup);
+  const right = sortLineupByPosition(rightLineup);
+  const length = Math.max(left.length, right.length);
+
+  return Array.from({ length }, (_, index) => {
+    const leftPlayer = left[index] ?? null;
+    const rightPlayer = right[index] ?? null;
+    return {
+      left: leftPlayer,
+      right: rightPlayer,
+      position:
+        leftPlayer?.position ?? rightPlayer?.position ?? ("SF" as Position),
+    };
+  });
+};
