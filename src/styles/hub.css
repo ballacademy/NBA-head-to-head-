@@ -82,8 +82,8 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  /* Horizontal padding matches account inset; logo sits in that same inset. */
-  padding: 12px var(--hub-chrome-inset) 10px;
+  /* Top inset matches logo left inset so the mark is equidistant from the rim. */
+  padding: var(--hub-logo-inset) var(--hub-chrome-inset) 10px;
 }
 
 .landing-hub-chrome {
@@ -98,7 +98,7 @@
 
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
-  top: 12px;
+  top: var(--hub-logo-inset);
   left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
@@ -120,11 +120,7 @@
 
 @media (min-width: 900px) {
   .landing-hub-scroll {
-    padding-top: 16px;
-  }
-
-  .landing-hub-chrome .landing-hub-brand {
-    top: 16px;
+    padding-bottom: 12px;
   }
 }
 
@@ -167,7 +163,14 @@
 .landing-hub__content > .hub-feature__return-row:first-child {
   position: absolute;
   z-index: 6;
-  left: 0;
+  /* Clear the logo: logo sits in the outer gutter; return is inside scroll padding. */
+  left: max(
+    0px,
+    calc(
+      var(--hub-logo-inset, 6px) + var(--hub-logo-size, 44px) + 8px -
+        var(--hub-chrome-inset, 14px)
+    )
+  );
   margin: 0;
   padding: 0;
   height: var(--hub-title-band-height, 52px);
@@ -328,7 +331,7 @@
   box-sizing: border-box;
   width: 100%;
   min-height: var(--hub-title-band-height, 52px);
-  height: var(--hub-title-band-height, 52px);
+  height: auto;
   margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(
@@ -415,9 +418,8 @@ h1.landing-hub__title--name {
   letter-spacing: 0;
   text-align: center;
   text-wrap: balance;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  white-space: normal;
 }
 
 /* Stats lede carries an info control — allow the shared grid layout. */
