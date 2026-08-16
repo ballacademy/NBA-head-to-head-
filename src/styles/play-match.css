@@ -579,12 +579,6 @@
   background-color: #0f172a;
 }
 
-.stats-panel__title-row .mode-card-info__popover {
-  left: 0;
-  right: auto;
-  transform: none;
-}
-
 .mode-card-info__list {
   position: relative;
   z-index: 1;

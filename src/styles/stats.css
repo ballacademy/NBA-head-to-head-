@@ -5,7 +5,7 @@
   max-width: 100%;
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--hub-subbox-border);
   border-radius: 14px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -32,7 +32,7 @@
 .stats-table th {
   position: sticky;
   top: 0;
-  background: #0f172a;
+  background: var(--hub-subbox-bg);
   z-index: 1;
 }
 

@@ -5,16 +5,6 @@
 }
 
 @media (max-width: 720px) {
-  .landing-profile-strip__stats {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .landing-profile-strip__stat:nth-child(-n + 3),
-  .landing-profile-strip__stat:nth-child(n + 4) {
-    grid-column: auto;
-  }
-
   .landing-profile-strip__label {
     font-size: 0.86rem;
   }
@@ -976,6 +966,17 @@
   box-shadow: inset 3px 0 0 var(--accent-roster);
 }
 
+/* Nested inside GM Stats panel — one surface, no second subbox. */
+.hub-feature.gm-stats-page .hub-feature__panel > .weekly-gm-recap {
+  margin: 0 0 8px;
+  padding: 0 0 12px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--accent-neutral-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: inset 2px 0 0 var(--accent-roster);
+}
+
 .weekly-gm-recap--compact {
   display: flex;
   flex-wrap: wrap;
@@ -1084,6 +1085,12 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
+}
+
+@media (max-width: 560px) {
+  .weekly-gm-recap__stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 .weekly-gm-recap__stat {
