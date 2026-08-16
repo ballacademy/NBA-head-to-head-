@@ -79,6 +79,7 @@ interface MatchResultsProps {
   onCollectionChange: (collection: PlayerCollection) => void;
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
+  onPostToCommunity?: () => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
@@ -95,6 +96,7 @@ export function MatchResults({
   onCollectionChange,
   onPlayAgain,
   onReturnToMenu,
+  onPostToCommunity,
   isMatchmaking = false,
   startMatchError = null,
   opponentAutoDrafted = false,
@@ -805,6 +807,16 @@ export function MatchResults({
                   busy: shareState === "busy",
                   onClick: () => void handleShareLineup(),
                 },
+                ...(onPostToCommunity
+                  ? [
+                      {
+                        id: "community",
+                        label: "Post to Community",
+                        disabled: isMatchmaking,
+                        onClick: onPostToCommunity,
+                      },
+                    ]
+                  : []),
                 {
                   id: "home",
                   label: "Back to home",
@@ -832,6 +844,16 @@ export function MatchResults({
                   busy: shareState === "busy",
                   onClick: () => void handleShareLineup(),
                 },
+                ...(onPostToCommunity
+                  ? [
+                      {
+                        id: "community",
+                        label: "Post to Community",
+                        disabled: isMatchmaking,
+                        onClick: onPostToCommunity,
+                      },
+                    ]
+                  : []),
                 {
                   id: "home",
                   label: "Back to home",

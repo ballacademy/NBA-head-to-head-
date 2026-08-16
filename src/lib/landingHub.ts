@@ -155,8 +155,8 @@ export const parentTabForFeature = (
   switch (feature) {
     case "stats":
     case "achievements":
-      return "roster";
     case "gmStats":
+      return "roster";
     case "privacy":
     case "terms":
     case "beta":

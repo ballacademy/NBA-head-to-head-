@@ -123,6 +123,8 @@ interface TierListPageProps {
   initialCommunityPostId?: string | null;
   /** Bumped when Community nav is selected — returns to the hub chooser. */
   hubReturnToken?: number;
+  /** Bumped to open Posts compose with the latest results shareable attached. */
+  composeIntentToken?: number;
 }
 
 type TierListView =
@@ -245,6 +247,7 @@ export function TierListPage({
   initialCommunityView = null,
   initialCommunityPostId = null,
   hubReturnToken = 0,
+  composeIntentToken = 0,
 }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const [view, setView] = useState<TierListView>(() => {
@@ -330,6 +333,7 @@ export function TierListPage({
   // null until first effect — avoids skipping reset when nav bumps the token
   // in the same render that mounts this page.
   const hubReturnSeenRef = useRef<number | null>(null);
+  const composeIntentSeenRef = useRef<number | null>(null);
   const dragSessionRef = useRef<PointerDragSession | null>(null);
   const suppressClickRef = useRef(false);
   const dragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -374,6 +378,32 @@ export function TierListPage({
     setCommunityFocusPostId(null);
     syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
   }, [hubReturnToken]);
+
+  useEffect(() => {
+    if (composeIntentSeenRef.current === null) {
+      composeIntentSeenRef.current = composeIntentToken;
+      if (composeIntentToken <= 0) {
+        return;
+      }
+    } else if (composeIntentToken === composeIntentSeenRef.current) {
+      return;
+    } else {
+      composeIntentSeenRef.current = composeIntentToken;
+    }
+
+    if (composeIntentToken <= 0) {
+      return;
+    }
+
+    setViewerDetail(null);
+    setViewerLoading(false);
+    setView("posts");
+    setCommunityFocusPostId(null);
+    const shareables = loadCommunityShareables();
+    setCommunityShareables(shareables);
+    setCommunityAttachment(shareables[0] ?? null);
+    syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null });
+  }, [composeIntentToken]);
 
   useEffect(() => {
     saveTierListState(state);

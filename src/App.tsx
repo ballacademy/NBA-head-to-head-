@@ -403,6 +403,7 @@ function App() {
   );
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const [communityHubReturnToken, setCommunityHubReturnToken] = useState(0);
+  const [communityComposeToken, setCommunityComposeToken] = useState(0);
   const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() =>
     initialLandingDeepLinks.contentTab ?? loadLandingHubTab(),
   );
@@ -2503,6 +2504,15 @@ function App() {
     syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
   }, [openFeaturePage, phase]);
 
+  /** Open Community Posts with the latest results shareable pre-attached. */
+  const openCommunityCompose = useCallback(() => {
+    if (phase !== "tierList") {
+      openFeaturePage("tierList");
+    }
+    setCommunityComposeToken((current) => current + 1);
+    syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null });
+  }, [openFeaturePage, phase]);
+
   const handleHubNav = useCallback(
     (tab: LandingHubTab) => {
       if (tab === "standings") {
@@ -2533,7 +2543,6 @@ function App() {
     }
 
     if (
-      phase === "gmStats" ||
       phase === "playerUsage" ||
       phase === "privacy" ||
       phase === "terms" ||
@@ -2542,7 +2551,11 @@ function App() {
       return "account";
     }
 
-    if (phase === "achievements" || phase === "stats") {
+    if (
+      phase === "achievements" ||
+      phase === "stats" ||
+      phase === "gmStats"
+    ) {
       return "roster";
     }
 
@@ -2646,6 +2659,7 @@ function App() {
             : null
         }
         hubReturnToken={communityHubReturnToken}
+        composeIntentToken={communityComposeToken}
       />,
       "landing-layout--tier-list",
     );
@@ -2861,6 +2875,11 @@ function App() {
             reviewOnly={isDailyReview}
             optimalReview={isDailyOptimalReview}
             onPlayAgain={() => resetToLanding()}
+            onPostToCommunity={openCommunityCompose}
+            onOpenAccount={() => {
+              resetToLanding();
+              updateLandingHubTab("account");
+            }}
           />
         </Suspense>
       ) : null}
@@ -2930,6 +2949,7 @@ function App() {
             onCollectionChange={handleCollectionChange}
             onPlayAgain={replayLastMode}
             onReturnToMenu={() => resetToLanding()}
+            onPostToCommunity={openCommunityCompose}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}
             opponentAutoDrafted={opponentAutoDrafted}

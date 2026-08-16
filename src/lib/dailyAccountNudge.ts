@@ -8,3 +8,9 @@ export const hasDismissedDailyAccountNudge = () =>
 export const markDailyAccountNudgeDismissed = () => {
   writeJson(DAILY_ACCOUNT_NUDGE_KEY, { dismissed: true });
 };
+
+/** Show only when we know the GM is signed out and they have not dismissed. */
+export const shouldShowDailyAccountNudge = (options: {
+  accountLinked: boolean | null;
+}) =>
+  options.accountLinked === false && !hasDismissedDailyAccountNudge();

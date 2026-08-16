@@ -1,5 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { evaluateCareerProgressAchievements } from "../lib/achievements";
+import {
+  getNextDailyStreakGoal,
+  getCareerProgressCounters,
+} from "../lib/careerProgressAchievements";
 import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
 import { formatOrdinal } from "../lib/ordinal";
 import type { CollectionTier } from "../lib/playerCollection";
@@ -33,10 +37,19 @@ export function FranchiseHubPanel({
   onViewGmStats,
   onPlayDaily,
 }: FranchiseHubPanelProps) {
+  useEffect(() => {
+    evaluateCareerProgressAchievements();
+  }, []);
+
   const dailyDraft = useMemo(() => {
     const teamName = loadTeamProfile()?.name ?? "Your team";
     return buildLocalGmStatsSnapshot(teamName).dailyDraft;
   }, []);
+  const streakCounters = useMemo(() => getCareerProgressCounters(), []);
+  const nextDailyGoal = useMemo(
+    () => getNextDailyStreakGoal(streakCounters),
+    [streakCounters],
+  );
 
   return (
     <div className="franchise-home">
@@ -57,6 +70,17 @@ export function FranchiseHubPanel({
             Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
             {formatPercentile(dailyDraft.averagePercentile)}
           </p>
+          {nextDailyGoal ? (
+            <p className="franchise-home__daily-next">
+              Next badge: {nextDailyGoal.title} (
+              {Math.min(streakCounters.dailyStreak, nextDailyGoal.target)}/
+              {nextDailyGoal.target})
+            </p>
+          ) : (
+            <p className="franchise-home__daily-next">
+              Daily streak badges complete.
+            </p>
+          )}
         </div>
         <button
           type="button"

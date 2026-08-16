@@ -37,6 +37,15 @@ import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { isShareDismissalError } from "../lib/appErrors";
 import { trackProductEvent } from "../lib/productAnalytics";
 import { rememberCommunityShareable } from "../lib/communityShareables";
+import {
+  markDailyAccountNudgeDismissed,
+  shouldShowDailyAccountNudge,
+} from "../lib/dailyAccountNudge";
+import {
+  isPlayerAccountLinked,
+  peekCachedAccountLinked,
+  subscribeAccountLinkChanged,
+} from "../lib/accountGate";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import type { Drafter, Player } from "../lib/types";
 import { players } from "../data/players";
@@ -54,6 +63,8 @@ interface DailyDraftResultsProps {
   reviewOnly?: boolean;
   optimalReview?: boolean;
   onPlayAgain: () => void;
+  onPostToCommunity?: () => void;
+  onOpenAccount?: () => void;
 }
 
 export function DailyDraftResults({
@@ -65,6 +76,8 @@ export function DailyDraftResults({
   reviewOnly = false,
   optimalReview = false,
   onPlayAgain,
+  onPostToCommunity,
+  onOpenAccount,
 }: DailyDraftResultsProps) {
   const submittedRef = useRef(reviewOnly || optimalReview);
   const analyticsFinishRef = useRef(false);
@@ -85,6 +98,16 @@ export function DailyDraftResults({
   const [canonicalFormatted, setCanonicalFormatted] = useState<string | null>(
     null,
   );
+  const [showAccountNudge, setShowAccountNudge] = useState(() => {
+    if (reviewOnly || optimalReview) {
+      return false;
+    }
+    const playerId = getOrCreatePlayerId();
+    const cached = peekCachedAccountLinked(playerId);
+    return shouldShowDailyAccountNudge({
+      accountLinked: cached,
+    });
+  });
   const [adoptedExistingAttempt, setAdoptedExistingAttempt] = useState(false);
   const displayLineup = canonicalLineup ?? userLineup;
   const goalResult = useMemo(
@@ -372,6 +395,35 @@ export function DailyDraftResults({
         dailyDateKey,
       );
 
+  useEffect(() => {
+    if (reviewOnly || optimalReview) {
+      setShowAccountNudge(false);
+      return;
+    }
+
+    const playerId = getOrCreatePlayerId();
+    let cancelled = false;
+
+    const refresh = () => {
+      const cached = peekCachedAccountLinked(playerId);
+      if (cached != null) {
+        setShowAccountNudge(
+          shouldShowDailyAccountNudge({ accountLinked: cached }),
+        );
+      }
+      void isPlayerAccountLinked(playerId).then((linked) => {
+        if (!cancelled) {
+          setShowAccountNudge(
+            shouldShowDailyAccountNudge({ accountLinked: linked }),
+          );
+        }
+      });
+    };
+
+    refresh();
+    return subscribeAccountLinkChanged(refresh);
+  }, [optimalReview, reviewOnly]);
+
   return (
     <section
       className={`match-results daily-draft-results match-results--compact ${matchModeThemeClass("daily")}`}
@@ -452,6 +504,35 @@ export function DailyDraftResults({
       </section>
 
       <div className="panel panel--compact match-results__actions daily-draft-results__footer">
+        {showAccountNudge ? (
+          <div className="daily-draft-results__account-nudge">
+            <p>
+              Create an account to sync Daily streaks and show up on
+              leaderboards.
+            </p>
+            <div className="match-results__action-row">
+              {onOpenAccount ? (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={onOpenAccount}
+                >
+                  Open Account
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => {
+                  markDailyAccountNudgeDismissed();
+                  setShowAccountNudge(false);
+                }}
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        ) : null}
         <PostGameNextActions
           primary={{
             id: "home",
@@ -469,11 +550,21 @@ export function DailyDraftResults({
                   },
                   {
                     id: "share",
-                    label: shareState === "error" ? shareButtonLabel : "Share image",
+                    label:
+                      shareState === "error" ? shareButtonLabel : "Share image",
                     busyLabel: "Preparing image…",
                     busy: shareState === "busy",
                     onClick: () => void handleShareImage(),
                   },
+                  ...(onPostToCommunity
+                    ? [
+                        {
+                          id: "community",
+                          label: "Post to Community",
+                          onClick: onPostToCommunity,
+                        },
+                      ]
+                    : []),
                 ]
           }
         />

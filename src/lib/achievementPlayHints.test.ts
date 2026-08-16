@@ -20,6 +20,7 @@ describe("achievementPlayHints", () => {
       playSection: "daily",
       ctaLabel: "Play Daily Draft",
     });
+    expect(getAchievementPlayHint("daily-streak-14").playSection).toBe("daily");
   });
 
   it("routes chemistry badges to Casual Head to Head", () => {
