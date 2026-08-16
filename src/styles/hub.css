@@ -149,6 +149,14 @@
   position: relative;
 }
 
+/*
+ * Feature pages with a return under the title: clear the floating logo so
+ * "Season Stats" / Badges / etc. sit below the mark instead of cramped high.
+ */
+.hub-feature:has(> .landing-hub__top + .hub-feature__return-row) {
+  padding-top: calc(var(--hub-logo-size) + 8px);
+}
+
 .hub-feature.tier-list-page {
   padding-inline: 2px;
 }

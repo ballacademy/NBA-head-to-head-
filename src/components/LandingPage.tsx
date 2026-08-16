@@ -1241,7 +1241,7 @@ export function LandingPage({
                   aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
                 >
                   <span className="landing-profile-strip__label">
-                    Recent AS
+                    Recent All-Star
                   </span>
                   <strong>
                     {collectionProgress.recentUnlocked}/

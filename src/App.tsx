@@ -21,12 +21,15 @@ import { TierListPage } from "./components/TierListPage";
 import type { LandingHubTab } from "./components/LandingBottomNav";
 import {
   applyLandingDeepLinksFromSearch,
+  hubParamForFeature,
   loadLandingHubTab,
+  parentTabForFeature,
   saveLandingHubTab,
   saveLandingH2hMode,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
   type LandingContentTab,
+  type LandingDeepLinkFeature,
 } from "./lib/landingHub";
 import { trackProductEvent } from "./lib/productAnalytics";
 import { PendingQueueResults } from "./components/PendingQueueResults";
@@ -226,6 +229,57 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "beta",
 ]);
 
+const featurePhaseFromDeepLink = (
+  feature: LandingDeepLinkFeature | null | undefined,
+): AppPhase | null => {
+  if (!feature) {
+    return null;
+  }
+  switch (feature) {
+    case "tierList":
+      return "tierList";
+    case "leaderboard":
+      return "leaderboard";
+    case "stats":
+      return "stats";
+    case "achievements":
+      return "achievements";
+    case "gmStats":
+      return "gmStats";
+    case "privacy":
+      return "privacy";
+    case "terms":
+      return "terms";
+    case "beta":
+      return "beta";
+  }
+};
+
+const deepLinkFeatureFromPhase = (
+  phase: AppPhase,
+): LandingDeepLinkFeature | null => {
+  switch (phase) {
+    case "tierList":
+      return "tierList";
+    case "leaderboard":
+      return "leaderboard";
+    case "stats":
+      return "stats";
+    case "achievements":
+      return "achievements";
+    case "gmStats":
+      return "gmStats";
+    case "privacy":
+      return "privacy";
+    case "terms":
+      return "terms";
+    case "beta":
+      return "beta";
+    default:
+      return null;
+  }
+};
+
 type FeatureHistoryState = {
   appPhase?: AppPhase;
   returnTo?: AppPhase;
@@ -263,11 +317,11 @@ function App() {
     if (initialPublicTierListId) {
       return "tierList";
     }
-    if (initialLandingDeepLinks.feature === "tierList") {
-      return "tierList";
-    }
-    if (initialLandingDeepLinks.feature === "leaderboard") {
-      return "leaderboard";
+    const fromDeepLink = featurePhaseFromDeepLink(
+      initialLandingDeepLinks.feature,
+    );
+    if (fromDeepLink) {
+      return fromDeepLink;
     }
     return "landing";
   });
@@ -366,25 +420,24 @@ function App() {
       return;
     }
 
-    if (initialLandingDeepLinks.feature === "tierList") {
+    const feature = initialLandingDeepLinks.feature;
+    const featurePhase = featurePhaseFromDeepLink(feature);
+    if (feature && featurePhase) {
       const state = window.history.state as FeatureHistoryState | null;
       if (!state?.appPhase) {
-        window.history.replaceState({ appPhase: "tierList" }, "");
+        window.history.replaceState({ appPhase: featurePhase }, "");
       }
       syncLandingDeepLinkUrl({
-        hub: "community",
-        view: initialLandingDeepLinks.communityView,
-        post: initialLandingDeepLinks.communityPostId,
+        hub: hubParamForFeature(feature),
+        view:
+          feature === "tierList"
+            ? initialLandingDeepLinks.communityView
+            : null,
+        post:
+          feature === "tierList"
+            ? initialLandingDeepLinks.communityPostId
+            : null,
       });
-      return;
-    }
-
-    if (initialLandingDeepLinks.feature === "leaderboard") {
-      const state = window.history.state as FeatureHistoryState | null;
-      if (!state?.appPhase) {
-        window.history.replaceState({ appPhase: "leaderboard" }, "");
-      }
-      syncLandingDeepLinkUrl({ hub: "ranks" });
       return;
     }
 
@@ -1578,6 +1631,18 @@ function App() {
       };
       window.history.pushState(historyState, "");
       setPhase(nextPhase);
+      const feature = deepLinkFeatureFromPhase(nextPhase);
+      if (feature) {
+        const parentTab = parentTabForFeature(feature);
+        setLandingHubTab(parentTab);
+        saveLandingHubTab(parentTab);
+        syncLandingDeepLinkUrl({
+          hub: hubParamForFeature(feature),
+          play: null,
+          view: null,
+          post: null,
+        });
+      }
     },
     [],
   );
@@ -1585,24 +1650,60 @@ function App() {
   const exitFeaturePage = useCallback(() => {
     const state = window.history.state as FeatureHistoryState | null;
     const returnTo = state?.returnTo;
+    const leavingFeature = deepLinkFeatureFromPhase(phase);
 
     if (returnTo && FEATURE_PHASES.has(returnTo)) {
       skipPopStateResetRef.current = true;
       window.history.back();
       setPhase(returnTo);
+      const returnFeature = deepLinkFeatureFromPhase(returnTo);
+      if (returnFeature) {
+        const syncReturn = () => {
+          syncLandingDeepLinkUrl({
+            hub: hubParamForFeature(returnFeature),
+            play: null,
+            view: null,
+            post: null,
+          });
+        };
+        syncReturn();
+        window.setTimeout(syncReturn, 0);
+      }
       return;
     }
 
     const shouldNavigateBack =
-      FEATURE_PHASES.has(phase) && state?.appPhase;
+      FEATURE_PHASES.has(phase) && Boolean(state?.appPhase);
 
+    const parentTab = leavingFeature
+      ? parentTabForFeature(leavingFeature)
+      : landingHubTab;
+    setLandingHubTab(parentTab);
+    saveLandingHubTab(parentTab);
     resetToLanding();
+
+    const syncParent = () => {
+      syncLandingDeepLinkUrl({
+        hub: parentTab,
+        play: parentTab === "play" ? undefined : null,
+        view: null,
+        post: null,
+      });
+      const landingState = window.history.state as FeatureHistoryState | null;
+      if (landingState?.appPhase) {
+        window.history.replaceState({}, "", window.location.href);
+      }
+    };
 
     if (shouldNavigateBack) {
       skipPopStateResetRef.current = true;
       window.history.back();
+      // History URL updates async with back(); re-sync parent hub after.
+      window.setTimeout(syncParent, 0);
+    } else {
+      syncParent();
     }
-  }, [phase]);
+  }, [landingHubTab, phase]);
 
   const replayLastMode = async () => {
     if (!user) {

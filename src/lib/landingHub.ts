@@ -14,9 +14,23 @@ export type LandingHubDeepLink =
   | LandingContentTab
   | "community"
   | "ranks"
-  | "standings";
+  | "standings"
+  | "stats"
+  | "badges"
+  | "gm-stats"
+  | "privacy"
+  | "terms"
+  | "beta";
 
-export type LandingDeepLinkFeature = "tierList" | "leaderboard";
+export type LandingDeepLinkFeature =
+  | "tierList"
+  | "leaderboard"
+  | "stats"
+  | "achievements"
+  | "gmStats"
+  | "privacy"
+  | "terms"
+  | "beta";
 
 export type LandingCommunityView = "posts" | "tiers";
 
@@ -52,7 +66,7 @@ export const isLandingPlaySection = (
 const normalizeQueryToken = (value: string) =>
   value.trim().toLowerCase().replace(/[\s_]+/g, "-");
 
-/** Parse `?hub=` including community / ranks aliases. */
+/** Parse `?hub=` including community / ranks / feature-page aliases. */
 export const parseLandingHubParam = (
   value: string | null | undefined,
 ): LandingHubDeepLink | null => {
@@ -83,8 +97,98 @@ export const parseLandingHubParam = (
   ) {
     return "ranks";
   }
+  if (token === "stats" || token === "season-stats" || token === "player-stats") {
+    return "stats";
+  }
+  if (
+    token === "badges" ||
+    token === "achievements" ||
+    token === "unlocks"
+  ) {
+    return "badges";
+  }
+  if (
+    token === "gm-stats" ||
+    token === "gmstats" ||
+    token === "gm-stat" ||
+    token === "career"
+  ) {
+    return "gm-stats";
+  }
+  if (token === "privacy") return "privacy";
+  if (token === "terms") return "terms";
+  if (token === "beta" || token === "beta-notes") return "beta";
 
   return null;
+};
+
+/** Canonical `?hub=` value for a feature page (stable across refresh). */
+export const hubParamForFeature = (
+  feature: LandingDeepLinkFeature,
+): Exclude<LandingHubDeepLink, "standings"> => {
+  switch (feature) {
+    case "tierList":
+      return "community";
+    case "leaderboard":
+      return "ranks";
+    case "stats":
+      return "stats";
+    case "achievements":
+      return "badges";
+    case "gmStats":
+      return "gm-stats";
+    case "privacy":
+      return "privacy";
+    case "terms":
+      return "terms";
+    case "beta":
+      return "beta";
+  }
+};
+
+/** Parent landing tab for a feature (used when exiting back to the hub). */
+export const parentTabForFeature = (
+  feature: LandingDeepLinkFeature,
+): LandingContentTab => {
+  switch (feature) {
+    case "stats":
+    case "achievements":
+      return "roster";
+    case "gmStats":
+    case "privacy":
+    case "terms":
+    case "beta":
+      return "account";
+    case "tierList":
+    case "leaderboard":
+      return "play";
+  }
+};
+
+export const featureFromHubDeepLink = (
+  hub: LandingHubDeepLink,
+): LandingDeepLinkFeature | null => {
+  switch (hub) {
+    case "community":
+      return "tierList";
+    case "ranks":
+    case "standings":
+      return "leaderboard";
+    case "stats":
+      return "stats";
+    case "badges":
+      return "achievements";
+    case "gm-stats":
+      return "gmStats";
+    case "privacy":
+      return "privacy";
+    case "terms":
+      return "terms";
+    case "beta":
+      return "beta";
+    default:
+      return null;
+  }
 };
 
 export const isLandingH2hMode = (
@@ -262,10 +366,13 @@ export const applyLandingDeepLinksFromSearch = (
   if (hub === "play" || hub === "roster" || hub === "account") {
     contentTab = hub;
     saveLandingHubTab(hub);
-  } else if (hub === "community") {
-    feature = "tierList";
-  } else if (hub === "ranks" || hub === "standings") {
-    feature = "leaderboard";
+  } else if (hub) {
+    const fromHub = featureFromHubDeepLink(hub);
+    if (fromHub) {
+      feature = fromHub;
+      contentTab = parentTabForFeature(fromHub);
+      saveLandingHubTab(contentTab);
+    }
   }
 
   if (
@@ -335,6 +442,15 @@ export const syncLandingDeepLinkUrl = (
         url.searchParams.set("hub", hubParam);
         if (hubParam !== "play" && options.play === undefined) {
           url.searchParams.delete("play");
+        }
+        // Feature hubs don't use community view/post params.
+        if (
+          hubParam !== "community" &&
+          options.view === undefined &&
+          options.post === undefined
+        ) {
+          url.searchParams.delete("view");
+          url.searchParams.delete("post");
         }
       }
       if (options.play === null) {
