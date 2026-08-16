@@ -1109,30 +1109,10 @@
   margin-bottom: 16px;
 }
 
-.gm-stats-page__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.gm-stats-page__brand,
-.gm-stats-page__logo {
-  width: 42px;
-  height: 42px;
-  aspect-ratio: 1;
-  object-fit: contain;
-}
-
-.gm-stats-page__subtitle {
-  margin: 6px 0 0;
-  color: var(--muted);
-}
-
 .gm-stats-page__summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 10px 0;
   margin: 4px 0 8px;
 }
 
@@ -1141,17 +1121,24 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  padding: 8px 10px 8px 0;
+  padding: 8px 12px 10px 0;
   border: 0;
-  border-right: 1px solid var(--accent-neutral-border);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.gm-stats-page__summary-card:last-child {
-  border-right: 0;
+.gm-stats-page__summary-card:not(:nth-child(2n)) {
+  border-right: 1px solid var(--accent-neutral-border);
+}
+
+.gm-stats-page__summary-card:nth-child(2n) {
   padding-right: 0;
+  padding-left: 12px;
+}
+
+.gm-stats-page__summary-card:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--accent-neutral-border);
 }
 
 .gm-profile-modal__stat {
@@ -1214,20 +1201,21 @@
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 6px;
+  gap: 0;
 }
 
 .gm-stats-page__most-drafted-row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: baseline;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--accent-neutral-border);
 }
 
 .gm-stats-page__most-drafted-row:last-child {
   border-bottom: 0;
+  padding-bottom: 2px;
 }
 
 .gm-stats-page__most-drafted-rank {
@@ -1239,14 +1227,17 @@
 
 .gm-stats-page__most-drafted-name {
   color: #e2e8f0;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 650;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gm-stats-page__most-drafted-meta {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1338,8 +1329,8 @@
 
 .front-office-badges {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1349,11 +1340,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 12px;
-  border-radius: 12px;
+  padding: 10px 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--accent-neutral-border);
   opacity: 1;
   filter: grayscale(0.75) brightness(0.78);
-  box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.2);
+  box-shadow: none;
+}
+
+.front-office-badges__item:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
 }
 
 .front-office-badges__item--unlocked {
@@ -1364,11 +1361,12 @@
 .front-office-badges__emoji {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 10px;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 8px;
   background: rgba(15, 23, 42, 0.4);
-  font-size: 1.1rem;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .front-office-badges__item--unlocked .front-office-badges__emoji {
@@ -1414,17 +1412,23 @@
 }
 
 @media (max-width: 560px) {
-  .gm-stats-page__header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .gm-stats-page__header .secondary-button {
-    width: 100%;
-  }
-
   .gm-stats-page__summary {
     grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .gm-stats-page__summary-card,
+  .gm-stats-page__summary-card:not(:nth-child(2n)),
+  .gm-stats-page__summary-card:nth-child(2n),
+  .gm-stats-page__summary-card:nth-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--accent-neutral-border);
+    padding: 10px 0;
+  }
+
+  .gm-stats-page__summary-card:last-child {
+    border-bottom: 0;
+    padding-bottom: 2px;
   }
 
   .gm-profile-modal__grid {
@@ -1435,10 +1439,6 @@
   .gm-profile-modal__label {
     font-size: 0.7rem;
     letter-spacing: 0.06em;
-  }
-
-  .front-office-badges {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

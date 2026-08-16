@@ -310,15 +310,10 @@
   grid-template-columns: 1fr;
 }
 
-@media (max-width: 720px) {
+@media (min-width: 600px) {
   .landing-profile-strip__stats {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .landing-profile-strip__stat:nth-child(-n + 3),
-  .landing-profile-strip__stat:nth-child(n + 4) {
-    grid-column: auto;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 8px;
   }
 }
 
@@ -326,12 +321,6 @@
   display: grid;
   gap: 2px;
   margin-bottom: 10px;
-}
-
-.landing-profile-strip__heading {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
 }
 
 .landing-profile-strip__title {
@@ -471,10 +460,6 @@
   font-weight: 800;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
-}
-
-.landing-profile-strip__action {
-  display: none;
 }
 
 .landing-profile-strip__meta {

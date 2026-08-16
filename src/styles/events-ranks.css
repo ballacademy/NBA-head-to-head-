@@ -875,18 +875,6 @@
   margin-bottom: 0;
 }
 
-.stats-panel__title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  position: relative;
-  z-index: 4;
-}
-
-.stats-panel__title-row h2 {
-  margin: 6px 0 0;
-}
-
 .feature-page--stats .section-heading .eyebrow,
 .stats-panel__heading .eyebrow,
 .hub-feature.stats-panel .landing-hub__title {
@@ -905,14 +893,15 @@
 
 .feature-page--stats .stats-table-wrap,
 .hub-feature.stats-panel .stats-table-wrap {
-  border-color: var(--accent-roster-border);
+  border-color: var(--hub-subbox-border);
   max-width: 100%;
   width: 100%;
   min-width: 0;
 }
 
-.feature-page--stats .stats-table th {
-  background: rgba(15, 23, 42, 0.94);
+.feature-page--stats .stats-table th,
+.hub-feature.stats-panel .stats-table th {
+  background: var(--hub-subbox-bg);
 }
 
 .feature-page--stats .sort-button.active,

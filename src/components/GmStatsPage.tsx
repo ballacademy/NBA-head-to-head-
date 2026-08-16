@@ -86,163 +86,180 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       className="gm-stats-page"
       title={snapshot.teamName}
       titleClassName="landing-hub__title--name"
-      lede={`${snapshot.totalWins}–${snapshot.totalLosses} · Pro ${formatRatingPoints(snapshot.ranked.elo)} · Casual ${formatRatingPoints(snapshot.classic.elo)} · ${snapshot.currentSeasonLabel}`}
+      lede={`${snapshot.totalWins}–${snapshot.totalLosses} · ${snapshot.currentSeasonLabel}`}
       onBack={onBack}
       backLabel="Account"
     >
-      <WeeklyGmRecapCard />
-
       <section className="hub-feature__panel">
-      <div className="gm-stats-page__summary">
-        <div className="gm-stats-page__summary-card">
-          <span className="gm-stats-page__label">Best monthly finish</span>
-          <strong className="gm-stats-page__value">
-            {formatLegacyMonthlyFinish(
-              snapshot.legacy.bestMonthlyRank,
-              snapshot.legacy.bestMonthlyRankSeasonId,
-            )}
-          </strong>
-        </div>
-        <div className="gm-stats-page__summary-card">
-          <span className="gm-stats-page__label">Most banners ever</span>
-          <strong className="gm-stats-page__value">
-            {formatLegacyPeakBannerCount(snapshot.legacy.peakElo)}
-          </strong>
-          {peakBannerTier ? (
-            <span className="gm-stats-page__value-meta">{peakBannerTier}</span>
-          ) : null}
-        </div>
-      </div>
+        <WeeklyGmRecapCard />
 
-      <section className="gm-stats-page__section">
-        <h2>Front Office</h2>
-        <div className="gm-stats-page__tier-row">
-          <RankedTierBadge
-            tier={snapshot.ranked.tier}
-            elo={snapshot.ranked.elo}
-            compact
+        <div className="gm-stats-page__summary">
+          <div className="gm-stats-page__summary-card">
+            <span className="gm-stats-page__label">Best monthly finish</span>
+            <strong className="gm-stats-page__value">
+              {formatLegacyMonthlyFinish(
+                snapshot.legacy.bestMonthlyRank,
+                snapshot.legacy.bestMonthlyRankSeasonId,
+              )}
+            </strong>
+          </div>
+          <div className="gm-stats-page__summary-card">
+            <span className="gm-stats-page__label">Most banners ever</span>
+            <strong className="gm-stats-page__value">
+              {formatLegacyPeakBannerCount(snapshot.legacy.peakElo)}
+            </strong>
+            {peakBannerTier ? (
+              <span className="gm-stats-page__value-meta">{peakBannerTier}</span>
+            ) : null}
+          </div>
+          <div className="gm-stats-page__summary-card">
+            <span className="gm-stats-page__label">Pro</span>
+            <strong className="gm-stats-page__value">
+              {formatRatingPoints(snapshot.ranked.elo)}
+            </strong>
+          </div>
+          <div className="gm-stats-page__summary-card">
+            <span className="gm-stats-page__label">Casual</span>
+            <strong className="gm-stats-page__value">
+              {formatRatingPoints(snapshot.classic.elo)}
+            </strong>
+          </div>
+        </div>
+
+        <section className="gm-stats-page__section">
+          <h2>Front Office</h2>
+          <div className="gm-stats-page__tier-row">
+            <RankedTierBadge
+              tier={snapshot.ranked.tier}
+              elo={snapshot.ranked.elo}
+              compact
+            />
+          </div>
+          <FrontOfficeBadgeGrid peakElo={snapshot.legacy.peakElo} />
+        </section>
+
+        <section className="gm-stats-page__section">
+          <h2>Mode records</h2>
+          <GmStatsFactRows
+            rows={[
+              {
+                label: "Casual H2H",
+                value: formatGmRecordLine(
+                  snapshot.records.headToHead.wins,
+                  snapshot.records.headToHead.losses,
+                  snapshot.records.headToHead.ties,
+                ),
+              },
+              {
+                label: "Pro H2H",
+                value: formatGmRecordLine(
+                  snapshot.records.ranked.wins,
+                  snapshot.records.ranked.losses,
+                  snapshot.records.ranked.ties,
+                ),
+              },
+              ...(isAllTimeModePlayable()
+                ? [
+                    {
+                      label: "All-Time",
+                      value: formatGmRecordLine(
+                        snapshot.records.allTime.wins,
+                        snapshot.records.allTime.losses,
+                        snapshot.records.allTime.ties,
+                      ),
+                    },
+                  ]
+                : []),
+            ]}
           />
-        </div>
-        <FrontOfficeBadgeGrid peakElo={snapshot.legacy.peakElo} />
-      </section>
+        </section>
 
-      <section className="gm-stats-page__section">
-        <h2>Mode records</h2>
-        <GmStatsFactRows
-          rows={[
-            {
-              label: "Casual H2H",
-              value: formatGmRecordLine(
-                snapshot.records.headToHead.wins,
-                snapshot.records.headToHead.losses,
-                snapshot.records.headToHead.ties,
-              ),
-            },
-            {
-              label: "Pro H2H",
-              value: formatGmRecordLine(
-                snapshot.records.ranked.wins,
-                snapshot.records.ranked.losses,
-                snapshot.records.ranked.ties,
-              ),
-            },
-            ...(isAllTimeModePlayable()
-              ? [
-                  {
-                    label: "All-Time",
-                    value: formatGmRecordLine(
-                      snapshot.records.allTime.wins,
-                      snapshot.records.allTime.losses,
-                      snapshot.records.allTime.ties,
-                    ),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </section>
+        <section className="gm-stats-page__section">
+          <h2>Daily draft</h2>
+          <GmStatsFactRows
+            rows={[
+              {
+                label: "Days played",
+                value: String(snapshot.dailyDraft.daysPlayed),
+              },
+              {
+                label: "Basic streak",
+                value: snapshot.dailyDraft.basicStreakLabel,
+              },
+              {
+                label: "Advanced streak",
+                value: snapshot.dailyDraft.advancedStreakLabel,
+              },
+              {
+                label: "Best percentile",
+                value: formatPercentileStat(snapshot.dailyDraft.bestPercentile),
+              },
+              {
+                label: "Average percentile",
+                value: formatPercentileStat(
+                  snapshot.dailyDraft.averagePercentile,
+                ),
+              },
+            ]}
+          />
+        </section>
 
-      <section className="gm-stats-page__section">
-        <h2>Daily draft</h2>
-        <GmStatsFactRows
-          rows={[
-            {
-              label: "Days played",
-              value: String(snapshot.dailyDraft.daysPlayed),
-            },
-            {
-              label: "Basic streak",
-              value: snapshot.dailyDraft.basicStreakLabel,
-            },
-            {
-              label: "Advanced streak",
-              value: snapshot.dailyDraft.advancedStreakLabel,
-            },
-            {
-              label: "Best percentile",
-              value: formatPercentileStat(snapshot.dailyDraft.bestPercentile),
-            },
-            {
-              label: "Average percentile",
-              value: formatPercentileStat(snapshot.dailyDraft.averagePercentile),
-            },
-          ]}
-        />
-      </section>
+        <section className="gm-stats-page__section">
+          <h2>Most drafted</h2>
+          {mostDrafted.length === 0 ? (
+            <p className="gm-stats-page__section-copy">
+              Play Daily or H2H to build your top drafted players.
+            </p>
+          ) : (
+            <ol className="gm-stats-page__most-drafted">
+              {mostDrafted.map((row, index) => (
+                <li
+                  key={row.playerId}
+                  className="gm-stats-page__most-drafted-row"
+                >
+                  <span className="gm-stats-page__most-drafted-rank">
+                    {index + 1}.
+                  </span>
+                  <span className="gm-stats-page__most-drafted-name">
+                    {row.name}
+                  </span>
+                  <span className="gm-stats-page__most-drafted-meta">
+                    {row.drafts} draft{row.drafts === 1 ? "" : "s"}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
 
-      <section className="gm-stats-page__section">
-        <h2>Most drafted</h2>
-        {mostDrafted.length === 0 ? (
-          <p className="gm-stats-page__section-copy">
-            Play Daily or H2H to build your top drafted players.
-          </p>
-        ) : (
-          <ol className="gm-stats-page__most-drafted">
-            {mostDrafted.map((row, index) => (
-              <li key={row.playerId} className="gm-stats-page__most-drafted-row">
-                <span className="gm-stats-page__most-drafted-rank">
-                  {index + 1}.
-                </span>
-                <span className="gm-stats-page__most-drafted-name">
-                  {row.name}
-                </span>
-                <span className="gm-stats-page__most-drafted-meta">
-                  {row.drafts} draft{row.drafts === 1 ? "" : "s"}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      <section className="gm-stats-page__section">
-        <h2>Collection</h2>
-        <GmStatsFactRows
-          rows={[
-            {
-              label: "All-Stars",
-              value: formatCollectionCount(
-                snapshot.collection.unlocked,
-                snapshot.collection.total,
-              ),
-            },
-            {
-              label: "Superstars",
-              value: formatCollectionCount(
-                snapshot.collection.superstarUnlocked,
-                snapshot.collection.superstarTotal,
-              ),
-            },
-            {
-              label: "Scrub pool",
-              value: formatCollectionCount(
-                snapshot.collection.scrubPoolUnlocked,
-                snapshot.collection.scrubPoolTotal,
-              ),
-            },
-          ]}
-        />
-      </section>
+        <section className="gm-stats-page__section">
+          <h2>Collection</h2>
+          <GmStatsFactRows
+            rows={[
+              {
+                label: "All-Stars",
+                value: formatCollectionCount(
+                  snapshot.collection.unlocked,
+                  snapshot.collection.total,
+                ),
+              },
+              {
+                label: "Superstars",
+                value: formatCollectionCount(
+                  snapshot.collection.superstarUnlocked,
+                  snapshot.collection.superstarTotal,
+                ),
+              },
+              {
+                label: "Scrub pool",
+                value: formatCollectionCount(
+                  snapshot.collection.scrubPoolUnlocked,
+                  snapshot.collection.scrubPoolTotal,
+                ),
+              },
+            ]}
+          />
+        </section>
       </section>
     </HubPageChrome>
   );

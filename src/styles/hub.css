@@ -195,16 +195,12 @@
 .hub-feature > .landing-hub__top + .hub-feature__return-row .hub-feature__return,
 .landing-hub__content > .hub-feature__return-row:first-child .hub-feature__return {
   pointer-events: auto;
-  min-height: 28px;
-  padding: 4px 9px;
-  font-size: 0.72rem;
-  font-weight: 700;
 }
 
 .hub-feature__return {
-  min-height: 34px;
-  padding: 7px 12px;
-  font-size: 0.84rem;
+  min-height: 28px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -418,6 +414,10 @@ h1.landing-hub__title--name {
 }
 
 /* Keep accessory controls from stretching the shared title band. */
+.landing-hub__title-accessory .mode-card-info {
+  margin-left: 0;
+}
+
 .landing-hub__title-accessory .mode-card-info__button {
   width: 26px;
   height: 26px;
@@ -1167,9 +1167,9 @@ h1.landing-hub__title--name {
 .landing-bottom-nav__label {
   max-width: 100%;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 750;
   letter-spacing: 0.01em;
   line-height: 1.15;
