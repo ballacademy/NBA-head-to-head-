@@ -160,14 +160,22 @@ export const scoreLineupRoleFit = (
 export const formatLineupRoleFitNote = (
   profile: LineupRoleFitProfile,
   stopperLabel: string,
-) =>
-  `${Math.round(profile.forwardCount)} forwards, ${Math.round(
-    profile.centerCount,
-  )} centers, ${roundOne(profile.stoppers)} ${stopperLabel}-or-better defenders, ${roundOne(
-    profile.rimProtectors,
-  )} rim protectors`;
+  defenseCounts?: {
+    plusDefenders: number;
+    rimProtectors: number;
+  },
+) => {
+  const plusDefenders =
+    defenseCounts?.plusDefenders ?? Math.round(profile.stoppers);
+  const rimProtectors =
+    defenseCounts?.rimProtectors ?? Math.round(profile.rimProtectors);
+  const plusLabel = plusDefenders === 1 ? "plus defender" : "plus defenders";
+  const rimLabel = rimProtectors === 1 ? "rim protector" : "rim protectors";
 
-const roundOne = (value: number) => Math.round(value * 10) / 10;
+  return `${Math.round(profile.forwardCount)} forwards, ${Math.round(
+    profile.centerCount,
+  )} centers, ${plusDefenders} ${plusLabel} (${stopperLabel}+), ${rimProtectors} ${rimLabel}`;
+};
 
 export const hasLineupCreation = (
   profile: LineupRoleFitProfile,

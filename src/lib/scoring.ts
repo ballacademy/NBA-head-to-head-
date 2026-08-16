@@ -293,6 +293,7 @@ export const getStopperGradeFactor = (player: Player) => {
   return smoothUnit(rank, 4, 9);
 };
 
+/** Plus defender ≈ B or better (not C+/B- soft contributions). */
 export const isPlusDefenderByGrade = (player: Player) =>
   getStopperGradeFactor(player) >= 0.75;
 
@@ -328,6 +329,16 @@ export const getRimProtectorFactor = (player: Player) => {
 
   return Math.max(blockFactor, paintPresence);
 };
+
+/** Discrete rim-anchor check for feedback copy (soft factor stays for scoring). */
+export const isRimProtectorByFactor = (player: Player) =>
+  getRimProtectorFactor(player) >= 0.75;
+
+export const countPlusDefenders = (lineup: Player[]) =>
+  lineup.filter(isPlusDefenderByGrade).length;
+
+export const countRimProtectors = (lineup: Player[]) =>
+  lineup.filter(isRimProtectorByFactor).length;
 
 export const SEASON_LENGTH = 82;
 export const LINEUP_RAW_CEILING = 232;
@@ -618,6 +629,9 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     scoreLineupRoleFit(roleFitProfile, { assists: totals.assists }),
   );
 
+  const plusDefenderCount = countPlusDefenders(lineup);
+  const rimProtectorCount = countRimProtectors(lineup);
+
   const categories: ScoreCategory[] = [
     {
       label: "Box score production",
@@ -641,7 +655,10 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     {
       label: "Team fit",
       value: round(fit),
-      note: formatLineupRoleFitNote(roleFitProfile, STOPPER_MINIMUM_DEFENSE_GRADE),
+      note: formatLineupRoleFitNote(roleFitProfile, STOPPER_MINIMUM_DEFENSE_GRADE, {
+        plusDefenders: plusDefenderCount,
+        rimProtectors: rimProtectorCount,
+      }),
     },
   ];
 
@@ -658,9 +675,19 @@ const buildLineupScoreBreakdown = (lineup: Player[]): LineupScoreBreakdown => {
     warnings.push("Spacing is fragile; defenses can load the paint.");
   }
 
-  if (stoppers >= 2 && rimProtectors >= 1) {
+  if (plusDefenderCount >= 2 && rimProtectorCount >= 1) {
     strengths.push("Multiple plus defenders with a back-line anchor.");
-  } else if (stoppers < 2) {
+  } else if (plusDefenderCount >= 2) {
+    strengths.push("Multiple plus defenders across the lineup.");
+  } else if (plusDefenderCount === 1 && rimProtectorCount >= 1) {
+    warnings.push(
+      "Only one plus defender anchoring the group; elite scorers can hunt the other matchups.",
+    );
+  } else if (plusDefenderCount === 1) {
+    warnings.push(
+      "Only one plus defender; the other matchups are soft against elite scorers.",
+    );
+  } else {
     warnings.push("Not enough defenders to survive elite scorers.");
   }
 
