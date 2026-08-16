@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   buildAchievementContext,
   checkLineupAchievements,
+  evaluateCareerProgressAchievements,
   unlockAchievements,
 } from "../lib/achievements";
 import { AchievementToast } from "./AchievementToast";
@@ -102,8 +103,12 @@ export function PendingQueueResults({
       userLineup,
       buildAchievementContext(userLineup, { hasSalaryCap: true }),
     );
-    const { newlyUnlocked } = unlockAchievements(earned);
-    setNewAchievementIds(newlyUnlocked);
+    const lineupUnlock = unlockAchievements(earned);
+    const careerUnlock = evaluateCareerProgressAchievements();
+    setNewAchievementIds([
+      ...lineupUnlock.newlyUnlocked,
+      ...careerUnlock.newlyUnlocked,
+    ]);
   }, [userLineup]);
 
   return (

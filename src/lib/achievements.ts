@@ -1,5 +1,11 @@
 import { readJson, writeJson } from "./browserStorage";
 import { ACHIEVEMENT_CHECKS, type AchievementCheckContext } from "./achievementChecks";
+import {
+  CAREER_PROGRESS_ACHIEVEMENT_IDS,
+  getCareerProgressBadgeRows,
+  getEarnedCareerProgressIds,
+  type CareerProgressBadgeRow,
+} from "./careerProgressAchievements";
 import { calculateLineupScore } from "./scoring";
 import type { Player } from "./types";
 
@@ -83,9 +89,23 @@ export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_CHECKS.map(
   }),
 );
 
-export const CAREER_ACHIEVEMENTS = ACHIEVEMENTS.filter(
-  (achievement) => !SPECIAL_ACHIEVEMENT_IDS.has(achievement.id),
+/** Lineup recipe badges (single-draft checks). */
+export const LINEUP_ACHIEVEMENTS = ACHIEVEMENTS.filter(
+  (achievement) =>
+    !SPECIAL_ACHIEVEMENT_IDS.has(achievement.id) &&
+    !CAREER_PROGRESS_ACHIEVEMENT_IDS.has(achievement.id),
 );
+
+/** Lifetime / multi-match progress badges. */
+export const CAREER_PROGRESS_ACHIEVEMENTS = ACHIEVEMENTS.filter((achievement) =>
+  CAREER_PROGRESS_ACHIEVEMENT_IDS.has(achievement.id),
+);
+
+/** Lineup + career progress (excludes special account badges). */
+export const CAREER_ACHIEVEMENTS = [
+  ...LINEUP_ACHIEVEMENTS,
+  ...CAREER_PROGRESS_ACHIEVEMENTS,
+];
 
 export const SPECIAL_ACHIEVEMENTS = ACHIEVEMENTS.filter((achievement) =>
   SPECIAL_ACHIEVEMENT_IDS.has(achievement.id),
@@ -122,8 +142,11 @@ export const checkLineupAchievements = (
     return [];
   }
 
-  return ACHIEVEMENT_CHECKS.filter((achievement) =>
-    achievement.check(lineup, context),
+  return ACHIEVEMENT_CHECKS.filter(
+    (achievement) =>
+      !CAREER_PROGRESS_ACHIEVEMENT_IDS.has(achievement.id) &&
+      !SPECIAL_ACHIEVEMENT_IDS.has(achievement.id) &&
+      achievement.check(lineup, context),
   ).map((achievement) => achievement.id);
 };
 
@@ -136,7 +159,10 @@ export const loadAchievementState = (): AchievementState => {
   const unlocked = Array.isArray(saved?.unlocked) ? saved.unlocked : [];
   const normalized = normalizeUnlockedAchievements(unlocked);
 
-  if (normalized.length !== unlocked.length || normalized.some((id, index) => id !== unlocked[index])) {
+  if (
+    normalized.length !== unlocked.length ||
+    normalized.some((id, index) => id !== unlocked[index])
+  ) {
     saveAchievementState({ unlocked: normalized });
   }
 
@@ -205,20 +231,33 @@ const mapAchievementProgress = (
 
 export const getAchievementProgress = (state = loadAchievementState()) => {
   const unlocked = new Set(state.unlocked);
-  const careerAchievements = mapAchievementProgress(
-    CAREER_ACHIEVEMENTS,
+  const lineupAchievements = mapAchievementProgress(
+    LINEUP_ACHIEVEMENTS,
     unlocked,
   );
+  const careerProgress: CareerProgressBadgeRow[] = getCareerProgressBadgeRows(
+    unlocked,
+  ).map((row) => ({
+    ...row,
+    isUnlocked: unlocked.has(row.id) || row.isUnlocked,
+  }));
   const specialAchievements = mapAchievementProgress(
     SPECIAL_ACHIEVEMENTS,
     unlocked,
   );
 
+  const lineupUnlocked = lineupAchievements.filter(
+    (achievement) => achievement.isUnlocked,
+  ).length;
+  const careerProgressUnlocked = careerProgress.filter(
+    (achievement) => achievement.isUnlocked,
+  ).length;
+
   return {
-    unlocked: careerAchievements.filter((achievement) => achievement.isUnlocked)
-      .length,
-    total: CAREER_ACHIEVEMENTS.length,
-    achievements: careerAchievements,
+    unlocked: lineupUnlocked + careerProgressUnlocked,
+    total: LINEUP_ACHIEVEMENTS.length + CAREER_PROGRESS_ACHIEVEMENTS.length,
+    achievements: lineupAchievements,
+    careerProgress,
     special: {
       unlocked: specialAchievements.filter(
         (achievement) => achievement.isUnlocked,
@@ -228,3 +267,7 @@ export const getAchievementProgress = (state = loadAchievementState()) => {
     },
   };
 };
+
+/** Unlock any career progress badges earned from existing W–L / draft / streak counters. */
+export const evaluateCareerProgressAchievements = () =>
+  unlockAchievements(getEarnedCareerProgressIds());

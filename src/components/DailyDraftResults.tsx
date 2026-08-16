@@ -10,6 +10,7 @@ import { buildDailyGoalResult } from "../lib/dailyGoalScoring";
 import {
   buildAchievementContext,
   checkLineupAchievements,
+  evaluateCareerProgressAchievements,
   unlockAchievements,
 } from "../lib/achievements";
 import {
@@ -294,8 +295,12 @@ export function DailyDraftResults({
       displayLineup,
       buildAchievementContext(displayLineup),
     );
-    const { newlyUnlocked } = unlockAchievements(earned);
-    setNewAchievementIds(newlyUnlocked);
+    const lineupUnlock = unlockAchievements(earned);
+    const careerUnlock = evaluateCareerProgressAchievements();
+    setNewAchievementIds([
+      ...lineupUnlock.newlyUnlocked,
+      ...careerUnlock.newlyUnlocked,
+    ]);
   }, [displayLineup, optimalReview, reviewOnly]);
 
   const handleCopyShareText = async () => {

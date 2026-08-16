@@ -523,6 +523,49 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (_lineup, context) => (context?.ovrOverflow ?? 0) >= 5,
   },
   {
+    id: "ten-wins",
+    title: "10 Wins",
+    description: "Win 10 competitive matches.",
+    emoji: "🔟",
+    // Granted from career progress counters (see careerProgressAchievements).
+    check: () => false,
+  },
+  {
+    id: "twenty-five-wins",
+    title: "25 Wins",
+    description: "Win 25 competitive matches.",
+    emoji: "🏅",
+    check: () => false,
+  },
+  {
+    id: "ten-drafts",
+    title: "10 Drafts",
+    description: "Record 10 competitive or Daily lineups.",
+    emoji: "📋",
+    check: () => false,
+  },
+  {
+    id: "twenty-five-drafts",
+    title: "25 Drafts",
+    description: "Record 25 competitive or Daily lineups.",
+    emoji: "🗂️",
+    check: () => false,
+  },
+  {
+    id: "daily-streak-3",
+    title: "Daily Habit",
+    description: "Play Daily Draft three days in a row.",
+    emoji: "📅",
+    check: () => false,
+  },
+  {
+    id: "daily-streak-7",
+    title: "Weekly Ritual",
+    description: "Play Daily Draft seven days in a row.",
+    emoji: "🗓️",
+    check: () => false,
+  },
+  {
     id: "founding-gm",
     title: "Founding GM",
     description:

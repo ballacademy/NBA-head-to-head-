@@ -1,5 +1,8 @@
-import { useMemo } from "react";
-import { getAchievementProgress } from "../lib/achievements";
+import { useEffect, useMemo, useState } from "react";
+import {
+  evaluateCareerProgressAchievements,
+  getAchievementProgress,
+} from "../lib/achievements";
 import {
   getAchievementPlayHint,
   getNearestLockedAchievement,
@@ -45,7 +48,17 @@ const buildTopEventBadge = (profile: EventProfile) => {
 };
 
 export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps) {
-  const progress = useMemo(() => getAchievementProgress(), []);
+  const [progressTick, setProgressTick] = useState(0);
+
+  useEffect(() => {
+    evaluateCareerProgressAchievements();
+    setProgressTick((current) => current + 1);
+  }, []);
+
+  const progress = useMemo(
+    () => getAchievementProgress(),
+    [progressTick],
+  );
   const eventBadges = useMemo(() => {
     return loadAllEventProfiles()
       .map((profile) => buildTopEventBadge(profile))
@@ -57,7 +70,21 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
     (achievement) => achievement.isUnlocked,
   );
 
-  const nextBadge = getNearestLockedAchievement(progress.achievements);
+  const nextCandidates = useMemo(
+    () => [
+      ...progress.careerProgress.map((row) => ({
+        id: row.id,
+        title: row.title,
+        description: `${row.description} (${Math.min(row.current, row.target)}/${row.target})`,
+        emoji: row.emoji,
+        isUnlocked: row.isUnlocked,
+      })),
+      ...progress.achievements,
+    ],
+    [progress.achievements, progress.careerProgress],
+  );
+
+  const nextBadge = getNearestLockedAchievement(nextCandidates);
   const nextBadgeHint = nextBadge
     ? getAchievementPlayHint(nextBadge.id)
     : null;
@@ -79,10 +106,6 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
           Sign in to sync badge progress across browsers. Guests keep badges on
           this device only.
         </AccountRequiredNote>
-
-        <div className="achievements-page__section-heading">
-          <h2>Lineup badges</h2>
-        </div>
 
         {nextBadge && nextBadgeHint && onPlayIntent ? (
           <div className="achievements-page__next-badge">
@@ -110,6 +133,49 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
             </div>
           </div>
         ) : null}
+
+        <div className="achievements-page__section-heading">
+          <h2>Career badges</h2>
+          <p className="achievements-page__subtitle">
+            Wins, drafts, and Daily streaks across sessions.
+          </p>
+        </div>
+        <ul className="achievements-page__list">
+          {progress.careerProgress.map((achievement) => (
+            <li
+              key={achievement.id}
+              className={`achievements-page__item${
+                achievement.isUnlocked
+                  ? " achievements-page__item--unlocked"
+                  : ""
+              }`}
+            >
+              <span className="achievements-page__emoji" aria-hidden="true">
+                {achievement.isUnlocked ? achievement.emoji : "❓"}
+              </span>
+              <div className="achievements-page__copy">
+                <div className="achievements-page__title-row">
+                  <strong>{achievement.title}</strong>
+                  {achievement.isUnlocked ? (
+                    <span className="achievements-page__status">Unlocked</span>
+                  ) : (
+                    <span className="achievements-page__status">
+                      {Math.min(achievement.current, achievement.target)}/
+                      {achievement.target}
+                    </span>
+                  )}
+                </div>
+                <span className="achievements-page__description">
+                  {achievement.description}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="achievements-page__section-heading achievements-page__section-heading--spaced">
+          <h2>Lineup badges</h2>
+        </div>
 
         <ul className="achievements-page__list">
           {progress.achievements.map((achievement) => (
