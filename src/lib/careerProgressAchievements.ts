@@ -4,15 +4,17 @@ import { loadAllModeRecords } from "./playerRecord";
 
 /** Lifetime / multi-session badges (not single-lineup checks). */
 export const CAREER_PROGRESS_ACHIEVEMENT_IDS = new Set([
-  "hundred-wins",
-  "thousand-wins",
+  "fifty-wins",
+  "five-hundred-wins",
+  "hundred-plays",
+  "thousand-plays",
   "ten-drafts",
   "twenty-five-drafts",
   "daily-streak-3",
   "daily-streak-7",
 ]);
 
-export type CareerProgressMetric = "wins" | "drafts" | "dailyStreak";
+export type CareerProgressMetric = "wins" | "plays" | "drafts" | "dailyStreak";
 
 export interface CareerProgressDefinition {
   id: string;
@@ -25,19 +27,35 @@ export interface CareerProgressDefinition {
 
 export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
-    id: "hundred-wins",
-    title: "100 Wins",
-    description: "Win 100 competitive matches.",
-    emoji: "💯",
+    id: "fifty-wins",
+    title: "50 Wins",
+    description: "Win 50 competitive matches.",
+    emoji: "🏅",
     metric: "wins",
+    target: 50,
+  },
+  {
+    id: "five-hundred-wins",
+    title: "500 Wins",
+    description: "Win 500 competitive matches.",
+    emoji: "🏆",
+    metric: "wins",
+    target: 500,
+  },
+  {
+    id: "hundred-plays",
+    title: "100 Plays",
+    description: "Play 100 competitive matches.",
+    emoji: "🎮",
+    metric: "plays",
     target: 100,
   },
   {
-    id: "thousand-wins",
-    title: "1,000 Wins",
-    description: "Win 1,000 competitive matches.",
-    emoji: "🏆",
-    metric: "wins",
+    id: "thousand-plays",
+    title: "1,000 Plays",
+    description: "Play 1,000 competitive matches.",
+    emoji: "♾️",
+    metric: "plays",
     target: 1000,
   },
   {
@@ -76,19 +94,31 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
 
 export interface CareerProgressCounters {
   wins: number;
+  plays: number;
   drafts: number;
   dailyStreak: number;
 }
+
+const modePlays = (mode: {
+  wins: number;
+  losses: number;
+  ties: number;
+}) => mode.wins + mode.losses + mode.ties;
 
 export const getCareerProgressCounters = (): CareerProgressCounters => {
   const records = loadAllModeRecords();
   const wins =
     records.headToHead.wins + records.ranked.wins + records.allTime.wins;
+  const plays =
+    modePlays(records.headToHead) +
+    modePlays(records.ranked) +
+    modePlays(records.allTime);
   const basic = getDailyDraftPlayStreak("basic");
   const advanced = getDailyDraftPlayStreak("advanced");
 
   return {
     wins,
+    plays,
     drafts: getRecordedDraftLineupCount(),
     dailyStreak: Math.max(basic.current, advanced.current),
   };

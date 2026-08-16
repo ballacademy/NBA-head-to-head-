@@ -51,9 +51,11 @@ export const ACHIEVEMENT_PLAY_HINTS: Record<string, AchievementPlayHint> = {
   daycare: CASUAL_H2H,
   "alphabet-squad": CASUAL_H2H,
 
-  // Career progress
-  "hundred-wins": CASUAL_H2H,
-  "thousand-wins": CASUAL_H2H,
+  // Career progress — short loops first via PRIORITY_ACHIEVEMENT_IDS.
+  "fifty-wins": CASUAL_H2H,
+  "five-hundred-wins": CASUAL_H2H,
+  "hundred-plays": CASUAL_H2H,
+  "thousand-plays": CASUAL_H2H,
   "ten-drafts": CASUAL_H2H,
   "twenty-five-drafts": CASUAL_H2H,
   "daily-streak-3": DAILY,
@@ -65,9 +67,10 @@ export function getAchievementPlayHint(id: string): AchievementPlayHint {
 }
 
 export const PRIORITY_ACHIEVEMENT_IDS = [
-  "hundred-wins",
-  "daily-streak-3",
   "ten-drafts",
+  "daily-streak-3",
+  "fifty-wins",
+  "hundred-plays",
   "ballin-on-budget",
   "seventy-wins",
   "eighty-ovr",

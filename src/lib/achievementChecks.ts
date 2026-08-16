@@ -35,8 +35,13 @@ const allUniqueTeams = (lineup: Player[]) => {
   return teams.size === lineup.length;
 };
 
-const allSameDivision = (lineup: Player[], division: string) =>
-  lineup.every((player) => getDivisionForTeam(player.team) === division);
+const allSameAnyDivision = (lineup: Player[]) => {
+  const divisions = lineup.map((player) => getDivisionForTeam(player.team));
+  if (divisions.some((division) => !division)) {
+    return false;
+  }
+  return new Set(divisions).size === 1;
+};
 
 const primaryPositions = (lineup: Player[]) =>
   lineup.map((player) => player.position);
@@ -87,8 +92,8 @@ export interface AchievementCheckDefinition {
 export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "oops-all-centers",
-    title: "Oops, All Centers",
-    description: "Draft a lineup of five bigs.",
+    title: "Oops, All Bigs",
+    description: "Draft a lineup of five bigs (power forwards or centers).",
     emoji: "🏗️",
     check: (lineup) =>
       lineup.every(
@@ -186,9 +191,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "nepotism",
     title: "Nepotism",
-    description: "Draft Bronny James and Thanasis Antetokounmpo together.",
+    description: "Draft LeBron James and Bronny James together.",
     emoji: "👨‍👩‍👦",
-    check: (lineup) => hasBbrIds(lineup, ["jamesbr02", "antetth01"]),
+    check: (lineup) => hasBbrIds(lineup, ["jamesle01", "jamesbr02"]),
   },
   {
     id: "family-ties",
@@ -296,7 +301,7 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   },
   {
     id: "free-agents",
-    title: "Free Agents",
+    title: "Five Uniforms",
     description: "Draft five players from five different teams.",
     emoji: "🏝️",
     check: allUniqueTeams,
@@ -310,10 +315,10 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   },
   {
     id: "pacific-pact",
-    title: "Pacific Pact",
-    description: "Draft five players from the Pacific Division.",
+    title: "Division Pact",
+    description: "Draft five players from the same NBA division.",
     emoji: "🌊",
-    check: (lineup) => allSameDivision(lineup, "Pacific"),
+    check: allSameAnyDivision,
   },
   {
     id: "five-superstars",
@@ -375,9 +380,9 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "workhorses",
     title: "Workhorses",
-    description: "Draft five players averaging at least 37 minutes each.",
+    description: "Draft five players averaging at least 34 minutes each.",
     emoji: "🐴",
-    check: (lineup) => lineup.every((player) => player.minutes >= 37),
+    check: (lineup) => lineup.every((player) => player.minutes >= 34),
   },
   {
     id: "true-god",
@@ -426,11 +431,13 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
   {
     id: "point-center",
     title: "Point Center",
-    description: "Draft a center averaging 8+ assists.",
+    description: "Draft a big (PF or C) averaging 6+ assists.",
     emoji: "🪄",
     check: (lineup) =>
       lineup.some(
-        (player) => player.position === "C" && player.assists >= 8,
+        (player) =>
+          (player.position === "C" || player.position === "PF") &&
+          player.assists >= 6,
       ),
   },
   {
@@ -523,18 +530,32 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (_lineup, context) => (context?.ovrOverflow ?? 0) >= 5,
   },
   {
-    id: "hundred-wins",
-    title: "100 Wins",
-    description: "Win 100 competitive matches.",
-    emoji: "💯",
+    id: "fifty-wins",
+    title: "50 Wins",
+    description: "Win 50 competitive matches.",
+    emoji: "🏅",
     // Granted from career progress counters (see careerProgressAchievements).
     check: () => false,
   },
   {
-    id: "thousand-wins",
-    title: "1,000 Wins",
-    description: "Win 1,000 competitive matches.",
+    id: "five-hundred-wins",
+    title: "500 Wins",
+    description: "Win 500 competitive matches.",
     emoji: "🏆",
+    check: () => false,
+  },
+  {
+    id: "hundred-plays",
+    title: "100 Plays",
+    description: "Play 100 competitive matches.",
+    emoji: "🎮",
+    check: () => false,
+  },
+  {
+    id: "thousand-plays",
+    title: "1,000 Plays",
+    description: "Play 1,000 competitive matches.",
+    emoji: "♾️",
     check: () => false,
   },
   {
