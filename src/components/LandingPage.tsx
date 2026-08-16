@@ -633,9 +633,9 @@ export function LandingPage({
           <button
             type="button"
             className="landing-team-chip__edit"
-            onClick={() => setTeamNameExpanded(true)}
+            onClick={() => onHubTabChange("account")}
           >
-            Edit
+            Edit in Account
           </button>
         </div>
       );
@@ -1244,7 +1244,7 @@ export function LandingPage({
                   aria-label={`View unlocked Recent All-Stars, ${collectionProgress.recentUnlocked} of ${collectionProgress.recentTotal}`}
                 >
                   <span className="landing-profile-strip__label">
-                    Recent All-Stars
+                    Recent AS
                   </span>
                   <strong>
                     {collectionProgress.recentUnlocked}/
@@ -1299,6 +1299,25 @@ export function LandingPage({
                   Shown on leaderboards. Tap to verify or copy your full ID.
                 </span>
               </p>
+
+              <label className="field landing-team-form__field">
+                <span>Team Name</span>
+                <input
+                  type="text"
+                  value={name}
+                  placeholder="e.g. Bulls"
+                  onBlur={handleTeamNameBlur}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    if (error) {
+                      setError("");
+                    }
+                  }}
+                />
+              </label>
+              {profanityWarning || error ? (
+                <InlineAlert message={profanityWarning || error} />
+              ) : null}
 
               <AccountAuthPanel
                 playerId={playerIdentity.playerId}
