@@ -628,17 +628,20 @@
 .hub-empty,
 .draft-empty {
   margin: 0;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(148, 163, 184, 0.08);
-  color: #cbd5e1;
+  padding: 18px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #94a3b8;
   font-size: 0.9rem;
   line-height: 1.45;
+  text-align: center;
 }
 
 .hub-empty__actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   margin-top: 10px;
 }

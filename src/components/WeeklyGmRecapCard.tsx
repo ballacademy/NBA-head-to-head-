@@ -8,11 +8,14 @@ import {
 interface WeeklyGmRecapCardProps {
   onViewGmStats?: () => void;
   className?: string;
+  /** Compact one-line teaser (Roster); full card stays on GM Stats. */
+  variant?: "full" | "compact";
 }
 
 export function WeeklyGmRecapCard({
   onViewGmStats,
   className = "",
+  variant = "full",
 }: WeeklyGmRecapCardProps) {
   const recap = useMemo(() => buildWeeklyGmRecap(), []);
   const [dismissed, setDismissed] = useState(() =>
@@ -27,6 +30,39 @@ export function WeeklyGmRecapCard({
     markWeeklyRecapSeen(recap.weekKey);
     setDismissed(true);
   };
+
+  if (variant === "compact") {
+    return (
+      <div
+        className={`weekly-gm-recap weekly-gm-recap--compact${
+          className ? ` ${className}` : ""
+        }`}
+        role="status"
+      >
+        <p className="weekly-gm-recap__compact-copy">
+          Weekly GM recap · {recap.dailyDaysSplitLabel} Daily days
+        </p>
+        <div className="weekly-gm-recap__compact-actions">
+          {onViewGmStats ? (
+            <button
+              type="button"
+              className="weekly-gm-recap__compact-link"
+              onClick={onViewGmStats}
+            >
+              View week
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="weekly-gm-recap__dismiss"
+            onClick={handleDismiss}
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section

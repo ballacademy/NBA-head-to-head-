@@ -779,13 +779,7 @@ export function LandingPage({
       ) : null}
 
       <div className="landing-hub__top">
-        <h1
-          className={`landing-hub__title${
-            hubTab === "roster" ? " landing-hub__title--roster" : ""
-          }`}
-        >
-          {hubTitle}
-        </h1>
+        <h1 className="landing-hub__title">{hubTitle}</h1>
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
 
@@ -1159,7 +1153,10 @@ export function LandingPage({
 
         {hubTab === "roster" ? (
           <>
-            <WeeklyGmRecapCard onViewGmStats={onViewGmStats} />
+            <WeeklyGmRecapCard
+              variant="compact"
+              onViewGmStats={onViewGmStats}
+            />
             <div className="landing-profile-strip landing-card landing-card--profile">
               <div className="landing-profile-strip__header">
                 <p className="landing-profile-strip__title">Your collection</p>
@@ -1278,79 +1275,63 @@ export function LandingPage({
         ) : null}
 
         {hubTab === "account" ? (
-          <>
-            <section
-              className="account-section landing-team-form landing-card landing-card--form"
-              aria-labelledby="account-identity-heading"
-            >
-              <p className="account-section__eyebrow" id="account-identity-heading">
-                Identity
-              </p>
-              <p className="landing-team-form__identity">
-                <span className="landing-team-form__identity-label">
-                  GM code
-                </span>
-                <GmIdentityBadge
-                  publicTag={playerIdentity.publicTag}
-                  playerId={playerIdentity.playerId}
-                  showName={false}
-                />
-                <span className="landing-team-form__identity-note">
-                  Shown on leaderboards. Tap to verify or copy your full ID.
-                </span>
-              </p>
-
-              <label className="field landing-team-form__field">
-                <span>Team Name</span>
-                <input
-                  type="text"
-                  value={name}
-                  placeholder="e.g. Bulls"
-                  onBlur={handleTeamNameBlur}
-                  onChange={(event) => {
-                    setName(event.target.value);
-                    if (error) {
-                      setError("");
-                    }
-                  }}
-                />
-              </label>
-              {profanityWarning || error ? (
-                <InlineAlert message={profanityWarning || error} />
-              ) : null}
-
-              <AccountAuthPanel
+          <section
+            className="account-section account-section--unified landing-team-form landing-card landing-card--form"
+            aria-labelledby="account-identity-heading"
+          >
+            <p className="account-section__eyebrow" id="account-identity-heading">
+              Identity
+            </p>
+            <p className="landing-team-form__identity">
+              <span className="landing-team-form__identity-label">
+                GM code
+              </span>
+              <GmIdentityBadge
+                publicTag={playerIdentity.publicTag}
                 playerId={playerIdentity.playerId}
-                onViewPrivacy={onViewPrivacy}
-                onViewTerms={onViewTerms}
+                showName={false}
               />
-            </section>
+              <span className="landing-team-form__identity-note">
+                Shown on leaderboards. Tap to verify or copy your full ID.
+              </span>
+            </p>
 
-            <section
-              className="account-section landing-card"
-              aria-labelledby="account-records-heading"
-            >
-              <p className="account-section__eyebrow" id="account-records-heading">
-                Records
-              </p>
-              <div className="landing-hub__links">
-                <button
-                  type="button"
-                  className="landing-hub__link-button hub-accent hub-accent--account"
-                  onClick={onViewGmStats}
-                >
-                  GM stats
-                </button>
-              </div>
-            </section>
+            <label className="field landing-team-form__field">
+              <span>Team Name</span>
+              <input
+                type="text"
+                value={name}
+                placeholder="e.g. Bulls"
+                onBlur={handleTeamNameBlur}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  if (error) {
+                    setError("");
+                  }
+                }}
+              />
+            </label>
+            {profanityWarning || error ? (
+              <InlineAlert message={profanityWarning || error} />
+            ) : null}
 
-            <section
-              className="account-section account-section--legal"
-              aria-labelledby="account-legal-heading"
-            >
-              <p className="account-section__eyebrow" id="account-legal-heading">
-                Legal
-              </p>
+            <AccountAuthPanel
+              playerId={playerIdentity.playerId}
+              onViewPrivacy={onViewPrivacy}
+              onViewTerms={onViewTerms}
+            />
+
+            <div className="landing-hub__links account-section__links">
+              <button
+                type="button"
+                className="landing-hub__link-button hub-accent hub-accent--account"
+                onClick={onViewGmStats}
+              >
+                GM stats
+              </button>
+            </div>
+
+            <div className="account-section__legal-strip">
               <p className="landing-disclaimer">
                 Draft Day GM is an independent project. It is not affiliated with,
                 endorsed by, or connected to the NBA, its teams, players, or
@@ -1388,8 +1369,8 @@ export function LandingPage({
               </nav>
 
               <p className="landing-credit">Powered by BALLACADEMY</p>
-            </section>
-          </>
+            </div>
+          </section>
         ) : null}
       </div>
     </HubShell>

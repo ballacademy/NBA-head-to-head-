@@ -65,6 +65,31 @@
   padding: 14px 16px;
 }
 
+.account-section--unified {
+  gap: 12px;
+}
+
+.account-section__links {
+  margin-top: 4px;
+}
+
+.account-section__legal-strip {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.account-section__legal-strip .landing-footer {
+  margin: 2px 0 0;
+}
+
+.account-section__legal-strip .landing-credit {
+  margin: 4px 0 0;
+  padding-top: 10px;
+}
+
 .account-section--legal {
   gap: 8px;
   padding: 12px 14px;

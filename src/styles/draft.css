@@ -972,9 +972,53 @@
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--hub-subbox-border);
-  background:
-    linear-gradient(90deg, var(--accent-roster-soft) 0%, transparent 55%),
-    var(--hub-subbox-bg);
+  background: var(--hub-subbox-bg);
+  box-shadow: inset 3px 0 0 var(--accent-roster);
+}
+
+.weekly-gm-recap--compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.weekly-gm-recap__compact-copy {
+  margin: 0;
+  flex: 1 1 160px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.weekly-gm-recap__compact-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.weekly-gm-recap__compact-link {
+  margin: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent-roster-bright);
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.weekly-gm-recap__compact-link:hover {
+  background: var(--accent-roster-soft);
 }
 
 .weekly-gm-recap__header {
