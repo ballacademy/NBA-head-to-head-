@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getTopLeaderboard } from "./leaderboard";
-import { persistMatchOutcome } from "./matchOutcome";
+import {
+  persistMatchOutcome,
+  projectRecordAfterMatch,
+  resolveRecordForMatchDisplay,
+} from "./matchOutcome";
 import { loadPlayerRecord, recordMatchResult } from "./playerRecord";
 
 const storage = new Map<string, string>();
@@ -43,6 +47,43 @@ describe("matchOutcome", () => {
     expect(first.classic?.leaderboardRank).toBeNull();
     expect(loadPlayerRecord("headToHead").wins).toBe(1);
     expect(getTopLeaderboard("elo")[0]?.elo).toBe(first.classic?.elo);
+  });
+
+  it("does not double-count streaks when display resolves after persist", () => {
+    recordMatchResult("win", "headToHead");
+    recordMatchResult("win", "headToHead");
+
+    const before = loadPlayerRecord("headToHead");
+    expect(before.winStreak).toBe(2);
+
+    persistMatchOutcome("win", { name: "Bulls" }, "match-streak-1", "headToHead");
+
+    const projectedTwice = projectRecordAfterMatch(
+      "win",
+      "headToHead",
+      loadPlayerRecord("headToHead"),
+    );
+    expect(projectedTwice.winStreak).toBe(4);
+
+    const displayed = resolveRecordForMatchDisplay(
+      "win",
+      "match-streak-1",
+      "headToHead",
+    );
+    expect(displayed.winStreak).toBe(3);
+    expect(displayed.wins).toBe(3);
+    expect(loadPlayerRecord("headToHead").winStreak).toBe(3);
+  });
+
+  it("projects streaks only before the match id is recorded", () => {
+    recordMatchResult("loss", "ranked");
+    const projected = resolveRecordForMatchDisplay(
+      "loss",
+      "match-not-yet",
+      "ranked",
+    );
+    expect(projected.lossStreak).toBe(2);
+    expect(loadPlayerRecord("ranked").lossStreak).toBe(1);
   });
 
   it("keeps monthly leaderboard W-L season-scoped when career record is larger", () => {

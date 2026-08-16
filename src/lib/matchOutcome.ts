@@ -67,6 +67,24 @@ export const projectRecordAfterMatch = (
   ...applyHeadToHeadResultToStats(current, result, options),
 });
 
+/**
+ * Record to show on match results. If this match is already persisted,
+ * return storage as-is — never project again (Strict Mode remounts and
+ * ghost-retry paths previously double-counted win/loss streaks).
+ */
+export const resolveRecordForMatchDisplay = (
+  result: HeadToHeadResult,
+  matchId: string,
+  mode: MatchRecordMode = "headToHead",
+  options: { countTowardStreak?: boolean } = {},
+): PlayerRecord => {
+  if (hasRecordedMatchId(matchId)) {
+    return loadPlayerRecord(mode);
+  }
+
+  return projectRecordAfterMatch(result, mode, loadPlayerRecord(mode), options);
+};
+
 export const persistMatchOutcome = (
   result: HeadToHeadResult,
   team: TeamProfile,

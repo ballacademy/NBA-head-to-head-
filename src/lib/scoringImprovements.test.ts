@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { getPlayersById, calculateLineupScore } from "./scoring";
 import { players } from "./playerPool";
-import { hasReliableLineupSpacing } from "./lineupShooting";
-import { buildLineupShootingProfile } from "./lineupShooting";
+import {
+  assessLineupSpacingFeedback,
+  buildLineupShootingProfile,
+  isEliteThreePointShooter,
+  isNonThreePointShooter,
+  isPassableThreePointShooter,
+} from "./lineupShooting";
 
 const lineup = (ids: string[]) => getPlayersById(ids, players);
 
@@ -21,8 +26,14 @@ describe("lineup scoring improvements", () => {
       userLineup.map(() => 1),
       userLineup.length,
     );
+    const spacing = assessLineupSpacingFeedback({
+      passableShooters: userLineup.filter(isPassableThreePointShooter).length,
+      eliteShooters: userLineup.filter(isEliteThreePointShooter).length,
+      nonShooters: userLineup.filter(isNonThreePointShooter).length,
+      volumeWeightedThreePoint: shootingProfile.volumeWeightedThreePoint,
+    });
 
-    expect(hasReliableLineupSpacing(shootingProfile)).toBe(true);
+    expect(spacing).toBe("strength");
     expect(score.strengths).toContain(
       "Enough shooting to keep the floor spaced.",
     );
@@ -30,6 +41,32 @@ describe("lineup scoring improvements", () => {
       "Positional overlap makes matchups harder to cover.",
     );
     expect(score.projectedRecord.wins).toBeGreaterThan(48);
+  });
+
+  it("does not praise average-or-worse spacing on a two-shooter Harden five", () => {
+    const byName = (name: string) => {
+      const hit = players.find((player) => player.name === name);
+      if (!hit) {
+        throw new Error(`Missing ${name}`);
+      }
+      return hit;
+    };
+    const talentHeavy = [
+      byName("James Harden"),
+      byName("Tyrese Maxey"),
+      byName("Deni Avdija"),
+      byName("Giannis Antetokounmpo"),
+      byName("Maxime Raynaud"),
+    ];
+    const score = calculateLineupScore(talentHeavy);
+
+    expect(talentHeavy.filter(isPassableThreePointShooter).length).toBe(2);
+    expect(score.strengths).not.toContain(
+      "Enough shooting to keep the floor spaced.",
+    );
+    expect(score.warnings).toContain(
+      "Spacing is fragile; defenses can load the paint.",
+    );
   });
 
   it("factors team quality into mixed lineups through raw scoring", () => {
