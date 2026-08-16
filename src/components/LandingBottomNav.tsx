@@ -17,7 +17,7 @@ const TABS: {
   icon: string;
 }[] = [
   { id: "play", label: "Play", icon: "play" },
-  { id: "roster", label: "Franchise", icon: "roster" },
+  { id: "roster", label: "Franchise", icon: "franchise" },
   { id: "community", label: "Community", icon: "community" },
   { id: "standings", label: "Ranks", icon: "standings" },
   { id: "account", label: "Account", icon: "account" },
@@ -35,16 +35,24 @@ function NavIcon({ name }: { name: string }) {
           />
         </svg>
       );
-    case "roster":
+    case "franchise":
+      // Championship pennant — reads as team/franchise identity at nav size.
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path
-            d="M8 4h8l1.5 3H20v13H4V7h4.5L8 4Z"
+            d="M7 3.5v17"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
+            strokeLinecap="round"
           />
-          <circle cx="12" cy="13" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <path
+            d="M7 5h9.5l-2.8 4.25L16.5 13.5H7V5Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
         </svg>
       );
     case "community":
