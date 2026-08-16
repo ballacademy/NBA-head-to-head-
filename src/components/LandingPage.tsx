@@ -783,6 +783,8 @@ export function LandingPage({
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
 
+      {hubTab === "play" && playSection !== "chooser" ? playModeBack : null}
+
       <div className="landing-hub__content">
         {hubTab === "play" && playSection === "chooser" ? (
           <div className="play-hub-chooser" role="list">
@@ -839,7 +841,6 @@ export function LandingPage({
 
         {hubTab === "play" && playSection === "headToHead" ? (
           <>
-            {playModeBack}
             {renderTeamNameField()}
             {anyQueuedLineupLock ? (
               <p className="queue-lock-note" role="status">
@@ -979,7 +980,6 @@ export function LandingPage({
 
         {hubTab === "play" && playSection === "daily" ? (
           <>
-            {playModeBack}
             {error || startMatchError ? (
               <InlineAlert message={error || startMatchError} />
             ) : null}
@@ -992,7 +992,6 @@ export function LandingPage({
 
         {hubTab === "play" && playSection === "events" ? (
           <>
-            {playModeBack}
             {renderTeamNameField()}
             {weeklyEvent && eventProfile ? (
               <div className="landing-game-modes">

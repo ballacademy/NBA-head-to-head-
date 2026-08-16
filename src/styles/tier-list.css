@@ -306,9 +306,9 @@
 
 .tier-list__select-field select:focus {
   outline: none;
-  border-color: rgba(52, 211, 153, 0.55);
+  border-color: var(--accent-community-border);
   box-shadow:
-    0 0 0 3px rgba(16, 185, 129, 0.16),
+    0 0 0 3px color-mix(in srgb, var(--accent-community-soft) 80%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -460,9 +460,9 @@
 }
 
 .tier-list__chip.is-active {
-  border-color: rgba(52, 211, 153, 0.55);
-  background: rgba(16, 185, 129, 0.18);
-  color: #ecfdf5;
+  border-color: var(--accent-community-border);
+  background: var(--accent-community-soft);
+  color: var(--accent-community-bright);
 }
 
 .tier-list__hint {
@@ -485,9 +485,9 @@
 }
 
 .tier-list__row.is-drop-target .tier-list__tier-drop {
-  border-color: rgba(52, 211, 153, 0.75);
-  background: rgba(16, 185, 129, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.28);
+  border-color: var(--accent-community-border);
+  background: var(--accent-community-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-community) 28%, transparent);
 }
 
 .tier-list-hub__load-more {

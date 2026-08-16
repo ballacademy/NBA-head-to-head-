@@ -633,15 +633,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 64px;
+  min-width: 40px;
   min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--hub-subbox-border);
+  padding: 8px 10px;
+  border: 1px solid transparent;
   border-radius: var(--btn-radius, 12px);
-  color: var(--text-muted-on-dark);
-  font-size: 0.8rem;
+  color: #94a3b8;
+  font-size: 1.15rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--hub-subbox-bg) 88%, transparent);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -653,8 +655,8 @@
 .mode-card-more__trigger:hover:not(:disabled),
 .mode-card-more__trigger[aria-expanded="true"]:not(:disabled) {
   color: var(--text-on-dark);
-  border-color: color-mix(in srgb, var(--hub-accent-border) 70%, var(--hub-subbox-border));
-  background: color-mix(in srgb, var(--hub-accent-soft) 55%, var(--hub-subbox-bg));
+  border-color: var(--hub-subbox-border);
+  background: color-mix(in srgb, var(--hub-subbox-bg) 70%, transparent);
 }
 
 .mode-card-more__menu {

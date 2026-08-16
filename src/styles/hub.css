@@ -82,7 +82,7 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  /* Top inset matches logo left inset, plus notch safe-area when present. */
+  /* Notch safe-area lives here only — logo top stays 0 inside this padded box. */
   padding:
     max(var(--hub-logo-inset), env(safe-area-inset-top, 0px))
     var(--hub-chrome-inset)
@@ -101,7 +101,7 @@
 
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
-  top: max(var(--hub-logo-inset), env(safe-area-inset-top, 0px));
+  top: 0;
   left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
@@ -150,9 +150,14 @@
 }
 
 /*
- * Feature pages with a return under the title: clear the floating logo so
- * "Season Stats" / Badges / etc. sit below the mark instead of cramped high.
+ * Shared contract: title band, then optional return. When a return follows the
+ * title (Play modes, Stats, Badges, Community drill-ins), clear the floating
+ * logo so every back page uses the same geometry.
  */
+.landing-hub-scroll > .landing-hub__top:has(+ .hub-feature__return-row) {
+  margin-top: calc(var(--hub-logo-size) + 8px);
+}
+
 .hub-feature:has(> .landing-hub__top + .hub-feature__return-row) {
   padding-top: calc(var(--hub-logo-size) + 8px);
 }
@@ -174,6 +179,7 @@
  * the title/lede (or the logo). Keep a compact control; Escape still works
  * via HubFeatureReturnButton.
  */
+.landing-hub-scroll > .landing-hub__top + .hub-feature__return-row,
 .hub-feature > .landing-hub__top + .hub-feature__return-row,
 .landing-hub__content > .hub-feature__return-row:first-child {
   position: static;
@@ -187,6 +193,7 @@
   pointer-events: auto;
 }
 
+.landing-hub-scroll > .landing-hub__top + .hub-feature__return-row .hub-feature__return,
 .hub-feature > .landing-hub__top + .hub-feature__return-row .hub-feature__return,
 .landing-hub__content > .hub-feature__return-row:first-child .hub-feature__return {
   pointer-events: auto;
@@ -1040,9 +1047,9 @@ h1.landing-hub__title--name {
 }
 
 .tier-list-hub__panel .secondary-button.is-active-like {
-  border-color: rgba(52, 211, 153, 0.55);
-  background: rgba(16, 185, 129, 0.18);
-  color: #ecfdf5;
+  border-color: var(--accent-community-border);
+  background: var(--accent-community-soft);
+  color: var(--accent-community-bright);
 }
 
 .tier-list-hub__viewer .tier-list__board {
@@ -1076,9 +1083,9 @@ h1.landing-hub__title--name {
 }
 
 .secondary-button.is-active-like {
-  border-color: rgba(52, 211, 153, 0.55);
-  background: rgba(16, 185, 129, 0.18);
-  color: #ecfdf5;
+  border-color: var(--accent-community-border);
+  background: var(--accent-community-soft);
+  color: var(--accent-community-bright);
 }
 
 .landing-bottom-nav {
@@ -1119,38 +1126,38 @@ h1.landing-hub__title--name {
 
 .landing-bottom-nav__item--active {
   color: #f8fafc;
-  background: transparent;
+  background: rgba(148, 163, 184, 0.12);
   box-shadow: inset 0 2px 0 rgba(226, 232, 240, 0.55);
 }
 
 .landing-bottom-nav__item--play.landing-bottom-nav__item--active {
   color: var(--accent-play-bright);
-  background: transparent;
+  background: var(--accent-play-soft);
   box-shadow: inset 0 2px 0 var(--accent-play);
 }
 
 .landing-bottom-nav__item--roster.landing-bottom-nav__item--active {
   color: var(--accent-roster-bright);
-  background: transparent;
+  background: var(--accent-roster-soft);
   box-shadow: inset 0 2px 0 var(--accent-roster);
 }
 
 .landing-bottom-nav__item--community.landing-bottom-nav__item--active,
 .landing-bottom-nav__item--tiers.landing-bottom-nav__item--active {
   color: var(--accent-community-bright);
-  background: transparent;
+  background: var(--accent-community-soft);
   box-shadow: inset 0 2px 0 var(--accent-community);
 }
 
 .landing-bottom-nav__item--standings.landing-bottom-nav__item--active {
   color: var(--accent-ranked-bright);
-  background: transparent;
+  background: var(--accent-ranked-soft);
   box-shadow: inset 0 2px 0 var(--accent-ranked);
 }
 
 .landing-bottom-nav__item--account.landing-bottom-nav__item--active {
   color: var(--accent-account-bright);
-  background: transparent;
+  background: var(--accent-account-soft);
   box-shadow: inset 0 2px 0 var(--accent-account-bright);
 }
 

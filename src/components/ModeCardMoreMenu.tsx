@@ -64,7 +64,7 @@ export function ModeCardMoreMenu({
         disabled={disabled}
         onClick={() => setOpen((current) => !current)}
       >
-        More
+        ···
       </button>
       {open ? (
         <div className="mode-card-more__menu" id={menuId} role="menu">
