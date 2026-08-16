@@ -523,18 +523,18 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: (_lineup, context) => (context?.ovrOverflow ?? 0) >= 5,
   },
   {
-    id: "ten-wins",
-    title: "10 Wins",
-    description: "Win 10 competitive matches.",
-    emoji: "🔟",
+    id: "hundred-wins",
+    title: "100 Wins",
+    description: "Win 100 competitive matches.",
+    emoji: "💯",
     // Granted from career progress counters (see careerProgressAchievements).
     check: () => false,
   },
   {
-    id: "twenty-five-wins",
-    title: "25 Wins",
-    description: "Win 25 competitive matches.",
-    emoji: "🏅",
+    id: "thousand-wins",
+    title: "1,000 Wins",
+    description: "Win 1,000 competitive matches.",
+    emoji: "🏆",
     check: () => false,
   },
   {

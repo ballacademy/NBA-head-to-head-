@@ -4,8 +4,8 @@ import { loadAllModeRecords } from "./playerRecord";
 
 /** Lifetime / multi-session badges (not single-lineup checks). */
 export const CAREER_PROGRESS_ACHIEVEMENT_IDS = new Set([
-  "ten-wins",
-  "twenty-five-wins",
+  "hundred-wins",
+  "thousand-wins",
   "ten-drafts",
   "twenty-five-drafts",
   "daily-streak-3",
@@ -25,20 +25,20 @@ export interface CareerProgressDefinition {
 
 export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
-    id: "ten-wins",
-    title: "10 Wins",
-    description: "Win 10 competitive matches.",
-    emoji: "🔟",
+    id: "hundred-wins",
+    title: "100 Wins",
+    description: "Win 100 competitive matches.",
+    emoji: "💯",
     metric: "wins",
-    target: 10,
+    target: 100,
   },
   {
-    id: "twenty-five-wins",
-    title: "25 Wins",
-    description: "Win 25 competitive matches.",
-    emoji: "🏅",
+    id: "thousand-wins",
+    title: "1,000 Wins",
+    description: "Win 1,000 competitive matches.",
+    emoji: "🏆",
     metric: "wins",
-    target: 25,
+    target: 1000,
   },
   {
     id: "ten-drafts",

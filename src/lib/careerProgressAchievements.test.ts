@@ -40,7 +40,7 @@ describe("careerProgressAchievements", () => {
   it("earns win and draft badges from existing counters", () => {
     replaceModePlayerRecords({
       headToHead: {
-        wins: 10,
+        wins: 100,
         losses: 2,
         ties: 0,
         winStreak: 0,
@@ -74,17 +74,17 @@ describe("careerProgressAchievements", () => {
     );
 
     expect(getCareerProgressCounters()).toMatchObject({
-      wins: 10,
+      wins: 100,
       drafts: 10,
     });
     expect(getEarnedCareerProgressIds()).toEqual(
-      expect.arrayContaining(["ten-wins", "ten-drafts"]),
+      expect.arrayContaining(["hundred-wins", "ten-drafts"]),
     );
 
     const { newlyUnlocked } = evaluateCareerProgressAchievements();
     expect(newlyUnlocked).toEqual(
-      expect.arrayContaining(["ten-wins", "ten-drafts"]),
+      expect.arrayContaining(["hundred-wins", "ten-drafts"]),
     );
-    expect(unlockAchievements(["ten-wins"]).newlyUnlocked).toEqual([]);
+    expect(unlockAchievements(["hundred-wins"]).newlyUnlocked).toEqual([]);
   });
 });
