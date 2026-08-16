@@ -12,6 +12,7 @@ export const CAREER_PROGRESS_ACHIEVEMENT_IDS = new Set([
   "twenty-five-drafts",
   "daily-streak-3",
   "daily-streak-7",
+  "daily-streak-14",
 ]);
 
 export type CareerProgressMetric = "wins" | "plays" | "drafts" | "dailyStreak";
@@ -90,6 +91,14 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
     metric: "dailyStreak",
     target: 7,
   },
+  {
+    id: "daily-streak-14",
+    title: "Two-Week Run",
+    description: "Play Daily Draft fourteen days in a row.",
+    emoji: "🔥",
+    metric: "dailyStreak",
+    target: 14,
+  },
 ];
 
 export interface CareerProgressCounters {
@@ -166,3 +175,13 @@ export const getEarnedCareerProgressIds = (
     (definition) =>
       currentForMetric(counters, definition.metric) >= definition.target,
   ).map((definition) => definition.id);
+
+/** Next Daily streak career badge still locked for this GM, if any. */
+export const getNextDailyStreakGoal = (
+  counters = getCareerProgressCounters(),
+) =>
+  CAREER_PROGRESS_DEFINITIONS.find(
+    (definition) =>
+      definition.metric === "dailyStreak" &&
+      counters.dailyStreak < definition.target,
+  ) ?? null;

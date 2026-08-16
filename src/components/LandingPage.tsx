@@ -1212,16 +1212,6 @@ export function LandingPage({
               onViewTerms={onViewTerms}
             />
 
-            <div className="landing-hub__links account-section__links">
-              <button
-                type="button"
-                className="landing-hub__link-button hub-accent hub-accent--account"
-                onClick={onViewGmStats}
-              >
-                GM stats
-              </button>
-            </div>
-
             <div className="account-section__legal-strip">
               <p className="landing-disclaimer">
                 Draft Day GM is an independent project. It is not affiliated with,

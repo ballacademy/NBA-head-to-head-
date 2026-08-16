@@ -175,7 +175,8 @@ describe("landingHub", () => {
     sessionStorageMock.clear();
     const gm = applyLandingDeepLinksFromSearch("?hub=gm-stats");
     expect(gm.feature).toBe("gmStats");
-    expect(gm.contentTab).toBe("account");
+    expect(gm.contentTab).toBe("roster");
+    expect(loadLandingHubTab()).toBe("roster");
 
     expect(parseLandingHubParam("season-stats")).toBe("stats");
     expect(parseLandingHubParam("achievements")).toBe("badges");

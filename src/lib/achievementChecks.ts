@@ -587,6 +587,13 @@ export const ACHIEVEMENT_CHECKS: AchievementCheckDefinition[] = [
     check: () => false,
   },
   {
+    id: "daily-streak-14",
+    title: "Two-Week Run",
+    description: "Play Daily Draft fourteen days in a row.",
+    emoji: "🔥",
+    check: () => false,
+  },
+  {
     id: "founding-gm",
     title: "Founding GM",
     description:

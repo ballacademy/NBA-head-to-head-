@@ -116,6 +116,10 @@ export const loadCommunityShareables = (): CommunityPostAttachment[] => {
   return saved.filter(isCommunityPostAttachment).slice(0, MAX_SHAREABLES);
 };
 
+/** Newest remembered matchup/lineup/tier attachment, if any. */
+export const getLatestCommunityShareable = () =>
+  loadCommunityShareables()[0] ?? null;
+
 const saveCommunityShareables = (entries: CommunityPostAttachment[]) => {
   writeJson(SHAREABLES_KEY, entries.slice(0, MAX_SHAREABLES));
 };

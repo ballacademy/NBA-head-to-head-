@@ -60,6 +60,7 @@ export const ACHIEVEMENT_PLAY_HINTS: Record<string, AchievementPlayHint> = {
   "twenty-five-drafts": CASUAL_H2H,
   "daily-streak-3": DAILY,
   "daily-streak-7": DAILY,
+  "daily-streak-14": DAILY,
 };
 
 export function getAchievementPlayHint(id: string): AchievementPlayHint {
@@ -69,6 +70,8 @@ export function getAchievementPlayHint(id: string): AchievementPlayHint {
 export const PRIORITY_ACHIEVEMENT_IDS = [
   "ten-drafts",
   "daily-streak-3",
+  "daily-streak-7",
+  "daily-streak-14",
   "fifty-wins",
   "hundred-plays",
   "ballin-on-budget",

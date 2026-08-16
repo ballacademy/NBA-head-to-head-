@@ -78,7 +78,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       titleClassName="landing-hub__title--name"
       lede={`${snapshot.totalWins}–${snapshot.totalLosses} · ${snapshot.currentSeasonLabel}`}
       onBack={onBack}
-      backLabel="Account"
+      backLabel="Franchise"
     >
       <section className="hub-feature__panel">
         <WeeklyGmRecapCard />
