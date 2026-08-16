@@ -1344,3 +1344,136 @@
   margin-top: 8px;
 }
 
+.hub-onboarding-overlay__panel {
+  width: min(380px, 100%);
+  max-height: min(88dvh, 520px);
+  overflow: auto;
+  padding: 16px 16px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(165deg, rgba(15, 23, 42, 0.96) 0%, rgba(12, 18, 28, 0.98) 100%);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.hub-onboarding-overlay__intents {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.hub-onboarding-overlay__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.hub-onboarding-overlay__header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.hub-onboarding-overlay__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hub-onboarding-overlay__lede {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.hub-onboarding-overlay__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.hub-onboarding-overlay__intent {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--hub-accent-border, rgba(148, 163, 184, 0.22));
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, var(--hub-accent-soft, rgba(148, 163, 184, 0.1)) 0%, transparent 55%),
+    rgba(15, 23, 42, 0.72);
+  box-shadow: inset 3px 0 0 var(--hub-accent, #94a3b8);
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    background-color 0.14s ease,
+    transform 0.14s ease;
+}
+
+.hub-onboarding-overlay__intent:hover,
+.hub-onboarding-overlay__intent:focus-visible {
+  border-color: var(--hub-accent-bright, #cbd5e1);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.hub-onboarding-overlay__intent strong {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--hub-accent-bright, #e2e8f0);
+}
+
+.hub-onboarding-overlay__intent span {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.first-session-guide__list {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.first-session-guide__list li {
+  display: grid;
+  gap: 2px;
+}
+
+.first-session-guide__list strong {
+  color: #e2e8f0;
+  font-size: 0.88rem;
+}
+
+.first-session-guide__list span {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.queued-draft-results__tip {
+  margin: 8px 0 0;
+  color: var(--accent-roster-bright, #fdba74);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+

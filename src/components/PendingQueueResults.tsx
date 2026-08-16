@@ -17,9 +17,8 @@ import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import {
   formatRatingPoints,
-  LIVE_OPPONENT_ONLY_MIN_ELO,
-  RATING_LABEL,
 } from "../lib/rankedElo";
+import { getHighBannerQueuedWaitCopy } from "../lib/highBannerQueueWait";
 import { getLineupSalaryTotal } from "../lib/salaryCap";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { matchModeThemeClass, getMatchModeTheme } from "../lib/matchModeTheme";
@@ -52,6 +51,9 @@ export function PendingQueueResults({
   const elo = user.salaryCapMode
     ? ensureCurrentRankedSeason().elo
     : ensureClassicProfile().elo;
+  const waitCopy = getHighBannerQueuedWaitCopy({
+    ratingPointsLabel: formatRatingPoints(elo),
+  });
 
   const postLineup = async () => {
     setSubmitState("submitting");
@@ -131,7 +133,7 @@ export function PendingQueueResults({
             ? "Couldn’t queue your lineup"
             : submitState === "submitting"
               ? "Posting your lineup…"
-              : "Waiting for a live opponent"}
+              : waitCopy.headline}
         </h2>
         {matchmakingNotice ? (
           <p className="match-results__matchmaking-notice" role="status">
@@ -144,15 +146,9 @@ export function PendingQueueResults({
           </p>
         ) : (
           <>
-            <p>
-              At {LIVE_OPPONENT_ONLY_MIN_ELO}+ {RATING_LABEL}, you only face saved
-              or live opponents. Your lineup is posted at{" "}
-              {formatRatingPoints(elo)} until another GM drafts against it.
-            </p>
+            <p>{waitCopy.body}</p>
             {submitState === "queued" ? (
-              <p>
-                You cannot enter a new lineup until this one receives a score.
-              </p>
+              <p className="queued-draft-results__tip">{waitCopy.tip}</p>
             ) : null}
           </>
         )}

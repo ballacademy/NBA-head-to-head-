@@ -101,6 +101,10 @@
   text-align: center;
 }
 
+.matchmaking-overlay__note--wait {
+  color: var(--accent-roster-bright, #fdba74);
+}
+
 .matchmaking-overlay__room-code {
   margin: 14px 0 0;
   text-align: center;

@@ -9,6 +9,7 @@ import {
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { getHighBannerSearchWaitMessage } from "../lib/highBannerQueueWait";
 import { MODE_COPY } from "../lib/modeCopy";
 
 interface MatchmakingOverlayProps {
@@ -22,6 +23,8 @@ interface MatchmakingOverlayProps {
   privateRoomRole?: "host" | "guest" | null;
   /** ISO timestamp when the private room expires (host). */
   privateRoomExpiresAt?: string | null;
+  /** 1500+ Banners live-only search (no NPC fallback). */
+  liveOnlySearch?: boolean;
 }
 
 const formatPrivateRoomExpiry = (expiresAt: string, nowMs: number) => {
@@ -53,6 +56,7 @@ export function MatchmakingOverlay({
   privateRoomCode = null,
   privateRoomRole = null,
   privateRoomExpiresAt = null,
+  liveOnlySearch = false,
 }: MatchmakingOverlayProps) {
   const titleId = useId();
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
@@ -194,6 +198,12 @@ export function MatchmakingOverlay({
           <p className="matchmaking-overlay__note">
             Event matches are live-only. Keep this open — search continues until
             someone joins.
+          </p>
+        ) : null}
+
+        {liveOnlySearch && !isMatched && !isPrivate && mode !== "event" ? (
+          <p className="matchmaking-overlay__note matchmaking-overlay__note--wait">
+            {getHighBannerSearchWaitMessage(elapsedSeconds)}
           </p>
         ) : null}
 
