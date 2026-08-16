@@ -1345,8 +1345,8 @@
 }
 
 .hub-onboarding-overlay__panel {
-  width: min(380px, 100%);
-  max-height: min(88dvh, 520px);
+  width: min(400px, 100%);
+  max-height: min(90dvh, 640px);
   overflow: auto;
   padding: 16px 16px 14px;
   border: 1px solid rgba(148, 163, 184, 0.22);
