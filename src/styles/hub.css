@@ -152,22 +152,14 @@
 /*
  * Hub title / logo geometry
  * -------------------------
- * Root tabs (Play / Roster / Community / Ranks / Account): title band sits
- * beside the floating logo — no return row, no extra top clearance.
+ * Every hub page (root tabs and back/feature pages) keeps the title band in
+ * the same vertical slot beside the floating logo. Horizontal inset on
+ * `.landing-hub__top` clears the mark; do not add extra top padding when a
+ * return row follows — that pushed sub-page titles too low.
  *
- * Back / feature pages (Stats, Badges, GM Stats, Legal, Play modes,
- * Community drill-ins): render title → `.hub-feature__return-row` as siblings.
- * Logo clearance applies whenever that pattern is present so every back page
- * uses the same geometry. Prefer `HubPageChrome` for new feature pages.
+ * Back pages still render title → `.hub-feature__return-row` as siblings
+ * (prefer `HubPageChrome`). Return stays under the title in document flow.
  */
-.landing-hub-scroll > .landing-hub__top:has(+ .hub-feature__return-row) {
-  margin-top: calc(var(--hub-logo-size) + 8px);
-}
-
-.hub-feature:has(> .landing-hub__top + .hub-feature__return-row) {
-  padding-top: calc(var(--hub-logo-size) + 8px);
-}
-
 .hub-feature.tier-list-page {
   padding-inline: 2px;
 }
