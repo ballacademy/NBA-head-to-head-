@@ -15,30 +15,28 @@ import { getLineupSalaryTotal, BUDGET_BADGE_SALARY_MAX } from "./salaryCap";
 import { playersById } from "./playerPool";
 
 describe("achievements", () => {
-  it("defines 62 unique badges", () => {
-    expect(ACHIEVEMENTS).toHaveLength(62);
-    expect(ACHIEVEMENT_CHECKS).toHaveLength(62);
+  it("defines 64 unique badges", () => {
+    expect(ACHIEVEMENTS).toHaveLength(64);
+    expect(ACHIEVEMENT_CHECKS).toHaveLength(64);
     expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(
-      62,
+      64,
     );
   });
 
-  it("detects nepotism when Bronny and Thanasis are drafted together", () => {
+  it("detects nepotism when LeBron and Bronny are drafted together", () => {
     const bronny = players.find((player) => player.bbrPlayerId === "jamesbr02");
-    const thanasis = databasePlayers.find(
-      (player) => player.bbrPlayerId === "antetth01",
-    );
+    const lebron = players.find((player) => player.bbrPlayerId === "jamesle01");
     const fillers = players
       .filter(
         (player) =>
-          player.bbrPlayerId !== "jamesbr02" && player.bbrPlayerId !== "antetth01",
+          player.bbrPlayerId !== "jamesbr02" && player.bbrPlayerId !== "jamesle01",
       )
       .slice(0, 3);
 
     expect(bronny).toBeDefined();
-    expect(thanasis).toBeDefined();
+    expect(lebron).toBeDefined();
 
-    const lineup = [bronny!, thanasis!, ...fillers];
+    const lineup = [bronny!, lebron!, ...fillers];
     expect(checkLineupAchievements(lineup)).toContain("nepotism");
   });
 
@@ -263,7 +261,7 @@ describe("achievements", () => {
     });
 
     expect(progress.unlocked).toBe(1);
-    expect(progress.total).toBe(61);
+    expect(progress.total).toBe(63);
     expect(
       progress.achievements.find((achievement) => achievement.id === "nepotism")
         ?.isUnlocked,
@@ -275,10 +273,10 @@ describe("achievements", () => {
     ).toBeUndefined();
     expect(
       progress.achievements.find(
-        (achievement) => achievement.id === "hundred-wins",
+        (achievement) => achievement.id === "fifty-wins",
       ),
     ).toBeUndefined();
-    expect(progress.careerProgress).toHaveLength(6);
+    expect(progress.careerProgress).toHaveLength(8);
     expect(progress.special.unlocked).toBe(1);
     expect(progress.special.total).toBe(1);
     expect(progress.special.achievements[0]?.id).toBe("founding-gm");

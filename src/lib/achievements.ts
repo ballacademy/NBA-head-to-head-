@@ -26,6 +26,8 @@ const REMOVED_ACHIEVEMENT_IDS = new Set([
   "dynasty",
   "ten-wins",
   "twenty-five-wins",
+  "hundred-wins",
+  "thousand-wins",
 ]);
 
 const LEGACY_ACHIEVEMENT_MIGRATIONS: Record<string, string> = {
