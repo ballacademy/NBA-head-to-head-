@@ -727,6 +727,18 @@
   margin-bottom: 0;
 }
 
+.draft-pool-toolbar__blind-submit {
+  align-self: end;
+  white-space: nowrap;
+}
+
+.draft-blind-error {
+  margin: 0 0 10px;
+  color: #fecaca;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
 .draft-pool-toolbar__sort select {
   padding: 10px 2rem 10px 12px;
   border-radius: 12px;

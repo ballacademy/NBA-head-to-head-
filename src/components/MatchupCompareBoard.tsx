@@ -46,11 +46,17 @@ function TeamHeader({
 }) {
   const teamName = drafter.name.trim() || "Opponent";
   const username = drafter.username?.trim() || undefined;
+  const outcomeAccent =
+    outcome === "win"
+      ? "#22c55e"
+      : outcome === "loss"
+        ? "#ef4444"
+        : "#94a3b8";
 
   return (
     <div
       className={`matchup-compare__team-header matchup-compare__team-header--${outcome}`}
-      style={{ "--accent": drafter.accent } as CSSProperties}
+      style={{ "--accent": outcomeAccent } as CSSProperties}
     >
       <div className="matchup-compare__team-copy">
         <p className={`matchup-compare__outcome matchup-compare__outcome--${outcome}`}>

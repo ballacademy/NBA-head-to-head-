@@ -36,7 +36,8 @@ const parseSort = (value: string | null) =>
     : "elo";
 
 const SEASON_ID_PATTERN = /^\d{4}-\d{2}$/;
-const EVENT_SEASON_ID_PATTERN = /^\d{4}-W\d{2}-(u25|intl|nostars|bargain)$/;
+const EVENT_SEASON_ID_PATTERN =
+  /^\d{4}-W\d{2}-(u25|intl|nostars|bargain|blind|agepos)$/;
 
 const parseSeasonId = (mode: LeaderboardMode, value: string | null) => {
   if (!value) {

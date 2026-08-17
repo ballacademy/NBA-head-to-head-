@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  findBlindDraftMatch,
   formatSlotConstraint,
   type DraftSortMode,
 } from "../lib/draft";
+import { isBlindEventRestriction } from "../lib/weeklyEvents";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { getPlayerPickShineClass } from "../lib/draftPickStyle";
 import { getPickTimeLimitSeconds } from "../lib/match";
@@ -80,6 +82,7 @@ export function DraftRoom({
   onTimeout,
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
+  const [blindError, setBlindError] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<DraftSortMode>(() =>
     isDailyDraft ? "alphabetical" : "points",
   );
@@ -95,6 +98,7 @@ export function DraftRoom({
   const playerPickListRef = useRef<HTMLDivElement | null>(null);
 
   const currentSlot = drafter.draftSlots[activeStep];
+  const isBlindDraft = isBlindEventRestriction(drafter.eventRestriction);
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
   const isPracticeMode = Boolean(drafter.practiceMode);
   const displayStreaks = useMemo(() => {
@@ -211,13 +215,12 @@ export function DraftRoom({
     return picks;
   }, [drafter.lineup, playersById]);
 
-  const candidates = useMemo(() => {
+  const slotCandidates = useMemo(() => {
     if (!currentSlot) {
       return [];
     }
 
-    const normalizedQuery = query.trim().toLowerCase();
-    const listed = buildDraftCandidateList(
+    return buildDraftCandidateList(
       players,
       currentSlot,
       pickedIds,
@@ -232,14 +235,28 @@ export function DraftRoom({
         affordable: banned ? false : entry.affordable,
       };
     });
+  }, [
+    banRankedEventPlayers,
+    currentSlot,
+    pickedIds,
+    players,
+    salaryCapOptions,
+    sortMode,
+  ]);
 
+  const candidates = useMemo(() => {
     const ordered = banRankedEventPlayers
       ? [
-          ...listed.filter((entry) => !entry.banned),
-          ...listed.filter((entry) => entry.banned),
+          ...slotCandidates.filter((entry) => !entry.banned),
+          ...slotCandidates.filter((entry) => entry.banned),
         ]
-      : listed;
+      : slotCandidates;
 
+    if (isBlindDraft) {
+      return ordered;
+    }
+
+    const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) {
       return ordered;
     }
@@ -247,29 +264,56 @@ export function DraftRoom({
     return ordered.filter(({ player }) =>
       `${player.name} ${player.team}`.toLowerCase().includes(normalizedQuery),
     );
-  }, [
-    banRankedEventPlayers,
-    currentSlot,
-    pickedIds,
-    players,
-    query,
-    salaryCapOptions,
-    sortMode,
-  ]);
+  }, [banRankedEventPlayers, isBlindDraft, query, slotCandidates]);
 
   const affordableCandidateCount = useMemo(
     () => candidates.filter((entry) => entry.affordable).length,
     [candidates],
   );
 
+  const submitBlindDraftPick = () => {
+    const match = findBlindDraftMatch(
+      candidates
+        .filter((entry) => entry.affordable && !entry.banned)
+        .map((entry) => entry.player),
+      query,
+    );
+
+    if ("error" in match) {
+      if (match.error === "empty") {
+        setBlindError("Type the full player name to draft.");
+      } else if (match.error === "ambiguous") {
+        setBlindError("Multiple players match that name — be more specific.");
+      } else {
+        setBlindError("No eligible player with that exact name for this slot.");
+      }
+      return;
+    }
+
+    if (draftSessionKey) {
+      clearDraftDeadline(draftSessionKey, activeStep);
+    }
+    setBlindError(null);
+    onPick(activeStep, match.player.id);
+    setQuery("");
+  };
+
   useEffect(() => {
     setQuery("");
+    setBlindError(null);
     setSecondsLeft(pickTimeLimitSeconds);
     timeoutFiredRef.current = false;
     lastClockPingSecondRef.current = null;
     // Reset the pick list so each new slot starts from the top of the pool.
     playerPickListRef.current?.scrollTo({ top: 0 });
-  }, [activeStep, currentSlot?.division, currentSlot?.position, pickTimeLimitSeconds]);
+  }, [
+    activeStep,
+    currentSlot?.division,
+    currentSlot?.position,
+    currentSlot?.minAge,
+    currentSlot?.maxAge,
+    pickTimeLimitSeconds,
+  ]);
 
   useEffect(() => {
     if (!currentSlot || drafter.lineup.length >= drafter.draftSlots.length) {
@@ -505,11 +549,13 @@ export function DraftRoom({
               {formatSlotConstraint(currentSlot)}
             </h3>
             <p className="draft-prompt__eligible">
-              {hasSalaryCap && candidates.length > affordableCandidateCount
-                ? `${affordableCandidateCount} affordable · ${candidates.length - affordableCandidateCount} over cap`
-                : `${affordableCandidateCount} ${
-                    affordableCandidateCount === 1 ? "player" : "players"
-                  } available`}
+              {isBlindDraft
+                ? "Blind draft — type the exact full name"
+                : hasSalaryCap && candidates.length > affordableCandidateCount
+                  ? `${affordableCandidateCount} affordable · ${candidates.length - affordableCandidateCount} over cap`
+                  : `${affordableCandidateCount} ${
+                      affordableCandidateCount === 1 ? "player" : "players"
+                    } available`}
             </p>
           </div>
         </div>
@@ -517,30 +563,65 @@ export function DraftRoom({
 
       <div className="draft-pool-toolbar">
         <label className="field stats-search draft-pool-toolbar__search">
-          <span>Search players for this slot</span>
+          <span>
+            {isBlindDraft
+              ? "Type the full player name"
+              : "Search players for this slot"}
+          </span>
           <input
             type="search"
             value={query}
-            placeholder="Search by name or team"
-            onChange={(event) => setQuery(event.target.value)}
+            placeholder={
+              isBlindDraft ? "Exact player name" : "Search by name or team"
+            }
+            onChange={(event) => {
+              setQuery(event.target.value);
+              if (blindError) {
+                setBlindError(null);
+              }
+            }}
+            onKeyDown={(event) => {
+              if (!isBlindDraft || event.key !== "Enter") {
+                return;
+              }
+              event.preventDefault();
+              submitBlindDraftPick();
+            }}
           />
         </label>
-        <label className="field draft-pool-toolbar__sort">
-          <span>Sort by</span>
-          <select
-            value={sortMode}
-            aria-label="Sort draft pool"
-            onChange={(event) =>
-              setSortMode(event.target.value as DraftSortMode)
-            }
+        {isBlindDraft ? (
+          <button
+            type="button"
+            className="secondary-button draft-pool-toolbar__blind-submit"
+            onClick={submitBlindDraftPick}
           >
-            <option value="points">Points</option>
-            <option value="alphabetical">Name</option>
-            <option value="salary">Salary</option>
-          </select>
-        </label>
+            Draft
+          </button>
+        ) : (
+          <label className="field draft-pool-toolbar__sort">
+            <span>Sort by</span>
+            <select
+              value={sortMode}
+              aria-label="Sort draft pool"
+              onChange={(event) =>
+                setSortMode(event.target.value as DraftSortMode)
+              }
+            >
+              <option value="points">Points</option>
+              <option value="alphabetical">Name</option>
+              <option value="salary">Salary</option>
+            </select>
+          </label>
+        )}
       </div>
 
+      {isBlindDraft && blindError ? (
+        <p className="draft-blind-error" role="alert">
+          {blindError}
+        </p>
+      ) : null}
+
+      {isBlindDraft ? null : (
       <div
         ref={playerPickListRef}
         className="player-pick-list"
@@ -662,6 +743,7 @@ export function DraftRoom({
           />
         )}
       </div>
+      )}
     </section>
   );
 }

@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { players } from "../data/players";
 import { isAllStarPlayer, isSuperstarPlayer } from "./allStars";
 import {
+  findBlindDraftMatch,
+  formatSlotConstraint,
+  generateFeasibleAgeBandSlotsUnderSalaryCap,
+  slotUsesAgeBand,
+} from "./draft";
+import {
   buildEventId,
   EVENT_BARGAIN_SALARY_CAP,
   EVENT_RESTRICTION_ROTATION,
@@ -25,16 +31,19 @@ describe("weeklyEvents", () => {
     expect(EVENT_RESTRICTION_ROTATION).toContain(restriction);
     const eventId = buildEventId(weekId, restriction);
     expect(isValidEventId(eventId)).toBe(true);
-    expect(isValidEventId(`${weekId}-nostars`)).toBe(true);
-    expect(isValidEventId(`${weekId}-bargain`)).toBe(true);
+    expect(isValidEventId(`${weekId}-blind`)).toBe(true);
+    expect(isValidEventId(`${weekId}-agepos`)).toBe(true);
   });
 
-  it("rotates through all four event modes by week number", () => {
-    expect(getEventRestrictionForWeek("2026-W28")).toBe("u25");
-    expect(getEventRestrictionForWeek("2026-W29")).toBe("intl");
-    expect(getEventRestrictionForWeek("2026-W30")).toBe("nostars");
-    expect(getEventRestrictionForWeek("2026-W31")).toBe("bargain");
-    expect(getEventTitle("u25")).toBe("Young and Coming");
+  it("rotates through all six event modes by week number", () => {
+    expect(getEventRestrictionForWeek("2026-W30")).toBe("u25");
+    expect(getEventRestrictionForWeek("2026-W31")).toBe("intl");
+    expect(getEventRestrictionForWeek("2026-W32")).toBe("nostars");
+    expect(getEventRestrictionForWeek("2026-W33")).toBe("bargain");
+    expect(getEventRestrictionForWeek("2026-W34")).toBe("blind");
+    expect(getEventRestrictionForWeek("2026-W35")).toBe("agepos");
+    expect(getEventTitle("blind")).toBe("Blind Draft");
+    expect(getEventTitle("agepos")).toBe("Age Bracket Draft");
   });
 
   it("filters under-25, international, and no-stars pools", () => {
@@ -42,6 +51,8 @@ describe("weeklyEvents", () => {
     const intl = filterPlayersForEventRestriction(players, "intl");
     const nostars = filterPlayersForEventRestriction(players, "nostars");
     const bargain = filterPlayersForEventRestriction(players, "bargain");
+    const blind = filterPlayersForEventRestriction(players, "blind");
+    const agepos = filterPlayersForEventRestriction(players, "agepos");
 
     expect(u25.length).toBeGreaterThan(40);
     expect(u25.every((player) => (player.age ?? 99) <= 25)).toBe(true);
@@ -53,13 +64,15 @@ describe("weeklyEvents", () => {
       ),
     ).toBe(true);
     expect(bargain.length).toBe(players.length);
+    expect(blind.length).toBe(players.length);
+    expect(agepos.length).toBe(players.length);
   });
 
   it("uses a tighter salary cap for Bargain Bin", () => {
     expect(getEventSalaryCap("bargain")).toBe(EVENT_BARGAIN_SALARY_CAP);
     expect(getEventSalaryCap("bargain")).toBe(50_000_000);
     expect(getEventSalaryCap("u25")).toBe(EVENT_SALARY_CAP);
-    expect(getEventSalaryCap("nostars")).toBe(EVENT_SALARY_CAP);
+    expect(getEventSalaryCap("blind")).toBe(EVENT_SALARY_CAP);
   });
 
   it("builds a playable current weekly event with shared slots", () => {
@@ -68,6 +81,29 @@ describe("weeklyEvents", () => {
     expect(event!.sharedSlots).toHaveLength(5);
     expect(event!.salaryCapLimit).toBe(getEventSalaryCap(event!.restriction));
     expect(event!.maxMatches).toBe(30);
+  });
+
+  it("builds age-band slots for Age Bracket Draft", () => {
+    const slots = generateFeasibleAgeBandSlotsUnderSalaryCap(
+      players,
+      EVENT_SALARY_CAP,
+      5,
+    );
+    expect(slots).toHaveLength(5);
+    expect(slots.every((slot) => slotUsesAgeBand(slot))).toBe(true);
+    expect(formatSlotConstraint(slots[0]!)).toMatch(/age/i);
+  });
+
+  it("matches blind draft picks by exact full name", () => {
+    const sample = players.slice(0, 20);
+    const target = sample[0]!;
+    expect(findBlindDraftMatch(sample, target.name)).toEqual({
+      player: target,
+    });
+    expect(findBlindDraftMatch(sample, "not a real player")).toEqual({
+      error: "not-found",
+    });
+    expect(findBlindDraftMatch(sample, "  ")).toEqual({ error: "empty" });
   });
 
   it("keeps every rotation mode pool large enough to draft", () => {

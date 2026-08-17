@@ -702,14 +702,18 @@
 }
 
 .team-lineup-card--outcome-win {
+  --accent: #22c55e;
   border-top-color: #22c55e;
 }
 
 .team-lineup-card--outcome-loss {
+  --accent: #ef4444;
+  border-top-color: #ef4444;
   opacity: 0.92;
 }
 
 .team-lineup-card--outcome-tie {
+  --accent: #94a3b8;
   border-top-color: #94a3b8;
 }
 

@@ -10,6 +10,60 @@ export interface DraftFilterOptions {
   allowedPlayerIds?: Set<string>;
 }
 
+export type DraftSlotAxis = "division" | "age";
+
+export interface AgeBand {
+  minAge: number;
+  maxAge: number;
+}
+
+/** Shared age bands for age+position event slots. */
+export const DRAFT_AGE_BANDS: readonly AgeBand[] = [
+  { minAge: 19, maxAge: 23 },
+  { minAge: 24, maxAge: 27 },
+  { minAge: 28, maxAge: 31 },
+  { minAge: 32, maxAge: 45 },
+] as const;
+
+export const slotUsesAgeBand = (slot: DraftSlotConstraint) =>
+  typeof slot.minAge === "number" && typeof slot.maxAge === "number";
+
+export const formatAgeBandLabel = (minAge: number, maxAge: number) => {
+  if (minAge <= 19 && maxAge <= 23) {
+    return `${maxAge} & Under`;
+  }
+  if (maxAge >= 40) {
+    return `${minAge}+`;
+  }
+  return `${minAge}–${maxAge}`;
+};
+
+export const normalizePlayerNameQuery = (value: string) =>
+  value.trim().toLowerCase().replace(/\s+/g, " ");
+
+/** Exact full-name match among eligible candidates (blind draft). */
+export const findBlindDraftMatch = (
+  candidates: Player[],
+  query: string,
+): { player: Player } | { error: "empty" | "not-found" | "ambiguous" } => {
+  const normalized = normalizePlayerNameQuery(query);
+  if (!normalized) {
+    return { error: "empty" };
+  }
+
+  const matches = candidates.filter(
+    (player) => normalizePlayerNameQuery(player.name) === normalized,
+  );
+
+  if (matches.length === 1) {
+    return { player: matches[0]! };
+  }
+  if (matches.length > 1) {
+    return { error: "ambiguous" };
+  }
+  return { error: "not-found" };
+};
+
 const GUARD_POSITIONS: Position[] = ["PG", "SG"];
 const FORWARD_POSITIONS: Position[] = ["SF", "PF"];
 const ALL_POSITIONS: Position[] = ["PG", "SG", "SF", "PF", "C"];
@@ -214,6 +268,15 @@ export const generateFeasibleDraftSlotsUnderSalaryCap = (
   slotCount = 5,
   options: GenerateFeasibleDraftSlotsOptions = {},
 ): DraftSlotConstraint[] => {
+  if (options.slotAxis === "age") {
+    return generateFeasibleAgeBandSlotsUnderSalaryCap(
+      players,
+      salaryCapLimit,
+      slotCount,
+      options,
+    );
+  }
+
   for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
     const slots = generateFeasibleDraftSlots(players, slotCount, options);
 
@@ -241,6 +304,86 @@ export const generateFeasibleDraftSlotsUnderSalaryCap = (
   }
 
   return generateFeasibleDraftSlots(players, slotCount, options);
+};
+
+const pickRandomFeasibleAgeBand = (
+  players: Player[],
+  position: Position,
+  pickedIds: Set<string>,
+  random: RandomSource,
+): AgeBand | null => {
+  const feasible = shuffleWith([...DRAFT_AGE_BANDS], random).filter(
+    (band) =>
+      filterPlayersForSlot(
+        players,
+        {
+          position,
+          division: DIVISIONS[0]!,
+          minAge: band.minAge,
+          maxAge: band.maxAge,
+        },
+        pickedIds,
+      ).length > 0,
+  );
+
+  if (feasible.length === 0) {
+    return DRAFT_AGE_BANDS[0] ?? null;
+  }
+
+  return pickRandomWith(feasible, random);
+};
+
+export const buildGreedyFeasibleAgeBandSlots = (
+  players: Player[],
+  positions: Position[],
+  random: RandomSource = defaultRandom,
+): DraftSlotConstraint[] => {
+  const pickedIds = new Set<string>();
+  const slots: DraftSlotConstraint[] = [];
+
+  for (const position of positions) {
+    const band =
+      pickRandomFeasibleAgeBand(players, position, pickedIds, random) ??
+      DRAFT_AGE_BANDS[0]!;
+    const slot: DraftSlotConstraint = {
+      position,
+      division: DIVISIONS[0]!,
+      minAge: band.minAge,
+      maxAge: band.maxAge,
+    };
+    slots.push(slot);
+    const pick = pickBestForSlot(players, slot, pickedIds);
+    if (pick) {
+      pickedIds.add(pick);
+    }
+  }
+
+  return slots;
+};
+
+export const generateFeasibleAgeBandSlotsUnderSalaryCap = (
+  players: Player[],
+  salaryCapLimit: number,
+  slotCount = 5,
+  options: GenerateFeasibleDraftSlotsOptions = {},
+): DraftSlotConstraint[] => {
+  const random = options.random ?? defaultRandom;
+
+  for (let attempt = 0; attempt < MAX_SLOT_GENERATION_ATTEMPTS; attempt += 1) {
+    const positions =
+      slotCount === 5
+        ? (generatePositionsForFiveSlots(random) ?? BALANCED_POSITIONS)
+        : ALL_POSITIONS.slice(0, slotCount);
+    const slots = buildGreedyFeasibleAgeBandSlots(players, positions, random);
+    if (
+      slots.length === slotCount &&
+      validateDraftSlotsFeasibleUnderSalaryCap(players, slots, salaryCapLimit)
+    ) {
+      return slots;
+    }
+  }
+
+  return buildGreedyFeasibleAgeBandSlots(players, BALANCED_POSITIONS, random);
 };
 
 const pickRandomFeasibleDivision = (
@@ -356,6 +499,8 @@ const buildFallbackFeasibleSlots = (
 export interface GenerateFeasibleDraftSlotsOptions {
   fixedDivision?: Division;
   random?: RandomSource;
+  /** When "age", slots use age bands instead of divisions. */
+  slotAxis?: DraftSlotAxis;
 }
 
 const generatePositionsForFiveSlots = (
@@ -497,17 +642,42 @@ export const filterPlayersForSlot = (
   pickedIds: Set<string>,
   options: DraftFilterOptions = {},
 ) =>
-  players.filter(
-    (player) =>
-      playerMatchesPosition(player, slot.position) &&
-      getDivisionForTeam(player.team) === slot.division &&
-      isDraftableTeam(player.team) &&
-      !pickedIds.has(player.id) &&
-      (options.allowedPlayerIds === undefined ||
-        options.allowedPlayerIds.has(player.id)) &&
-      (options.maxAffordableSalary === undefined ||
-        estimatePlayerSalary(player) <= options.maxAffordableSalary),
-  );
+  players.filter((player) => {
+    if (!playerMatchesPosition(player, slot.position)) {
+      return false;
+    }
+
+    if (!isDraftableTeam(player.team) || pickedIds.has(player.id)) {
+      return false;
+    }
+
+    if (slotUsesAgeBand(slot)) {
+      if (typeof player.age !== "number") {
+        return false;
+      }
+      if (player.age < slot.minAge! || player.age > slot.maxAge!) {
+        return false;
+      }
+    } else if (getDivisionForTeam(player.team) !== slot.division) {
+      return false;
+    }
+
+    if (
+      options.allowedPlayerIds !== undefined &&
+      !options.allowedPlayerIds.has(player.id)
+    ) {
+      return false;
+    }
+
+    if (
+      options.maxAffordableSalary !== undefined &&
+      estimatePlayerSalary(player) > options.maxAffordableSalary
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 
 export type DraftSortMode = "points" | "alphabetical" | "salary";
 
@@ -562,11 +732,21 @@ export const autoDraftLineup = (
   return lineup;
 };
 
-export const formatSlotConstraint = (slot: DraftSlotConstraint) =>
-  `Draft a ${slot.position} from the ${slot.division} Division`;
+export const formatSlotConstraint = (slot: DraftSlotConstraint) => {
+  if (slotUsesAgeBand(slot)) {
+    return `Draft a ${slot.position} age ${formatAgeBandLabel(slot.minAge!, slot.maxAge!)}`;
+  }
 
-export const formatPickSlotSummary = (slot: DraftSlotConstraint) =>
-  `${slot.position} • ${slot.division} Division`;
+  return `Draft a ${slot.position} from the ${slot.division} Division`;
+};
+
+export const formatPickSlotSummary = (slot: DraftSlotConstraint) => {
+  if (slotUsesAgeBand(slot)) {
+    return `${slot.position} • Age ${formatAgeBandLabel(slot.minAge!, slot.maxAge!)}`;
+  }
+
+  return `${slot.position} • ${slot.division} Division`;
+};
 
 export const pickBestForSlot = (
   players: Player[],

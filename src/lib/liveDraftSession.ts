@@ -21,7 +21,7 @@ export interface LiveDraftSession {
   salaryCapLimit?: number;
   privateMatch?: boolean;
   eventId?: string;
-  eventRestriction?: "u25" | "intl" | "nostars" | "bargain";
+  eventRestriction?: "u25" | "intl" | "nostars" | "bargain" | "blind" | "agepos";
   phase: "drafting" | "waiting";
   savedAt: string;
 }
