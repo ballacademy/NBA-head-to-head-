@@ -6,6 +6,9 @@
   --hub-logo-height: 16px;
   --hub-logo-width: 36px;
   --hub-logo-size: var(--hub-logo-width);
+  --hub-logo-stamp-pad-y: 3px;
+  --hub-logo-stamp-pad-x: 5px;
+  --hub-logo-stamp-radius: 5px;
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
   --hub-tab-accent-bright: var(--accent-play-bright);
@@ -77,6 +80,9 @@
     --hub-logo-height: 18px;
     --hub-logo-width: 42px;
     --hub-logo-size: var(--hub-logo-width);
+    --hub-logo-stamp-pad-y: 4px;
+    --hub-logo-stamp-pad-x: 6px;
+    --hub-logo-stamp-radius: 6px;
     --hub-title-band-height: 58px;
   }
 }
@@ -105,24 +111,21 @@
 
 .landing-hub-chrome .landing-hub-brand {
   position: absolute;
-  top: 0;
+  top: calc(
+    (var(--hub-title-band-height) - var(--hub-logo-height) -
+      2 * var(--hub-logo-stamp-pad-y) - 3px) / 2
+  );
   left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: var(--hub-title-band-height);
+  height: auto;
   margin: 0;
-  padding: 3px 7px;
-  border-radius: 9px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--hub-tab-accent-soft) 72%, transparent),
-    color-mix(in srgb, var(--hub-tab-accent) 8%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--hub-tab-accent-border) 42%, transparent);
-  box-shadow:
-    0 0 14px color-mix(in srgb, var(--hub-tab-accent-glow) 55%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--hub-tab-accent-bright) 12%, transparent);
+  padding: var(--hub-logo-stamp-pad-y) var(--hub-logo-stamp-pad-x);
+  border-radius: var(--hub-logo-stamp-radius);
+  background: transparent;
+  border: 1.5px solid color-mix(in srgb, var(--hub-tab-accent) 62%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hub-tab-accent-glow) 38%, transparent);
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
@@ -134,9 +137,7 @@
   border: 0;
   outline: 0;
   box-shadow: none;
-  filter:
-    drop-shadow(0 0 6px color-mix(in srgb, var(--hub-tab-accent) 38%, transparent))
-    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 @media (min-width: 900px) {
@@ -348,8 +349,14 @@
   margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(
-    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 36px) + 22px),
-    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 36px) + 18px)
+    calc(
+      var(--hub-logo-inset, 14px) + var(--hub-logo-width, 36px) +
+        2 * var(--hub-logo-stamp-pad-x, 5px) + 18px
+    ),
+    calc(
+      var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 36px) +
+        2 * var(--hub-logo-stamp-pad-x, 5px) + 14px
+    )
   );
   padding-bottom: 0;
   text-align: center;
@@ -361,8 +368,14 @@
   .landing-hub__top {
     margin-bottom: 12px;
     padding-inline: max(
-      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 42px) + 26px),
-      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 42px) + 22px)
+      calc(
+        var(--hub-logo-inset, 22px) + var(--hub-logo-width, 42px) +
+          2 * var(--hub-logo-stamp-pad-x, 6px) + 20px
+      ),
+      calc(
+        var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 42px) +
+          2 * var(--hub-logo-stamp-pad-x, 6px) + 16px
+      )
     );
   }
 }
