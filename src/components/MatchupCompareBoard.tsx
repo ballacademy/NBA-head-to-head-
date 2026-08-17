@@ -79,6 +79,12 @@ function TeamHeader({
         {username ? (
           <p className="matchup-compare__username">{formatUsername(username)}</p>
         ) : null}
+        <p
+          className="matchup-compare__record"
+          aria-label="Projected team record"
+        >
+          {score.projectedRecord.formatted}
+        </p>
       </div>
       <div className="matchup-compare__score">
         <div

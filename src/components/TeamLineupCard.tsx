@@ -125,7 +125,9 @@ export function TeamLineupCard({
             </span>
           </h3>
           {showProjectedRecord ? (
-            <p className="projected-record">{score.projectedRecord.formatted}</p>
+            <p className="projected-record" aria-label="Projected team record">
+              {score.projectedRecord.formatted}
+            </p>
           ) : null}
         </div>
         <div className="team-lineup-card__score">
