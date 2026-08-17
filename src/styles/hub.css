@@ -1,9 +1,11 @@
 /* src/styles/hub.css — extracted from styles.css L612-1794 */
 .landing--hub {
   --hub-chrome-inset: 14px;
-  /* Logo sits tighter to the left edge than the account inset on the right. */
-  --hub-logo-inset: 6px;
-  --hub-logo-size: 44px;
+  /* Wide GM mark — align with content inset, not the old circular-badge flush. */
+  --hub-logo-inset: var(--hub-chrome-inset);
+  --hub-logo-height: 32px;
+  --hub-logo-width: 72px;
+  --hub-logo-size: var(--hub-logo-width);
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
   --hub-tab-accent-bright: var(--accent-play-bright);
@@ -71,8 +73,10 @@
 @media (min-width: 900px) {
   .landing--hub {
     --hub-chrome-inset: 22px;
-    --hub-logo-inset: 10px;
-    --hub-logo-size: 56px;
+    --hub-logo-inset: var(--hub-chrome-inset);
+    --hub-logo-height: 40px;
+    --hub-logo-width: 90px;
+    --hub-logo-size: var(--hub-logo-width);
     --hub-title-band-height: 58px;
   }
 }
@@ -111,14 +115,16 @@
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
-  width: var(--hub-logo-size);
-  height: var(--hub-logo-size);
+  width: var(--hub-logo-width);
+  height: var(--hub-logo-height);
+  aspect-ratio: auto;
   flex-shrink: 0;
   background-color: transparent;
   border: 0;
   outline: 0;
   box-shadow: none;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.4));
+  /* Soft lift only — old heavy shadow was for the circular badge. */
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 
 @media (min-width: 900px) {
@@ -330,8 +336,8 @@
   margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(
-    calc(var(--hub-logo-inset, 6px) + var(--hub-logo-size, 44px) + 10px),
-    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-size, 44px) + 8px)
+    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 72px) + 10px),
+    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 72px) + 8px)
   );
   padding-bottom: 0;
   text-align: center;
@@ -343,8 +349,8 @@
   .landing-hub__top {
     margin-bottom: 12px;
     padding-inline: max(
-      calc(var(--hub-logo-inset, 10px) + var(--hub-logo-size, 56px) + 14px),
-      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-size, 56px) + 12px)
+      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 90px) + 14px),
+      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 90px) + 12px)
     );
   }
 }
