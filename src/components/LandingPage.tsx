@@ -91,7 +91,6 @@ import {
 } from "../lib/eventLeaderboard";
 import {
   EVENT_BADGE_THRESHOLDS,
-  EVENT_SALARY_CAP,
   formatEventBadgeLabel,
   getCurrentWeeklyEvent,
 } from "../lib/weeklyEvents";
@@ -770,7 +769,7 @@ export function LandingPage({
       ? playSection === "daily"
         ? "Hidden stats. One try per mode."
         : playSection === "events"
-          ? "Weekly live H2H · $100M cap."
+          ? "Weekly live H2H · rotating rules."
           : playSection === "headToHead"
             ? "Live matchups · Casual or Pro."
             : "Choose a mode."
@@ -879,7 +878,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Events</span>
                 <span className="play-hub-chooser__meta">
-                  Weekly shared board · $100M cap
+                  Weekly shared board · rotating modes
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -1050,8 +1049,8 @@ export function LandingPage({
                   <h2 className="event-card__title">{weeklyEvent.title}</h2>
                   <p className="event-card__description">
                     <strong>{weeklyEvent.restrictionLabel}</strong>
-                    {" · "}${(EVENT_SALARY_CAP / 1_000_000).toFixed(0)}M ·{" "}
-                    {eventMatchesLeft}/{weeklyEvent.maxMatches} left
+                    {" · "}${(weeklyEvent.salaryCapLimit / 1_000_000).toFixed(0)}
+                    M · {eventMatchesLeft}/{weeklyEvent.maxMatches} left
                   </p>
                   {eventPresenceLabel ? (
                     <p className="event-card__presence" role="status">
