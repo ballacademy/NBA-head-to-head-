@@ -1,10 +1,10 @@
 /* src/styles/hub.css — extracted from styles.css L612-1794 */
 .landing--hub {
   --hub-chrome-inset: 14px;
-  /* Compact GM mark — readable but not competing with hub titles. */
+  /* Compact GM mark — small corner stamp, not a second headline. */
   --hub-logo-inset: var(--hub-chrome-inset);
-  --hub-logo-height: 22px;
-  --hub-logo-width: 50px;
+  --hub-logo-height: 16px;
+  --hub-logo-width: 36px;
   --hub-logo-size: var(--hub-logo-width);
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
@@ -74,8 +74,8 @@
   .landing--hub {
     --hub-chrome-inset: 22px;
     --hub-logo-inset: var(--hub-chrome-inset);
-    --hub-logo-height: 26px;
-    --hub-logo-width: 58px;
+    --hub-logo-height: 18px;
+    --hub-logo-width: 42px;
     --hub-logo-size: var(--hub-logo-width);
     --hub-title-band-height: 58px;
   }
@@ -109,9 +109,20 @@
   left: var(--hub-logo-inset);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   height: var(--hub-title-band-height);
   margin: 0;
+  padding: 3px 7px;
+  border-radius: 9px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--hub-tab-accent-soft) 72%, transparent),
+    color-mix(in srgb, var(--hub-tab-accent) 8%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--hub-tab-accent-border) 42%, transparent);
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--hub-tab-accent-glow) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--hub-tab-accent-bright) 12%, transparent);
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
@@ -123,8 +134,9 @@
   border: 0;
   outline: 0;
   box-shadow: none;
-  /* Soft lift only — old heavy shadow was for the circular badge. */
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+  filter:
+    drop-shadow(0 0 6px color-mix(in srgb, var(--hub-tab-accent) 38%, transparent))
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
 
 @media (min-width: 900px) {
@@ -336,8 +348,8 @@
   margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(
-    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 50px) + 10px),
-    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 50px) + 8px)
+    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 36px) + 22px),
+    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 36px) + 18px)
   );
   padding-bottom: 0;
   text-align: center;
@@ -349,8 +361,8 @@
   .landing-hub__top {
     margin-bottom: 12px;
     padding-inline: max(
-      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 58px) + 14px),
-      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 58px) + 12px)
+      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 42px) + 26px),
+      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 42px) + 22px)
     );
   }
 }
