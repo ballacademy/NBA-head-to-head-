@@ -472,10 +472,10 @@ main.landing-layout {
 
 .landing__logo {
   display: block;
-  /* Square circular mark — match prior vertical footprint (~80px). */
+  /* Default (non-hub) footprint; hub overrides width/height via brand class. */
   width: min(80px, 20vw);
   height: auto;
-  aspect-ratio: 1;
+  aspect-ratio: 2.25 / 1;
   background-color: transparent;
   border: 0;
   outline: 0;
