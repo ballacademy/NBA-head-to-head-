@@ -18,7 +18,11 @@ import { formatCompactPlayerName, formatPlayerPositions } from "../lib/playerPoo
 import { getMatchRecordMode, loadPlayerRecord } from "../lib/playerRecord";
 import { loadEventProfile } from "../lib/eventProfile";
 import { loadSelfSeasonBoardRecord } from "../lib/seasonBoardRecord";
-import { playDraftClockPing } from "../lib/draftClockSound";
+import {
+  ensureDraftClockAudioUnlocked,
+  playDraftClockPing,
+  unlockDraftClockAudio,
+} from "../lib/draftClockSound";
 import {
   estimatePlayerSalary,
   formatSalary,
@@ -294,6 +298,7 @@ export function DraftRoom({
       clearDraftDeadline(draftSessionKey, activeStep);
     }
     setBlindError(null);
+    unlockDraftClockAudio();
     onPick(activeStep, match.player.id);
     setQuery("");
   };
@@ -314,6 +319,11 @@ export function DraftRoom({
     currentSlot?.maxAge,
     pickTimeLimitSeconds,
   ]);
+
+  useEffect(() => {
+    ensureDraftClockAudioUnlocked();
+    unlockDraftClockAudio();
+  }, []);
 
   useEffect(() => {
     if (!currentSlot || drafter.lineup.length >= drafter.draftSlots.length) {
@@ -683,6 +693,7 @@ export function DraftRoom({
                   if (draftSessionKey) {
                     clearDraftDeadline(draftSessionKey, activeStep);
                   }
+                  unlockDraftClockAudio();
                   onPick(activeStep, player.id);
                   setQuery("");
                   event.currentTarget.blur();
