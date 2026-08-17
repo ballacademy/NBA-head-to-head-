@@ -9,6 +9,7 @@
   --hub-logo-stamp-pad-y: 3px;
   --hub-logo-stamp-pad-x: 5px;
   --hub-logo-stamp-radius: 5px;
+  --hub-logo-stamp-border: 2.5px;
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
   --hub-tab-accent-bright: var(--accent-play-bright);
