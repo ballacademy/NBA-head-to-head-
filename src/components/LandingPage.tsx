@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { scrollHubToTop } from "../lib/hubScroll";
 import {
   completeUnlock,
   dismissPendingUnlock,
@@ -250,7 +251,7 @@ export function LandingPage({
     if (section !== "chooser") {
       trackProductEvent("play_mode_open", { section });
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollHubToTop();
   }, []);
 
   useEffect(() => {
@@ -262,6 +263,25 @@ export function LandingPage({
     ) {
       active.blur();
     }
+  }, [hubTab, playSection]);
+
+  useEffect(() => {
+    if (hubTab !== "play" || playSection !== "chooser") {
+      return;
+    }
+
+    const onReturn = () => {
+      if (document.visibilityState === "visible") {
+        scrollHubToTop();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onReturn);
+    window.addEventListener("pageshow", onReturn);
+    return () => {
+      document.removeEventListener("visibilitychange", onReturn);
+      window.removeEventListener("pageshow", onReturn);
+    };
   }, [hubTab, playSection]);
 
   useEffect(() => {
@@ -660,7 +680,7 @@ export function LandingPage({
     }
 
     onHubTabChange(tab);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollHubToTop();
   };
 
   const renderTeamNameField = () => {

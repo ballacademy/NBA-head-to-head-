@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { lazyWithChunkReload } from "./lib/lazyChunk";
+import { scrollHubToTop } from "./lib/hubScroll";
+import { unlockDraftClockAudio } from "./lib/draftClockSound";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { MatchResults } from "./components/MatchResults";
 import { players } from "./data/players";
@@ -950,6 +952,9 @@ function App() {
     team: TeamProfile,
     options: StartDraftOptions = {},
   ): Promise<StartMatchResult> => {
+    // Unlock while still in the click gesture so countdown ticks can play later.
+    unlockDraftClockAudio();
+
     const practiceMode = Boolean(options.practiceMode);
     const privateMatch = Boolean(options.privateMatch);
 
@@ -2412,11 +2417,7 @@ function App() {
       return;
     }
 
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    document.documentElement.scrollLeft = 0;
-    document.body.scrollLeft = 0;
+    scrollHubToTop();
   }, [phase, landingRenderKey]);
 
   useEffect(() => {

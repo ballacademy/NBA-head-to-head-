@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { scrollHubToTop } from "../lib/hubScroll";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import {
   LandingBottomNav,
@@ -20,12 +21,23 @@ export function HubShell({
   children,
   className = "",
 }: HubShellProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const tabAccent =
     activeTab === "standings"
       ? "ranked"
       : activeTab === "community"
         ? "community"
         : activeTab;
+
+  // Shared scroller keeps position across tabs; reset so Play modes aren't cut off.
+  useLayoutEffect(() => {
+    const node = scrollRef.current;
+    if (node) {
+      node.scrollTop = 0;
+      node.scrollLeft = 0;
+    }
+    scrollHubToTop();
+  }, [activeTab]);
 
   return (
     <section
@@ -36,7 +48,7 @@ export function HubShell({
     >
       <div className="landing__glow" aria-hidden="true" />
 
-      <div className="landing-hub-scroll">
+      <div className="landing-hub-scroll" ref={scrollRef}>
         {/* Zero-height chrome keeps the logo top-left and scrolling away with content. */}
         <div className="landing-hub-chrome" aria-hidden="true">
           <div className="landing-hub-brand">
