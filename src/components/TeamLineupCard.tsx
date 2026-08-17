@@ -56,6 +56,14 @@ export function TeamLineupCard({
   const breakdownId = useId();
   const teamName = drafter.name.trim() || "Opponent";
   const username = drafter.username?.trim() || undefined;
+  const outcomeAccent =
+    resolvedOutcome === "win"
+      ? "#22c55e"
+      : resolvedOutcome === "loss"
+        ? "#ef4444"
+        : resolvedOutcome === "tie"
+          ? "#94a3b8"
+          : drafter.accent;
 
   return (
     <article
@@ -69,7 +77,7 @@ export function TeamLineupCard({
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ "--accent": drafter.accent } as CSSProperties}
+      style={{ "--accent": outcomeAccent } as CSSProperties}
     >
       <div className="team-lineup-card__header">
         <div>

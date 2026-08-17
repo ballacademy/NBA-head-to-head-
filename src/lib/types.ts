@@ -63,6 +63,9 @@ export interface Player {
 export interface DraftSlotConstraint {
   position: Position;
   division: Division;
+  /** When both set, the slot filters by age band instead of division. */
+  minAge?: number;
+  maxAge?: number;
 }
 
 export interface Drafter {
@@ -82,7 +85,7 @@ export interface Drafter {
   privateMatch?: boolean;
   /** Weekly Events mode id (e.g. 2026-W30-u25). */
   eventId?: string;
-  eventRestriction?: "u25" | "intl" | "nostars" | "bargain";
+  eventRestriction?: "u25" | "intl" | "nostars" | "bargain" | "blind" | "agepos";
   rankedOpponentElo?: number;
   classicOpponentElo?: number;
   isGhostOpponent?: boolean;

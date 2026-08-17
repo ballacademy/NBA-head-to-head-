@@ -314,6 +314,7 @@
 }
 
 .matchup-panel__team--won .team-lineup-card--compact {
+  --accent: #22c55e;
   border-color: rgba(34, 197, 94, 0.4);
   border-top-color: #22c55e;
   background:
@@ -325,21 +326,14 @@
 }
 
 .matchup-panel__team--lost .team-lineup-card--compact {
-  border-color: rgba(148, 163, 184, 0.16);
+  --accent: #ef4444;
+  border-color: rgba(239, 68, 68, 0.28);
+  border-top-color: #ef4444;
   opacity: 0.88;
 }
 
-.matchup-panel__team--opponent .team-lineup-card--compact {
-  --accent: #ef4444;
-  border-top-color: #ef4444;
-}
-
-.matchup-panel__team--opponent.matchup-panel__team--won .team-lineup-card--compact {
-  --accent: #22c55e;
-  border-top-color: #22c55e;
-}
-
 .matchup-panel__team--tie .team-lineup-card--compact {
+  --accent: #94a3b8;
   border-top-color: #94a3b8;
 }
 
@@ -379,6 +373,7 @@
 }
 
 .matchup-compare__team-header--win {
+  --accent: #22c55e;
   border-color: rgba(34, 197, 94, 0.35);
   border-top-color: #22c55e;
   background:
@@ -387,22 +382,15 @@
 }
 
 .matchup-compare__team-header--loss {
+  --accent: #ef4444;
+  border-color: rgba(239, 68, 68, 0.28);
+  border-top-color: #ef4444;
   opacity: 0.9;
 }
 
 .matchup-compare__team-header--tie {
+  --accent: #94a3b8;
   border-top-color: #94a3b8;
-}
-
-.matchup-compare__headers > .matchup-compare__team-header:last-child {
-  --accent: #ef4444;
-  border-top-color: #ef4444;
-}
-
-.matchup-compare__headers
-  > .matchup-compare__team-header--win:last-child {
-  --accent: #22c55e;
-  border-top-color: #22c55e;
 }
 
 .matchup-compare__team-copy {

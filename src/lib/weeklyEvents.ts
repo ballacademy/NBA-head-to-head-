@@ -7,7 +7,13 @@ import { createSeededRandom } from "./seededRandom";
 import { BUDGET_BADGE_SALARY_MAX, RANKED_SALARY_CAP } from "./salaryCap";
 import type { DraftSlotConstraint, Player } from "./types";
 
-export type EventRestrictionId = "u25" | "intl" | "nostars" | "bargain";
+export type EventRestrictionId =
+  | "u25"
+  | "intl"
+  | "nostars"
+  | "bargain"
+  | "blind"
+  | "agepos";
 
 export type EventBadgeTier = "participation" | "bronze" | "silver" | "gold";
 
@@ -35,6 +41,8 @@ export const EVENT_RESTRICTION_ROTATION = [
   "intl",
   "nostars",
   "bargain",
+  "blind",
+  "agepos",
 ] as const satisfies readonly EventRestrictionId[];
 
 export const EVENT_BADGE_THRESHOLDS: Record<EventBadgeTier, number> = {
@@ -48,7 +56,15 @@ const INTERNATIONAL_BBR_IDS = new Set(
   (internationalPlayerIds as { playerIds: string[] }).playerIds,
 );
 
-const EVENT_ID_PATTERN = /^(\d{4}-W\d{2})-(u25|intl|nostars|bargain)$/;
+const EVENT_ID_PATTERN =
+  /^(\d{4}-W\d{2})-(u25|intl|nostars|bargain|blind|agepos)$/;
+
+export const isBlindEventRestriction = (restriction?: EventRestrictionId | null) =>
+  restriction === "blind";
+
+export const isAgePosEventRestriction = (
+  restriction?: EventRestrictionId | null,
+) => restriction === "agepos";
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
 
@@ -125,6 +141,8 @@ export const filterPlayersForEventRestriction = (
     case "nostars":
       return players.filter(isNoStarsEventPlayer);
     case "bargain":
+    case "blind":
+    case "agepos":
       return players.filter(isBargainBinEventPlayer);
     default: {
       const _exhaustive: never = restriction;
@@ -146,6 +164,10 @@ export const getEventRestrictionLabel = (restriction: EventRestrictionId) => {
       return "No Stars Allowed";
     case "bargain":
       return "Bargain Bin · $50M Cap";
+    case "blind":
+      return "Blind Draft";
+    case "agepos":
+      return "Age + Position Slots";
     default: {
       const _exhaustive: never = restriction;
       return _exhaustive;
@@ -163,6 +185,10 @@ export const getEventTitle = (restriction: EventRestrictionId) => {
       return "No Stars Allowed";
     case "bargain":
       return "Bargain Bin";
+    case "blind":
+      return "Blind Draft";
+    case "agepos":
+      return "Age Bracket Draft";
     default: {
       const _exhaustive: never = restriction;
       return _exhaustive;
@@ -180,6 +206,10 @@ export const getEventDescription = (restriction: EventRestrictionId) => {
       return "Head-to-head with a shared board. All-Stars and superstars are locked out.";
     case "bargain":
       return "Head-to-head with a shared board and a strict $50M salary cap.";
+    case "blind":
+      return "Shared division + position board. Player lists are hidden — type the exact name to draft.";
+    case "agepos":
+      return "Shared board where each slot is a position plus an age band instead of a division.";
     default: {
       const _exhaustive: never = restriction;
       return _exhaustive;
@@ -191,9 +221,11 @@ export const buildSharedEventDraftSlots = (
   pool: Player[],
   eventId: string,
   salaryCapLimit = EVENT_SALARY_CAP,
+  restriction?: EventRestrictionId,
 ): DraftSlotConstraint[] =>
   generateFeasibleDraftSlotsUnderSalaryCap(pool, salaryCapLimit, 5, {
     random: createSeededRandom(`event-slots:${eventId}`),
+    slotAxis: restriction === "agepos" ? "age" : "division",
   });
 
 export const getCurrentWeeklyEvent = (
@@ -210,7 +242,12 @@ export const getCurrentWeeklyEvent = (
     return null;
   }
 
-  const sharedSlots = buildSharedEventDraftSlots(pool, id, salaryCapLimit);
+  const sharedSlots = buildSharedEventDraftSlots(
+    pool,
+    id,
+    salaryCapLimit,
+    restriction,
+  );
 
   if (sharedSlots.length !== 5) {
     return null;
