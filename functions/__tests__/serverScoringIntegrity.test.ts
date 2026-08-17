@@ -67,17 +67,15 @@ describe("eventLineupValidation", () => {
   it("rejects players outside the event restriction pool", () => {
     const event = getCurrentWeeklyEvent(players);
     expect(event).not.toBeNull();
-    const allowed = new Set(
-      filterPlayersForEventRestriction(players, event!.restriction).map(
-        (player) => player.id,
-      ),
-    );
-    const ineligible = players.find((player) => !allowed.has(player.id));
-    expect(ineligible).toBeDefined();
     const pool = filterPlayersForEventRestriction(players, event!.restriction);
+    const allowed = new Set(pool.map((player) => player.id));
+    const ineligible = players.find((player) => !allowed.has(player.id));
+    // Full-pool weeks (blind / bargain / agepos) have no in-roster ineligible
+    // players — use a fake id so the validator still rejects.
+    const outsiderId = ineligible?.id ?? "not-eligible-for-event-xyz";
     const lineup = [
       ...pool.slice(0, 4).map((player) => player.id),
-      ineligible!.id,
+      outsiderId,
     ];
     expect(validateEventLineupIds(lineup)).toMatch(/not eligible/i);
   });

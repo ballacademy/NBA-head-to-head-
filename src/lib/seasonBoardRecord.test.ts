@@ -5,6 +5,10 @@ import {
   projectSelfSeasonBoardRecordAfterMatch,
 } from "./seasonBoardRecord";
 
+vi.mock("./careerStatsRemote", () => ({
+  pushCareerStatsIfLinked: vi.fn(async () => undefined),
+}));
+
 const storage = new Map<string, string>();
 
 const localStorageMock = {
