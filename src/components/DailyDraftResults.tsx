@@ -42,6 +42,7 @@ import {
   shouldShowDailyAccountNudge,
 } from "../lib/dailyAccountNudge";
 import {
+  getCachedLinkedUsername,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
   subscribeAccountLinkChanged,
@@ -203,6 +204,7 @@ export function DailyDraftResults({
           lineupNames: userLineup.map((player) => player.name),
           lineupIds: userLineup.map((player) => player.id),
           accent: DAILY_SHARE_ACCENT,
+          username: getCachedLinkedUsername(getOrCreatePlayerId()) ?? undefined,
           savedAt: new Date().toISOString(),
         });
       }
@@ -345,7 +347,9 @@ export function DailyDraftResults({
     try {
       await saveLineupShareCard({
         teamName: user.name,
+        username: getCachedLinkedUsername(getOrCreatePlayerId()) ?? undefined,
         headline: dailyGoal.title,
+        subhead: user.name,
         footerNote: formatDailyDraftProductName(user.dailyDraftMode ?? dailyGoal.mode),
         accent: DAILY_SHARE_ACCENT,
         ovr: 0,

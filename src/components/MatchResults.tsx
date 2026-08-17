@@ -60,6 +60,7 @@ import {
   evaluateCareerProgressAchievements,
   unlockAchievements,
 } from "../lib/achievements";
+import { getCachedLinkedUsername } from "../lib/accountGate";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { isShareDismissalError } from "../lib/appErrors";
 import { trackProductEvent } from "../lib/productAnalytics";
@@ -238,6 +239,9 @@ export function MatchResults({
           modeLabel: resultModeLabel,
           result: matchResult,
           userTeam: user.name,
+          username:
+            getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
+            undefined,
           opponentTeam: formatOpponentDisplayName(
             opponent.name,
             opponent.username,
@@ -547,6 +551,9 @@ export function MatchResults({
     try {
       await saveLineupShareCard({
         teamName: user.name,
+        username:
+          getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
+          undefined,
         subhead: resultModeLabel,
         accent: user.accent,
         ovr: userScore.total,

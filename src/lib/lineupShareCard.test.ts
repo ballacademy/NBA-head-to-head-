@@ -3,6 +3,7 @@ import {
   buildLineupShareCardText,
   resolveShareCardStatDisplay,
   resolveShareCardTitle,
+  resolveShareCardUsername,
   type LineupShareCardInput,
 } from "./lineupShareCard";
 import type { Player } from "./types";
@@ -28,6 +29,13 @@ describe("lineupShareCard header helpers", () => {
         baseInput({ headline: "Most Assists · Basic" }),
       ),
     ).toBe("Most Assists · Basic");
+  });
+
+  it("formats linked usernames for the share card", () => {
+    expect(resolveShareCardUsername(baseInput())).toBeNull();
+    expect(
+      resolveShareCardUsername(baseInput({ username: "BallAcademy" })),
+    ).toBe("@ballacademy");
   });
 
   it("falls back to OVR when no custom stat is provided", () => {
@@ -74,5 +82,16 @@ describe("lineupShareCard header helpers", () => {
         }),
       ),
     ).toBe("Most Assists • 42.5 AST · Top 12% Today");
+  });
+
+  it("includes username in share text when present", () => {
+    expect(
+      buildLineupShareCardText(
+        baseInput({
+          username: "ace",
+          ovr: 91,
+        }),
+      ),
+    ).toBe("Midnight Foxes (@ace) • OVR 91");
   });
 });
