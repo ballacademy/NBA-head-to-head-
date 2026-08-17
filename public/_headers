@@ -28,10 +28,6 @@
   Content-Type: image/png
 
 # Versioned logo mark — long-cache is OK because the filename changes on redesign.
-/draft-day-gm-logo-v4.png
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/png
-
 /draft-day-gm-mark-v5.svg
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: image/svg+xml
@@ -64,9 +60,29 @@
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: image/png
 
+/draft-day-gm-favicon-v6.svg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/svg+xml
+
+/draft-day-gm-favicon-v6.png
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+
+/draft-day-gm-favicon-v6-180.png
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+
+/draft-day-gm-favicon-v6-32.png
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+
 # Legacy unversioned path — short TTL so old bookmarks pick up replacements.
 /draft-day-gm-logo.png
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=300
+  Content-Type: image/png
+
+/draft-day-gm-logo-v4.png
+  Cache-Control: public, max-age=300
   Content-Type: image/png
 
 # Only long-cache real hashed bundles — not /assets/404.html.

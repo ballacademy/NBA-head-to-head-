@@ -1,10 +1,10 @@
 /* src/styles/hub.css — extracted from styles.css L612-1794 */
 .landing--hub {
   --hub-chrome-inset: 14px;
-  /* Wide GM mark — align with content inset, not the old circular-badge flush. */
+  /* Compact GM mark — readable but not competing with hub titles. */
   --hub-logo-inset: var(--hub-chrome-inset);
-  --hub-logo-height: 32px;
-  --hub-logo-width: 72px;
+  --hub-logo-height: 22px;
+  --hub-logo-width: 50px;
   --hub-logo-size: var(--hub-logo-width);
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
@@ -74,8 +74,8 @@
   .landing--hub {
     --hub-chrome-inset: 22px;
     --hub-logo-inset: var(--hub-chrome-inset);
-    --hub-logo-height: 40px;
-    --hub-logo-width: 90px;
+    --hub-logo-height: 26px;
+    --hub-logo-width: 58px;
     --hub-logo-size: var(--hub-logo-width);
     --hub-title-band-height: 58px;
   }
@@ -336,8 +336,8 @@
   margin: 0 0 10px;
   /* Equal side inset so title/lede sit on the true center axis (logo clearance). */
   padding-inline: max(
-    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 72px) + 10px),
-    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 72px) + 8px)
+    calc(var(--hub-logo-inset, 14px) + var(--hub-logo-width, 50px) + 10px),
+    calc(var(--hub-chrome-inset, 14px) + var(--hub-logo-width, 50px) + 8px)
   );
   padding-bottom: 0;
   text-align: center;
@@ -349,8 +349,8 @@
   .landing-hub__top {
     margin-bottom: 12px;
     padding-inline: max(
-      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 90px) + 14px),
-      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 90px) + 12px)
+      calc(var(--hub-logo-inset, 22px) + var(--hub-logo-width, 58px) + 14px),
+      calc(var(--hub-chrome-inset, 22px) + var(--hub-logo-width, 58px) + 12px)
     );
   }
 }
