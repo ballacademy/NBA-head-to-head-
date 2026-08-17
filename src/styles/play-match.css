@@ -457,6 +457,14 @@
   overflow-wrap: anywhere;
 }
 
+.matchup-compare__record {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .matchup-compare__team-header .score-orb--compact {
   width: 44px;
   height: 44px;

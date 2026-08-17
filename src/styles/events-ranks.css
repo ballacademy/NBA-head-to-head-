@@ -463,7 +463,7 @@
 }
 
 .matchup-panel__team .team-lineup-card__header .projected-record {
-  margin: 0;
+  margin: 4px 0 0;
   color: #94a3b8;
   font-size: 0.82rem;
   font-weight: 600;
