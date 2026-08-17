@@ -3,11 +3,12 @@ interface DraftDayGmLogoProps {
   title?: string;
 }
 
-const LOGO_SRC = "/draft-day-gm-logo-v4.png";
+const LOGO_SRC = "/draft-day-gm-mark-v5.svg";
 
 /**
- * Renders as a CSS background mark (not &lt;img&gt;) so mobile Safari never
- * flashes the unloaded-image rectangle behind the transparent PNG.
+ * Hub / in-app mark: transparent purple GM (SVG).
+ * Renders as a CSS background (not &lt;img&gt;) so mobile Safari never
+ * flashes the unloaded-image rectangle behind a transparent asset.
  */
 export function DraftDayGmLogo({
   className,
