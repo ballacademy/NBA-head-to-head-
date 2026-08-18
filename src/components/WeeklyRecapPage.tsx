@@ -24,8 +24,8 @@ export function WeeklyRecapPage({
   return (
     <HubPageChrome
       className="weekly-recap-page"
-      title="This week"
-      lede={`Daily Draft · ${recap.weekRangeLabel}`}
+      title="Weekly recap"
+      lede={`Last week · Daily Draft · ${recap.weekRangeLabel}`}
       onBack={onBack}
       backLabel={backLabel}
     >

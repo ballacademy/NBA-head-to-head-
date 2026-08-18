@@ -44,18 +44,20 @@ export const getWeeklyRecapWeekKey = (date = new Date()) => {
   return subtractDaysFromDateKey(today, daysSinceMonday);
 };
 
-const forEachDayInWeekSoFar = (
+/** Monday of the last completed Mon–Sun week (not the in-progress week). */
+export const getLastCompletedWeeklyRecapWeekKey = (date = new Date()) =>
+  subtractDaysFromDateKey(getWeeklyRecapWeekKey(date), 7);
+
+const forEachDayInWeek = (
   weekKey: string,
   visit: (dateKey: string) => void,
 ) => {
-  const today = getDailyDateKey();
   const weekEnd = subtractDaysFromDateKey(weekKey, -6);
-  const endKey = today < weekEnd ? today : weekEnd;
   let cursor = weekKey;
 
-  while (cursor <= endKey) {
+  while (cursor <= weekEnd) {
     visit(cursor);
-    if (cursor === endKey) {
+    if (cursor === weekEnd) {
       break;
     }
     cursor = subtractDaysFromDateKey(cursor, -1);
@@ -72,21 +74,19 @@ const formatDateKeyShort = (dateKey: string) => {
 };
 
 export const formatWeeklyRecapRangeLabel = (weekKey: string) => {
-  const today = getDailyDateKey();
   const weekEnd = subtractDaysFromDateKey(weekKey, -6);
-  const endKey = today < weekEnd ? today : weekEnd;
-  return `${formatDateKeyShort(weekKey)}–${formatDateKeyShort(endKey)}`;
+  return `${formatDateKeyShort(weekKey)}–${formatDateKeyShort(weekEnd)}`;
 };
 
-/** Count distinct calendar days with a Daily score from weekKey through today (in-week). */
+/** Count distinct calendar days with a Daily score in the Mon–Sun week. */
 export const countDailyDaysThisWeek = (
   playerId = getOrCreatePlayerId(),
-  weekKey = getWeeklyRecapWeekKey(),
+  weekKey = getLastCompletedWeeklyRecapWeekKey(),
 ) => {
   const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
   let count = 0;
 
-  forEachDayInWeekSoFar(weekKey, (cursor) => {
+  forEachDayInWeek(weekKey, (cursor) => {
     const entries = store[cursor] ?? [];
     if (entries.some((entry) => entry.playerId === playerId)) {
       count += 1;
@@ -98,13 +98,13 @@ export const countDailyDaysThisWeek = (
 
 export const countDailyModeDaysThisWeek = (
   playerId = getOrCreatePlayerId(),
-  weekKey = getWeeklyRecapWeekKey(),
+  weekKey = getLastCompletedWeeklyRecapWeekKey(),
 ) => {
   const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
   let basic = 0;
   let advanced = 0;
 
-  forEachDayInWeekSoFar(weekKey, (cursor) => {
+  forEachDayInWeek(weekKey, (cursor) => {
     const modes = new Set(
       (store[cursor] ?? [])
         .filter((entry) => entry.playerId === playerId)
@@ -123,12 +123,12 @@ export const countDailyModeDaysThisWeek = (
 
 export const getBestDailyPercentileThisWeek = (
   playerId = getOrCreatePlayerId(),
-  weekKey = getWeeklyRecapWeekKey(),
+  weekKey = getLastCompletedWeeklyRecapWeekKey(),
 ) => {
   const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
   let best: number | null = null;
 
-  forEachDayInWeekSoFar(weekKey, (cursor) => {
+  forEachDayInWeek(weekKey, (cursor) => {
     for (const entry of store[cursor] ?? []) {
       if (entry.playerId !== playerId || typeof entry.percentile !== "number") {
         continue;
@@ -144,7 +144,7 @@ export const getBestDailyPercentileThisWeek = (
 
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
-    return "No Daily yet";
+    return "No Daily";
   }
 
   return `${formatDailyDraftModeLabel("basic")} ${basic} · ${formatDailyDraftModeLabel("advanced")} ${advanced}`;
@@ -160,26 +160,26 @@ const formatBestDailyFinishLabel = (percentile: number | null) => {
 export interface WeeklyGmRecap {
   weekKey: string;
   weekRangeLabel: string;
-  dailyDaysThisWeek: number;
+  dailyDays: number;
   dailyDaysSplitLabel: string;
-  dailyPuzzlesThisWeek: number;
+  dailyPuzzles: number;
   bestDailyFinishLabel: string;
 }
 
 export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
-  const weekKey = getWeeklyRecapWeekKey();
+  const weekKey = getLastCompletedWeeklyRecapWeekKey();
   const modeDays = countDailyModeDaysThisWeek(undefined, weekKey);
   const bestPercentile = getBestDailyPercentileThisWeek(undefined, weekKey);
 
   return {
     weekKey,
     weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey),
-    dailyDaysThisWeek: countDailyDaysThisWeek(undefined, weekKey),
+    dailyDays: countDailyDaysThisWeek(undefined, weekKey),
     dailyDaysSplitLabel: formatDailyDaysSplitLabel(
       modeDays.basic,
       modeDays.advanced,
     ),
-    dailyPuzzlesThisWeek: modeDays.basic + modeDays.advanced,
+    dailyPuzzles: modeDays.basic + modeDays.advanced,
     bestDailyFinishLabel: formatBestDailyFinishLabel(bestPercentile),
   };
 };

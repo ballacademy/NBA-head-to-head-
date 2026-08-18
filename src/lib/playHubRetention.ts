@@ -83,7 +83,7 @@ export const buildPlayHubChips = (params: {
     chips.push({
       id: "recap",
       label: "Weekly recap",
-      detail: "Daily Draft · this week",
+      detail: "Daily Draft · last week",
       ctaLabel: "Go",
       action: { type: "recap" },
     });
