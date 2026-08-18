@@ -269,7 +269,9 @@ export function MatchupCompareBoard({
       </div>
 
       <div className="matchup-compare__rows" id={statsId}>
-        {pairs.map((pair, index) => (
+        {pairs
+          .filter((pair) => pair.left || pair.right)
+          .map((pair, index) => (
           <div className="matchup-compare__row" key={`slot-${index}`}>
             <ComparePlayerCell
               player={pair.left}
@@ -277,7 +279,7 @@ export function MatchupCompareBoard({
               allTimeMode={user.allTimeMode}
               align="left"
             />
-            <span className="matchup-compare__slot" aria-hidden="true">
+            <span className="matchup-compare__slot" aria-label={`${pair.position} lineup slot`}>
               {pair.position}
             </span>
             <ComparePlayerCell
