@@ -7,6 +7,7 @@ import {
   formatEventBadgeEmoji,
   formatEventBadgeLabel,
   getTopEventBadgeTier,
+  isCurrentEventId,
   type EventBadgeTier,
 } from "./weeklyEvents";
 
@@ -44,7 +45,9 @@ export const buildEventHistoryRows = (
         losses: profile.losses,
         ties: profile.ties,
         matchesPlayed: profile.matchesPlayed,
-        isCurrent: currentEventId != null && profile.eventId === currentEventId,
+        isCurrent:
+          isCurrentEventId(profile.eventId) ||
+          (currentEventId != null && profile.eventId === currentEventId),
         topBadge,
         topBadgeLabel: topBadge ? formatEventBadgeLabel(topBadge) : null,
         topBadgeEmoji: topBadge ? formatEventBadgeEmoji(topBadge) : null,

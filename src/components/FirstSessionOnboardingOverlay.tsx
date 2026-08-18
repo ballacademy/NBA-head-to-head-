@@ -125,3 +125,30 @@ export function FirstSessionOnboardingOverlay({
     document.body,
   );
 }
+
+interface FirstSessionWelcomeBarProps {
+  onSeePlay: () => void;
+  onDismiss: () => void;
+}
+
+/** Non-modal welcome on Daily / H2H / Events so the overlay doesn't cover them. */
+export function FirstSessionWelcomeBar({
+  onSeePlay,
+  onDismiss,
+}: FirstSessionWelcomeBarProps) {
+  return (
+    <div className="first-session-welcome-bar" role="status">
+      <p className="first-session-welcome-bar__copy">
+        Practice, Daily Draft, and this week&apos;s Event all live on Play.
+      </p>
+      <div className="first-session-welcome-bar__actions">
+        <button type="button" className="secondary-button" onClick={onSeePlay}>
+          See Play
+        </button>
+        <button type="button" className="secondary-button" onClick={onDismiss}>
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -105,6 +105,8 @@ import { canPlayEventMatch, loadEventProfile } from "./lib/eventProfile";
 import {
   filterPlayersForEventRestriction,
   getCurrentWeeklyEvent,
+  getWeeklyEventForEventId,
+  isCurrentEventId,
   type EventRestrictionId,
 } from "./lib/weeklyEvents";
 import { getOrCreatePlayerIdentity } from "./lib/playerIdentity";
@@ -1887,8 +1889,17 @@ function App() {
     }
 
     if (user.eventId) {
-      const event = getCurrentWeeklyEvent(players);
-      if (!event || event.id !== user.eventId) {
+      if (!isCurrentEventId(user.eventId)) {
+        resetToLanding({
+          error: "This week's event has ended. Check back for the next one.",
+        });
+        return;
+      }
+
+      const event =
+        getWeeklyEventForEventId(user.eventId, players) ??
+        getCurrentWeeklyEvent(players);
+      if (!event) {
         resetToLanding({
           error: "This week's event has ended. Check back for the next one.",
         });

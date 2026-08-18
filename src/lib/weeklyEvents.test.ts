@@ -21,7 +21,11 @@ import {
   getEventSalaryCap,
   getEventTitle,
   getIsoWeekId,
+  getLegacyUtcEventId,
   getTopEventBadgeTier,
+  getUtcIsoWeekId,
+  getWeeklyEventForEventId,
+  isCurrentEventId,
   isValidEventId,
 } from "./weeklyEvents";
 
@@ -31,6 +35,24 @@ describe("weeklyEvents", () => {
     expect(getIsoWeekId(new Date("2026-08-03T03:00:00.000Z"))).toBe("2026-W31");
     // Later that UTC Monday is Monday morning Eastern (2026-08-03 → W32).
     expect(getIsoWeekId(new Date("2026-08-03T12:00:00.000Z"))).toBe("2026-W32");
+  });
+
+  it("aliases the UTC week id during the Sunday-evening Eastern window", () => {
+    const sundayEvening = new Date("2026-08-03T03:00:00.000Z");
+    expect(getUtcIsoWeekId(sundayEvening)).toBe("2026-W32");
+    expect(getLegacyUtcEventId(sundayEvening)).toBe("2026-W32-nostars");
+    expect(isCurrentEventId("2026-W31-intl", sundayEvening)).toBe(true);
+    expect(isCurrentEventId("2026-W32-nostars", sundayEvening)).toBe(true);
+    expect(isCurrentEventId("2026-W30-u25", sundayEvening)).toBe(false);
+    expect(getWeeklyEventForEventId("2026-W32-nostars", players)?.id).toBe(
+      "2026-W32-nostars",
+    );
+
+    const mondayMorning = new Date("2026-08-03T12:00:00.000Z");
+    expect(getUtcIsoWeekId(mondayMorning)).toBe("2026-W32");
+    expect(getLegacyUtcEventId(mondayMorning)).toBeNull();
+    expect(isCurrentEventId("2026-W32-nostars", mondayMorning)).toBe(true);
+    expect(isCurrentEventId("2026-W31-intl", mondayMorning)).toBe(false);
   });
 
   it("builds ISO week and event ids for the full restriction set", () => {
