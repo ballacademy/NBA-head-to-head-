@@ -1,7 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { MatchupCompareBoard } from "./MatchupCompareBoard";
-import { TeamLineupCard } from "./TeamLineupCard";
 import { GmIdentityBadge } from "./GmIdentityBadge";
 import { GmProfileModal } from "./GmProfileModal";
 import { PlayerUnlockModal } from "./PlayerUnlockModal";
@@ -823,54 +822,6 @@ export function MatchResults({
               playerId={playerIdentity.playerId}
             />
           </p>
-        </div>
-
-        <div className="matchup-panel__grid matchup-panel__grid--desktop">
-          <div
-            className={`matchup-panel__team${
-              isTie
-                ? " matchup-panel__team--tie"
-                : userWon
-                  ? " matchup-panel__team--won"
-                  : " matchup-panel__team--lost"
-            }`}
-          >
-            <TeamLineupCard
-              drafter={user}
-              lineup={userLineup}
-              score={userScore}
-              isWinner={userWon}
-              outcome={isTie ? "tie" : userWon ? "win" : "loss"}
-              winStreak={displayStreaks.winStreak}
-              lossStreak={displayStreaks.lossStreak}
-              showStreak={showCompetitiveStreak}
-              showScoreContext
-              compact
-            />
-          </div>
-
-          <div
-            className={`matchup-panel__team matchup-panel__team--opponent${
-              isTie
-                ? " matchup-panel__team--tie"
-                : userWon
-                  ? " matchup-panel__team--lost"
-                  : " matchup-panel__team--won"
-            }`}
-          >
-            <TeamLineupCard
-              drafter={opponent}
-              lineup={opponentLineup}
-              score={opponentScore}
-              isWinner={matchResult === "loss"}
-              outcome={isTie ? "tie" : userWon ? "loss" : "win"}
-              showScoreContext
-              compact
-              onNameClick={
-                canOpenOpponentProfile ? openOpponentProfile : undefined
-              }
-            />
-          </div>
         </div>
 
         <div className="matchup-panel__compare">

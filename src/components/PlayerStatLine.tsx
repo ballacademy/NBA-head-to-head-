@@ -30,6 +30,7 @@ export function PlayerStatLine({
 }: PlayerStatLineProps) {
   const goalStat = dailyGoal ? formatPlayerGoalStat(player, dailyGoal) : null;
   const isDaily = Boolean(dailyGoal);
+  const displayPosition = lineupSlot ?? player.position;
   const positions = lineupSlot ?? formatPlayerPositions(player.positions);
   const meta = `${player.team} · ${positions}${
     pickNumber ? ` · Pick ${pickNumber}` : ""
@@ -43,11 +44,11 @@ export function PlayerStatLine({
     >
       <PlayerTeamIcon
         team={player.team}
-        position={player.position}
+        position={displayPosition}
         jerseyNumber={player.jerseyNumber}
         bbrPlayerId={player.bbrPlayerId}
         showJersey
-        label={`${player.name}, ${player.team} ${player.position}`}
+        label={`${player.name}, ${player.team} ${displayPosition}`}
       />
       <div className="player-stat-line__content">
         {isDaily ? (

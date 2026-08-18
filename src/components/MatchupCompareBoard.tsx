@@ -230,7 +230,7 @@ function TeamDetails({
   );
 }
 
-/** Mobile matchup board: position-aligned rows + shared stats toggle. */
+/** Position-aligned matchup board with a shared stats toggle. */
 export function MatchupCompareBoard({
   user,
   opponent,

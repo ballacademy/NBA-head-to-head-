@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { assignLineupSlots } from "./lineupOrder";
 import {
   buildLineupShareCardText,
+  formatShareCardPlayerMeta,
   resolveShareCardStatDisplay,
   resolveShareCardTitle,
   resolveShareCardUsername,
@@ -93,5 +95,61 @@ describe("lineupShareCard header helpers", () => {
         }),
       ),
     ).toBe("Midnight Foxes (@ace) • OVR 91");
+  });
+});
+
+const sharePlayer = (
+  name: string,
+  position: Player["position"],
+  options: { positions?: Player["positions"]; heightInches?: number } = {},
+): Player => ({
+  id: name,
+  name,
+  team: "LAL",
+  position,
+  positions: options.positions ?? [position],
+  jerseyNumber: 23,
+  points: 20,
+  rebounds: 5,
+  assists: 3,
+  steals: 1,
+  blocks: 1,
+  turnovers: 2,
+  trueShooting: 0.58,
+  threePoint: 0.35,
+  threePointersAttempted: 6,
+  fieldGoalsAttempted: 14,
+  freeThrowsAttempted: 3,
+  freeThrowPct: 0.75,
+  personalFouls: 2,
+  minutes: 32,
+  heightInches: options.heightInches ?? 78,
+  usage: 25,
+  defense: 7,
+  gamesPlayed: 70,
+  styles: ["connector"],
+});
+
+describe("lineupShareCard player rows", () => {
+  it("labels unique PG–C slots instead of repeating listed primaries", () => {
+    const lineup = [
+      sharePlayer("Shorter Point", "PG", { heightInches: 73 }),
+      sharePlayer("Taller Point", "PG", { heightInches: 76 }),
+      sharePlayer("Wing", "SF"),
+      sharePlayer("Power", "PF"),
+      sharePlayer("Big", "C"),
+    ];
+
+    const rows = assignLineupSlots(lineup).map((entry, index) =>
+      formatShareCardPlayerMeta(entry.player, entry.slot, index),
+    );
+
+    expect(rows).toEqual([
+      "PG · LAL · #23",
+      "SG · LAL · #23",
+      "SF · LAL · #23",
+      "PF · LAL · #23",
+      "C · LAL · #23",
+    ]);
   });
 });
