@@ -844,6 +844,78 @@ h1.landing-hub__title--name {
   box-shadow: none;
 }
 
+.play-hub-strip {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 0 0 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.play-hub-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.play-hub-strip__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 10px 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--hub-subbox-border);
+  background: var(--hub-subbox-bg);
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.play-hub-strip__chip--inbox {
+  box-shadow: inset 3px 0 0 var(--accent-play, #38bdf8);
+}
+
+.play-hub-strip__chip--recap {
+  box-shadow: inset 3px 0 0 var(--accent-roster, #a78bfa);
+}
+
+.play-hub-strip__chip--badge,
+.play-hub-strip__chip--streak {
+  box-shadow: inset 3px 0 0 var(--accent-daily, #f59e0b);
+}
+
+.play-hub-strip__copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.play-hub-strip__detail {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.play-hub-strip__copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.play-hub-strip__cta {
+  flex-shrink: 0;
+  color: var(--accent-play-bright, #7dd3fc);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .play-hub-chooser__option {
   position: relative;
   display: grid;
@@ -1194,10 +1266,27 @@ h1.landing-hub__title--name {
 }
 
 .landing-bottom-nav__icon {
+  position: relative;
   display: grid;
   place-items: center;
   width: 22px;
   height: 22px;
+}
+
+.landing-bottom-nav__badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent-play-bright, #38bdf8);
+  color: #0b1220;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
 }
 
 .landing-bottom-nav__icon svg {

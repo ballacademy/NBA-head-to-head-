@@ -8,3 +8,46 @@ export const hasSeenDraftOnboarding = () =>
 export const markDraftOnboardingSeen = () => {
   writeJson(DRAFT_ONBOARDING_KEY, { seen: true });
 };
+
+export type DraftOnboardingContext = {
+  hasSalaryCap: boolean;
+  isDailyDraft: boolean;
+  /** Live Casual/Pro or Events — not Practice or Daily. */
+  isCompetitive: boolean;
+};
+
+export const getDraftOnboardingBullets = ({
+  hasSalaryCap,
+  isDailyDraft,
+  isCompetitive,
+}: DraftOnboardingContext): string[] => {
+  const bullets = ["Make five timed draft picks for your lineup."];
+
+  if (isDailyDraft) {
+    bullets.push(
+      "Player stats stay hidden until you lock your five — draft from memory.",
+    );
+  }
+
+  if (hasSalaryCap) {
+    bullets.push(
+      "Stay under the salary cap — the salary bar shows spent vs remaining.",
+    );
+  }
+
+  if (hasSalaryCap && !isDailyDraft) {
+    bullets.push(
+      "Banners are your Front Office rating. Wins and losses move them on the Casual and Pro season boards.",
+    );
+  }
+
+  bullets.push("If the timer hits zero, remaining picks auto-fill.");
+
+  if (isCompetitive) {
+    bullets.push(
+      "LeBron James is banned in Casual, Pro, and Events — he stays on the board with a Banned label.",
+    );
+  }
+
+  return bullets;
+};

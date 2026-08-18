@@ -14,8 +14,10 @@ import {
   EVENT_SALARY_CAP,
   evaluateEventBadges,
   filterPlayersForEventRestriction,
+  formatWeeklyEventChooserMeta,
   getCurrentWeeklyEvent,
   getEventRestrictionForWeek,
+  getScheduledWeeklyEventMeta,
   getEventSalaryCap,
   getEventTitle,
   getIsoWeekId,
@@ -73,6 +75,22 @@ describe("weeklyEvents", () => {
     expect(getEventSalaryCap("bargain")).toBe(50_000_000);
     expect(getEventSalaryCap("u25")).toBe(EVENT_SALARY_CAP);
     expect(getEventSalaryCap("blind")).toBe(EVENT_SALARY_CAP);
+  });
+
+  it("names this week's event on the Play chooser even if unplayable", () => {
+    const scheduled = getScheduledWeeklyEventMeta(
+      new Date("2026-08-17T12:00:00.000Z"),
+    );
+    expect(scheduled.title).toBe(getEventTitle(scheduled.restriction));
+    expect(formatWeeklyEventChooserMeta(null, scheduled)).toBe(
+      `${scheduled.title} · check back`,
+    );
+
+    const playable = getCurrentWeeklyEvent(players);
+    expect(playable).not.toBeNull();
+    expect(formatWeeklyEventChooserMeta(playable, scheduled)).toBe(
+      `${playable!.title} · this week`,
+    );
   });
 
   it("builds a playable current weekly event with shared slots", () => {

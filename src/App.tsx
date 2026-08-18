@@ -66,7 +66,10 @@ import { solveBestDailyDraftLineup } from "./lib/dailyDraftSolver";
 import {
   hasSeenDraftOnboarding,
   markDraftOnboardingSeen,
+  type DraftOnboardingContext,
 } from "./lib/draftOnboarding";
+import { getPlayNavBadgeCount } from "./lib/playHubRetention";
+import { loadPendingLineupState } from "./lib/pendingLineup";
 import { getMatchModeTheme } from "./lib/matchModeTheme";
 import {
   findPlayerDailyDraftEntry,
@@ -354,8 +357,13 @@ function App() {
     return "landing";
   });
   const [showDraftOnboarding, setShowDraftOnboarding] = useState(false);
-  const [draftOnboardingHasSalaryCap, setDraftOnboardingHasSalaryCap] =
-    useState(false);
+  const [draftOnboarding, setDraftOnboarding] = useState<DraftOnboardingContext>(
+    {
+      hasSalaryCap: false,
+      isDailyDraft: false,
+      isCompetitive: false,
+    },
+  );
   const [matchedOpponentName, setMatchedOpponentName] = useState<string | null>(
     null,
   );
@@ -928,17 +936,20 @@ function App() {
     (user?.lineup.filter((playerId): playerId is string => Boolean(playerId))
       .length ?? 0) >= 5;
 
-  const ensureDraftOnboarding = useCallback((hasSalaryCap: boolean) => {
-    if (hasSeenDraftOnboarding()) {
-      return Promise.resolve();
-    }
+  const ensureDraftOnboarding = useCallback(
+    (context: DraftOnboardingContext) => {
+      if (hasSeenDraftOnboarding()) {
+        return Promise.resolve();
+      }
 
-    return new Promise<void>((resolve) => {
-      draftOnboardingResolverRef.current = resolve;
-      setDraftOnboardingHasSalaryCap(hasSalaryCap);
-      setShowDraftOnboarding(true);
-    });
-  }, []);
+      return new Promise<void>((resolve) => {
+        draftOnboardingResolverRef.current = resolve;
+        setDraftOnboarding(context);
+        setShowDraftOnboarding(true);
+      });
+    },
+    [],
+  );
 
   const dismissDraftOnboarding = useCallback(() => {
     markDraftOnboardingSeen();
@@ -1007,7 +1018,11 @@ function App() {
               : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
 
     // Show first-draft instructions before matchmaking or the pick timer starts.
-    await ensureDraftOnboarding(salaryCapLimit != null);
+    await ensureDraftOnboarding({
+      hasSalaryCap: salaryCapLimit != null,
+      isDailyDraft: daily,
+      isCompetitive: !daily && !practiceMode,
+    });
 
     const applyStartBans = shouldApplyRankedEventPlayerBans({
       isDailyDraft: daily,
@@ -2565,12 +2580,20 @@ function App() {
     return landingHubTab;
   })();
 
+  const playNavIdentity = getOrCreatePlayerIdentity().playerId;
+  const playNavBadgeCount = getPlayNavBadgeCount({
+    pendingResultCount: deliveredOwnerResults.length,
+    queuedClassic: Boolean(loadPendingLineupState("classic", playNavIdentity)),
+    queuedRanked: Boolean(loadPendingLineupState("ranked", playNavIdentity)),
+  });
+
   const renderHubFeature = (content: ReactNode, layoutClass = "") => (
     <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
       <HubShell
         activeTab={hubNavForPhase}
         onSelectTab={handleHubNav}
         onPrefetchTab={prefetchHubFeatureTab}
+        playBadgeCount={playNavBadgeCount}
       >
         <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
       </HubShell>
@@ -2696,19 +2719,30 @@ function App() {
     );
   }
 
-  if (phase === "landing" && deliveredOwnerResults.length > 0) {
+  if (
+    phase === "landing" &&
+    deliveredOwnerResults.length > 0 &&
+    landingHubTab === "play"
+  ) {
     return (
       <main className="landing-layout">
-        <PendingOwnerResults
-          deliveries={deliveredOwnerResults}
-          modeRecords={modeRecords}
-          onDone={() => {
-            const playerId = getOrCreatePlayerIdentity().playerId;
-            const toFinalize = deliveredOwnerResults;
-            setDeliveredOwnerResults([]);
-            void finalizeDeliveredOwnerResults(toFinalize, playerId);
-          }}
-        />
+        <HubShell
+          activeTab="play"
+          onSelectTab={handleHubNav}
+          onPrefetchTab={prefetchHubFeatureTab}
+          playBadgeCount={playNavBadgeCount}
+        >
+          <PendingOwnerResults
+            deliveries={deliveredOwnerResults}
+            modeRecords={modeRecords}
+            onDone={() => {
+              const playerId = getOrCreatePlayerIdentity().playerId;
+              const toFinalize = deliveredOwnerResults;
+              setDeliveredOwnerResults([]);
+              void finalizeDeliveredOwnerResults(toFinalize, playerId);
+            }}
+          />
+        </HubShell>
       </main>
     );
   }
@@ -2756,10 +2790,13 @@ function App() {
           hubTab={landingHubTab}
           onHubTabChange={updateLandingHubTab}
           onPrefetchHubTab={prefetchHubFeatureTab}
+          pendingOwnerResultCount={deliveredOwnerResults.length}
         />
         {showDraftOnboarding ? (
           <DraftOnboardingOverlay
-            hasSalaryCap={draftOnboardingHasSalaryCap}
+            hasSalaryCap={draftOnboarding.hasSalaryCap}
+            isDailyDraft={draftOnboarding.isDailyDraft}
+            isCompetitive={draftOnboarding.isCompetitive}
             onDismiss={dismissDraftOnboarding}
           />
         ) : null}
