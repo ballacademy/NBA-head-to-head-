@@ -92,6 +92,7 @@ export function FranchiseHubPanel({
     [streakCounters],
   );
   const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
+  const nextBadgeIsDaily = nextBadge?.hint.playSection === "daily";
 
   return (
     <div className="franchise-home">
@@ -122,7 +123,7 @@ export function FranchiseHubPanel({
               {nextBadge.emoji} {nextBadge.title}
             </p>
             <p className="franchise-home__note-copy">{nextBadge.description}</p>
-            {onPlayIntent ? (
+            {onPlayIntent && !nextBadgeIsDaily ? (
               <button
                 type="button"
                 className="franchise-home__text-link"

@@ -87,6 +87,11 @@ const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
   const store = loadDailyScoreStore();
   const current = store[dateKey] ?? [];
   const normalizedEntry = normalizeEntry(entry);
+  const existing = current.find(
+    (candidate) =>
+      candidate.playerId === normalizedEntry.playerId &&
+      resolveEntryMode(candidate) === normalizedEntry.mode,
+  );
   const withoutCurrent = current.filter(
     (candidate) =>
       !(
@@ -95,7 +100,16 @@ const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
       ),
   );
 
-  store[dateKey] = [...withoutCurrent, normalizedEntry];
+  store[dateKey] = [
+    ...withoutCurrent,
+    {
+      ...normalizedEntry,
+      percentile:
+        typeof normalizedEntry.percentile === "number"
+          ? normalizedEntry.percentile
+          : existing?.percentile,
+    },
+  ];
   saveDailyScoreStore(store);
 };
 

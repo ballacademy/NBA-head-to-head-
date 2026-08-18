@@ -53,6 +53,9 @@ export function WeeklyGmRecapCard({
           </p>
         </div>
         <p className="franchise-home__summary">{recap.dailyDaysSplitLabel}</p>
+        <p className="franchise-home__meta">
+          Best finish {recap.bestDailyFinishLabel}
+        </p>
         <div className="franchise-home__card-actions">
           {onViewWeek ? (
             <button
