@@ -9,6 +9,71 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+const isElementScrollable = (element: HTMLElement) =>
+  element.scrollHeight - element.clientHeight > 1;
+
+const eventAllowsInnerScroll = (
+  target: EventTarget | null,
+  root: HTMLElement | null,
+) => {
+  if (!(target instanceof Node) || !root?.contains(target)) {
+    return false;
+  }
+
+  let node: Node | null = target;
+  while (node instanceof HTMLElement && root.contains(node)) {
+    if (isElementScrollable(node)) {
+      return true;
+    }
+    if (node === root) {
+      break;
+    }
+    node = node.parentElement;
+  }
+
+  return false;
+};
+
+const lockBackgroundScroll = (getDialogRoot: () => HTMLElement | null) => {
+  const locked = [
+    document.documentElement,
+    document.body,
+    ...document.querySelectorAll<HTMLElement>(".landing-hub-scroll"),
+  ];
+  const previousOverflow = locked.map((node) => node.style.overflow);
+  locked.forEach((node) => {
+    node.style.overflow = "hidden";
+  });
+  document.documentElement.classList.add("ddgm-dialog-open");
+  document.body.classList.add("ddgm-dialog-open");
+
+  const preventBackgroundScroll = (event: Event) => {
+    if (eventAllowsInnerScroll(event.target, getDialogRoot())) {
+      return;
+    }
+    event.preventDefault();
+  };
+
+  document.addEventListener("wheel", preventBackgroundScroll, {
+    capture: true,
+    passive: false,
+  });
+  document.addEventListener("touchmove", preventBackgroundScroll, {
+    capture: true,
+    passive: false,
+  });
+
+  return () => {
+    locked.forEach((node, index) => {
+      node.style.overflow = previousOverflow[index] ?? "";
+    });
+    document.documentElement.classList.remove("ddgm-dialog-open");
+    document.body.classList.remove("ddgm-dialog-open");
+    document.removeEventListener("wheel", preventBackgroundScroll, true);
+    document.removeEventListener("touchmove", preventBackgroundScroll, true);
+  };
+};
+
 export type UseDialogA11yOptions = {
   open?: boolean;
   onClose: () => void;
@@ -21,6 +86,8 @@ export type UseDialogA11yOptions = {
   initialFocusRef?: RefObject<HTMLElement | null>;
   /** Dialog root used for focus trap + initial focus fallback. */
   containerRef?: RefObject<HTMLElement | null>;
+  /** Freeze the page behind the dialog (hub scroll + body). */
+  lockScroll?: boolean;
 };
 
 /**
@@ -35,6 +102,7 @@ export const useDialogA11y = ({
   restoreFocus = true,
   initialFocusRef,
   containerRef,
+  lockScroll = false,
 }: UseDialogA11yOptions) => {
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const localContainerRef = useRef<HTMLElement | null>(null);
@@ -121,9 +189,15 @@ export const useDialogA11y = ({
 
     window.addEventListener("keydown", onKeyDown, true);
 
+    const scrollUnlock =
+      lockScroll && typeof document !== "undefined"
+        ? lockBackgroundScroll(() => resolvedContainerRef.current)
+        : null;
+
     return () => {
       window.clearTimeout(focusTimer);
       window.removeEventListener("keydown", onKeyDown, true);
+      scrollUnlock?.();
       if (restoreFocus) {
         previouslyFocusedRef.current?.focus?.();
       }
@@ -132,6 +206,7 @@ export const useDialogA11y = ({
     closeOnEscape,
     disableClose,
     initialFocusRef,
+    lockScroll,
     onClose,
     open,
     resolvedContainerRef,

@@ -83,7 +83,7 @@ export const buildPlayHubChips = (params: {
       id: "recap",
       label: "Weekly recap",
       detail: "Franchise · last 7 days",
-      ctaLabel: "Franchise",
+      ctaLabel: "Go",
       action: { type: "roster" },
     });
   }

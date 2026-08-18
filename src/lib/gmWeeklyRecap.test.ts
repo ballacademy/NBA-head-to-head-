@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { writeJson } from "./browserStorage";
 import {
+  buildWeeklyGmRecap,
   countDailyDaysThisWeek,
   countDailyModeDaysThisWeek,
   getBestDailyPercentileThisWeek,
@@ -85,6 +86,13 @@ describe("gmWeeklyRecap", () => {
       advanced: 1,
     });
     expect(getBestDailyPercentileThisWeek(playerId, weekKey)).toBe(88);
+
+    const recap = buildWeeklyGmRecap();
+    expect(recap.weekKey).toBe("2026-08-10");
+    expect(recap.weekRangeLabel).toContain("Aug");
+    expect(recap).not.toHaveProperty("casualRecord");
+    expect(recap).not.toHaveProperty("collectionUnlocked");
+    expect(recap).not.toHaveProperty("basicStreakLabel");
 
     vi.useRealTimers();
   });

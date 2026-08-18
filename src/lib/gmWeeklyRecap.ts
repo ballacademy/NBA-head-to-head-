@@ -1,26 +1,12 @@
 import { readJson, writeJson } from "./browserStorage";
-import { getClassicProfileView } from "./classicProfile";
 import { getDailyDateKey, subtractDaysFromDateKey } from "./dailyDraft";
-import {
-  formatDailyDraftPlayStreak,
-  getDailyDraftPlayStreak,
-} from "./dailyDraftPlayStreak";
 import {
   formatDailyDraftModeLabel,
   getDailyDraftModeForGoalId,
   type DailyDraftMode,
 } from "./dailyDraftMode";
-import { getUnlockedFrontOfficeBadges } from "./frontOfficeBadges";
-import { loadGmLegacyStats } from "./gmLegacyStats";
 import { formatOrdinal } from "./ordinal";
-import { getCollectionProgress } from "./playerCollection";
-import {
-  formatPlayerRecord,
-  loadAllModeRecords,
-  getOrCreatePlayerId,
-} from "./playerRecord";
-import { formatRatingPoints } from "./rankedElo";
-import { getRankedProfileView } from "./rankedProfile";
+import { getOrCreatePlayerId } from "./playerRecord";
 
 const WEEKLY_RECAP_SEEN_KEY = "ddgm:weekly-recap-seen";
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
@@ -74,6 +60,22 @@ const forEachDayInWeekSoFar = (
     }
     cursor = subtractDaysFromDateKey(cursor, -1);
   }
+};
+
+const formatDateKeyShort = (dateKey: string) => {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+};
+
+export const formatWeeklyRecapRangeLabel = (weekKey: string) => {
+  const today = getDailyDateKey();
+  const weekEnd = subtractDaysFromDateKey(weekKey, -6);
+  const endKey = today < weekEnd ? today : weekEnd;
+  return `${formatDateKeyShort(weekKey)}–${formatDateKeyShort(endKey)}`;
 };
 
 /** Count distinct calendar days with a Daily score from weekKey through today (in-week). */
@@ -140,14 +142,6 @@ export const getBestDailyPercentileThisWeek = (
   return best;
 };
 
-const formatStreakLabel = (mode: DailyDraftMode) => {
-  const streak = getDailyDraftPlayStreak(mode, getDailyDateKey());
-  if (streak.current <= 0) {
-    return "No active streak";
-  }
-  return formatDailyDraftPlayStreak(streak);
-};
-
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
     return "No Daily yet";
@@ -165,58 +159,28 @@ const formatBestDailyFinishLabel = (percentile: number | null) => {
 
 export interface WeeklyGmRecap {
   weekKey: string;
+  weekRangeLabel: string;
   dailyDaysThisWeek: number;
   dailyDaysSplitLabel: string;
+  dailyPuzzlesThisWeek: number;
   bestDailyFinishLabel: string;
-  basicStreakLabel: string;
-  advancedStreakLabel: string;
-  collectionUnlocked: number;
-  collectionTotal: number;
-  frontOfficeBadgesUnlocked: number;
-  casualRecord: string;
-  casualBannersLabel: string;
-  proRecord: string;
-  proBannersLabel: string;
 }
 
 export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
-  const collection = getCollectionProgress();
-  const records = loadAllModeRecords();
-  const legacy = loadGmLegacyStats();
-  const classic = getClassicProfileView();
-  const ranked = getRankedProfileView();
-  const peakElo = Math.max(legacy.peakElo, classic.peakElo, ranked.peakElo);
   const weekKey = getWeeklyRecapWeekKey();
   const modeDays = countDailyModeDaysThisWeek(undefined, weekKey);
   const bestPercentile = getBestDailyPercentileThisWeek(undefined, weekKey);
 
   return {
     weekKey,
+    weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey),
     dailyDaysThisWeek: countDailyDaysThisWeek(undefined, weekKey),
     dailyDaysSplitLabel: formatDailyDaysSplitLabel(
       modeDays.basic,
       modeDays.advanced,
     ),
+    dailyPuzzlesThisWeek: modeDays.basic + modeDays.advanced,
     bestDailyFinishLabel: formatBestDailyFinishLabel(bestPercentile),
-    basicStreakLabel: formatStreakLabel("basic"),
-    advancedStreakLabel: formatStreakLabel("advanced"),
-    // All-Stars and Superstars are disjoint unlock pools — combine for the recap.
-    collectionUnlocked:
-      collection.unlocked + collection.superstarUnlocked,
-    collectionTotal: collection.total + collection.superstarTotal,
-    frontOfficeBadgesUnlocked: getUnlockedFrontOfficeBadges(peakElo).length,
-    casualRecord: formatPlayerRecord({
-      wins: records.headToHead.wins,
-      losses: records.headToHead.losses,
-      ties: records.headToHead.ties,
-    }),
-    casualBannersLabel: formatRatingPoints(classic.elo),
-    proRecord: formatPlayerRecord({
-      wins: records.ranked.wins,
-      losses: records.ranked.losses,
-      ties: records.ranked.ties,
-    }),
-    proBannersLabel: formatRatingPoints(ranked.elo),
   };
 };
 
