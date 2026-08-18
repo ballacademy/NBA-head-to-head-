@@ -38,6 +38,12 @@ export function DraftOnboardingOverlay({
               Stay under the salary cap — the salary bar shows spent vs remaining.
             </li>
           ) : null}
+          {hasSalaryCap ? (
+            <li>
+              Banners are your Front Office rating. Wins and losses move them on
+              the Casual and Pro season boards.
+            </li>
+          ) : null}
           <li>If the timer hits zero, remaining picks auto-fill.</li>
         </ul>
         <button

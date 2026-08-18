@@ -1219,7 +1219,7 @@ export function CommunityPostsPanel({
                           {post.authorClassicElo != null ? (
                             <RankedTierBadge
                               elo={post.authorClassicElo}
-                              tierLabel="Classic"
+                              tierLabel="Casual"
                               compact
                             />
                           ) : null}

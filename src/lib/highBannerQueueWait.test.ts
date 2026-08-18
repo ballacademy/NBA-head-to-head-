@@ -12,7 +12,7 @@ describe("highBannerQueueWait", () => {
       `${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}`,
     );
     expect(getHighBannerSearchWaitMessage(12)).toMatch(/thin/i);
-    expect(getHighBannerSearchWaitMessage(30)).toMatch(/queues/i);
+    expect(getHighBannerSearchWaitMessage(30)).toMatch(/another GM/i);
   });
 
   it("explains queued wait with practice tip", () => {
@@ -24,6 +24,6 @@ describe("highBannerQueueWait", () => {
   });
 
   it("softens landing queue lock note", () => {
-    expect(getHighBannerQueueLockNote(" (Pro)")).toMatch(/Soft ETA/i);
+    expect(getHighBannerQueueLockNote(" (Pro)")).toMatch(/Practice and Private/i);
   });
 });

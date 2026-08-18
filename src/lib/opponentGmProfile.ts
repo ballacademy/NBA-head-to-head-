@@ -20,7 +20,7 @@ export const canOpenOpponentGmProfile = (options: {
     return false;
   }
 
-  // Weekly events track a separate ladder; skip Classic/Pro profile there.
+  // Weekly events track a separate ladder; skip Casual/Pro profile there.
   // Private H2H is allowed — room opponents are real accounts.
   if (options.eventId) {
     return false;

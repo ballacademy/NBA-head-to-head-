@@ -1,6 +1,6 @@
 # Human lineup matchmaking backend
 
-Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, then fall back to a stored human lineup or an NPC based on your Banner rating.
+Casual and Pro Head to Head search for a live opponent for **7–10 seconds**, then fall back to a stored human lineup or an NPC based on your Banner rating.
 
 ## Architecture
 
@@ -32,7 +32,7 @@ Classic and Pro Head to Head search for a live opponent for **7–10 seconds**, 
 | `GET` | `/api/daily-scores?dateKey=YYYY-MM-DD&goalId=...&playerId=...` | Fetch today's Daily Draft scores (other players' values + your entry) |
 | `POST` | `/api/daily-scores` | Submit or update your Daily Draft score for today |
 | `GET` | `/api/leaderboards?mode=classic\|ranked&sort=elo\|winStreak\|lossStreak&seasonId=YYYY-MM` | Fetch global leaderboard entries (real players only) |
-| `POST` | `/api/leaderboards` | Upsert your Classic or Pro leaderboard row after a match |
+| `POST` | `/api/leaderboards` | Upsert your Casual or Pro leaderboard row after a match |
 | `GET` | `/api/player-profile?playerId=...` | Fetch legacy / current-season profile snippets |
 | `POST` | `/api/account/register` | Optional: bind username + password hash to current `playerId` |
 | `POST` | `/api/account/login` | Optional: restore a saved `playerId` with username/password |
@@ -50,7 +50,7 @@ npx wrangler d1 migrations apply draft-day-gm --remote
 
 ## Flow
 
-1. Player starts Classic or Pro H2H.
+1. Player starts Casual or Pro H2H.
 2. Client joins `/api/queue` and polls for **7–10 seconds** for another active player in the same mode.
 3. If a live opponent is found: both players draft simultaneously; the waiting screen appears only until the other player finishes.
 4. If no live opponent is found: client instantly checks `/api/opponent` for a stored human lineup.
@@ -59,7 +59,7 @@ npx wrangler d1 migrations apply draft-day-gm --remote
 7. If none exists and the player is **1500+ Banners**: draft once, queue the lineup, and block new drafts until that lineup is matched.
 8. When a challenger faces a saved ghost lineup, `/api/match-results` consumes that lineup (server-rescored OVRs), writes `owner_match_results`, and the original owner sees the result on next landing via `/api/pending` (GET + ack).
 
-All-Time mode still uses the local opponent simulator. Daily Draft submissions sync to D1 for shared percentiles (server recomputes the goal value from the lineup). Classic and Pro leaderboards sync to D1 after each match.
+All-Time mode still uses the local opponent simulator. Daily Draft submissions sync to D1 for shared percentiles (server recomputes the goal value from the lineup). Casual and Pro leaderboards sync to D1 after each match.
 
 ## One-time Cloudflare setup
 

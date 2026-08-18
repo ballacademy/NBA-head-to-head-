@@ -111,7 +111,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         error:
           mode === "ranked"
             ? "This room is Pro Head to Head. Open Private match from Pro and try again."
-            : "This room is Classic Head to Head. Open Private match from Classic and try again.",
+            : "This room is Casual Head to Head. Open Private match from Casual and try again.",
       },
       409,
     );

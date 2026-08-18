@@ -315,7 +315,7 @@ export function LeaderboardPage() {
     <HubPageChrome
       className="leaderboard"
       title="Ranks"
-      lede="Classic and Pro."
+      lede="Casual and Pro."
     >
       {refreshFailed ? (
         <InlineAlert
@@ -449,7 +449,7 @@ export function LeaderboardPage() {
           />
         ) : (
           <EmptyState
-            message={`No casual entries yet. Play ${CLASSIC_HEAD_TO_HEAD_LABEL} to claim the first spot.`}
+            message={`No ${CLASSIC_HEAD_TO_HEAD_LABEL} entries yet. Play a matchup to join the ladder.`}
           />
         )}
       </section>

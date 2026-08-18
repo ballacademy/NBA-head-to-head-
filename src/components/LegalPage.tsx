@@ -9,7 +9,7 @@ interface LegalPageProps {
   onOpenPrivacy?: () => void;
 }
 
-const LAST_UPDATED = "July 30, 2026";
+const LAST_UPDATED = "August 18, 2026";
 
 function PrivacyPolicyContent() {
   return (
@@ -45,7 +45,7 @@ function PrivacyPolicyContent() {
       <h3>On our servers</h3>
       <p>
         When you use online features (matchmaking, leaderboards, Daily Draft
-        sharing, or stored lineups), we send and store:
+        sharing, Community, or stored lineups), we send and store:
       </p>
       <ul>
         <li>Your anonymous player ID and public GM code</li>
@@ -53,8 +53,21 @@ function PrivacyPolicyContent() {
         <li>Lineups you draft (player IDs only)</li>
         <li>Match results, ratings, wins, losses, and streaks</li>
         <li>Daily Draft scores and formatted results</li>
+        <li>
+          Community posts you publish (text, optional attached lineup / matchup /
+          tier-list snapshots) plus likes and replies tied to your GM identity
+        </li>
         <li>Unlocked collection player IDs for signed-in accounts</li>
+        <li>
+          Career progress for signed-in accounts (mode records and related
+          Front Office ratings)
+        </li>
         <li>Temporary matchmaking queue entries while you search for an opponent</li>
+        <li>
+          Anonymous first-party product counters (for example mode opens,
+          finishes, and shares) with a random session id — not advertising
+          profiles
+        </li>
       </ul>
 
       <h3>Optional accounts</h3>
@@ -81,15 +94,16 @@ function PrivacyPolicyContent() {
         that GM identity on another browser or after clearing site data.
       </p>
       <p>
-        Password resets are support-assisted during beta: email us with your
-        username, we send a one-time reset code, and you set a new password in
-        the Account tab. New accounts store an email address for recovery. Older
-        accounts created before email was required may not have one on file. If
-        you forget your username, contact us to request help or account
-        deletion. Collection unlocks and badges sync to your linked account so
-        you can use them on another signed-in device. Logging into an account on
-        a new browser restores the GM identity, online competitive records,
-        collection unlocks, and badge progress when available.
+        Password resets are self-serve: open Account → Forgot password to email
+        a one-time code and set a new password. Support can still issue a code if
+        email delivery fails. New accounts store an email address for recovery.
+        Older accounts created before email was required may not have one on
+        file. If you forget your username, contact us to request help or account
+        deletion. Collection unlocks, badges, and career records sync to your
+        linked account so you can use them on another signed-in device. Logging
+        into an account on a new browser restores the GM identity, online
+        competitive records, collection unlocks, and badge progress when
+        available.
       </p>
       <p>
         Public leaderboards show team names and GM codes, not full private
@@ -279,10 +293,11 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
 
       <h2>Your content</h2>
       <p>
-        You may enter a team name and draft lineups. Do not use names that are
-        illegal, harassing, hateful, impersonate others, or infringe someone
-        else&apos;s rights. We may remove or refuse content that violates these
-        Terms or creates risk for the service.
+        You may enter a team name, draft lineups, and publish Community posts or
+        tier lists. Do not use names or posts that are illegal, harassing,
+        hateful, impersonate others, or infringe someone else&apos;s rights. We
+        may remove or refuse content that violates these Terms or creates risk
+        for the service.
       </p>
 
       <h2>Optional accounts</h2>
@@ -302,8 +317,9 @@ function TermsContent({ onOpenPrivacy }: { onOpenPrivacy?: () => void }) {
           authentication endpoints
         </li>
         <li>
-          Password resets use a one-time support-issued code; contact us if you
-          need a reset or an account removed
+          Password resets use a one-time code from Account → Forgot password
+          (or from support if you email us). Contact us if you need an account
+          removed
         </li>
       </ul>
 

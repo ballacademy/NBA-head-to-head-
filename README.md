@@ -1,7 +1,7 @@
 # Draft Day GM
 
 An NBA-themed web app for drafting five-man lineups and playing head-to-head
-matchups: Classic H2H, Pro H2H (salary cap + Banners), Daily Draft, Weekly
+matchups: Casual H2H, Pro H2H (salary cap + Banners), Daily Draft, Weekly
 Events, and private friend matches.
 
 Lineups are scored on:
@@ -12,7 +12,7 @@ Lineups are scored on:
 - team fit, including spacing, role balance, defense, rim protection, and
   penalties for too many ball-dominant players
 
-The app also renders a shareable story-style graphic for each selected lineup.
+The app can export a shareable lineup image from match and Daily results.
 
 ## Scripts
 

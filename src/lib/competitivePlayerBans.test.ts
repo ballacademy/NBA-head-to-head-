@@ -121,7 +121,7 @@ describe("competitivePlayerBans", () => {
     );
   });
 
-  it("keeps Classic practice and Daily open without an All-Star unlock", async () => {
+  it("keeps Casual practice and Daily open without an All-Star unlock", async () => {
     const { getDraftablePlayers } = await import("./playerCollection");
     const poolId = findPlayerId("LeBron James")!;
     const lockedCollection = {

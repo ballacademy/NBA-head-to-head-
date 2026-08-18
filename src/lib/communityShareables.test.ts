@@ -33,6 +33,40 @@ describe("formatCommunityAttachmentChip", () => {
     ).toBe("Pro · W · 88–84");
   });
 
+  it("shortens casual matchup attachments", () => {
+    expect(
+      formatCommunityAttachmentChip({
+        kind: "matchup",
+        modeLabel: "Casual Head to Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 88,
+        opponentOvr: 84,
+        userLineupNames: [],
+        opponentLineupNames: [],
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }),
+    ).toBe("Casual · W · 88–84");
+  });
+
+  it("maps stored Classic labels to Casual", () => {
+    expect(
+      formatCommunityAttachmentChip({
+        kind: "matchup",
+        modeLabel: "Classic Head-to-Head",
+        result: "loss",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 80,
+        opponentOvr: 90,
+        userLineupNames: [],
+        opponentLineupNames: [],
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }),
+    ).toBe("Casual · L · 80–90");
+  });
+
   it("shortens daily lineup attachments", () => {
     expect(
       formatCommunityAttachmentChip({
@@ -67,7 +101,7 @@ describe("matchup share card record", () => {
     const input = buildShareCardInputFromAttachment(
       {
         kind: "matchup",
-        modeLabel: "Classic Head-to-Head",
+        modeLabel: "Casual Head to Head",
         result: "win",
         userTeam: "Aces",
         opponentTeam: "Rivals",
@@ -91,7 +125,7 @@ describe("matchup share card record", () => {
     const input = buildShareCardInputFromAttachment(
       {
         kind: "matchup",
-        modeLabel: "Classic Head-to-Head",
+        modeLabel: "Casual Head to Head",
         result: "loss",
         userTeam: "Aces",
         opponentTeam: "Rivals",
@@ -114,7 +148,7 @@ describe("matchup share card record", () => {
     expect(
       formatCommunityMatchupDetails({
         kind: "matchup",
-        modeLabel: "Classic Head-to-Head",
+        modeLabel: "Casual Head to Head",
         result: "win",
         userTeam: "Aces",
         opponentTeam: "Rivals",

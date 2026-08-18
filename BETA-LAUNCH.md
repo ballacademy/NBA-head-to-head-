@@ -6,7 +6,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 - [x] Scoring fairness pass merged (`#214`)
 - [x] Support email + feedback/bug mailto links in Account + Beta notes
-- [x] Explicit copy: password reset (self-serve email code + support fallback), local collection, All-Time live with legend unlock rules
+- [x] Explicit copy: password reset (self-serve email code + support fallback), local collection, All-Time **coming soon** on production (`ALL_TIME_MODE_PLAYABLE = false`; playable on QA)
 - [x] In-product **Beta notes** page (Account tab)
 - [x] Runtime error toast + React error boundary with email report path
 - [x] All-Time legends testing unlock set to **off** for release
@@ -14,7 +14,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 ## You must confirm in Cloudflare / production
 
-1. **D1 migrations** — production DB applied through `0018` (private rooms). Confirm newer migrations are applied before launch.
+1. **D1 migrations** — production DB applied through `0025` (career stats). Confirm newer migrations are applied before launch.
 2. **Pages binding** — Pages project has D1 binding name **`DB`** for Production.
 3. **Deploy** — latest `main` (or this PR after merge) is live on Pages.
 4. **Apex DNS** — `draftdaygm.com` resolves and redirects to `www` (already looked healthy: apex → 301 www).
@@ -34,8 +34,8 @@ On a real phone + desktop browser:
 
 1. **Landing** — modes load; logo/nav OK; no blank white flash.
 2. **Daily Draft** — start Basic or Advanced, finish once, see results / percentile. Only one scored attempt per mode per day.
-3. **Practice (H2H)** — Practice Classic/Pro does not change records, Banners, or badges.
-4. **Classic H2H** — queue, draft, results, record updates.
+3. **Practice (H2H)** — Practice Casual/Pro does not change records, Banners, or badges.
+4. **Casual H2H** — queue, draft, results, record updates.
 5. **Pro H2H** — same with salary cap.
 6. **Weekly Event** — entry available; live queue only; result counts toward event.
 7. **Account** — create account on device A; log in on device B; GM code restores; **collection unlocks match** across devices when signed in.
