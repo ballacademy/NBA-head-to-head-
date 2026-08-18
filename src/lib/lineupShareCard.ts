@@ -8,13 +8,13 @@ import {
   JERSEY_SILHOUETTE_PATH,
   JERSEY_VIEWBOX_SIZE,
 } from "./jerseySilhouette";
-import { sortLineupByPosition } from "./lineupOrder";
+import { assignLineupSlots } from "./lineupOrder";
 import {
   drawCircularPlayerHeadshot,
   loadPlayerHeadshotImages,
 } from "./playerHeadshots";
 import { getTeamColors, type TeamColors } from "./teamColors";
-import type { Player } from "./types";
+import type { Player, Position } from "./types";
 
 export interface LineupShareCardInput {
   teamName: string;
@@ -68,6 +68,15 @@ export const resolveShareCardStatDisplay = (input: LineupShareCardInput) => {
     label: "OVR",
     overflow,
   };
+};
+
+export const formatShareCardPlayerMeta = (
+  player: Player,
+  slot: Position,
+  index: number,
+) => {
+  const jerseyNumber = String(player.jerseyNumber || index + 1);
+  return `${slot} · ${player.team} · #${jerseyNumber}`;
 };
 
 const CARD_WIDTH = 1080;
@@ -298,6 +307,7 @@ const drawTexturedBackground = (
 const drawPlayerRow = (
   context: CanvasRenderingContext2D,
   player: Player,
+  slot: Position,
   index: number,
   y: number,
   accent: string,
@@ -358,7 +368,7 @@ const drawPlayerRow = (
   context.fillStyle = "rgba(203, 213, 225, 0.88)";
   context.font = `500 20px ${FONT_STACK}`;
   context.fillText(
-    `${player.position} · ${player.team} · #${jerseyNumber}`,
+    formatShareCardPlayerMeta(player, slot, index),
     214,
     y + 76,
   );
@@ -626,7 +636,8 @@ export const drawLineupShareCard = (
     throw new Error("Could not create share card canvas context.");
   }
 
-  const lineup = sortLineupByPosition(input.lineup);
+  const slotted = assignLineupSlots(input.lineup);
+  const lineup = slotted.map((entry) => entry.player);
   const { cardHeight, footerY, headerLayout } = computeShareCardLayout(
     context,
     input,
@@ -658,13 +669,14 @@ export const drawLineupShareCard = (
 
   drawShareCardHeader(context, input, headerLayout);
 
-  lineup.forEach((player, index) => {
-    const headshot = player.bbrPlayerId
-      ? headshots.get(player.bbrPlayerId)
+  slotted.forEach((entry, index) => {
+    const headshot = entry.player.bbrPlayerId
+      ? headshots.get(entry.player.bbrPlayerId)
       : undefined;
     drawPlayerRow(
       context,
-      player,
+      entry.player,
+      entry.slot,
       index,
       headerLayout.firstPlayerY + index * ROW_STEP,
       input.accent,

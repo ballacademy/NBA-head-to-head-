@@ -6,7 +6,7 @@ import {
   unlockAchievements,
 } from "../lib/achievements";
 import { AchievementToast } from "./AchievementToast";
-import { sortLineupByPosition } from "../lib/lineupOrder";
+import { assignLineupSlots } from "../lib/lineupOrder";
 import {
   submitStoredLineup,
   type GhostMatchmakingMode,
@@ -41,7 +41,7 @@ export function PendingQueueResults({
   onDone,
   matchmakingNotice = null,
 }: PendingQueueResultsProps) {
-  const orderedLineup = sortLineupByPosition(userLineup);
+  const slottedLineup = assignLineupSlots(userLineup);
   const submittedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
@@ -157,8 +157,12 @@ export function PendingQueueResults({
       <section className="panel panel--compact daily-draft-results__lineup">
         <h3>{user.name}</h3>
         <div className="team-lineup-card__players">
-          {orderedLineup.map((player, index) => (
-            <PlayerStatLine key={player.id} player={player} pickNumber={index + 1} />
+          {slottedLineup.map(({ player, slot }) => (
+            <PlayerStatLine
+              key={player.id}
+              player={player}
+              lineupSlot={slot}
+            />
           ))}
         </div>
       </section>

@@ -558,7 +558,7 @@ export function DraftRoom({
               className={`draft-progress__slot draft-progress__slot--${status}`}
               aria-label={
                 player
-                  ? `Pick ${index + 1}: ${player.name}, ${player.position}`
+                  ? `Pick ${index + 1}: ${player.name}, ${slot?.position ?? player.position}`
                   : `Pick ${index + 1}: ${slot?.position ?? "upcoming"}`
               }
             >
@@ -568,7 +568,7 @@ export function DraftRoom({
                     {formatCompactPlayerName(player.name)}
                   </span>
                   <span className="draft-progress__position">
-                    {player.position}
+                    {slot?.position ?? player.position}
                   </span>
                 </>
               ) : (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sortLineupByPosition } from "../lib/lineupOrder";
+import { assignLineupSlots } from "../lib/lineupOrder";
 import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -42,7 +42,7 @@ function MatchupDetail({
     allTimeRecord,
     { allTimeMode: false },
   );
-  const orderedLineup = sortLineupByPosition(lineup);
+  const slottedLineup = assignLineupSlots(lineup);
   const ownerWon = result.ownerResult === "win";
   const ownerLost = result.ownerResult === "loss";
   const outcome = mode === "ranked" ? ranked : classic;
@@ -84,8 +84,12 @@ function MatchupDetail({
       <section className="panel panel--compact daily-draft-results__lineup">
         <h3>Your queued lineup</h3>
         <div className="team-lineup-card__players">
-          {orderedLineup.map((player, index) => (
-            <PlayerStatLine key={player.id} player={player} pickNumber={index + 1} />
+          {slottedLineup.map(({ player, slot }) => (
+            <PlayerStatLine
+              key={player.id}
+              player={player}
+              lineupSlot={slot}
+            />
           ))}
         </div>
       </section>
