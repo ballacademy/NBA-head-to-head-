@@ -386,7 +386,7 @@ export const drawTierListShareCard = (
   context.font = `600 18px ${FONT_STACK}`;
   context.fillText("#DraftDayGM", PAD_X, height - 24);
   context.textAlign = "right";
-  context.fillText("POWERED BY BALLACADEMY", CARD_WIDTH - PAD_X, height - 24);
+  context.fillText("DRAFT DAY GM", CARD_WIDTH - PAD_X, height - 24);
   context.textAlign = "left";
 };
 

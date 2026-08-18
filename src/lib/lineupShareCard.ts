@@ -28,7 +28,7 @@ export interface LineupShareCardInput {
   eyebrow?: string;
   /** Optional muted context drawn under the title. */
   subhead?: string;
-  /** Optional right-side footer context (defaults to "POWERED BY BALLACADEMY"). */
+  /** Optional right-side footer context (defaults to "DRAFT DAY GM"). */
   footerNote?: string;
   record?: string;
   /** Prefix drawn before `record` (defaults to "Projected"). */
@@ -678,7 +678,7 @@ export const drawLineupShareCard = (
   context.fillText("#DraftDayGM", 88, footerY);
   context.textAlign = "right";
   context.fillText(
-    input.footerNote?.trim() || "POWERED BY BALLACADEMY",
+    input.footerNote?.trim() || "DRAFT DAY GM",
     CARD_WIDTH - 88,
     footerY,
   );

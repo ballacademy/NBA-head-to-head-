@@ -96,6 +96,8 @@ import {
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
+import { buildCommunityPostSocialMeta } from "../lib/communityPostSocialMeta";
+import { applySocialMeta, resetSocialMeta } from "../lib/socialMeta";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -446,6 +448,35 @@ export function TierListPage({
   useEffect(() => {
     communityFocusPostIdRef.current = communityFocusPostId;
   }, [communityFocusPostId]);
+
+  useEffect(() => {
+    if (view !== "posts" || !communityFocusPostId) {
+      resetSocialMeta();
+      return;
+    }
+
+    const post = communityPosts.find((entry) => entry.id === communityFocusPostId);
+    if (!post) {
+      return;
+    }
+
+    applySocialMeta(
+      buildCommunityPostSocialMeta(
+        {
+          id: post.id,
+          authorName: post.authorName,
+          authorTag: post.authorTag,
+          body: post.body,
+          attachment: post.attachment,
+        },
+        `${window.location.origin}${window.location.pathname}${window.location.search}`,
+      ),
+    );
+
+    return () => {
+      resetSocialMeta();
+    };
+  }, [communityFocusPostId, communityPosts, view]);
 
   const mergeCommunityPostsWithFocus = useCallback(
     (pagePosts: CommunityPost[], current: CommunityPost[]) => {
