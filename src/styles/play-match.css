@@ -338,7 +338,7 @@
 }
 
 .matchup-panel__compare {
-  display: none;
+  display: block;
 }
 
 .matchup-compare {
@@ -605,13 +605,32 @@
   font-size: 0.72rem;
 }
 
-@media (max-width: 900px) {
-  .matchup-panel__grid--desktop {
-    display: none;
+@media (min-width: 721px) {
+  .matchup-compare {
+    padding: 14px 16px 16px;
   }
 
-  .matchup-panel__compare {
-    display: block;
+  .matchup-compare__headers {
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .matchup-compare__row {
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px 8px;
+  }
+
+  .matchup-compare__slot {
+    font-size: 0.7rem;
+  }
+
+  .matchup-compare__player-name {
+    font-size: 0.88rem;
+  }
+
+  .matchup-compare__player-meta {
+    font-size: 0.7rem;
   }
 }
 
