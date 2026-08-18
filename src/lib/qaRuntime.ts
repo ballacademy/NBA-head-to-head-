@@ -2,7 +2,7 @@
  * Runtime QA vs production detection (client hostname).
  *
  * Keep feature parity between QA and prod by default. Only gate intentional
- * QA-only experiments here (All-Time playable on prod, etc.).
+ * QA-only experiments here (All-Time playable on prod, player headshots, etc.).
  */
 
 const QA_HOST_MARKERS = ["nba-head-to-head-qa"] as const;

@@ -5,36 +5,17 @@ import {
   type SocialMetaTags,
 } from "./communityPostSocialMeta";
 
-const META_KEYS = [
-  "description",
-  "og:type",
-  "og:site_name",
-  "og:title",
-  "og:description",
-  "og:url",
-  "og:image",
-  "og:image:type",
-  "og:image:width",
-  "og:image:height",
-  "og:image:alt",
-  "twitter:card",
-  "twitter:title",
-  "twitter:description",
-  "twitter:image",
-] as const;
-
 const DEFAULT_META: SocialMetaTags = {
   title: DEFAULT_SITE_NAME,
   description:
-    "Draft NBA five-man lineups, score team fit, and run Casual Head to Head or Pro Head to Head salary-cap matchups.",
+    "Draft. Match up. Prove your GM eye. Build NBA fives and compete in Casual or Pro Head to Head.",
   url: "https://www.draftdaygm.com/",
   image: DEFAULT_OG_IMAGE,
   imageAlt: DEFAULT_OG_IMAGE_ALT,
   siteName: DEFAULT_SITE_NAME,
 };
 
-const DEFAULT_DESCRIPTION =
-  "Draft. Match up. Prove your GM eye. Build NBA fives and compete in Casual or Pro Head to Head.";
+const DEFAULT_DESCRIPTION = DEFAULT_META.description;
 
 let activeMeta: SocialMetaTags | null = null;
 let canonicalLink: HTMLLinkElement | null = null;

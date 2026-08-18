@@ -52,7 +52,6 @@ describe("playHubRetention", () => {
       queuedClassic: true,
       queuedRanked: false,
       recapReady: true,
-      recapDaysLabel: "2 Daily days",
       nextBadgeTitle: "10 Drafts",
       nextBadgePlaySection: "headToHead",
       nextBadgeH2hMode: "classic",

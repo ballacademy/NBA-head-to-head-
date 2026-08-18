@@ -47,7 +47,6 @@ export const buildPlayHubChips = (params: {
   queuedClassic: boolean;
   queuedRanked: boolean;
   recapReady: boolean;
-  recapDaysLabel?: string | null;
   nextBadgeTitle?: string | null;
   nextBadgeIsDaily?: boolean;
   nextBadgePlaySection?: LandingPlaySection;
