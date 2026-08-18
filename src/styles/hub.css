@@ -9,6 +9,7 @@
   --hub-logo-stamp-pad-y: 3px;
   --hub-logo-stamp-pad-x: 5px;
   --hub-logo-stamp-radius: 5px;
+  --hub-logo-stamp-border: 2.5px;
   --hub-title-band-height: 52px;
   --hub-tab-accent: var(--accent-play);
   --hub-tab-accent-bright: var(--accent-play-bright);
@@ -113,7 +114,7 @@
   position: absolute;
   top: calc(
     (var(--hub-title-band-height) - var(--hub-logo-height) -
-      2 * var(--hub-logo-stamp-pad-y)) / 2
+      2 * var(--hub-logo-stamp-pad-y) - 2 * var(--hub-logo-stamp-border)) / 2
   );
   left: var(--hub-logo-inset);
   display: flex;
@@ -123,13 +124,10 @@
   margin: 0;
   padding: var(--hub-logo-stamp-pad-y) var(--hub-logo-stamp-pad-x);
   border-radius: var(--hub-logo-stamp-radius);
-  /* Inverse micro-badge: filled tab accent, white GM. Mix charcoal so Account
-     platinum stays dark enough for white letters. */
-  background: color-mix(in srgb, var(--hub-tab-accent) 78%, #0b0d11);
-  border: 0;
-  box-shadow:
-    0 0 12px color-mix(in srgb, var(--hub-tab-accent-glow) 42%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--hub-tab-accent-bright) 22%, transparent);
+  background: transparent;
+  border: var(--hub-logo-stamp-border) solid
+    color-mix(in srgb, var(--hub-tab-accent) 62%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hub-tab-accent-glow) 38%, transparent);
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
@@ -141,8 +139,7 @@
   border: 0;
   outline: 0;
   box-shadow: none;
-  /* Purple PNG → white without a new asset. */
-  filter: brightness(0) invert(1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 @media (min-width: 900px) {
