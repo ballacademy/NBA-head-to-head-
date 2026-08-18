@@ -82,8 +82,8 @@ export const buildPlayHubChips = (params: {
   if (params.recapReady) {
     chips.push({
       id: "recap",
-      label: "Weekly recap ready",
-      detail: params.recapDaysLabel ?? undefined,
+      label: "Weekly recap",
+      detail: "Franchise · last 7 days",
       ctaLabel: "Franchise",
       action: { type: "roster" },
     });
@@ -107,7 +107,7 @@ export const buildPlayHubChips = (params: {
     chips.push({
       id: "streak",
       label: params.dailyStreakLabel,
-      detail: "Daily",
+      detail: "Daily Draft streak",
       ctaLabel: "Play",
       action: { type: "play", playSection: "daily" },
     });

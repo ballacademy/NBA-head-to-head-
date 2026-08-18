@@ -47,7 +47,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "daily",
     short: "Daily",
     title: "Daily Draft",
-    blurb: "One shared puzzle per day — chase your percentile.",
+    blurb: "Two scored challenges per day — Basic and Advanced.",
   },
   dailyBasic: {
     id: "dailyBasic",
@@ -82,7 +82,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     id: "practice",
     short: "Practice",
     title: "Practice",
-    blurb: "Vs a bot — no streaks, badges, or leaderboard impact.",
+    blurb: "Vs a bot — learn the loop without Banners, badges, or board impact.",
   },
 };
 
