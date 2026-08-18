@@ -8,7 +8,7 @@ import {
 const DEFAULT_META: SocialMetaTags = {
   title: DEFAULT_SITE_NAME,
   description:
-    "Draft. Match up. Prove your GM eye. Build NBA fives and compete in Casual or Pro Head to Head.",
+    "Draft. Match up. Prove your GM eye. Daily Draft, weekly Events, and Casual or Pro Head to Head.",
   url: "https://www.draftdaygm.com/",
   image: DEFAULT_OG_IMAGE,
   imageAlt: DEFAULT_OG_IMAGE_ALT,
