@@ -908,7 +908,7 @@ export function MatchResults({
                   : []),
                 {
                   id: "home",
-                  label: "Back to home",
+                  label: "Back to Play",
                   disabled: isMatchmaking,
                   onClick: onReturnToMenu,
                 },
@@ -945,7 +945,7 @@ export function MatchResults({
                   : []),
                 {
                   id: "home",
-                  label: "Back to home",
+                  label: "Back to Play",
                   disabled: isMatchmaking,
                   onClick: onReturnToMenu,
                 },

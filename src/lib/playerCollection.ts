@@ -37,6 +37,10 @@ const LAST_UNLOCK_MATCH_KEY = "nba-head-to-head-last-unlock-match";
 
 export const PREMIUM_UNLOCK_CHANCE = 1 / 3;
 
+/** Collection tiles on Franchise — win-pool vs loss-pool. */
+export const COLLECTION_UNLOCK_COPY =
+  "Win to unlock All-Stars and Superstars. Lose to unlock Scrubs and Super Scrubs.";
+
 export type UnlockOfferKind = "win" | "loss";
 
 export interface UnlockOffer {

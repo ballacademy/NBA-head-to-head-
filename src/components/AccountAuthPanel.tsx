@@ -355,11 +355,13 @@ export function AccountAuthPanel({
         )}
       </div>
 
-      <p className="landing-team-form__account-note">
-        You can play without an account. Create one to appear on leaderboards,
-        host or join private matches, publish tier lists, and restore this GM
-        code on another device. Signing in syncs collection and badge progress.
-      </p>
+      {linkState !== "linked" ? (
+        <p className="landing-team-form__account-note">
+          You can play without an account. Create one to appear on leaderboards,
+          host or join private matches, publish tier lists, and restore this GM
+          code on another device. Signing in syncs collection and badge progress.
+        </p>
+      ) : null}
 
       <p className="landing-team-form__account-note landing-team-form__account-note--support">
         Questions or feedback?{" "}

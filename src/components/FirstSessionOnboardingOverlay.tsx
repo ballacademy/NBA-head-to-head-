@@ -16,7 +16,7 @@ const GUIDE_ITEMS: { title: string; body: string }[] = [
   },
   {
     title: "Get a score",
-    body: `Daily Draft has two scored challenges each day (Basic and Advanced). ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} H2H are live matchups with Banners on the line.`,
+    body: `Daily Draft has two scored challenges each day (Basic and Advanced). ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} H2H are live matchups with Banners on the line. Events is a weekly themed H2H with rotating restrictions.`,
   },
   {
     title: "Build a career",
@@ -73,8 +73,9 @@ export function FirstSessionOnboardingOverlay({
         <div className="hub-onboarding-overlay__body">
           <p className="hub-onboarding-overlay__lede">
             Draft five NBA players, get a score, and see how your lineup stacks
-            up. Practice against a bot to learn the loop, or jump into
-            today&apos;s Daily Draft.
+            up. Practice against a bot to learn the loop, jump into
+            today&apos;s Daily Draft, or open Events from Play for this
+            week&apos;s themed matchup.
           </p>
 
           <ul className="first-session-guide__list">

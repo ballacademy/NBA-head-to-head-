@@ -6,6 +6,7 @@ import {
   getCollectionProgress,
   getCollectionTierTotal,
   getUnlockedPlayersByTier,
+  COLLECTION_UNLOCK_COPY,
   type CollectionTier,
   type PlayerCollection,
 } from "../lib/playerCollection";
@@ -129,7 +130,7 @@ import {
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
-  "Win to unlock All-Stars, lose to unlock Scrubs.",
+  COLLECTION_UNLOCK_COPY,
 ];
 
 interface LandingPageProps {
@@ -1542,7 +1543,9 @@ export function LandingPage({
         ) : null}
       </div>
 
-      {showFirstSessionGuide ? (
+      {showFirstSessionGuide &&
+      hubTab === "play" &&
+      playSection === "chooser" ? (
         <FirstSessionOnboardingOverlay
           onDismiss={dismissFirstSessionGuide}
           onPractice={() => {

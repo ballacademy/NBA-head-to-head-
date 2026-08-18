@@ -288,11 +288,6 @@
   letter-spacing: 0.02em;
 }
 
-.team-lineup-card--compact .streak-badge__icon {
-  width: 1.05rem;
-  height: 1.05rem;
-}
-
 .win-streak-badge {
   display: inline-flex;
   align-items: center;

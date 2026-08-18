@@ -28,6 +28,7 @@ import {
   saveLandingH2hMode,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
+  syncLandingHubTabUrl,
   type LandingContentTab,
   type LandingDeepLinkFeature,
 } from "./lib/landingHub";
@@ -2525,10 +2526,7 @@ function App() {
   const updateLandingHubTab = useCallback((tab: LandingContentTab) => {
     setLandingHubTab(tab);
     saveLandingHubTab(tab);
-    syncLandingDeepLinkUrl({
-      hub: tab,
-      play: tab === "play" ? undefined : null,
-    });
+    syncLandingHubTabUrl(tab);
   }, []);
 
   const goToLandingHub = useCallback(
@@ -2546,12 +2544,16 @@ function App() {
       resetToLanding();
 
       const syncParent = () => {
-        syncLandingDeepLinkUrl({
-          hub: tab,
-          play: tab === "play" ? undefined : null,
-          view: null,
-          post: null,
-        });
+        if (tab === "play") {
+          syncLandingHubTabUrl("play");
+        } else {
+          syncLandingDeepLinkUrl({
+            hub: tab,
+            play: null,
+            view: null,
+            post: null,
+          });
+        }
         const landingState = window.history.state as FeatureHistoryState | null;
         if (landingState?.appPhase) {
           window.history.replaceState({}, "", window.location.href);
@@ -3109,7 +3111,13 @@ function App() {
             collection={collection}
             onCollectionChange={handleCollectionChange}
             onPlayAgain={replayLastMode}
-            onReturnToMenu={() => resetToLanding()}
+            onReturnToMenu={() => {
+              saveLandingHubTab("play");
+              saveLandingPlaySection("chooser");
+              setLandingHubTab("play");
+              syncLandingHubTabUrl("play");
+              resetToLanding();
+            }}
             onPostToCommunity={openCommunityCompose}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}

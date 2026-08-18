@@ -152,7 +152,7 @@ describe("nbaPlayerUsage", () => {
     expect(canShowMostDraftedBoards()).toBe(true);
   });
 
-  it("ranks most drafted separately for Casual, Pro, and Daily", () => {
+  it("ranks most drafted separately for Casual, Pro, Daily, and Events", () => {
     recordNbaPlayerMatchUsage({
       recordKey: "c1",
       playerIds: ["casual-star", "shared"],
@@ -179,6 +179,18 @@ describe("nbaPlayerUsage", () => {
       recordKey: "daily:2",
       playerIds: ["daily-star"],
     });
+    recordNbaPlayerMatchUsage({
+      recordKey: "e1",
+      playerIds: ["event-star", "shared"],
+      mode: "event",
+      result: "win",
+    });
+    recordNbaPlayerMatchUsage({
+      recordKey: "e2",
+      playerIds: ["event-star"],
+      mode: "event",
+      result: "loss",
+    });
 
     expect(
       getMostDraftedNbaPlayersForMode("headToHead", 10).map((row) => row.playerId),
@@ -189,6 +201,9 @@ describe("nbaPlayerUsage", () => {
     expect(
       getMostDraftedNbaPlayersForMode("daily", 10).map((row) => row.playerId),
     ).toEqual(["daily-star", "shared"]);
+    expect(
+      getMostDraftedNbaPlayersForMode("event", 10).map((row) => row.playerId),
+    ).toEqual(["event-star", "shared"]);
     expect(getMostDraftedNbaPlayersForMode("headToHead", 10)[0]?.drafts).toBe(2);
   });
 
@@ -214,7 +229,7 @@ describe("nbaPlayerUsage", () => {
     expect(rows.a).toBe(1);
   });
 
-  it("formats personal hit rate only for Casual/Pro with enough decided games", () => {
+  it("formats personal hit rate for Casual/Pro/Events with enough decided games", () => {
     expect(
       formatPersonalHitRateMeta("daily", {
         drafts: 4,
@@ -241,5 +256,14 @@ describe("nbaPlayerUsage", () => {
         winPct: 2 / 3,
       }),
     ).toBe("6 drafts · Your hit rate 66.7%");
+
+    expect(
+      formatPersonalHitRateMeta("event", {
+        drafts: 6,
+        wins: 3,
+        losses: 1,
+        winPct: 0.75,
+      }),
+    ).toBe("6 drafts · Your hit rate 75%");
   });
 });

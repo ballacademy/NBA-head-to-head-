@@ -433,6 +433,24 @@ export interface SyncLandingDeepLinkUrlOptions {
   clearLandingParams?: boolean;
 }
 
+/** Write the Play hub URL from the stored play section (including chooser). */
+export const syncLandingHubTabUrl = (tab: LandingContentTab) => {
+  if (tab === "play") {
+    const play = loadLandingPlaySection();
+    syncLandingDeepLinkUrl({
+      hub: "play",
+      play,
+      h2hMode: play === "headToHead" ? loadLandingH2hMode() : null,
+    });
+    return;
+  }
+
+  syncLandingDeepLinkUrl({
+    hub: tab,
+    play: null,
+  });
+};
+
 /** Sync hub/play/view/post query params via replaceState; preserves `tierList`. */
 export const syncLandingDeepLinkUrl = (
   options: SyncLandingDeepLinkUrlOptions,

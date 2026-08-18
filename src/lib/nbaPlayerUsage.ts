@@ -368,12 +368,13 @@ export const getMostDraftedNbaPlayers = (
 ): NbaPlayerUsageRow[] => listNbaPlayerUsageRows().slice(0, Math.max(0, limit));
 
 /** Modes shown on the public Most drafted boards. */
-export type MostDraftedBoardMode = "headToHead" | "ranked" | "daily";
+export type MostDraftedBoardMode = "headToHead" | "ranked" | "daily" | "event";
 
 export const MOST_DRAFTED_BOARD_LABELS: Record<MostDraftedBoardMode, string> = {
   headToHead: "Casual",
   ranked: "Pro",
   daily: "Daily",
+  event: "Events",
 };
 
 const MIN_LINEUPS_FOR_MOST_DRAFTED = 2;
@@ -396,7 +397,7 @@ export interface MostDraftedModeRow {
   winPct: number | null;
 }
 
-/** Top drafted NBA players within one mode (Casual / Pro / Daily). */
+/** Top drafted NBA players within one mode (Casual / Pro / Daily / Events). */
 export const getMostDraftedNbaPlayersForMode = (
   mode: MostDraftedBoardMode,
   limit = 10,
@@ -441,7 +442,7 @@ export const formatNbaPlayerWinPct = (winPct: number | null) =>
 /** Min decided (W+L) games before showing personal hit rate on Most Drafted. */
 export const MIN_DECIDED_FOR_PERSONAL_HIT_RATE = 3;
 
-/** Personal hit rate is Casual/Pro only — Daily has no W/L. */
+/** Personal hit rate is Casual/Pro/Events — Daily has no W/L. */
 export const canShowPersonalHitRate = (
   mode: MostDraftedBoardMode,
   row: Pick<MostDraftedModeRow, "wins" | "losses" | "winPct">,

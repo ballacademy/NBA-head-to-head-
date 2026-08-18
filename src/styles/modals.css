@@ -312,10 +312,6 @@
   font-weight: 900;
 }
 
-.matchup-panel__team .lineup-chemistry-badges {
-  margin: 0 0 8px;
-}
-
 .player-rarity-badges {
   display: inline-flex;
   flex-wrap: wrap;
@@ -654,11 +650,6 @@
 
 .mode-theme .waiting-spinner {
   border-top-color: var(--mode-accent-bright);
-}
-
-.mode-theme .matchup-panel__team .team-lineup-card--compact {
-  --accent: var(--mode-accent);
-  border-top-color: var(--mode-accent);
 }
 
 .mode-theme--daily .daily-draft-banner {
