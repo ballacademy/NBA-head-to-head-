@@ -106,6 +106,7 @@ describe("gmWeeklyRecap", () => {
 
     const recap = buildWeeklyGmRecap();
     expect(recap.weekKey).toBe("2026-08-03");
+    expect(recap.periodLabel).toBe("Last week");
     expect(recap.weekRangeLabel).toMatch(/Aug 3.+Aug 9/);
     expect(recap.dailyDays).toBe(2);
     expect(recap.dailyPuzzles).toBe(3);
@@ -130,6 +131,49 @@ describe("gmWeeklyRecap", () => {
     const recap = buildWeeklyGmRecap();
     expect(recap.dailyDays).toBe(1);
     expect(recap.bestDailyFinishLabel).toBe("—");
+
+    vi.useRealTimers();
+  });
+
+  it("falls back to this week when last week has no Daily scores", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
+
+    const playerId = "player-test";
+    setPlayerIdentity(playerId);
+    writeJson("nba-head-to-head-daily-scores", {
+      "2026-08-17": [
+        { playerId, goalId: "pts", mode: "basic", percentile: 72 },
+      ],
+      "2026-08-18": [
+        { playerId, goalId: "adv-ast", mode: "advanced", percentile: 81 },
+      ],
+    });
+
+    const recap = buildWeeklyGmRecap();
+    expect(recap.weekKey).toBe("2026-08-17");
+    expect(recap.periodLabel).toBe("This week");
+    expect(recap.dailyDays).toBe(2);
+    expect(recap.dailyPuzzles).toBe(2);
+    expect(recap.bestDailyFinishLabel).toContain("percentile");
+
+    vi.useRealTimers();
+  });
+
+  it("counts last-week scores even when playerId is missing on the row", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
+
+    setPlayerIdentity("player-test");
+    writeJson("nba-head-to-head-daily-scores", {
+      "2026-08-12": [{ goalId: "pts", mode: "basic", percentile: 64 }],
+    });
+
+    const recap = buildWeeklyGmRecap();
+    expect(recap.periodLabel).toBe("Last week");
+    expect(recap.dailyDays).toBe(1);
+    expect(recap.dailyPuzzles).toBe(1);
+    expect(recap.bestDailyFinishLabel).toContain("64");
 
     vi.useRealTimers();
   });

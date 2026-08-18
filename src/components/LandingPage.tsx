@@ -520,6 +520,7 @@ export function LandingPage({
       queuedRanked: queuedLineupLock.ranked,
       recapReady:
         recap.dailyPuzzles > 0 && !hasSeenWeeklyRecap(recap.weekKey),
+      recapDetail: `Daily Draft · ${recap.periodLabel.toLowerCase()}`,
       nextBadgeTitle: nextBadge?.title ?? null,
       nextBadgeIsDaily,
       nextBadgePlaySection: nextBadge?.hint.playSection,

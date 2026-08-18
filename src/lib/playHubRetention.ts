@@ -48,6 +48,7 @@ export const buildPlayHubChips = (params: {
   queuedClassic: boolean;
   queuedRanked: boolean;
   recapReady: boolean;
+  recapDetail?: string;
   nextBadgeTitle?: string | null;
   nextBadgeIsDaily?: boolean;
   nextBadgePlaySection?: LandingPlaySection;
@@ -83,7 +84,7 @@ export const buildPlayHubChips = (params: {
     chips.push({
       id: "recap",
       label: "Weekly recap",
-      detail: "Daily Draft · last week",
+      detail: params.recapDetail ?? "Daily Draft",
       ctaLabel: "Go",
       action: { type: "recap" },
     });
