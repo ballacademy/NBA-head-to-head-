@@ -10,6 +10,7 @@ interface HubShellProps {
   activeTab: LandingHubTab;
   onSelectTab: (tab: LandingHubTab) => void;
   onPrefetchTab?: (tab: LandingHubTab) => void;
+  playBadgeCount?: number;
   children: ReactNode;
   className?: string;
 }
@@ -18,6 +19,7 @@ export function HubShell({
   activeTab,
   onSelectTab,
   onPrefetchTab,
+  playBadgeCount = 0,
   children,
   className = "",
 }: HubShellProps) {
@@ -62,6 +64,7 @@ export function HubShell({
         activeTab={activeTab}
         onSelect={onSelectTab}
         onPrefetchTab={onPrefetchTab}
+        playBadgeCount={playBadgeCount}
       />
     </section>
   );

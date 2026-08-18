@@ -9,6 +9,7 @@ interface LandingBottomNavProps {
   activeTab: LandingHubTab;
   onSelect: (tab: LandingHubTab) => void;
   onPrefetchTab?: (tab: LandingHubTab) => void;
+  playBadgeCount?: number;
 }
 
 const TABS: {
@@ -110,11 +111,17 @@ export function LandingBottomNav({
   activeTab,
   onSelect,
   onPrefetchTab,
+  playBadgeCount = 0,
 }: LandingBottomNavProps) {
   return (
     <nav className="landing-bottom-nav" aria-label="Main sections">
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
+        const showPlayBadge = tab.id === "play" && playBadgeCount > 0;
+        const badgeLabel =
+          playBadgeCount === 1
+            ? "1 queued match waiting"
+            : `${playBadgeCount} queued matches waiting`;
 
         return (
           <button
@@ -124,12 +131,18 @@ export function LandingBottomNav({
               isActive ? " landing-bottom-nav__item--active" : ""
             }`}
             aria-current={isActive ? "page" : undefined}
+            aria-label={showPlayBadge ? `Play, ${badgeLabel}` : undefined}
             onClick={() => onSelect(tab.id)}
             onPointerEnter={() => onPrefetchTab?.(tab.id)}
             onFocus={() => onPrefetchTab?.(tab.id)}
           >
             <span className="landing-bottom-nav__icon">
               <NavIcon name={tab.icon} />
+              {showPlayBadge ? (
+                <span className="landing-bottom-nav__badge" aria-hidden="true">
+                  {playBadgeCount > 9 ? "9+" : playBadgeCount}
+                </span>
+              ) : null}
             </span>
             <span className="landing-bottom-nav__label">{tab.label}</span>
           </button>

@@ -1,13 +1,18 @@
 import { useRef, type RefObject } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { getDraftOnboardingBullets } from "../lib/draftOnboarding";
 
 interface DraftOnboardingOverlayProps {
   hasSalaryCap: boolean;
+  isDailyDraft?: boolean;
+  isCompetitive?: boolean;
   onDismiss: () => void;
 }
 
 export function DraftOnboardingOverlay({
   hasSalaryCap,
+  isDailyDraft = false,
+  isCompetitive = false,
   onDismiss,
 }: DraftOnboardingOverlayProps) {
   const dismissRef = useRef<HTMLButtonElement | null>(null);
@@ -16,6 +21,11 @@ export function DraftOnboardingOverlay({
     onClose: onDismiss,
     initialFocusRef: dismissRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+  });
+  const bullets = getDraftOnboardingBullets({
+    hasSalaryCap,
+    isDailyDraft,
+    isCompetitive,
   });
 
   return (
@@ -32,19 +42,9 @@ export function DraftOnboardingOverlay({
         <p className="eyebrow">First draft</p>
         <h2 id="draft-onboarding-title">How drafting works</h2>
         <ul className="draft-onboarding-overlay__list">
-          <li>Make five timed draft picks for your lineup.</li>
-          {hasSalaryCap ? (
-            <li>
-              Stay under the salary cap — the salary bar shows spent vs remaining.
-            </li>
-          ) : null}
-          {hasSalaryCap ? (
-            <li>
-              Banners are your Front Office rating. Wins and losses move them on
-              the Casual and Pro season boards.
-            </li>
-          ) : null}
-          <li>If the timer hits zero, remaining picks auto-fill.</li>
+          {bullets.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
         </ul>
         <button
           type="button"

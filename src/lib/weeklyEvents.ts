@@ -228,6 +228,37 @@ export const buildSharedEventDraftSlots = (
     slotAxis: restriction === "agepos" ? "age" : "division",
   });
 
+export interface ScheduledWeeklyEventMeta {
+  weekId: string;
+  weekLabel: string;
+  title: string;
+  restriction: EventRestrictionId;
+  restrictionLabel: string;
+}
+
+/** This week's scheduled event, even if the live pool isn't playable yet. */
+export const getScheduledWeeklyEventMeta = (
+  date: Date = new Date(),
+): ScheduledWeeklyEventMeta => {
+  const weekId = getIsoWeekId(date);
+  const restriction = getEventRestrictionForWeek(weekId);
+  return {
+    weekId,
+    weekLabel: formatEventWeekLabel(weekId),
+    title: getEventTitle(restriction),
+    restriction,
+    restrictionLabel: getEventRestrictionLabel(restriction),
+  };
+};
+
+export const formatWeeklyEventChooserMeta = (
+  playable: WeeklyEventDefinition | null,
+  scheduled: ScheduledWeeklyEventMeta = getScheduledWeeklyEventMeta(),
+) =>
+  playable
+    ? `${playable.title} · this week`
+    : `${scheduled.title} · check back`;
+
 export const getCurrentWeeklyEvent = (
   players: Player[],
   date: Date = new Date(),

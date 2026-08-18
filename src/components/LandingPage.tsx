@@ -92,7 +92,9 @@ import {
 import {
   EVENT_BADGE_THRESHOLDS,
   formatEventBadgeLabel,
+  formatWeeklyEventChooserMeta,
   getCurrentWeeklyEvent,
+  getScheduledWeeklyEventMeta,
 } from "../lib/weeklyEvents";
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
@@ -110,6 +112,18 @@ import {
   markBannersExplainerSeen,
 } from "../lib/bannersExplainer";
 import { FirstSessionOnboardingOverlay } from "./FirstSessionOnboardingOverlay";
+import { PlayHubStrip } from "./PlayHubStrip";
+import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
+import {
+  buildWeeklyGmRecap,
+  hasSeenWeeklyRecap,
+} from "../lib/gmWeeklyRecap";
+import {
+  buildPlayHubChips,
+  formatPlayHubDailyStreakLabel,
+  getPlayNavBadgeCount,
+  type PlayHubChip,
+} from "../lib/playHubRetention";
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
@@ -153,6 +167,7 @@ interface LandingPageProps {
   hubTab: LandingContentTab;
   onHubTabChange: (tab: LandingContentTab) => void;
   onPrefetchHubTab?: (tab: LandingHubTab) => void;
+  pendingOwnerResultCount?: number;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -197,6 +212,7 @@ export function LandingPage({
   hubTab,
   onHubTabChange,
   onPrefetchHubTab,
+  pendingOwnerResultCount = 0,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -472,6 +488,62 @@ export function LandingPage({
       ),
     [weeklyEvent?.id],
   );
+  const scheduledWeeklyEvent = useMemo(
+    () => getScheduledWeeklyEventMeta(),
+    [],
+  );
+  const eventChooserMeta = formatWeeklyEventChooserMeta(
+    weeklyEvent,
+    scheduledWeeklyEvent,
+  );
+  const playHubChips = useMemo(() => {
+    const recap = buildWeeklyGmRecap();
+    const nextBadge = getNextBadgeTeaser();
+    const nextBadgeIsDaily = Boolean(
+      nextBadge?.id.startsWith("daily-streak-"),
+    );
+    return buildPlayHubChips({
+      pendingResultCount: pendingOwnerResultCount,
+      queuedClassic: queuedLineupLock.classic,
+      queuedRanked: queuedLineupLock.ranked,
+      recapReady: !hasSeenWeeklyRecap(recap.weekKey),
+      recapDaysLabel: recap.dailyDaysSplitLabel,
+      nextBadgeTitle: nextBadge?.title ?? null,
+      nextBadgeIsDaily,
+      nextBadgePlaySection: nextBadge?.hint.playSection,
+      nextBadgeH2hMode: nextBadge?.hint.h2hMode,
+      dailyStreakLabel: formatPlayHubDailyStreakLabel(
+        getDailyDraftPlayStreak("basic"),
+        getDailyDraftPlayStreak("advanced"),
+      ),
+    });
+  }, [
+    pendingOwnerResultCount,
+    queuedLineupLock.classic,
+    queuedLineupLock.ranked,
+  ]);
+  const playNavBadgeCount = getPlayNavBadgeCount({
+    pendingResultCount: pendingOwnerResultCount,
+    queuedClassic: queuedLineupLock.classic,
+    queuedRanked: queuedLineupLock.ranked,
+  });
+
+  const handlePlayHubChip = (chip: PlayHubChip) => {
+    if (chip.action.type === "inbox" || chip.action.type === "h2h") {
+      updatePlaySection("headToHead");
+      return;
+    }
+    if (chip.action.type === "roster") {
+      onHubTabChange("roster");
+      return;
+    }
+    if (chip.action.type === "play") {
+      handlePlayIntent({
+        playSection: chip.action.playSection,
+        h2hMode: chip.action.h2hMode,
+      });
+    }
+  };
 
   const dismissFirstSessionGuide = useCallback(() => {
     markFirstSessionGuideSeen();
@@ -816,6 +888,7 @@ export function LandingPage({
       activeTab={hubTab}
       onSelectTab={handleHubSelect}
       onPrefetchTab={onPrefetchHubTab}
+      playBadgeCount={playNavBadgeCount}
     >
       {showTeamNameModal ? (
         <TeamNameValidationModal
@@ -863,7 +936,9 @@ export function LandingPage({
 
       <div className="landing-hub__content">
         {hubTab === "play" && playSection === "chooser" ? (
-          <div className="play-hub-chooser" role="list">
+          <>
+            <PlayHubStrip chips={playHubChips} onChip={handlePlayHubChip} />
+            <div className="play-hub-chooser" role="list">
             <button
               type="button"
               className="play-hub-chooser__option hub-accent hub-accent--daily"
@@ -905,7 +980,7 @@ export function LandingPage({
               <span className="play-hub-chooser__copy">
                 <span className="play-hub-chooser__label">Events</span>
                 <span className="play-hub-chooser__meta">
-                  Weekly shared board · rotating modes
+                  {eventChooserMeta}
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -913,6 +988,7 @@ export function LandingPage({
               </span>
             </button>
           </div>
+          </>
         ) : null}
 
         {hubTab === "play" && playSection === "headToHead" ? (
@@ -1308,7 +1384,9 @@ export function LandingPage({
                 ) : null}
               </div>
             ) : (
-              <InlineAlert message="This week's event is unavailable. Check back soon." />
+              <InlineAlert
+                message={`This week's ${scheduledWeeklyEvent.title} isn't available right now. Check back later this week.`}
+              />
             )}
           </>
         ) : null}
@@ -1422,8 +1500,16 @@ export function LandingPage({
       {showFirstSessionGuide ? (
         <FirstSessionOnboardingOverlay
           onDismiss={dismissFirstSessionGuide}
-          onGoToHub={(tab) => {
-            onHubTabChange(tab);
+          onPractice={() => {
+            dismissFirstSessionGuide();
+            void handleStart({
+              practiceMode: true,
+              salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+            });
+          }}
+          onDaily={() => {
+            dismissFirstSessionGuide();
+            handlePlayIntent({ playSection: "daily" });
           }}
         />
       ) : null}

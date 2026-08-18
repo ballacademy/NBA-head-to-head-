@@ -1,39 +1,32 @@
 import { useRef, type RefObject } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { MODE_COPY } from "../lib/modeCopy";
-import type { LandingContentTab } from "../lib/landingHub";
 
 interface FirstSessionOnboardingOverlayProps {
   onDismiss: () => void;
-  onGoToHub: (tab: LandingContentTab) => void;
+  onPractice: () => void;
+  onDaily: () => void;
 }
 
 const GUIDE_ITEMS: { title: string; body: string }[] = [
   {
-    title: "Play",
-    body: `${MODE_COPY.daily.title}, ${MODE_COPY.classicH2h.short}/${MODE_COPY.proH2h.short} Head to Head, and weekly Events — start every match here.`,
+    title: "Draft a five",
+    body: "Five timed picks. Stay under the cap when there is one. If the timer hits zero, remaining slots auto-fill.",
   },
   {
-    title: "Franchise",
-    body: "Your unlocked players, badge goals, and Daily streak progress as you build a career.",
+    title: "Get a score",
+    body: `${MODE_COPY.daily.title} is a shared puzzle. ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} are live head-to-head.`,
   },
   {
-    title: "Community",
-    body: "Share lineups and browse tier lists from other GMs.",
-  },
-  {
-    title: "Ranks",
-    body: `Season leaderboards for ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} Head to Head.`,
-  },
-  {
-    title: "Account",
-    body: "Set your team name, sign in to keep progress, and open privacy or terms.",
+    title: "Build a career",
+    body: "Franchise keeps Daily streaks, badges, and unlocks. Start here on Play — Practice does not touch your record.",
   },
 ];
 
 export function FirstSessionOnboardingOverlay({
   onDismiss,
-  onGoToHub,
+  onPractice,
+  onDaily,
 }: FirstSessionOnboardingOverlayProps) {
   const dismissRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -59,7 +52,7 @@ export function FirstSessionOnboardingOverlay({
         <div className="hub-onboarding-overlay__header">
           <div>
             <p className="eyebrow">Welcome</p>
-            <h2 id="first-session-title">Quick tour</h2>
+            <h2 id="first-session-title">How to play</h2>
           </div>
           <button
             type="button"
@@ -71,8 +64,8 @@ export function FirstSessionOnboardingOverlay({
           </button>
         </div>
         <p className="hub-onboarding-overlay__lede">
-          Draft a five and compete as a GM. Use the bottom bar to move around —
-          here&apos;s what each tab is for.
+          Draft five players and get a score. Practice is the fastest way to
+          learn the loop — or jump into today&apos;s Daily.
         </p>
 
         <ul className="first-session-guide__list">
@@ -87,25 +80,19 @@ export function FirstSessionOnboardingOverlay({
         <div className="hub-onboarding-overlay__intents" role="group">
           <button
             type="button"
-            className="hub-onboarding-overlay__intent hub-accent hub-accent--daily"
-            onClick={() => {
-              onGoToHub("play");
-              onDismiss();
-            }}
+            className="hub-onboarding-overlay__intent hub-accent hub-accent--h2h"
+            onClick={onPractice}
           >
-            <strong>Start in Play</strong>
-            <span>Pick Daily, Head to Head, or an Event and draft.</span>
+            <strong>Practice Casual</strong>
+            <span>Vs a bot — no streaks, badges, or board impact.</span>
           </button>
           <button
             type="button"
-            className="hub-onboarding-overlay__intent hub-accent hub-accent--roster"
-            onClick={() => {
-              onGoToHub("roster");
-              onDismiss();
-            }}
+            className="hub-onboarding-overlay__intent hub-accent hub-accent--daily"
+            onClick={onDaily}
           >
-            <strong>Peek at Franchise</strong>
-            <span>See your collection and what to unlock next.</span>
+            <strong>Try Daily Draft</strong>
+            <span>One shared puzzle. Stats stay hidden until you lock.</span>
           </button>
         </div>
 
