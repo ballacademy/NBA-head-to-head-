@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { assignLineupSlots } from "../lib/lineupOrder";
 import { formatPersistedUncappedOvr } from "../lib/scoring";
 import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
