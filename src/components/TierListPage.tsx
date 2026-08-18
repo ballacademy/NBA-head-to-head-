@@ -90,6 +90,8 @@ import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { fetchAccountStatus } from "../lib/accountApi";
 import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
+  ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
+  ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
   getCachedLinkedUsername,
@@ -1108,6 +1110,10 @@ export function TierListPage({
   };
 
   const handleToggleLike = async (id: string, liked: boolean) => {
+    if (accountLinked !== true) {
+      setStatusMessage(ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE);
+      return;
+    }
     const result = await setTierListLike({
       id,
       playerId: identity.playerId,
@@ -1380,6 +1386,10 @@ export function TierListPage({
   }, [library.documents, loadCommunityPosts, view]);
 
   const handleCreateCommunityPost = async () => {
+    if (accountLinked !== true) {
+      setCommunityPostError(ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE);
+      return;
+    }
     setCommunityPostSubmitting(true);
     setCommunityPostError(null);
     const classicElo = ensureClassicProfile().elo;
@@ -1412,6 +1422,10 @@ export function TierListPage({
     postId: string,
     liked: boolean,
   ) => {
+    if (accountLinked !== true) {
+      setCommunityPostLikeError(ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE);
+      return;
+    }
     setCommunityPostLikeError(null);
     const result = await setCommunityPostLike({
       playerId: identity.playerId,
@@ -1674,6 +1688,7 @@ export function TierListPage({
             setPublicFiltersDraft(DEFAULT_PUBLIC_TIER_LIST_FILTERS)
           }
           onCreate={() => void handleNew()}
+          accountLinked={accountLinked}
         />
       ) : null}
 
@@ -1699,6 +1714,7 @@ export function TierListPage({
               ? () => void handleUnpublishOwnedPublic(viewerDetail.id)
               : undefined
           }
+          accountLinked={accountLinked}
         />
       ) : null}
 

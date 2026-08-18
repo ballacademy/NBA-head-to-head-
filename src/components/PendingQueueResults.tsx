@@ -178,7 +178,7 @@ export function PendingQueueResults({
           </button>
         ) : null}
         <button type="button" className="play-again-button" onClick={onDone}>
-          Back to home
+          Back to Play
         </button>
       </div>
     </section>

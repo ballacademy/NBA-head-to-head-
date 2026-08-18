@@ -303,6 +303,7 @@ interface TierListPublicPanelProps {
   onUnpublishOwned: (id: string) => void;
   onClearFilters?: () => void;
   onCreate?: () => void;
+  accountLinked?: boolean | null;
 }
 
 export function TierListPublicPanel({
@@ -321,7 +322,9 @@ export function TierListPublicPanel({
   onUnpublishOwned,
   onClearFilters,
   onCreate,
+  accountLinked = null,
 }: TierListPublicPanelProps) {
+  const accountReady = accountLinked === true;
   const hasActiveFilters =
     filters.query.trim().length > 0 ||
     filters.mineOnly ||
@@ -486,6 +489,14 @@ export function TierListPublicPanel({
                       entry.likedByViewer ? " is-active-like" : ""
                     }`}
                     aria-pressed={entry.likedByViewer}
+                    disabled={!accountReady}
+                    title={
+                      accountReady
+                        ? undefined
+                        : accountLinked === null
+                          ? "Checking account"
+                          : "Create an account to like"
+                    }
                     onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
                   >
                     {entry.likedByViewer ? "Liked" : "Like"} · {entry.likeCount}
@@ -1036,7 +1047,7 @@ export function CommunityPostsPanel({
             rows={3}
             placeholder="Share a short take (tier lists, Daily, matchups…)"
             onChange={(event) => onDraftChange(event.target.value)}
-            disabled={accountBlocked || submitting}
+            disabled={!accountReady || submitting}
           />
         </label>
 
@@ -1053,7 +1064,7 @@ export function CommunityPostsPanel({
               );
               onSelectAttachment(match ?? null);
             }}
-            disabled={accountBlocked || submitting || shareables.length === 0}
+            disabled={!accountReady || submitting || shareables.length === 0}
           >
             <option value="">No attachment</option>
             {shareables.map((entry) => (
@@ -1065,8 +1076,8 @@ export function CommunityPostsPanel({
         </label>
         {shareables.length === 0 ? (
           <p className="community-posts-panel__attach-hint">
-            Finish a Daily or H2H matchup, or publish a tier list, to attach it
-            here.
+            Finish a Daily, H2H, or Events matchup, or publish a tier list, to
+            attach it here.
           </p>
         ) : null}
 
@@ -1304,7 +1315,7 @@ export function CommunityPostsPanel({
                         post.likedByViewer ? " is-active" : ""
                       }`}
                       aria-pressed={post.likedByViewer}
-                      disabled={accountBlocked}
+                      disabled={!accountReady}
                       title={
                         accountReady
                           ? "Like"
@@ -1618,6 +1629,7 @@ interface TierListPublicViewerProps {
   onCopyLink: () => void;
   onEditOwned?: () => void;
   onUnpublishOwned?: () => void;
+  accountLinked?: boolean | null;
 }
 
 export function TierListPublicViewer({
@@ -1627,7 +1639,9 @@ export function TierListPublicViewer({
   onCopyLink,
   onEditOwned,
   onUnpublishOwned,
+  accountLinked = null,
 }: TierListPublicViewerProps) {
+  const accountReady = accountLinked === true;
   return (
     <div className="tier-list-hub__panel tier-list-hub__viewer">
       <div className="tier-list-hub__panel-header">
@@ -1669,6 +1683,14 @@ export function TierListPublicViewer({
                 detail.likedByViewer ? " is-active-like" : ""
               }`}
               aria-pressed={detail.likedByViewer}
+              disabled={!accountReady}
+              title={
+                accountReady
+                  ? undefined
+                  : accountLinked === null
+                    ? "Checking account"
+                    : "Create an account to like"
+              }
               onClick={() => onToggleLike(!detail.likedByViewer)}
             >
               {detail.likedByViewer ? "Liked" : "Like"} · {detail.likeCount}
