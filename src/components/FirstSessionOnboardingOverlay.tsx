@@ -1,4 +1,5 @@
 import { useRef, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { MODE_COPY } from "../lib/modeCopy";
 
@@ -11,7 +12,7 @@ interface FirstSessionOnboardingOverlayProps {
 const GUIDE_ITEMS: { title: string; body: string }[] = [
   {
     title: "Draft a five",
-    body: "Five timed picks. Stay under the salary cap when there is one. If the timer hits zero, remaining slots auto-fill.",
+    body: "Five timed picks. Stay under the cap when there is one. If the timer hits zero, remaining slots auto-fill.",
   },
   {
     title: "Get a score",
@@ -34,9 +35,14 @@ export function FirstSessionOnboardingOverlay({
     onClose: onDismiss,
     initialFocusRef: dismissRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="draft-onboarding-overlay hub-onboarding-overlay"
       role="dialog"
@@ -63,38 +69,44 @@ export function FirstSessionOnboardingOverlay({
             ×
           </button>
         </div>
-        <p className="hub-onboarding-overlay__lede">
-          Draft five NBA players, get a score, and see how your lineup stacks
-          up. Practice against a bot to learn the loop, or jump into
-          today&apos;s Daily Draft.
-        </p>
 
-        <ul className="first-session-guide__list">
-          {GUIDE_ITEMS.map((item) => (
-            <li key={item.title}>
-              <strong>{item.title}</strong>
-              <span>{item.body}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="hub-onboarding-overlay__body">
+          <p className="hub-onboarding-overlay__lede">
+            Draft five NBA players, get a score, and see how your lineup stacks
+            up. Practice against a bot to learn the loop, or jump into
+            today&apos;s Daily Draft.
+          </p>
 
-        <div className="hub-onboarding-overlay__intents" role="group">
-          <button
-            type="button"
-            className="hub-onboarding-overlay__intent hub-accent hub-accent--h2h"
-            onClick={onPractice}
-          >
-            <strong>Practice H2H</strong>
-            <span>Vs a bot — no Banners, badges, or board impact.</span>
-          </button>
-          <button
-            type="button"
-            className="hub-onboarding-overlay__intent hub-accent hub-accent--daily"
-            onClick={onDaily}
-          >
-            <strong>Try Daily Draft</strong>
-            <span>Two puzzles per day — stats stay hidden until all five are picked.</span>
-          </button>
+          <ul className="first-session-guide__list">
+            {GUIDE_ITEMS.map((item) => (
+              <li key={item.title}>
+                <strong>{item.title}</strong>
+                <span>{item.body}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hub-onboarding-overlay__intents" role="group">
+            <button
+              type="button"
+              className="hub-onboarding-overlay__intent hub-accent hub-accent--h2h"
+              onClick={onPractice}
+            >
+              <strong>Practice H2H</strong>
+              <span>Vs a bot — no Banners, badges, or board impact.</span>
+            </button>
+            <button
+              type="button"
+              className="hub-onboarding-overlay__intent hub-accent hub-accent--daily"
+              onClick={onDaily}
+            >
+              <strong>Try Daily Draft</strong>
+              <span>
+                Two puzzles per day — stats stay hidden until all five are
+                picked.
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="hub-onboarding-overlay__footer">
@@ -108,6 +120,7 @@ export function FirstSessionOnboardingOverlay({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

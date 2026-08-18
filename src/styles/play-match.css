@@ -1599,6 +1599,11 @@
   font-weight: 800;
 }
 
+html.ddgm-dialog-open,
+body.ddgm-dialog-open {
+  overflow: hidden;
+}
+
 .draft-onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -1625,10 +1630,21 @@
   margin-top: 8px;
 }
 
+.hub-onboarding-overlay {
+  align-items: center;
+  justify-content: center;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 .hub-onboarding-overlay__panel {
+  display: flex;
+  flex-direction: column;
   width: min(400px, 100%);
-  max-height: min(90dvh, 640px);
-  overflow: auto;
+  max-height: min(calc(100dvh - 24px - env(safe-area-inset-bottom, 0px)), 560px);
+  overflow: hidden;
   padding: 16px 16px 14px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   background:
@@ -1636,12 +1652,20 @@
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  touch-action: auto;
+}
+
+.hub-onboarding-overlay__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hub-onboarding-overlay__intents {
   display: grid;
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0;
 }
 
 .hub-onboarding-overlay__header {
@@ -1683,9 +1707,13 @@
 
 .hub-onboarding-overlay__footer {
   display: flex;
+  flex-shrink: 0;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .hub-onboarding-overlay__intent {
@@ -1730,7 +1758,7 @@
 .first-session-guide__list {
   display: grid;
   gap: 10px;
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   padding: 0;
   list-style: none;
 }

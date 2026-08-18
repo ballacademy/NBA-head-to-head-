@@ -62,6 +62,7 @@ describe("playHubRetention", () => {
     expect(chips[1]).toMatchObject({
       label: "Weekly recap",
       detail: "Franchise · last 7 days",
+      ctaLabel: "Go",
     });
     expect(chips[0]).toMatchObject({
       label: "1 result ready",
