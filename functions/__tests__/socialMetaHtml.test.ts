@@ -12,10 +12,10 @@ const SAMPLE_HTML = `<!doctype html>
     <meta property="og:title" content="Draft Day GM" />
     <meta property="og:description" content="Default OG description" />
     <meta property="og:url" content="https://www.draftdaygm.com/" />
-    <meta property="og:image" content="https://www.draftdaygm.com/og-share-v5.png" />
+    <meta property="og:image" content="https://www.draftdaygm.com/og-share-v6.png" />
     <meta name="twitter:title" content="Draft Day GM" />
     <meta name="twitter:description" content="Default Twitter description" />
-    <meta name="twitter:image" content="https://www.draftdaygm.com/og-share-v5.png" />
+    <meta name="twitter:image" content="https://www.draftdaygm.com/og-share-v6.png" />
   </head>
   <body></body>
 </html>`;

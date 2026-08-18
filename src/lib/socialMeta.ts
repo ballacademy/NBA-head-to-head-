@@ -1,12 +1,13 @@
 import {
   DEFAULT_OG_IMAGE,
   DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_SHARE_TITLE,
   DEFAULT_SITE_NAME,
   type SocialMetaTags,
 } from "./communityPostSocialMeta";
 
 const DEFAULT_META: SocialMetaTags = {
-  title: DEFAULT_SITE_NAME,
+  title: DEFAULT_SHARE_TITLE,
   description:
     "Draft. Match up. Prove your GM eye. Daily Draft, weekly Events, and Casual or Pro Head to Head.",
   url: "https://www.draftdaygm.com/",

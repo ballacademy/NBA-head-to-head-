@@ -27,6 +27,10 @@
   Cache-Control: public, max-age=3600
   Content-Type: image/png
 
+/og-share-v6.png
+  Cache-Control: public, max-age=3600
+  Content-Type: image/png
+
 # Versioned logo mark — long-cache is OK because the filename changes on redesign.
 /draft-day-gm-mark-v5.svg
   Cache-Control: public, max-age=31536000, immutable
