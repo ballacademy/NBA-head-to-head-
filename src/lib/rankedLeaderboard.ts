@@ -33,6 +33,7 @@ export interface RankedLeaderboardEntry {
   tierLabel: string;
   wins: number;
   losses: number;
+  ties?: number;
   winStreak: number;
   lossStreak: number;
   isNpc?: boolean;
@@ -202,6 +203,7 @@ const normalizeEntry = (entry: RankedLeaderboardEntry): RankedLeaderboardEntry =
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),
     losses: Math.max(0, entry.losses),
+    ties: Math.max(0, entry.ties ?? 0),
     winStreak: Math.max(0, entry.winStreak ?? 0),
     lossStreak: Math.max(0, entry.lossStreak ?? 0),
     isNpc: entry.isNpc ?? false,
@@ -427,8 +429,11 @@ export const formatRankedLeaderboardElo = (entry: Pick<RankedLeaderboardEntry, "
   formatRankedElo(entry.elo);
 
 export const formatRankedLeaderboardRecord = (
-  entry: Pick<RankedLeaderboardEntry, "wins" | "losses">,
-) => `${entry.wins}-${entry.losses}`;
+  entry: Pick<RankedLeaderboardEntry, "wins" | "losses"> & { ties?: number },
+) =>
+  entry.ties && entry.ties > 0
+    ? `${entry.wins}-${entry.losses}-${entry.ties}`
+    : `${entry.wins}-${entry.losses}`;
 
 export const formatRankedLeaderboardWinStreak = (
   entry: Pick<RankedLeaderboardEntry, "winStreak">,

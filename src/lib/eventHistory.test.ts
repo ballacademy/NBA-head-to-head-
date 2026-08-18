@@ -36,6 +36,18 @@ describe("eventHistory", () => {
     expect(rows[0]?.topBadgeLabel).toBe("Competitor");
   });
 
+  it("marks only the live week as current so history can drop it", () => {
+    const rows = buildEventHistoryRows(
+      [profile("2026-W30-u25"), profile("2026-W29-intl")],
+      "2026-W30-u25",
+    );
+
+    expect(rows.filter((row) => row.isCurrent)).toHaveLength(1);
+    expect(rows.filter((row) => !row.isCurrent).map((row) => row.eventId)).toEqual(
+      ["2026-W29-intl"],
+    );
+  });
+
   it("formats presence status", () => {
     expect(
       formatEventPresenceLabel({

@@ -9,7 +9,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "win",
         priorSeasonGames: 0,
       }),
-    ).toEqual({ wins: 1, losses: 0, winStreak: 1, lossStreak: 0 });
+    ).toEqual({ wins: 1, losses: 0, ties: 0, winStreak: 1, lossStreak: 0 });
 
     expect(
       nextSeasonLeaderboardStats({
@@ -17,7 +17,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "loss",
         priorSeasonGames: 0,
       }),
-    ).toEqual({ wins: 0, losses: 1, winStreak: 0, lossStreak: 1 });
+    ).toEqual({ wins: 0, losses: 1, ties: 0, winStreak: 0, lossStreak: 1 });
   });
 
   it("increments an in-sync season row by one match", () => {
@@ -27,7 +27,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "win",
         priorSeasonGames: 3,
       }),
-    ).toEqual({ wins: 3, losses: 1, winStreak: 3, lossStreak: 0 });
+    ).toEqual({ wins: 3, losses: 1, ties: 0, winStreak: 3, lossStreak: 0 });
 
     expect(
       nextSeasonLeaderboardStats({
@@ -35,7 +35,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "loss",
         priorSeasonGames: 3,
       }),
-    ).toEqual({ wins: 2, losses: 2, winStreak: 0, lossStreak: 1 });
+    ).toEqual({ wins: 2, losses: 2, ties: 0, winStreak: 0, lossStreak: 1 });
   });
 
   it("does not invent an all-wins catch-up when the season row is missing", () => {
@@ -47,7 +47,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "win",
         priorSeasonGames: 4,
       }),
-    ).toEqual({ wins: 1, losses: 0, winStreak: 1, lossStreak: 0 });
+    ).toEqual({ wins: 1, losses: 0, ties: 0, winStreak: 1, lossStreak: 0 });
   });
 
   it("rebases career-leaked boards to this match only", () => {
@@ -57,7 +57,7 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "loss",
         priorSeasonGames: 2,
       }),
-    ).toEqual({ wins: 0, losses: 1, winStreak: 0, lossStreak: 1 });
+    ).toEqual({ wins: 0, losses: 1, ties: 0, winStreak: 0, lossStreak: 1 });
   });
 
   it("advances a behind season row by one match without filling the gap", () => {
@@ -67,17 +67,27 @@ describe("nextSeasonLeaderboardStats", () => {
         result: "loss",
         priorSeasonGames: 10,
       }),
-    ).toEqual({ wins: 2, losses: 2, winStreak: 0, lossStreak: 1 });
+    ).toEqual({ wins: 2, losses: 2, ties: 0, winStreak: 0, lossStreak: 1 });
   });
 
-  it("keeps record unchanged on ties when in sync", () => {
+  it("counts ties on an in-sync season row", () => {
     expect(
       nextSeasonLeaderboardStats({
         existing: { wins: 1, losses: 1, winStreak: 0, lossStreak: 1 },
         result: "tie",
         priorSeasonGames: 2,
       }),
-    ).toEqual({ wins: 1, losses: 1, winStreak: 0, lossStreak: 1 });
+    ).toEqual({ wins: 1, losses: 1, ties: 1, winStreak: 0, lossStreak: 1 });
+  });
+
+  it("starts a fresh season board at 0-0-1 on a tie", () => {
+    expect(
+      nextSeasonLeaderboardStats({
+        existing: null,
+        result: "tie",
+        priorSeasonGames: 0,
+      }),
+    ).toEqual({ wins: 0, losses: 0, ties: 1, winStreak: 0, lossStreak: 0 });
   });
 
   it("can update W-L without changing streaks", () => {
@@ -88,7 +98,7 @@ describe("nextSeasonLeaderboardStats", () => {
         priorSeasonGames: 3,
         countTowardStreak: false,
       }),
-    ).toEqual({ wins: 2, losses: 2, winStreak: 2, lossStreak: 0 });
+    ).toEqual({ wins: 2, losses: 2, ties: 0, winStreak: 2, lossStreak: 0 });
 
     expect(
       nextSeasonLeaderboardStats({
@@ -97,6 +107,16 @@ describe("nextSeasonLeaderboardStats", () => {
         priorSeasonGames: 0,
         countTowardStreak: false,
       }),
-    ).toEqual({ wins: 1, losses: 0, winStreak: 0, lossStreak: 0 });
+    ).toEqual({ wins: 1, losses: 0, ties: 0, winStreak: 0, lossStreak: 0 });
+  });
+
+  it("stays in sync after a tie so the next win is 2-1-1, not a desync catch-up", () => {
+    expect(
+      nextSeasonLeaderboardStats({
+        existing: { wins: 1, losses: 1, ties: 1, winStreak: 0, lossStreak: 1 },
+        result: "win",
+        priorSeasonGames: 3,
+      }),
+    ).toEqual({ wins: 2, losses: 1, ties: 1, winStreak: 1, lossStreak: 0 });
   });
 });

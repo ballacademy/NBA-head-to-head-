@@ -25,6 +25,7 @@ export interface CommunityMatchupAttachment {
   /** Competitive W-L (or W-L-T) after the match, e.g. "12-5". */
   userWinRecord?: string;
   ovrOverflow?: number;
+  opponentOvrOverflow?: number;
   savedAt: string;
 }
 
@@ -55,6 +56,14 @@ export type CommunityPostAttachment =
   | CommunityMatchupAttachment
   | CommunityLineupAttachment
   | CommunityTierListAttachment;
+
+export const formatShareableOvr = (ovr: number, overflow?: number) => {
+  const extra = Math.max(0, Math.round(overflow ?? 0));
+  return extra > 0 ? `${ovr}(+${extra})` : `${ovr}`;
+};
+
+const formatMatchupOvrPair = (attachment: CommunityMatchupAttachment) =>
+  `${formatShareableOvr(attachment.userOvr, attachment.ovrOverflow)}–${formatShareableOvr(attachment.opponentOvr, attachment.opponentOvrOverflow)}`;
 
 const SHAREABLES_KEY = "nba-head-to-head-community-shareables";
 const MAX_SHAREABLES = 8;
@@ -172,7 +181,7 @@ export const formatCommunityMatchupDetails = (
         : "tied";
   return {
     headline: `${attachment.userTeam} ${verb} ${attachment.opponentTeam}`,
-    score: `${attachment.userOvr}–${attachment.opponentOvr} OVR · ${attachment.modeLabel}`,
+    score: `${formatMatchupOvrPair(attachment)} OVR · ${attachment.modeLabel}`,
     record: attachment.userRecord
       ? `Projected ${attachment.userRecord}`
       : attachment.userWinRecord
@@ -193,7 +202,7 @@ export const formatCommunityAttachmentSummary = (
         : attachment.result === "loss"
           ? "lost to"
           : "tied";
-    return `${attachment.modeLabel}: ${attachment.userTeam} ${verb} ${attachment.opponentTeam} (${attachment.userOvr}–${attachment.opponentOvr} OVR)`;
+    return `${attachment.modeLabel}: ${attachment.userTeam} ${verb} ${attachment.opponentTeam} (${formatMatchupOvrPair(attachment)} OVR)`;
   }
 
   if (attachment.kind === "tierList") {
@@ -236,7 +245,7 @@ export const formatCommunityAttachmentChip = (
               : /h2h|head/i.test(attachment.modeLabel)
                 ? "H2H"
                 : attachment.modeLabel.slice(0, 12);
-    return `${mode} · ${result} · ${attachment.userOvr}–${attachment.opponentOvr}`;
+    return `${mode} · ${result} · ${formatMatchupOvrPair(attachment)}`;
   }
 
   if (attachment.kind === "tierList") {
@@ -375,6 +384,7 @@ export const buildMatchupShareCardInputsFromAttachment = (
       teamName: attachment.opponentTeam,
       accent: attachment.opponentAccent?.trim() || "#38bdf8",
       ovr: attachment.opponentOvr,
+      ovrOverflow: attachment.opponentOvrOverflow,
       lineup: opponentLineup,
       headline: attachment.opponentTeam,
       subhead: attachment.modeLabel,

@@ -70,6 +70,7 @@ export const persistClassicLeaderboardOutcome = (
     elo: classicResult.profile.elo,
     wins: seasonStats.wins,
     losses: seasonStats.losses,
+    ties: seasonStats.ties,
     winStreak: seasonStats.winStreak,
     lossStreak: seasonStats.lossStreak,
   });
@@ -120,6 +121,7 @@ export const persistRankedOutcome = (
     elo: rankedResult.profile.elo,
     wins: seasonStats.wins,
     losses: seasonStats.losses,
+    ties: seasonStats.ties,
     winStreak: seasonStats.winStreak,
     lossStreak: seasonStats.lossStreak,
     isNpc: false,

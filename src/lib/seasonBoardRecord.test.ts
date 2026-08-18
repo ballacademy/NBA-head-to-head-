@@ -83,4 +83,17 @@ describe("seasonBoardRecord", () => {
     expect(projected.wins).toBe(2);
     expect(projected.losses).toBe(1);
   });
+
+  it("counts a classic tie on the season board", () => {
+    persistMatchOutcome("win", { name: "Bulls" }, "t1", "headToHead");
+    persistMatchOutcome("tie", { name: "Bulls" }, "t2", "headToHead");
+
+    expect(loadSelfSeasonBoardRecord("classic")).toEqual({
+      wins: 1,
+      losses: 0,
+      ties: 1,
+      winStreak: 1,
+      lossStreak: 0,
+    });
+  });
 });

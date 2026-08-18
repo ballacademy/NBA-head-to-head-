@@ -35,7 +35,7 @@ export const getDraftOnboardingBullets = ({
     );
   }
 
-  if (hasSalaryCap && !isDailyDraft) {
+  if (hasSalaryCap && isCompetitive) {
     bullets.push(
       "Banners are your Front Office rating. Wins and losses move them on the Casual and Pro season boards.",
     );

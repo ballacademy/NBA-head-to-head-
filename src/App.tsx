@@ -409,6 +409,7 @@ function App() {
   const collectionSyncAttemptedRef = useRef(false);
   const achievementsSyncAttemptedRef = useRef(false);
   const careerSyncAttemptedRef = useRef(false);
+  const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
     GhostMatchmakingMode | null
@@ -1040,7 +1041,7 @@ function App() {
     await ensureDraftOnboarding({
       hasSalaryCap: salaryCapLimit != null,
       isDailyDraft: daily,
-      isCompetitive: !daily && !practiceMode,
+      isCompetitive: !daily && !practiceMode && !privateMatch,
     });
 
     const applyStartBans = shouldApplyRankedEventPlayerBans({
@@ -1796,7 +1797,7 @@ function App() {
       phase === "playerUsage"
         ? "account"
         : phase === "weeklyRecap"
-          ? "play"
+          ? weeklyRecapReturnTabRef.current
           : leavingFeature
             ? parentTabForFeature(leavingFeature)
             : landingHubTab;
@@ -2544,9 +2545,25 @@ function App() {
 
       resetToLanding();
 
+      const syncParent = () => {
+        syncLandingDeepLinkUrl({
+          hub: tab,
+          play: tab === "play" ? undefined : null,
+          view: null,
+          post: null,
+        });
+        const landingState = window.history.state as FeatureHistoryState | null;
+        if (landingState?.appPhase) {
+          window.history.replaceState({}, "", window.location.href);
+        }
+      };
+
       if (shouldNavigateBack) {
         skipPopStateResetRef.current = true;
         window.history.back();
+        window.setTimeout(syncParent, 0);
+      } else {
+        syncParent();
       }
     },
     [phase, updateLandingHubTab],
@@ -2600,7 +2617,7 @@ function App() {
     }
 
     if (phase === "weeklyRecap") {
-      return "play";
+      return weeklyRecapReturnTabRef.current === "roster" ? "roster" : "play";
     }
 
     if (
@@ -2680,7 +2697,14 @@ function App() {
   }
 
   if (phase === "weeklyRecap") {
-    return renderHubFeature(<WeeklyRecapPage onBack={exitFeaturePage} />);
+    return renderHubFeature(
+      <WeeklyRecapPage
+        onBack={exitFeaturePage}
+        backLabel={
+          weeklyRecapReturnTabRef.current === "roster" ? "Franchise" : "Play"
+        }
+      />,
+    );
   }
 
   if (phase === "playerUsage") {
@@ -2838,10 +2862,14 @@ function App() {
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
           onCollectionChange={setCollection}
+          onCareerSynced={() => setModeRecords(loadAllModeRecords())}
           onViewStats={() => openFeaturePage("stats")}
           onViewTierList={openCommunityHub}
           onViewGmStats={() => openFeaturePage("gmStats")}
-          onViewWeeklyRecap={() => openFeaturePage("weeklyRecap")}
+          onViewWeeklyRecap={(source = "play") => {
+            weeklyRecapReturnTabRef.current = source;
+            openFeaturePage("weeklyRecap");
+          }}
           onViewAchievements={() => openFeaturePage("achievements")}
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
           onViewPrivacy={() => openFeaturePage("privacy")}

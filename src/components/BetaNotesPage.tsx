@@ -182,7 +182,7 @@ export function BetaNotesPage({
                 and public tier lists (account required to publish)
               </li>
               <li>
-                <strong>Franchise</strong> — Collection, Badges, Season Stats,
+                <strong>Franchise</strong> — Collection, Badges, Player pool,
                 Daily progress, and Most drafted · <strong>Ranks</strong> ·{" "}
                 <strong>Account</strong> (sign-in, settings)
               </li>

@@ -31,5 +31,6 @@ describe("getDraftOnboardingBullets", () => {
       isCompetitive: false,
     });
     expect(bullets.some((line) => /LeBron/i.test(line))).toBe(false);
+    expect(bullets.some((line) => /Banners/i.test(line))).toBe(false);
   });
 });

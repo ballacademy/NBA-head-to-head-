@@ -14,6 +14,7 @@ import {
 import { getRankedProfileView } from "./rankedProfile";
 import { formatRatingPoints, getTierForElo } from "./rankedElo";
 import { getCurrentSeasonId, formatSeasonLabel } from "./rankedSeason";
+import { loadAllEventProfiles } from "./eventProfile";
 import {
   formatLegacyMonthlyFinish,
   formatLegacyPeakBanners,
@@ -40,11 +41,19 @@ export interface GmDailyDraftStats {
   advancedStreakLabel: string;
 }
 
+export interface GmEventRecordStats {
+  wins: number;
+  losses: number;
+  ties: number;
+}
+
 export interface GmStatsSnapshot {
   teamName: string;
   records: ModePlayerRecords;
+  events: GmEventRecordStats;
   totalWins: number;
   totalLosses: number;
+  totalTies: number;
   classic: ReturnType<typeof getClassicProfileView>;
   ranked: ReturnType<typeof getRankedProfileView>;
   legacy: GmLegacyStats;
@@ -77,17 +86,38 @@ export const buildLocalGmStatsSnapshot = (
   const classic = getClassicProfileView();
   const ranked = getRankedProfileView();
   const legacy = loadGmLegacyStats();
+  const events = loadAllEventProfiles().reduce(
+    (totals, profile) => ({
+      wins: totals.wins + profile.wins,
+      losses: totals.losses + profile.losses,
+      ties: totals.ties + profile.ties,
+    }),
+    { wins: 0, losses: 0, ties: 0 },
+  );
   const totalWins =
-    records.headToHead.wins + records.ranked.wins + records.allTime.wins;
+    records.headToHead.wins +
+    records.ranked.wins +
+    records.allTime.wins +
+    events.wins;
   const totalLosses =
-    records.headToHead.losses + records.ranked.losses + records.allTime.losses;
+    records.headToHead.losses +
+    records.ranked.losses +
+    records.allTime.losses +
+    events.losses;
+  const totalTies =
+    records.headToHead.ties +
+    records.ranked.ties +
+    records.allTime.ties +
+    events.ties;
   const peakElo = Math.max(legacy.peakElo, classic.peakElo, ranked.peakElo);
 
   return {
     teamName,
     records,
+    events,
     totalWins,
     totalLosses,
+    totalTies,
     classic,
     ranked,
     legacy: mergeGmLegacyStats(legacy, {

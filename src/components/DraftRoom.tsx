@@ -121,8 +121,10 @@ export function DraftRoom({
   const isBlindDraft = isBlindEventRestriction(drafter.eventRestriction);
   const playerRecord = loadPlayerRecord(getMatchRecordMode(drafter));
   const isPracticeMode = Boolean(drafter.practiceMode);
+  const isPrivateMatch = Boolean(drafter.privateMatch);
+  const isUnratedMatch = isPracticeMode || isPrivateMatch;
   const displayStreaks = useMemo(() => {
-    if (isPracticeMode || isDailyDraft) {
+    if (isUnratedMatch || isDailyDraft) {
       return { winStreak: 0, lossStreak: 0 };
     }
 
@@ -159,7 +161,7 @@ export function DraftRoom({
     drafter.salaryCapLimit,
     drafter.salaryCapMode,
     isDailyDraft,
-    isPracticeMode,
+    isUnratedMatch,
     playerRecord.lossStreak,
     playerRecord.winStreak,
   ]);
@@ -183,11 +185,11 @@ export function DraftRoom({
   const salaryCapLimit = drafter.salaryCapLimit;
   const hasSalaryCap = salaryCapLimit != null;
   const rankedProfile =
-    !isPracticeMode && drafter.salaryCapMode && !drafter.eventId
+    !isUnratedMatch && drafter.salaryCapMode && !drafter.eventId
       ? getRankedProfileView()
       : null;
   const classicProfile =
-    !isPracticeMode && hasSalaryCap && !drafter.salaryCapMode && !drafter.eventId
+    !isUnratedMatch && hasSalaryCap && !drafter.salaryCapMode && !drafter.eventId
       ? getClassicProfileView()
       : null;
   const salaryCapOptions = useMemo(
@@ -438,6 +440,7 @@ export function DraftRoom({
     salaryCapMode: drafter.salaryCapMode,
     allTimeMode: drafter.allTimeMode,
     practiceMode: drafter.practiceMode,
+    privateMatch: drafter.privateMatch,
     eventId: drafter.eventId,
   });
 
@@ -467,6 +470,8 @@ export function DraftRoom({
             <p className="eyebrow">
               {isPracticeMode
                 ? "Practice mode"
+                : isPrivateMatch
+                  ? "Private match"
                 : drafter.eventId
                   ? "Weekly Event"
                   : drafter.salaryCapMode
@@ -475,6 +480,10 @@ export function DraftRoom({
             </p>
             {isPracticeMode ? (
               <p className="salary-cap-banner__rating">Bot · no rating change</p>
+            ) : isPrivateMatch ? (
+              <p className="salary-cap-banner__rating">
+                Friend · no Banners, badges, or board
+              </p>
             ) : drafter.eventId ? (
               <p className="salary-cap-banner__rating">Shared board</p>
             ) : rankedProfile ? (

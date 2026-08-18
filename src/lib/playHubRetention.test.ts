@@ -88,6 +88,17 @@ describe("playHubRetention", () => {
     expect(chips.some((chip) => chip.id === "streak")).toBe(true);
   });
 
+  it("omits the recap chip when recapReady is false", () => {
+    const chips = buildPlayHubChips({
+      pendingResultCount: 0,
+      queuedClassic: false,
+      queuedRanked: false,
+      recapReady: false,
+    });
+
+    expect(chips.some((chip) => chip.id === "recap")).toBe(false);
+  });
+
   it("skips the Daily streak chip when the next badge is already Daily", () => {
     const chips = buildPlayHubChips({
       pendingResultCount: 0,

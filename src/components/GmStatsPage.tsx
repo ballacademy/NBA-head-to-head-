@@ -75,7 +75,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       className="gm-stats-page"
       title={snapshot.teamName}
       titleClassName="landing-hub__title--name"
-      lede={`${snapshot.totalWins}–${snapshot.totalLosses} · ${snapshot.currentSeasonLabel}`}
+      lede={`Career ${formatGmRecordLine(snapshot.totalWins, snapshot.totalLosses, snapshot.totalTies)} · ${snapshot.currentSeasonLabel}`}
       onBack={onBack}
       backLabel="Franchise"
     >
@@ -157,6 +157,14 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
                     },
                   ]
                 : []),
+              {
+                label: "Events",
+                value: formatGmRecordLine(
+                  snapshot.events.wins,
+                  snapshot.events.losses,
+                  snapshot.events.ties,
+                ),
+              },
             ]}
           />
         </section>

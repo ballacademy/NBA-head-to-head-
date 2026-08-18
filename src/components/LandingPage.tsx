@@ -158,10 +158,11 @@ interface LandingPageProps {
   landingBasicDaily: LandingDailyDraftSnapshot;
   landingAdvancedDaily: LandingDailyDraftSnapshot;
   onCollectionChange: (collection: PlayerCollection) => void;
+  onCareerSynced?: () => void;
   onViewStats: () => void;
   onViewTierList: () => void;
   onViewGmStats: () => void;
-  onViewWeeklyRecap: () => void;
+  onViewWeeklyRecap: (source?: "play" | "roster") => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
   onViewPrivacy: () => void;
@@ -204,6 +205,7 @@ export function LandingPage({
   landingBasicDaily,
   landingAdvancedDaily,
   onCollectionChange,
+  onCareerSynced,
   onViewStats,
   onViewTierList,
   onViewGmStats,
@@ -238,6 +240,7 @@ export function LandingPage({
     null | "classic" | "ranked"
   >(null);
   const [teamNameExpanded, setTeamNameExpanded] = useState(false);
+  const [recapSeenTick, setRecapSeenTick] = useState(0);
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
@@ -481,6 +484,7 @@ export function LandingPage({
       ),
     [weeklyEvent?.id],
   );
+  const pastEventHistory = eventHistory.filter((row) => !row.isCurrent);
   const scheduledWeeklyEvent = useMemo(
     () => getScheduledWeeklyEventMeta(),
     [],
@@ -507,7 +511,8 @@ export function LandingPage({
       pendingResultCount: pendingOwnerResultCount,
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,
-      recapReady: !hasSeenWeeklyRecap(recap.weekKey),
+      recapReady:
+        recap.dailyPuzzlesThisWeek > 0 && !hasSeenWeeklyRecap(recap.weekKey),
       nextBadgeTitle: nextBadge?.title ?? null,
       nextBadgeIsDaily,
       nextBadgePlaySection: nextBadge?.hint.playSection,
@@ -521,6 +526,7 @@ export function LandingPage({
     pendingOwnerResultCount,
     queuedLineupLock.classic,
     queuedLineupLock.ranked,
+    recapSeenTick,
   ]);
   const playNavBadgeCount = getPlayNavBadgeCount({
     pendingResultCount: pendingOwnerResultCount,
@@ -538,7 +544,8 @@ export function LandingPage({
       return;
     }
     if (chip.action.type === "recap") {
-      onViewWeeklyRecap();
+      setRecapSeenTick((tick) => tick + 1);
+      onViewWeeklyRecap("play");
       return;
     }
     if (chip.action.type === "play") {
@@ -721,7 +728,9 @@ export function LandingPage({
             {formatDailyDraftProductName(mode)}
           </p>
           {dailyCompleted ? (
-            <span className="daily-draft-card__completed-tag">Completed</span>
+            <span className="daily-draft-card__completed-tag">
+              {snapshot.canViewLineup ? "Completed" : "Played"}
+            </span>
           ) : null}
         </div>
         <h3 className="daily-draft-card__challenge-title">
@@ -740,7 +749,9 @@ export function LandingPage({
             onClick={() => void handleDailyAction(mode)}
           >
             {dailyCompleted
-              ? `View ${formatDailyDraftModeLabel(mode)} lineup`
+              ? snapshot.canViewLineup
+                ? `View ${formatDailyDraftModeLabel(mode)} lineup`
+                : "Lineup not saved"
               : `Play ${formatDailyDraftModeLabel(mode)}`}
           </button>
           <button
@@ -1217,6 +1228,9 @@ export function LandingPage({
                     {" · "}${(weeklyEvent.salaryCapLimit / 1_000_000).toFixed(0)}
                     M · {eventMatchesLeft}/{weeklyEvent.maxMatches} left
                   </p>
+                  <p className="event-card__description">
+                    {weeklyEvent.description}
+                  </p>
                   {eventPresenceLabel ? (
                     <p className="event-card__presence" role="status">
                       {eventPresenceLabel}
@@ -1361,7 +1375,7 @@ export function LandingPage({
                   )}
                 </details>
 
-                {eventHistory.length > 0 ? (
+                {pastEventHistory.length > 0 ? (
                   <section
                     className="event-history landing-card"
                     aria-label="Event history"
@@ -1371,7 +1385,7 @@ export function LandingPage({
                       Past weekly events beyond this week&apos;s card.
                     </p>
                     <ul className="event-history__list">
-                      {eventHistory.map((row) => (
+                      {pastEventHistory.map((row) => (
                         <li
                           key={row.eventId}
                           className={`event-history__row${
@@ -1424,7 +1438,10 @@ export function LandingPage({
             onViewStats={onViewStats}
             onViewAchievements={onViewAchievements}
             onViewGmStats={onViewGmStats}
-            onViewWeeklyRecap={onViewWeeklyRecap}
+            onViewWeeklyRecap={() => {
+              setRecapSeenTick((tick) => tick + 1);
+              onViewWeeklyRecap("roster");
+            }}
             onPlayDaily={() => {
               updatePlaySection("daily");
               onHubTabChange("play");
@@ -1478,6 +1495,8 @@ export function LandingPage({
               playerId={playerIdentity.playerId}
               onViewPrivacy={onViewPrivacy}
               onViewTerms={onViewTerms}
+              onCollectionChange={onCollectionChange}
+              onCareerSynced={onCareerSynced}
             />
 
             <div className="account-section__legal-strip">
