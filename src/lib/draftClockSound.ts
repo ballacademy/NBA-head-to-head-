@@ -1,4 +1,6 @@
 /** Draft-clock tick (Web Audio — no asset file). Same sound every second. */
+import { shouldPlayDraftClockPing } from "./draftClockPrefs";
+
 let sharedAudioContext: AudioContext | null = null;
 let unlockListenersAttached = false;
 
@@ -68,6 +70,10 @@ export const ensureDraftClockAudioUnlocked = (): void => {
  * `secondsLeft` is kept for call-site compatibility and ignored.
  */
 export const playDraftClockPing = (_secondsLeft?: number) => {
+  if (!shouldPlayDraftClockPing()) {
+    return;
+  }
+
   try {
     const ctx = getAudioContext();
     if (!ctx) {
