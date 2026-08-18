@@ -116,4 +116,21 @@ describe("gmWeeklyRecap", () => {
 
     vi.useRealTimers();
   });
+
+  it("shows an em dash when last week's scores have no stored percentile", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-13T16:00:00.000Z"));
+
+    const playerId = "player-test";
+    setPlayerIdentity(playerId);
+    writeJson("nba-head-to-head-daily-scores", {
+      "2026-08-04": [{ playerId, goalId: "pts", mode: "basic" }],
+    });
+
+    const recap = buildWeeklyGmRecap();
+    expect(recap.dailyDays).toBe(1);
+    expect(recap.bestDailyFinishLabel).toBe("—");
+
+    vi.useRealTimers();
+  });
 });

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clearDailyDraftRemoteCacheForTests,
+  findPlayerDailyDraftEntry,
   getDailyDraftPercentile,
   refreshDailyDraftScoresFromApi,
   submitDailyDraftScore,
@@ -179,5 +180,58 @@ describe("dailyDraftScores remote integration", () => {
     )["2099-01-04"][0];
     expect(saved.value).toBe(55);
     expect(saved.lineup).toEqual(["p1", "p2", "p3", "p4", "p5"]);
+  });
+
+  it("keeps a stored percentile when the API entry has none", async () => {
+    const storage = stubPlayerStorage();
+    const goal = DAILY_DRAFT_GOALS[0]!;
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-01-05": [
+          {
+            playerId: "player-test-1",
+            goalId: goal.id,
+            mode: "basic",
+            value: 40,
+            formattedResult: "40.0",
+            percentile: 81,
+            lineup: ["a", "b", "c", "d", "e"],
+            teamName: "Test Team",
+            submittedAt: "2026-06-26T00:00:00.000Z",
+          },
+        ],
+      }),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          dateKey: "2099-01-05",
+          goalId: goal.id,
+          values: [10, 20, 30],
+          totalDrafters: 4,
+          entry: {
+            playerId: "player-test-1",
+            goalId: goal.id,
+            value: 40,
+            formattedResult: "40.0",
+            lineup: ["a", "b", "c", "d", "e"],
+            teamName: "Test Team",
+            submittedAt: "2026-06-26T00:00:00.000Z",
+          },
+        }),
+      }),
+    );
+
+    await refreshDailyDraftScoresFromApi("2099-01-05", goal.id);
+    const entry = findPlayerDailyDraftEntry(
+      "2099-01-05",
+      "player-test-1",
+      "basic",
+    );
+
+    expect(entry?.percentile).toBe(81);
   });
 });
