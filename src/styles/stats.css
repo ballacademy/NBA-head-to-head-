@@ -166,12 +166,6 @@
     grid-column: auto;
   }
 
-  .story-card__top,
-  .story-footer {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .stats-panel__footer {
     display: block;
   }

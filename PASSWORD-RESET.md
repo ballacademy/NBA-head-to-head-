@@ -47,9 +47,9 @@ git pull
 npx wrangler d1 migrations apply draft-day-gm --remote
 ```
 
-You want migrations through `0014_player_account_email` applied (includes
-`0013_password_reset_tokens`). If it says **No migrations to apply**, you’re
-already current after this ships.
+You want production D1 migrations applied through **`0025_player_career_stats.sql`**
+(includes password reset `0013` and account email `0014`). If it says **No
+migrations to apply**, you’re already current.
 
 Also merge/deploy so the live site has Forgot password, self-serve request
 reset, and email on signup.

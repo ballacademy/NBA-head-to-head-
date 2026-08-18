@@ -18,8 +18,6 @@ import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { HubShell } from "./components/HubShell";
-import { LeaderboardPage } from "./components/LeaderboardPage";
-import { TierListPage } from "./components/TierListPage";
 import type { LandingHubTab } from "./components/LandingBottomNav";
 import {
   applyLandingDeepLinksFromSearch,
@@ -195,6 +193,16 @@ const PlayerStatsTable = lazyWithChunkReload(() =>
     default: m.PlayerStatsTable,
   })),
 );
+const LeaderboardPage = lazyWithChunkReload(() =>
+  import("./components/LeaderboardPage").then((m) => ({
+    default: m.LeaderboardPage,
+  })),
+);
+const TierListPage = lazyWithChunkReload(() =>
+  import("./components/TierListPage").then((m) => ({
+    default: m.TierListPage,
+  })),
+);
 
 const FeaturePageFallback = () => (
   <div className="panel panel--compact feature-page-fallback hub-empty" role="status" aria-live="polite">
@@ -203,8 +211,12 @@ const FeaturePageFallback = () => (
 );
 
 const prefetchHubFeatureTab = (tab: LandingHubTab) => {
-  if (tab === "standings" || tab === "community") {
-    // Eagerly bundled with App — nothing to prefetch.
+  if (tab === "standings") {
+    void import("./components/LeaderboardPage").catch(() => undefined);
+    return;
+  }
+  if (tab === "community") {
+    void import("./components/TierListPage").catch(() => undefined);
     return;
   }
   if (tab === "roster") {

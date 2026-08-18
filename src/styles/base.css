@@ -96,7 +96,6 @@ main.landing-layout {
 }
 
 .hero-actions a,
-.story-footer button,
 .secondary-button {
   border: 0;
   border-radius: 12px;
@@ -262,8 +261,7 @@ main.landing-layout {
   letter-spacing: 0.06em;
 }
 
-.panel,
-.story-card {
+.panel {
   border: 1px solid var(--panel-border);
   border-radius: 28px;
   background: var(--panel);

@@ -40,13 +40,41 @@ Casual and Pro Head to Head search for a live opponent for **7–10 seconds**, t
 
 ## Optional accounts
 
-Accounts are optional. Register stores a username and PBKDF2-SHA-256 password hash linked to the browser GM `playerId`. Login returns that `playerId` so the client can restore identity after cleared local storage. Apply migration `0010_player_accounts.sql` before enabling the feature in production.
-Password resets use support-issued one-time codes (`0013_password_reset_tokens.sql`);
-see `PASSWORD-RESET.md`.
+Accounts are optional. Register stores a username and PBKDF2-SHA-256 password hash linked to the browser GM `playerId`. Login returns that `playerId` so the client can restore identity after cleared local storage. Password resets use one-time codes (`0013_password_reset_tokens.sql`) and signup email (`0014_player_account_email.sql`); see `PASSWORD-RESET.md`.
 
 ```bash
 npx wrangler d1 migrations apply draft-day-gm --remote
 ```
+
+Production and QA should stay current through **`0025_player_career_stats.sql`**. The repo ships 25 migrations in `migrations/`:
+
+| Migration | Purpose |
+|-----------|---------|
+| `0001` | Stored ghost lineups |
+| `0002` | Owner match results queue |
+| `0003` | Daily Draft shared scores |
+| `0004` | Global leaderboards |
+| `0005` | Live matchmaking queue |
+| `0006` | Purge invalid stored lineups |
+| `0007` | Player legacy stats |
+| `0008` | Daily Draft mode column |
+| `0009` | Stored lineup matchmaking meta |
+| `0010` | Optional player accounts |
+| `0011` | Soft-claim ghost matchmaking |
+| `0012` | Account signup index |
+| `0013` | Password reset tokens |
+| `0014` | Account email for recovery |
+| `0015` | Published tier lists |
+| `0016` | Purge unlinked leaderboard rows |
+| `0017` | Real owner match scores |
+| `0018` | Private friend rooms |
+| `0019` | Cloud collection sync |
+| `0020` | Cloud achievements sync |
+| `0021` | Product analytics events |
+| `0022` | Community posts |
+| `0023` | Post likes + attachments |
+| `0024` | Community replies + reports |
+| `0025` | Career stats sync |
 
 ## Flow
 
@@ -72,7 +100,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft submissions s
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
-   Includes `0003_daily_draft_scores.sql` for shared Daily Draft percentiles, `0004_leaderboard_entries.sql` for global leaderboards, `0005_live_matchmaking.sql` for live opponent pairing, `0006_purge_invalid_stored_lineups.sql` to remove pre-fix ghost lineups with fewer than five player ids, `0010_player_accounts.sql` for optional username/password GM restore, `0011_stored_lineup_soft_claim.sql` for soft-claim ghost matchmaking, and `0018_private_rooms.sql` for account-only private friend matches.
+   Applies every file in `migrations/` through **`0025_player_career_stats.sql`** (see the migration table under **Optional accounts** above).
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

@@ -145,7 +145,7 @@ Keep **`qa` in sync with `main`** for almost everything. Product and bugfix land
 | Exception | Prod | QA / local |
 |-----------|------|------------|
 | All-Time mode | Coming soon (`ALL_TIME_MODE_PLAYABLE = false`) | Playable |
-| Player headshots | Jerseys | ESPN headshots (also `?headshots` anywhere) |
+| Player headshots | Enabled (ESPN, jersey fallback) | Same |
 
 Anything else called out specifically for QA can stay QA-only the same way; default new work to both environments.
 
