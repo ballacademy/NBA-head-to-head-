@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import {
   buildWeeklyGmRecap,
   markWeeklyRecapSeen,
@@ -15,7 +15,7 @@ export function WeeklyRecapPage({
   onBack,
   backLabel = "Play",
 }: WeeklyRecapPageProps) {
-  const recap = useMemo(() => buildWeeklyGmRecap(), []);
+  const recap = buildWeeklyGmRecap();
 
   useEffect(() => {
     markWeeklyRecapSeen(recap.weekKey);
@@ -25,7 +25,7 @@ export function WeeklyRecapPage({
     <HubPageChrome
       className="weekly-recap-page"
       title="Weekly recap"
-      lede={`Last week · Daily Draft · ${recap.weekRangeLabel}`}
+      lede={`${recap.periodLabel} · Daily Draft · ${recap.weekRangeLabel}`}
       onBack={onBack}
       backLabel={backLabel}
     >

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   buildWeeklyGmRecap,
   hasSeenWeeklyRecap,
@@ -24,7 +24,7 @@ export function WeeklyGmRecapCard({
   hideDismiss = false,
   hideHeading = false,
 }: WeeklyGmRecapCardProps) {
-  const recap = useMemo(() => buildWeeklyGmRecap(), []);
+  const recap = buildWeeklyGmRecap();
   const [dismissed, setDismissed] = useState(() =>
     hasSeenWeeklyRecap(recap.weekKey),
   );
@@ -49,7 +49,7 @@ export function WeeklyGmRecapCard({
         <div className="franchise-home__card-head">
           <p className="franchise-home__eyebrow">Weekly recap</p>
           <p className="franchise-home__lede">
-            Last week · {recap.weekRangeLabel}
+            {recap.periodLabel} · {recap.weekRangeLabel}
           </p>
         </div>
         <p className="franchise-home__summary">{recap.dailyDaysSplitLabel}</p>
@@ -94,7 +94,7 @@ export function WeeklyGmRecapCard({
                 Weekly recap
               </h2>
               <p className="weekly-gm-recap__lede">
-                Last week · Daily Draft · {recap.weekRangeLabel}
+                {recap.periodLabel} · Daily Draft · {recap.weekRangeLabel}
               </p>
             </div>
           )}

@@ -10,15 +10,16 @@ import { getOrCreatePlayerId } from "./playerRecord";
 
 const WEEKLY_RECAP_SEEN_KEY = "ddgm:weekly-recap-seen";
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 type DailyScoreEntry = {
-  playerId: string;
+  playerId?: string;
   goalId?: string;
   mode?: DailyDraftMode;
   percentile?: number;
 };
 
-type DailyScoreStore = Record<string, DailyScoreEntry[]>;
+type DailyScoreStore = Record<string, DailyScoreEntry[] | unknown>;
 
 type WeeklyRecapSeenStore = Record<string, boolean>;
 
@@ -29,11 +30,34 @@ const saveSeenStore = (store: WeeklyRecapSeenStore) => {
   writeJson(WEEKLY_RECAP_SEEN_KEY, store);
 };
 
+const loadDailyScoreStore = (): DailyScoreStore => {
+  const saved = readJson<DailyScoreStore>(DAILY_SCORES_KEY);
+  return saved && typeof saved === "object" ? saved : {};
+};
+
 const resolveEntryMode = (entry: DailyScoreEntry): DailyDraftMode =>
-  entry.mode ??
-  (typeof entry.goalId === "string"
-    ? getDailyDraftModeForGoalId(entry.goalId)
-    : "basic");
+  entry.mode === "basic" || entry.mode === "advanced"
+    ? entry.mode
+    : typeof entry.goalId === "string"
+      ? getDailyDraftModeForGoalId(entry.goalId)
+      : "basic";
+
+const belongsToPlayer = (entry: DailyScoreEntry, playerId: string) => {
+  if (typeof entry.playerId !== "string" || entry.playerId.length === 0) {
+    return true;
+  }
+  return entry.playerId === playerId;
+};
+
+const playerHasAnyScores = (store: DailyScoreStore, playerId: string) =>
+  Object.values(store).some(
+    (raw) =>
+      Array.isArray(raw) &&
+      raw.some(
+        (entry) =>
+          typeof entry?.playerId === "string" && entry.playerId === playerId,
+      ),
+  );
 
 /** Monday date key for the week containing `date`. */
 export const getWeeklyRecapWeekKey = (date = new Date()) => {
@@ -48,20 +72,40 @@ export const getWeeklyRecapWeekKey = (date = new Date()) => {
 export const getLastCompletedWeeklyRecapWeekKey = (date = new Date()) =>
   subtractDaysFromDateKey(getWeeklyRecapWeekKey(date), 7);
 
-const forEachDayInWeek = (
-  weekKey: string,
-  visit: (dateKey: string) => void,
-) => {
-  const weekEnd = subtractDaysFromDateKey(weekKey, -6);
-  let cursor = weekKey;
+const weekEndDateKey = (weekKey: string) =>
+  subtractDaysFromDateKey(weekKey, -6);
 
-  while (cursor <= weekEnd) {
-    visit(cursor);
-    if (cursor === weekEnd) {
-      break;
+const entriesForWeek = (
+  store: DailyScoreStore,
+  weekKey: string,
+  playerId: string,
+) => {
+  const weekEnd = weekEndDateKey(weekKey);
+  const restrictToPlayer = playerHasAnyScores(store, playerId);
+  const matched: { dateKey: string; entry: DailyScoreEntry }[] = [];
+
+  for (const [dateKey, raw] of Object.entries(store)) {
+    if (
+      !DATE_KEY_PATTERN.test(dateKey) ||
+      dateKey < weekKey ||
+      dateKey > weekEnd ||
+      !Array.isArray(raw)
+    ) {
+      continue;
     }
-    cursor = subtractDaysFromDateKey(cursor, -1);
+
+    for (const entry of raw) {
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      if (restrictToPlayer && !belongsToPlayer(entry, playerId)) {
+        continue;
+      }
+      matched.push({ dateKey, entry });
+    }
   }
+
+  return matched;
 };
 
 const formatDateKeyShort = (dateKey: string) => {
@@ -73,74 +117,76 @@ const formatDateKeyShort = (dateKey: string) => {
   });
 };
 
-export const formatWeeklyRecapRangeLabel = (weekKey: string) => {
-  const weekEnd = subtractDaysFromDateKey(weekKey, -6);
-  return `${formatDateKeyShort(weekKey)}–${formatDateKeyShort(weekEnd)}`;
+export const formatWeeklyRecapRangeLabel = (
+  weekKey: string,
+  throughToday = false,
+) => {
+  const weekEnd = weekEndDateKey(weekKey);
+  const today = getDailyDateKey();
+  const endKey = throughToday && today < weekEnd ? today : weekEnd;
+  return `${formatDateKeyShort(weekKey)}–${formatDateKeyShort(endKey)}`;
 };
 
-/** Count distinct calendar days with a Daily score in the Mon–Sun week. */
-export const countDailyDaysThisWeek = (
-  playerId = getOrCreatePlayerId(),
-  weekKey = getLastCompletedWeeklyRecapWeekKey(),
+const summarizeWeek = (
+  weekKey: string,
+  playerId: string,
+  store: DailyScoreStore,
 ) => {
-  const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
-  let count = 0;
-
-  forEachDayInWeek(weekKey, (cursor) => {
-    const entries = store[cursor] ?? [];
-    if (entries.some((entry) => entry.playerId === playerId)) {
-      count += 1;
-    }
-  });
-
-  return count;
-};
-
-export const countDailyModeDaysThisWeek = (
-  playerId = getOrCreatePlayerId(),
-  weekKey = getLastCompletedWeeklyRecapWeekKey(),
-) => {
-  const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
+  const matched = entriesForWeek(store, weekKey, playerId);
+  const days = new Set(matched.map((row) => row.dateKey));
   let basic = 0;
   let advanced = 0;
+  let bestPercentile: number | null = null;
 
-  forEachDayInWeek(weekKey, (cursor) => {
-    const modes = new Set(
-      (store[cursor] ?? [])
-        .filter((entry) => entry.playerId === playerId)
-        .map(resolveEntryMode),
-    );
+  const modesByDay = new Map<string, Set<DailyDraftMode>>();
+  for (const row of matched) {
+    const modes = modesByDay.get(row.dateKey) ?? new Set<DailyDraftMode>();
+    modes.add(resolveEntryMode(row.entry));
+    modesByDay.set(row.dateKey, modes);
+
+    if (typeof row.entry.percentile === "number") {
+      if (bestPercentile == null || row.entry.percentile > bestPercentile) {
+        bestPercentile = row.entry.percentile;
+      }
+    }
+  }
+
+  for (const modes of modesByDay.values()) {
     if (modes.has("basic")) {
       basic += 1;
     }
     if (modes.has("advanced")) {
       advanced += 1;
     }
-  });
+  }
 
-  return { basic, advanced };
+  return {
+    dailyDays: days.size,
+    basic,
+    advanced,
+    dailyPuzzles: basic + advanced,
+    bestPercentile,
+  };
+};
+
+/** Count distinct calendar days with a Daily score in the Mon–Sun week. */
+export const countDailyDaysThisWeek = (
+  playerId = getOrCreatePlayerId(),
+  weekKey = getLastCompletedWeeklyRecapWeekKey(),
+) => summarizeWeek(weekKey, playerId, loadDailyScoreStore()).dailyDays;
+
+export const countDailyModeDaysThisWeek = (
+  playerId = getOrCreatePlayerId(),
+  weekKey = getLastCompletedWeeklyRecapWeekKey(),
+) => {
+  const summary = summarizeWeek(weekKey, playerId, loadDailyScoreStore());
+  return { basic: summary.basic, advanced: summary.advanced };
 };
 
 export const getBestDailyPercentileThisWeek = (
   playerId = getOrCreatePlayerId(),
   weekKey = getLastCompletedWeeklyRecapWeekKey(),
-) => {
-  const store = readJson<DailyScoreStore>(DAILY_SCORES_KEY) ?? {};
-  let best: number | null = null;
-
-  forEachDayInWeek(weekKey, (cursor) => {
-    for (const entry of store[cursor] ?? []) {
-      if (entry.playerId !== playerId || typeof entry.percentile !== "number") {
-        continue;
-      }
-      if (best == null || entry.percentile > best) {
-        best = entry.percentile;
-      }
-    }
-  });
-
-  return best;
-};
+) => summarizeWeek(weekKey, playerId, loadDailyScoreStore()).bestPercentile;
 
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
@@ -160,6 +206,7 @@ const formatBestDailyFinishLabel = (percentile: number | null) => {
 export interface WeeklyGmRecap {
   weekKey: string;
   weekRangeLabel: string;
+  periodLabel: "Last week" | "This week";
   dailyDays: number;
   dailyDaysSplitLabel: string;
   dailyPuzzles: number;
@@ -167,20 +214,27 @@ export interface WeeklyGmRecap {
 }
 
 export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
-  const weekKey = getLastCompletedWeeklyRecapWeekKey();
-  const modeDays = countDailyModeDaysThisWeek(undefined, weekKey);
-  const bestPercentile = getBestDailyPercentileThisWeek(undefined, weekKey);
+  const playerId = getOrCreatePlayerId();
+  const store = loadDailyScoreStore();
+  const lastWeekKey = getLastCompletedWeeklyRecapWeekKey();
+  const thisWeekKey = getWeeklyRecapWeekKey();
+  const lastWeek = summarizeWeek(lastWeekKey, playerId, store);
+  const thisWeek = summarizeWeek(thisWeekKey, playerId, store);
+  const useLastWeek = lastWeek.dailyPuzzles > 0 || thisWeek.dailyPuzzles <= 0;
+  const weekKey = useLastWeek ? lastWeekKey : thisWeekKey;
+  const summary = useLastWeek ? lastWeek : thisWeek;
 
   return {
     weekKey,
-    weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey),
-    dailyDays: countDailyDaysThisWeek(undefined, weekKey),
+    weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey, !useLastWeek),
+    periodLabel: useLastWeek ? "Last week" : "This week",
+    dailyDays: summary.dailyDays,
     dailyDaysSplitLabel: formatDailyDaysSplitLabel(
-      modeDays.basic,
-      modeDays.advanced,
+      summary.basic,
+      summary.advanced,
     ),
-    dailyPuzzles: modeDays.basic + modeDays.advanced,
-    bestDailyFinishLabel: formatBestDailyFinishLabel(bestPercentile),
+    dailyPuzzles: summary.dailyPuzzles,
+    bestDailyFinishLabel: formatBestDailyFinishLabel(summary.bestPercentile),
   };
 };
 
