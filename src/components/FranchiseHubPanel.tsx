@@ -295,7 +295,7 @@ export function FranchiseHubPanel({
           >
             <span className="franchise-home__link-copy">
               <strong>GM Stats</strong>
-              <span>Front Office record and Daily details</span>
+              <span>Front Office, Events, and Daily details</span>
             </span>
             <span className="franchise-home__link-chevron" aria-hidden="true">
               ›

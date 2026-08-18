@@ -573,15 +573,16 @@ export function LandingPage({
       playSection: LandingPlaySection;
       h2hMode?: "classic" | "ranked";
     }) => {
-      saveLandingPlaySection(intent.playSection);
-      setPlaySection(intent.playSection);
       if (intent.h2hMode) {
         saveLandingH2hMode(intent.h2hMode);
         setH2hIntentTarget(intent.h2hMode);
       }
-      onHubTabChange("play");
+      updatePlaySection(intent.playSection);
+      if (hubTab !== "play") {
+        onHubTabChange("play");
+      }
     },
-    [onHubTabChange],
+    [hubTab, onHubTabChange, updatePlaySection],
   );
 
   useEffect(() => {

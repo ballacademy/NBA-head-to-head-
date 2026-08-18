@@ -1874,7 +1874,7 @@ function App() {
         salaryCapMode: Boolean(user.salaryCapMode),
         salaryCapLimit: user.salaryCapLimit,
       });
-      // Stay on results if practice restart fails instead of dumping to home.
+      // Stay on results if practice restart fails instead of dumping to Play.
       if (result === "failed") {
         return;
       }
@@ -2084,7 +2084,7 @@ function App() {
       if (failedUnfillable) {
         resetToLandingRef.current({
           error:
-            "Couldn't auto-fill a legal lineup for this draft. Return home and try again.",
+            "Couldn't auto-fill a legal lineup for this draft. Return to Play and try again.",
         });
         return;
       }
@@ -2368,7 +2368,7 @@ function App() {
       if (!opponentPlayerId) {
         resetToLanding({
           error:
-            "Your opponent did not finish drafting in time. Return home and try again.",
+            "Your opponent did not finish drafting in time. Return to Play and try again.",
         });
         return;
       }
@@ -2408,7 +2408,7 @@ function App() {
       if (!resolved) {
         resetToLanding({
           error:
-            "Your opponent did not finish drafting in time. Return home and try again.",
+            "Your opponent did not finish drafting in time. Return to Play and try again.",
         });
         return;
       }

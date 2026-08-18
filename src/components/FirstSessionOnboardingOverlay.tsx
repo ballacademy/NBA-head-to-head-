@@ -16,7 +16,7 @@ const GUIDE_ITEMS: { title: string; body: string }[] = [
   },
   {
     title: "Get a score",
-    body: `Daily Draft has two scored challenges each day (Basic and Advanced). ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} H2H are live matchups with Banners on the line. Events is a weekly themed H2H with rotating restrictions.`,
+    body: `Daily Draft has two scored challenges each day (Basic and Advanced). ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} H2H are live matchups with Banners on the line. Weekly Events is a themed H2H with rotating restrictions.`,
   },
   {
     title: "Build a career",

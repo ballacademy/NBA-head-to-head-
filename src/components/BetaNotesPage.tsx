@@ -183,8 +183,9 @@ export function BetaNotesPage({
               </li>
               <li>
                 <strong>Franchise</strong> — Collection, Badges, Player pool,
-                Daily progress, and Most drafted · <strong>Ranks</strong> ·{" "}
-                <strong>Account</strong> (sign-in, settings)
+                Daily progress, Most drafted, and GM Stats ·{" "}
+                <strong>Ranks</strong> · <strong>Account</strong> (sign-in,
+                settings)
               </li>
               <li>
                 <strong>Private match</strong> (Casual or Pro) — account
