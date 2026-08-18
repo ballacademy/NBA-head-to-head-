@@ -54,14 +54,14 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "daily",
     short: "Basic",
     title: "Daily Draft · Basic",
-    blurb: "Season per-game goal.",
+    blurb: "Season per-game stats — one scored try per mode daily.",
   },
   dailyAdvanced: {
     id: "dailyAdvanced",
     internalMode: "daily",
     short: "Advanced",
     title: "Daily Draft · Advanced",
-    blurb: "Per-minute and rate goal.",
+    blurb: "Per-minute and rate stats — one scored try per mode daily.",
   },
   weeklyEvent: {
     id: "weeklyEvent",

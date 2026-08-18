@@ -1,4 +1,5 @@
 import { hasLimitedSampleSize } from "../lib/sampleSize";
+import { LIMITED_SAMPLE_TOOLTIP_COPY } from "../lib/limitedSampleExplainer";
 import type { Player } from "../lib/types";
 
 interface LimitedSampleBadgeProps {
@@ -15,7 +16,10 @@ export function LimitedSampleBadge({
   }
 
   return (
-    <span className="player-caveat-badge player-caveat-badge--limited-sample">
+    <span
+      className="player-caveat-badge player-caveat-badge--limited-sample"
+      title={LIMITED_SAMPLE_TOOLTIP_COPY}
+    >
       {compact ? "Limited sample" : "Limited sample size"}
     </span>
   );

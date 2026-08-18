@@ -24,6 +24,11 @@ import {
   unlockDraftClockAudio,
 } from "../lib/draftClockSound";
 import {
+  loadDraftClockMuted,
+  saveDraftClockMuted,
+} from "../lib/draftClockPrefs";
+import { formatBlindDraftNamePlaceholder } from "../lib/blindDraftCopy";
+import {
   estimatePlayerSalary,
   formatSalary,
   getLineupSalaryTotal,
@@ -45,6 +50,11 @@ import type { Drafter, Player } from "../lib/types";
 import { getMatchModeTheme, matchModeThemeClass } from "../lib/matchModeTheme";
 import { getPlayerRarityBadgeItems } from "../lib/playerRarityBadges";
 import { hasLimitedSampleSize } from "../lib/sampleSize";
+import {
+  LIMITED_SAMPLE_TOOLTIP_COPY,
+  hasSeenLimitedSampleExplainer,
+  markLimitedSampleExplainerSeen,
+} from "../lib/limitedSampleExplainer";
 import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import { LimitedSampleBadge } from "./LimitedSampleBadge";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
@@ -87,6 +97,12 @@ export function DraftRoom({
 }: DraftRoomProps) {
   const [query, setQuery] = useState("");
   const [blindError, setBlindError] = useState<string | null>(null);
+  const [draftClockMuted, setDraftClockMuted] = useState(() =>
+    loadDraftClockMuted(),
+  );
+  const [showLimitedSampleExplainer, setShowLimitedSampleExplainer] = useState(
+    () => !hasSeenLimitedSampleExplainer(),
+  );
   const [sortMode, setSortMode] = useState<DraftSortMode>(() =>
     isDailyDraft ? "alphabetical" : "points",
   );
@@ -274,6 +290,23 @@ export function DraftRoom({
     () => candidates.filter((entry) => entry.affordable).length,
     [candidates],
   );
+  const hasLimitedSampleInPool = useMemo(
+    () =>
+      !isDailyDraft &&
+      !isBlindDraft &&
+      candidates.some(({ player }) => hasLimitedSampleSize(player)),
+    [candidates, isBlindDraft, isDailyDraft],
+  );
+  const showLimitedSampleNote =
+    showLimitedSampleExplainer && hasLimitedSampleInPool;
+
+  const toggleDraftClockMuted = () => {
+    setDraftClockMuted((current) => {
+      const next = !current;
+      saveDraftClockMuted(next);
+      return next;
+    });
+  };
 
   const submitBlindDraftPick = () => {
     const match = findBlindDraftMatch(
@@ -355,7 +388,9 @@ export function DraftRoom({
         lastClockPingSecondRef.current !== remaining
       ) {
         lastClockPingSecondRef.current = remaining;
-        playDraftClockPing(remaining);
+        if (!draftClockMuted) {
+          playDraftClockPing(remaining);
+        }
       }
       setSecondsLeft(remaining);
 
@@ -388,6 +423,7 @@ export function DraftRoom({
     drafter.lineup,
     onTimeout,
     pickTimeLimitSeconds,
+    draftClockMuted,
   ]);
 
   if (!currentSlot) {
@@ -550,9 +586,24 @@ export function DraftRoom({
           <div className="draft-prompt__copy">
             <div className="draft-prompt__topline">
               <p className="draft-prompt__eyebrow">On the clock</p>
-              <div className={timerClass} aria-live="polite">
-                <span>{secondsLeft}s</span>
-                <small>left</small>
+              <div className="draft-prompt__timer-row">
+                <div className={timerClass} aria-live="polite">
+                  <span>{secondsLeft}s</span>
+                  <small>left</small>
+                </div>
+                <button
+                  type="button"
+                  className="draft-clock-mute"
+                  aria-pressed={draftClockMuted}
+                  aria-label={
+                    draftClockMuted
+                      ? "Unmute draft clock"
+                      : "Mute draft clock"
+                  }
+                  onClick={toggleDraftClockMuted}
+                >
+                  {draftClockMuted ? "Unmute" : "Mute"}
+                </button>
               </div>
             </div>
             <h3 id="draft-heading" className="draft-prompt__title">
@@ -560,7 +611,7 @@ export function DraftRoom({
             </h3>
             <p className="draft-prompt__eligible">
               {isBlindDraft
-                ? "Blind draft — type the exact full name"
+                ? `Blind draft — type the exact full name (${formatBlindDraftNamePlaceholder()})`
                 : hasSalaryCap && candidates.length > affordableCandidateCount
                   ? `${affordableCandidateCount} affordable · ${candidates.length - affordableCandidateCount} over cap`
                   : `${affordableCandidateCount} ${
@@ -582,7 +633,9 @@ export function DraftRoom({
             type="search"
             value={query}
             placeholder={
-              isBlindDraft ? "Exact player name" : "Search by name or team"
+              isBlindDraft
+                ? formatBlindDraftNamePlaceholder()
+                : "Search by name or team"
             }
             onChange={(event) => {
               setQuery(event.target.value);
@@ -628,6 +681,22 @@ export function DraftRoom({
       {isBlindDraft && blindError ? (
         <p className="draft-blind-error" role="alert">
           {blindError}
+        </p>
+      ) : null}
+
+      {showLimitedSampleNote ? (
+        <p className="limited-sample-explainer" role="note">
+          <span>{LIMITED_SAMPLE_TOOLTIP_COPY}</span>
+          <button
+            type="button"
+            className="limited-sample-explainer__dismiss"
+            onClick={() => {
+              markLimitedSampleExplainerSeen();
+              setShowLimitedSampleExplainer(false);
+            }}
+          >
+            Got it
+          </button>
         </p>
       ) : null}
 

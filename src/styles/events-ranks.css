@@ -1077,6 +1077,38 @@
   margin-bottom: 2px;
 }
 
+.draft-prompt__timer-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draft-clock-mute {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.45);
+  color: #e2e8f0;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.draft-clock-mute[aria-pressed="true"] {
+  opacity: 0.72;
+}
+
+.draft-clock-mute:hover {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
 .draft-prompt--compact .draft-prompt__eyebrow {
   margin: 0;
   font-size: 0.68rem;

@@ -16,6 +16,7 @@ import type { DailyDraftMode } from "../lib/dailyDraftMode";
 import {
   formatDailyDraftModeLabel,
   formatDailyDraftProductName,
+  getDailyDraftScoringTwistCopy,
 } from "../lib/dailyDraftMode";
 import type { LandingDailyDraftSnapshot } from "../lib/landingDailyDraft";
 import {
@@ -716,6 +717,10 @@ export function LandingPage({
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
         </h3>
+        <p className="daily-draft-card__challenge-copy">
+          {getDailyDraftScoringTwistCopy(mode)}
+        </p>
+        <p className="daily-draft-card__goal-copy">{snapshot.goal.description}</p>
         <p className="daily-draft-card__status">{statusParts.join(" · ")}</p>
         <div className="daily-draft-card__actions">
           <button

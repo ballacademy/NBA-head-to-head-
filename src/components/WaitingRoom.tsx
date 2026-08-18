@@ -34,7 +34,8 @@ export function WaitingRoom({
           : opponentName
             ? ` ${opponentName} is still drafting and will be revealed once both teams are ready.`
             : " Your opponent is still drafting and will be revealed once both teams are ready."}{" "}
-        Stay here to see the result — leaving abandons this match screen.
+        Stay here to watch it finish, or leave and come back from Play — your
+        match stays live and results appear once both lineups are ready.
       </p>
 
       <div className="waiting-indicator">
