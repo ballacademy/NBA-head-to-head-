@@ -10,6 +10,8 @@
 .owner-results-inbox__lineup .team-lineup-card__players {
   margin: 0;
 }
+
+.owner-results-inbox__list {
   list-style: none;
   margin: 0 0 12px;
   padding: 0;
