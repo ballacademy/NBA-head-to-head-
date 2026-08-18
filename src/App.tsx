@@ -31,6 +31,7 @@ import {
   syncLandingHubTabUrl,
   type LandingContentTab,
   type LandingDeepLinkFeature,
+  type LandingPlaySection,
 } from "./lib/landingHub";
 import { trackProductEvent } from "./lib/productAnalytics";
 import { isQaRuntimeHost } from "./lib/qaRuntime";
@@ -1741,6 +1742,16 @@ function App() {
   const resetToLandingRef = useRef(resetToLanding);
   resetToLandingRef.current = resetToLanding;
 
+  const returnToPlayHub = (playSection?: LandingPlaySection) => {
+    saveLandingHubTab("play");
+    if (playSection) {
+      saveLandingPlaySection(playSection);
+    }
+    setLandingHubTab("play");
+    syncLandingHubTabUrl("play");
+    resetToLanding();
+  };
+
   const openFeaturePage = useCallback(
     (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
       pendingFeatureNavigationRef.current = true;
@@ -1809,12 +1820,16 @@ function App() {
     scrollHubToTop();
 
     const syncParent = () => {
-      syncLandingDeepLinkUrl({
-        hub: parentTab,
-        play: parentTab === "play" ? undefined : null,
-        view: null,
-        post: null,
-      });
+      if (parentTab === "play") {
+        syncLandingHubTabUrl("play");
+      } else {
+        syncLandingDeepLinkUrl({
+          hub: parentTab,
+          play: null,
+          view: null,
+          post: null,
+        });
+      }
       const landingState = window.history.state as FeatureHistoryState | null;
       if (landingState?.appPhase) {
         window.history.replaceState({}, "", window.location.href);
@@ -2912,9 +2927,9 @@ function App() {
       <section className="panel landing hub-feature">
         <p className="eyebrow">Draft unavailable</p>
         <h2>We couldn&apos;t load your draft.</h2>
-        <p>Return home and try starting again.</p>
-        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-          Back to home
+        <p>Return to Play and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => returnToPlayHub()}>
+          Back to Play
         </button>
       </section>,
       { activeTab: landingHubTab, suspense: false },
@@ -2926,9 +2941,9 @@ function App() {
       <section className="panel landing hub-feature">
         <p className="eyebrow">Draft unavailable</p>
         <h2>We couldn&apos;t set up this matchup.</h2>
-        <p>Return home and try starting again.</p>
-        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-          Back to home
+        <p>Return to Play and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => returnToPlayHub()}>
+          Back to Play
         </button>
       </section>,
       { activeTab: landingHubTab, suspense: false },
@@ -2946,9 +2961,9 @@ function App() {
       <section className="panel landing hub-feature">
         <p className="eyebrow">Draft unavailable</p>
         <h2>We couldn&apos;t load this draft board.</h2>
-        <p>Return home and try starting again.</p>
-        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-          Back to home
+        <p>Return to Play and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => returnToPlayHub()}>
+          Back to Play
         </button>
       </section>,
       { activeTab: landingHubTab, suspense: false },
@@ -2998,7 +3013,7 @@ function App() {
           user={user}
           userLineup={userLineup}
           starCount={countUnlockedAllStars(collection)}
-          onDone={() => resetToLanding()}
+          onDone={() => returnToPlayHub()}
           matchmakingNotice={matchmakingNotice}
         />
       ) : null}
@@ -3016,9 +3031,9 @@ function App() {
             <button
               type="button"
               className="play-again-button match-results__primary-action"
-              onClick={() => resetToLanding()}
+              onClick={() => returnToPlayHub()}
             >
-              Back to home
+              Back to Play
             </button>
           </div>
         </section>
@@ -3037,7 +3052,7 @@ function App() {
             benchmarkValues={dailyBenchmarkValues}
             reviewOnly={isDailyReview}
             optimalReview={isDailyOptimalReview}
-            onPlayAgain={() => resetToLanding()}
+            onPlayAgain={() => returnToPlayHub()}
             onPostToCommunity={openCommunityCompose}
             onOpenAccount={() => {
               resetToLanding();
@@ -3086,9 +3101,9 @@ function App() {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => resetToLanding()}
+              onClick={() => returnToPlayHub()}
             >
-              Back to home
+              Back to Play
             </button>
           </div>
         </section>
@@ -3111,13 +3126,7 @@ function App() {
             collection={collection}
             onCollectionChange={handleCollectionChange}
             onPlayAgain={replayLastMode}
-            onReturnToMenu={() => {
-              saveLandingHubTab("play");
-              saveLandingPlaySection("chooser");
-              setLandingHubTab("play");
-              syncLandingHubTabUrl("play");
-              resetToLanding();
-            }}
+            onReturnToMenu={() => returnToPlayHub("chooser")}
             onPostToCommunity={openCommunityCompose}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}

@@ -6,7 +6,7 @@ import {
   requestPasswordReset,
   resetAccountPassword,
 } from "../lib/accountApi";
-import { markPlayerAccountLinked } from "../lib/accountGate";
+import { markPlayerAccountLinked, peekCachedAccountLinked, getCachedLinkedUsername } from "../lib/accountGate";
 import { trackProductEvent } from "../lib/productAnalytics";
 import {
   pullAndMergeCollection,
@@ -60,8 +60,19 @@ export function AccountAuthPanel({
   const consentId = useId();
   const submitLock = useRef(false);
   const [mode, setMode] = useState<AccountPanelMode>("closed");
-  const [linkState, setLinkState] = useState<AccountLinkState>("loading");
-  const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
+  const [linkState, setLinkState] = useState<AccountLinkState>(() => {
+    const cached = peekCachedAccountLinked(playerId);
+    if (cached === true) {
+      return "linked";
+    }
+    if (cached === false) {
+      return "unlinked";
+    }
+    return "loading";
+  });
+  const [linkedUsername, setLinkedUsername] = useState<string | null>(() =>
+    getCachedLinkedUsername(playerId),
+  );
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -355,7 +366,7 @@ export function AccountAuthPanel({
         )}
       </div>
 
-      {linkState !== "linked" ? (
+      {linkState === "unlinked" ? (
         <p className="landing-team-form__account-note">
           You can play without an account. Create one to appear on leaderboards,
           host or join private matches, publish tier lists, and restore this GM

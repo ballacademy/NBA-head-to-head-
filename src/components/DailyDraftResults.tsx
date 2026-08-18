@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { sortLineupByPosition } from "../lib/lineupOrder";
+import { assignLineupSlots } from "../lib/lineupOrder";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { AchievementToast } from "./AchievementToast";
@@ -133,8 +133,8 @@ export function DailyDraftResults({
       user.dailyDraftMode ?? dailyGoal.mode,
     ],
   );
-  const orderedLineup = useMemo(
-    () => sortLineupByPosition(displayLineup),
+  const slottedLineup = useMemo(
+    () => assignLineupSlots(displayLineup),
     [displayLineup],
   );
 
@@ -497,11 +497,12 @@ export function DailyDraftResults({
       <section className="panel panel--compact daily-draft-results__lineup">
         <h3>{optimalReview ? "Best Possible Lineup" : user.name}</h3>
         <div className="team-lineup-card__players">
-          {orderedLineup.map((player) => (
+          {slottedLineup.map(({ player, slot }) => (
             <PlayerStatLine
               key={player.id}
               player={player}
               dailyGoal={dailyGoal}
+              lineupSlot={slot}
             />
           ))}
         </div>
@@ -540,7 +541,7 @@ export function DailyDraftResults({
         <PostGameNextActions
           primary={{
             id: "home",
-            label: "Back to home",
+            label: "Back to Play",
             onClick: onPlayAgain,
           }}
           secondary={

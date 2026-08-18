@@ -41,7 +41,9 @@ export function PrivateMatchModal({
     : CLASSIC_HEAD_TO_HEAD_LABEL;
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
+  const [accountLinked, setAccountLinked] = useState<boolean | null>(() =>
+    peekCachedAccountLinked(getOrCreatePlayerId()),
+  );
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const mountedRef = useRef(true);
   const accountReady = accountLinked === true;
