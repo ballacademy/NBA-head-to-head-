@@ -30,6 +30,7 @@ import {
   FOUNDING_GM_ACHIEVEMENT_ID,
   syncFoundingGmAchievement,
 } from "../lib/foundingGm";
+import type { PlayerCollection } from "../lib/playerCollection";
 import { restorePlayerIdentityFromLogin, logoutToAnonymousIdentity } from "../lib/restorePlayerIdentity";
 import {
   SUPPORT_EMAIL,
@@ -45,12 +46,16 @@ interface AccountAuthPanelProps {
   playerId: string;
   onViewPrivacy: () => void;
   onViewTerms: () => void;
+  onCollectionChange?: (collection: PlayerCollection) => void;
+  onCareerSynced?: () => void;
 }
 
 export function AccountAuthPanel({
   playerId,
   onViewPrivacy,
   onViewTerms,
+  onCollectionChange,
+  onCareerSynced,
 }: AccountAuthPanelProps) {
   const consentId = useId();
   const submitLock = useRef(false);
@@ -212,9 +217,13 @@ export function AccountAuthPanel({
       setLinkState("linked");
       markPlayerAccountLinked(playerId, result.username);
       setMode("closed");
-      await pullAndMergeCollection(playerId);
+      const mergedCollection = await pullAndMergeCollection(playerId);
+      if (mergedCollection) {
+        onCollectionChange?.(mergedCollection);
+      }
       await pullAndMergeAchievements(playerId);
       await pullAndMergeCareerStats(playerId);
+      onCareerSynced?.();
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
       );

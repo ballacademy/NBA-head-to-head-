@@ -1,5 +1,6 @@
 import { getDailyDraftPlayStreak } from "./dailyDraftPlayStreak";
 import { getRecordedDraftLineupCount } from "./nbaPlayerUsage";
+import { loadAllEventProfiles } from "./eventProfile";
 import { loadAllModeRecords } from "./playerRecord";
 
 /** Lifetime / multi-session badges (not single-lineup checks). */
@@ -37,7 +38,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "fifty-wins",
     title: "50 Wins",
-    description: "Win 50 competitive matches.",
+    description: "Win 50 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🏅",
     metric: "wins",
     target: 50,
@@ -45,7 +46,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "wins-100",
     title: "100 Wins",
-    description: "Win 100 competitive matches.",
+    description: "Win 100 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🎖️",
     metric: "wins",
     target: 100,
@@ -53,7 +54,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "wins-250",
     title: "250 Wins",
-    description: "Win 250 competitive matches.",
+    description: "Win 250 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🥇",
     metric: "wins",
     target: 250,
@@ -61,7 +62,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "five-hundred-wins",
     title: "500 Wins",
-    description: "Win 500 competitive matches.",
+    description: "Win 500 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🏆",
     metric: "wins",
     target: 500,
@@ -69,7 +70,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "hundred-plays",
     title: "100 Plays",
-    description: "Play 100 competitive matches.",
+    description: "Play 100 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🎮",
     metric: "plays",
     target: 100,
@@ -77,7 +78,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "plays-250",
     title: "250 Plays",
-    description: "Play 250 competitive matches.",
+    description: "Play 250 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🕹️",
     metric: "plays",
     target: 250,
@@ -85,7 +86,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "plays-500",
     title: "500 Plays",
-    description: "Play 500 competitive matches.",
+    description: "Play 500 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "🎯",
     metric: "plays",
     target: 500,
@@ -93,7 +94,7 @@ export const CAREER_PROGRESS_DEFINITIONS: CareerProgressDefinition[] = [
   {
     id: "thousand-plays",
     title: "1,000 Plays",
-    description: "Play 1,000 competitive matches.",
+    description: "Play 1,000 competitive matches (Casual, Pro, All-Time, and Events).",
     emoji: "♾️",
     metric: "plays",
     target: 1000,
@@ -179,12 +180,23 @@ const modePlays = (mode: {
 
 export const getCareerProgressCounters = (): CareerProgressCounters => {
   const records = loadAllModeRecords();
+  const events = loadAllEventProfiles().reduce(
+    (totals, profile) => ({
+      wins: totals.wins + profile.wins,
+      plays: totals.plays + profile.matchesPlayed,
+    }),
+    { wins: 0, plays: 0 },
+  );
   const wins =
-    records.headToHead.wins + records.ranked.wins + records.allTime.wins;
+    records.headToHead.wins +
+    records.ranked.wins +
+    records.allTime.wins +
+    events.wins;
   const plays =
     modePlays(records.headToHead) +
     modePlays(records.ranked) +
-    modePlays(records.allTime);
+    modePlays(records.allTime) +
+    events.plays;
   const basic = getDailyDraftPlayStreak("basic");
   const advanced = getDailyDraftPlayStreak("advanced");
 

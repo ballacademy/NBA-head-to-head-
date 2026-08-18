@@ -11,9 +11,10 @@ export const getMatchModeTheme = (options: {
   salaryCapMode?: boolean;
   allTimeMode?: boolean;
   practiceMode?: boolean;
+  privateMatch?: boolean;
   eventId?: string;
 }): MatchModeTheme => {
-  if (options.practiceMode) {
+  if (options.practiceMode || options.privateMatch) {
     return "practice";
   }
 

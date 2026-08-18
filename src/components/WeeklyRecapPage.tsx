@@ -8,9 +8,13 @@ import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
 interface WeeklyRecapPageProps {
   onBack: () => void;
+  backLabel?: string;
 }
 
-export function WeeklyRecapPage({ onBack }: WeeklyRecapPageProps) {
+export function WeeklyRecapPage({
+  onBack,
+  backLabel = "Play",
+}: WeeklyRecapPageProps) {
   const recap = useMemo(() => buildWeeklyGmRecap(), []);
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export function WeeklyRecapPage({ onBack }: WeeklyRecapPageProps) {
       title="This week"
       lede={`Daily Draft · ${recap.weekRangeLabel}`}
       onBack={onBack}
-      backLabel="Play"
+      backLabel={backLabel}
     >
       <section className="hub-feature__panel">
         <WeeklyGmRecapCard alwaysVisible hideDismiss hideHeading />

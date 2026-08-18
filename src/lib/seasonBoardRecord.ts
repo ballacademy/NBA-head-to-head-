@@ -40,7 +40,7 @@ export const loadSelfSeasonBoardRecord = (
   return {
     wins: entry.wins,
     losses: entry.losses,
-    ties: 0,
+    ties: entry.ties ?? 0,
     winStreak: entry.winStreak,
     lossStreak: entry.lossStreak,
   };
@@ -69,6 +69,7 @@ export const projectSelfSeasonBoardRecordAfterMatch = (
       ? {
           wins: existingEntry.wins,
           losses: existingEntry.losses,
+          ties: existingEntry.ties ?? 0,
           winStreak: existingEntry.winStreak,
           lossStreak: existingEntry.lossStreak,
         }
@@ -81,7 +82,7 @@ export const projectSelfSeasonBoardRecordAfterMatch = (
   return {
     wins: stats.wins,
     losses: stats.losses,
-    ties: 0,
+    ties: stats.ties,
     winStreak: stats.winStreak,
     lossStreak: stats.lossStreak,
   };

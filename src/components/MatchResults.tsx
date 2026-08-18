@@ -170,13 +170,15 @@ export function MatchResults({
   const isEventMatch = Boolean(user.eventId);
   const resultModeLabel = user.eventId
     ? MODE_COPY.weeklyEvent.title
-    : user.allTimeMode
-      ? MODE_COPY.allTime.title
-      : user.salaryCapMode
-        ? MODE_COPY.proH2h.title
-        : user.practiceMode
-          ? MODE_COPY.practice.title
-          : MODE_COPY.classicH2h.title;
+    : user.practiceMode
+      ? MODE_COPY.practice.title
+      : user.privateMatch
+        ? "Private match"
+        : user.allTimeMode
+          ? MODE_COPY.allTime.title
+          : user.salaryCapMode
+            ? MODE_COPY.proH2h.title
+            : MODE_COPY.classicH2h.title;
   const matchRecordMode = getMatchRecordMode(user);
   const modeTheme = getMatchModeTheme(user);
   const updatedRecord = useMemo(() => {
@@ -258,6 +260,7 @@ export function MatchResults({
             ? undefined
             : formatPlayerRecord(updatedRecord),
           ovrOverflow: userScore.ovrOverflow,
+          opponentOvrOverflow: opponentScore.ovrOverflow,
           savedAt: new Date().toISOString(),
         });
       } catch {

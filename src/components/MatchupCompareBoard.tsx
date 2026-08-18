@@ -6,6 +6,7 @@ import {
   buildLineupScoreContext,
   buildLineupScoreInsights,
   formatLineupOvrDisplay,
+  formatProjectedSeasonRecord,
 } from "../lib/scoring";
 import { PlayerDraftStats } from "./PlayerDraftStats";
 import { LineupChemistryBadges } from "./LineupChemistryBadges";
@@ -77,13 +78,24 @@ function TeamHeader({
           )}
         </h3>
         {username ? (
-          <p className="matchup-compare__username">{formatUsername(username)}</p>
+          onNameClick ? (
+            <button
+              type="button"
+              className="matchup-compare__username-button"
+              onClick={onNameClick}
+              aria-label={`View profile for ${formatUsername(username)}`}
+            >
+              {formatUsername(username)}
+            </button>
+          ) : (
+            <p className="matchup-compare__username">{formatUsername(username)}</p>
+          )
         ) : null}
         <p
           className="matchup-compare__record"
           aria-label="Projected team record"
         >
-          {score.projectedRecord.formatted}
+          {formatProjectedSeasonRecord(score.projectedRecord)}
         </p>
       </div>
       <div className="matchup-compare__score">

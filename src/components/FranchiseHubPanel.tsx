@@ -70,7 +70,12 @@ export function FranchiseHubPanel({
 
   return (
     <div className="franchise-home">
-      <WeeklyGmRecapCard variant="compact" onViewWeek={onViewWeeklyRecap} />
+      <WeeklyGmRecapCard
+        variant="compact"
+        alwaysVisible
+        hideDismiss
+        onViewWeek={onViewWeeklyRecap}
+      />
 
       {showStandaloneNextBadge && nextBadge && onPlayIntent ? (
         <section
@@ -109,7 +114,7 @@ export function FranchiseHubPanel({
         aria-label="Daily Draft progress"
       >
         <div className="franchise-home__daily-copy">
-          <p className="franchise-home__eyebrow">Daily Draft</p>
+          <p className="franchise-home__eyebrow">Career Daily</p>
           <p className="franchise-home__daily-line">
             {dailyDraft.daysPlayed} day{dailyDraft.daysPlayed === 1 ? "" : "s"}{" "}
             · Basic {dailyDraft.basicStreakLabel} · Adv{" "}
@@ -276,8 +281,8 @@ export function FranchiseHubPanel({
             onClick={onViewStats}
           >
             <span className="franchise-home__link-copy">
-              <strong>Season Stats</strong>
-              <span>Player production this season</span>
+              <strong>Player pool</strong>
+              <span>NBA production this season</span>
             </span>
             <span className="franchise-home__link-chevron" aria-hidden="true">
               ›

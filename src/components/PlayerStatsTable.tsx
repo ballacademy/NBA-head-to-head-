@@ -183,16 +183,16 @@ export function PlayerStatsTable({
   return (
     <HubPageChrome
       className="stats-panel"
-      title="Season Stats"
+      title="Player pool"
       titleId="stats-heading"
       titleAccessory={
         <ModeCardInfo
           details={statsInfoDetails}
           popoverAlign="end"
-          ariaLabel="Season Stats details"
+          ariaLabel="Player pool details"
         />
       }
-      lede="Player pool"
+      lede="NBA production this season"
       onBack={onBack}
       backLabel="Franchise"
     >

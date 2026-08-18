@@ -7,7 +7,7 @@ export interface HubPageChromeProps {
   title: ReactNode;
   titleId?: string;
   titleClassName?: string;
-  /** Optional control beside the title (e.g. Season Stats info). */
+  /** Optional control beside the title (e.g. Player pool info). */
   titleAccessory?: ReactNode;
   lede?: ReactNode;
   ledeClassName?: string;

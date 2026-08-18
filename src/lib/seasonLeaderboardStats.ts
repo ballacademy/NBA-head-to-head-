@@ -3,6 +3,7 @@ import type { HeadToHeadResult } from "./playerRecord";
 export interface SeasonLeaderboardStats {
   wins: number;
   losses: number;
+  ties: number;
   winStreak: number;
   lossStreak: number;
 }
@@ -10,46 +11,75 @@ export interface SeasonLeaderboardStats {
 export interface SeasonLeaderboardBase {
   wins: number;
   losses: number;
+  ties?: number;
   winStreak: number;
   lossStreak: number;
 }
 
+const gamesPlayed = (row: SeasonLeaderboardBase) =>
+  row.wins + row.losses + (row.ties ?? 0);
+
 const singleMatchStats = (
-  result: Exclude<HeadToHeadResult, "tie">,
+  result: HeadToHeadResult,
   countTowardStreak: boolean,
   preservedWinStreak = 0,
   preservedLossStreak = 0,
 ): SeasonLeaderboardStats => {
+  if (result === "tie") {
+    return {
+      wins: 0,
+      losses: 0,
+      ties: 1,
+      winStreak: preservedWinStreak,
+      lossStreak: preservedLossStreak,
+    };
+  }
+
   if (!countTowardStreak) {
     return result === "win"
       ? {
           wins: 1,
           losses: 0,
+          ties: 0,
           winStreak: preservedWinStreak,
           lossStreak: preservedLossStreak,
         }
       : {
           wins: 0,
           losses: 1,
+          ties: 0,
           winStreak: preservedWinStreak,
           lossStreak: preservedLossStreak,
         };
   }
 
   return result === "win"
-    ? { wins: 1, losses: 0, winStreak: 1, lossStreak: 0 }
-    : { wins: 0, losses: 1, winStreak: 0, lossStreak: 1 };
+    ? { wins: 1, losses: 0, ties: 0, winStreak: 1, lossStreak: 0 }
+    : { wins: 0, losses: 1, ties: 0, winStreak: 0, lossStreak: 1 };
 };
 
 const incrementExisting = (
   existing: SeasonLeaderboardBase,
-  result: Exclude<HeadToHeadResult, "tie">,
+  result: HeadToHeadResult,
   countTowardStreak: boolean,
 ): SeasonLeaderboardStats => {
+  const ties = existing.ties ?? 0;
+
+  if (result === "tie") {
+    return {
+      wins: existing.wins,
+      losses: existing.losses,
+      ties: ties + 1,
+      winStreak: existing.winStreak,
+      lossStreak: existing.lossStreak,
+    };
+  }
+
   if (result === "win") {
     return {
       wins: existing.wins + 1,
       losses: existing.losses,
+      ties,
       winStreak: countTowardStreak ? existing.winStreak + 1 : existing.winStreak,
       lossStreak: countTowardStreak ? 0 : existing.lossStreak,
     };
@@ -58,6 +88,7 @@ const incrementExisting = (
   return {
     wins: existing.wins,
     losses: existing.losses + 1,
+    ties,
     winStreak: countTowardStreak ? 0 : existing.winStreak,
     lossStreak: countTowardStreak
       ? existing.lossStreak + 1
@@ -66,7 +97,7 @@ const incrementExisting = (
 };
 
 /**
- * Build monthly/event-board W–L from the prior season row + this match.
+ * Build monthly/event-board W–L–T from the prior season row + this match.
  * Career modeRecords must not be posted to season leaderboards — the API
  * rejects first inserts with more than one game when no D1 row exists yet.
  *
@@ -74,6 +105,9 @@ const incrementExisting = (
  * never invent an all-wins / all-losses catch-up from `priorSeasonGames`
  * (that produced fake boards like 63-1). Prefer advancing a known row by one
  * match, or starting from this match only.
+ *
+ * Ties count as games (and as the T in W–L–T) so Play/Ranks stay in sync with
+ * career after a draw. Remote monthly APIs still persist W–L only.
  */
 export const nextSeasonLeaderboardStats = (params: {
   existing: SeasonLeaderboardBase | null | undefined;
@@ -89,23 +123,10 @@ export const nextSeasonLeaderboardStats = (params: {
   const { result, priorSeasonGames } = params;
   const countTowardStreak = params.countTowardStreak !== false;
   const existing = params.existing;
-  const existingGames = existing ? existing.wins + existing.losses : 0;
+  const existingGames = existing ? gamesPlayed(existing) : 0;
   const inSync = Boolean(existing) && existingGames === priorSeasonGames;
   const preservedWinStreak = existing?.winStreak ?? 0;
   const preservedLossStreak = existing?.lossStreak ?? 0;
-
-  if (result === "tie") {
-    if (inSync && existing) {
-      return {
-        wins: existing.wins,
-        losses: existing.losses,
-        winStreak: existing.winStreak,
-        lossStreak: existing.lossStreak,
-      };
-    }
-
-    return { wins: 0, losses: 0, winStreak: 0, lossStreak: 0 };
-  }
 
   if (inSync && existing) {
     return incrementExisting(existing, result, countTowardStreak);

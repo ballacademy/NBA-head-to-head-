@@ -50,8 +50,8 @@ function MatchupDetail({
 
   return (
     <>
-      <div className="panel panel--compact daily-draft-results__header">
-        <p className="eyebrow">Matchup preview · {modeLabel(mode)}</p>
+      <div className="panel panel--compact owner-results-inbox__header">
+        <p className="eyebrow">Queued result · {modeLabel(mode)}</p>
         <h2>
           {ownerWon
             ? "Your queued lineup won"
@@ -83,7 +83,7 @@ function MatchupDetail({
         </p>
       </div>
 
-      <section className="panel panel--compact daily-draft-results__lineup">
+      <section className="panel panel--compact owner-results-inbox__lineup">
         <h3>Your queued lineup</h3>
         <div className="team-lineup-card__players">
           {slottedLineup.map(({ player, slot }) => (
@@ -114,7 +114,7 @@ export function PendingOwnerResults({
 
   return (
     <section
-      className={`match-results daily-draft-results match-results--compact owner-results-inbox ${matchModeThemeClass(
+      className={`match-results match-results--compact owner-results-inbox ${matchModeThemeClass(
         themeMode,
       )}`}
     >
@@ -122,7 +122,7 @@ export function PendingOwnerResults({
         <MatchupDetail delivery={selected} modeRecords={modeRecords} />
       ) : (
         <>
-          <div className="panel panel--compact daily-draft-results__header">
+          <div className="panel panel--compact owner-results-inbox__header">
             <p className="eyebrow">Queued lineup results</p>
             <h2>
               {count === 1
@@ -130,7 +130,8 @@ export function PendingOwnerResults({
                 : `${count} matchups while you were away`}
             </h2>
             <p>
-              Open any matchup for the full preview, or close all results at once.
+              Open a matchup to see your five and the score. Opponent lineups
+              aren&apos;t stored for queued-away games.
             </p>
           </div>
 

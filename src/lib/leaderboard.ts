@@ -35,6 +35,7 @@ export interface LeaderboardEntry {
   tierLabel: string;
   wins: number;
   losses: number;
+  ties?: number;
   winStreak: number;
   lossStreak: number;
   updatedAt: string;
@@ -60,6 +61,7 @@ const normalizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => {
     tierLabel: getTierForElo(elo).label,
     wins: Math.max(0, entry.wins),
     losses: Math.max(0, entry.losses),
+    ties: Math.max(0, entry.ties ?? 0),
     winStreak: Math.max(0, entry.winStreak ?? 0),
     lossStreak: Math.max(0, entry.lossStreak ?? 0),
     updatedAt: entry.updatedAt,
@@ -104,6 +106,7 @@ const parseStoredEntries = (
           getTierForElo(entry.elo ?? RANKED_STARTING_ELO).label,
         wins: entry.wins,
         losses: entry.losses,
+        ties: entry.ties ?? 0,
         winStreak: entry.winStreak ?? 0,
         lossStreak: entry.lossStreak ?? 0,
         updatedAt: entry.updatedAt ?? new Date().toISOString(),
@@ -248,8 +251,11 @@ export const formatLeaderboardTeam = (
 ) => formatGmDisplayName(entry.name, entry.publicTag);
 
 export const formatLeaderboardRecord = (
-  entry: Pick<LeaderboardEntry, "wins" | "losses">,
-) => `${entry.wins}-${entry.losses}`;
+  entry: Pick<LeaderboardEntry, "wins" | "losses"> & { ties?: number },
+) =>
+  entry.ties && entry.ties > 0
+    ? `${entry.wins}-${entry.losses}-${entry.ties}`
+    : `${entry.wins}-${entry.losses}`;
 
 export const formatLeaderboardElo = (entry: Pick<LeaderboardEntry, "elo">) =>
   formatRankedElo(entry.elo);

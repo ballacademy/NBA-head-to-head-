@@ -33,6 +33,25 @@ describe("formatCommunityAttachmentChip", () => {
     ).toBe("Pro · W · 88–84");
   });
 
+  it("keeps overflow in matchup chip scores", () => {
+    expect(
+      formatCommunityAttachmentChip({
+        kind: "matchup",
+        modeLabel: "Pro Head-to-Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 100,
+        opponentOvr: 100,
+        ovrOverflow: 4,
+        opponentOvrOverflow: 0,
+        userLineupNames: [],
+        opponentLineupNames: [],
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }),
+    ).toBe("Pro · W · 100(+4)–100");
+  });
+
   it("shortens casual matchup attachments", () => {
     expect(
       formatCommunityAttachmentChip({
