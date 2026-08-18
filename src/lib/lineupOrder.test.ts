@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { pairLineupsByPosition, sortLineupByPosition } from "./lineupOrder";
+import {
+  assignLineupSlots,
+  pairLineupsByPosition,
+  sortLineupByPosition,
+} from "./lineupOrder";
 import type { Player } from "./types";
 
 const makePlayer = (
@@ -124,17 +128,63 @@ describe("sortLineupByPosition", () => {
   });
 });
 
+describe("assignLineupSlots", () => {
+  it("gives a five unique PG–C slots even when listed positions repeat", () => {
+    const lineup = [
+      makePlayer("Point", "PG"),
+      makePlayer("Combo", "PG", { positions: ["PG", "SG"], heightInches: 76 }),
+      makePlayer("Wing", "SF"),
+      makePlayer("Stretch", "SF", { positions: ["SF", "PF"], heightInches: 81 }),
+      makePlayer("Big", "C"),
+    ];
+
+    expect(
+      assignLineupSlots(lineup).map((entry) => [entry.slot, entry.player.name]),
+    ).toEqual([
+      ["PG", "Point"],
+      ["SG", "Combo"],
+      ["SF", "Wing"],
+      ["PF", "Stretch"],
+      ["C", "Big"],
+    ]);
+  });
+
+  it("slides a second listed PG into SG rather than showing PG twice", () => {
+    const lineup = [
+      makePlayer("Shorter Point", "PG", { heightInches: 73 }),
+      makePlayer("Taller Point", "PG", { heightInches: 76 }),
+      makePlayer("Wing", "SF"),
+      makePlayer("Power", "PF"),
+      makePlayer("Big", "C"),
+    ];
+
+    expect(
+      assignLineupSlots(lineup).map((entry) => [entry.slot, entry.player.name]),
+    ).toEqual([
+      ["PG", "Shorter Point"],
+      ["SG", "Taller Point"],
+      ["SF", "Wing"],
+      ["PF", "Power"],
+      ["C", "Big"],
+    ]);
+  });
+});
+
 describe("pairLineupsByPosition", () => {
-  it("pairs opposing players by sorted position order", () => {
+  it("pairs opposing players on PG–C lineup slots", () => {
     const left = [
       makePlayer("Big", "C"),
       makePlayer("Point", "PG"),
       makePlayer("Wing", "SF"),
+      makePlayer("Shooting", "SG"),
+      makePlayer("Power", "PF"),
     ];
     const right = [
       makePlayer("Rim", "C"),
       makePlayer("Floor", "PG"),
       makePlayer("Three", "SF"),
+      makePlayer("Two", "SG"),
+      makePlayer("Four", "PF"),
     ];
 
     expect(
@@ -145,8 +195,35 @@ describe("pairLineupsByPosition", () => {
       ]),
     ).toEqual([
       ["Point", "PG", "Floor"],
+      ["Shooting", "SG", "Two"],
       ["Wing", "SF", "Three"],
+      ["Power", "PF", "Four"],
       ["Big", "C", "Rim"],
+    ]);
+  });
+
+  it("still uses PG–C labels when listed positions duplicate", () => {
+    const left = [
+      makePlayer("Point", "PG"),
+      makePlayer("Combo", "PG", { positions: ["PG", "SG"] }),
+      makePlayer("Wing", "SF"),
+      makePlayer("Stretch", "SF", { positions: ["SF", "PF"] }),
+      makePlayer("Big", "C"),
+    ];
+    const right = [
+      makePlayer("Floor", "PG"),
+      makePlayer("Two", "SG"),
+      makePlayer("Three", "SF"),
+      makePlayer("Four", "PF"),
+      makePlayer("Rim", "C"),
+    ];
+
+    expect(pairLineupsByPosition(left, right).map((pair) => pair.position)).toEqual([
+      "PG",
+      "SG",
+      "SF",
+      "PF",
+      "C",
     ]);
   });
 
@@ -162,6 +239,9 @@ describe("pairLineupsByPosition", () => {
       ]),
     ).toEqual([
       ["Point", "Floor", "PG"],
+      [null, null, "SG"],
+      [null, null, "SF"],
+      [null, null, "PF"],
       ["Big", null, "C"],
     ]);
   });
