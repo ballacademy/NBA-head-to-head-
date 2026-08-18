@@ -61,7 +61,7 @@ describe("playHubRetention", () => {
     expect(chips.map((chip) => chip.id)).toEqual(["inbox", "recap", "badge"]);
     expect(chips[1]).toMatchObject({
       label: "Weekly recap",
-      detail: "Daily Draft · this week",
+      detail: "Daily Draft · last week",
       ctaLabel: "Go",
       action: { type: "recap" },
     });

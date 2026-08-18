@@ -519,7 +519,7 @@ export function LandingPage({
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,
       recapReady:
-        recap.dailyPuzzlesThisWeek > 0 && !hasSeenWeeklyRecap(recap.weekKey),
+        recap.dailyPuzzles > 0 && !hasSeenWeeklyRecap(recap.weekKey),
       nextBadgeTitle: nextBadge?.title ?? null,
       nextBadgeIsDaily,
       nextBadgePlaySection: nextBadge?.hint.playSection,

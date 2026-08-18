@@ -67,67 +67,63 @@ export function MostDraftedBoards({ refreshKey = 0 }: MostDraftedBoardsProps) {
   }
 
   return (
-    <section className="gm-stats-page__section franchise-home__most-drafted">
-      <div className="gm-stats-page__section-heading">
-        <h2>
+    <section className="franchise-home__card landing-card" aria-label="Most drafted">
+      <div className="franchise-home__card-head">
+        <p className="franchise-home__eyebrow">Most drafted</p>
+        <p className="franchise-home__lede">
           {mostDraftedMode
-            ? `Most drafted · ${MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]}`
-            : "Most drafted"}
-        </h2>
-        {mostDraftedMode ? (
-          <button
-            type="button"
-            className="gm-stats-page__section-back"
-            onClick={() => setMostDraftedMode(null)}
-          >
-            All modes
-          </button>
-        ) : null}
+            ? MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]
+            : "Your most used players by mode"}
+        </p>
       </div>
 
       {mostDraftedMode ? (
-        mostDraftedDetail.length === 0 ? (
-          <p className="gm-stats-page__section-copy">
-            No {MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]} drafts yet.
-          </p>
-        ) : (
-          <ol className="gm-stats-page__most-drafted">
-            {mostDraftedDetail.map((row, index) => (
-              <li key={row.playerId} className="gm-stats-page__most-drafted-row">
-                <span className="gm-stats-page__most-drafted-rank">
-                  {index + 1}.
-                </span>
-                <span className="gm-stats-page__most-drafted-name">
-                  {row.name}
-                </span>
-                <span className="gm-stats-page__most-drafted-meta">
-                  {formatPersonalHitRateMeta(mostDraftedMode, row)}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )
+        <>
+          <div className="franchise-home__card-actions">
+            <button
+              type="button"
+              className="franchise-home__text-link"
+              onClick={() => setMostDraftedMode(null)}
+            >
+              All modes
+            </button>
+          </div>
+          {mostDraftedDetail.length === 0 ? (
+            <p className="franchise-home__meta">
+              No {MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]} drafts yet.
+            </p>
+          ) : (
+            <ol className="franchise-home__rank-list">
+              {mostDraftedDetail.map((row, index) => (
+                <li key={row.playerId} className="franchise-home__rank-row">
+                  <span className="franchise-home__rank-index">{index + 1}.</span>
+                  <span className="franchise-home__rank-name">{row.name}</span>
+                  <span className="franchise-home__rank-meta">
+                    {formatPersonalHitRateMeta(mostDraftedMode, row)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </>
       ) : (
-        <div className="gm-stats-page__most-drafted-boards">
+        <div className="franchise-home__rows">
           {mostDraftedSummaries.map((board) => (
             <button
               key={board.mode}
               type="button"
-              className="gm-stats-page__most-drafted-board"
+              className="franchise-home__row"
               onClick={() => setMostDraftedMode(board.mode)}
             >
-              <span className="gm-stats-page__most-drafted-board-label">
-                {board.label}
+              <span className="franchise-home__row-copy">
+                <strong>{board.label}</strong>
               </span>
-              <span className="gm-stats-page__most-drafted-board-meta">
+              <span className="franchise-home__row-meta">
                 {board.leaderName
                   ? `${board.leaderName} · ${board.leaderDrafts}`
                   : "No drafts yet"}
               </span>
-              <span
-                className="gm-stats-page__most-drafted-board-chevron"
-                aria-hidden="true"
-              >
+              <span className="franchise-home__row-chevron" aria-hidden="true">
                 ›
               </span>
             </button>
