@@ -11,7 +11,7 @@ export function PlayHubStrip({ chips, onChip }: PlayHubStripProps) {
   }
 
   return (
-    <div className="play-hub-strip" role="list" aria-label="Career loop">
+    <div className="play-hub-strip" role="list" aria-label="Play updates">
       {chips.map((chip) => (
         <button
           key={chip.id}

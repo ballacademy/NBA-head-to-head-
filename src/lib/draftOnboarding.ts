@@ -25,7 +25,7 @@ export const getDraftOnboardingBullets = ({
 
   if (isDailyDraft) {
     bullets.push(
-      "Player stats stay hidden until you lock your five — draft from memory.",
+      "Player stats stay hidden until you finish all five picks — draft from memory.",
     );
   }
 

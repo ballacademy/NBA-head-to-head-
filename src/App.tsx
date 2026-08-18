@@ -1711,6 +1711,13 @@ function App() {
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
+    scrollHubToTop();
+    if (typeof window !== "undefined") {
+      const state = window.history.state as FeatureHistoryState | null;
+      if (state?.appPhase) {
+        window.history.replaceState({}, "", window.location.href);
+      }
+    }
   };
 
   const resetToLandingRef = useRef(resetToLanding);
@@ -1778,6 +1785,8 @@ function App() {
     setLandingHubTab(parentTab);
     saveLandingHubTab(parentTab);
     resetToLanding();
+
+    scrollHubToTop();
 
     const syncParent = () => {
       syncLandingDeepLinkUrl({
@@ -2440,7 +2449,7 @@ function App() {
   }, [ensureResultsMatchId, opponent?.liveMatchId, opponentComplete, phase]);
 
   useLayoutEffect(() => {
-    if (phase !== "landing") {
+    if (phase !== "landing" && !FEATURE_PHASES.has(phase)) {
       return;
     }
 
@@ -2599,18 +2608,30 @@ function App() {
     queuedRanked: Boolean(loadPendingLineupState("ranked", playNavIdentity)),
   });
 
-  const renderHubFeature = (content: ReactNode, layoutClass = "") => (
-    <main className={`landing-layout${layoutClass ? ` ${layoutClass}` : ""}`}>
+  const renderHubChrome = (
+    content: ReactNode,
+    options?: { layoutClass?: string; activeTab?: LandingHubTab; suspense?: boolean },
+  ) => (
+    <main
+      className={`landing-layout${options?.layoutClass ? ` ${options.layoutClass}` : ""}`}
+    >
       <HubShell
-        activeTab={hubNavForPhase}
+        activeTab={options?.activeTab ?? hubNavForPhase}
         onSelectTab={handleHubNav}
         onPrefetchTab={prefetchHubFeatureTab}
         playBadgeCount={playNavBadgeCount}
       >
-        <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
+        {options?.suspense === false ? (
+          content
+        ) : (
+          <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
+        )}
       </HubShell>
     </main>
   );
+
+  const renderHubFeature = (content: ReactNode, layoutClass = "") =>
+    renderHubChrome(content, { layoutClass });
 
   const isMatchmakingSearchActive =
     matchmakingMode != null || isMatchmakingInFlight;
@@ -2830,32 +2851,30 @@ function App() {
   }
 
   if (!user) {
-    return (
-      <main className="landing-layout">
-        <section className="panel landing">
-          <p className="eyebrow">Draft unavailable</p>
-          <h2>We couldn&apos;t load your draft.</h2>
-          <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-            Back to home
-          </button>
-        </section>
-      </main>
+    return renderHubChrome(
+      <section className="panel landing hub-feature">
+        <p className="eyebrow">Draft unavailable</p>
+        <h2>We couldn&apos;t load your draft.</h2>
+        <p>Return home and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
+          Back to home
+        </button>
+      </section>,
+      { activeTab: landingHubTab, suspense: false },
     );
   }
 
   if (!isDailyDraft && !opponent && !isPendingQueueMatch) {
-    return (
-      <main className="landing-layout">
-        <section className="panel landing">
-          <p className="eyebrow">Draft unavailable</p>
-          <h2>We couldn&apos;t set up this matchup.</h2>
-          <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-            Back to home
-          </button>
-        </section>
-      </main>
+    return renderHubChrome(
+      <section className="panel landing hub-feature">
+        <p className="eyebrow">Draft unavailable</p>
+        <h2>We couldn&apos;t set up this matchup.</h2>
+        <p>Return home and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
+          Back to home
+        </button>
+      </section>,
+      { activeTab: landingHubTab, suspense: false },
     );
   }
 
@@ -2864,6 +2883,20 @@ function App() {
     !userDraftComplete &&
     user.draftSlots.length > 0 &&
     user.draftSlots[draftStep];
+
+  if (phase === "drafting" && !userDraftComplete && !canRenderDraftRoom) {
+    return renderHubChrome(
+      <section className="panel landing hub-feature">
+        <p className="eyebrow">Draft unavailable</p>
+        <h2>We couldn&apos;t load this draft board.</h2>
+        <p>Return home and try starting again.</p>
+        <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
+          Back to home
+        </button>
+      </section>,
+      { activeTab: landingHubTab, suspense: false },
+    );
+  }
 
   return (
     <main className={phase === "drafting" ? "draft-layout-shell" : undefined}>
@@ -2889,15 +2922,6 @@ function App() {
             onTimeout={handleTimeout}
           />
         </div>
-      ) : phase === "drafting" && !userDraftComplete ? (
-        <section className="panel landing">
-          <p className="eyebrow">Draft unavailable</p>
-          <h2>We couldn&apos;t load this draft board.</h2>
-          <p>Return home and try starting again.</p>
-          <button type="button" className="secondary-button" onClick={() => resetToLanding()}>
-            Back to home
-          </button>
-        </section>
       ) : null}
 
       {phase === "waiting" && opponent?.isLiveOpponent ? (

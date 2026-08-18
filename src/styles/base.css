@@ -54,6 +54,14 @@ main.landing-layout {
   box-sizing: border-box;
 }
 
+/* Keep the hub shell + bottom nav pinned to the viewport when returning from draft/results. */
+main.landing-layout:has(.landing--hub) {
+  height: calc(100dvh - 4px);
+  max-height: calc(100dvh - 4px);
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;

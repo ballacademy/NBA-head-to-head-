@@ -11,15 +11,15 @@ interface FirstSessionOnboardingOverlayProps {
 const GUIDE_ITEMS: { title: string; body: string }[] = [
   {
     title: "Draft a five",
-    body: "Five timed picks. Stay under the cap when there is one. If the timer hits zero, remaining slots auto-fill.",
+    body: "Five timed picks. Stay under the salary cap when there is one. If the timer hits zero, remaining slots auto-fill.",
   },
   {
     title: "Get a score",
-    body: `${MODE_COPY.daily.title} is a shared puzzle. ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} are live head-to-head.`,
+    body: `Daily Draft has two scored challenges each day (Basic and Advanced). ${MODE_COPY.classicH2h.short} and ${MODE_COPY.proH2h.short} H2H are live matchups with Banners on the line.`,
   },
   {
     title: "Build a career",
-    body: "Franchise keeps Daily streaks, badges, and unlocks. Start here on Play — Practice does not touch your record.",
+    body: "Franchise tracks badges, collection unlocks, and a weekly recap. Practice H2H is vs a bot and does not change your record.",
   },
 ];
 
@@ -52,7 +52,7 @@ export function FirstSessionOnboardingOverlay({
         <div className="hub-onboarding-overlay__header">
           <div>
             <p className="eyebrow">Welcome</p>
-            <h2 id="first-session-title">How to play</h2>
+            <h2 id="first-session-title">Prove your GM eye</h2>
           </div>
           <button
             type="button"
@@ -64,8 +64,9 @@ export function FirstSessionOnboardingOverlay({
           </button>
         </div>
         <p className="hub-onboarding-overlay__lede">
-          Draft five players and get a score. Practice is the fastest way to
-          learn the loop — or jump into today&apos;s Daily.
+          Draft five NBA players, get a score, and see how your lineup stacks
+          up. Practice against a bot to learn the loop, or jump into
+          today&apos;s Daily Draft.
         </p>
 
         <ul className="first-session-guide__list">
@@ -83,8 +84,8 @@ export function FirstSessionOnboardingOverlay({
             className="hub-onboarding-overlay__intent hub-accent hub-accent--h2h"
             onClick={onPractice}
           >
-            <strong>Practice Casual</strong>
-            <span>Vs a bot — no streaks, badges, or board impact.</span>
+            <strong>Practice H2H</strong>
+            <span>Vs a bot — no Banners, badges, or board impact.</span>
           </button>
           <button
             type="button"
@@ -92,7 +93,7 @@ export function FirstSessionOnboardingOverlay({
             onClick={onDaily}
           >
             <strong>Try Daily Draft</strong>
-            <span>One shared puzzle. Stats stay hidden until you lock.</span>
+            <span>Two puzzles per day — stats stay hidden until all five are picked.</span>
           </button>
         </div>
 

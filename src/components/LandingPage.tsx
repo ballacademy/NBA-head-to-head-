@@ -865,7 +865,7 @@ export function LandingPage({
           ? "Weekly live H2H · rotating rules."
           : playSection === "headToHead"
             ? "Live matchups · Casual or Pro."
-            : "Choose a mode."
+            : "Draft. Match up. Prove your GM eye."
       : hubTab === "roster"
         ? "Your collection and career."
         : "Sign in and settings.";
