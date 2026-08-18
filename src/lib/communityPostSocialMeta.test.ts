@@ -1,9 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_SHARE_TITLE,
   buildCommunityPostShareUrl,
   buildCommunityPostSocialMeta,
   isSocialCrawlerUserAgent,
 } from "./communityPostSocialMeta";
+
+describe("default share preview", () => {
+  it("puts the GM eye slogan in the default title, alt, and image URL", () => {
+    expect(DEFAULT_SHARE_TITLE).toBe(
+      "Draft Day GM — Draft. Match up. Prove your GM eye.",
+    );
+    expect(DEFAULT_OG_IMAGE_ALT).toBe(
+      "Draft Day GM — Draft. Match up. Prove your GM eye.",
+    );
+    expect(DEFAULT_OG_IMAGE).toBe("https://www.draftdaygm.com/og-share-v6.png");
+  });
+});
 
 describe("communityPostSocialMeta", () => {
   it("builds a share URL with community post params", () => {

@@ -1,7 +1,9 @@
-export const DEFAULT_OG_IMAGE = "https://www.draftdaygm.com/og-share-v5.png";
+export const DEFAULT_OG_IMAGE = "https://www.draftdaygm.com/og-share-v6.png";
 export const DEFAULT_OG_IMAGE_ALT =
-  "Draft Day GM — draft NBA lineups and compete head to head";
+  "Draft Day GM — Draft. Match up. Prove your GM eye.";
 export const DEFAULT_SITE_NAME = "Draft Day GM";
+export const DEFAULT_SHARE_TITLE =
+  "Draft Day GM — Draft. Match up. Prove your GM eye.";
 
 export interface CommunityPostSocialMetaInput {
   id: string;
