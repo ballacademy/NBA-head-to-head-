@@ -12,6 +12,7 @@ import {
   countPlusDefenders,
   formatLineupOvrDisplay,
   formatLineupOvrLabel,
+  formatPersistedUncappedOvr,
   getLineupOffenseFloorPenalty,
   getLowScoringLineupPenalty,
   getLowScoringSeverity,
@@ -1174,6 +1175,10 @@ describe("normalizeLineupTotal", () => {
     expect(formatLineupOvrDisplay({ total: 100, ovrOverflow: 4 })).toBe(
       "100 (+4)",
     );
+    expect(formatPersistedUncappedOvr(104.47)).toBe("100 (+4)");
+    expect(formatPersistedUncappedOvr(101.4)).toBe("100 (+1)");
+    expect(formatPersistedUncappedOvr(98.2)).toBe("98");
+    expect(formatPersistedUncappedOvr(90)).toBe("90");
     expect(formatLineupOvrLabel({ ovrOverflow: 4 })).toBe("OVR");
     expect(formatLineupOvrLabel({ ovrOverflow: 0 })).toBe("OVR");
   });

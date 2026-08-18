@@ -605,11 +605,15 @@ export function LandingPage({
       return;
     }
 
-    // Daily Draft only uses a name for results labeling — reuse a saved
+    // Daily and Practice only use a name for results labeling — reuse a saved
     // profile when present, otherwise a local default (no team-name gate).
-    const team = options?.isDailyDraft
-      ? (loadTeamProfile() ?? ({ name: "Daily Draft" } satisfies TeamProfile))
-      : promptForValidTeamProfile();
+    const team =
+      options?.isDailyDraft || options?.practiceMode
+        ? (loadTeamProfile() ??
+          ({
+            name: options?.isDailyDraft ? "Daily Draft" : "Practice",
+          } satisfies TeamProfile))
+        : promptForValidTeamProfile();
 
     if (!team) {
       return;
@@ -774,9 +778,7 @@ export function LandingPage({
   };
 
   const renderTeamNameField = () => {
-    const forceExpanded =
-      Boolean(liveRestoreNotice) ||
-      Boolean(profanityWarning || error || startMatchError);
+    const forceExpanded = Boolean(profanityWarning || error || startMatchError);
     const showCompactChip =
       teamValidation.ok && !teamNameExpanded && !forceExpanded;
 
@@ -825,35 +827,6 @@ export function LandingPage({
             }}
           />
         </label>
-        {liveRestoreNotice ? (
-          <InlineAlert
-            message={
-              <>
-                {liveRestoreNotice}
-                {onDismissLiveRestore ? (
-                  <>
-                    {" "}
-                    <button
-                      type="button"
-                      className="daily-draft-results__sync-retry"
-                      onClick={onDismissLiveRestore}
-                    >
-                      Dismiss
-                    </button>
-                  </>
-                ) : null}
-              </>
-            }
-            action={
-              onRetryLiveRestore
-                ? {
-                    label: "Retry reconnect",
-                    onClick: onRetryLiveRestore,
-                  }
-                : undefined
-            }
-          />
-        ) : null}
         {profanityWarning || error || startMatchError ? (
           <InlineAlert message={profanityWarning || error || startMatchError} />
         ) : null}
@@ -946,6 +919,37 @@ export function LandingPage({
       {hubTab === "play" && playSection !== "chooser" ? playModeBack : null}
 
       <div className="landing-hub__content">
+        {liveRestoreNotice ? (
+          <InlineAlert
+            tone="info"
+            role="status"
+            message={
+              <>
+                {liveRestoreNotice}
+                {onDismissLiveRestore ? (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      className="daily-draft-results__sync-retry"
+                      onClick={onDismissLiveRestore}
+                    >
+                      Dismiss
+                    </button>
+                  </>
+                ) : null}
+              </>
+            }
+            action={
+              onRetryLiveRestore
+                ? {
+                    label: "Resume match",
+                    onClick: onRetryLiveRestore,
+                  }
+                : undefined
+            }
+          />
+        ) : null}
         {hubTab === "play" && playSection === "chooser" ? (
           <>
             <PlayHubStrip chips={playHubChips} onChip={handlePlayHubChip} />
@@ -1523,10 +1527,13 @@ export function LandingPage({
         <FirstSessionOnboardingOverlay
           onDismiss={dismissFirstSessionGuide}
           onPractice={() => {
-            dismissFirstSessionGuide();
             void handleStart({
               practiceMode: true,
               salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+            }).then((result) => {
+              if (result === "started") {
+                dismissFirstSessionGuide();
+              }
             });
           }}
           onDaily={() => {

@@ -1449,8 +1449,8 @@ function App() {
       return "failed";
     }
 
-    // Don't persist a placeholder daily-only name over a real team profile.
-    if (!daily || loadTeamProfile() != null) {
+    // Don't persist a placeholder daily/practice name over a real team profile.
+    if (!((daily || practiceMode) && loadTeamProfile() == null)) {
       saveTeamProfile(team);
     }
     setModeRecords(loadAllModeRecords());
@@ -1682,8 +1682,13 @@ function App() {
   const resetToLanding = (options?: {
     error?: string | null;
     preserveError?: boolean;
+    preserveLiveSession?: boolean;
   }) => {
-    clearLiveDraftSession();
+    if (options?.preserveLiveSession) {
+      liveRecoveryAttemptedRef.current = true;
+    } else {
+      clearLiveDraftSession();
+    }
     setUser(null);
     setOpponent(null);
     setOpponentCollection(null);
@@ -1714,7 +1719,11 @@ function App() {
       setStartMatchError(options?.error ?? null);
     }
     setMatchmakingNotice(null);
-    setLiveRestoreNotice(null);
+    setLiveRestoreNotice(
+      options?.preserveLiveSession
+        ? "Your match is still live. Resume to wait for results."
+        : null,
+    );
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
@@ -2950,6 +2959,7 @@ function App() {
             opponent.username,
           )}
           opponentAutoDrafted={opponentAutoDrafted}
+          onLeave={() => resetToLanding({ preserveLiveSession: true })}
         />
       ) : null}
 
