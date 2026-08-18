@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildEventHistoryRows,
   formatEventPresenceLabel,
@@ -45,6 +45,23 @@ describe("eventHistory", () => {
     expect(rows.filter((row) => row.isCurrent)).toHaveLength(1);
     expect(rows.filter((row) => !row.isCurrent).map((row) => row.eventId)).toEqual(
       ["2026-W29-intl"],
+    );
+  });
+
+  it("treats the UTC Sunday-evening alias as current without a passed id", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-03T03:00:00.000Z"));
+    const rows = buildEventHistoryRows(
+      [profile("2026-W32-nostars"), profile("2026-W30-u25")],
+      null,
+    );
+    vi.useRealTimers();
+
+    expect(
+      rows.find((row) => row.eventId === "2026-W32-nostars")?.isCurrent,
+    ).toBe(true);
+    expect(rows.find((row) => row.eventId === "2026-W30-u25")?.isCurrent).toBe(
+      false,
     );
   });
 

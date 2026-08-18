@@ -97,7 +97,9 @@ import {
   formatEventBadgeLabel,
   formatWeeklyEventChooserMeta,
   getCurrentWeeklyEvent,
+  getLegacyUtcEventId,
   getScheduledWeeklyEventMeta,
+  getWeeklyEventForEventId,
 } from "../lib/weeklyEvents";
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
@@ -114,7 +116,7 @@ import {
   hasSeenBannersExplainer,
   markBannersExplainerSeen,
 } from "../lib/bannersExplainer";
-import { FirstSessionOnboardingOverlay } from "./FirstSessionOnboardingOverlay";
+import { FirstSessionOnboardingOverlay, FirstSessionWelcomeBar } from "./FirstSessionOnboardingOverlay";
 import { PlayHubStrip } from "./PlayHubStrip";
 import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import {
@@ -457,10 +459,14 @@ export function LandingPage({
     }
   };
 
-  const weeklyEvent = useMemo(
-    () => getCurrentWeeklyEvent(allPlayers),
-    [],
-  );
+  const weeklyEvent = useMemo(() => {
+    const current = getCurrentWeeklyEvent(allPlayers);
+    const legacyId = getLegacyUtcEventId();
+    if (!legacyId || loadEventProfile(legacyId).matchesPlayed <= 0) {
+      return current;
+    }
+    return getWeeklyEventForEventId(legacyId, allPlayers) ?? current;
+  }, []);
   const eventProfile = weeklyEvent
     ? loadEventProfile(weeklyEvent.id)
     : null;
@@ -929,6 +935,15 @@ export function LandingPage({
       </div>
 
       {hubTab === "play" && playSection !== "chooser" ? playModeBack : null}
+
+      {showFirstSessionGuide &&
+      hubTab === "play" &&
+      playSection !== "chooser" ? (
+        <FirstSessionWelcomeBar
+          onSeePlay={() => updatePlaySection("chooser")}
+          onDismiss={dismissFirstSessionGuide}
+        />
+      ) : null}
 
       <div className="landing-hub__content">
         {liveRestoreNotice ? (

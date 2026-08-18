@@ -73,8 +73,10 @@ import {
 import { submitEventLeaderboardEntry } from "../lib/eventLeaderboard";
 import {
   formatEventBadgeLabel,
-  getCurrentWeeklyEvent,
+  getWeeklyEventForEventId,
+  isCurrentEventId,
   type EventBadgeTier,
+  type WeeklyEventDefinition,
 } from "../lib/weeklyEvents";
 import { MODE_COPY } from "../lib/modeCopy";
 import type { Drafter, Player } from "../lib/types";
@@ -155,7 +157,7 @@ export function MatchResults({
   } | null>(null);
   const applyGhostCompetitiveOutcomeRef = useRef<(() => void) | null>(null);
   const eventLeaderboardSubmissionRef = useRef<{
-    event: NonNullable<ReturnType<typeof getCurrentWeeklyEvent>>;
+    event: WeeklyEventDefinition;
     teamName: string;
     profile: EventProfile;
   } | null>(null);
@@ -287,8 +289,8 @@ export function MatchResults({
           nextProfile.badges.filter((badge) => !before.badges.includes(badge)),
         );
 
-        const event = getCurrentWeeklyEvent(allPlayers);
-        if (event && event.id === user.eventId) {
+        const event = getWeeklyEventForEventId(user.eventId, allPlayers);
+        if (event && isCurrentEventId(user.eventId)) {
           eventLeaderboardSubmissionRef.current = {
             event,
             teamName: user.name,

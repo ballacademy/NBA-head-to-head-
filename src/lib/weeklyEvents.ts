@@ -69,15 +69,54 @@ export const isAgePosEventRestriction = (
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
 
-/** ISO week id like 2026-W30 (America/New_York civil date, same as Daily). */
-export const getIsoWeekId = (date: Date = new Date()): string => {
-  const [year, month, day] = getDailyDateKey(date).split("-").map(Number);
+const isoWeekIdFromUtcCivilDate = (year: number, month: number, day: number) => {
   const utc = new Date(Date.UTC(year, month - 1, day));
   const weekday = utc.getUTCDay() || 7;
   utc.setUTCDate(utc.getUTCDate() + 4 - weekday);
   const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
   const week = Math.ceil(((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return `${utc.getUTCFullYear()}-W${pad2(week)}`;
+};
+
+/** ISO week id like 2026-W30 (America/New_York civil date, same as Daily). */
+export const getIsoWeekId = (date: Date = new Date()): string => {
+  const [year, month, day] = getDailyDateKey(date).split("-").map(Number);
+  return isoWeekIdFromUtcCivilDate(year, month, day);
+};
+
+/** Legacy UTC ISO week used for event ids before Eastern weeks. */
+export const getUtcIsoWeekId = (date: Date = new Date()): string =>
+  isoWeekIdFromUtcCivilDate(
+    date.getUTCFullYear(),
+    date.getUTCMonth() + 1,
+    date.getUTCDate(),
+  );
+
+const eventIdForWeek = (weekId: string) =>
+  buildEventId(weekId, getEventRestrictionForWeek(weekId));
+
+/**
+ * UTC event id when it disagrees with Eastern (Sunday evening ET /
+ * Monday 00:00–04:00 UTC). Null when both calendars share a week.
+ */
+export const getLegacyUtcEventId = (date: Date = new Date()): string | null => {
+  const easternWeekId = getIsoWeekId(date);
+  const utcWeekId = getUtcIsoWeekId(date);
+  if (easternWeekId === utcWeekId) {
+    return null;
+  }
+  return eventIdForWeek(utcWeekId);
+};
+
+export const isCurrentEventId = (
+  eventId: string,
+  date: Date = new Date(),
+): boolean => {
+  if (eventId === eventIdForWeek(getIsoWeekId(date))) {
+    return true;
+  }
+  const legacyId = getLegacyUtcEventId(date);
+  return legacyId != null && eventId === legacyId;
 };
 
 export const formatEventWeekLabel = (weekId: string) => {
@@ -259,11 +298,10 @@ export const formatWeeklyEventChooserMeta = (
     ? `${playable.title} · this week`
     : `${scheduled.title} · check back`;
 
-export const getCurrentWeeklyEvent = (
+export const getWeeklyEventForWeekId = (
+  weekId: string,
   players: Player[],
-  date: Date = new Date(),
 ): WeeklyEventDefinition | null => {
-  const weekId = getIsoWeekId(date);
   const restriction = getEventRestrictionForWeek(weekId);
   const id = buildEventId(weekId, restriction);
   const salaryCapLimit = getEventSalaryCap(restriction);
@@ -296,6 +334,23 @@ export const getCurrentWeeklyEvent = (
     sharedSlots,
   };
 };
+
+export const getWeeklyEventForEventId = (
+  eventId: string,
+  players: Player[],
+): WeeklyEventDefinition | null => {
+  const match = EVENT_ID_PATTERN.exec(eventId);
+  if (!match) {
+    return null;
+  }
+  return getWeeklyEventForWeekId(match[1]!, players);
+};
+
+export const getCurrentWeeklyEvent = (
+  players: Player[],
+  date: Date = new Date(),
+): WeeklyEventDefinition | null =>
+  getWeeklyEventForWeekId(getIsoWeekId(date), players);
 
 export const evaluateEventBadges = (params: {
   matchesPlayed: number;
