@@ -616,7 +616,7 @@ export function MatchResults({
             : null
       : null;
 
-  /** Classic/Pro badges use monthly board streaks (same as Play cards + Ranks). */
+  /** Casual/Pro badges use monthly board streaks (same as Play cards + Ranks). */
   const displayStreaks = useMemo(() => {
     if (isEventMatch && eventProfile) {
       return {

@@ -48,7 +48,6 @@ import {
 import { ClassicModeSummary } from "./ClassicModeSummary";
 import { PrivateMatchModal } from "./PrivateMatchModal";
 import { ModeCardInfo } from "./ModeCardInfo";
-import { ModeCardMoreMenu } from "./ModeCardMoreMenu";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
@@ -105,6 +104,11 @@ import {
   hasSeenFirstSessionGuide,
   markFirstSessionGuideSeen,
 } from "../lib/firstSessionOnboarding";
+import {
+  BANNERS_EXPLAINER_COPY,
+  hasSeenBannersExplainer,
+  markBannersExplainerSeen,
+} from "../lib/bannersExplainer";
 import { FirstSessionOnboardingOverlay } from "./FirstSessionOnboardingOverlay";
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
@@ -223,6 +227,9 @@ export function LandingPage({
   );
   const [showFirstSessionGuide, setShowFirstSessionGuide] = useState(
     () => !hasSeenFirstSessionGuide(),
+  );
+  const [showBannersExplainer, setShowBannersExplainer] = useState(
+    () => !hasSeenBannersExplainer(),
   );
   const classicH2hCardRef = useRef<HTMLDivElement | null>(null);
   const proH2hCardRef = useRef<HTMLDivElement | null>(null);
@@ -795,7 +802,7 @@ export function LandingPage({
             : "Choose a mode."
       : hubTab === "roster"
         ? "Your collection and career."
-        : "Sign in, stats, and settings.";
+        : "Sign in and settings.";
 
   const playModeBack = (
     <HubFeatureReturnButton
@@ -922,6 +929,21 @@ export function LandingPage({
                 )}
               </p>
             ) : null}
+            {showBannersExplainer ? (
+              <p className="banners-explainer" role="note">
+                <span>{BANNERS_EXPLAINER_COPY}</span>
+                <button
+                  type="button"
+                  className="banners-explainer__dismiss"
+                  onClick={() => {
+                    markBannersExplainerSeen();
+                    setShowBannersExplainer(false);
+                  }}
+                >
+                  Got it
+                </button>
+              </p>
+            ) : null}
             <div className="landing-game-modes landing-game-modes--h2h">
               <div
                 ref={classicH2hCardRef}
@@ -934,7 +956,7 @@ export function LandingPage({
                   <ModeCardInfo details={classicModeDetails} variant="corner" />
                 </div>
                 <ClassicModeSummary record={modeRecords.headToHead} />
-                <div className="mode-card__actions mode-card__actions--primary-row">
+                <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
@@ -947,16 +969,27 @@ export function LandingPage({
                         ? "Lineup queued"
                         : `Play ${CLASSIC_HEAD_TO_HEAD_LABEL}`}
                   </button>
-                  <ModeCardMoreMenu
+                  <button
+                    type="button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
-                    onPractice={() =>
+                    onClick={() =>
                       void handleStart({
                         practiceMode: true,
                         salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
                       })
                     }
-                    onPrivate={() => setPrivateMatchMode("classic")}
-                  />
+                  >
+                    Practice
+                  </button>
+                  <button
+                    type="button"
+                    className="mode-card__cta mode-card__cta--secondary"
+                    disabled={modesBlocked}
+                    onClick={() => setPrivateMatchMode("classic")}
+                  >
+                    Private
+                  </button>
                 </div>
               </div>
 
@@ -971,7 +1004,7 @@ export function LandingPage({
                   <ModeCardInfo details={proModeDetails} variant="corner" />
                 </div>
                 <RankedModeSummary record={modeRecords.ranked} />
-                <div className="mode-card__actions mode-card__actions--primary-row">
+                <div className="mode-card__actions mode-card__actions--split">
                   <button
                     type="button"
                     className="mode-card__cta mode-card__cta--primary"
@@ -984,17 +1017,28 @@ export function LandingPage({
                         ? "Lineup queued"
                         : `Play ${PRO_HEAD_TO_HEAD_LABEL}`}
                   </button>
-                  <ModeCardMoreMenu
+                  <button
+                    type="button"
+                    className="mode-card__cta mode-card__cta--secondary"
                     disabled={modesBlocked}
-                    onPractice={() =>
+                    onClick={() =>
                       void handleStart({
                         practiceMode: true,
                         salaryCapMode: true,
                         salaryCapLimit: RANKED_SALARY_CAP,
                       })
                     }
-                    onPrivate={() => setPrivateMatchMode("ranked")}
-                  />
+                  >
+                    Practice
+                  </button>
+                  <button
+                    type="button"
+                    className="mode-card__cta mode-card__cta--secondary"
+                    disabled={modesBlocked}
+                    onClick={() => setPrivateMatchMode("ranked")}
+                  >
+                    Private
+                  </button>
                 </div>
               </div>
 

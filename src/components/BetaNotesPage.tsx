@@ -178,9 +178,12 @@ export function BetaNotesPage({
                 in practice and Daily Draft without an All-Star unlock.
               </li>
               <li>
+                <strong>Community</strong> — posts, attached lineups/matchups,
+                and public tier lists (account required to publish)
+              </li>
+              <li>
                 <strong>Franchise</strong> — Collection, Badges, Season Stats,
-                Daily progress, and Most drafted ·{" "}
-                <strong>Ranks</strong> · <strong>Community</strong> ·{" "}
+                Daily progress, and Most drafted · <strong>Ranks</strong> ·{" "}
                 <strong>Account</strong> (sign-in, settings)
               </li>
               <li>

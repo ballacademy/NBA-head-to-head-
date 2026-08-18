@@ -1,4 +1,4 @@
-/** Private friend-match room helpers (Classic / Pro rules, unranked outcomes). */
+/** Private friend-match room helpers (Casual / Pro rules, unranked outcomes). */
 
 export const PRIVATE_ROOM_CODE_LENGTH = 6;
 export const PRIVATE_ROOM_TTL_MS = 10 * 60 * 1000;

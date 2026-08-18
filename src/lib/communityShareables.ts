@@ -227,13 +227,15 @@ export const formatCommunityAttachmentChip = (
     const mode =
       /pro|salary|ranked/i.test(attachment.modeLabel)
         ? "Pro"
-        : /classic|casual|h2h|head/i.test(attachment.modeLabel)
-          ? "H2H"
+        : /casual|classic/i.test(attachment.modeLabel)
+          ? "Casual"
           : /event/i.test(attachment.modeLabel)
             ? "Event"
             : /practice/i.test(attachment.modeLabel)
               ? "Practice"
-              : attachment.modeLabel.slice(0, 12);
+              : /h2h|head/i.test(attachment.modeLabel)
+                ? "H2H"
+                : attachment.modeLabel.slice(0, 12);
     return `${mode} · ${result} · ${attachment.userOvr}–${attachment.opponentOvr}`;
   }
 

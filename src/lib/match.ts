@@ -33,7 +33,7 @@ export interface StartDraftOptions {
   salaryCapLimit?: number;
   allTimeMode?: boolean;
   practiceMode?: boolean;
-  /** Account-only friend match via room code (Classic or Pro rules). */
+  /** Account-only friend match via room code (Casual or Pro rules). */
   privateMatch?: boolean;
   privateRoom?:
     | { role: "host" }
