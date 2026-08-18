@@ -14,7 +14,7 @@ import {
   fetchCommunityPostForSocialMeta,
   injectSocialMetaIntoHtml,
 } from "./lib/socialMetaHtml";
-import { isSocialCrawlerUserAgent } from "../../src/lib/communityPostSocialMeta";
+import { isSocialCrawlerUserAgent } from "../src/lib/communityPostSocialMeta";
 
 const CANONICAL_HOST = "www.draftdaygm.com";
 const APEX_HOSTS = new Set(["draftdaygm.com"]);
