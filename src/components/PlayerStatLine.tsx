@@ -4,7 +4,7 @@ import { PlayerRarityBadge } from "./PlayerRarityBadge";
 import type { DailyDraftGoal } from "../lib/dailyDraftGoals";
 import { formatPlayerGoalStat } from "../lib/dailyGoalScoring";
 import { formatPlayerPositions } from "../lib/playerPool";
-import type { Player } from "../lib/types";
+import type { Player, Position } from "../lib/types";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 
 interface PlayerStatLineProps {
@@ -15,6 +15,8 @@ interface PlayerStatLineProps {
   showDraftStats?: boolean;
   dailyGoal?: DailyDraftGoal;
   allTimeMode?: boolean;
+  /** Unique PG–C slot on matchup results; listed eligibility stays elsewhere. */
+  lineupSlot?: Position;
 }
 
 export function PlayerStatLine({
@@ -24,14 +26,14 @@ export function PlayerStatLine({
   showDraftStats = true,
   dailyGoal,
   allTimeMode = false,
+  lineupSlot,
 }: PlayerStatLineProps) {
   const goalStat = dailyGoal ? formatPlayerGoalStat(player, dailyGoal) : null;
   const isDaily = Boolean(dailyGoal);
-  const positions = formatPlayerPositions(player.positions);
+  const positions = lineupSlot ?? formatPlayerPositions(player.positions);
   const meta = `${player.team} · ${positions}${
     pickNumber ? ` · Pick ${pickNumber}` : ""
   }`;
-  const denseMeta = positions;
 
   return (
     <div
@@ -75,14 +77,7 @@ export function PlayerStatLine({
             <div className="player-stat-line__title-row">
               <strong className="player-stat-line__name">
                 {player.name}
-                <span className="player-stat-line__meta player-stat-line__meta--full">
-                  {" "}
-                  {meta}
-                </span>
-                <span className="player-stat-line__meta player-stat-line__meta--dense">
-                  {" "}
-                  {denseMeta}
-                </span>
+                <span className="player-stat-line__meta"> {meta}</span>
               </strong>
               <span className="player-stat-line__badges">
                 <LimitedSampleBadge player={player} compact={compact} />
