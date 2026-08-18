@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { assignLineupSlots } from "../lib/lineupOrder";
+import { formatPersistedUncappedOvr } from "../lib/scoring";
 import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -65,7 +65,8 @@ function MatchupDetail({
         <p>
           Margin{" "}
           {Math.abs(result.ownerScore - result.opponentScore).toFixed(1)} • OVR{" "}
-          {result.ownerScore.toFixed(1)} vs {result.opponentScore.toFixed(1)}
+          {formatPersistedUncappedOvr(result.ownerScore)} vs{" "}
+          {formatPersistedUncappedOvr(result.opponentScore)}
           {outcome ? (
             <>
               {" "}
@@ -153,9 +154,10 @@ export function PendingOwnerResults({
                         {result.opponentTeamName}
                       </span>
                       <span className="owner-results-inbox__meta">
-                        {modeLabel(mode)} · {result.ownerScore.toFixed(1)}–
-                        {result.opponentScore.toFixed(1)} · margin{" "}
-                        {margin.toFixed(1)}
+                        {modeLabel(mode)} ·{" "}
+                        {formatPersistedUncappedOvr(result.ownerScore)}–
+                        {formatPersistedUncappedOvr(result.opponentScore)} ·
+                        margin {margin.toFixed(1)}
                         {outcome
                           ? ` · ${formatRatingDelta(outcome.delta)}`
                           : ""}

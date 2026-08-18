@@ -369,6 +369,13 @@ export const formatLineupOvrDisplay = (
 ) =>
   score.ovrOverflow > 0 ? `${score.total} (+${score.ovrOverflow})` : `${score.total}`;
 
+/** Format a persisted uncapped OVR the same way live matchup orbs do. */
+export const formatPersistedUncappedOvr = (uncappedTotal: number) => {
+  const ovrOverflow = lineupOvrOverflow(uncappedTotal);
+  const total = ovrOverflow > 0 ? 100 : displayLineupOvr(uncappedTotal);
+  return formatLineupOvrDisplay({ total, ovrOverflow });
+};
+
 /** Orb / share label stays "OVR"; overflow belongs on the number via formatLineupOvrDisplay. */
 export const formatLineupOvrLabel = (
   _score?: Pick<LineupScore, "ovrOverflow">,
