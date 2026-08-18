@@ -337,10 +337,6 @@
   border-top-color: #94a3b8;
 }
 
-.player-stat-line__meta--dense {
-  display: none;
-}
-
 .matchup-panel__compare {
   display: none;
 }

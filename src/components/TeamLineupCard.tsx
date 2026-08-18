@@ -1,6 +1,6 @@
 import { useId, useState, type CSSProperties } from "react";
 import { formatUsername } from "../lib/accountCredentials";
-import { sortLineupByPosition } from "../lib/lineupOrder";
+import { assignLineupSlots } from "../lib/lineupOrder";
 import {
   buildLineupScoreContext,
   buildLineupScoreInsights,
@@ -43,7 +43,7 @@ export function TeamLineupCard({
   onNameClick,
 }: TeamLineupCardProps) {
   const resolvedOutcome = outcome ?? (isWinner ? "win" : undefined);
-  const orderedLineup = sortLineupByPosition(lineup);
+  const slottedLineup = assignLineupSlots(lineup);
   const scoreContext = showScoreContext
     ? buildLineupScoreContext(score)
     : null;
@@ -217,12 +217,13 @@ export function TeamLineupCard({
       <LineupChemistryBadges lineup={lineup} />
 
       <div className="team-lineup-card__players">
-        {orderedLineup.length > 0 ? (
-          orderedLineup.map((player) => (
+        {slottedLineup.length > 0 ? (
+          slottedLineup.map(({ player, slot }) => (
             <PlayerStatLine
               key={player.id}
               player={player}
               compact={compact}
+              lineupSlot={slot}
               allTimeMode={drafter.allTimeMode}
             />
           ))
