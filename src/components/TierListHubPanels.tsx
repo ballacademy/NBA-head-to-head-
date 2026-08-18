@@ -536,7 +536,7 @@ interface CommunityPostsPanelProps {
   error: string | null;
   likeError?: string | null;
   onSubmit: () => void;
-  accountLinked: boolean;
+  accountLinked: boolean | null;
   sort: CommunityPostSort;
   onSortChange: (sort: CommunityPostSort) => void;
   shareables: CommunityPostAttachment[];
@@ -637,6 +637,8 @@ export function CommunityPostsPanel({
   focusPostId = null,
   postsToday = null,
 }: CommunityPostsPanelProps) {
+  const accountReady = accountLinked === true;
+  const accountBlocked = accountLinked === false;
   const remaining = COMMUNITY_POST_BODY_MAX - draft.length;
   const [viewingPostId, setViewingPostId] = useState<string | null>(null);
   const [viewingAttachment, setViewingAttachment] =
@@ -867,7 +869,7 @@ export function CommunityPostsPanel({
   };
 
   const handleReport = async (postId: string) => {
-    if (!accountLinked || actionBusy) {
+    if (!accountReady || actionBusy) {
       return;
     }
     setReportError(null);
@@ -1015,7 +1017,11 @@ export function CommunityPostsPanel({
         </p>
       ) : null}
 
-      {!accountLinked ? (
+      {accountLinked === null ? (
+        <p className="community-activity-strip" role="status">
+          Checking account…
+        </p>
+      ) : accountBlocked ? (
         <AccountRequiredNote className="account-required-note--inline">
           {`${ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE} Anyone can browse.`}
         </AccountRequiredNote>
@@ -1030,7 +1036,7 @@ export function CommunityPostsPanel({
             rows={3}
             placeholder="Share a short take (tier lists, Daily, matchups…)"
             onChange={(event) => onDraftChange(event.target.value)}
-            disabled={!accountLinked || submitting}
+            disabled={accountBlocked || submitting}
           />
         </label>
 
@@ -1047,7 +1053,7 @@ export function CommunityPostsPanel({
               );
               onSelectAttachment(match ?? null);
             }}
-            disabled={!accountLinked || submitting || shareables.length === 0}
+            disabled={accountBlocked || submitting || shareables.length === 0}
           >
             <option value="">No attachment</option>
             {shareables.map((entry) => (
@@ -1111,7 +1117,7 @@ export function CommunityPostsPanel({
           <button
             type="submit"
             className="hub-cta"
-            disabled={!accountLinked || submitting || draft.trim().length === 0}
+            disabled={!accountReady || submitting || draft.trim().length === 0}
           >
             {submitting ? "Posting…" : "Post"}
           </button>
@@ -1298,9 +1304,13 @@ export function CommunityPostsPanel({
                         post.likedByViewer ? " is-active" : ""
                       }`}
                       aria-pressed={post.likedByViewer}
-                      disabled={!accountLinked}
+                      disabled={accountBlocked}
                       title={
-                        accountLinked ? "Like" : "Create an account to like"
+                        accountReady
+                          ? "Like"
+                          : accountLinked === null
+                            ? "Checking account"
+                            : "Create an account to like"
                       }
                       onClick={() =>
                         onToggleLike(post.id, !post.likedByViewer)
@@ -1364,7 +1374,7 @@ export function CommunityPostsPanel({
                                 type="button"
                                 className="community-posts-panel__text-action"
                                 disabled={
-                                  !accountLinked || actionBusy === post.id
+                                  !accountReady || actionBusy === post.id
                                 }
                                 onClick={() => void handleReport(post.id)}
                               >
@@ -1406,7 +1416,7 @@ export function CommunityPostsPanel({
                           ))}
                         </ul>
                       )}
-                      {accountLinked ? (
+                      {accountReady ? (
                         <div className="community-posts-panel__reply-compose">
                           <textarea
                             rows={2}

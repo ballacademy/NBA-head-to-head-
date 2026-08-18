@@ -8,7 +8,7 @@ import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
 import type { LandingPlaySection } from "../lib/landingHub";
 import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import { formatOrdinal } from "../lib/ordinal";
-import type { CollectionTier } from "../lib/playerCollection";
+import { COLLECTION_UNLOCK_COPY, type CollectionTier } from "../lib/playerCollection";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { MostDraftedBoards } from "./MostDraftedBoards";
 import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
@@ -255,7 +255,7 @@ export function FranchiseHubPanel({
           </button>
         </div>
         <p className="landing-profile-strip__meta franchise-home__collection-meta">
-          Win to unlock All-Stars, lose to unlock Scrubs.
+          {COLLECTION_UNLOCK_COPY}
         </p>
       </div>
 
@@ -295,7 +295,7 @@ export function FranchiseHubPanel({
           >
             <span className="franchise-home__link-copy">
               <strong>GM Stats</strong>
-              <span>Your Front Office record</span>
+              <span>Front Office record and Daily details</span>
             </span>
             <span className="franchise-home__link-chevron" aria-hidden="true">
               ›

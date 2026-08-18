@@ -1,5 +1,6 @@
 import internationalPlayerIds from "../../data/international-player-ids.json";
 import { isAllStarPlayer, isSuperstarPlayer } from "./allStars";
+import { getDailyDateKey } from "./dailyDraft";
 import {
   generateFeasibleDraftSlotsUnderSalaryCap,
 } from "./draft";
@@ -68,13 +69,12 @@ export const isAgePosEventRestriction = (
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
 
-/** ISO week id like 2026-W30 (UTC). */
+/** ISO week id like 2026-W30 (America/New_York civil date, same as Daily). */
 export const getIsoWeekId = (date: Date = new Date()): string => {
-  const utc = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
-  const day = utc.getUTCDay() || 7;
-  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const [year, month, day] = getDailyDateKey(date).split("-").map(Number);
+  const utc = new Date(Date.UTC(year, month - 1, day));
+  const weekday = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - weekday);
   const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
   const week = Math.ceil(((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return `${utc.getUTCFullYear()}-W${pad2(week)}`;

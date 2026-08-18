@@ -12,6 +12,7 @@ const MOST_DRAFTED_MODES: MostDraftedBoardMode[] = [
   "headToHead",
   "ranked",
   "daily",
+  "event",
 ];
 
 interface MostDraftedBoardsProps {

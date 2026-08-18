@@ -17,6 +17,7 @@ import {
   saveLandingHubTab,
   saveLandingPlaySection,
   syncLandingDeepLinkUrl,
+  syncLandingHubTabUrl,
 } from "./landingHub";
 
 const sessionStorageMock = (() => {
@@ -288,6 +289,51 @@ describe("landingHub", () => {
 
     const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
     expect(nextUrl).toContain("play=classic");
+  });
+
+  it("writes the stored play section when opening the Play hub", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/?hub=franchise",
+        pathname: "/",
+        search: "?hub=franchise",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    saveLandingPlaySection("chooser");
+    syncLandingHubTabUrl("play");
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("hub=play");
+    expect(nextUrl).toContain("play=chooser");
+  });
+
+  it("clears play when leaving the Play hub", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/?hub=play&play=events",
+        pathname: "/",
+        search: "?hub=play&play=events",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    syncLandingHubTabUrl("roster");
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("hub=franchise");
+    expect(nextUrl).not.toContain("play=");
   });
 
   it("builds community and ranks share URLs", () => {

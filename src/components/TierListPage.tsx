@@ -275,7 +275,9 @@ export function TierListPage({
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authorName, setAuthorName] = useState(`GM ${formatPublicTag(identity.publicTag)}`);
-  const [accountLinked, setAccountLinked] = useState(false);
+  const [accountLinked, setAccountLinked] = useState<boolean | null>(() =>
+    peekCachedAccountLinked(identity.playerId),
+  );
   const [mineSort, setMineSort] = useState<PublicTierListSort>("recent");
   const [publishedLikeCounts, setPublishedLikeCounts] = useState<
     Record<string, number>
@@ -2229,10 +2231,10 @@ export function TierListPage({
                 <button
                   type="button"
                   className="secondary-button"
-                  disabled={!accountLinked}
+                  disabled={accountLinked !== true}
                   onClick={() => void handlePublish()}
                   title={
-                    accountLinked
+                    accountLinked === true
                       ? "Update the public copy with your latest edits"
                       : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
                   }
@@ -2251,10 +2253,10 @@ export function TierListPage({
               <button
                 type="button"
                 className="secondary-button"
-                disabled={!accountLinked}
+                disabled={accountLinked !== true}
                 onClick={() => void handlePublish()}
                 title={
-                  accountLinked
+                  accountLinked === true
                     ? "Publish to public tier lists"
                     : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
                 }
@@ -2271,7 +2273,7 @@ export function TierListPage({
             </button>
           </div>
         </div>
-        {!accountLinked && !state.publishedId ? (
+        {accountLinked === false && !state.publishedId ? (
           <AccountRequiredNote className="account-required-note--inline">
             {ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE}
           </AccountRequiredNote>

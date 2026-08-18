@@ -26,6 +26,13 @@ import {
 } from "./weeklyEvents";
 
 describe("weeklyEvents", () => {
+  it("uses Eastern civil dates for ISO weeks, matching Daily", () => {
+    // Monday 03:00 UTC is still Sunday evening Eastern (2026-08-02 → W31).
+    expect(getIsoWeekId(new Date("2026-08-03T03:00:00.000Z"))).toBe("2026-W31");
+    // Later that UTC Monday is Monday morning Eastern (2026-08-03 → W32).
+    expect(getIsoWeekId(new Date("2026-08-03T12:00:00.000Z"))).toBe("2026-W32");
+  });
+
   it("builds ISO week and event ids for the full restriction set", () => {
     const weekId = getIsoWeekId(new Date("2026-07-27T12:00:00.000Z"));
     expect(weekId).toMatch(/^\d{4}-W\d{2}$/);

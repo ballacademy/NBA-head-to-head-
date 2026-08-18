@@ -13,7 +13,6 @@ import { formatRatingPoints } from "../lib/rankedElo";
 import { loadTeamProfile } from "../lib/teamProfile";
 import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { HubPageChrome } from "./HubPageChrome";
-import { MostDraftedBoards } from "./MostDraftedBoards";
 import { RankedTierBadge } from "./RankedTierBadge";
 
 interface GmStatsPageProps {
@@ -39,9 +38,6 @@ function GmStatsFactRows({
 
 const formatPercentileStat = (value: number | null) =>
   value != null ? formatOrdinal(Math.round(value)) : "—";
-
-const formatCollectionCount = (unlocked: number, total: number) =>
-  `${unlocked} of ${total}`;
 
 export function GmStatsPage({ onBack }: GmStatsPageProps) {
   const teamName = loadTeamProfile()?.name ?? "Your team";
@@ -193,37 +189,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
                 label: "Average percentile",
                 value: formatPercentileStat(
                   snapshot.dailyDraft.averagePercentile,
-                ),
-              },
-            ]}
-          />
-        </section>
-
-        <MostDraftedBoards refreshKey={legacyTick} />
-
-        <section className="gm-stats-page__section">
-          <h2>Collection</h2>
-          <GmStatsFactRows
-            rows={[
-              {
-                label: "All-Stars",
-                value: formatCollectionCount(
-                  snapshot.collection.unlocked,
-                  snapshot.collection.total,
-                ),
-              },
-              {
-                label: "Superstars",
-                value: formatCollectionCount(
-                  snapshot.collection.superstarUnlocked,
-                  snapshot.collection.superstarTotal,
-                ),
-              },
-              {
-                label: "Scrub pool",
-                value: formatCollectionCount(
-                  snapshot.collection.scrubPoolUnlocked,
-                  snapshot.collection.scrubPoolTotal,
                 ),
               },
             ]}
