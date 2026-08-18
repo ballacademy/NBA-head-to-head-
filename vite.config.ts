@@ -21,7 +21,7 @@ export default defineConfig({
 
           // Keep explicitly lazy feature pages in their own chunks.
           if (
-            /\/src\/components\/(AchievementsPage|GmStatsPage|LegalPage|BetaNotesPage|PlayerStatsTable)\./.test(
+            /\/src\/components\/(AchievementsPage|GmStatsPage|WeeklyRecapPage|LegalPage|BetaNotesPage|PlayerStatsTable)\./.test(
               id,
             )
           ) {

@@ -175,6 +175,11 @@ const AchievementsPage = lazyWithChunkReload(() =>
 const GmStatsPage = lazyWithChunkReload(() =>
   import("./components/GmStatsPage").then((m) => ({ default: m.GmStatsPage })),
 );
+const WeeklyRecapPage = lazyWithChunkReload(() =>
+  import("./components/WeeklyRecapPage").then((m) => ({
+    default: m.WeeklyRecapPage,
+  })),
+);
 const InternalPlayerUsagePage = lazyWithChunkReload(() =>
   import("./components/InternalPlayerUsagePage").then((m) => ({
     default: m.InternalPlayerUsagePage,
@@ -235,6 +240,7 @@ type AppPhase =
   | "stats"
   | "tierList"
   | "gmStats"
+  | "weeklyRecap"
   | "playerUsage"
   | "leaderboard"
   | "achievements"
@@ -246,6 +252,7 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
   "tierList",
   "gmStats",
+  "weeklyRecap",
   "playerUsage",
   "leaderboard",
   "achievements",
@@ -1779,9 +1786,11 @@ function App() {
     const parentTab =
       phase === "playerUsage"
         ? "account"
-        : leavingFeature
-          ? parentTabForFeature(leavingFeature)
-          : landingHubTab;
+        : phase === "weeklyRecap"
+          ? "play"
+          : leavingFeature
+            ? parentTabForFeature(leavingFeature)
+            : landingHubTab;
     setLandingHubTab(parentTab);
     saveLandingHubTab(parentTab);
     resetToLanding();
@@ -2581,6 +2590,10 @@ function App() {
       return "community";
     }
 
+    if (phase === "weeklyRecap") {
+      return "play";
+    }
+
     if (
       phase === "playerUsage" ||
       phase === "privacy" ||
@@ -2655,6 +2668,10 @@ function App() {
 
   if (phase === "gmStats") {
     return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
+  }
+
+  if (phase === "weeklyRecap") {
+    return renderHubFeature(<WeeklyRecapPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "playerUsage") {
@@ -2815,6 +2832,7 @@ function App() {
           onViewStats={() => openFeaturePage("stats")}
           onViewTierList={openCommunityHub}
           onViewGmStats={() => openFeaturePage("gmStats")}
+          onViewWeeklyRecap={() => openFeaturePage("weeklyRecap")}
           onViewAchievements={() => openFeaturePage("achievements")}
           onViewLeaderboard={() => openFeaturePage("leaderboard")}
           onViewPrivacy={() => openFeaturePage("privacy")}

@@ -19,6 +19,7 @@ import {
   getDailyDraftScoringTwistCopy,
 } from "../lib/dailyDraftMode";
 import type { LandingDailyDraftSnapshot } from "../lib/landingDailyDraft";
+import { formatDailyDraftChooserStatus } from "../lib/landingDailyDraft";
 import {
   formatDailyDraftPlayStreak,
   getDailyDraftPlayStreak,
@@ -160,6 +161,7 @@ interface LandingPageProps {
   onViewStats: () => void;
   onViewTierList: () => void;
   onViewGmStats: () => void;
+  onViewWeeklyRecap: () => void;
   onViewAchievements: () => void;
   onViewLeaderboard: () => void;
   onViewPrivacy: () => void;
@@ -205,6 +207,7 @@ export function LandingPage({
   onViewStats,
   onViewTierList,
   onViewGmStats,
+  onViewWeeklyRecap,
   onViewAchievements,
   onViewLeaderboard,
   onViewPrivacy,
@@ -486,6 +489,14 @@ export function LandingPage({
     weeklyEvent,
     scheduledWeeklyEvent,
   );
+  const dailyChooserStatus = useMemo(
+    () =>
+      formatDailyDraftChooserStatus({
+        basicDone: Boolean(landingBasicDaily.entry),
+        advancedDone: Boolean(landingAdvancedDaily.entry),
+      }),
+    [landingAdvancedDaily.entry, landingBasicDaily.entry],
+  );
   const playHubChips = useMemo(() => {
     const recap = buildWeeklyGmRecap();
     const nextBadge = getNextBadgeTeaser();
@@ -524,6 +535,10 @@ export function LandingPage({
     }
     if (chip.action.type === "roster") {
       onHubTabChange("roster");
+      return;
+    }
+    if (chip.action.type === "recap") {
+      onViewWeeklyRecap();
       return;
     }
     if (chip.action.type === "play") {
@@ -701,6 +716,9 @@ export function LandingPage({
           <p className="eyebrow" id={`daily-draft-${mode}-title`}>
             {formatDailyDraftProductName(mode)}
           </p>
+          {dailyCompleted ? (
+            <span className="daily-draft-card__completed-tag">Completed</span>
+          ) : null}
         </div>
         <h3 className="daily-draft-card__challenge-title">
           {snapshot.goal.title}
@@ -936,12 +954,22 @@ export function LandingPage({
               type="button"
               className="play-hub-chooser__option hub-accent hub-accent--daily"
               role="listitem"
+              aria-label={`Daily Draft, ${dailyChooserStatus.meta}`}
               onClick={() => updatePlaySection("daily")}
             >
               <span className="play-hub-chooser__copy">
-                <span className="play-hub-chooser__label">Daily Draft</span>
+                <span className="play-hub-chooser__label-row">
+                  <span className="play-hub-chooser__label">Daily Draft</span>
+                  {dailyChooserStatus.tagLabel ? (
+                    <span
+                      className={`play-hub-chooser__tag play-hub-chooser__tag--${dailyChooserStatus.tag}`}
+                    >
+                      {dailyChooserStatus.tagLabel}
+                    </span>
+                  ) : null}
+                </span>
                 <span className="play-hub-chooser__meta">
-                  One scored try per mode each day
+                  {dailyChooserStatus.meta}
                 </span>
               </span>
               <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -1392,6 +1420,7 @@ export function LandingPage({
             onViewStats={onViewStats}
             onViewAchievements={onViewAchievements}
             onViewGmStats={onViewGmStats}
+            onViewWeeklyRecap={onViewWeeklyRecap}
             onPlayDaily={() => {
               updatePlaySection("daily");
               onHubTabChange("play");

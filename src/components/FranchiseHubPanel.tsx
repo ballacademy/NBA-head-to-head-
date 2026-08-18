@@ -24,6 +24,7 @@ interface FranchiseHubPanelProps {
   onViewStats: () => void;
   onViewAchievements: () => void;
   onViewGmStats: () => void;
+  onViewWeeklyRecap: () => void;
   onPlayDaily: () => void;
   onPlayIntent?: (intent: {
     playSection: LandingPlaySection;
@@ -43,6 +44,7 @@ export function FranchiseHubPanel({
   onViewStats,
   onViewAchievements,
   onViewGmStats,
+  onViewWeeklyRecap,
   onPlayDaily,
   onPlayIntent,
 }: FranchiseHubPanelProps) {
@@ -68,7 +70,7 @@ export function FranchiseHubPanel({
 
   return (
     <div className="franchise-home">
-      <WeeklyGmRecapCard variant="compact" onViewGmStats={onViewGmStats} />
+      <WeeklyGmRecapCard variant="compact" onViewWeek={onViewWeeklyRecap} />
 
       {showStandaloneNextBadge && nextBadge && onPlayIntent ? (
         <section

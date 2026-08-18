@@ -975,6 +975,13 @@ h1.landing-hub__title--name {
   min-width: 0;
 }
 
+.play-hub-chooser__label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .play-hub-chooser__label {
   font-family: var(--font-display);
   font-size: 1.08rem;
@@ -982,6 +989,32 @@ h1.landing-hub__title--name {
   line-height: 1.15;
   letter-spacing: 0.02em;
   color: #f1f5f9;
+  min-width: 0;
+}
+
+.play-hub-chooser__tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.play-hub-chooser__tag--completed {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.38);
+}
+
+.play-hub-chooser__tag--progress {
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.3);
 }
 
 .play-hub-chooser__meta {
