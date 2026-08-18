@@ -6,23 +6,30 @@ import {
 } from "../lib/gmWeeklyRecap";
 
 interface WeeklyGmRecapCardProps {
-  onViewGmStats?: () => void;
+  onViewWeek?: () => void;
   className?: string;
-  /** Compact one-line teaser (Franchise); full card stays on GM Stats. */
+  /** Compact one-line teaser (Franchise); full card is the recap page. */
   variant?: "full" | "compact";
+  /** Keep stats visible after the Play chip is dismissed. */
+  alwaysVisible?: boolean;
+  hideDismiss?: boolean;
+  hideHeading?: boolean;
 }
 
 export function WeeklyGmRecapCard({
-  onViewGmStats,
+  onViewWeek,
   className = "",
   variant = "full",
+  alwaysVisible = false,
+  hideDismiss = false,
+  hideHeading = false,
 }: WeeklyGmRecapCardProps) {
   const recap = useMemo(() => buildWeeklyGmRecap(), []);
   const [dismissed, setDismissed] = useState(() =>
     hasSeenWeeklyRecap(recap.weekKey),
   );
 
-  if (dismissed) {
+  if (dismissed && !alwaysVisible) {
     return null;
   }
 
@@ -43,22 +50,24 @@ export function WeeklyGmRecapCard({
           This week · {recap.dailyDaysSplitLabel}
         </p>
         <div className="weekly-gm-recap__compact-actions">
-          {onViewGmStats ? (
+          {onViewWeek ? (
             <button
               type="button"
               className="weekly-gm-recap__compact-link"
-              onClick={onViewGmStats}
+              onClick={onViewWeek}
             >
               View week
             </button>
           ) : null}
-          <button
-            type="button"
-            className="weekly-gm-recap__dismiss"
-            onClick={handleDismiss}
-          >
-            Dismiss
-          </button>
+          {hideDismiss ? null : (
+            <button
+              type="button"
+              className="weekly-gm-recap__dismiss"
+              onClick={handleDismiss}
+            >
+              Dismiss
+            </button>
+          )}
         </div>
       </div>
     );
@@ -67,25 +76,32 @@ export function WeeklyGmRecapCard({
   return (
     <section
       className={`weekly-gm-recap${className ? ` ${className}` : ""}`}
-      aria-labelledby="weekly-gm-recap-title"
+      aria-labelledby={hideHeading ? undefined : "weekly-gm-recap-title"}
+      aria-label={hideHeading ? "This week" : undefined}
     >
-      <div className="weekly-gm-recap__header">
-        <div className="weekly-gm-recap__heading">
-          <h2 className="weekly-gm-recap__title" id="weekly-gm-recap-title">
-            This week
-          </h2>
-          <p className="weekly-gm-recap__lede">
-            Daily Draft only · {recap.weekRangeLabel}
-          </p>
+      {hideHeading && hideDismiss ? null : (
+        <div className="weekly-gm-recap__header">
+          {hideHeading ? null : (
+            <div className="weekly-gm-recap__heading">
+              <h2 className="weekly-gm-recap__title" id="weekly-gm-recap-title">
+                This week
+              </h2>
+              <p className="weekly-gm-recap__lede">
+                Daily Draft only · {recap.weekRangeLabel}
+              </p>
+            </div>
+          )}
+          {hideDismiss ? null : (
+            <button
+              type="button"
+              className="weekly-gm-recap__dismiss"
+              onClick={handleDismiss}
+            >
+              Dismiss
+            </button>
+          )}
         </div>
-        <button
-          type="button"
-          className="weekly-gm-recap__dismiss"
-          onClick={handleDismiss}
-        >
-          Dismiss
-        </button>
-      </div>
+      )}
 
       <dl className="weekly-gm-recap__stats">
         <div className="weekly-gm-recap__stat">

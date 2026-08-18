@@ -15,7 +15,6 @@ import { FrontOfficeBadgeGrid } from "./FrontOfficeBadgeGrid";
 import { HubPageChrome } from "./HubPageChrome";
 import { MostDraftedBoards } from "./MostDraftedBoards";
 import { RankedTierBadge } from "./RankedTierBadge";
-import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
 interface GmStatsPageProps {
   onBack: () => void;
@@ -81,8 +80,6 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
       backLabel="Franchise"
     >
       <section className="hub-feature__panel">
-        <WeeklyGmRecapCard />
-
         <div className="gm-stats-page__summary">
           <div className="gm-stats-page__summary-card">
             <span className="gm-stats-page__label">Best monthly finish</span>

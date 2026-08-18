@@ -10,6 +10,7 @@ export type PlayHubChipAction =
   | { type: "inbox" }
   | { type: "h2h" }
   | { type: "roster" }
+  | { type: "recap" }
   | { type: "play"; playSection: LandingPlaySection; h2hMode?: "classic" | "ranked" };
 
 export type PlayHubChip = {
@@ -82,9 +83,9 @@ export const buildPlayHubChips = (params: {
     chips.push({
       id: "recap",
       label: "Weekly recap",
-      detail: "Franchise · last 7 days",
+      detail: "Daily Draft · this week",
       ctaLabel: "Go",
-      action: { type: "roster" },
+      action: { type: "recap" },
     });
   }
 

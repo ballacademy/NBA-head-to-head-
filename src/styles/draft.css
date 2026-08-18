@@ -764,6 +764,22 @@
   margin-top: 0;
 }
 
+.daily-draft-card__completed-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
 .daily-draft-card__text-link {
   margin: 0;
   padding: 4px 0 0;
@@ -975,18 +991,7 @@
   border-radius: 14px;
   border: 1px solid var(--hub-subbox-border);
   background: var(--hub-subbox-bg);
-  box-shadow: inset 3px 0 0 var(--accent-roster);
-}
-
-/* Nested inside GM Stats panel — one surface, no second subbox. */
-.hub-feature.gm-stats-page .hub-feature__panel > .weekly-gm-recap {
-  margin: 0 0 8px;
-  padding: 0 0 12px 10px;
-  border: 0;
-  border-bottom: 1px solid var(--accent-neutral-border);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: inset 2px 0 0 var(--accent-roster);
+  box-shadow: inset 3px 0 0 var(--accent-play);
 }
 
 .weekly-gm-recap--compact {
