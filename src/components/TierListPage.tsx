@@ -1196,10 +1196,6 @@ export function TierListPage({
   };
 
   const openCommunityView = (next: TierListView) => {
-    const active = document.activeElement;
-    if (active instanceof HTMLElement) {
-      active.blur();
-    }
     setView(next);
     if (next !== "posts") {
       setCommunityFocusPostId(null);
@@ -1609,16 +1605,6 @@ export function TierListPage({
   const activeFilterCount = countActiveTierListFilters(filters);
   const activeFilterSummary =
     recommendTierListTitle(filters) || "All players";
-
-  useEffect(() => {
-    const active = document.activeElement;
-    if (
-      active instanceof HTMLElement &&
-      active.matches("button, [href], input, select, textarea")
-    ) {
-      active.blur();
-    }
-  }, [view]);
 
   return (
     <HubPageChrome

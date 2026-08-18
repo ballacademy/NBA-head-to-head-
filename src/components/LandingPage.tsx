@@ -279,17 +279,6 @@ export function LandingPage({
   }, []);
 
   useEffect(() => {
-    const active = document.activeElement;
-    if (
-      active instanceof HTMLElement &&
-      active.matches("button, [href], input, select, textarea") &&
-      active.closest(".landing--hub, .hub-feature")
-    ) {
-      active.blur();
-    }
-  }, [hubTab, playSection]);
-
-  useEffect(() => {
     if (hubTab !== "play" || playSection !== "chooser") {
       return;
     }
