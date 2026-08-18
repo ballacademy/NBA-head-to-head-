@@ -347,7 +347,7 @@ export function LandingPage({
         `${CLASSIC_PICK_TIME_LIMIT_SECONDS}-second picks.`,
         `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
         "Monthly Top 500 on the Casual board.",
-        "Practice vs a bot, or start a private match with a room code — neither changes streaks or badges.",
+        "Practice H2H vs a bot, or start a private match — neither changes Banners, badges, or board placement.",
       ]),
     [],
   );
@@ -358,7 +358,7 @@ export function LandingPage({
         `${PICK_TIME_LIMIT_SECONDS}-second picks.`,
         `${RATING_LABEL} matchmaking pairs similar Front Offices.`,
         "Monthly Top 500 on the Pro board.",
-        "Practice vs a bot, or start a private match with a room code — neither changes streaks or badges.",
+        "Practice H2H vs a bot, or start a private match — neither changes Banners, badges, or board placement.",
       ]),
     [],
   );
@@ -497,7 +497,6 @@ export function LandingPage({
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,
       recapReady: !hasSeenWeeklyRecap(recap.weekKey),
-      recapDaysLabel: recap.dailyDaysSplitLabel,
       nextBadgeTitle: nextBadge?.title ?? null,
       nextBadgeIsDaily,
       nextBadgePlaySection: nextBadge?.hint.playSection,

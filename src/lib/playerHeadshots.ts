@@ -1,4 +1,5 @@
 import headshotData from "../../data/espn-player-headshots.json";
+import { isQaRuntimeHost } from "./qaRuntime";
 
 type HeadshotEntry = {
   espnId: string;
@@ -14,11 +15,17 @@ const byBbrPlayerId = (
 
 const DEFAULT_HEADSHOT_LOAD_TIMEOUT_MS = 8_000;
 
-/** Player headshots are enabled in all environments. */
+/** True on QA / local hosts, or when `?headshots` is in the URL (prod stays jerseys). */
 export const arePlayerHeadshotsEnabled = (
-  _hostname = typeof window !== "undefined" ? window.location.hostname : "",
-  _search = typeof window !== "undefined" ? window.location.search : "",
-): boolean => true;
+  hostname = typeof window !== "undefined" ? window.location.hostname : "",
+  search = typeof window !== "undefined" ? window.location.search : "",
+): boolean => {
+  if (search.includes("headshots")) {
+    return true;
+  }
+
+  return isQaRuntimeHost(hostname);
+};
 
 export const getPlayerHeadshotUrl = (
   bbrPlayerId: string | undefined | null,
