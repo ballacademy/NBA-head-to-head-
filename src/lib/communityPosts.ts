@@ -252,6 +252,11 @@ const sortLocalPosts = (
   );
 };
 
+/** Cached feed from the last successful fetch — paint Community without waiting. */
+export const peekLocalCommunityPosts = (
+  sort: CommunityPostSort = "recent",
+): CommunityPost[] => sortLocalPosts(loadLocalFeed().posts, sort);
+
 export const formatCommunityPostTime = (iso: string) => {
   const ms = Date.parse(iso);
   if (!Number.isFinite(ms)) {

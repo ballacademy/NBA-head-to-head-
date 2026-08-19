@@ -78,6 +78,7 @@ import {
   fetchCommunityActivity,
   getCommunityPost,
   listCommunityPosts,
+  peekLocalCommunityPosts,
   setCommunityPostLike,
   type CommunityPost,
   type CommunityPostSort,
@@ -297,7 +298,9 @@ export function TierListPage({
   const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
     null,
   );
-  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>(() =>
+    peekLocalCommunityPosts("recent"),
+  );
   const [communityPostsLoading, setCommunityPostsLoading] = useState(false);
   const [communityPostsLoadingMore, setCommunityPostsLoadingMore] =
     useState(false);
@@ -336,6 +339,8 @@ export function TierListPage({
   const deepLinkHandledRef = useRef(false);
   const postDeepLinkHandledRef = useRef(false);
   const communityPostsLoadGenRef = useRef(0);
+  const communityPostsRef = useRef(communityPosts);
+  communityPostsRef.current = communityPosts;
   const communityFocusPostIdRef = useRef(communityFocusPostId);
   // null until first effect — avoids skipping reset when nav bumps the token
   // in the same render that mounts this page.
@@ -1307,7 +1312,14 @@ export function TierListPage({
   const loadCommunityPosts = useCallback(async () => {
     const generation = communityPostsLoadGenRef.current + 1;
     communityPostsLoadGenRef.current = generation;
-    setCommunityPostsLoading(true);
+    if (communityPostsRef.current.length === 0) {
+      const local = peekLocalCommunityPosts(communityPostSort);
+      if (local.length > 0) {
+        setCommunityPosts(local);
+      } else {
+        setCommunityPostsLoading(true);
+      }
+    }
     setCommunityPostError(null);
     setCommunityPostLikeError(null);
     try {

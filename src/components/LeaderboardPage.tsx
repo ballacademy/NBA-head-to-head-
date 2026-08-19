@@ -18,7 +18,10 @@ import {
   RANKED_LEADERBOARD_LIMIT,
   type RankedLeaderboardSort,
 } from "../lib/rankedLeaderboard";
-import { refreshLeaderboardFromApi } from "../lib/leaderboardRemote";
+import {
+  getCachedRemoteLeaderboard,
+  refreshLeaderboardFromApi,
+} from "../lib/leaderboardRemote";
 import {
   formatTierBannerRange,
   RANKED_TIERS,
@@ -239,7 +242,15 @@ export function LeaderboardPage() {
   const sort: BoardSort = view === "ranked" ? rankedSort : classicSort;
 
   const refreshBoard = async () => {
-    setRefreshBusy(true);
+    const hasLocal =
+      (view === "ranked"
+        ? getTopRankedLeaderboard(rankedSort)
+        : getTopLeaderboard(classicSort)
+      ).length > 0 ||
+      Boolean(getCachedRemoteLeaderboard(view, sort as LeaderboardSort, seasonId)?.length);
+    if (!hasLocal) {
+      setRefreshBusy(true);
+    }
     const ok = await refreshLeaderboardFromApi({
       mode: view,
       sort: sort as LeaderboardSort,
