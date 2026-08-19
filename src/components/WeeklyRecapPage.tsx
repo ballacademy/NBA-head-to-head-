@@ -29,9 +29,7 @@ export function WeeklyRecapPage({
       onBack={onBack}
       backLabel={backLabel}
     >
-      <section className="hub-feature__panel">
-        <WeeklyGmRecapCard alwaysVisible hideDismiss hideHeading />
-      </section>
+      <WeeklyGmRecapCard alwaysVisible hideDismiss hideHeading />
     </HubPageChrome>
   );
 }

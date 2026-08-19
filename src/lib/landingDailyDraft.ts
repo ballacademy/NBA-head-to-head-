@@ -56,3 +56,7 @@ export const formatDailyDraftChooserStatus = (params: {
     tagLabel: null,
   };
 };
+
+export const shouldShowFranchiseDailyPlayCta = (
+  status: DailyDraftChooserStatus,
+) => status.tag !== "completed";

@@ -26,12 +26,9 @@
   max-height: calc(100dvh - 4px);
   padding: 0;
   overflow: hidden;
-  /* Soft tab-colored rim — color without a heavy outer glow. */
+  /* One rim: tab color lives on the border, not a second outer ring. */
   border-color: color-mix(in srgb, var(--hub-tab-accent-border) 70%, var(--hub-chrome-border));
-  box-shadow:
-    var(--hub-chrome-shadow),
-    0 0 0 1px color-mix(in srgb, var(--hub-tab-accent) 22%, transparent),
-    0 0 28px color-mix(in srgb, var(--hub-tab-accent-glow) 55%, transparent);
+  box-shadow: var(--hub-chrome-shadow);
 }
 
 .landing--hub-tab-play {
@@ -875,11 +872,11 @@ h1.landing-hub__title--name {
 }
 
 .play-hub-strip__chip--inbox {
-  box-shadow: inset 3px 0 0 var(--accent-play, #38bdf8);
+  box-shadow: inset 3px 0 0 var(--accent-play);
 }
 
 .play-hub-strip__chip--recap {
-  box-shadow: inset 3px 0 0 var(--accent-roster, #a78bfa);
+  box-shadow: inset 3px 0 0 var(--accent-roster);
 }
 
 .play-hub-strip__chip--badge,
@@ -928,7 +925,7 @@ h1.landing-hub__title--name {
   border-radius: 12px;
   border: 1px solid var(--hub-subbox-border);
   background: var(--hub-subbox-bg);
-  box-shadow: inset 3px 0 0 var(--accent-play, #38bdf8);
+  box-shadow: inset 3px 0 0 var(--accent-play);
 }
 
 .first-session-welcome-bar__copy {
@@ -1374,6 +1371,22 @@ h1.landing-hub__title--name {
 
 .landing-card {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Clip inset accent rails to the card radius so they don't square off
+   corners or sit in front of the next page when hub views swap. */
+.franchise-home__card,
+.play-hub-chooser__option,
+.play-hub-strip__chip,
+.first-session-welcome-bar,
+.daily-draft-card,
+.head-to-head-card,
+.ranked-cap-card,
+.all-time-card,
+.event-card,
+.weekly-gm-recap {
+  overflow: hidden;
+  background-clip: padding-box;
 }
 
 .landing-mode-card__record-block {

@@ -556,12 +556,14 @@
   gap: 10px;
   margin: 0;
   padding: 14px 14px 14px 16px;
+  overflow: hidden;
   border: 1px solid
     color-mix(in srgb, var(--accent-roster-border) 75%, var(--hub-subbox-border));
   border-radius: 16px;
   background:
     linear-gradient(90deg, var(--accent-roster-soft) 0%, transparent 42%),
     var(--hub-subbox-bg);
+  background-clip: padding-box;
   box-shadow:
     var(--hub-subbox-shadow),
     inset 3px 0 0 var(--accent-roster);
@@ -692,7 +694,7 @@
 .franchise-home__row:focus-visible {
   outline: none;
   border-radius: 8px;
-  box-shadow: inset 0 0 0 1px var(--accent-roster-border, #fdba74);
+  box-shadow: inset 0 0 0 1px var(--accent-roster-border);
 }
 
 .franchise-home__row.is-active .franchise-home__row-copy strong,
@@ -701,7 +703,14 @@
 }
 
 .franchise-home__row.is-active {
+  border-bottom-color: transparent;
   box-shadow: inset 0 -2px 0 var(--accent-roster);
+}
+
+.franchise-home__row.is-active:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px var(--accent-roster-border),
+    inset 0 -2px 0 var(--accent-roster);
 }
 
 @media (hover: hover) and (pointer: fine) {

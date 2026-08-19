@@ -1,4 +1,5 @@
 import { useRef, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { getDraftOnboardingBullets } from "../lib/draftOnboarding";
 
@@ -28,7 +29,11 @@ export function DraftOnboardingOverlay({
     isCompetitive,
   });
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="draft-onboarding-overlay"
       role="dialog"
@@ -55,6 +60,7 @@ export function DraftOnboardingOverlay({
           Got it
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

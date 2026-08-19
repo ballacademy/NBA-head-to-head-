@@ -308,6 +308,9 @@ export function LandingPage({
 
   useEffect(() => {
     if (hubTab !== "play" || playSection !== "headToHead" || !h2hIntentTarget) {
+      if (h2hIntentTarget && (hubTab !== "play" || playSection !== "headToHead")) {
+        setH2hIntentTarget(null);
+      }
       return;
     }
 
@@ -1460,6 +1463,7 @@ export function LandingPage({
               setRecapSeenTick((tick) => tick + 1);
               onViewWeeklyRecap("roster");
             }}
+            dailyChooserStatus={dailyChooserStatus}
             onPlayDaily={() => {
               updatePlaySection("daily");
               onHubTabChange("play");
