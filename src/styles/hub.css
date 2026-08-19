@@ -121,11 +121,11 @@
   margin: 0;
   padding: var(--hub-logo-stamp-pad-y) var(--hub-logo-stamp-pad-x);
   border-radius: var(--hub-logo-stamp-radius);
-  background: transparent;
-  /* Stamp stays brand purple to match the mark. Tab color lives on rim/nav. */
+  /* Match app-icon field so the purple mark pops like the PWA tile. */
+  background: var(--bg-deep);
   border: var(--hub-logo-stamp-border) solid
     color-mix(in srgb, var(--accent-play) 58%, var(--hub-chrome-border));
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
