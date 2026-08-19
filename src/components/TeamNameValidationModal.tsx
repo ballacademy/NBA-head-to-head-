@@ -17,6 +17,7 @@ export function TeamNameValidationModal({
     onClose,
     initialFocusRef: closeRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const modal = (

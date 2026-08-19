@@ -1776,7 +1776,7 @@ body.ddgm-dialog-open {
 
 .queued-draft-results__tip {
   margin: 8px 0 0;
-  color: var(--accent-roster-bright, #fdba74);
+  color: var(--accent-roster-bright);
   font-size: 0.86rem;
   line-height: 1.4;
 }

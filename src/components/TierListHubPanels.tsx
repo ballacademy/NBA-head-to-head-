@@ -56,6 +56,7 @@ import {
   type FormEvent,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { RankedTierBadge } from "./RankedTierBadge";
@@ -737,6 +738,7 @@ export function CommunityPostsPanel({
     onClose: closeAttachmentViewer,
     initialFocusRef: viewerCloseRef,
     containerRef: viewerPanelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const renderShareImage = useCallback(
@@ -1504,14 +1506,15 @@ export function CommunityPostsPanel({
         </div>
       ) : null}
 
-      {viewingPostId ? (
-        <div
-          className="community-posts-panel__viewer"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Attached lineup"
-          onClick={closeAttachmentViewer}
-        >
+      {viewingPostId
+        ? createPortal(
+            <div
+              className="community-posts-panel__viewer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Attached lineup"
+              onClick={closeAttachmentViewer}
+            >
           <div
             ref={viewerPanelRef}
             className="community-posts-panel__viewer-card"
@@ -1575,8 +1578,10 @@ export function CommunityPostsPanel({
               </div>
             ) : null}
           </div>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
 
       {reportPostId ? (
         <ReportPostDialog

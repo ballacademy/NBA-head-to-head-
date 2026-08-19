@@ -22,6 +22,7 @@ export function DraftOnboardingOverlay({
     onClose: onDismiss,
     initialFocusRef: dismissRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
   const bullets = getDraftOnboardingBullets({
     hasSalaryCap,

@@ -118,6 +118,7 @@ export function MatchmakingOverlay({
     disableClose: !canCancelWithEscape,
     initialFocusRef: onCancel && !isMatched ? cancelButtonRef : undefined,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const handleCopyCode = async () => {

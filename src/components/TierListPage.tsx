@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   addTier,
   clearTierListPlacements,
@@ -358,6 +359,7 @@ export function TierListPage({
     onClose: closeFilters,
     initialFocusRef: filterSheetDoneRef,
     containerRef: filterSheetPanelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   useEffect(() => {
@@ -1819,19 +1821,20 @@ export function TierListPage({
           ) : null}
         </div>
 
-        {filtersOpen ? (
-          <div
-            className="tier-list__filter-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tier-list-filters-title"
-            id="tier-list-filters-sheet"
-            onClick={(event) => {
-              if (event.target === event.currentTarget) {
-                closeFilters();
-              }
-            }}
-          >
+        {filtersOpen
+          ? createPortal(
+              <div
+                className="tier-list__filter-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="tier-list-filters-title"
+                id="tier-list-filters-sheet"
+                onClick={(event) => {
+                  if (event.target === event.currentTarget) {
+                    closeFilters();
+                  }
+                }}
+              >
             <div
               ref={filterSheetPanelRef}
               className="tier-list__filter-sheet__panel"
@@ -2189,8 +2192,10 @@ export function TierListPage({
                 </button>
               </div>
             </div>
-          </div>
-        ) : null}
+          </div>,
+              document.body,
+            )
+          : null}
 
         {selectedPlayerId && !draggingPlayerId ? (
           <p className="tier-list__hint">

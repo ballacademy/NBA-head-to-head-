@@ -44,6 +44,7 @@ export function PlayerUnlockModal({
     disableClose: !canDismiss,
     initialFocusRef: hasOptions ? firstOptionRef : dismissRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const modal = (

@@ -61,6 +61,7 @@ export function CollectionTierModal({
   const { containerRef } = useDialogA11y({
     onClose,
     initialFocusRef,
+    lockScroll: true,
   });
 
   const label = COLLECTION_TIER_LABELS[tier];
