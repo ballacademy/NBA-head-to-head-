@@ -6,6 +6,7 @@ import {
   countDailyModeDaysThisWeek,
   getBestDailyPercentileThisWeek,
   getLastCompletedWeeklyRecapWeekKey,
+  recordWeeklyH2hResult,
   getWeeklyRecapWeekKey,
 } from "./gmWeeklyRecap";
 import { getDailyDateKey } from "./dailyDraft";
@@ -174,6 +175,38 @@ describe("gmWeeklyRecap", () => {
     expect(recap.dailyDays).toBe(1);
     expect(recap.dailyPuzzles).toBe(1);
     expect(recap.bestDailyFinishLabel).toContain("64");
+
+    vi.useRealTimers();
+  });
+
+  it("scopes weekly H2H recap by player id", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
+
+    const weekKey = getWeeklyRecapWeekKey();
+    expect(weekKey).toBe("2026-08-17");
+    writeJson("nba-head-to-head-daily-scores", {
+      "2026-08-18": [
+        { playerId: "player-a", goalId: "pts", mode: "basic", percentile: 71 },
+        { playerId: "player-b", goalId: "pts", mode: "basic", percentile: 63 },
+      ],
+    });
+
+    recordWeeklyH2hResult("win", "player-a", "headToHead");
+    recordWeeklyH2hResult("loss", "player-a", "ranked");
+    recordWeeklyH2hResult("win", "player-b", "headToHead");
+
+    setPlayerIdentity("player-a");
+    const recapA = buildWeeklyGmRecap();
+    expect(recapA.h2hWins).toBe(1);
+    expect(recapA.h2hLosses).toBe(1);
+    expect(recapA.h2hMatches).toBe(2);
+
+    setPlayerIdentity("player-b");
+    const recapB = buildWeeklyGmRecap();
+    expect(recapB.h2hWins).toBe(1);
+    expect(recapB.h2hLosses).toBe(0);
+    expect(recapB.h2hMatches).toBe(1);
 
     vi.useRealTimers();
   });

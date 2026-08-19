@@ -59,7 +59,8 @@ export function WeeklyGmRecapCard({
         {recap.h2hMatches > 0 ? (
           <p className="franchise-home__meta">
             H2H {recap.h2hWins}–{recap.h2hLosses}
-            {recap.h2hTies > 0 ? `–${recap.h2hTies}` : ""} this {recap.periodLabel === "This week" ? "week" : "week"}
+            {recap.h2hTies > 0 ? `–${recap.h2hTies}` : ""}{" "}
+            {recap.periodLabel.toLowerCase()}
           </p>
         ) : null}
         <div className="franchise-home__card-actions">
