@@ -340,7 +340,7 @@
 .landing-hub__top {
   display: grid;
   justify-items: center;
-  align-content: center;
+  align-content: start;
   gap: 3px;
   box-sizing: border-box;
   width: 100%;
@@ -378,6 +378,23 @@
       )
     );
   }
+}
+
+.landing-hub__top > .landing-hub__title,
+.landing-hub__top > .landing-hub__title-row {
+  box-sizing: border-box;
+  min-height: var(--hub-title-band-height, 52px);
+  align-self: stretch;
+}
+
+.landing-hub__top > .landing-hub__title-row {
+  align-items: center;
+}
+
+.landing-hub__top > .landing-hub__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .landing .landing-hub__title,

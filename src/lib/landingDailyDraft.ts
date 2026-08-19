@@ -51,9 +51,9 @@ export const formatDailyDraftChooserStatus = (params: {
     };
   }
   return {
-    meta: "Daily's up · Basic & Advanced",
+    meta: "Ready today · Basic & Advanced",
     tag: "open",
-    tagLabel: "Up",
+    tagLabel: "Open",
   };
 };
 
@@ -70,5 +70,5 @@ export const formatFranchiseDailyPlayCta = (
   if (status.tag === "progress") {
     return "Finish Daily";
   }
-  return "Daily's up";
+  return "Play Daily";
 };

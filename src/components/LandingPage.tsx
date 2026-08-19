@@ -556,10 +556,7 @@ export function LandingPage({
         getDailyDraftPlayStreak("advanced"),
       ),
       dailyOpen: dailyChooserStatus.tag !== "completed",
-      dailyOpenDetail:
-        dailyChooserStatus.tag === "progress"
-          ? dailyChooserStatus.meta
-          : "One try per mode",
+      dailyOpenDetail: dailyChooserStatus.meta,
     });
   }, [
     pendingOwnerResultCount,

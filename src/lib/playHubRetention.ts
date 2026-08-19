@@ -85,7 +85,7 @@ export const buildPlayHubChips = (params: {
   if (params.dailyOpen && !params.nextBadgeIsDaily) {
     chips.push({
       id: "daily",
-      label: "Daily's up",
+      label: "Daily ready",
       detail: params.dailyOpenDetail ?? "One try per mode",
       ctaLabel: "Play",
       action: { type: "play", playSection: "daily" },
