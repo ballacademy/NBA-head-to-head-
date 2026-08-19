@@ -100,6 +100,14 @@ describe("playerTiers", () => {
     );
   });
 
+  it("includes Trevor Keels in the scrub pool with end-of-bench minutes", () => {
+    const keels = players.find((entry) => entry.bbrPlayerId === "keelstr01");
+    expect(keels).toBeDefined();
+    expect(isScrubPlayer(keels!)).toBe(true);
+    expect(keels!.minutes).toBeLessThan(5);
+    expect(keels!.points).toBeLessThanOrEqual(2);
+  });
+
   it("keeps Jonathan Isaac and Pat Connaughton out of the scrub pool", () => {
     const isaac = players.find((player) => player.bbrPlayerId === "isaacjo01");
     const connaughton = players.find(
@@ -115,6 +123,7 @@ describe("playerTiers", () => {
 
   it("includes the curated scrub pool members", () => {
     const includedIds = [
+      "keelstr01",
       "johnsaj01",
       "thierad01",
       "youngch01",
@@ -122,6 +131,8 @@ describe("playerTiers", () => {
       "barnhbr01",
       "washity02",
       "liveris01",
+      "pedulse01",
+      "hepbuch01",
     ] as const;
     const excludedIds = [
       "berinjo01",
