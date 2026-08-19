@@ -247,6 +247,8 @@ export function LandingPage({
   const [playSection, setPlaySection] = useState<LandingPlaySection>(() =>
     loadLandingPlaySection(),
   );
+  const [rosterVisited, setRosterVisited] = useState(hubTab === "roster");
+  const [accountVisited, setAccountVisited] = useState(hubTab === "account");
   const [h2hIntentTarget, setH2hIntentTarget] = useState<LandingH2hMode | null>(
     () =>
       loadLandingPlaySection() === "headToHead" ? loadLandingH2hMode() : null,
@@ -405,7 +407,16 @@ export function LandingPage({
     return () => {
       cancelled = true;
     };
-  }, [playerIdentity.playerId, hubTab, playSection, startMatchError]);
+  }, [playerIdentity.playerId, playSection, startMatchError]);
+
+  useEffect(() => {
+    if (hubTab === "roster") {
+      setRosterVisited(true);
+    }
+    if (hubTab === "account") {
+      setAccountVisited(true);
+    }
+  }, [hubTab]);
 
   const matchmakingLabel =
     matchmakingElapsedSeconds > 0
@@ -982,7 +993,8 @@ export function LandingPage({
             }
           />
         ) : null}
-        {hubTab === "play" && playSection === "chooser" ? (
+        <div hidden={hubTab !== "play"}>
+        {playSection === "chooser" ? (
           <>
             <PlayHubStrip chips={playHubChips} onChip={handlePlayHubChip} />
             <div className="play-hub-chooser" role="list">
@@ -1048,7 +1060,7 @@ export function LandingPage({
           </>
         ) : null}
 
-        {hubTab === "play" && playSection === "headToHead" ? (
+        {playSection === "headToHead" ? (
           <>
             {renderTeamNameField()}
             {anyQueuedLineupLock ? (
@@ -1222,7 +1234,7 @@ export function LandingPage({
           </>
         ) : null}
 
-        {hubTab === "play" && playSection === "daily" ? (
+        {playSection === "daily" ? (
           <>
             {error || startMatchError ? (
               <InlineAlert message={error || startMatchError} />
@@ -1234,7 +1246,7 @@ export function LandingPage({
           </>
         ) : null}
 
-        {hubTab === "play" && playSection === "events" ? (
+        {playSection === "events" ? (
           <>
             {renderTeamNameField()}
             {weeklyEvent && eventProfile ? (
@@ -1450,8 +1462,10 @@ export function LandingPage({
             )}
           </>
         ) : null}
+        </div>
 
-        {hubTab === "roster" ? (
+        {hubTab === "roster" || rosterVisited ? (
+          <div hidden={hubTab !== "roster"}>
           <FranchiseHubPanel
             collectionProgress={collectionProgress}
             collectionTier={collectionTier}
@@ -1470,9 +1484,11 @@ export function LandingPage({
             }}
             onPlayIntent={handlePlayIntent}
           />
+          </div>
         ) : null}
 
-        {hubTab === "account" ? (
+        {hubTab === "account" || accountVisited ? (
+          <div hidden={hubTab !== "account"}>
           <section
             className="account-section account-section--unified landing-team-form landing-card landing-card--form"
             aria-labelledby="account-identity-heading"
@@ -1561,6 +1577,7 @@ export function LandingPage({
               <p className="landing-credit">Powered by BALLACADEMY</p>
             </div>
           </section>
+          </div>
         ) : null}
       </div>
 

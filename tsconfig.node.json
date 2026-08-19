@@ -9,7 +9,9 @@
     "strict": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"],
-    "noEmit": true
+    "noEmit": true,
+    // Tests typecheck app modules; hub prefetch dynamically imports .tsx pages.
+    "jsx": "react-jsx"
   },
   "include": ["vite.config.ts", "src/**/*.test.ts"]
 }

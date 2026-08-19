@@ -89,6 +89,50 @@ describe("leaderboard remote integration", () => {
     );
   });
 
+  it("skips a network refetch when the cache is still fresh", async () => {
+    const seasonId = getCurrentSeasonId();
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            mode: "classic",
+            seasonId,
+            sort: "elo",
+            entries: [],
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+
+    await refreshLeaderboardFromApi({
+      mode: "classic",
+      sort: "elo",
+      limit: 500,
+      seasonId,
+    });
+    fetchMock.mockClear();
+
+    const skipped = await refreshLeaderboardFromApi({
+      mode: "classic",
+      sort: "elo",
+      limit: 500,
+      seasonId,
+    });
+    expect(skipped).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const forced = await refreshLeaderboardFromApi({
+      mode: "classic",
+      sort: "elo",
+      limit: 500,
+      seasonId,
+      force: true,
+    });
+    expect(forced).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("submits local classic upserts to the leaderboard API", async () => {
     const seasonId = getCurrentSeasonId();
     markPlayerAccountLinked("player-test-1", "tester");

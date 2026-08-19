@@ -1,5 +1,6 @@
 import {
   Suspense,
+  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -9,6 +10,11 @@ import {
   type ReactNode,
 } from "react";
 import { lazyWithChunkReload } from "./lib/lazyChunk";
+import {
+  prefetchFeaturePhase,
+  prefetchHubFeatureTab,
+  scheduleIdleHubPrefetch,
+} from "./lib/hubPrefetch";
 import { scrollHubToTop } from "./lib/hubScroll";
 import { unlockDraftClockAudio } from "./lib/draftClockSound";
 import { DailyDraftResults } from "./components/DailyDraftResults";
@@ -218,23 +224,6 @@ const FeaturePageFallback = () => (
     <p>Loading…</p>
   </div>
 );
-
-const prefetchHubFeatureTab = (tab: LandingHubTab) => {
-  if (tab === "standings") {
-    void import("./components/LeaderboardPage").catch(() => undefined);
-    return;
-  }
-  if (tab === "community") {
-    void import("./components/TierListPage").catch(() => undefined);
-    return;
-  }
-  if (tab === "roster") {
-    // Prefetch is best-effort; never surface a toast if a stale chunk 404s.
-    void import("./components/PlayerStatsTable").catch(() => undefined);
-    void import("./components/AchievementsPage").catch(() => undefined);
-    void import("./components/GmStatsPage").catch(() => undefined);
-  }
-};
 
 type AppPhase =
   | "landing"
@@ -781,6 +770,13 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "landing") {
+      return;
+    }
+    return scheduleIdleHubPrefetch();
   }, [phase]);
 
   const activePlayers = useMemo(
@@ -1762,7 +1758,10 @@ function App() {
         returnTo: options?.returnTo,
       };
       window.history.pushState(historyState, "");
-      setPhase(nextPhase);
+      prefetchFeaturePhase(nextPhase);
+      startTransition(() => {
+        setPhase(nextPhase);
+      });
       const feature = deepLinkFeatureFromPhase(nextPhase);
       if (feature) {
         const parentTab = parentTabForFeature(feature);

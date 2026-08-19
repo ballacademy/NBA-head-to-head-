@@ -16,6 +16,9 @@ interface RemoteLeaderboardCache {
 
 const remoteCache = new Map<string, RemoteLeaderboardCache>();
 
+/** Skip a second network trip when landing just warmed the board. */
+const LEADERBOARD_CACHE_FRESH_MS = 60_000;
+
 const cacheKey = (
   mode: LeaderboardMode,
   seasonId: string,
@@ -32,8 +35,17 @@ export const refreshLeaderboardFromApi = async (params: {
   sort: LeaderboardSort;
   limit: number;
   seasonId?: string;
+  force?: boolean;
 }) => {
   const seasonId = params.seasonId ?? getSeasonIdForMode(params.mode);
+  if (!params.force) {
+    const cached = remoteCache.get(
+      cacheKey(params.mode, seasonId, params.sort),
+    );
+    if (cached && Date.now() - cached.fetchedAt < LEADERBOARD_CACHE_FRESH_MS) {
+      return true;
+    }
+  }
   const remote = await fetchRemoteLeaderboard({
     mode: params.mode,
     seasonId,
@@ -283,6 +295,7 @@ export const confirmRemoteLeaderboardRank = async (params: {
       sort,
       limit: 500,
       seasonId,
+      force: true,
     });
   }
 

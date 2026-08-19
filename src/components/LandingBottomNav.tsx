@@ -133,6 +133,7 @@ export function LandingBottomNav({
             aria-current={isActive ? "page" : undefined}
             aria-label={showPlayBadge ? `Play, ${badgeLabel}` : undefined}
             onClick={() => onSelect(tab.id)}
+            onPointerDown={() => onPrefetchTab?.(tab.id)}
             onPointerEnter={() => onPrefetchTab?.(tab.id)}
             onFocus={() => onPrefetchTab?.(tab.id)}
           >
