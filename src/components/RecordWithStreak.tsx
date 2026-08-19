@@ -8,12 +8,14 @@ interface RecordWithStreakProps {
   record: PlayerRecord;
   align?: "left" | "right";
   className?: string;
+  recordLabel?: string;
 }
 
 export function RecordWithStreak({
   record,
   align = "left",
   className,
+  recordLabel = "Record",
 }: RecordWithStreakProps) {
   const showWinStreak = hasFireStreak(record.winStreak);
   const showLossStreak =
@@ -31,7 +33,7 @@ export function RecordWithStreak({
         .join(" ")}
     >
       <div className="landing-mode-card__record-stat">
-        <span className="landing-mode-card__record-label">Record</span>
+        <span className="landing-mode-card__record-label">{recordLabel}</span>
         <span className="landing-mode-card__record-value">
           {formatPlayerRecord(record)}
         </span>
