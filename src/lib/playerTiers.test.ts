@@ -59,7 +59,7 @@ describe("playerTiers", () => {
     const scrubIds = getScrubPlayerIds();
     const superScrubIds = getSuperScrubPlayerIds();
 
-    expect(SCRUB_POOL_SIZE).toBe(29);
+    expect(SCRUB_POOL_SIZE).toBe(30);
     expect(scrubIds).toHaveLength(SCRUB_POOL_SIZE);
     expect(superScrubIds).toHaveLength(SUPER_SCRUB_POOL_SIZE);
     expect(new Set(scrubIds).size).toBe(SCRUB_POOL_SIZE);
@@ -121,6 +121,7 @@ describe("playerTiers", () => {
       "mcculke01",
       "barnhbr01",
       "washity02",
+      "liveris01",
     ] as const;
     const excludedIds = [
       "berinjo01",

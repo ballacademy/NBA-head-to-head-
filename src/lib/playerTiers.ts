@@ -13,6 +13,7 @@ export const SCRUB_POOL_BBR_IDS = [
   "hukpoar01",
   "chrisca02",
   "laniech01",
+  "liveris01",
   "terryda01",
   "barnhbr01",
   "battlja01",
