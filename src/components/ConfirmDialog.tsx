@@ -1,4 +1,5 @@
 import { useRef, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 
 export type ConfirmDialogProps = {
@@ -27,9 +28,14 @@ export function ConfirmDialog({
     disableClose: busy,
     initialFocusRef: cancelRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="unlock-modal unlock-modal--compact confirm-dialog"
       role="dialog"
@@ -68,6 +74,7 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

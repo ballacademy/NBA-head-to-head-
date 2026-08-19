@@ -5,6 +5,7 @@ import {
   type FormEvent,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 
 const REPORT_REASON_MAX = 200;
@@ -33,6 +34,7 @@ export function ReportPostDialog({
     disableClose: busy,
     initialFocusRef: closeRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const handleSubmit = (event: FormEvent) => {
@@ -43,7 +45,11 @@ export function ReportPostDialog({
     void onSubmit(reason.trim().slice(0, REPORT_REASON_MAX));
   };
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="unlock-modal unlock-modal--compact community-report-dialog"
       role="dialog"
@@ -102,6 +108,7 @@ export function ReportPostDialog({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

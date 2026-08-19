@@ -122,7 +122,7 @@
   --danger-bright: #fecaca;
   --danger-soft: rgba(239, 68, 68, 0.14);
   --danger-text: #fecaca;
-  --modal-scrim: rgba(2, 6, 23, 0.72);
+  --modal-scrim: rgba(2, 6, 23, 0.88);
   --secondary-bg: rgba(255, 255, 255, 0.1);
   --secondary-border: rgba(255, 255, 255, 0.16);
   --scroll-fade: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.85));

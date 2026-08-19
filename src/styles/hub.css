@@ -1339,7 +1339,7 @@ h1.landing-hub__title--name {
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--accent-play-bright, #38bdf8);
+  background: var(--accent-play-bright);
   color: #0b1220;
   font-size: 0.58rem;
   font-weight: 800;

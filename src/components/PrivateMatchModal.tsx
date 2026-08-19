@@ -103,6 +103,7 @@ export function PrivateMatchModal({
     disableClose: busy,
     initialFocusRef: closeRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
+    lockScroll: true,
   });
 
   const startHost = async () => {
