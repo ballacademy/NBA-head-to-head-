@@ -115,4 +115,39 @@ describe("playHubRetention", () => {
     expect(chips).toHaveLength(1);
     expect(chips[0]?.action).toEqual({ type: "play", playSection: "daily" });
   });
+
+  it("surfaces a Daily's up chip and hides the streak while Daily is unfinished", () => {
+    const chips = buildPlayHubChips({
+      pendingResultCount: 0,
+      queuedClassic: false,
+      queuedRanked: false,
+      recapReady: false,
+      dailyStreakLabel: "Basic 3-day streak",
+      dailyOpen: true,
+      dailyOpenDetail: "Daily's up · Basic & Advanced",
+    });
+
+    expect(chips.map((chip) => chip.id)).toEqual(["daily"]);
+    expect(chips[0]).toMatchObject({
+      label: "Daily's up",
+      detail: "Daily's up · Basic & Advanced",
+      ctaLabel: "Play",
+      action: { type: "play", playSection: "daily" },
+    });
+  });
+
+  it("does not add a Daily chip when the next badge already points at Daily", () => {
+    const chips = buildPlayHubChips({
+      pendingResultCount: 0,
+      queuedClassic: false,
+      queuedRanked: false,
+      recapReady: false,
+      nextBadgeTitle: "3-Day Streak",
+      nextBadgeIsDaily: true,
+      nextBadgePlaySection: "daily",
+      dailyOpen: true,
+    });
+
+    expect(chips.map((chip) => chip.id)).toEqual(["badge"]);
+  });
 });

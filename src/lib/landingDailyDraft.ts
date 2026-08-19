@@ -17,7 +17,7 @@ export interface LandingDailyDraftSnapshot {
   canViewLineup: boolean;
 }
 
-export type DailyDraftChooserTag = "completed" | "progress";
+export type DailyDraftChooserTag = "completed" | "progress" | "open";
 
 export interface DailyDraftChooserStatus {
   meta: string;
@@ -51,12 +51,24 @@ export const formatDailyDraftChooserStatus = (params: {
     };
   }
   return {
-    meta: "Not played today",
-    tag: null,
-    tagLabel: null,
+    meta: "Daily's up · Basic & Advanced",
+    tag: "open",
+    tagLabel: "Up",
   };
 };
 
 export const shouldShowFranchiseDailyPlayCta = (
   status: DailyDraftChooserStatus,
 ) => status.tag !== "completed";
+
+export const formatFranchiseDailyPlayCta = (
+  status: DailyDraftChooserStatus,
+) => {
+  if (status.tag === "completed") {
+    return null;
+  }
+  if (status.tag === "progress") {
+    return "Finish Daily";
+  }
+  return "Daily's up";
+};

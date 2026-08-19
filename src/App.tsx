@@ -37,8 +37,10 @@ import {
   syncLandingHubTabUrl,
   type LandingContentTab,
   type LandingDeepLinkFeature,
+  type LandingH2hMode,
   type LandingPlaySection,
 } from "./lib/landingHub";
+import { capturePwaInstallPrompt } from "./lib/pwaInstall";
 import { trackProductEvent } from "./lib/productAnalytics";
 import { isQaRuntimeHost } from "./lib/qaRuntime";
 import { PendingQueueResults } from "./components/PendingQueueResults";
@@ -344,6 +346,7 @@ const readInitialLandingDeepLinks = () => {
       communityView: null,
       communityPostId: null,
       betaSection: null,
+      privateRoomCode: null,
     };
   }
 };
@@ -450,9 +453,20 @@ function App() {
   >(null);
   const [pendingPrivateMatchMode, setPendingPrivateMatchMode] = useState<
     "classic" | "ranked" | null
-  >(null);
+  >(() =>
+    initialLandingDeepLinks.privateRoomCode
+      ? (initialLandingDeepLinks.h2hMode ?? "classic")
+      : null,
+  );
+  const [pendingPrivateJoinCode, setPendingPrivateJoinCode] = useState<
+    string | null
+  >(() => initialLandingDeepLinks.privateRoomCode);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
+
+  useEffect(() => {
+    return capturePwaInstallPrompt();
+  }, []);
 
   useEffect(() => {
     if (phase === "playerUsage" && !isQaRuntimeHost()) {
@@ -537,6 +551,8 @@ function App() {
           initialLandingDeepLinks.playSection
             ? initialLandingDeepLinks.playSection ?? undefined
             : undefined,
+        h2hMode: initialLandingDeepLinks.h2hMode,
+        room: null,
       });
     }
   }, [initialLandingDeepLinks, initialPublicTierListId]);
@@ -2596,6 +2612,17 @@ function App() {
     [phase, updateLandingHubTab],
   );
 
+  const startPrivateChallenge = useCallback(
+    (mode: LandingH2hMode, joinCode?: string | null) => {
+      saveLandingPlaySection("headToHead");
+      saveLandingH2hMode(mode);
+      setPendingPrivateJoinCode(joinCode ?? null);
+      setPendingPrivateMatchMode(mode);
+      goToLandingHub("play");
+    },
+    [goToLandingHub],
+  );
+
   /** Open Community at the hub chooser (not Posts / Tier lists). */
   const openCommunityHub = useCallback(() => {
     if (phase !== "tierList") {
@@ -2716,7 +2743,9 @@ function App() {
   }, [matchmakingMode]);
 
   if (phase === "leaderboard") {
-    return renderHubFeature(<LeaderboardPage />);
+    return renderHubFeature(
+      <LeaderboardPage onChallengeGm={startPrivateChallenge} />,
+    );
   }
 
   if (phase === "gmStats") {
@@ -2824,6 +2853,8 @@ function App() {
         }
         hubReturnToken={communityHubReturnToken}
         composeIntentToken={communityComposeToken}
+        onOpenAccount={() => goToLandingHub("account")}
+        onChallengeGm={startPrivateChallenge}
       />,
       "landing-layout--tier-list",
     );
@@ -2882,9 +2913,11 @@ function App() {
           }}
           privateRoomCode={privateRoomCode}
           pendingPrivateMatchMode={pendingPrivateMatchMode}
-          onPendingPrivateMatchModeConsumed={() =>
-            setPendingPrivateMatchMode(null)
-          }
+          pendingPrivateJoinCode={pendingPrivateJoinCode}
+          onPendingPrivateMatchModeConsumed={() => {
+            setPendingPrivateMatchMode(null);
+            setPendingPrivateJoinCode(null);
+          }}
           onStartDraft={startMatch}
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}
@@ -3138,6 +3171,7 @@ function App() {
             onPlayAgain={replayLastMode}
             onReturnToMenu={() => returnToPlayHub("chooser")}
             onPostToCommunity={openCommunityCompose}
+            onChallengeGm={startPrivateChallenge}
             isMatchmaking={isMatchmakingSearchActive}
             startMatchError={startMatchError}
             opponentAutoDrafted={opponentAutoDrafted}

@@ -25,7 +25,7 @@ export const ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE =
   "Create an account to post in Community.";
 
 export const ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE =
-  "Create an account to post, reply, or like.";
+  "Sign in to post, reply, or like. Anyone can read.";
 
 export const ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE =
   "Create an account to like posts.";

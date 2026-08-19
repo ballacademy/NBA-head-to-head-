@@ -1094,6 +1094,12 @@
   width: min(560px, 100%);
 }
 
+.gm-profile-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .gm-profile-modal__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

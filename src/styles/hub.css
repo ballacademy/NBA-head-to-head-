@@ -1043,6 +1043,12 @@ h1.landing-hub__title--name {
   border: 1px solid rgba(250, 204, 21, 0.3);
 }
 
+.play-hub-chooser__tag--open {
+  color: var(--accent-play-bright);
+  background: var(--accent-play-soft);
+  border: 1px solid var(--accent-play-border);
+}
+
 .play-hub-chooser__meta {
   color: var(--muted);
   font-size: 0.84rem;

@@ -93,6 +93,7 @@ interface MatchResultsProps {
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
   onPostToCommunity?: () => void;
+  onChallengeGm?: (mode: "classic" | "ranked") => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
@@ -110,6 +111,7 @@ export function MatchResults({
   onPlayAgain,
   onReturnToMenu,
   onPostToCommunity,
+  onChallengeGm,
   isMatchmaking = false,
   startMatchError = null,
   opponentAutoDrafted = false,
@@ -685,6 +687,11 @@ export function MatchResults({
           elo={opponent.rankedOpponentElo ?? opponent.classicOpponentElo}
           profileMode={opponentProfileMode}
           onClose={() => setOpponentProfileOpen(false)}
+          onChallenge={
+            onChallengeGm && !user.practiceMode && !user.eventId
+              ? () => onChallengeGm(opponentProfileMode)
+              : undefined
+          }
         />
       ) : null}
 
@@ -942,6 +949,20 @@ export function MatchResults({
                         label: "Post to Community",
                         disabled: isMatchmaking,
                         onClick: onPostToCommunity,
+                      },
+                    ]
+                  : []),
+                ...(onChallengeGm &&
+                canOpenOpponentProfile &&
+                !user.practiceMode &&
+                !user.privateMatch &&
+                !user.eventId
+                  ? [
+                      {
+                        id: "challenge",
+                        label: "Challenge this GM",
+                        disabled: isMatchmaking,
+                        onClick: () => onChallengeGm(opponentProfileMode),
                       },
                     ]
                   : []),

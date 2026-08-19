@@ -9,6 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
+import { buildPrivateMatchShareUrl } from "../lib/landingHub";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { getHighBannerSearchWaitMessage } from "../lib/highBannerQueueWait";
 import { MODE_COPY } from "../lib/modeCopy";
@@ -125,7 +126,14 @@ export function MatchmakingOverlay({
     if (!privateRoomCode) {
       return;
     }
-    const ok = await copyToClipboard(privateRoomCode);
+    const invite =
+      mode === "event"
+        ? privateRoomCode
+        : buildPrivateMatchShareUrl(
+            mode === "ranked" ? "ranked" : "classic",
+            privateRoomCode,
+          );
+    const ok = await copyToClipboard(invite);
     setCopyState(ok ? "copied" : "failed");
     window.setTimeout(() => setCopyState("idle"), 2000);
   };
@@ -181,7 +189,7 @@ export function MatchmakingOverlay({
                   ? "Copied"
                   : copyState === "failed"
                     ? "Copy failed"
-                    : "Copy code"}
+                    : "Copy invite"}
               </button>
             ) : null}
           </div>
@@ -196,7 +204,7 @@ export function MatchmakingOverlay({
           <p className="matchmaking-overlay__note">
             {isPrivateGuest
               ? `Stay on this screen while we connect you. Same mode as your friend (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}).`
-              : `Friend needs an account. They join with this code under the same mode (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}). Records and Banners do not change.`}
+              : `Share the invite link or this code. Friend needs an account and the same mode (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}). Records and Banners do not change.`}
           </p>
         ) : null}
 

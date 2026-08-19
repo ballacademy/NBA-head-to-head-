@@ -7,7 +7,11 @@ import { RankedTierBadge } from "./RankedTierBadge";
 import { PlayerStatLine } from "./PlayerStatLine";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import { shortLabelForH2hMode } from "../lib/modeCopy";
-import type { DeliveredOwnerResult } from "../lib/pendingOwnerResults";
+import {
+  QUEUED_OWNER_DETAIL_COPY,
+  QUEUED_OWNER_INBOX_COPY,
+  type DeliveredOwnerResult,
+} from "../lib/pendingOwnerResults";
 import type { ModePlayerRecords } from "../lib/playerRecord";
 
 interface PendingOwnerResultsProps {
@@ -63,6 +67,7 @@ function MatchupDetail({
           {result.opponentTeamName} drafted against your saved five while you were
           away.
         </p>
+        <p>{QUEUED_OWNER_DETAIL_COPY}</p>
         <p>
           Margin{" "}
           {Math.abs(result.ownerScore - result.opponentScore).toFixed(1)} • OVR{" "}
@@ -133,6 +138,7 @@ export function PendingOwnerResults({
               Open a matchup to see your five and the score. Opponent lineups
               aren&apos;t stored for queued-away games.
             </p>
+            <p>{QUEUED_OWNER_INBOX_COPY}</p>
           </div>
 
           <ul className="owner-results-inbox__list">

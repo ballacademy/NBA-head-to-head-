@@ -42,6 +42,7 @@ export interface LandingDeepLinkBoot {
   communityView: LandingCommunityView | null;
   communityPostId: string | null;
   betaSection: string | null;
+  privateRoomCode: string | null;
 }
 
 const LANDING_HUB_TAB_KEY = "ddgm:landing-hub-tab";
@@ -253,6 +254,45 @@ export const parseLandingPlayWithH2h = (
   return { section: null, h2hMode: null };
 };
 
+/** 6-character private room codes (no 0/O/1/I). */
+export const parsePrivateRoomParam = (
+  value: string | null | undefined,
+): string | null => {
+  if (!value) {
+    return null;
+  }
+  const code = value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  return code.length === 6 ? code : null;
+};
+
+const shareOrigin = () =>
+  typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "https://www.draftdaygm.com";
+
+/** Bookmark / share URL for today's Daily Draft chooser. */
+export const buildDailyDraftShareUrl = () => {
+  const url = new URL(shareOrigin());
+  url.searchParams.set("hub", "play");
+  url.searchParams.set("play", "daily");
+  return url.toString();
+};
+
+/** Invite URL that opens Private join for this Casual/Pro room. */
+export const buildPrivateMatchShareUrl = (
+  mode: LandingH2hMode,
+  roomCode: string,
+) => {
+  const code = parsePrivateRoomParam(roomCode);
+  const url = new URL(shareOrigin());
+  url.searchParams.set("hub", "play");
+  url.searchParams.set("play", mode === "ranked" ? "ranked" : "classic");
+  if (code) {
+    url.searchParams.set("room", code);
+  }
+  return url.toString();
+};
+
 export const loadLandingHubTab = (): LandingContentTab => {
   try {
     const stored = sessionStorage.getItem(LANDING_HUB_TAB_KEY);
@@ -354,6 +394,7 @@ export const applyLandingDeepLinksFromSearch = (
   const { section: playSection, h2hMode } = parseLandingPlayWithH2h(
     params.get("play"),
   );
+  const privateRoomCode = parsePrivateRoomParam(params.get("room"));
   const viewToken = normalizeQueryToken(params.get("view") ?? "");
   const postRaw = params.get("post")?.trim() ?? "";
   const communityPostId = postRaw ? postRaw.slice(0, 80) : null;
@@ -363,6 +404,8 @@ export const applyLandingDeepLinksFromSearch = (
   let contentTab: LandingContentTab | null = null;
   let feature: LandingDeepLinkFeature | null = null;
   let communityView: LandingCommunityView | null = null;
+  let resolvedPlay = playSection;
+  let resolvedH2h = h2hMode;
 
   if (h2hMode) {
     saveLandingH2hMode(h2hMode);
@@ -402,8 +445,19 @@ export const applyLandingDeepLinksFromSearch = (
     feature = feature ?? "tierList";
   }
 
-  if (playSection) {
-    saveLandingPlaySection(playSection);
+  if (privateRoomCode) {
+    resolvedPlay = "headToHead";
+    resolvedH2h = resolvedH2h ?? "classic";
+    feature = null;
+    communityView = null;
+    contentTab = "play";
+    saveLandingHubTab("play");
+    saveLandingPlaySection("headToHead");
+    saveLandingH2hMode(resolvedH2h);
+  }
+
+  if (resolvedPlay) {
+    saveLandingPlaySection(resolvedPlay);
     // Play deep links land on the Play hub unless a feature hub won.
     if (!feature) {
       contentTab = contentTab ?? "play";
@@ -413,12 +467,13 @@ export const applyLandingDeepLinksFromSearch = (
 
   return {
     contentTab,
-    playSection,
-    h2hMode,
+    playSection: resolvedPlay,
+    h2hMode: resolvedH2h,
     feature,
     communityView,
     communityPostId,
     betaSection: feature === "beta" ? betaSection : null,
+    privateRoomCode,
   };
 };
 
@@ -429,6 +484,7 @@ export interface SyncLandingDeepLinkUrlOptions {
   view?: LandingCommunityView | null;
   post?: string | null;
   section?: string | null;
+  room?: string | null;
   /** When false, drop hub/play params (e.g. leaving the landing surface). */
   clearLandingParams?: boolean;
 }
@@ -468,6 +524,7 @@ export const syncLandingDeepLinkUrl = (
       url.searchParams.delete("view");
       url.searchParams.delete("post");
       url.searchParams.delete("section");
+      url.searchParams.delete("room");
     } else {
       if (options.hub != null) {
         const hubParam =
@@ -519,6 +576,11 @@ export const syncLandingDeepLinkUrl = (
         url.searchParams.delete("section");
       } else if (options.section != null && options.section.trim()) {
         url.searchParams.set("section", options.section.trim().slice(0, 40));
+      }
+      if (options.room === null) {
+        url.searchParams.delete("room");
+      } else if (options.room != null) {
+        url.searchParams.set("room", options.room);
       }
     }
 

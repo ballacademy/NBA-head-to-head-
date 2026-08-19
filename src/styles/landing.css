@@ -109,6 +109,18 @@
   text-transform: uppercase;
 }
 
+.account-section__home-screen {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.account-section__home-screen .secondary-button {
+  width: fit-content;
+}
+
 .account-section .landing-hub__links {
   margin: 0;
 }

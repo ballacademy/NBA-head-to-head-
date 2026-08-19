@@ -23,6 +23,12 @@ export interface DeliveredOwnerResult {
   ranked?: RankedMatchOutcome;
 }
 
+export const QUEUED_OWNER_INBOX_COPY =
+  "These matches update Banners and this month's W–L. Win/loss streaks only change when you play live.";
+
+export const QUEUED_OWNER_DETAIL_COPY =
+  "Banners and this month's W–L updated. Your win/loss streak did not.";
+
 const toMatchRecordMode = (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
 ): MatchRecordMode => (mode === "ranked" ? "ranked" : "headToHead");

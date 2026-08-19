@@ -58,7 +58,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
-import { AccountRequiredNote } from "./AccountRequiredNote";
 import { RankedTierBadge } from "./RankedTierBadge";
 
 const formatSavedAt = (savedAt: number) =>
@@ -98,7 +97,7 @@ export function TierListHubHome({
           <span className="play-hub-chooser__copy">
             <span className="play-hub-chooser__label">Posts</span>
             <span className="play-hub-chooser__meta">
-              Share takes and attach recent results or published lists
+              Anyone can read. Sign in to post takes and results.
             </span>
           </span>
           <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -114,7 +113,7 @@ export function TierListHubHome({
           <span className="play-hub-chooser__copy">
             <span className="play-hub-chooser__label">Tier lists</span>
             <span className="play-hub-chooser__meta">
-              Browse public boards, open yours, or create a new list
+              Browse public boards. Sign in to publish.
             </span>
           </span>
           <span className="play-hub-chooser__chevron" aria-hidden="true">
@@ -565,6 +564,8 @@ interface CommunityPostsPanelProps {
   playersById: Map<string, Player>;
   focusPostId?: string | null;
   postsToday?: number | null;
+  onSignIn?: () => void;
+  onChallengeAuthor?: (mode: "classic" | "ranked") => void;
 }
 
 const TrashIcon = () => (
@@ -648,6 +649,8 @@ export function CommunityPostsPanel({
   playersById,
   focusPostId = null,
   postsToday = null,
+  onSignIn,
+  onChallengeAuthor,
 }: CommunityPostsPanelProps) {
   const accountReady = accountLinked === true;
   const accountBlocked = accountLinked === false;
@@ -1030,16 +1033,24 @@ export function CommunityPostsPanel({
         </p>
       ) : null}
 
-      {accountLinked === null ? (
-        <p className="community-activity-strip" role="status">
-          Checking account…
-        </p>
-      ) : accountBlocked ? (
-        <AccountRequiredNote className="account-required-note--inline">
-          {`${ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE} Anyone can browse.`}
-        </AccountRequiredNote>
+      {accountBlocked ? (
+        <div className="community-posts-panel__signin">
+          <p className="community-posts-panel__signin-copy">
+            {ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE}
+          </p>
+          {onSignIn ? (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onSignIn}
+            >
+              Sign in to post
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
+      {accountReady ? (
       <form className="community-posts-panel__compose" onSubmit={handleSubmit}>
         <label className="tier-list__search community-posts-panel__field">
           <span>New post</span>
@@ -1141,6 +1152,7 @@ export function CommunityPostsPanel({
           </p>
         ) : null}
       </form>
+      ) : null}
 
       {likeError || replyError ? (
         <p className="form-error community-posts-panel__like-error" role="alert">
@@ -1161,7 +1173,9 @@ export function CommunityPostsPanel({
           message={
             isFeedFiltered
               ? "No posts match this filter."
-              : "No posts yet. Be the first to share something short."
+              : accountReady
+                ? "No posts yet. Be the first to share something short."
+                : "No posts yet. Sign in to start the conversation."
           }
           actions={
             isFeedFiltered ? (
@@ -1171,6 +1185,14 @@ export function CommunityPostsPanel({
                 onClick={() => setFeedFilter("all")}
               >
                 Show all posts
+              </button>
+            ) : !accountReady && onSignIn ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={onSignIn}
+              >
+                Sign in to post
               </button>
             ) : onOpenTiers ? (
               <button
@@ -1321,9 +1343,7 @@ export function CommunityPostsPanel({
                       title={
                         accountReady
                           ? "Like"
-                          : accountLinked === null
-                            ? "Checking account"
-                            : "Create an account to like"
+                          : "Sign in to like"
                       }
                       onClick={() =>
                         onToggleLike(post.id, !post.likedByViewer)
@@ -1383,6 +1403,18 @@ export function CommunityPostsPanel({
                           </button>
                           {!isOwn ? (
                             <>
+                              {onChallengeAuthor ? (
+                                <button
+                                  type="button"
+                                  className="community-posts-panel__text-action"
+                                  onClick={() => {
+                                    setOpenMenuPostId(null);
+                                    onChallengeAuthor("classic");
+                                  }}
+                                >
+                                  Challenge
+                                </button>
+                              ) : null}
                               <button
                                 type="button"
                                 className="community-posts-panel__text-action"
