@@ -1016,12 +1016,10 @@
 .landing-card--mode.is-intent-target,
 .head-to-head-card.is-intent-target,
 .ranked-cap-card.is-intent-target {
-  outline: 2px solid color-mix(in srgb, var(--hub-accent-bright) 85%, white);
-  outline-offset: 3px;
+  outline: none;
   box-shadow:
     inset 3px 0 0 var(--hub-accent),
-    0 0 0 1px color-mix(in srgb, var(--hub-accent) 35%, transparent),
-    0 14px 32px color-mix(in srgb, var(--hub-accent) 22%, transparent);
+    inset 0 0 0 2px color-mix(in srgb, var(--hub-accent-bright) 85%, white);
 }
 
 .mode-card__cta:disabled {
@@ -1604,10 +1602,12 @@ body.ddgm-dialog-open {
   inset: 0;
   /* Above hub info popovers (1200) so first-draft tips stay readable. */
   z-index: 1300;
+  isolation: isolate;
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(10px);
 }
 
 .draft-onboarding-overlay__panel {

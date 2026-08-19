@@ -6,6 +6,7 @@ import {
   useState,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import type { GhostMatchmakingMode } from "../lib/ghostMatchmaking";
 import { copyToClipboard } from "../lib/copyToClipboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -128,7 +129,11 @@ export function MatchmakingOverlay({
     window.setTimeout(() => setCopyState("idle"), 2000);
   };
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="matchmaking-overlay"
       role="dialog"
@@ -225,6 +230,7 @@ export function MatchmakingOverlay({
           </button>
         ) : null}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

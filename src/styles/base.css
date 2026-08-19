@@ -424,6 +424,11 @@ main.landing-layout:has(.landing--hub) {
   z-index: 1;
 }
 
+.landing-layout > .draft-onboarding-overlay,
+.landing-layout > .matchmaking-overlay {
+  z-index: 1300;
+}
+
 .landing {
   width: min(760px, 100%);
   margin-inline: auto;

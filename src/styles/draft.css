@@ -987,11 +987,12 @@
 .weekly-gm-recap {
   display: grid;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 14px 12px 16px;
+  overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--hub-subbox-border);
   background: var(--hub-subbox-bg);
-  box-shadow: inset 3px 0 0 var(--accent-play);
+  box-shadow: inset 3px 0 0 var(--accent-roster);
 }
 
 .weekly-gm-recap--compact {

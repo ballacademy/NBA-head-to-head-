@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { formatDailyDraftChooserStatus } from "./landingDailyDraft";
+import {
+  formatDailyDraftChooserStatus,
+  shouldShowFranchiseDailyPlayCta,
+} from "./landingDailyDraft";
 
 describe("formatDailyDraftChooserStatus", () => {
   it("shows not played when neither mode is done", () => {
@@ -37,5 +40,32 @@ describe("formatDailyDraftChooserStatus", () => {
       tag: "completed",
       tagLabel: "Completed",
     });
+  });
+
+  it("hides the Franchise Play Daily CTA only after both lineups are done", () => {
+    expect(
+      shouldShowFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: false,
+          advancedDone: false,
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      shouldShowFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: true,
+          advancedDone: false,
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      shouldShowFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: true,
+          advancedDone: true,
+        }),
+      ),
+    ).toBe(false);
   });
 });

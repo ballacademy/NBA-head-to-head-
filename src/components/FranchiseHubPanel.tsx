@@ -5,6 +5,10 @@ import {
   getCareerProgressCounters,
 } from "../lib/careerProgressAchievements";
 import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
+import {
+  shouldShowFranchiseDailyPlayCta,
+  type DailyDraftChooserStatus,
+} from "../lib/landingDailyDraft";
 import type { LandingPlaySection } from "../lib/landingHub";
 import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import { formatOrdinal } from "../lib/ordinal";
@@ -25,6 +29,7 @@ interface FranchiseHubPanelProps {
   onViewAchievements: () => void;
   onViewGmStats: () => void;
   onViewWeeklyRecap: () => void;
+  dailyChooserStatus: DailyDraftChooserStatus;
   onPlayDaily: () => void;
   onPlayIntent?: (intent: {
     playSection: LandingPlaySection;
@@ -75,6 +80,7 @@ export function FranchiseHubPanel({
   onViewAchievements,
   onViewGmStats,
   onViewWeeklyRecap,
+  dailyChooserStatus,
   onPlayDaily,
   onPlayIntent,
 }: FranchiseHubPanelProps) {
@@ -93,6 +99,7 @@ export function FranchiseHubPanel({
   );
   const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
   const nextBadgeIsDaily = nextBadge?.hint.playSection === "daily";
+  const showPlayDaily = shouldShowFranchiseDailyPlayCta(dailyChooserStatus);
 
   return (
     <div className="franchise-home">
@@ -147,13 +154,17 @@ export function FranchiseHubPanel({
         ) : (
           <p className="franchise-home__meta">Daily streak badges complete.</p>
         )}
-        <button
-          type="button"
-          className="franchise-home__cta secondary-button"
-          onClick={onPlayDaily}
-        >
-          Play Daily
-        </button>
+        {showPlayDaily ? (
+          <button
+            type="button"
+            className="franchise-home__cta secondary-button"
+            onClick={onPlayDaily}
+          >
+            Play Daily
+          </button>
+        ) : (
+          <p className="franchise-home__meta">{dailyChooserStatus.meta}</p>
+        )}
       </section>
 
       <section className="franchise-home__card landing-card" aria-label="Collection">
