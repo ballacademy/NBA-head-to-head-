@@ -7,6 +7,7 @@ import {
   MOST_DRAFTED_BOARD_LABELS,
   type MostDraftedBoardMode,
 } from "../lib/nbaPlayerUsage";
+import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 
 const MOST_DRAFTED_MODES: MostDraftedBoardMode[] = [
   "headToHead",
@@ -79,15 +80,10 @@ export function MostDraftedBoards({ refreshKey = 0 }: MostDraftedBoardsProps) {
 
       {mostDraftedMode ? (
         <>
-          <div className="franchise-home__card-actions">
-            <button
-              type="button"
-              className="franchise-home__text-link"
-              onClick={() => setMostDraftedMode(null)}
-            >
-              All modes
-            </button>
-          </div>
+          <HubFeatureReturnButton
+            label="Most drafted"
+            onBack={() => setMostDraftedMode(null)}
+          />
           {mostDraftedDetail.length === 0 ? (
             <p className="franchise-home__meta">
               No {MOST_DRAFTED_BOARD_LABELS[mostDraftedMode]} drafts yet.

@@ -32,6 +32,7 @@ export function RankedModeSummary({ record }: RankedModeSummaryProps) {
         record={{ ...record, ...seasonRecord, playerId: record.playerId }}
         align="right"
         className="ranked-mode-summary__record"
+        recordLabel="This month"
       />
     </div>
   );
