@@ -26,6 +26,8 @@ describe("draftGrade", () => {
     expect(shareText).toContain("Splash Zone");
     expect(shareText).toContain("42.3% from 3");
     expect(shareText).toContain("87th percentile");
+    expect(shareText).toContain("hub=play");
+    expect(shareText).toContain("play=daily");
     expect(shareText).not.toContain("🟥");
     expect(shareText).not.toContain(lineup[0]!.name);
   });

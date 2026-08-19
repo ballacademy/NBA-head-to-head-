@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
+  QUEUED_OWNER_DETAIL_COPY,
+  QUEUED_OWNER_INBOX_COPY,
   fetchDeliverableOwnerResult,
   fetchDeliverableOwnerResults,
   finalizeDeliveredOwnerResult,
@@ -199,5 +201,12 @@ describe("pendingOwnerResults", () => {
       resultIds: ["result-1", "result-2"],
       playerId: "player-1",
     });
+  });
+
+  it("tells owners that queued results move Banners and month W–L, not streaks", () => {
+    expect(QUEUED_OWNER_INBOX_COPY).toContain("Banners");
+    expect(QUEUED_OWNER_INBOX_COPY).toContain("this month's W–L");
+    expect(QUEUED_OWNER_INBOX_COPY).toContain("Win/loss streaks");
+    expect(QUEUED_OWNER_DETAIL_COPY).toContain("did not");
   });
 });

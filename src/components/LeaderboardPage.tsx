@@ -78,6 +78,7 @@ interface LeaderboardBoardProps {
   viewKey: string;
   showTier: boolean;
   profileMode: "classic" | "ranked";
+  onChallengeGm?: (mode: "classic" | "ranked") => void;
 }
 
 function LeaderboardEntryRow({
@@ -88,6 +89,7 @@ function LeaderboardEntryRow({
   currentPlayerId,
   showTier,
   profileMode,
+  onChallengeGm,
 }: {
   entry: BoardEntry;
   rank: number;
@@ -96,6 +98,7 @@ function LeaderboardEntryRow({
   currentPlayerId: string;
   showTier: boolean;
   profileMode: "classic" | "ranked";
+  onChallengeGm?: (mode: "classic" | "ranked") => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -197,6 +200,11 @@ function LeaderboardEntryRow({
           tierLabel={entry.tierLabel}
           profileMode={profileMode}
           onClose={() => setProfileOpen(false)}
+          onChallenge={
+            isYou || !onChallengeGm
+              ? undefined
+              : () => onChallengeGm(profileMode)
+          }
         />
       ) : null}
     </li>
@@ -211,6 +219,7 @@ function LeaderboardBoard({
   viewKey,
   showTier,
   profileMode,
+  onChallengeGm,
 }: LeaderboardBoardProps) {
   return (
     <ol className="leaderboard-rows" key={`leaderboard-rows-${viewKey}`}>
@@ -224,13 +233,18 @@ function LeaderboardBoard({
           currentPlayerId={currentPlayerId}
           showTier={showTier}
           profileMode={profileMode}
+          onChallengeGm={onChallengeGm}
         />
       ))}
     </ol>
   );
 }
 
-export function LeaderboardPage() {
+export function LeaderboardPage({
+  onChallengeGm,
+}: {
+  onChallengeGm?: (mode: "classic" | "ranked") => void;
+} = {}) {
   const [view, setView] = useState<LeaderboardView>("classic");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
   const [classicSort, setClassicSort] = useState<ClassicSort>("elo");
@@ -442,6 +456,7 @@ export function LeaderboardPage() {
               viewKey={`${view}-${sort}`}
               showTier
               profileMode="ranked"
+              onChallengeGm={onChallengeGm}
             />
           ) : (
             <EmptyState
@@ -457,6 +472,7 @@ export function LeaderboardPage() {
             viewKey={`${view}-${sort}`}
             showTier
             profileMode="classic"
+            onChallengeGm={onChallengeGm}
           />
         ) : (
           <EmptyState

@@ -31,6 +31,7 @@ interface GmProfileModalProps {
   profileMode?: "classic" | "ranked";
   fetchRemoteProfile?: boolean;
   onClose: () => void;
+  onChallenge?: () => void;
 }
 
 const formatPlainStreak = (winStreak: number, lossStreak: number) => {
@@ -59,6 +60,7 @@ export function GmProfileModal({
   profileMode = "ranked",
   fetchRemoteProfile = true,
   onClose,
+  onChallenge,
 }: GmProfileModalProps) {
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -282,14 +284,28 @@ export function GmProfileModal({
           </div>
         </div>
 
-        <button
-          ref={closeRef}
-          type="button"
-          className="secondary-button"
-          onClick={onClose}
-        >
-          Close
-        </button>
+        <div className="gm-profile-modal__actions">
+          <button
+            ref={closeRef}
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+          >
+            Close
+          </button>
+          {onChallenge ? (
+            <button
+              type="button"
+              className="landing__primary-button"
+              onClick={() => {
+                onClose();
+                onChallenge();
+              }}
+            >
+              Challenge
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -1,17 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDailyDraftChooserStatus,
+  formatFranchiseDailyPlayCta,
   shouldShowFranchiseDailyPlayCta,
 } from "./landingDailyDraft";
 
 describe("formatDailyDraftChooserStatus", () => {
-  it("shows not played when neither mode is done", () => {
+  it("shows Daily is up when neither mode is done", () => {
     expect(
       formatDailyDraftChooserStatus({ basicDone: false, advancedDone: false }),
     ).toEqual({
-      meta: "Not played today",
-      tag: null,
-      tagLabel: null,
+      meta: "Daily's up · Basic & Advanced",
+      tag: "open",
+      tagLabel: "Up",
     });
   });
 
@@ -67,5 +68,32 @@ describe("formatDailyDraftChooserStatus", () => {
         }),
       ),
     ).toBe(false);
+  });
+
+  it("labels the Franchise Daily CTA as up, finish, or hidden", () => {
+    expect(
+      formatFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: false,
+          advancedDone: false,
+        }),
+      ),
+    ).toBe("Daily's up");
+    expect(
+      formatFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: true,
+          advancedDone: false,
+        }),
+      ),
+    ).toBe("Finish Daily");
+    expect(
+      formatFranchiseDailyPlayCta(
+        formatDailyDraftChooserStatus({
+          basicDone: true,
+          advancedDone: true,
+        }),
+      ),
+    ).toBeNull();
   });
 });

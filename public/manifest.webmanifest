@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "Draft Day GM",
+  "short_name": "Draft Day GM",
+  "description": "Draft. Match up. Prove your GM eye. Daily Draft, weekly Events, and Casual or Pro Head to Head.",
+  "start_url": "/?hub=play&play=daily",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#171b22",
+  "theme_color": "#171b22",
+  "icons": [
+    {
+      "src": "/draft-day-gm-pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/draft-day-gm-pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/draft-day-gm-favicon-v6-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

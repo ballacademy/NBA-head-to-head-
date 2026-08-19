@@ -3,6 +3,8 @@ import {
   applyLandingDeepLinksFromSearch,
   buildCommunityHubShareUrl,
   buildCommunityPostShareUrl,
+  buildDailyDraftShareUrl,
+  buildPrivateMatchShareUrl,
   buildRanksHubShareUrl,
   isLandingContentTab,
   isLandingH2hMode,
@@ -13,6 +15,7 @@ import {
   parseLandingHubParam,
   parseLandingPlayParam,
   parseLandingPlayWithH2h,
+  parsePrivateRoomParam,
   saveLandingH2hMode,
   saveLandingHubTab,
   saveLandingPlaySection,
@@ -350,5 +353,50 @@ describe("landingHub", () => {
       "https://example.test/?hub=community&view=tiers",
     );
     expect(buildRanksHubShareUrl()).toBe("https://example.test/?hub=ranks");
+  });
+
+  it("parses private room codes from share URLs", () => {
+    expect(parsePrivateRoomParam("abc123")).toBe("ABC123");
+    expect(parsePrivateRoomParam("AB-C12-3")).toBe("ABC123");
+    expect(parsePrivateRoomParam("short")).toBeNull();
+    expect(parsePrivateRoomParam("")).toBeNull();
+  });
+
+  it("opens Daily from play=daily without a hub param", () => {
+    const boot = applyLandingDeepLinksFromSearch("?play=daily");
+    expect(boot.contentTab).toBe("play");
+    expect(boot.playSection).toBe("daily");
+    expect(boot.privateRoomCode).toBeNull();
+    expect(loadLandingHubTab()).toBe("play");
+    expect(loadLandingPlaySection()).toBe("daily");
+  });
+
+  it("forces Play H2H from a private room invite", () => {
+    const boot = applyLandingDeepLinksFromSearch(
+      "?hub=community&view=posts&room=xyz789",
+    );
+    expect(boot.contentTab).toBe("play");
+    expect(boot.playSection).toBe("headToHead");
+    expect(boot.h2hMode).toBe("classic");
+    expect(boot.feature).toBeNull();
+    expect(boot.communityView).toBeNull();
+    expect(boot.privateRoomCode).toBe("XYZ789");
+    expect(loadLandingPlaySection()).toBe("headToHead");
+    expect(loadLandingH2hMode()).toBe("classic");
+  });
+
+  it("builds Daily and private-match share URLs", () => {
+    vi.stubGlobal("window", {
+      location: {
+        origin: "https://example.test",
+      },
+    });
+
+    expect(buildDailyDraftShareUrl()).toBe(
+      "https://example.test/?hub=play&play=daily",
+    );
+    expect(buildPrivateMatchShareUrl("ranked", "abc123")).toBe(
+      "https://example.test/?hub=play&play=ranked&room=ABC123",
+    );
   });
 });

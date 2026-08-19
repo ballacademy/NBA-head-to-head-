@@ -131,6 +131,8 @@ interface TierListPageProps {
   hubReturnToken?: number;
   /** Bumped to open Posts compose with the latest results shareable attached. */
   composeIntentToken?: number;
+  onOpenAccount?: () => void;
+  onChallengeGm?: (mode: "classic" | "ranked") => void;
 }
 
 type TierListView =
@@ -254,6 +256,8 @@ export function TierListPage({
   initialCommunityPostId = null,
   hubReturnToken = 0,
   composeIntentToken = 0,
+  onOpenAccount,
+  onChallengeGm,
 }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
   const [view, setView] = useState<TierListView>(() => {
@@ -1223,13 +1227,13 @@ export function TierListPage({
       case "posts":
         return {
           title: "Posts",
-          lede: "Share takes with results or published lists.",
+          lede: "Anyone can read. Sign in to post.",
           back: "Community",
         };
       case "tiersHub":
         return {
           title: "Tier lists",
-          lede: "Browse, open yours, or create a list.",
+          lede: "Browse public boards. Sign in to publish.",
           back: "Community",
         };
       case "public":
@@ -1259,7 +1263,7 @@ export function TierListPage({
       default:
         return {
           title: "Community",
-          lede: "Posts, results, and tier lists.",
+          lede: "Read takes, results, and public lists.",
           back: "Back",
         };
     }
@@ -1660,9 +1664,6 @@ export function TierListPage({
 
       {view === "tiersHub" ? (
         <>
-          <AccountRequiredNote>
-            {`${ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE} Browsing stays open.`}
-          </AccountRequiredNote>
           <TierListTiersHub
             onCreate={() => void handleNew()}
             onOpenMine={() => openCommunityView("mine")}
@@ -1765,6 +1766,8 @@ export function TierListPage({
           playersById={playersById}
           focusPostId={communityFocusPostId}
           postsToday={communityPostsToday}
+          onSignIn={onOpenAccount}
+          onChallengeAuthor={onChallengeGm}
         />
       ) : null}
 

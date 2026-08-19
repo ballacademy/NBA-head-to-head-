@@ -6,6 +6,7 @@ import {
 } from "../lib/careerProgressAchievements";
 import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
 import {
+  formatFranchiseDailyPlayCta,
   shouldShowFranchiseDailyPlayCta,
   type DailyDraftChooserStatus,
 } from "../lib/landingDailyDraft";
@@ -161,7 +162,7 @@ export function FranchiseHubPanel({
             className="franchise-home__cta secondary-button"
             onClick={onPlayDaily}
           >
-            Play Daily
+            {formatFranchiseDailyPlayCta(dailyChooserStatus) ?? "Play Daily"}
           </button>
         ) : null}
       </section>

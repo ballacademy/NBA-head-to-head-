@@ -4,7 +4,7 @@ import {
 } from "./dailyDraftPlayStreak";
 import type { LandingPlaySection } from "./landingHub";
 
-export type PlayHubChipId = "inbox" | "recap" | "badge" | "streak";
+export type PlayHubChipId = "inbox" | "daily" | "recap" | "badge" | "streak";
 
 export type PlayHubChipAction =
   | { type: "inbox" }
@@ -54,6 +54,8 @@ export const buildPlayHubChips = (params: {
   nextBadgePlaySection?: LandingPlaySection;
   nextBadgeH2hMode?: "classic" | "ranked";
   dailyStreakLabel?: string | null;
+  dailyOpen?: boolean;
+  dailyOpenDetail?: string | null;
 }): PlayHubChip[] => {
   const chips: PlayHubChip[] = [];
 
@@ -77,6 +79,16 @@ export const buildPlayHubChips = (params: {
       detail: "Waiting for another GM",
       ctaLabel: "H2H",
       action: { type: "h2h" },
+    });
+  }
+
+  if (params.dailyOpen && !params.nextBadgeIsDaily) {
+    chips.push({
+      id: "daily",
+      label: "Daily's up",
+      detail: params.dailyOpenDetail ?? "One try per mode",
+      ctaLabel: "Play",
+      action: { type: "play", playSection: "daily" },
     });
   }
 
@@ -104,7 +116,11 @@ export const buildPlayHubChips = (params: {
     });
   }
 
-  if (params.dailyStreakLabel && !params.nextBadgeIsDaily) {
+  if (
+    params.dailyStreakLabel &&
+    !params.nextBadgeIsDaily &&
+    !params.dailyOpen
+  ) {
     chips.push({
       id: "streak",
       label: params.dailyStreakLabel,

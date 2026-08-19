@@ -54,6 +54,7 @@ import { ModeCardInfo } from "./ModeCardInfo";
 import { TeamNameValidationModal } from "./TeamNameValidationModal";
 import { RankedModeSummary } from "./RankedModeSummary";
 import { GmIdentityBadge } from "./GmIdentityBadge";
+import { AddToHomeScreenCard } from "./AddToHomeScreenCard";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
@@ -149,6 +150,7 @@ interface LandingPageProps {
   privateRoomCode?: string | null;
   /** Open the private-match modal after rematch from results. */
   pendingPrivateMatchMode?: "classic" | "ranked" | null;
+  pendingPrivateJoinCode?: string | null;
   onPendingPrivateMatchModeConsumed?: () => void;
   onStartDraft: (
     team: TeamProfile,
@@ -201,6 +203,7 @@ export function LandingPage({
   onDismissLiveRestore,
   privateRoomCode = null,
   pendingPrivateMatchMode = null,
+  pendingPrivateJoinCode = null,
   onPendingPrivateMatchModeConsumed,
   onStartDraft,
   onViewDailyLineup,
@@ -268,8 +271,10 @@ export function LandingPage({
       ranked: Boolean(loadPendingLineupState("ranked", playerId)),
     };
   });
+  const [privateJoinPrefill, setPrivateJoinPrefill] = useState("");
   const closePrivateMatchModal = useCallback(() => {
     setPrivateMatchMode(null);
+    setPrivateJoinPrefill("");
   }, []);
 
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
@@ -329,9 +334,16 @@ export function LandingPage({
     if (!pendingPrivateMatchMode) {
       return;
     }
+    if (pendingPrivateJoinCode) {
+      setPrivateJoinPrefill(pendingPrivateJoinCode.trim().toUpperCase());
+    }
     setPrivateMatchMode(pendingPrivateMatchMode);
     onPendingPrivateMatchModeConsumed?.();
-  }, [pendingPrivateMatchMode, onPendingPrivateMatchModeConsumed]);
+  }, [
+    pendingPrivateMatchMode,
+    pendingPrivateJoinCode,
+    onPendingPrivateMatchModeConsumed,
+  ]);
 
   const teamFormRef = useRef<HTMLDivElement>(null);
 
@@ -543,12 +555,18 @@ export function LandingPage({
         getDailyDraftPlayStreak("basic"),
         getDailyDraftPlayStreak("advanced"),
       ),
+      dailyOpen: dailyChooserStatus.tag !== "completed",
+      dailyOpenDetail:
+        dailyChooserStatus.tag === "progress"
+          ? dailyChooserStatus.meta
+          : "One try per mode",
     });
   }, [
     pendingOwnerResultCount,
     queuedLineupLock.classic,
     queuedLineupLock.ranked,
     recapSeenTick,
+    dailyChooserStatus,
   ]);
   const playNavBadgeCount = getPlayNavBadgeCount({
     pendingResultCount: pendingOwnerResultCount,
@@ -931,6 +949,7 @@ export function LandingPage({
           salaryCapMode={privateMatchMode === "ranked"}
           startMatchError={startMatchError}
           privateRoomCode={privateRoomCode}
+          initialJoinCode={privateJoinPrefill || pendingPrivateJoinCode}
           onClose={closePrivateMatchModal}
           onStart={handleStart}
         />
@@ -1536,6 +1555,8 @@ export function LandingPage({
               onCollectionChange={onCollectionChange}
               onCareerSynced={onCareerSynced}
             />
+
+            <AddToHomeScreenCard />
 
             <div className="account-section__legal-strip">
               <p className="landing-disclaimer">

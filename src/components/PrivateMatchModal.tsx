@@ -21,6 +21,7 @@ interface PrivateMatchModalProps {
   startMatchError?: string | null;
   /** When the host room is ready, parent shows MatchmakingOverlay with this code. */
   privateRoomCode?: string | null;
+  initialJoinCode?: string | null;
   onClose: () => void;
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
 }
@@ -31,6 +32,7 @@ export function PrivateMatchModal({
   salaryCapMode,
   startMatchError = null,
   privateRoomCode = null,
+  initialJoinCode = null,
   onClose,
   onStart,
 }: PrivateMatchModalProps) {
@@ -39,7 +41,9 @@ export function PrivateMatchModal({
   const modeLabel = salaryCapMode
     ? PRO_HEAD_TO_HEAD_LABEL
     : CLASSIC_HEAD_TO_HEAD_LABEL;
-  const [joinCode, setJoinCode] = useState("");
+  const [joinCode, setJoinCode] = useState(
+    () => (initialJoinCode ?? "").trim().toUpperCase(),
+  );
   const [error, setError] = useState<string | null>(null);
   const [accountLinked, setAccountLinked] = useState<boolean | null>(() =>
     peekCachedAccountLinked(getOrCreatePlayerId()),
@@ -88,6 +92,13 @@ export function PrivateMatchModal({
       setError(null);
     }
   }, [startMatchError]);
+
+  useEffect(() => {
+    if (!initialJoinCode) {
+      return;
+    }
+    setJoinCode(initialJoinCode.trim().toUpperCase());
+  }, [initialJoinCode]);
 
   // Host path: App sets the room code once create succeeds, then waits for a
   // guest under MatchmakingOverlay. Dismiss this modal so the code is visible.

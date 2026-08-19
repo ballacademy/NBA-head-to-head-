@@ -3,6 +3,7 @@ import { getLineupTierAdjustment } from "./lineupMatchupBonus";
 import { formatDailyDraftModeLabel } from "./dailyDraftMode";
 import type { DailyDraftMode } from "./dailyDraftMode";
 import { formatOrdinal } from "./ordinal";
+import { buildDailyDraftShareUrl } from "./landingHub";
 import type { Player } from "./types";
 
 export type DraftLetterGrade =
@@ -84,6 +85,7 @@ export const buildDailyDraftShareText = (
     lines.push(`📈 ${formatOrdinal(percentile)} percentile`);
   }
 
+  lines.push(buildDailyDraftShareUrl());
   lines.push("#DraftDayGM");
 
   return lines.join("\n");

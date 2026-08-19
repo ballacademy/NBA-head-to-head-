@@ -43,6 +43,28 @@
   width: auto;
 }
 
+.community-posts-panel__signin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--accent-community-border);
+  background: var(--accent-community-soft);
+}
+
+.community-posts-panel__signin-copy {
+  margin: 0;
+  flex: 1 1 12rem;
+  color: var(--accent-community-bright);
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
 .community-posts-panel__compose {
   display: grid;
   gap: 10px;
