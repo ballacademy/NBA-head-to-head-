@@ -96,6 +96,25 @@ const CHEMISTRY_BLOCK_GAP = 12;
 const CHEMISTRY_FONT = `700 14px ${FONT_STACK}`;
 
 let fontsReady: Promise<void> | null = null;
+let brandMarkReady: Promise<HTMLImageElement | null> | null = null;
+
+const loadImageElement = (src: string): Promise<HTMLImageElement | null> =>
+  new Promise((resolve) => {
+    if (typeof Image === "undefined") {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () =>
+      resolve(img.naturalWidth > 0 ? img : null);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+
+export const loadBrandMarkImage = (): Promise<HTMLImageElement | null> => {
+  brandMarkReady ??= loadImageElement("/draft-day-gm-mark-v5.png");
+  return brandMarkReady;
+};
 
 const roundRect = (
   context: CanvasRenderingContext2D,
@@ -629,6 +648,7 @@ export const drawLineupShareCard = (
   canvas: HTMLCanvasElement,
   input: LineupShareCardInput,
   headshots: Map<string, HTMLImageElement> = new Map(),
+  brandMark: HTMLImageElement | null = null,
 ) => {
   const context = canvas.getContext("2d");
 
@@ -688,24 +708,34 @@ export const drawLineupShareCard = (
   context.font = `600 18px ${FONT_STACK}`;
   context.textAlign = "left";
   context.fillText("#DraftDayGM", 88, footerY);
-  context.textAlign = "right";
-  context.fillText(
-    input.footerNote?.trim() || "DRAFT DAY GM",
-    CARD_WIDTH - 88,
-    footerY,
-  );
-  context.textAlign = "left";
+
+  if (brandMark && !input.footerNote?.trim()) {
+    const markH = 28;
+    const markW = Math.round(markH * (brandMark.naturalWidth / brandMark.naturalHeight));
+    context.globalAlpha = 0.72;
+    context.drawImage(brandMark, CARD_WIDTH - 88 - markW, footerY - markH + 4, markW, markH);
+    context.globalAlpha = 1;
+  } else {
+    context.textAlign = "right";
+    context.fillText(
+      input.footerNote?.trim() || "DRAFT DAY GM",
+      CARD_WIDTH - 88,
+      footerY,
+    );
+    context.textAlign = "left";
+  }
 };
 
 export const createLineupShareCardBlob = async (input: LineupShareCardInput) => {
   await ensureShareCardFonts();
 
-  const headshots = await loadPlayerHeadshotImages(
-    input.lineup.map((player) => player.bbrPlayerId),
-  );
+  const [headshots, brandMark] = await Promise.all([
+    loadPlayerHeadshotImages(input.lineup.map((player) => player.bbrPlayerId)),
+    loadBrandMarkImage(),
+  ]);
 
   const canvas = document.createElement("canvas");
-  drawLineupShareCard(canvas, input, headshots);
+  drawLineupShareCard(canvas, input, headshots, brandMark);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -741,12 +771,15 @@ export const createMatchupShareCardBlob = async (inputs: {
     ...inputs.user.lineup.map((player) => player.bbrPlayerId),
     ...inputs.opponent.lineup.map((player) => player.bbrPlayerId),
   ];
-  const headshots = await loadPlayerHeadshotImages(allBbrIds);
+  const [headshots, brandMark] = await Promise.all([
+    loadPlayerHeadshotImages(allBbrIds),
+    loadBrandMarkImage(),
+  ]);
 
   const userCanvas = document.createElement("canvas");
   const opponentCanvas = document.createElement("canvas");
-  drawLineupShareCard(userCanvas, inputs.user, headshots);
-  drawLineupShareCard(opponentCanvas, inputs.opponent, headshots);
+  drawLineupShareCard(userCanvas, inputs.user, headshots, brandMark);
+  drawLineupShareCard(opponentCanvas, inputs.opponent, headshots, brandMark);
 
   const gap = 28;
   const combined = document.createElement("canvas");

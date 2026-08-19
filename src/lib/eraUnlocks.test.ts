@@ -17,10 +17,10 @@ import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
 describe("all-time mode availability", () => {
-  it("keeps all-time mode behind coming soon on production", () => {
-    expect(ALL_TIME_MODE_PLAYABLE).toBe(false);
-    expect(isAllTimeModePlayable("www.draftdaygm.com")).toBe(false);
-    expect(isAllTimeModePlayable("")).toBe(false);
+  it("exposes all-time mode on production after launch", () => {
+    expect(ALL_TIME_MODE_PLAYABLE).toBe(true);
+    expect(isAllTimeModePlayable("www.draftdaygm.com")).toBe(true);
+    expect(isAllTimeModePlayable("")).toBe(true);
   });
 
   it("exposes all-time mode on QA and local hosts", () => {

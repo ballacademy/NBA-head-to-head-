@@ -6,10 +6,11 @@ import {
   type DailyDraftMode,
 } from "./dailyDraftMode";
 import { formatOrdinal } from "./ordinal";
-import { getOrCreatePlayerId } from "./playerRecord";
+import { getOrCreatePlayerId, type HeadToHeadResult, type MatchRecordMode } from "./playerRecord";
 
 const WEEKLY_RECAP_SEEN_KEY = "ddgm:weekly-recap-seen";
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
+const WEEKLY_H2H_KEY = "ddgm:weekly-h2h";
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 type DailyScoreEntry = {
@@ -188,6 +189,39 @@ export const getBestDailyPercentileThisWeek = (
   weekKey = getLastCompletedWeeklyRecapWeekKey(),
 ) => summarizeWeek(weekKey, playerId, loadDailyScoreStore()).bestPercentile;
 
+interface WeeklyH2hRecord {
+  wins: number;
+  losses: number;
+  ties: number;
+}
+
+type WeeklyH2hStore = Record<string, WeeklyH2hRecord | undefined>;
+
+const loadWeeklyH2hStore = (): WeeklyH2hStore =>
+  readJson<WeeklyH2hStore>(WEEKLY_H2H_KEY) ?? {};
+
+/** Call this after every persisted H2H / ranked / all-time match result. */
+export const recordWeeklyH2hResult = (
+  result: HeadToHeadResult,
+  _mode: MatchRecordMode = "headToHead",
+) => {
+  const weekKey = getWeeklyRecapWeekKey();
+  const store = loadWeeklyH2hStore();
+  const current = store[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
+  if (result === "win") {
+    current.wins += 1;
+  } else if (result === "loss") {
+    current.losses += 1;
+  } else {
+    current.ties += 1;
+  }
+  store[weekKey] = current;
+  writeJson(WEEKLY_H2H_KEY, store);
+};
+
+export const getWeeklyH2hRecord = (weekKey: string): WeeklyH2hRecord =>
+  loadWeeklyH2hStore()[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
+
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
     return "No Daily";
@@ -211,6 +245,10 @@ export interface WeeklyGmRecap {
   dailyDaysSplitLabel: string;
   dailyPuzzles: number;
   bestDailyFinishLabel: string;
+  h2hWins: number;
+  h2hLosses: number;
+  h2hTies: number;
+  h2hMatches: number;
 }
 
 export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
@@ -223,6 +261,7 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
   const useLastWeek = lastWeek.dailyPuzzles > 0 || thisWeek.dailyPuzzles <= 0;
   const weekKey = useLastWeek ? lastWeekKey : thisWeekKey;
   const summary = useLastWeek ? lastWeek : thisWeek;
+  const h2h = getWeeklyH2hRecord(weekKey);
 
   return {
     weekKey,
@@ -235,6 +274,10 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
     ),
     dailyPuzzles: summary.dailyPuzzles,
     bestDailyFinishLabel: formatBestDailyFinishLabel(summary.bestPercentile),
+    h2hWins: h2h.wins,
+    h2hLosses: h2h.losses,
+    h2hTies: h2h.ties,
+    h2hMatches: h2h.wins + h2h.losses + h2h.ties,
   };
 };
 
