@@ -193,8 +193,8 @@ export function BetaNotesPage({
                 that mode; records, Banners, and badges do not change.
               </li>
               <li>
-                <strong>All-Time Draft</strong> — coming soon (peak seasons and
-                era legends). Not playable in this beta build.
+                <strong>All-Time Draft</strong> — peak seasons and era legends.
+                Unlock after 50 career wins or 1,000 All-Time Banners.
               </li>
               <li>
                 <strong>Stored lineup results</strong> — when someone drafts

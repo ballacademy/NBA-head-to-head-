@@ -1,4 +1,5 @@
 import { readJson, writeJson } from "./browserStorage";
+import { recordWeeklyH2hResult } from "./gmWeeklyRecap";
 import {
   persistAllTimeOutcome,
   persistClassicLeaderboardOutcome,
@@ -139,6 +140,7 @@ export const persistMatchOutcome = (
 
   rememberRecordedMatchId(matchId);
   writeJson(LAST_MATCH_OUTCOME_KEY, { matchId, ranked, classic, allTime });
+  recordWeeklyH2hResult(result, mode);
 
   void import("./careerStatsRemote")
     .then(({ pushCareerStatsIfLinked }) => {

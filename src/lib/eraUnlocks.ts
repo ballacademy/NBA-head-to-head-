@@ -12,11 +12,8 @@ export const ALL_TIME_WIN_THRESHOLD = 50;
  */
 export const ALL_TIME_BANNER_UNLOCK_THRESHOLD = 1000;
 
-/**
- * Production default: All-Time stays “coming soon” on www.
- * QA / local hosts still expose the mode via `isAllTimeModePlayable()`.
- */
-export const ALL_TIME_MODE_PLAYABLE = false;
+/** Launched Aug 19, 2026. QA / local always expose the mode too. */
+export const ALL_TIME_MODE_PLAYABLE = true;
 
 /** Set to false before release to require 50 wins / banner threshold for legends. */
 export const ALL_TIME_LEGENDS_TESTING_UNLOCK = false;

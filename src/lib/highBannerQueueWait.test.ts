@@ -12,7 +12,7 @@ describe("highBannerQueueWait", () => {
       `${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}`,
     );
     expect(getHighBannerSearchWaitMessage(12)).toMatch(/thin/i);
-    expect(getHighBannerSearchWaitMessage(30)).toMatch(/another GM/i);
+    expect(getHighBannerSearchWaitMessage(30)).toMatch(/cancel/i);
   });
 
   it("explains queued wait with practice tip", () => {

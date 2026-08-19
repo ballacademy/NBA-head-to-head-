@@ -12,8 +12,8 @@ import { isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
 
 describe("playerPool roster metadata", () => {
   it("tracks the active roster as-of date", () => {
-    expect(ACTIVE_ROSTER_AS_OF).toBe("2026-08-11");
-    expect(ACTIVE_ROSTER_AS_OF_LABEL).toBe("August 11, 2026");
+    expect(ACTIVE_ROSTER_AS_OF).toBe("2026-08-19");
+    expect(ACTIVE_ROSTER_AS_OF_LABEL).toBe("August 19, 2026");
   });
 });
 
