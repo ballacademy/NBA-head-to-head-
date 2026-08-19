@@ -1007,152 +1007,32 @@ export function CommunityPostsPanel({
         </label>
       </div>
 
-      <div
-        className="community-posts-panel__filters"
-        role="toolbar"
-        aria-label="Filter posts"
-      >
-        {feedFilterOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`community-posts-panel__filter-chip${
-              feedFilter === option.value ? " is-active" : ""
-            }`}
-            aria-pressed={feedFilter === option.value}
-            onClick={() => setFeedFilter(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      {postsToday != null && postsToday > 0 ? (
-        <p className="community-activity-strip" role="status">
-          <strong>{postsToday}</strong> new today
-        </p>
-      ) : null}
-
-      {accountBlocked ? (
-        <div className="community-posts-panel__signin">
-          <p className="community-posts-panel__signin-copy">
-            {ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE}
-          </p>
-          {onSignIn ? (
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={onSignIn}
-            >
-              Sign in to post
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-
-      {accountReady ? (
-      <form className="community-posts-panel__compose" onSubmit={handleSubmit}>
-        <label className="tier-list__search community-posts-panel__field">
-          <span>New post</span>
-          <textarea
-            value={draft}
-            maxLength={COMMUNITY_POST_BODY_MAX}
-            rows={3}
-            placeholder="Share a short take (tier lists, Daily, matchups…)"
-            onChange={(event) => onDraftChange(event.target.value)}
-            disabled={!accountReady || submitting}
-          />
-        </label>
-
-        <label className="tier-list-hub__sort community-posts-panel__attach">
-          <span>Attach a recent result or list</span>
-          <select
-            value={
-              selectedAttachment ? attachmentKey(selectedAttachment) : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
-              const match = shareables.find(
-                (entry) => attachmentKey(entry) === value,
-              );
-              onSelectAttachment(match ?? null);
-            }}
-            disabled={!accountReady || submitting || shareables.length === 0}
-          >
-            <option value="">No attachment</option>
-            {shareables.map((entry) => (
-              <option key={attachmentKey(entry)} value={attachmentKey(entry)}>
-                {formatCommunityAttachmentChip(entry)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {shareables.length === 0 ? (
-          <p className="community-posts-panel__attach-hint">
-            Finish a Daily, H2H, or Events matchup, or publish a tier list, to
-            attach it here.
-          </p>
-        ) : null}
-
-        {selectedAttachment ? (
+      <div className="community-posts-panel__main">
+        <div className="community-posts-panel__feed">
           <div
-            className="community-posts-panel__attach-preview-card"
-            role="status"
+            className="community-posts-panel__filters"
+            role="toolbar"
+            aria-label="Filter posts"
           >
-            <div className="community-posts-panel__attach-preview-top">
-              <span className="community-posts-panel__attachment-chip">
-                {formatCommunityAttachmentChip(selectedAttachment)}
-              </span>
+            {feedFilterOptions.map((option) => (
               <button
+                key={option.value}
                 type="button"
-                className="community-posts-panel__text-action"
-                onClick={() => onSelectAttachment(null)}
+                className={`community-posts-panel__filter-chip${
+                  feedFilter === option.value ? " is-active" : ""
+                }`}
+                aria-pressed={feedFilter === option.value}
+                onClick={() => setFeedFilter(option.value)}
               >
-                Remove
+                {option.label}
               </button>
-            </div>
-            <p className="community-posts-panel__attach-preview-summary">
-              {formatCommunityAttachmentSummary(selectedAttachment)}
-            </p>
-            {selectedAttachment.kind === "matchup" ? (
-              <p className="community-posts-panel__attach-preview-meta">
-                {[
-                  selectedAttachment.userRecord
-                    ? `Projected ${selectedAttachment.userRecord}`
-                    : null,
-                  selectedAttachment.userLineupNames.slice(0, 5).join(", "),
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            ) : null}
-            {selectedAttachment.kind === "lineup" ? (
-              <p className="community-posts-panel__attach-preview-meta">
-                {selectedAttachment.lineupNames.slice(0, 5).join(", ")}
-              </p>
-            ) : null}
+            ))}
           </div>
-        ) : null}
-
-        <div className="community-posts-panel__compose-meta">
-          <span className={remaining < 40 ? "is-tight" : undefined}>
-            {remaining} left
-          </span>
-          <button
-            type="submit"
-            className="hub-cta"
-            disabled={!accountReady || submitting || draft.trim().length === 0}
-          >
-            {submitting ? "Posting…" : "Post"}
-          </button>
-        </div>
-        {error ? (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        ) : null}
-      </form>
-      ) : null}
+          {postsToday != null && postsToday > 0 ? (
+            <p className="community-activity-strip" role="status">
+              <strong>{postsToday}</strong> new today
+            </p>
+          ) : null}
 
       {likeError || replyError ? (
         <p className="form-error community-posts-panel__like-error" role="alert">
@@ -1307,7 +1187,9 @@ export function CommunityPostsPanel({
                             void handleViewAttachment(post.id, post.attachment);
                           }}
                         >
-                          View lineup
+                          {post.attachment.kind === "matchup"
+                            ? "View matchup"
+                            : "View lineup"}
                         </button>
                       ) : null}
                       {post.attachment.kind === "tierList" ? (
@@ -1537,6 +1419,143 @@ export function CommunityPostsPanel({
           ) : null}
         </div>
       ) : null}
+        </div>
+
+        <div className="community-posts-panel__composer">
+          {accountBlocked ? (
+            <div className="community-posts-panel__signin">
+              <p className="community-posts-panel__signin-copy">
+                {ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE}
+              </p>
+              {onSignIn ? (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={onSignIn}
+                >
+                  Sign in to post
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {accountReady ? (
+            <form
+              className="community-posts-panel__compose"
+              onSubmit={handleSubmit}
+            >
+              <label className="tier-list__search community-posts-panel__field">
+                <span>New post</span>
+                <textarea
+                  value={draft}
+                  maxLength={COMMUNITY_POST_BODY_MAX}
+                  rows={3}
+                  placeholder="Share a short take (tier lists, Daily, matchups…)"
+                  onChange={(event) => onDraftChange(event.target.value)}
+                  disabled={!accountReady || submitting}
+                />
+              </label>
+
+              <label className="tier-list-hub__sort community-posts-panel__attach">
+                <span>Attach a recent result or list</span>
+                <select
+                  value={
+                    selectedAttachment ? attachmentKey(selectedAttachment) : ""
+                  }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    const match = shareables.find(
+                      (entry) => attachmentKey(entry) === value,
+                    );
+                    onSelectAttachment(match ?? null);
+                  }}
+                  disabled={
+                    !accountReady || submitting || shareables.length === 0
+                  }
+                >
+                  <option value="">No attachment</option>
+                  {shareables.map((entry) => (
+                    <option
+                      key={attachmentKey(entry)}
+                      value={attachmentKey(entry)}
+                    >
+                      {formatCommunityAttachmentChip(entry)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {shareables.length === 0 ? (
+                <p className="community-posts-panel__attach-hint">
+                  Finish a Daily, H2H, or Events matchup, or publish a tier list,
+                  to attach it here.
+                </p>
+              ) : null}
+
+              {selectedAttachment ? (
+                <div
+                  className="community-posts-panel__attach-preview-card"
+                  role="status"
+                >
+                  <div className="community-posts-panel__attach-preview-top">
+                    <span className="community-posts-panel__attachment-chip">
+                      {formatCommunityAttachmentChip(selectedAttachment)}
+                    </span>
+                    <button
+                      type="button"
+                      className="community-posts-panel__text-action"
+                      onClick={() => onSelectAttachment(null)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <p className="community-posts-panel__attach-preview-summary">
+                    {formatCommunityAttachmentSummary(selectedAttachment)}
+                  </p>
+                  {selectedAttachment.kind === "matchup" ? (
+                    <p className="community-posts-panel__attach-preview-meta">
+                      {[
+                        selectedAttachment.userRecord
+                          ? `Projected ${selectedAttachment.userRecord}`
+                          : null,
+                        selectedAttachment.userLineupNames
+                          .slice(0, 5)
+                          .join(", "),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
+                  {selectedAttachment.kind === "lineup" ? (
+                    <p className="community-posts-panel__attach-preview-meta">
+                      {selectedAttachment.lineupNames.slice(0, 5).join(", ")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="community-posts-panel__compose-meta">
+                <span className={remaining < 40 ? "is-tight" : undefined}>
+                  {remaining} left
+                </span>
+                <button
+                  type="submit"
+                  className="hub-cta"
+                  disabled={
+                    !accountReady || submitting || draft.trim().length === 0
+                  }
+                >
+                  {submitting ? "Posting…" : "Post"}
+                </button>
+              </div>
+              {error ? (
+                <p className="form-error" role="alert">
+                  {error}
+                </p>
+              ) : null}
+            </form>
+          ) : null}
+        </div>
+      </div>
 
       {viewingPostId
         ? createPortal(

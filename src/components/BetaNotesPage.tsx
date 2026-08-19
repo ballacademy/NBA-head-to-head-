@@ -59,7 +59,7 @@ export function BetaNotesPage({
       title="Beta notes"
       lede="Live modes, known limits, and how to reach us."
       onBack={onBack}
-      backVisible={false}
+      backLabel="Account"
     >
       <section className="hub-feature__panel">
         <div className="legal-page__body beta-notes-body">

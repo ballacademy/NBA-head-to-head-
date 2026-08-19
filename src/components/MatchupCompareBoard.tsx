@@ -93,9 +93,9 @@ function TeamHeader({
         ) : null}
         <p
           className="matchup-compare__record"
-          aria-label="Projected team record"
+          aria-label={`Projected team record ${formatProjectedSeasonRecord(score.projectedRecord)}`}
         >
-          {formatProjectedSeasonRecord(score.projectedRecord)}
+          Projected {formatProjectedSeasonRecord(score.projectedRecord)}
         </p>
       </div>
       <div className="matchup-compare__score">
