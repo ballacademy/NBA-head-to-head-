@@ -195,19 +195,22 @@ interface WeeklyH2hRecord {
   ties: number;
 }
 
-type WeeklyH2hStore = Record<string, WeeklyH2hRecord | undefined>;
+type WeeklyH2hByWeekStore = Record<string, WeeklyH2hRecord | undefined>;
+type WeeklyH2hStore = Record<string, WeeklyH2hByWeekStore | undefined>;
 
 const loadWeeklyH2hStore = (): WeeklyH2hStore =>
   readJson<WeeklyH2hStore>(WEEKLY_H2H_KEY) ?? {};
 
-/** Call this after every persisted H2H / ranked / all-time match result. */
+/** Call this after every persisted casual / pro H2H match result. */
 export const recordWeeklyH2hResult = (
   result: HeadToHeadResult,
+  playerId: string,
   _mode: MatchRecordMode = "headToHead",
 ) => {
   const weekKey = getWeeklyRecapWeekKey();
   const store = loadWeeklyH2hStore();
-  const current = store[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
+  const byWeek = store[playerId] ?? {};
+  const current = byWeek[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
   if (result === "win") {
     current.wins += 1;
   } else if (result === "loss") {
@@ -215,12 +218,15 @@ export const recordWeeklyH2hResult = (
   } else {
     current.ties += 1;
   }
-  store[weekKey] = current;
+  byWeek[weekKey] = current;
+  store[playerId] = byWeek;
   writeJson(WEEKLY_H2H_KEY, store);
 };
 
-export const getWeeklyH2hRecord = (weekKey: string): WeeklyH2hRecord =>
-  loadWeeklyH2hStore()[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
+export const getWeeklyH2hRecord = (
+  weekKey: string,
+  playerId = getOrCreatePlayerId(),
+): WeeklyH2hRecord => loadWeeklyH2hStore()[playerId]?.[weekKey] ?? { wins: 0, losses: 0, ties: 0 };
 
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
@@ -261,7 +267,7 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
   const useLastWeek = lastWeek.dailyPuzzles > 0 || thisWeek.dailyPuzzles <= 0;
   const weekKey = useLastWeek ? lastWeekKey : thisWeekKey;
   const summary = useLastWeek ? lastWeek : thisWeek;
-  const h2h = getWeeklyH2hRecord(weekKey);
+  const h2h = getWeeklyH2hRecord(weekKey, playerId);
 
   return {
     weekKey,
