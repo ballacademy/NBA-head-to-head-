@@ -122,9 +122,10 @@
   padding: var(--hub-logo-stamp-pad-y) var(--hub-logo-stamp-pad-x);
   border-radius: var(--hub-logo-stamp-radius);
   background: transparent;
+  /* Stamp stays brand purple to match the mark. Tab color lives on rim/nav. */
   border: var(--hub-logo-stamp-border) solid
-    color-mix(in srgb, var(--hub-tab-accent) 62%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--hub-tab-accent-glow) 38%, transparent);
+    color-mix(in srgb, var(--accent-play) 58%, var(--hub-chrome-border));
+  box-shadow: none;
 }
 
 .landing-hub-chrome .landing-hub-brand__logo {
