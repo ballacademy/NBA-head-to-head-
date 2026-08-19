@@ -173,6 +173,8 @@ interface LandingPageProps {
   onViewPrivacy: () => void;
   onViewTerms: () => void;
   onViewBetaNotes: () => void;
+  onViewGameLog?: () => void;
+  onViewPendingResults?: () => void;
   hubTab: LandingContentTab;
   onHubTabChange: (tab: LandingContentTab) => void;
   onPrefetchHubTab?: (tab: LandingHubTab) => void;
@@ -221,6 +223,8 @@ export function LandingPage({
   onViewPrivacy,
   onViewTerms,
   onViewBetaNotes,
+  onViewGameLog,
+  onViewPendingResults,
   hubTab,
   onHubTabChange,
   onPrefetchHubTab,
@@ -572,8 +576,15 @@ export function LandingPage({
   });
 
   const handlePlayHubChip = (chip: PlayHubChip) => {
-    if (chip.action.type === "inbox" || chip.action.type === "h2h") {
+    if (chip.action.type === "inbox") {
+      onViewPendingResults?.();
+      return;
+    }
+    if (chip.action.type === "h2h") {
       updatePlaySection("headToHead");
+      if (hubTab !== "play") {
+        onHubTabChange("play");
+      }
       return;
     }
     if (chip.action.type === "roster") {
@@ -1090,6 +1101,17 @@ export function LandingPage({
                 )}
               </p>
             ) : null}
+            {onViewGameLog ? (
+              <div className="landing-hub__links landing-hub__links--inline">
+                <button
+                  type="button"
+                  className="landing-hub__link-button landing-hub__link-button--compact"
+                  onClick={onViewGameLog}
+                >
+                  Game log
+                </button>
+              </div>
+            ) : null}
             {showBannersExplainer ? (
               <p className="banners-explainer" role="note">
                 <span>{BANNERS_EXPLAINER_COPY}</span>
@@ -1235,7 +1257,7 @@ export function LandingPage({
                   </h2>
                   <p className="all-time-card__description">
                     Draft active stars at their peak seasons plus legendary
-                    All-Stars from every era. Coming soon.
+                    All-Stars from every era. Mode is still in development.
                   </p>
                   <button
                     type="button"

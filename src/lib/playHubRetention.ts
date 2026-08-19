@@ -66,7 +66,8 @@ export const buildPlayHubChips = (params: {
         params.pendingResultCount === 1
           ? "1 result ready"
           : `${params.pendingResultCount} results ready`,
-      ctaLabel: "View",
+      detail: "Queued lineup results",
+      ctaLabel: "Open",
       action: { type: "inbox" },
     });
   } else if (params.queuedClassic || params.queuedRanked) {

@@ -15,6 +15,7 @@ import { clearPendingLineupState } from "./pendingLineup";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import type { MatchRecordMode } from "./playerRecord";
 import { loadTeamProfile } from "./teamProfile";
+import { logQueuedMatchGameEntry } from "./matchGameLog";
 
 export interface DeliveredOwnerResult {
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">;
@@ -86,6 +87,16 @@ const deliverPendingResult = (
       lossStreak: banners.lossStreak,
     });
   }
+
+  logQueuedMatchGameEntry({
+    matchId: pending.id,
+    mode: mode === "ranked" ? "ranked" : "classic",
+    result: pending.ownerResult,
+    opponentName: pending.opponentTeamName,
+    ownerScore: pending.ownerScore,
+    opponentScore: pending.opponentScore,
+    bannerDelta: banners?.delta,
+  });
 
   return {
     mode,

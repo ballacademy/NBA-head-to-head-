@@ -192,6 +192,9 @@ const WeeklyRecapPage = lazyWithChunkReload(() =>
     default: m.WeeklyRecapPage,
   })),
 );
+const GameLogPage = lazyWithChunkReload(() =>
+  import("./components/GameLogPage").then((m) => ({ default: m.GameLogPage })),
+);
 const InternalPlayerUsagePage = lazyWithChunkReload(() =>
   import("./components/InternalPlayerUsagePage").then((m) => ({
     default: m.InternalPlayerUsagePage,
@@ -235,6 +238,7 @@ type AppPhase =
   | "stats"
   | "tierList"
   | "gmStats"
+  | "gameLog"
   | "weeklyRecap"
   | "playerUsage"
   | "leaderboard"
@@ -247,6 +251,7 @@ const FEATURE_PHASES = new Set<AppPhase>([
   "stats",
   "tierList",
   "gmStats",
+  "gameLog",
   "weeklyRecap",
   "playerUsage",
   "leaderboard",
@@ -1768,6 +1773,12 @@ function App() {
       };
       window.history.pushState(historyState, "");
       prefetchFeaturePhase(nextPhase);
+      if (nextPhase === "gameLog") {
+        setLandingHubTab("play");
+        saveLandingHubTab("play");
+        syncLandingHubTabUrl("play");
+        saveLandingPlaySection("headToHead");
+      }
       startTransition(() => {
         setPhase(nextPhase);
       });
@@ -1820,9 +1831,11 @@ function App() {
         ? "account"
         : phase === "weeklyRecap"
           ? weeklyRecapReturnTabRef.current
-          : leavingFeature
-            ? parentTabForFeature(leavingFeature)
-            : landingHubTab;
+          : phase === "gameLog"
+            ? "play"
+            : leavingFeature
+              ? parentTabForFeature(leavingFeature)
+              : landingHubTab;
     setLandingHubTab(parentTab);
     saveLandingHubTab(parentTab);
     resetToLanding();
@@ -2667,6 +2680,10 @@ function App() {
       return weeklyRecapReturnTabRef.current === "roster" ? "roster" : "play";
     }
 
+    if (phase === "gameLog") {
+      return "play";
+    }
+
     if (
       phase === "playerUsage" ||
       phase === "privacy" ||
@@ -2743,6 +2760,10 @@ function App() {
 
   if (phase === "gmStats") {
     return renderHubFeature(<GmStatsPage onBack={exitFeaturePage} />);
+  }
+
+  if (phase === "gameLog") {
+    return renderHubFeature(<GameLogPage onBack={exitFeaturePage} />);
   }
 
   if (phase === "weeklyRecap") {
@@ -2855,8 +2876,7 @@ function App() {
 
   if (
     phase === "landing" &&
-    deliveredOwnerResults.length > 0 &&
-    landingHubTab === "play"
+    deliveredOwnerResults.length > 0
   ) {
     return (
       <main className="landing-layout">
@@ -2927,6 +2947,13 @@ function App() {
           onViewPrivacy={() => openFeaturePage("privacy")}
           onViewTerms={() => openFeaturePage("terms")}
           onViewBetaNotes={() => openFeaturePage("beta")}
+          onViewGameLog={() => openFeaturePage("gameLog")}
+          onViewPendingResults={() => {
+            setLandingHubTab("play");
+            saveLandingHubTab("play");
+            syncLandingHubTabUrl("play");
+            scrollHubToTop();
+          }}
           hubTab={landingHubTab}
           onHubTabChange={updateLandingHubTab}
           onPrefetchHubTab={prefetchHubFeatureTab}

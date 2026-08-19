@@ -83,6 +83,82 @@
   line-height: 1.35;
 }
 
+.game-log__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-log__row {
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.game-log__row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.game-log__outcome {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-log__row--win .game-log__outcome {
+  color: #86efac;
+}
+
+.game-log__row--loss .game-log__outcome {
+  color: #fca5a5;
+}
+
+.game-log__row--tie .game-log__outcome {
+  color: #fde68a;
+}
+
+.game-log__when {
+  color: rgba(148, 163, 184, 0.88);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.game-log__opponent {
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.game-log__meta {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.92);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.game-log__empty p:last-child {
+  margin: 0;
+}
+
+.landing-hub__links--inline {
+  margin: 0 0 10px;
+}
+
+.landing-hub__link-button--compact {
+  min-height: 38px;
+  font-size: 0.78rem;
+}
+
 .owner-results-inbox__chevron {
   color: #94a3b8;
   font-size: 1.35rem;
