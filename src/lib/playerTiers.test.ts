@@ -5,6 +5,7 @@ import {
   getSuperScrubPlayerIds,
   isScrubPlayer,
   isSuperScrubPlayer,
+  SCRUB_POOL_BBR_IDS,
   SCRUB_POOL_SIZE,
   SUPER_SCRUB_POOL_SIZE,
 } from "./playerTiers";
@@ -54,10 +55,11 @@ const buildGreedyLineup = (direction: "min" | "max") => {
 };
 
 describe("playerTiers", () => {
-  it("defines 30 scrubs with the worst 6 marked as super scrubs", () => {
+  it("defines the curated scrub pool with the worst 6 marked as super scrubs", () => {
     const scrubIds = getScrubPlayerIds();
     const superScrubIds = getSuperScrubPlayerIds();
 
+    expect(SCRUB_POOL_SIZE).toBe(30);
     expect(scrubIds).toHaveLength(SCRUB_POOL_SIZE);
     expect(superScrubIds).toHaveLength(SUPER_SCRUB_POOL_SIZE);
     expect(new Set(scrubIds).size).toBe(SCRUB_POOL_SIZE);
@@ -66,6 +68,21 @@ describe("playerTiers", () => {
     superScrubIds.forEach((playerId) => {
       expect(scrubIds).toContain(playerId);
     });
+  });
+
+  it("resolves every curated scrub id in the draftable pool", () => {
+    const byBbr = new Map(
+      players
+        .filter((player) => player.bbrPlayerId)
+        .map((player) => [player.bbrPlayerId!, player]),
+    );
+
+    expect(SCRUB_POOL_BBR_IDS).toHaveLength(SCRUB_POOL_SIZE);
+    for (const bbrPlayerId of SCRUB_POOL_BBR_IDS) {
+      const player = byBbr.get(bbrPlayerId);
+      expect(player).toBeDefined();
+      expect(isScrubPlayer(player!)).toBe(true);
+    }
   });
 
   it("flags scrub tiers on player lookups", () => {
@@ -97,13 +114,35 @@ describe("playerTiers", () => {
   });
 
   it("includes the curated scrub pool members", () => {
-    const ajJohnson = players.find((player) => player.bbrPlayerId === "johnsaj01");
-    const adouThiero = players.find((player) => player.bbrPlayerId === "thierad01");
+    const includedIds = [
+      "johnsaj01",
+      "thierad01",
+      "youngch01",
+      "mcculke01",
+      "barnhbr01",
+      "washity02",
+      "liveris01",
+    ] as const;
+    const excludedIds = [
+      "berinjo01",
+      "essenno01",
+      "holmeda01",
+      "cissosi01",
+      "yangha01",
+    ] as const;
 
-    expect(ajJohnson).toBeDefined();
-    expect(adouThiero).toBeDefined();
-    expect(isScrubPlayer(ajJohnson!)).toBe(true);
-    expect(isScrubPlayer(adouThiero!)).toBe(true);
+    for (const bbrPlayerId of includedIds) {
+      const player = players.find((entry) => entry.bbrPlayerId === bbrPlayerId);
+      expect(player).toBeDefined();
+      expect(isScrubPlayer(player!)).toBe(true);
+    }
+
+    for (const bbrPlayerId of excludedIds) {
+      const player = players.find((entry) => entry.bbrPlayerId === bbrPlayerId);
+      expect(player).toBeDefined();
+      expect(isScrubPlayer(player!)).toBe(false);
+    }
+
     expect(getScrubPlayerIds()).toHaveLength(SCRUB_POOL_SIZE);
   });
 
