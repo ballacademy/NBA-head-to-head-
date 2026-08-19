@@ -4,11 +4,9 @@ import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
 import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
-const unlockedRecord = { wins: 0 };
-
 describe("getActivePlayerPool", () => {
   it("keeps only the best season for a legend on the same franchise", () => {
-    const pool = getActivePlayerPool(unlockedRecord, { allTimeMode: true });
+    const pool = getActivePlayerPool({ allTimeMode: true });
     const hakeemRockets = pool.filter(
       (player) => player.bbrPlayerId === "olajwh01" && player.team === "HOU",
     );
@@ -18,7 +16,7 @@ describe("getActivePlayerPool", () => {
   });
 
   it("uses active stars and legends only in all-time mode", () => {
-    const pool = getActivePlayerPool(unlockedRecord, { allTimeMode: true });
+    const pool = getActivePlayerPool({ allTimeMode: true });
     const activeStarIds = new Set(getActiveStarPlayerIds());
     const nonStarCurrentPlayers = players.filter(
       (player) => !activeStarIds.has(player.id),
@@ -40,7 +38,7 @@ describe("getActivePlayerPool", () => {
   });
 
   it("uses best-season stats for active stars like Kyle Lowry", () => {
-    const pool = getActivePlayerPool(unlockedRecord, { allTimeMode: true });
+    const pool = getActivePlayerPool({ allTimeMode: true });
     const lowry = pool.find((player) => player.bbrPlayerId === "lowryky01");
 
     expect(lowry?.points).toBe(22.4);

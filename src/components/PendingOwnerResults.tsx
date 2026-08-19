@@ -12,11 +12,9 @@ import {
   QUEUED_OWNER_INBOX_COPY,
   type DeliveredOwnerResult,
 } from "../lib/pendingOwnerResults";
-import type { ModePlayerRecords } from "../lib/playerRecord";
 
 interface PendingOwnerResultsProps {
   deliveries: DeliveredOwnerResult[];
-  modeRecords: ModePlayerRecords;
   onDone: () => void;
 }
 
@@ -35,18 +33,13 @@ const modeLabel = (mode: DeliveredOwnerResult["mode"]) =>
 
 function MatchupDetail({
   delivery,
-  modeRecords,
 }: {
   delivery: DeliveredOwnerResult;
-  modeRecords: ModePlayerRecords;
 }) {
   const { result, mode, classic, ranked } = delivery;
-  const allTimeRecord = modeRecords.allTime;
-  const lineup = getPlayersByIdFromActivePool(
-    result.ownerLineup,
-    allTimeRecord,
-    { allTimeMode: false },
-  );
+  const lineup = getPlayersByIdFromActivePool(result.ownerLineup, {
+    allTimeMode: false,
+  });
   const slottedLineup = assignLineupSlots(lineup);
   const ownerWon = result.ownerResult === "win";
   const ownerLost = result.ownerResult === "loss";
@@ -106,7 +99,6 @@ function MatchupDetail({
 
 export function PendingOwnerResults({
   deliveries,
-  modeRecords,
   onDone,
 }: PendingOwnerResultsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -124,7 +116,7 @@ export function PendingOwnerResults({
       )}`}
     >
       {selected ? (
-        <MatchupDetail delivery={selected} modeRecords={modeRecords} />
+        <MatchupDetail delivery={selected} />
       ) : (
         <>
           <div className="panel panel--compact owner-results-inbox__header">

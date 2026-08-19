@@ -534,6 +534,7 @@
   font-size: 0.58rem;
 }
 
+.matchup-compare__breakdown-toggle,
 .matchup-compare__stats-toggle {
   display: inline-flex;
   align-items: center;
@@ -552,6 +553,7 @@
   cursor: pointer;
 }
 
+.matchup-compare__breakdown-toggle span,
 .matchup-compare__stats-toggle span {
   color: var(--muted);
   font-size: 1rem;
@@ -562,8 +564,8 @@
 .matchup-compare__details {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .matchup-compare__details-team {

@@ -2,7 +2,6 @@ import { getActiveStarPlayers } from "./activeStars";
 import { getEraPlayerPool } from "./eraPlayers";
 import { getUnlockedEras } from "./eraUnlocks";
 import { players, playersById } from "./playerPool";
-import type { PlayerRecord } from "./playerRecord";
 import type { Player } from "./types";
 
 export interface PlayerPoolOptions {
@@ -29,7 +28,6 @@ const dedupeEraPlayersByFranchise = (eraPlayers: Player[]) => {
 };
 
 export const getActivePlayerPool = (
-  record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
 ): Player[] => {
   if (!options.allTimeMode) {
@@ -46,11 +44,8 @@ export const getActivePlayerPool = (
   return [...uniqueActiveStars, ...eraPlayers];
 };
 
-export const getActivePlayersById = (
-  record: Pick<PlayerRecord, "wins">,
-  options: PlayerPoolOptions = {},
-) => {
-  const pool = getActivePlayerPool(record, options);
+export const getActivePlayersById = (options: PlayerPoolOptions = {}) => {
+  const pool = getActivePlayerPool(options);
   return new Map<string, Player>(pool.map((player) => [player.id, player]));
 };
 
@@ -69,10 +64,9 @@ const findPlayerByBbrPlayerId = (
 
 export const getPlayerFromActivePool = (
   playerId: string,
-  record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
 ) => {
-  const pool = getActivePlayerPool(record, options);
+  const pool = getActivePlayerPool(options);
   const activeById = new Map(pool.map((player) => [player.id, player]));
   const direct = activeById.get(playerId) ?? playersById.get(playerId);
 
@@ -94,16 +88,14 @@ export const getPlayerFromActivePool = (
 
 export const getPlayersByIdFromActivePool = (
   playerIds: string[],
-  record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
 ) =>
   playerIds
-    .map((id) => getPlayerFromActivePool(id, record, options))
+    .map((id) => getPlayerFromActivePool(id, options))
     .filter((player): player is Player => Boolean(player));
 
 export const isCompleteLineupFromActivePool = (
   playerIds: string[],
-  record: Pick<PlayerRecord, "wins">,
   options: PlayerPoolOptions = {},
 ) => {
   const ids = playerIds.filter((id): id is string => Boolean(id));
@@ -112,5 +104,5 @@ export const isCompleteLineupFromActivePool = (
     return false;
   }
 
-  return ids.every((id) => Boolean(getPlayerFromActivePool(id, record, options)));
+  return ids.every((id) => Boolean(getPlayerFromActivePool(id, options)));
 };
