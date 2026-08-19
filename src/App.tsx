@@ -3056,7 +3056,7 @@ function App() {
           user={user}
           userLineup={userLineup}
           starCount={countUnlockedAllStars(collection)}
-          onDone={() => returnToPlayHub()}
+          onDone={() => returnToPlayHub("headToHead")}
           matchmakingNotice={matchmakingNotice}
         />
       ) : null}
@@ -3169,7 +3169,9 @@ function App() {
             collection={collection}
             onCollectionChange={handleCollectionChange}
             onPlayAgain={replayLastMode}
-            onReturnToMenu={() => returnToPlayHub("chooser")}
+            onReturnToMenu={() =>
+              returnToPlayHub(user.eventId ? "events" : "headToHead")
+            }
             onPostToCommunity={openCommunityCompose}
             onChallengeGm={startPrivateChallenge}
             isMatchmaking={isMatchmakingSearchActive}
