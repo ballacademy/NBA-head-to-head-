@@ -667,7 +667,7 @@
 
 .franchise-home__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 11rem) 1.15rem;
   align-items: baseline;
   gap: 10px;
   width: 100%;

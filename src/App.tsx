@@ -214,7 +214,7 @@ const TierListPage = lazyWithChunkReload(() =>
 );
 
 const FeaturePageFallback = () => (
-  <div className="panel panel--compact feature-page-fallback hub-empty" role="status" aria-live="polite">
+  <div className="feature-page-fallback hub-empty" role="status" aria-live="polite">
     <p>Loading…</p>
   </div>
 );

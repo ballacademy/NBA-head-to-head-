@@ -65,6 +65,7 @@ export function GmProfileModal({
   const { containerRef } = useDialogA11y({
     onClose,
     initialFocusRef: closeRef,
+    lockScroll: true,
   });
   const [loading, setLoading] = useState(fetchRemoteProfile);
   const [seasonUnavailable, setSeasonUnavailable] = useState(false);

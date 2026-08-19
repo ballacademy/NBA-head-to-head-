@@ -118,6 +118,7 @@ export function FranchiseHubPanel({
         <p className="franchise-home__summary">
           {dailyDraft.daysPlayed} day{dailyDraft.daysPlayed === 1 ? "" : "s"} ·
           Basic {dailyDraft.basicStreakLabel} · Adv {dailyDraft.advancedStreakLabel}
+          {showPlayDaily ? "" : " · Done today"}
         </p>
         <p className="franchise-home__meta">
           Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
@@ -162,9 +163,7 @@ export function FranchiseHubPanel({
           >
             Play Daily
           </button>
-        ) : (
-          <p className="franchise-home__meta">{dailyChooserStatus.meta}</p>
-        )}
+        ) : null}
       </section>
 
       <section className="franchise-home__card landing-card" aria-label="Collection">
