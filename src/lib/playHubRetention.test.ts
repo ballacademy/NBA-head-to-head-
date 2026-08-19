@@ -68,7 +68,24 @@ describe("playHubRetention", () => {
     });
     expect(chips[0]).toMatchObject({
       label: "1 result ready",
+      ctaLabel: "Open",
+      detail: "Queued lineup results",
       action: { type: "inbox" },
+    });
+  });
+
+  it("routes queued lineup chips to H2H", () => {
+    const chips = buildPlayHubChips({
+      pendingResultCount: 0,
+      queuedClassic: true,
+      queuedRanked: false,
+      recapReady: false,
+    });
+
+    expect(chips[0]).toMatchObject({
+      id: "inbox",
+      ctaLabel: "H2H",
+      action: { type: "h2h" },
     });
   });
 

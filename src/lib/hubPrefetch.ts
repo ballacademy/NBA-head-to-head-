@@ -51,6 +51,7 @@ export const prefetchFeaturePhase = (phase: string) => {
     case "stats":
     case "achievements":
     case "gmStats":
+    case "gameLog":
     case "weeklyRecap":
       prefetchHubFeatureTab("roster");
       return;

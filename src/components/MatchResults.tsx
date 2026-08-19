@@ -46,6 +46,7 @@ import { ensureClassicProfile } from "../lib/classicProfile";
 import { loadAllTimeProfile } from "../lib/allTimeProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
+import { logLiveMatchGameEntry } from "../lib/matchGameLog";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -122,6 +123,7 @@ export function MatchResults({
   const [matchCollection, setMatchCollection] =
     useState<PlayerCollection>(collection);
   const [actionsReady, setActionsReady] = useState(false);
+  const [ghostSubmitting, setGhostSubmitting] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
   const [rankedOutcome, setRankedOutcome] = useState<RankedMatchOutcome | null>(null);
@@ -223,6 +225,7 @@ export function MatchResults({
         : matchRecordMode === "headToHead"
           ? "classic"
           : null;
+  const competitiveActionsLocked = ghostSubmitting || isMatchmaking;
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -312,6 +315,15 @@ export function MatchResults({
         const next = processMatchUnlock(matchResult, matchId, collection);
         setMatchCollection(next);
         onCollectionChange(next);
+        logLiveMatchGameEntry({
+          matchId,
+          matchRecordMode,
+          matchResult,
+          opponentName: opponent.name,
+          ownerScore: userScore.uncappedTotal,
+          opponentScore: opponentScore.uncappedTotal,
+          isEvent: true,
+        });
         setActionsReady(true);
         return;
       }
@@ -385,6 +397,16 @@ export function MatchResults({
           });
         }
 
+        logLiveMatchGameEntry({
+          matchId,
+          matchRecordMode,
+          matchResult,
+          opponentName: opponent.name,
+          ownerScore: userScore.uncappedTotal,
+          opponentScore: opponentScore.uncappedTotal,
+          bannerDelta: banners?.delta,
+        });
+
         const next = processMatchUnlock(matchResult, matchId, collection);
         setMatchCollection(next);
         onCollectionChange(next);
@@ -434,18 +456,19 @@ export function MatchResults({
           ),
         };
         ghostOutcomeSubmissionRef.current = submission;
+        setActionsReady(true);
+        setGhostSubmitting(true);
 
         void submitGhostMatchOutcome(submission).then((ok) => {
+          setGhostSubmitting(false);
           if (!ok) {
             setGhostOutcomeFailed(true);
-            setActionsReady(true);
             return;
           }
 
           // Only count the match locally after the owner result is persisted.
           applyLocalCompetitiveOutcome();
           storeChallengerLineup();
-          setActionsReady(true);
         });
         return;
       }
@@ -851,6 +874,11 @@ export function MatchResults({
 
       {actionsReady ? (
         <div className="panel panel--compact match-results__actions">
+          {ghostSubmitting ? (
+            <p className="match-results__matchmaking-notice" role="status">
+              Reporting result to the queued owner…
+            </p>
+          ) : null}
           {matchmakingNotice ? (
             <p className="match-results__matchmaking-notice" role="status">
               {matchmakingNotice}
@@ -894,7 +922,7 @@ export function MatchResults({
                   id: "share",
                   label: shareButtonLabel,
                   busyLabel: "Sharing…",
-                  disabled: isMatchmaking,
+                  disabled: competitiveActionsLocked,
                   busy: shareState === "busy",
                   onClick: () => void handleShareLineup(),
                 },
@@ -903,7 +931,7 @@ export function MatchResults({
                       {
                         id: "community",
                         label: "Post to Community",
-                        disabled: isMatchmaking,
+                        disabled: competitiveActionsLocked,
                         onClick: onPostToCommunity,
                       },
                     ]
@@ -911,7 +939,7 @@ export function MatchResults({
                 {
                   id: "home",
                   label: "Back to Play",
-                  disabled: isMatchmaking,
+                  disabled: competitiveActionsLocked,
                   onClick: onReturnToMenu,
                 },
               ]}
@@ -921,7 +949,7 @@ export function MatchResults({
               primary={{
                 id: "play-again",
                 label: playAgainLabel,
-                disabled: isMatchmaking,
+                disabled: competitiveActionsLocked,
                 onClick: () => {
                   void onPlayAgain();
                 },
@@ -931,7 +959,7 @@ export function MatchResults({
                   id: "share",
                   label: shareButtonLabel,
                   busyLabel: "Sharing…",
-                  disabled: isMatchmaking,
+                  disabled: competitiveActionsLocked,
                   busy: shareState === "busy",
                   onClick: () => void handleShareLineup(),
                 },
@@ -940,7 +968,7 @@ export function MatchResults({
                       {
                         id: "community",
                         label: "Post to Community",
-                        disabled: isMatchmaking,
+                        disabled: competitiveActionsLocked,
                         onClick: onPostToCommunity,
                       },
                     ]
@@ -954,7 +982,7 @@ export function MatchResults({
                       {
                         id: "challenge",
                         label: "Challenge this GM",
-                        disabled: isMatchmaking,
+                        disabled: competitiveActionsLocked,
                         onClick: () => onChallengeGm(opponentProfileMode),
                       },
                     ]
@@ -962,7 +990,7 @@ export function MatchResults({
                 {
                   id: "home",
                   label: "Back to Play",
-                  disabled: isMatchmaking,
+                  disabled: competitiveActionsLocked,
                   onClick: onReturnToMenu,
                 },
               ]}

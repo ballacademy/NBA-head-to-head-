@@ -194,7 +194,8 @@ export function BetaNotesPage({
               </li>
               <li>
                 <strong>All-Time Draft</strong> — peak seasons and era legends.
-                Unlock after 50 career wins or 1,000 All-Time Banners.
+                Coming soon; not tied to career wins or banner totals in the
+                current beta.
               </li>
               <li>
                 <strong>Stored lineup results</strong> — when someone drafts
