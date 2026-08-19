@@ -22,8 +22,8 @@ interface GmProfileModalProps {
   name: string;
   publicTag: string;
   username?: string;
-  wins: number;
-  losses: number;
+  wins?: number;
+  losses?: number;
   winStreak?: number;
   lossStreak?: number;
   elo?: number;
@@ -70,12 +70,13 @@ export function GmProfileModal({
     lockScroll: true,
   });
   const [loading, setLoading] = useState(fetchRemoteProfile);
+  const [profileResolved, setProfileResolved] = useState(!fetchRemoteProfile);
   const [seasonUnavailable, setSeasonUnavailable] = useState(false);
   const [displayName, setDisplayName] = useState(name);
   const [displayTag, setDisplayTag] = useState(publicTag);
   const [displayUsername, setDisplayUsername] = useState(username);
-  const [displayWins, setDisplayWins] = useState(wins);
-  const [displayLosses, setDisplayLosses] = useState(losses);
+  const [displayWins, setDisplayWins] = useState(wins ?? 0);
+  const [displayLosses, setDisplayLosses] = useState(losses ?? 0);
   const [displayWinStreak, setDisplayWinStreak] = useState(winStreak);
   const [displayLossStreak, setDisplayLossStreak] = useState(lossStreak);
   const [legacyPeakElo, setLegacyPeakElo] = useState<number | null>(elo ?? null);
@@ -91,16 +92,30 @@ export function GmProfileModal({
     setDisplayName(name);
     setDisplayTag(publicTag);
     setDisplayUsername(username);
-    setDisplayWins(wins);
-    setDisplayLosses(losses);
-    setDisplayWinStreak(winStreak);
-    setDisplayLossStreak(lossStreak);
-    setCurrentSeasonElo(elo ?? null);
-  }, [name, publicTag, username, wins, losses, winStreak, lossStreak, elo]);
+    if (!fetchRemoteProfile || profileResolved) {
+      setDisplayWins(wins ?? 0);
+      setDisplayLosses(losses ?? 0);
+      setDisplayWinStreak(winStreak);
+      setDisplayLossStreak(lossStreak);
+      setCurrentSeasonElo(elo ?? null);
+    }
+  }, [
+    name,
+    publicTag,
+    username,
+    wins,
+    losses,
+    winStreak,
+    lossStreak,
+    elo,
+    fetchRemoteProfile,
+    profileResolved,
+  ]);
 
   useEffect(() => {
     if (!fetchRemoteProfile) {
       setLoading(false);
+      setProfileResolved(true);
       setSeasonUnavailable(false);
       return;
     }
@@ -109,6 +124,7 @@ export function GmProfileModal({
 
     const load = async () => {
       setLoading(true);
+      setProfileResolved(false);
       setSeasonUnavailable(false);
       const profile = await fetchRemotePlayerProfile({
         playerId,
@@ -123,6 +139,7 @@ export function GmProfileModal({
       if (!profile) {
         setSeasonUnavailable(true);
         setLoading(false);
+        setProfileResolved(true);
         return;
       }
 
@@ -155,6 +172,7 @@ export function GmProfileModal({
       }
 
       setLoading(false);
+      setProfileResolved(true);
     };
 
     void load();
@@ -175,8 +193,9 @@ export function GmProfileModal({
   const showWinBadge = hasFireStreak(displayWinStreak);
   const showLossBadge =
     !showWinBadge && hasLossStreakBadge(displayLossStreak);
+  const statsPending = fetchRemoteProfile && !profileResolved;
 
-  const monthRecordLabel = loading
+  const monthRecordLabel = statsPending
     ? "Loading..."
     : seasonUnavailable
       ? "Stats unavailable"
@@ -190,7 +209,7 @@ export function GmProfileModal({
             losses: displayLosses,
           });
 
-  const streakLabel = loading ? (
+  const streakLabel = statsPending ? (
     "Loading..."
   ) : seasonUnavailable ? (
     "Stats unavailable"
@@ -233,7 +252,7 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Best monthly finish</span>
             <strong className="gm-profile-modal__value">
-              {loading
+              {statsPending
                 ? "Loading..."
                 : seasonUnavailable && !legacyBestRank
                   ? "Stats unavailable"
@@ -246,13 +265,13 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Most banners ever</span>
             <strong className="gm-profile-modal__value">
-              {loading
+              {statsPending
                 ? "Loading..."
                 : seasonUnavailable && legacyPeakElo == null
                   ? "Stats unavailable"
                   : formatLegacyPeakBannerCount(legacyPeakElo)}
             </strong>
-            {!loading &&
+            {!statsPending &&
             !seasonUnavailable &&
             formatLegacyPeakBannerTier(legacyPeakElo) ? (
               <span className="gm-profile-modal__meta">
@@ -266,7 +285,7 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">This month</span>
             <strong>{monthRecordLabel}</strong>
-            {!loading &&
+            {!statsPending &&
             !seasonUnavailable &&
             typeof currentSeasonElo === "number" ? (
               <RankedTierBadge

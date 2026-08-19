@@ -705,8 +705,6 @@ export function MatchResults({
           name={opponent.name}
           publicTag={derivePublicTag(opponentProfileId)}
           username={opponent.username}
-          wins={0}
-          losses={0}
           elo={opponent.rankedOpponentElo ?? opponent.classicOpponentElo}
           profileMode={opponentProfileMode}
           onClose={() => setOpponentProfileOpen(false)}

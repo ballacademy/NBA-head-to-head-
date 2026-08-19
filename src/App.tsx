@@ -2754,7 +2754,7 @@ function App() {
 
   if (phase === "leaderboard") {
     return renderHubFeature(
-      <LeaderboardPage onChallengeGm={startPrivateChallenge} />,
+      <LeaderboardPage onBack={exitFeaturePage} onChallengeGm={startPrivateChallenge} />,
     );
   }
 
