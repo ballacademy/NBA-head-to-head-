@@ -3,24 +3,18 @@ import { getActivePlayerPool } from "./activePlayerPool";
 import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
 import {
   ALL_ERA_IDS,
-  ALL_TIME_BANNER_UNLOCK_THRESHOLD,
-  ALL_TIME_LEGENDS_TESTING_UNLOCK,
   ALL_TIME_MODE_PLAYABLE,
-  ALL_TIME_WIN_THRESHOLD,
-  areLegendsUnlocked,
-  getAllTimeWinsRemaining,
   getUnlockedEras,
   isAllTimeModePlayable,
-  isAllTimeModeUnlocked,
 } from "./eraUnlocks";
 import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
 describe("all-time mode availability", () => {
-  it("exposes all-time mode on production after launch", () => {
-    expect(ALL_TIME_MODE_PLAYABLE).toBe(true);
-    expect(isAllTimeModePlayable("www.draftdaygm.com")).toBe(true);
-    expect(isAllTimeModePlayable("")).toBe(true);
+  it("keeps all-time mode behind a date gate on production until launched", () => {
+    expect(ALL_TIME_MODE_PLAYABLE).toBe(false);
+    expect(isAllTimeModePlayable("www.draftdaygm.com")).toBe(false);
+    expect(isAllTimeModePlayable("")).toBe(false);
   });
 
   it("exposes all-time mode on QA and local hosts", () => {
@@ -38,9 +32,14 @@ describe("active player pool", () => {
     );
   });
 
-  it("adds active stars and legend pools in all-time mode when unlocked", () => {
+  it("unlocks all eras when in all-time mode (no per-player threshold)", () => {
+    expect(getUnlockedEras()).toEqual(ALL_ERA_IDS);
+    expect(getUnlockedEras()).toHaveLength(5);
+  });
+
+  it("adds active stars and legend pools in all-time mode", () => {
     const allTimePool = getActivePlayerPool(
-      { wins: ALL_TIME_WIN_THRESHOLD },
+      { wins: 0 },
       { allTimeMode: true },
     );
     const activeStarIds = new Set(getActiveStarPlayerIds());
@@ -68,63 +67,21 @@ describe("active player pool", () => {
     );
   });
 
-  it("unlocks every legend era together at the win threshold", () => {
-    if (ALL_TIME_LEGENDS_TESTING_UNLOCK) {
-      expect(getUnlockedEras({ wins: 0 })).toEqual(ALL_ERA_IDS);
-      return;
-    }
+  it("keeps only the best season for a legend on the same franchise", () => {
+    const pool = getActivePlayerPool({ wins: 0 }, { allTimeMode: true });
+    const hakeemRockets = pool.filter(
+      (player) => player.bbrPlayerId === "olajwh01" && player.team === "HOU",
+    );
 
-    expect(getUnlockedEras({ wins: 49 })).toEqual([]);
-    expect(getUnlockedEras({ wins: 50 })).toEqual(ALL_ERA_IDS);
+    expect(hakeemRockets).toHaveLength(1);
+    expect(hakeemRockets[0]?.points).toBe(27.8);
   });
 
-  it("unlocks legends via All-Time peak banners without 50 wins", () => {
-    if (ALL_TIME_LEGENDS_TESTING_UNLOCK) {
-      return;
-    }
+  it("uses best-season stats for active stars like Kyle Lowry", () => {
+    const pool = getActivePlayerPool({ wins: 0 }, { allTimeMode: true });
+    const lowry = pool.find((player) => player.bbrPlayerId === "lowryky01");
 
-    expect(
-      areLegendsUnlocked(
-        { wins: 0 },
-        { peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD - 1 },
-      ),
-    ).toBe(false);
-    expect(
-      areLegendsUnlocked(
-        { wins: 0 },
-        { peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD },
-      ),
-    ).toBe(true);
-    expect(
-      getActivePlayerPool(
-        { wins: 0 },
-        {
-          allTimeMode: true,
-          peakBanners: ALL_TIME_BANNER_UNLOCK_THRESHOLD,
-        },
-      ).some((player) => player.name === "Michael Jordan"),
-    ).toBe(true);
-  });
-
-  it("unlocks all-time mode at 50 wins", () => {
-    if (ALL_TIME_LEGENDS_TESTING_UNLOCK) {
-      expect(isAllTimeModeUnlocked({ wins: 0 })).toBe(true);
-      return;
-    }
-
-    expect(isAllTimeModeUnlocked({ wins: 49 })).toBe(false);
-    expect(isAllTimeModeUnlocked({ wins: 50 })).toBe(true);
-  });
-
-  it("reports wins remaining until legends unlock", () => {
-    if (ALL_TIME_LEGENDS_TESTING_UNLOCK) {
-      expect(getAllTimeWinsRemaining({ wins: 0 })).toBe(
-        ALL_TIME_WIN_THRESHOLD,
-      );
-      return;
-    }
-
-    expect(getAllTimeWinsRemaining({ wins: 42 })).toBe(8);
-    expect(getAllTimeWinsRemaining({ wins: 50 })).toBe(0);
+    expect(lowry?.points).toBe(22.4);
+    expect(lowry?.minutes).toBe(37.4);
   });
 });

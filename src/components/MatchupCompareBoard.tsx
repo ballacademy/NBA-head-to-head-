@@ -304,6 +304,11 @@ export function MatchupCompareBoard({
         ))}
       </div>
 
+      <div className="matchup-compare__details">
+        <TeamDetails lineup={userLineup} score={userScore} />
+        <TeamDetails lineup={opponentLineup} score={opponentScore} />
+      </div>
+
       <button
         type="button"
         className="matchup-compare__stats-toggle"
@@ -314,13 +319,6 @@ export function MatchupCompareBoard({
         {statsOpen ? "Hide player stats" : "Show player stats"}
         <span aria-hidden="true">{statsOpen ? "−" : "+"}</span>
       </button>
-
-      {statsOpen ? (
-        <div className="matchup-compare__details">
-          <TeamDetails lineup={userLineup} score={userScore} />
-          <TeamDetails lineup={opponentLineup} score={opponentScore} />
-        </div>
-      ) : null}
     </div>
   );
 }

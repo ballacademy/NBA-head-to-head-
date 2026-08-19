@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getActivePlayerPool } from "./activePlayerPool";
 import { ACTIVE_STAR_COUNT, getActiveStarPlayerIds } from "./activeStars";
-import { ALL_TIME_WIN_THRESHOLD } from "./eraUnlocks";
 import { getLegendPlayerCount } from "./eraPlayers";
 import { players } from "./playerPool";
 
-const unlockedRecord = { wins: ALL_TIME_WIN_THRESHOLD };
+const unlockedRecord = { wins: 0 };
 
 describe("getActivePlayerPool", () => {
   it("keeps only the best season for a legend on the same franchise", () => {
