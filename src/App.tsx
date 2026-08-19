@@ -796,8 +796,8 @@ function App() {
   }, [phase]);
 
   const activePlayers = useMemo(
-    () => getActivePlayerPool(modeRecords.allTime, { allTimeMode }),
-    [allTimeMode, modeRecords.allTime],
+    () => getActivePlayerPool({ allTimeMode }),
+    [allTimeMode],
   );
 
   const eventRestriction = user?.eventRestriction;
@@ -947,24 +947,17 @@ function App() {
   const opponentLineupIds = (opponent?.lineup ?? []).filter(
     (playerId): playerId is string => Boolean(playerId),
   );
-  const userLineup = getPlayersByIdFromActivePool(
-    userLineupIds,
-    modeRecords.allTime,
-    { allTimeMode },
-  );
-  const opponentLineup = getPlayersByIdFromActivePool(
-    opponentLineupIds,
-    modeRecords.allTime,
-    { allTimeMode },
-  );
-  const userLineupComplete = isCompleteLineupFromActivePool(
-    userLineupIds,
-    modeRecords.allTime,
-    { allTimeMode },
-  );
+  const userLineup = getPlayersByIdFromActivePool(userLineupIds, {
+    allTimeMode,
+  });
+  const opponentLineup = getPlayersByIdFromActivePool(opponentLineupIds, {
+    allTimeMode,
+  });
+  const userLineupComplete = isCompleteLineupFromActivePool(userLineupIds, {
+    allTimeMode,
+  });
   const opponentLineupComplete = isCompleteLineupFromActivePool(
     opponentLineupIds,
-    modeRecords.allTime,
     { allTimeMode },
   );
   const userDraftComplete =
@@ -1039,7 +1032,7 @@ function App() {
       return "failed";
     }
 
-    const pool = getActivePlayerPool(loadPlayerRecord("allTime"), {
+    const pool = getActivePlayerPool({
       allTimeMode: nextAllTimeMode,
     });
     let salaryCapLimit =
@@ -1651,7 +1644,7 @@ function App() {
       const yesterdayKey = setup.dateKey;
       const playerId = getOrCreatePlayerIdentity().playerId;
       await refreshCanonicalDailyGoalData(yesterdayKey, playerId, mode);
-      const pool = getActivePlayerPool(modeRecords.allTime, { allTimeMode: false });
+      const pool = getActivePlayerPool({ allTimeMode: false });
       const bestLineup = solveBestDailyDraftLineup(
         pool,
         setup.slots,
@@ -2875,7 +2868,6 @@ function App() {
         >
           <PendingOwnerResults
             deliveries={deliveredOwnerResults}
-            modeRecords={modeRecords}
             onDone={() => {
               const playerId = getOrCreatePlayerIdentity().playerId;
               const toFinalize = deliveredOwnerResults;

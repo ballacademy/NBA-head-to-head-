@@ -258,7 +258,9 @@ export function MatchupCompareBoard({
   onOpponentNameClick,
 }: MatchupCompareBoardProps) {
   const [statsOpen, setStatsOpen] = useState(false);
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
   const statsId = useId();
+  const breakdownId = useId();
   const pairs = pairLineupsByPosition(userLineup, opponentLineup);
 
   return (
@@ -304,10 +306,23 @@ export function MatchupCompareBoard({
         ))}
       </div>
 
-      <div className="matchup-compare__details">
-        <TeamDetails lineup={userLineup} score={userScore} />
-        <TeamDetails lineup={opponentLineup} score={opponentScore} />
-      </div>
+      <button
+        type="button"
+        className="matchup-compare__breakdown-toggle"
+        aria-expanded={breakdownOpen}
+        aria-controls={breakdownId}
+        onClick={() => setBreakdownOpen((open) => !open)}
+      >
+        {breakdownOpen ? "Hide lineup breakdown" : "Lineup breakdown"}
+        <span aria-hidden="true">{breakdownOpen ? "−" : "+"}</span>
+      </button>
+
+      {breakdownOpen ? (
+        <div id={breakdownId} className="matchup-compare__details">
+          <TeamDetails lineup={userLineup} score={userScore} />
+          <TeamDetails lineup={opponentLineup} score={opponentScore} />
+        </div>
+      ) : null}
 
       <button
         type="button"

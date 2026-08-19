@@ -13,7 +13,7 @@ describe("dailyDraftPreview", () => {
   it(
     "returns yesterday's best formatted result",
     () => {
-      const preview = getYesterdayDailyBestPreview(getDailyDateKey(), { wins: 0 });
+      const preview = getYesterdayDailyBestPreview(getDailyDateKey());
 
       expect(preview).not.toBeNull();
       expect(preview?.formattedResult.length).toBeGreaterThan(0);
@@ -28,16 +28,14 @@ describe("dailyDraftPreview", () => {
       const todayDateKey = getDailyDateKey();
       const yesterdayKey = subtractDaysFromDateKey(todayDateKey, 1);
       const setup = getCanonicalDailyDraftSetup(yesterdayKey);
-      const pool = getActivePlayerPool({ wins: 0 }, {
-        allTimeMode: false,
-      });
+      const pool = getActivePlayerPool({ allTimeMode: false });
       const bestLineup = solveBestDailyDraftLineup(
         pool,
         setup.slots,
         setup.goal,
         yesterdayKey,
       );
-      const preview = getYesterdayDailyBestPreview(todayDateKey, { wins: 0 });
+      const preview = getYesterdayDailyBestPreview(todayDateKey);
 
       expect(preview?.title).toBe(setup.goal.title);
       expect(preview?.formattedResult).toBe(
