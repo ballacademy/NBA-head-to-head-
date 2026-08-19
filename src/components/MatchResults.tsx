@@ -761,13 +761,6 @@ export function MatchResults({
                 {formatLineupOvrDisplay(userScore)}–{formatLineupOvrDisplay(opponentScore)}
               </span>
             </li>
-            <li className="matchup-panel__fact">
-              <span className="matchup-panel__fact-label">Proj</span>
-              <span className="matchup-panel__fact-value">
-                {formatProjectedSeasonRecord(userScore.projectedRecord)}–
-                {formatProjectedSeasonRecord(opponentScore.projectedRecord)}
-              </span>
-            </li>
             {competitiveOutcome ? (
               <li className="matchup-panel__fact">
                 <span className="matchup-panel__fact-label">Rating</span>
@@ -788,7 +781,7 @@ export function MatchResults({
             ) : null}
             {confirmedLeaderboardRank != null && confirmedLeaderboardRank > 0 ? (
               <li className="matchup-panel__fact">
-                <span className="matchup-panel__fact-label">Board</span>
+                <span className="matchup-panel__fact-label">Rank</span>
                 <span className="matchup-panel__fact-value">
                   #{confirmedLeaderboardRank}
                 </span>

@@ -1,5 +1,4 @@
 import { getActiveStarPlayers } from "./activeStars";
-import { loadAllTimeProfile } from "./allTimeProfile";
 import { getEraPlayerPool } from "./eraPlayers";
 import { getUnlockedEras } from "./eraUnlocks";
 import { players, playersById } from "./playerPool";
@@ -8,8 +7,6 @@ import type { Player } from "./types";
 
 export interface PlayerPoolOptions {
   allTimeMode?: boolean;
-  /** Override All-Time peak banners used for legends unlock. */
-  peakBanners?: number;
 }
 
 const dedupeEraPlayersByFranchise = (eraPlayers: Player[]) => {
@@ -39,10 +36,8 @@ export const getActivePlayerPool = (
     return players;
   }
 
-  const peakBanners =
-    options.peakBanners ?? loadAllTimeProfile().peakElo;
   const eraPlayers = dedupeEraPlayersByFranchise(
-    getEraPlayerPool(getUnlockedEras(record, { peakBanners })),
+    getEraPlayerPool(getUnlockedEras()),
   );
   const activeStars = getActiveStarPlayers();
   const eraIds = new Set(eraPlayers.map((player) => player.id));
@@ -56,7 +51,7 @@ export const getActivePlayersById = (
   options: PlayerPoolOptions = {},
 ) => {
   const pool = getActivePlayerPool(record, options);
-  return new Map(pool.map((player) => [player.id, player]));
+  return new Map<string, Player>(pool.map((player) => [player.id, player]));
 };
 
 const findPlayerByBbrPlayerId = (
