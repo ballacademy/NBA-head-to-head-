@@ -6,13 +6,13 @@ import {
 } from "./landingDailyDraft";
 
 describe("formatDailyDraftChooserStatus", () => {
-  it("shows Daily is up when neither mode is done", () => {
+  it("shows ready today when neither mode is done", () => {
     expect(
       formatDailyDraftChooserStatus({ basicDone: false, advancedDone: false }),
     ).toEqual({
-      meta: "Daily's up · Basic & Advanced",
+      meta: "Ready today · Basic & Advanced",
       tag: "open",
-      tagLabel: "Up",
+      tagLabel: "Open",
     });
   });
 
@@ -70,7 +70,7 @@ describe("formatDailyDraftChooserStatus", () => {
     ).toBe(false);
   });
 
-  it("labels the Franchise Daily CTA as up, finish, or hidden", () => {
+  it("labels the Franchise Daily CTA as play, finish, or hidden", () => {
     expect(
       formatFranchiseDailyPlayCta(
         formatDailyDraftChooserStatus({
@@ -78,7 +78,7 @@ describe("formatDailyDraftChooserStatus", () => {
           advancedDone: false,
         }),
       ),
-    ).toBe("Daily's up");
+    ).toBe("Play Daily");
     expect(
       formatFranchiseDailyPlayCta(
         formatDailyDraftChooserStatus({

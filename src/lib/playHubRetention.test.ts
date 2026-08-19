@@ -116,7 +116,7 @@ describe("playHubRetention", () => {
     expect(chips[0]?.action).toEqual({ type: "play", playSection: "daily" });
   });
 
-  it("surfaces a Daily's up chip and hides the streak while Daily is unfinished", () => {
+  it("surfaces a Daily ready chip and hides the streak while Daily is unfinished", () => {
     const chips = buildPlayHubChips({
       pendingResultCount: 0,
       queuedClassic: false,
@@ -124,13 +124,13 @@ describe("playHubRetention", () => {
       recapReady: false,
       dailyStreakLabel: "Basic 3-day streak",
       dailyOpen: true,
-      dailyOpenDetail: "Daily's up · Basic & Advanced",
+      dailyOpenDetail: "Ready today · Basic & Advanced",
     });
 
     expect(chips.map((chip) => chip.id)).toEqual(["daily"]);
     expect(chips[0]).toMatchObject({
-      label: "Daily's up",
-      detail: "Daily's up · Basic & Advanced",
+      label: "Daily ready",
+      detail: "Ready today · Basic & Advanced",
       ctaLabel: "Play",
       action: { type: "play", playSection: "daily" },
     });
