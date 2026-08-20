@@ -640,7 +640,7 @@ describe("restorePlayerIdentityFromLogin", () => {
             winStreak: 2,
             lossStreak: 0,
             elo: 1032,
-            badges: [] as const,
+            badges: [],
           },
         },
       };
