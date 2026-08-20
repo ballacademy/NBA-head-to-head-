@@ -1,33 +1,20 @@
 import { readJson, writeJson } from "./browserStorage";
 import { getOrCreatePlayerId, type HeadToHeadResult } from "./playerRecord";
+import type {
+  NbaPlayerModeUsage,
+  NbaPlayerUsageMode,
+  NbaPlayerUsageStore,
+} from "./nbaPlayerUsageShared";
+import {
+  MAX_NBA_PLAYER_USAGE_RECORDED_KEYS,
+  normalizeNbaPlayerUsageStore,
+} from "./nbaPlayerUsageShared";
+
+export type { NbaPlayerModeUsage, NbaPlayerUsageMode, NbaPlayerUsageStore };
 
 const USAGE_KEY = "nba-head-to-head-nba-player-usage";
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
-const MAX_RECORDED_KEYS = 200;
-
-export type NbaPlayerUsageMode =
-  | "daily"
-  | "headToHead"
-  | "ranked"
-  | "allTime"
-  | "event";
-
-export interface NbaPlayerModeUsage {
-  drafts: number;
-  wins: number;
-  losses: number;
-  ties: number;
-}
-
-export interface NbaPlayerUsageStore {
-  version: 1;
-  byPlayerId: Record<string, Partial<Record<NbaPlayerUsageMode, NbaPlayerModeUsage>>>;
-  /** Match / daily attempt keys already applied (dedupe). */
-  recordedKeys: string[];
-  dailyBackfillDone?: boolean;
-  /** Last lineup attributed per daily record key (canonical replace). */
-  dailyLineups?: Record<string, string[]>;
-}
+const MAX_RECORDED_KEYS = MAX_NBA_PLAYER_USAGE_RECORDED_KEYS;
 
 export interface NbaPlayerUsageRow {
   playerId: string;
@@ -46,28 +33,6 @@ const emptyMode = (): NbaPlayerModeUsage => ({
   ties: 0,
 });
 
-const emptyStore = (): NbaPlayerUsageStore => ({
-  version: 1,
-  byPlayerId: {},
-  recordedKeys: [],
-  dailyBackfillDone: false,
-  dailyLineups: {},
-});
-
-const sanitizeMode = (value: unknown): NbaPlayerModeUsage => {
-  if (!value || typeof value !== "object") {
-    return emptyMode();
-  }
-
-  const row = value as Partial<NbaPlayerModeUsage>;
-  return {
-    drafts: Math.max(0, Math.floor(Number(row.drafts) || 0)),
-    wins: Math.max(0, Math.floor(Number(row.wins) || 0)),
-    losses: Math.max(0, Math.floor(Number(row.losses) || 0)),
-    ties: Math.max(0, Math.floor(Number(row.ties) || 0)),
-  };
-};
-
 const uniquePlayerIds = (playerIds: string[]) =>
   [...new Set(playerIds.filter((id) => typeof id === "string" && id.length > 0))];
 
@@ -81,54 +46,13 @@ const sameIdSet = (left: string[], right: string[]) => {
 
 export const loadNbaPlayerUsageStore = (): NbaPlayerUsageStore => {
   const saved = readJson<Partial<NbaPlayerUsageStore>>(USAGE_KEY);
-  if (!saved || saved.version !== 1 || typeof saved.byPlayerId !== "object") {
-    return emptyStore();
-  }
+  return normalizeNbaPlayerUsageStore(saved);
+};
 
-  const byPlayerId: NbaPlayerUsageStore["byPlayerId"] = {};
-  for (const [playerId, modes] of Object.entries(saved.byPlayerId ?? {})) {
-    if (!playerId || !modes || typeof modes !== "object") {
-      continue;
-    }
-    const nextModes: Partial<Record<NbaPlayerUsageMode, NbaPlayerModeUsage>> = {};
-    for (const mode of [
-      "daily",
-      "headToHead",
-      "ranked",
-      "allTime",
-      "event",
-    ] as const) {
-      if (modes[mode]) {
-        nextModes[mode] = sanitizeMode(modes[mode]);
-      }
-    }
-    if (Object.keys(nextModes).length > 0) {
-      byPlayerId[playerId] = nextModes;
-    }
-  }
-
-  const recordedKeys = Array.isArray(saved.recordedKeys)
-    ? saved.recordedKeys.filter(
-        (key): key is string => typeof key === "string" && key.length > 0,
-      )
-    : [];
-
-  const dailyLineups: Record<string, string[]> = {};
-  if (saved.dailyLineups && typeof saved.dailyLineups === "object") {
-    for (const [key, lineup] of Object.entries(saved.dailyLineups)) {
-      if (typeof key === "string" && Array.isArray(lineup)) {
-        dailyLineups[key] = uniquePlayerIds(lineup);
-      }
-    }
-  }
-
-  return {
-    version: 1,
-    byPlayerId,
-    recordedKeys,
-    dailyBackfillDone: Boolean(saved.dailyBackfillDone),
-    dailyLineups,
-  };
+const pushUsageIfLinked = () => {
+  void import("./nbaPlayerUsageRemote")
+    .then(({ pushNbaPlayerUsageIfLinked }) => pushNbaPlayerUsageIfLinked())
+    .catch(() => undefined);
 };
 
 export const saveNbaPlayerUsageStore = (store: NbaPlayerUsageStore) => {
@@ -201,6 +125,7 @@ export const recordNbaPlayerMatchUsage = (params: {
   }
   rememberKey(store, params.recordKey);
   saveNbaPlayerUsageStore(store);
+  pushUsageIfLinked();
   return true;
 };
 
@@ -240,6 +165,7 @@ export const recordNbaPlayerDailyDraftUsage = (params: {
   };
   rememberKey(store, params.recordKey);
   saveNbaPlayerUsageStore(store);
+  pushUsageIfLinked();
   return true;
 };
 
@@ -315,6 +241,9 @@ export const backfillNbaPlayerUsageFromDailyScores = (
 
   store.dailyBackfillDone = true;
   saveNbaPlayerUsageStore(store);
+  if (applied > 0) {
+    pushUsageIfLinked();
+  }
   return applied;
 };
 
