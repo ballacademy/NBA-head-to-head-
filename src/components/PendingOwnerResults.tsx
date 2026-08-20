@@ -5,6 +5,7 @@ import { getPlayersByIdFromActivePool } from "../lib/activePlayerPool";
 import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
 import { RankedTierBadge } from "./RankedTierBadge";
 import { PlayerStatLine } from "./PlayerStatLine";
+import { HubPageChrome } from "./HubPageChrome";
 import { matchModeThemeClass } from "../lib/matchModeTheme";
 import { shortLabelForH2hMode } from "../lib/modeCopy";
 import {
@@ -31,6 +32,16 @@ const outcomeLabel = (result: DeliveredOwnerResult["result"]["ownerResult"]) => 
 const modeLabel = (mode: DeliveredOwnerResult["mode"]) =>
   shortLabelForH2hMode(mode);
 
+const detailTitle = (result: DeliveredOwnerResult["result"]["ownerResult"]) => {
+  if (result === "win") {
+    return "Queued lineup won";
+  }
+  if (result === "loss") {
+    return "Queued lineup lost";
+  }
+  return "Queued lineup tied";
+};
+
 function MatchupDetail({
   delivery,
 }: {
@@ -41,48 +52,44 @@ function MatchupDetail({
     allTimeMode: false,
   });
   const slottedLineup = assignLineupSlots(lineup);
-  const ownerWon = result.ownerResult === "win";
-  const ownerLost = result.ownerResult === "loss";
   const outcome = mode === "ranked" ? ranked : classic;
+  const margin = Math.abs(result.ownerScore - result.opponentScore);
 
   return (
     <>
-      <div className="panel panel--compact owner-results-inbox__header">
-        <p className="eyebrow">Queued result · {modeLabel(mode)}</p>
-        <h2>
-          {ownerWon
-            ? "Your queued lineup won"
-            : ownerLost
-              ? "Your queued lineup lost"
-              : "Your queued lineup tied"}
-        </h2>
+      <div className="panel panel--compact owner-results-inbox__summary">
         <p>
-          {result.opponentTeamName} drafted against your saved five while you were
-          away.
+          {result.opponentTeamName} drafted against your saved five while you
+          were away.
         </p>
-        <p>{QUEUED_OWNER_DETAIL_COPY}</p>
-        <p>
-          Margin{" "}
-          {Math.abs(result.ownerScore - result.opponentScore).toFixed(1)} • OVR{" "}
-          {formatPersistedUncappedOvr(result.ownerScore)} vs{" "}
-          {formatPersistedUncappedOvr(result.opponentScore)}
+        <p className="owner-results-inbox__scoreline">
+          <span>
+            {formatPersistedUncappedOvr(result.ownerScore)}–
+            {formatPersistedUncappedOvr(result.opponentScore)} OVR
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>Margin {margin.toFixed(1)}</span>
           {outcome ? (
             <>
-              {" "}
-              • {formatRatingDelta(outcome.delta)} ({formatRatingPoints(outcome.elo)})
+              <span aria-hidden="true">·</span>
+              <span>
+                {formatRatingDelta(outcome.delta)} (
+                {formatRatingPoints(outcome.elo)})
+              </span>
             </>
           ) : null}
         </p>
         {outcome ? (
           <RankedTierBadge tierLabel={outcome.tierLabel} elo={outcome.elo} />
         ) : null}
-        <p className="matchup-panel__ranked-note">
+        <p className="owner-results-inbox__note">{QUEUED_OWNER_DETAIL_COPY}</p>
+        <p className="owner-results-inbox__note">
           Matched vs {formatRatingPoints(result.opponentElo)} opponent
         </p>
       </div>
 
       <section className="panel panel--compact owner-results-inbox__lineup">
-        <h3>Your queued lineup</h3>
+        <h2 className="owner-results-inbox__section-title">Your queued lineup</h2>
         <div className="team-lineup-card__players">
           {slottedLineup.map(({ player, slot }) => (
             <PlayerStatLine
@@ -102,36 +109,41 @@ export function PendingOwnerResults({
   onDone,
 }: PendingOwnerResultsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = deliveries.find((delivery) => delivery.result.id === selectedId);
+  const selected = deliveries.find(
+    (delivery) => delivery.result.id === selectedId,
+  );
   const count = deliveries.length;
-  const themeMode =
-    deliveries.every((delivery) => delivery.mode === "ranked")
-      ? "ranked"
-      : "head-to-head";
+  const themeMode = deliveries.every((delivery) => delivery.mode === "ranked")
+    ? "ranked"
+    : "head-to-head";
+
+  const title = selected
+    ? detailTitle(selected.result.ownerResult)
+    : "Queued results";
+  const lede = selected
+    ? `Queued result · ${modeLabel(selected.mode)}`
+    : count === 1
+      ? "1 matchup while you were away"
+      : `${count} matchups while you were away`;
 
   return (
-    <section
+    <HubPageChrome
       className={`match-results match-results--compact owner-results-inbox ${matchModeThemeClass(
         themeMode,
       )}`}
+      title={title}
+      lede={lede}
+      onBack={selected ? () => setSelectedId(null) : undefined}
+      backLabel="Results"
     >
       {selected ? (
         <MatchupDetail delivery={selected} />
       ) : (
         <>
-          <div className="panel panel--compact owner-results-inbox__header">
-            <p className="eyebrow">Queued lineup results</p>
-            <h2>
-              {count === 1
-                ? "1 matchup while you were away"
-                : `${count} matchups while you were away`}
-            </h2>
-            <p>
-              Open a matchup to see your five and the score. Opponent lineups
-              aren&apos;t stored for queued-away games.
-            </p>
-            <p>{QUEUED_OWNER_INBOX_COPY}</p>
-          </div>
+          <p className="owner-results-inbox__lede-note">
+            {QUEUED_OWNER_INBOX_COPY} Open a matchup for your five and the score.
+            Opponent lineups aren&apos;t stored for queued-away games.
+          </p>
 
           <ul className="owner-results-inbox__list">
             {deliveries.map((delivery) => {
@@ -163,7 +175,10 @@ export function PendingOwnerResults({
                           : ""}
                       </span>
                     </span>
-                    <span className="owner-results-inbox__chevron" aria-hidden="true">
+                    <span
+                      className="owner-results-inbox__chevron"
+                      aria-hidden="true"
+                    >
                       ›
                     </span>
                   </button>
@@ -174,24 +189,11 @@ export function PendingOwnerResults({
         </>
       )}
 
-      <div
-        className={`panel panel--compact daily-draft-results__footer queued-draft-results__footer${
-          selected ? " owner-results-inbox__footer--split" : ""
-        }`}
-      >
-        {selected ? (
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => setSelectedId(null)}
-          >
-            Back to results
-          </button>
-        ) : null}
+      <div className="panel panel--compact owner-results-inbox__footer">
         <button type="button" className="play-again-button" onClick={onDone}>
-          Close all results
+          Back to Play
         </button>
       </div>
-    </section>
+    </HubPageChrome>
   );
 }
