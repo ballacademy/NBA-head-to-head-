@@ -32,6 +32,7 @@ import {
   pullAndMergeTierListLibrary,
   pushTierListLibraryIfLinked,
 } from "../lib/tierListLibraryRemote";
+import { pullAndMergeDailyDraftHistory } from "../lib/dailyDraftHistoryRemote";
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -252,6 +253,7 @@ export function AccountAuthPanel({
       await pullAndMergeNbaPlayerUsage(playerId);
       await pullAndMergeEventProfiles(playerId);
       await pullAndMergeTierListLibrary(playerId);
+      await pullAndMergeDailyDraftHistory(playerId);
       onCareerSynced?.();
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),
@@ -389,7 +391,7 @@ export function AccountAuthPanel({
           You can play without an account. Create one to appear on leaderboards,
           host or join private matches, publish tier lists, and restore this GM
           code on another device. Signing in syncs collection, badges, career
-          records, Most Drafted, event badges, and tier lists.
+          records, Most Drafted, event badges, tier lists, and Daily streaks.
         </p>
       ) : null}
 
@@ -619,10 +621,11 @@ export function AccountAuthPanel({
             <>
               <p className="landing-team-form__account-warning">
                 Logging in replaces this browser&apos;s GM identity. Device-only
-                history (game log, live draft session) resets. Signed-in progress
-                restores from the cloud: collection, badges, career W–L, Most
-                Drafted, event badges, and tier lists. Leaderboard / online
-                records restore from the server when available.
+                history (game log, weekly-recap seen, unlock-progress, live draft
+                session) resets. Signed-in progress restores from the cloud:
+                collection, badges, career W–L, Most Drafted, event badges, tier
+                lists, and Daily streaks. Leaderboard / online records restore
+                from the server when available.
               </p>
               <p className="landing-team-form__account-note">
                 <button

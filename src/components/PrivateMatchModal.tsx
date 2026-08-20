@@ -213,7 +213,8 @@ export function PrivateMatchModal({
         <p className="unlock-modal__copy">
           Play a friend head-to-head with a room code. Same draft rules as{" "}
           {modeLabel}. Requires an account. Does not change records, Banners,
-          badges, or board placement.
+          badges, or board placement. Room codes expire after{" "}
+          <strong>10 minutes</strong> — join before then.
         </p>
 
         {accountBlocked ? (

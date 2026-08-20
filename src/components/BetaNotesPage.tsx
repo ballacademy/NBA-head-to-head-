@@ -232,16 +232,26 @@ export function BetaNotesPage({
               </li>
               <li>
                 <strong>Guest / local progress</strong> — When signed in,
-                collection, badges, career W–L, Most Drafted, event badges, and
-                tier list drafts/library sync to your account and restore on
-                login. Device-only history (game log, weekly-recap seen,
-                unlock-progress, live draft session) clears on logout and is not
-                restored across devices. Daily streak continuity is still
-                mostly local to this browser.
+                collection, badges, career W–L, Most Drafted, event badges, tier
+                list drafts/library, and <strong>Daily streaks</strong> (from
+                your scored Daily history) sync to your account and restore on
+                login / another device. Device-only history (game log,
+                weekly-recap seen, unlock-progress, live draft session,
+                community mute/rate caches) clears on logout and is not restored
+                across devices.
               </li>
               <li>
-                A few players may still be missing salary rows until the next
-                data pass.
+                <strong>Stats freshness</strong> — Roster/salaries are labeled
+                as of {SALARIES_DATA_AS_OF_LABEL}; player production stats are
+                still as of {STATS_DATA_AS_OF_LABEL}. New signings may look thin
+                or limited-sample until the next stats pass.
+              </li>
+              <li>
+                <strong>1500+ Banners</strong> — At {`1500+`} Banners you skip
+                NPC fallback and need a <em>live</em> opponent. That opponent can
+                be below 1500; they just have to be a real GM (or claim your
+                queued lineup live). Practice and Private still work while you
+                wait.
               </li>
             </ul>
           </details>

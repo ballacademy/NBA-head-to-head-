@@ -21,7 +21,7 @@ export interface StoredLineupSubmission {
   lineup: string[];
   elo: number;
   practiceMode?: boolean;
-  /** True when this lineup is waiting for a 1500+ live/ghost claim (queue_for_live). */
+  /** True when this lineup is waiting for a live claim (queue_for_live / 1500+). */
   awaitingLive?: boolean;
   salaryTotal: number;
   starCount: number;

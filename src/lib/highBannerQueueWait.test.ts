@@ -8,6 +8,7 @@ import { LIVE_OPPONENT_ONLY_MIN_ELO, RATING_LABEL } from "./rankedElo";
 
 describe("highBannerQueueWait", () => {
   it("escalates search wait copy as elapsed time grows", () => {
+    expect(getHighBannerSearchWaitMessage(0)).toMatch(/live opponent \(any rating\)/i);
     expect(getHighBannerSearchWaitMessage(0)).toContain(
       `${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}`,
     );
@@ -20,10 +21,12 @@ describe("highBannerQueueWait", () => {
       ratingPointsLabel: `1600 ${RATING_LABEL}`,
     });
     expect(copy.body).toContain("1600");
+    expect(copy.body).toMatch(/any rating/i);
     expect(copy.tip).toMatch(/Practice and Private/i);
   });
 
   it("softens landing queue lock note", () => {
     expect(getHighBannerQueueLockNote(" (Pro)")).toMatch(/Practice and Private/i);
+    expect(getHighBannerQueueLockNote(" (Pro)")).toMatch(/any rating/i);
   });
 });

@@ -56,6 +56,10 @@ vi.mock("./tierListLibraryRemote", () => ({
   resetTierListLibraryPullGate: vi.fn(),
 }));
 
+vi.mock("./dailyDraftHistoryRemote", () => ({
+  pullAndMergeDailyDraftHistory: vi.fn(async () => null),
+}));
+
 vi.mock("./dailyDraftScores", async () => {
   const actual = await vi.importActual<typeof import("./dailyDraftScores")>(
     "./dailyDraftScores",

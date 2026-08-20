@@ -512,8 +512,8 @@ export function DailyDraftResults({
         {showAccountNudge ? (
           <div className="daily-draft-results__account-nudge">
             <p>
-              Create an account to sync Daily streaks and show up on
-              leaderboards.
+              Create an account to keep Daily streaks across devices and show
+              up on leaderboards.
             </p>
             <div className="match-results__action-row">
               {onOpenAccount ? (

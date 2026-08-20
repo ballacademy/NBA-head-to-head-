@@ -14,7 +14,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 ## You must confirm in Cloudflare / production
 
-1. **D1 migrations** — production DB applied through `0028` (usage / event profiles / tier library). Deploy workflow applies these; confirm “No migrations to apply” on the latest prod deploy.
+1. **D1 migrations** — production DB applied through `0029` (Daily player history index). Deploy workflow applies these; confirm “No migrations to apply” on the latest prod deploy.
 2. **Pages binding** — Pages project has D1 binding name **`DB`** for Production.
 3. **Resend (password reset email)** — Production secret `RESEND_API_KEY` set; verified sending domain + `RESET_EMAIL_FROM` for real player inboxes (see `PASSWORD-RESET.md`). Without this, Forgot password returns a clear “email isn’t available” error.
 4. **Deploy** — latest `main` (or this PR after merge) is live on Pages.
@@ -39,7 +39,7 @@ On a real phone + desktop browser:
 4. **Casual H2H** — queue, draft, results, record updates.
 5. **Pro H2H** — same with salary cap.
 6. **Weekly Event** — entry available; live queue only; result counts toward event.
-7. **Account** — create account on device A; log in on device B; GM code restores; **collection, badges, career W–L, Most Drafted, event badges, and tier lists** match across devices when signed in. Log out → log in again restores the same cloud progress.
+7. **Account** — create account on device A; log in on device B; GM code restores; **collection, badges, career W–L, Most Drafted, event badges, tier lists, and Daily streaks** match across devices when signed in. Log out → log in again restores the same cloud progress.
 8. **Password reset** — while signed out, Forgot password emails a code (Resend configured). While signed in, Forgot password is not shown.
 9. **Collection / Badges / Leaderboards / Stats** — open without crash.
 10. **Beta notes** — Account → Beta notes; feedback mailto opens.

@@ -113,6 +113,18 @@ const mergeEntryToLocal = (dateKey: string, entry: DailyDraftScoreEntry) => {
   saveDailyScoreStore(store);
 };
 
+/** Merge cloud Daily history (streaks) into local storage. */
+export const mergeDailyDraftHistoryEntries = (
+  entries: Array<DailyDraftScoreEntry & { dateKey: string }>,
+) => {
+  for (const entry of entries) {
+    if (!entry.dateKey || !isUsableDailyEntry(entry)) {
+      continue;
+    }
+    mergeEntryToLocal(entry.dateKey, entry);
+  }
+};
+
 export const loadDailyScoresForDate = (
   dateKey: string,
   mode?: DailyDraftMode,

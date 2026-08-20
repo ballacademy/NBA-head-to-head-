@@ -18,6 +18,7 @@ import {
   pullAndMergeTierListLibrary,
   resetTierListLibraryPullGate,
 } from "./tierListLibraryRemote";
+import { pullAndMergeDailyDraftHistory } from "./dailyDraftHistoryRemote";
 import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
 import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
@@ -352,6 +353,7 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   await pullAndMergeNbaPlayerUsage(playerId);
   await pullAndMergeEventProfiles(playerId);
   await pullAndMergeTierListLibrary(playerId);
+  await pullAndMergeDailyDraftHistory(playerId);
 
   const dateKey = getDailyDateKey();
   await Promise.all([
