@@ -133,7 +133,7 @@ export const buildPlayHubChips = (params: {
     chips.push({
       id: "streak",
       label: params.dailyStreakLabel,
-      detail: "Daily Draft streak",
+      detail: "Daily streak",
       ctaLabel: "Play",
       action: { type: "play", playSection: "daily" },
     });

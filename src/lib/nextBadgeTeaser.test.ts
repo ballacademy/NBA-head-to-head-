@@ -1,5 +1,5 @@
 import { getAchievementProgress } from "./achievements";
-import { getNextBadgeTeaser } from "./nextBadgeTeaser";
+import { getNextBadgeTeaser, isDailyNextBadge } from "./nextBadgeTeaser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./achievements", async () => {
@@ -41,5 +41,6 @@ describe("nextBadgeTeaser", () => {
     expect(teaser?.id).toBe("ten-drafts");
     expect(teaser?.description).toContain("2/10");
     expect(teaser?.hint.playSection).toBe("headToHead");
+    expect(isDailyNextBadge(teaser)).toBe(false);
   });
 });

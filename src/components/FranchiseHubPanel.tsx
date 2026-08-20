@@ -100,7 +100,6 @@ export function FranchiseHubPanel({
     [streakCounters],
   );
   const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
-  const nextBadgeIsDaily = nextBadge?.hint.playSection === "daily";
   const showPlayDaily = shouldShowFranchiseDailyPlayCta(dailyChooserStatus);
 
   return (
@@ -115,7 +114,7 @@ export function FranchiseHubPanel({
       <section className="franchise-home__card landing-card" aria-label="Daily Draft">
         <div className="franchise-home__card-head">
           <p className="franchise-home__eyebrow">Daily Draft</p>
-          <p className="franchise-home__lede">Career totals</p>
+          <p className="franchise-home__lede">{dailyChooserStatus.meta}</p>
         </div>
         <p className="franchise-home__summary">
           {formatDailyDraftCareerLine(
@@ -123,42 +122,19 @@ export function FranchiseHubPanel({
             dailyDraft.longestBasicStreak,
             dailyDraft.longestAdvancedStreak,
           )}
-          {showPlayDaily ? "" : " · Done today"}
         </p>
         <p className="franchise-home__meta">
           Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
           {formatPercentile(dailyDraft.averagePercentile)}
         </p>
-        {nextBadge ? (
-          <div className="franchise-home__note">
-            <p className="franchise-home__note-label">Next badge</p>
-            <p className="franchise-home__note-title">
-              {nextBadge.emoji} {nextBadge.title}
-            </p>
-            <p className="franchise-home__note-copy">{nextBadge.description}</p>
-            {onPlayIntent && !nextBadgeIsDaily ? (
-              <button
-                type="button"
-                className="franchise-home__text-link"
-                onClick={() =>
-                  onPlayIntent({
-                    playSection: nextBadge.hint.playSection,
-                    h2hMode: nextBadge.hint.h2hMode,
-                  })
-                }
-              >
-                {nextBadge.hint.ctaLabel}
-              </button>
-            ) : null}
-          </div>
-        ) : nextDailyGoal ? (
+        {nextDailyGoal ? (
           <p className="franchise-home__meta">
-            Streak goal: {nextDailyGoal.title} (
+            Next streak badge: {nextDailyGoal.title} (
             {Math.min(streakCounters.dailyStreak, nextDailyGoal.target)}/
             {nextDailyGoal.target})
           </p>
         ) : (
-          <p className="franchise-home__meta">Daily streak badges complete.</p>
+          <p className="franchise-home__meta">All Daily streak badges unlocked</p>
         )}
         {showPlayDaily ? (
           <button
@@ -170,6 +146,33 @@ export function FranchiseHubPanel({
           </button>
         ) : null}
       </section>
+
+      {nextBadge ? (
+        <section className="franchise-home__card landing-card" aria-label="Next badge">
+          <div className="franchise-home__card-head">
+            <p className="franchise-home__eyebrow">Next badge</p>
+            <p className="franchise-home__lede">Nearest career unlock</p>
+          </div>
+          <p className="franchise-home__summary">
+            {nextBadge.emoji} {nextBadge.title}
+          </p>
+          <p className="franchise-home__meta">{nextBadge.description}</p>
+          {onPlayIntent ? (
+            <button
+              type="button"
+              className="franchise-home__cta secondary-button"
+              onClick={() =>
+                onPlayIntent({
+                  playSection: nextBadge.hint.playSection,
+                  h2hMode: nextBadge.hint.h2hMode,
+                })
+              }
+            >
+              {nextBadge.hint.ctaLabel}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="franchise-home__card landing-card" aria-label="Collection">
         <div className="franchise-home__card-head">
