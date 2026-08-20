@@ -7,6 +7,7 @@ import {
   formatLegacyPeakBannerTier,
   refreshGmLegacyFromApi,
 } from "../lib/gmStats";
+import { formatLongestStreakStat } from "../lib/dailyDraftPlayStreak";
 import { isAllTimeModePlayable } from "../lib/eraUnlocks";
 import { formatOrdinal } from "../lib/ordinal";
 import { formatRatingPoints } from "../lib/rankedElo";
@@ -166,7 +167,7 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
         </section>
 
         <section className="gm-stats-page__section">
-          <h2>Daily draft</h2>
+          <h2>Daily Draft</h2>
           <GmStatsFactRows
             rows={[
               {
@@ -183,11 +184,13 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
               },
               {
                 label: "Longest Basic streak",
-                value: String(snapshot.dailyDraft.longestBasicStreak),
+                value: formatLongestStreakStat(snapshot.dailyDraft.longestBasicStreak),
               },
               {
                 label: "Longest Advanced streak",
-                value: String(snapshot.dailyDraft.longestAdvancedStreak),
+                value: formatLongestStreakStat(
+                  snapshot.dailyDraft.longestAdvancedStreak,
+                ),
               },
               {
                 label: "Best percentile",

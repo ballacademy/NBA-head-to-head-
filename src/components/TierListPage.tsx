@@ -1227,43 +1227,43 @@ export function TierListPage({
       case "posts":
         return {
           title: "Posts",
-          lede: "Anyone can read. Sign in to post.",
+          lede: "Anyone can read. Sign in to post",
           back: "Community",
         };
       case "tiersHub":
         return {
           title: "Tier lists",
-          lede: "Browse public boards. Sign in to publish.",
+          lede: "Browse public boards. Sign in to publish",
           back: "Community",
         };
       case "public":
         return {
           title: "Public tier lists",
-          lede: "Browse and like community boards.",
+          lede: "Browse and like community boards",
           back: "Tier lists",
         };
       case "mine":
         return {
           title: "My tier lists",
-          lede: "Open or delete lists on this device.",
+          lede: "Open or delete lists on this device",
           back: "Tier lists",
         };
       case "editor":
         return {
           title: "Create a list",
-          lede: "Build a board, then publish when ready.",
+          lede: "Build a board, then publish when ready",
           back: "Tier lists",
         };
       case "viewer":
         return {
           title: "Public tier lists",
-          lede: "Browse and like community boards.",
+          lede: "Browse and like community boards",
           back: "Public lists",
         };
       default:
         return {
           title: "Community",
-          lede: "Read takes, results, and public lists.",
+          lede: "Read takes, results, and public lists",
           back: "Back",
         };
     }

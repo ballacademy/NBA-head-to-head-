@@ -139,6 +139,9 @@ export const getLongestDailyDraftPlayStreak = (
 const formatStreakDayCount = (days: number) =>
   days === 1 ? "1 day" : `${days} days`;
 
+export const formatLongestStreakStat = (days: number) =>
+  days > 0 ? formatStreakDayCount(days) : "—";
+
 export const formatDailyDraftCareerLine = (
   daysPlayed: number,
   longestBasic: number,

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   formatDailyDraftCareerLine,
   formatDailyDraftPlayStreak,
+  formatLongestStreakStat,
   getDailyDraftPlayStreak,
   getLongestDailyDraftPlayStreak,
 } from "./dailyDraftPlayStreak";
@@ -246,5 +247,11 @@ describe("dailyDraftPlayStreak", () => {
     expect(
       formatDailyDraftCareerLine(5, getLongestDailyDraftPlayStreak("basic"), 0),
     ).toBe("5 days completed · Longest Basic 3 days");
+  });
+
+  it("formats empty longest streak stats for display", () => {
+    expect(formatLongestStreakStat(0)).toBe("—");
+    expect(formatLongestStreakStat(1)).toBe("1 day");
+    expect(formatLongestStreakStat(7)).toBe("7 days");
   });
 });

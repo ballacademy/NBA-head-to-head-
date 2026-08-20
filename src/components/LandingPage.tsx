@@ -121,7 +121,7 @@ import {
 } from "../lib/bannersExplainer";
 import { FirstSessionOnboardingOverlay, FirstSessionWelcomeBar } from "./FirstSessionOnboardingOverlay";
 import { PlayHubStrip } from "./PlayHubStrip";
-import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
+import { getNextBadgeTeaser, isDailyNextBadge } from "../lib/nextBadgeTeaser";
 import {
   buildWeeklyGmRecap,
   hasSeenWeeklyRecap,
@@ -542,9 +542,7 @@ export function LandingPage({
   const playHubChips = useMemo(() => {
     const recap = buildWeeklyGmRecap();
     const nextBadge = getNextBadgeTeaser();
-    const nextBadgeIsDaily = Boolean(
-      nextBadge?.id.startsWith("daily-streak-"),
-    );
+    const nextBadgeIsDaily = isDailyNextBadge(nextBadge);
     return buildPlayHubChips({
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,

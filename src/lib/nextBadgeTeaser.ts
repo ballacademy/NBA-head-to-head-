@@ -16,6 +16,9 @@ export type NextBadgeTeaser = {
   hint: AchievementPlayHint;
 };
 
+export const isDailyNextBadge = (badge: NextBadgeTeaser | null | undefined) =>
+  badge?.hint.playSection === "daily";
+
 export const getNextBadgeTeaser = (): NextBadgeTeaser | null => {
   evaluateCareerProgressAchievements();
   const progress = getAchievementProgress();
