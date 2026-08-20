@@ -174,12 +174,20 @@ export function GmStatsPage({ onBack }: GmStatsPageProps) {
                 value: String(snapshot.dailyDraft.daysPlayed),
               },
               {
-                label: "Basic streak",
+                label: "Current Basic streak",
                 value: snapshot.dailyDraft.basicStreakLabel,
               },
               {
-                label: "Advanced streak",
+                label: "Current Advanced streak",
                 value: snapshot.dailyDraft.advancedStreakLabel,
+              },
+              {
+                label: "Longest Basic streak",
+                value: String(snapshot.dailyDraft.longestBasicStreak),
+              },
+              {
+                label: "Longest Advanced streak",
+                value: String(snapshot.dailyDraft.longestAdvancedStreak),
               },
               {
                 label: "Best percentile",

@@ -108,6 +108,59 @@ export const formatDailyDraftPlayStreak = (streak: DailyDraftPlayStreak) => {
   return `${streak.current}-day streak`;
 };
 
+export const getLongestDailyDraftPlayStreak = (
+  mode: DailyDraftMode,
+  playerId = getOrCreatePlayerId(),
+): number => {
+  const dateKeys = getCompletedDailyDraftDateKeys(mode, playerId);
+  if (dateKeys.length === 0) {
+    return 0;
+  }
+
+  let longest = 1;
+  let current = 1;
+
+  for (let index = 1; index < dateKeys.length; index += 1) {
+    const previous = dateKeys[index - 1];
+    const next = dateKeys[index];
+
+    if (subtractDaysFromDateKey(next, 1) === previous) {
+      current += 1;
+      longest = Math.max(longest, current);
+      continue;
+    }
+
+    current = 1;
+  }
+
+  return longest;
+};
+
+const formatStreakDayCount = (days: number) =>
+  days === 1 ? "1 day" : `${days} days`;
+
+export const formatDailyDraftCareerLine = (
+  daysPlayed: number,
+  longestBasic: number,
+  longestAdvanced: number,
+) => {
+  const dayPart = `${daysPlayed} day${daysPlayed === 1 ? "" : "s"} completed`;
+  const streakParts: string[] = [];
+
+  if (longestBasic > 0) {
+    streakParts.push(`Basic ${formatStreakDayCount(longestBasic)}`);
+  }
+  if (longestAdvanced > 0) {
+    streakParts.push(`Adv ${formatStreakDayCount(longestAdvanced)}`);
+  }
+
+  if (streakParts.length === 0) {
+    return dayPart;
+  }
+
+  return `${dayPart} · Longest ${streakParts.join(" · ")}`;
+};
+
 /** Ensures today's completion is reflected when scores were just merged. */
 export const hasPlayedDailyDraftOnDate = (
   mode: DailyDraftMode,

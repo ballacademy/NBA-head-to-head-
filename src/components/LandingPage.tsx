@@ -912,13 +912,13 @@ export function LandingPage({
       ? playSection === "daily"
         ? MODE_COPY.daily.blurb
         : playSection === "events"
-          ? "Weekly live H2H · rotating rules."
+          ? "Weekly live H2H · rotating rules"
           : playSection === "headToHead"
-            ? "Live matchups · Casual or Pro."
+            ? "Live matchups · Casual or Pro"
             : "Draft. Match up. Prove your GM eye."
       : hubTab === "roster"
-        ? "Your collection and career."
-        : "Sign in and settings.";
+        ? "Your collection and career"
+        : "Sign in and settings";
 
   const playModeBack = (
     <HubFeatureReturnButton

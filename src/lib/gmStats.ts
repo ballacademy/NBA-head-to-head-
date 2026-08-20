@@ -2,6 +2,7 @@ import { summarizePlayerDailyDraftHistory } from "./dailyDraftScores";
 import {
   formatDailyDraftPlayStreak,
   getDailyDraftPlayStreak,
+  getLongestDailyDraftPlayStreak,
 } from "./dailyDraftPlayStreak";
 import { getDailyDateKey } from "./dailyDraft";
 import { getClassicProfileView } from "./classicProfile";
@@ -37,6 +38,8 @@ export interface GmDailyDraftStats {
   latestResult: string | null;
   basicStreak: number;
   advancedStreak: number;
+  longestBasicStreak: number;
+  longestAdvancedStreak: number;
   basicStreakLabel: string;
   advancedStreakLabel: string;
 }
@@ -68,11 +71,15 @@ const summarizeDailyDraftStats = (): GmDailyDraftStats => {
   const asOf = getDailyDateKey();
   const basic = getDailyDraftPlayStreak("basic", asOf);
   const advanced = getDailyDraftPlayStreak("advanced", asOf);
+  const longestBasicStreak = getLongestDailyDraftPlayStreak("basic");
+  const longestAdvancedStreak = getLongestDailyDraftPlayStreak("advanced");
 
   return {
     ...summary,
     basicStreak: basic.current,
     advancedStreak: advanced.current,
+    longestBasicStreak,
+    longestAdvancedStreak,
     basicStreakLabel: formatDailyDraftPlayStreak(basic),
     advancedStreakLabel: formatDailyDraftPlayStreak(advanced),
   };

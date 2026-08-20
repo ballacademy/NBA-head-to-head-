@@ -58,7 +58,7 @@ export function GameLogPage({ onBack }: GameLogPageProps) {
       lede={
         entries.length > 0
           ? `${entries.length} recent · ${liveCount} live · ${queuedCount} queued`
-          : "Recent competitive matches and queued-away results."
+          : "Recent competitive matches and queued-away results"
       }
       onBack={onBack}
       backLabel="Head to Head"

@@ -342,7 +342,7 @@ export function LeaderboardPage({
     <HubPageChrome
       className="leaderboard"
       title="Ranks"
-      lede="Casual and Pro."
+      lede="Casual and Pro"
       onBack={onBack}
     >
       {refreshFailed ? (
