@@ -4,7 +4,7 @@ const LIMITED_SAMPLE_EXPLAINER_SEEN_KEY =
   "ddgm:limited-sample-explainer-seen:v1";
 
 export const LIMITED_SAMPLE_TOOLTIP_COPY =
-  "Few games played — rating stays conservative.";
+  "Limited sample (<30 games this season): stats may stay conservative and can blend in prior-season production.";
 
 export const hasSeenLimitedSampleExplainer = () =>
   readJson<{ seen?: boolean }>(LIMITED_SAMPLE_EXPLAINER_SEEN_KEY)?.seen ===

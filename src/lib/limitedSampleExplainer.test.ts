@@ -28,5 +28,6 @@ describe("limitedSampleExplainer", () => {
     markLimitedSampleExplainerSeen();
     expect(hasSeenLimitedSampleExplainer()).toBe(true);
     expect(LIMITED_SAMPLE_TOOLTIP_COPY).toMatch(/conservative/i);
+    expect(LIMITED_SAMPLE_TOOLTIP_COPY).toMatch(/prior-season/i);
   });
 });
