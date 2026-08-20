@@ -25,6 +25,14 @@ import {
   pushNbaPlayerUsageIfLinked,
 } from "../lib/nbaPlayerUsageRemote";
 import {
+  pullAndMergeEventProfiles,
+  pushEventProfilesIfLinked,
+} from "../lib/eventProfileRemote";
+import {
+  pullAndMergeTierListLibrary,
+  pushTierListLibraryIfLinked,
+} from "../lib/tierListLibraryRemote";
+import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
@@ -197,6 +205,8 @@ export function AccountAuthPanel({
     void pushAchievementsIfLinked(undefined, playerId, { force: true });
     void pushCareerStatsIfLinked(playerId, { force: true });
     void pushNbaPlayerUsageIfLinked(playerId, { force: true });
+    void pushEventProfilesIfLinked(playerId, { force: true });
+    void pushTierListLibraryIfLinked(playerId, { force: true });
     const { newlyUnlocked } = syncFoundingGmAchievement(
       Boolean(result.foundingGm),
     );
@@ -240,6 +250,8 @@ export function AccountAuthPanel({
       await pullAndMergeAchievements(playerId);
       await pullAndMergeCareerStats(playerId);
       await pullAndMergeNbaPlayerUsage(playerId);
+      await pullAndMergeEventProfiles(playerId);
+      await pullAndMergeTierListLibrary(playerId);
       onCareerSynced?.();
       const { newlyUnlocked } = syncFoundingGmAchievement(
         Boolean(result.foundingGm),

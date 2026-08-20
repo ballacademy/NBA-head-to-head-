@@ -165,6 +165,8 @@ import { pullAndMergeCollection } from "./lib/collectionRemote";
 import { pullAndMergeAchievements } from "./lib/achievementsRemote";
 import { pullAndMergeCareerStats } from "./lib/careerStatsRemote";
 import { pullAndMergeNbaPlayerUsage } from "./lib/nbaPlayerUsageRemote";
+import { pullAndMergeEventProfiles } from "./lib/eventProfileRemote";
+import { pullAndMergeTierListLibrary } from "./lib/tierListLibraryRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -412,6 +414,8 @@ function App() {
   const achievementsSyncAttemptedRef = useRef(false);
   const careerSyncAttemptedRef = useRef(false);
   const usageSyncAttemptedRef = useRef(false);
+  const eventProfilesSyncAttemptedRef = useRef(false);
+  const tierListLibrarySyncAttemptedRef = useRef(false);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
@@ -609,6 +613,24 @@ function App() {
 
     usageSyncAttemptedRef.current = true;
     void pullAndMergeNbaPlayerUsage();
+  }, [phase]);
+
+  useEffect(() => {
+    if (eventProfilesSyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    eventProfilesSyncAttemptedRef.current = true;
+    void pullAndMergeEventProfiles();
+  }, [phase]);
+
+  useEffect(() => {
+    if (tierListLibrarySyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    tierListLibrarySyncAttemptedRef.current = true;
+    void pullAndMergeTierListLibrary();
   }, [phase]);
 
   useEffect(() => {

@@ -1,5 +1,7 @@
 import { readJson, writeJson } from "./browserStorage";
 import type { HeadToHeadResult } from "./playerRecord";
+import type { EventProfilesPayload } from "./eventProfileShared";
+import { normalizeEventProfilesPayload } from "./eventProfileShared";
 import {
   evaluateEventBadges,
   EVENT_MAX_MATCHES,
@@ -77,6 +79,20 @@ const saveAllProfiles = (profiles: Record<string, EventProfile>) => {
   writeJson(EVENT_PROFILES_KEY, { byEventId: profiles });
 };
 
+const pushEventProfilesIfLinked = () => {
+  void import("./eventProfileRemote")
+    .then(({ pushEventProfilesIfLinked }) => pushEventProfilesIfLinked())
+    .catch(() => undefined);
+};
+
+export const loadEventProfilesPayload = (): EventProfilesPayload =>
+  normalizeEventProfilesPayload({ byEventId: loadAllProfiles() });
+
+export const saveEventProfilesPayload = (payload: EventProfilesPayload) => {
+  const normalized = normalizeEventProfilesPayload(payload);
+  saveAllProfiles(normalized.byEventId);
+};
+
 export const loadEventProfile = (eventId: string): EventProfile => {
   const profiles = loadAllProfiles();
   return profiles[eventId] ?? emptyProfile(eventId);
@@ -146,5 +162,6 @@ export const persistEventMatchOutcome = (
   profiles[eventId] = next;
   saveAllProfiles(profiles);
   writeJson(lastKey, { matchId, eventId });
+  pushEventProfilesIfLinked();
   return next;
 };

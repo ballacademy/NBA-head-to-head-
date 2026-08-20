@@ -10,6 +10,14 @@ import {
   pullAndMergeNbaPlayerUsage,
   resetNbaPlayerUsagePullGate,
 } from "./nbaPlayerUsageRemote";
+import {
+  pullAndMergeEventProfiles,
+  resetEventProfilesPullGate,
+} from "./eventProfileRemote";
+import {
+  pullAndMergeTierListLibrary,
+  resetTierListLibraryPullGate,
+} from "./tierListLibraryRemote";
 import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
 import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
@@ -63,6 +71,7 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-event-profiles",
   "nba-head-to-head-tier-list",
   "nba-head-to-head-tier-list-library",
+  "nba-head-to-head-tier-list-current-updated-at",
   "nba-head-to-head-tier-list-public",
   "nba-head-to-head-community-shareables",
   "nba-head-to-head-community-muted-players",
@@ -136,6 +145,8 @@ const clearIdentityBoundLocalState = (
   resetAchievementsPullGate();
   resetCareerPullGate();
   resetNbaPlayerUsagePullGate();
+  resetEventProfilesPullGate();
+  resetTierListLibraryPullGate();
   savePlayerCollection({
     // Login restore + merge must not mint random All-Stars into the cloud union.
     unlockedIds: seedStarterCollection
@@ -339,6 +350,8 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   await pullAndMergeAchievements(playerId);
   await pullAndMergeCareerStats(playerId);
   await pullAndMergeNbaPlayerUsage(playerId);
+  await pullAndMergeEventProfiles(playerId);
+  await pullAndMergeTierListLibrary(playerId);
 
   const dateKey = getDailyDateKey();
   await Promise.all([
