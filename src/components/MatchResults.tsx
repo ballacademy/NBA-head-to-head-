@@ -7,6 +7,7 @@ import { PlayerUnlockModal } from "./PlayerUnlockModal";
 import { AchievementToast } from "./AchievementToast";
 import { InlineAlert } from "./InlineAlert";
 import { PostGameNextActions } from "./PostGameNextActions";
+import { forceUnlockBackgroundScroll } from "../hooks/useDialogA11y";
 import {
   getMatchRecordMode,
   formatPlayerRecord,
@@ -117,6 +118,12 @@ export function MatchResults({
   opponentAutoDrafted = false,
   matchmakingNotice = null,
 }: MatchResultsProps) {
+  // Nested PrivateMatchModal + MatchmakingOverlay locks can leave body/html
+  // overflow stuck (or wheel preventDefault still attached). Clear before paint.
+  useLayoutEffect(() => {
+    forceUnlockBackgroundScroll();
+  }, []);
+
   const recordedRef = useRef(false);
   const achievementsCheckedRef = useRef(false);
   const [matchCollection, setMatchCollection] =
