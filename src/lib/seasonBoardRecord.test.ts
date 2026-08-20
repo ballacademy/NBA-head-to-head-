@@ -3,6 +3,7 @@ import { persistMatchOutcome } from "./matchOutcome";
 import {
   loadSelfSeasonBoardRecord,
   projectSelfSeasonBoardRecordAfterMatch,
+  seasonStreaksForMatchDisplay,
 } from "./seasonBoardRecord";
 
 vi.mock("./careerStatsRemote", () => ({
@@ -82,6 +83,33 @@ describe("seasonBoardRecord", () => {
     expect(projected.lossStreak).toBe(1);
     expect(projected.wins).toBe(2);
     expect(projected.losses).toBe(1);
+  });
+
+  it("does not project streaks while a ghost persist is still pending", () => {
+    persistMatchOutcome("win", { name: "Bulls" }, "g1", "headToHead");
+    persistMatchOutcome("win", { name: "Bulls" }, "g2", "headToHead");
+
+    expect(
+      seasonStreaksForMatchDisplay("classic", "loss", { persistPending: true }),
+    ).toEqual({
+      winStreak: 2,
+      lossStreak: 0,
+    });
+    expect(seasonStreaksForMatchDisplay("classic", "loss")).toEqual({
+      winStreak: 0,
+      lossStreak: 1,
+    });
+  });
+
+  it("uses the stored streak once the match is recorded", () => {
+    persistMatchOutcome("win", { name: "Bulls" }, "s1", "ranked");
+
+    expect(
+      seasonStreaksForMatchDisplay("ranked", "loss", { recorded: true }),
+    ).toEqual({
+      winStreak: 1,
+      lossStreak: 0,
+    });
   });
 
   it("counts a classic tie on the season board", () => {

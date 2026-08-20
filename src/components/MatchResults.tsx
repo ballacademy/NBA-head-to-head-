@@ -28,8 +28,7 @@ import {
   resolveRecordForMatchDisplay,
 } from "../lib/matchOutcome";
 import {
-  loadSelfSeasonBoardRecord,
-  projectSelfSeasonBoardRecordAfterMatch,
+  seasonStreaksForMatchDisplay,
   type SeasonBoardMode,
 } from "../lib/seasonBoardRecord";
 import { recordNbaPlayerMatchUsage } from "../lib/nbaPlayerUsage";
@@ -226,6 +225,9 @@ export function MatchResults({
           ? "classic"
           : null;
   const competitiveActionsLocked = ghostSubmitting || isMatchmaking;
+  const queuedGhostPersistPending = Boolean(
+    opponent.isGhostOpponent && extractGhostStoredLineupId(opponent.id),
+  );
 
   useLayoutEffect(() => {
     if (recordedRef.current) {
@@ -662,14 +664,10 @@ export function MatchResults({
     }
 
     if (seasonBoardMode) {
-      if (hasRecordedMatchId(matchId)) {
-        return loadSelfSeasonBoardRecord(seasonBoardMode);
-      }
-
-      return projectSelfSeasonBoardRecordAfterMatch(
-        seasonBoardMode,
-        matchResult,
-      );
+      return seasonStreaksForMatchDisplay(seasonBoardMode, matchResult, {
+        recorded: hasRecordedMatchId(matchId),
+        persistPending: queuedGhostPersistPending,
+      });
     }
 
     return {
@@ -682,6 +680,7 @@ export function MatchResults({
     isEventMatch,
     matchId,
     matchResult,
+    queuedGhostPersistPending,
     seasonBoardMode,
     updatedRecord.lossStreak,
     updatedRecord.winStreak,

@@ -7,7 +7,6 @@ import type { LandingPlaySection } from "./landingHub";
 export type PlayHubChipId = "inbox" | "daily" | "recap" | "badge" | "streak";
 
 export type PlayHubChipAction =
-  | { type: "inbox" }
   | { type: "h2h" }
   | { type: "roster" }
   | { type: "recap" }
@@ -44,7 +43,6 @@ export const formatPlayHubDailyStreakLabel = (
 };
 
 export const buildPlayHubChips = (params: {
-  pendingResultCount: number;
   queuedClassic: boolean;
   queuedRanked: boolean;
   recapReady: boolean;
@@ -59,18 +57,7 @@ export const buildPlayHubChips = (params: {
 }): PlayHubChip[] => {
   const chips: PlayHubChip[] = [];
 
-  if (params.pendingResultCount > 0) {
-    chips.push({
-      id: "inbox",
-      label:
-        params.pendingResultCount === 1
-          ? "1 result ready"
-          : `${params.pendingResultCount} results ready`,
-      detail: "Queued lineup results",
-      ctaLabel: "Open",
-      action: { type: "inbox" },
-    });
-  } else if (params.queuedClassic || params.queuedRanked) {
+  if (params.queuedClassic || params.queuedRanked) {
     chips.push({
       id: "inbox",
       label:

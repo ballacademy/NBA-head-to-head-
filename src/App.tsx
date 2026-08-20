@@ -2874,8 +2874,11 @@ function App() {
     );
   }
 
+  // Only interrupt Play. Other hub tabs keep their page and show a Play
+  // badge until the user opens Play, so Account/Franchise aren't hijacked.
   if (
     phase === "landing" &&
+    landingHubTab === "play" &&
     deliveredOwnerResults.length > 0
   ) {
     return (
@@ -2948,12 +2951,6 @@ function App() {
           onViewTerms={() => openFeaturePage("terms")}
           onViewBetaNotes={() => openFeaturePage("beta")}
           onViewGameLog={() => openFeaturePage("gameLog")}
-          onViewPendingResults={() => {
-            setLandingHubTab("play");
-            saveLandingHubTab("play");
-            syncLandingHubTabUrl("play");
-            scrollHubToTop();
-          }}
           hubTab={landingHubTab}
           onHubTabChange={updateLandingHubTab}
           onPrefetchHubTab={prefetchHubFeatureTab}

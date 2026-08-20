@@ -174,7 +174,6 @@ interface LandingPageProps {
   onViewTerms: () => void;
   onViewBetaNotes: () => void;
   onViewGameLog?: () => void;
-  onViewPendingResults?: () => void;
   hubTab: LandingContentTab;
   onHubTabChange: (tab: LandingContentTab) => void;
   onPrefetchHubTab?: (tab: LandingHubTab) => void;
@@ -224,7 +223,6 @@ export function LandingPage({
   onViewTerms,
   onViewBetaNotes,
   onViewGameLog,
-  onViewPendingResults,
   hubTab,
   onHubTabChange,
   onPrefetchHubTab,
@@ -545,7 +543,6 @@ export function LandingPage({
       nextBadge?.id.startsWith("daily-streak-"),
     );
     return buildPlayHubChips({
-      pendingResultCount: pendingOwnerResultCount,
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,
       recapReady:
@@ -563,7 +560,6 @@ export function LandingPage({
       dailyOpenDetail: dailyChooserStatus.meta,
     });
   }, [
-    pendingOwnerResultCount,
     queuedLineupLock.classic,
     queuedLineupLock.ranked,
     recapSeenTick,
@@ -576,10 +572,6 @@ export function LandingPage({
   });
 
   const handlePlayHubChip = (chip: PlayHubChip) => {
-    if (chip.action.type === "inbox") {
-      onViewPendingResults?.();
-      return;
-    }
     if (chip.action.type === "h2h") {
       updatePlaySection("headToHead");
       if (hubTab !== "play") {
