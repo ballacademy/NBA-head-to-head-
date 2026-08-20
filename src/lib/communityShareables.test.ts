@@ -52,6 +52,23 @@ describe("formatCommunityAttachmentChip", () => {
     ).toBe("Pro · W · 100(+4)–100");
   });
 
+  it("shortens All-Time matchup attachments", () => {
+    expect(
+      formatCommunityAttachmentChip({
+        kind: "matchup",
+        modeLabel: "All-Time Draft",
+        result: "tie",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 88,
+        opponentOvr: 88,
+        userLineupNames: [],
+        opponentLineupNames: [],
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }),
+    ).toBe("All-Time · T · 88–88");
+  });
+
   it("shortens casual matchup attachments", () => {
     expect(
       formatCommunityAttachmentChip({

@@ -45,6 +45,16 @@ describe("canOpenOpponentGmProfile", () => {
     expect(
       canOpenOpponentGmProfile({ profilePlayerId: "npc-ranked-3" }),
     ).toBe(false);
+    expect(
+      canOpenOpponentGmProfile({
+        profilePlayerId: "ghost-queued-lineup-1",
+      }),
+    ).toBe(false);
+    expect(
+      canOpenOpponentGmProfile({
+        profilePlayerId: "live-match-opponent-1",
+      }),
+    ).toBe(false);
     expect(canOpenOpponentGmProfile({ profilePlayerId: null })).toBe(false);
   });
 });

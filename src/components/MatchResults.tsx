@@ -121,7 +121,6 @@ export function MatchResults({
   const achievementsCheckedRef = useRef(false);
   const [matchCollection, setMatchCollection] =
     useState<PlayerCollection>(collection);
-  const [actionsReady, setActionsReady] = useState(false);
   const [ghostSubmitting, setGhostSubmitting] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [newAchievementIds, setNewAchievementIds] = useState<string[]>([]);
@@ -326,7 +325,6 @@ export function MatchResults({
           opponentScore: opponentScore.uncappedTotal,
           isEvent: true,
         });
-        setActionsReady(true);
         return;
       }
 
@@ -458,7 +456,6 @@ export function MatchResults({
           ),
         };
         ghostOutcomeSubmissionRef.current = submission;
-        setActionsReady(true);
         setGhostSubmitting(true);
 
         void submitGhostMatchOutcome(submission).then((ok) => {
@@ -478,8 +475,6 @@ export function MatchResults({
       applyLocalCompetitiveOutcome();
       storeChallengerLineup();
     }
-
-    setActionsReady(true);
   }, [
     collection,
     matchId,
@@ -877,8 +872,7 @@ export function MatchResults({
         </div>
       </div>
 
-      {actionsReady ? (
-        <div className="panel panel--compact match-results__actions">
+      <div className="panel panel--compact match-results__actions">
           {ghostSubmitting ? (
             <p className="match-results__matchmaking-notice" role="status">
               Reporting result to the queued owner…
@@ -1002,7 +996,6 @@ export function MatchResults({
             />
           )}
         </div>
-      ) : null}
     </section>
   );
 }
