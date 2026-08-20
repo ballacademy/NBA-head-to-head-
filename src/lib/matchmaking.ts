@@ -15,8 +15,6 @@ import {
   savePendingLineupState,
 } from "./pendingLineup";
 import {
-  LIVE_OPPONENT_ONLY_MIN_ELO,
-  RATING_LABEL,
   requiresLiveOpponentOnly,
 } from "./rankedElo";
 
@@ -228,7 +226,7 @@ export const getStartMatchErrorMessage = (error: StartMatchError) => {
     case "daily_completed":
       return "You've already completed today's Daily Draft. Come back tomorrow.";
     case "pending_lineup_locked":
-      return `Your queued lineup is still waiting for a live opponent at ${LIVE_OPPONENT_ONLY_MIN_ELO}+ ${RATING_LABEL}. You can play again once that lineup is matched.`;
+      return `Your queued lineup is still waiting for a live opponent (any rating). You can play again once that lineup is matched.`;
     case "event_limit_reached":
       return "You've used all 30 entries for this week's event. Check back next week.";
     case "matchmaking_unavailable":

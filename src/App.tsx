@@ -167,6 +167,7 @@ import { pullAndMergeCareerStats } from "./lib/careerStatsRemote";
 import { pullAndMergeNbaPlayerUsage } from "./lib/nbaPlayerUsageRemote";
 import { pullAndMergeEventProfiles } from "./lib/eventProfileRemote";
 import { pullAndMergeTierListLibrary } from "./lib/tierListLibraryRemote";
+import { pullAndMergeDailyDraftHistory } from "./lib/dailyDraftHistoryRemote";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -416,6 +417,7 @@ function App() {
   const usageSyncAttemptedRef = useRef(false);
   const eventProfilesSyncAttemptedRef = useRef(false);
   const tierListLibrarySyncAttemptedRef = useRef(false);
+  const dailyHistorySyncAttemptedRef = useRef(false);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
@@ -631,6 +633,15 @@ function App() {
 
     tierListLibrarySyncAttemptedRef.current = true;
     void pullAndMergeTierListLibrary();
+  }, [phase]);
+
+  useEffect(() => {
+    if (dailyHistorySyncAttemptedRef.current || phase !== "landing") {
+      return;
+    }
+
+    dailyHistorySyncAttemptedRef.current = true;
+    void pullAndMergeDailyDraftHistory();
   }, [phase]);
 
   useEffect(() => {

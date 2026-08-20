@@ -82,3 +82,50 @@ export const submitRemoteDailyDraftScore = async (params: {
     return null;
   }
 };
+
+export interface RemoteDailyDraftHistoryEntry extends DailyDraftScoreEntry {
+  dateKey: string;
+}
+
+export interface RemoteDailyDraftPlayerHistory {
+  playerId: string;
+  entries: RemoteDailyDraftHistoryEntry[];
+}
+
+/** Account-gated full Daily history for streak restore across devices. */
+export const fetchRemoteDailyDraftPlayerHistory = async (
+  playerId: string,
+): Promise<RemoteDailyDraftPlayerHistory | null> => {
+  try {
+    const search = new URLSearchParams({ playerId });
+    const response = await fetch(
+      `${buildUrl("/api/daily-player-history")}?${search.toString()}`,
+      { headers: { accept: "application/json" } },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as Partial<RemoteDailyDraftPlayerHistory>;
+    const entries = Array.isArray(payload.entries)
+      ? payload.entries.filter(
+          (entry): entry is RemoteDailyDraftHistoryEntry =>
+            Boolean(
+              entry &&
+                typeof entry === "object" &&
+                typeof entry.dateKey === "string" &&
+                typeof entry.playerId === "string" &&
+                typeof entry.goalId === "string",
+            ),
+        )
+      : [];
+
+    return {
+      playerId: payload.playerId ?? playerId,
+      entries,
+    };
+  } catch {
+    return null;
+  }
+};
