@@ -103,6 +103,22 @@ describe("playHubRetention", () => {
     expect(chips.some((chip) => chip.id === "streak")).toBe(true);
   });
 
+  it("surfaces a game log chip when recent matches exist", () => {
+    const chips = buildPlayHubChips({
+      queuedClassic: false,
+      queuedRanked: false,
+      recapReady: false,
+      gameLogCount: 3,
+    });
+
+    expect(chips[0]).toMatchObject({
+      id: "gameLog",
+      label: "3 recent matches",
+      ctaLabel: "View",
+      action: { type: "gameLog" },
+    });
+  });
+
   it("omits the recap chip when recapReady is false", () => {
     const chips = buildPlayHubChips({
       queuedClassic: false,

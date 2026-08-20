@@ -44,7 +44,7 @@ import { getOrCreatePlayerIdentity, derivePublicTag } from "../lib/playerIdentit
 import { ensureClassicProfile } from "../lib/classicProfile";
 import { loadAllTimeProfile } from "../lib/allTimeProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
-import { formatRatingDelta, formatRatingPoints } from "../lib/rankedElo";
+import { formatRatingDelta, formatRatingPoints, getTierForElo } from "../lib/rankedElo";
 import { logLiveMatchGameEntry } from "../lib/matchGameLog";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
@@ -630,6 +630,12 @@ export function MatchResults({
   const opponentProfileMode: "classic" | "ranked" = user.salaryCapMode
     ? "ranked"
     : "classic";
+  const opponentProfileElo =
+    opponent.rankedOpponentElo ?? opponent.classicOpponentElo ?? undefined;
+  const opponentProfileTierLabel =
+    opponentProfileElo != null
+      ? getTierForElo(opponentProfileElo).label
+      : undefined;
   const canOpenOpponentProfile = canOpenOpponentGmProfile({
     profilePlayerId: opponentProfileId,
     practiceMode: user.practiceMode,
@@ -705,7 +711,8 @@ export function MatchResults({
           name={opponent.name}
           publicTag={derivePublicTag(opponentProfileId)}
           username={opponent.username}
-          elo={opponent.rankedOpponentElo ?? opponent.classicOpponentElo}
+          elo={opponentProfileElo}
+          tierLabel={opponentProfileTierLabel}
           profileMode={opponentProfileMode}
           onClose={() => setOpponentProfileOpen(false)}
           onChallenge={

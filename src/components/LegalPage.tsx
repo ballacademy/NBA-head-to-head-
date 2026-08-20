@@ -451,6 +451,7 @@ export function LegalPage({ kind, onBack, onOpenPrivacy }: LegalPageProps) {
       title={title}
       lede="Site policies"
       onBack={onBack}
+      backLabel="Account"
     >
       <section className="hub-feature__panel">
         <div className="legal-page__body">
