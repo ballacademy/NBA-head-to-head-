@@ -87,3 +87,28 @@ export const projectSelfSeasonBoardRecordAfterMatch = (
     lossStreak: stats.lossStreak,
   };
 };
+
+/**
+ * Streaks shown on match results. Live matches can project before persist.
+ * Ghost/queued submits persist after server ack — keep the current streak until
+ * then so a failed report cannot flash a streak that never applied.
+ */
+export const seasonStreaksForMatchDisplay = (
+  mode: SeasonBoardMode,
+  result: HeadToHeadResult,
+  options: { recorded?: boolean; persistPending?: boolean } = {},
+): Pick<SeasonBoardRecord, "winStreak" | "lossStreak"> => {
+  if (options.persistPending || options.recorded) {
+    const current = loadSelfSeasonBoardRecord(mode);
+    return {
+      winStreak: current.winStreak,
+      lossStreak: current.lossStreak,
+    };
+  }
+
+  const projected = projectSelfSeasonBoardRecordAfterMatch(mode, result);
+  return {
+    winStreak: projected.winStreak,
+    lossStreak: projected.lossStreak,
+  };
+};

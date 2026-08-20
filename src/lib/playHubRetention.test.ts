@@ -46,9 +46,8 @@ describe("playHubRetention", () => {
     ).toBeNull();
   });
 
-  it("prioritizes inbox, recap, and next badge on the Play strip", () => {
+  it("prioritizes queued-lineup inbox, recap, and next badge on the Play strip", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 1,
       queuedClassic: true,
       queuedRanked: false,
       recapReady: true,
@@ -67,16 +66,15 @@ describe("playHubRetention", () => {
       action: { type: "recap" },
     });
     expect(chips[0]).toMatchObject({
-      label: "1 result ready",
-      ctaLabel: "Open",
-      detail: "Queued lineup results",
-      action: { type: "inbox" },
+      label: "Lineup queued",
+      ctaLabel: "H2H",
+      detail: "Waiting for another GM",
+      action: { type: "h2h" },
     });
   });
 
   it("routes queued lineup chips to H2H", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: true,
       queuedRanked: false,
       recapReady: false,
@@ -91,7 +89,6 @@ describe("playHubRetention", () => {
 
   it("shows a queued-lineup chip when no results are waiting", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: false,
       queuedRanked: true,
       recapReady: false,
@@ -108,7 +105,6 @@ describe("playHubRetention", () => {
 
   it("omits the recap chip when recapReady is false", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: false,
       queuedRanked: false,
       recapReady: false,
@@ -119,7 +115,6 @@ describe("playHubRetention", () => {
 
   it("skips the Daily streak chip when the next badge is already Daily", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: false,
       queuedRanked: false,
       recapReady: false,
@@ -135,7 +130,6 @@ describe("playHubRetention", () => {
 
   it("surfaces a Daily ready chip and hides the streak while Daily is unfinished", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: false,
       queuedRanked: false,
       recapReady: false,
@@ -155,7 +149,6 @@ describe("playHubRetention", () => {
 
   it("does not add a Daily chip when the next badge already points at Daily", () => {
     const chips = buildPlayHubChips({
-      pendingResultCount: 0,
       queuedClassic: false,
       queuedRanked: false,
       recapReady: false,
