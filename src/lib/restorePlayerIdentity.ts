@@ -6,6 +6,18 @@ import {
   pullAndMergeCareerStats,
   resetCareerPullGate,
 } from "./careerStatsRemote";
+import {
+  pullAndMergeNbaPlayerUsage,
+  resetNbaPlayerUsagePullGate,
+} from "./nbaPlayerUsageRemote";
+import {
+  pullAndMergeEventProfiles,
+  resetEventProfilesPullGate,
+} from "./eventProfileRemote";
+import {
+  pullAndMergeTierListLibrary,
+  resetTierListLibraryPullGate,
+} from "./tierListLibraryRemote";
 import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
 import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
@@ -59,12 +71,15 @@ const IDENTITY_BOUND_STORAGE_KEYS = [
   "nba-head-to-head-event-profiles",
   "nba-head-to-head-tier-list",
   "nba-head-to-head-tier-list-library",
+  "nba-head-to-head-tier-list-current-updated-at",
   "nba-head-to-head-tier-list-public",
   "nba-head-to-head-community-shareables",
   "nba-head-to-head-community-muted-players",
   "nba-head-to-head-community-posts",
   "nba-head-to-head-community-rate",
   "ddgm:weekly-recap-seen",
+  "ddgm:weekly-h2h",
+  "ddgm:match-game-log",
   "nba-head-to-head-nba-player-usage",
   "nba-head-to-head-event-profiles:last-match",
   "nba-head-to-head-draft-onboarding-seen",
@@ -129,6 +144,9 @@ const clearIdentityBoundLocalState = (
   resetCollectionPullGate();
   resetAchievementsPullGate();
   resetCareerPullGate();
+  resetNbaPlayerUsagePullGate();
+  resetEventProfilesPullGate();
+  resetTierListLibraryPullGate();
   savePlayerCollection({
     // Login restore + merge must not mint random All-Stars into the cloud union.
     unlockedIds: seedStarterCollection
@@ -331,6 +349,9 @@ export const restorePlayerIdentityFromLogin = async (playerId: string) => {
   await pullAndMergeCollection(playerId);
   await pullAndMergeAchievements(playerId);
   await pullAndMergeCareerStats(playerId);
+  await pullAndMergeNbaPlayerUsage(playerId);
+  await pullAndMergeEventProfiles(playerId);
+  await pullAndMergeTierListLibrary(playerId);
 
   const dateKey = getDailyDateKey();
   await Promise.all([

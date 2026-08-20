@@ -41,6 +41,21 @@ vi.mock("./careerStatsRemote", () => ({
   resetCareerPullGate: vi.fn(),
 }));
 
+vi.mock("./nbaPlayerUsageRemote", () => ({
+  pullAndMergeNbaPlayerUsage: vi.fn(async () => null),
+  resetNbaPlayerUsagePullGate: vi.fn(),
+}));
+
+vi.mock("./eventProfileRemote", () => ({
+  pullAndMergeEventProfiles: vi.fn(async () => null),
+  resetEventProfilesPullGate: vi.fn(),
+}));
+
+vi.mock("./tierListLibraryRemote", () => ({
+  pullAndMergeTierListLibrary: vi.fn(async () => null),
+  resetTierListLibraryPullGate: vi.fn(),
+}));
+
 vi.mock("./dailyDraftScores", async () => {
   const actual = await vi.importActual<typeof import("./dailyDraftScores")>(
     "./dailyDraftScores",
@@ -139,6 +154,9 @@ describe("logoutToAnonymousIdentity", () => {
     expect(readJson("nba-head-to-head-community-posts")).toBeNull();
     expect(readJson("nba-head-to-head-community-rate")).toBeNull();
     expect(readJson("ddgm:weekly-recap-seen")).toBeNull();
+    expect(readJson("ddgm:match-game-log")).toBeNull();
+    expect(readJson("ddgm:weekly-h2h")).toBeNull();
+    expect(readJson("nba-head-to-head-nba-player-usage")).toBeNull();
     expect(
       readJson("nba-head-to-head-pending-lineup-classic-player-linked-old"),
     ).toBeNull();
@@ -525,5 +543,135 @@ describe("restorePlayerIdentityFromLogin", () => {
     expect(new Set(loadPlayerCollection().unlockedIds)).toEqual(
       new Set(getRecentAllStarUnlockPlayerIds()),
     );
+  });
+
+  it("restores most drafted usage from cloud on login", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const { pullAndMergeNbaPlayerUsage } = await import("./nbaPlayerUsageRemote");
+    const { loadNbaPlayerUsageStore, saveNbaPlayerUsageStore } = await import(
+      "./nbaPlayerUsage"
+    );
+    const seasonId = getCurrentSeasonId();
+
+    setPlayerIdentity("player-anonymous-old");
+    saveNbaPlayerUsageStore({
+      version: 1,
+      byPlayerId: {
+        "nba-local": {
+          headToHead: { drafts: 1, wins: 1, losses: 0, ties: 0 },
+        },
+      },
+      recordedKeys: ["local-match"],
+      dailyBackfillDone: false,
+      dailyLineups: {},
+    });
+
+    vi.mocked(fetchRemoteLeaderboard).mockResolvedValue({
+      mode: "ranked",
+      seasonId,
+      sort: "elo",
+      entries: [],
+    });
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+    });
+    vi.mocked(pullAndMergeNbaPlayerUsage).mockImplementation(async () => {
+      saveNbaPlayerUsageStore({
+        version: 1,
+        byPlayerId: {
+          "nba-local": {
+            headToHead: { drafts: 1, wins: 1, losses: 0, ties: 0 },
+          },
+          "nba-remote": {
+            ranked: { drafts: 3, wins: 2, losses: 1, ties: 0 },
+          },
+        },
+        recordedKeys: ["local-match", "remote-match"],
+        dailyBackfillDone: true,
+        dailyLineups: {},
+      });
+      return loadNbaPlayerUsageStore();
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(pullAndMergeNbaPlayerUsage).toHaveBeenCalledWith("player-linked");
+    expect(loadNbaPlayerUsageStore().byPlayerId["nba-remote"]?.ranked?.drafts).toBe(
+      3,
+    );
+  });
+
+  it("restores event profiles and tier lists from cloud on login", async () => {
+    const { fetchRemoteLeaderboard } = await import("./leaderboardApi");
+    const { fetchRemotePlayerProfile } = await import("./playerProfileApi");
+    const { pullAndMergeEventProfiles } = await import("./eventProfileRemote");
+    const { pullAndMergeTierListLibrary } = await import(
+      "./tierListLibraryRemote"
+    );
+    const { saveEventProfilesPayload } = await import("./eventProfile");
+    const {
+      applyTierListAccountLocally,
+      normalizeTierListState,
+      createDefaultTier,
+    } = await import("./tierList");
+    const seasonId = getCurrentSeasonId();
+
+    vi.mocked(fetchRemoteLeaderboard).mockResolvedValue({
+      mode: "ranked",
+      seasonId,
+      sort: "elo",
+      entries: [],
+    });
+    vi.mocked(fetchRemotePlayerProfile).mockResolvedValue({
+      playerId: "player-linked",
+      legacy: null,
+    });
+    vi.mocked(pullAndMergeEventProfiles).mockImplementation(async () => {
+      const payload = {
+        byEventId: {
+          "event-remote": {
+            eventId: "event-remote",
+            wins: 2,
+            losses: 0,
+            ties: 0,
+            matchesPlayed: 2,
+            winStreak: 2,
+            lossStreak: 0,
+            elo: 1032,
+            badges: [],
+          },
+        },
+      };
+      saveEventProfilesPayload(payload);
+      return payload;
+    });
+    vi.mocked(pullAndMergeTierListLibrary).mockImplementation(async () => {
+      const payload = {
+        current: normalizeTierListState({
+          title: "Restored board",
+          tiers: createDefaultTier(),
+        }),
+        currentUpdatedAt: 500,
+        library: {
+          documents: [
+            {
+              id: "restored-doc",
+              title: "Restored saved",
+              tiers: createDefaultTier(),
+              savedAt: 400,
+            },
+          ],
+        },
+      };
+      applyTierListAccountLocally(payload);
+      return payload;
+    });
+
+    await restorePlayerIdentityFromLogin("player-linked");
+
+    expect(pullAndMergeEventProfiles).toHaveBeenCalledWith("player-linked");
+    expect(pullAndMergeTierListLibrary).toHaveBeenCalledWith("player-linked");
   });
 });

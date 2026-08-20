@@ -29,6 +29,8 @@ import { isInternationalEventPlayer } from "./weeklyEvents";
 
 export const TIER_LIST_STORAGE_KEY = "nba-head-to-head-tier-list";
 export const TIER_LIST_LIBRARY_KEY = "nba-head-to-head-tier-list-library";
+export const TIER_LIST_CURRENT_UPDATED_AT_KEY =
+  "nba-head-to-head-tier-list-current-updated-at";
 
 export type TierListRoleFilter = "all" | "starter" | "bench";
 export type TierListExperienceFilter =
@@ -424,11 +426,33 @@ export const normalizeTierListState = (
   };
 };
 
+export const loadTierListCurrentUpdatedAt = (): number => {
+  const saved = readJson<{ updatedAt?: number }>(TIER_LIST_CURRENT_UPDATED_AT_KEY);
+  if (typeof saved?.updatedAt === "number" && Number.isFinite(saved.updatedAt)) {
+    return Math.max(0, Math.round(saved.updatedAt));
+  }
+  return 0;
+};
+
+const touchTierListCurrentUpdatedAt = (updatedAt = Date.now()) => {
+  writeJson(TIER_LIST_CURRENT_UPDATED_AT_KEY, {
+    updatedAt: Math.max(0, Math.round(updatedAt)),
+  });
+};
+
 export const loadTierListState = (): TierListState =>
   normalizeTierListState(readJson<Partial<TierListState>>(TIER_LIST_STORAGE_KEY));
 
+const pushTierListLibraryIfLinked = () => {
+  void import("./tierListLibraryRemote")
+    .then(({ pushTierListLibraryIfLinked }) => pushTierListLibraryIfLinked())
+    .catch(() => undefined);
+};
+
 export const saveTierListState = (state: TierListState) => {
   writeJson(TIER_LIST_STORAGE_KEY, normalizeTierListState(state));
+  touchTierListCurrentUpdatedAt();
+  pushTierListLibraryIfLinked();
 };
 
 export const normalizeTierListLibrary = (
@@ -471,6 +495,23 @@ export const loadTierListLibrary = (): TierListLibrary =>
 
 export const saveTierListLibrary = (library: TierListLibrary) => {
   writeJson(TIER_LIST_LIBRARY_KEY, normalizeTierListLibrary(library));
+  pushTierListLibraryIfLinked();
+};
+
+export const snapshotLocalTierListAccount = () => ({
+  current: loadTierListState(),
+  currentUpdatedAt: loadTierListCurrentUpdatedAt(),
+  library: loadTierListLibrary(),
+});
+
+export const applyTierListAccountLocally = (payload: {
+  current: TierListState;
+  currentUpdatedAt: number;
+  library: TierListLibrary;
+}) => {
+  writeJson(TIER_LIST_STORAGE_KEY, normalizeTierListState(payload.current));
+  touchTierListCurrentUpdatedAt(payload.currentUpdatedAt);
+  writeJson(TIER_LIST_LIBRARY_KEY, normalizeTierListLibrary(payload.library));
 };
 
 /** Upsert the working board into the saved-library list. */
