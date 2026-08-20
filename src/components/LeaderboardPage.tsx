@@ -241,10 +241,8 @@ function LeaderboardBoard({
 }
 
 export function LeaderboardPage({
-  onBack,
   onChallengeGm,
 }: {
-  onBack?: () => void;
   onChallengeGm?: (mode: "classic" | "ranked") => void;
 } = {}) {
   const [view, setView] = useState<LeaderboardView>("classic");
@@ -343,7 +341,6 @@ export function LeaderboardPage({
       className="leaderboard"
       title="Ranks"
       lede="Casual and Pro"
-      onBack={onBack}
     >
       {refreshFailed ? (
         <InlineAlert
