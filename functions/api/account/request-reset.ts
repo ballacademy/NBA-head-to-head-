@@ -76,9 +76,21 @@ const sendResetEmail = async (params: {
   }
 };
 
+const EMAIL_UNAVAILABLE = {
+  error:
+    "Password reset email isn't available right now. Email support for a one-time reset code.",
+};
+
+const EMAIL_SEND_FAILED = {
+  error:
+    "Couldn't send the reset email. Try again in a minute, or email support for a code.",
+};
+
 /**
  * Public self-serve: request a password reset code emailed to the account.
- * Always returns a generic success message (does not reveal if username exists).
+ * Always returns a generic success message (does not reveal whether a username
+ * exists) when email delivery is configured. Without Resend configured, returns
+ * a clear unavailable error instead of pretending a code was emailed.
  */
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: { username?: unknown };
@@ -90,6 +102,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!context.env.DB) {
     return json({ error: "Account database is not configured." }, 503);
+  }
+
+  const apiKey = context.env.RESEND_API_KEY?.trim();
+  if (!apiKey) {
+    console.info(
+      "[request-reset] RESEND_API_KEY not set; refusing self-serve email",
+    );
+    return json(EMAIL_UNAVAILABLE, 503);
   }
 
   const usernameResult = validateUsername(String(body.username ?? ""));
@@ -153,30 +173,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       .bind(id, account.id, tokenHash, createdAt, expiresAt)
       .run();
 
-    const apiKey = context.env.RESEND_API_KEY?.trim();
-    if (apiKey) {
-      const from =
-        context.env.RESET_EMAIL_FROM?.trim() ||
-        "Draft Day GM <onboarding@resend.dev>";
-      try {
-        await sendResetEmail({
-          apiKey,
-          from,
-          to: email,
-          username: account.username,
-          code,
-          expiresAt,
-        });
-      } catch (error) {
-        console.error(
-          "[request-reset] email delivery failed",
-          error instanceof Error ? error.message : String(error),
-        );
-      }
-    } else {
-      console.info(
-        "[request-reset] RESEND_API_KEY not set; reset token stored without email",
+    const from =
+      context.env.RESET_EMAIL_FROM?.trim() ||
+      "Draft Day GM <onboarding@resend.dev>";
+    try {
+      await sendResetEmail({
+        apiKey,
+        from,
+        to: email,
+        username: account.username,
+        code,
+        expiresAt,
+      });
+    } catch (error) {
+      console.error(
+        "[request-reset] email delivery failed",
+        error instanceof Error ? error.message : String(error),
       );
+      return json(EMAIL_SEND_FAILED, 502);
     }
 
     return json(GENERIC_OK);
