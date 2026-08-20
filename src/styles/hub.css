@@ -191,6 +191,11 @@
   padding-inline: 2px;
 }
 
+.hub-feature__return-row--split {
+  justify-content: space-between;
+  gap: 10px;
+}
+
 /*
  * Return stays in document flow under the title band so it never covers
  * the title/lede (or the logo). Keep a compact control; Escape still works

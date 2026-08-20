@@ -918,12 +918,24 @@ export function LandingPage({
         ? "Your collection and career"
         : "Sign in and settings";
 
-  const playModeBack = (
-    <HubFeatureReturnButton
-      label="Play"
-      onBack={() => updatePlaySection("chooser")}
-    />
-  );
+  const playModeBack =
+    hubTab === "play" && playSection !== "chooser" ? (
+      <HubFeatureReturnButton
+        label="Play"
+        onBack={() => updatePlaySection("chooser")}
+        trailing={
+          playSection === "headToHead" && onViewGameLog ? (
+            <button
+              type="button"
+              className="secondary-button hub-feature__return"
+              onClick={onViewGameLog}
+            >
+              Game log
+            </button>
+          ) : undefined
+        }
+      />
+    ) : null;
 
   return (
     <HubShell
@@ -975,7 +987,7 @@ export function LandingPage({
         <p className="landing__lede landing-hub__lede">{hubLede}</p>
       </div>
 
-      {hubTab === "play" && playSection !== "chooser" ? playModeBack : null}
+      {playModeBack}
 
       {showFirstSessionGuide &&
       hubTab === "play" &&
@@ -1098,17 +1110,6 @@ export function LandingPage({
                       : " (Pro)",
                 )}
               </p>
-            ) : null}
-            {onViewGameLog ? (
-              <div className="landing-hub__links landing-hub__links--inline">
-                <button
-                  type="button"
-                  className="landing-hub__link-button landing-hub__link-button--compact"
-                  onClick={onViewGameLog}
-                >
-                  Game log
-                </button>
-              </div>
             ) : null}
             {showBannersExplainer ? (
               <p className="banners-explainer" role="note">
