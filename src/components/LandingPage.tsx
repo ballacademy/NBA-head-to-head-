@@ -36,6 +36,7 @@ import {
   CLASSIC_HEAD_TO_HEAD_LABEL,
   PRO_HEAD_TO_HEAD_LABEL,
 } from "../lib/modeLabels";
+import { MODE_COPY } from "../lib/modeCopy";
 import { PICK_TIME_LIMIT_SECONDS, CLASSIC_PICK_TIME_LIMIT_SECONDS } from "../lib/match";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -902,7 +903,7 @@ export function LandingPage({
   const hubLede =
     hubTab === "play"
       ? playSection === "daily"
-        ? "Hidden stats. One try per mode."
+        ? MODE_COPY.daily.blurb
         : playSection === "events"
           ? "Weekly live H2H · rotating rules."
           : playSection === "headToHead"

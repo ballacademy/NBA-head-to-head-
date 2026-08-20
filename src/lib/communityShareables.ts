@@ -29,6 +29,23 @@ export interface CommunityMatchupAttachment {
   savedAt: string;
 }
 
+/** Label for competitive monthly W–L on share cards and post attachments. */
+export const COMMUNITY_COMPETITIVE_RECORD_LABEL = "This month";
+
+export const formatCommunityCompetitiveRecord = (userWinRecord: string) =>
+  `${COMMUNITY_COMPETITIVE_RECORD_LABEL} ${userWinRecord}`;
+
+export const communityMatchupAttachmentViewLabel = (
+  kind: "matchup" | "lineup",
+) => (kind === "matchup" ? "View matchup" : "View lineup");
+
+export const communityMatchupViewerToggleLabel = (
+  showingFullMatchup: boolean,
+) => (showingFullMatchup ? "View my lineup" : "View full matchup");
+
+export const formatCommunityActivityStrip = (postsToday: number) =>
+  `${postsToday} new post${postsToday === 1 ? "" : "s"} today`;
+
 export interface CommunityLineupAttachment {
   kind: "lineup";
   title: string;
@@ -185,7 +202,7 @@ export const formatCommunityMatchupDetails = (
     record: attachment.userRecord
       ? `Projected ${attachment.userRecord}`
       : attachment.userWinRecord
-        ? `Record ${attachment.userWinRecord}`
+        ? formatCommunityCompetitiveRecord(attachment.userWinRecord)
         : null,
     yourFive: attachment.userLineupNames.join(", "),
     theirFive: attachment.opponentLineupNames.join(", "),
@@ -240,11 +257,13 @@ export const formatCommunityAttachmentChip = (
           ? "Casual"
           : /event/i.test(attachment.modeLabel)
             ? "Event"
-            : /practice/i.test(attachment.modeLabel)
-              ? "Practice"
-              : /h2h|head/i.test(attachment.modeLabel)
-                ? "H2H"
-                : attachment.modeLabel.slice(0, 12);
+            : /all[- ]?time/i.test(attachment.modeLabel)
+              ? "All-Time"
+              : /practice/i.test(attachment.modeLabel)
+                ? "Practice"
+                : /h2h|head/i.test(attachment.modeLabel)
+                  ? "H2H"
+                  : attachment.modeLabel.slice(0, 12);
     return `${mode} · ${result} · ${formatMatchupOvrPair(attachment)}`;
   }
 
@@ -330,7 +349,7 @@ export const buildShareCardInputFromAttachment = (
       recordLabel: projectedRecord
         ? "Projected"
         : winRecord
-          ? "Record"
+          ? COMMUNITY_COMPETITIVE_RECORD_LABEL
           : undefined,
     };
   }

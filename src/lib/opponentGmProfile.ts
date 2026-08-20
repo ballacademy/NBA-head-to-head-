@@ -3,6 +3,7 @@ export const canOpenOpponentGmProfile = (options: {
   profilePlayerId?: string | null;
   practiceMode?: boolean;
   eventId?: string | null;
+  allTimeMode?: boolean;
 }): boolean => {
   const profilePlayerId = options.profilePlayerId?.trim() ?? "";
 
@@ -21,8 +22,8 @@ export const canOpenOpponentGmProfile = (options: {
   }
 
   // Weekly events track a separate ladder; skip Casual/Pro profile there.
-  // Private H2H is allowed — room opponents are real accounts.
-  if (options.eventId) {
+  // All-Time uses a separate ladder — Casual/Pro monthly stats would mislead.
+  if (options.eventId || options.allTimeMode) {
     return false;
   }
 
