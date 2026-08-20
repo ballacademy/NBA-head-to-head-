@@ -549,7 +549,7 @@ export function LandingPage({
       gameLogCount: loadMatchGameLog().length,
       recapReady:
         recap.dailyPuzzles > 0 && !hasSeenWeeklyRecap(recap.weekKey),
-      recapDetail: `Daily Draft · ${recap.periodLabel.toLowerCase()}`,
+      recapDetail: recap.weekRangeLabel,
       nextBadgeTitle: nextBadge?.title ?? null,
       nextBadgeIsDaily,
       nextBadgePlaySection: nextBadge?.hint.playSection,
@@ -1522,11 +1522,6 @@ export function LandingPage({
             onViewWeeklyRecap={() => {
               setRecapSeenTick((tick) => tick + 1);
               onViewWeeklyRecap("roster");
-            }}
-            dailyChooserStatus={dailyChooserStatus}
-            onPlayDaily={() => {
-              updatePlaySection("daily");
-              onHubTabChange("play");
             }}
             onPlayIntent={handlePlayIntent}
           />

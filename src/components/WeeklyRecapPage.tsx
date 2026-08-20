@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   buildWeeklyGmRecap,
+  formatWeeklyRecapLede,
   markWeeklyRecapSeen,
 } from "../lib/gmWeeklyRecap";
 import { HubPageChrome } from "./HubPageChrome";
@@ -25,7 +26,7 @@ export function WeeklyRecapPage({
     <HubPageChrome
       className="weekly-recap-page"
       title="Weekly recap"
-      lede={`${recap.periodLabel} · Daily Draft · ${recap.weekRangeLabel}`}
+      lede={formatWeeklyRecapLede(recap)}
       onBack={onBack}
       backLabel={backLabel}
     >

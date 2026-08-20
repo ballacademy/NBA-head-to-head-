@@ -136,7 +136,7 @@ describe("gmWeeklyRecap", () => {
     vi.useRealTimers();
   });
 
-  it("falls back to this week when last week has no Daily scores", () => {
+  it("always recaps the previous completed Mon–Sun week", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
 
@@ -152,11 +152,14 @@ describe("gmWeeklyRecap", () => {
     });
 
     const recap = buildWeeklyGmRecap();
-    expect(recap.weekKey).toBe("2026-08-17");
-    expect(recap.periodLabel).toBe("This week");
-    expect(recap.dailyDays).toBe(2);
-    expect(recap.dailyPuzzles).toBe(2);
-    expect(recap.bestDailyFinishLabel).toContain("percentile");
+    expect(recap.weekKey).toBe("2026-08-10");
+    expect(recap.periodLabel).toBe("Last week");
+    expect(recap.weekRangeLabel).toMatch(/Aug 10.+Aug 16/);
+    expect(recap.dailyDays).toBe(0);
+    expect(recap.dailyPuzzles).toBe(0);
+    expect(recap.dailyDaysSplitLabel).toBe("No puzzles scored");
+    expect(recap.h2hMatches).toBe(0);
+    expect(recap.h2hWinPctLabel).toBe("—");
 
     vi.useRealTimers();
   });
@@ -181,32 +184,29 @@ describe("gmWeeklyRecap", () => {
 
   it("scopes weekly H2H recap by player id", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
-
-    const weekKey = getWeeklyRecapWeekKey();
-    expect(weekKey).toBe("2026-08-17");
-    writeJson("nba-head-to-head-daily-scores", {
-      "2026-08-18": [
-        { playerId: "player-a", goalId: "pts", mode: "basic", percentile: 71 },
-        { playerId: "player-b", goalId: "pts", mode: "basic", percentile: 63 },
-      ],
-    });
+    vi.setSystemTime(new Date("2026-08-16T20:00:00.000Z"));
 
     recordWeeklyH2hResult("win", "player-a", "headToHead");
     recordWeeklyH2hResult("loss", "player-a", "ranked");
     recordWeeklyH2hResult("win", "player-b", "headToHead");
+
+    vi.setSystemTime(new Date("2026-08-18T20:00:00.000Z"));
 
     setPlayerIdentity("player-a");
     const recapA = buildWeeklyGmRecap();
     expect(recapA.h2hWins).toBe(1);
     expect(recapA.h2hLosses).toBe(1);
     expect(recapA.h2hMatches).toBe(2);
+    expect(recapA.h2hRecordLabel).toBe("1-1");
+    expect(recapA.h2hWinPctLabel).toBe("50%");
 
     setPlayerIdentity("player-b");
     const recapB = buildWeeklyGmRecap();
     expect(recapB.h2hWins).toBe(1);
     expect(recapB.h2hLosses).toBe(0);
     expect(recapB.h2hMatches).toBe(1);
+    expect(recapB.h2hRecordLabel).toBe("1-0");
+    expect(recapB.h2hWinPctLabel).toBe("100%");
 
     vi.useRealTimers();
   });

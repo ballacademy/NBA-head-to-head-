@@ -1,3 +1,4 @@
+import { formatGmRecordLine } from "./gmStats";
 import { readJson, writeJson } from "./browserStorage";
 import { getDailyDateKey, subtractDaysFromDateKey } from "./dailyDraft";
 import {
@@ -230,7 +231,7 @@ export const getWeeklyH2hRecord = (
 
 const formatDailyDaysSplitLabel = (basic: number, advanced: number) => {
   if (basic <= 0 && advanced <= 0) {
-    return "No Daily";
+    return "No puzzles scored";
   }
 
   return `${formatDailyDraftModeLabel("basic")} ${basic} · ${formatDailyDraftModeLabel("advanced")} ${advanced}`;
@@ -243,10 +244,19 @@ const formatBestDailyFinishLabel = (percentile: number | null) => {
   return `${formatOrdinal(Math.round(percentile))} percentile`;
 };
 
+const formatWinPctLabel = (wins: number, losses: number, ties: number) => {
+  const total = wins + losses + ties;
+  if (total <= 0) {
+    return "—";
+  }
+
+  return `${Math.round((wins / total) * 100)}%`;
+};
+
 export interface WeeklyGmRecap {
   weekKey: string;
   weekRangeLabel: string;
-  periodLabel: "Last week" | "This week";
+  periodLabel: "Last week";
   dailyDays: number;
   dailyDaysSplitLabel: string;
   dailyPuzzles: number;
@@ -255,24 +265,24 @@ export interface WeeklyGmRecap {
   h2hLosses: number;
   h2hTies: number;
   h2hMatches: number;
+  h2hRecordLabel: string;
+  h2hWinPctLabel: string;
 }
+
+export const formatWeeklyRecapLede = (recap: Pick<WeeklyGmRecap, "periodLabel" | "weekRangeLabel">) =>
+  `${recap.periodLabel} · ${recap.weekRangeLabel}`;
 
 export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
   const playerId = getOrCreatePlayerId();
   const store = loadDailyScoreStore();
-  const lastWeekKey = getLastCompletedWeeklyRecapWeekKey();
-  const thisWeekKey = getWeeklyRecapWeekKey();
-  const lastWeek = summarizeWeek(lastWeekKey, playerId, store);
-  const thisWeek = summarizeWeek(thisWeekKey, playerId, store);
-  const useLastWeek = lastWeek.dailyPuzzles > 0 || thisWeek.dailyPuzzles <= 0;
-  const weekKey = useLastWeek ? lastWeekKey : thisWeekKey;
-  const summary = useLastWeek ? lastWeek : thisWeek;
+  const weekKey = getLastCompletedWeeklyRecapWeekKey();
+  const summary = summarizeWeek(weekKey, playerId, store);
   const h2h = getWeeklyH2hRecord(weekKey, playerId);
 
   return {
     weekKey,
-    weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey, !useLastWeek),
-    periodLabel: useLastWeek ? "Last week" : "This week",
+    weekRangeLabel: formatWeeklyRecapRangeLabel(weekKey),
+    periodLabel: "Last week",
     dailyDays: summary.dailyDays,
     dailyDaysSplitLabel: formatDailyDaysSplitLabel(
       summary.basic,
@@ -284,6 +294,8 @@ export const buildWeeklyGmRecap = (): WeeklyGmRecap => {
     h2hLosses: h2h.losses,
     h2hTies: h2h.ties,
     h2hMatches: h2h.wins + h2h.losses + h2h.ties,
+    h2hRecordLabel: formatGmRecordLine(h2h.wins, h2h.losses, h2h.ties),
+    h2hWinPctLabel: formatWinPctLabel(h2h.wins, h2h.losses, h2h.ties),
   };
 };
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   buildWeeklyGmRecap,
+  formatWeeklyRecapLede,
   hasSeenWeeklyRecap,
   markWeeklyRecapSeen,
 } from "../lib/gmWeeklyRecap";
@@ -16,6 +17,18 @@ interface WeeklyGmRecapCardProps {
   hideHeading?: boolean;
 }
 
+const formatWeeklyH2hSummary = (
+  matches: number,
+  recordLabel: string,
+  winPctLabel: string,
+) => {
+  if (matches <= 0) {
+    return "H2H · No matches";
+  }
+
+  return `H2H ${recordLabel} · ${winPctLabel} · ${matches} match${matches === 1 ? "" : "es"}`;
+};
+
 export function WeeklyGmRecapCard({
   onViewWeek,
   className = "",
@@ -25,6 +38,12 @@ export function WeeklyGmRecapCard({
   hideHeading = false,
 }: WeeklyGmRecapCardProps) {
   const recap = buildWeeklyGmRecap();
+  const recapLede = formatWeeklyRecapLede(recap);
+  const h2hSummary = formatWeeklyH2hSummary(
+    recap.h2hMatches,
+    recap.h2hRecordLabel,
+    recap.h2hWinPctLabel,
+  );
   const [dismissed, setDismissed] = useState(() =>
     hasSeenWeeklyRecap(recap.weekKey),
   );
@@ -48,21 +67,13 @@ export function WeeklyGmRecapCard({
       >
         <div className="franchise-home__card-head">
           <p className="franchise-home__eyebrow">Weekly recap</p>
-          <p className="franchise-home__lede">
-            {recap.periodLabel} · {recap.weekRangeLabel}
-          </p>
+          <p className="franchise-home__lede">{recapLede}</p>
         </div>
         <p className="franchise-home__summary">{recap.dailyDaysSplitLabel}</p>
         <p className="franchise-home__meta">
           Best finish {recap.bestDailyFinishLabel}
         </p>
-        {recap.h2hMatches > 0 ? (
-          <p className="franchise-home__meta">
-            H2H {recap.h2hWins}–{recap.h2hLosses}
-            {recap.h2hTies > 0 ? `–${recap.h2hTies}` : ""}{" "}
-            {recap.periodLabel.toLowerCase()}
-          </p>
-        ) : null}
+        <p className="franchise-home__meta">{h2hSummary}</p>
         <div className="franchise-home__card-actions">
           {onViewWeek ? (
             <button
@@ -100,9 +111,7 @@ export function WeeklyGmRecapCard({
               <h2 className="weekly-gm-recap__title" id="weekly-gm-recap-title">
                 Weekly recap
               </h2>
-              <p className="weekly-gm-recap__lede">
-                {recap.periodLabel} · Daily Draft · {recap.weekRangeLabel}
-              </p>
+              <p className="weekly-gm-recap__lede">{recapLede}</p>
             </div>
           )}
           {hideDismiss ? null : (
@@ -117,25 +126,49 @@ export function WeeklyGmRecapCard({
         </div>
       )}
 
-      <dl className="weekly-gm-recap__stats">
-        <div className="weekly-gm-recap__stat">
-          <dt>Days played</dt>
-          <dd>{recap.dailyDays}</dd>
-        </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Puzzles scored</dt>
-          <dd>
-            {recap.dailyPuzzles}
-            <span className="weekly-gm-recap__stat-meta">
-              {recap.dailyDaysSplitLabel}
-            </span>
-          </dd>
-        </div>
-        <div className="weekly-gm-recap__stat">
-          <dt>Best finish</dt>
-          <dd>{recap.bestDailyFinishLabel}</dd>
-        </div>
-      </dl>
+      <div className="weekly-gm-recap__groups">
+        <section className="weekly-gm-recap__group" aria-label="Daily Draft">
+          <p className="weekly-gm-recap__group-title">Daily Draft</p>
+          <dl className="weekly-gm-recap__stats">
+            <div className="weekly-gm-recap__stat">
+              <dt>Days played</dt>
+              <dd>{recap.dailyDays}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Puzzles scored</dt>
+              <dd>
+                {recap.dailyPuzzles}
+                <span className="weekly-gm-recap__stat-meta">
+                  {recap.dailyDaysSplitLabel}
+                </span>
+              </dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Best finish</dt>
+              <dd>{recap.bestDailyFinishLabel}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="weekly-gm-recap__group" aria-label="Head to Head">
+          <p className="weekly-gm-recap__group-title">Head to Head</p>
+          <dl className="weekly-gm-recap__stats">
+            <div className="weekly-gm-recap__stat">
+              <dt>Matches</dt>
+              <dd>{recap.h2hMatches}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Record</dt>
+              <dd>{recap.h2hRecordLabel}</dd>
+            </div>
+            <div className="weekly-gm-recap__stat">
+              <dt>Win %</dt>
+              <dd>{recap.h2hWinPctLabel}</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
       {onViewWeek ? (
         <button
           type="button"
