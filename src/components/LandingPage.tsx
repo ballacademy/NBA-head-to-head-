@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { scrollHubToTop } from "../lib/hubScroll";
+import { loadMatchGameLog } from "../lib/matchGameLog";
 import {
   completeUnlock,
   dismissPendingUnlock,
@@ -546,6 +547,7 @@ export function LandingPage({
     return buildPlayHubChips({
       queuedClassic: queuedLineupLock.classic,
       queuedRanked: queuedLineupLock.ranked,
+      gameLogCount: loadMatchGameLog().length,
       recapReady:
         recap.dailyPuzzles > 0 && !hasSeenWeeklyRecap(recap.weekKey),
       recapDetail: `Daily Draft · ${recap.periodLabel.toLowerCase()}`,
@@ -573,6 +575,10 @@ export function LandingPage({
   });
 
   const handlePlayHubChip = (chip: PlayHubChip) => {
+    if (chip.action.type === "gameLog") {
+      onViewGameLog?.();
+      return;
+    }
     if (chip.action.type === "h2h") {
       updatePlaySection("headToHead");
       if (hubTab !== "play") {
@@ -915,7 +921,7 @@ export function LandingPage({
 
   const playModeBack = (
     <HubFeatureReturnButton
-      label="Play modes"
+      label="Play"
       onBack={() => updatePlaySection("chooser")}
     />
   );

@@ -893,6 +893,10 @@ h1.landing-hub__title--name {
   box-shadow: inset 3px 0 0 var(--accent-play);
 }
 
+.play-hub-strip__chip--gameLog {
+  box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.55);
+}
+
 .play-hub-strip__chip--recap {
   box-shadow: inset 3px 0 0 var(--accent-roster);
 }

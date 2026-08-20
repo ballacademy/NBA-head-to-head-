@@ -169,16 +169,16 @@ function ComparePlayerCell({
 function TeamDetails({
   lineup,
   score,
+  insightsOpen,
 }: {
   lineup: Player[];
   score: LineupScore;
+  insightsOpen: boolean;
 }) {
   const scoreContext = buildLineupScoreContext(score);
   const insights = buildLineupScoreInsights(score);
   const hasInsights =
     insights.boosts.length > 0 || insights.detractors.length > 0;
-  const [breakdownOpen, setBreakdownOpen] = useState(false);
-  const breakdownId = useId();
 
   return (
     <div className="matchup-compare__details-team">
@@ -186,56 +186,44 @@ function TeamDetails({
         <p className="matchup-compare__score-context">{scoreContext}</p>
       ) : null}
       <LineupChemistryBadges lineup={lineup} />
-      {hasInsights ? (
+      {hasInsights && insightsOpen ? (
         <div className="score-breakdown">
-          <button
-            type="button"
-            className="score-breakdown__toggle"
-            aria-expanded={breakdownOpen}
-            aria-controls={breakdownId}
-            onClick={() => setBreakdownOpen((open) => !open)}
-          >
-            Boosts & detractors
-            <span aria-hidden="true">{breakdownOpen ? "−" : "+"}</span>
-          </button>
-          {breakdownOpen ? (
-            <div id={breakdownId} className="score-breakdown__panels">
-              {insights.boosts.length > 0 ? (
-                <div className="score-breakdown__group">
-                  <h4 className="score-breakdown__group-title score-breakdown__group-title--boost">
-                    Boosts
-                  </h4>
-                  <ul className="score-breakdown__insights">
-                    {insights.boosts.map((note) => (
-                      <li
-                        key={`boost-${note}`}
-                        className="score-breakdown__insight score-breakdown__insight--boost"
-                      >
-                        {note}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {insights.detractors.length > 0 ? (
-                <div className="score-breakdown__group">
-                  <h4 className="score-breakdown__group-title score-breakdown__group-title--drag">
-                    Detractors
-                  </h4>
-                  <ul className="score-breakdown__insights">
-                    {insights.detractors.map((note) => (
-                      <li
-                        key={`drag-${note}`}
-                        className="score-breakdown__insight score-breakdown__insight--drag"
-                      >
-                        {note}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          <div className="score-breakdown__panels">
+            {insights.boosts.length > 0 ? (
+              <div className="score-breakdown__group">
+                <h4 className="score-breakdown__group-title score-breakdown__group-title--boost">
+                  Boosts
+                </h4>
+                <ul className="score-breakdown__insights">
+                  {insights.boosts.map((note) => (
+                    <li
+                      key={`boost-${note}`}
+                      className="score-breakdown__insight score-breakdown__insight--boost"
+                    >
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {insights.detractors.length > 0 ? (
+              <div className="score-breakdown__group">
+                <h4 className="score-breakdown__group-title score-breakdown__group-title--drag">
+                  Detractors
+                </h4>
+                <ul className="score-breakdown__insights">
+                  {insights.detractors.map((note) => (
+                    <li
+                      key={`drag-${note}`}
+                      className="score-breakdown__insight score-breakdown__insight--drag"
+                    >
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>
@@ -319,8 +307,16 @@ export function MatchupCompareBoard({
 
       {breakdownOpen ? (
         <div id={breakdownId} className="matchup-compare__details">
-          <TeamDetails lineup={userLineup} score={userScore} />
-          <TeamDetails lineup={opponentLineup} score={opponentScore} />
+          <TeamDetails
+            lineup={userLineup}
+            score={userScore}
+            insightsOpen={breakdownOpen}
+          />
+          <TeamDetails
+            lineup={opponentLineup}
+            score={opponentScore}
+            insightsOpen={breakdownOpen}
+          />
         </div>
       ) : null}
 

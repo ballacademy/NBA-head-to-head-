@@ -4,10 +4,17 @@ import {
 } from "./dailyDraftPlayStreak";
 import type { LandingPlaySection } from "./landingHub";
 
-export type PlayHubChipId = "inbox" | "daily" | "recap" | "badge" | "streak";
+export type PlayHubChipId =
+  | "inbox"
+  | "daily"
+  | "recap"
+  | "badge"
+  | "streak"
+  | "gameLog";
 
 export type PlayHubChipAction =
   | { type: "h2h" }
+  | { type: "gameLog" }
   | { type: "roster" }
   | { type: "recap" }
   | { type: "play"; playSection: LandingPlaySection; h2hMode?: "classic" | "ranked" };
@@ -54,6 +61,7 @@ export const buildPlayHubChips = (params: {
   dailyStreakLabel?: string | null;
   dailyOpen?: boolean;
   dailyOpenDetail?: string | null;
+  gameLogCount?: number;
 }): PlayHubChip[] => {
   const chips: PlayHubChip[] = [];
 
@@ -87,6 +95,19 @@ export const buildPlayHubChips = (params: {
       detail: params.recapDetail ?? "Daily Draft",
       ctaLabel: "Go",
       action: { type: "recap" },
+    });
+  }
+
+  if (params.gameLogCount && params.gameLogCount > 0) {
+    chips.push({
+      id: "gameLog",
+      label:
+        params.gameLogCount === 1
+          ? "1 recent match"
+          : `${params.gameLogCount} recent matches`,
+      detail: "Game log",
+      ctaLabel: "View",
+      action: { type: "gameLog" },
     });
   }
 

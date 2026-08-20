@@ -193,9 +193,13 @@ export function GmProfileModal({
   const showWinBadge = hasFireStreak(displayWinStreak);
   const showLossBadge =
     !showWinBadge && hasLossStreakBadge(displayLossStreak);
-  const statsPending = fetchRemoteProfile && !profileResolved;
+  const hasSeededMonthlyRecord = wins !== undefined && losses !== undefined;
+  const legacyStatsPending = fetchRemoteProfile && !profileResolved;
+  const monthlyStatsPending =
+    fetchRemoteProfile && !profileResolved && !hasSeededMonthlyRecord;
+  const displayElo = currentSeasonElo ?? elo ?? null;
 
-  const monthRecordLabel = statsPending
+  const monthRecordLabel = monthlyStatsPending
     ? "Loading..."
     : seasonUnavailable
       ? "Stats unavailable"
@@ -209,7 +213,7 @@ export function GmProfileModal({
             losses: displayLosses,
           });
 
-  const streakLabel = statsPending ? (
+  const streakLabel = monthlyStatsPending ? (
     "Loading..."
   ) : seasonUnavailable ? (
     "Stats unavailable"
@@ -252,7 +256,7 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Best monthly finish</span>
             <strong className="gm-profile-modal__value">
-              {statsPending
+              {legacyStatsPending
                 ? "Loading..."
                 : seasonUnavailable && !legacyBestRank
                   ? "Stats unavailable"
@@ -265,13 +269,13 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">Most banners ever</span>
             <strong className="gm-profile-modal__value">
-              {statsPending
+              {legacyStatsPending
                 ? "Loading..."
                 : seasonUnavailable && legacyPeakElo == null
                   ? "Stats unavailable"
                   : formatLegacyPeakBannerCount(legacyPeakElo)}
             </strong>
-            {!statsPending &&
+            {!legacyStatsPending &&
             !seasonUnavailable &&
             formatLegacyPeakBannerTier(legacyPeakElo) ? (
               <span className="gm-profile-modal__meta">
@@ -285,12 +289,10 @@ export function GmProfileModal({
           <div className="gm-profile-modal__stat">
             <span className="gm-profile-modal__label">This month</span>
             <strong>{monthRecordLabel}</strong>
-            {!statsPending &&
-            !seasonUnavailable &&
-            typeof currentSeasonElo === "number" ? (
+            {!seasonUnavailable && typeof displayElo === "number" ? (
               <RankedTierBadge
                 tierLabel={tierLabel}
-                elo={currentSeasonElo}
+                elo={displayElo}
                 compact
               />
             ) : null}
