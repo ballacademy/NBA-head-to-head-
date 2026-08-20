@@ -27,7 +27,7 @@ import {
   getDailyDraftPlayStreak,
 } from "../lib/dailyDraftPlayStreak";
 import { getDailyDateKey } from "../lib/dailyDraft";
-import { isAllTimeModePlayable } from "../lib/eraUnlocks";
+import { ALL_TIME_MODE_PLAYABLE, isAllTimeModePlayable } from "../lib/eraUnlocks";
 import {
   type ModePlayerRecords,
   type PlayerRecord,
@@ -359,6 +359,7 @@ export function LandingPage({
 
   const collectionProgress = getCollectionProgress(collection);
   const allTimePlayable = isAllTimeModePlayable();
+  const allTimeQaPreview = allTimePlayable && !ALL_TIME_MODE_PLAYABLE;
   const isMatchmaking = isMatchmakingSearchActive || matchmakingMode != null;
   const teamValidation = useMemo(() => validateTeamProfile(name), [name]);
   const modesBlocked = isMatchmaking || Boolean(collection.pendingUnlock);
@@ -1227,6 +1228,11 @@ export function LandingPage({
               {allTimePlayable ? (
                 <div className="all-time-card landing-card landing-card--mode">
                   <p className="eyebrow">{ALL_TIME_LABEL}</p>
+                  {allTimeQaPreview ? (
+                    <p className="all-time-card__preview-note" role="note">
+                      QA preview — not in the production beta yet.
+                    </p>
+                  ) : null}
                   <h2 className="all-time-card__title">
                     Peak seasons &amp; legends
                   </h2>
@@ -1235,6 +1241,11 @@ export function LandingPage({
                     from active stars at their peak seasons, plus legendary
                     All-Stars from every era.
                   </p>
+                  {allTimeQaPreview ? (
+                    <p className="all-time-card__preview-copy">
+                      {MODE_COPY.allTime.blurb}
+                    </p>
+                  ) : null}
                   <MatchModeRecord record={modeRecords.allTime} />
                   <button
                     type="button"

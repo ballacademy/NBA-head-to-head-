@@ -14,8 +14,6 @@ export interface HubPageChromeProps {
   /** When set, renders the shared return row under the title band. */
   onBack?: () => void;
   backLabel?: string;
-  /** Escape still works when false; used by Beta notes. */
-  backVisible?: boolean;
   children: ReactNode;
 }
 
@@ -34,7 +32,6 @@ export function HubPageChrome({
   ledeClassName = "",
   onBack,
   backLabel,
-  backVisible = true,
   children,
 }: HubPageChromeProps) {
   const rootClass = className ? `hub-feature ${className}` : "hub-feature";
@@ -66,11 +63,7 @@ export function HubPageChrome({
       </div>
 
       {onBack ? (
-        <HubFeatureReturnButton
-          onBack={onBack}
-          label={backLabel}
-          visible={backVisible}
-        />
+        <HubFeatureReturnButton onBack={onBack} label={backLabel} />
       ) : null}
 
       {children}
