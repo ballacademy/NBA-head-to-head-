@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { canOpenOpponentGmProfile } from "./opponentGmProfile";
 
 describe("canOpenOpponentGmProfile", () => {
-  it("allows competitive live and ghost profile ids", () => {
+  it("allows competitive opponents with real profile ids", () => {
     expect(
       canOpenOpponentGmProfile({
         profilePlayerId: "p_abcdef1234567890abcdef12",
@@ -23,7 +23,7 @@ describe("canOpenOpponentGmProfile", () => {
     ).toBe(true);
   });
 
-  it("blocks practice, events, and synthetic ids", () => {
+  it("blocks practice, events, All-Time, and synthetic ids", () => {
     expect(
       canOpenOpponentGmProfile({
         profilePlayerId: "player-1",
@@ -34,6 +34,12 @@ describe("canOpenOpponentGmProfile", () => {
       canOpenOpponentGmProfile({
         profilePlayerId: "player-1",
         eventId: "evt-1",
+      }),
+    ).toBe(false);
+    expect(
+      canOpenOpponentGmProfile({
+        profilePlayerId: "player-1",
+        allTimeMode: true,
       }),
     ).toBe(false);
     expect(

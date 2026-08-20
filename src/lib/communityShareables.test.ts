@@ -160,7 +160,25 @@ describe("matchup share card record", () => {
     );
 
     expect(input?.record).toBe("12-5");
-    expect(input?.recordLabel).toBe("Record");
+    expect(input?.recordLabel).toBe("This month");
+  });
+
+  it("labels competitive W-L as this month in matchup details", () => {
+    expect(
+      formatCommunityMatchupDetails({
+        kind: "matchup",
+        modeLabel: "Casual Head to Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 91,
+        opponentOvr: 87,
+        userLineupNames: ["A"],
+        opponentLineupNames: ["B"],
+        userWinRecord: "12-5",
+        savedAt: "2026-07-01T00:00:00.000Z",
+      }).record,
+    ).toBe("This month 12-5");
   });
 
   it("surfaces projected team W-L in matchup details", () => {

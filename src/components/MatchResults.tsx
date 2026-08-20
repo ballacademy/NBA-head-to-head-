@@ -634,6 +634,7 @@ export function MatchResults({
     profilePlayerId: opponentProfileId,
     practiceMode: user.practiceMode,
     eventId: user.eventId,
+    allTimeMode: user.allTimeMode,
   });
   const openOpponentProfile = () => setOpponentProfileOpen(true);
   const competitiveOutcome =

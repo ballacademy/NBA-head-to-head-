@@ -25,6 +25,9 @@ import {
 import {
   buildMatchupShareCardInputsFromAttachment,
   buildShareCardInputFromAttachment,
+  communityMatchupAttachmentViewLabel,
+  communityMatchupViewerToggleLabel,
+  formatCommunityActivityStrip,
   formatCommunityAttachmentChip,
   formatCommunityAttachmentSummary,
   formatCommunityMatchupDetails,
@@ -83,8 +86,7 @@ export function TierListHubHome({
     <div className="tier-list-hub__home">
       {postsToday != null && postsToday > 0 ? (
         <p className="community-activity-strip" role="status">
-          <strong>{postsToday}</strong> new post
-          {postsToday === 1 ? "" : "s"} today
+          <strong>{formatCommunityActivityStrip(postsToday)}</strong>
         </p>
       ) : null}
       <div className="play-hub-chooser tier-list-hub__chooser" role="list">
@@ -1030,7 +1032,7 @@ export function CommunityPostsPanel({
           </div>
           {postsToday != null && postsToday > 0 ? (
             <p className="community-activity-strip" role="status">
-              <strong>{postsToday}</strong> new today
+              <strong>{formatCommunityActivityStrip(postsToday)}</strong>
             </p>
           ) : null}
 
@@ -1187,9 +1189,7 @@ export function CommunityPostsPanel({
                             void handleViewAttachment(post.id, post.attachment);
                           }}
                         >
-                          {post.attachment.kind === "matchup"
-                            ? "View matchup"
-                            : "View lineup"}
+                          {communityMatchupAttachmentViewLabel(post.attachment.kind)}
                         </button>
                       ) : null}
                       {post.attachment.kind === "tierList" ? (
@@ -1486,8 +1486,8 @@ export function CommunityPostsPanel({
               </label>
               {shareables.length === 0 ? (
                 <p className="community-posts-panel__attach-hint">
-                  Finish a Daily, H2H, or Events matchup, or publish a tier list,
-                  to attach it here.
+                  Finish a Daily, H2H, Events, or All-Time matchup, or publish a
+                  tier list, to attach it here.
                 </p>
               ) : null}
 
@@ -1608,7 +1608,7 @@ export function CommunityPostsPanel({
                   onClick={() => void handleToggleFullMatchup()}
                   disabled={viewBusy}
                 >
-                  {showingFullMatchup ? "Show my lineup" : "Show matchup"}
+                  {communityMatchupViewerToggleLabel(showingFullMatchup)}
                 </button>
                 {showMatchupDetails ? (
                   (() => {

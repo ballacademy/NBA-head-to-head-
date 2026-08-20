@@ -65,7 +65,7 @@ export const buildPlayHubChips = (params: {
           ? "Lineups queued"
           : "Lineup queued",
       detail: "Waiting for another GM",
-      ctaLabel: "H2H",
+      ctaLabel: "Status",
       action: { type: "h2h" },
     });
   }

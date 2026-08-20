@@ -67,7 +67,7 @@ describe("playHubRetention", () => {
     });
     expect(chips[0]).toMatchObject({
       label: "Lineup queued",
-      ctaLabel: "H2H",
+      ctaLabel: "Status",
       detail: "Waiting for another GM",
       action: { type: "h2h" },
     });
@@ -82,7 +82,7 @@ describe("playHubRetention", () => {
 
     expect(chips[0]).toMatchObject({
       id: "inbox",
-      ctaLabel: "H2H",
+      ctaLabel: "Status",
       action: { type: "h2h" },
     });
   });
