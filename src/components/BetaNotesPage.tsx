@@ -57,7 +57,7 @@ export function BetaNotesPage({
     <HubPageChrome
       className="beta-notes-page"
       title="Beta notes"
-      lede="Live modes, known limits, and how to reach us."
+      lede="Live modes, known limits, and how to reach us"
       onBack={onBack}
       backLabel="Account"
     >

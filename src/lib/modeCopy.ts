@@ -47,7 +47,7 @@ export const MODE_COPY: Record<ModeCopyId, ModeCopy> = {
     internalMode: "daily",
     short: "Daily",
     title: "Daily Draft",
-    blurb: "Two scored challenges per day — Basic and Advanced.",
+    blurb: "Two scored challenges per day — Basic and Advanced",
   },
   dailyBasic: {
     id: "dailyBasic",

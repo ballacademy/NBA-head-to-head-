@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  formatDailyDraftCareerLine,
   formatDailyDraftPlayStreak,
   getDailyDraftPlayStreak,
+  getLongestDailyDraftPlayStreak,
 } from "./dailyDraftPlayStreak";
 
 const stubStorage = (playerId = "player-streak-1") => {
@@ -175,5 +177,74 @@ describe("dailyDraftPlayStreak", () => {
 
     expect(getDailyDraftPlayStreak("basic", "2099-04-02").current).toBe(1);
     expect(getDailyDraftPlayStreak("advanced", "2099-04-02").current).toBe(2);
+  });
+
+  it("finds the longest consecutive streak in history", () => {
+    const storage = stubStorage();
+    storage.set(
+      "nba-head-to-head-daily-scores",
+      JSON.stringify({
+        "2099-05-01": [
+          {
+            playerId: "player-streak-1",
+            goalId: "ppg",
+            mode: "basic",
+            value: 1,
+            formattedResult: "1",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-01T12:00:00.000Z",
+          },
+        ],
+        "2099-05-02": [
+          {
+            playerId: "player-streak-1",
+            goalId: "ppg",
+            mode: "basic",
+            value: 1,
+            formattedResult: "1",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-02T12:00:00.000Z",
+          },
+        ],
+        "2099-05-05": [
+          {
+            playerId: "player-streak-1",
+            goalId: "ppg",
+            mode: "basic",
+            value: 1,
+            formattedResult: "1",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-05T12:00:00.000Z",
+          },
+        ],
+        "2099-05-06": [
+          {
+            playerId: "player-streak-1",
+            goalId: "ppg",
+            mode: "basic",
+            value: 1,
+            formattedResult: "1",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-06T12:00:00.000Z",
+          },
+        ],
+        "2099-05-07": [
+          {
+            playerId: "player-streak-1",
+            goalId: "ppg",
+            mode: "basic",
+            value: 1,
+            formattedResult: "1",
+            lineup: ["a", "b", "c", "d", "e"],
+            submittedAt: "2099-05-07T12:00:00.000Z",
+          },
+        ],
+      }),
+    );
+
+    expect(getLongestDailyDraftPlayStreak("basic")).toBe(3);
+    expect(
+      formatDailyDraftCareerLine(5, getLongestDailyDraftPlayStreak("basic"), 0),
+    ).toBe("5 days completed · Longest Basic 3 days");
   });
 });

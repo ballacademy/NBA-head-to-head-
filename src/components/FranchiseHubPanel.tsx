@@ -5,6 +5,7 @@ import {
   getCareerProgressCounters,
 } from "../lib/careerProgressAchievements";
 import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
+import { formatDailyDraftCareerLine } from "../lib/dailyDraftPlayStreak";
 import {
   formatFranchiseDailyPlayCta,
   shouldShowFranchiseDailyPlayCta,
@@ -117,8 +118,11 @@ export function FranchiseHubPanel({
           <p className="franchise-home__lede">Career totals</p>
         </div>
         <p className="franchise-home__summary">
-          {dailyDraft.daysPlayed} day{dailyDraft.daysPlayed === 1 ? "" : "s"} ·
-          Basic {dailyDraft.basicStreakLabel} · Adv {dailyDraft.advancedStreakLabel}
+          {formatDailyDraftCareerLine(
+            dailyDraft.daysPlayed,
+            dailyDraft.longestBasicStreak,
+            dailyDraft.longestAdvancedStreak,
+          )}
           {showPlayDaily ? "" : " · Done today"}
         </p>
         <p className="franchise-home__meta">
