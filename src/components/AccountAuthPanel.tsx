@@ -388,7 +388,8 @@ export function AccountAuthPanel({
         <p className="landing-team-form__account-note">
           You can play without an account. Create one to appear on leaderboards,
           host or join private matches, publish tier lists, and restore this GM
-          code on another device. Signing in syncs collection and badge progress.
+          code on another device. Signing in syncs collection, badges, career
+          records, Most Drafted, event badges, and tier lists.
         </p>
       ) : null}
 
@@ -453,17 +454,6 @@ export function AccountAuthPanel({
             disabled={busy}
           >
             Log out
-          </button>
-          <span className="landing-team-form__account-sep" aria-hidden="true">
-            ·
-          </span>
-          <button
-            type="button"
-            className="landing-team-form__account-action"
-            onClick={() => openMode("reset")}
-            disabled={busy}
-          >
-            Forgot password
           </button>
         </div>
       ) : null}
@@ -629,9 +619,10 @@ export function AccountAuthPanel({
             <>
               <p className="landing-team-form__account-warning">
                 Logging in replaces this browser&apos;s GM identity. Device-only
-                progress resets. Your collection and badges sync from the
-                account when signed in. Leaderboard / online records are restored
-                from the server when available.
+                history (game log, live draft session) resets. Signed-in progress
+                restores from the cloud: collection, badges, career W–L, Most
+                Drafted, event badges, and tier lists. Leaderboard / online
+                records restore from the server when available.
               </p>
               <p className="landing-team-form__account-note">
                 <button
@@ -648,8 +639,13 @@ export function AccountAuthPanel({
           {mode === "reset" && resetStep === "request" ? (
             <>
               <p className="landing-team-form__account-note">
-                We&apos;ll email a one-time code if this username has an email
-                on file. Codes expire in 1 hour.
+                We&apos;ll email a one-time code if this username has an email on
+                file and email delivery is configured. Codes expire in 1 hour.
+                Check spam if it doesn&apos;t arrive — or email{" "}
+                <a href={buildPasswordResetMailto(username)}>
+                  {SUPPORT_EMAIL}
+                </a>{" "}
+                for a support-issued code.
               </p>
               <p className="landing-team-form__account-note">
                 Already have a code from support?{" "}

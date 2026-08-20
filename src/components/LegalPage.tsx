@@ -94,13 +94,15 @@ function PrivacyPolicyContent() {
         that GM identity on another browser or after clearing site data.
       </p>
       <p>
-        Password resets are self-serve: open Account → Forgot password to email
-        a one-time code and set a new password. Support can still issue a code if
-        email delivery fails. New accounts store an email address for recovery.
+        Password resets are self-serve while signed out: open Account → Forgot
+        password to email a one-time code and set a new password (requires email
+        delivery to be configured on the server). Support can still issue a code
+        if email delivery fails. New accounts store an email address for recovery.
         Older accounts created before email was required may not have one on
         file. If you forget your username, contact us to request help or account
-        deletion. Collection unlocks, badges, and career records sync to your
-        linked account so you can use them on another signed-in device. Logging
+        deletion. Collection unlocks, badges, career records, Most Drafted, event
+        badges, and tier lists sync to your linked account so you can use them on
+        another signed-in device. Logging
         into an account on a new browser restores the GM identity, online
         competitive records, collection unlocks, and badge progress when
         available.

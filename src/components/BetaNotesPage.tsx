@@ -221,17 +221,23 @@ export function BetaNotesPage({
             <summary>Known limits</summary>
             <ul>
               <li>
-                <strong>Password reset</strong> — use Account → Forgot password
-                to email yourself a one-time code (when email delivery is
-                configured). Support-assisted codes via{" "}
+                <strong>Password reset</strong> — when you&apos;re signed out,
+                use Account → Forgot password to email yourself a one-time code
+                (requires Resend email delivery on the server). Support-assisted
+                codes via{" "}
                 <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> still
-                work. New accounts require an email for recovery.
+                work. New accounts require an email for recovery. Forgot password
+                is hidden while you&apos;re already signed in — log out first if
+                you need a reset.
               </li>
               <li>
-                <strong>Guest / local progress</strong> — Collection unlocks and
-                badges sync to your account when signed in. Logging into an
-                account on another browser restores online records, collection,
-                and badge progress.
+                <strong>Guest / local progress</strong> — When signed in,
+                collection, badges, career W–L, Most Drafted, event badges, and
+                tier list drafts/library sync to your account and restore on
+                login. Device-only history (game log, weekly-recap seen,
+                unlock-progress, live draft session) clears on logout and is not
+                restored across devices. Daily streak continuity is still
+                mostly local to this browser.
               </li>
               <li>
                 A few players may still be missing salary rows until the next
