@@ -1,21 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { evaluateCareerProgressAchievements } from "../lib/achievements";
-import {
-  getNextDailyStreakGoal,
-  getCareerProgressCounters,
-} from "../lib/careerProgressAchievements";
-import { buildLocalGmStatsSnapshot } from "../lib/gmStats";
-import { formatDailyDraftCareerLine } from "../lib/dailyDraftPlayStreak";
-import {
-  formatFranchiseDailyPlayCta,
-  shouldShowFranchiseDailyPlayCta,
-  type DailyDraftChooserStatus,
-} from "../lib/landingDailyDraft";
 import type { LandingPlaySection } from "../lib/landingHub";
 import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
-import { formatOrdinal } from "../lib/ordinal";
 import { COLLECTION_UNLOCK_COPY, type CollectionTier } from "../lib/playerCollection";
-import { loadTeamProfile } from "../lib/teamProfile";
 import { MostDraftedBoards } from "./MostDraftedBoards";
 import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
 
@@ -31,16 +18,11 @@ interface FranchiseHubPanelProps {
   onViewAchievements: () => void;
   onViewGmStats: () => void;
   onViewWeeklyRecap: () => void;
-  dailyChooserStatus: DailyDraftChooserStatus;
-  onPlayDaily: () => void;
   onPlayIntent?: (intent: {
     playSection: LandingPlaySection;
     h2hMode?: "classic" | "ranked";
   }) => void;
 }
-
-const formatPercentile = (value: number | null) =>
-  value != null ? formatOrdinal(Math.round(value)) : "—";
 
 function FranchiseRow({
   label,
@@ -82,25 +64,13 @@ export function FranchiseHubPanel({
   onViewAchievements,
   onViewGmStats,
   onViewWeeklyRecap,
-  dailyChooserStatus,
-  onPlayDaily,
   onPlayIntent,
 }: FranchiseHubPanelProps) {
   useEffect(() => {
     evaluateCareerProgressAchievements();
   }, []);
 
-  const dailyDraft = useMemo(() => {
-    const teamName = loadTeamProfile()?.name ?? "Your team";
-    return buildLocalGmStatsSnapshot(teamName).dailyDraft;
-  }, []);
-  const streakCounters = useMemo(() => getCareerProgressCounters(), []);
-  const nextDailyGoal = useMemo(
-    () => getNextDailyStreakGoal(streakCounters),
-    [streakCounters],
-  );
   const nextBadge = useMemo(() => getNextBadgeTeaser(), []);
-  const showPlayDaily = shouldShowFranchiseDailyPlayCta(dailyChooserStatus);
 
   return (
     <div className="franchise-home">
@@ -110,42 +80,6 @@ export function FranchiseHubPanel({
         hideDismiss
         onViewWeek={onViewWeeklyRecap}
       />
-
-      <section className="franchise-home__card landing-card" aria-label="Daily Draft">
-        <div className="franchise-home__card-head">
-          <p className="franchise-home__eyebrow">Daily Draft</p>
-          <p className="franchise-home__lede">{dailyChooserStatus.meta}</p>
-        </div>
-        <p className="franchise-home__summary">
-          {formatDailyDraftCareerLine(
-            dailyDraft.daysPlayed,
-            dailyDraft.longestBasicStreak,
-            dailyDraft.longestAdvancedStreak,
-          )}
-        </p>
-        <p className="franchise-home__meta">
-          Best {formatPercentile(dailyDraft.bestPercentile)} · Avg{" "}
-          {formatPercentile(dailyDraft.averagePercentile)}
-        </p>
-        {nextDailyGoal ? (
-          <p className="franchise-home__meta">
-            Next streak badge: {nextDailyGoal.title} (
-            {Math.min(streakCounters.dailyStreak, nextDailyGoal.target)}/
-            {nextDailyGoal.target})
-          </p>
-        ) : (
-          <p className="franchise-home__meta">All Daily streak badges unlocked</p>
-        )}
-        {showPlayDaily ? (
-          <button
-            type="button"
-            className="franchise-home__cta secondary-button"
-            onClick={onPlayDaily}
-          >
-            {formatFranchiseDailyPlayCta(dailyChooserStatus) ?? "Play Daily"}
-          </button>
-        ) : null}
-      </section>
 
       {nextBadge ? (
         <section className="franchise-home__card landing-card" aria-label="Next badge">
@@ -221,7 +155,7 @@ export function FranchiseHubPanel({
       <nav className="franchise-home__card landing-card" aria-label="Career pages">
         <div className="franchise-home__card-head">
           <p className="franchise-home__eyebrow">Career</p>
-          <p className="franchise-home__lede">Badges, pool, and GM stats</p>
+          <p className="franchise-home__lede">Badges, Daily stats, and GM record</p>
         </div>
         <div className="franchise-home__rows">
           <FranchiseRow
