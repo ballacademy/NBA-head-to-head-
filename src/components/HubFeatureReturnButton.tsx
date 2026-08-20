@@ -1,16 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 interface HubFeatureReturnButtonProps {
   onBack: () => void;
   label?: string;
   /** When false, only Escape triggers onBack (no visible control). */
   visible?: boolean;
+  /** Optional action aligned to the right of the return row (e.g. Game log). */
+  trailing?: ReactNode;
 }
 
 export function HubFeatureReturnButton({
   onBack,
   label = "Return",
   visible = true,
+  trailing,
 }: HubFeatureReturnButtonProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -33,7 +36,11 @@ export function HubFeatureReturnButton({
   const displayLabel = label.startsWith("←") ? label : `← ${label}`;
 
   return (
-    <div className="hub-feature__return-row">
+    <div
+      className={`hub-feature__return-row${
+        trailing ? " hub-feature__return-row--split" : ""
+      }`}
+    >
       <button
         type="button"
         className="secondary-button hub-feature__return"
@@ -41,6 +48,7 @@ export function HubFeatureReturnButton({
       >
         {displayLabel}
       </button>
+      {trailing}
     </div>
   );
 }
