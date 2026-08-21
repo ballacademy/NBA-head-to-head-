@@ -806,8 +806,14 @@ const downloadBlob = (blob: Blob, filename: string) => {
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
   link.click();
-  URL.revokeObjectURL(url);
+  link.remove();
+  // Delay revoke so Safari/Firefox can finish the download navigation.
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 2_000);
 };
 
 export const buildLineupShareCardText = (input: LineupShareCardInput) => {

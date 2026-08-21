@@ -2285,9 +2285,10 @@ function App() {
     }
   }, [isDailyDraft, isPendingQueueMatch, matchId, opponent?.liveMatchId, phase]);
 
-  // Private/matchmaking dialogs can leave body scroll locked; results must scroll.
+  // Private/matchmaking dialogs can leave body scroll locked; clear on results
+  // and when returning to the hub.
   useLayoutEffect(() => {
-    if (phase === "results") {
+    if (phase === "results" || phase === "landing") {
       forceUnlockBackgroundScroll();
     }
   }, [phase]);
@@ -2353,7 +2354,9 @@ function App() {
         setOpponentPickCount(state.opponentLineup.length);
         setOpponentAutoDrafted(false);
         setOpponentComplete(true);
-        setPhase("waiting");
+        // Stay on drafting until the local lineup is locked. Jumping to
+        // "waiting"/"results" here aborts an in-progress draft when the
+        // opponent finishes first.
       }
     };
 
@@ -2669,11 +2672,17 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (phase === "waiting" && opponentComplete) {
+    if (phase === "waiting" && opponentComplete && userDraftComplete) {
       ensureResultsMatchId(opponent?.liveMatchId);
       setPhase("results");
     }
-  }, [ensureResultsMatchId, opponent?.liveMatchId, opponentComplete, phase]);
+  }, [
+    ensureResultsMatchId,
+    opponent?.liveMatchId,
+    opponentComplete,
+    phase,
+    userDraftComplete,
+  ]);
 
   useLayoutEffect(() => {
     if (phase !== "landing" && !FEATURE_PHASES.has(phase)) {
