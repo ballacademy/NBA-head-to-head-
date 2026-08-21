@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { assignLineupSlots } from "./lineupOrder";
 import {
   buildLineupShareCardText,
+  drawBrandMarkStamp,
   formatShareCardPlayerMeta,
   resolveShareCardStatDisplay,
   resolveShareCardTitle,
@@ -151,5 +152,41 @@ describe("lineupShareCard player rows", () => {
       "PF · LAL · #23",
       "C · LAL · #23",
     ]);
+  });
+});
+
+describe("drawBrandMarkStamp", () => {
+  it("draws a boxed stamp then the mark image", () => {
+    const calls: string[] = [];
+    const context = {
+      save: () => calls.push("save"),
+      restore: () => calls.push("restore"),
+      beginPath: () => undefined,
+      moveTo: () => undefined,
+      lineTo: () => undefined,
+      quadraticCurveTo: () => undefined,
+      closePath: () => undefined,
+      fill: () => calls.push("fill"),
+      stroke: () => calls.push("stroke"),
+      drawImage: () => calls.push("drawImage"),
+      fillStyle: "",
+      strokeStyle: "",
+      lineWidth: 0,
+    } as unknown as CanvasRenderingContext2D;
+
+    const brandMark = {
+      naturalWidth: 90,
+      naturalHeight: 40,
+    } as HTMLImageElement;
+
+    drawBrandMarkStamp(context, brandMark, {
+      right: 400,
+      bottom: 200,
+      markHeight: 20,
+    });
+
+    expect(calls).toEqual(["save", "fill", "stroke", "drawImage", "restore"]);
+    expect(context.fillStyle).toBe("#0b0d11");
+    expect(context.strokeStyle).toBe("rgba(168, 85, 247, 0.55)");
   });
 });

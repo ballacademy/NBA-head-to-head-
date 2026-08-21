@@ -28,7 +28,7 @@ export interface LineupShareCardInput {
   eyebrow?: string;
   /** Optional muted context drawn under the title. */
   subhead?: string;
-  /** Optional right-side footer context (defaults to "DRAFT DAY GM"). */
+  /** Optional left-side footer note (e.g. community "Saved …"). */
   footerNote?: string;
   record?: string;
   /** Prefix drawn before `record` (defaults to "Projected"). */
@@ -114,6 +114,50 @@ const loadImageElement = (src: string): Promise<HTMLImageElement | null> =>
 export const loadBrandMarkImage = (): Promise<HTMLImageElement | null> => {
   brandMarkReady ??= loadImageElement("/draft-day-gm-mark-v5.png");
   return brandMarkReady;
+};
+
+/** Hub-matched stamp: deep field + play-accent rim around the purple GM mark. */
+const BRAND_STAMP_BG = "#0b0d11";
+const BRAND_STAMP_BORDER = "rgba(168, 85, 247, 0.55)";
+
+/**
+ * Draw the GM mark inside a boxed stamp (same idea as the hub chrome logo).
+ * `right` / `bottom` are the outer edges of the stamp box.
+ */
+export const drawBrandMarkStamp = (
+  context: CanvasRenderingContext2D,
+  brandMark: HTMLImageElement,
+  options: {
+    right: number;
+    bottom: number;
+    markHeight?: number;
+  },
+) => {
+  const markH = options.markHeight ?? 22;
+  const ratio =
+    brandMark.naturalHeight > 0
+      ? brandMark.naturalWidth / brandMark.naturalHeight
+      : 2.25;
+  const markW = Math.round(markH * ratio);
+  /* Match hub `.landing-hub-brand` stamp (desktop token sizes). */
+  const padX = 6;
+  const padY = 4;
+  const radius = 6;
+  const border = 2.5;
+  const boxW = markW + padX * 2;
+  const boxH = markH + padY * 2;
+  const boxX = options.right - boxW;
+  const boxY = options.bottom - boxH;
+
+  context.save();
+  roundRect(context, boxX, boxY, boxW, boxH, radius);
+  context.fillStyle = BRAND_STAMP_BG;
+  context.fill();
+  context.strokeStyle = BRAND_STAMP_BORDER;
+  context.lineWidth = border;
+  context.stroke();
+  context.drawImage(brandMark, boxX + padX, boxY + padY, markW, markH);
+  context.restore();
 };
 
 const roundRect = (
@@ -707,22 +751,19 @@ export const drawLineupShareCard = (
   context.fillStyle = "#94a3b8";
   context.font = `600 18px ${FONT_STACK}`;
   context.textAlign = "left";
-  context.fillText("#DraftDayGM", 88, footerY);
+  const footerNote = input.footerNote?.trim();
+  if (footerNote) {
+    context.fillText(footerNote, 88, footerY);
+  }
 
-  if (brandMark && !input.footerNote?.trim()) {
-    const markH = 28;
-    const markW = Math.round(markH * (brandMark.naturalWidth / brandMark.naturalHeight));
-    context.globalAlpha = 0.72;
-    context.drawImage(brandMark, CARD_WIDTH - 88 - markW, footerY - markH + 4, markW, markH);
-    context.globalAlpha = 1;
-  } else {
-    context.textAlign = "right";
-    context.fillText(
-      input.footerNote?.trim() || "DRAFT DAY GM",
-      CARD_WIDTH - 88,
-      footerY,
-    );
-    context.textAlign = "left";
+  // Brand once at the top (eyebrow) + stamped mark in the footer — no extra
+  // "#DraftDayGM" / "DRAFT DAY GM" text clutter.
+  if (brandMark) {
+    drawBrandMarkStamp(context, brandMark, {
+      right: CARD_WIDTH - 88,
+      bottom: footerY + 6,
+      markHeight: 22,
+    });
   }
 };
 
