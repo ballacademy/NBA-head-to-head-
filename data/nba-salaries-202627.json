@@ -5,7 +5,7 @@
   "supplementsFile": "data/manual/nba-salary-supplements.csv",
   "voidedContractsFile": "data/manual/nba-voided-contracts.csv",
   "voidedPlayerCount": 7,
-  "generatedAt": "2026-08-21T23:31:12.842108+00:00",
+  "generatedAt": "2026-08-21T23:47:45.420301+00:00",
   "playerCount": 482,
   "salaries": {
     "achiupr01": 5477000,
@@ -428,7 +428,7 @@
     "thompam01": 12258609,
     "thompau01": 11117925,
     "thompet01": 1361969,
-    "thompkl01": 8000000,
+    "thompkl01": 17460317,
     "thybuma01": 3286399,
     "tomlina01": 2411090,
     "tonjejo01": 1361969,

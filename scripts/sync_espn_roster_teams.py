@@ -54,9 +54,7 @@ SUFFIX_PATTERN = re.compile(r"\b(jr|sr|ii|iii|iv|v)\b", re.I)
 
 # Confirmed moves not yet on ESPN team rosters (buyout / waiver timing).
 # Map ESPN display name → BBR team abbreviation.
-MANUAL_TEAM_OVERRIDES = {
-    "Klay Thompson": "MIA",
-}
+MANUAL_TEAM_OVERRIDES: dict[str, str] = {}
 
 
 def normalize_name(name: str) -> str:
