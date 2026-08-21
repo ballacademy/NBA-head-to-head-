@@ -86,6 +86,7 @@ export const loadLiveMatchPair = async (db: D1Database, matchId: string) =>
 const createRematchLiveMatch = async (
   db: D1Database,
   params: {
+    matchId: string;
     mode: PrivateRoomMode;
     playerAId: string;
     playerATeam: string;
@@ -95,7 +96,6 @@ const createRematchLiveMatch = async (
     playerBElo: number;
   },
 ) => {
-  const matchId = crypto.randomUUID();
   const createdAt = new Date().toISOString();
   await db
     .prepare(
@@ -107,7 +107,7 @@ const createRematchLiveMatch = async (
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
-      matchId,
+      params.matchId,
       params.mode,
       params.playerAId,
       params.playerATeam,
@@ -118,8 +118,66 @@ const createRematchLiveMatch = async (
       createdAt,
     )
     .run();
-  return matchId;
+  return params.matchId;
 };
+
+export const isLiveMatchStillJoinable = async (db: D1Database, matchId: string) => {
+  const row = await db
+    .prepare(
+      `SELECT player_a_lineup_json, player_b_lineup_json, created_at
+       FROM live_matches
+       WHERE id = ?`,
+    )
+    .bind(matchId)
+    .first<{
+      player_a_lineup_json: string | null;
+      player_b_lineup_json: string | null;
+      created_at: string;
+    }>();
+
+  if (!row) {
+    return false;
+  }
+
+  // Already drafting / finished — do not reconnect into this match.
+  if (row.player_a_lineup_json || row.player_b_lineup_json) {
+    return false;
+  }
+
+  const createdMs = Date.parse(row.created_at);
+  if (!Number.isFinite(createdMs)) {
+    return false;
+  }
+
+  // Same window as rematch lobby TTL — stale matched lobbies start fresh.
+  return Date.now() - createdMs < PRIVATE_REMATCH_TTL_MS;
+};
+
+const matchedResultForPlayer = (
+  row: PrivateRematchRow,
+  params: {
+    sourceMatchId: string;
+    mode: PrivateRoomMode;
+    isPlayerA: boolean;
+    matchId: string;
+  },
+): OfferPrivateRematchResult => ({
+  status: "matched",
+  sourceMatchId: params.sourceMatchId,
+  matchId: params.matchId,
+  mode: params.mode,
+  opponent: params.isPlayerA
+    ? {
+        playerId: row.player_b_id,
+        teamName: row.player_b_team,
+        elo: Math.round(row.player_b_elo),
+      }
+    : {
+        playerId: row.player_a_id,
+        teamName: row.player_a_team,
+        elo: Math.round(row.player_a_elo),
+      },
+});
 
 export type OfferPrivateRematchResult =
   | {
@@ -179,23 +237,15 @@ export const offerPrivateRematch = async (
   const elo = Math.round(params.elo);
 
   if (existing?.status === "matched" && existing.new_match_id) {
-    return {
-      status: "matched",
-      sourceMatchId: params.sourceMatchId,
-      matchId: existing.new_match_id,
-      mode,
-      opponent: isPlayerA
-        ? {
-            playerId: existing.player_b_id,
-            teamName: existing.player_b_team,
-            elo: Math.round(existing.player_b_elo),
-          }
-        : {
-            playerId: existing.player_a_id,
-            teamName: existing.player_a_team,
-            elo: Math.round(existing.player_a_elo),
-          },
-    };
+    if (await isLiveMatchStillJoinable(db, existing.new_match_id)) {
+      return matchedResultForPlayer(existing, {
+        sourceMatchId: params.sourceMatchId,
+        mode,
+        isPlayerA,
+        matchId: existing.new_match_id,
+      });
+    }
+    // Prior rematch already started drafting — fall through to a fresh lobby.
   }
 
   if (
@@ -306,38 +356,20 @@ const finalizeReadyOffer = async (
   const refreshed = await getPrivateRematch(db, params.sourceMatchId);
   if (!refreshed || refreshed.status !== "waiting") {
     if (refreshed?.status === "matched" && refreshed.new_match_id) {
-      return {
-        status: "matched",
+      return matchedResultForPlayer(refreshed, {
         sourceMatchId: params.sourceMatchId,
-        matchId: refreshed.new_match_id,
         mode: params.mode,
-        opponent: params.isPlayerA
-          ? {
-              playerId: refreshed.player_b_id,
-              teamName: refreshed.player_b_team,
-              elo: Math.round(refreshed.player_b_elo),
-            }
-          : {
-              playerId: refreshed.player_a_id,
-              teamName: refreshed.player_a_team,
-              elo: Math.round(refreshed.player_a_elo),
-            },
-      };
+        isPlayerA: params.isPlayerA,
+        matchId: refreshed.new_match_id,
+      });
     }
     return { error: "Rematch lobby expired. Try again.", status: 410 };
   }
 
   if (refreshed.player_a_ready_at && refreshed.player_b_ready_at) {
-    const newMatchId = await createRematchLiveMatch(db, {
-      mode: params.mode,
-      playerAId: refreshed.player_a_id,
-      playerATeam: refreshed.player_a_team,
-      playerAElo: refreshed.player_a_elo,
-      playerBId: refreshed.player_b_id,
-      playerBTeam: refreshed.player_b_team,
-      playerBElo: refreshed.player_b_elo,
-    });
-
+    // Claim first (like private rooms), then create the live match — avoids
+    // orphan live_matches when both clients finalize at once or one cancels.
+    const newMatchId = crypto.randomUUID();
     const claimed = await db
       .prepare(
         `UPDATE private_rematches
@@ -351,32 +383,40 @@ const finalizeReadyOffer = async (
       .bind(newMatchId, params.sourceMatchId)
       .run();
 
-    const finalRow =
-      (claimed.meta?.changes ?? 0) >= 1
-        ? { ...refreshed, new_match_id: newMatchId, status: "matched" }
-        : await getPrivateRematch(db, params.sourceMatchId);
+    if ((claimed.meta?.changes ?? 0) >= 1) {
+      await createRematchLiveMatch(db, {
+        matchId: newMatchId,
+        mode: params.mode,
+        playerAId: refreshed.player_a_id,
+        playerATeam: refreshed.player_a_team,
+        playerAElo: refreshed.player_a_elo,
+        playerBId: refreshed.player_b_id,
+        playerBTeam: refreshed.player_b_team,
+        playerBElo: refreshed.player_b_elo,
+      });
 
-    if (!finalRow?.new_match_id) {
-      return { error: "Could not start rematch. Try again.", status: 409 };
+      return matchedResultForPlayer(
+        { ...refreshed, new_match_id: newMatchId, status: "matched" },
+        {
+          sourceMatchId: params.sourceMatchId,
+          mode: params.mode,
+          isPlayerA: params.isPlayerA,
+          matchId: newMatchId,
+        },
+      );
     }
 
-    return {
-      status: "matched",
-      sourceMatchId: params.sourceMatchId,
-      matchId: finalRow.new_match_id,
-      mode: params.mode,
-      opponent: params.isPlayerA
-        ? {
-            playerId: finalRow.player_b_id,
-            teamName: finalRow.player_b_team,
-            elo: Math.round(finalRow.player_b_elo),
-          }
-        : {
-            playerId: finalRow.player_a_id,
-            teamName: finalRow.player_a_team,
-            elo: Math.round(finalRow.player_a_elo),
-          },
-    };
+    const raced = await getPrivateRematch(db, params.sourceMatchId);
+    if (raced?.status === "matched" && raced.new_match_id) {
+      return matchedResultForPlayer(raced, {
+        sourceMatchId: params.sourceMatchId,
+        mode: params.mode,
+        isPlayerA: params.isPlayerA,
+        matchId: raced.new_match_id,
+      });
+    }
+
+    return { error: "Could not start rematch. Try again.", status: 409 };
   }
 
   return {
@@ -414,7 +454,9 @@ export const cancelPrivateRematchOffer = async (
       .prepare(
         `UPDATE private_rematches
          SET status = 'cancelled'
-         WHERE source_match_id = ? AND status = 'waiting'`,
+         WHERE source_match_id = ?
+           AND status = 'waiting'
+           AND new_match_id IS NULL`,
       )
       .bind(params.sourceMatchId)
       .run();
@@ -427,7 +469,9 @@ export const cancelPrivateRematchOffer = async (
       .prepare(
         `UPDATE private_rematches
          SET player_a_ready_at = NULL
-         WHERE source_match_id = ? AND status = 'waiting'`,
+         WHERE source_match_id = ?
+           AND status = 'waiting'
+           AND new_match_id IS NULL`,
       )
       .bind(params.sourceMatchId)
       .run();
@@ -436,7 +480,9 @@ export const cancelPrivateRematchOffer = async (
       .prepare(
         `UPDATE private_rematches
          SET player_b_ready_at = NULL
-         WHERE source_match_id = ? AND status = 'waiting'`,
+         WHERE source_match_id = ?
+           AND status = 'waiting'
+           AND new_match_id IS NULL`,
       )
       .bind(params.sourceMatchId)
       .run();

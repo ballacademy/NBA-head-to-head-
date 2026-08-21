@@ -5,6 +5,7 @@ import {
   cancelPrivateRematchOffer,
   cleanupExpiredPrivateRematches,
   getPrivateRematch,
+  isLiveMatchStillJoinable,
   offerPrivateRematch,
 } from "../lib/privateRematches";
 import { parsePrivateRoomMode } from "../lib/privateRooms";
@@ -135,6 +136,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   if (row.status === "matched" && row.new_match_id) {
+    if (!(await isLiveMatchStillJoinable(context.env.DB, row.new_match_id))) {
+      return json({ status: "expired" }, 410);
+    }
     const mode = parsePrivateRoomMode(row.mode);
     if (!mode) {
       return json({ error: "Rematch mode is invalid" }, 400);
