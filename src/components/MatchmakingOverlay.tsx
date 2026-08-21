@@ -25,6 +25,8 @@ interface MatchmakingOverlayProps {
   privateRoomRole?: "host" | "guest" | null;
   /** ISO timestamp when the private room expires (host). */
   privateRoomExpiresAt?: string | null;
+  /** Waiting for the same private opponent to also press Rematch. */
+  privateRematchWaiting?: boolean;
   /** 1500+ Banners live-only search (no NPC fallback). */
   liveOnlySearch?: boolean;
 }
@@ -58,6 +60,7 @@ export function MatchmakingOverlay({
   privateRoomCode = null,
   privateRoomRole = null,
   privateRoomExpiresAt = null,
+  privateRematchWaiting = false,
   liveOnlySearch = false,
 }: MatchmakingOverlayProps) {
   const titleId = useId();
@@ -67,8 +70,9 @@ export function MatchmakingOverlay({
   const [nowMs, setNowMs] = useState(() => Date.now());
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
-  const isPrivate = Boolean(privateRoomCode);
-  const isPrivateGuest = isPrivate && privateRoomRole === "guest";
+  const isPrivateRematch = privateRematchWaiting && !privateRoomCode;
+  const isPrivate = Boolean(privateRoomCode) || isPrivateRematch;
+  const isPrivateGuest = Boolean(privateRoomCode) && privateRoomRole === "guest";
   const modeCopy =
     mode === "event"
       ? MODE_COPY.weeklyEvent
@@ -87,15 +91,17 @@ export function MatchmakingOverlay({
     ? `Matched vs ${matchedOpponentName}`
     : isCancelling
       ? "Finalizing…"
-      : isPrivateGuest
-        ? "Connecting to your friend’s room…"
-        : isPrivate
-          ? "Waiting for your friend to join…"
-          : elapsedSeconds > 0
-            ? `Finding live opponent… ${elapsedSeconds}s`
-            : mode === "event"
-              ? "Finding live opponent…"
-              : "Finding opponent…";
+      : isPrivateRematch
+        ? "Waiting for your opponent to rematch…"
+        : isPrivateGuest
+          ? "Connecting to your friend’s room…"
+          : isPrivate
+            ? "Waiting for your friend to join…"
+            : elapsedSeconds > 0
+              ? `Finding live opponent… ${elapsedSeconds}s`
+              : mode === "event"
+                ? "Finding live opponent…"
+                : "Finding opponent…";
   const expiryLabel =
     isPrivate && privateRoomExpiresAt && !isMatched
       ? formatPrivateRoomExpiry(privateRoomExpiresAt, nowMs)
@@ -162,13 +168,15 @@ export function MatchmakingOverlay({
             ? "Opponent found"
             : isCancelling
               ? "Cancelling search"
-              : isPrivateGuest
-                ? "Joining private room"
-                : isPrivate
-                  ? "Share your room code"
-                  : mode === "event"
-                    ? "Waiting for a live opponent"
-                    : "Searching for an opponent"}
+              : isPrivateRematch
+                ? "Rematch"
+                : isPrivateGuest
+                  ? "Joining private room"
+                  : isPrivate
+                    ? "Share your room code"
+                    : mode === "event"
+                      ? "Waiting for a live opponent"
+                      : "Searching for an opponent"}
         </h2>
 
         {isPrivate && privateRoomCode && !isMatched ? (
@@ -195,6 +203,10 @@ export function MatchmakingOverlay({
           </div>
         ) : null}
 
+        {isPrivateRematch && expiryLabel && !isMatched ? (
+          <p className="matchmaking-overlay__expiry">{expiryLabel}</p>
+        ) : null}
+
         <div className="waiting-indicator matchmaking-overlay__indicator">
           <span className="waiting-spinner" aria-hidden="true" />
           <strong>{statusLabel}</strong>
@@ -202,9 +214,11 @@ export function MatchmakingOverlay({
 
         {isPrivate && !isMatched ? (
           <p className="matchmaking-overlay__note">
-            {isPrivateGuest
-              ? `Stay on this screen while we connect you. Same mode as your friend (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}).`
-              : `Share the invite link or this code. Friend needs an account and the same mode (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}). Records and Banners do not change.`}
+            {isPrivateRematch
+              ? "Both of you need to press Rematch. Records and Banners still do not change."
+              : isPrivateGuest
+                ? `Stay on this screen while we connect you. Same mode as your friend (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}).`
+                : `Share the invite link or this code. Friend needs an account and the same mode (${MODE_COPY.classicH2h.short} or ${MODE_COPY.proH2h.short}). Records and Banners do not change.`}
           </p>
         ) : null}
 
@@ -231,11 +245,13 @@ export function MatchmakingOverlay({
           >
             {isCancelling
               ? "Cancelling…"
-              : isPrivateGuest
-                ? "Cancel join"
-                : isPrivate
-                  ? "Cancel room"
-                  : "Cancel search"}
+              : isPrivateRematch
+                ? "Cancel rematch"
+                : isPrivateGuest
+                  ? "Cancel join"
+                  : isPrivate
+                    ? "Cancel room"
+                    : "Cancel search"}
           </button>
         ) : null}
       </section>
