@@ -489,7 +489,7 @@ function App() {
     return capturePwaInstallPrompt();
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (phase === "playerUsage" && !isQaRuntimeHost()) {
       setLandingHubTab("account");
       saveLandingHubTab("account");
@@ -1900,6 +1900,20 @@ function App() {
 
   const openFeaturePage = useCallback(
     (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
+      // Internal usage tooling is QA-only — bounce to Account on prod.
+      if (nextPhase === "playerUsage" && !isQaRuntimeHost()) {
+        setLandingHubTab("account");
+        saveLandingHubTab("account");
+        setPhase("landing");
+        syncLandingDeepLinkUrl({
+          hub: "account",
+          play: null,
+          view: null,
+          post: null,
+        });
+        return;
+      }
+
       pendingFeatureNavigationRef.current = true;
       const historyState: FeatureHistoryState = {
         appPhase: nextPhase,
@@ -2948,7 +2962,12 @@ function App() {
 
   if (phase === "playerUsage") {
     if (!isQaRuntimeHost()) {
-      return renderHubFeature(<FeaturePageFallback />);
+      // useLayoutEffect redirects to Account before paint when possible.
+      return renderHubFeature(
+        <div className="hub-empty" role="status" aria-live="polite">
+          <p>Opening Account…</p>
+        </div>,
+      );
     }
     return renderHubFeature(
       <InternalPlayerUsagePage onBack={exitFeaturePage} />,

@@ -12,10 +12,11 @@ describe("appErrors dismissal helpers", () => {
     expect(isShareDismissalError(abort)).toBe(true);
   });
 
-  it("treats share NotAllowedError as a share dismissal only", () => {
+  it("does not treat NotAllowedError as a share dismissal", () => {
+    // NotAllowedError often means share was blocked — callers should download.
     const denied = new DOMException("Share canceled", "NotAllowedError");
     expect(isUserDismissalError(denied)).toBe(false);
-    expect(isShareDismissalError(denied)).toBe(true);
+    expect(isShareDismissalError(denied)).toBe(false);
   });
 
   it("does not treat unrelated errors as dismissals", () => {

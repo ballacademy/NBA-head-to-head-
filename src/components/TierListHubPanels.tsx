@@ -687,6 +687,7 @@ export function CommunityPostsPanel({
   const viewerPanelRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const focusRef = useRef<HTMLLIElement | null>(null);
+  const viewRequestIdRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -695,6 +696,13 @@ export function CommunityPostsPanel({
       }
     };
   }, [viewImageUrl]);
+
+  useEffect(() => {
+    return () => {
+      // Invalidate in-flight image renders on unmount.
+      viewRequestIdRef.current += 1;
+    };
+  }, []);
 
   useEffect(() => {
     if (!focusPostId || !focusRef.current) {
@@ -724,6 +732,7 @@ export function CommunityPostsPanel({
   }, [hasMore, loading, loadingMore, onLoadMore, posts.length]);
 
   const closeAttachmentViewer = useCallback(() => {
+    viewRequestIdRef.current += 1;
     setViewingPostId(null);
     setViewingAttachment(null);
     setShowMatchupDetails(false);
@@ -782,6 +791,7 @@ export function CommunityPostsPanel({
       return;
     }
 
+    const requestId = ++viewRequestIdRef.current;
     setViewingPostId(postId);
     setViewingAttachment(attachment);
     setShowMatchupDetails(false);
@@ -797,6 +807,9 @@ export function CommunityPostsPanel({
 
     try {
       const blob = await renderShareImage(attachment, "lineup");
+      if (requestId !== viewRequestIdRef.current) {
+        return;
+      }
       if (!blob) {
         setViewError("Could not rebuild that lineup image.");
         setViewBusy(false);
@@ -804,17 +817,23 @@ export function CommunityPostsPanel({
       }
       setViewImageUrl(URL.createObjectURL(blob));
     } catch {
+      if (requestId !== viewRequestIdRef.current) {
+        return;
+      }
       setViewError("Could not open that lineup image.");
     } finally {
-      setViewBusy(false);
+      if (requestId === viewRequestIdRef.current) {
+        setViewBusy(false);
+      }
     }
   };
 
   const handleToggleFullMatchup = async () => {
-    if (!viewingAttachment || viewingAttachment.kind !== "matchup") {
+    if (!viewingAttachment || viewingAttachment.kind !== "matchup" || viewBusy) {
       return;
     }
     const next = !showingFullMatchup;
+    const requestId = ++viewRequestIdRef.current;
     setShowingFullMatchup(next);
     setShowMatchupDetails(next);
     setViewBusy(true);
@@ -830,6 +849,9 @@ export function CommunityPostsPanel({
         viewingAttachment,
         next ? "matchup" : "lineup",
       );
+      if (requestId !== viewRequestIdRef.current) {
+        return;
+      }
       if (!blob) {
         setViewError(
           next
@@ -840,9 +862,14 @@ export function CommunityPostsPanel({
       }
       setViewImageUrl(URL.createObjectURL(blob));
     } catch {
+      if (requestId !== viewRequestIdRef.current) {
+        return;
+      }
       setViewError("Could not update the matchup image.");
     } finally {
-      setViewBusy(false);
+      if (requestId === viewRequestIdRef.current) {
+        setViewBusy(false);
+      }
     }
   };
 
