@@ -1,4 +1,4 @@
-import { ensureShareCardFonts, loadBrandMarkImage } from "./lineupShareCard";
+import { ensureShareCardFonts, drawBrandMarkStamp, loadBrandMarkImage } from "./lineupShareCard";
 import {
   arePlayerHeadshotsEnabled,
   drawCircularPlayerHeadshot,
@@ -389,20 +389,12 @@ export const drawTierListShareCard = (
     y += rowHeight + ROW_GAP;
   }
 
-  context.fillStyle = "#94a3b8";
-  context.font = `600 18px ${FONT_STACK}`;
-  context.fillText("#DraftDayGM", PAD_X, height - 24);
-
   if (brandMark) {
-    const markH = 28;
-    const markW = Math.round(markH * (brandMark.naturalWidth / brandMark.naturalHeight));
-    context.globalAlpha = 0.72;
-    context.drawImage(brandMark, CARD_WIDTH - PAD_X - markW, height - 24 - markH + 4, markW, markH);
-    context.globalAlpha = 1;
-  } else {
-    context.textAlign = "right";
-    context.fillText("DRAFT DAY GM", CARD_WIDTH - PAD_X, height - 24);
-    context.textAlign = "left";
+    drawBrandMarkStamp(context, brandMark, {
+      right: CARD_WIDTH - PAD_X,
+      bottom: height - 16,
+      markHeight: 22,
+    });
   }
 };
 
