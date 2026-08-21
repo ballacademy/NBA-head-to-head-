@@ -150,6 +150,7 @@ interface LandingPageProps {
   onDismissLiveRestore?: () => void;
   /** Host private room code once created (dismisses create modal for overlay). */
   privateRoomCode?: string | null;
+  privateRoomRole?: "host" | "guest" | null;
   /** Open the private-match modal after rematch from results. */
   pendingPrivateMatchMode?: "classic" | "ranked" | null;
   pendingPrivateJoinCode?: string | null;
@@ -205,6 +206,7 @@ export function LandingPage({
   onRetryLiveRestore,
   onDismissLiveRestore,
   privateRoomCode = null,
+  privateRoomRole = null,
   pendingPrivateMatchMode = null,
   pendingPrivateJoinCode = null,
   onPendingPrivateMatchModeConsumed,
@@ -677,6 +679,11 @@ export function LandingPage({
     const result = await onStartDraft(team, options);
 
     if (result === "failed") {
+      if (options?.privateMatch) {
+        // PrivateMatchModal shows the specific join/create error in-dialog.
+        return result;
+      }
+
       if (options?.isDailyDraft) {
         const mode = options.dailyDraftMode ?? "basic";
         const completed =
@@ -967,6 +974,7 @@ export function LandingPage({
           salaryCapMode={privateMatchMode === "ranked"}
           startMatchError={startMatchError}
           privateRoomCode={privateRoomCode}
+          privateRoomRole={privateRoomRole}
           initialJoinCode={privateJoinPrefill || pendingPrivateJoinCode}
           onClose={closePrivateMatchModal}
           onStart={handleStart}

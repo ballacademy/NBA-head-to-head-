@@ -1163,7 +1163,10 @@ function App() {
       setIsMatchmakingInFlight(true);
       setIsCancellingMatchmaking(false);
       setMatchmakingStartedAt(Date.now());
-      setMatchmakingMode(requestedMode);
+      // Keep the private-match modal open until host create / guest join
+      // succeeds — opening the overlay early closed the modal and could leave
+      // hub scroll locked when the room code was invalid.
+      setMatchmakingMode(null);
       setMatchedOpponentName(null);
       setPrivateRoomCode(null);
       setPrivateRoomExpiresAt(null);
@@ -1190,6 +1193,7 @@ function App() {
           session.privateRoomCode = created.roomCode;
           setPrivateRoomCode(created.roomCode);
           setPrivateRoomExpiresAt(created.expiresAt);
+          setMatchmakingMode(requestedMode);
 
           const waited = await waitForPrivateRoomGuest(
             { roomCode: created.roomCode, playerId },
@@ -1219,9 +1223,6 @@ function App() {
           session.mode = waited.matched.mode;
           setMatchmakingMode(waited.matched.mode);
         } else {
-          session.privateRoomCode = privateRoom.roomCode;
-          setPrivateRoomCode(privateRoom.roomCode);
-
           const joined = await joinPrivateRoom({
             roomCode: privateRoom.roomCode,
             playerId,
@@ -1235,6 +1236,8 @@ function App() {
             return "failed";
           }
 
+          session.privateRoomCode = privateRoom.roomCode;
+          setPrivateRoomCode(privateRoom.roomCode);
           liveOpponent = joined.opponent;
           session.matchId = joined.matchId;
           salaryCapMode = joined.mode === "ranked";
@@ -2979,6 +2982,7 @@ function App() {
             setLiveRestoreNotice(null);
           }}
           privateRoomCode={privateRoomCode}
+          privateRoomRole={privateRoomRole}
           pendingPrivateMatchMode={pendingPrivateMatchMode}
           pendingPrivateJoinCode={pendingPrivateJoinCode}
           onPendingPrivateMatchModeConsumed={() => {

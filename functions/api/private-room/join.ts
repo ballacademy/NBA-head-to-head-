@@ -75,7 +75,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const existing = await getPrivateRoom(db, roomCode);
   if (!existing) {
-    return json({ error: "Room not found" }, 404);
+    return json(
+      { error: "That room doesn't exist or the code is invalid." },
+      404,
+    );
   }
 
   if (existing.host_player_id === playerId) {
