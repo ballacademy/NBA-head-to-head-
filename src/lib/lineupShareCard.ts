@@ -1,4 +1,4 @@
-import { isShareDismissalError } from "./appErrors";
+import { isUserDismissalError } from "./appErrors";
 import { formatUsername } from "./accountCredentials";
 import { getActiveChemistryBonuses, type ActiveChemistryBonus } from "./chemistry";
 import {
@@ -840,13 +840,14 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
         text: shareText,
         files: [file],
       });
+      return;
     } catch (error) {
-      if (isShareDismissalError(error)) {
+      // User cancelled the sheet — stop. Permission / policy blocks fall
+      // through to download so share still produces a file.
+      if (isUserDismissalError(error)) {
         return;
       }
-      throw error;
     }
-    return;
   }
 
   downloadBlob(blob, filename);

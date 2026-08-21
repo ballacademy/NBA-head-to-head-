@@ -38,20 +38,13 @@ export const isUserDismissalError = (error: unknown): boolean => {
   return name === "AbortError";
 };
 
-/** Share-sheet dismissals (AbortError, or NotAllowedError on some browsers). */
-export const isShareDismissalError = (error: unknown): boolean => {
-  if (isUserDismissalError(error)) {
-    return true;
-  }
-
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const name =
-    "name" in error && typeof error.name === "string" ? error.name : "";
-  return name === "NotAllowedError";
-};
+/**
+ * Share-sheet dismissals that should not show an error toast.
+ * Only AbortError — NotAllowedError often means share was blocked and
+ * callers should fall back to download instead of silently exiting.
+ */
+export const isShareDismissalError = (error: unknown): boolean =>
+  isUserDismissalError(error);
 
 /**
  * Browser / extension noise that should not open the runtime error toaster.
