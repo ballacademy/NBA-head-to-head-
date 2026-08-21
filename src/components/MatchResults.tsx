@@ -60,7 +60,7 @@ import {
   evaluateCareerProgressAchievements,
   unlockAchievements,
 } from "../lib/achievements";
-import { getCachedLinkedUsername } from "../lib/accountGate";
+import { getCachedLinkedUsername, isPlayerAccountLinked } from "../lib/accountGate";
 import { saveLineupShareCard } from "../lib/lineupShareCard";
 import { isShareDismissalError } from "../lib/appErrors";
 import { trackProductEvent } from "../lib/productAnalytics";
@@ -249,38 +249,40 @@ export function MatchResults({
       userLineup.length === 5 && opponentLineup.length === 5;
 
     if (lineupsComplete) {
-      try {
-        rememberCommunityShareable({
-          kind: "matchup",
-          modeLabel: resultModeLabel,
-          result: matchResult,
-          userTeam: user.name,
-          username:
-            getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
-            undefined,
-          opponentTeam: formatOpponentDisplayName(
-            opponent.name,
-            opponent.username,
-          ),
-          userOvr: userScore.total,
-          opponentOvr: opponentScore.total,
-          userLineupNames: userLineup.map((player) => player.name),
-          opponentLineupNames: opponentLineup.map((player) => player.name),
-          userLineupIds: userLineup.map((player) => player.id),
-          opponentLineupIds: opponentLineup.map((player) => player.id),
-          userAccent: user.accent,
-          opponentAccent: opponent.accent,
-          userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
-          userWinRecord: skipCompetitiveRecords
-            ? undefined
-            : formatPlayerRecord(updatedRecord),
-          ovrOverflow: userScore.ovrOverflow,
-          opponentOvrOverflow: opponentScore.ovrOverflow,
-          savedAt: new Date().toISOString(),
-        });
-      } catch {
-        // Never block match results on local shareable storage failures.
-      }
+      void (async () => {
+        try {
+          const playerId = getOrCreatePlayerIdentity().playerId;
+          await isPlayerAccountLinked(playerId);
+          rememberCommunityShareable({
+            kind: "matchup",
+            modeLabel: resultModeLabel,
+            result: matchResult,
+            userTeam: user.name,
+            username: getCachedLinkedUsername(playerId) ?? undefined,
+            opponentTeam: formatOpponentDisplayName(
+              opponent.name,
+              opponent.username,
+            ),
+            userOvr: userScore.total,
+            opponentOvr: opponentScore.total,
+            userLineupNames: userLineup.map((player) => player.name),
+            opponentLineupNames: opponentLineup.map((player) => player.name),
+            userLineupIds: userLineup.map((player) => player.id),
+            opponentLineupIds: opponentLineup.map((player) => player.id),
+            userAccent: user.accent,
+            opponentAccent: opponent.accent,
+            userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+            userWinRecord: skipCompetitiveRecords
+              ? undefined
+              : formatPlayerRecord(updatedRecord),
+            ovrOverflow: userScore.ovrOverflow,
+            opponentOvrOverflow: opponentScore.ovrOverflow,
+            savedAt: new Date().toISOString(),
+          });
+        } catch {
+          // Never block match results on local shareable storage failures.
+        }
+      })();
     }
 
     if (!skipCompetitiveRecords && lineupsComplete) {
@@ -582,11 +584,11 @@ export function MatchResults({
     setShareState("busy");
 
     try {
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      await isPlayerAccountLinked(playerId);
       await saveLineupShareCard({
         teamName: user.name,
-        username:
-          getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
-          undefined,
+        username: getCachedLinkedUsername(playerId) ?? undefined,
         subhead: resultModeLabel,
         accent: user.accent,
         ovr: userScore.total,
@@ -945,7 +947,7 @@ export function MatchResults({
                 {
                   id: "home",
                   label: "Back to Play",
-                  disabled: competitiveActionsLocked,
+                  disabled: ghostSubmitting,
                   onClick: onReturnToMenu,
                 },
               ]}
@@ -996,7 +998,8 @@ export function MatchResults({
                 {
                   id: "home",
                   label: "Back to Play",
-                  disabled: competitiveActionsLocked,
+                  // Keep hub exit available during rematch wait / matchmaking.
+                  disabled: ghostSubmitting,
                   onClick: onReturnToMenu,
                 },
               ]}

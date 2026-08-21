@@ -290,15 +290,21 @@ const resolvePlayersByIds = (
   names: string[],
   playersById: Map<string, Player>,
 ): Player[] => {
-  if (ids && ids.length > 0) {
-    return ids
-      .map((id) => playersById.get(id))
-      .filter((player): player is Player => player != null);
-  }
-
   const byName = new Map(
     [...playersById.values()].map((player) => [player.name, player]),
   );
+
+  if (ids && ids.length > 0) {
+    return ids.map((id, index) => {
+      const byId = playersById.get(id);
+      if (byId) {
+        return byId;
+      }
+      const fallbackName = names[index];
+      return fallbackName ? byName.get(fallbackName) : undefined;
+    }).filter((player): player is Player => player != null);
+  }
+
   return names
     .map((name) => byName.get(name))
     .filter((player): player is Player => player != null);

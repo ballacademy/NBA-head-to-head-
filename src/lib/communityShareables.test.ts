@@ -157,6 +157,27 @@ describe("matchup share card record", () => {
     expect(input?.recordLabel).toBe("Projected");
   });
 
+  it("falls back to lineup names when stored ids are stale", () => {
+    const input = buildShareCardInputFromAttachment(
+      {
+        kind: "matchup",
+        modeLabel: "Casual Head to Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 91,
+        opponentOvr: 87,
+        userLineupNames: ["Guard"],
+        opponentLineupNames: ["Other"],
+        userLineupIds: ["missing-id"],
+        savedAt: "2026-07-01T00:00:00.000Z",
+      },
+      playersById,
+    );
+
+    expect(input?.lineup.map((player) => player.name)).toEqual(["Guard"]);
+  });
+
   it("falls back to competitive record when projected is missing", () => {
     const input = buildShareCardInputFromAttachment(
       {
