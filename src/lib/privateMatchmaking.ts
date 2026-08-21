@@ -29,6 +29,8 @@ const PRIVATE_ROOM_UNAVAILABLE =
   "Private match servers are temporarily unavailable. Try again in a moment.";
 const PRIVATE_ROOM_UNREACHABLE =
   "Could not reach private match servers. Check your connection and try again.";
+export const PRIVATE_ROOM_NOT_FOUND_MESSAGE =
+  "That room doesn't exist or the code is invalid.";
 
 const readError = async (response: Response) => {
   try {
@@ -39,9 +41,27 @@ const readError = async (response: Response) => {
   }
 };
 
+/** Normalize API / network join failures into player-facing copy. */
+export const formatPrivateJoinError = (error: string) => {
+  const normalized = error.trim().toLowerCase();
+  if (
+    normalized === "room not found" ||
+    normalized.includes("not found") ||
+    normalized.includes("does not exist") ||
+    normalized.includes("invalid room")
+  ) {
+    return PRIVATE_ROOM_NOT_FOUND_MESSAGE;
+  }
+  return error;
+};
+
 const mapPrivateRoomFailure = async (response: Response) => {
   if (response.status >= 500) {
     return PRIVATE_ROOM_UNAVAILABLE;
+  }
+
+  if (response.status === 404) {
+    return PRIVATE_ROOM_NOT_FOUND_MESSAGE;
   }
 
   return readError(response);
@@ -120,7 +140,7 @@ export const joinPrivateRoom = async (params: {
     });
 
     if (!response.ok) {
-      return { error: await mapPrivateRoomFailure(response) };
+      return { error: formatPrivateJoinError(await mapPrivateRoomFailure(response)) };
     }
 
     const payload = (await response.json()) as {
@@ -158,7 +178,7 @@ export const joinPrivateRoom = async (params: {
       };
     }
 
-    return { error: "Could not join private room" };
+    return { error: PRIVATE_ROOM_NOT_FOUND_MESSAGE };
   } catch {
     return { error: PRIVATE_ROOM_UNREACHABLE };
   }

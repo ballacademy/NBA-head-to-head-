@@ -21,6 +21,8 @@ interface PrivateMatchModalProps {
   startMatchError?: string | null;
   /** When the host room is ready, parent shows MatchmakingOverlay with this code. */
   privateRoomCode?: string | null;
+  /** Host-only: dismiss this modal once the waiting room code is ready. */
+  privateRoomRole?: "host" | "guest" | null;
   initialJoinCode?: string | null;
   onClose: () => void;
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
@@ -32,6 +34,7 @@ export function PrivateMatchModal({
   salaryCapMode,
   startMatchError = null,
   privateRoomCode = null,
+  privateRoomRole = null,
   initialJoinCode = null,
   onClose,
   onStart,
@@ -102,11 +105,12 @@ export function PrivateMatchModal({
 
   // Host path: App sets the room code once create succeeds, then waits for a
   // guest under MatchmakingOverlay. Dismiss this modal so the code is visible.
+  // Guest joins stay on this modal so invalid codes can show an in-dialog error.
   useEffect(() => {
-    if (privateRoomCode) {
+    if (privateRoomCode && privateRoomRole === "host") {
       onClose();
     }
-  }, [privateRoomCode, onClose]);
+  }, [privateRoomCode, privateRoomRole, onClose]);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   useDialogA11y({
@@ -179,7 +183,10 @@ export function PrivateMatchModal({
       if (result === "started" || result === "cancelled") {
         onClose();
       } else if (result === "failed") {
-        setError("Could not join that room. Check the code and try again.");
+        // Prefer App's startMatchError when it arrives; keep a modal fallback.
+        setError(
+          "Couldn't join that room. Check the code and try again.",
+        );
       }
     } finally {
       if (mountedRef.current) {
