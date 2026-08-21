@@ -38,6 +38,8 @@ export interface StartDraftOptions {
   privateRoom?:
     | { role: "host" }
     | { role: "guest"; roomCode: string };
+  /** Rematch the same private opponent when both sides opt in. */
+  privateRematch?: { previousMatchId: string };
   eventId?: string;
   eventRestriction?: "u25" | "intl" | "nostars" | "bargain" | "blind" | "agepos";
   /** When set, both competitors use these exact draft slots. */

@@ -622,7 +622,7 @@ export function MatchResults({
   const playAgainLabel = user.practiceMode
     ? "Practice again"
     : user.privateMatch
-      ? "Private match again"
+      ? "Rematch"
       : user.eventId
         ? "Play event again"
         : "Draft another team";

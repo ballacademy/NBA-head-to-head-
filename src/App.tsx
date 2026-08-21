@@ -134,6 +134,11 @@ import {
   joinPrivateRoom,
   waitForPrivateRoomGuest,
 } from "./lib/privateMatchmaking";
+import {
+  cancelPrivateRematch,
+  offerPrivateRematch,
+  waitForPrivateRematch,
+} from "./lib/privateRematch";
 import { formatOpponentDisplayName } from "./lib/opponentDisplayName";
 import {
   clearLiveDraftSession,
@@ -459,12 +464,14 @@ function App() {
     cancelled: boolean;
     privateRoomCode?: string;
     privateRoomRole?: "host" | "guest";
+    privateRematchSourceMatchId?: string;
     /** Once set, cancel is ignored — a live match already exists. */
     matchId?: string;
   } | null>(null);
   const [privateRoomRole, setPrivateRoomRole] = useState<
     "host" | "guest" | null
   >(null);
+  const [privateRematchWaiting, setPrivateRematchWaiting] = useState(false);
   const [pendingPrivateMatchMode, setPendingPrivateMatchMode] = useState<
     "classic" | "ranked" | null
   >(() =>
@@ -1132,8 +1139,9 @@ function App() {
     let activeMatchmakingGeneration: number | null = null;
 
     if (privateMatch) {
+      const privateRematch = options.privateRematch;
       const privateRoom = options.privateRoom;
-      if (!privateRoom) {
+      if (!privateRoom && !privateRematch) {
         setStartMatchError(getStartMatchErrorMessage("setup_failed"));
         return "failed";
       }
@@ -1156,7 +1164,8 @@ function App() {
         playerId,
         cancelled: false,
         privateRoomCode: undefined as string | undefined,
-        privateRoomRole: privateRoom.role as "host" | "guest",
+        privateRoomRole: privateRoom?.role as "host" | "guest" | undefined,
+        privateRematchSourceMatchId: privateRematch?.previousMatchId,
         matchId: undefined as string | undefined,
       };
       matchmakingSessionRef.current = session;
@@ -1166,18 +1175,76 @@ function App() {
       // Keep the private-match modal open until host create / guest join
       // succeeds — opening the overlay early closed the modal and could leave
       // hub scroll locked when the room code was invalid.
-      setMatchmakingMode(null);
+      // Rematch shows the overlay immediately while waiting on the opponent.
+      setMatchmakingMode(privateRematch ? requestedMode : null);
       setMatchedOpponentName(null);
       setPrivateRoomCode(null);
       setPrivateRoomExpiresAt(null);
-      setPrivateRoomRole(privateRoom.role);
+      setPrivateRoomRole(privateRoom?.role ?? null);
+      setPrivateRematchWaiting(Boolean(privateRematch));
 
       const elo = salaryCapMode
         ? ensureCurrentRankedSeason().elo
         : ensureClassicProfile().elo;
 
       try {
-        if (privateRoom.role === "host") {
+        if (privateRematch) {
+          const offered = await offerPrivateRematch({
+            sourceMatchId: privateRematch.previousMatchId,
+            playerId,
+            teamName: team.name,
+            elo,
+          });
+
+          if ("error" in offered) {
+            setStartMatchError(offered.error);
+            return "failed";
+          }
+
+          setPrivateRoomExpiresAt(offered.status === "waiting" ? offered.expiresAt : null);
+
+          let matched =
+            offered.status === "matched"
+              ? offered
+              : null;
+
+          if (!matched) {
+            const waited = await waitForPrivateRematch(
+              {
+                sourceMatchId: privateRematch.previousMatchId,
+                playerId,
+              },
+              { isCancelled: () => session.cancelled && !session.matchId },
+            );
+
+            if (!waited.ok) {
+              if (waited.error === "expired") {
+                setStartMatchError(
+                  "Rematch timed out. Ask your opponent to press Rematch again.",
+                );
+                return "failed";
+              }
+              if (waited.error === "setup_failed") {
+                setStartMatchError(
+                  "Private rematch is temporarily unavailable. Try again in a moment.",
+                );
+                return "failed";
+              }
+              return "cancelled";
+            }
+
+            matched = waited.matched;
+          }
+
+          liveOpponent = matched.opponent;
+          session.matchId = matched.matchId;
+          salaryCapMode = matched.mode === "ranked";
+          salaryCapLimit = salaryCapMode
+            ? RANKED_SALARY_CAP
+            : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
+          session.mode = matched.mode;
+          setMatchmakingMode(matched.mode);
+        } else if (privateRoom!.role === "host") {
           const created = await createPrivateRoom({
             mode: requestedMode,
             playerId,
@@ -1224,7 +1291,7 @@ function App() {
           setMatchmakingMode(waited.matched.mode);
         } else {
           const joined = await joinPrivateRoom({
-            roomCode: privateRoom.roomCode,
+            roomCode: privateRoom!.roomCode,
             playerId,
             teamName: team.name,
             elo,
@@ -1236,8 +1303,8 @@ function App() {
             return "failed";
           }
 
-          session.privateRoomCode = privateRoom.roomCode;
-          setPrivateRoomCode(privateRoom.roomCode);
+          session.privateRoomCode = privateRoom!.roomCode;
+          setPrivateRoomCode(privateRoom!.roomCode);
           liveOpponent = joined.opponent;
           session.matchId = joined.matchId;
           salaryCapMode = joined.mode === "ranked";
@@ -1275,6 +1342,7 @@ function App() {
           setPrivateRoomCode(null);
           setPrivateRoomExpiresAt(null);
           setPrivateRoomRole(null);
+          setPrivateRematchWaiting(false);
         }
 
         setIsCancellingMatchmaking(false);
@@ -1641,6 +1709,14 @@ function App() {
       return;
     }
 
+    if (session.privateRematchSourceMatchId) {
+      await cancelPrivateRematch({
+        sourceMatchId: session.privateRematchSourceMatchId,
+        playerId: session.playerId,
+      });
+      return;
+    }
+
     // Guest join is a single POST; aborting locally is enough.
     if (session.privateRoomRole === "guest") {
       return;
@@ -1777,6 +1853,7 @@ function App() {
     setPrivateRoomCode(null);
     setPrivateRoomExpiresAt(null);
     setPrivateRoomRole(null);
+    setPrivateRematchWaiting(false);
     draftOnboardingResolverRef.current = null;
     if (!options?.preserveError) {
       setStartMatchError(options?.error ?? null);
@@ -1951,7 +2028,25 @@ function App() {
     }
 
     if (user.privateMatch) {
-      // Reopen the private match modal so host/guest can choose create or join.
+      const previousMatchId = matchId ?? opponent?.liveMatchId ?? null;
+      const canRematchSameOpponent = Boolean(
+        previousMatchId && opponent?.isLiveOpponent,
+      );
+
+      if (canRematchSameOpponent && previousMatchId) {
+        const result = await startMatch(team, {
+          privateMatch: true,
+          salaryCapMode: Boolean(user.salaryCapMode),
+          privateRematch: { previousMatchId },
+        });
+        // Stay on results if rematch fails/cancels so the player can retry.
+        if (result === "failed" || result === "cancelled") {
+          return;
+        }
+        return;
+      }
+
+      // Fallback: reopen the private match modal for a new room code.
       setPendingPrivateMatchMode(user.salaryCapMode ? "ranked" : "classic");
       resetToLanding();
       return;
@@ -3030,6 +3125,7 @@ function App() {
             privateRoomCode={privateRoomCode}
             privateRoomRole={privateRoomRole}
             privateRoomExpiresAt={privateRoomExpiresAt}
+            privateRematchWaiting={privateRematchWaiting}
             liveOnlySearch={matchmakingLiveOnlySearch}
           />
         ) : null}
@@ -3263,6 +3359,7 @@ function App() {
           privateRoomCode={privateRoomCode}
           privateRoomRole={privateRoomRole}
           privateRoomExpiresAt={privateRoomExpiresAt}
+          privateRematchWaiting={privateRematchWaiting}
           liveOnlySearch={matchmakingLiveOnlySearch}
         />
       ) : null}
