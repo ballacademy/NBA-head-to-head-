@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync player teams in the local database against ESPN roster assignments."""
+"""Sync player teams + jersey numbers against ESPN roster assignments."""
 
 from __future__ import annotations
 
@@ -52,6 +52,12 @@ ESPN_TO_BBR = {
 
 SUFFIX_PATTERN = re.compile(r"\b(jr|sr|ii|iii|iv|v)\b", re.I)
 
+# Confirmed moves not yet on ESPN team rosters (buyout / waiver timing).
+# Map ESPN display name → BBR team abbreviation.
+MANUAL_TEAM_OVERRIDES = {
+    "Klay Thompson": "MIA",
+}
+
 
 def normalize_name(name: str) -> str:
     decomposed = unicodedata.normalize("NFKD", name)
@@ -81,9 +87,18 @@ def build_name_index(players: list[dict]) -> dict[str, list[dict]]:
     return index
 
 
-def fetch_espn_assignments() -> dict[str, str]:
+def parse_jersey(raw: object) -> int | None:
+    if raw is None or raw == "":
+        return None
+    try:
+        return int(str(raw).strip())
+    except ValueError:
+        return None
+
+
+def fetch_espn_roster_rows() -> list[dict[str, object]]:
     teams_payload = fetch_json(ESPN_TEAMS_URL)
-    assignments: dict[str, str] = {}
+    rows: list[dict[str, object]] = []
 
     for entry in teams_payload["sports"][0]["leagues"][0]["teams"]:
         team = entry["team"]
@@ -97,9 +112,19 @@ def fetch_espn_assignments() -> dict[str, str]:
 
         for athlete in roster.get("athletes", []):
             name = str(athlete["displayName"])
-            assignments[name] = bbr_team
+            rows.append(
+                {
+                    "name": name,
+                    "team": bbr_team,
+                    "jerseyNumber": parse_jersey(athlete.get("jersey")),
+                }
+            )
 
-    return assignments
+    for name, team in MANUAL_TEAM_OVERRIDES.items():
+        if not any(normalize_name(str(row["name"])) == normalize_name(name) for row in rows):
+            rows.append({"name": name, "team": team, "jerseyNumber": None})
+
+    return rows
 
 
 def resolve_player(
@@ -128,14 +153,18 @@ def player_bbr_id(player: dict) -> str:
 
 def build_overrides(
     players: list[dict],
-    espn_assignments: dict[str, str],
-) -> tuple[dict[str, str], list[tuple[str, str, str]]]:
+    espn_rows: list[dict[str, object]],
+) -> tuple[dict[str, str], dict[str, int], list[tuple[str, str, str]], list[tuple[str, int | None, int]]]:
     name_index = build_name_index(players)
     overrides: dict[str, str] = {}
-    changes: list[tuple[str, str, str]] = []
+    jersey_by_bbr: dict[str, int] = {}
+    team_changes: list[tuple[str, str, str]] = []
+    jersey_changes: list[tuple[str, int | None, int]] = []
     seen_bbr: set[str] = set()
 
-    for espn_name, target_team in sorted(espn_assignments.items()):
+    for row in sorted(espn_rows, key=lambda item: str(item["name"])):
+        espn_name = str(row["name"])
+        target_team = str(row["team"])
         player = resolve_player(espn_name, name_index)
 
         if not player:
@@ -151,9 +180,13 @@ def build_overrides(
 
         if current_team != target_team:
             overrides[bbr_id] = target_team
-            changes.append((str(player["name"]), current_team, target_team))
+            team_changes.append((str(player["name"]), current_team, target_team))
 
-    return overrides, changes
+        jersey_number = row.get("jerseyNumber")
+        if isinstance(jersey_number, int):
+            jersey_by_bbr[bbr_id] = jersey_number
+
+    return overrides, jersey_by_bbr, team_changes, jersey_changes
 
 
 def apply_team_updates(players: list[dict], overrides: dict[str, str]) -> int:
@@ -177,34 +210,73 @@ def apply_team_updates(players: list[dict], overrides: dict[str, str]) -> int:
     return updated
 
 
-def apply_jersey_updates(overrides: dict[str, str]) -> int:
+def apply_jersey_updates(
+    team_overrides: dict[str, str],
+    jersey_by_bbr: dict[str, int],
+    name_by_bbr: dict[str, str],
+    current_team_by_bbr: dict[str, str],
+) -> tuple[int, list[tuple[str, int | None, int]]]:
     if not JERSEYS_PATH.exists():
-        return 0
+        return 0, []
 
     payload = json.loads(JERSEYS_PATH.read_text(encoding="utf-8"))
+    by_player = payload.setdefault("byPlayerId", {})
+    players_list = payload.setdefault("players", [])
     updated = 0
+    jersey_changes: list[tuple[str, int | None, int]] = []
 
-    for bbr_id, team in overrides.items():
-        entry = payload.get("byPlayerId", {}).get(bbr_id)
+    # Ensure every pool player has a jersey row tagged to the current team.
+    for bbr_id, team in current_team_by_bbr.items():
+        name = name_by_bbr.get(bbr_id, bbr_id)
+        entry = by_player.get(bbr_id)
+        if entry is None:
+            by_player[bbr_id] = {
+                "jerseyNumber": jersey_by_bbr.get(bbr_id, 0),
+                "team": team,
+                "name": name,
+            }
+            updated += 1
+            continue
 
-        if entry and entry.get("team") != team:
+        changed = False
+        if entry.get("team") != team:
             entry["team"] = team
+            changed = True
+        if entry.get("name") != name:
+            entry["name"] = name
+            changed = True
+        if bbr_id in jersey_by_bbr and entry.get("jerseyNumber") != jersey_by_bbr[bbr_id]:
+            jersey_changes.append(
+                (name, entry.get("jerseyNumber"), jersey_by_bbr[bbr_id]),
+            )
+            entry["jerseyNumber"] = jersey_by_bbr[bbr_id]
+            changed = True
+        if changed:
             updated += 1
 
-        for player in payload.get("players", []):
-            if str(player.get("bbrPlayerId")) == bbr_id and player.get("team") != team:
-                player["team"] = team
-                updated += 1
+    # Keep legacy players[] array in sync when present.
+    for player in players_list:
+        bbr_id = str(player.get("bbrPlayerId") or "")
+        if not bbr_id:
+            continue
+        entry = by_player.get(bbr_id)
+        if not entry:
+            continue
+        player["team"] = entry.get("team", player.get("team"))
+        player["name"] = entry.get("name", player.get("name"))
+        if "jerseyNumber" in entry:
+            player["jerseyNumber"] = entry["jerseyNumber"]
 
-    if updated:
-        payload["generatedAt"] = datetime.now(timezone.utc).isoformat()
-        payload["rosterSource"] = "espn"
-        JERSEYS_PATH.write_text(
-            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
+    payload["generatedAt"] = datetime.now(timezone.utc).isoformat()
+    payload["updatedAt"] = payload["generatedAt"]
+    payload["rosterSource"] = "espn"
+    payload["playerCount"] = len(by_player)
+    JERSEYS_PATH.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
-    return updated
+    return updated, jersey_changes
 
 
 def write_override_file(overrides: dict[str, str]) -> None:
@@ -245,14 +317,36 @@ def main() -> int:
 
     stats_payload = json.loads(STATS_PATH.read_text(encoding="utf-8"))
     players = stats_payload["players"]
-    espn_assignments = fetch_espn_assignments()
-    overrides, changes = build_overrides(players, espn_assignments)
+    espn_rows = fetch_espn_roster_rows()
+    overrides, jersey_by_bbr, team_changes, _ = build_overrides(players, espn_rows)
 
-    print(f"ESPN roster entries: {len(espn_assignments)}")
-    print(f"Team changes detected: {len(changes)}")
+    print(f"ESPN roster entries: {len(espn_rows)}")
+    print(f"Team changes detected: {len(team_changes)}")
 
-    for name, old_team, new_team in changes:
+    for name, old_team, new_team in team_changes:
         print(f"  {name}: {old_team} -> {new_team}")
+
+    # Preview jersey number changes against current file.
+    existing_jerseys = {}
+    if JERSEYS_PATH.exists():
+        existing_jerseys = (
+            json.loads(JERSEYS_PATH.read_text(encoding="utf-8")).get("byPlayerId") or {}
+        )
+    jersey_previews: list[tuple[str, int | None, int]] = []
+    for bbr_id, number in jersey_by_bbr.items():
+        prior = existing_jerseys.get(bbr_id, {}).get("jerseyNumber")
+        if prior != number:
+            name = next(
+                (str(player["name"]) for player in players if player_bbr_id(player) == bbr_id),
+                bbr_id,
+            )
+            jersey_previews.append((name, prior, number))
+
+    print(f"Jersey number changes detected: {len(jersey_previews)}")
+    for name, old_number, new_number in jersey_previews[:40]:
+        print(f"  {name}: #{old_number} -> #{new_number}")
+    if len(jersey_previews) > 40:
+        print(f"  … and {len(jersey_previews) - 40} more")
 
     if args.dry_run:
         return 0
@@ -267,11 +361,20 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    jersey_updates = apply_jersey_updates(overrides)
+    name_by_bbr = {player_bbr_id(player): str(player["name"]) for player in players}
+    current_team_by_bbr = {
+        player_bbr_id(player): str(player["team"]) for player in players
+    }
+    jersey_updates, jersey_changes = apply_jersey_updates(
+        overrides,
+        jersey_by_bbr,
+        name_by_bbr,
+        current_team_by_bbr,
+    )
     write_override_file(overrides)
 
     print(f"Updated {updated_players} players in {STATS_PATH.name}")
-    print(f"Updated {jersey_updates} jersey team entries")
+    print(f"Updated {jersey_updates} jersey entries ({len(jersey_changes)} number changes)")
     print(f"Wrote {len(overrides)} overrides to {OVERRIDES_PATH.name}")
     return 0
 
