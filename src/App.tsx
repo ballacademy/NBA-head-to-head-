@@ -1334,6 +1334,15 @@ function App() {
           return "cancelled";
         }
       } finally {
+        // Clear sticky rematch ready if we never entered a live match — otherwise
+        // the opponent can rematch into a lobby this client already abandoned.
+        if (privateRematch && !session.matchId) {
+          void cancelPrivateRematch({
+            sourceMatchId: privateRematch.previousMatchId,
+            playerId,
+          });
+        }
+
         if (matchmakingSessionRef.current?.generation === generation) {
           matchmakingSessionRef.current = null;
           setMatchmakingMode(null);
@@ -2028,9 +2037,10 @@ function App() {
     }
 
     if (user.privateMatch) {
-      const previousMatchId = matchId ?? opponent?.liveMatchId ?? null;
+      // Prefer the live match id — fabricated client matchIds cannot rematch.
+      const previousMatchId = opponent?.liveMatchId ?? matchId ?? null;
       const canRematchSameOpponent = Boolean(
-        previousMatchId && opponent?.isLiveOpponent,
+        opponent?.liveMatchId && opponent?.isLiveOpponent,
       );
 
       if (canRematchSameOpponent && previousMatchId) {

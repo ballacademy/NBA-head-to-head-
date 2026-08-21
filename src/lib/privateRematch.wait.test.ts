@@ -65,12 +65,14 @@ describe("waitForPrivateRematch", () => {
   });
 
   it("fails after repeated poll errors", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        new Response(JSON.stringify({ error: "down" }), { status: 500 }),
-      ),
-    );
+    const fetchMock = vi.fn(async (input: RequestInfo, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      if (method === "DELETE") {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ error: "down" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     const result = await waitForPrivateRematch(
       { sourceMatchId: "match-old", playerId: "self-1" },
@@ -78,5 +80,10 @@ describe("waitForPrivateRematch", () => {
     );
 
     expect(result).toEqual({ ok: false, error: "setup_failed" });
+    expect(
+      fetchMock.mock.calls.some(
+        (call) => (call[1] as RequestInit | undefined)?.method === "DELETE",
+      ),
+    ).toBe(true);
   });
 });

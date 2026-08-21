@@ -257,6 +257,7 @@ export const waitForPrivateRematch = async (
     if ("error" in poll) {
       consecutiveErrors += 1;
       if (consecutiveErrors >= maxConsecutiveErrors) {
+        await cancelPrivateRematch(params);
         return { ok: false, error: "setup_failed" };
       }
       await sleep(pollIntervalMs);
@@ -270,6 +271,9 @@ export const waitForPrivateRematch = async (
     }
 
     if (poll.status === "expired" || poll.status === "cancelled") {
+      if (poll.status === "expired") {
+        await cancelPrivateRematch(params);
+      }
       return { ok: false, error: poll.status };
     }
 
