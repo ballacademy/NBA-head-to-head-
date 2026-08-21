@@ -17,6 +17,7 @@ import {
 } from "./lib/hubPrefetch";
 import { scrollHubToTop } from "./lib/hubScroll";
 import { unlockDraftClockAudio } from "./lib/draftClockSound";
+import { forceUnlockBackgroundScroll } from "./hooks/useDialogA11y";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { MatchResults } from "./components/MatchResults";
 import { players } from "./data/players";
@@ -2175,6 +2176,13 @@ function App() {
       );
     }
   }, [isDailyDraft, isPendingQueueMatch, matchId, opponent?.liveMatchId, phase]);
+
+  // Private/matchmaking dialogs can leave body scroll locked; results must scroll.
+  useLayoutEffect(() => {
+    if (phase === "results") {
+      forceUnlockBackgroundScroll();
+    }
+  }, [phase]);
 
   const ensureResultsMatchId = useCallback((liveMatchId?: string | null) => {
     setMatchId((current) => {

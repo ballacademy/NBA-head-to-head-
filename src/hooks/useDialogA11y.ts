@@ -14,41 +14,60 @@ const isElementScrollable = (element: HTMLElement) =>
 
 const eventAllowsInnerScroll = (
   target: EventTarget | null,
-  root: HTMLElement | null,
+  roots: Iterable<() => HTMLElement | null>,
 ) => {
-  if (!(target instanceof Node) || !root?.contains(target)) {
+  if (!(target instanceof Node)) {
     return false;
   }
 
-  let node: Node | null = target;
-  while (node instanceof HTMLElement && root.contains(node)) {
-    if (isElementScrollable(node)) {
-      return true;
+  for (const getRoot of roots) {
+    const root = getRoot();
+    if (!root?.contains(target)) {
+      continue;
     }
-    if (node === root) {
-      break;
+
+    let node: Node | null = target;
+    while (node instanceof HTMLElement && root.contains(node)) {
+      if (isElementScrollable(node)) {
+        return true;
+      }
+      if (node === root) {
+        break;
+      }
+      node = node.parentElement;
     }
-    node = node.parentElement;
   }
 
   return false;
 };
 
-const lockBackgroundScroll = (getDialogRoot: () => HTMLElement | null) => {
-  const locked = [
-    document.documentElement,
-    document.body,
-    ...document.querySelectorAll<HTMLElement>(".landing-hub-scroll"),
-  ];
-  const previousOverflow = locked.map((node) => node.style.overflow);
-  locked.forEach((node) => {
+type OverflowSnapshot = { node: HTMLElement; overflow: string };
+
+/** Nested dialogs (private modal + matchmaking) must share one lock. */
+let scrollLockCount = 0;
+let overflowSnapshot: OverflowSnapshot[] | null = null;
+const activeDialogRoots = new Set<() => HTMLElement | null>();
+let preventBackgroundScroll: ((event: Event) => void) | null = null;
+
+const collectLockTargets = () => [
+  document.documentElement,
+  document.body,
+  ...document.querySelectorAll<HTMLElement>(".landing-hub-scroll"),
+];
+
+const applyScrollLock = () => {
+  overflowSnapshot = collectLockTargets().map((node) => ({
+    node,
+    overflow: node.style.overflow,
+  }));
+  for (const { node } of overflowSnapshot) {
     node.style.overflow = "hidden";
-  });
+  }
   document.documentElement.classList.add("ddgm-dialog-open");
   document.body.classList.add("ddgm-dialog-open");
 
-  const preventBackgroundScroll = (event: Event) => {
-    if (eventAllowsInnerScroll(event.target, getDialogRoot())) {
+  preventBackgroundScroll = (event: Event) => {
+    if (eventAllowsInnerScroll(event.target, activeDialogRoots)) {
       return;
     }
     event.preventDefault();
@@ -62,16 +81,69 @@ const lockBackgroundScroll = (getDialogRoot: () => HTMLElement | null) => {
     capture: true,
     passive: false,
   });
+};
 
-  return () => {
-    locked.forEach((node, index) => {
-      node.style.overflow = previousOverflow[index] ?? "";
-    });
-    document.documentElement.classList.remove("ddgm-dialog-open");
-    document.body.classList.remove("ddgm-dialog-open");
+const releaseScrollLock = () => {
+  if (overflowSnapshot) {
+    for (const { node, overflow } of overflowSnapshot) {
+      node.style.overflow = overflow;
+    }
+    overflowSnapshot = null;
+  }
+
+  document.documentElement.classList.remove("ddgm-dialog-open");
+  document.body.classList.remove("ddgm-dialog-open");
+
+  if (preventBackgroundScroll) {
     document.removeEventListener("wheel", preventBackgroundScroll, true);
     document.removeEventListener("touchmove", preventBackgroundScroll, true);
+    preventBackgroundScroll = null;
+  }
+};
+
+/**
+ * Reference-counted body/hub scroll freeze. Safe when PrivateMatchModal and
+ * MatchmakingOverlay both lock at once — unlocking one must not restore
+ * `overflow: hidden` captured from the other.
+ */
+export const lockBackgroundScroll = (
+  getDialogRoot: () => HTMLElement | null,
+) => {
+  activeDialogRoots.add(getDialogRoot);
+  scrollLockCount += 1;
+
+  if (scrollLockCount === 1) {
+    applyScrollLock();
+  }
+
+  return () => {
+    activeDialogRoots.delete(getDialogRoot);
+    scrollLockCount = Math.max(0, scrollLockCount - 1);
+    if (scrollLockCount === 0) {
+      releaseScrollLock();
+    }
   };
+};
+
+/** Hard reset for pages that must scroll (e.g. match results after private). */
+export const forceUnlockBackgroundScroll = () => {
+  activeDialogRoots.clear();
+  scrollLockCount = 0;
+  releaseScrollLock();
+  // Also clear leftover inline overflow / listeners if a prior unlock left the
+  // page stuck without an active snapshot (legacy nested-lock bug).
+  for (const node of collectLockTargets()) {
+    if (node.style.overflow === "hidden") {
+      node.style.overflow = "";
+    }
+  }
+  document.documentElement.classList.remove("ddgm-dialog-open");
+  document.body.classList.remove("ddgm-dialog-open");
+};
+
+/** Test helper — do not use in product code. */
+export const resetBackgroundScrollLockForTests = () => {
+  forceUnlockBackgroundScroll();
 };
 
 export type UseDialogA11yOptions = {
