@@ -127,19 +127,22 @@ const normalizeMatchup = (
 
 const normalizeEntry = (
   entry: AppendMatchGameLogEntryInput,
-): MatchGameLogEntry => ({
-  id: entry.id,
-  recordedAt: entry.recordedAt ?? new Date().toISOString(),
-  kind: entry.kind,
-  mode: entry.mode,
-  result: entry.result,
-  opponentName: entry.opponentName.trim() || "Opponent",
-  ownerScore: entry.ownerScore,
-  opponentScore: entry.opponentScore,
-  bannerDelta: entry.bannerDelta,
-  streakCounted: entry.streakCounted !== false,
-  matchup: normalizeMatchup(entry.matchup),
-});
+): MatchGameLogEntry => {
+  const matchup = normalizeMatchup(entry.matchup);
+  return {
+    id: entry.id,
+    recordedAt: entry.recordedAt ?? new Date().toISOString(),
+    kind: entry.kind,
+    mode: entry.mode,
+    result: entry.result,
+    opponentName: entry.opponentName.trim() || "Opponent",
+    ownerScore: entry.ownerScore,
+    opponentScore: entry.opponentScore,
+    bannerDelta: entry.bannerDelta,
+    streakCounted: entry.streakCounted !== false,
+    ...(matchup ? { matchup } : {}),
+  };
+};
 
 export const loadMatchGameLog = (): MatchGameLogEntry[] => {
   const saved = readJson<MatchGameLogEntry[]>(MATCH_GAME_LOG_KEY);
@@ -147,34 +150,45 @@ export const loadMatchGameLog = (): MatchGameLogEntry[] => {
     return [];
   }
 
-  return saved
-    .map((entry) => {
-      if (
-        !entry ||
-        typeof entry.id !== "string" ||
-        typeof entry.recordedAt !== "string" ||
-        (entry.kind !== "live" && entry.kind !== "queued") ||
-        (entry.mode !== "classic" &&
-          entry.mode !== "ranked" &&
-          entry.mode !== "event" &&
-          entry.mode !== "allTime") ||
-        (entry.result !== "win" &&
-          entry.result !== "loss" &&
-          entry.result !== "tie") ||
-        typeof entry.opponentName !== "string" ||
-        typeof entry.ownerScore !== "number" ||
-        typeof entry.opponentScore !== "number" ||
-        typeof entry.streakCounted !== "boolean"
-      ) {
-        return null;
-      }
+  const next: MatchGameLogEntry[] = [];
+  for (const entry of saved) {
+    if (
+      !entry ||
+      typeof entry.id !== "string" ||
+      typeof entry.recordedAt !== "string" ||
+      (entry.kind !== "live" && entry.kind !== "queued") ||
+      (entry.mode !== "classic" &&
+        entry.mode !== "ranked" &&
+        entry.mode !== "event" &&
+        entry.mode !== "allTime") ||
+      (entry.result !== "win" &&
+        entry.result !== "loss" &&
+        entry.result !== "tie") ||
+      typeof entry.opponentName !== "string" ||
+      typeof entry.ownerScore !== "number" ||
+      typeof entry.opponentScore !== "number" ||
+      typeof entry.streakCounted !== "boolean"
+    ) {
+      continue;
+    }
 
-      return {
-        ...entry,
-        matchup: normalizeMatchup(entry.matchup),
-      } satisfies MatchGameLogEntry;
-    })
-    .filter((entry): entry is MatchGameLogEntry => entry != null);
+    const matchup = normalizeMatchup(entry.matchup);
+    next.push({
+      id: entry.id,
+      recordedAt: entry.recordedAt,
+      kind: entry.kind,
+      mode: entry.mode,
+      result: entry.result,
+      opponentName: entry.opponentName,
+      ownerScore: entry.ownerScore,
+      opponentScore: entry.opponentScore,
+      bannerDelta:
+        typeof entry.bannerDelta === "number" ? entry.bannerDelta : undefined,
+      streakCounted: entry.streakCounted,
+      ...(matchup ? { matchup } : {}),
+    });
+  }
+  return next;
 };
 
 export const appendMatchGameLogEntry = (
