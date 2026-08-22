@@ -3,6 +3,7 @@ import { createDefaultTierListState } from "./tierList";
 import {
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
   createTierListComment,
+  deleteTierListComment,
   fetchPublicTierLists,
   listTierListComments,
   matchesPublicTierListBrowseFilters,
@@ -134,6 +135,14 @@ describe("tierListCommunity local fallback", () => {
     const listed = await listTierListComments({ id: published.id });
     expect(listed).toHaveLength(1);
     expect(listed[0]?.authorName).toBe("Fan");
+
+    const deleted = await deleteTierListComment({
+      id: published.id,
+      commentId: created.comment.id,
+      playerId: "viewer-2",
+    });
+    expect(deleted.ok).toBe(true);
+    expect(await listTierListComments({ id: published.id })).toHaveLength(0);
   });
 
   it("updates an existing published list in the local catalog", async () => {

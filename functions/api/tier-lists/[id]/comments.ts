@@ -25,6 +25,8 @@ interface CommentBody {
   authorName?: unknown;
   authorTag?: unknown;
   body?: unknown;
+  action?: unknown;
+  commentId?: unknown;
 }
 
 const parseTierListId = (id: string | string[] | undefined) =>
@@ -97,11 +99,50 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const playerId = parsePlayerId(body.playerId);
-  const text = typeof body.body === "string" ? body.body.trim() : "";
-
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
   }
+
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json({ error: "Create an account to comment on tier lists." }, 403);
+  }
+
+  if (body.action === "delete") {
+    const commentId =
+      typeof body.commentId === "string" && body.commentId.trim()
+        ? body.commentId.trim().slice(0, 80)
+        : "";
+    if (!commentId) {
+      return json({ error: "commentId is required" }, 400);
+    }
+
+    const existing = await context.env.DB.prepare(
+      `SELECT id, player_id FROM tier_list_comments
+       WHERE id = ? AND tier_list_id = ?`,
+    )
+      .bind(commentId, tierListId)
+      .first<{ id: string; player_id: string }>();
+
+    if (!existing) {
+      return json({ error: "Comment not found" }, 404);
+    }
+
+    if (existing.player_id !== playerId) {
+      return json({ error: "You can only delete your own comments." }, 403);
+    }
+
+    await context.env.DB.prepare(
+      `DELETE FROM tier_list_comments WHERE id = ? AND tier_list_id = ?`,
+    )
+      .bind(commentId, tierListId)
+      .run();
+
+    return json({ ok: true, commentId });
+  }
+
+  const text = typeof body.body === "string" ? body.body.trim() : "";
+
   if (!text) {
     return json({ error: "Comment body is required" }, 400);
   }
@@ -110,11 +151,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { error: `Comments can be at most ${COMMENT_BODY_MAX} characters` },
       400,
     );
-  }
-
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "Create an account to comment on tier lists." }, 403);
   }
 
   const existing = await context.env.DB.prepare(

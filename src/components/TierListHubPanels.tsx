@@ -1320,7 +1320,17 @@ export function CommunityPostsPanel({
                                 <button
                                   type="button"
                                   className="community-posts-panel__text-action"
+                                  disabled={!accountReady}
+                                  title={
+                                    accountReady
+                                      ? undefined
+                                      : "Create an account to challenge another GM."
+                                  }
                                   onClick={() => {
+                                    if (!accountReady) {
+                                      onSignIn?.();
+                                      return;
+                                    }
                                     setOpenMenuPostId(null);
                                     onChallengeAuthor("classic");
                                   }}
@@ -1726,6 +1736,8 @@ interface TierListPublicViewerProps {
   commentSubmitting: boolean;
   commentError: string | null;
   onSignIn?: () => void;
+  viewerPlayerId?: string;
+  onDeleteComment?: (commentId: string) => void;
 }
 
 export function TierListPublicViewer({
@@ -1745,6 +1757,8 @@ export function TierListPublicViewer({
   commentSubmitting,
   commentError,
   onSignIn,
+  viewerPlayerId,
+  onDeleteComment,
 }: TierListPublicViewerProps) {
   const accountReady = accountLinked === true;
   const commentRemaining = TIER_LIST_COMMENT_BODY_MAX - commentDraft.length;
@@ -1884,15 +1898,33 @@ export function TierListPublicViewer({
           </p>
         ) : (
           <ul className="tier-list-hub__comments-list">
-            {comments.map((comment) => (
-              <li key={comment.id}>
-                <strong>
-                  {comment.authorName} · {formatPublicTag(comment.authorTag)}
-                </strong>
-                <span>{formatPublicTierListTime(comment.createdAt)}</span>
-                <p>{comment.body}</p>
-              </li>
-            ))}
+            {comments.map((comment) => {
+              const isOwnComment = Boolean(
+                viewerPlayerId && comment.playerId === viewerPlayerId,
+              );
+              return (
+                <li key={comment.id}>
+                  <div className="tier-list-hub__comment-meta">
+                    <strong>
+                      {comment.authorName} · {formatPublicTag(comment.authorTag)}
+                    </strong>
+                    <span>{formatPublicTierListTime(comment.createdAt)}</span>
+                    {onDeleteComment && isOwnComment ? (
+                      <button
+                        type="button"
+                        className="tier-list-hub__comment-delete"
+                        aria-label="Delete comment"
+                        title="Delete comment"
+                        onClick={() => onDeleteComment(comment.id)}
+                      >
+                        <TrashIcon />
+                      </button>
+                    ) : null}
+                  </div>
+                  <p>{comment.body}</p>
+                </li>
+              );
+            })}
           </ul>
         )}
 

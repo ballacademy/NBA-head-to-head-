@@ -179,7 +179,15 @@ import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
 import { ensureClassicProfile } from "./lib/classicProfile";
-import { ensureCurrentRankedSeason } from "./lib/rankedProfile";
+import {
+  ensureCurrentRankedSeason,
+  resolveRankedEloForMatchmaking,
+  resolveRankedEloForMatchmakingSync,
+} from "./lib/rankedProfile";
+import {
+  ACCOUNT_REQUIRED_CHALLENGE_MESSAGE,
+  isPlayerAccountLinked,
+} from "./lib/accountGate";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -1189,7 +1197,7 @@ function App() {
       setPrivateRematchWaiting(Boolean(privateRematch));
 
       const elo = salaryCapMode
-        ? ensureCurrentRankedSeason().elo
+        ? await resolveRankedEloForMatchmaking()
         : ensureClassicProfile().elo;
 
       try {
@@ -1436,7 +1444,7 @@ function App() {
       const elo = eventMode
         ? loadEventProfile(eventId!).elo
         : salaryCapMode
-          ? ensureCurrentRankedSeason().elo
+          ? await resolveRankedEloForMatchmaking()
           : ensureClassicProfile().elo;
 
       try {
@@ -2904,11 +2912,21 @@ function App() {
 
   const startPrivateChallenge = useCallback(
     (mode: LandingH2hMode, joinCode?: string | null) => {
-      saveLandingPlaySection("headToHead");
-      saveLandingH2hMode(mode);
-      setPendingPrivateJoinCode(joinCode ?? null);
-      setPendingPrivateMatchMode(mode);
-      goToLandingHub("play");
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      void isPlayerAccountLinked(playerId).then((linked) => {
+        if (!linked) {
+          setStartMatchError(ACCOUNT_REQUIRED_CHALLENGE_MESSAGE);
+          goToLandingHub("play");
+          return;
+        }
+
+        saveLandingPlaySection("headToHead");
+        saveLandingH2hMode(mode);
+        setPendingPrivateJoinCode(joinCode ?? null);
+        setPendingPrivateMatchMode(mode);
+        setStartMatchError(null);
+        goToLandingHub("play");
+      });
     },
     [goToLandingHub],
   );
@@ -3030,7 +3048,7 @@ function App() {
 
     const elo =
       matchmakingMode === "ranked"
-        ? ensureCurrentRankedSeason().elo
+        ? resolveRankedEloForMatchmakingSync()
         : ensureClassicProfile().elo;
 
     return requiresLiveOpponentOnly(elo);
