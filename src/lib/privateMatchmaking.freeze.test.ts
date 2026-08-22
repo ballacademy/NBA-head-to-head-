@@ -36,6 +36,29 @@ describe("private room freeze guards", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
   });
 
+  it("honors an already-aborted external signal immediately", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fetchMock = vi.fn(
+      (_input: RequestInfo, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          if (init?.signal?.aborted) {
+            reject(new DOMException("Aborted", "AbortError"));
+            return;
+          }
+          init?.signal?.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      fetchWithTimeout("/api/private-room", { signal: controller.signal }, 5_000),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("maps aborted join to a cancelled error instead of hanging", async () => {
     const controller = new AbortController();
     vi.stubGlobal(

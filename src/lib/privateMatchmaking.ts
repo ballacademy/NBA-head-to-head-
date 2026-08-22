@@ -58,7 +58,11 @@ export const fetchWithTimeout = async (
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const external = init.signal;
   const onExternalAbort = () => controller.abort();
-  external?.addEventListener("abort", onExternalAbort);
+  if (external?.aborted) {
+    controller.abort();
+  } else {
+    external?.addEventListener("abort", onExternalAbort);
+  }
 
   try {
     return await fetch(input, { ...init, signal: controller.signal });
