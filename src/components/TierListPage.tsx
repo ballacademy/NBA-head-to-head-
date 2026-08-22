@@ -60,10 +60,12 @@ import { getTeamGlowColor } from "../lib/teamColors";
 import { downloadTierListImage } from "../lib/tierListShareCard";
 import {
   buildPublicTierListShareUrl,
+  createTierListComment,
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
   fetchPublishedLikeCounts,
   fetchPublicTierList,
   fetchPublicTierLists,
+  listTierListComments,
   publishTierList,
   setTierListLike,
   unpublishTierList,
@@ -71,6 +73,7 @@ import {
   type PublicTierListDetail,
   type PublicTierListSort,
   type PublicTierListSummary,
+  type TierListComment,
 } from "../lib/tierListCommunity";
 import {
   createCommunityPost,
@@ -94,6 +97,7 @@ import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
   getCachedLinkedUsername,
@@ -300,6 +304,13 @@ export function TierListPage({
   const [publicHasMore, setPublicHasMore] = useState(false);
   const [publicNextOffset, setPublicNextOffset] = useState(0);
   const [viewerDetail, setViewerDetail] = useState<PublicTierListDetail | null>(
+    null,
+  );
+  const [viewerComments, setViewerComments] = useState<TierListComment[]>([]);
+  const [viewerCommentsLoading, setViewerCommentsLoading] = useState(false);
+  const [viewerCommentDraft, setViewerCommentDraft] = useState("");
+  const [viewerCommentSubmitting, setViewerCommentSubmitting] = useState(false);
+  const [viewerCommentError, setViewerCommentError] = useState<string | null>(
     null,
   );
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>(() =>
@@ -566,39 +577,6 @@ export function TierListPage({
       cancelled = true;
     };
   }, [view, publicSort, publicFilters, identity.playerId]);
-
-  useEffect(() => {
-    if (!initialPublicTierListId || deepLinkHandledRef.current) {
-      return;
-    }
-
-    deepLinkHandledRef.current = true;
-    let cancelled = false;
-    setViewerLoading(true);
-    setView("viewer");
-    void fetchPublicTierList({
-      id: initialPublicTierListId,
-      viewerPlayerId: identity.playerId,
-    }).then((detail) => {
-      if (cancelled) {
-        return;
-      }
-      if (!detail) {
-        setViewerDetail(null);
-        setViewerLoading(false);
-        setView("public");
-        setStatusMessage("That shared tier list could not be found");
-        return;
-      }
-      setViewerDetail(detail);
-      setViewerLoading(false);
-      setView("viewer");
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialPublicTierListId, identity.playerId]);
 
   useEffect(() => {
     if (view !== "mine") {
@@ -983,6 +961,120 @@ export function TierListPage({
     }
   };
 
+  const handleDownloadPublic = async (detail: PublicTierListDetail) => {
+    try {
+      const tiers = detail.tiers.map((tier, index) => ({
+        name: tier.name,
+        accent: accentForTier(index, tier.name),
+        players: tier.playerIds
+          .map((playerId) => resolvePlayer(playerId))
+          .filter((player): player is Player => player != null)
+          .map((player) => ({
+            name: player.name,
+            team: player.team,
+            position: player.position,
+            bbrPlayerId: player.bbrPlayerId,
+          })),
+      }));
+
+      await downloadTierListImage(
+        {
+          title: displayTierListTitle(detail.title),
+          tiers,
+        },
+        "png",
+      );
+      setStatusMessage("Image download started");
+    } catch {
+      setStatusMessage("Could not download image");
+    }
+  };
+
+  const loadViewerComments = useCallback(async (id: string) => {
+    setViewerCommentsLoading(true);
+    setViewerCommentError(null);
+    try {
+      const comments = await listTierListComments({ id });
+      setViewerComments(comments);
+    } catch {
+      setViewerComments([]);
+      setViewerCommentError("Could not load comments");
+    } finally {
+      setViewerCommentsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!initialPublicTierListId || deepLinkHandledRef.current) {
+      return;
+    }
+
+    deepLinkHandledRef.current = true;
+    let cancelled = false;
+    setViewerLoading(true);
+    setViewerComments([]);
+    setViewerCommentDraft("");
+    setViewerCommentError(null);
+    setView("viewer");
+    void fetchPublicTierList({
+      id: initialPublicTierListId,
+      viewerPlayerId: identity.playerId,
+    }).then((detail) => {
+      if (cancelled) {
+        return;
+      }
+      if (!detail) {
+        setViewerDetail(null);
+        setViewerLoading(false);
+        setView("public");
+        setStatusMessage("That shared tier list could not be found");
+        return;
+      }
+      setViewerDetail(detail);
+      setViewerLoading(false);
+      setView("viewer");
+      void loadViewerComments(detail.id);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialPublicTierListId, identity.playerId, loadViewerComments]);
+
+  const handleSubmitViewerComment = async () => {
+    if (!viewerDetail) {
+      return;
+    }
+    if (accountLinked !== true) {
+      setViewerCommentError(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE);
+      return;
+    }
+
+    const body = viewerCommentDraft.trim();
+    if (!body) {
+      return;
+    }
+
+    setViewerCommentSubmitting(true);
+    setViewerCommentError(null);
+    const result = await createTierListComment({
+      id: viewerDetail.id,
+      playerId: identity.playerId,
+      authorName: authorName.trim() || `GM ${formatPublicTag(identity.publicTag)}`,
+      authorTag: identity.publicTag,
+      body,
+    });
+    setViewerCommentSubmitting(false);
+
+    if (!result.ok) {
+      setViewerCommentError(result.error);
+      return;
+    }
+
+    setViewerComments((current) => [...current, result.comment]);
+    setViewerCommentDraft("");
+  };
+
   const handleNew = async () => {
     const ok = await unpublishPublishedCopy(state.publishedId);
     if (!ok) {
@@ -1036,6 +1128,9 @@ export function TierListPage({
   const handleOpenPublic = async (id: string) => {
     setViewerLoading(true);
     setViewerDetail(null);
+    setViewerComments([]);
+    setViewerCommentDraft("");
+    setViewerCommentError(null);
     setView("viewer");
     const detail = await fetchPublicTierList({
       id,
@@ -1049,6 +1144,7 @@ export function TierListPage({
     }
     setViewerDetail(detail);
     setViewerLoading(false);
+    void loadViewerComments(detail.id);
   };
 
   const handleLoadMorePublic = async () => {
@@ -1719,6 +1815,7 @@ export function TierListPage({
           playersById={playersById}
           onToggleLike={(liked) => handleToggleLike(viewerDetail.id, liked)}
           onCopyLink={() => void handleCopyPublicLink(viewerDetail.id)}
+          onDownload={() => void handleDownloadPublic(viewerDetail)}
           onEditOwned={
             viewerDetail.isOwner
               ? () => void handleEditOwnedPublic(viewerDetail.id)
@@ -1730,6 +1827,14 @@ export function TierListPage({
               : undefined
           }
           accountLinked={accountLinked}
+          comments={viewerComments}
+          commentsLoading={viewerCommentsLoading}
+          commentDraft={viewerCommentDraft}
+          onCommentDraftChange={setViewerCommentDraft}
+          onSubmitComment={() => void handleSubmitViewerComment()}
+          commentSubmitting={viewerCommentSubmitting}
+          commentError={viewerCommentError}
+          onSignIn={onOpenAccount}
         />
       ) : null}
 

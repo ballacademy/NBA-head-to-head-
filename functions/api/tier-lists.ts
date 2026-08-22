@@ -380,6 +380,9 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     return json({ error: "Not allowed to delete this tier list" }, 403);
   }
 
+  await context.env.DB.prepare(`DELETE FROM tier_list_comments WHERE tier_list_id = ?`)
+    .bind(id)
+    .run();
   await context.env.DB.prepare(`DELETE FROM tier_list_likes WHERE tier_list_id = ?`)
     .bind(id)
     .run();

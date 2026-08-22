@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
+  ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
@@ -8,6 +9,8 @@ import { displayTierListTitle } from "./tierList";
 
 export type PublicTierListSort = "recent" | "likes";
 export type PublicTierListDateWindow = "all" | "week" | "month";
+
+export const TIER_LIST_COMMENT_BODY_MAX = 280;
 
 export interface PublicTierListBrowseFilters {
   query: string;
@@ -41,9 +44,20 @@ export interface PublicTierListDetail extends PublicTierListSummary {
   tiers: TierListRow[];
 }
 
+export interface TierListComment {
+  id: string;
+  tierListId: string;
+  playerId: string;
+  authorName: string;
+  authorTag: string;
+  body: string;
+  createdAt: string;
+}
+
 interface LocalPublicCatalog {
   lists: Array<PublicTierListDetail & { playerId: string }>;
   likesByPlayer: Record<string, string[]>;
+  commentsByTierListId: Record<string, TierListComment[]>;
 }
 
 const LOCAL_PUBLIC_KEY = "nba-head-to-head-tier-list-public";
@@ -54,6 +68,7 @@ const buildUrl = (path: string) => `${API_BASE}${path}`;
 const emptyCatalog = (): LocalPublicCatalog => ({
   lists: [],
   likesByPlayer: {},
+  commentsByTierListId: {},
 });
 
 const loadLocalCatalog = (): LocalPublicCatalog => {
@@ -70,6 +85,11 @@ const loadLocalCatalog = (): LocalPublicCatalog => {
     likesByPlayer:
       saved.likesByPlayer && typeof saved.likesByPlayer === "object"
         ? saved.likesByPlayer
+        : {},
+    commentsByTierListId:
+      saved.commentsByTierListId &&
+      typeof saved.commentsByTierListId === "object"
+        ? saved.commentsByTierListId
         : {},
   };
 };
@@ -471,6 +491,11 @@ export const unpublishTierList = async (params: {
   saveLocalCatalog({
     lists: catalog.lists.filter((list) => list.id !== params.id),
     likesByPlayer,
+    commentsByTierListId: Object.fromEntries(
+      Object.entries(catalog.commentsByTierListId).filter(
+        ([tierListId]) => tierListId !== params.id,
+      ),
+    ),
   });
 
   return { ok: true };
@@ -559,6 +584,7 @@ export const setTierListLike = async (params: {
   const lists = [...catalog.lists];
   lists[entryIndex] = { ...entry, likeCount };
   saveLocalCatalog({
+    ...catalog,
     lists,
     likesByPlayer: {
       ...catalog.likesByPlayer,
@@ -567,4 +593,152 @@ export const setTierListLike = async (params: {
   });
 
   return { ok: true, liked: params.liked, likeCount };
+};
+
+const normalizeTierListComment = (
+  entry: Partial<TierListComment>,
+): TierListComment | null => {
+  if (
+    !entry ||
+    typeof entry.id !== "string" ||
+    typeof entry.tierListId !== "string" ||
+    typeof entry.playerId !== "string" ||
+    typeof entry.authorName !== "string" ||
+    typeof entry.authorTag !== "string" ||
+    typeof entry.body !== "string" ||
+    typeof entry.createdAt !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    id: entry.id,
+    tierListId: entry.tierListId,
+    playerId: entry.playerId,
+    authorName: entry.authorName,
+    authorTag: entry.authorTag,
+    body: entry.body,
+    createdAt: entry.createdAt,
+  };
+};
+
+export const listTierListComments = async (params: {
+  id: string;
+}): Promise<TierListComment[]> => {
+  try {
+    const response = await fetch(
+      buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
+      { headers: { accept: "application/json" } },
+    );
+
+    if (response.ok) {
+      const body = (await response.json()) as {
+        comments?: Partial<TierListComment>[];
+      };
+      if (Array.isArray(body.comments)) {
+        return body.comments
+          .map((entry) => normalizeTierListComment(entry))
+          .filter((entry): entry is TierListComment => Boolean(entry));
+      }
+    }
+  } catch {
+    // Local fallback.
+  }
+
+  const catalog = loadLocalCatalog();
+  return [...(catalog.commentsByTierListId[params.id] ?? [])];
+};
+
+export type CreateTierListCommentResult =
+  | { ok: true; comment: TierListComment }
+  | { ok: false; error: string };
+
+export const createTierListComment = async (params: {
+  id: string;
+  playerId: string;
+  authorName: string;
+  authorTag: string;
+  body: string;
+}): Promise<CreateTierListCommentResult> => {
+  const text = params.body.trim();
+  if (!text) {
+    return { ok: false, error: "Comment body is required." };
+  }
+  if (text.length > TIER_LIST_COMMENT_BODY_MAX) {
+    return {
+      ok: false,
+      error: `Comments can be at most ${TIER_LIST_COMMENT_BODY_MAX} characters.`,
+    };
+  }
+
+  if (!(await isPlayerAccountLinked(params.playerId))) {
+    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE };
+  }
+
+  try {
+    const response = await fetch(
+      buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          playerId: params.playerId,
+          authorName: params.authorName,
+          authorTag: params.authorTag,
+          body: text,
+        }),
+      },
+    );
+
+    if (response.ok) {
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        comment?: Partial<TierListComment>;
+        error?: string;
+      };
+      const comment = normalizeTierListComment(payload.comment ?? {});
+      if (comment) {
+        return { ok: true, comment };
+      }
+    } else {
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      if (payload?.error) {
+        return { ok: false, error: payload.error };
+      }
+    }
+  } catch {
+    // Local fallback below for linked accounts when the API is offline.
+  }
+
+  const catalog = loadLocalCatalog();
+  if (!catalog.lists.some((entry) => entry.id === params.id)) {
+    return { ok: false, error: "Tier list not found" };
+  }
+
+  const now = new Date().toISOString();
+  const comment: TierListComment = {
+    id: `local-tlc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    tierListId: params.id,
+    playerId: params.playerId,
+    authorName: params.authorName.trim().slice(0, 32) || "GM",
+    authorTag: params.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, 8) ||
+      "0000",
+    body: text,
+    createdAt: now,
+  };
+
+  saveLocalCatalog({
+    ...catalog,
+    commentsByTierListId: {
+      ...catalog.commentsByTierListId,
+      [params.id]: [...(catalog.commentsByTierListId[params.id] ?? []), comment],
+    },
+  });
+
+  return { ok: true, comment };
 };

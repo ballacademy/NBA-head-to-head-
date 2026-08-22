@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultTierListState } from "./tierList";
 import {
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
+  createTierListComment,
   fetchPublicTierLists,
+  listTierListComments,
   matchesPublicTierListBrowseFilters,
   publishTierList,
   setTierListLike,
@@ -100,6 +102,38 @@ describe("tierListCommunity local fallback", () => {
       filters: { ...DEFAULT_PUBLIC_TIER_LIST_FILTERS, query: "zzzz-nope" },
     });
     expect(searchMiss.lists).toHaveLength(0);
+  });
+
+  it("stores comments locally when the comments API is unavailable", async () => {
+    const state = createDefaultTierListState();
+    state.title = "Comment Board";
+    const published = await publishTierList({
+      state,
+      playerId: "viewer-1",
+      authorName: "Tester",
+      authorTag: "ABCD",
+    });
+    expect(published.ok).toBe(true);
+    if (!published.ok) {
+      return;
+    }
+
+    const created = await createTierListComment({
+      id: published.id,
+      playerId: "viewer-2",
+      authorName: "Fan",
+      authorTag: "ZZZZ",
+      body: "Great rankings",
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) {
+      return;
+    }
+    expect(created.comment.body).toBe("Great rankings");
+
+    const listed = await listTierListComments({ id: published.id });
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.authorName).toBe("Fan");
   });
 
   it("updates an existing published list in the local catalog", async () => {
