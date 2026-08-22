@@ -1,11 +1,13 @@
 import type { Player } from "../lib/types";
 import {
   formatPublicTierListTime,
+  TIER_LIST_COMMENT_BODY_MAX,
   type PublicTierListBrowseFilters,
   type PublicTierListDateWindow,
   type PublicTierListDetail,
   type PublicTierListSort,
   type PublicTierListSummary,
+  type TierListComment,
 } from "../lib/tierListCommunity";
 import {
   COMMUNITY_POST_BODY_MAX,
@@ -39,7 +41,10 @@ import {
 } from "../lib/lineupShareCard";
 import { buildCommunityPostShareUrl } from "../lib/landingHub";
 import { copyToClipboard } from "../lib/copyToClipboard";
-import { ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE } from "../lib/accountGate";
+import {
+  ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+} from "../lib/accountGate";
 import { formatPublicTag } from "../lib/playerIdentity";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { EmptyState } from "./EmptyState";
@@ -484,26 +489,25 @@ export function TierListPublicPanel({
                       Unpublish
                     </button>
                   </>
-                ) : (
-                  <button
-                    type="button"
-                    className={`secondary-button${
-                      entry.likedByViewer ? " is-active-like" : ""
-                    }`}
-                    aria-pressed={entry.likedByViewer}
-                    disabled={!accountReady}
-                    title={
-                      accountReady
-                        ? undefined
-                        : accountLinked === null
-                          ? "Checking account"
-                          : "Create an account to like"
-                    }
-                    onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
-                  >
-                    {entry.likedByViewer ? "Liked" : "Like"} · {entry.likeCount}
-                  </button>
-                )}
+                ) : null}
+                <button
+                  type="button"
+                  className={`secondary-button${
+                    entry.likedByViewer ? " is-active-like" : ""
+                  }`}
+                  aria-pressed={entry.likedByViewer}
+                  disabled={!accountReady}
+                  title={
+                    accountReady
+                      ? undefined
+                      : accountLinked === null
+                        ? "Checking account"
+                        : "Create an account to like"
+                  }
+                  onClick={() => onToggleLike(entry.id, !entry.likedByViewer)}
+                >
+                  {entry.likedByViewer ? "Liked" : "Like"} · {entry.likeCount}
+                </button>
                 <button
                   type="button"
                   className="secondary-button"
@@ -1710,9 +1714,18 @@ interface TierListPublicViewerProps {
   playersById: Map<string, Player>;
   onToggleLike: (liked: boolean) => void;
   onCopyLink: () => void;
+  onDownload: () => void;
   onEditOwned?: () => void;
   onUnpublishOwned?: () => void;
   accountLinked?: boolean | null;
+  comments: TierListComment[];
+  commentsLoading: boolean;
+  commentDraft: string;
+  onCommentDraftChange: (value: string) => void;
+  onSubmitComment: () => void;
+  commentSubmitting: boolean;
+  commentError: string | null;
+  onSignIn?: () => void;
 }
 
 export function TierListPublicViewer({
@@ -1720,11 +1733,22 @@ export function TierListPublicViewer({
   playersById,
   onToggleLike,
   onCopyLink,
+  onDownload,
   onEditOwned,
   onUnpublishOwned,
   accountLinked = null,
+  comments,
+  commentsLoading,
+  commentDraft,
+  onCommentDraftChange,
+  onSubmitComment,
+  commentSubmitting,
+  commentError,
+  onSignIn,
 }: TierListPublicViewerProps) {
   const accountReady = accountLinked === true;
+  const commentRemaining = TIER_LIST_COMMENT_BODY_MAX - commentDraft.length;
+
   return (
     <div className="tier-list-hub__panel tier-list-hub__viewer">
       <div className="tier-list-hub__panel-header">
@@ -1738,6 +1762,31 @@ export function TierListPublicViewer({
           </span>
         </div>
         <div className="tier-list__library-actions">
+          <button
+            type="button"
+            className={`secondary-button${
+              detail.likedByViewer ? " is-active-like" : ""
+            }`}
+            aria-pressed={detail.likedByViewer}
+            disabled={!accountReady}
+            title={
+              accountReady
+                ? undefined
+                : accountLinked === null
+                  ? "Checking account"
+                  : "Create an account to like"
+            }
+            onClick={() => onToggleLike(!detail.likedByViewer)}
+          >
+            {detail.likedByViewer ? "Liked" : "Like"} · {detail.likeCount}
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onDownload}
+          >
+            Download
+          </button>
           <button type="button" className="secondary-button" onClick={onCopyLink}>
             Copy link
           </button>
@@ -1757,26 +1806,6 @@ export function TierListPublicViewer({
               onClick={onUnpublishOwned}
             >
               Unpublish
-            </button>
-          ) : null}
-          {!detail.isOwner ? (
-            <button
-              type="button"
-              className={`secondary-button${
-                detail.likedByViewer ? " is-active-like" : ""
-              }`}
-              aria-pressed={detail.likedByViewer}
-              disabled={!accountReady}
-              title={
-                accountReady
-                  ? undefined
-                  : accountLinked === null
-                    ? "Checking account"
-                    : "Create an account to like"
-              }
-              onClick={() => onToggleLike(!detail.likedByViewer)}
-            >
-              {detail.likedByViewer ? "Liked" : "Like"} · {detail.likeCount}
             </button>
           ) : null}
         </div>
@@ -1836,6 +1865,92 @@ export function TierListPublicViewer({
           );
         })}
       </div>
+
+      <section className="tier-list-hub__comments" aria-label="Comments">
+        <div className="tier-list-hub__comments-header">
+          <h3>Comments</h3>
+          <span>
+            {comments.length} comment{comments.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        {commentsLoading ? (
+          <p className="tier-list__hint" role="status">
+            Loading comments…
+          </p>
+        ) : comments.length === 0 ? (
+          <p className="tier-list-hub__comments-empty">
+            Be the first to comment
+          </p>
+        ) : (
+          <ul className="tier-list-hub__comments-list">
+            {comments.map((comment) => (
+              <li key={comment.id}>
+                <strong>
+                  {comment.authorName} · {formatPublicTag(comment.authorTag)}
+                </strong>
+                <span>{formatPublicTierListTime(comment.createdAt)}</span>
+                <p>{comment.body}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {accountReady ? (
+          <form
+            className="tier-list-hub__comment-compose"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSubmitComment();
+            }}
+          >
+            <textarea
+              rows={2}
+              maxLength={TIER_LIST_COMMENT_BODY_MAX}
+              value={commentDraft}
+              placeholder="Add a comment…"
+              aria-label="Comment"
+              onChange={(event) => onCommentDraftChange(event.target.value)}
+            />
+            <div className="tier-list-hub__comment-compose-actions">
+              <span
+                className={
+                  commentRemaining <= 20
+                    ? "tier-list-hub__comment-remaining is-tight"
+                    : "tier-list-hub__comment-remaining"
+                }
+              >
+                {commentRemaining}
+              </span>
+              <button
+                type="submit"
+                className="secondary-button"
+                disabled={commentSubmitting || !commentDraft.trim()}
+              >
+                {commentSubmitting ? "Posting…" : "Comment"}
+              </button>
+            </div>
+            {commentError ? (
+              <p className="tier-list-hub__comment-error" role="alert">
+                {commentError}
+              </p>
+            ) : null}
+          </form>
+        ) : (
+          <div className="tier-list-hub__comment-signin">
+            <p>{ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE}</p>
+            {onSignIn ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={onSignIn}
+              >
+                Sign in
+              </button>
+            ) : null}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
