@@ -436,6 +436,8 @@
   align-items: end;
   justify-content: space-between;
   margin-top: 2px;
+  width: 100%;
+  min-width: 0;
 }
 
 .tier-list__board-header .tier-list__page-title {
@@ -447,7 +449,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  flex: 0 0 auto;
+  /* Allow wrap inside the hub (overflow-x: hidden) once Publish becomes
+     Update + Unpublish and the row no longer fits on one line. */
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-end;
 }
 
 .tier-list__chip {
