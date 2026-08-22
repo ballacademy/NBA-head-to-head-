@@ -41,6 +41,13 @@
     align-items: center;
   }
 
+  .tier-list__board-header-actions {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    justify-content: stretch;
+  }
+
   .tier-list__board-header .tier-list__page-title-input {
     min-height: 34px;
     font-size: 1.15rem;
