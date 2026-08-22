@@ -1,6 +1,7 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
@@ -464,9 +465,19 @@ export const unpublishTierList = async (params: {
 
     if (response.ok) {
       const catalog = loadLocalCatalog();
+      const likesByPlayer = { ...catalog.likesByPlayer };
+      for (const [playerId, liked] of Object.entries(likesByPlayer)) {
+        likesByPlayer[playerId] = liked.filter((id) => id !== params.id);
+      }
       saveLocalCatalog({
         ...catalog,
         lists: catalog.lists.filter((entry) => entry.id !== params.id),
+        likesByPlayer,
+        commentsByTierListId: Object.fromEntries(
+          Object.entries(catalog.commentsByTierListId).filter(
+            ([tierListId]) => tierListId !== params.id,
+          ),
+        ),
       });
       return { ok: true };
     }
@@ -508,6 +519,10 @@ export const setTierListLike = async (params: {
 }): Promise<
   { ok: true; liked: boolean; likeCount: number } | { ok: false; error: string }
 > => {
+  if (!(await isPlayerAccountLinked(params.playerId))) {
+    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE };
+  }
+
   try {
     if (params.liked) {
       const response = await fetch(
@@ -534,6 +549,13 @@ export const setTierListLike = async (params: {
             likeCount: body.likeCount,
           };
         }
+      } else {
+        const body = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (body?.error) {
+          return { ok: false, error: body.error };
+        }
       }
     } else {
       const search = new URLSearchParams({ playerId: params.playerId });
@@ -556,6 +578,13 @@ export const setTierListLike = async (params: {
             liked: Boolean(body.liked),
             likeCount: body.likeCount,
           };
+        }
+      } else {
+        const body = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (body?.error) {
+          return { ok: false, error: body.error };
         }
       }
     }

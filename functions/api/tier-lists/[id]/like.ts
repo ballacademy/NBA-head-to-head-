@@ -1,4 +1,5 @@
-import type { Env } from "../../types";
+import type { Env } from "../../../types";
+import { getAccountByPlayerId } from "../../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -18,10 +19,29 @@ interface LikeBody {
   playerId?: unknown;
 }
 
+const parseTierListId = (id: string | string[] | undefined) =>
+  typeof id === "string"
+    ? id.trim().slice(0, 64)
+    : Array.isArray(id)
+      ? String(id[0] ?? "")
+          .trim()
+          .slice(0, 64)
+      : "";
+
+const recountLikes = async (db: D1Database, tierListId: string) => {
+  const countRow = await db
+    .prepare(
+      `SELECT COUNT(*) AS count
+       FROM tier_list_likes
+       WHERE tier_list_id = ?`,
+    )
+    .bind(tierListId)
+    .first<{ count: number }>();
+  return Math.max(0, Math.round(Number(countRow?.count ?? 0)) || 0);
+};
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const id = context.params.id;
-  const tierListId =
-    typeof id === "string" ? id.trim().slice(0, 64) : Array.isArray(id) ? id[0] : "";
+  const tierListId = parseTierListId(context.params.id);
 
   if (!tierListId) {
     return json({ error: "tier list id is required" }, 400);
@@ -39,51 +59,47 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "playerId is required" }, 400);
   }
 
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json({ error: "Create an account to like tier lists." }, 403);
+  }
+
   const existing = await context.env.DB.prepare(
-    `SELECT id, like_count FROM published_tier_lists WHERE id = ?`,
+    `SELECT id FROM published_tier_lists WHERE id = ?`,
   )
     .bind(tierListId)
-    .first<{ id: string; like_count: number }>();
+    .first<{ id: string }>();
 
   if (!existing) {
     return json({ error: "Tier list not found" }, 404);
   }
 
-  const already = await context.env.DB.prepare(
-    `SELECT tier_list_id FROM tier_list_likes
-     WHERE tier_list_id = ? AND player_id = ?`,
-  )
-    .bind(tierListId, playerId)
-    .first();
-
-  if (already) {
-    return json({ ok: true, liked: true, likeCount: existing.like_count });
-  }
-
   const now = new Date().toISOString();
-  await context.env.DB.batch([
-    context.env.DB.prepare(
-      `INSERT INTO tier_list_likes (tier_list_id, player_id, created_at)
-       VALUES (?, ?, ?)`,
-    ).bind(tierListId, playerId, now),
-    context.env.DB.prepare(
-      `UPDATE published_tier_lists
-       SET like_count = like_count + 1, updated_at = ?
-       WHERE id = ?`,
-    ).bind(now, tierListId),
-  ]);
+  await context.env.DB.prepare(
+    `INSERT OR IGNORE INTO tier_list_likes (tier_list_id, player_id, created_at)
+     VALUES (?, ?, ?)`,
+  )
+    .bind(tierListId, playerId, now)
+    .run();
+
+  const likeCount = await recountLikes(context.env.DB, tierListId);
+  await context.env.DB.prepare(
+    `UPDATE published_tier_lists
+     SET like_count = ?, updated_at = ?
+     WHERE id = ?`,
+  )
+    .bind(likeCount, now, tierListId)
+    .run();
 
   return json({
     ok: true,
     liked: true,
-    likeCount: existing.like_count + 1,
+    likeCount,
   });
 };
 
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
-  const id = context.params.id;
-  const tierListId =
-    typeof id === "string" ? id.trim().slice(0, 64) : Array.isArray(id) ? id[0] : "";
+  const tierListId = parseTierListId(context.params.id);
   const url = new URL(context.request.url);
   const playerId = parsePlayerId(url.searchParams.get("playerId"));
 
@@ -91,40 +107,37 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     return json({ error: "id and playerId are required" }, 400);
   }
 
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json({ error: "Create an account to like tier lists." }, 403);
+  }
+
   const existing = await context.env.DB.prepare(
-    `SELECT id, like_count FROM published_tier_lists WHERE id = ?`,
+    `SELECT id FROM published_tier_lists WHERE id = ?`,
   )
     .bind(tierListId)
-    .first<{ id: string; like_count: number }>();
+    .first<{ id: string }>();
 
   if (!existing) {
     return json({ error: "Tier list not found" }, 404);
   }
 
-  const already = await context.env.DB.prepare(
-    `SELECT tier_list_id FROM tier_list_likes
+  const now = new Date().toISOString();
+  await context.env.DB.prepare(
+    `DELETE FROM tier_list_likes
      WHERE tier_list_id = ? AND player_id = ?`,
   )
     .bind(tierListId, playerId)
-    .first();
+    .run();
 
-  if (!already) {
-    return json({ ok: true, liked: false, likeCount: existing.like_count });
-  }
+  const likeCount = await recountLikes(context.env.DB, tierListId);
+  await context.env.DB.prepare(
+    `UPDATE published_tier_lists
+     SET like_count = ?, updated_at = ?
+     WHERE id = ?`,
+  )
+    .bind(likeCount, now, tierListId)
+    .run();
 
-  const now = new Date().toISOString();
-  const nextCount = Math.max(0, existing.like_count - 1);
-  await context.env.DB.batch([
-    context.env.DB.prepare(
-      `DELETE FROM tier_list_likes
-       WHERE tier_list_id = ? AND player_id = ?`,
-    ).bind(tierListId, playerId),
-    context.env.DB.prepare(
-      `UPDATE published_tier_lists
-       SET like_count = ?, updated_at = ?
-       WHERE id = ?`,
-    ).bind(nextCount, now, tierListId),
-  ]);
-
-  return json({ ok: true, liked: false, likeCount: nextCount });
+  return json({ ok: true, liked: false, likeCount });
 };

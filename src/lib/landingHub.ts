@@ -485,6 +485,8 @@ export interface SyncLandingDeepLinkUrlOptions {
   post?: string | null;
   section?: string | null;
   room?: string | null;
+  /** Set/clear `?tierList=` (omit to leave the current value alone). */
+  tierList?: string | null;
   /** When false, drop hub/play params (e.g. leaving the landing surface). */
   clearLandingParams?: boolean;
 }
@@ -507,7 +509,7 @@ export const syncLandingHubTabUrl = (tab: LandingContentTab) => {
   });
 };
 
-/** Sync hub/play/view/post query params via replaceState; preserves `tierList`. */
+/** Sync hub/play/view/post query params via replaceState. */
 export const syncLandingDeepLinkUrl = (
   options: SyncLandingDeepLinkUrlOptions,
 ) => {
@@ -581,6 +583,11 @@ export const syncLandingDeepLinkUrl = (
         url.searchParams.delete("room");
       } else if (options.room != null) {
         url.searchParams.set("room", options.room);
+      }
+      if (options.tierList === null) {
+        url.searchParams.delete("tierList");
+      } else if (options.tierList != null && options.tierList.trim()) {
+        url.searchParams.set("tierList", options.tierList.trim().slice(0, 64));
       }
     }
 
