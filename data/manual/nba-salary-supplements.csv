@@ -1,7 +1,7 @@
 bbr_player_id,name,salary_usd,notes
 durenja01,Jalen Duren,6483144,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN)
 mathube01,Bennedict Mathurin,9187573,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN)
-watsope01,Peyton Watson,4356476,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN)
+watsope01,Peyton Watson,20000000,4-year $88M S&T from DEN (player option Y4 + 7.5% kicker); Y1 estimated $20M pending Spotrac
 ryanco01,Cormac Ryan,1361969,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN); floored to NBA minimum for draft cap
 newtotr01,Tristen Newton,1361969,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN); floored to NBA minimum for draft cap
 hinsobl01,Blake Hinson,1361969,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN); floored to NBA minimum for draft cap
@@ -78,3 +78,4 @@ sochaje01,Jeremy Sochan,2449142,1-year non-guaranteed veteran minimum
 walkelo01,Lonnie Walker IV,3286399,"1-year vet min $3,286,399 (training camp deal)"
 paytoga02,Gary Payton II,3876529,1-year ~$3.9M return to GSW
 houstca01,Caleb Houstan,2449142,1-year deal
+bealbr01,Bradley Beal,6424800,"2-year $13.2M return (player option Y2); 2026-27 year-1 $6,424,800 Non-Bird"
