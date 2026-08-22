@@ -1,5 +1,5 @@
-import type { Env } from "../../types";
-import { getAccountByPlayerId } from "../../lib/playerAccounts";
+import type { Env } from "../../../types";
+import { getAccountByPlayerId } from "../../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
