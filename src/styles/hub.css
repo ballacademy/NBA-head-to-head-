@@ -1326,6 +1326,33 @@ h1.landing-hub__title--name {
   gap: 2px;
 }
 
+.tier-list-hub__comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.tier-list-hub__comment-delete {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.tier-list-hub__comment-delete:hover {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+}
+
 .tier-list-hub__comments-list strong {
   color: #e2e8f0;
   font-size: 0.84rem;

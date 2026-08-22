@@ -61,6 +61,7 @@ import { downloadTierListImage } from "../lib/tierListShareCard";
 import {
   buildPublicTierListShareUrl,
   createTierListComment,
+  deleteTierListComment,
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
   fetchPublishedLikeCounts,
   fetchPublicTierList,
@@ -98,6 +99,7 @@ import {
   ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
@@ -1138,6 +1140,31 @@ export function TierListPage({
     setViewerCommentDraft("");
   };
 
+  const handleDeleteViewerComment = async (commentId: string) => {
+    if (!viewerDetail) {
+      return;
+    }
+    if (accountLinked !== true) {
+      setViewerCommentError(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE);
+      return;
+    }
+
+    const result = await deleteTierListComment({
+      id: viewerDetail.id,
+      commentId,
+      playerId: identity.playerId,
+    });
+    if (!result.ok) {
+      setViewerCommentError(result.error);
+      return;
+    }
+
+    setViewerComments((current) =>
+      current.filter((comment) => comment.id !== commentId),
+    );
+    setViewerCommentError(null);
+  };
+
   const handleNew = async () => {
     const ok = await unpublishPublishedCopy(state.publishedId);
     if (!ok) {
@@ -1927,6 +1954,10 @@ export function TierListPage({
           commentSubmitting={viewerCommentSubmitting}
           commentError={viewerCommentError}
           onSignIn={onOpenAccount}
+          viewerPlayerId={identity.playerId}
+          onDeleteComment={(commentId) =>
+            void handleDeleteViewerComment(commentId)
+          }
         />
       ) : null}
 

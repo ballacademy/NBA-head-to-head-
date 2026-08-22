@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateEloChange,
+  clampGuestRankedElo,
   formatRatingDelta,
   formatRatingPoints,
   formatTierBannerRange,
@@ -9,6 +10,7 @@ import {
   RANKED_TIERS,
   getStreakMultiplier,
   getTierForElo,
+  GUEST_RANKED_ELO_CAP,
   LIVE_OPPONENT_ONLY_MIN_ELO,
   RANKED_STARTING_ELO,
   RATING_LABEL,
@@ -145,5 +147,13 @@ describe("rankedElo", () => {
 
     expect(result.delta).toBe(0);
     expect(result.nextElo).toBe(RANKED_STARTING_ELO);
+  });
+
+  it("caps guest Pro elo at 1500 while linked accounts can climb past it", () => {
+    expect(GUEST_RANKED_ELO_CAP).toBe(1500);
+    expect(clampGuestRankedElo(1490, false)).toBe(1490);
+    expect(clampGuestRankedElo(1510, false)).toBe(1500);
+    expect(clampGuestRankedElo(1800, false)).toBe(1500);
+    expect(clampGuestRankedElo(1800, true)).toBe(1800);
   });
 });

@@ -1,7 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getTopRankedLeaderboard, upsertRankedLeaderboardEntry } from "./rankedLeaderboard";
-import { applyRankedMatchResult, ensureCurrentRankedSeason } from "./rankedProfile";
-import { RANKED_STARTING_ELO } from "./rankedElo";
+import {
+  clearAccountLinkCache,
+  markPlayerAccountLinked,
+} from "./accountGate";
+import { GUEST_RANKED_ELO_CAP, RANKED_STARTING_ELO } from "./rankedElo";
+import {
+  getTopRankedLeaderboard,
+  upsertRankedLeaderboardEntry,
+} from "./rankedLeaderboard";
+import {
+  applyRankedMatchResult,
+  ensureCurrentRankedSeason,
+} from "./rankedProfile";
 
 const storage = new Map<string, string>();
 
@@ -18,6 +28,7 @@ const localStorageMock = {
 describe("ranked profile and leaderboard", () => {
   beforeEach(() => {
     storage.clear();
+    clearAccountLinkCache();
     vi.stubGlobal("localStorage", localStorageMock);
     vi.stubGlobal("crypto", {
       randomUUID: () => "player-test-1",
@@ -26,6 +37,7 @@ describe("ranked profile and leaderboard", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    clearAccountLinkCache();
   });
 
   it("starts ranked players at 500 elo", () => {
@@ -52,9 +64,11 @@ describe("ranked profile and leaderboard", () => {
     });
 
     expect(result.delta).toBeGreaterThan(0);
-    expect(getTopRankedLeaderboard().some((entry) => entry.playerId === "player-test-1")).toBe(
-      true,
-    );
+    expect(
+      getTopRankedLeaderboard().some(
+        (entry) => entry.playerId === "player-test-1",
+      ),
+    ).toBe(true);
   });
 
   it("does not apply win-streak bonus on ties", () => {
@@ -66,10 +80,7 @@ describe("ranked profile and leaderboard", () => {
       rankedGamesPlayed: 10,
     };
 
-    storage.set(
-      "nba-head-to-head-ranked-profile",
-      JSON.stringify(baseProfile),
-    );
+    storage.set("nba-head-to-head-ranked-profile", JSON.stringify(baseProfile));
 
     const withoutStreak = applyRankedMatchResult({
       result: "tie",
@@ -78,10 +89,7 @@ describe("ranked profile and leaderboard", () => {
       lossStreak: 0,
     });
 
-    storage.set(
-      "nba-head-to-head-ranked-profile",
-      JSON.stringify(baseProfile),
-    );
+    storage.set("nba-head-to-head-ranked-profile", JSON.stringify(baseProfile));
 
     const withStreak = applyRankedMatchResult({
       result: "tie",
@@ -91,5 +99,49 @@ describe("ranked profile and leaderboard", () => {
     });
 
     expect(withStreak.delta).toBe(withoutStreak.delta);
+  });
+
+  it("caps guest elo at 1500 after a win that would climb higher", () => {
+    const seasonId = ensureCurrentRankedSeason().seasonId;
+    storage.set(
+      "nba-head-to-head-ranked-profile",
+      JSON.stringify({
+        playerId: "player-test-1",
+        seasonId,
+        elo: GUEST_RANKED_ELO_CAP - 5,
+        peakElo: GUEST_RANKED_ELO_CAP - 5,
+        rankedGamesPlayed: 20,
+      }),
+    );
+
+    const guestResult = applyRankedMatchResult({
+      result: "win",
+      opponentElo: GUEST_RANKED_ELO_CAP,
+      winStreak: 3,
+      lossStreak: 0,
+    });
+
+    expect(guestResult.profile.elo).toBe(GUEST_RANKED_ELO_CAP);
+
+    storage.set(
+      "nba-head-to-head-ranked-profile",
+      JSON.stringify({
+        playerId: "player-test-1",
+        seasonId,
+        elo: GUEST_RANKED_ELO_CAP - 5,
+        peakElo: GUEST_RANKED_ELO_CAP - 5,
+        rankedGamesPlayed: 20,
+      }),
+    );
+    markPlayerAccountLinked("player-test-1", "tester");
+
+    const linkedResult = applyRankedMatchResult({
+      result: "win",
+      opponentElo: GUEST_RANKED_ELO_CAP,
+      winStreak: 3,
+      lossStreak: 0,
+    });
+
+    expect(linkedResult.profile.elo).toBeGreaterThan(GUEST_RANKED_ELO_CAP);
   });
 });

@@ -1,5 +1,6 @@
 import { readJson, writeJson } from "./browserStorage";
 import {
+  ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
@@ -770,4 +771,80 @@ export const createTierListComment = async (params: {
   });
 
   return { ok: true, comment };
+};
+
+export type DeleteTierListCommentResult =
+  | { ok: true; commentId: string }
+  | { ok: false; error: string };
+
+export const deleteTierListComment = async (params: {
+  id: string;
+  commentId: string;
+  playerId: string;
+}): Promise<DeleteTierListCommentResult> => {
+  if (!(await isPlayerAccountLinked(params.playerId))) {
+    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE };
+  }
+
+  try {
+    const response = await fetch(
+      buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "delete",
+          playerId: params.playerId,
+          commentId: params.commentId,
+        }),
+      },
+    );
+
+    if (response.ok) {
+      const catalog = loadLocalCatalog();
+      const existing = catalog.commentsByTierListId[params.id] ?? [];
+      saveLocalCatalog({
+        ...catalog,
+        commentsByTierListId: {
+          ...catalog.commentsByTierListId,
+          [params.id]: existing.filter(
+            (comment) => comment.id !== params.commentId,
+          ),
+        },
+      });
+      return { ok: true, commentId: params.commentId };
+    }
+
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    if (payload?.error) {
+      return { ok: false, error: payload.error };
+    }
+  } catch {
+    // Local fallback below.
+  }
+
+  const catalog = loadLocalCatalog();
+  const existing = catalog.commentsByTierListId[params.id] ?? [];
+  const target = existing.find((comment) => comment.id === params.commentId);
+  if (!target) {
+    return { ok: false, error: "Comment not found" };
+  }
+  if (target.playerId !== params.playerId) {
+    return { ok: false, error: "You can only delete your own comments." };
+  }
+
+  saveLocalCatalog({
+    ...catalog,
+    commentsByTierListId: {
+      ...catalog.commentsByTierListId,
+      [params.id]: existing.filter((comment) => comment.id !== params.commentId),
+    },
+  });
+
+  return { ok: true, commentId: params.commentId };
 };

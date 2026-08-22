@@ -41,8 +41,23 @@ export const RATING_LABEL = "Banners";
 
 export const LIVE_OPPONENT_ONLY_MIN_ELO = 1500;
 
+/** Guests can climb Pro Banners only up to this cap until they create an account. */
+export const GUEST_RANKED_ELO_CAP = 1500;
+
 export const requiresLiveOpponentOnly = (rating: number) =>
   Math.max(0, Math.round(rating)) >= LIVE_OPPONENT_ONLY_MIN_ELO;
+
+/** When `accountLinked` is not true, Elo cannot exceed {@link GUEST_RANKED_ELO_CAP}. */
+export const clampGuestRankedElo = (
+  elo: number,
+  accountLinked: boolean,
+): number => {
+  const normalized = Math.max(0, Math.round(elo));
+  if (accountLinked) {
+    return normalized;
+  }
+  return Math.min(normalized, GUEST_RANKED_ELO_CAP);
+};
 
 export const formatRankedElo = (elo: number) => Math.max(0, Math.round(elo)).toString();
 
