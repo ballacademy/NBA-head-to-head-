@@ -118,7 +118,10 @@ export function PrivateMatchModal({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const requestClose = useCallback(() => {
     if (busyAction != null) {
+      // Abort/cancel the in-flight create or join, but keep this modal open
+      // until onStart settles — otherwise the hub stays blocked with no Cancel UI.
       onCancelInFlight?.();
+      return;
     }
     onClose();
   }, [busyAction, onCancelInFlight, onClose]);
