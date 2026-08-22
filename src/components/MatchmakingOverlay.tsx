@@ -81,7 +81,7 @@ export function MatchmakingOverlay({
         : MODE_COPY.classicH2h;
   const modeLabel = modeCopy.title;
   const isMatched = Boolean(matchedOpponentName);
-  const canCancelWithEscape = Boolean(onCancel && !isMatched && !isCancelling);
+  const canCancelWithEscape = Boolean(onCancel && !isMatched);
   const handleDialogClose = useCallback(() => {
     if (canCancelWithEscape) {
       onCancel?.();
@@ -241,10 +241,9 @@ export function MatchmakingOverlay({
             ref={cancelButtonRef}
             className="secondary-button matchmaking-overlay__cancel"
             onClick={onCancel}
-            disabled={isCancelling}
           >
             {isCancelling
-              ? "Cancelling…"
+              ? "Force cancel"
               : isPrivateRematch
                 ? "Cancel rematch"
                 : isPrivateGuest

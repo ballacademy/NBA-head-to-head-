@@ -155,6 +155,8 @@ interface LandingPageProps {
   pendingPrivateMatchMode?: "classic" | "ranked" | null;
   pendingPrivateJoinCode?: string | null;
   onPendingPrivateMatchModeConsumed?: () => void;
+  /** Cancel an in-flight private create/join from the modal Close button. */
+  onCancelMatchmaking?: () => void;
   onStartDraft: (
     team: TeamProfile,
     options?: StartDraftOptions,
@@ -210,6 +212,7 @@ export function LandingPage({
   pendingPrivateMatchMode = null,
   pendingPrivateJoinCode = null,
   onPendingPrivateMatchModeConsumed,
+  onCancelMatchmaking,
   onStartDraft,
   onViewDailyLineup,
   onViewYesterdayBestDailyLineup,
@@ -977,6 +980,7 @@ export function LandingPage({
           privateRoomRole={privateRoomRole}
           initialJoinCode={privateJoinPrefill || pendingPrivateJoinCode}
           onClose={closePrivateMatchModal}
+          onCancelInFlight={onCancelMatchmaking}
           onStart={handleStart}
         />
       ) : null}

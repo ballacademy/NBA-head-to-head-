@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
@@ -25,6 +25,8 @@ interface PrivateMatchModalProps {
   privateRoomRole?: "host" | "guest" | null;
   initialJoinCode?: string | null;
   onClose: () => void;
+  /** Abort an in-flight create/join so Close never freezes the hub. */
+  onCancelInFlight?: () => void;
   onStart: (options: StartDraftOptions) => Promise<StartMatchResult | void>;
 }
 
@@ -37,6 +39,7 @@ export function PrivateMatchModal({
   privateRoomRole = null,
   initialJoinCode = null,
   onClose,
+  onCancelInFlight,
   onStart,
 }: PrivateMatchModalProps) {
   const titleId = useId();
@@ -113,9 +116,16 @@ export function PrivateMatchModal({
   }, [privateRoomCode, privateRoomRole, onClose]);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const requestClose = useCallback(() => {
+    if (busyAction != null) {
+      onCancelInFlight?.();
+    }
+    onClose();
+  }, [busyAction, onCancelInFlight, onClose]);
+
   useDialogA11y({
-    onClose,
-    disableClose: busy,
+    onClose: requestClose,
+    disableClose: false,
     initialFocusRef: closeRef,
     containerRef: panelRef as RefObject<HTMLElement | null>,
     lockScroll: true,
@@ -196,10 +206,7 @@ export function PrivateMatchModal({
   };
 
   const handleBackdropClose = () => {
-    if (busy) {
-      return;
-    }
-    onClose();
+    requestClose();
   };
 
   const modal = (
@@ -291,9 +298,8 @@ export function PrivateMatchModal({
           type="button"
           className="secondary-button private-match-modal__close"
           onClick={handleBackdropClose}
-          disabled={busy}
         >
-          Close
+          {busy ? "Cancel" : "Close"}
         </button>
       </div>
     </div>
