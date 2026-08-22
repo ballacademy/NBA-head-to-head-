@@ -1260,12 +1260,13 @@ function App() {
           session.mode = matched.mode;
           setMatchmakingMode(matched.mode);
         } else if (privateRoom!.role === "host") {
+          // Do not abort create — a mid-flight abort can orphan a waiting room
+          // the server already made. Timeout still applies; cancel after create.
           const created = await createPrivateRoom({
             mode: requestedMode,
             playerId,
             teamName: team.name,
             elo,
-            signal: abortController.signal,
           });
 
           if ("error" in created) {
@@ -1323,13 +1324,14 @@ function App() {
           session.mode = waited.matched.mode;
           setMatchmakingMode(waited.matched.mode);
         } else {
+          // Do not abort join — aborting after the server matched orphans the host.
+          // If the guest pressed Cancel mid-join, still enter draft once matched.
           const joined = await joinPrivateRoom({
             roomCode: privateRoom!.roomCode,
             playerId,
             teamName: team.name,
             elo,
             expectedMode: requestedMode,
-            signal: abortController.signal,
           });
 
           if ("error" in joined) {
@@ -1341,10 +1343,6 @@ function App() {
             }
             setStartMatchError(joined.error);
             return "failed";
-          }
-
-          if (session.cancelled) {
-            return "cancelled";
           }
 
           session.privateRoomCode = privateRoom!.roomCode;
@@ -1396,7 +1394,6 @@ function App() {
           setPrivateRoomExpiresAt(null);
           setPrivateRoomRole(null);
           setPrivateRematchWaiting(false);
-          forceUnlockBackgroundScroll();
         }
 
         setIsCancellingMatchmaking(false);
@@ -1741,6 +1738,7 @@ function App() {
 
     // Orphaned UI (in-flight cleared mid-flight) — force unlock the hub.
     if (!session) {
+      matchmakingGenerationRef.current += 1;
       setMatchmakingMode(null);
       setMatchmakingStartedAt(null);
       setIsMatchmakingInFlight(false);
@@ -1761,6 +1759,9 @@ function App() {
     // Second press while Finalizing: force-clear UI even if DELETE is hung.
     if (session.cancelled) {
       session.abortController?.abort();
+      // Invalidate the in-flight startMatch so a late last-poll match cannot
+      // yank the player into draft after they Force cancelled.
+      matchmakingGenerationRef.current += 1;
       if (matchmakingSessionRef.current?.generation === session.generation) {
         matchmakingSessionRef.current = null;
       }
@@ -1786,11 +1787,13 @@ function App() {
     // Clearing matchmakingMode here made cancel look done while a late match
     // could still drop the player into draft. Second cancel force-exits above.
 
-    if (session.privateRoomCode && session.privateRoomRole === "host") {
-      await cancelPrivateRoom({
-        roomCode: session.privateRoomCode,
-        playerId: session.playerId,
-      });
+    if (session.privateRoomRole === "host") {
+      if (session.privateRoomCode) {
+        await cancelPrivateRoom({
+          roomCode: session.privateRoomCode,
+          playerId: session.playerId,
+        });
+      }
       return;
     }
 
@@ -1802,7 +1805,7 @@ function App() {
       return;
     }
 
-    // Guest join is a single POST; aborting the signal is enough.
+    // Guest join is a single POST (not aborted); cancel is local until matchId.
     if (session.privateRoomRole === "guest") {
       return;
     }
@@ -1912,6 +1915,8 @@ function App() {
     if (session && !session.matchId) {
       session.cancelled = true;
       session.abortController?.abort();
+      // Invalidate in-flight startMatch so a late last-poll match cannot draft.
+      matchmakingGenerationRef.current += 1;
       if (session.privateRoomCode && session.privateRoomRole === "host") {
         void cancelPrivateRoom({
           roomCode: session.privateRoomCode,
