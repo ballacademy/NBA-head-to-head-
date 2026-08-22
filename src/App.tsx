@@ -132,6 +132,7 @@ import {
   cancelPrivateRoom,
   createPrivateRoom,
   joinPrivateRoom,
+  PRIVATE_ROOM_ABORTED_MESSAGE,
   waitForPrivateRoomGuest,
 } from "./lib/privateMatchmaking";
 import {
@@ -462,6 +463,7 @@ function App() {
     mode: GhostMatchmakingMode;
     playerId: string;
     cancelled: boolean;
+    abortController?: AbortController;
     privateRoomCode?: string;
     privateRoomRole?: "host" | "guest";
     privateRematchSourceMatchId?: string;
@@ -1154,15 +1156,18 @@ function App() {
 
       if (previousSession) {
         previousSession.cancelled = true;
+        previousSession.abortController?.abort();
       }
 
       const generation = ++matchmakingGenerationRef.current;
       activeMatchmakingGeneration = generation;
+      const abortController = new AbortController();
       const session = {
         generation,
         mode: requestedMode,
         playerId,
         cancelled: false,
+        abortController,
         privateRoomCode: undefined as string | undefined,
         privateRoomRole: privateRoom?.role as "host" | "guest" | undefined,
         privateRematchSourceMatchId: privateRematch?.previousMatchId,
@@ -1194,9 +1199,16 @@ function App() {
             playerId,
             teamName: team.name,
             elo,
+            signal: abortController.signal,
           });
 
           if ("error" in offered) {
+            if (
+              offered.error === PRIVATE_ROOM_ABORTED_MESSAGE ||
+              session.cancelled
+            ) {
+              return "cancelled";
+            }
             setStartMatchError(offered.error);
             return "failed";
           }
@@ -1214,7 +1226,10 @@ function App() {
                 sourceMatchId: privateRematch.previousMatchId,
                 playerId,
               },
-              { isCancelled: () => session.cancelled && !session.matchId },
+              {
+                isCancelled: () => session.cancelled && !session.matchId,
+                signal: abortController.signal,
+              },
             );
 
             if (!waited.ok) {
@@ -1250,11 +1265,26 @@ function App() {
             playerId,
             teamName: team.name,
             elo,
+            signal: abortController.signal,
           });
 
           if ("error" in created) {
+            if (
+              created.error === PRIVATE_ROOM_ABORTED_MESSAGE ||
+              session.cancelled
+            ) {
+              return "cancelled";
+            }
             setStartMatchError(created.error);
             return "failed";
+          }
+
+          if (session.cancelled) {
+            void cancelPrivateRoom({
+              roomCode: created.roomCode,
+              playerId,
+            });
+            return "cancelled";
           }
 
           session.privateRoomCode = created.roomCode;
@@ -1264,7 +1294,10 @@ function App() {
 
           const waited = await waitForPrivateRoomGuest(
             { roomCode: created.roomCode, playerId },
-            { isCancelled: () => session.cancelled && !session.matchId },
+            {
+              isCancelled: () => session.cancelled && !session.matchId,
+              signal: abortController.signal,
+            },
           );
 
           if (!waited.ok) {
@@ -1296,11 +1329,22 @@ function App() {
             teamName: team.name,
             elo,
             expectedMode: requestedMode,
+            signal: abortController.signal,
           });
 
           if ("error" in joined) {
+            if (
+              joined.error === PRIVATE_ROOM_ABORTED_MESSAGE ||
+              session.cancelled
+            ) {
+              return "cancelled";
+            }
             setStartMatchError(joined.error);
             return "failed";
+          }
+
+          if (session.cancelled) {
+            return "cancelled";
           }
 
           session.privateRoomCode = privateRoom!.roomCode;
@@ -1352,6 +1396,7 @@ function App() {
           setPrivateRoomExpiresAt(null);
           setPrivateRoomRole(null);
           setPrivateRematchWaiting(false);
+          forceUnlockBackgroundScroll();
         }
 
         setIsCancellingMatchmaking(false);
@@ -1371,6 +1416,7 @@ function App() {
 
       if (previousSession) {
         previousSession.cancelled = true;
+        previousSession.abortController?.abort();
       }
 
       const generation = ++matchmakingGenerationRef.current;
@@ -1693,7 +1739,17 @@ function App() {
   const cancelMatchmaking = useCallback(async () => {
     const session = matchmakingSessionRef.current;
 
-    if (!session || session.cancelled) {
+    // Orphaned UI (in-flight cleared mid-flight) — force unlock the hub.
+    if (!session) {
+      setMatchmakingMode(null);
+      setMatchmakingStartedAt(null);
+      setIsMatchmakingInFlight(false);
+      setIsCancellingMatchmaking(false);
+      setPrivateRoomCode(null);
+      setPrivateRoomExpiresAt(null);
+      setPrivateRoomRole(null);
+      setPrivateRematchWaiting(false);
+      forceUnlockBackgroundScroll();
       return;
     }
 
@@ -1702,13 +1758,33 @@ function App() {
       return;
     }
 
+    // Second press while Finalizing: force-clear UI even if DELETE is hung.
+    if (session.cancelled) {
+      session.abortController?.abort();
+      if (matchmakingSessionRef.current?.generation === session.generation) {
+        matchmakingSessionRef.current = null;
+      }
+      setMatchmakingMode(null);
+      setMatchmakingStartedAt(null);
+      setIsMatchmakingInFlight(false);
+      setIsCancellingMatchmaking(false);
+      setMatchedOpponentName(null);
+      setPrivateRoomCode(null);
+      setPrivateRoomExpiresAt(null);
+      setPrivateRoomRole(null);
+      setPrivateRematchWaiting(false);
+      forceUnlockBackgroundScroll();
+      return;
+    }
+
     session.cancelled = true;
+    session.abortController?.abort();
     setStartMatchError(null);
     setIsCancellingMatchmaking(true);
     trackProductEvent("matchmaking_cancel", { mode: session.mode });
     // Keep the overlay visible until search resolves to cancelled or matched.
     // Clearing matchmakingMode here made cancel look done while a late match
-    // could still drop the player into draft.
+    // could still drop the player into draft. Second cancel force-exits above.
 
     if (session.privateRoomCode && session.privateRoomRole === "host") {
       await cancelPrivateRoom({
@@ -1726,7 +1802,7 @@ function App() {
       return;
     }
 
-    // Guest join is a single POST; aborting locally is enough.
+    // Guest join is a single POST; aborting the signal is enough.
     if (session.privateRoomRole === "guest") {
       return;
     }
@@ -1832,6 +1908,25 @@ function App() {
     preserveError?: boolean;
     preserveLiveSession?: boolean;
   }) => {
+    const session = matchmakingSessionRef.current;
+    if (session && !session.matchId) {
+      session.cancelled = true;
+      session.abortController?.abort();
+      if (session.privateRoomCode && session.privateRoomRole === "host") {
+        void cancelPrivateRoom({
+          roomCode: session.privateRoomCode,
+          playerId: session.playerId,
+        });
+      }
+      if (session.privateRematchSourceMatchId) {
+        void cancelPrivateRematch({
+          sourceMatchId: session.privateRematchSourceMatchId,
+          playerId: session.playerId,
+        });
+      }
+      matchmakingSessionRef.current = null;
+    }
+
     if (options?.preserveLiveSession) {
       liveRecoveryAttemptedRef.current = true;
     } else {
@@ -1876,6 +1971,7 @@ function App() {
     setModeRecords(loadAllModeRecords());
     setPhase("landing");
     setLandingRenderKey((current) => current + 1);
+    forceUnlockBackgroundScroll();
     scrollHubToTop();
     if (typeof window !== "undefined") {
       const state = window.history.state as FeatureHistoryState | null;
@@ -3122,6 +3218,7 @@ function App() {
             setPendingPrivateMatchMode(null);
             setPendingPrivateJoinCode(null);
           }}
+          onCancelMatchmaking={cancelMatchmaking}
           onStartDraft={startMatch}
           onViewDailyLineup={viewDailyLineup}
           onViewYesterdayBestDailyLineup={viewYesterdayBestDailyLineup}

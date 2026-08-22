@@ -1,14 +1,40 @@
 import type { LiveOpponentSnapshot } from "./liveMatchmaking";
 import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
-import type { PrivateMatchMode } from "./privateMatchmaking";
+import {
+  fetchWithTimeout,
+  PRIVATE_ROOM_ABORTED_MESSAGE,
+  PRIVATE_ROOM_CANCEL_TIMEOUT_MS,
+  PRIVATE_ROOM_FETCH_TIMEOUT_MS,
+  type PrivateMatchMode,
+} from "./privateMatchmaking";
 
 const API_BASE = "";
 const buildUrl = (path: string) => `${API_BASE}${path}`;
 
-const sleep = (ms: number) =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
+const sleep = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
+
+const isAbortError = (error: unknown) =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      "name" in error &&
+      (error as { name?: string }).name === "AbortError",
+  );
 
 const PRIVATE_REMATCH_UNAVAILABLE =
   "Private rematch is temporarily unavailable. Try again in a moment.";
@@ -90,23 +116,29 @@ export const offerPrivateRematch = async (params: {
   playerId: string;
   teamName: string;
   elo: number;
+  signal?: AbortSignal;
 }): Promise<
   PrivateRematchWaiting | PrivateRematchMatched | { error: string }
 > => {
   try {
-    const response = await fetch(buildUrl("/api/private-rematch"), {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
+    const response = await fetchWithTimeout(
+      buildUrl("/api/private-rematch"),
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          sourceMatchId: params.sourceMatchId,
+          playerId: params.playerId,
+          teamName: params.teamName,
+          elo: Math.round(params.elo),
+        }),
+        signal: params.signal,
       },
-      body: JSON.stringify({
-        sourceMatchId: params.sourceMatchId,
-        playerId: params.playerId,
-        teamName: params.teamName,
-        elo: Math.round(params.elo),
-      }),
-    });
+      PRIVATE_ROOM_FETCH_TIMEOUT_MS,
+    );
 
     if (!response.ok) {
       return { error: await mapFailure(response) };
@@ -140,7 +172,10 @@ export const offerPrivateRematch = async (params: {
     }
 
     return { error: "Could not start rematch" };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error) || params.signal?.aborted) {
+      return { error: PRIVATE_ROOM_ABORTED_MESSAGE };
+    }
     return { error: PRIVATE_REMATCH_UNREACHABLE };
   }
 };
@@ -148,6 +183,7 @@ export const offerPrivateRematch = async (params: {
 export const pollPrivateRematch = async (params: {
   sourceMatchId: string;
   playerId: string;
+  signal?: AbortSignal;
 }): Promise<
   | PrivateRematchWaiting
   | PrivateRematchMatched
@@ -159,9 +195,10 @@ export const pollPrivateRematch = async (params: {
       matchId: params.sourceMatchId,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${buildUrl("/api/private-rematch")}?${search.toString()}`,
-      { headers: { accept: "application/json" } },
+      { headers: { accept: "application/json" }, signal: params.signal },
+      PRIVATE_ROOM_FETCH_TIMEOUT_MS,
     );
 
     if (response.status === 410) {
@@ -208,7 +245,10 @@ export const pollPrivateRematch = async (params: {
     }
 
     return { error: "Unexpected rematch response" };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error) || params.signal?.aborted) {
+      return { error: PRIVATE_ROOM_ABORTED_MESSAGE };
+    }
     return { error: PRIVATE_REMATCH_UNREACHABLE };
   }
 };
@@ -216,15 +256,21 @@ export const pollPrivateRematch = async (params: {
 export const cancelPrivateRematch = async (params: {
   sourceMatchId: string;
   playerId: string;
+  signal?: AbortSignal;
 }): Promise<boolean> => {
   try {
     const search = new URLSearchParams({
       matchId: params.sourceMatchId,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${buildUrl("/api/private-rematch")}?${search.toString()}`,
-      { method: "DELETE", headers: { accept: "application/json" } },
+      {
+        method: "DELETE",
+        headers: { accept: "application/json" },
+        signal: params.signal,
+      },
+      PRIVATE_ROOM_CANCEL_TIMEOUT_MS,
     );
     return response.ok;
   } catch {
@@ -240,6 +286,7 @@ export const waitForPrivateRematch = async (
   },
   options: {
     isCancelled?: () => boolean;
+    signal?: AbortSignal;
     pollIntervalMs?: number;
     maxConsecutiveErrors?: number;
   } = {},
@@ -251,16 +298,26 @@ export const waitForPrivateRematch = async (
   const maxConsecutiveErrors = options.maxConsecutiveErrors ?? 5;
   let consecutiveErrors = 0;
 
-  while (!options.isCancelled?.()) {
-    const poll = await pollPrivateRematch(params);
+  const cancelled = () =>
+    Boolean(options.isCancelled?.() || options.signal?.aborted);
+
+  while (!cancelled()) {
+    const poll = await pollPrivateRematch({ ...params, signal: options.signal });
 
     if ("error" in poll) {
+      if (poll.error === PRIVATE_ROOM_ABORTED_MESSAGE || cancelled()) {
+        break;
+      }
       consecutiveErrors += 1;
       if (consecutiveErrors >= maxConsecutiveErrors) {
         await cancelPrivateRematch(params);
         return { ok: false, error: "setup_failed" };
       }
-      await sleep(pollIntervalMs);
+      try {
+        await sleep(pollIntervalMs, options.signal);
+      } catch {
+        break;
+      }
       continue;
     }
 
@@ -277,7 +334,11 @@ export const waitForPrivateRematch = async (
       return { ok: false, error: poll.status };
     }
 
-    await sleep(pollIntervalMs);
+    try {
+      await sleep(pollIntervalMs, options.signal);
+    } catch {
+      break;
+    }
   }
 
   const lastPoll = await pollPrivateRematch(params);

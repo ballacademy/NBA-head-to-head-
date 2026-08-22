@@ -20,10 +20,53 @@ export interface PrivateRoomMatched {
 const API_BASE = "";
 const buildUrl = (path: string) => `${API_BASE}${path}`;
 
-const sleep = (ms: number) =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
+/** Private room create/join/poll should never hang the UI indefinitely. */
+export const PRIVATE_ROOM_FETCH_TIMEOUT_MS = 15_000;
+export const PRIVATE_ROOM_CANCEL_TIMEOUT_MS = 3_000;
+
+const sleep = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
+
+const isAbortError = (error: unknown) =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      "name" in error &&
+      (error as { name?: string }).name === "AbortError",
+  );
+
+export const fetchWithTimeout = async (
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = PRIVATE_ROOM_FETCH_TIMEOUT_MS,
+): Promise<Response> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const external = init.signal;
+  const onExternalAbort = () => controller.abort();
+  external?.addEventListener("abort", onExternalAbort);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+    external?.removeEventListener("abort", onExternalAbort);
+  }
+};
 
 const PRIVATE_ROOM_UNAVAILABLE =
   "Private match servers are temporarily unavailable. Try again in a moment.";
@@ -31,6 +74,7 @@ const PRIVATE_ROOM_UNREACHABLE =
   "Could not reach private match servers. Check your connection and try again.";
 export const PRIVATE_ROOM_NOT_FOUND_MESSAGE =
   "That room doesn't exist or the code is invalid.";
+export const PRIVATE_ROOM_ABORTED_MESSAGE = "cancelled";
 
 const readError = async (response: Response) => {
   try {
@@ -72,9 +116,10 @@ export const createPrivateRoom = async (params: {
   playerId: string;
   teamName: string;
   elo: number;
+  signal?: AbortSignal;
 }): Promise<PrivateRoomWaiting | { error: string }> => {
   try {
-    const response = await fetch(buildUrl("/api/private-room"), {
+    const response = await fetchWithTimeout(buildUrl("/api/private-room"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -86,6 +131,7 @@ export const createPrivateRoom = async (params: {
         teamName: params.teamName,
         elo: Math.round(params.elo),
       }),
+      signal: params.signal,
     });
 
     if (!response.ok) {
@@ -111,7 +157,10 @@ export const createPrivateRoom = async (params: {
     }
 
     return { error: "Could not create private room" };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error) || params.signal?.aborted) {
+      return { error: PRIVATE_ROOM_ABORTED_MESSAGE };
+    }
     return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
@@ -122,9 +171,10 @@ export const joinPrivateRoom = async (params: {
   teamName: string;
   elo: number;
   expectedMode: PrivateMatchMode;
+  signal?: AbortSignal;
 }): Promise<PrivateRoomMatched | { error: string }> => {
   try {
-    const response = await fetch(buildUrl("/api/private-room/join"), {
+    const response = await fetchWithTimeout(buildUrl("/api/private-room/join"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -137,6 +187,7 @@ export const joinPrivateRoom = async (params: {
         elo: Math.round(params.elo),
         expectedMode: params.expectedMode,
       }),
+      signal: params.signal,
     });
 
     if (!response.ok) {
@@ -179,7 +230,10 @@ export const joinPrivateRoom = async (params: {
     }
 
     return { error: PRIVATE_ROOM_NOT_FOUND_MESSAGE };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error) || params.signal?.aborted) {
+      return { error: PRIVATE_ROOM_ABORTED_MESSAGE };
+    }
     return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
@@ -187,6 +241,7 @@ export const joinPrivateRoom = async (params: {
 export const pollPrivateRoom = async (params: {
   roomCode: string;
   playerId: string;
+  signal?: AbortSignal;
 }): Promise<
   | PrivateRoomWaiting
   | PrivateRoomMatched
@@ -198,9 +253,9 @@ export const pollPrivateRoom = async (params: {
       code: params.roomCode,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${buildUrl("/api/private-room")}?${search.toString()}`,
-      { headers: { accept: "application/json" } },
+      { headers: { accept: "application/json" }, signal: params.signal },
     );
 
     if (response.status === 410) {
@@ -260,7 +315,10 @@ export const pollPrivateRoom = async (params: {
     }
 
     return { error: "Unexpected private room response" };
-  } catch {
+  } catch (error) {
+    if (isAbortError(error) || params.signal?.aborted) {
+      return { error: PRIVATE_ROOM_ABORTED_MESSAGE };
+    }
     return { error: PRIVATE_ROOM_UNREACHABLE };
   }
 };
@@ -268,15 +326,17 @@ export const pollPrivateRoom = async (params: {
 export const cancelPrivateRoom = async (params: {
   roomCode: string;
   playerId: string;
+  signal?: AbortSignal;
 }): Promise<boolean> => {
   try {
     const search = new URLSearchParams({
       code: params.roomCode,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${buildUrl("/api/private-room")}?${search.toString()}`,
-      { method: "DELETE", headers: { accept: "application/json" } },
+      { method: "DELETE", headers: { accept: "application/json" }, signal: params.signal },
+      PRIVATE_ROOM_CANCEL_TIMEOUT_MS,
     );
     return response.ok;
   } catch {
@@ -292,6 +352,7 @@ export const waitForPrivateRoomGuest = async (
   },
   options: {
     isCancelled?: () => boolean;
+    signal?: AbortSignal;
     pollIntervalMs?: number;
     maxConsecutiveErrors?: number;
   } = {},
@@ -303,15 +364,25 @@ export const waitForPrivateRoomGuest = async (
   const maxConsecutiveErrors = options.maxConsecutiveErrors ?? 5;
   let consecutiveErrors = 0;
 
-  while (!options.isCancelled?.()) {
-    const poll = await pollPrivateRoom(params);
+  const cancelled = () =>
+    Boolean(options.isCancelled?.() || options.signal?.aborted);
+
+  while (!cancelled()) {
+    const poll = await pollPrivateRoom({ ...params, signal: options.signal });
 
     if ("error" in poll) {
+      if (poll.error === PRIVATE_ROOM_ABORTED_MESSAGE || cancelled()) {
+        break;
+      }
       consecutiveErrors += 1;
       if (consecutiveErrors >= maxConsecutiveErrors) {
         return { ok: false, error: "setup_failed" };
       }
-      await sleep(pollIntervalMs);
+      try {
+        await sleep(pollIntervalMs, options.signal);
+      } catch {
+        break;
+      }
       continue;
     }
 
@@ -325,7 +396,11 @@ export const waitForPrivateRoomGuest = async (
       return { ok: false, error: poll.status };
     }
 
-    await sleep(pollIntervalMs);
+    try {
+      await sleep(pollIntervalMs, options.signal);
+    } catch {
+      break;
+    }
   }
 
   // Cancel raced a join — one last poll so we don't orphan a live match.
