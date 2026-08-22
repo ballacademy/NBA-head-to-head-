@@ -2,6 +2,7 @@ export type ProductAnalyticsEvent =
   | "daily_finish"
   | "account_create"
   | "share_lineup"
+  | "share_matchup"
   | "matchmaking_cancel"
   | "play_mode_open";
 
