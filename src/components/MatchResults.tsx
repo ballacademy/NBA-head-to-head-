@@ -33,7 +33,10 @@ import {
   type SeasonBoardMode,
 } from "../lib/seasonBoardRecord";
 import { recordNbaPlayerMatchUsage } from "../lib/nbaPlayerUsage";
-import { rememberCommunityShareable } from "../lib/communityShareables";
+import {
+  buildMatchupShareCardInputsFromAttachment,
+  rememberCommunityShareable,
+} from "../lib/communityShareables";
 import {
   extractGhostStoredLineupId,
   submitGhostMatchOutcome,
@@ -46,7 +49,7 @@ import { ensureClassicProfile } from "../lib/classicProfile";
 import { loadAllTimeProfile } from "../lib/allTimeProfile";
 import { ensureCurrentRankedSeason } from "../lib/rankedProfile";
 import { formatRatingDelta, formatRatingPoints, getTierForElo } from "../lib/rankedElo";
-import { logLiveMatchGameEntry } from "../lib/matchGameLog";
+import { logLiveMatchGameEntry, type MatchGameLogMatchup } from "../lib/matchGameLog";
 import type { RankedMatchOutcome } from "../lib/matchOutcome";
 import {
   calculateLineupScore,
@@ -61,7 +64,8 @@ import {
   unlockAchievements,
 } from "../lib/achievements";
 import { getCachedLinkedUsername, isPlayerAccountLinked } from "../lib/accountGate";
-import { saveLineupShareCard } from "../lib/lineupShareCard";
+import { saveLineupShareCard, saveMatchupShareCard } from "../lib/lineupShareCard";
+import { databasePlayersById } from "../lib/playerPool";
 import { isShareDismissalError } from "../lib/appErrors";
 import { trackProductEvent } from "../lib/productAnalytics";
 import { confirmRemoteLeaderboardRank } from "../lib/leaderboardRemote";
@@ -248,35 +252,51 @@ export function MatchResults({
     const lineupsComplete =
       userLineup.length === 5 && opponentLineup.length === 5;
 
+    const buildMatchupSnapshot = (
+      username?: string,
+    ): MatchGameLogMatchup | undefined => {
+      if (!lineupsComplete) {
+        return undefined;
+      }
+      return {
+        modeLabel: resultModeLabel,
+        userTeam: user.name,
+        username,
+        opponentTeam: formatOpponentDisplayName(
+          opponent.name,
+          opponent.username,
+        ),
+        userOvr: userScore.total,
+        opponentOvr: opponentScore.total,
+        userLineupNames: userLineup.map((player) => player.name),
+        opponentLineupNames: opponentLineup.map((player) => player.name),
+        userLineupIds: userLineup.map((player) => player.id),
+        opponentLineupIds: opponentLineup.map((player) => player.id),
+        userAccent: user.accent,
+        opponentAccent: opponent.accent,
+        userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+        userWinRecord: skipCompetitiveRecords
+          ? undefined
+          : formatPlayerRecord(updatedRecord),
+        ovrOverflow: userScore.ovrOverflow,
+        opponentOvrOverflow: opponentScore.ovrOverflow,
+      };
+    };
+
     if (lineupsComplete) {
       void (async () => {
         try {
           const playerId = getOrCreatePlayerIdentity().playerId;
           await isPlayerAccountLinked(playerId);
+          const username = getCachedLinkedUsername(playerId) ?? undefined;
+          const matchup = buildMatchupSnapshot(username);
+          if (!matchup) {
+            return;
+          }
           rememberCommunityShareable({
             kind: "matchup",
-            modeLabel: resultModeLabel,
+            ...matchup,
             result: matchResult,
-            userTeam: user.name,
-            username: getCachedLinkedUsername(playerId) ?? undefined,
-            opponentTeam: formatOpponentDisplayName(
-              opponent.name,
-              opponent.username,
-            ),
-            userOvr: userScore.total,
-            opponentOvr: opponentScore.total,
-            userLineupNames: userLineup.map((player) => player.name),
-            opponentLineupNames: opponentLineup.map((player) => player.name),
-            userLineupIds: userLineup.map((player) => player.id),
-            opponentLineupIds: opponentLineup.map((player) => player.id),
-            userAccent: user.accent,
-            opponentAccent: opponent.accent,
-            userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
-            userWinRecord: skipCompetitiveRecords
-              ? undefined
-              : formatPlayerRecord(updatedRecord),
-            ovrOverflow: userScore.ovrOverflow,
-            opponentOvrOverflow: opponentScore.ovrOverflow,
             savedAt: new Date().toISOString(),
           });
         } catch {
@@ -333,6 +353,10 @@ export function MatchResults({
           ownerScore: userScore.uncappedTotal,
           opponentScore: opponentScore.uncappedTotal,
           isEvent: true,
+          matchup: buildMatchupSnapshot(
+            getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
+              undefined,
+          ),
         });
         return;
       }
@@ -414,6 +438,10 @@ export function MatchResults({
           ownerScore: userScore.uncappedTotal,
           opponentScore: opponentScore.uncappedTotal,
           bannerDelta: banners?.delta,
+          matchup: buildMatchupSnapshot(
+            getCachedLinkedUsername(getOrCreatePlayerIdentity().playerId) ??
+              undefined,
+          ),
         });
 
         const next = processMatchUnlock(matchResult, matchId, collection);
@@ -611,6 +639,61 @@ export function MatchResults({
     }
   };
 
+  const handleShareMatchup = async () => {
+    if (shareState === "busy" || userLineup.length !== 5 || opponentLineup.length !== 5) {
+      return;
+    }
+
+    setShareState("busy");
+
+    try {
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      await isPlayerAccountLinked(playerId);
+      const inputs = buildMatchupShareCardInputsFromAttachment(
+        {
+          kind: "matchup",
+          modeLabel: resultModeLabel,
+          result: matchResult,
+          userTeam: user.name,
+          username: getCachedLinkedUsername(playerId) ?? undefined,
+          opponentTeam: formatOpponentDisplayName(
+            opponent.name,
+            opponent.username,
+          ),
+          userOvr: userScore.total,
+          opponentOvr: opponentScore.total,
+          userLineupNames: userLineup.map((player) => player.name),
+          opponentLineupNames: opponentLineup.map((player) => player.name),
+          userLineupIds: userLineup.map((player) => player.id),
+          opponentLineupIds: opponentLineup.map((player) => player.id),
+          userAccent: user.accent,
+          opponentAccent: opponent.accent,
+          userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+          ovrOverflow: userScore.ovrOverflow,
+          opponentOvrOverflow: opponentScore.ovrOverflow,
+          savedAt: new Date().toISOString(),
+        },
+        databasePlayersById,
+      );
+      if (!inputs) {
+        throw new Error("Could not rebuild matchup image.");
+      }
+      await saveMatchupShareCard(inputs);
+      trackProductEvent("share_matchup", {
+        surface: "match_results",
+      });
+      setShareState("idle");
+    } catch (error) {
+      if (isShareDismissalError(error)) {
+        setShareState("idle");
+        return;
+      }
+
+      setShareState("error");
+      window.setTimeout(() => setShareState("idle"), 3000);
+    }
+  };
+
   const hasPendingUnlock = Boolean(matchCollection.pendingUnlock);
   const showCompetitiveStreak =
     !user.practiceMode && !user.privateMatch;
@@ -621,6 +704,8 @@ export function MatchResults({
       : "New star unlocked — click to choose";
   const shareButtonLabel =
     shareState === "error" ? "Share failed — try again" : "Share lineup";
+  const shareMatchupButtonLabel =
+    shareState === "error" ? "Share failed — try again" : "Share matchup";
   const playAgainLabel = user.practiceMode
     ? "Practice again"
     : user.privateMatch
@@ -927,6 +1012,14 @@ export function MatchResults({
               }}
               secondary={[
                 {
+                  id: "share-matchup",
+                  label: shareMatchupButtonLabel,
+                  busyLabel: "Sharing…",
+                  disabled: competitiveActionsLocked,
+                  busy: shareState === "busy",
+                  onClick: () => void handleShareMatchup(),
+                },
+                {
                   id: "share",
                   label: shareButtonLabel,
                   busyLabel: "Sharing…",
@@ -963,6 +1056,14 @@ export function MatchResults({
                 },
               }}
               secondary={[
+                {
+                  id: "share-matchup",
+                  label: shareMatchupButtonLabel,
+                  busyLabel: "Sharing…",
+                  disabled: competitiveActionsLocked,
+                  busy: shareState === "busy",
+                  onClick: () => void handleShareMatchup(),
+                },
                 {
                   id: "share",
                   label: shareButtonLabel,

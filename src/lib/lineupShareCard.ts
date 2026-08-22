@@ -893,3 +893,41 @@ export const saveLineupShareCard = async (input: LineupShareCardInput) => {
 
   downloadBlob(blob, filename);
 };
+
+export const buildMatchupShareCardText = (inputs: {
+  user: LineupShareCardInput;
+  opponent: LineupShareCardInput;
+}) => {
+  const userTitle = resolveShareCardTitle(inputs.user);
+  const opponentTitle = resolveShareCardTitle(inputs.opponent);
+  const userStat = resolveShareCardStatDisplay(inputs.user);
+  const opponentStat = resolveShareCardStatDisplay(inputs.opponent);
+  return `${userTitle} ${userStat.value} vs ${opponentTitle} ${opponentStat.value}`;
+};
+
+export const saveMatchupShareCard = async (inputs: {
+  user: LineupShareCardInput;
+  opponent: LineupShareCardInput;
+}) => {
+  const blob = await createMatchupShareCardBlob(inputs);
+  const filename = "draft-day-gm-matchup.png";
+  const file = new File([blob], filename, { type: "image/png" });
+  const shareText = buildMatchupShareCardText(inputs);
+
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: "Draft Day GM Matchup",
+        text: shareText,
+        files: [file],
+      });
+      return;
+    } catch (error) {
+      if (isUserDismissalError(error)) {
+        return;
+      }
+    }
+  }
+
+  downloadBlob(blob, filename);
+};
