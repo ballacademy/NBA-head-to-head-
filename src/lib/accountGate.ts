@@ -30,6 +30,9 @@ export const ACCOUNT_REQUIRED_COMMUNITY_ENGAGE_MESSAGE =
 export const ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE =
   "Create an account to like posts.";
 
+export const ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE =
+  "Create an account to like tier lists.";
+
 export const ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE =
   "Create an account to reply.";
 

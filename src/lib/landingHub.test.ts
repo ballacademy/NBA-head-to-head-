@@ -273,6 +273,34 @@ describe("landingHub", () => {
     expect(nextUrl).toContain("tierList=abc123");
   });
 
+  it("can clear tierList when leaving a public viewer", () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: "https://example.test/?hub=community&view=tiers&tierList=abc123",
+        pathname: "/",
+        search: "?hub=community&view=tiers&tierList=abc123",
+        hash: "",
+      },
+      history: {
+        state: null,
+        replaceState,
+      },
+    });
+
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: "tiers",
+      post: null,
+      tierList: null,
+    });
+
+    const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
+    expect(nextUrl).toContain("hub=community");
+    expect(nextUrl).toContain("view=tiers");
+    expect(nextUrl).not.toContain("tierList=");
+  });
+
   it("syncs classic alias for casual H2H deep links", () => {
     const replaceState = vi.fn();
     vi.stubGlobal("window", {

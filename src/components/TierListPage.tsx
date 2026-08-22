@@ -98,6 +98,7 @@ import {
   ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
   getCachedLinkedUsername,
@@ -354,6 +355,7 @@ export function TierListPage({
   const deepLinkHandledRef = useRef(false);
   const postDeepLinkHandledRef = useRef(false);
   const communityPostsLoadGenRef = useRef(0);
+  const viewerCommentsLoadGenRef = useRef(0);
   const communityPostsRef = useRef(communityPosts);
   communityPostsRef.current = communityPosts;
   const communityFocusPostIdRef = useRef(communityFocusPostId);
@@ -382,6 +384,15 @@ export function TierListPage({
     lockScroll: true,
   });
 
+  const resetViewerCommentState = useCallback(() => {
+    viewerCommentsLoadGenRef.current += 1;
+    setViewerComments([]);
+    setViewerCommentsLoading(false);
+    setViewerCommentDraft("");
+    setViewerCommentError(null);
+    setViewerCommentSubmitting(false);
+  }, []);
+
   useEffect(() => {
     if (hubReturnSeenRef.current === null) {
       hubReturnSeenRef.current = hubReturnToken;
@@ -390,9 +401,15 @@ export function TierListPage({
       if (hubReturnToken > 0) {
         setViewerDetail(null);
         setViewerLoading(false);
+        resetViewerCommentState();
         setView("hub");
         setCommunityFocusPostId(null);
-        syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: null,
+          post: null,
+          tierList: null,
+        });
       }
       return;
     }
@@ -402,10 +419,16 @@ export function TierListPage({
     hubReturnSeenRef.current = hubReturnToken;
     setViewerDetail(null);
     setViewerLoading(false);
+    resetViewerCommentState();
     setView("hub");
     setCommunityFocusPostId(null);
-    syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
-  }, [hubReturnToken]);
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: null,
+      post: null,
+      tierList: null,
+    });
+  }, [hubReturnToken, resetViewerCommentState]);
 
   useEffect(() => {
     if (composeIntentSeenRef.current === null) {
@@ -425,13 +448,19 @@ export function TierListPage({
 
     setViewerDetail(null);
     setViewerLoading(false);
+    resetViewerCommentState();
     setView("posts");
     setCommunityFocusPostId(null);
     const shareables = loadCommunityShareables();
     setCommunityShareables(shareables);
     setCommunityAttachment(shareables[0] ?? null);
-    syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null });
-  }, [composeIntentToken]);
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: "posts",
+      post: null,
+      tierList: null,
+    });
+  }, [composeIntentToken, resetViewerCommentState]);
 
   useEffect(() => {
     saveTierListState(state);
@@ -991,16 +1020,25 @@ export function TierListPage({
   };
 
   const loadViewerComments = useCallback(async (id: string) => {
+    const loadGen = ++viewerCommentsLoadGenRef.current;
     setViewerCommentsLoading(true);
     setViewerCommentError(null);
     try {
       const comments = await listTierListComments({ id });
+      if (viewerCommentsLoadGenRef.current !== loadGen) {
+        return;
+      }
       setViewerComments(comments);
     } catch {
+      if (viewerCommentsLoadGenRef.current !== loadGen) {
+        return;
+      }
       setViewerComments([]);
       setViewerCommentError("Could not load comments");
     } finally {
-      setViewerCommentsLoading(false);
+      if (viewerCommentsLoadGenRef.current === loadGen) {
+        setViewerCommentsLoading(false);
+      }
     }
   }, []);
 
@@ -1012,10 +1050,14 @@ export function TierListPage({
     deepLinkHandledRef.current = true;
     let cancelled = false;
     setViewerLoading(true);
-    setViewerComments([]);
-    setViewerCommentDraft("");
-    setViewerCommentError(null);
+    resetViewerCommentState();
     setView("viewer");
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: "tiers",
+      post: null,
+      tierList: initialPublicTierListId,
+    });
     void fetchPublicTierList({
       id: initialPublicTierListId,
       viewerPlayerId: identity.playerId,
@@ -1027,6 +1069,12 @@ export function TierListPage({
         setViewerDetail(null);
         setViewerLoading(false);
         setView("public");
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: "tiers",
+          post: null,
+          tierList: null,
+        });
         setStatusMessage("That shared tier list could not be found");
         return;
       }
@@ -1039,12 +1087,18 @@ export function TierListPage({
     return () => {
       cancelled = true;
     };
-  }, [initialPublicTierListId, identity.playerId, loadViewerComments]);
+  }, [
+    initialPublicTierListId,
+    identity.playerId,
+    loadViewerComments,
+    resetViewerCommentState,
+  ]);
 
   const handleSubmitViewerComment = async () => {
     if (!viewerDetail) {
       return;
     }
+    const targetId = viewerDetail.id;
     if (accountLinked !== true) {
       setViewerCommentError(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE);
       return;
@@ -1058,7 +1112,7 @@ export function TierListPage({
     setViewerCommentSubmitting(true);
     setViewerCommentError(null);
     const result = await createTierListComment({
-      id: viewerDetail.id,
+      id: targetId,
       playerId: identity.playerId,
       authorName: authorName.trim() || `GM ${formatPublicTag(identity.publicTag)}`,
       authorTag: identity.publicTag,
@@ -1071,7 +1125,16 @@ export function TierListPage({
       return;
     }
 
-    setViewerComments((current) => [...current, result.comment]);
+    if (result.comment.tierListId !== targetId) {
+      return;
+    }
+
+    setViewerComments((current) => {
+      if (current.some((entry) => entry.id === result.comment.id)) {
+        return current;
+      }
+      return [...current, result.comment];
+    });
     setViewerCommentDraft("");
   };
 
@@ -1128,10 +1191,14 @@ export function TierListPage({
   const handleOpenPublic = async (id: string) => {
     setViewerLoading(true);
     setViewerDetail(null);
-    setViewerComments([]);
-    setViewerCommentDraft("");
-    setViewerCommentError(null);
+    resetViewerCommentState();
     setView("viewer");
+    syncLandingDeepLinkUrl({
+      hub: "community",
+      view: "tiers",
+      post: null,
+      tierList: id,
+    });
     const detail = await fetchPublicTierList({
       id,
       viewerPlayerId: identity.playerId,
@@ -1139,6 +1206,12 @@ export function TierListPage({
     if (!detail) {
       setViewerLoading(false);
       setView("public");
+      syncLandingDeepLinkUrl({
+        hub: "community",
+        view: "tiers",
+        post: null,
+        tierList: null,
+      });
       setStatusMessage("Could not open that tier list");
       return;
     }
@@ -1218,7 +1291,7 @@ export function TierListPage({
 
   const handleToggleLike = async (id: string, liked: boolean) => {
     if (accountLinked !== true) {
-      setStatusMessage(ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE);
+      setStatusMessage(ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE);
       return;
     }
     const result = await setTierListLike({
@@ -1254,12 +1327,13 @@ export function TierListPage({
   };
 
   const syncCommunityDeepLink = useCallback(
-    (next: TierListView, postId: string | null = null) => {
+    (next: TierListView, postId: string | null = null, tierListId: string | null = null) => {
       if (next === "hub") {
         syncLandingDeepLinkUrl({
           hub: "community",
           view: null,
           post: null,
+          tierList: null,
         });
         return;
       }
@@ -1268,6 +1342,16 @@ export function TierListPage({
           hub: "community",
           view: "posts",
           post: postId,
+          tierList: null,
+        });
+        return;
+      }
+      if (next === "viewer") {
+        syncLandingDeepLinkUrl({
+          hub: "community",
+          view: "tiers",
+          post: null,
+          tierList: tierListId,
         });
         return;
       }
@@ -1275,13 +1359,13 @@ export function TierListPage({
         next === "tiersHub" ||
         next === "mine" ||
         next === "public" ||
-        next === "editor" ||
-        next === "viewer"
+        next === "editor"
       ) {
         syncLandingDeepLinkUrl({
           hub: "community",
           view: "tiers",
           post: null,
+          tierList: null,
         });
       }
     },
@@ -1292,6 +1376,7 @@ export function TierListPage({
     if (view === "viewer") {
       setViewerDetail(null);
       setViewerLoading(false);
+      resetViewerCommentState();
       setView("public");
       syncCommunityDeepLink("public");
       return;
@@ -1619,7 +1704,14 @@ export function TierListPage({
         );
         if (viewerDetail?.id === publishedId) {
           setViewerDetail(null);
+          resetViewerCommentState();
           setView("public");
+          syncLandingDeepLinkUrl({
+            hub: "community",
+            view: "tiers",
+            post: null,
+            tierList: null,
+          });
         }
         setStatusMessage("Removed from public tier lists");
         setPendingConfirm(null);

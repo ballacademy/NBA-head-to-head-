@@ -1144,6 +1144,24 @@ h1.landing-hub__title--name {
   gap: 10px 14px;
   align-items: end;
   justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+}
+
+.tier-list-hub__panel-header .tier-list__library-copy {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.tier-list-hub__viewer-actions,
+.tier-list__library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-end;
 }
 
 .tier-list-hub__panel-header h2 {

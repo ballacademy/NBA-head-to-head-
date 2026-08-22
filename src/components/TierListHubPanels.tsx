@@ -1753,7 +1753,7 @@ export function TierListPublicViewer({
     <div className="tier-list-hub__panel tier-list-hub__viewer">
       <div className="tier-list-hub__panel-header">
         <div className="tier-list__library-copy">
-          <h2>{detail.title}</h2>
+          <h2>{displayTierListTitle(detail.title)}</h2>
           <span>
             {detail.authorName} · {formatPublicTag(detail.authorTag)} ·{" "}
             {formatPublicTierListTime(detail.publishedAt)} ·{" "}
@@ -1761,7 +1761,7 @@ export function TierListPublicViewer({
             {detail.isOwner ? " · Yours" : ""}
           </span>
         </div>
-        <div className="tier-list__library-actions">
+        <div className="tier-list-hub__viewer-actions">
           <button
             type="button"
             className={`secondary-button${
@@ -1896,7 +1896,11 @@ export function TierListPublicViewer({
           </ul>
         )}
 
-        {accountReady ? (
+        {accountLinked === null ? (
+          <p className="tier-list__hint" role="status">
+            Checking account…
+          </p>
+        ) : accountReady ? (
           <form
             className="tier-list-hub__comment-compose"
             onSubmit={(event) => {
