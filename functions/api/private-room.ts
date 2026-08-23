@@ -1,8 +1,8 @@
 import type { Env } from "../types";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
+import { resolveServerMatchmakingElo } from "../lib/matchmakingElo";
+import { getAccountByPlayerId, getUsernameByPlayerId } from "../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import {
-  claimPrivateRoomAndCreateMatch,
   cleanupExpiredPrivateRooms,
   getPrivateRoom,
   insertPrivateRoom,
@@ -10,7 +10,6 @@ import {
   normalizeRoomCode,
   parsePrivateRoomMode,
 } from "../lib/privateRooms";
-import { getUsernameByPlayerId } from "../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -54,7 +53,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   );
   const playerId = parsePlayerId(body.playerId);
   const teamName = parseTeamName(body.teamName);
-  const elo = Number(body.elo ?? 500);
+  const clientElo = Number(body.elo ?? 500);
   const invitedPlayerId = parsePlayerId(body.invitedPlayerId);
 
   if (!mode) {
@@ -70,7 +69,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: profanityError }, 400);
   }
 
-  if (!Number.isFinite(elo)) {
+  if (!Number.isFinite(clientElo)) {
     return json({ error: "elo must be a number" }, 400);
   }
 
@@ -80,6 +79,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const db = context.env.DB;
+  const elo = await resolveServerMatchmakingElo(db, {
+    mode,
+    playerId,
+    clientElo,
+  });
   await cleanupExpiredPrivateRooms(db);
 
   try {
@@ -87,7 +91,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       mode,
       hostPlayerId: playerId,
       hostTeamName: teamName,
-      hostElo: Math.round(elo),
+      hostElo: elo,
       invitedPlayerId: invitedPlayerId || null,
     });
 

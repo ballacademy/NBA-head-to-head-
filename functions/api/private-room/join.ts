@@ -1,5 +1,6 @@
 import type { Env } from "../../types";
-import { getAccountByPlayerId } from "../../lib/playerAccounts";
+import { resolveServerMatchmakingElo } from "../../lib/matchmakingElo";
+import { getAccountByPlayerId, getUsernameByPlayerId } from "../../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../../lib/profanity";
 import {
   claimPrivateRoomAndCreateMatch,
@@ -9,7 +10,6 @@ import {
   normalizeRoomCode,
   parsePrivateRoomMode,
 } from "../../lib/privateRooms";
-import { getUsernameByPlayerId } from "../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -46,7 +46,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.playerId === "string" ? body.playerId.trim().slice(0, 128) : "";
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
-  const elo = Number(body.elo ?? 500);
+  const eloRaw = Number(body.elo ?? 500);
 
   if (!isValidRoomCodeFormat(roomCode)) {
     return json({ error: "Enter a valid 6-character room code" }, 400);
@@ -61,7 +61,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: profanityError }, 400);
   }
 
-  if (!Number.isFinite(elo)) {
+  if (!Number.isFinite(eloRaw)) {
     return json({ error: "elo must be a number" }, 400);
   }
 
@@ -130,11 +130,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
+  const elo = await resolveServerMatchmakingElo(db, {
+    mode,
+    playerId,
+    clientElo: eloRaw,
+  });
+
   const claimed = await claimPrivateRoomAndCreateMatch(db, {
     code: roomCode,
     guestPlayerId: playerId,
     guestTeamName: teamName,
-    guestElo: Math.round(elo),
+    guestElo: elo,
   });
 
   if (!claimed) {

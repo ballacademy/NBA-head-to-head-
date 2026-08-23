@@ -133,8 +133,8 @@ describe("tierListCommunity local fallback", () => {
     expect(created.comment.body).toBe("Great rankings");
 
     const listed = await listTierListComments({ id: published.id });
-    expect(listed).toHaveLength(1);
-    expect(listed[0]?.authorName).toBe("Fan");
+    expect(listed.comments).toHaveLength(1);
+    expect(listed.comments[0]?.authorName).toBe("Fan");
 
     const deleted = await deleteTierListComment({
       id: published.id,
@@ -142,7 +142,9 @@ describe("tierListCommunity local fallback", () => {
       playerId: "viewer-2",
     });
     expect(deleted.ok).toBe(true);
-    expect(await listTierListComments({ id: published.id })).toHaveLength(0);
+    expect(
+      (await listTierListComments({ id: published.id })).comments,
+    ).toHaveLength(0);
   });
 
   it("updates an existing published list in the local catalog", async () => {

@@ -151,16 +151,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const nowMs = Date.now();
-  const claimExpires = lineup.claim_expires_at
-    ? Date.parse(lineup.claim_expires_at)
-    : NaN;
-  const claimActive =
-    Boolean(lineup.claimed_by) &&
-    Number.isFinite(claimExpires) &&
-    claimExpires > nowMs;
 
-  if (claimActive && lineup.claimed_by !== challengerPlayerId) {
-    return json({ error: "stored lineup is claimed by another challenger" }, 409);
+  // Bind results to the challenger who claimed this ghost lineup. Allow expired
+  // claims so a long draft can still submit, but never accept unclaimed rows or
+  // another player's claim.
+  if (!lineup.claimed_by || lineup.claimed_by !== challengerPlayerId) {
+    return json(
+      {
+        error: lineup.claimed_by
+          ? "stored lineup is claimed by another challenger"
+          : "stored lineup has no active challenger claim",
+      },
+      409,
+    );
   }
 
   const ownerLineup = parseStoredLineupJson(lineup.lineup_json);
@@ -188,9 +191,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       `UPDATE stored_lineups
        SET consumed_at = ?, consumed_by = ?,
            claimed_by = NULL, claim_expires_at = NULL
-       WHERE id = ? AND consumed_at IS NULL`,
+       WHERE id = ?
+         AND consumed_at IS NULL
+         AND claimed_by = ?`,
     )
-    .bind(now, challengerPlayerId, lineup.id)
+    .bind(now, challengerPlayerId, lineup.id, challengerPlayerId)
     .run();
 
   if ((consume.meta?.changes ?? 0) === 0) {

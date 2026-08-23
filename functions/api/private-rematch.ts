@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { resolveServerMatchmakingElo } from "../lib/matchmakingElo";
 import { getAccountByPlayerId, getUsernameByPlayerId } from "../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import {
@@ -54,7 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const sourceMatchId = parseSourceMatchId(body.sourceMatchId);
   const playerId = parsePlayerId(body.playerId);
   const teamName = parseTeamName(body.teamName);
-  const elo = Number(body.elo ?? 500);
+  const clientElo = Number(body.elo ?? 500);
 
   if (!sourceMatchId || !playerId || !teamName) {
     return json(
@@ -68,7 +69,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: profanityError }, 400);
   }
 
-  if (!Number.isFinite(elo)) {
+  if (!Number.isFinite(clientElo)) {
     return json({ error: "elo must be a number" }, 400);
   }
 
@@ -76,6 +77,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!account) {
     return json({ error: ACCOUNT_REQUIRED }, 403);
   }
+
+  const liveModeRow = await context.env.DB.prepare(
+    `SELECT mode FROM live_matches WHERE id = ?`,
+  )
+    .bind(sourceMatchId)
+    .first<{ mode: string }>();
+  const mode = parsePrivateRoomMode(liveModeRow?.mode ?? null);
+  const elo = mode
+    ? await resolveServerMatchmakingElo(context.env.DB, {
+        mode,
+        playerId,
+        clientElo,
+      })
+    : Math.max(0, Math.min(4000, Math.round(clientElo)));
 
   const result = await offerPrivateRematch(context.env.DB, {
     sourceMatchId,

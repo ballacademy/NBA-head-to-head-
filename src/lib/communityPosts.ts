@@ -657,7 +657,11 @@ export const fetchCommunityActivity = async (): Promise<CommunityActivity> => {
 
 export const listCommunityPostReplies = async (params: {
   postId: string;
-}): Promise<CommunityPostReply[]> => {
+}): Promise<{
+  replies: CommunityPostReply[];
+  totalCount: number;
+  hasMore: boolean;
+}> => {
   const search = new URLSearchParams({ repliesFor: params.postId });
   try {
     const response = await fetch(
@@ -668,17 +672,30 @@ export const listCommunityPostReplies = async (params: {
       },
     );
     if (!response.ok) {
-      return [];
+      return { replies: [], totalCount: 0, hasMore: false };
     }
-    const payload = (await response.json()) as { replies?: unknown[] };
+    const payload = (await response.json()) as {
+      replies?: unknown[];
+      totalCount?: unknown;
+      hasMore?: unknown;
+    };
     if (!Array.isArray(payload.replies)) {
-      return [];
+      return { replies: [], totalCount: 0, hasMore: false };
     }
-    return payload.replies
+    const replies = payload.replies
       .map((entry) => normalizeReply(entry as Partial<CommunityPostReply>))
       .filter((entry): entry is CommunityPostReply => Boolean(entry));
+    const totalCount = Math.max(
+      replies.length,
+      Math.round(Number(payload.totalCount ?? replies.length)) || replies.length,
+    );
+    return {
+      replies,
+      totalCount,
+      hasMore: payload.hasMore === true || totalCount > replies.length,
+    };
   } catch {
-    return [];
+    return { replies: [], totalCount: 0, hasMore: false };
   }
 };
 

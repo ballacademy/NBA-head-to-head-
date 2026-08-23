@@ -319,6 +319,8 @@ export function TierListPage({
     null,
   );
   const [viewerComments, setViewerComments] = useState<TierListComment[]>([]);
+  const [viewerCommentsTotalCount, setViewerCommentsTotalCount] = useState(0);
+  const [viewerCommentsHasMore, setViewerCommentsHasMore] = useState(false);
   const [viewerCommentsLoading, setViewerCommentsLoading] = useState(false);
   const [viewerCommentDraft, setViewerCommentDraft] = useState("");
   const [viewerCommentSubmitting, setViewerCommentSubmitting] = useState(false);
@@ -399,6 +401,8 @@ export function TierListPage({
   const resetViewerCommentState = useCallback(() => {
     viewerCommentsLoadGenRef.current += 1;
     setViewerComments([]);
+    setViewerCommentsTotalCount(0);
+    setViewerCommentsHasMore(false);
     setViewerCommentsLoading(false);
     setViewerCommentDraft("");
     setViewerCommentError(null);
@@ -1050,16 +1054,20 @@ export function TierListPage({
     setViewerCommentsLoading(true);
     setViewerCommentError(null);
     try {
-      const comments = await listTierListComments({ id });
+      const page = await listTierListComments({ id });
       if (viewerCommentsLoadGenRef.current !== loadGen) {
         return;
       }
-      setViewerComments(comments);
+      setViewerComments(page.comments);
+      setViewerCommentsTotalCount(page.totalCount);
+      setViewerCommentsHasMore(page.hasMore);
     } catch {
       if (viewerCommentsLoadGenRef.current !== loadGen) {
         return;
       }
       setViewerComments([]);
+      setViewerCommentsTotalCount(0);
+      setViewerCommentsHasMore(false);
       setViewerCommentError("Could not load comments");
     } finally {
       if (viewerCommentsLoadGenRef.current === loadGen) {
@@ -1173,6 +1181,7 @@ export function TierListPage({
         }
         return [...current, result.comment];
       });
+      setViewerCommentsTotalCount((current) => current + 1);
       setViewerCommentDraft("");
     } finally {
       if (viewerCommentsLoadGenRef.current === submitGen) {
@@ -1236,6 +1245,7 @@ export function TierListPage({
     setViewerComments((current) =>
       current.filter((comment) => comment.id !== commentId),
     );
+    setViewerCommentsTotalCount((current) => Math.max(0, current - 1));
     setViewerCommentError(null);
   };
 
@@ -2021,6 +2031,8 @@ export function TierListPage({
           }
           accountLinked={accountLinked}
           comments={viewerComments}
+          commentsTotalCount={viewerCommentsTotalCount}
+          commentsHasMore={viewerCommentsHasMore}
           commentsLoading={viewerCommentsLoading}
           commentDraft={viewerCommentDraft}
           onCommentDraftChange={setViewerCommentDraft}
