@@ -101,7 +101,7 @@ describe("ranked profile and leaderboard", () => {
     expect(withStreak.delta).toBe(withoutStreak.delta);
   });
 
-  it("caps guest elo at 1500 after a win that would climb higher", () => {
+  it("caps guest elo at the guest cap after a win that would climb higher", () => {
     markPlayerAccountLinked("player-test-1", null);
     const seasonId = ensureCurrentRankedSeason().seasonId;
     storage.set(

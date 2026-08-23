@@ -41,8 +41,12 @@ export const RATING_LABEL = "Banners";
 
 export const LIVE_OPPONENT_ONLY_MIN_ELO = 1500;
 
-/** Guests can climb Pro Banners only up to this cap until they create an account. */
-export const GUEST_RANKED_ELO_CAP = 1500;
+/**
+ * Guests can climb Pro Banners only up to this cap until they create an account.
+ * Kept one below {@link LIVE_OPPONENT_ONLY_MIN_ELO} so guests stay in the NPC-ok
+ * matchmaking band and never hit live-opponent-only solely from the guest ceiling.
+ */
+export const GUEST_RANKED_ELO_CAP = 1499;
 
 export const requiresLiveOpponentOnly = (rating: number) =>
   Math.max(0, Math.round(rating)) >= LIVE_OPPONENT_ONLY_MIN_ELO;
