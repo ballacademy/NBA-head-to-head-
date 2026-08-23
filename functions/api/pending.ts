@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import {
   matchmakingModeError,
   parseMatchmakingMode,
@@ -64,6 +65,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   const db = context.env.DB;
@@ -151,6 +161,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   const acknowledgedAt = new Date().toISOString();

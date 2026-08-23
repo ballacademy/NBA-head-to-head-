@@ -509,8 +509,10 @@ export function TierListPage({
         if (cancelled) {
           return;
         }
-        if (result.ok && result.status.linked && result.status.username) {
-          setAuthorName(result.status.username);
+        if (result.ok && result.status.linked) {
+          if (result.status.username) {
+            setAuthorName(result.status.username);
+          }
           setAccountLinked(true);
           return;
         }

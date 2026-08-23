@@ -111,17 +111,19 @@ export function AccountAuthPanel({
 
     setStatusError(null);
 
-    if (result.status.linked && result.status.username) {
-      setLinkedUsername(result.status.username);
+    if (result.status.linked) {
+      setLinkedUsername(result.status.username ?? null);
       setLinkState("linked");
-      markPlayerAccountLinked(playerId, result.status.username);
+      markPlayerAccountLinked(playerId, result.status.username ?? null, {
+        linked: true,
+      });
       syncFoundingGmAchievement(Boolean(result.status.foundingGm));
       return;
     }
 
     setLinkedUsername(null);
     setLinkState("unlinked");
-    markPlayerAccountLinked(playerId, null);
+    markPlayerAccountLinked(playerId, null, { linked: false });
   };
 
   const refreshStatus = async () => {

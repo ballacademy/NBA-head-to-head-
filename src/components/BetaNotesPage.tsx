@@ -68,7 +68,8 @@ export function BetaNotesPage({
               Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
               Draft is coming soon. Accounts unlock leaderboards and public
               tier lists. Bottom nav: Play, Franchise, Community, Ranks, and
-              Account.
+              Account — Franchise and Ranks soft-unlock after your first scored
+              games so new GMs stay focused on Play.
             </p>
             <p className="beta-notes-summary__meta">
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
@@ -183,9 +184,16 @@ export function BetaNotesPage({
               </li>
               <li>
                 <strong>Franchise</strong> — Collection, Badges, Player pool,
-                Daily progress, Most drafted, and GM Stats ·{" "}
-                <strong>Ranks</strong> · <strong>Account</strong> (sign-in,
-                settings)
+                Daily progress, Most drafted, and GM Stats. Soft-unlocks after
+                your first scored Daily or competitive match.
+              </li>
+              <li>
+                <strong>Ranks</strong> — season boards. Soft-unlocks after two
+                competitive matches (Casual, Pro, or Events). Daily alone does
+                not unlock Ranks.
+              </li>
+              <li>
+                <strong>Account</strong> — sign-in and settings (always available)
               </li>
               <li>
                 <strong>Private match</strong> (Casual or Pro) — account

@@ -99,7 +99,7 @@ export const isPlayerAccountLinked = async (
     return false;
   }
 
-  const linked = Boolean(result.status.linked && result.status.username);
+  const linked = Boolean(result.status.linked);
   linkCache.set(trimmed, {
     linked,
     username: result.status.username ?? null,
@@ -111,6 +111,7 @@ export const isPlayerAccountLinked = async (
 export const markPlayerAccountLinked = (
   playerId: string,
   username: string | null,
+  options: { linked?: boolean } = {},
 ) => {
   const trimmed = playerId.trim();
   if (!trimmed) {
@@ -118,7 +119,7 @@ export const markPlayerAccountLinked = (
   }
 
   linkCache.set(trimmed, {
-    linked: Boolean(username),
+    linked: options.linked ?? Boolean(username),
     username,
     checkedAt: Date.now(),
   });

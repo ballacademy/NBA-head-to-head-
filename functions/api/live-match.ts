@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import { validateEventLineupIds } from "../lib/eventLineupValidation";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import { parseMatchmakingMode } from "../lib/matchmakingMode";
@@ -166,6 +167,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "matchId and playerId are required" }, 400);
   }
 
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const row = await loadLiveMatch(context.env.DB, matchId);
 
   if (!row) {
@@ -196,6 +206,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!matchId || !playerId) {
     return json({ error: "matchId and playerId are required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   const row = await loadLiveMatch(context.env.DB, matchId);

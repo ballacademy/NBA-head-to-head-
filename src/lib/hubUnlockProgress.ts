@@ -142,6 +142,38 @@ export const isHubTabUnlocked = (
   progress = getHubUnlockProgress(),
 ) => getHubTabLockPrompt(tab, progress) == null;
 
+/** Feature pages that live under Franchise / Ranks must respect the same gates. */
+export const getFeatureLockPrompt = (
+  feature:
+    | "leaderboard"
+    | "stats"
+    | "achievements"
+    | "gmStats"
+    | "weeklyRecap"
+    | "tierList"
+    | "gameLog"
+    | "privacy"
+    | "terms"
+    | "beta"
+    | string,
+  progress = getHubUnlockProgress(),
+): HubTabLockPrompt | null => {
+  if (feature === "leaderboard") {
+    return getHubTabLockPrompt("standings", progress);
+  }
+
+  if (
+    feature === "stats" ||
+    feature === "achievements" ||
+    feature === "gmStats" ||
+    feature === "weeklyRecap"
+  ) {
+    return getHubTabLockPrompt("roster", progress);
+  }
+
+  return null;
+};
+
 export const hubTabLockStates = (
   progress = getHubUnlockProgress(),
 ): Partial<Record<HubNavTab, true>> => {

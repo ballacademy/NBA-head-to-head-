@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
@@ -78,6 +79,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!playerId || !teamName) {
     return json({ error: "playerId and teamName are required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   const profanityError = rejectProfaneTeamName(teamName);

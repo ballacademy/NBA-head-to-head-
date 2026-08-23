@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import { computeDailySubmissionValue } from "../lib/dailyScoreCompute";
 import { parseDailyLineupJson, parseDailyMode } from "../lib/dailyScoresDb";
 import { isAllowedDailySubmissionDateKey } from "../lib/dailyDateKeys";
@@ -171,6 +172,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!playerId || !teamName) {
     return json({ error: "playerId and teamName are required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   if (lineup.length !== 5) {
