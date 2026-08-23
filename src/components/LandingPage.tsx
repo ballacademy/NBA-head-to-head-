@@ -132,6 +132,10 @@ import {
   getPlayNavBadgeCount,
   type PlayHubChip,
 } from "../lib/playHubRetention";
+import {
+  formatHubUnlockProgressLabel,
+  getHubUnlockProgress,
+} from "../lib/hubUnlockProgress";
 
 const buildHeadToHeadModeDetails = (baseDetails: string[]) => [
   ...baseDetails,
@@ -456,6 +460,8 @@ export function LandingPage({
     [],
   );
   const playerIdentity = useMemo(() => getOrCreatePlayerIdentity(), []);
+  const hubUnlockProgress = getHubUnlockProgress();
+  const hubUnlockHint = formatHubUnlockProgressLabel(hubUnlockProgress);
 
   useEffect(() => {
     let cancelled = false;
@@ -1010,6 +1016,11 @@ export function LandingPage({
       onSelectTab={handleHubSelect}
       onPrefetchTab={onPrefetchHubTab}
       playBadgeCount={playNavBadgeCount}
+      onGoToPlay={() => {
+        onHubTabChange("play");
+        updatePlaySection("chooser");
+        scrollHubToTop();
+      }}
     >
       {showTeamNameModal ? (
         <TeamNameValidationModal
@@ -1104,6 +1115,11 @@ export function LandingPage({
         {playSection === "chooser" ? (
           <>
             <PlayHubStrip chips={playHubChips} onChip={handlePlayHubChip} />
+            {hubUnlockHint ? (
+              <p className="play-hub-unlock-hint" role="status">
+                {hubUnlockHint}
+              </p>
+            ) : null}
             <div className="play-hub-chooser" role="list">
             <button
               type="button"
@@ -1131,39 +1147,65 @@ export function LandingPage({
                 ›
               </span>
             </button>
-            <button
-              type="button"
-              className="play-hub-chooser__option hub-accent hub-accent--h2h"
-              role="listitem"
-              onClick={() => updatePlaySection("headToHead")}
-            >
-              <span className="play-hub-chooser__copy">
-                <span className="play-hub-chooser__label">Head to Head</span>
-                <span className="play-hub-chooser__meta">
-                  Casual · Pro · practice · private match
+            {!hubUnlockProgress.playModesExpanded ? (
+              <button
+                type="button"
+                className="play-hub-chooser__option hub-accent hub-accent--h2h"
+                role="listitem"
+                onClick={() =>
+                  void handleStart({
+                    practiceMode: true,
+                    salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
+                  })
+                }
+              >
+                <span className="play-hub-chooser__copy">
+                  <span className="play-hub-chooser__label">Practice H2H</span>
+                  <span className="play-hub-chooser__meta">
+                    Vs a bot — learn the draft loop with no board impact
+                  </span>
                 </span>
-              </span>
-              <span className="play-hub-chooser__chevron" aria-hidden="true">
-                ›
-              </span>
-            </button>
-            <button
-              type="button"
-              className="play-hub-chooser__option hub-accent hub-accent--event"
-              role="listitem"
-              onClick={() => updatePlaySection("events")}
-            >
-              <span className="play-hub-chooser__copy">
-                <span className="play-hub-chooser__label">Events</span>
-                <span className="play-hub-chooser__meta">
-                  {eventChooserMeta}
+                <span className="play-hub-chooser__chevron" aria-hidden="true">
+                  ›
                 </span>
-              </span>
-              <span className="play-hub-chooser__chevron" aria-hidden="true">
-                ›
-              </span>
-            </button>
-          </div>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="play-hub-chooser__option hub-accent hub-accent--h2h"
+                  role="listitem"
+                  onClick={() => updatePlaySection("headToHead")}
+                >
+                  <span className="play-hub-chooser__copy">
+                    <span className="play-hub-chooser__label">Head to Head</span>
+                    <span className="play-hub-chooser__meta">
+                      Casual · Pro · practice · private match
+                    </span>
+                  </span>
+                  <span className="play-hub-chooser__chevron" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="play-hub-chooser__option hub-accent hub-accent--event"
+                  role="listitem"
+                  onClick={() => updatePlaySection("events")}
+                >
+                  <span className="play-hub-chooser__copy">
+                    <span className="play-hub-chooser__label">Events</span>
+                    <span className="play-hub-chooser__meta">
+                      {eventChooserMeta}
+                    </span>
+                  </span>
+                  <span className="play-hub-chooser__chevron" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+              </>
+            )}
+            </div>
           </>
         ) : null}
 

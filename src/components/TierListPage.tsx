@@ -108,6 +108,7 @@ import {
   getCachedLinkedUsername,
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
+import { getHubUnlockProgress } from "../lib/hubUnlockProgress";
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
 import { buildCommunityPostSocialMeta } from "../lib/communityPostSocialMeta";
 import { applySocialMeta, resetSocialMeta } from "../lib/socialMeta";
@@ -391,6 +392,7 @@ export function TierListPage({
   const dragFrameRef = useRef<number | null>(null);
   const filterSheetPanelRef = useRef<HTMLDivElement | null>(null);
   const filterSheetDoneRef = useRef<HTMLButtonElement | null>(null);
+  const showCommunityNewHereStrip = !getHubUnlockProgress().franchiseUnlocked;
 
   const closeFilters = useCallback(() => {
     setFiltersOpen(false);
@@ -2011,6 +2013,7 @@ export function TierListPage({
           onOpenPosts={() => openCommunityView("posts")}
           onOpenTiers={() => openCommunityView("tiersHub")}
           postsToday={communityPostsToday}
+          showNewHereStrip={showCommunityNewHereStrip}
         />
       ) : null}
 

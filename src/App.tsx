@@ -3205,6 +3205,10 @@ function App() {
         onSelectTab={handleHubNav}
         onPrefetchTab={prefetchHubFeatureTab}
         playBadgeCount={playNavBadgeCount}
+        onGoToPlay={() => {
+          saveLandingPlaySection("chooser");
+          goToLandingHub("play");
+        }}
       >
         {options?.suspense === false ? (
           content
