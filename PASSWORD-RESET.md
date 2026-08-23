@@ -86,6 +86,10 @@ Production D1 migrations apply automatically on Pages deploy. You want migration
 through **`0034_account_sessions.sql`** (password reset tables are older:
 `0013` / `0014`; sessions are `0034`). If deploy says **No migrations to apply**, you’re current.
 
+A successful password reset **revokes every existing `account_sessions` row** for
+that account, then issues a fresh HttpOnly session cookie for the browser that
+completed the reset. Other devices must log in again.
+
 Manual apply if needed:
 
 ```bat

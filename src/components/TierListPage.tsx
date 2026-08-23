@@ -86,6 +86,7 @@ import {
   peekLocalCommunityPosts,
   setCommunityPostLike,
   type CommunityPost,
+  type CommunityPostFeedCursor,
   type CommunityPostSort,
 } from "../lib/communityPosts";
 import {
@@ -108,7 +109,6 @@ import {
   getCachedLinkedUsername,
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
-import { getHubUnlockProgress } from "../lib/hubUnlockProgress";
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
 import { buildCommunityPostSocialMeta } from "../lib/communityPostSocialMeta";
 import { applySocialMeta, resetSocialMeta } from "../lib/socialMeta";
@@ -342,6 +342,8 @@ export function TierListPage({
     useState(false);
   const [communityPostsHasMore, setCommunityPostsHasMore] = useState(false);
   const [communityPostsNextOffset, setCommunityPostsNextOffset] = useState(0);
+  const [communityPostsNextCursor, setCommunityPostsNextCursor] =
+    useState<CommunityPostFeedCursor | null>(null);
   const [communityPostDraft, setCommunityPostDraft] = useState("");
   const [communityPostSubmitting, setCommunityPostSubmitting] = useState(false);
   const [communityPostError, setCommunityPostError] = useState<string | null>(
@@ -392,7 +394,7 @@ export function TierListPage({
   const dragFrameRef = useRef<number | null>(null);
   const filterSheetPanelRef = useRef<HTMLDivElement | null>(null);
   const filterSheetDoneRef = useRef<HTMLButtonElement | null>(null);
-  const showCommunityNewHereStrip = !getHubUnlockProgress().franchiseUnlocked;
+  const showCommunityNewHereStrip = accountLinked !== true;
 
   const closeFilters = useCallback(() => {
     setFiltersOpen(false);
@@ -509,10 +511,21 @@ export function TierListPage({
         if (cancelled) {
           return;
         }
-        if (result.ok && result.status.linked) {
+        if (result.ok && result.status.authenticated) {
           if (result.status.username) {
             setAuthorName(result.status.username);
           }
+          setAccountLinked(true);
+          return;
+        }
+        // Back-compat: older status payloads only returned username with a session.
+        if (
+          result.ok &&
+          result.status.linked &&
+          result.status.username &&
+          result.status.authenticated !== false
+        ) {
+          setAuthorName(result.status.username);
           setAccountLinked(true);
           return;
         }
@@ -1689,6 +1702,7 @@ export function TierListPage({
       );
       setCommunityPostsHasMore(page.hasMore);
       setCommunityPostsNextOffset(page.nextOffset);
+      setCommunityPostsNextCursor(page.nextCursor);
     } finally {
       if (generation === communityPostsLoadGenRef.current) {
         setCommunityPostsLoading(false);
@@ -1710,6 +1724,7 @@ export function TierListPage({
         sort: communityPostSort,
         playerId: identity.playerId,
         offset: communityPostsNextOffset,
+        cursor: communityPostsNextCursor,
       });
       setCommunityPosts((current) => {
         const seen = new Set(current.map((post) => post.id));
@@ -1720,6 +1735,7 @@ export function TierListPage({
       });
       setCommunityPostsHasMore(page.hasMore);
       setCommunityPostsNextOffset(page.nextOffset);
+      setCommunityPostsNextCursor(page.nextCursor);
     } finally {
       setCommunityPostsLoadingMore(false);
     }
@@ -1727,6 +1743,7 @@ export function TierListPage({
     communityPostSort,
     communityPostsHasMore,
     communityPostsLoadingMore,
+    communityPostsNextCursor,
     communityPostsNextOffset,
     identity.playerId,
   ]);

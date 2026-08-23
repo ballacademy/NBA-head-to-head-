@@ -6,7 +6,7 @@ import {
   requestPasswordReset,
   resetAccountPassword,
 } from "../lib/accountApi";
-import { markPlayerAccountLinked, peekCachedAccountLinked, getCachedLinkedUsername } from "../lib/accountGate";
+import { markPlayerAccountLinked, peekCachedAccountLinked, getCachedLinkedUsername, ACCOUNT_SESSION_EXPIRED_MESSAGE } from "../lib/accountGate";
 import { trackProductEvent } from "../lib/productAnalytics";
 import {
   pullAndMergeCollection,
@@ -111,13 +111,31 @@ export function AccountAuthPanel({
 
     setStatusError(null);
 
-    if (result.status.linked) {
+    const authenticated =
+      typeof result.status.authenticated === "boolean"
+        ? result.status.authenticated
+        : Boolean(result.status.linked && result.status.username);
+
+    if (authenticated) {
       setLinkedUsername(result.status.username ?? null);
       setLinkState("linked");
       markPlayerAccountLinked(playerId, result.status.username ?? null, {
         linked: true,
+        accountExists: true,
       });
       syncFoundingGmAchievement(Boolean(result.status.foundingGm));
+      return;
+    }
+
+    // Account exists but session cookie is missing/expired — prompt login.
+    if (result.status.linked) {
+      setLinkedUsername(null);
+      setLinkState("unlinked");
+      markPlayerAccountLinked(playerId, null, {
+        linked: false,
+        accountExists: true,
+      });
+      setMessage(ACCOUNT_SESSION_EXPIRED_MESSAGE);
       return;
     }
 

@@ -26,6 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (session) {
       return json({
         linked: true,
+        authenticated: true,
         playerId: session.playerId,
         username: session.account.username,
         signupIndex: session.account.signup_index,
@@ -39,7 +40,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     );
 
     if (!playerIdResult.ok) {
-      return json({ linked: false, playerId: "" });
+      return json({ linked: false, authenticated: false, playerId: "" });
     }
 
     const account = await getAccountByPlayerId(
@@ -50,6 +51,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (!account) {
       return json({
         linked: false,
+        authenticated: false,
         playerId: playerIdResult.playerId,
       });
     }
@@ -58,6 +60,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // do not reveal username or treat it as an authenticated session.
     return json({
       linked: true,
+      authenticated: false,
       playerId: account.player_id,
     });
   } catch (error) {

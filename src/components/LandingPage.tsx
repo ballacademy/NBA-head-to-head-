@@ -302,21 +302,41 @@ export function LandingPage({
   }, []);
 
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
-    setPlaySection(section);
-    saveLandingPlaySection(section);
+    const unlock = getHubUnlockProgress();
+    const next =
+      !unlock.playModesExpanded &&
+      (section === "headToHead" || section === "events") &&
+      !privateRoomCode
+        ? "chooser"
+        : section;
+    setPlaySection(next);
+    saveLandingPlaySection(next);
     syncLandingDeepLinkUrl({
       hub: "play",
-      play: section,
-      h2hMode: section === "headToHead" ? loadLandingH2hMode() : null,
+      play: next,
+      h2hMode: next === "headToHead" ? loadLandingH2hMode() : null,
     });
-    if (section !== "headToHead") {
+    if (next !== "headToHead") {
       setH2hIntentTarget(null);
     }
-    if (section !== "chooser") {
-      trackProductEvent("play_mode_open", { section });
+    if (next !== "chooser") {
+      trackProductEvent("play_mode_open", { section: next });
     }
     scrollHubToTop();
-  }, []);
+  }, [privateRoomCode]);
+
+  useEffect(() => {
+    if (privateRoomCode) {
+      return;
+    }
+    const unlock = getHubUnlockProgress();
+    if (
+      !unlock.playModesExpanded &&
+      (playSection === "headToHead" || playSection === "events")
+    ) {
+      updatePlaySection("chooser");
+    }
+  }, [playSection, privateRoomCode, updatePlaySection]);
 
   useEffect(() => {
     if (hubTab !== "play" || playSection !== "chooser") {

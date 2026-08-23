@@ -68,8 +68,9 @@ export function BetaNotesPage({
               Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
               Draft is coming soon. Accounts unlock leaderboards and public
               tier lists. Bottom nav: Play, Franchise, Community, Ranks, and
-              Account — Franchise and Ranks soft-unlock after your first scored
-              games so new GMs stay focused on Play.
+              Account — Franchise soft-unlocks after your first scored game;
+              Ranks after two competitive matches so new GMs stay focused on
+              Play.
             </p>
             <p className="beta-notes-summary__meta">
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
