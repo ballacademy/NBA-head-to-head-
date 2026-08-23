@@ -1,5 +1,6 @@
 import type { Env } from "../types";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
+import { resolveCommunityAuthorFields } from "../lib/communityAuthor";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -281,31 +282,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const playerId = parsePlayerId(body.playerId);
-  if (!playerId) {
+  const requestedPlayerId = parsePlayerId(body.playerId);
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json(
-      { error: "Create an account to publish tier lists." },
-      403,
-    );
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { account, playerId } = auth;
 
   const title =
     typeof body.title === "string" && body.title.trim()
       ? body.title.trim().slice(0, TITLE_MAX)
       : "Untitled tier list";
-  const authorName =
-    typeof body.authorName === "string" && body.authorName.trim()
-      ? body.authorName.trim().slice(0, AUTHOR_NAME_MAX)
-      : "GM";
-  const authorTag =
-    typeof body.authorTag === "string" && body.authorTag.trim()
-      ? body.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, AUTHOR_TAG_MAX)
-      : "0000";
+  const author = await resolveCommunityAuthorFields(context.env.DB, {
+    playerId,
+    username: account.username,
+  });
+  const authorName = author.authorName;
+  const authorTag = author.authorTag;
   const tiersResult = normalizeTiersJson(body.tiers);
   if (!tiersResult.ok) {
     return json({ error: tiersResult.error }, 400);
@@ -360,19 +361,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const id = parsePlayerId(url.searchParams.get("id"));
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!id || !playerId) {
+  if (!id || !requestedPlayerId) {
     return json({ error: "id and playerId are required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json(
-      { error: "Create an account to unpublish tier lists." },
-      403,
-    );
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { playerId } = auth;
 
   const existing = await context.env.DB.prepare(
     `SELECT id, player_id FROM published_tier_lists WHERE id = ?`,

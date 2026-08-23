@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { CareerStatsPayload } from "./careerStatsShared";
 import {
   emptyCareerStats,
@@ -19,7 +20,7 @@ export const fetchRemoteCareerStats = async (
 ): Promise<RemoteCareerStatsPayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/career-stats")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -45,7 +46,7 @@ export const pushRemoteCareerStats = async (params: {
   career: CareerStatsPayload;
 }): Promise<RemoteCareerStatsPayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/career-stats"), {
+    const response = await apiFetch(buildUrl("/api/career-stats"), {
       method: "PUT",
       headers: {
         accept: "application/json",

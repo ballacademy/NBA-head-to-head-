@@ -4,6 +4,10 @@ import {
   validateUsername,
 } from "../../lib/accountCredentials";
 import {
+  createAccountSession,
+  jsonWithSessionCookie,
+} from "../../lib/accountSessions";
+import {
   assertRateLimitAllow,
   clearAuthRateLimit,
   getAccountByUsername,
@@ -164,10 +168,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await clearAuthRateLimit(context.env.DB, rateKey);
 
-    return json({
-      ok: true,
-      username: account.username,
+    const session = await createAccountSession(context.env.DB, {
+      accountId: account.id,
+      playerId: account.player_id,
     });
+
+    return jsonWithSessionCookie(
+      {
+        ok: true,
+        username: account.username,
+        playerId: account.player_id,
+      },
+      session.token,
+    );
   } catch (error) {
     const schemaError = missingSchemaError(error);
     if (schemaError) {

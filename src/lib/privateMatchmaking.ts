@@ -1,4 +1,5 @@
 import type { LiveOpponentSnapshot } from "./liveMatchmaking";
+import { apiFetch } from "./apiFetch";
 import { MATCHMAKING_POLL_INTERVAL_MS } from "./ghostMatchmaking";
 
 export type PrivateMatchMode = "classic" | "ranked";
@@ -65,7 +66,7 @@ export const fetchWithTimeout = async (
   }
 
   try {
-    return await fetch(input, { ...init, signal: controller.signal });
+    return await apiFetch(input, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
     external?.removeEventListener("abort", onExternalAbort);
@@ -364,7 +365,7 @@ export const cancelPrivateRoomKeepalive = (params: {
       code: params.roomCode,
       playerId: params.playerId,
     });
-    void fetch(`${buildUrl("/api/private-room")}?${search.toString()}`, {
+    void apiFetch(`${buildUrl("/api/private-room")}?${search.toString()}`, {
       method: "DELETE",
       headers: { accept: "application/json" },
       keepalive: true,

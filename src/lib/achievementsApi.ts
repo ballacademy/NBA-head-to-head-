@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 const API_BASE = "";
 
 const buildUrl = (path: string) => `${API_BASE}${path}`;
@@ -13,7 +14,7 @@ export const fetchRemoteAchievements = async (
 ): Promise<RemoteAchievementsPayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/achievements")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -43,7 +44,7 @@ export const pushRemoteAchievements = async (params: {
   unlockedIds: string[];
 }): Promise<RemoteAchievementsPayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/achievements"), {
+    const response = await apiFetch(buildUrl("/api/achievements"), {
       method: "PUT",
       headers: {
         accept: "application/json",

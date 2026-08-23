@@ -74,6 +74,10 @@ vi.mock("./dailyDraftScores", async () => {
   };
 });
 
+vi.mock("./accountApi", () => ({
+  logoutAccount: vi.fn(async () => ({ ok: true })),
+}));
+
 const storage = new Map<string, string>();
 
 const localStorageMock = {

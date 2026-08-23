@@ -314,3 +314,7 @@ export const confirmRemoteLeaderboardRank = async (params: {
 export const clearLeaderboardRemoteCacheForTests = () => {
   remoteCache.clear();
 };
+
+export const clearLeaderboardRemoteCache = () => {
+  remoteCache.clear();
+};

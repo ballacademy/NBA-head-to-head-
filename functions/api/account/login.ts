@@ -4,6 +4,10 @@ import {
   validateUsername,
 } from "../../lib/accountCredentials";
 import {
+  createAccountSession,
+  jsonWithSessionCookie,
+} from "../../lib/accountSessions";
+import {
   assertAuthRateLimitAllow,
   buildAuthRateLimitKey,
   clearAuthRateLimit,
@@ -95,13 +99,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await clearAuthRateLimit(context.env.DB, rateKey);
     await touchAccountLogin(context.env.DB, account.id);
 
-    return json({
-      ok: true,
-      username: account.username,
+    const session = await createAccountSession(context.env.DB, {
+      accountId: account.id,
       playerId: account.player_id,
-      signupIndex: account.signup_index,
-      foundingGm: isFoundingGmSignupIndex(account.signup_index),
     });
+
+    return jsonWithSessionCookie(
+      {
+        ok: true,
+        username: account.username,
+        playerId: account.player_id,
+        signupIndex: account.signup_index,
+        foundingGm: isFoundingGmSignupIndex(account.signup_index),
+      },
+      session.token,
+    );
   } catch (error) {
     const schemaError = missingAccountsSchemaError(error);
     if (schemaError) {

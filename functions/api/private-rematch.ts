@@ -1,6 +1,7 @@
 import type { Env } from "../types";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
 import { resolveServerMatchmakingElo } from "../lib/matchmakingElo";
-import { getAccountByPlayerId, getUsernameByPlayerId } from "../lib/playerAccounts";
+import { getUsernameByPlayerId } from "../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import {
   cancelPrivateRematchOffer,
@@ -19,8 +20,6 @@ const json = (body: unknown, status = 200) =>
       "cache-control": "no-store",
     },
   });
-
-const ACCOUNT_REQUIRED = "Create an account to host or join a private match.";
 
 const parsePlayerId = (value: unknown) =>
   typeof value === "string" && value.trim().length > 0
@@ -53,11 +52,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const sourceMatchId = parseSourceMatchId(body.sourceMatchId);
-  const playerId = parsePlayerId(body.playerId);
+  const requestedPlayerId = parsePlayerId(body.playerId);
   const teamName = parseTeamName(body.teamName);
   const clientElo = Number(body.elo ?? 500);
 
-  if (!sourceMatchId || !playerId || !teamName) {
+  if (!sourceMatchId || !requestedPlayerId || !teamName) {
     return json(
       { error: "sourceMatchId, playerId, and teamName are required" },
       400,
@@ -73,10 +72,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: ACCOUNT_REQUIRED }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const liveModeRow = await context.env.DB.prepare(
     `SELECT mode FROM live_matches WHERE id = ?`,

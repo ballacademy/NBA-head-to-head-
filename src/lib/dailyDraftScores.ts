@@ -521,6 +521,10 @@ export const clearDailyDraftRemoteCacheForTests = () => {
   remoteCache.clear();
 };
 
+export const clearDailyDraftRemoteCache = () => {
+  remoteCache.clear();
+};
+
 export type FlushDailyDraftScoresResult =
   | { ok: true; submitted: number }
   | { ok: false; submitted: number; failed: number };

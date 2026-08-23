@@ -23,10 +23,14 @@ import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
 import {
   flushLocalDailyDraftScoresToRemote,
   refreshDailyDraftScoresFromApi,
+  clearDailyDraftRemoteCache,
 } from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import { upsertLeaderboardEntry } from "./leaderboard";
-import { seedRemoteLeaderboardCache } from "./leaderboardRemote";
+import {
+  clearLeaderboardRemoteCache,
+  seedRemoteLeaderboardCache,
+} from "./leaderboardRemote";
 import {
   createStarterCollection,
   savePlayerCollection,
@@ -49,6 +53,7 @@ import {
   saveGmLegacyStats,
 } from "./gmLegacyStats";
 import { getRecentAllStarUnlockPlayerIds } from "./allStars";
+import { logoutAccount } from "./accountApi";
 import { saveTeamProfile, validateTeamProfile } from "./teamProfile";
 import { resetUnlockProgress } from "./unlockProgress";
 
@@ -152,6 +157,8 @@ const clearIdentityBoundLocalState = (
   resetNbaPlayerUsagePullGate();
   resetEventProfilesPullGate();
   resetTierListLibraryPullGate();
+  clearLeaderboardRemoteCache();
+  clearDailyDraftRemoteCache();
   savePlayerCollection({
     // Login restore + merge must not mint random All-Stars into the cloud union.
     unlockedIds: seedStarterCollection
@@ -196,6 +203,7 @@ export const logoutToAnonymousIdentity = async (
     }
   }
 
+  await logoutAccount();
   clearIdentityBoundLocalState(previousPlayerId);
   clearAccountLinkCache();
   return { ok: true, identity: mintAnonymousPlayerIdentity() };

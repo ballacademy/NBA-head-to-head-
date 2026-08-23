@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import {
   ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
@@ -294,7 +295,7 @@ export const listCommunityPosts = async (params?: {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/community-posts")}?${search.toString()}`,
       {
         method: "GET",
@@ -379,7 +380,7 @@ export const createCommunityPost = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -450,7 +451,7 @@ export const setCommunityPostLike = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -553,7 +554,7 @@ export const deleteCommunityPost = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -611,7 +612,7 @@ export const getCommunityPost = async (params: {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/community-posts")}?${search.toString()}`,
       {
         method: "GET",
@@ -633,7 +634,7 @@ export const getCommunityPost = async (params: {
 
 export const fetchCommunityActivity = async (): Promise<CommunityActivity> => {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/community-posts")}?activity=1`,
       {
         method: "GET",
@@ -655,16 +656,27 @@ export const fetchCommunityActivity = async (): Promise<CommunityActivity> => {
   return { postsToday: 0 };
 };
 
+export type CommunityReplyCursor = {
+  beforeCreatedAt: string;
+  beforeId: string;
+};
+
 export const listCommunityPostReplies = async (params: {
   postId: string;
+  cursor?: CommunityReplyCursor | null;
 }): Promise<{
   replies: CommunityPostReply[];
   totalCount: number;
   hasMore: boolean;
+  nextCursor: CommunityReplyCursor | null;
 }> => {
   const search = new URLSearchParams({ repliesFor: params.postId });
+  if (params.cursor) {
+    search.set("beforeCreatedAt", params.cursor.beforeCreatedAt);
+    search.set("beforeId", params.cursor.beforeId);
+  }
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/community-posts")}?${search.toString()}`,
       {
         method: "GET",
@@ -672,15 +684,26 @@ export const listCommunityPostReplies = async (params: {
       },
     );
     if (!response.ok) {
-      return { replies: [], totalCount: 0, hasMore: false };
+      return {
+        replies: [],
+        totalCount: 0,
+        hasMore: false,
+        nextCursor: null,
+      };
     }
     const payload = (await response.json()) as {
       replies?: unknown[];
       totalCount?: unknown;
       hasMore?: unknown;
+      nextCursor?: CommunityReplyCursor | null;
     };
     if (!Array.isArray(payload.replies)) {
-      return { replies: [], totalCount: 0, hasMore: false };
+      return {
+        replies: [],
+        totalCount: 0,
+        hasMore: false,
+        nextCursor: null,
+      };
     }
     const replies = payload.replies
       .map((entry) => normalizeReply(entry as Partial<CommunityPostReply>))
@@ -689,13 +712,20 @@ export const listCommunityPostReplies = async (params: {
       replies.length,
       Math.round(Number(payload.totalCount ?? replies.length)) || replies.length,
     );
+    const nextCursor =
+      payload.nextCursor &&
+      typeof payload.nextCursor.beforeCreatedAt === "string" &&
+      typeof payload.nextCursor.beforeId === "string"
+        ? payload.nextCursor
+        : null;
     return {
       replies,
       totalCount,
-      hasMore: payload.hasMore === true || totalCount > replies.length,
+      hasMore: payload.hasMore === true || nextCursor != null,
+      nextCursor,
     };
   } catch {
-    return { replies: [], totalCount: 0, hasMore: false };
+    return { replies: [], totalCount: 0, hasMore: false, nextCursor: null };
   }
 };
 
@@ -736,7 +766,7 @@ export const createCommunityPostReply = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -801,7 +831,7 @@ export const reportCommunityPost = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -861,7 +891,7 @@ export const deleteCommunityReply = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/community-posts"), {
+    const response = await apiFetch(buildUrl("/api/community-posts"), {
       method: "POST",
       headers: {
         "content-type": "application/json",

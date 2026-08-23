@@ -1,5 +1,6 @@
 import type { Env } from "../../../types";
-import { getAccountByPlayerId } from "../../../lib/playerAccounts";
+import { requireLinkedAccountSession } from "../../../lib/accountSessions";
+import { syncTierListLikeCount } from "../../../lib/likeCounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -28,18 +29,6 @@ const parseTierListId = (id: string | string[] | undefined) =>
           .slice(0, 64)
       : "";
 
-const recountLikes = async (db: D1Database, tierListId: string) => {
-  const countRow = await db
-    .prepare(
-      `SELECT COUNT(*) AS count
-       FROM tier_list_likes
-       WHERE tier_list_id = ?`,
-    )
-    .bind(tierListId)
-    .first<{ count: number }>();
-  return Math.max(0, Math.round(Number(countRow?.count ?? 0)) || 0);
-};
-
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const tierListId = parseTierListId(context.params.id);
 
@@ -54,15 +43,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const playerId = parsePlayerId(body.playerId);
-  if (!playerId) {
+  const requestedPlayerId = parsePlayerId(body.playerId);
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "Create an account to like tier lists." }, 403);
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { playerId } = auth;
 
   const existing = await context.env.DB.prepare(
     `SELECT id FROM published_tier_lists WHERE id = ?`,
@@ -82,14 +76,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     .bind(tierListId, playerId, now)
     .run();
 
-  const likeCount = await recountLikes(context.env.DB, tierListId);
-  await context.env.DB.prepare(
-    `UPDATE published_tier_lists
-     SET like_count = ?, updated_at = ?
-     WHERE id = ?`,
-  )
-    .bind(likeCount, now, tierListId)
-    .run();
+  const likeCount = await syncTierListLikeCount(
+    context.env.DB,
+    tierListId,
+    now,
+  );
 
   return json({
     ok: true,
@@ -101,16 +92,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
   const tierListId = parseTierListId(context.params.id);
   const url = new URL(context.request.url);
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!tierListId || !playerId) {
+  if (!tierListId || !requestedPlayerId) {
     return json({ error: "id and playerId are required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "Create an account to like tier lists." }, 403);
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { playerId } = auth;
 
   const existing = await context.env.DB.prepare(
     `SELECT id FROM published_tier_lists WHERE id = ?`,
@@ -130,14 +126,11 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     .bind(tierListId, playerId)
     .run();
 
-  const likeCount = await recountLikes(context.env.DB, tierListId);
-  await context.env.DB.prepare(
-    `UPDATE published_tier_lists
-     SET like_count = ?, updated_at = ?
-     WHERE id = ?`,
-  )
-    .bind(likeCount, now, tierListId)
-    .run();
+  const likeCount = await syncTierListLikeCount(
+    context.env.DB,
+    tierListId,
+    now,
+  );
 
   return json({ ok: true, liked: false, likeCount });
 };

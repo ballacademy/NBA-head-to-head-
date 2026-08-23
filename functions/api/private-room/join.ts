@@ -1,6 +1,7 @@
 import type { Env } from "../../types";
+import { requireLinkedAccountSession } from "../../lib/accountSessions";
 import { resolveServerMatchmakingElo } from "../../lib/matchmakingElo";
-import { getAccountByPlayerId, getUsernameByPlayerId } from "../../lib/playerAccounts";
+import { getUsernameByPlayerId } from "../../lib/playerAccounts";
 import { rejectProfaneTeamName } from "../../lib/profanity";
 import {
   claimPrivateRoomAndCreateMatch,
@@ -20,8 +21,6 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-const ACCOUNT_REQUIRED = "Create an account to host or join a private match.";
-
 interface JoinBody {
   roomCode?: unknown;
   playerId?: unknown;
@@ -29,6 +28,11 @@ interface JoinBody {
   elo?: unknown;
   expectedMode?: unknown;
 }
+
+const parsePlayerId = (value: unknown) =>
+  typeof value === "string" && value.trim().length > 0
+    ? value.trim().slice(0, 128)
+    : "";
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   let body: JoinBody;
@@ -42,8 +46,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const roomCode = normalizeRoomCode(
     typeof body.roomCode === "string" ? body.roomCode : "",
   );
-  const playerId =
-    typeof body.playerId === "string" ? body.playerId.trim().slice(0, 128) : "";
+  const requestedPlayerId = parsePlayerId(body.playerId);
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
   const eloRaw = Number(body.elo ?? 500);
@@ -52,7 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Enter a valid 6-character room code" }, 400);
   }
 
-  if (!playerId || !teamName) {
+  if (!requestedPlayerId || !teamName) {
     return json({ error: "playerId and teamName are required" }, 400);
   }
 
@@ -65,10 +68,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "elo must be a number" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: ACCOUNT_REQUIRED }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const db = context.env.DB;
   await cleanupExpiredPrivateRooms(db);

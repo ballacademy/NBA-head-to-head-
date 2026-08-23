@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 const API_BASE = "";
 
 const buildUrl = (path: string) => `${API_BASE}${path}`;
@@ -13,7 +14,7 @@ export const fetchRemoteCollection = async (
 ): Promise<RemoteCollectionPayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/collection")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -43,7 +44,7 @@ export const pushRemoteCollection = async (params: {
   unlockedIds: string[];
 }): Promise<RemoteCollectionPayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/collection"), {
+    const response = await apiFetch(buildUrl("/api/collection"), {
       method: "PUT",
       headers: {
         accept: "application/json",

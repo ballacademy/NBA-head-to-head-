@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import { isPlayerAccountLinked } from "./accountGate";
 import type { EventProfile } from "./eventProfile";
@@ -42,7 +43,7 @@ export const submitEventLeaderboardEntry = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/leaderboards"), {
+    const response = await apiFetch(buildUrl("/api/leaderboards"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -81,7 +82,7 @@ export const fetchEventLeaderboard = async (
   });
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       buildUrl(`/api/leaderboards?${search.toString()}`),
       {
         headers: { accept: "application/json" },

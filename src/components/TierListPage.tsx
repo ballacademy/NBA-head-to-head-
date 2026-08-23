@@ -321,7 +321,13 @@ export function TierListPage({
   const [viewerComments, setViewerComments] = useState<TierListComment[]>([]);
   const [viewerCommentsTotalCount, setViewerCommentsTotalCount] = useState(0);
   const [viewerCommentsHasMore, setViewerCommentsHasMore] = useState(false);
+  const [viewerCommentsNextCursor, setViewerCommentsNextCursor] = useState<{
+    beforeCreatedAt: string;
+    beforeId: string;
+  } | null>(null);
   const [viewerCommentsLoading, setViewerCommentsLoading] = useState(false);
+  const [viewerCommentsLoadingMore, setViewerCommentsLoadingMore] =
+    useState(false);
   const [viewerCommentDraft, setViewerCommentDraft] = useState("");
   const [viewerCommentSubmitting, setViewerCommentSubmitting] = useState(false);
   const [viewerCommentError, setViewerCommentError] = useState<string | null>(
@@ -403,7 +409,9 @@ export function TierListPage({
     setViewerComments([]);
     setViewerCommentsTotalCount(0);
     setViewerCommentsHasMore(false);
+    setViewerCommentsNextCursor(null);
     setViewerCommentsLoading(false);
+    setViewerCommentsLoadingMore(false);
     setViewerCommentDraft("");
     setViewerCommentError(null);
     setViewerCommentSubmitting(false);
@@ -1061,6 +1069,7 @@ export function TierListPage({
       setViewerComments(page.comments);
       setViewerCommentsTotalCount(page.totalCount);
       setViewerCommentsHasMore(page.hasMore);
+      setViewerCommentsNextCursor(page.nextCursor);
     } catch {
       if (viewerCommentsLoadGenRef.current !== loadGen) {
         return;
@@ -1068,6 +1077,7 @@ export function TierListPage({
       setViewerComments([]);
       setViewerCommentsTotalCount(0);
       setViewerCommentsHasMore(false);
+      setViewerCommentsNextCursor(null);
       setViewerCommentError("Could not load comments");
     } finally {
       if (viewerCommentsLoadGenRef.current === loadGen) {
@@ -1075,6 +1085,49 @@ export function TierListPage({
       }
     }
   }, []);
+
+  const loadOlderViewerComments = useCallback(async () => {
+    if (!viewerDetail) {
+      return;
+    }
+    if (
+      !viewerCommentsHasMore ||
+      !viewerCommentsNextCursor ||
+      viewerCommentsLoadingMore
+    ) {
+      return;
+    }
+    const loadGen = viewerCommentsLoadGenRef.current;
+    setViewerCommentsLoadingMore(true);
+    setViewerCommentError(null);
+    try {
+      const page = await listTierListComments({
+        id: viewerDetail.id,
+        cursor: viewerCommentsNextCursor,
+      });
+      if (viewerCommentsLoadGenRef.current !== loadGen) {
+        return;
+      }
+      setViewerComments((current) => [...page.comments, ...current]);
+      setViewerCommentsTotalCount(page.totalCount);
+      setViewerCommentsHasMore(page.hasMore);
+      setViewerCommentsNextCursor(page.nextCursor);
+    } catch {
+      if (viewerCommentsLoadGenRef.current !== loadGen) {
+        return;
+      }
+      setViewerCommentError("Could not load older comments");
+    } finally {
+      if (viewerCommentsLoadGenRef.current === loadGen) {
+        setViewerCommentsLoadingMore(false);
+      }
+    }
+  }, [
+    viewerCommentsHasMore,
+    viewerCommentsLoadingMore,
+    viewerCommentsNextCursor,
+    viewerDetail,
+  ]);
 
   useEffect(() => {
     if (!initialPublicTierListId || deepLinkHandledRef.current) {
@@ -2034,6 +2087,8 @@ export function TierListPage({
           commentsTotalCount={viewerCommentsTotalCount}
           commentsHasMore={viewerCommentsHasMore}
           commentsLoading={viewerCommentsLoading}
+          commentsLoadingMore={viewerCommentsLoadingMore}
+          onLoadOlderComments={() => void loadOlderViewerComments()}
           commentDraft={viewerCommentDraft}
           onCommentDraftChange={setViewerCommentDraft}
           onSubmitComment={() => void handleSubmitViewerComment()}

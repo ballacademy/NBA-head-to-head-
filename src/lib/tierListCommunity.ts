@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import { readJson, writeJson } from "./browserStorage";
 import {
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
@@ -249,7 +250,7 @@ export const fetchPublicTierLists = async (params: {
       search.set("dateWindow", filters.dateWindow);
     }
 
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/tier-lists")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -328,7 +329,7 @@ export const fetchPublicTierList = async (params: {
       id: params.id,
       viewerPlayerId: params.viewerPlayerId,
     });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/tier-lists")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -380,7 +381,7 @@ export const publishTierList = async (params: {
   };
 
   try {
-    const response = await fetch(buildUrl("/api/tier-lists"), {
+    const response = await apiFetch(buildUrl("/api/tier-lists"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -457,7 +458,7 @@ export const unpublishTierList = async (params: {
       id: params.id,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/tier-lists")}?${search.toString()}`,
       {
         method: "DELETE",
@@ -527,7 +528,7 @@ export const setTierListLike = async (params: {
 
   try {
     if (params.liked) {
-      const response = await fetch(
+      const response = await apiFetch(
         buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/like`),
         {
           method: "POST",
@@ -561,7 +562,7 @@ export const setTierListLike = async (params: {
       }
     } else {
       const search = new URLSearchParams({ playerId: params.playerId });
-      const response = await fetch(
+      const response = await apiFetch(
         `${buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/like`)}?${search.toString()}`,
         {
           method: "DELETE",
@@ -653,16 +654,31 @@ const normalizeTierListComment = (
   };
 };
 
+export type TierListCommentCursor = {
+  beforeCreatedAt: string;
+  beforeId: string;
+};
+
 export const listTierListComments = async (params: {
   id: string;
+  cursor?: TierListCommentCursor | null;
 }): Promise<{
   comments: TierListComment[];
   totalCount: number;
   hasMore: boolean;
+  nextCursor: TierListCommentCursor | null;
 }> => {
+  const search = new URLSearchParams();
+  if (params.cursor) {
+    search.set("beforeCreatedAt", params.cursor.beforeCreatedAt);
+    search.set("beforeId", params.cursor.beforeId);
+  }
+  const query = search.toString();
   try {
-    const response = await fetch(
-      buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
+    const response = await apiFetch(
+      buildUrl(
+        `/api/tier-lists/${encodeURIComponent(params.id)}/comments${query ? `?${query}` : ""}`,
+      ),
       { headers: { accept: "application/json" } },
     );
 
@@ -671,6 +687,7 @@ export const listTierListComments = async (params: {
         comments?: Partial<TierListComment>[];
         totalCount?: unknown;
         hasMore?: unknown;
+        nextCursor?: TierListCommentCursor | null;
       };
       if (Array.isArray(body.comments)) {
         const comments = body.comments
@@ -681,10 +698,17 @@ export const listTierListComments = async (params: {
           Math.round(Number(body.totalCount ?? comments.length)) ||
             comments.length,
         );
+        const nextCursor =
+          body.nextCursor &&
+          typeof body.nextCursor.beforeCreatedAt === "string" &&
+          typeof body.nextCursor.beforeId === "string"
+            ? body.nextCursor
+            : null;
         return {
           comments,
           totalCount,
-          hasMore: body.hasMore === true || totalCount > comments.length,
+          hasMore: body.hasMore === true || nextCursor != null,
+          nextCursor,
         };
       }
     }
@@ -698,6 +722,7 @@ export const listTierListComments = async (params: {
     comments,
     totalCount: comments.length,
     hasMore: false,
+    nextCursor: null,
   };
 };
 
@@ -728,7 +753,7 @@ export const createTierListComment = async (params: {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
       {
         method: "POST",
@@ -809,7 +834,7 @@ export const deleteTierListComment = async (params: {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
       {
         method: "POST",
@@ -889,7 +914,7 @@ export const reportPublicTierList = async (params: {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/report`),
       {
         method: "POST",

@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { EventProfilesPayload } from "./eventProfileShared";
 import {
   emptyEventProfilesPayload,
@@ -19,7 +20,7 @@ export const fetchRemoteEventProfiles = async (
 ): Promise<RemoteEventProfilesPayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/event-profiles")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -45,7 +46,7 @@ export const pushRemoteEventProfiles = async (params: {
   profiles: EventProfilesPayload;
 }): Promise<RemoteEventProfilesPayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/event-profiles"), {
+    const response = await apiFetch(buildUrl("/api/event-profiles"), {
       method: "PUT",
       headers: {
         accept: "application/json",

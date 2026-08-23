@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 export type LeaderboardMode = "classic" | "ranked";
 export type LeaderboardSort = "elo" | "winStreak" | "lossStreak";
 
@@ -51,7 +52,7 @@ export const fetchRemoteLeaderboard = async (params: {
   }
 
   try {
-    const response = await fetch(`${buildUrl("/api/leaderboards")}?${search.toString()}`, {
+    const response = await apiFetch(`${buildUrl("/api/leaderboards")}?${search.toString()}`, {
       headers: { accept: "application/json" },
     });
 
@@ -78,7 +79,7 @@ export const submitRemoteLeaderboardEntry = async (params: {
   lossStreak: number;
 }): Promise<RemoteLeaderboardEntry | null> => {
   try {
-    const response = await fetch(buildUrl("/api/leaderboards"), {
+    const response = await apiFetch(buildUrl("/api/leaderboards"), {
       method: "POST",
       headers: {
         accept: "application/json",

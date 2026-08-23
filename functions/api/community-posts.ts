@@ -1,6 +1,7 @@
 import type { Env } from "../types";
 import { resolveCommunityAuthorFields } from "../lib/communityAuthor";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
+import { syncCommunityPostLikeCount } from "../lib/likeCounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -165,6 +166,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   if (repliesFor) {
     const postId = repliesFor.trim().slice(0, 80);
+    const beforeCreatedAt =
+      url.searchParams.get("beforeCreatedAt")?.trim().slice(0, 40) ?? "";
+    const beforeId =
+      url.searchParams.get("beforeId")?.trim().slice(0, 80) ?? "";
+    const useCursor = Boolean(beforeCreatedAt && beforeId);
+
     const countRow = await context.env.DB.prepare(
       `SELECT COUNT(*) AS total FROM community_post_replies WHERE post_id = ?`,
     )
@@ -172,36 +179,67 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       .first<{ total: number }>();
     const totalCount = Math.max(0, Math.round(Number(countRow?.total ?? 0)));
 
-    // Newest page, then reverse to chronological display order so recent
-    // replies stay visible once the thread exceeds REPLY_LIMIT.
-    const rows = await context.env.DB.prepare(
-      `SELECT id, post_id, player_id, author_name, author_tag, body, created_at
-       FROM (
-         SELECT id, post_id, player_id, author_name, author_tag, body, created_at
-         FROM community_post_replies
-         WHERE post_id = ?
-         ORDER BY created_at DESC, id DESC
-         LIMIT ?
-       )
-       ORDER BY created_at ASC, id ASC`,
-    )
-      .bind(postId, REPLY_LIMIT)
-      .all<{
-        id: string;
-        post_id: string;
-        player_id: string;
-        author_name: string;
-        author_tag: string;
-        body: string;
-        created_at: string;
-      }>();
+    const fetchLimit = REPLY_LIMIT + 1;
+    const rows = useCursor
+      ? await context.env.DB.prepare(
+          `SELECT id, post_id, player_id, author_name, author_tag, body, created_at
+           FROM (
+             SELECT id, post_id, player_id, author_name, author_tag, body, created_at
+             FROM community_post_replies
+             WHERE post_id = ?
+               AND (created_at < ? OR (created_at = ? AND id < ?))
+             ORDER BY created_at DESC, id DESC
+             LIMIT ?
+           )
+           ORDER BY created_at ASC, id ASC`,
+        )
+          .bind(postId, beforeCreatedAt, beforeCreatedAt, beforeId, fetchLimit)
+          .all<{
+            id: string;
+            post_id: string;
+            player_id: string;
+            author_name: string;
+            author_tag: string;
+            body: string;
+            created_at: string;
+          }>()
+      : await context.env.DB.prepare(
+          `SELECT id, post_id, player_id, author_name, author_tag, body, created_at
+           FROM (
+             SELECT id, post_id, player_id, author_name, author_tag, body, created_at
+             FROM community_post_replies
+             WHERE post_id = ?
+             ORDER BY created_at DESC, id DESC
+             LIMIT ?
+           )
+           ORDER BY created_at ASC, id ASC`,
+        )
+          .bind(postId, fetchLimit)
+          .all<{
+            id: string;
+            post_id: string;
+            player_id: string;
+            author_name: string;
+            author_tag: string;
+            body: string;
+            created_at: string;
+          }>();
 
-    const replies = (rows.results ?? []).map(mapReplyRow);
+    const rawReplies = rows.results ?? [];
+    const hasMore = rawReplies.length > REPLY_LIMIT;
+    const pageRows = hasMore ? rawReplies.slice(0, REPLY_LIMIT) : rawReplies;
+    const replies = pageRows.map(mapReplyRow);
+    const oldest = replies[0];
+
     return json({
       replies,
       totalCount,
-      hasMore: totalCount > replies.length,
+      hasMore: useCursor ? hasMore : totalCount > replies.length,
       limit: REPLY_LIMIT,
+      nextCursor:
+        hasMore && oldest
+          ? { beforeCreatedAt: oldest.createdAt, beforeId: oldest.id }
+          : null,
     });
   }
 
@@ -329,20 +367,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (body.action === "delete") {
-    const playerId = parsePlayerId(body.playerId);
+    const requestedPlayerId = parsePlayerId(body.playerId);
     const postId =
       typeof body.postId === "string" && body.postId.trim()
         ? body.postId.trim().slice(0, 80)
         : "";
 
-    if (!playerId || !postId) {
+    if (!requestedPlayerId || !postId) {
       return json({ error: "playerId and postId are required" }, 400);
     }
 
-    const account = await getAccountByPlayerId(context.env.DB, playerId);
-    if (!account) {
-      return json({ error: "Create an account to delete posts." }, 403);
+    const auth = await requireLinkedAccountSession(
+      context.request,
+      context.env.DB,
+      requestedPlayerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
     }
+    const { playerId } = auth;
 
     const existing = await context.env.DB.prepare(
       `SELECT id, player_id FROM community_posts WHERE id = ?`,
@@ -376,7 +419,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (body.action === "report") {
-    const playerId = parsePlayerId(body.playerId);
+    const requestedPlayerId = parsePlayerId(body.playerId);
     const postId =
       typeof body.postId === "string" && body.postId.trim()
         ? body.postId.trim().slice(0, 80)
@@ -386,14 +429,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         ? body.reason.trim().slice(0, REASON_MAX)
         : "";
 
-    if (!playerId || !postId) {
+    if (!requestedPlayerId || !postId) {
       return json({ error: "playerId and postId are required" }, 400);
     }
 
-    const account = await getAccountByPlayerId(context.env.DB, playerId);
-    if (!account) {
-      return json({ error: "Create an account to report posts." }, 403);
+    const auth = await requireLinkedAccountSession(
+      context.request,
+      context.env.DB,
+      requestedPlayerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
     }
+    const { playerId } = auth;
 
     const existing = await context.env.DB.prepare(
       `SELECT id FROM community_posts WHERE id = ?`,
@@ -418,20 +466,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (body.action === "delete-reply") {
-    const playerId = parsePlayerId(body.playerId);
+    const requestedPlayerId = parsePlayerId(body.playerId);
     const replyId =
       typeof body.replyId === "string" && body.replyId.trim()
         ? body.replyId.trim().slice(0, 80)
         : "";
 
-    if (!playerId || !replyId) {
+    if (!requestedPlayerId || !replyId) {
       return json({ error: "playerId and replyId are required" }, 400);
     }
 
-    const account = await getAccountByPlayerId(context.env.DB, playerId);
-    if (!account) {
-      return json({ error: "Create an account to delete replies." }, 403);
+    const auth = await requireLinkedAccountSession(
+      context.request,
+      context.env.DB,
+      requestedPlayerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
     }
+    const { playerId } = auth;
 
     const existing = await context.env.DB.prepare(
       `SELECT id, player_id, post_id FROM community_post_replies WHERE id = ?`,
@@ -457,14 +510,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (body.action === "reply") {
-    const playerId = parsePlayerId(body.playerId);
+    const requestedPlayerId = parsePlayerId(body.playerId);
     const postId =
       typeof body.postId === "string" && body.postId.trim()
         ? body.postId.trim().slice(0, 80)
         : "";
     const text = typeof body.body === "string" ? body.body.trim() : "";
 
-    if (!playerId || !postId) {
+    if (!requestedPlayerId || !postId) {
       return json({ error: "playerId and postId are required" }, 400);
     }
     if (!text) {
@@ -477,10 +530,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    const account = await getAccountByPlayerId(context.env.DB, playerId);
-    if (!account) {
-      return json({ error: "Create an account to reply." }, 403);
+    const auth = await requireLinkedAccountSession(
+      context.request,
+      context.env.DB,
+      requestedPlayerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
     }
+    const { account, playerId } = auth;
 
     const existing = await context.env.DB.prepare(
       `SELECT id FROM community_posts WHERE id = ?`,
@@ -526,21 +584,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   if (body.action === "like") {
-    const playerId = parsePlayerId(body.playerId);
+    const requestedPlayerId = parsePlayerId(body.playerId);
     const postId =
       typeof body.postId === "string" && body.postId.trim()
         ? body.postId.trim().slice(0, 80)
         : "";
     const liked = body.liked === true;
 
-    if (!playerId || !postId) {
+    if (!requestedPlayerId || !postId) {
       return json({ error: "playerId and postId are required" }, 400);
     }
 
-    const account = await getAccountByPlayerId(context.env.DB, playerId);
-    if (!account) {
-      return json({ error: "Create an account to like posts." }, 403);
+    const auth = await requireLinkedAccountSession(
+      context.request,
+      context.env.DB,
+      requestedPlayerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
     }
+    const { playerId } = auth;
 
     const existing = await context.env.DB.prepare(
       `SELECT id FROM community_posts WHERE id = ?`,
@@ -570,36 +633,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         .run();
     }
 
-    const countRow = await context.env.DB.prepare(
-      `SELECT COUNT(*) AS count
-       FROM community_post_likes
-       WHERE post_id = ?`,
-    )
-      .bind(postId)
-      .first<{ count: number }>();
-    const likeCount = Math.max(0, Math.round(Number(countRow?.count ?? 0)));
-
-    await context.env.DB.prepare(
-      `UPDATE community_posts SET like_count = ? WHERE id = ?`,
-    )
-      .bind(likeCount, postId)
-      .run();
+    const likeCount = await syncCommunityPostLikeCount(context.env.DB, postId);
 
     return json({ ok: true, postId, liked, likeCount });
   }
 
-  const playerId = parsePlayerId(body.playerId);
-  if (!playerId) {
+  const requestedPlayerId = parsePlayerId(body.playerId);
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json(
-      { error: "Create an account to post in Community." },
-      403,
-    );
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { account, playerId } = auth;
 
   const text = typeof body.body === "string" ? body.body.trim() : "";
   if (!text) {

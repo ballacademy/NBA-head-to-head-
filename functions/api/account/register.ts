@@ -6,6 +6,10 @@ import {
   validateUsername,
 } from "../../lib/accountCredentials";
 import {
+  createAccountSession,
+  jsonWithSessionCookie,
+} from "../../lib/accountSessions";
+import {
   assertRegisterRateLimitAllow,
   buildRegisterRateLimitKey,
   createPlayerAccount,
@@ -130,14 +134,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       playerId: playerIdResult.playerId,
     });
 
-    return json({
-      ok: true,
-      username: account.username,
+    const session = await createAccountSession(context.env.DB, {
+      accountId: account.id,
       playerId: account.playerId,
-      createdAt: account.createdAt,
-      signupIndex: account.signupIndex,
-      foundingGm: account.foundingGm,
     });
+
+    return jsonWithSessionCookie(
+      {
+        ok: true,
+        username: account.username,
+        playerId: account.playerId,
+        createdAt: account.createdAt,
+        signupIndex: account.signupIndex,
+        foundingGm: account.foundingGm,
+      },
+      session.token,
+      201,
+    );
   } catch (error) {
     const missingTable = missingAccountsTableError(error);
     if (missingTable) {
