@@ -249,7 +249,7 @@ describe("landingHub", () => {
     expect(focused.communityPostId).toBe("cpost-abc");
   });
 
-  it("syncs hub/play into the URL while preserving tierList", () => {
+  it("clears sticky tierList when leaving the Community hub", () => {
     const replaceState = vi.fn();
     vi.stubGlobal("window", {
       location: {
@@ -270,7 +270,7 @@ describe("landingHub", () => {
     const nextUrl = String(replaceState.mock.calls[0]?.[2] ?? "");
     expect(nextUrl).toContain("hub=play");
     expect(nextUrl).toContain("play=ranked");
-    expect(nextUrl).toContain("tierList=abc123");
+    expect(nextUrl).not.toContain("tierList=");
   });
 
   it("can clear tierList when leaving a public viewer", () => {

@@ -361,6 +361,7 @@ export function TierListPage({
   const postDeepLinkHandledRef = useRef(false);
   const communityPostsLoadGenRef = useRef(0);
   const viewerCommentsLoadGenRef = useRef(0);
+  const viewerCommentSubmittingRef = useRef(false);
   const communityPostsRef = useRef(communityPosts);
   communityPostsRef.current = communityPosts;
   const communityFocusPostIdRef = useRef(communityFocusPostId);
@@ -1114,33 +1115,51 @@ export function TierListPage({
       return;
     }
 
+    if (viewerCommentSubmittingRef.current || viewerCommentSubmitting) {
+      return;
+    }
+
+    viewerCommentSubmittingRef.current = true;
     setViewerCommentSubmitting(true);
     setViewerCommentError(null);
-    const result = await createTierListComment({
-      id: targetId,
-      playerId: identity.playerId,
-      authorName: authorName.trim() || `GM ${formatPublicTag(identity.publicTag)}`,
-      authorTag: identity.publicTag,
-      body,
-    });
-    setViewerCommentSubmitting(false);
+    const submitGen = ++viewerCommentsLoadGenRef.current;
 
-    if (!result.ok) {
-      setViewerCommentError(result.error);
-      return;
-    }
+    try {
+      const result = await createTierListComment({
+        id: targetId,
+        playerId: identity.playerId,
+        authorName:
+          authorName.trim() || `GM ${formatPublicTag(identity.publicTag)}`,
+        authorTag: identity.publicTag,
+        body,
+      });
 
-    if (result.comment.tierListId !== targetId) {
-      return;
-    }
-
-    setViewerComments((current) => {
-      if (current.some((entry) => entry.id === result.comment.id)) {
-        return current;
+      if (viewerCommentsLoadGenRef.current !== submitGen) {
+        return;
       }
-      return [...current, result.comment];
-    });
-    setViewerCommentDraft("");
+
+      if (!result.ok) {
+        setViewerCommentError(result.error);
+        return;
+      }
+
+      if (result.comment.tierListId !== targetId) {
+        return;
+      }
+
+      setViewerComments((current) => {
+        if (current.some((entry) => entry.id === result.comment.id)) {
+          return current;
+        }
+        return [...current, result.comment];
+      });
+      setViewerCommentDraft("");
+    } finally {
+      if (viewerCommentsLoadGenRef.current === submitGen) {
+        viewerCommentSubmittingRef.current = false;
+        setViewerCommentSubmitting(false);
+      }
+    }
   };
 
   const handleDeleteViewerComment = async (commentId: string) => {

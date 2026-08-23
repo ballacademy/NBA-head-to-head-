@@ -44,7 +44,7 @@ describe("careerStatsSync", () => {
     });
   });
 
-  it("merges mode records with max counters", () => {
+  it("merges mode records as a unit without inventing W–L", () => {
     const left = emptyCareerStats();
     left.modes.headToHead = {
       wins: 10,
@@ -62,13 +62,39 @@ describe("careerStatsSync", () => {
       lossStreak: 2,
     };
 
+    // Same games (13) but different split — take higher wins whole, never 10–5.
     expect(mergeCareerStats(left, right).modes.headToHead).toEqual({
       wins: 10,
-      losses: 5,
+      losses: 2,
       ties: 1,
       winStreak: 3,
-      lossStreak: 2,
+      lossStreak: 0,
     });
+
+    const fuller = emptyCareerStats();
+    fuller.modes.headToHead = {
+      wins: 9,
+      losses: 6,
+      ties: 0,
+      winStreak: 1,
+      lossStreak: 2,
+    };
+    // 15 games beats 13 — take the fuller record whole.
+    expect(mergeCareerStats(left, fuller).modes.headToHead).toEqual(
+      fuller.modes.headToHead,
+    );
+
+    const dominated = emptyCareerStats();
+    dominated.modes.headToHead = {
+      wins: 12,
+      losses: 5,
+      ties: 1,
+      winStreak: 4,
+      lossStreak: 0,
+    };
+    expect(mergeCareerStats(left, dominated).modes.headToHead).toEqual(
+      dominated.modes.headToHead,
+    );
   });
 
   it("prefers the more-played All-Time banners for current elo", () => {

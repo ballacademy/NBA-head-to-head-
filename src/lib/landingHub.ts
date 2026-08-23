@@ -527,6 +527,7 @@ export const syncLandingDeepLinkUrl = (
       url.searchParams.delete("post");
       url.searchParams.delete("section");
       url.searchParams.delete("room");
+      url.searchParams.delete("tierList");
     } else {
       if (options.hub != null) {
         const hubParam =
@@ -539,7 +540,7 @@ export const syncLandingDeepLinkUrl = (
         if (hubParam !== "play" && options.play === undefined) {
           url.searchParams.delete("play");
         }
-        // Feature hubs don't use community view/post params.
+        // Feature hubs don't use community view/post/tierList params.
         if (
           hubParam !== "community" &&
           options.view === undefined &&
@@ -547,6 +548,9 @@ export const syncLandingDeepLinkUrl = (
         ) {
           url.searchParams.delete("view");
           url.searchParams.delete("post");
+        }
+        if (hubParam !== "community" && options.tierList === undefined) {
+          url.searchParams.delete("tierList");
         }
         if (hubParam !== "beta" && options.section === undefined) {
           url.searchParams.delete("section");

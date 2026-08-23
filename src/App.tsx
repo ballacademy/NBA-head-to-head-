@@ -2183,6 +2183,7 @@ function App() {
             play: null,
             view: null,
             post: null,
+            tierList: null,
           });
         };
         syncReturn();
@@ -2219,6 +2220,7 @@ function App() {
           play: null,
           view: null,
           post: null,
+          tierList: null,
         });
       }
       const landingState = window.history.state as FeatureHistoryState | null;
@@ -3002,6 +3004,7 @@ function App() {
             play: null,
             view: null,
             post: null,
+            tierList: null,
           });
         }
         const landingState = window.history.state as FeatureHistoryState | null;
@@ -3067,7 +3070,7 @@ function App() {
       openFeaturePage("tierList");
     }
     setCommunityHubReturnToken((current) => current + 1);
-    syncLandingDeepLinkUrl({ hub: "community", view: null, post: null });
+    syncLandingDeepLinkUrl({ hub: "community", view: null, post: null, tierList: null });
   }, [openFeaturePage, phase]);
 
   /** Open Community Posts with the latest results shareable pre-attached. */
@@ -3076,7 +3079,7 @@ function App() {
       openFeaturePage("tierList");
     }
     setCommunityComposeToken((current) => current + 1);
-    syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null });
+    syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null, tierList: null });
   }, [openFeaturePage, phase]);
 
   const handleHubNav = useCallback(

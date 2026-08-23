@@ -107,16 +107,58 @@ export const parseCareerJson = (raw: string): CareerStatsPayload => {
   }
 };
 
+const modeGames = (mode: ModeRecordStatsPayload) =>
+  mode.wins + mode.losses + mode.ties;
+
+const modeDominates = (
+  candidate: ModeRecordStatsPayload,
+  other: ModeRecordStatsPayload,
+) =>
+  candidate.wins >= other.wins &&
+  candidate.losses >= other.losses &&
+  candidate.ties >= other.ties;
+
+/**
+ * Pick one whole W–L record — never Math.max wins/losses independently
+ * (that invents games that never happened across devices).
+ */
 const mergeMode = (
   left: ModeRecordStatsPayload,
   right: ModeRecordStatsPayload,
-): ModeRecordStatsPayload => ({
-  wins: Math.max(left.wins, right.wins),
-  losses: Math.max(left.losses, right.losses),
-  ties: Math.max(left.ties, right.ties),
-  winStreak: Math.max(left.winStreak, right.winStreak),
-  lossStreak: Math.max(left.lossStreak, right.lossStreak),
-});
+): ModeRecordStatsPayload => {
+  if (
+    left.wins === right.wins &&
+    left.losses === right.losses &&
+    left.ties === right.ties
+  ) {
+    return {
+      wins: left.wins,
+      losses: left.losses,
+      ties: left.ties,
+      winStreak: Math.max(left.winStreak, right.winStreak),
+      lossStreak: Math.max(left.lossStreak, right.lossStreak),
+    };
+  }
+
+  if (modeDominates(left, right) && !modeDominates(right, left)) {
+    return left;
+  }
+  if (modeDominates(right, left) && !modeDominates(left, right)) {
+    return right;
+  }
+
+  const leftGames = modeGames(left);
+  const rightGames = modeGames(right);
+  if (leftGames !== rightGames) {
+    return leftGames > rightGames ? left : right;
+  }
+
+  if (left.wins !== right.wins) {
+    return left.wins > right.wins ? left : right;
+  }
+
+  return left;
+};
 
 const mergeBanners = (
   left: AllTimeBannersPayload,

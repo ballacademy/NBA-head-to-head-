@@ -29,7 +29,7 @@ describe("nbaPlayerUsageShared", () => {
     });
   });
 
-  it("merges usage with max counters and union keys", () => {
+  it("merges usage as a unit without inventing W–L", () => {
     const left = emptyNbaPlayerUsageStore();
     left.byPlayerId["player-a"] = {
       headToHead: { drafts: 3, wins: 2, losses: 1, ties: 0 },
@@ -47,7 +47,7 @@ describe("nbaPlayerUsageShared", () => {
     expect(merged.byPlayerId["player-a"]?.headToHead).toEqual({
       drafts: 3,
       wins: 2,
-      losses: 2,
+      losses: 1,
       ties: 0,
     });
     expect(merged.byPlayerId["player-a"]?.ranked).toEqual({
