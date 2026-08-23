@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { TierListAccountPayload } from "./tierListLibraryShared";
 import {
   emptyTierListAccountPayload,
@@ -19,7 +20,7 @@ export const fetchRemoteTierListLibrary = async (
 ): Promise<RemoteTierListLibraryPayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/tier-list-library")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -45,7 +46,7 @@ export const pushRemoteTierListLibrary = async (params: {
   library: TierListAccountPayload;
 }): Promise<RemoteTierListLibraryPayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/tier-list-library"), {
+    const response = await apiFetch(buildUrl("/api/tier-list-library"), {
       method: "PUT",
       headers: {
         accept: "application/json",

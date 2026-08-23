@@ -678,11 +678,17 @@ export function CommunityPostsPanel({
   const [repliesByPost, setRepliesByPost] = useState<
     Record<
       string,
-      { replies: CommunityPostReply[]; totalCount: number; hasMore: boolean }
+      {
+        replies: CommunityPostReply[];
+        totalCount: number;
+        hasMore: boolean;
+        nextCursor: { beforeCreatedAt: string; beforeId: string } | null;
+      }
     >
   >({});
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyBusy, setReplyBusy] = useState<string | null>(null);
+  const [replyLoadingMore, setReplyLoadingMore] = useState<string | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [muteEpoch, setMuteEpoch] = useState(0);
@@ -913,6 +919,44 @@ export function CommunityPostsPanel({
     setRepliesByPost((current) => ({ ...current, [postId]: page }));
   };
 
+  const handleLoadOlderReplies = async (postId: string) => {
+    const existing = repliesByPost[postId];
+    if (
+      !existing?.hasMore ||
+      !existing.nextCursor ||
+      replyLoadingMore === postId
+    ) {
+      return;
+    }
+    setReplyLoadingMore(postId);
+    setReplyError(null);
+    try {
+      const page = await listCommunityPostReplies({
+        postId,
+        cursor: existing.nextCursor,
+      });
+      setRepliesByPost((current) => {
+        const prior = current[postId];
+        if (!prior) {
+          return current;
+        }
+        return {
+          ...current,
+          [postId]: {
+            replies: [...page.replies, ...prior.replies],
+            totalCount: page.totalCount,
+            hasMore: page.hasMore,
+            nextCursor: page.nextCursor,
+          },
+        };
+      });
+    } catch {
+      setReplyError("Could not load older replies.");
+    } finally {
+      setReplyLoadingMore(null);
+    }
+  };
+
   const handleSubmitReply = async (postId: string) => {
     const body = (replyDrafts[postId] ?? "").trim();
     if (!body || replyBusy) {
@@ -942,6 +986,7 @@ export function CommunityPostsPanel({
           replies,
           totalCount: Math.max((existing?.totalCount ?? 0) + 1, replies.length),
           hasMore: existing?.hasMore ?? false,
+          nextCursor: existing?.nextCursor ?? null,
         },
       };
     });
@@ -976,6 +1021,7 @@ export function CommunityPostsPanel({
             (existing?.totalCount ?? replies.length) - 1,
           ),
           hasMore: existing?.hasMore ?? false,
+          nextCursor: existing?.nextCursor ?? null,
         },
       };
     });
@@ -1494,10 +1540,18 @@ export function CommunityPostsPanel({
                         </ul>
                       )}
                       {replyPage?.hasMore ? (
-                        <p className="community-posts-panel__replies-empty">
-                          Showing latest {replyPage.replies.length} of{" "}
-                          {replyPage.totalCount} replies
-                        </p>
+                        <div className="community-posts-panel__replies-more">
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            disabled={replyLoadingMore === post.id}
+                            onClick={() => void handleLoadOlderReplies(post.id)}
+                          >
+                            {replyLoadingMore === post.id
+                              ? "Loading…"
+                              : `Load older replies (${replyPage.totalCount - replyPage.replies.length} more)`}
+                          </button>
+                        </div>
                       ) : null}
                       {accountReady ? (
                         <div className="community-posts-panel__reply-compose">
@@ -1847,6 +1901,8 @@ interface TierListPublicViewerProps {
   commentsTotalCount?: number;
   commentsHasMore?: boolean;
   commentsLoading: boolean;
+  commentsLoadingMore?: boolean;
+  onLoadOlderComments?: () => void;
   commentDraft: string;
   onCommentDraftChange: (value: string) => void;
   onSubmitComment: () => void;
@@ -1871,6 +1927,8 @@ export function TierListPublicViewer({
   commentsTotalCount,
   commentsHasMore = false,
   commentsLoading,
+  commentsLoadingMore = false,
+  onLoadOlderComments,
   commentDraft,
   onCommentDraftChange,
   onSubmitComment,
@@ -2059,9 +2117,18 @@ export function TierListPublicViewer({
           </ul>
         )}
         {commentsHasMore ? (
-          <p className="tier-list__hint" role="status">
-            Showing latest {comments.length} of {commentCount} comments
-          </p>
+          <div className="tier-list-hub__comments-more">
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={commentsLoadingMore}
+              onClick={onLoadOlderComments}
+            >
+              {commentsLoadingMore
+                ? "Loading…"
+                : `Load older comments (${commentCount - comments.length} more)`}
+            </button>
+          </div>
         ) : null}
 
         {accountLinked === null ? (

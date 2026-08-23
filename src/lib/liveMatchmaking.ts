@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import {
   buildLiveAutofillLineup,
   LIVE_MATCH_LINEUP_WAIT_MS,
@@ -63,7 +64,7 @@ export const joinMatchmakingQueue = async (params: {
   elo: number;
 }): Promise<JoinMatchmakingResult> => {
   try {
-    const response = await fetch(buildUrl("/api/queue"), {
+    const response = await apiFetch(buildUrl("/api/queue"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -125,7 +126,7 @@ export const pollMatchmakingQueue = async (params: {
       mode: params.mode,
       playerId: params.playerId,
     });
-    const response = await fetch(`${buildUrl("/api/queue")}?${search.toString()}`, {
+    const response = await apiFetch(`${buildUrl("/api/queue")}?${search.toString()}`, {
       headers: { accept: "application/json" },
     });
 
@@ -173,7 +174,7 @@ export const leaveMatchmakingQueue = async (params: {
       mode: params.mode,
       playerId: params.playerId,
     });
-    await fetch(`${buildUrl("/api/queue")}?${search.toString()}`, {
+    await apiFetch(`${buildUrl("/api/queue")}?${search.toString()}`, {
       method: "DELETE",
       headers: { accept: "application/json" },
     });
@@ -323,7 +324,7 @@ export const fetchLiveMatchStateDetailed = async (params: {
       matchId: params.matchId,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/live-match")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -363,7 +364,7 @@ export const submitLiveMatchLineup = async (params: {
   lineup: string[];
 }): Promise<LiveMatchState | null> => {
   try {
-    const response = await fetch(buildUrl("/api/live-match"), {
+    const response = await apiFetch(buildUrl("/api/live-match"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -426,7 +427,7 @@ export const autofillLiveMatchOpponentLineup = async (params: {
   lineup: string[];
 }): Promise<LiveMatchState | null> => {
   try {
-    const response = await fetch(buildUrl("/api/live-match"), {
+    const response = await apiFetch(buildUrl("/api/live-match"), {
       method: "POST",
       headers: {
         accept: "application/json",

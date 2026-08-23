@@ -1,6 +1,7 @@
 import type { Env } from "../../types";
 import { validatePlayerId } from "../../lib/accountCredentials";
 import { isFoundingGmSignupIndex } from "../../lib/foundingGm";
+import { resolveSessionFromRequest } from "../../lib/accountSessions";
 import { getAccountByPlayerId } from "../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
@@ -13,20 +14,34 @@ const json = (body: unknown, status = 200) =>
   });
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const url = new URL(context.request.url);
-  const playerIdResult = validatePlayerId(
-    url.searchParams.get("playerId") ?? "",
-  );
-
-  if (!playerIdResult.ok) {
-    return json({ error: playerIdResult.error }, 400);
-  }
-
   if (!context.env.DB) {
     return json({ error: "Account database is not configured." }, 503);
   }
 
   try {
+    const session = await resolveSessionFromRequest(
+      context.request,
+      context.env.DB,
+    );
+    if (session) {
+      return json({
+        linked: true,
+        playerId: session.playerId,
+        username: session.account.username,
+        signupIndex: session.account.signup_index,
+        foundingGm: isFoundingGmSignupIndex(session.account.signup_index),
+      });
+    }
+
+    const url = new URL(context.request.url);
+    const playerIdResult = validatePlayerId(
+      url.searchParams.get("playerId") ?? "",
+    );
+
+    if (!playerIdResult.ok) {
+      return json({ linked: false, playerId: "" });
+    }
+
     const account = await getAccountByPlayerId(
       context.env.DB,
       playerIdResult.playerId,
@@ -39,8 +54,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Only confirm linkage + username for the browser that already holds the GM id.
-    // Do not expose last-login timestamps on this unauthenticated endpoint.
+    // Unauthenticated lookup: confirm whether this local GM id is linked, but
+    // do not treat it as an authenticated session.
     return json({
       linked: true,
       playerId: account.player_id,

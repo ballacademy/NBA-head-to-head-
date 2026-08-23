@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { HeadToHeadResult } from "./playerRecord";
 import { resolveMatchmakingSearchMs } from "./matchmakingTiming";
 import { parseGhostOpponentSnapshot } from "./storedLineups";
@@ -104,7 +105,7 @@ export const fetchGhostOpponent = async (params: {
   starCount: number;
 }): Promise<GhostOpponentSnapshot | null> => {
   try {
-    const response = await fetch(buildOpponentPath(params), {
+    const response = await apiFetch(buildOpponentPath(params), {
       headers: { accept: "application/json" },
     });
 
@@ -167,7 +168,7 @@ export const fetchPendingMatchmakingStatus = async (params: {
   playerId: string;
 }): Promise<PendingMatchmakingStatus | null> => {
   try {
-    const response = await fetch(buildPendingPath(params), {
+    const response = await apiFetch(buildPendingPath(params), {
       headers: { accept: "application/json" },
     });
 
@@ -213,7 +214,7 @@ export const acknowledgePendingOwnerResults = async (params: {
   }
 
   try {
-    const response = await fetch(buildUrl("/api/pending"), {
+    const response = await apiFetch(buildUrl("/api/pending"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -240,7 +241,7 @@ export const releaseGhostOpponentClaim = async (params: {
       mode: params.mode,
       playerId: params.playerId,
     });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/opponent")}?${search.toString()}`,
       {
         method: "DELETE",
@@ -262,7 +263,7 @@ export const submitStoredLineup = async (
   }
 
   try {
-    const response = await fetch(buildUrl("/api/lineups"), {
+    const response = await apiFetch(buildUrl("/api/lineups"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -285,7 +286,7 @@ export const submitGhostMatchOutcome = async (
   submission: GhostMatchOutcomeSubmission,
 ): Promise<boolean> => {
   try {
-    const response = await fetch(buildUrl("/api/match-results"), {
+    const response = await apiFetch(buildUrl("/api/match-results"), {
       method: "POST",
       headers: {
         accept: "application/json",

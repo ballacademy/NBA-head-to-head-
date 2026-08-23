@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { DailyDraftScoreEntry } from "./dailyDraftScores";
 
 export interface RemoteDailyDraftScores {
@@ -33,7 +34,7 @@ export const fetchRemoteDailyDraftScores = async (params: {
   }
 
   try {
-    const response = await fetch(`${buildUrl("/api/daily-scores")}?${search.toString()}`, {
+    const response = await apiFetch(`${buildUrl("/api/daily-scores")}?${search.toString()}`, {
       headers: { accept: "application/json" },
     });
 
@@ -59,7 +60,7 @@ export const submitRemoteDailyDraftScore = async (params: {
   lineup: string[];
 }): Promise<DailyDraftScoreEntry | null> => {
   try {
-    const response = await fetch(buildUrl("/api/daily-scores"), {
+    const response = await apiFetch(buildUrl("/api/daily-scores"), {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -98,7 +99,7 @@ export const fetchRemoteDailyDraftPlayerHistory = async (
 ): Promise<RemoteDailyDraftPlayerHistory | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/daily-player-history")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );

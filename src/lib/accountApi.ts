@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import {
   normalizeUsername,
   normalizeEmail,
@@ -50,6 +51,18 @@ export type AccountStatusResult =
 
 export const ACCOUNT_STATUS_TIMEOUT_MS = 10_000;
 
+export const logoutAccount = async (): Promise<{ ok: true } | { ok: false }> => {
+  try {
+    const response = await apiFetch(`${API_BASE}/api/account/logout`, {
+      method: "POST",
+      headers: { accept: "application/json" },
+    });
+    return response.ok ? { ok: true } : { ok: false };
+  } catch {
+    return { ok: false };
+  }
+};
+
 export const fetchAccountStatus = async (
   playerId: string,
   options: { timeoutMs?: number } = {},
@@ -63,7 +76,7 @@ export const fetchAccountStatus = async (
 
     let response: Response;
     try {
-      response = await fetch(
+      response = await apiFetch(
         `${API_BASE}/api/account/status?${search.toString()}`,
         {
           headers: { accept: "application/json" },
@@ -130,7 +143,7 @@ export const registerAccount = async (params: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/account/register`, {
+    const response = await apiFetch(`${API_BASE}/api/account/register`, {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -186,7 +199,7 @@ export const loginAccount = async (params: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/account/login`, {
+    const response = await apiFetch(`${API_BASE}/api/account/login`, {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -236,7 +249,7 @@ export const requestPasswordReset = async (
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/account/request-reset`, {
+    const response = await apiFetch(`${API_BASE}/api/account/request-reset`, {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -296,7 +309,7 @@ export const resetAccountPassword = async (params: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/account/reset-password`, {
+    const response = await apiFetch(`${API_BASE}/api/account/reset-password`, {
       method: "POST",
       headers: {
         accept: "application/json",

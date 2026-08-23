@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import type { NbaPlayerUsageStore } from "./nbaPlayerUsageShared";
 import {
   emptyNbaPlayerUsageStore,
@@ -19,7 +20,7 @@ export const fetchRemoteNbaPlayerUsage = async (
 ): Promise<RemoteNbaPlayerUsagePayload | null> => {
   try {
     const search = new URLSearchParams({ playerId });
-    const response = await fetch(
+    const response = await apiFetch(
       `${buildUrl("/api/nba-player-usage")}?${search.toString()}`,
       { headers: { accept: "application/json" } },
     );
@@ -45,7 +46,7 @@ export const pushRemoteNbaPlayerUsage = async (params: {
   usage: NbaPlayerUsageStore;
 }): Promise<RemoteNbaPlayerUsagePayload | null> => {
   try {
-    const response = await fetch(buildUrl("/api/nba-player-usage"), {
+    const response = await apiFetch(buildUrl("/api/nba-player-usage"), {
       method: "PUT",
       headers: {
         accept: "application/json",

@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiFetch";
+
 export interface RemotePlayerLegacyProfile {
   playerId: string;
   peakElo: number;
@@ -46,7 +48,7 @@ export const fetchRemotePlayerProfile = async (params: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/player-profile?${search.toString()}`, {
+    const response = await apiFetch(`${API_BASE}/api/player-profile?${search.toString()}`, {
       headers: { accept: "application/json" },
     });
 
