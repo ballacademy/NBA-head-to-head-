@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import {
+  getDailyDateKey,
+  getDailyDraftSetup,
+} from "../../src/lib/dailyDraft";
+import { filterPlayersForSlot } from "../../src/lib/draft";
 import { players } from "../../src/lib/playerPool";
 import { calculateLineupScore } from "../../src/lib/scoring";
 import {
@@ -36,22 +41,55 @@ describe("lineupScoring", () => {
 
 describe("dailyScoreCompute", () => {
   it("computes value and formattedResult for a valid goal lineup", () => {
-    const lineup = players.slice(0, 5).map((player) => player.id);
-    const result = computeDailySubmissionValue("splash-zone", lineup);
-    expect(result).not.toBeNull();
-    expect(Number.isFinite(result!.value)).toBe(true);
-    expect(result!.formattedResult.length).toBeGreaterThan(0);
+    const dateKey = getDailyDateKey();
+    const setup = getDailyDraftSetup(dateKey, "basic");
+    const picked = new Set<string>();
+    const lineup: string[] = [];
+    for (const slot of setup.slots) {
+      const candidate = filterPlayersForSlot(players, slot, picked)[0];
+      expect(candidate).toBeTruthy();
+      lineup.push(candidate!.id);
+      picked.add(candidate!.id);
+    }
+
+    const result = computeDailySubmissionValue(
+      dateKey,
+      "basic",
+      setup.goal.id,
+      lineup,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(Number.isFinite(result.value)).toBe(true);
+    expect(result.formattedResult.length).toBeGreaterThan(0);
   });
 
-  it("returns null for unknown goal or missing players", () => {
+  it("returns errors for unknown goal, duplicates, or missing players", () => {
+    const dateKey = getDailyDateKey();
+    const setup = getDailyDraftSetup(dateKey, "basic");
     const lineup = players.slice(0, 5).map((player) => player.id);
-    expect(computeDailySubmissionValue("not-a-real-goal", lineup)).toBeNull();
+
     expect(
-      computeDailySubmissionValue("splash-zone", [
+      computeDailySubmissionValue(dateKey, "basic", "not-a-real-goal", lineup)
+        .ok,
+    ).toBe(false);
+    expect(
+      computeDailySubmissionValue(dateKey, "basic", setup.goal.id, [
         ...lineup.slice(0, 4),
         "missing-player-id-xyz",
-      ]),
-    ).toBeNull();
+      ]).ok,
+    ).toBe(false);
+    expect(
+      computeDailySubmissionValue(dateKey, "basic", setup.goal.id, [
+        lineup[0]!,
+        lineup[0]!,
+        lineup[1]!,
+        lineup[2]!,
+        lineup[3]!,
+      ]).ok,
+    ).toBe(false);
   });
 });
 

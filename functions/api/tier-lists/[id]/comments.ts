@@ -1,4 +1,5 @@
 import type { Env } from "../../../types";
+import { resolveCommunityAuthorFields } from "../../../lib/communityAuthor";
 import { getAccountByPlayerId } from "../../../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
@@ -16,8 +17,6 @@ const parsePlayerId = (value: unknown) =>
     : "";
 
 const COMMENT_BODY_MAX = 280;
-const AUTHOR_NAME_MAX = 32;
-const AUTHOR_TAG_MAX = 8;
 const LIST_LIMIT = 80;
 
 interface CommentBody {
@@ -54,12 +53,23 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "Tier list not found" }, 404);
   }
 
+  const countRow = await context.env.DB.prepare(
+    `SELECT COUNT(*) AS total FROM tier_list_comments WHERE tier_list_id = ?`,
+  )
+    .bind(tierListId)
+    .first<{ total: number }>();
+  const totalCount = Math.max(0, Math.round(Number(countRow?.total ?? 0)));
+
   const rows = await context.env.DB.prepare(
     `SELECT id, tier_list_id, player_id, author_name, author_tag, body, created_at
-     FROM tier_list_comments
-     WHERE tier_list_id = ?
-     ORDER BY created_at ASC
-     LIMIT ?`,
+     FROM (
+       SELECT id, tier_list_id, player_id, author_name, author_tag, body, created_at
+       FROM tier_list_comments
+       WHERE tier_list_id = ?
+       ORDER BY created_at DESC, id DESC
+       LIMIT ?
+     )
+     ORDER BY created_at ASC, id ASC`,
   )
     .bind(tierListId, LIST_LIMIT)
     .all<{
@@ -82,7 +92,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     createdAt: row.created_at,
   }));
 
-  return json({ comments });
+  return json({
+    comments,
+    totalCount,
+    hasMore: totalCount > comments.length,
+    limit: LIST_LIMIT,
+  });
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -117,18 +132,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return json({ error: "commentId is required" }, 400);
     }
 
-    const existing = await context.env.DB.prepare(
+    const existingComment = await context.env.DB.prepare(
       `SELECT id, player_id FROM tier_list_comments
        WHERE id = ? AND tier_list_id = ?`,
     )
       .bind(commentId, tierListId)
       .first<{ id: string; player_id: string }>();
 
-    if (!existing) {
+    if (!existingComment) {
       return json({ error: "Comment not found" }, 404);
     }
 
-    if (existing.player_id !== playerId) {
+    if (existingComment.player_id !== playerId) {
       return json({ error: "You can only delete your own comments." }, 403);
     }
 
@@ -142,10 +157,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const text = typeof body.body === "string" ? body.body.trim() : "";
-
   if (!text) {
     return json({ error: "Comment body is required" }, 400);
   }
+
   if (text.length > COMMENT_BODY_MAX) {
     return json(
       { error: `Comments can be at most ${COMMENT_BODY_MAX} characters` },
@@ -163,14 +178,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Tier list not found" }, 404);
   }
 
-  const authorName =
-    typeof body.authorName === "string" && body.authorName.trim()
-      ? body.authorName.trim().slice(0, AUTHOR_NAME_MAX)
-      : account.username.slice(0, AUTHOR_NAME_MAX);
-  const authorTag =
-    typeof body.authorTag === "string" && body.authorTag.trim()
-      ? body.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, AUTHOR_TAG_MAX)
-      : "0000";
+  const author = await resolveCommunityAuthorFields(context.env.DB, {
+    playerId,
+    username: account.username,
+  });
+  const { authorName, authorTag } = author;
 
   const now = new Date().toISOString();
   const id = `tlc-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;

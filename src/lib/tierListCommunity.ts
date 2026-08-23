@@ -655,7 +655,11 @@ const normalizeTierListComment = (
 
 export const listTierListComments = async (params: {
   id: string;
-}): Promise<TierListComment[]> => {
+}): Promise<{
+  comments: TierListComment[];
+  totalCount: number;
+  hasMore: boolean;
+}> => {
   try {
     const response = await fetch(
       buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/comments`),
@@ -665,11 +669,23 @@ export const listTierListComments = async (params: {
     if (response.ok) {
       const body = (await response.json()) as {
         comments?: Partial<TierListComment>[];
+        totalCount?: unknown;
+        hasMore?: unknown;
       };
       if (Array.isArray(body.comments)) {
-        return body.comments
+        const comments = body.comments
           .map((entry) => normalizeTierListComment(entry))
           .filter((entry): entry is TierListComment => Boolean(entry));
+        const totalCount = Math.max(
+          comments.length,
+          Math.round(Number(body.totalCount ?? comments.length)) ||
+            comments.length,
+        );
+        return {
+          comments,
+          totalCount,
+          hasMore: body.hasMore === true || totalCount > comments.length,
+        };
       }
     }
   } catch {
@@ -677,7 +693,12 @@ export const listTierListComments = async (params: {
   }
 
   const catalog = loadLocalCatalog();
-  return [...(catalog.commentsByTierListId[params.id] ?? [])];
+  const comments = [...(catalog.commentsByTierListId[params.id] ?? [])];
+  return {
+    comments,
+    totalCount: comments.length,
+    hasMore: false,
+  };
 };
 
 export type CreateTierListCommentResult =

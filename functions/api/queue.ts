@@ -1,5 +1,6 @@
 import type { Env, MatchmakingMode } from "../types";
-import { claimQueueOpponent } from "../lib/matchmakingDb";
+import { claimQueueOpponentAndCreateMatch } from "../lib/matchmakingDb";
+import { resolveServerMatchmakingElo } from "../lib/matchmakingElo";
 import {
   matchmakingModeError,
   parseMatchmakingMode,
@@ -101,49 +102,6 @@ const opponentFromMatch = async (
   };
 };
 
-const createLiveMatch = async (
-  db: D1Database,
-  mode: MatchmakingMode,
-  opponent: QueueRow,
-  joiner: { playerId: string; teamName: string; elo: number },
-) => {
-  const matchId = crypto.randomUUID();
-  const createdAt = nowIso();
-
-  await db
-    .prepare(
-      `INSERT INTO live_matches (
-        id, mode,
-        player_a_id, player_a_team, player_a_elo,
-        player_b_id, player_b_team, player_b_elo,
-        created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      matchId,
-      mode,
-      opponent.player_id,
-      opponent.team_name,
-      Math.round(opponent.elo),
-      joiner.playerId,
-      joiner.teamName,
-      Math.round(joiner.elo),
-      createdAt,
-    )
-    .run();
-
-  return {
-    matchId,
-    createdAt,
-    opponent: {
-      teamName: opponent.team_name,
-      elo: opponent.elo,
-      playerId: opponent.player_id,
-      username: await getUsernameByPlayerId(db, opponent.player_id),
-    },
-  };
-};
-
 interface QueueBody {
   mode?: unknown;
   playerId?: unknown;
@@ -165,7 +123,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.playerId === "string" ? body.playerId.trim() : "";
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
-  const elo = Number(body.elo ?? 1000);
+  const clientElo = Number(body.elo ?? 1000);
 
   if (!mode) {
     return json({ error: matchmakingModeError() }, 400);
@@ -181,33 +139,37 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: profanityError }, 400);
   }
 
-  if (!Number.isFinite(elo)) {
+  if (!Number.isFinite(clientElo)) {
     return json({ error: "elo must be a number" }, 400);
   }
 
   const db = context.env.DB;
+  const elo = await resolveServerMatchmakingElo(db, {
+    mode,
+    playerId,
+    clientElo,
+  });
+
   await cleanupExpiredQueue(db);
   const now = nowIso();
 
-  const opponent = await claimQueueOpponent(
+  const matched = await claimQueueOpponentAndCreateMatch(
     db,
     mode,
-    playerId,
-    Math.round(elo),
+    { playerId, teamName, elo },
     now,
   );
 
-  if (opponent) {
-    const match = await createLiveMatch(db, mode, opponent, {
-      playerId,
-      teamName,
-      elo: Math.round(elo),
-    });
-
+  if (matched) {
     return json({
       status: "matched",
-      matchId: match.matchId,
-      opponent: match.opponent,
+      matchId: matched.matchId,
+      opponent: {
+        teamName: matched.opponent.team_name,
+        elo: matched.opponent.elo,
+        playerId: matched.opponent.player_id,
+        username: await getUsernameByPlayerId(db, matched.opponent.player_id),
+      },
     });
   }
 
@@ -230,7 +192,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       mode,
       playerId,
       teamName,
-      Math.round(elo),
+      elo,
       joinedAt,
       expiresIso(QUEUE_TTL_SECONDS),
     )

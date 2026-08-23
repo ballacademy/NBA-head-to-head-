@@ -162,6 +162,93 @@ export const releaseGhostOpponentClaim = async (
     .run();
 };
 
+export const claimQueueOpponentAndCreateMatch = async (
+  db: D1Database,
+  mode: MatchmakingMode,
+  joiner: { playerId: string; teamName: string; elo: number },
+  now: string,
+): Promise<{ matchId: string; opponent: QueueEntryRow } | null> => {
+  const selectBanded = () => {
+    const minElo = Math.max(0, Math.round(joiner.elo) - 250);
+    const maxElo = Math.round(joiner.elo) + 250;
+    return db
+      .prepare(
+        `SELECT id, mode, player_id, team_name, elo, joined_at, expires_at
+         FROM matchmaking_queue
+         WHERE mode = ?
+           AND player_id != ?
+           AND expires_at >= ?
+           AND elo BETWEEN ? AND ?
+         ORDER BY joined_at ASC
+         LIMIT 1`,
+      )
+      .bind(mode, joiner.playerId, now, minElo, maxElo)
+      .first<QueueEntryRow>();
+  };
+
+  const selectAny = () =>
+    db
+      .prepare(
+        `SELECT id, mode, player_id, team_name, elo, joined_at, expires_at
+         FROM matchmaking_queue
+         WHERE mode = ?
+           AND player_id != ?
+           AND expires_at >= ?
+         ORDER BY joined_at ASC
+         LIMIT 1`,
+      )
+      .bind(mode, joiner.playerId, now)
+      .first<QueueEntryRow>();
+
+  // A few attempts: another joiner may race the same candidate between SELECT and batch.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const candidate = (await selectBanded()) ?? (await selectAny());
+    if (!candidate) {
+      return null;
+    }
+
+    const matchId = crypto.randomUUID();
+    const createdAt = now;
+    const results = await db.batch([
+      db
+        .prepare(
+          `INSERT INTO live_matches (
+            id, mode,
+            player_a_id, player_a_team, player_a_elo,
+            player_b_id, player_b_team, player_b_elo,
+            created_at
+          )
+          SELECT ?, mode, player_id, team_name, elo, ?, ?, ?, ?
+          FROM matchmaking_queue
+          WHERE id = ? AND expires_at >= ?`,
+        )
+        .bind(
+          matchId,
+          joiner.playerId,
+          joiner.teamName,
+          Math.round(joiner.elo),
+          createdAt,
+          candidate.id,
+          now,
+        ),
+      db
+        .prepare(
+          `DELETE FROM matchmaking_queue
+           WHERE id = ?
+             AND EXISTS (SELECT 1 FROM live_matches WHERE id = ?)`,
+        )
+        .bind(candidate.id, matchId),
+    ]);
+
+    if ((results[0]?.meta?.changes ?? 0) >= 1) {
+      return { matchId, opponent: candidate };
+    }
+  }
+
+  return null;
+};
+
+/** @deprecated Prefer {@link claimQueueOpponentAndCreateMatch} — delete-first can drop waiters. */
 export const claimQueueOpponent = async (
   db: D1Database,
   mode: MatchmakingMode,

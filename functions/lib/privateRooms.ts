@@ -188,54 +188,63 @@ export const claimPrivateRoomAndCreateMatch = async (
   const createdAt = new Date().toISOString();
   const guestElo = Math.round(params.guestElo);
 
-  const claim = await db
-    .prepare(
-      `UPDATE private_rooms
-       SET guest_player_id = ?,
-           guest_team_name = ?,
-           guest_elo = ?,
-           match_id = ?,
-           status = 'matched'
-       WHERE code = ?
-         AND status = 'waiting'
-         AND guest_player_id IS NULL
-         AND expires_at >= ?`,
-    )
-    .bind(
-      params.guestPlayerId,
-      params.guestTeamName,
-      guestElo,
-      matchId,
-      params.code,
-      createdAt,
-    )
-    .run();
+  // Insert the live match only while the room is still waiting, then mark the
+  // room matched — one D1 batch so a failed insert cannot leave matched-without-match.
+  const results = await db.batch([
+    db
+      .prepare(
+        `INSERT INTO live_matches (
+          id, mode,
+          player_a_id, player_a_team, player_a_elo,
+          player_b_id, player_b_team, player_b_elo,
+          created_at
+        )
+        SELECT ?, mode, host_player_id, host_team_name, host_elo, ?, ?, ?, ?
+        FROM private_rooms
+        WHERE code = ?
+          AND status = 'waiting'
+          AND guest_player_id IS NULL
+          AND expires_at >= ?
+          AND host_player_id != ?
+          AND (invited_player_id IS NULL OR invited_player_id = ?)`,
+      )
+      .bind(
+        matchId,
+        params.guestPlayerId,
+        params.guestTeamName,
+        guestElo,
+        createdAt,
+        params.code,
+        createdAt,
+        params.guestPlayerId,
+        params.guestPlayerId,
+      ),
+    db
+      .prepare(
+        `UPDATE private_rooms
+         SET guest_player_id = ?,
+             guest_team_name = ?,
+             guest_elo = ?,
+             match_id = ?,
+             status = 'matched'
+         WHERE code = ?
+           AND status = 'waiting'
+           AND guest_player_id IS NULL
+           AND EXISTS (SELECT 1 FROM live_matches WHERE id = ?)`,
+      )
+      .bind(
+        params.guestPlayerId,
+        params.guestTeamName,
+        guestElo,
+        matchId,
+        params.code,
+        matchId,
+      ),
+  ]);
 
-  if ((claim.meta?.changes ?? 0) < 1) {
+  if ((results[0]?.meta?.changes ?? 0) < 1) {
     return null;
   }
-
-  await db
-    .prepare(
-      `INSERT INTO live_matches (
-        id, mode,
-        player_a_id, player_a_team, player_a_elo,
-        player_b_id, player_b_team, player_b_elo,
-        created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      matchId,
-      mode,
-      room.host_player_id,
-      room.host_team_name,
-      Math.round(room.host_elo),
-      params.guestPlayerId,
-      params.guestTeamName,
-      guestElo,
-      createdAt,
-    )
-    .run();
 
   return {
     matchId,

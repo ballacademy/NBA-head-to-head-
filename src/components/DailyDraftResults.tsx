@@ -240,28 +240,33 @@ export function DailyDraftResults({
     }
 
     setSyncRetryBusy(true);
-    const refreshed = await refreshDailyDraftScoresFromApi(
-      dailyDateKey,
-      dailyGoal.id,
-      getOrCreatePlayerId(),
-      dailyGoal.mode,
-    );
-    const result = await submitDailyDraftScore(
-      dailyDateKey,
-      dailyGoal,
-      goalResult.value,
-      goalResult.formatted,
-      benchmarkValues,
-      displayLineup.map((player) => player.id),
-      user.name,
-    );
-    if (result.adoptedExisting) {
-      adoptCanonicalEntry(result.entry);
-      setAdoptedExistingAttempt(true);
+    try {
+      const refreshed = await refreshDailyDraftScoresFromApi(
+        dailyDateKey,
+        dailyGoal.id,
+        getOrCreatePlayerId(),
+        dailyGoal.mode,
+      );
+      const result = await submitDailyDraftScore(
+        dailyDateKey,
+        dailyGoal,
+        goalResult.value,
+        goalResult.formatted,
+        benchmarkValues,
+        displayLineup.map((player) => player.id),
+        user.name,
+      );
+      if (result.adoptedExisting) {
+        adoptCanonicalEntry(result.entry);
+        setAdoptedExistingAttempt(true);
+      }
+      setPercentileResult(result);
+      setRemoteSyncFailed(!(result.remoteSynced || refreshed));
+    } catch {
+      setRemoteSyncFailed(true);
+    } finally {
+      setSyncRetryBusy(false);
     }
-    setPercentileResult(result);
-    setRemoteSyncFailed(!(result.remoteSynced || refreshed));
-    setSyncRetryBusy(false);
   };
 
   useEffect(() => {

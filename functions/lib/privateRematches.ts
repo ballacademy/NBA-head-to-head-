@@ -83,44 +83,6 @@ export const loadLiveMatchPair = async (db: D1Database, matchId: string) =>
     .bind(matchId)
     .first<LiveMatchPairRow>();
 
-const createRematchLiveMatch = async (
-  db: D1Database,
-  params: {
-    matchId: string;
-    mode: PrivateRoomMode;
-    playerAId: string;
-    playerATeam: string;
-    playerAElo: number;
-    playerBId: string;
-    playerBTeam: string;
-    playerBElo: number;
-  },
-) => {
-  const createdAt = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO live_matches (
-        id, mode,
-        player_a_id, player_a_team, player_a_elo,
-        player_b_id, player_b_team, player_b_elo,
-        created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      params.matchId,
-      params.mode,
-      params.playerAId,
-      params.playerATeam,
-      Math.round(params.playerAElo),
-      params.playerBId,
-      params.playerBTeam,
-      Math.round(params.playerBElo),
-      createdAt,
-    )
-    .run();
-  return params.matchId;
-};
-
 export const isLiveMatchStillJoinable = async (db: D1Database, matchId: string) => {
   const row = await db
     .prepare(
@@ -367,34 +329,42 @@ const finalizeReadyOffer = async (
   }
 
   if (refreshed.player_a_ready_at && refreshed.player_b_ready_at) {
-    // Claim first (like private rooms), then create the live match — avoids
-    // orphan live_matches when both clients finalize at once or one cancels.
+    // Insert live match from a still-waiting both-ready row, then mark matched —
+    // one D1 batch so a failed insert cannot leave matched-without-match.
     const newMatchId = crypto.randomUUID();
-    const claimed = await db
-      .prepare(
-        `UPDATE private_rematches
-         SET status = 'matched', new_match_id = ?
-         WHERE source_match_id = ?
-           AND status = 'waiting'
-           AND player_a_ready_at IS NOT NULL
-           AND player_b_ready_at IS NOT NULL
-           AND new_match_id IS NULL`,
-      )
-      .bind(newMatchId, params.sourceMatchId)
-      .run();
+    const createdAt = new Date().toISOString();
+    const results = await db.batch([
+      db
+        .prepare(
+          `INSERT INTO live_matches (
+            id, mode,
+            player_a_id, player_a_team, player_a_elo,
+            player_b_id, player_b_team, player_b_elo,
+            created_at
+          )
+          SELECT ?, ?, player_a_id, player_a_team, player_a_elo,
+                 player_b_id, player_b_team, player_b_elo, ?
+          FROM private_rematches
+          WHERE source_match_id = ?
+            AND status = 'waiting'
+            AND player_a_ready_at IS NOT NULL
+            AND player_b_ready_at IS NOT NULL
+            AND new_match_id IS NULL`,
+        )
+        .bind(newMatchId, params.mode, createdAt, params.sourceMatchId),
+      db
+        .prepare(
+          `UPDATE private_rematches
+           SET status = 'matched', new_match_id = ?
+           WHERE source_match_id = ?
+             AND status = 'waiting'
+             AND new_match_id IS NULL
+             AND EXISTS (SELECT 1 FROM live_matches WHERE id = ?)`,
+        )
+        .bind(newMatchId, params.sourceMatchId, newMatchId),
+    ]);
 
-    if ((claimed.meta?.changes ?? 0) >= 1) {
-      await createRematchLiveMatch(db, {
-        matchId: newMatchId,
-        mode: params.mode,
-        playerAId: refreshed.player_a_id,
-        playerATeam: refreshed.player_a_team,
-        playerAElo: refreshed.player_a_elo,
-        playerBId: refreshed.player_b_id,
-        playerBTeam: refreshed.player_b_team,
-        playerBElo: refreshed.player_b_elo,
-      });
-
+    if ((results[0]?.meta?.changes ?? 0) >= 1) {
       return matchedResultForPlayer(
         { ...refreshed, new_match_id: newMatchId, status: "matched" },
         {

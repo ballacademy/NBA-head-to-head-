@@ -150,7 +150,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     typeof body.dateKey === "string" ? body.dateKey : null,
   );
   const goalId = parseGoalId(typeof body.goalId === "string" ? body.goalId : null);
-  const mode = parseMode(typeof body.mode === "string" ? body.mode : null);
   const playerId = parsePlayerId(body.playerId);
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
@@ -178,15 +177,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "lineup must contain exactly 5 player ids" }, 400);
   }
 
-  const computed = computeDailySubmissionValue(goalId, lineup);
-  if (!computed) {
-    return json(
-      {
-        error:
-          "could not score daily lineup; invalid goalId or unknown player ids",
-      },
-      400,
-    );
+  const rawMode = typeof body.mode === "string" ? body.mode.trim() : "";
+  if (rawMode && rawMode !== "basic" && rawMode !== "advanced") {
+    return json({ error: "mode must be basic or advanced" }, 400);
+  }
+  const mode = rawMode === "advanced" ? "advanced" : "basic";
+
+  const computed = computeDailySubmissionValue(dateKey, mode, goalId, lineup);
+  if (!computed.ok) {
+    return json({ error: computed.error }, 400);
   }
 
   const { value, formattedResult } = computed;

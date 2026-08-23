@@ -1,4 +1,5 @@
 import type { Env } from "../types";
+import { resolveCommunityAuthorFields } from "../lib/communityAuthor";
 import { getAccountByPlayerId } from "../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
@@ -17,8 +18,6 @@ const parsePlayerId = (value: unknown) =>
 
 const BODY_MAX = 400;
 const REPLY_BODY_MAX = 280;
-const AUTHOR_NAME_MAX = 32;
-const AUTHOR_TAG_MAX = 8;
 const LIST_LIMIT = 50;
 const REPLY_LIMIT = 40;
 const ATTACHMENT_JSON_MAX = 8_000;
@@ -77,14 +76,6 @@ const parseJsonObject = (value: unknown, max: number): string | null => {
   } catch {
     return null;
   }
-};
-
-const parseElo = (value: unknown) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) {
-    return null;
-  }
-  return Math.max(0, Math.min(4000, Math.round(n)));
 };
 
 const parseQuote = (raw: string | null) => {
@@ -174,12 +165,25 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   if (repliesFor) {
     const postId = repliesFor.trim().slice(0, 80);
+    const countRow = await context.env.DB.prepare(
+      `SELECT COUNT(*) AS total FROM community_post_replies WHERE post_id = ?`,
+    )
+      .bind(postId)
+      .first<{ total: number }>();
+    const totalCount = Math.max(0, Math.round(Number(countRow?.total ?? 0)));
+
+    // Newest page, then reverse to chronological display order so recent
+    // replies stay visible once the thread exceeds REPLY_LIMIT.
     const rows = await context.env.DB.prepare(
       `SELECT id, post_id, player_id, author_name, author_tag, body, created_at
-       FROM community_post_replies
-       WHERE post_id = ?
-       ORDER BY created_at ASC
-       LIMIT ?`,
+       FROM (
+         SELECT id, post_id, player_id, author_name, author_tag, body, created_at
+         FROM community_post_replies
+         WHERE post_id = ?
+         ORDER BY created_at DESC, id DESC
+         LIMIT ?
+       )
+       ORDER BY created_at ASC, id ASC`,
     )
       .bind(postId, REPLY_LIMIT)
       .all<{
@@ -192,8 +196,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         created_at: string;
       }>();
 
+    const replies = (rows.results ?? []).map(mapReplyRow);
     return json({
-      replies: (rows.results ?? []).map(mapReplyRow),
+      replies,
+      totalCount,
+      hasMore: totalCount > replies.length,
+      limit: REPLY_LIMIT,
     });
   }
 
@@ -483,14 +491,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       return json({ error: "Post not found" }, 404);
     }
 
-    const authorName =
-      typeof body.authorName === "string" && body.authorName.trim()
-        ? body.authorName.trim().slice(0, AUTHOR_NAME_MAX)
-        : account.username.slice(0, AUTHOR_NAME_MAX);
-    const authorTag =
-      typeof body.authorTag === "string" && body.authorTag.trim()
-        ? body.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, AUTHOR_TAG_MAX)
-        : "0000";
+    const author = await resolveCommunityAuthorFields(context.env.DB, {
+      playerId,
+      username: account.username,
+    });
+    const authorName = author.authorName;
+    const authorTag = author.authorTag;
 
     const now = new Date().toISOString();
     const id = `creply-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
@@ -639,16 +645,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 
-  const authorName =
-    typeof body.authorName === "string" && body.authorName.trim()
-      ? body.authorName.trim().slice(0, AUTHOR_NAME_MAX)
-      : account.username.slice(0, AUTHOR_NAME_MAX);
-  const authorTag =
-    typeof body.authorTag === "string" && body.authorTag.trim()
-      ? body.authorTag.replace(/^#/, "").trim().toUpperCase().slice(0, AUTHOR_TAG_MAX)
-      : "0000";
-  const authorClassicElo = parseElo(body.authorClassicElo);
-  const authorRankedElo = parseElo(body.authorRankedElo);
+  const author = await resolveCommunityAuthorFields(context.env.DB, {
+    playerId,
+    username: account.username,
+  });
+  const { authorName, authorTag, authorClassicElo, authorRankedElo } = author;
 
   const now = new Date().toISOString();
   const id = `cpost-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;

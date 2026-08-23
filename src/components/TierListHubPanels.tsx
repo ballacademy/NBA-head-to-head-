@@ -676,7 +676,10 @@ export function CommunityPostsPanel({
   const [showingFullMatchup, setShowingFullMatchup] = useState(false);
   const [expandedReplies, setExpandedReplies] = useState<string | null>(null);
   const [repliesByPost, setRepliesByPost] = useState<
-    Record<string, CommunityPostReply[]>
+    Record<
+      string,
+      { replies: CommunityPostReply[]; totalCount: number; hasMore: boolean }
+    >
   >({});
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyBusy, setReplyBusy] = useState<string | null>(null);
@@ -906,8 +909,8 @@ export function CommunityPostsPanel({
     if (repliesByPost[postId]) {
       return;
     }
-    const replies = await listCommunityPostReplies({ postId });
-    setRepliesByPost((current) => ({ ...current, [postId]: replies }));
+    const page = await listCommunityPostReplies({ postId });
+    setRepliesByPost((current) => ({ ...current, [postId]: page }));
   };
 
   const handleSubmitReply = async (postId: string) => {
@@ -930,10 +933,18 @@ export function CommunityPostsPanel({
       return;
     }
     setReplyDrafts((current) => ({ ...current, [postId]: "" }));
-    setRepliesByPost((current) => ({
-      ...current,
-      [postId]: [...(current[postId] ?? []), result.reply],
-    }));
+    setRepliesByPost((current) => {
+      const existing = current[postId];
+      const replies = [...(existing?.replies ?? []), result.reply];
+      return {
+        ...current,
+        [postId]: {
+          replies,
+          totalCount: Math.max((existing?.totalCount ?? 0) + 1, replies.length),
+          hasMore: existing?.hasMore ?? false,
+        },
+      };
+    });
   };
 
   const handleDeleteReply = async (postId: string, replyId: string) => {
@@ -951,10 +962,23 @@ export function CommunityPostsPanel({
       setReplyError(result.error);
       return;
     }
-    setRepliesByPost((current) => ({
-      ...current,
-      [postId]: (current[postId] ?? []).filter((reply) => reply.id !== replyId),
-    }));
+    setRepliesByPost((current) => {
+      const existing = current[postId];
+      const replies = (existing?.replies ?? []).filter(
+        (reply) => reply.id !== replyId,
+      );
+      return {
+        ...current,
+        [postId]: {
+          replies,
+          totalCount: Math.max(
+            0,
+            (existing?.totalCount ?? replies.length) - 1,
+          ),
+          hasMore: existing?.hasMore ?? false,
+        },
+      };
+    });
   };
 
   const handleReport = async (postId: string) => {
@@ -1164,9 +1188,11 @@ export function CommunityPostsPanel({
             const isOwn = Boolean(
               viewerPlayerId && post.playerId === viewerPlayerId,
             );
+            const replyPage = repliesByPost[post.id];
             const replyCount = Math.max(
               post.replyCount,
-              (repliesByPost[post.id] ?? []).length,
+              replyPage?.totalCount ?? 0,
+              replyPage?.replies.length ?? 0,
             );
             const replyRemaining =
               COMMUNITY_REPLY_BODY_MAX - (replyDrafts[post.id]?.length ?? 0);
@@ -1432,13 +1458,13 @@ export function CommunityPostsPanel({
 
                   {expandedReplies === post.id ? (
                     <div className="community-posts-panel__replies">
-                      {(repliesByPost[post.id] ?? []).length === 0 ? (
+                      {(replyPage?.replies.length ?? 0) === 0 ? (
                         <p className="community-posts-panel__replies-empty">
                           Be the first to reply
                         </p>
                       ) : (
                         <ul className="community-posts-panel__replies-list">
-                          {(repliesByPost[post.id] ?? []).map((reply) => (
+                          {(replyPage?.replies ?? []).map((reply) => (
                             <li key={reply.id}>
                               <div className="community-posts-panel__reply-meta">
                                 <strong>
@@ -1467,6 +1493,12 @@ export function CommunityPostsPanel({
                           ))}
                         </ul>
                       )}
+                      {replyPage?.hasMore ? (
+                        <p className="community-posts-panel__replies-empty">
+                          Showing latest {replyPage.replies.length} of{" "}
+                          {replyPage.totalCount} replies
+                        </p>
+                      ) : null}
                       {accountReady ? (
                         <div className="community-posts-panel__reply-compose">
                           <textarea
@@ -1474,7 +1506,7 @@ export function CommunityPostsPanel({
                             maxLength={COMMUNITY_REPLY_BODY_MAX}
                             value={replyDrafts[post.id] ?? ""}
                             placeholder={
-                              (repliesByPost[post.id] ?? []).length === 0
+                              (replyPage?.replies.length ?? 0) === 0
                                 ? "Be the first to reply…"
                                 : "Write a reply…"
                             }
@@ -1812,6 +1844,8 @@ interface TierListPublicViewerProps {
   onUnpublishOwned?: () => void;
   accountLinked?: boolean | null;
   comments: TierListComment[];
+  commentsTotalCount?: number;
+  commentsHasMore?: boolean;
   commentsLoading: boolean;
   commentDraft: string;
   onCommentDraftChange: (value: string) => void;
@@ -1834,6 +1868,8 @@ export function TierListPublicViewer({
   onUnpublishOwned,
   accountLinked = null,
   comments,
+  commentsTotalCount,
+  commentsHasMore = false,
   commentsLoading,
   commentDraft,
   onCommentDraftChange,
@@ -1847,6 +1883,7 @@ export function TierListPublicViewer({
 }: TierListPublicViewerProps) {
   const accountReady = accountLinked === true;
   const commentRemaining = TIER_LIST_COMMENT_BODY_MAX - commentDraft.length;
+  const commentCount = Math.max(commentsTotalCount ?? 0, comments.length);
 
   return (
     <div className="tier-list-hub__panel tier-list-hub__viewer">
@@ -1978,7 +2015,7 @@ export function TierListPublicViewer({
         <div className="tier-list-hub__comments-header">
           <h3>Comments</h3>
           <span>
-            {comments.length} comment{comments.length === 1 ? "" : "s"}
+            {commentCount} comment{commentCount === 1 ? "" : "s"}
           </span>
         </div>
 
@@ -2021,6 +2058,11 @@ export function TierListPublicViewer({
             })}
           </ul>
         )}
+        {commentsHasMore ? (
+          <p className="tier-list__hint" role="status">
+            Showing latest {comments.length} of {commentCount} comments
+          </p>
+        ) : null}
 
         {accountLinked === null ? (
           <p className="tier-list__hint" role="status">
