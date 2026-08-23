@@ -154,6 +154,7 @@ export function MatchResults({
   const [shareState, setShareState] = useState<"idle" | "busy" | "error">(
     "idle",
   );
+  const [shareWarning, setShareWarning] = useState<string | null>(null);
   const [ghostOutcomeFailed, setGhostOutcomeFailed] = useState(false);
   const [ghostOutcomeRetryBusy, setGhostOutcomeRetryBusy] = useState(false);
   const [eventLeaderboardSyncFailed, setEventLeaderboardSyncFailed] =
@@ -685,6 +686,13 @@ export function MatchResults({
       trackProductEvent("share_matchup", {
         surface: "match_results",
       });
+      setShareWarning(
+        inputs.missingPlayerCount > 0
+          ? `${inputs.missingPlayerCount} player${
+              inputs.missingPlayerCount === 1 ? "" : "s"
+            } missing from share image.`
+          : null,
+      );
       setShareState("idle");
     } catch (error) {
       if (isShareDismissalError(error)) {
@@ -996,6 +1004,11 @@ export function MatchResults({
           {matchmakingNotice ? (
             <p className="match-results__matchmaking-notice" role="status">
               {matchmakingNotice}
+            </p>
+          ) : null}
+          {shareWarning ? (
+            <p className="match-results__matchmaking-notice" role="status">
+              {shareWarning}
             </p>
           ) : null}
           {startMatchError ? (

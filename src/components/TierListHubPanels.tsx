@@ -13,6 +13,7 @@ import {
   COMMUNITY_POST_BODY_MAX,
   COMMUNITY_REPLY_BODY_MAX,
   createCommunityPostReply,
+  deleteCommunityReply,
   formatCommunityPostTime,
   listCommunityPostReplies,
   reportCommunityPost,
@@ -33,6 +34,7 @@ import {
   formatCommunityAttachmentChip,
   formatCommunityAttachmentSummary,
   formatCommunityMatchupDetails,
+  formatMissingPlayersShareWarning,
   type CommunityPostAttachment,
 } from "../lib/communityShareables";
 import {
@@ -766,7 +768,7 @@ export function CommunityPostsPanel({
     async (
       attachment: CommunityPostAttachment,
       mode: "lineup" | "matchup",
-    ) => {
+    ): Promise<{ blob: Blob; missingPlayerCount: number } | null> => {
       if (attachment.kind === "tierList") {
         return null;
       }
@@ -778,13 +780,20 @@ export function CommunityPostsPanel({
         if (!inputs) {
           return null;
         }
-        return createMatchupShareCardBlob(inputs);
+        return {
+          blob: await createMatchupShareCardBlob(inputs),
+          missingPlayerCount: inputs.missingPlayerCount,
+        };
       }
       const input = buildShareCardInputFromAttachment(attachment, playersById);
       if (!input) {
         return null;
       }
-      return createLineupShareCardBlob(input);
+      const { missingPlayerCount, ...cardInput } = input;
+      return {
+        blob: await createLineupShareCardBlob(cardInput),
+        missingPlayerCount,
+      };
     },
     [playersById],
   );
@@ -813,16 +822,19 @@ export function CommunityPostsPanel({
     });
 
     try {
-      const blob = await renderShareImage(attachment, "lineup");
+      const rendered = await renderShareImage(attachment, "lineup");
       if (requestId !== viewRequestIdRef.current) {
         return;
       }
-      if (!blob) {
+      if (!rendered) {
         setViewError("Could not rebuild that lineup image.");
         setViewBusy(false);
         return;
       }
-      setViewImageUrl(URL.createObjectURL(blob));
+      setViewImageUrl(URL.createObjectURL(rendered.blob));
+      setViewError(
+        formatMissingPlayersShareWarning(rendered.missingPlayerCount),
+      );
     } catch {
       if (requestId !== viewRequestIdRef.current) {
         return;
@@ -852,22 +864,26 @@ export function CommunityPostsPanel({
       return null;
     });
     try {
-      const blob = await renderShareImage(
+      const rendered = await renderShareImage(
         viewingAttachment,
         next ? "matchup" : "lineup",
       );
       if (requestId !== viewRequestIdRef.current) {
         return;
       }
-      if (!blob) {
+      if (!rendered) {
         setViewError(
           next
-            ? "Could not rebuild the full matchup image."
+            ? "Could not rebuild that matchup image."
             : "Could not rebuild that lineup image.",
         );
+        setViewBusy(false);
         return;
       }
-      setViewImageUrl(URL.createObjectURL(blob));
+      setViewImageUrl(URL.createObjectURL(rendered.blob));
+      setViewError(
+        formatMissingPlayersShareWarning(rendered.missingPlayerCount),
+      );
     } catch {
       if (requestId !== viewRequestIdRef.current) {
         return;
@@ -917,6 +933,27 @@ export function CommunityPostsPanel({
     setRepliesByPost((current) => ({
       ...current,
       [postId]: [...(current[postId] ?? []), result.reply],
+    }));
+  };
+
+  const handleDeleteReply = async (postId: string, replyId: string) => {
+    if (!accountReady || actionBusy) {
+      return;
+    }
+    setActionBusy(replyId);
+    setReplyError(null);
+    const result = await deleteCommunityReply({
+      playerId: viewerPlayerId,
+      replyId,
+    });
+    setActionBusy(null);
+    if (!result.ok) {
+      setReplyError(result.error);
+      return;
+    }
+    setRepliesByPost((current) => ({
+      ...current,
+      [postId]: (current[postId] ?? []).filter((reply) => reply.id !== replyId),
     }));
   };
 
@@ -1295,10 +1332,33 @@ export function CommunityPostsPanel({
                         className="community-posts-panel__menu"
                         open={openMenuPostId === post.id}
                         onToggle={(event) => {
-                          const open = (
-                            event.currentTarget as HTMLDetailsElement
-                          ).open;
+                          const details = event.currentTarget as HTMLDetailsElement;
+                          const open = details.open;
                           setOpenMenuPostId(open ? post.id : null);
+                          if (!open) {
+                            details.classList.remove("is-up");
+                            return;
+                          }
+                          requestAnimationFrame(() => {
+                            const panel = details.querySelector(
+                              ".community-posts-panel__menu-panel",
+                            ) as HTMLElement | null;
+                            if (!panel) {
+                              return;
+                            }
+                            const panelRect = panel.getBoundingClientRect();
+                            const scrollParent = details.closest(
+                              ".landing-hub-scroll",
+                            );
+                            const boundsBottom = scrollParent
+                              ? scrollParent.getBoundingClientRect().bottom
+                              : window.innerHeight;
+                            if (panelRect.bottom > boundsBottom) {
+                              details.classList.add("is-up");
+                            } else {
+                              details.classList.remove("is-up");
+                            }
+                          });
                         }}
                       >
                         <summary
@@ -1380,13 +1440,28 @@ export function CommunityPostsPanel({
                         <ul className="community-posts-panel__replies-list">
                           {(repliesByPost[post.id] ?? []).map((reply) => (
                             <li key={reply.id}>
-                              <strong>
-                                {reply.authorName} ·{" "}
-                                {formatPublicTag(reply.authorTag)}
-                              </strong>
-                              <span>
-                                {formatCommunityPostTime(reply.createdAt)}
-                              </span>
+                              <div className="community-posts-panel__reply-meta">
+                                <strong>
+                                  {reply.authorName} ·{" "}
+                                  {formatPublicTag(reply.authorTag)}
+                                </strong>
+                                <span>
+                                  {formatCommunityPostTime(reply.createdAt)}
+                                </span>
+                                {accountReady &&
+                                reply.playerId === viewerPlayerId ? (
+                                  <button
+                                    type="button"
+                                    className="community-posts-panel__text-action"
+                                    disabled={actionBusy === reply.id}
+                                    onClick={() =>
+                                      void handleDeleteReply(post.id, reply.id)
+                                    }
+                                  >
+                                    Delete
+                                  </button>
+                                ) : null}
+                              </div>
                               <p>{reply.body}</p>
                             </li>
                           ))}
@@ -1746,6 +1821,7 @@ interface TierListPublicViewerProps {
   onSignIn?: () => void;
   viewerPlayerId?: string;
   onDeleteComment?: (commentId: string) => void;
+  onReport?: () => void;
 }
 
 export function TierListPublicViewer({
@@ -1767,6 +1843,7 @@ export function TierListPublicViewer({
   onSignIn,
   viewerPlayerId,
   onDeleteComment,
+  onReport,
 }: TierListPublicViewerProps) {
   const accountReady = accountLinked === true;
   const commentRemaining = TIER_LIST_COMMENT_BODY_MAX - commentDraft.length;
@@ -1812,6 +1889,15 @@ export function TierListPublicViewer({
           <button type="button" className="secondary-button" onClick={onCopyLink}>
             Copy link
           </button>
+          {!detail.isOwner && onReport ? (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onReport}
+            >
+              Report
+            </button>
+          ) : null}
           {detail.isOwner && onEditOwned ? (
             <button
               type="button"

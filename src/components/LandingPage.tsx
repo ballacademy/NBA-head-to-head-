@@ -185,6 +185,8 @@ interface LandingPageProps {
   onHubTabChange: (tab: LandingContentTab) => void;
   onPrefetchHubTab?: (tab: LandingHubTab) => void;
   pendingOwnerResultCount?: number;
+  cloudSyncError?: string | null;
+  onRetryCloudSync?: () => void;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -237,6 +239,8 @@ export function LandingPage({
   onHubTabChange,
   onPrefetchHubTab,
   pendingOwnerResultCount = 0,
+  cloudSyncError = null,
+  onRetryCloudSync,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -1591,6 +1595,8 @@ export function LandingPage({
               onViewWeeklyRecap("roster");
             }}
             onPlayIntent={handlePlayIntent}
+            cloudSyncError={cloudSyncError}
+            onRetryCloudSync={onRetryCloudSync}
           />
           </div>
         ) : null}

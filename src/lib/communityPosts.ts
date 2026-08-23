@@ -825,3 +825,66 @@ export const reportCommunityPost = async (params: {
     };
   }
 };
+
+export type DeleteCommunityReplyResult =
+  | { ok: true; replyId: string; postId: string }
+  | { ok: false; error: string; accountRequired?: boolean };
+
+export const deleteCommunityReply = async (params: {
+  playerId: string;
+  replyId: string;
+}): Promise<DeleteCommunityReplyResult> => {
+  const linked = await isPlayerAccountLinked(params.playerId);
+  if (!linked) {
+    return {
+      ok: false,
+      error: "Create an account to delete replies.",
+      accountRequired: true,
+    };
+  }
+
+  try {
+    const response = await fetch(buildUrl("/api/community-posts"), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        action: "delete-reply",
+        playerId: params.playerId,
+        replyId: params.replyId,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { ok?: boolean; replyId?: string; postId?: string; error?: string }
+      | null;
+
+    if (response.status === 403) {
+      return {
+        ok: false,
+        error: payload?.error ?? "You can only delete your own replies.",
+        accountRequired: payload?.error?.includes("account") || undefined,
+      };
+    }
+
+    if (!response.ok || !payload?.replyId || !payload.postId) {
+      return {
+        ok: false,
+        error: payload?.error ?? "Could not delete reply. Try again.",
+      };
+    }
+
+    return {
+      ok: true,
+      replyId: payload.replyId,
+      postId: payload.postId,
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Try again.",
+    };
+  }
+};

@@ -289,25 +289,46 @@ const resolvePlayersByIds = (
   ids: string[] | undefined,
   names: string[],
   playersById: Map<string, Player>,
-): Player[] => {
+): { players: Player[]; missingCount: number } => {
   const byName = new Map(
     [...playersById.values()].map((player) => [player.name, player]),
   );
 
   if (ids && ids.length > 0) {
-    return ids.map((id, index) => {
+    const resolved = ids.map((id, index) => {
       const byId = playersById.get(id);
       if (byId) {
         return byId;
       }
       const fallbackName = names[index];
       return fallbackName ? byName.get(fallbackName) : undefined;
-    }).filter((player): player is Player => player != null);
+    });
+    const players = resolved.filter(
+      (player): player is Player => player != null,
+    );
+    return {
+      players,
+      missingCount: Math.max(0, ids.length - players.length),
+    };
   }
 
-  return names
-    .map((name) => byName.get(name))
-    .filter((player): player is Player => player != null);
+  const resolved = names.map((name) => byName.get(name));
+  const players = resolved.filter(
+    (player): player is Player => player != null,
+  );
+  return {
+    players,
+    missingCount: Math.max(0, names.length - players.length),
+  };
+};
+
+export const formatMissingPlayersShareWarning = (missingCount: number) => {
+  if (missingCount <= 0) {
+    return null;
+  }
+  return missingCount === 1
+    ? "1 player couldn’t be resolved and was left out of the image."
+    : `${missingCount} players couldn’t be resolved and were left out of the image.`;
 };
 
 const formatSavedFooterNote = (savedAt: string) => {
@@ -325,13 +346,13 @@ const formatSavedFooterNote = (savedAt: string) => {
 export const buildShareCardInputFromAttachment = (
   attachment: CommunityPostAttachment,
   playersById: Map<string, Player>,
-): LineupShareCardInput | null => {
+): (LineupShareCardInput & { missingPlayerCount: number }) | null => {
   if (attachment.kind === "tierList") {
     return null;
   }
 
   if (attachment.kind === "matchup") {
-    const lineup = resolvePlayersByIds(
+    const { players: lineup, missingCount } = resolvePlayersByIds(
       attachment.userLineupIds,
       attachment.userLineupNames,
       playersById,
@@ -357,10 +378,11 @@ export const buildShareCardInputFromAttachment = (
         : winRecord
           ? COMMUNITY_COMPETITIVE_RECORD_LABEL
           : undefined,
+      missingPlayerCount: missingCount,
     };
   }
 
-  const lineup = resolvePlayersByIds(
+  const { players: lineup, missingCount } = resolvePlayersByIds(
     attachment.lineupIds,
     attachment.lineupNames,
     playersById,
@@ -381,6 +403,7 @@ export const buildShareCardInputFromAttachment = (
     footerNote: formatSavedFooterNote(attachment.savedAt),
     statLabel: percentile || "RESULT",
     statValue: attachment.resultLabel || undefined,
+    missingPlayerCount: missingCount,
   };
 };
 
@@ -388,23 +411,30 @@ export const buildShareCardInputFromAttachment = (
 export const buildMatchupShareCardInputsFromAttachment = (
   attachment: CommunityMatchupAttachment,
   playersById: Map<string, Player>,
-): { user: LineupShareCardInput; opponent: LineupShareCardInput } | null => {
+): {
+  user: LineupShareCardInput;
+  opponent: LineupShareCardInput;
+  missingPlayerCount: number;
+} | null => {
   const user = buildShareCardInputFromAttachment(attachment, playersById);
   if (!user) {
     return null;
   }
 
-  const opponentLineup = resolvePlayersByIds(
-    attachment.opponentLineupIds,
-    attachment.opponentLineupNames,
-    playersById,
-  );
+  const { players: opponentLineup, missingCount: opponentMissing } =
+    resolvePlayersByIds(
+      attachment.opponentLineupIds,
+      attachment.opponentLineupNames,
+      playersById,
+    );
   if (opponentLineup.length === 0) {
     return null;
   }
 
+  const { missingPlayerCount: userMissing, ...userInput } = user;
+
   return {
-    user,
+    user: userInput,
     opponent: {
       teamName: attachment.opponentTeam,
       accent: attachment.opponentAccent?.trim() || "#38bdf8",
@@ -415,6 +445,7 @@ export const buildMatchupShareCardInputsFromAttachment = (
       subhead: attachment.modeLabel,
       footerNote: formatSavedFooterNote(attachment.savedAt),
     },
+    missingPlayerCount: userMissing + opponentMissing,
   };
 };
 

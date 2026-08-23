@@ -5,6 +5,7 @@ import { isShareDismissalError } from "../lib/appErrors";
 import {
   buildMatchupShareCardInputsFromAttachment,
   formatCommunityMatchupDetails,
+  formatMissingPlayersShareWarning,
 } from "../lib/communityShareables";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import {
@@ -93,6 +94,12 @@ function GameLogMatchupViewer({
         }
         objectUrl = URL.createObjectURL(blob);
         setImageUrl(objectUrl);
+        const missingWarning = formatMissingPlayersShareWarning(
+          inputs.missingPlayerCount,
+        );
+        if (missingWarning) {
+          setError(missingWarning);
+        }
       } catch {
         if (!cancelled) {
           setError("Could not open that matchup image.");
@@ -129,6 +136,12 @@ function GameLogMatchupViewer({
       }
       await saveMatchupShareCard(inputs);
       trackProductEvent("share_matchup", { surface: "game_log" });
+      const missingWarning = formatMissingPlayersShareWarning(
+        inputs.missingPlayerCount,
+      );
+      if (missingWarning) {
+        setError(missingWarning);
+      }
     } catch (shareError) {
       if (!isShareDismissalError(shareError)) {
         setError("Share failed — try again.");

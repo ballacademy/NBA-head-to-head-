@@ -45,6 +45,9 @@ export const ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE =
 export const ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE =
   "Create an account to comment on tier lists.";
 
+export const ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE =
+  "Create an account to report tier lists.";
+
 export const ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE =
   "Create an account to report posts.";
 

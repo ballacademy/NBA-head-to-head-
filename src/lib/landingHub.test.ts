@@ -12,6 +12,9 @@ import {
   loadLandingH2hMode,
   loadLandingHubTab,
   loadLandingPlaySection,
+  featureFromHubDeepLink,
+  hubParamForFeature,
+  parentTabForFeature,
   parseLandingHubParam,
   parseLandingPlayParam,
   parseLandingPlayWithH2h,
@@ -67,6 +70,17 @@ describe("landingHub", () => {
     expect(parseLandingHubParam("tier-list")).toBe("community");
     expect(parseLandingHubParam("franchise")).toBe("roster");
     expect(parseLandingHubParam("roster")).toBe("roster");
+    expect(parseLandingHubParam("game-log")).toBe("game-log");
+    expect(parseLandingHubParam("gamelog")).toBe("game-log");
+    expect(parseLandingHubParam("weekly-recap")).toBe("weekly-recap");
+    expect(parseLandingHubParam("recap")).toBe("weekly-recap");
+    expect(parseLandingHubParam("weekly")).toBe("weekly-recap");
+    expect(hubParamForFeature("gameLog")).toBe("game-log");
+    expect(hubParamForFeature("weeklyRecap")).toBe("weekly-recap");
+    expect(parentTabForFeature("gameLog")).toBe("play");
+    expect(parentTabForFeature("weeklyRecap")).toBe("roster");
+    expect(featureFromHubDeepLink("game-log")).toBe("gameLog");
+    expect(featureFromHubDeepLink("weekly-recap")).toBe("weeklyRecap");
     expect(parseLandingPlayParam("h2h")).toBe("headToHead");
     expect(parseLandingPlayParam("daily-draft")).toBe("daily");
     expect(parseLandingPlayParam("weekly")).toBe("events");

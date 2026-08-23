@@ -354,6 +354,27 @@ export const cancelPrivateRoom = async (params: {
 };
 
 /** Host: create room and poll until a friend joins (or cancel/expire). */
+/** Best-effort cancel for tab close / pagehide (keepalive, no abort). */
+export const cancelPrivateRoomKeepalive = (params: {
+  roomCode: string;
+  playerId: string;
+}): void => {
+  try {
+    const search = new URLSearchParams({
+      code: params.roomCode,
+      playerId: params.playerId,
+    });
+    void fetch(`${buildUrl("/api/private-room")}?${search.toString()}`, {
+      method: "DELETE",
+      headers: { accept: "application/json" },
+      keepalive: true,
+    });
+  } catch {
+    // ignore — unload path
+  }
+};
+
+
 export const waitForPrivateRoomGuest = async (
   params: {
     roomCode: string;

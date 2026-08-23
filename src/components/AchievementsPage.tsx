@@ -18,6 +18,7 @@ import {
 } from "../lib/weeklyEvents";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { HubPageChrome } from "./HubPageChrome";
+import { InlineAlert } from "./InlineAlert";
 
 interface AchievementsPageProps {
   onBack: () => void;
@@ -25,6 +26,8 @@ interface AchievementsPageProps {
     playSection: LandingPlaySection;
     h2hMode?: "classic" | "ranked";
   }) => void;
+  cloudSyncError?: string | null;
+  onRetryCloudSync?: () => void;
 }
 
 const buildTopEventBadge = (profile: EventProfile) => {
@@ -44,7 +47,12 @@ const buildTopEventBadge = (profile: EventProfile) => {
   };
 };
 
-export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps) {
+export function AchievementsPage({
+  onBack,
+  onPlayIntent,
+  cloudSyncError = null,
+  onRetryCloudSync,
+}: AchievementsPageProps) {
   const [progressTick, setProgressTick] = useState(0);
 
   useEffect(() => {
@@ -82,6 +90,16 @@ export function AchievementsPage({ onBack, onPlayIntent }: AchievementsPageProps
       onBack={onBack}
       backLabel="Franchise"
     >
+      {cloudSyncError ? (
+        <InlineAlert
+          message={cloudSyncError}
+          action={
+            onRetryCloudSync
+              ? { label: "Retry", onClick: onRetryCloudSync }
+              : undefined
+          }
+        />
+      ) : null}
       <section className="hub-feature__panel achievements-page__panel">
         <AccountRequiredNote className="account-required-note--inline">
           Sign in to sync badge progress across browsers. Guests keep badges on

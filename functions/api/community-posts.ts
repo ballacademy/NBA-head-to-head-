@@ -409,6 +409,45 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ ok: true, reportId: id });
   }
 
+  if (body.action === "delete-reply") {
+    const playerId = parsePlayerId(body.playerId);
+    const replyId =
+      typeof body.replyId === "string" && body.replyId.trim()
+        ? body.replyId.trim().slice(0, 80)
+        : "";
+
+    if (!playerId || !replyId) {
+      return json({ error: "playerId and replyId are required" }, 400);
+    }
+
+    const account = await getAccountByPlayerId(context.env.DB, playerId);
+    if (!account) {
+      return json({ error: "Create an account to delete replies." }, 403);
+    }
+
+    const existing = await context.env.DB.prepare(
+      `SELECT id, player_id, post_id FROM community_post_replies WHERE id = ?`,
+    )
+      .bind(replyId)
+      .first<{ id: string; player_id: string; post_id: string }>();
+
+    if (!existing) {
+      return json({ error: "Reply not found" }, 404);
+    }
+
+    if (existing.player_id !== playerId) {
+      return json({ error: "You can only delete your own replies." }, 403);
+    }
+
+    await context.env.DB.prepare(
+      `DELETE FROM community_post_replies WHERE id = ? AND player_id = ?`,
+    )
+      .bind(replyId, playerId)
+      .run();
+
+    return json({ ok: true, replyId, postId: existing.post_id });
+  }
+
   if (body.action === "reply") {
     const playerId = parsePlayerId(body.playerId);
     const postId =

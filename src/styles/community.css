@@ -529,6 +529,12 @@
   outline: none;
 }
 
+
+.community-posts-panel__menu.is-up .community-posts-panel__menu-panel {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
 .community-posts-panel__menu-panel {
   position: absolute;
   right: 0;
@@ -626,6 +632,18 @@
 .community-posts-panel__replies-list span {
   color: #94a3b8;
   font-size: 0.78rem;
+}
+
+.community-posts-panel__reply-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.community-posts-panel__reply-meta .community-posts-panel__text-action {
+  margin-left: auto;
+  padding: 0;
 }
 
 .community-posts-panel__replies-list p {

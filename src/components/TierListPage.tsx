@@ -62,6 +62,7 @@ import {
   buildPublicTierListShareUrl,
   createTierListComment,
   deleteTierListComment,
+  reportPublicTierList,
   DEFAULT_PUBLIC_TIER_LIST_FILTERS,
   fetchPublishedLikeCounts,
   fetchPublicTierList,
@@ -99,6 +100,7 @@ import {
   ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   isPlayerAccountLinked,
@@ -112,6 +114,7 @@ import { applySocialMeta, resetSocialMeta } from "../lib/socialMeta";
 import type { Player, Position } from "../lib/types";
 import { AccountRequiredNote } from "./AccountRequiredNote";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ReportPostDialog } from "./ReportPostDialog";
 import { HubPageChrome } from "./HubPageChrome";
 import { PlayerTeamIcon } from "./PlayerTeamIcon";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -292,6 +295,9 @@ export function TierListPage({
   const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const [authorName, setAuthorName] = useState(`GM ${formatPublicTag(identity.publicTag)}`);
   const [accountLinked, setAccountLinked] = useState<boolean | null>(() =>
     peekCachedAccountLinked(identity.playerId),
@@ -969,19 +975,23 @@ export function TierListPage({
         setState(titled);
       }
 
-      const tiers = titled.tiers.map((tier, index) => ({
-        name: tier.name,
-        accent: accentForTier(index, tier.name),
-        players: tier.playerIds
+      let missingCount = 0;
+      const tiers = titled.tiers.map((tier, index) => {
+        const players = tier.playerIds
           .map((playerId) => resolvePlayer(playerId))
-          .filter((player): player is Player => player != null)
-          .map((player) => ({
+          .filter((player): player is Player => player != null);
+        missingCount += Math.max(0, tier.playerIds.length - players.length);
+        return {
+          name: tier.name,
+          accent: accentForTier(index, tier.name),
+          players: players.map((player) => ({
             name: player.name,
             team: player.team,
             position: player.position,
             bbrPlayerId: player.bbrPlayerId,
           })),
-      }));
+        };
+      });
 
       await downloadTierListImage(
         {
@@ -990,7 +1000,11 @@ export function TierListPage({
         },
         "png",
       );
-      setStatusMessage("Image download started");
+      setStatusMessage(
+        missingCount > 0
+          ? `Downloaded — ${missingCount} player${missingCount === 1 ? "" : "s"} missing from roster`
+          : "Image download started",
+      );
     } catch {
       setStatusMessage("Could not download image");
     }
@@ -998,19 +1012,23 @@ export function TierListPage({
 
   const handleDownloadPublic = async (detail: PublicTierListDetail) => {
     try {
-      const tiers = detail.tiers.map((tier, index) => ({
-        name: tier.name,
-        accent: accentForTier(index, tier.name),
-        players: tier.playerIds
+      let missingCount = 0;
+      const tiers = detail.tiers.map((tier, index) => {
+        const players = tier.playerIds
           .map((playerId) => resolvePlayer(playerId))
-          .filter((player): player is Player => player != null)
-          .map((player) => ({
+          .filter((player): player is Player => player != null);
+        missingCount += Math.max(0, tier.playerIds.length - players.length);
+        return {
+          name: tier.name,
+          accent: accentForTier(index, tier.name),
+          players: players.map((player) => ({
             name: player.name,
             team: player.team,
             position: player.position,
             bbrPlayerId: player.bbrPlayerId,
           })),
-      }));
+        };
+      });
 
       await downloadTierListImage(
         {
@@ -1019,7 +1037,11 @@ export function TierListPage({
         },
         "png",
       );
-      setStatusMessage("Image download started");
+      setStatusMessage(
+        missingCount > 0
+          ? `Downloaded — ${missingCount} player${missingCount === 1 ? "" : "s"} missing from roster`
+          : "Image download started",
+      );
     } catch {
       setStatusMessage("Could not download image");
     }
@@ -1160,6 +1182,38 @@ export function TierListPage({
         setViewerCommentSubmitting(false);
       }
     }
+  };
+
+  const handleOpenReportDialog = () => {
+    if (accountLinked !== true) {
+      setStatusMessage(ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE);
+      return;
+    }
+    setReportError(null);
+    setReportDialogOpen(true);
+  };
+
+  const handleSubmitTierListReport = async (reason: string) => {
+    if (!viewerDetail || reportBusy) {
+      return;
+    }
+    setReportBusy(true);
+    setReportError(null);
+    const result = await reportPublicTierList({
+      id: viewerDetail.id,
+      playerId: identity.playerId,
+      reason,
+    });
+    setReportBusy(false);
+    if (!result.ok) {
+      setReportError(result.error);
+      if (result.accountRequired) {
+        setStatusMessage(result.error);
+      }
+      return;
+    }
+    setReportDialogOpen(false);
+    setStatusMessage("Thanks — report submitted.");
   };
 
   const handleDeleteViewerComment = async (commentId: string) => {
@@ -1980,6 +2034,25 @@ export function TierListPage({
           onDeleteComment={(commentId) =>
             void handleDeleteViewerComment(commentId)
           }
+          onReport={
+            viewerDetail.isOwner ? undefined : handleOpenReportDialog
+          }
+        />
+      ) : null}
+
+      {reportDialogOpen && viewerDetail ? (
+        <ReportPostDialog
+          postId={viewerDetail.id}
+          busy={reportBusy}
+          error={reportError}
+          onSubmit={handleSubmitTierListReport}
+          onClose={() => {
+            if (reportBusy) {
+              return;
+            }
+            setReportDialogOpen(false);
+            setReportError(null);
+          }}
         />
       ) : null}
 
