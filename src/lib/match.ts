@@ -36,7 +36,7 @@ export interface StartDraftOptions {
   /** Account-only friend match via room code (Casual or Pro rules). */
   privateMatch?: boolean;
   privateRoom?:
-    | { role: "host" }
+    | { role: "host"; invitedPlayerId?: string | null }
     | { role: "guest"; roomCode: string };
   /** Rematch the same private opponent when both sides opt in. */
   privateRematch?: { previousMatchId: string };

@@ -175,6 +175,7 @@ import { pullAndMergeNbaPlayerUsage } from "./lib/nbaPlayerUsageRemote";
 import { pullAndMergeEventProfiles } from "./lib/eventProfileRemote";
 import { pullAndMergeTierListLibrary } from "./lib/tierListLibraryRemote";
 import { pullAndMergeDailyDraftHistory } from "./lib/dailyDraftHistoryRemote";
+import { runCloudPullWithRetry } from "./lib/cloudPullRetry";
 import { isAllTimeModePlayable } from "./lib/eraUnlocks";
 import { loadAllModeRecords, loadPlayerRecord } from "./lib/playerRecord";
 import { ensureNpcOpponentPool } from "./lib/rankedLeaderboard";
@@ -188,6 +189,7 @@ import {
   ACCOUNT_REQUIRED_CHALLENGE_MESSAGE,
   isPlayerAccountLinked,
 } from "./lib/accountGate";
+import type { ChallengeTarget } from "./lib/challengeTarget";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -433,6 +435,8 @@ function App() {
   const eventProfilesSyncAttemptedRef = useRef(false);
   const tierListLibrarySyncAttemptedRef = useRef(false);
   const dailyHistorySyncAttemptedRef = useRef(false);
+  /** Bumped on tab focus so failed cloud pulls can retry after backoff exhausted. */
+  const [cloudPullRetryNonce, setCloudPullRetryNonce] = useState(0);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
@@ -492,6 +496,11 @@ function App() {
   const [pendingPrivateJoinCode, setPendingPrivateJoinCode] = useState<
     string | null
   >(() => initialLandingDeepLinks.privateRoomCode);
+  const [pendingChallengeTarget, setPendingChallengeTarget] =
+    useState<ChallengeTarget | null>(null);
+  const [challengeTargetLabel, setChallengeTargetLabel] = useState<
+    string | null
+  >(null);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
 
@@ -589,78 +598,177 @@ function App() {
   }, [initialLandingDeepLinks, initialPublicTierListId]);
 
   useEffect(() => {
+    if (phase !== "landing") {
+      return;
+    }
+
+    const maybeRetryCloudPulls = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      if (
+        collectionSyncAttemptedRef.current &&
+        achievementsSyncAttemptedRef.current &&
+        careerSyncAttemptedRef.current &&
+        usageSyncAttemptedRef.current &&
+        eventProfilesSyncAttemptedRef.current &&
+        tierListLibrarySyncAttemptedRef.current &&
+        dailyHistorySyncAttemptedRef.current
+      ) {
+        return;
+      }
+      setCloudPullRetryNonce((current) => current + 1);
+    };
+
+    document.addEventListener("visibilitychange", maybeRetryCloudPulls);
+    window.addEventListener("focus", maybeRetryCloudPulls);
+    return () => {
+      document.removeEventListener("visibilitychange", maybeRetryCloudPulls);
+      window.removeEventListener("focus", maybeRetryCloudPulls);
+    };
+  }, [phase]);
+
+  useEffect(() => {
     if (collectionSyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    collectionSyncAttemptedRef.current = true;
-
-    void (async () => {
-      const merged = await pullAndMergeCollection();
-      if (merged) {
-        setCollection(merged);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeCollection(),
+      onSuccess: (merged) => setCollection(merged),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        collectionSyncAttemptedRef.current = true;
       }
-    })();
-  }, [phase]);
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (achievementsSyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    achievementsSyncAttemptedRef.current = true;
-    void pullAndMergeAchievements();
-  }, [phase]);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeAchievements(),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        achievementsSyncAttemptedRef.current = true;
+      }
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (careerSyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    careerSyncAttemptedRef.current = true;
-    void (async () => {
-      const merged = await pullAndMergeCareerStats();
-      if (merged) {
-        setModeRecords(loadAllModeRecords());
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeCareerStats(),
+      onSuccess: () => setModeRecords(loadAllModeRecords()),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        careerSyncAttemptedRef.current = true;
       }
-    })();
-  }, [phase]);
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (usageSyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    usageSyncAttemptedRef.current = true;
-    void pullAndMergeNbaPlayerUsage();
-  }, [phase]);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeNbaPlayerUsage(),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        usageSyncAttemptedRef.current = true;
+      }
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (eventProfilesSyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    eventProfilesSyncAttemptedRef.current = true;
-    void pullAndMergeEventProfiles();
-  }, [phase]);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeEventProfiles(),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        eventProfilesSyncAttemptedRef.current = true;
+      }
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (tierListLibrarySyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    tierListLibrarySyncAttemptedRef.current = true;
-    void pullAndMergeTierListLibrary();
-  }, [phase]);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeTierListLibrary(),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        tierListLibrarySyncAttemptedRef.current = true;
+      }
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (dailyHistorySyncAttemptedRef.current || phase !== "landing") {
       return;
     }
 
-    dailyHistorySyncAttemptedRef.current = true;
-    void pullAndMergeDailyDraftHistory();
-  }, [phase]);
+    const controller = new AbortController();
+    void runCloudPullWithRetry({
+      isLinked: () =>
+        isPlayerAccountLinked(getOrCreatePlayerIdentity().playerId),
+      pull: () => pullAndMergeDailyDraftHistory(),
+      signal: controller.signal,
+    }).then((outcome) => {
+      if (outcome === "ok" || outcome === "skipped") {
+        dailyHistorySyncAttemptedRef.current = true;
+      }
+    });
+
+    return () => controller.abort();
+  }, [phase, cloudPullRetryNonce]);
 
   useEffect(() => {
     if (liveRecoveryAttemptedRef.current || phase !== "landing") {
@@ -1267,7 +1375,7 @@ function App() {
             : CLASSIC_HEAD_TO_HEAD_SALARY_CAP;
           session.mode = matched.mode;
           setMatchmakingMode(matched.mode);
-        } else if (privateRoom!.role === "host") {
+        } else if (privateRoom?.role === "host") {
           // Do not abort create — a mid-flight abort can orphan a waiting room
           // the server already made. Timeout still applies; cancel after create.
           const created = await createPrivateRoom({
@@ -1275,6 +1383,7 @@ function App() {
             playerId,
             teamName: team.name,
             elo,
+            invitedPlayerId: privateRoom.invitedPlayerId ?? null,
           });
 
           if ("error" in created) {
@@ -1755,6 +1864,7 @@ function App() {
       setPrivateRoomExpiresAt(null);
       setPrivateRoomRole(null);
       setPrivateRematchWaiting(false);
+      setChallengeTargetLabel(null);
       forceUnlockBackgroundScroll();
       return;
     }
@@ -1782,6 +1892,7 @@ function App() {
       setPrivateRoomExpiresAt(null);
       setPrivateRoomRole(null);
       setPrivateRematchWaiting(false);
+      setChallengeTargetLabel(null);
       forceUnlockBackgroundScroll();
       return;
     }
@@ -2911,8 +3022,15 @@ function App() {
   );
 
   const startPrivateChallenge = useCallback(
-    (mode: LandingH2hMode, joinCode?: string | null) => {
+    (mode: LandingH2hMode, targetOrJoinCode?: ChallengeTarget | string | null) => {
       const playerId = getOrCreatePlayerIdentity().playerId;
+      const target: ChallengeTarget | null =
+        targetOrJoinCode && typeof targetOrJoinCode === "object"
+          ? targetOrJoinCode
+          : null;
+      const joinCode =
+        typeof targetOrJoinCode === "string" ? targetOrJoinCode : null;
+
       void isPlayerAccountLinked(playerId).then((linked) => {
         if (!linked) {
           setStartMatchError(ACCOUNT_REQUIRED_CHALLENGE_MESSAGE);
@@ -2920,9 +3038,21 @@ function App() {
           return;
         }
 
+        if (target?.playerId && target.playerId === playerId) {
+          setStartMatchError("You can't challenge yourself.");
+          goToLandingHub("play");
+          return;
+        }
+
         saveLandingPlaySection("headToHead");
         saveLandingH2hMode(mode);
-        setPendingPrivateJoinCode(joinCode ?? null);
+        setPendingPrivateJoinCode(joinCode);
+        setPendingChallengeTarget(target);
+        setChallengeTargetLabel(
+          target
+            ? target.displayName?.trim() || "that GM"
+            : null,
+        );
         setPendingPrivateMatchMode(mode);
         setStartMatchError(null);
         goToLandingHub("play");
@@ -3237,9 +3367,11 @@ function App() {
           privateRoomRole={privateRoomRole}
           pendingPrivateMatchMode={pendingPrivateMatchMode}
           pendingPrivateJoinCode={pendingPrivateJoinCode}
+          pendingChallengeTarget={pendingChallengeTarget}
           onPendingPrivateMatchModeConsumed={() => {
             setPendingPrivateMatchMode(null);
             setPendingPrivateJoinCode(null);
+            setPendingChallengeTarget(null);
           }}
           onCancelMatchmaking={cancelMatchmaking}
           onStartDraft={startMatch}
@@ -3285,6 +3417,7 @@ function App() {
             privateRoomExpiresAt={privateRoomExpiresAt}
             privateRematchWaiting={privateRematchWaiting}
             liveOnlySearch={matchmakingLiveOnlySearch}
+            challengeTargetLabel={challengeTargetLabel}
           />
         ) : null}
       </main>
@@ -3519,6 +3652,7 @@ function App() {
           privateRoomExpiresAt={privateRoomExpiresAt}
           privateRematchWaiting={privateRematchWaiting}
           liveOnlySearch={matchmakingLiveOnlySearch}
+          challengeTargetLabel={challengeTargetLabel}
         />
       ) : null}
     </main>

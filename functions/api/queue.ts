@@ -54,6 +54,10 @@ const cleanupExpiredQueue = async (db: D1Database) => {
     .run();
 };
 
+/**
+ * Recent live match that is still joinable (neither side has submitted a
+ * lineup). Cancel/timeout polls must not reattach into finished drafts.
+ */
 const findLiveMatchSince = async (
   db: D1Database,
   mode: MatchmakingMode,
@@ -68,6 +72,8 @@ const findLiveMatchSince = async (
        WHERE mode = ?
          AND (player_a_id = ? OR player_b_id = ?)
          AND created_at >= ?
+         AND player_a_lineup_json IS NULL
+         AND player_b_lineup_json IS NULL
        ORDER BY created_at DESC
        LIMIT 1`,
     )

@@ -97,6 +97,7 @@ export function AccountAuthPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [logoutForceArmed, setLogoutForceArmed] = useState(false);
 
   const applyStatusResult = (
     result: Awaited<ReturnType<typeof fetchAccountStatus>>,
@@ -285,17 +286,30 @@ export function AccountAuthPanel({
 
     submitLock.current = true;
     setBusy(true);
-    setError(null);
     setMessage(null);
-
-    try {
-      logoutToAnonymousIdentity();
-      window.location.reload();
-    } catch {
-      submitLock.current = false;
-      setBusy(false);
-      setError("Could not log out. Refresh the page and try again.");
+    const force = logoutForceArmed;
+    if (!force) {
+      setError(null);
     }
+
+    void (async () => {
+      try {
+        const result = await logoutToAnonymousIdentity({ force });
+        if (!result.ok) {
+          setLogoutForceArmed(true);
+          setError(result.error);
+          submitLock.current = false;
+          setBusy(false);
+          return;
+        }
+        setLogoutForceArmed(false);
+        window.location.reload();
+      } catch {
+        submitLock.current = false;
+        setBusy(false);
+        setError("Could not log out. Refresh the page and try again.");
+      }
+    })();
   };
 
   const handleRequestResetEmail = async () => {
@@ -455,7 +469,7 @@ export function AccountAuthPanel({
             onClick={handleLogout}
             disabled={busy}
           >
-            Log out
+            {logoutForceArmed ? "Log out anyway" : "Log out"}
           </button>
         </div>
       ) : null}

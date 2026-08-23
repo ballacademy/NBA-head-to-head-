@@ -102,6 +102,7 @@ describe("ranked profile and leaderboard", () => {
   });
 
   it("caps guest elo at 1500 after a win that would climb higher", () => {
+    markPlayerAccountLinked("player-test-1", null);
     const seasonId = ensureCurrentRankedSeason().seasonId;
     storage.set(
       "nba-head-to-head-ranked-profile",
@@ -143,5 +144,32 @@ describe("ranked profile and leaderboard", () => {
     });
 
     expect(linkedResult.profile.elo).toBeGreaterThan(GUEST_RANKED_ELO_CAP);
+  });
+
+  it("does not permanently clamp Elo when account link status is unknown", () => {
+    const seasonId = ensureCurrentRankedSeason().seasonId;
+    storage.set(
+      "nba-head-to-head-ranked-profile",
+      JSON.stringify({
+        playerId: "player-test-1",
+        seasonId,
+        elo: GUEST_RANKED_ELO_CAP + 80,
+        peakElo: GUEST_RANKED_ELO_CAP + 80,
+        rankedGamesPlayed: 20,
+      }),
+    );
+
+    // Cache empty → peekCachedAccountLinked returns null.
+    const stillHigh = ensureCurrentRankedSeason();
+    expect(stillHigh.elo).toBe(GUEST_RANKED_ELO_CAP + 80);
+
+    const result = applyRankedMatchResult({
+      result: "win",
+      opponentElo: GUEST_RANKED_ELO_CAP,
+      winStreak: 3,
+      lossStreak: 0,
+    });
+
+    expect(result.profile.elo).toBeGreaterThan(GUEST_RANKED_ELO_CAP);
   });
 });

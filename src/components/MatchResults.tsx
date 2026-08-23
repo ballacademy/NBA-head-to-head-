@@ -98,7 +98,10 @@ interface MatchResultsProps {
   onPlayAgain: () => void;
   onReturnToMenu: () => void;
   onPostToCommunity?: () => void;
-  onChallengeGm?: (mode: "classic" | "ranked") => void;
+  onChallengeGm?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
   isMatchmaking?: boolean;
   startMatchError?: string | null;
   opponentAutoDrafted?: boolean;
@@ -732,6 +735,21 @@ export function MatchResults({
     allTimeMode: user.allTimeMode,
   });
   const openOpponentProfile = () => setOpponentProfileOpen(true);
+  const challengeOpponentTarget = opponentProfileId
+    ? {
+        playerId: opponentProfileId,
+        displayName: formatOpponentDisplayName(
+          opponent.name,
+          opponent.username,
+        ),
+      }
+    : null;
+  const startChallengeVsOpponent = () => {
+    if (!onChallengeGm || !challengeOpponentTarget) {
+      return;
+    }
+    onChallengeGm(opponentProfileMode, challengeOpponentTarget);
+  };
   const competitiveOutcome =
     !user.practiceMode && !user.privateMatch
       ? matchRecordMode === "ranked"
@@ -805,8 +823,11 @@ export function MatchResults({
           profileMode={opponentProfileMode}
           onClose={() => setOpponentProfileOpen(false)}
           onChallenge={
-            onChallengeGm && !user.practiceMode && !user.eventId
-              ? () => onChallengeGm(opponentProfileMode)
+            onChallengeGm &&
+            challengeOpponentTarget &&
+            !user.practiceMode &&
+            !user.eventId
+              ? startChallengeVsOpponent
               : undefined
           }
         />
@@ -1083,6 +1104,7 @@ export function MatchResults({
                     ]
                   : []),
                 ...(onChallengeGm &&
+                challengeOpponentTarget &&
                 canOpenOpponentProfile &&
                 !user.practiceMode &&
                 !user.privateMatch &&
@@ -1092,7 +1114,7 @@ export function MatchResults({
                         id: "challenge",
                         label: "Challenge this GM",
                         disabled: competitiveActionsLocked,
-                        onClick: () => onChallengeGm(opponentProfileMode),
+                        onClick: startChallengeVsOpponent,
                       },
                     ]
                   : []),

@@ -24,6 +24,8 @@ interface PrivateMatchModalProps {
   /** Host-only: dismiss this modal once the waiting room code is ready. */
   privateRoomRole?: "host" | "guest" | null;
   initialJoinCode?: string | null;
+  /** Challenge: host room that only this GM can join. */
+  invitedPlayerId?: string | null;
   onClose: () => void;
   /** Abort an in-flight create/join so Close never freezes the hub. */
   onCancelInFlight?: () => void;
@@ -38,6 +40,7 @@ export function PrivateMatchModal({
   privateRoomCode = null,
   privateRoomRole = null,
   initialJoinCode = null,
+  invitedPlayerId = null,
   onClose,
   onCancelInFlight,
   onStart,
@@ -149,7 +152,10 @@ export function PrivateMatchModal({
       const result = await onStart({
         privateMatch: true,
         salaryCapMode,
-        privateRoom: { role: "host" },
+        privateRoom: {
+          role: "host",
+          ...(invitedPlayerId ? { invitedPlayerId } : {}),
+        },
       });
       if (!mountedRef.current) {
         return;
@@ -226,11 +232,17 @@ export function PrivateMatchModal({
         onClick={(event) => event.stopPropagation()}
       >
         <p className="eyebrow">{modeLabel}</p>
-        <h2 id={titleId}>Private match</h2>
+        <h2 id={titleId}>
+          {invitedPlayerId ? "Challenge" : "Private match"}
+        </h2>
         <p className="unlock-modal__copy">
-          Play a friend head-to-head with a room code. Same draft rules as{" "}
-          {modeLabel}. Requires an account. Does not change records, Banners,
-          badges, or board placement. Room codes expire after{" "}
+          {invitedPlayerId
+            ? "Creating a private room for that GM. Share the code or link so they can join. Same draft rules as "
+            : "Play a friend head-to-head with a room code. Same draft rules as "}
+          {modeLabel}
+          {invitedPlayerId
+            ? ". Requires an account. Does not change records, Banners, badges, or board placement. Room codes expire after "
+            : ". Requires an account. Does not change records, Banners, badges, or board placement. Room codes expire after "}
           <strong>10 minutes</strong> — join before then.
         </p>
 
@@ -256,45 +268,49 @@ export function PrivateMatchModal({
             ? "Creating room…"
             : accountLinked === null
               ? "Checking account…"
-              : "Create room"}
+              : invitedPlayerId
+                ? "Create challenge room"
+                : "Create room"}
         </button>
 
-        <div className="private-match-modal__join">
-          <label
-            className="private-match-modal__label"
-            htmlFor="private-room-code"
-          >
-            Join with code
-          </label>
-          <div className="private-match-modal__join-row">
-            <input
-              id="private-room-code"
-              className="private-match-modal__input"
-              value={joinCode}
-              onChange={(event) =>
-                setJoinCode(
-                  event.target.value
-                    .toUpperCase()
-                    .replace(/[^A-Z0-9]/g, "")
-                    .slice(0, 6),
-                )
-              }
-              placeholder="ABC123"
-              maxLength={6}
-              autoComplete="off"
-              spellCheck={false}
-              disabled={busy || !accountReady}
-            />
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={busy || !accountReady}
-              onClick={() => void startGuest()}
+        {!invitedPlayerId ? (
+          <div className="private-match-modal__join">
+            <label
+              className="private-match-modal__label"
+              htmlFor="private-room-code"
             >
-              {busyAction === "guest" ? "Joining…" : "Join"}
-            </button>
+              Join with code
+            </label>
+            <div className="private-match-modal__join-row">
+              <input
+                id="private-room-code"
+                className="private-match-modal__input"
+                value={joinCode}
+                onChange={(event) =>
+                  setJoinCode(
+                    event.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, "")
+                      .slice(0, 6),
+                  )
+                }
+                placeholder="ABC123"
+                maxLength={6}
+                autoComplete="off"
+                spellCheck={false}
+                disabled={busy || !accountReady}
+              />
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={busy || !accountReady}
+                onClick={() => void startGuest()}
+              >
+                {busyAction === "guest" ? "Joining…" : "Join"}
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <button
           ref={closeRef}

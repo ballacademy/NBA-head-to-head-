@@ -78,7 +78,10 @@ interface LeaderboardBoardProps {
   viewKey: string;
   showTier: boolean;
   profileMode: "classic" | "ranked";
-  onChallengeGm?: (mode: "classic" | "ranked") => void;
+  onChallengeGm?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
 }
 
 function LeaderboardEntryRow({
@@ -98,7 +101,10 @@ function LeaderboardEntryRow({
   currentPlayerId: string;
   showTier: boolean;
   profileMode: "classic" | "ranked";
-  onChallengeGm?: (mode: "classic" | "ranked") => void;
+  onChallengeGm?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -203,7 +209,14 @@ function LeaderboardEntryRow({
           onChallenge={
             isYou || !onChallengeGm
               ? undefined
-              : () => onChallengeGm(profileMode)
+              : () =>
+                  onChallengeGm(profileMode, {
+                    playerId: entry.playerId,
+                    displayName:
+                      entry.username?.trim() ||
+                      entry.name?.trim() ||
+                      formatPublicTag(entry.publicTag),
+                  })
           }
         />
       ) : null}
@@ -243,7 +256,10 @@ function LeaderboardBoard({
 export function LeaderboardPage({
   onChallengeGm,
 }: {
-  onChallengeGm?: (mode: "classic" | "ranked") => void;
+  onChallengeGm?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
 } = {}) {
   const [view, setView] = useState<LeaderboardView>("classic");
   const [rankedSort, setRankedSort] = useState<RankedSort>("elo");
