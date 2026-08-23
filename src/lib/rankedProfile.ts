@@ -12,8 +12,17 @@ import { getCurrentSeasonId } from "./rankedSeason";
 import { recordLocalGmLegacySnapshot } from "./gmLegacyStats";
 import type { HeadToHeadResult } from "./playerRecord";
 
+/** True only when cache says linked — unknown (`null`) is not treated as linked. */
 const isRankedAccountLinkedSync = (playerId: string) =>
   peekCachedAccountLinked(playerId) === true;
+
+/**
+ * Persist guest Elo clamps only when link status is known-false.
+ * Unknown (`null`) must not rewrite storage — that permanently capped linked GMs
+ * whose account cache had expired.
+ */
+const shouldPersistGuestEloClamp = (playerId: string) =>
+  peekCachedAccountLinked(playerId) === false;
 
 const getActiveStreakForElo = (
   result: HeadToHeadResult,
@@ -104,7 +113,8 @@ export const ensureCurrentRankedSeason = (): RankedProfile => {
   }
 
   // Guests who already climbed past the cap (older builds) get pulled back.
-  if (!isRankedAccountLinkedSync(profile.playerId)) {
+  // Skip when link status is unknown so we never permanently clamp a linked GM.
+  if (shouldPersistGuestEloClamp(profile.playerId)) {
     const cappedElo = clampGuestRankedElo(profile.elo, false);
     const cappedPeak = clampGuestRankedElo(profile.peakElo, false);
     if (cappedElo !== profile.elo || cappedPeak !== profile.peakElo) {
@@ -175,15 +185,17 @@ export const applyRankedMatchResult = ({
     activeStreak,
   });
 
-  const accountLinked = isRankedAccountLinkedSync(current.playerId);
-  const cappedElo = clampGuestRankedElo(nextElo, accountLinked);
+  // Persist the guest cap only for known guests. Unknown link status must not
+  // write a clamped Elo (that permanently stuck linked accounts at 1500).
+  const accountLinkedForPersist = !shouldPersistGuestEloClamp(current.playerId);
+  const cappedElo = clampGuestRankedElo(nextElo, accountLinkedForPersist);
   const appliedDelta = cappedElo - current.elo;
 
   const nextProfile: RankedProfile = {
     ...current,
     elo: cappedElo,
     peakElo: Math.max(
-      clampGuestRankedElo(current.peakElo, accountLinked),
+      clampGuestRankedElo(current.peakElo, accountLinkedForPersist),
       cappedElo,
     ),
     rankedGamesPlayed: current.rankedGamesPlayed + 1,
@@ -192,7 +204,24 @@ export const applyRankedMatchResult = ({
   saveRankedProfile(nextProfile);
 
   // Warm account cache so the next match uses a firm linked/guest answer.
-  void isPlayerAccountLinked(current.playerId);
+  // If this resolves to guest and we wrote an uncapped Elo, pull it back.
+  void isPlayerAccountLinked(current.playerId).then((linked) => {
+    if (linked) {
+      return;
+    }
+    const latest = loadRankedProfile();
+    if (
+      latest.playerId !== current.playerId ||
+      latest.seasonId !== nextProfile.seasonId
+    ) {
+      return;
+    }
+    const guestElo = clampGuestRankedElo(latest.elo, false);
+    const guestPeak = clampGuestRankedElo(latest.peakElo, false);
+    if (guestElo !== latest.elo || guestPeak !== latest.peakElo) {
+      saveRankedProfile({ ...latest, elo: guestElo, peakElo: guestPeak });
+    }
+  });
 
   recordLocalGmLegacySnapshot({
     elo: nextProfile.peakElo,

@@ -571,7 +571,10 @@ interface CommunityPostsPanelProps {
   focusPostId?: string | null;
   postsToday?: number | null;
   onSignIn?: () => void;
-  onChallengeAuthor?: (mode: "classic" | "ranked") => void;
+  onChallengeAuthor?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
 }
 
 const TrashIcon = () => (
@@ -1332,7 +1335,12 @@ export function CommunityPostsPanel({
                                       return;
                                     }
                                     setOpenMenuPostId(null);
-                                    onChallengeAuthor("classic");
+                                    onChallengeAuthor("classic", {
+                                      playerId: post.playerId,
+                                      displayName:
+                                        post.authorName?.trim() ||
+                                        formatPublicTag(post.authorTag),
+                                    });
                                   }}
                                 >
                                   Challenge

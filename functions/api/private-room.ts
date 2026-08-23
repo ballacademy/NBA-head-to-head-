@@ -28,6 +28,7 @@ interface CreateBody {
   playerId?: unknown;
   teamName?: unknown;
   elo?: unknown;
+  invitedPlayerId?: unknown;
 }
 
 const parsePlayerId = (value: unknown) =>
@@ -54,6 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const playerId = parsePlayerId(body.playerId);
   const teamName = parseTeamName(body.teamName);
   const elo = Number(body.elo ?? 500);
+  const invitedPlayerId = parsePlayerId(body.invitedPlayerId);
 
   if (!mode) {
     return json({ error: "mode must be classic or ranked" }, 400);
@@ -86,6 +88,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       hostPlayerId: playerId,
       hostTeamName: teamName,
       hostElo: Math.round(elo),
+      invitedPlayerId: invitedPlayerId || null,
     });
 
     return json(

@@ -20,7 +20,10 @@ import {
 } from "./tierListLibraryRemote";
 import { pullAndMergeDailyDraftHistory } from "./dailyDraftHistoryRemote";
 import { getDailyDateKey, getDailyGoal } from "./dailyDraft";
-import { refreshDailyDraftScoresFromApi } from "./dailyDraftScores";
+import {
+  flushLocalDailyDraftScoresToRemote,
+  refreshDailyDraftScoresFromApi,
+} from "./dailyDraftScores";
 import { fetchRemoteLeaderboard } from "./leaderboardApi";
 import { upsertLeaderboardEntry } from "./leaderboard";
 import { seedRemoteLeaderboardCache } from "./leaderboardRemote";
@@ -32,6 +35,7 @@ import {
   getOrCreatePlayerIdentity,
   mintAnonymousPlayerIdentity,
   setPlayerIdentity,
+  type PlayerIdentity,
 } from "./playerIdentity";
 import { fetchRemotePlayerProfile } from "./playerProfileApi";
 import { clearModePlayerRecords } from "./playerRecord";
@@ -158,15 +162,43 @@ const clearIdentityBoundLocalState = (
   });
 };
 
+export type LogoutIdentityResult =
+  | { ok: true; identity: PlayerIdentity }
+  | {
+      ok: false;
+      error: string;
+      pendingDailyCount: number;
+    };
+
 /**
  * Logs out of the linked account on this device by minting a fresh anonymous
  * GM identity. The account itself remains; log in again to restore it.
+ *
+ * Flushes local Daily scores first so an offline submit is not wiped. Pass
+ * `force: true` to skip the flush after the user confirms.
  */
-export const logoutToAnonymousIdentity = () => {
+export const logoutToAnonymousIdentity = async (
+  options: { force?: boolean } = {},
+): Promise<LogoutIdentityResult> => {
   const previousPlayerId = getOrCreatePlayerIdentity().playerId;
+
+  if (!options.force) {
+    const flush = await flushLocalDailyDraftScoresToRemote(previousPlayerId);
+    if (!flush.ok) {
+      return {
+        ok: false,
+        pendingDailyCount: flush.failed,
+        error:
+          flush.failed === 1
+            ? "Could not sync your Daily score before logging out. Retry, or log out anyway and risk losing it."
+            : `Could not sync ${flush.failed} Daily scores before logging out. Retry, or log out anyway and risk losing them.`,
+      };
+    }
+  }
+
   clearIdentityBoundLocalState(previousPlayerId);
   clearAccountLinkCache();
-  return mintAnonymousPlayerIdentity();
+  return { ok: true, identity: mintAnonymousPlayerIdentity() };
 };
 
 /**

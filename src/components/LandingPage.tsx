@@ -154,6 +154,8 @@ interface LandingPageProps {
   /** Open the private-match modal after rematch from results. */
   pendingPrivateMatchMode?: "classic" | "ranked" | null;
   pendingPrivateJoinCode?: string | null;
+  /** Challenge a specific GM — auto-host a room invited to them. */
+  pendingChallengeTarget?: { playerId: string; displayName?: string } | null;
   onPendingPrivateMatchModeConsumed?: () => void;
   /** Cancel an in-flight private create/join from the modal Close button. */
   onCancelMatchmaking?: () => void;
@@ -211,6 +213,7 @@ export function LandingPage({
   privateRoomRole = null,
   pendingPrivateMatchMode = null,
   pendingPrivateJoinCode = null,
+  pendingChallengeTarget = null,
   onPendingPrivateMatchModeConsumed,
   onCancelMatchmaking,
   onStartDraft,
@@ -281,9 +284,13 @@ export function LandingPage({
     };
   });
   const [privateJoinPrefill, setPrivateJoinPrefill] = useState("");
+  const [challengeInvitePlayerId, setChallengeInvitePlayerId] = useState<
+    string | null
+  >(null);
   const closePrivateMatchModal = useCallback(() => {
     setPrivateMatchMode(null);
     setPrivateJoinPrefill("");
+    setChallengeInvitePlayerId(null);
   }, []);
 
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
@@ -346,12 +353,58 @@ export function LandingPage({
     if (pendingPrivateJoinCode) {
       setPrivateJoinPrefill(pendingPrivateJoinCode.trim().toUpperCase());
     }
+    if (pendingChallengeTarget?.playerId) {
+      setChallengeInvitePlayerId(pendingChallengeTarget.playerId);
+    } else {
+      setChallengeInvitePlayerId(null);
+    }
     setPrivateMatchMode(pendingPrivateMatchMode);
     onPendingPrivateMatchModeConsumed?.();
   }, [
     pendingPrivateMatchMode,
     pendingPrivateJoinCode,
+    pendingChallengeTarget,
     onPendingPrivateMatchModeConsumed,
+  ]);
+
+  // Challenge: skip the create/join chooser and host a room invited to that GM.
+  useEffect(() => {
+    if (
+      !challengeInvitePlayerId ||
+      !privateMatchMode ||
+      privateJoinPrefill ||
+      isMatchmakingSearchActive ||
+      privateRoomCode
+    ) {
+      return;
+    }
+
+    const team = loadTeamProfile();
+    if (!team?.name?.trim()) {
+      return;
+    }
+
+    const invitedPlayerId = challengeInvitePlayerId;
+
+    void onStartDraft(team, {
+      privateMatch: true,
+      salaryCapMode: privateMatchMode === "ranked",
+      privateRoom: {
+        role: "host",
+        invitedPlayerId,
+      },
+    }).then((result) => {
+      if (result === "started" || result === "cancelled") {
+        setChallengeInvitePlayerId(null);
+      }
+    });
+  }, [
+    challengeInvitePlayerId,
+    privateMatchMode,
+    privateJoinPrefill,
+    isMatchmakingSearchActive,
+    privateRoomCode,
+    onStartDraft,
   ]);
 
   const teamFormRef = useRef<HTMLDivElement>(null);
@@ -979,6 +1032,7 @@ export function LandingPage({
           privateRoomCode={privateRoomCode}
           privateRoomRole={privateRoomRole}
           initialJoinCode={privateJoinPrefill || pendingPrivateJoinCode}
+          invitedPlayerId={challengeInvitePlayerId}
           onClose={closePrivateMatchModal}
           onCancelInFlight={onCancelMatchmaking}
           onStart={handleStart}

@@ -67,6 +67,10 @@ vi.mock("./dailyDraftScores", async () => {
   return {
     ...actual,
     refreshDailyDraftScoresFromApi: vi.fn(async () => true),
+    flushLocalDailyDraftScoresToRemote: vi.fn(async () => ({
+      ok: true,
+      submitted: 0,
+    })),
   };
 });
 
@@ -99,7 +103,7 @@ describe("logoutToAnonymousIdentity", () => {
     vi.unstubAllGlobals();
   });
 
-  it("mints a new anonymous identity and clears account-bound local state", () => {
+  it("mints a new anonymous identity and clears account-bound local state", async () => {
     setPlayerIdentity("player-linked-old");
     markPlayerAccountLinked("player-linked-old", "hooper");
     writeJson("nba-head-to-head-team-profile", { name: "Old Team" });
@@ -140,9 +144,13 @@ describe("logoutToAnonymousIdentity", () => {
       submittedAt: "2026-08-01T00:00:00.000Z",
     });
 
-    const next = logoutToAnonymousIdentity();
+    const next = await logoutToAnonymousIdentity();
 
-    expect(next.playerId).toBe("player-anonymous-new");
+    expect(next.ok).toBe(true);
+    if (!next.ok) {
+      return;
+    }
+    expect(next.identity.playerId).toBe("player-anonymous-new");
     expect(getOrCreatePlayerIdentity().playerId).toBe("player-anonymous-new");
     expect(readJson("nba-head-to-head-team-profile")).toBeNull();
     expect(readJson("nba-head-to-head-classic-profile")).toBeNull();
@@ -164,6 +172,42 @@ describe("logoutToAnonymousIdentity", () => {
     expect(
       readJson("nba-head-to-head-pending-lineup-classic-player-linked-old"),
     ).toBeNull();
+  });
+
+  it("blocks logout when Daily flush fails unless forced", async () => {
+    const { flushLocalDailyDraftScoresToRemote } = await import(
+      "./dailyDraftScores"
+    );
+    vi.mocked(flushLocalDailyDraftScoresToRemote).mockResolvedValueOnce({
+      ok: false,
+      submitted: 0,
+      failed: 1,
+    });
+
+    setPlayerIdentity("player-linked-old");
+    writeJson("nba-head-to-head-daily-scores", {
+      "2099-01-01": [
+        {
+          playerId: "player-linked-old",
+          goalId: "pts",
+          value: 120,
+          formattedResult: "120.0 PTS",
+          submittedAt: "2099-01-01T12:00:00.000Z",
+        },
+      ],
+    });
+
+    const blocked = await logoutToAnonymousIdentity();
+    expect(blocked.ok).toBe(false);
+    expect(getOrCreatePlayerIdentity().playerId).toBe("player-linked-old");
+    expect(readJson("nba-head-to-head-daily-scores")).not.toBeNull();
+
+    const forced = await logoutToAnonymousIdentity({ force: true });
+    expect(forced.ok).toBe(true);
+    if (forced.ok) {
+      expect(forced.identity.playerId).toBe("player-anonymous-new");
+    }
+    expect(readJson("nba-head-to-head-daily-scores")).toBeNull();
   });
 });
 

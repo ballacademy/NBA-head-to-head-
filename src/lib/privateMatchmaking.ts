@@ -120,6 +120,8 @@ export const createPrivateRoom = async (params: {
   playerId: string;
   teamName: string;
   elo: number;
+  /** When set, only this GM may join (Challenge flow). */
+  invitedPlayerId?: string | null;
   signal?: AbortSignal;
 }): Promise<PrivateRoomWaiting | { error: string }> => {
   try {
@@ -134,6 +136,9 @@ export const createPrivateRoom = async (params: {
         playerId: params.playerId,
         teamName: params.teamName,
         elo: Math.round(params.elo),
+        ...(params.invitedPlayerId
+          ? { invitedPlayerId: params.invitedPlayerId }
+          : {}),
       }),
       signal: params.signal,
     });

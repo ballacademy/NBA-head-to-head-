@@ -85,6 +85,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "You cannot join your own private room" }, 400);
   }
 
+  if (
+    existing.invited_player_id &&
+    existing.invited_player_id !== playerId
+  ) {
+    return json(
+      { error: "This challenge is for another GM. Ask them for a new invite." },
+      403,
+    );
+  }
+
   if (existing.status === "expired" || existing.expires_at < new Date().toISOString()) {
     return json({ error: "This room has expired" }, 410);
   }

@@ -29,6 +29,8 @@ interface MatchmakingOverlayProps {
   privateRematchWaiting?: boolean;
   /** 1500+ Banners live-only search (no NPC fallback). */
   liveOnlySearch?: boolean;
+  /** Challenge flow: show who the room is for. */
+  challengeTargetLabel?: string | null;
 }
 
 const formatPrivateRoomExpiry = (expiresAt: string, nowMs: number) => {
@@ -62,6 +64,7 @@ export function MatchmakingOverlay({
   privateRoomExpiresAt = null,
   privateRematchWaiting = false,
   liveOnlySearch = false,
+  challengeTargetLabel = null,
 }: MatchmakingOverlayProps) {
   const titleId = useId();
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
@@ -95,13 +98,15 @@ export function MatchmakingOverlay({
         ? "Waiting for your opponent to rematch…"
         : isPrivateGuest
           ? "Connecting to your friend’s room…"
-          : isPrivate
-            ? "Waiting for your friend to join…"
-            : elapsedSeconds > 0
-              ? `Finding live opponent… ${elapsedSeconds}s`
-              : mode === "event"
-                ? "Finding live opponent…"
-                : "Finding opponent…";
+          : isPrivate && challengeTargetLabel
+            ? `Challenge for ${challengeTargetLabel} — share your code`
+            : isPrivate
+              ? "Waiting for your friend to join…"
+              : elapsedSeconds > 0
+                ? `Finding live opponent… ${elapsedSeconds}s`
+                : mode === "event"
+                  ? "Finding live opponent…"
+                  : "Finding opponent…";
   const expiryLabel =
     isPrivate && privateRoomExpiresAt && !isMatched
       ? formatPrivateRoomExpiry(privateRoomExpiresAt, nowMs)

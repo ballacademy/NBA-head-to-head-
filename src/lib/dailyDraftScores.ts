@@ -520,3 +520,67 @@ export const getTopDailyScoresForDate = (
 export const clearDailyDraftRemoteCacheForTests = () => {
   remoteCache.clear();
 };
+
+export type FlushDailyDraftScoresResult =
+  | { ok: true; submitted: number }
+  | { ok: false; submitted: number; failed: number };
+
+/**
+ * Best-effort push of this player's local Daily scores before logout wipe.
+ * Re-submit is safe: the API returns the stored first attempt on 409.
+ */
+export const flushLocalDailyDraftScoresToRemote = async (
+  playerId: string,
+): Promise<FlushDailyDraftScoresResult> => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return { ok: true, submitted: 0 };
+  }
+
+  const store = loadDailyScoreStore();
+  const pending: Array<{ dateKey: string; entry: DailyDraftScoreEntry }> = [];
+
+  for (const [dateKey, entries] of Object.entries(store)) {
+    if (!Array.isArray(entries)) {
+      continue;
+    }
+    for (const raw of entries) {
+      const entry = normalizeEntry(raw);
+      if (entry.playerId === trimmed && isUsableDailyEntry(entry)) {
+        pending.push({ dateKey, entry });
+      }
+    }
+  }
+
+  if (pending.length === 0) {
+    return { ok: true, submitted: 0 };
+  }
+
+  let submitted = 0;
+  let failed = 0;
+
+  for (const { dateKey, entry } of pending) {
+    const remote = await submitRemoteDailyDraftScore({
+      dateKey,
+      goalId: entry.goalId,
+      mode: resolveEntryMode(entry),
+      playerId: entry.playerId,
+      teamName: entry.teamName?.trim() || "GM",
+      value: entry.value,
+      formattedResult: entry.formattedResult,
+      lineup: Array.isArray(entry.lineup) ? entry.lineup : [],
+    });
+
+    if (remote) {
+      submitted += 1;
+    } else {
+      failed += 1;
+    }
+  }
+
+  if (failed > 0) {
+    return { ok: false, submitted, failed };
+  }
+
+  return { ok: true, submitted };
+};

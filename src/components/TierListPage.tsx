@@ -139,7 +139,10 @@ interface TierListPageProps {
   /** Bumped to open Posts compose with the latest results shareable attached. */
   composeIntentToken?: number;
   onOpenAccount?: () => void;
-  onChallengeGm?: (mode: "classic" | "ranked") => void;
+  onChallengeGm?: (
+    mode: "classic" | "ranked",
+    target?: { playerId: string; displayName?: string } | null,
+  ) => void;
 }
 
 type TierListView =

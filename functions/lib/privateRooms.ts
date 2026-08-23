@@ -22,6 +22,7 @@ export interface PrivateRoomRow {
   status: string;
   created_at: string;
   expires_at: string;
+  invited_player_id: string | null;
 }
 
 export const parsePrivateRoomMode = (
@@ -67,10 +68,17 @@ export const insertPrivateRoom = async (
     hostPlayerId: string;
     hostTeamName: string;
     hostElo: number;
+    invitedPlayerId?: string | null;
   },
 ): Promise<PrivateRoomRow> => {
   const createdAt = new Date().toISOString();
   const expiresAt = privateRoomExpiresAt();
+  const invitedPlayerId =
+    typeof params.invitedPlayerId === "string" &&
+    params.invitedPlayerId.trim().length > 0 &&
+    params.invitedPlayerId.trim() !== params.hostPlayerId
+      ? params.invitedPlayerId.trim().slice(0, 128)
+      : null;
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const code = generatePrivateRoomCode();
@@ -79,8 +87,8 @@ export const insertPrivateRoom = async (
         .prepare(
           `INSERT INTO private_rooms (
             code, mode, host_player_id, host_team_name, host_elo,
-            status, created_at, expires_at
-          ) VALUES (?, ?, ?, ?, ?, 'waiting', ?, ?)`,
+            invited_player_id, status, created_at, expires_at
+          ) VALUES (?, ?, ?, ?, ?, ?, 'waiting', ?, ?)`,
         )
         .bind(
           code,
@@ -88,6 +96,7 @@ export const insertPrivateRoom = async (
           params.hostPlayerId,
           params.hostTeamName,
           Math.round(params.hostElo),
+          invitedPlayerId,
           createdAt,
           expiresAt,
         )
@@ -106,17 +115,14 @@ export const insertPrivateRoom = async (
         status: "waiting",
         created_at: createdAt,
         expires_at: expiresAt,
+        invited_player_id: invitedPlayerId,
       };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (/UNIQUE|constraint/i.test(message) && attempt < 7) {
-        continue;
-      }
-      throw error;
+    } catch {
+      // Code collision — retry with a new code.
     }
   }
 
-  throw new Error("Could not allocate a private room code");
+  throw new Error("Could not allocate private room code");
 };
 
 export const getPrivateRoom = async (db: D1Database, code: string) =>
@@ -124,7 +130,7 @@ export const getPrivateRoom = async (db: D1Database, code: string) =>
     .prepare(
       `SELECT code, mode, host_player_id, host_team_name, host_elo,
               guest_player_id, guest_team_name, guest_elo, match_id,
-              status, created_at, expires_at
+              status, created_at, expires_at, invited_player_id
        FROM private_rooms
        WHERE code = ?`,
     )
@@ -163,6 +169,13 @@ export const claimPrivateRoomAndCreateMatch = async (
   }
 
   if (room.host_player_id === params.guestPlayerId) {
+    return null;
+  }
+
+  if (
+    room.invited_player_id &&
+    room.invited_player_id !== params.guestPlayerId
+  ) {
     return null;
   }
 
