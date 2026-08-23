@@ -1,6 +1,13 @@
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { scrollHubToTop } from "../lib/hubScroll";
+import {
+  getHubTabLockPrompt,
+  getHubUnlockProgress,
+  hubTabLockStates,
+  type HubTabLockPrompt,
+} from "../lib/hubUnlockProgress";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
+import { HubTabUnlockDialog } from "./HubTabUnlockDialog";
 import {
   LandingBottomNav,
   type LandingHubTab,
@@ -11,6 +18,7 @@ interface HubShellProps {
   onSelectTab: (tab: LandingHubTab) => void;
   onPrefetchTab?: (tab: LandingHubTab) => void;
   playBadgeCount?: number;
+  onGoToPlay?: () => void;
   children: ReactNode;
   className?: string;
 }
@@ -20,16 +28,40 @@ export function HubShell({
   onSelectTab,
   onPrefetchTab,
   playBadgeCount = 0,
+  onGoToPlay,
   children,
   className = "",
 }: HubShellProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [unlockPrompt, setUnlockPrompt] = useState<HubTabLockPrompt | null>(
+    null,
+  );
+  const unlockProgress = getHubUnlockProgress();
+  const lockedTabs = hubTabLockStates(unlockProgress);
   const tabAccent =
     activeTab === "standings"
       ? "ranked"
       : activeTab === "community"
         ? "community"
         : activeTab;
+
+  const handleSelectTab = (tab: LandingHubTab) => {
+    const lock = getHubTabLockPrompt(tab, unlockProgress);
+    if (lock) {
+      setUnlockPrompt(lock);
+      return;
+    }
+    onSelectTab(tab);
+  };
+
+  const handleGoToPlay = () => {
+    setUnlockPrompt(null);
+    if (onGoToPlay) {
+      onGoToPlay();
+      return;
+    }
+    onSelectTab("play");
+  };
 
   // Shared scroller keeps position across tabs; reset so Play modes aren't cut off.
   useLayoutEffect(() => {
@@ -62,10 +94,19 @@ export function HubShell({
 
       <LandingBottomNav
         activeTab={activeTab}
-        onSelect={onSelectTab}
+        lockedTabs={lockedTabs}
+        onSelect={handleSelectTab}
         onPrefetchTab={onPrefetchTab}
         playBadgeCount={playBadgeCount}
       />
+
+      {unlockPrompt ? (
+        <HubTabUnlockDialog
+          prompt={unlockPrompt}
+          onGoToPlay={handleGoToPlay}
+          onClose={() => setUnlockPrompt(null)}
+        />
+      ) : null}
     </section>
   );
 }

@@ -10,6 +10,7 @@ interface LandingBottomNavProps {
   onSelect: (tab: LandingHubTab) => void;
   onPrefetchTab?: (tab: LandingHubTab) => void;
   playBadgeCount?: number;
+  lockedTabs?: Partial<Record<LandingHubTab, true>>;
 }
 
 const TABS: {
@@ -107,16 +108,42 @@ function NavIcon({ name }: { name: string }) {
   }
 }
 
+function NavLockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M7 10V8a5 5 0 0 1 10 0v2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <rect
+        x="5"
+        y="10"
+        width="14"
+        height="11"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+      />
+    </svg>
+  );
+}
+
 export function LandingBottomNav({
   activeTab,
   onSelect,
   onPrefetchTab,
   playBadgeCount = 0,
+  lockedTabs = {},
 }: LandingBottomNavProps) {
   return (
     <nav className="landing-bottom-nav" aria-label="Main sections">
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
+        const isLocked = Boolean(lockedTabs[tab.id]);
         const showPlayBadge = tab.id === "play" && playBadgeCount > 0;
         const badgeLabel =
           playBadgeCount === 1
@@ -129,9 +156,15 @@ export function LandingBottomNav({
             type="button"
             className={`landing-bottom-nav__item landing-bottom-nav__item--${tab.id}${
               isActive ? " landing-bottom-nav__item--active" : ""
-            }`}
+            }${isLocked ? " landing-bottom-nav__item--locked" : ""}`}
             aria-current={isActive ? "page" : undefined}
-            aria-label={showPlayBadge ? `Play, ${badgeLabel}` : undefined}
+            aria-label={
+              showPlayBadge
+                ? `Play, ${badgeLabel}`
+                : isLocked
+                  ? `${tab.label}, locked until you play more`
+                  : undefined
+            }
             onClick={() => onSelect(tab.id)}
             onPointerDown={() => onPrefetchTab?.(tab.id)}
             onPointerEnter={() => onPrefetchTab?.(tab.id)}
@@ -142,6 +175,10 @@ export function LandingBottomNav({
               {showPlayBadge ? (
                 <span className="landing-bottom-nav__badge" aria-hidden="true">
                   {playBadgeCount > 9 ? "9+" : playBadgeCount}
+                </span>
+              ) : isLocked ? (
+                <span className="landing-bottom-nav__lock" aria-hidden="true">
+                  <NavLockIcon />
                 </span>
               ) : null}
             </span>

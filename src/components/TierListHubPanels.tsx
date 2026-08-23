@@ -82,15 +82,23 @@ interface TierListHubHomeProps {
   onOpenPosts: () => void;
   onOpenTiers: () => void;
   postsToday?: number | null;
+  showNewHereStrip?: boolean;
 }
 
 export function TierListHubHome({
   onOpenPosts,
   onOpenTiers,
   postsToday = null,
+  showNewHereStrip = false,
 }: TierListHubHomeProps) {
   return (
     <div className="tier-list-hub__home">
+      {showNewHereStrip ? (
+        <p className="community-new-here-strip" role="status">
+          New here? Browse posts and tier lists freely — sign in when you&apos;re
+          ready to post or like.
+        </p>
+      ) : null}
       {postsToday != null && postsToday > 0 ? (
         <p className="community-activity-strip" role="status">
           <strong>{formatCommunityActivityStrip(postsToday)}</strong>

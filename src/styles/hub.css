@@ -978,6 +978,30 @@ h1.landing-hub__title--name {
   gap: 8px;
 }
 
+.play-hub-unlock-hint,
+.community-new-here-strip {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--hub-subbox-border);
+  background: var(--hub-subbox-bg);
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.community-new-here-strip {
+  box-shadow: inset 3px 0 0 var(--accent-community, #a78bfa);
+}
+
+.play-hub-unlock-hint {
+  box-shadow: inset 3px 0 0 var(--accent-play);
+}
+
+.hub-unlock-overlay__panel {
+  max-width: 420px;
+}
+
 .play-hub-chooser__option {
   position: relative;
   display: grid;
@@ -1563,6 +1587,29 @@ h1.landing-hub__title--name {
   font-weight: 800;
   line-height: 16px;
   text-align: center;
+}
+
+.landing-bottom-nav__item--locked {
+  opacity: 0.78;
+}
+
+.landing-bottom-nav__lock {
+  position: absolute;
+  top: -4px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
+}
+
+.landing-bottom-nav__lock svg {
+  width: 8px;
+  height: 8px;
 }
 
 .landing-bottom-nav__icon svg {
