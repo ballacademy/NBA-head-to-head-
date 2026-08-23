@@ -21,7 +21,7 @@ describe("eventProfileSync", () => {
     });
   });
 
-  it("merges event profiles with max counters", () => {
+  it("merges event profiles as a whole record without inventing W–L", () => {
     const left = emptyEventProfilesPayload();
     left.byEventId["event-a"] = {
       eventId: "event-a",
@@ -47,11 +47,12 @@ describe("eventProfileSync", () => {
       badges: [],
     };
 
+    // Same match count — take the higher-win whole record, never 3–2.
     expect(
       mergeEventProfilesPayload(left, right).byEventId["event-a"],
     ).toMatchObject({
       wins: 3,
-      losses: 2,
+      losses: 1,
     });
   });
 

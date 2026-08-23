@@ -24,7 +24,7 @@ describe("nbaPlayerUsageSync", () => {
     });
   });
 
-  it("merges mode usage with max counters", () => {
+  it("merges mode usage as a whole row without inventing W–L", () => {
     const left = emptyNbaPlayerUsageStore();
     left.byPlayerId["player-a"] = {
       headToHead: { drafts: 5, wins: 3, losses: 2, ties: 0 },
@@ -37,7 +37,7 @@ describe("nbaPlayerUsageSync", () => {
     expect(mergeNbaPlayerUsageStore(left, right).byPlayerId["player-a"]?.headToHead).toEqual({
       drafts: 5,
       wins: 3,
-      losses: 3,
+      losses: 2,
       ties: 0,
     });
   });
