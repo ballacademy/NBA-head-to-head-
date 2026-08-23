@@ -987,7 +987,6 @@ export function TierListPage({
           players: players.map((player) => ({
             name: player.name,
             team: player.team,
-            position: player.position,
             bbrPlayerId: player.bbrPlayerId,
           })),
         };
@@ -1024,7 +1023,6 @@ export function TierListPage({
           players: players.map((player) => ({
             name: player.name,
             team: player.team,
-            position: player.position,
             bbrPlayerId: player.bbrPlayerId,
           })),
         };
