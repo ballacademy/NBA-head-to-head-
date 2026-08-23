@@ -149,11 +149,12 @@ describe("rankedElo", () => {
     expect(result.nextElo).toBe(RANKED_STARTING_ELO);
   });
 
-  it("caps guest Pro elo at 1500 while linked accounts can climb past it", () => {
-    expect(GUEST_RANKED_ELO_CAP).toBe(1500);
+  it("caps guest Pro elo at 1499 while linked accounts can climb past it", () => {
+    expect(GUEST_RANKED_ELO_CAP).toBe(1499);
+    expect(GUEST_RANKED_ELO_CAP).toBeLessThan(LIVE_OPPONENT_ONLY_MIN_ELO);
     expect(clampGuestRankedElo(1490, false)).toBe(1490);
-    expect(clampGuestRankedElo(1510, false)).toBe(1500);
-    expect(clampGuestRankedElo(1800, false)).toBe(1500);
+    expect(clampGuestRankedElo(1510, false)).toBe(1499);
+    expect(clampGuestRankedElo(1800, false)).toBe(1499);
     expect(clampGuestRankedElo(1800, true)).toBe(1800);
   });
 });
