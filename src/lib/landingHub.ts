@@ -18,6 +18,8 @@ export type LandingHubDeepLink =
   | "stats"
   | "badges"
   | "gm-stats"
+  | "game-log"
+  | "weekly-recap"
   | "privacy"
   | "terms"
   | "beta";
@@ -28,6 +30,8 @@ export type LandingDeepLinkFeature =
   | "stats"
   | "achievements"
   | "gmStats"
+  | "gameLog"
+  | "weeklyRecap"
   | "privacy"
   | "terms"
   | "beta";
@@ -119,6 +123,16 @@ export const parseLandingHubParam = (
   ) {
     return "gm-stats";
   }
+  if (token === "game-log" || token === "gamelog") {
+    return "game-log";
+  }
+  if (
+    token === "weekly-recap" ||
+    token === "recap" ||
+    token === "weekly"
+  ) {
+    return "weekly-recap";
+  }
   if (token === "privacy") return "privacy";
   if (token === "terms") return "terms";
   if (token === "beta" || token === "beta-notes") return "beta";
@@ -141,6 +155,10 @@ export const hubParamForFeature = (
       return "badges";
     case "gmStats":
       return "gm-stats";
+    case "gameLog":
+      return "game-log";
+    case "weeklyRecap":
+      return "weekly-recap";
     case "privacy":
       return "privacy";
     case "terms":
@@ -158,6 +176,7 @@ export const parentTabForFeature = (
     case "stats":
     case "achievements":
     case "gmStats":
+    case "weeklyRecap":
       return "roster";
     case "privacy":
     case "terms":
@@ -165,6 +184,7 @@ export const parentTabForFeature = (
       return "account";
     case "tierList":
     case "leaderboard":
+    case "gameLog":
       return "play";
   }
 };
@@ -184,6 +204,10 @@ export const featureFromHubDeepLink = (
       return "achievements";
     case "gm-stats":
       return "gmStats";
+    case "game-log":
+      return "gameLog";
+    case "weekly-recap":
+      return "weeklyRecap";
     case "privacy":
       return "privacy";
     case "terms":

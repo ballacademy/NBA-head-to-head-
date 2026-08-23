@@ -3,6 +3,7 @@ import {
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
+  ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
@@ -847,4 +848,66 @@ export const deleteTierListComment = async (params: {
   });
 
   return { ok: true, commentId: params.commentId };
+};
+
+export type ReportPublicTierListResult =
+  | { ok: true }
+  | { ok: false; error: string; accountRequired?: boolean };
+
+export const reportPublicTierList = async (params: {
+  id: string;
+  playerId: string;
+  reason?: string;
+}): Promise<ReportPublicTierListResult> => {
+  if (!(await isPlayerAccountLinked(params.playerId))) {
+    return {
+      ok: false,
+      error: ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
+      accountRequired: true,
+    };
+  }
+
+  try {
+    const response = await fetch(
+      buildUrl(`/api/tier-lists/${encodeURIComponent(params.id)}/report`),
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          playerId: params.playerId,
+          reason: params.reason ?? "",
+        }),
+      },
+    );
+
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      error?: string;
+    } | null;
+
+    if (response.status === 403) {
+      return {
+        ok: false,
+        error: payload?.error ?? ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
+        accountRequired: true,
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload?.error ?? "Could not report tier list. Try again.",
+      };
+    }
+
+    return { ok: true };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Try again.",
+    };
+  }
 };

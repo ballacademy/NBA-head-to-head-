@@ -130,6 +130,7 @@ import {
 } from "./lib/liveMatchmaking";
 import {
   cancelPrivateRoom,
+  cancelPrivateRoomKeepalive,
   createPrivateRoom,
   joinPrivateRoom,
   PRIVATE_ROOM_ABORTED_MESSAGE,
@@ -312,6 +313,10 @@ const featurePhaseFromDeepLink = (
       return "achievements";
     case "gmStats":
       return "gmStats";
+    case "gameLog":
+      return "gameLog";
+    case "weeklyRecap":
+      return "weeklyRecap";
     case "privacy":
       return "privacy";
     case "terms":
@@ -335,6 +340,10 @@ const deepLinkFeatureFromPhase = (
       return "achievements";
     case "gmStats":
       return "gmStats";
+    case "gameLog":
+      return "gameLog";
+    case "weeklyRecap":
+      return "weeklyRecap";
     case "privacy":
       return "privacy";
     case "terms":
@@ -437,6 +446,7 @@ function App() {
   const dailyHistorySyncAttemptedRef = useRef(false);
   /** Bumped on tab focus so failed cloud pulls can retry after backoff exhausted. */
   const [cloudPullRetryNonce, setCloudPullRetryNonce] = useState(0);
+  const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
@@ -643,6 +653,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         collectionSyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync your collection. Check your connection.",
+        );
       }
     });
 
@@ -663,11 +677,39 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         achievementsSyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync your achievements. Check your connection.",
+        );
       }
     });
 
     return () => controller.abort();
   }, [phase, cloudPullRetryNonce]);
+
+  // Host tab close / refresh cancels an unmatched private room.
+  useEffect(() => {
+    if (!privateRoomCode || privateRoomRole !== "host") {
+      return;
+    }
+    const onUnload = () => {
+      const session = matchmakingSessionRef.current;
+      if (session?.matchId) {
+        return;
+      }
+      cancelPrivateRoomKeepalive({
+        roomCode: privateRoomCode,
+        playerId:
+          session?.playerId ?? getOrCreatePlayerIdentity().playerId,
+      });
+    };
+    window.addEventListener("pagehide", onUnload);
+    window.addEventListener("beforeunload", onUnload);
+    return () => {
+      window.removeEventListener("pagehide", onUnload);
+      window.removeEventListener("beforeunload", onUnload);
+    };
+  }, [privateRoomCode, privateRoomRole]);
 
   useEffect(() => {
     if (careerSyncAttemptedRef.current || phase !== "landing") {
@@ -2118,6 +2160,13 @@ function App() {
     resetToLanding();
   };
 
+  const handleRetryCloudSync = useCallback(() => {
+    setCloudSyncError(null);
+    collectionSyncAttemptedRef.current = false;
+    achievementsSyncAttemptedRef.current = false;
+    setCloudPullRetryNonce((current) => current + 1);
+  }, []);
+
   const openFeaturePage = useCallback(
     (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
       // Internal usage tooling is QA-only — bounce to Account on prod.
@@ -2142,9 +2191,7 @@ function App() {
       window.history.pushState(historyState, "");
       prefetchFeaturePhase(nextPhase);
       if (nextPhase === "gameLog") {
-        setLandingHubTab("play");
-        saveLandingHubTab("play");
-        syncLandingHubTabUrl("play");
+        // Remember H2H as return context; hub URL comes from deep-link feature sync.
         saveLandingPlaySection("headToHead");
       }
       startTransition(() => {
@@ -3230,6 +3277,8 @@ function App() {
     return renderHubFeature(
       <AchievementsPage
         onBack={exitFeaturePage}
+        cloudSyncError={cloudSyncError}
+        onRetryCloudSync={handleRetryCloudSync}
         onPlayIntent={(intent) => {
           saveLandingPlaySection(intent.playSection);
           if (intent.h2hMode) {
@@ -3399,6 +3448,8 @@ function App() {
           onHubTabChange={updateLandingHubTab}
           onPrefetchHubTab={prefetchHubFeatureTab}
           pendingOwnerResultCount={deliveredOwnerResults.length}
+          cloudSyncError={cloudSyncError}
+          onRetryCloudSync={handleRetryCloudSync}
         />
         {showDraftOnboarding ? (
           <DraftOnboardingOverlay

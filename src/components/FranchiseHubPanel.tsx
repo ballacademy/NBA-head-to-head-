@@ -5,6 +5,7 @@ import { getNextBadgeTeaser } from "../lib/nextBadgeTeaser";
 import { COLLECTION_UNLOCK_COPY, type CollectionTier } from "../lib/playerCollection";
 import { MostDraftedBoards } from "./MostDraftedBoards";
 import { WeeklyGmRecapCard } from "./WeeklyGmRecapCard";
+import { InlineAlert } from "./InlineAlert";
 
 type CollectionProgress = ReturnType<
   typeof import("../lib/playerCollection").getCollectionProgress
@@ -22,6 +23,8 @@ interface FranchiseHubPanelProps {
     playSection: LandingPlaySection;
     h2hMode?: "classic" | "ranked";
   }) => void;
+  cloudSyncError?: string | null;
+  onRetryCloudSync?: () => void;
 }
 
 function FranchiseRow({
@@ -65,6 +68,8 @@ export function FranchiseHubPanel({
   onViewGmStats,
   onViewWeeklyRecap,
   onPlayIntent,
+  cloudSyncError = null,
+  onRetryCloudSync,
 }: FranchiseHubPanelProps) {
   useEffect(() => {
     evaluateCareerProgressAchievements();
@@ -74,6 +79,16 @@ export function FranchiseHubPanel({
 
   return (
     <div className="franchise-home">
+      {cloudSyncError ? (
+        <InlineAlert
+          message={cloudSyncError}
+          action={
+            onRetryCloudSync
+              ? { label: "Retry", onClick: onRetryCloudSync }
+              : undefined
+          }
+        />
+      ) : null}
       <WeeklyGmRecapCard
         variant="compact"
         alwaysVisible
