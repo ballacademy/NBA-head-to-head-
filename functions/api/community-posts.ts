@@ -270,62 +270,92 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     url.searchParams.get("sort") === "popular" ? "popular" : "recent";
   const singleId = url.searchParams.get("id")?.trim().slice(0, 80) ?? "";
 
+  const beforeLikeCountRaw = url.searchParams.get("beforeLikeCount");
+  const beforeLikeCount = Number(beforeLikeCountRaw);
+  const beforeCreatedAt =
+    url.searchParams.get("beforeCreatedAt")?.trim().slice(0, 40) ?? "";
+  const beforeId =
+    url.searchParams.get("beforeId")?.trim().slice(0, 80) ?? "";
+  const usePopularCursor =
+    sort === "popular" &&
+    Number.isFinite(beforeLikeCount) &&
+    beforeCreatedAt.length > 0 &&
+    beforeId.length > 0;
+  const useRecentCursor =
+    sort === "recent" && beforeCreatedAt.length > 0 && beforeId.length > 0;
+
   const orderSql =
     sort === "popular"
-      ? "like_count DESC, created_at DESC"
-      : "created_at DESC";
+      ? "like_count DESC, created_at DESC, id DESC"
+      : "created_at DESC, id DESC";
 
-  const rows = singleId
-    ? await context.env.DB.prepare(
-        `SELECT p.id, p.player_id, p.author_name, p.author_tag, p.body, p.created_at,
+  const selectSql = `SELECT p.id, p.player_id, p.author_name, p.author_tag, p.body, p.created_at,
                 p.like_count, p.attachment_json, p.quote_post_id, p.quote_json,
                 p.author_classic_elo, p.author_ranked_elo,
                 (SELECT COUNT(*) FROM community_post_replies r WHERE r.post_id = p.id) AS reply_count
-         FROM community_posts p
+         FROM community_posts p`;
+
+  type PostRow = {
+    id: string;
+    player_id: string;
+    author_name: string;
+    author_tag: string;
+    body: string;
+    created_at: string;
+    like_count: number | null;
+    attachment_json: string | null;
+    quote_post_id: string | null;
+    quote_json: string | null;
+    author_classic_elo: number | null;
+    author_ranked_elo: number | null;
+    reply_count: number | null;
+  };
+
+  const rows = singleId
+    ? await context.env.DB.prepare(
+        `${selectSql}
          WHERE p.id = ?
          LIMIT 1`,
       )
         .bind(singleId)
-        .all<{
-          id: string;
-          player_id: string;
-          author_name: string;
-          author_tag: string;
-          body: string;
-          created_at: string;
-          like_count: number | null;
-          attachment_json: string | null;
-          quote_post_id: string | null;
-          quote_json: string | null;
-          author_classic_elo: number | null;
-          author_ranked_elo: number | null;
-          reply_count: number | null;
-        }>()
-    : await context.env.DB.prepare(
-        `SELECT p.id, p.player_id, p.author_name, p.author_tag, p.body, p.created_at,
-                p.like_count, p.attachment_json, p.quote_post_id, p.quote_json,
-                p.author_classic_elo, p.author_ranked_elo,
-                (SELECT COUNT(*) FROM community_post_replies r WHERE r.post_id = p.id) AS reply_count
-         FROM community_posts p
+        .all<PostRow>()
+    : usePopularCursor
+      ? await context.env.DB.prepare(
+          `${selectSql}
+         WHERE (
+           p.like_count < ?
+           OR (p.like_count = ? AND p.created_at < ?)
+           OR (p.like_count = ? AND p.created_at = ? AND p.id < ?)
+         )
+         ORDER BY ${orderSql}
+         LIMIT ?`,
+        )
+          .bind(
+            beforeLikeCount,
+            beforeLikeCount,
+            beforeCreatedAt,
+            beforeLikeCount,
+            beforeCreatedAt,
+            beforeId,
+            limit + 1,
+          )
+          .all<PostRow>()
+      : useRecentCursor
+        ? await context.env.DB.prepare(
+            `${selectSql}
+         WHERE (p.created_at < ? OR (p.created_at = ? AND p.id < ?))
+         ORDER BY ${orderSql}
+         LIMIT ?`,
+          )
+            .bind(beforeCreatedAt, beforeCreatedAt, beforeId, limit + 1)
+            .all<PostRow>()
+        : await context.env.DB.prepare(
+            `${selectSql}
          ORDER BY ${orderSql}
          LIMIT ? OFFSET ?`,
-      )
-        .bind(limit + 1, offset)
-        .all<{
-          id: string;
-          player_id: string;
-          author_name: string;
-          author_tag: string;
-          body: string;
-          created_at: string;
-          like_count: number | null;
-          attachment_json: string | null;
-          quote_post_id: string | null;
-          quote_json: string | null;
-          author_classic_elo: number | null;
-          author_ranked_elo: number | null;
-          reply_count: number | null;
-        }>();
+          )
+            .bind(limit + 1, offset)
+            .all<PostRow>();
 
   const results = rows.results ?? [];
   const hasMore = !singleId && results.length > limit;
@@ -346,11 +376,30 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   const posts = pageRows.map((row) => mapPostRow(row, likedIds.has(row.id)));
+  const last = pageRows[pageRows.length - 1];
+  const nextCursor =
+    hasMore && last
+      ? sort === "popular"
+        ? {
+            beforeLikeCount: Math.max(
+              0,
+              Math.round(Number(last.like_count ?? 0)) || 0,
+            ),
+            beforeCreatedAt: last.created_at,
+            beforeId: last.id,
+          }
+        : {
+            beforeCreatedAt: last.created_at,
+            beforeId: last.id,
+          }
+      : null;
+
   return json({
     posts,
     sort,
     hasMore,
     nextOffset: offset + pageRows.length,
+    nextCursor,
   });
 };
 

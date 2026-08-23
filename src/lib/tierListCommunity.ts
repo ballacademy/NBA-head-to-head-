@@ -6,6 +6,7 @@ import {
   ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
   ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
+  ACCOUNT_SESSION_EXPIRED_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
 import type { TierListRow, TierListState } from "./tierList";
@@ -934,10 +935,10 @@ export const reportPublicTierList = async (params: {
       error?: string;
     } | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
+        error: response.status === 401 ? ACCOUNT_SESSION_EXPIRED_MESSAGE : (payload?.error ?? ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE),
         accountRequired: true,
       };
     }

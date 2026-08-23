@@ -13,8 +13,9 @@ export const clampClientMatchmakingElo = (value: number) =>
  * Prefer the current-season leaderboard Elo when present. Otherwise clamp the
  * client value, and for ranked guests apply {@link GUEST_RANKED_ELO_CAP}.
  *
- * Note: without session auth, a caller can still spoof another linked playerId.
- * This only removes client-only Elo spoofing for guests and clamps extremes.
+ * Linked accounts must present a matching session cookie on queue/live paths
+ * (`requirePlayerIdAuthority`). This helper still clamps client Elo and prefers
+ * the server leaderboard row when present.
  */
 export const resolveServerMatchmakingElo = async (
   db: D1Database,

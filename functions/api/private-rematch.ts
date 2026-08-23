@@ -132,11 +132,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const sourceMatchId = parseSourceMatchId(url.searchParams.get("matchId"));
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!sourceMatchId || !playerId) {
+  if (!sourceMatchId || !requestedPlayerId) {
     return json({ error: "matchId and playerId are required" }, 400);
   }
+
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   await cleanupExpiredPrivateRematches(context.env.DB);
   const row = await getPrivateRematch(context.env.DB, sourceMatchId);
@@ -191,11 +199,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const sourceMatchId = parseSourceMatchId(url.searchParams.get("matchId"));
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!sourceMatchId || !playerId) {
+  if (!sourceMatchId || !requestedPlayerId) {
     return json({ error: "matchId and playerId are required" }, 400);
   }
+
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const ok = await cancelPrivateRematchOffer(context.env.DB, {
     sourceMatchId,

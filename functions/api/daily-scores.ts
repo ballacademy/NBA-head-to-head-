@@ -116,13 +116,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   let entry = null;
 
   if (playerId) {
+    const auth = await requirePlayerIdAuthority(
+      context.request,
+      db,
+      playerId,
+    );
+    if (!auth.ok) {
+      return auth.response;
+    }
+
     const playerRow = await db
       .prepare(
         `SELECT date_key, goal_id, mode, player_id, team_name, value, formatted_result, lineup_json, submitted_at
          FROM daily_draft_scores
          WHERE date_key = ? AND goal_id = ? AND mode = ? AND player_id = ?`,
       )
-      .bind(dateKey, goalId, mode, playerId)
+      .bind(dateKey, goalId, mode, auth.playerId)
       .first<DailyScoreRow>();
 
     entry = playerRow ? rowToEntry(playerRow) : null;

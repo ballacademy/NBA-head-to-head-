@@ -129,7 +129,9 @@ function PrivacyPolicyContent() {
         <li>Display leaderboards and Daily Draft percentiles</li>
         <li>Keep your local progress synced with server-side competitive features</li>
         <li>
-          Authenticate optional accounts so you can restore a GM identity
+          Authenticate optional accounts with an HttpOnly session cookie so you
+          can restore a GM identity and keep cloud sync / competitive play
+          signed in on this browser
         </li>
         <li>Contact you about account recovery when you request a reset</li>
         <li>Maintain and protect the service, including login rate limiting</li>
@@ -146,7 +148,8 @@ function PrivacyPolicyContent() {
         <li>
           <strong>Your browser:</strong> local storage and session storage on
           your device (including an anonymous session id used only for
-          first-party product counters)
+          first-party product counters), plus an HttpOnly session cookie when
+          you are signed in
         </li>
         <li>
           <strong>Our backend:</strong> Cloudflare D1 databases that power the

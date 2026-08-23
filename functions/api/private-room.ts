@@ -121,11 +121,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const code = normalizeRoomCode(url.searchParams.get("code") ?? "");
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!isValidRoomCodeFormat(code) || !playerId) {
+  if (!isValidRoomCodeFormat(code) || !requestedPlayerId) {
     return json({ error: "code and playerId are required" }, 400);
   }
+
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const db = context.env.DB;
   await cleanupExpiredPrivateRooms(db);
@@ -174,11 +182,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
   const code = normalizeRoomCode(url.searchParams.get("code") ?? "");
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!isValidRoomCodeFormat(code) || !playerId) {
+  if (!isValidRoomCodeFormat(code) || !requestedPlayerId) {
     return json({ error: "code and playerId are required" }, 400);
   }
+
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const db = context.env.DB;
   const room = await getPrivateRoom(db, code);

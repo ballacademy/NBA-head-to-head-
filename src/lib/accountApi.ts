@@ -11,6 +11,8 @@ const API_BASE = "";
 
 export interface AccountStatusResponse {
   linked: boolean;
+  /** True only when a valid HttpOnly session cookie resolves for this GM. */
+  authenticated?: boolean;
   playerId: string;
   username?: string;
   createdAt?: string;

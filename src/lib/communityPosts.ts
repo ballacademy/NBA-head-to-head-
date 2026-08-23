@@ -4,6 +4,7 @@ import {
   ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
   ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
+  ACCOUNT_SESSION_EXPIRED_MESSAGE,
   isPlayerAccountLinked,
 } from "./accountGate";
 import { readJson, writeJson } from "./browserStorage";
@@ -272,26 +273,45 @@ export const formatCommunityPostTime = (iso: string) => {
   });
 };
 
+export type CommunityPostFeedCursor = {
+  beforeLikeCount?: number;
+  beforeCreatedAt: string;
+  beforeId: string;
+};
+
 export const listCommunityPosts = async (params?: {
   sort?: CommunityPostSort;
   playerId?: string;
   offset?: number;
   limit?: number;
+  cursor?: CommunityPostFeedCursor | null;
 }): Promise<{
   posts: CommunityPost[];
   hasMore: boolean;
   nextOffset: number;
+  nextCursor: CommunityPostFeedCursor | null;
 }> => {
   const sort = params?.sort ?? "recent";
   const offset = Math.max(0, Math.floor(params?.offset ?? 0));
   const limit = Math.max(1, Math.min(50, Math.floor(params?.limit ?? 50)));
   const search = new URLSearchParams({
     limit: String(limit),
-    offset: String(offset),
     sort,
   });
   if (params?.playerId) {
     search.set("playerId", params.playerId);
+  }
+  if (params?.cursor?.beforeCreatedAt && params.cursor.beforeId) {
+    search.set("beforeCreatedAt", params.cursor.beforeCreatedAt);
+    search.set("beforeId", params.cursor.beforeId);
+    if (
+      typeof params.cursor.beforeLikeCount === "number" &&
+      Number.isFinite(params.cursor.beforeLikeCount)
+    ) {
+      search.set("beforeLikeCount", String(params.cursor.beforeLikeCount));
+    }
+  } else {
+    search.set("offset", String(offset));
   }
 
   try {
@@ -308,22 +328,36 @@ export const listCommunityPosts = async (params?: {
         posts?: unknown[];
         hasMore?: boolean;
         nextOffset?: number;
+        nextCursor?: CommunityPostFeedCursor | null;
       };
       if (Array.isArray(payload.posts)) {
         const posts = payload.posts
           .map((entry) => normalizePost(entry as Partial<CommunityPost>))
           .filter((entry): entry is CommunityPost => Boolean(entry))
           .slice(0, limit);
-        if (offset === 0) {
+        if (offset === 0 && !params?.cursor) {
           saveLocalFeed({ posts });
         }
+        const nextCursor =
+          payload.nextCursor &&
+          typeof payload.nextCursor.beforeCreatedAt === "string" &&
+          typeof payload.nextCursor.beforeId === "string"
+            ? {
+                beforeCreatedAt: payload.nextCursor.beforeCreatedAt,
+                beforeId: payload.nextCursor.beforeId,
+                ...(typeof payload.nextCursor.beforeLikeCount === "number"
+                  ? { beforeLikeCount: payload.nextCursor.beforeLikeCount }
+                  : {}),
+              }
+            : null;
         return {
           posts,
-          hasMore: Boolean(payload.hasMore),
+          hasMore: Boolean(payload.hasMore) || nextCursor != null,
           nextOffset:
             typeof payload.nextOffset === "number"
               ? payload.nextOffset
               : offset + posts.length,
+          nextCursor,
         };
       }
     }
@@ -337,6 +371,7 @@ export const listCommunityPosts = async (params?: {
     posts: page,
     hasMore: offset + page.length < local.length,
     nextOffset: offset + page.length,
+    nextCursor: null,
   };
 };
 
@@ -402,11 +437,13 @@ export const createCommunityPost = async (params: {
       | { ok?: boolean; post?: Partial<CommunityPost>; error?: string }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
         error:
-          payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
+          response.status === 401
+            ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+            : (payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE),
         accountRequired: true,
       };
     }
@@ -475,10 +512,13 @@ export const setCommunityPostLike = async (params: {
         }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
+        error:
+          response.status === 401
+            ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+            : (payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE),
         accountRequired: true,
       };
     }
@@ -571,10 +611,13 @@ export const deleteCommunityPost = async (params: {
       | { ok?: boolean; postId?: string; error?: string }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? "You can only delete your own posts.",
+        error:
+          response.status === 401
+            ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+            : (payload?.error ?? "You can only delete your own posts."),
         accountRequired: payload?.error?.includes("account") || undefined,
       };
     }
@@ -786,10 +829,13 @@ export const createCommunityPostReply = async (params: {
       | { ok?: boolean; reply?: Partial<CommunityPostReply>; error?: string }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
+        error:
+          response.status === 401
+            ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+            : (payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE),
         accountRequired: true,
       };
     }
@@ -849,10 +895,13 @@ export const reportCommunityPost = async (params: {
       | { ok?: boolean; error?: string }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
+        error:
+          response.status === 401
+            ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+            : (payload?.error ?? ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE),
         accountRequired: true,
       };
     }
@@ -908,10 +957,10 @@ export const deleteCommunityReply = async (params: {
       | { ok?: boolean; replyId?: string; postId?: string; error?: string }
       | null;
 
-    if (response.status === 403) {
+    if (response.status === 401 || response.status === 403) {
       return {
         ok: false,
-        error: payload?.error ?? "You can only delete your own replies.",
+        error: response.status === 401 ? ACCOUNT_SESSION_EXPIRED_MESSAGE : (payload?.error ?? "You can only delete your own replies."),
         accountRequired: payload?.error?.includes("account") || undefined,
       };
     }

@@ -4,7 +4,10 @@ const CACHE_TTL_MS = 60_000;
 export const ACCOUNT_LINK_CHANGED_EVENT = "ddgm:account-link-changed";
 
 type AccountLinkCache = {
+  /** True only when the GM has a live authenticated session. */
   linked: boolean;
+  /** Account exists for this playerId even if the session cookie is gone. */
+  accountExists: boolean;
   username: string | null;
   checkedAt: number;
 };
@@ -54,6 +57,9 @@ export const ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE =
 export const ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE =
   "Create an account to appear on event standings.";
 
+export const ACCOUNT_SESSION_EXPIRED_MESSAGE =
+  "Session expired. Log in again to keep cloud sync and competitive play.";
+
 const emitAccountLinkChanged = () => {
   for (const listener of [...linkListeners]) {
     listener();
@@ -80,6 +86,23 @@ export const clearAccountLinkCache = (playerId?: string) => {
   emitAccountLinkChanged();
 };
 
+const statusLooksAuthenticated = (status: {
+  linked?: boolean;
+  authenticated?: boolean;
+  username?: string | null;
+}) => {
+  if (typeof status.authenticated === "boolean") {
+    return status.authenticated;
+  }
+  // Older responses: username only comes back with a live session.
+  return Boolean(status.linked && status.username);
+};
+
+/**
+ * True when this GM has a live authenticated session (cookie present).
+ * Linked-but-expired (password reset / cleared cookie) returns false so
+ * write gates prompt sign-in instead of soft-failing with 401s.
+ */
 export const isPlayerAccountLinked = async (
   playerId: string,
 ): Promise<boolean> => {
@@ -99,28 +122,32 @@ export const isPlayerAccountLinked = async (
     return false;
   }
 
-  const linked = Boolean(result.status.linked);
+  const authenticated = statusLooksAuthenticated(result.status);
+  const accountExists = Boolean(result.status.linked);
   linkCache.set(trimmed, {
-    linked,
-    username: result.status.username ?? null,
+    linked: authenticated,
+    accountExists,
+    username: authenticated ? (result.status.username ?? null) : null,
     checkedAt: Date.now(),
   });
-  return linked;
+  return authenticated;
 };
 
 export const markPlayerAccountLinked = (
   playerId: string,
   username: string | null,
-  options: { linked?: boolean } = {},
+  options: { linked?: boolean; accountExists?: boolean } = {},
 ) => {
   const trimmed = playerId.trim();
   if (!trimmed) {
     return;
   }
 
+  const linked = options.linked ?? Boolean(username);
   linkCache.set(trimmed, {
-    linked: options.linked ?? Boolean(username),
-    username,
+    linked,
+    accountExists: options.accountExists ?? linked,
+    username: linked ? username : null,
     checkedAt: Date.now(),
   });
   emitAccountLinkChanged();
@@ -156,4 +183,21 @@ export const peekCachedAccountLinked = (
   }
 
   return cached.linked;
+};
+
+/** True when an account exists for this GM but the session cookie is gone. */
+export const peekCachedAccountNeedsRelogin = (
+  playerId: string,
+): boolean | null => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const cached = linkCache.get(trimmed);
+  if (!cached || Date.now() - cached.checkedAt >= CACHE_TTL_MS) {
+    return null;
+  }
+
+  return cached.accountExists && !cached.linked;
 };
