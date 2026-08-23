@@ -1,7 +1,7 @@
 import type { Env, LeaderboardEntryRow } from "../types";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
 import { rejectProfaneTeamName } from "../lib/profanity";
 import { upsertPlayerLegacyStats } from "../lib/playerLegacy";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
 import {
   isPublicOpaquePlayerId,
   toLeaderboardPublicEntry,
@@ -168,7 +168,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "seasonId is required for leaderboards" }, 400);
   }
 
-  const playerId = parsePlayerId(body.playerId);
+  const requestedPlayerId = parsePlayerId(body.playerId);
   const teamName =
     typeof body.teamName === "string" ? body.teamName.trim().slice(0, 32) : "";
   const publicTag =
@@ -179,24 +179,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const winStreak = Math.max(0, Math.round(Number(body.winStreak ?? 0)));
   const lossStreak = Math.max(0, Math.round(Number(body.lossStreak ?? 0)));
 
-  if (!playerId || !teamName || !publicTag) {
+  if (!requestedPlayerId || !teamName || !publicTag) {
     return json(
       { error: "playerId, teamName, and publicTag are required" },
       400,
     );
   }
 
-  if (isPublicOpaquePlayerId(playerId)) {
+  if (isPublicOpaquePlayerId(requestedPlayerId)) {
     return json({ error: "playerId is invalid" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json(
-      { error: "Create an account to appear on leaderboards." },
-      403,
-    );
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const profanityError = rejectProfaneTeamName(teamName);
 

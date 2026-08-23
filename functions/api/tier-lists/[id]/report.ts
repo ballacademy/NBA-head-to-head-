@@ -1,5 +1,5 @@
 import type { Env } from "../../../types";
-import { getAccountByPlayerId } from "../../../lib/playerAccounts";
+import { requireLinkedAccountSession } from "../../../lib/accountSessions";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -36,18 +36,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const playerId = parsePlayerId(body.playerId);
+  const requestedPlayerId = parsePlayerId(body.playerId);
   const reason =
     typeof body.reason === "string" ? body.reason.trim().slice(0, REASON_MAX) : "";
 
-  if (!playerId) {
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "Create an account to report tier lists." }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const existing = await context.env.DB.prepare(
     `SELECT id, player_id FROM published_tier_lists WHERE id = ?`,

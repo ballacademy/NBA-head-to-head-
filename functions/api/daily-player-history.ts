@@ -1,5 +1,5 @@
 import type { Env } from "../types";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
 import { parseDailyLineupJson, parseDailyMode } from "../lib/dailyScoresDb";
 
 const json = (body: unknown, status = 200) =>
@@ -37,9 +37,9 @@ interface HistoryRow {
  */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!playerId) {
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
@@ -47,10 +47,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "database unavailable" }, 503);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "account required" }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { playerId } = auth;
 
   const rows = await context.env.DB.prepare(
     `SELECT date_key, goal_id, mode, player_id, team_name, value,

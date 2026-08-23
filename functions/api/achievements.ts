@@ -1,6 +1,6 @@
 import type { Env } from "../types";
+import { requireLinkedAccountSession } from "../lib/accountSessions";
 import { isFoundingGmSignupIndex } from "../lib/foundingGm";
-import { getAccountByPlayerId } from "../lib/playerAccounts";
 import {
   filterUnlockedAchievementIds,
   loadPlayerAchievementsRow,
@@ -38,16 +38,19 @@ const withFoundingGm = (
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url);
-  const playerId = parsePlayerId(url.searchParams.get("playerId"));
+  const requestedPlayerId = parsePlayerId(url.searchParams.get("playerId"));
 
-  if (!playerId) {
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "account required" }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { account, playerId } = auth;
 
   const row = await loadPlayerAchievementsRow(context.env.DB, playerId);
   const unlockedIds = withFoundingGm(
@@ -76,15 +79,18 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     return json({ error: "invalid JSON body" }, 400);
   }
 
-  const playerId = parsePlayerId(body.playerId);
-  if (!playerId) {
+  const requestedPlayerId = parsePlayerId(body.playerId);
+  if (!requestedPlayerId) {
     return json({ error: "playerId is required" }, 400);
   }
 
-  const account = await getAccountByPlayerId(context.env.DB, playerId);
-  if (!account) {
-    return json({ error: "account required" }, 403);
-  }
+  const auth = await requireLinkedAccountSession(
+    context.request,
+    context.env.DB,
+    requestedPlayerId,
+  );
+  if (!auth.ok) return auth.response;
+  const { account, playerId } = auth;
 
   const incoming = filterUnlockedAchievementIds(body.unlockedIds);
   const existing = await loadPlayerAchievementsRow(context.env.DB, playerId);
