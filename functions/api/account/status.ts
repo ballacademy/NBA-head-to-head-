@@ -55,13 +55,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     // Unauthenticated lookup: confirm whether this local GM id is linked, but
-    // do not treat it as an authenticated session.
+    // do not reveal username or treat it as an authenticated session.
     return json({
       linked: true,
       playerId: account.player_id,
-      username: account.username,
-      signupIndex: account.signup_index,
-      foundingGm: isFoundingGmSignupIndex(account.signup_index),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

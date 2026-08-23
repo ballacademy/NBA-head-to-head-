@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import { scoreLineupIds } from "../lib/lineupScoring";
 import { computeLineupSalaryTotal } from "../lib/playerSalaries";
 import {
@@ -88,6 +89,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
       400,
     );
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    challengerPlayerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   if (!Number.isFinite(challengerElo)) {

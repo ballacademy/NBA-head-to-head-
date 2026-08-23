@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode, StoredLineupRow } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import {
   claimGhostOpponent,
   releaseGhostOpponentClaim,
@@ -91,6 +92,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "playerId is required" }, 400);
   }
 
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   if (!Number.isFinite(elo)) {
     return json({ error: "elo must be a number" }, 400);
   }
@@ -133,6 +143,15 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
 
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   await releaseGhostOpponentClaim(context.env.DB, mode, playerId);

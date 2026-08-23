@@ -25,7 +25,13 @@ import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
 import { LandingPage } from "./components/LandingPage";
 import { HubShell } from "./components/HubShell";
+import { HubTabUnlockDialog } from "./components/HubTabUnlockDialog";
 import type { LandingHubTab } from "./components/LandingBottomNav";
+import {
+  getFeatureLockPrompt,
+  getHubTabLockPrompt,
+  type HubTabLockPrompt,
+} from "./lib/hubUnlockProgress";
 import {
   applyLandingDeepLinksFromSearch,
   hubParamForFeature,
@@ -401,7 +407,11 @@ function App() {
     const fromDeepLink = featurePhaseFromDeepLink(
       initialLandingDeepLinks.feature,
     );
-    if (fromDeepLink) {
+    if (
+      fromDeepLink &&
+      initialLandingDeepLinks.feature &&
+      !getFeatureLockPrompt(initialLandingDeepLinks.feature)
+    ) {
       return fromDeepLink;
     }
     return "landing";
@@ -474,9 +484,16 @@ function App() {
   const [landingRenderKey, setLandingRenderKey] = useState(0);
   const [communityHubReturnToken, setCommunityHubReturnToken] = useState(0);
   const [communityComposeToken, setCommunityComposeToken] = useState(0);
-  const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() =>
-    initialLandingDeepLinks.contentTab ?? loadLandingHubTab(),
-  );
+  const [landingHubTab, setLandingHubTab] = useState<LandingContentTab>(() => {
+    const tab =
+      initialLandingDeepLinks.contentTab ?? loadLandingHubTab();
+    if (tab === "roster" && getHubTabLockPrompt("roster")) {
+      return "play";
+    }
+    return tab;
+  });
+  const [hubUnlockPrompt, setHubUnlockPrompt] =
+    useState<HubTabLockPrompt | null>(null);
   const skipPopStateResetRef = useRef(false);
   const pendingFeatureNavigationRef = useRef(false);
   const matchmakingGenerationRef = useRef(0);
@@ -571,7 +588,7 @@ function App() {
 
     const feature = initialLandingDeepLinks.feature;
     const featurePhase = featurePhaseFromDeepLink(feature);
-    if (feature && featurePhase) {
+    if (feature && featurePhase && !getFeatureLockPrompt(feature)) {
       const state = window.history.state as FeatureHistoryState | null;
       if (!state?.appPhase) {
         window.history.replaceState({ appPhase: featurePhase }, "");
@@ -590,15 +607,30 @@ function App() {
       return;
     }
 
+    if (feature && getFeatureLockPrompt(feature)) {
+      syncLandingDeepLinkUrl({
+        hub: "play",
+        play: null,
+        view: null,
+        post: null,
+        tierList: null,
+      });
+      return;
+    }
+
     if (
       initialLandingDeepLinks.contentTab ||
       initialLandingDeepLinks.playSection
     ) {
+      const contentTab =
+        initialLandingDeepLinks.contentTab === "roster" &&
+        getHubTabLockPrompt("roster")
+          ? "play"
+          : initialLandingDeepLinks.contentTab ?? "play";
       syncLandingDeepLinkUrl({
-        hub: initialLandingDeepLinks.contentTab ?? "play",
+        hub: contentTab,
         play:
-          initialLandingDeepLinks.contentTab === "play" ||
-          initialLandingDeepLinks.playSection
+          contentTab === "play" || initialLandingDeepLinks.playSection
             ? initialLandingDeepLinks.playSection ?? undefined
             : undefined,
         h2hMode: initialLandingDeepLinks.h2hMode,
@@ -2183,6 +2215,15 @@ function App() {
         return;
       }
 
+      const feature = deepLinkFeatureFromPhase(nextPhase);
+      if (feature) {
+        const lock = getFeatureLockPrompt(feature);
+        if (lock) {
+          setHubUnlockPrompt(lock);
+          return;
+        }
+      }
+
       pendingFeatureNavigationRef.current = true;
       const historyState: FeatureHistoryState = {
         appPhase: nextPhase,
@@ -2197,7 +2238,6 @@ function App() {
       startTransition(() => {
         setPhase(nextPhase);
       });
-      const feature = deepLinkFeatureFromPhase(nextPhase);
       if (feature) {
         const parentTab = parentTabForFeature(feature);
         setLandingHubTab(parentTab);
@@ -3023,6 +3063,11 @@ function App() {
   }, [phase]);
 
   const updateLandingHubTab = useCallback((tab: LandingContentTab) => {
+    const lock = getHubTabLockPrompt(tab);
+    if (lock) {
+      setHubUnlockPrompt(lock);
+      return;
+    }
     setLandingHubTab(tab);
     saveLandingHubTab(tab);
     syncLandingHubTabUrl(tab);
@@ -3030,6 +3075,11 @@ function App() {
 
   const goToLandingHub = useCallback(
     (tab: LandingContentTab) => {
+      const lock = getHubTabLockPrompt(tab);
+      if (lock) {
+        setHubUnlockPrompt(lock);
+        return;
+      }
       updateLandingHubTab(tab);
 
       if (phase === "landing") {
@@ -3206,6 +3256,7 @@ function App() {
         onPrefetchTab={prefetchHubFeatureTab}
         playBadgeCount={playNavBadgeCount}
         onGoToPlay={() => {
+          setHubUnlockPrompt(null);
           saveLandingPlaySection("chooser");
           goToLandingHub("play");
         }}
@@ -3216,6 +3267,17 @@ function App() {
           <Suspense fallback={<FeaturePageFallback />}>{content}</Suspense>
         )}
       </HubShell>
+      {hubUnlockPrompt ? (
+        <HubTabUnlockDialog
+          prompt={hubUnlockPrompt}
+          onGoToPlay={() => {
+            setHubUnlockPrompt(null);
+            saveLandingPlaySection("chooser");
+            goToLandingHub("play");
+          }}
+          onClose={() => setHubUnlockPrompt(null)}
+        />
+      ) : null}
     </main>
   );
 
@@ -3455,6 +3517,17 @@ function App() {
           cloudSyncError={cloudSyncError}
           onRetryCloudSync={handleRetryCloudSync}
         />
+        {hubUnlockPrompt ? (
+          <HubTabUnlockDialog
+            prompt={hubUnlockPrompt}
+            onGoToPlay={() => {
+              setHubUnlockPrompt(null);
+              saveLandingPlaySection("chooser");
+              updateLandingHubTab("play");
+            }}
+            onClose={() => setHubUnlockPrompt(null)}
+          />
+        ) : null}
         {showDraftOnboarding ? (
           <DraftOnboardingOverlay
             hasSalaryCap={draftOnboarding.hasSalaryCap}

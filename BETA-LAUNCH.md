@@ -14,7 +14,7 @@ Use this when shipping Draft Day GM to a small public beta.
 
 ## You must confirm in Cloudflare / production
 
-1. **D1 migrations** — production DB applied through `0029` (Daily player history index). Deploy workflow applies these; confirm “No migrations to apply” on the latest prod deploy.
+1. **D1 migrations** — production DB applied through `0034` (account sessions). Deploy workflow applies these; confirm “No migrations to apply” on the latest prod deploy.
 2. **Pages binding** — Pages project has D1 binding name **`DB`** for Production.
 3. **Resend (password reset email)** — Production secret `RESEND_API_KEY` set; verified sending domain + `RESET_EMAIL_FROM` for real player inboxes (see `PASSWORD-RESET.md`). Without this, Forgot password returns a clear “email isn’t available” error.
 4. **Deploy** — latest `main` (or this PR after merge) is live on Pages.

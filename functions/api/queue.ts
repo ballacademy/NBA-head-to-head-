@@ -1,4 +1,5 @@
 import type { Env, MatchmakingMode } from "../types";
+import { requirePlayerIdAuthority } from "../lib/accountSessions";
 import { claimQueueOpponentAndCreateMatch } from "../lib/matchmakingDb";
 import { resolveServerMatchmakingElo } from "../lib/matchmakingElo";
 import {
@@ -133,6 +134,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return json({ error: "playerId and teamName are required" }, 400);
   }
 
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const profanityError = rejectProfaneTeamName(teamName);
 
   if (profanityError) {
@@ -214,6 +224,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return json({ error: "playerId is required" }, 400);
   }
 
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const db = context.env.DB;
   await cleanupExpiredQueue(db);
 
@@ -281,6 +300,15 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
 
   if (!playerId) {
     return json({ error: "playerId is required" }, 400);
+  }
+
+  const auth = await requirePlayerIdAuthority(
+    context.request,
+    context.env.DB,
+    playerId,
+  );
+  if (!auth.ok) {
+    return auth.response;
   }
 
   await context.env.DB.prepare(

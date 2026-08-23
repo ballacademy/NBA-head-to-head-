@@ -6,6 +6,7 @@ import {
   FRANCHISE_UNLOCK_SCORED_GAMES,
   getHubTabLockPrompt,
   getHubUnlockProgress,
+  getFeatureLockPrompt,
   RANKS_UNLOCK_COMPETITIVE_GAMES,
 } from "./hubUnlockProgress";
 import { recordMatchResult } from "./playerRecord";
@@ -106,5 +107,16 @@ describe("hubUnlockProgress", () => {
   it("uses the documented unlock thresholds", () => {
     expect(FRANCHISE_UNLOCK_SCORED_GAMES).toBe(1);
     expect(RANKS_UNLOCK_COMPETITIVE_GAMES).toBe(2);
+  });
+
+  it("maps Franchise and Ranks feature pages to the same locks", () => {
+    expect(getFeatureLockPrompt("leaderboard")?.kind).toBe("ranks");
+    expect(getFeatureLockPrompt("stats")?.kind).toBe("franchise");
+    expect(getFeatureLockPrompt("achievements")?.kind).toBe("franchise");
+    expect(getFeatureLockPrompt("gmStats")?.kind).toBe("franchise");
+    expect(getFeatureLockPrompt("weeklyRecap")?.kind).toBe("franchise");
+    expect(getFeatureLockPrompt("tierList")).toBeNull();
+    expect(getFeatureLockPrompt("gameLog")).toBeNull();
+    expect(getFeatureLockPrompt("beta")).toBeNull();
   });
 });

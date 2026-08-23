@@ -99,6 +99,22 @@ export const revokeAccountSessionByToken = async (
     .run();
 };
 
+/** Revoke every active session for an account (e.g. after password reset). */
+export const revokeAllAccountSessions = async (
+  db: D1Database,
+  accountId: string,
+) => {
+  const now = new Date().toISOString();
+  await db
+    .prepare(
+      `UPDATE account_sessions
+       SET revoked_at = ?
+       WHERE account_id = ? AND revoked_at IS NULL`,
+    )
+    .bind(now, accountId)
+    .run();
+};
+
 export const resolveSessionFromRequest = async (
   request: Request,
   db: D1Database,
@@ -157,6 +173,49 @@ export const requireLinkedAccountSession = async (
   }
 
   return { ok: true, account: session.account, playerId: session.playerId };
+};
+
+/**
+ * Authorize a playerId that may be a guest or a linked account.
+ * Linked accounts must present a matching session cookie; guests may proceed
+ * without a session (playerId alone is still accepted for anonymous play).
+ */
+export const requirePlayerIdAuthority = async (
+  request: Request,
+  db: D1Database,
+  playerId: string,
+):
+  | { ok: true; playerId: string; linked: boolean }
+  | { ok: false; response: Response } => {
+  const trimmed = playerId.trim();
+  if (!trimmed) {
+    return {
+      ok: false,
+      response: jsonAuthError("playerId is required", 400),
+    };
+  }
+
+  const account = await getAccountByPlayerId(db, trimmed);
+  if (!account) {
+    return { ok: true, playerId: trimmed, linked: false };
+  }
+
+  const session = await resolveSessionFromRequest(request, db);
+  if (!session) {
+    return {
+      ok: false,
+      response: jsonAuthError("Sign in required.", 401),
+    };
+  }
+
+  if (session.playerId !== trimmed) {
+    return {
+      ok: false,
+      response: jsonAuthError("Session does not match this GM.", 403),
+    };
+  }
+
+  return { ok: true, playerId: trimmed, linked: true };
 };
 
 export const jsonWithSessionCookie = (

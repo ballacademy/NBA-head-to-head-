@@ -46,7 +46,7 @@ Accounts are optional. Register stores a username and PBKDF2-SHA-256 password ha
 npx wrangler d1 migrations apply draft-day-gm --remote
 ```
 
-Production and QA should stay current through **`0025_player_career_stats.sql`**. The repo ships 25 migrations in `migrations/`:
+Production and QA should stay current through **`0034_account_sessions.sql`**. The repo ships migrations in `migrations/` including:
 
 | Migration | Purpose |
 |-----------|---------|
@@ -75,6 +75,9 @@ Production and QA should stay current through **`0025_player_career_stats.sql`**
 | `0023` | Post likes + attachments |
 | `0024` | Community replies + reports |
 | `0025` | Career stats sync |
+| `0026`–`0029` | Usage, event profiles, tier library, daily history |
+| `0030`–`0033` | Private rematches, tier comments, room invites, reports |
+| `0034` | Account sessions (HttpOnly cookie auth) |
 
 ## Flow
 
@@ -100,7 +103,7 @@ All-Time mode still uses the local opponent simulator. Daily Draft submissions s
    ```bash
    npx wrangler d1 migrations apply draft-day-gm --remote
    ```
-   Applies every file in `migrations/` through **`0025_player_career_stats.sql`** (see the migration table under **Optional accounts** above).
+   Applies every file in `migrations/` through **`0034_account_sessions.sql`** (see the migration table under **Optional accounts** above).
 4. In the Cloudflare dashboard, bind the D1 database to your Pages project as **`DB`**.
 5. Redeploy Pages from `main`.
 

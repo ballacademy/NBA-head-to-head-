@@ -6,6 +6,7 @@ import {
 import {
   createAccountSession,
   jsonWithSessionCookie,
+  revokeAllAccountSessions,
 } from "../../lib/accountSessions";
 import {
   assertRateLimitAllow,
@@ -167,6 +168,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       .run();
 
     await clearAuthRateLimit(context.env.DB, rateKey);
+
+    await revokeAllAccountSessions(context.env.DB, account.id);
 
     const session = await createAccountSession(context.env.DB, {
       accountId: account.id,

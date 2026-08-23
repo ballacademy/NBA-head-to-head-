@@ -83,8 +83,8 @@ Until a domain is verified, you can still test reset by:
 ## Database
 
 Production D1 migrations apply automatically on Pages deploy. You want migrations
-through **`0028_player_tier_list_library.sql`** (password reset tables are older:
-`0013` / `0014`). If deploy says **No migrations to apply**, you’re current.
+through **`0034_account_sessions.sql`** (password reset tables are older:
+`0013` / `0014`; sessions are `0034`). If deploy says **No migrations to apply**, you’re current.
 
 Manual apply if needed:
 
