@@ -26,7 +26,7 @@ describe("eventProfileShared", () => {
     });
   });
 
-  it("merges profiles with max counters", () => {
+  it("merges profiles as a unit without inventing W–L", () => {
     const left = emptyEventProfilesPayload();
     left.byEventId["event-a"] = {
       eventId: "event-a",
@@ -56,10 +56,27 @@ describe("eventProfileShared", () => {
       mergeEventProfilesPayload(left, right).byEventId["event-a"],
     ).toMatchObject({
       wins: 3,
-      losses: 2,
-      matchesPlayed: 5,
+      losses: 1,
+      matchesPlayed: 4,
       winStreak: 2,
-      lossStreak: 1,
+      lossStreak: 0,
+      elo: 1048,
+    });
+
+    right.byEventId["event-a"] = {
+      ...right.byEventId["event-a"]!,
+      wins: 5,
+      losses: 2,
+      matchesPlayed: 7,
+      elo: 1100,
+    };
+    expect(
+      mergeEventProfilesPayload(left, right).byEventId["event-a"],
+    ).toMatchObject({
+      wins: 5,
+      losses: 2,
+      matchesPlayed: 7,
+      elo: 1100,
     });
   });
 

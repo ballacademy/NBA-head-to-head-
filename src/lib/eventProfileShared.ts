@@ -75,24 +75,32 @@ export const parseEventProfilesJson = (raw: string): EventProfilesPayload => {
   }
 };
 
+/**
+ * Pick one whole event record — never Math.max wins/losses independently
+ * (that invents matches that never happened across devices).
+ */
 const mergeProfile = (left: EventProfile, right: EventProfile): EventProfile => {
-  const wins = Math.max(left.wins, right.wins);
-  const losses = Math.max(left.losses, right.losses);
-  const ties = Math.max(left.ties, right.ties);
-  const matchesPlayed = Math.max(left.matchesPlayed, right.matchesPlayed);
-  const elo =
-    left.matchesPlayed >= right.matchesPlayed ? left.elo : right.elo;
+  const a = normalizeEventProfile(left.eventId, left);
+  const b = normalizeEventProfile(right.eventId || left.eventId, right);
 
-  return normalizeEventProfile(left.eventId, {
-    eventId: left.eventId,
-    wins,
-    losses,
-    ties,
-    matchesPlayed,
-    winStreak: Math.max(left.winStreak, right.winStreak),
-    lossStreak: Math.max(left.lossStreak, right.lossStreak),
-    elo,
-  });
+  if (a.matchesPlayed !== b.matchesPlayed) {
+    return a.matchesPlayed > b.matchesPlayed ? a : b;
+  }
+
+  if (a.wins === b.wins && a.losses === b.losses && a.ties === b.ties) {
+    return normalizeEventProfile(a.eventId, {
+      ...a,
+      winStreak: Math.max(a.winStreak, b.winStreak),
+      lossStreak: Math.max(a.lossStreak, b.lossStreak),
+      elo: Math.max(a.elo, b.elo),
+    });
+  }
+
+  if (a.wins !== b.wins) {
+    return a.wins > b.wins ? a : b;
+  }
+
+  return a;
 };
 
 /** Monotonic merge safe for cross-device sync. */

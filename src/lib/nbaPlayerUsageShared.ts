@@ -130,15 +130,32 @@ export const parseNbaPlayerUsageJson = (raw: string): NbaPlayerUsageStore => {
   }
 };
 
+/**
+ * Pick one whole usage row — never Math.max wins/losses independently
+ * (that invents outcomes that never happened across devices).
+ */
 const mergeModeUsage = (
   left: NbaPlayerModeUsage,
   right: NbaPlayerModeUsage,
-): NbaPlayerModeUsage => ({
-  drafts: Math.max(left.drafts, right.drafts),
-  wins: Math.max(left.wins, right.wins),
-  losses: Math.max(left.losses, right.losses),
-  ties: Math.max(left.ties, right.ties),
-});
+): NbaPlayerModeUsage => {
+  if (left.drafts !== right.drafts) {
+    return left.drafts > right.drafts ? left : right;
+  }
+
+  if (
+    left.wins === right.wins &&
+    left.losses === right.losses &&
+    left.ties === right.ties
+  ) {
+    return left;
+  }
+
+  if (left.wins !== right.wins) {
+    return left.wins > right.wins ? left : right;
+  }
+
+  return left;
+};
 
 const mergeDailyLineups = (
   left: Record<string, string[]>,

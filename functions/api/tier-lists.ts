@@ -366,6 +366,14 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     return json({ error: "id and playerId are required" }, 400);
   }
 
+  const account = await getAccountByPlayerId(context.env.DB, playerId);
+  if (!account) {
+    return json(
+      { error: "Create an account to unpublish tier lists." },
+      403,
+    );
+  }
+
   const existing = await context.env.DB.prepare(
     `SELECT id, player_id FROM published_tier_lists WHERE id = ?`,
   )

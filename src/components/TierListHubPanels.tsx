@@ -1945,6 +1945,9 @@ export function TierListPublicViewer({
             className="tier-list-hub__comment-compose"
             onSubmit={(event) => {
               event.preventDefault();
+              if (commentSubmitting || !commentDraft.trim()) {
+                return;
+              }
               onSubmitComment();
             }}
           >
