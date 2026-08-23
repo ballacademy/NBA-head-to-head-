@@ -330,7 +330,7 @@ export function AccountAuthPanel({
       return;
     }
 
-    setResetStep("enter-code");
+    // Stay on the request step — generic success does not mean a code was emailed.
     setMessage(result.message);
   };
 
