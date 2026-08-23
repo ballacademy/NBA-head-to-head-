@@ -10,7 +10,6 @@ import { getTeamGlowColor } from "./teamColors";
 export interface TierListSharePlayer {
   name: string;
   team: string;
-  position: string;
   bbrPlayerId?: string;
 }
 
@@ -40,8 +39,9 @@ const FOOTER_GAP = 40;
 const FONT_STACK =
   'Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
-const playerLabel = (player: TierListSharePlayer) =>
-  `${player.name} · ${player.team} ${player.position}`;
+export const formatTierListSharePlayerLabel = (player: TierListSharePlayer) =>
+  `${player.name} · ${player.team}`;
+
 
 const chipUsesHeadshotSlot = (
   player: TierListSharePlayer,
@@ -54,7 +54,7 @@ const measureChipWidth = (
   player: TierListSharePlayer,
   headshotsEnabled: boolean,
 ) => {
-  const label = player.team ? playerLabel(player) : player.name;
+  const label = player.team ? formatTierListSharePlayerLabel(player) : player.name;
   const textWidth = context.measureText(label).width;
   const avatarWidth = chipUsesHeadshotSlot(player, headshotsEnabled)
     ? CHIP_AVATAR_SIZE + CHIP_AVATAR_GAP
@@ -194,7 +194,7 @@ const wrapPlayerChips = (
   const entries =
     players.length > 0
       ? players
-      : [{ name: "Empty", team: "", position: "" } satisfies TierListSharePlayer];
+      : [{ name: "Empty", team: "" } satisfies TierListSharePlayer];
 
   for (const player of entries) {
     const chipWidth = measureChipWidth(context, player, headshotsEnabled);
@@ -312,7 +312,7 @@ export const drawTierListShareCard = (
       context.font = `700 18px ${FONT_STACK}`;
 
       for (const player of row) {
-        const label = player.team ? playerLabel(player) : player.name;
+        const label = player.team ? formatTierListSharePlayerLabel(player) : player.name;
         const headshot = player.bbrPlayerId
           ? headshots.get(player.bbrPlayerId)
           : undefined;
