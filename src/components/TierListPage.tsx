@@ -1596,13 +1596,17 @@ export function TierListPage({
     syncCommunityDeepLink(next, next === "posts" ? communityFocusPostId : null);
   };
 
+  const returningToMatchResults = isGameReturnPhase(
+    readFeatureHistoryState()?.returnTo,
+  );
+
   const communityChrome = (() => {
     switch (view) {
       case "posts":
         return {
           title: "Posts",
           lede: "Anyone can read. Sign in to post",
-          back: "Community",
+          back: returningToMatchResults ? "Matchup results" : "Community",
         };
       case "tiersHub":
         return {
