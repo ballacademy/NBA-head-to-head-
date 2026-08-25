@@ -3834,6 +3834,7 @@ function App() {
               privateRoomRole={privateRoomRole}
               initialJoinCode={resultsChallengeModal.joinCode}
               invitedPlayerId={resultsChallengeModal.target?.playerId ?? null}
+              closeLabel="Back to results"
               onClose={() => {
                 setResultsChallengeModal(null);
                 setChallengeTargetLabel(null);

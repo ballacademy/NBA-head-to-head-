@@ -26,6 +26,8 @@ interface PrivateMatchModalProps {
   initialJoinCode?: string | null;
   /** Challenge: host room that only this GM can join. */
   invitedPlayerId?: string | null;
+  /** Close / cancel control label (e.g. Back to results from matchup). */
+  closeLabel?: string;
   onClose: () => void;
   /** Abort an in-flight create/join so Close never freezes the hub. */
   onCancelInFlight?: () => void;
@@ -41,6 +43,7 @@ export function PrivateMatchModal({
   privateRoomRole = null,
   initialJoinCode = null,
   invitedPlayerId = null,
+  closeLabel = "Close",
   onClose,
   onCancelInFlight,
   onStart,
@@ -318,7 +321,7 @@ export function PrivateMatchModal({
           className="secondary-button private-match-modal__close"
           onClick={handleBackdropClose}
         >
-          {busy ? "Cancel" : "Close"}
+          {busy ? "Cancel" : closeLabel}
         </button>
       </div>
     </div>
