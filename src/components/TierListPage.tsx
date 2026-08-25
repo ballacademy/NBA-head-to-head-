@@ -110,6 +110,7 @@ import {
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
+import { isGameReturnPhase, readFeatureHistoryState } from "../lib/featureNavigation";
 import { buildCommunityPostSocialMeta } from "../lib/communityPostSocialMeta";
 import { applySocialMeta, resetSocialMeta } from "../lib/socialMeta";
 import type { Player, Position } from "../lib/types";
@@ -270,6 +271,7 @@ export function TierListPage({
   initialCommunityPostId = null,
   hubReturnToken = 0,
   composeIntentToken = 0,
+  onBack,
   onOpenAccount,
   onChallengeGm,
 }: TierListPageProps) {
@@ -1554,6 +1556,16 @@ export function TierListPage({
   );
 
   const handleBack = () => {
+    const returnTo = readFeatureHistoryState()?.returnTo;
+    if (
+      isGameReturnPhase(returnTo) &&
+      onBack &&
+      (view === "posts" || view === "hub")
+    ) {
+      onBack();
+      return;
+    }
+
     if (view === "viewer") {
       setViewerDetail(null);
       setViewerLoading(false);

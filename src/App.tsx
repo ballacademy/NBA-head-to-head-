@@ -20,6 +20,7 @@ import { unlockDraftClockAudio } from "./lib/draftClockSound";
 import { forceUnlockBackgroundScroll } from "./hooks/useDialogA11y";
 import { DailyDraftResults } from "./components/DailyDraftResults";
 import { MatchResults } from "./components/MatchResults";
+import { PrivateMatchModal } from "./components/PrivateMatchModal";
 import { players } from "./data/players";
 import { DraftOnboardingOverlay } from "./components/DraftOnboardingOverlay";
 import { DraftRoom } from "./components/DraftRoom";
@@ -197,6 +198,9 @@ import {
   isPlayerAccountLinked,
 } from "./lib/accountGate";
 import type { ChallengeTarget } from "./lib/challengeTarget";
+import {
+  isGameReturnPhase,
+} from "./lib/featureNavigation";
 import { getSalaryCapDraftOptions } from "./lib/salaryCapDraft";
 import {
   CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
@@ -366,6 +370,12 @@ type FeatureHistoryState = {
   returnTo?: AppPhase;
 };
 
+const isReturnablePhase = (target: AppPhase | undefined): target is AppPhase =>
+  Boolean(
+    target &&
+      (FEATURE_PHASES.has(target) || isGameReturnPhase(target)),
+  );
+
 const readInitialPublicTierListId = () => {
   try {
     const id = new URLSearchParams(window.location.search).get("tierList");
@@ -528,6 +538,11 @@ function App() {
   const [challengeTargetLabel, setChallengeTargetLabel] = useState<
     string | null
   >(null);
+  const [resultsChallengeModal, setResultsChallengeModal] = useState<{
+    mode: LandingH2hMode;
+    target: ChallengeTarget | null;
+    joinCode: string | null;
+  } | null>(null);
   const liveRecoveryAttemptedRef = useRef(false);
   const todaysDailyDateKey = useDailyDateKey();
 
@@ -2258,7 +2273,7 @@ function App() {
     const returnTo = state?.returnTo;
     const leavingFeature = deepLinkFeatureFromPhase(phase);
 
-    if (returnTo && FEATURE_PHASES.has(returnTo)) {
+    if (returnTo && isReturnablePhase(returnTo)) {
       skipPopStateResetRef.current = true;
       window.history.back();
       setPhase(returnTo);
@@ -3047,7 +3062,7 @@ function App() {
       const state = event.state as FeatureHistoryState | null;
       const nextPhase = state?.appPhase;
 
-      if (typeof nextPhase === "string" && FEATURE_PHASES.has(nextPhase)) {
+      if (typeof nextPhase === "string" && isReturnablePhase(nextPhase)) {
         setPhase(nextPhase);
         return;
       }
@@ -3134,13 +3149,28 @@ function App() {
       void isPlayerAccountLinked(playerId).then((linked) => {
         if (!linked) {
           setStartMatchError(ACCOUNT_REQUIRED_CHALLENGE_MESSAGE);
-          goToLandingHub("play");
+          if (phase !== "results") {
+            goToLandingHub("play");
+          }
           return;
         }
 
         if (target?.playerId && target.playerId === playerId) {
           setStartMatchError("You can't challenge yourself.");
-          goToLandingHub("play");
+          if (phase !== "results") {
+            goToLandingHub("play");
+          }
+          return;
+        }
+
+        const label = target
+          ? target.displayName?.trim() || "that GM"
+          : null;
+
+        if (phase === "results") {
+          setResultsChallengeModal({ mode, target, joinCode });
+          setChallengeTargetLabel(label);
+          setStartMatchError(null);
           return;
         }
 
@@ -3148,17 +3178,37 @@ function App() {
         saveLandingH2hMode(mode);
         setPendingPrivateJoinCode(joinCode);
         setPendingChallengeTarget(target);
-        setChallengeTargetLabel(
-          target
-            ? target.displayName?.trim() || "that GM"
-            : null,
-        );
+        setChallengeTargetLabel(label);
         setPendingPrivateMatchMode(mode);
         setStartMatchError(null);
         goToLandingHub("play");
       });
     },
-    [goToLandingHub],
+    [goToLandingHub, phase],
+  );
+
+  const startPrivateMatchFromResults = useCallback(
+    async (
+      options?: StartDraftOptions,
+    ): Promise<StartMatchResult | void> => {
+      const team =
+        loadTeamProfile() ??
+        (user?.name?.trim()
+          ? ({ name: user.name.trim() } satisfies TeamProfile)
+          : null);
+      if (!team?.name?.trim()) {
+        setStartMatchError("Set a team name before hosting a private match.");
+        return "failed";
+      }
+
+      const result = await startMatch(team, options ?? {});
+      if (result === "started" || result === "cancelled") {
+        setResultsChallengeModal(null);
+        setChallengeTargetLabel(null);
+      }
+      return result;
+    },
+    [startMatch, user?.name],
   );
 
   /** Open Community at the hub chooser (not Posts / Tier lists). */
@@ -3172,8 +3222,15 @@ function App() {
 
   /** Open Community Posts with the latest results shareable pre-attached. */
   const openCommunityCompose = useCallback(() => {
+    const fromResults = phase === "results";
+    if (fromResults) {
+      window.history.pushState({ appPhase: "results" }, "");
+    }
     if (phase !== "tierList") {
-      openFeaturePage("tierList");
+      openFeaturePage(
+        "tierList",
+        fromResults ? { returnTo: "results" } : undefined,
+      );
     }
     setCommunityComposeToken((current) => current + 1);
     syncLandingDeepLinkUrl({ hub: "community", view: "posts", post: null, tierList: null });
@@ -3769,6 +3826,22 @@ function App() {
             opponentAutoDrafted={opponentAutoDrafted}
             matchmakingNotice={matchmakingNotice}
           />
+          {resultsChallengeModal ? (
+            <PrivateMatchModal
+              salaryCapMode={resultsChallengeModal.mode === "ranked"}
+              startMatchError={startMatchError}
+              privateRoomCode={privateRoomCode}
+              privateRoomRole={privateRoomRole}
+              initialJoinCode={resultsChallengeModal.joinCode}
+              invitedPlayerId={resultsChallengeModal.target?.playerId ?? null}
+              onClose={() => {
+                setResultsChallengeModal(null);
+                setChallengeTargetLabel(null);
+              }}
+              onCancelInFlight={cancelMatchmaking}
+              onStart={startPrivateMatchFromResults}
+            />
+          ) : null}
         </Suspense>
       ) : null}
       {matchmakingMode ? (
