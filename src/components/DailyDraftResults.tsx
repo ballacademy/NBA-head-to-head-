@@ -477,7 +477,7 @@ export function DailyDraftResults({
         {!optimalReview && remoteSyncFailed ? (
           <InlineAlert
             className="daily-draft-results__sync-error"
-            message="Score saved on this device; leaderboard sync failed."
+            message="Score saved on this device; cloud percentile sync failed."
             action={{
               label: "Retry sync",
               busyLabel: "Retrying…",
