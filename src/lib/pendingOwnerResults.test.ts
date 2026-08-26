@@ -19,7 +19,10 @@ vi.mock("./pendingLineup", () => ({
 }));
 
 vi.mock("./leaderboardRemote", () => ({
-  confirmRemoteLeaderboardRank: vi.fn().mockResolvedValue(null),
+  confirmRemoteLeaderboardRank: vi.fn().mockResolvedValue({
+    ok: false,
+    reason: "not-linked",
+  }),
 }));
 
 vi.mock("./teamProfile", () => ({
@@ -146,11 +149,20 @@ describe("pendingOwnerResults", () => {
 
     const deliveries = await fetchDeliverableOwnerResults("classic", "player-1");
 
-    expect(deliveries.map((delivery) => delivery.result.id)).toEqual([
+    expect(deliveries.ok).toBe(true);
+    expect(deliveries.deliveries.map((delivery) => delivery.result.id)).toEqual([
       "result-1",
       "result-2",
     ]);
     expect(persistMatchOutcome).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns ok:false when pending status cannot be fetched", async () => {
+    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue(null);
+
+    const result = await fetchDeliverableOwnerResults("classic", "player-1");
+    expect(result).toEqual({ ok: false, deliveries: [] });
+    expect(persistMatchOutcome).not.toHaveBeenCalled();
   });
 
   it("acks and clears local pending lineup state on finalize", async () => {
@@ -203,10 +215,12 @@ describe("pendingOwnerResults", () => {
     });
   });
 
-  it("tells owners that queued results move Banners and month W–L, not streaks", () => {
+  it("tells owners that queued results already moved Banners and month W–L, not streaks", () => {
+    expect(QUEUED_OWNER_INBOX_COPY).toContain("already updated");
     expect(QUEUED_OWNER_INBOX_COPY).toContain("Banners");
     expect(QUEUED_OWNER_INBOX_COPY).toContain("this month's W–L");
     expect(QUEUED_OWNER_INBOX_COPY).toContain("Win/loss streaks");
+    expect(QUEUED_OWNER_DETAIL_COPY).toContain("already updated");
     expect(QUEUED_OWNER_DETAIL_COPY).toContain("did not");
   });
 });

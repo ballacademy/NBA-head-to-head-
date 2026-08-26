@@ -20,6 +20,8 @@ import type { DraftSlotConstraint, Player } from "./types";
 
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
 const BENCHMARK_SAMPLES = 500;
+/** Once the live pool is this large, drop simulated benchmarks from percentile math. */
+const REAL_POOL_BENCHMARK_CUTOFF = 25;
 
 export interface DailyDraftScoreEntry {
   playerId: string;
@@ -232,6 +234,8 @@ export interface DailyDraftPercentileResult {
   percentile: number;
   totalDrafters: number;
   sampleSize: number;
+  /** True when simulated auto-draft scores were mixed into the pool. */
+  includesSimulatedBenchmarks: boolean;
 }
 
 const getRemoteCache = (dateKey: string, goalId: string) =>
@@ -287,10 +291,17 @@ export const getDailyDraftPercentile = (
     (excludePlayerId != null
       ? otherEntries.map((entry) => entry.value)
       : entries.map((entry) => entry.value));
+  const remotePoolSize = Math.max(
+    remote?.totalDrafters ?? 0,
+    remote?.values.length ?? 0,
+  );
+  const useBenchmarks =
+    !remote || remotePoolSize < REAL_POOL_BENCHMARK_CUTOFF;
+  const activeBenchmarks = useBenchmarks ? benchmarkValues : [];
   const combined =
     excludePlayerId != null
-      ? [...benchmarkValues, ...submissionValues, value]
-      : [...benchmarkValues, ...submissionValues];
+      ? [...activeBenchmarks, ...submissionValues, value]
+      : [...activeBenchmarks, ...submissionValues];
   const uniqueDrafters = new Set(otherEntries.map((entry) => entry.playerId));
 
   if (excludePlayerId) {
@@ -301,6 +312,7 @@ export const getDailyDraftPercentile = (
     percentile: computePercentile(value, combined, goal.direction),
     totalDrafters: remote?.totalDrafters ?? uniqueDrafters.size,
     sampleSize: combined.length,
+    includesSimulatedBenchmarks: activeBenchmarks.length > 0,
   };
 };
 
@@ -477,6 +489,15 @@ export const formatPlayerDailyDraftPercentile = (
 
 export const formatDailyPercentile = (result: DailyDraftPercentileResult) =>
   `Top ${100 - result.percentile}% Today`;
+
+export const formatDailyPercentileComparison = (
+  result: DailyDraftPercentileResult,
+) => {
+  if (result.includesSimulatedBenchmarks) {
+    return `Compared to today's score pool (${result.sampleSize.toLocaleString()} incl. simulated benchmarks)`;
+  }
+  return `Compared to ${result.sampleSize.toLocaleString()} scores today`;
+};
 
 export const getPlayerDailyDraftEntry = (
   dateKey: string,

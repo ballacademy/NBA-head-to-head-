@@ -59,7 +59,7 @@ import { GmIdentityBadge } from "./GmIdentityBadge";
 import { AddToHomeScreenCard } from "./AddToHomeScreenCard";
 import { AccountAuthPanel } from "./AccountAuthPanel";
 import { AccountRequiredNote } from "./AccountRequiredNote";
-import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE } from "../lib/accountGate";
+import { ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE, resolveAccountRequiredMessage } from "../lib/accountGate";
 import { InlineAlert } from "./InlineAlert";
 import { EmptyState } from "./EmptyState";
 import { RecordWithStreak } from "./RecordWithStreak";
@@ -1528,7 +1528,10 @@ export function LandingPage({
                     Ranked by wins this week. Ties break by fewer losses.
                   </p>
                   <AccountRequiredNote className="account-required-note--inline">
-                    {ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE}
+                    {resolveAccountRequiredMessage(
+                      playerIdentity.playerId,
+                      ACCOUNT_REQUIRED_EVENT_STANDINGS_MESSAGE,
+                    )}
                   </AccountRequiredNote>
                   {eventLeaderboardLoading ? (
                     <EmptyState message="Loading…" loading />

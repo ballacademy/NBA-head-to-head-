@@ -28,31 +28,37 @@ vi.mock("./playerProfileApi", () => ({
 
 vi.mock("./collectionRemote", () => ({
   pullAndMergeCollection: vi.fn(async () => null),
+  pushCollectionIfLinked: vi.fn(async () => true),
   resetCollectionPullGate: vi.fn(),
 }));
 
 vi.mock("./achievementsRemote", () => ({
   pullAndMergeAchievements: vi.fn(async () => null),
+  pushAchievementsIfLinked: vi.fn(async () => true),
   resetAchievementsPullGate: vi.fn(),
 }));
 
 vi.mock("./careerStatsRemote", () => ({
   pullAndMergeCareerStats: vi.fn(async () => null),
+  pushCareerStatsIfLinked: vi.fn(async () => true),
   resetCareerPullGate: vi.fn(),
 }));
 
 vi.mock("./nbaPlayerUsageRemote", () => ({
   pullAndMergeNbaPlayerUsage: vi.fn(async () => null),
+  pushNbaPlayerUsageIfLinked: vi.fn(async () => true),
   resetNbaPlayerUsagePullGate: vi.fn(),
 }));
 
 vi.mock("./eventProfileRemote", () => ({
   pullAndMergeEventProfiles: vi.fn(async () => null),
+  pushEventProfilesIfLinked: vi.fn(async () => true),
   resetEventProfilesPullGate: vi.fn(),
 }));
 
 vi.mock("./tierListLibraryRemote", () => ({
   pullAndMergeTierListLibrary: vi.fn(async () => null),
+  pushTierListLibraryIfLinked: vi.fn(async () => true),
   resetTierListLibraryPullGate: vi.fn(),
 }));
 
@@ -212,6 +218,25 @@ describe("logoutToAnonymousIdentity", () => {
       expect(forced.identity.playerId).toBe("player-anonymous-new");
     }
     expect(readJson("nba-head-to-head-daily-scores")).toBeNull();
+  });
+
+  it("blocks logout when cloud progress flush fails unless forced", async () => {
+    const { pushCareerStatsIfLinked } = await import("./careerStatsRemote");
+    vi.mocked(pushCareerStatsIfLinked).mockResolvedValueOnce(false);
+    markPlayerAccountLinked("player-linked-old", "hooper");
+    setPlayerIdentity("player-linked-old");
+
+    const blocked = await logoutToAnonymousIdentity();
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) {
+      expect(blocked.pendingCloudCount).toBeGreaterThan(0);
+      expect(blocked.error).toContain("cloud progress");
+    }
+    expect(getOrCreatePlayerIdentity().playerId).toBe("player-linked-old");
+
+    vi.mocked(pushCareerStatsIfLinked).mockResolvedValue(true);
+    const forced = await logoutToAnonymousIdentity({ force: true });
+    expect(forced.ok).toBe(true);
   });
 });
 

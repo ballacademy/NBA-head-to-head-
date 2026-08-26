@@ -161,6 +161,9 @@ export function MatchResults({
     useState(false);
   const [eventLeaderboardRetryBusy, setEventLeaderboardRetryBusy] =
     useState(false);
+  const [leaderboardSyncFailed, setLeaderboardSyncFailed] = useState(false);
+  const [leaderboardSyncRetryBusy, setLeaderboardSyncRetryBusy] =
+    useState(false);
   const ghostOutcomeSubmissionRef = useRef<{
     storedLineupId: string;
     mode: "classic" | "ranked";
@@ -177,6 +180,17 @@ export function MatchResults({
     event: WeeklyEventDefinition;
     teamName: string;
     profile: EventProfile;
+  } | null>(null);
+  const leaderboardSyncParamsRef = useRef<{
+    mode: "classic" | "ranked";
+    playerId: string;
+    teamName: string;
+    publicTag: string;
+    elo: number;
+    wins: number;
+    losses: number;
+    winStreak: number;
+    lossStreak: number;
   } | null>(null);
   const userScore = calculateLineupScore(userLineup);
   const opponentScore = calculateLineupScore(opponentLineup);
@@ -417,8 +431,10 @@ export function MatchResults({
         const banners = outcome.ranked ?? outcome.classic;
         if (banners) {
           const identity = getOrCreatePlayerIdentity();
-          void confirmRemoteLeaderboardRank({
-            mode: matchRecordMode === "ranked" ? "ranked" : "classic",
+          const syncParams = {
+            mode: (matchRecordMode === "ranked" ? "ranked" : "classic") as
+              | "classic"
+              | "ranked",
             playerId: identity.playerId,
             teamName: user.name,
             publicTag: identity.publicTag,
@@ -427,9 +443,18 @@ export function MatchResults({
             losses: banners.losses,
             winStreak: banners.winStreak,
             lossStreak: banners.lossStreak,
-          }).then((rank) => {
-            if (rank != null) {
-              setConfirmedLeaderboardRank(rank);
+          };
+          leaderboardSyncParamsRef.current = syncParams;
+          void confirmRemoteLeaderboardRank(syncParams).then((result) => {
+            if (result.ok) {
+              if (result.rank != null) {
+                setConfirmedLeaderboardRank(result.rank);
+              }
+              setLeaderboardSyncFailed(false);
+              return;
+            }
+            if (result.reason === "submit-failed") {
+              setLeaderboardSyncFailed(true);
             }
           });
         }
@@ -606,6 +631,27 @@ export function MatchResults({
     const ok = await submitEventLeaderboardEntry(submission);
     setEventLeaderboardSyncFailed(!ok);
     setEventLeaderboardRetryBusy(false);
+  };
+
+  const retryLeaderboardSync = async () => {
+    const params = leaderboardSyncParamsRef.current;
+    if (!params || leaderboardSyncRetryBusy) {
+      return;
+    }
+
+    setLeaderboardSyncRetryBusy(true);
+    const result = await confirmRemoteLeaderboardRank(params);
+    if (result.ok) {
+      if (result.rank != null) {
+        setConfirmedLeaderboardRank(result.rank);
+      }
+      setLeaderboardSyncFailed(false);
+    } else if (result.reason === "submit-failed") {
+      setLeaderboardSyncFailed(true);
+    } else {
+      setLeaderboardSyncFailed(false);
+    }
+    setLeaderboardSyncRetryBusy(false);
   };
 
   const handleShareLineup = async () => {
@@ -1033,6 +1079,17 @@ export function MatchResults({
                 busyLabel: "Retrying…",
                 busy: eventLeaderboardRetryBusy,
                 onClick: () => void retryEventLeaderboardSync(),
+              }}
+            />
+          ) : null}
+          {leaderboardSyncFailed ? (
+            <InlineAlert
+              message="Ranks sync failed. Your local record is saved."
+              action={{
+                label: "Retry sync",
+                busyLabel: "Retrying…",
+                busy: leaderboardSyncRetryBusy,
+                onClick: () => void retryLeaderboardSync(),
               }}
             />
           ) : null}

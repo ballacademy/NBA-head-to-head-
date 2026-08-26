@@ -253,7 +253,11 @@ export const syncLeaderboardEntryToApi = (params: {
   void confirmRemoteLeaderboardRank(params);
 };
 
-/** Submit the entry, refresh remote boards, and return 1-based Elo rank. */
+export type LeaderboardSyncResult =
+  | { ok: true; rank: number | null }
+  | { ok: false; reason: "not-linked" | "submit-failed" };
+
+/** Submit the entry, refresh remote boards, and return sync status + Elo rank. */
 export const confirmRemoteLeaderboardRank = async (params: {
   mode: LeaderboardMode;
   playerId: string;
@@ -265,11 +269,11 @@ export const confirmRemoteLeaderboardRank = async (params: {
   winStreak: number;
   lossStreak: number;
   seasonId?: string;
-}): Promise<number | null> => {
+}): Promise<LeaderboardSyncResult> => {
   const seasonId = params.seasonId ?? getSeasonIdForMode(params.mode);
 
   if (!(await isPlayerAccountLinked(params.playerId))) {
-    return null;
+    return { ok: false, reason: "not-linked" };
   }
 
   const submitted = await submitRemoteLeaderboardEntry({
@@ -286,7 +290,7 @@ export const confirmRemoteLeaderboardRank = async (params: {
   });
 
   if (!submitted) {
-    return null;
+    return { ok: false, reason: "submit-failed" };
   }
 
   for (const sort of ["elo", "winStreak", "lossStreak"] as const) {
@@ -301,14 +305,14 @@ export const confirmRemoteLeaderboardRank = async (params: {
 
   const entries = getCachedRemoteLeaderboard(params.mode, "elo", seasonId);
   if (!entries?.length) {
-    return null;
+    return { ok: true, rank: null };
   }
 
   const index = entries.findIndex(
     (entry) => entry.isYou === true || entry.playerId === params.playerId,
   );
 
-  return index >= 0 ? index + 1 : null;
+  return { ok: true, rank: index >= 0 ? index + 1 : null };
 };
 
 export const clearLeaderboardRemoteCacheForTests = () => {

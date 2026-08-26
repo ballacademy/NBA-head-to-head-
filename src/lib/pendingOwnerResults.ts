@@ -25,10 +25,10 @@ export interface DeliveredOwnerResult {
 }
 
 export const QUEUED_OWNER_INBOX_COPY =
-  "These matches update Banners and this month's W–L. Win/loss streaks only change when you play live.";
+  "These matches already updated Banners and this month's W–L. Win/loss streaks only change when you play live.";
 
 export const QUEUED_OWNER_DETAIL_COPY =
-  "Banners and this month's W–L updated. Your win/loss streak did not.";
+  "Banners and this month's W–L already updated. Your win/loss streak did not.";
 
 const toMatchRecordMode = (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
@@ -109,12 +109,19 @@ const deliverPendingResult = (
 export const fetchDeliverableOwnerResults = async (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
   playerId: string,
-): Promise<DeliveredOwnerResult[]> => {
+): Promise<{
+  ok: boolean;
+  deliveries: DeliveredOwnerResult[];
+}> => {
   const status = await fetchPendingMatchmakingStatus({ mode, playerId });
+  if (!status) {
+    return { ok: false, deliveries: [] };
+  }
+
   const pendingList =
-    status?.pendingResults?.length
+    status.pendingResults?.length
       ? status.pendingResults
-      : status?.pendingResult
+      : status.pendingResult
         ? [status.pendingResult]
         : [];
 
@@ -127,7 +134,7 @@ export const fetchDeliverableOwnerResults = async (
     }
   }
 
-  return deliveries;
+  return { ok: true, deliveries };
 };
 
 /** @deprecated Prefer fetchDeliverableOwnerResults for batch inbox delivery. */
@@ -135,8 +142,8 @@ export const fetchDeliverableOwnerResult = async (
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">,
   playerId: string,
 ): Promise<DeliveredOwnerResult | null> => {
-  const deliveries = await fetchDeliverableOwnerResults(mode, playerId);
-  return deliveries[0] ?? null;
+  const result = await fetchDeliverableOwnerResults(mode, playerId);
+  return result.deliveries[0] ?? null;
 };
 
 export const finalizeDeliveredOwnerResults = async (
