@@ -209,7 +209,7 @@ describe("pendingOwnerResults", () => {
     await expect(resultPromise).resolves.toBe(false);
 
     expect(clearPendingLineupState).not.toHaveBeenCalled();
-    expect(acknowledgePendingOwnerResults.mock.calls.length).toBeGreaterThan(1);
+    expect(vi.mocked(acknowledgePendingOwnerResults).mock.calls.length).toBeGreaterThan(1);
     vi.useRealTimers();
   });
 

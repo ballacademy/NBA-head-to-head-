@@ -101,7 +101,7 @@ describe("flushLocalDailyDraftScoresToRemote", () => {
       submitted: 0,
       failed: 1,
     });
-    expect(submitRemoteDailyDraftScore.mock.calls.length).toBeGreaterThan(1);
+    expect(vi.mocked(submitRemoteDailyDraftScore).mock.calls.length).toBeGreaterThan(1);
     vi.useRealTimers();
   });
 
