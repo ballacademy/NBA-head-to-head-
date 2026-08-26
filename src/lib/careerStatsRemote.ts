@@ -18,6 +18,7 @@ import {
 } from "./playerRecord";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import { RANKED_STARTING_ELO } from "./rankedElo";
+import { emitCloudSyncError } from "./cloudSyncEvents";
 
 let careerPullSucceeded = false;
 
@@ -126,6 +127,10 @@ export const pushCareerStatsIfLinked = async (
   if (pushed) {
     careerPullSucceeded = true;
     applyCareerStatsLocally(pushed.career);
+  } else {
+    emitCloudSyncError(
+      "Couldn't sync your career record to the cloud. Check your connection.",
+    );
   }
   return Boolean(pushed);
 };

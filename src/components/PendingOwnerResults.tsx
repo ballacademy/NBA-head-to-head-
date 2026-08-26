@@ -16,7 +16,8 @@ import {
 
 interface PendingOwnerResultsProps {
   deliveries: DeliveredOwnerResult[];
-  onDone: () => void;
+  /** Return true when server ack succeeded and the inbox can close. */
+  onDone: () => Promise<boolean>;
 }
 
 const outcomeLabel = (result: DeliveredOwnerResult["result"]["ownerResult"]) => {
@@ -109,6 +110,8 @@ export function PendingOwnerResults({
   onDone,
 }: PendingOwnerResultsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [ackBusy, setAckBusy] = useState(false);
+  const [ackError, setAckError] = useState<string | null>(null);
   const selected = deliveries.find(
     (delivery) => delivery.result.id === selectedId,
   );
@@ -125,6 +128,21 @@ export function PendingOwnerResults({
     : count === 1
       ? "1 matchup while you were away"
       : `${count} matchups while you were away`;
+
+  const handleDone = async () => {
+    if (ackBusy) {
+      return;
+    }
+    setAckBusy(true);
+    setAckError(null);
+    const ok = await onDone();
+    setAckBusy(false);
+    if (!ok) {
+      setAckError(
+        "Couldn't confirm these results with the server. Try again — your Banners already updated.",
+      );
+    }
+  };
 
   return (
     <HubPageChrome
@@ -190,8 +208,18 @@ export function PendingOwnerResults({
       )}
 
       <div className="panel panel--compact owner-results-inbox__footer">
-        <button type="button" className="play-again-button" onClick={onDone}>
-          Back to Play
+        {ackError ? (
+          <p className="form-error" role="alert">
+            {ackError}
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className="play-again-button"
+          disabled={ackBusy}
+          onClick={() => void handleDone()}
+        >
+          {ackBusy ? "Confirming…" : ackError ? "Retry" : "Back to Play"}
         </button>
       </div>
     </HubPageChrome>

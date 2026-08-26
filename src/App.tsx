@@ -195,9 +195,16 @@ import {
 } from "./lib/rankedProfile";
 import {
   ACCOUNT_REQUIRED_CHALLENGE_MESSAGE,
+  ACCOUNT_SESSION_EXPIRED_MESSAGE,
   isPlayerAccountLinked,
+  peekCachedAccountNeedsRelogin,
   resolveAccountRequiredMessage,
+  subscribeAccountLinkChanged,
 } from "./lib/accountGate";
+import {
+  CLOUD_SYNC_ERROR_EVENT,
+  type CloudSyncErrorDetail,
+} from "./lib/cloudSyncEvents";
 import type { ChallengeTarget } from "./lib/challengeTarget";
 import {
   isGameReturnPhase,
@@ -468,6 +475,9 @@ function App() {
   /** Bumped on tab focus so failed cloud pulls can retry after backoff exhausted. */
   const [cloudPullRetryNonce, setCloudPullRetryNonce] = useState(0);
   const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+  const [sessionExpiredMessage, setSessionExpiredMessage] = useState<
+    string | null
+  >(null);
   const ownerInboxSettledRef = useRef(false);
   const [ownerInboxRetryNonce, setOwnerInboxRetryNonce] = useState(0);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
@@ -2266,8 +2276,63 @@ function App() {
     setCloudSyncError(null);
     collectionSyncAttemptedRef.current = false;
     achievementsSyncAttemptedRef.current = false;
+    careerSyncAttemptedRef.current = false;
+    usageSyncAttemptedRef.current = false;
+    eventProfilesSyncAttemptedRef.current = false;
+    tierListLibrarySyncAttemptedRef.current = false;
+    dailyHistorySyncAttemptedRef.current = false;
     setCloudPullRetryNonce((current) => current + 1);
   }, []);
+
+  useEffect(() => {
+    const onCloudSyncError = (event: Event) => {
+      const detail = (event as CustomEvent<CloudSyncErrorDetail>).detail;
+      if (detail?.message) {
+        setCloudSyncError(detail.message);
+      }
+    };
+    window.addEventListener(CLOUD_SYNC_ERROR_EVENT, onCloudSyncError);
+    return () => {
+      window.removeEventListener(CLOUD_SYNC_ERROR_EVENT, onCloudSyncError);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshSessionBanner = async () => {
+      const playerId = getOrCreatePlayerIdentity().playerId;
+      await isPlayerAccountLinked(playerId);
+      if (cancelled) {
+        return;
+      }
+      setSessionExpiredMessage(
+        peekCachedAccountNeedsRelogin(playerId) === true
+          ? ACCOUNT_SESSION_EXPIRED_MESSAGE
+          : null,
+      );
+    };
+
+    void refreshSessionBanner();
+    const unsubscribe = subscribeAccountLinkChanged(() => {
+      void refreshSessionBanner();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [landingRenderKey]);
+
+  const hubBannerProps = {
+    sessionExpiredMessage,
+    onOpenAccountForRelogin: () => {
+      goToLandingHub("account");
+    },
+    cloudSyncError,
+    onRetryCloudSync: handleRetryCloudSync,
+    onDismissCloudSyncError: () => setCloudSyncError(null),
+  };
 
   const openFeaturePage = useCallback(
     (nextPhase: AppPhase, options?: { returnTo?: AppPhase }) => {
@@ -3372,6 +3437,7 @@ function App() {
         onSelectTab={handleHubNav}
         onPrefetchTab={prefetchHubFeatureTab}
         playBadgeCount={playNavBadgeCount}
+        {...hubBannerProps}
         onGoToPlay={() => {
           setHubUnlockPrompt(null);
           saveLandingPlaySection("chooser");
@@ -3560,14 +3626,20 @@ function App() {
           onSelectTab={handleHubNav}
           onPrefetchTab={prefetchHubFeatureTab}
           playBadgeCount={playNavBadgeCount}
+          {...hubBannerProps}
         >
           <PendingOwnerResults
             deliveries={deliveredOwnerResults}
-            onDone={() => {
+            onDone={async () => {
               const playerId = getOrCreatePlayerIdentity().playerId;
-              const toFinalize = deliveredOwnerResults;
-              setDeliveredOwnerResults([]);
-              void finalizeDeliveredOwnerResults(toFinalize, playerId);
+              const ok = await finalizeDeliveredOwnerResults(
+                deliveredOwnerResults,
+                playerId,
+              );
+              if (ok) {
+                setDeliveredOwnerResults([]);
+              }
+              return ok;
             }}
           />
         </HubShell>
@@ -3633,6 +3705,9 @@ function App() {
           pendingOwnerResultCount={deliveredOwnerResults.length}
           cloudSyncError={cloudSyncError}
           onRetryCloudSync={handleRetryCloudSync}
+          sessionExpiredMessage={sessionExpiredMessage}
+          onOpenAccountForRelogin={() => goToLandingHub("account")}
+          onDismissCloudSyncError={() => setCloudSyncError(null)}
         />
         {hubUnlockPrompt ? (
           <HubTabUnlockDialog

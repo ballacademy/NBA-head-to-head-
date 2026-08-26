@@ -191,6 +191,9 @@ interface LandingPageProps {
   pendingOwnerResultCount?: number;
   cloudSyncError?: string | null;
   onRetryCloudSync?: () => void;
+  sessionExpiredMessage?: string | null;
+  onOpenAccountForRelogin?: () => void;
+  onDismissCloudSyncError?: () => void;
 }
 
 function MatchModeRecord({ record }: { record: PlayerRecord }) {
@@ -245,6 +248,9 @@ export function LandingPage({
   pendingOwnerResultCount = 0,
   cloudSyncError = null,
   onRetryCloudSync,
+  sessionExpiredMessage = null,
+  onOpenAccountForRelogin,
+  onDismissCloudSyncError,
 }: LandingPageProps) {
   const [name, setName] = useState(() => loadTeamProfile()?.name ?? "");
   const [error, setError] = useState("");
@@ -1036,6 +1042,11 @@ export function LandingPage({
       onSelectTab={handleHubSelect}
       onPrefetchTab={onPrefetchHubTab}
       playBadgeCount={playNavBadgeCount}
+      sessionExpiredMessage={sessionExpiredMessage}
+      onOpenAccountForRelogin={onOpenAccountForRelogin}
+      cloudSyncError={cloudSyncError}
+      onRetryCloudSync={onRetryCloudSync}
+      onDismissCloudSyncError={onDismissCloudSyncError}
       onGoToPlay={() => {
         onHubTabChange("play");
         updatePlaySection("chooser");

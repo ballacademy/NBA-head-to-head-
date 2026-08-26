@@ -16,6 +16,7 @@ import { getOrCreatePlayerIdentity } from "./playerIdentity";
 import type { MatchRecordMode } from "./playerRecord";
 import { loadTeamProfile } from "./teamProfile";
 import { logQueuedMatchGameEntry } from "./matchGameLog";
+import { runTruthyWithRetry } from "./cloudPullRetry";
 
 export interface DeliveredOwnerResult {
   mode: Extract<GhostMatchmakingMode, "classic" | "ranked">;
@@ -149,9 +150,23 @@ export const fetchDeliverableOwnerResult = async (
 export const finalizeDeliveredOwnerResults = async (
   deliveries: DeliveredOwnerResult[],
   playerId: string,
-) => {
+): Promise<boolean> => {
   if (deliveries.length === 0) {
-    return;
+    return true;
+  }
+
+  const acked = await runTruthyWithRetry({
+    run: async () =>
+      (await acknowledgePendingOwnerResults({
+        resultIds: deliveries.map((delivery) => delivery.result.id),
+        playerId,
+      }))
+        ? true
+        : null,
+  });
+
+  if (!acked) {
+    return false;
   }
 
   const modes = new Set(deliveries.map((delivery) => delivery.mode));
@@ -159,15 +174,10 @@ export const finalizeDeliveredOwnerResults = async (
     clearPendingLineupState(mode, playerId);
   }
 
-  await acknowledgePendingOwnerResults({
-    resultIds: deliveries.map((delivery) => delivery.result.id),
-    playerId,
-  });
+  return true;
 };
 
 export const finalizeDeliveredOwnerResult = async (
   delivery: DeliveredOwnerResult,
   playerId: string,
-) => {
-  await finalizeDeliveredOwnerResults([delivery], playerId);
-};
+): Promise<boolean> => finalizeDeliveredOwnerResults([delivery], playerId);

@@ -17,7 +17,7 @@ import {
 export const COMMUNITY_POST_BODY_MAX = 400;
 export const COMMUNITY_REPLY_BODY_MAX = 280;
 
-/** Soft client-side spacing between posts/replies (not a hard server limit). */
+/** Soft client-side spacing between posts/replies; server also enforces cooldowns. */
 const COMMUNITY_RATE_KEY = "nba-head-to-head-community-rate";
 const COMMUNITY_POST_MIN_GAP_MS = 15_000;
 const COMMUNITY_REPLY_MIN_GAP_MS = 8_000;

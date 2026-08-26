@@ -17,6 +17,7 @@ import { getOrCreatePlayerId } from "./playerRecord";
 import { recordNbaPlayerDailyDraftUsage } from "./nbaPlayerUsage";
 import { getPlayersById } from "./scoring";
 import type { DraftSlotConstraint, Player } from "./types";
+import { runTruthyWithRetry } from "./cloudPullRetry";
 
 const DAILY_SCORES_KEY = "nba-head-to-head-daily-scores";
 const BENCHMARK_SAMPLES = 500;
@@ -585,15 +586,18 @@ export const flushLocalDailyDraftScoresToRemote = async (
   let failed = 0;
 
   for (const { dateKey, entry } of pending) {
-    const remote = await submitRemoteDailyDraftScore({
-      dateKey,
-      goalId: entry.goalId,
-      mode: resolveEntryMode(entry),
-      playerId: entry.playerId,
-      teamName: entry.teamName?.trim() || "GM",
-      value: entry.value,
-      formattedResult: entry.formattedResult,
-      lineup: Array.isArray(entry.lineup) ? entry.lineup : [],
+    const remote = await runTruthyWithRetry({
+      run: () =>
+        submitRemoteDailyDraftScore({
+          dateKey,
+          goalId: entry.goalId,
+          mode: resolveEntryMode(entry),
+          playerId: entry.playerId,
+          teamName: entry.teamName?.trim() || "GM",
+          value: entry.value,
+          formattedResult: entry.formattedResult,
+          lineup: Array.isArray(entry.lineup) ? entry.lineup : [],
+        }),
     });
 
     if (remote) {

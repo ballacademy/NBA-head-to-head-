@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { runCloudPullWithRetry } from "./cloudPullRetry";
+import { runCloudPullWithRetry, runTruthyWithRetry } from "./cloudPullRetry";
 
 describe("runCloudPullWithRetry", () => {
   beforeEach(() => {
@@ -49,5 +49,32 @@ describe("runCloudPullWithRetry", () => {
     });
     expect(outcome).toBe("failed");
     expect(pull).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("runTruthyWithRetry", () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("retries until a truthy value is returned", async () => {
+    const run = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce({ ok: true });
+
+    await expect(
+      runTruthyWithRetry({ run, maxAttempts: 4, baseDelayMs: 1 }),
+    ).resolves.toEqual({ ok: true });
+    expect(run).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns null after exhausting attempts", async () => {
+    const run = vi.fn(async () => null);
+    await expect(
+      runTruthyWithRetry({ run, maxAttempts: 3, baseDelayMs: 1 }),
+    ).resolves.toBeNull();
+    expect(run).toHaveBeenCalledTimes(3);
   });
 });

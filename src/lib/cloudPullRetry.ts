@@ -33,6 +33,10 @@ const isAbortError = (error: unknown) =>
 export const CLOUD_PULL_MAX_ATTEMPTS = 6;
 export const CLOUD_PULL_BASE_DELAY_MS = 1_500;
 
+/** Shorter budget for logout / ack flushes (user is waiting). */
+export const CLOUD_FLUSH_MAX_ATTEMPTS = 4;
+export const CLOUD_FLUSH_BASE_DELAY_MS = 400;
+
 /**
  * Runs `pull` until it succeeds, the player is not linked, attempts are
  * exhausted, or `signal` aborts. Callers should only mark a one-shot gate
@@ -83,4 +87,48 @@ export const runCloudPullWithRetry = async <T>(params: {
   }
 
   return "failed";
+};
+
+/**
+ * Retries an operation that returns a truthy value on success. Used for
+ * logout Daily flushes and pending-owner acks where the user is waiting.
+ */
+export const runTruthyWithRetry = async <T>(params: {
+  run: () => Promise<T | null | false | undefined>;
+  signal?: AbortSignal;
+  maxAttempts?: number;
+  baseDelayMs?: number;
+}): Promise<T | null> => {
+  const maxAttempts = params.maxAttempts ?? CLOUD_FLUSH_MAX_ATTEMPTS;
+  const baseDelayMs = params.baseDelayMs ?? CLOUD_FLUSH_BASE_DELAY_MS;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    if (params.signal?.aborted) {
+      return null;
+    }
+
+    try {
+      const result = await params.run();
+      if (result) {
+        return result as T;
+      }
+    } catch (error) {
+      if (isAbortError(error) || params.signal?.aborted) {
+        return null;
+      }
+    }
+
+    if (attempt >= maxAttempts || params.signal?.aborted) {
+      break;
+    }
+
+    const delay = Math.min(8_000, baseDelayMs * 2 ** (attempt - 1));
+    try {
+      await sleep(delay, params.signal);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
 };

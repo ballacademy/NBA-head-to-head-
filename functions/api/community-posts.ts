@@ -2,6 +2,12 @@ import type { Env } from "../types";
 import { resolveCommunityAuthorFields } from "../lib/communityAuthor";
 import { requireLinkedAccountSession } from "../lib/accountSessions";
 import { syncCommunityPostLikeCount } from "../lib/likeCounts";
+import {
+  assertCommunityPostRateLimitAllow,
+  assertCommunityReplyRateLimitAllow,
+  recordCommunityPostAttempt,
+  recordCommunityReplyAttempt,
+} from "../lib/playerAccounts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -589,6 +595,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
     const { account, playerId } = auth;
 
+    const rate = await assertCommunityReplyRateLimitAllow(
+      context.env.DB,
+      playerId,
+    );
+    if (!rate.ok) {
+      return json({ error: rate.error }, 429);
+    }
+
     const existing = await context.env.DB.prepare(
       `SELECT id FROM community_posts WHERE id = ?`,
     )
@@ -614,6 +628,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     )
       .bind(id, postId, playerId, authorName, authorTag, text, now)
       .run();
+
+    await recordCommunityReplyAttempt(context.env.DB, playerId);
 
     return json(
       {
@@ -702,6 +718,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
   const { account, playerId } = auth;
 
+  const rate = await assertCommunityPostRateLimitAllow(context.env.DB, playerId);
+  if (!rate.ok) {
+    return json({ error: rate.error }, 429);
+  }
+
   const text = typeof body.body === "string" ? body.body.trim() : "";
   if (!text) {
     return json({ error: "Post body is required" }, 400);
@@ -775,6 +796,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       authorRankedElo,
     )
     .run();
+
+  await recordCommunityPostAttempt(context.env.DB, playerId);
 
   let attachment: unknown = null;
   if (attachmentJson) {
