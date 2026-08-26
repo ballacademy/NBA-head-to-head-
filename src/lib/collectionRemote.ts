@@ -11,6 +11,7 @@ import {
   type PlayerCollection,
 } from "./playerCollection";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
+import { emitCloudSyncError } from "./cloudSyncEvents";
 
 let collectionPullSucceeded = false;
 
@@ -94,6 +95,10 @@ export const pushCollectionIfLinked = async (
 
   if (pushed) {
     collectionPullSucceeded = true;
+  } else {
+    emitCloudSyncError(
+      "Couldn't sync your collection to the cloud. Check your connection.",
+    );
   }
 
   return Boolean(pushed);

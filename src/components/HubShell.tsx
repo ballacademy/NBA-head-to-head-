@@ -8,6 +8,7 @@ import {
 } from "../lib/hubUnlockProgress";
 import { DraftDayGmLogo } from "./DraftDayGmLogo";
 import { HubTabUnlockDialog } from "./HubTabUnlockDialog";
+import { InlineAlert } from "./InlineAlert";
 import {
   LandingBottomNav,
   type LandingHubTab,
@@ -21,6 +22,12 @@ interface HubShellProps {
   onGoToPlay?: () => void;
   children: ReactNode;
   className?: string;
+  /** Session cookie gone but account still exists for this GM. */
+  sessionExpiredMessage?: string | null;
+  onOpenAccountForRelogin?: () => void;
+  cloudSyncError?: string | null;
+  onRetryCloudSync?: () => void;
+  onDismissCloudSyncError?: () => void;
 }
 
 export function HubShell({
@@ -31,6 +38,11 @@ export function HubShell({
   onGoToPlay,
   children,
   className = "",
+  sessionExpiredMessage = null,
+  onOpenAccountForRelogin,
+  cloudSyncError = null,
+  onRetryCloudSync,
+  onDismissCloudSyncError,
 }: HubShellProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [unlockPrompt, setUnlockPrompt] = useState<HubTabLockPrompt | null>(
@@ -89,6 +101,41 @@ export function HubShell({
             <DraftDayGmLogo className="landing__logo landing-hub-brand__logo" />
           </div>
         </div>
+        {sessionExpiredMessage ? (
+          <div className="landing-hub-banner">
+            <InlineAlert
+              message={sessionExpiredMessage}
+              action={
+                onOpenAccountForRelogin
+                  ? {
+                      label: "Log in",
+                      onClick: onOpenAccountForRelogin,
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        ) : null}
+        {cloudSyncError ? (
+          <div className="landing-hub-banner">
+            <InlineAlert
+              message={cloudSyncError}
+              action={
+                onRetryCloudSync
+                  ? {
+                      label: "Retry",
+                      onClick: onRetryCloudSync,
+                    }
+                  : onDismissCloudSyncError
+                    ? {
+                        label: "Dismiss",
+                        onClick: onDismissCloudSyncError,
+                      }
+                    : undefined
+              }
+            />
+          </div>
+        ) : null}
         {children}
       </div>
 

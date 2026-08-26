@@ -97,6 +97,17 @@
     10px;
 }
 
+.landing-hub-banner {
+  position: relative;
+  z-index: 3;
+  margin: 0 0 10px;
+}
+
+.landing-hub-banner .form-error,
+.landing-hub-banner .inline-alert {
+  margin: 0;
+}
+
 .landing-hub-chrome {
   position: relative;
   z-index: 4;

@@ -10,6 +10,7 @@ import {
   type AchievementState,
 } from "./achievements";
 import { getOrCreatePlayerIdentity } from "./playerIdentity";
+import { emitCloudSyncError } from "./cloudSyncEvents";
 
 let achievementsPullSucceeded = false;
 
@@ -74,6 +75,10 @@ export const pushAchievementsIfLinked = async (
 
   if (pushed) {
     achievementsPullSucceeded = true;
+  } else {
+    emitCloudSyncError(
+      "Couldn't sync your badges to the cloud. Check your connection.",
+    );
   }
 
   return Boolean(pushed);

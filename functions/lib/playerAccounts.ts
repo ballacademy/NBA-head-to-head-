@@ -11,6 +11,13 @@ export const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 export const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = 5;
 export const REGISTER_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
+/** Soft cooldown for Community posts (mirrors client gap). */
+export const COMMUNITY_POST_RATE_LIMIT_MAX_ATTEMPTS = 1;
+export const COMMUNITY_POST_RATE_LIMIT_WINDOW_MS = 15_000;
+/** Soft cooldown for Community replies (mirrors client gap). */
+export const COMMUNITY_REPLY_RATE_LIMIT_MAX_ATTEMPTS = 1;
+export const COMMUNITY_REPLY_RATE_LIMIT_WINDOW_MS = 8_000;
+
 const ACCOUNT_SELECT_COLUMNS = `id, username, email, password_salt, password_hash, password_iters,
               player_id, created_at, last_login_at, signup_index`;
 
@@ -280,7 +287,7 @@ export const buildRegisterRateLimitKey = (request: Request) =>
 export const assertRateLimitAllow = async (
   db: D1Database,
   bucketKey: string,
-  options: { maxAttempts: number; windowMs: number },
+  options: { maxAttempts: number; windowMs: number; error?: string },
 ) => {
   const now = Date.now();
   const row = await db
@@ -312,7 +319,9 @@ export const assertRateLimitAllow = async (
   if (row.attempt_count >= options.maxAttempts) {
     return {
       ok: false as const,
-      error: "Too many attempts. Try again in about 15 minutes.",
+      error:
+        options.error ??
+        "Too many attempts. Try again in about 15 minutes.",
     };
   }
 
@@ -410,4 +419,52 @@ export const clearAuthRateLimit = async (db: D1Database, bucketKey: string) => {
     .prepare(`DELETE FROM auth_rate_limits WHERE bucket_key = ?`)
     .bind(bucketKey)
     .run();
+};
+
+export const buildCommunityPostRateLimitKey = (playerId: string) =>
+  `community:post:${playerId}`.slice(0, 160);
+
+export const buildCommunityReplyRateLimitKey = (playerId: string) =>
+  `community:reply:${playerId}`.slice(0, 160);
+
+export const assertCommunityPostRateLimitAllow = async (
+  db: D1Database,
+  playerId: string,
+) =>
+  assertRateLimitAllow(db, buildCommunityPostRateLimitKey(playerId), {
+    maxAttempts: COMMUNITY_POST_RATE_LIMIT_MAX_ATTEMPTS,
+    windowMs: COMMUNITY_POST_RATE_LIMIT_WINDOW_MS,
+    error: "You're posting too fast. Wait a few seconds and try again.",
+  });
+
+export const assertCommunityReplyRateLimitAllow = async (
+  db: D1Database,
+  playerId: string,
+) =>
+  assertRateLimitAllow(db, buildCommunityReplyRateLimitKey(playerId), {
+    maxAttempts: COMMUNITY_REPLY_RATE_LIMIT_MAX_ATTEMPTS,
+    windowMs: COMMUNITY_REPLY_RATE_LIMIT_WINDOW_MS,
+    error: "You're replying too fast. Wait a few seconds and try again.",
+  });
+
+export const recordCommunityPostAttempt = async (
+  db: D1Database,
+  playerId: string,
+) => {
+  await recordRateLimitAttempt(
+    db,
+    buildCommunityPostRateLimitKey(playerId),
+    COMMUNITY_POST_RATE_LIMIT_WINDOW_MS,
+  );
+};
+
+export const recordCommunityReplyAttempt = async (
+  db: D1Database,
+  playerId: string,
+) => {
+  await recordRateLimitAttempt(
+    db,
+    buildCommunityReplyRateLimitKey(playerId),
+    COMMUNITY_REPLY_RATE_LIMIT_WINDOW_MS,
+  );
 };
