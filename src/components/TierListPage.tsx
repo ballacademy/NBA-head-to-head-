@@ -107,6 +107,7 @@ import {
   isPlayerAccountLinked,
   peekCachedAccountLinked,
   getCachedLinkedUsername,
+  resolveAccountRequiredMessage,
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { syncLandingDeepLinkUrl } from "../lib/landingHub";
@@ -276,6 +277,8 @@ export function TierListPage({
   onChallengeGm,
 }: TierListPageProps) {
   const identity = useMemo(() => getOrCreatePlayerIdentity(), []);
+  const accountRequiredMessage = (message: string) =>
+    resolveAccountRequiredMessage(identity.playerId, message);
   const [view, setView] = useState<TierListView>(() => {
     if (initialPublicTierListId) {
       return "viewer";
@@ -956,7 +959,7 @@ export function TierListPage({
   const handlePublish = async () => {
     if (!(await isPlayerAccountLinked(identity.playerId))) {
       setAccountLinked(false);
-      setStatusMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE);
+      setStatusMessage(accountRequiredMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE));
       return;
     }
 
@@ -1206,7 +1209,7 @@ export function TierListPage({
     }
     const targetId = viewerDetail.id;
     if (accountLinked !== true) {
-      setViewerCommentError(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE);
+      setViewerCommentError(accountRequiredMessage(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE));
       return;
     }
 
@@ -1265,7 +1268,7 @@ export function TierListPage({
 
   const handleOpenReportDialog = () => {
     if (accountLinked !== true) {
-      setStatusMessage(ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE);
+      setStatusMessage(accountRequiredMessage(ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE));
       return;
     }
     setReportError(null);
@@ -1300,7 +1303,7 @@ export function TierListPage({
       return;
     }
     if (accountLinked !== true) {
-      setViewerCommentError(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE);
+      setViewerCommentError(accountRequiredMessage(ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE));
       return;
     }
 
@@ -1474,7 +1477,7 @@ export function TierListPage({
 
   const handleToggleLike = async (id: string, liked: boolean) => {
     if (accountLinked !== true) {
-      setStatusMessage(ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE);
+      setStatusMessage(accountRequiredMessage(ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE));
       return;
     }
     const result = await setTierListLike({
@@ -1787,7 +1790,7 @@ export function TierListPage({
 
   const handleCreateCommunityPost = async () => {
     if (accountLinked !== true) {
-      setCommunityPostError(ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE);
+      setCommunityPostError(accountRequiredMessage(ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE));
       return;
     }
     setCommunityPostSubmitting(true);
@@ -1823,7 +1826,7 @@ export function TierListPage({
     liked: boolean,
   ) => {
     if (accountLinked !== true) {
-      setCommunityPostLikeError(ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE);
+      setCommunityPostLikeError(accountRequiredMessage(ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE));
       return;
     }
     setCommunityPostLikeError(null);
@@ -2698,7 +2701,7 @@ export function TierListPage({
                   title={
                     accountLinked === true
                       ? "Update the public copy with your latest edits"
-                      : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
+                      : accountRequiredMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE)
                   }
                 >
                   Update
@@ -2720,7 +2723,7 @@ export function TierListPage({
                 title={
                   accountLinked === true
                     ? "Publish to public tier lists"
-                    : ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE
+                    : accountRequiredMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE)
                 }
               >
                 Publish
@@ -2737,7 +2740,7 @@ export function TierListPage({
         </div>
         {accountLinked === false && !state.publishedId ? (
           <AccountRequiredNote className="account-required-note--inline">
-            {ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE}
+            {accountRequiredMessage(ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE)}
           </AccountRequiredNote>
         ) : null}
 

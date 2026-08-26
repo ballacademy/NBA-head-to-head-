@@ -46,13 +46,28 @@ describe("dailyDraftScores", () => {
 
   it("formats percentile copy for the results screen", () => {
     expect(
-      formatDailyPercentile({ percentile: 92, totalDrafters: 10, sampleSize: 510 }),
+      formatDailyPercentile({
+        percentile: 92,
+        totalDrafters: 10,
+        sampleSize: 510,
+        includesSimulatedBenchmarks: true,
+      }),
     ).toBe("Top 8% Today");
     expect(
-      formatDailyPercentile({ percentile: 64, totalDrafters: 10, sampleSize: 510 }),
+      formatDailyPercentile({
+        percentile: 64,
+        totalDrafters: 10,
+        sampleSize: 510,
+        includesSimulatedBenchmarks: true,
+      }),
     ).toBe("Top 36% Today");
     expect(
-      formatDailyPercentile({ percentile: 20, totalDrafters: 10, sampleSize: 510 }),
+      formatDailyPercentile({
+        percentile: 20,
+        totalDrafters: 10,
+        sampleSize: 510,
+        includesSimulatedBenchmarks: true,
+      }),
     ).toBe("Top 80% Today");
   });
 
@@ -141,8 +156,29 @@ describe("dailyDraftScores", () => {
         percentile: 92,
         totalDrafters: 10,
         sampleSize: 510,
+        includesSimulatedBenchmarks: true,
       }),
     ).toBe("Top 8% Today");
+  });
+
+  it("labels simulated vs live score pools honestly", async () => {
+    const { formatDailyPercentileComparison } = await import("./dailyDraftScores");
+    expect(
+      formatDailyPercentileComparison({
+        percentile: 50,
+        totalDrafters: 3,
+        sampleSize: 504,
+        includesSimulatedBenchmarks: true,
+      }),
+    ).toContain("simulated benchmarks");
+    expect(
+      formatDailyPercentileComparison({
+        percentile: 50,
+        totalDrafters: 40,
+        sampleSize: 40,
+        includesSimulatedBenchmarks: false,
+      }),
+    ).toBe("Compared to 40 scores today");
   });
 
   it("finds a daily entry by player id regardless of goal id", () => {

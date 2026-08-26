@@ -196,6 +196,7 @@ import {
 import {
   ACCOUNT_REQUIRED_CHALLENGE_MESSAGE,
   isPlayerAccountLinked,
+  resolveAccountRequiredMessage,
 } from "./lib/accountGate";
 import type { ChallengeTarget } from "./lib/challengeTarget";
 import {
@@ -467,6 +468,8 @@ function App() {
   /** Bumped on tab focus so failed cloud pulls can retry after backoff exhausted. */
   const [cloudPullRetryNonce, setCloudPullRetryNonce] = useState(0);
   const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+  const ownerInboxSettledRef = useRef(false);
+  const [ownerInboxRetryNonce, setOwnerInboxRetryNonce] = useState(0);
   const weeklyRecapReturnTabRef = useRef<LandingContentTab>("play");
   const [isPendingQueueMatch, setIsPendingQueueMatch] = useState(false);
   const [matchmakingMode, setMatchmakingMode] = useState<
@@ -672,9 +675,15 @@ function App() {
         tierListLibrarySyncAttemptedRef.current &&
         dailyHistorySyncAttemptedRef.current
       ) {
+        if (!ownerInboxSettledRef.current) {
+          setOwnerInboxRetryNonce((current) => current + 1);
+        }
         return;
       }
       setCloudPullRetryNonce((current) => current + 1);
+      if (!ownerInboxSettledRef.current) {
+        setOwnerInboxRetryNonce((current) => current + 1);
+      }
     };
 
     document.addEventListener("visibilitychange", maybeRetryCloudPulls);
@@ -773,6 +782,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         careerSyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync your career records. Check your connection.",
+        );
       }
     });
 
@@ -793,6 +806,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         usageSyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync Most Drafted. Check your connection.",
+        );
       }
     });
 
@@ -813,6 +830,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         eventProfilesSyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync event progress. Check your connection.",
+        );
       }
     });
 
@@ -833,6 +854,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         tierListLibrarySyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync your tier lists. Check your connection.",
+        );
       }
     });
 
@@ -853,6 +878,10 @@ function App() {
     }).then((outcome) => {
       if (outcome === "ok" || outcome === "skipped") {
         dailyHistorySyncAttemptedRef.current = true;
+      } else if (outcome === "failed") {
+        setCloudSyncError(
+          "Couldn't sync Daily history. Check your connection.",
+        );
       }
     });
 
@@ -899,7 +928,15 @@ function App() {
   }, [phase, landingRenderKey]);
 
   useEffect(() => {
-    if (phase !== "landing" || deliveredOwnerResults.length > 0) {
+    ownerInboxSettledRef.current = false;
+  }, [landingRenderKey]);
+
+  useEffect(() => {
+    if (
+      phase !== "landing" ||
+      deliveredOwnerResults.length > 0 ||
+      ownerInboxSettledRef.current
+    ) {
       return;
     }
 
@@ -908,6 +945,7 @@ function App() {
     void (async () => {
       const playerId = getOrCreatePlayerIdentity().playerId;
       const deliveries: DeliveredOwnerResult[] = [];
+      let fetchFailed = false;
 
       for (const mode of ["classic", "ranked"] as const) {
         if (cancelled) {
@@ -915,10 +953,22 @@ function App() {
         }
 
         const batch = await fetchDeliverableOwnerResults(mode, playerId);
-        deliveries.push(...batch);
+        if (!batch.ok) {
+          fetchFailed = true;
+          continue;
+        }
+        deliveries.push(...batch.deliveries);
       }
 
-      if (!cancelled && deliveries.length > 0) {
+      if (cancelled) {
+        return;
+      }
+
+      if (!fetchFailed) {
+        ownerInboxSettledRef.current = true;
+      }
+
+      if (deliveries.length > 0) {
         setDeliveredOwnerResults(deliveries);
         setModeRecords(loadAllModeRecords());
       }
@@ -927,7 +977,12 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [deliveredOwnerResults.length, phase, landingRenderKey]);
+  }, [
+    deliveredOwnerResults.length,
+    phase,
+    landingRenderKey,
+    ownerInboxRetryNonce,
+  ]);
 
   useEffect(() => {
     if (!user || !opponent?.isLiveOpponent || !opponent.liveMatchId) {
@@ -3148,7 +3203,12 @@ function App() {
 
       void isPlayerAccountLinked(playerId).then((linked) => {
         if (!linked) {
-          setStartMatchError(ACCOUNT_REQUIRED_CHALLENGE_MESSAGE);
+          setStartMatchError(
+            resolveAccountRequiredMessage(
+              playerId,
+              ACCOUNT_REQUIRED_CHALLENGE_MESSAGE,
+            ),
+          );
           if (phase !== "results") {
             goToLandingHub("play");
           }

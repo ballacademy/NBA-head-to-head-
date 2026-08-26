@@ -15,6 +15,7 @@ import {
 } from "../lib/achievements";
 import {
   formatDailyPercentile,
+  formatDailyPercentileComparison,
   getDailyDraftPercentile,
   loadReviewDailyDraftPercentile,
   refreshDailyDraftScoresFromApi,
@@ -468,10 +469,7 @@ export function DailyDraftResults({
         {!optimalReview && percentileResult ? (
           <p className="daily-draft-results__percentile">
             {formatDailyPercentile(percentileResult)}
-            <span>
-              Compared to {percentileResult.sampleSize.toLocaleString()} scores
-              today
-            </span>
+            <span>{formatDailyPercentileComparison(percentileResult)}</span>
           </p>
         ) : null}
         {!optimalReview && remoteSyncFailed ? (

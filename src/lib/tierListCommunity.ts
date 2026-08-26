@@ -8,6 +8,7 @@ import {
   ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
   ACCOUNT_SESSION_EXPIRED_MESSAGE,
   isPlayerAccountLinked,
+  resolveAccountRequiredMessage,
 } from "./accountGate";
 import type { TierListRow, TierListState } from "./tierList";
 import { displayTierListTitle } from "./tierList";
@@ -368,7 +369,13 @@ export const publishTierList = async (params: {
   publishedId?: string | null;
 }): Promise<{ ok: true; id: string; updated: boolean } | { ok: false; error: string }> => {
   if (!(await isPlayerAccountLinked(params.playerId))) {
-    return { ok: false, error: ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE };
+    return {
+      ok: false,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_TIER_PUBLISH_MESSAGE,
+      ),
+    };
   }
 
   const title = displayTierListTitle(params.state.title);
@@ -524,7 +531,13 @@ export const setTierListLike = async (params: {
   { ok: true; liked: boolean; likeCount: number } | { ok: false; error: string }
 > => {
   if (!(await isPlayerAccountLinked(params.playerId))) {
-    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE };
+    return {
+      ok: false,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_TIER_LIST_LIKE_MESSAGE,
+      ),
+    };
   }
 
   try {
@@ -750,7 +763,13 @@ export const createTierListComment = async (params: {
   }
 
   if (!(await isPlayerAccountLinked(params.playerId))) {
-    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE };
+    return {
+      ok: false,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_TIER_LIST_COMMENT_MESSAGE,
+      ),
+    };
   }
 
   try {
@@ -831,7 +850,13 @@ export const deleteTierListComment = async (params: {
   playerId: string;
 }): Promise<DeleteTierListCommentResult> => {
   if (!(await isPlayerAccountLinked(params.playerId))) {
-    return { ok: false, error: ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE };
+    return {
+      ok: false,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_TIER_LIST_COMMENT_DELETE_MESSAGE,
+      ),
+    };
   }
 
   try {
@@ -909,7 +934,10 @@ export const reportPublicTierList = async (params: {
   if (!(await isPlayerAccountLinked(params.playerId))) {
     return {
       ok: false,
-      error: ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_TIER_LIST_REPORT_MESSAGE,
+      ),
       accountRequired: true,
     };
   }

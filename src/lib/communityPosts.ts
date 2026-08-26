@@ -6,6 +6,7 @@ import {
   ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
   ACCOUNT_SESSION_EXPIRED_MESSAGE,
   isPlayerAccountLinked,
+  resolveAccountRequiredMessage,
 } from "./accountGate";
 import { readJson, writeJson } from "./browserStorage";
 import {
@@ -404,7 +405,10 @@ export const createCommunityPost = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_COMMUNITY_POST_MESSAGE,
+      ),
       accountRequired: true,
     };
   }
@@ -482,7 +486,10 @@ export const setCommunityPostLike = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_COMMUNITY_LIKE_MESSAGE,
+      ),
       accountRequired: true,
     };
   }
@@ -798,7 +805,10 @@ export const createCommunityPostReply = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_COMMUNITY_REPLY_MESSAGE,
+      ),
       accountRequired: true,
     };
   }
@@ -871,7 +881,10 @@ export const reportCommunityPost = async (params: {
   if (!linked) {
     return {
       ok: false,
-      error: ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
+      error: resolveAccountRequiredMessage(
+        params.playerId,
+        ACCOUNT_REQUIRED_COMMUNITY_REPORT_MESSAGE,
+      ),
       accountRequired: true,
     };
   }

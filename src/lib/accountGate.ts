@@ -201,3 +201,17 @@ export const peekCachedAccountNeedsRelogin = (
 
   return cached.accountExists && !cached.linked;
 };
+
+/**
+ * Prefer "session expired / log in again" when we know an account exists for
+ * this GM but the cookie is gone — otherwise the create-account copy.
+ */
+export const resolveAccountRequiredMessage = (
+  playerId: string,
+  createAccountMessage: string,
+): string => {
+  if (peekCachedAccountNeedsRelogin(playerId) === true) {
+    return ACCOUNT_SESSION_EXPIRED_MESSAGE;
+  }
+  return createAccountMessage;
+};

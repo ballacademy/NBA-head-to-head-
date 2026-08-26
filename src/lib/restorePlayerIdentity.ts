@@ -1,21 +1,36 @@
 import { getBrowserStorage, removeJson } from "./browserStorage";
-import { clearAccountLinkCache } from "./accountGate";
-import { pullAndMergeCollection, resetCollectionPullGate } from "./collectionRemote";
-import { pullAndMergeAchievements, resetAchievementsPullGate } from "./achievementsRemote";
+import {
+  clearAccountLinkCache,
+  isPlayerAccountLinked,
+} from "./accountGate";
+import {
+  pullAndMergeCollection,
+  pushCollectionIfLinked,
+  resetCollectionPullGate,
+} from "./collectionRemote";
+import {
+  pullAndMergeAchievements,
+  pushAchievementsIfLinked,
+  resetAchievementsPullGate,
+} from "./achievementsRemote";
 import {
   pullAndMergeCareerStats,
+  pushCareerStatsIfLinked,
   resetCareerPullGate,
 } from "./careerStatsRemote";
 import {
   pullAndMergeNbaPlayerUsage,
+  pushNbaPlayerUsageIfLinked,
   resetNbaPlayerUsagePullGate,
 } from "./nbaPlayerUsageRemote";
 import {
   pullAndMergeEventProfiles,
+  pushEventProfilesIfLinked,
   resetEventProfilesPullGate,
 } from "./eventProfileRemote";
 import {
   pullAndMergeTierListLibrary,
+  pushTierListLibraryIfLinked,
   resetTierListLibraryPullGate,
 } from "./tierListLibraryRemote";
 import { pullAndMergeDailyDraftHistory } from "./dailyDraftHistoryRemote";
@@ -175,14 +190,35 @@ export type LogoutIdentityResult =
       ok: false;
       error: string;
       pendingDailyCount: number;
+      pendingCloudCount: number;
     };
+
+const flushLinkedAccountCloudState = async (
+  playerId: string,
+): Promise<{ ok: true } | { ok: false; failed: number }> => {
+  const results = await Promise.all([
+    pushCollectionIfLinked(undefined, playerId, { force: true }),
+    pushAchievementsIfLinked(undefined, playerId, { force: true }),
+    pushCareerStatsIfLinked(playerId, { force: true }),
+    pushNbaPlayerUsageIfLinked(playerId, { force: true }),
+    pushEventProfilesIfLinked(playerId, { force: true }),
+    pushTierListLibraryIfLinked(playerId, { force: true }),
+  ]);
+
+  const failed = results.filter((ok) => !ok).length;
+  if (failed > 0) {
+    return { ok: false, failed };
+  }
+  return { ok: true };
+};
 
 /**
  * Logs out of the linked account on this device by minting a fresh anonymous
  * GM identity. The account itself remains; log in again to restore it.
  *
- * Flushes local Daily scores first so an offline submit is not wiped. Pass
- * `force: true` to skip the flush after the user confirms.
+ * Flushes local Daily scores and (when the session is live) other cloud
+ * progress first so an offline submit is not wiped. Pass `force: true` to
+ * skip the flush after the user confirms.
  */
 export const logoutToAnonymousIdentity = async (
   options: { force?: boolean } = {},
@@ -195,11 +231,28 @@ export const logoutToAnonymousIdentity = async (
       return {
         ok: false,
         pendingDailyCount: flush.failed,
+        pendingCloudCount: 0,
         error:
           flush.failed === 1
             ? "Could not sync your Daily score before logging out. Retry, or log out anyway and risk losing it."
             : `Could not sync ${flush.failed} Daily scores before logging out. Retry, or log out anyway and risk losing them.`,
       };
+    }
+
+    // Session already gone — cannot push; don't block logout on that.
+    if (await isPlayerAccountLinked(previousPlayerId)) {
+      const cloudFlush = await flushLinkedAccountCloudState(previousPlayerId);
+      if (!cloudFlush.ok) {
+        return {
+          ok: false,
+          pendingDailyCount: 0,
+          pendingCloudCount: cloudFlush.failed,
+          error:
+            cloudFlush.failed === 1
+              ? "Could not sync cloud progress before logging out. Retry, or log out anyway and risk losing recent collection, badges, or career updates."
+              : `Could not sync ${cloudFlush.failed} cloud progress items before logging out. Retry, or log out anyway and risk losing recent updates.`,
+        };
+      }
     }
   }
 

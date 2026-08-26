@@ -4,6 +4,9 @@ import {
   isPlayerAccountLinked,
   markPlayerAccountLinked,
   peekCachedAccountLinked,
+  peekCachedAccountNeedsRelogin,
+  resolveAccountRequiredMessage,
+  ACCOUNT_SESSION_EXPIRED_MESSAGE,
   subscribeAccountLinkChanged,
 } from "./accountGate";
 
@@ -55,6 +58,28 @@ describe("accountGate", () => {
     expect(peekCachedAccountLinked("p4")).toBe(true);
     markPlayerAccountLinked("p4", null);
     expect(peekCachedAccountLinked("p4")).toBe(false);
+  });
+
+  it("detects expired sessions that still have an account", () => {
+    markPlayerAccountLinked("p6", null, {
+      linked: false,
+      accountExists: true,
+    });
+    expect(peekCachedAccountNeedsRelogin("p6")).toBe(true);
+    expect(
+      resolveAccountRequiredMessage("p6", "Create an account to post."),
+    ).toBe(ACCOUNT_SESSION_EXPIRED_MESSAGE);
+  });
+
+  it("keeps create-account copy for true guests", () => {
+    markPlayerAccountLinked("p7", null, {
+      linked: false,
+      accountExists: false,
+    });
+    expect(peekCachedAccountNeedsRelogin("p7")).toBe(false);
+    expect(
+      resolveAccountRequiredMessage("p7", "Create an account to post."),
+    ).toBe("Create an account to post.");
   });
 
   it("notifies subscribers when link cache changes", () => {

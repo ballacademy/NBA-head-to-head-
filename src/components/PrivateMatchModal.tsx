@@ -4,6 +4,7 @@ import {
   ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
   isPlayerAccountLinked,
   peekCachedAccountLinked,
+  resolveAccountRequiredMessage,
   subscribeAccountLinkChanged,
 } from "../lib/accountGate";
 import { getOrCreatePlayerId } from "../lib/playerIdentity";
@@ -143,7 +144,12 @@ export function PrivateMatchModal({
   const startHost = async () => {
     setError(null);
     if (accountBlocked) {
-      setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
+      setError(
+        resolveAccountRequiredMessage(
+          getOrCreatePlayerId(),
+          ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
+        ),
+      );
       return;
     }
     if (!accountReady || busy) {
@@ -179,7 +185,12 @@ export function PrivateMatchModal({
   const startGuest = async () => {
     setError(null);
     if (accountBlocked) {
-      setError(ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE);
+      setError(
+        resolveAccountRequiredMessage(
+          getOrCreatePlayerId(),
+          ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
+        ),
+      );
       return;
     }
     if (!accountReady || busy) {
@@ -251,7 +262,10 @@ export function PrivateMatchModal({
 
         {accountBlocked ? (
           <AccountRequiredNote>
-            {ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE}
+            {resolveAccountRequiredMessage(
+              getOrCreatePlayerId(),
+              ACCOUNT_REQUIRED_PRIVATE_MATCH_MESSAGE,
+            )}
           </AccountRequiredNote>
         ) : null}
 
