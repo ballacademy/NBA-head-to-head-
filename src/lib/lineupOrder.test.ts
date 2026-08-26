@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   assignLineupSlots,
+  getPositionContinuumIndex,
   pairLineupsByPosition,
   sortLineupByPosition,
 } from "./lineupOrder";
+import { players } from "./playerPool";
 import type { Player } from "./types";
 
 const makePlayer = (
@@ -69,6 +71,24 @@ describe("sortLineupByPosition", () => {
     expect(sortLineupByPosition(lineup).map((player) => player.name)).toEqual([
       "Pure Point",
       "Combo Guard",
+    ]);
+  });
+
+  it("orders the continuum PG → PG/SG → SG → SG/SF → SF", () => {
+    const lineup = [
+      makePlayer("Pure SF", "SF", { positions: ["SF"] }),
+      makePlayer("SG/SF", "SG", { positions: ["SG", "SF"] }),
+      makePlayer("Pure SG", "SG", { positions: ["SG"] }),
+      makePlayer("PG/SG", "PG", { positions: ["PG", "SG"] }),
+      makePlayer("Pure PG", "PG", { positions: ["PG"] }),
+    ];
+
+    expect(sortLineupByPosition(lineup).map((player) => player.name)).toEqual([
+      "Pure PG",
+      "PG/SG",
+      "Pure SG",
+      "SG/SF",
+      "Pure SF",
     ]);
   });
 
@@ -166,6 +186,56 @@ describe("assignLineupSlots", () => {
       ["SF", "Wing"],
       ["PF", "Power"],
       ["C", "Big"],
+    ]);
+  });
+
+  it("keeps SG/SF on the wing and slides a pure SF to PF when both compete", () => {
+    const lineup = [
+      makePlayer("Point", "PG", { positions: ["PG", "SG"], heightInches: 74.5 }),
+      makePlayer("Two", "SG", { positions: ["SG", "PG"], heightInches: 76.5 }),
+      makePlayer("Pure SF", "SF", { positions: ["SF"], heightInches: 79.5 }),
+      makePlayer("SG/SF", "SG", { positions: ["SG", "SF"], heightInches: 76.5 }),
+      makePlayer("Big", "C", { positions: ["C", "PF"], heightInches: 84 }),
+    ];
+
+    expect(
+      assignLineupSlots(lineup).map((entry) => [entry.slot, entry.player.name]),
+    ).toEqual([
+      ["PG", "Point"],
+      ["SG", "Two"],
+      ["SF", "SG/SF"],
+      ["PF", "Pure SF"],
+      ["C", "Big"],
+    ]);
+  });
+
+  it("slots Nickeil at SF ahead of pure-SF Dillon Brooks at PF", () => {
+    const names = [
+      "Shai Gilgeous-Alexander",
+      "Austin Reaves",
+      "Dillon Brooks",
+      "Nickeil Alexander-Walker",
+      "Derik Queen",
+    ];
+    const lineup = names.map((name) => {
+      const player = players.find((entry) => entry.name === name);
+      if (!player) {
+        throw new Error(`missing roster player: ${name}`);
+      }
+      return player;
+    });
+
+    expect(getPositionContinuumIndex(lineup[3]!)).toBeLessThan(
+      getPositionContinuumIndex(lineup[2]!),
+    );
+    expect(
+      assignLineupSlots(lineup).map((entry) => [entry.slot, entry.player.name]),
+    ).toEqual([
+      ["PG", "Shai Gilgeous-Alexander"],
+      ["SG", "Austin Reaves"],
+      ["SF", "Nickeil Alexander-Walker"],
+      ["PF", "Dillon Brooks"],
+      ["C", "Derik Queen"],
     ]);
   });
 });
