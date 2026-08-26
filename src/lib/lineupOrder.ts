@@ -8,27 +8,33 @@ const POSITION_ORDER: Record<Position, number> = {
   C: 4,
 };
 
-const getSecondaryPosition = (player: Player): Position | undefined =>
-  player.positions.length > 1 ? player.positions[1] : undefined;
+/**
+ * Guard→center continuum from listed positions.
+ * Hybrids lean toward the smaller (guard-side) listed spot so e.g. SG/SF sits
+ * between SG and SF — closer to the top of the lineup than a pure SF, and much
+ * closer than PF.
+ */
+export const getPositionContinuumIndex = (player: Player): number => {
+  const orders = (player.positions.length > 0
+    ? player.positions
+    : [player.position]
+  ).map((position) => POSITION_ORDER[position]);
 
-/** Lineup slot used for ordering among players with the same listed primary. */
-const getLineupSlotPosition = (player: Player): number => {
-  const secondary = getSecondaryPosition(player);
-  return POSITION_ORDER[secondary ?? player.position];
+  if (orders.length === 1) {
+    return orders[0]!;
+  }
+
+  const min = Math.min(...orders);
+  const max = Math.max(...orders);
+  return min * 0.65 + max * 0.35;
 };
 
 export const sortLineupByPosition = (lineup: Player[]) =>
   [...lineup].sort((left, right) => {
-    const primaryComparison =
-      POSITION_ORDER[left.position] - POSITION_ORDER[right.position];
-    if (primaryComparison !== 0) {
-      return primaryComparison;
-    }
-
-    const slotComparison =
-      getLineupSlotPosition(left) - getLineupSlotPosition(right);
-    if (slotComparison !== 0) {
-      return slotComparison;
+    const continuumComparison =
+      getPositionContinuumIndex(left) - getPositionContinuumIndex(right);
+    if (continuumComparison !== 0) {
+      return continuumComparison;
     }
 
     const leftSinglePosition = left.positions.length === 1 ? 0 : 1;
@@ -55,18 +61,29 @@ const SLOT_HEIGHT: Record<Position, number> = {
   C: 84,
 };
 
+/**
+ * Continuum distance is the main “where do they sit” signal. Listed eligibility
+ * still prefers primary → secondary → stretch, but stretch cost scales with how
+ * far the slot is on the PG→C continuum so a pure SF slides to PF more cheaply
+ * than an SG/SF does — without letting a PG freely claim C.
+ */
+const CONTINUUM_FIT_WEIGHT = 2;
+const LISTED_SECONDARY_COST = 0.35;
+const UNLISTED_STRETCH_BASE = 2;
+
 const slotFitCost = (player: Player, slot: Position) => {
+  const continuumDist = Math.abs(
+    getPositionContinuumIndex(player) - POSITION_ORDER[slot],
+  );
   const listedIndex = player.positions.indexOf(slot);
   const eligibility =
-    listedIndex === 0 ? 0 : listedIndex > 0 ? 1 : 10 + Math.min(
-      ...player.positions.map(
-        (position) =>
-          Math.abs(POSITION_ORDER[position] - POSITION_ORDER[slot]),
-      ),
-      Math.abs(POSITION_ORDER[player.position] - POSITION_ORDER[slot]),
-    );
+    listedIndex === 0
+      ? 0
+      : listedIndex > 0
+        ? LISTED_SECONDARY_COST
+        : UNLISTED_STRETCH_BASE + continuumDist;
   const heightFit = Math.abs(player.heightInches - SLOT_HEIGHT[slot]) / 100;
-  return eligibility + heightFit;
+  return continuumDist * CONTINUUM_FIT_WEIGHT + eligibility + heightFit;
 };
 
 /**
