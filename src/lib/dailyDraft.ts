@@ -22,6 +22,9 @@ const ADVANCED_DAILY_SLOT_SEED_OFFSET = 503;
 const ADVANCED_DAILY_GOAL_SEED_OFFSET = 1003;
 const DAILY_SLOT_ATTEMPT_STEP = 7919;
 
+/** Fixed anchor so every date derives from the same forward calendar. */
+export const DAILY_GOAL_CALENDAR_EPOCH = "2020-01-01";
+
 const goalCacheKey = (mode: DailyDraftMode, dateKey: string) =>
   `${mode}:${dateKey}`;
 
@@ -96,12 +99,6 @@ export const formatDailyDateLabel = (dateKey: string) => {
 const compareDateKeys = (left: string, right: string) =>
   left < right ? -1 : left > right ? 1 : 0;
 
-const getGoalCalendarBootstrapStartKey = (dateKey: string) =>
-  subtractDaysFromDateKey(
-    dateKey,
-    Math.max(DAILY_GOAL_REPEAT_WINDOW_DAYS * 2, 120),
-  );
-
 const computeGoalForDate = (
   dateKey: string,
   workingCache: Map<string, DailyDraftGoal>,
@@ -153,35 +150,41 @@ const computeGoalForDate = (
   return bestGoal;
 };
 
-const buildIsolatedDailyGoal = (dateKey: string, mode: DailyDraftMode) => {
-  const workingCache = new Map<string, DailyDraftGoal>();
-  const startKey = getGoalCalendarBootstrapStartKey(dateKey);
-  let cursor = startKey;
+const preloadCachedGoalsThrough = (
+  mode: DailyDraftMode,
+  dateKey: string,
+  workingCache: Map<string, DailyDraftGoal>,
+) => {
+  for (const [key, goal] of goalCache) {
+    const separatorIndex = key.indexOf(":");
+    const cachedMode = key.slice(0, separatorIndex) as DailyDraftMode;
+    const cachedDate = key.slice(separatorIndex + 1);
 
-  while (compareDateKeys(cursor, dateKey) <= 0) {
-    const goal = computeGoalForDate(cursor, workingCache, mode);
-    workingCache.set(cursor, goal);
-
-    if (cursor === dateKey) {
-      break;
+    if (cachedMode === mode && compareDateKeys(cachedDate, dateKey) <= 0) {
+      workingCache.set(cachedDate, goal);
     }
-
-    cursor = subtractDaysFromDateKey(cursor, -1);
   }
-
-  return workingCache.get(dateKey) ?? getDailyDraftGoalsForMode(mode)[0]!;
 };
 
-export const buildDailyGoalChainForTests = (
+const buildGoalChainThrough = (
   dateKey: string,
-  mode: DailyDraftMode = "basic",
+  mode: DailyDraftMode,
+  persistToGoalCache: boolean,
 ) => {
   const workingCache = new Map<string, DailyDraftGoal>();
-  const startKey = getGoalCalendarBootstrapStartKey(dateKey);
-  let cursor = startKey;
+  preloadCachedGoalsThrough(mode, dateKey, workingCache);
+
+  let cursor = DAILY_GOAL_CALENDAR_EPOCH;
 
   while (compareDateKeys(cursor, dateKey) <= 0) {
-    workingCache.set(cursor, computeGoalForDate(cursor, workingCache, mode));
+    if (!workingCache.has(cursor)) {
+      const goal = computeGoalForDate(cursor, workingCache, mode);
+      workingCache.set(cursor, goal);
+
+      if (persistToGoalCache) {
+        goalCache.set(goalCacheKey(mode, cursor), goal);
+      }
+    }
 
     if (cursor === dateKey) {
       break;
@@ -193,14 +196,17 @@ export const buildDailyGoalChainForTests = (
   return workingCache;
 };
 
-const fillGoalsThrough = (dateKey: string, mode: DailyDraftMode) => {
-  const cacheKey = goalCacheKey(mode, dateKey);
+export const buildDailyGoalChainForTests = (
+  dateKey: string,
+  mode: DailyDraftMode = "basic",
+) => buildGoalChainThrough(dateKey, mode, false);
 
-  if (goalCache.has(cacheKey)) {
+const fillGoalsThrough = (dateKey: string, mode: DailyDraftMode) => {
+  if (goalCache.has(goalCacheKey(mode, dateKey))) {
     return;
   }
 
-  goalCache.set(cacheKey, buildIsolatedDailyGoal(dateKey, mode));
+  buildGoalChainThrough(dateKey, mode, true);
 };
 
 export const clearDailyDraftCachesForTests = () => {
