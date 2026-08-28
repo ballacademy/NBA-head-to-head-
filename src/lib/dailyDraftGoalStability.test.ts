@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   clearDailyDraftCachesForTests,
+  getDailyChallenge,
   getDailyGoal,
+  subtractDaysFromDateKey,
 } from "./dailyDraft";
 
 describe("dailyDraft goal calendar stability", () => {
@@ -27,5 +29,35 @@ describe("dailyDraft goal calendar stability", () => {
     const yesterdayViaTomorrow = getDailyGoal(todayKey, "advanced");
 
     expect(yesterdayViaTomorrow.id).toBe(todayGoal.id);
+  });
+
+  it("does not repeat the same goal on consecutive days when cached in order", () => {
+    clearDailyDraftCachesForTests();
+
+    for (let day = 2; day <= 31; day += 1) {
+      const current = `2026-08-${String(day).padStart(2, "0")}`;
+      const previous = subtractDaysFromDateKey(current, 1);
+
+      for (const mode of ["basic", "advanced"] as const) {
+        const previousGoal = getDailyChallenge(previous, mode);
+        const currentGoal = getDailyChallenge(current, mode);
+
+        expect(
+          currentGoal.id,
+          `${mode} ${previous}->${current}`,
+        ).not.toBe(previousGoal.id);
+      }
+    }
+  });
+
+  it("keeps late-August goals stable regardless of which later date is requested first", () => {
+    clearDailyDraftCachesForTests();
+    const direct = getDailyGoal("2026-08-26", "basic");
+
+    clearDailyDraftCachesForTests();
+    getDailyGoal("2026-08-30", "basic");
+    const viaLater = getDailyGoal("2026-08-26", "basic");
+
+    expect(viaLater.id).toBe(direct.id);
   });
 });
