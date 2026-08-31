@@ -1,8 +1,8 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-08-21T23:30:47.544920+00:00",
-  "updatedAt": "2026-08-21T23:47:45.302079+00:00",
+  "generatedAt": "2026-08-31T23:21:29.335828+00:00",
+  "updatedAt": "2026-08-31T23:21:29.335828+00:00",
   "rosterSource": "espn",
   "playerCount": 603,
   "byPlayerId": {
@@ -342,8 +342,8 @@
       "name": "Nic Claxton"
     },
     "richani01": {
-      "jerseyNumber": 2,
-      "team": "FA",
+      "jerseyNumber": 8,
+      "team": "MIA",
       "name": "Nick Richards"
     },
     "essenno01": {
@@ -558,7 +558,7 @@
     },
     "willibr03": {
       "jerseyNumber": 10,
-      "team": "FA",
+      "team": "GSW",
       "name": "Brandon Williams"
     },
     "martica02": {
@@ -593,7 +593,7 @@
     },
     "thompkl01": {
       "jerseyNumber": 31,
-      "team": "DAL",
+      "team": "MIA",
       "name": "Klay Thompson"
     },
     "irvinky01": {
@@ -967,8 +967,8 @@
       "name": "Garrison Mathews"
     },
     "niangge01": {
-      "jerseyNumber": 0,
-      "team": "FA",
+      "jerseyNumber": 31,
+      "team": "GSW",
       "name": "Georges Niang"
     },
     "nelsogr02": {
@@ -1748,7 +1748,7 @@
     },
     "johnske10": {
       "jerseyNumber": 16,
-      "team": "FA",
+      "team": "MIA",
       "name": "Keshad Johnson"
     },
     "gardnmy01": {
@@ -1928,7 +1928,7 @@
     },
     "greenjo02": {
       "jerseyNumber": 10,
-      "team": "MIN",
+      "team": "UTA",
       "name": "Josh Green"
     },
     "phillju01": {
@@ -2848,7 +2848,7 @@
     },
     "willico04": {
       "jerseyNumber": 5,
-      "team": "UTA",
+      "team": "MIN",
       "name": "Cody Williams"
     },
     "grayha01": {
@@ -2873,7 +2873,7 @@
     },
     "konchjo01": {
       "jerseyNumber": 55,
-      "team": "UTA",
+      "team": "MIN",
       "name": "John Konchar"
     },
     "okogijo01": {
@@ -3621,8 +3621,8 @@
     {
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
-      "team": "FA",
-      "jerseyNumber": 2,
+      "team": "MIA",
+      "jerseyNumber": 8,
       "position": "C"
     },
     {
@@ -3705,7 +3705,7 @@
     {
       "bbrPlayerId": "greenjo02",
       "name": "Josh Green",
-      "team": "MIN",
+      "team": "UTA",
       "jerseyNumber": 10,
       "position": "SG"
     },
@@ -4132,7 +4132,7 @@
     {
       "bbrPlayerId": "thompkl01",
       "name": "Klay Thompson",
-      "team": "DAL",
+      "team": "MIA",
       "jerseyNumber": 31,
       "position": "SF"
     },
@@ -4146,7 +4146,7 @@
     {
       "bbrPlayerId": "willibr03",
       "name": "Brandon Williams",
-      "team": "FA",
+      "team": "GSW",
       "jerseyNumber": 10,
       "position": "PG"
     },
@@ -5322,7 +5322,7 @@
     {
       "bbrPlayerId": "konchjo01",
       "name": "John Konchar",
-      "team": "UTA",
+      "team": "MIN",
       "jerseyNumber": 55,
       "position": "SG"
     },
@@ -5476,7 +5476,7 @@
     {
       "bbrPlayerId": "johnske10",
       "name": "Keshad Johnson",
-      "team": "FA",
+      "team": "MIA",
       "jerseyNumber": 16,
       "position": "SF"
     },
@@ -6666,8 +6666,8 @@
     {
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
-      "team": "FA",
-      "jerseyNumber": 2,
+      "team": "MIA",
+      "jerseyNumber": 8,
       "position": "C"
     },
     {
@@ -7366,7 +7366,7 @@
     {
       "bbrPlayerId": "konchjo01",
       "name": "John Konchar",
-      "team": "UTA",
+      "team": "MIN",
       "jerseyNumber": 55,
       "position": "SG"
     },
@@ -7422,7 +7422,7 @@
     {
       "bbrPlayerId": "willico04",
       "name": "Cody Williams",
-      "team": "UTA",
+      "team": "MIN",
       "jerseyNumber": 5,
       "position": "SG"
     },

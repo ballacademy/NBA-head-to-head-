@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-08-21T23:30:47.525496+00:00",
-  "rosterAsOf": "2026-08-21",
+  "generatedAt": "2026-08-31T23:21:29.317344+00:00",
+  "rosterAsOf": "2026-08-31",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -5853,10 +5853,10 @@
       "statsTeam": "SAS"
     },
     {
-      "id": "willibr03-fa",
+      "id": "willibr03-gsw",
       "bbrPlayerId": "willibr03",
       "name": "Brandon Williams",
-      "team": "FA",
+      "team": "GSW",
       "position": "PG",
       "positions": [
         "PG"
@@ -7188,10 +7188,10 @@
       "statsTeam": "UTA"
     },
     {
-      "id": "thompkl01-dal",
+      "id": "thompkl01-mia",
       "bbrPlayerId": "thompkl01",
       "name": "Klay Thompson",
-      "team": "DAL",
+      "team": "MIA",
       "position": "SF",
       "positions": [
         "SF"
@@ -7224,7 +7224,8 @@
       "blockPct": 1.2,
       "personalFouls": 1,
       "effectiveFieldGoalPct": 0.5235849056603774,
-      "trueShooting": 0.536
+      "trueShooting": 0.536,
+      "statsTeam": "DAL"
     },
     {
       "id": "willima07-pho",
@@ -9049,10 +9050,10 @@
       "statsTeam": "DET"
     },
     {
-      "id": "niangge01-fa",
+      "id": "niangge01-gsw",
       "bbrPlayerId": "niangge01",
       "name": "Georges Niang",
-      "team": "FA",
+      "team": "GSW",
       "position": "PF",
       "positions": [
         "PF"
@@ -10295,10 +10296,10 @@
       "statsTeam": "BRK"
     },
     {
-      "id": "willico04-uta",
+      "id": "willico04-min",
       "bbrPlayerId": "willico04",
       "name": "Cody Williams",
-      "team": "UTA",
+      "team": "MIN",
       "position": "SG",
       "positions": [
         "SG"
@@ -15344,10 +15345,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "richani01-fa",
+      "id": "richani01-mia",
       "bbrPlayerId": "richani01",
       "name": "Nick Richards",
-      "team": "FA",
+      "team": "MIA",
       "position": "C",
       "positions": [
         "C",
@@ -17730,10 +17731,10 @@
       "statsTeam": "ORL"
     },
     {
-      "id": "konchjo01-uta",
+      "id": "konchjo01-min",
       "bbrPlayerId": "konchjo01",
       "name": "John Konchar",
-      "team": "UTA",
+      "team": "MIN",
       "position": "SG",
       "positions": [
         "SG"
@@ -18092,10 +18093,10 @@
       "statsTeam": "PHI"
     },
     {
-      "id": "greenjo02-min",
+      "id": "greenjo02-uta",
       "bbrPlayerId": "greenjo02",
       "name": "Josh Green",
-      "team": "MIN",
+      "team": "UTA",
       "position": "SG",
       "positions": [
         "SG"
@@ -18132,10 +18133,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "johnske10-fa",
+      "id": "johnske10-mia",
       "bbrPlayerId": "johnske10",
       "name": "Keshad Johnson",
-      "team": "FA",
+      "team": "MIA",
       "position": "SF",
       "positions": [
         "SF"
