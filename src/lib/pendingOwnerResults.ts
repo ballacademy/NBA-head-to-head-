@@ -97,6 +97,8 @@ const deliverPendingResult = (
     ownerScore: pending.ownerScore,
     opponentScore: pending.opponentScore,
     bannerDelta: banners?.delta,
+    // Stamp the match time from the server, not inbox-open / delivery time.
+    recordedAt: pending.createdAt,
   });
 
   return {
