@@ -133,6 +133,41 @@ describe("pendingOwnerResults", () => {
     });
   });
 
+  it("stamps game-log entries with the match createdAt, not delivery time", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-04T01:00:00.000Z"));
+    vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
+      queuedLineup: null,
+      pendingResults: [
+        sampleResult("result-old", {
+          createdAt: "2026-08-20T15:30:00.000Z",
+        }),
+        sampleResult("result-newer", {
+          createdAt: "2026-08-28T18:45:00.000Z",
+          ownerResult: "loss",
+          opponentTeamName: "Visitors",
+        }),
+      ],
+      pendingResult: sampleResult("result-old", {
+        createdAt: "2026-08-20T15:30:00.000Z",
+      }),
+    });
+
+    await fetchDeliverableOwnerResults("classic", "player-1");
+
+    const { loadMatchGameLog } = await import("./matchGameLog");
+    const entries = loadMatchGameLog();
+    expect(entries.map((entry) => entry.id)).toEqual([
+      "result-newer",
+      "result-old",
+    ]);
+    expect(entries.map((entry) => entry.recordedAt)).toEqual([
+      "2026-08-28T18:45:00.000Z",
+      "2026-08-20T15:30:00.000Z",
+    ]);
+    vi.useRealTimers();
+  });
+
   it("delivers every pending result in order", async () => {
     vi.mocked(fetchPendingMatchmakingStatus).mockResolvedValue({
       queuedLineup: null,

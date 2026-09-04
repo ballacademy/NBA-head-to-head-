@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   appendMatchGameLogEntry,
+  formatMatchGameLogWhen,
   loadMatchGameLog,
   matchGameLogEntryHasMatchup,
   MATCH_GAME_LOG_MAX_ENTRIES,
@@ -115,6 +116,25 @@ describe("matchGameLog", () => {
     const attachment = toCommunityMatchupAttachment(loaded!);
     expect(attachment?.kind).toBe("matchup");
     expect(attachment?.opponentRecord).toBe("44-38");
+  });
+
+  it("keeps an explicit recordedAt instead of stamping now", () => {
+    appendMatchGameLogEntry({
+      id: "queued-timed-1",
+      kind: "queued",
+      mode: "classic",
+      result: "loss",
+      opponentName: "Visitors",
+      ownerScore: 90,
+      opponentScore: 95,
+      recordedAt: "2026-08-20T15:30:00.000Z",
+      streakCounted: false,
+    });
+
+    expect(loadMatchGameLog()[0]?.recordedAt).toBe("2026-08-20T15:30:00.000Z");
+    expect(formatMatchGameLogWhen("2026-08-20T15:30:00.000Z")).not.toBe(
+      "Unknown time",
+    );
   });
 
   it("keeps older entries without matchup snapshots loadable", () => {

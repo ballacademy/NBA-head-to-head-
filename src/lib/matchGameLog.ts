@@ -135,9 +135,16 @@ const normalizeEntry = (
   entry: AppendMatchGameLogEntryInput,
 ): MatchGameLogEntry => {
   const matchup = normalizeMatchup(entry.matchup);
+  const recordedAtCandidate = entry.recordedAt?.trim();
+  const recordedAt =
+    recordedAtCandidate &&
+    !Number.isNaN(new Date(recordedAtCandidate).getTime())
+      ? recordedAtCandidate
+      : new Date().toISOString();
+
   return {
     id: entry.id,
-    recordedAt: entry.recordedAt ?? new Date().toISOString(),
+    recordedAt,
     kind: entry.kind,
     mode: entry.mode,
     result: entry.result,
@@ -332,6 +339,8 @@ export const logQueuedMatchGameEntry = (params: {
   ownerScore: number;
   opponentScore: number;
   bannerDelta?: number;
+  /** When the match actually resolved (server created_at), not inbox open time. */
+  recordedAt?: string;
   matchup?: MatchGameLogMatchup;
 }) =>
   appendMatchGameLogEntry({
@@ -344,5 +353,6 @@ export const logQueuedMatchGameEntry = (params: {
     opponentScore: params.opponentScore,
     bannerDelta: params.bannerDelta,
     streakCounted: false,
+    recordedAt: params.recordedAt,
     matchup: params.matchup,
   });
