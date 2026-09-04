@@ -27,6 +27,8 @@ export interface MatchGameLogMatchup {
   userAccent?: string;
   opponentAccent?: string;
   userRecord?: string;
+  /** Projected season W–L for the opposing five. */
+  opponentRecord?: string;
   userWinRecord?: string;
   ovrOverflow?: number;
   opponentOvrOverflow?: number;
@@ -112,6 +114,10 @@ const normalizeMatchup = (
         : undefined,
     userRecord:
       typeof entry.userRecord === "string" ? entry.userRecord : undefined,
+    opponentRecord:
+      typeof entry.opponentRecord === "string"
+        ? entry.opponentRecord
+        : undefined,
     userWinRecord:
       typeof entry.userWinRecord === "string"
         ? entry.userWinRecord
@@ -277,6 +283,7 @@ export const toCommunityMatchupAttachment = (
     userAccent: matchup.userAccent,
     opponentAccent: matchup.opponentAccent,
     userRecord: matchup.userRecord,
+    opponentRecord: matchup.opponentRecord,
     userWinRecord: matchup.userWinRecord,
     ovrOverflow: matchup.ovrOverflow,
     opponentOvrOverflow: matchup.opponentOvrOverflow,
