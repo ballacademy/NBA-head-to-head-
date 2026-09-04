@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildMatchupShareCardInputsFromAttachment,
   buildShareCardInputFromAttachment,
   formatCommunityAttachmentChip,
   formatCommunityMatchupDetails,
@@ -131,6 +132,7 @@ describe("formatCommunityAttachmentChip", () => {
 describe("matchup share card record", () => {
   const playersById = new Map<string, Player>([
     ["p1", stubPlayer("p1", "Guard")],
+    ["p2", stubPlayer("p2", "Other")],
   ]);
 
   it("prefers projected team W-L on the lineup share card", () => {
@@ -236,5 +238,40 @@ describe("matchup share card record", () => {
         savedAt: "2026-07-01T00:00:00.000Z",
       }).record,
     ).toBe("Projected 50-32");
+  });
+
+  it("keeps mode/date/brand on the user card and mirrors projected record for the opponent", () => {
+    const inputs = buildMatchupShareCardInputsFromAttachment(
+      {
+        kind: "matchup",
+        modeLabel: "Casual Head to Head",
+        result: "win",
+        userTeam: "Aces",
+        opponentTeam: "Rivals",
+        userOvr: 91,
+        opponentOvr: 87,
+        userLineupNames: ["Guard"],
+        opponentLineupNames: ["Other"],
+        userLineupIds: ["p1"],
+        opponentLineupIds: ["p2"],
+        userRecord: "50-32",
+        opponentRecord: "44-38",
+        savedAt: "2026-07-01T00:00:00.000Z",
+      },
+      playersById,
+    );
+
+    expect(inputs).not.toBeNull();
+    expect(inputs!.user.subhead).toBe("Casual Head to Head");
+    expect(inputs!.user.footerNote).toMatch(/^Saved /);
+    expect(inputs!.user.record).toBe("50-32");
+    expect(inputs!.user.recordLabel).toBe("Projected");
+    expect(inputs!.user.showBrandChrome).not.toBe(false);
+
+    expect(inputs!.opponent.subhead).toBeUndefined();
+    expect(inputs!.opponent.footerNote).toBeUndefined();
+    expect(inputs!.opponent.showBrandChrome).toBe(false);
+    expect(inputs!.opponent.record).toBe("44-38");
+    expect(inputs!.opponent.recordLabel).toBe("Projected");
   });
 });

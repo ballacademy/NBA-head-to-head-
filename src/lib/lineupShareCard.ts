@@ -26,6 +26,11 @@ export interface LineupShareCardInput {
   username?: string;
   /** Small uppercase label above the title (defaults to "DRAFT DAY GM"). */
   eyebrow?: string;
+  /**
+   * When false, skip the DRAFT DAY GM eyebrow and footer brand stamp.
+   * Used for the bottom half of stacked matchup shares so chrome isn’t duplicated.
+   */
+  showBrandChrome?: boolean;
   /** Optional muted context drawn under the title. */
   subhead?: string;
   /** Optional left-side footer note (e.g. community "Saved …"). */
@@ -478,16 +483,17 @@ const getShareCardHeaderLayout = (
   const stat = resolveShareCardStatDisplay(input);
   const username = resolveShareCardUsername(input);
   const subhead = input.subhead?.trim() || null;
+  const showBrandChrome = input.showBrandChrome !== false;
 
-  const eyebrowY = 98;
-  const titleY = 160;
+  const eyebrowY = showBrandChrome ? 98 : null;
+  const titleY = showBrandChrome ? 160 : 118;
   let leftCursor = titleY;
   const usernameY = username ? ((leftCursor += 30), leftCursor) : null;
   const subheadY = subhead ? ((leftCursor += username ? 28 : 32), leftCursor) : null;
   const startingFiveY = leftCursor + 36;
   const dividerY = startingFiveY + 14;
 
-  const ovrY = 160;
+  const ovrY = titleY;
   const ovrLabelY = ovrY + (stat.custom ? 28 : 30);
   const recordY =
     !stat.custom && input.record ? ovrLabelY + 30 : null;
@@ -522,6 +528,7 @@ const getShareCardHeaderLayout = (
     ovrLabelY,
     ovrY,
     recordY,
+    showBrandChrome,
     startingFiveY,
     stat,
     subhead,
@@ -575,15 +582,17 @@ const drawShareCardHeader = (
   context.textBaseline = "alphabetic";
 
   context.textAlign = "left";
-  context.font = `700 20px ${FONT_STACK}`;
-  context.fillStyle = "#67e8f9";
-  context.letterSpacing = "3.2px";
-  context.fillText(
-    input.eyebrow?.trim() || "DRAFT DAY GM",
-    HEADER_X,
-    layout.eyebrowY,
-  );
-  context.letterSpacing = "0px";
+  if (layout.showBrandChrome && layout.eyebrowY != null) {
+    context.font = `700 20px ${FONT_STACK}`;
+    context.fillStyle = "#67e8f9";
+    context.letterSpacing = "3.2px";
+    context.fillText(
+      input.eyebrow?.trim() || "DRAFT DAY GM",
+      HEADER_X,
+      layout.eyebrowY,
+    );
+    context.letterSpacing = "0px";
+  }
 
   context.font = `700 52px ${FONT_STACK}`;
   context.fillStyle = "#f8fafc";
@@ -757,8 +766,9 @@ export const drawLineupShareCard = (
   }
 
   // Brand once at the top (eyebrow) + stamped mark in the footer — no extra
-  // "#DraftDayGM" / "DRAFT DAY GM" text clutter.
-  if (brandMark) {
+  // "#DraftDayGM" / "DRAFT DAY GM" text clutter. Matchup stacks omit chrome
+  // on the bottom card via `showBrandChrome: false`.
+  if (brandMark && input.showBrandChrome !== false) {
     drawBrandMarkStamp(context, brandMark, {
       right: CARD_WIDTH - 88,
       bottom: footerY + 6,
@@ -819,8 +829,15 @@ export const createMatchupShareCardBlob = async (inputs: {
 
   const userCanvas = document.createElement("canvas");
   const opponentCanvas = document.createElement("canvas");
+  // Top card keeps brand chrome (eyebrow + logo + mode/date from inputs).
+  // Bottom card is the opposing five only — no duplicated DRAFT DAY GM chrome.
   drawLineupShareCard(userCanvas, inputs.user, headshots, brandMark);
-  drawLineupShareCard(opponentCanvas, inputs.opponent, headshots, brandMark);
+  drawLineupShareCard(
+    opponentCanvas,
+    { ...inputs.opponent, showBrandChrome: false },
+    headshots,
+    brandMark,
+  );
 
   const gap = 28;
   const combined = document.createElement("canvas");

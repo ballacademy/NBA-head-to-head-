@@ -293,6 +293,9 @@ export function MatchResults({
         userAccent: user.accent,
         opponentAccent: opponent.accent,
         userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+        opponentRecord: formatProjectedSeasonRecord(
+          opponentScore.projectedRecord,
+        ),
         userWinRecord: skipCompetitiveRecords
           ? undefined
           : formatPlayerRecord(updatedRecord),
@@ -719,6 +722,9 @@ export function MatchResults({
           userAccent: user.accent,
           opponentAccent: opponent.accent,
           userRecord: formatProjectedSeasonRecord(userScore.projectedRecord),
+          opponentRecord: formatProjectedSeasonRecord(
+            opponentScore.projectedRecord,
+          ),
           ovrOverflow: userScore.ovrOverflow,
           opponentOvrOverflow: opponentScore.ovrOverflow,
           savedAt: new Date().toISOString(),

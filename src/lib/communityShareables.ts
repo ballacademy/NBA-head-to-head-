@@ -22,6 +22,8 @@ export interface CommunityMatchupAttachment {
   userAccent?: string;
   opponentAccent?: string;
   userRecord?: string;
+  /** Projected season W–L for the opposing five (same format as userRecord). */
+  opponentRecord?: string;
   /** Competitive W-L (or W-L-T) after the match, e.g. "12-5". */
   userWinRecord?: string;
   ovrOverflow?: number;
@@ -432,6 +434,7 @@ export const buildMatchupShareCardInputsFromAttachment = (
   }
 
   const { missingPlayerCount: userMissing, ...userInput } = user;
+  const projectedOpponentRecord = attachment.opponentRecord?.trim();
 
   return {
     user: userInput,
@@ -442,8 +445,11 @@ export const buildMatchupShareCardInputsFromAttachment = (
       ovrOverflow: attachment.opponentOvrOverflow,
       lineup: opponentLineup,
       headline: attachment.opponentTeam,
-      subhead: attachment.modeLabel,
-      footerNote: formatSavedFooterNote(attachment.savedAt),
+      // Mode label + saved date live on the top (user) card only so the
+      // stacked matchup image doesn’t repeat Casual H2H / Saved date / brand.
+      showBrandChrome: false,
+      record: projectedOpponentRecord || undefined,
+      recordLabel: projectedOpponentRecord ? "Projected" : undefined,
     },
     missingPlayerCount: userMissing + opponentMissing,
   };

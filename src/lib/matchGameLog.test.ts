@@ -103,13 +103,18 @@ describe("matchGameLog", () => {
         opponentLineupNames: ["F", "G", "H", "I", "J"],
         userLineupIds: ["a", "b", "c", "d", "e"],
         opponentLineupIds: ["f", "g", "h", "i", "j"],
+        userRecord: "50-32",
+        opponentRecord: "44-38",
       },
     });
 
     const loaded = loadMatchGameLog()[0];
     expect(loaded?.matchup?.userTeam).toBe("My Five");
     expect(loaded?.matchup?.userLineupIds).toEqual(["a", "b", "c", "d", "e"]);
-    expect(toCommunityMatchupAttachment(loaded!)?.kind).toBe("matchup");
+    expect(loaded?.matchup?.opponentRecord).toBe("44-38");
+    const attachment = toCommunityMatchupAttachment(loaded!);
+    expect(attachment?.kind).toBe("matchup");
+    expect(attachment?.opponentRecord).toBe("44-38");
   });
 
   it("keeps older entries without matchup snapshots loadable", () => {
