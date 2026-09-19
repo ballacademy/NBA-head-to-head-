@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-08-31T23:21:29.317344+00:00",
-  "rosterAsOf": "2026-08-31",
+  "generatedAt": "2026-09-19T21:18:55.025467+00:00",
+  "rosterAsOf": "2026-09-19",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -254,10 +254,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "leonaka01-lac",
+      "id": "leonaka01-tor",
       "bbrPlayerId": "leonaka01",
       "name": "Kawhi Leonard",
-      "team": "LAC",
+      "team": "TOR",
       "position": "SF",
       "positions": [
         "SF"
@@ -1231,10 +1231,10 @@
       "statsTeam": "MIA"
     },
     {
-      "id": "ingrabr01-tor",
+      "id": "ingrabr01-lac",
       "bbrPlayerId": "ingrabr01",
       "name": "Brandon Ingram",
-      "team": "TOR",
+      "team": "LAC",
       "position": "SF",
       "positions": [
         "SF"
@@ -2772,10 +2772,10 @@
       "statsTeam": "NOP"
     },
     {
-      "id": "mathube01-lac",
+      "id": "mathube01-nop",
       "bbrPlayerId": "mathube01",
       "name": "Bennedict Mathurin",
-      "team": "LAC",
+      "team": "NOP",
       "position": "SF",
       "positions": [
         "SF"
@@ -6499,10 +6499,10 @@
       "statsTeam": "DET"
     },
     {
-      "id": "kuminjo01-fa",
+      "id": "kuminjo01-min",
       "bbrPlayerId": "kuminjo01",
       "name": "Jonathan Kuminga",
-      "team": "FA",
+      "team": "MIN",
       "position": "PF",
       "positions": [
         "PF"
@@ -9775,10 +9775,10 @@
       "statsTeam": "LAL"
     },
     {
-      "id": "whitmca01-cle",
+      "id": "whitmca01-den",
       "bbrPlayerId": "whitmca01",
       "name": "Cam Whitmore",
-      "team": "CLE",
+      "team": "DEN",
       "position": "SF",
       "positions": [
         "SF"
@@ -14821,10 +14821,10 @@
       "statsTeam": "CHI"
     },
     {
-      "id": "dickgr01-tor",
+      "id": "dickgr01-lac",
       "bbrPlayerId": "dickgr01",
       "name": "Gradey Dick",
-      "team": "TOR",
+      "team": "LAC",
       "position": "SG",
       "positions": [
         "SG"
@@ -15063,10 +15063,10 @@
       "statsTeam": "4TM"
     },
     {
-      "id": "gillan01-fa",
+      "id": "gillan01-was",
       "bbrPlayerId": "gillan01",
       "name": "Anthony Gill",
-      "team": "FA",
+      "team": "WAS",
       "position": "PF",
       "positions": [
         "PF"
@@ -16798,10 +16798,10 @@
       "statsTeam": "IND"
     },
     {
-      "id": "hawkijo01-nop",
+      "id": "hawkijo01-mem",
       "bbrPlayerId": "hawkijo01",
       "name": "Jordan Hawkins",
-      "team": "NOP",
+      "team": "MEM",
       "position": "SG",
       "positions": [
         "SG"
@@ -16919,10 +16919,10 @@
       "statsTeam": "POR"
     },
     {
-      "id": "simmobe01-fa",
+      "id": "simmobe01-sac",
       "bbrPlayerId": "simmobe01",
       "name": "Ben Simmons",
-      "team": "FA",
+      "team": "SAC",
       "position": "PG",
       "positions": [
         "PG",
@@ -17246,10 +17246,10 @@
       "statsTeam": "CLE"
     },
     {
-      "id": "branhma01-fa",
+      "id": "branhma01-orl",
       "bbrPlayerId": "branhma01",
       "name": "Malaki Branham",
-      "team": "FA",
+      "team": "ORL",
       "position": "SG",
       "positions": [
         "SG"
@@ -18255,10 +18255,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "peavymi01-nop",
+      "id": "peavymi01-mem",
       "bbrPlayerId": "peavymi01",
       "name": "Micah Peavy",
-      "team": "NOP",
+      "team": "MEM",
       "position": "SG",
       "positions": [
         "SG"
@@ -19835,10 +19835,10 @@
       "lastTeam": "CHI"
     },
     {
-      "id": "johnsaj01-mem",
+      "id": "johnsaj01-nop",
       "bbrPlayerId": "johnsaj01",
       "name": "AJ Johnson",
-      "team": "MEM",
+      "team": "NOP",
       "position": "SG",
       "positions": [
         "SG"
@@ -20853,10 +20853,10 @@
       "statsTeam": "SAS"
     },
     {
-      "id": "reathdu01-fa",
+      "id": "reathdu01-pho",
       "bbrPlayerId": "reathdu01",
       "name": "Duop Reath",
-      "team": "FA",
+      "team": "PHO",
       "position": "C",
       "positions": [
         "C",
@@ -21463,10 +21463,10 @@
       "statsTeam": "CHO"
     },
     {
-      "id": "davisjd01-hou",
+      "id": "davisjd01-orl",
       "bbrPlayerId": "davisjd01",
       "name": "JD Davison",
-      "team": "HOU",
+      "team": "ORL",
       "position": "PG",
       "positions": [
         "PG"
@@ -23416,10 +23416,10 @@
       "statsTeam": "ORL"
     },
     {
-      "id": "jonesdi01-fa",
+      "id": "jonesdi01-phi",
       "bbrPlayerId": "jonesdi01",
       "name": "Dillon Jones",
-      "team": "FA",
+      "team": "PHI",
       "position": "SF",
       "positions": [
         "SF"
