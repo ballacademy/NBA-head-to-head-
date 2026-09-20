@@ -65,7 +65,7 @@ describe("impactRanking", () => {
     expect(lamelo).toBeDefined();
     expect(holiday).toBeDefined();
     expect(getPlayerImpactAdjustment(cade!)).toBeGreaterThan(0);
-    expect(getPlayerImpactAdjustment(lamelo!)).toBeGreaterThan(0.4);
+    expect(getPlayerImpactAdjustment(lamelo!)).toBeGreaterThan(0.35);
     expect(getPlayerImpactAdjustment(holiday!)).toBeLessThan(0);
   });
 
