@@ -41,19 +41,20 @@ describe("hubUnlockProgress", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts locked until the player completes a scored experience", () => {
+  it("keeps Play modes open while Franchise and Ranks start locked", () => {
     expect(getHubUnlockProgress()).toMatchObject({
       totalScoredGames: 0,
       franchiseUnlocked: false,
       ranksUnlocked: false,
-      playModesExpanded: false,
+      playModesExpanded: true,
     });
     expect(getHubTabLockPrompt("roster")).not.toBeNull();
     expect(getHubTabLockPrompt("standings")).not.toBeNull();
     expect(getHubTabLockPrompt("community")).toBeNull();
+    expect(getHubTabLockPrompt("play")).toBeNull();
   });
 
-  it("unlocks Franchise after one Daily score", () => {
+  it("unlocks Franchise after one Daily score without gating H2H", () => {
     localStorageMock.setItem(
       "nba-head-to-head-daily-scores",
       JSON.stringify({

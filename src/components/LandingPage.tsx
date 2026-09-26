@@ -308,41 +308,21 @@ export function LandingPage({
   }, []);
 
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
-    const unlock = getHubUnlockProgress();
-    const next =
-      !unlock.playModesExpanded &&
-      (section === "headToHead" || section === "events") &&
-      !privateRoomCode
-        ? "chooser"
-        : section;
-    setPlaySection(next);
-    saveLandingPlaySection(next);
+    setPlaySection(section);
+    saveLandingPlaySection(section);
     syncLandingDeepLinkUrl({
       hub: "play",
-      play: next,
-      h2hMode: next === "headToHead" ? loadLandingH2hMode() : null,
+      play: section,
+      h2hMode: section === "headToHead" ? loadLandingH2hMode() : null,
     });
-    if (next !== "headToHead") {
+    if (section !== "headToHead") {
       setH2hIntentTarget(null);
     }
-    if (next !== "chooser") {
-      trackProductEvent("play_mode_open", { section: next });
+    if (section !== "chooser") {
+      trackProductEvent("play_mode_open", { section });
     }
     scrollHubToTop();
-  }, [privateRoomCode]);
-
-  useEffect(() => {
-    if (privateRoomCode) {
-      return;
-    }
-    const unlock = getHubUnlockProgress();
-    if (
-      !unlock.playModesExpanded &&
-      (playSection === "headToHead" || playSection === "events")
-    ) {
-      updatePlaySection("chooser");
-    }
-  }, [playSection, privateRoomCode, updatePlaySection]);
+  }, []);
 
   useEffect(() => {
     if (hubTab !== "play" || playSection !== "chooser") {
@@ -1178,64 +1158,38 @@ export function LandingPage({
                 ›
               </span>
             </button>
-            {!hubUnlockProgress.playModesExpanded ? (
-              <button
-                type="button"
-                className="play-hub-chooser__option hub-accent hub-accent--h2h"
-                role="listitem"
-                onClick={() =>
-                  void handleStart({
-                    practiceMode: true,
-                    salaryCapLimit: CLASSIC_HEAD_TO_HEAD_SALARY_CAP,
-                  })
-                }
-              >
-                <span className="play-hub-chooser__copy">
-                  <span className="play-hub-chooser__label">Practice H2H</span>
-                  <span className="play-hub-chooser__meta">
-                    Vs a bot — learn the draft loop with no board impact
-                  </span>
+            <button
+              type="button"
+              className="play-hub-chooser__option hub-accent hub-accent--h2h"
+              role="listitem"
+              onClick={() => updatePlaySection("headToHead")}
+            >
+              <span className="play-hub-chooser__copy">
+                <span className="play-hub-chooser__label">Head to Head</span>
+                <span className="play-hub-chooser__meta">
+                  Casual · Pro · practice · private match
                 </span>
-                <span className="play-hub-chooser__chevron" aria-hidden="true">
-                  ›
+              </span>
+              <span className="play-hub-chooser__chevron" aria-hidden="true">
+                ›
+              </span>
+            </button>
+            <button
+              type="button"
+              className="play-hub-chooser__option hub-accent hub-accent--event"
+              role="listitem"
+              onClick={() => updatePlaySection("events")}
+            >
+              <span className="play-hub-chooser__copy">
+                <span className="play-hub-chooser__label">Events</span>
+                <span className="play-hub-chooser__meta">
+                  {eventChooserMeta}
                 </span>
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="play-hub-chooser__option hub-accent hub-accent--h2h"
-                  role="listitem"
-                  onClick={() => updatePlaySection("headToHead")}
-                >
-                  <span className="play-hub-chooser__copy">
-                    <span className="play-hub-chooser__label">Head to Head</span>
-                    <span className="play-hub-chooser__meta">
-                      Casual · Pro · practice · private match
-                    </span>
-                  </span>
-                  <span className="play-hub-chooser__chevron" aria-hidden="true">
-                    ›
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="play-hub-chooser__option hub-accent hub-accent--event"
-                  role="listitem"
-                  onClick={() => updatePlaySection("events")}
-                >
-                  <span className="play-hub-chooser__copy">
-                    <span className="play-hub-chooser__label">Events</span>
-                    <span className="play-hub-chooser__meta">
-                      {eventChooserMeta}
-                    </span>
-                  </span>
-                  <span className="play-hub-chooser__chevron" aria-hidden="true">
-                    ›
-                  </span>
-                </button>
-              </>
-            )}
+              </span>
+              <span className="play-hub-chooser__chevron" aria-hidden="true">
+                ›
+              </span>
+            </button>
             </div>
           </>
         ) : null}
