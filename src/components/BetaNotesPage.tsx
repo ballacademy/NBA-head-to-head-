@@ -65,12 +65,11 @@ export function BetaNotesPage({
         <div className="legal-page__body beta-notes-body">
           <div className="beta-notes-summary">
             <p>
-              Daily Draft, Casual/Pro H2H, and weekly Events are live. All-Time
-              Draft is coming soon. Accounts unlock leaderboards and public
-              tier lists. Bottom nav: Play, Franchise, Community, Ranks, and
-              Account — Franchise soft-unlocks after your first scored game;
-              Ranks after two competitive matches so new GMs stay focused on
-              Play.
+              Daily Draft, Casual/Pro H2H, and weekly Events are live from the
+              first visit. All-Time Draft is coming soon. Accounts unlock
+              leaderboards and public tier lists. Bottom nav: Play, Franchise,
+              Community, Ranks, and Account — Franchise soft-unlocks after your
+              first scored game; Ranks after two competitive matches.
             </p>
             <p className="beta-notes-summary__meta">
               Roster as of {ACTIVE_ROSTER_AS_OF_LABEL} · Stats{" "}
@@ -186,7 +185,7 @@ export function BetaNotesPage({
               <li>
                 <strong>Franchise</strong> — Collection, Badges, Player pool,
                 Daily progress, Most drafted, and GM Stats. Soft-unlocks after
-                your first scored Daily or competitive match.
+                your first scored Daily or competitive H2H match.
               </li>
               <li>
                 <strong>Ranks</strong> — season boards. Soft-unlocks after two

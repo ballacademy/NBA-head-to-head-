@@ -27,6 +27,7 @@ export interface HubUnlockProgress {
   totalScoredGames: number;
   franchiseUnlocked: boolean;
   ranksUnlocked: boolean;
+  /** Always true — Casual/Pro/Events are available without a prior Daily. */
   playModesExpanded: boolean;
   franchiseGamesRemaining: number;
   ranksGamesRemaining: number;
@@ -102,7 +103,9 @@ export const getHubUnlockProgress = (): HubUnlockProgress => {
     totalScoredGames,
     franchiseUnlocked,
     ranksUnlocked,
-    playModesExpanded: franchiseUnlocked,
+    // Head to Head / Events stay open from the first visit — only Franchise and
+    // Ranks soft-lock until the player has some scored history.
+    playModesExpanded: true,
     franchiseGamesRemaining: Math.max(
       0,
       FRANCHISE_UNLOCK_SCORED_GAMES - totalScoredGames,
