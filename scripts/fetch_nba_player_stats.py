@@ -648,7 +648,15 @@ def row_dict_to_player_payload(
     resolved_positions = apply_position_override(bbr_player_id, resolved_positions)
     resolved_stats_team = stats_team or team
 
-    return {
+    height_raw = row_dict.get("HEIGHT_INCHES")
+    height_inches = None
+    if height_raw is not None and pd.notna(height_raw):
+        try:
+            height_inches = int(float(height_raw))
+        except (TypeError, ValueError):
+            height_inches = None
+
+    payload = {
         "id": player_id,
         "bbrPlayerId": bbr_player_id,
         "name": player_name,
@@ -686,6 +694,9 @@ def row_dict_to_player_payload(
         "effectiveFieldGoalPct": to_float(row_dict.get("EFG_PCT")),
         "trueShooting": true_shooting,
     }
+    if height_inches is not None and height_inches > 0:
+        payload["heightInches"] = height_inches
+    return payload
 
 
 def build_advanced_lookup(advanced: pd.DataFrame) -> dict[tuple[str, str], dict[str, float | None]]:

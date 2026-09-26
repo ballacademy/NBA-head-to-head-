@@ -8,6 +8,7 @@ import { applyCurrentTeamOverride } from "./currentTeamOverrides";
 import { applyOptionTeamOverride } from "./optionTeamOverrides";
 import { applyPositionOverride } from "./positionOverrides";
 import { lookupJerseyNumber } from "./jerseyNumbers";
+import { resolvePlayerHeightInches } from "./playerHeights";
 import {
   buildDefensiveRatings,
   toDefensiveStatInput,
@@ -41,6 +42,8 @@ export interface RawSeasonPlayer {
   salary?: number;
   draftYear?: number;
   jerseyNumber?: number | null;
+  /** Real listed height in inches when available (from BBR roster sync). */
+  heightInches?: number | null;
   isRosterAddition?: boolean;
   gamesPlayed: number;
   gamesStarted?: number;
@@ -171,21 +174,6 @@ export const deriveStyles = (
   return styles.slice(0, 2);
 };
 
-const POSITION_HEIGHT_INCHES: Record<Position, number> = {
-  PG: 74.5,
-  SG: 76.5,
-  SF: 79.5,
-  PF: 81.5,
-  C: 84,
-};
-
-const estimateHeightInches = (raw: RawSeasonPlayer, position: Position) => {
-  const base = POSITION_HEIGHT_INCHES[position];
-  const variance = (raw.id.length + (raw.bbrPlayerId?.length ?? 0)) % 3;
-
-  return base + variance - 1;
-};
-
 export const toPlayer = (raw: RawSeasonPlayer): Player => {
   const positions = applyPositionOverride(
     raw.bbrPlayerId,
@@ -230,7 +218,12 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
     freeThrowPct: raw.freeThrowPct ?? 0,
     personalFouls: raw.personalFouls ?? 0,
     minutes: raw.minutes,
-    heightInches: estimateHeightInches(raw, position),
+    heightInches: resolvePlayerHeightInches({
+      heightInches: raw.heightInches,
+      bbrPlayerId: raw.bbrPlayerId,
+      position,
+      seed: `${raw.id}${raw.bbrPlayerId ?? ""}`,
+    }),
     usage: estimateUsage(raw),
     defense: rating?.defense ?? estimateDefense(raw),
     defenseGrade: rating?.grade,
