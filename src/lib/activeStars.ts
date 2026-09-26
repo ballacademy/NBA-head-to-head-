@@ -5,6 +5,7 @@ import {
   toDefensiveStatInput,
 } from "./defenseRating";
 import { lookupJerseyNumber } from "./jerseyNumbers";
+import { resolvePlayerHeightInches } from "./playerHeights";
 import {
   deriveStyles,
   estimateDefense,
@@ -63,14 +64,6 @@ const toRawSeasonPlayer = (raw: ActiveStarBestSeasonRaw): RawSeasonPlayer => ({
   trueShooting: raw.trueShooting,
 });
 
-const POSITION_HEIGHT_INCHES: Record<Player["position"], number> = {
-  PG: 74.5,
-  SG: 76.5,
-  SF: 79.5,
-  PF: 81.5,
-  C: 84,
-};
-
 const toActiveStarPlayer = (
   raw: ActiveStarBestSeasonRaw,
   rating?: { defense: number; grade: Player["defenseGrade"] },
@@ -104,7 +97,11 @@ const toActiveStarPlayer = (
     freeThrowPct: 0,
     personalFouls: 0,
     minutes: raw.minutes,
-    heightInches: POSITION_HEIGHT_INCHES[position] ?? 80,
+    heightInches: resolvePlayerHeightInches({
+      bbrPlayerId: raw.bbrPlayerId,
+      position,
+      seed: raw.bbrPlayerId,
+    }),
     usage: estimateUsage(statInput),
     defense: rating?.defense ?? estimateDefense(statInput),
     defenseGrade: rating?.grade,

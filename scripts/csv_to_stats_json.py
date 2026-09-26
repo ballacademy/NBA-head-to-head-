@@ -100,6 +100,9 @@ MANUAL_COLUMN_ALIASES: dict[str, str] = {
     "stealPct": "STL_PCT",
     "block_pct": "BLK_PCT",
     "blockPct": "BLK_PCT",
+    "height_inches": "HEIGHT_INCHES",
+    "heightInches": "HEIGHT_INCHES",
+    "height": "HEIGHT_INCHES",
 }
 
 MANUAL_ADVANCED_KEYS = {
