@@ -479,18 +479,10 @@ const layoutChemistryPillRows = (
   return rows;
 };
 
-const getShareCardHeaderLayout = (
-  context: CanvasRenderingContext2D,
-  input: LineupShareCardInput,
-  lineup: Player[],
-) => {
-  const bonuses = getActiveChemistryBonuses(lineup);
-  const stat = resolveShareCardStatDisplay(input);
-  const username = resolveShareCardUsername(input);
+/** Vertical slots for brand / mode / title (used by layout + tests). */
+export const resolveShareCardHeaderTextYs = (input: LineupShareCardInput) => {
   const modeLabel = input.modeLabel?.trim() || null;
-  const subhead = input.subhead?.trim() || null;
   const showBrandChrome = input.showBrandChrome !== false;
-
   const eyebrowY = showBrandChrome ? 98 : null;
   // Mode sits under DRAFT DAY GM and above the team name when present.
   const modeY = modeLabel ? (showBrandChrome ? 128 : 98) : null;
@@ -501,6 +493,20 @@ const getShareCardHeaderLayout = (
     : showBrandChrome
       ? 160
       : 118;
+  return { eyebrowY, modeLabel, modeY, showBrandChrome, titleY };
+};
+
+const getShareCardHeaderLayout = (
+  context: CanvasRenderingContext2D,
+  input: LineupShareCardInput,
+  lineup: Player[],
+) => {
+  const bonuses = getActiveChemistryBonuses(lineup);
+  const stat = resolveShareCardStatDisplay(input);
+  const username = resolveShareCardUsername(input);
+  const subhead = input.subhead?.trim() || null;
+  const { eyebrowY, modeLabel, modeY, showBrandChrome, titleY } =
+    resolveShareCardHeaderTextYs(input);
   let leftCursor = titleY;
   const usernameY = username ? ((leftCursor += 30), leftCursor) : null;
   const subheadY = subhead ? ((leftCursor += username ? 28 : 32), leftCursor) : null;

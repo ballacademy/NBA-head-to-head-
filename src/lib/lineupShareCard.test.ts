@@ -4,6 +4,7 @@ import {
   buildLineupShareCardText,
   drawBrandMarkStamp,
   formatShareCardPlayerMeta,
+  resolveShareCardHeaderTextYs,
   resolveShareCardStatDisplay,
   resolveShareCardTitle,
   resolveShareCardUsername,
@@ -162,6 +163,23 @@ describe("lineupShareCard player rows", () => {
       "PF · LAL · #23",
       "C · LAL · #23",
     ]);
+  });
+});
+
+describe("lineupShareCard mode placement", () => {
+  it("places mode under the brand eyebrow and above the team name", () => {
+    const withMode = resolveShareCardHeaderTextYs(
+      baseInput({ modeLabel: "Casual Head to Head" }),
+    );
+    expect(withMode.eyebrowY).toBe(98);
+    expect(withMode.modeY).toBe(128);
+    expect(withMode.titleY).toBe(182);
+    expect(withMode.modeY!).toBeGreaterThan(withMode.eyebrowY!);
+    expect(withMode.titleY).toBeGreaterThan(withMode.modeY!);
+
+    const withoutMode = resolveShareCardHeaderTextYs(baseInput());
+    expect(withoutMode.modeY).toBeNull();
+    expect(withoutMode.titleY).toBe(160);
   });
 });
 
