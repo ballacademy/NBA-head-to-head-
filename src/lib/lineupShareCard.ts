@@ -31,7 +31,12 @@ export interface LineupShareCardInput {
    * Used for the bottom half of stacked matchup shares so chrome isn’t duplicated.
    */
   showBrandChrome?: boolean;
-  /** Optional muted context drawn under the title. */
+  /**
+   * Mode played (e.g. "Casual Head to Head"), drawn under the brand eyebrow
+   * and above the team name / title.
+   */
+  modeLabel?: string;
+  /** Optional muted context drawn under the title (e.g. Daily username). */
   subhead?: string;
   /** Optional left-side footer note (e.g. community "Saved …"). */
   footerNote?: string;
@@ -474,6 +479,23 @@ const layoutChemistryPillRows = (
   return rows;
 };
 
+/** Vertical slots for brand / mode / title (used by layout + tests). */
+export const resolveShareCardHeaderTextYs = (input: LineupShareCardInput) => {
+  const modeLabel = input.modeLabel?.trim() || null;
+  const showBrandChrome = input.showBrandChrome !== false;
+  const eyebrowY = showBrandChrome ? 98 : null;
+  // Mode sits under DRAFT DAY GM and above the team name when present.
+  const modeY = modeLabel ? (showBrandChrome ? 128 : 98) : null;
+  const titleY = modeLabel
+    ? showBrandChrome
+      ? 182
+      : 148
+    : showBrandChrome
+      ? 160
+      : 118;
+  return { eyebrowY, modeLabel, modeY, showBrandChrome, titleY };
+};
+
 const getShareCardHeaderLayout = (
   context: CanvasRenderingContext2D,
   input: LineupShareCardInput,
@@ -483,10 +505,8 @@ const getShareCardHeaderLayout = (
   const stat = resolveShareCardStatDisplay(input);
   const username = resolveShareCardUsername(input);
   const subhead = input.subhead?.trim() || null;
-  const showBrandChrome = input.showBrandChrome !== false;
-
-  const eyebrowY = showBrandChrome ? 98 : null;
-  const titleY = showBrandChrome ? 160 : 118;
+  const { eyebrowY, modeLabel, modeY, showBrandChrome, titleY } =
+    resolveShareCardHeaderTextYs(input);
   let leftCursor = titleY;
   const usernameY = username ? ((leftCursor += 30), leftCursor) : null;
   const subheadY = subhead ? ((leftCursor += username ? 28 : 32), leftCursor) : null;
@@ -528,6 +548,8 @@ const getShareCardHeaderLayout = (
     ovrLabelY,
     ovrY,
     recordY,
+    modeLabel,
+    modeY,
     showBrandChrome,
     startingFiveY,
     stat,
@@ -592,6 +614,16 @@ const drawShareCardHeader = (
       layout.eyebrowY,
     );
     context.letterSpacing = "0px";
+  }
+
+  if (layout.modeLabel && layout.modeY != null) {
+    context.font = `600 22px ${FONT_STACK}`;
+    context.fillStyle = "rgba(203, 213, 225, 0.92)";
+    context.fillText(
+      fitTextToWidth(context, layout.modeLabel, TITLE_MAX_WIDTH),
+      HEADER_X,
+      layout.modeY,
+    );
   }
 
   context.font = `700 52px ${FONT_STACK}`;

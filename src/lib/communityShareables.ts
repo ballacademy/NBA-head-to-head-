@@ -372,7 +372,7 @@ export const buildShareCardInputFromAttachment = (
       ovr: attachment.userOvr,
       ovrOverflow: attachment.ovrOverflow,
       lineup,
-      subhead: attachment.modeLabel,
+      modeLabel: attachment.modeLabel,
       footerNote: formatSavedFooterNote(attachment.savedAt),
       record: projectedRecord || winRecord || undefined,
       recordLabel: projectedRecord
@@ -401,7 +401,7 @@ export const buildShareCardInputFromAttachment = (
     ovr: attachment.ovr ?? 0,
     lineup,
     headline: attachment.title,
-    subhead: attachment.modeLabel,
+    modeLabel: attachment.modeLabel,
     footerNote: formatSavedFooterNote(attachment.savedAt),
     statLabel: percentile || "RESULT",
     statValue: attachment.resultLabel || undefined,

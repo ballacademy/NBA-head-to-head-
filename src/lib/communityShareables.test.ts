@@ -262,12 +262,14 @@ describe("matchup share card record", () => {
     );
 
     expect(inputs).not.toBeNull();
-    expect(inputs!.user.subhead).toBe("Casual Head to Head");
+    expect(inputs!.user.modeLabel).toBe("Casual Head to Head");
+    expect(inputs!.user.subhead).toBeUndefined();
     expect(inputs!.user.footerNote).toMatch(/^Saved /);
     expect(inputs!.user.record).toBe("50-32");
     expect(inputs!.user.recordLabel).toBe("Projected");
     expect(inputs!.user.showBrandChrome).not.toBe(false);
 
+    expect(inputs!.opponent.modeLabel).toBeUndefined();
     expect(inputs!.opponent.subhead).toBeUndefined();
     expect(inputs!.opponent.footerNote).toBeUndefined();
     expect(inputs!.opponent.showBrandChrome).toBe(false);
