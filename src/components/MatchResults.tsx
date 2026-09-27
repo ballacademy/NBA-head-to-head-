@@ -670,7 +670,7 @@ export function MatchResults({
       await saveLineupShareCard({
         teamName: user.name,
         username: getCachedLinkedUsername(playerId) ?? undefined,
-        subhead: resultModeLabel,
+        modeLabel: resultModeLabel,
         accent: user.accent,
         ovr: userScore.total,
         ovrOverflow: userScore.ovrOverflow,

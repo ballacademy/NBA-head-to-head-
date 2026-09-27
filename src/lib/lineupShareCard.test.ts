@@ -97,6 +97,16 @@ describe("lineupShareCard header helpers", () => {
       ),
     ).toBe("Midnight Foxes (@ace) • OVR 91");
   });
+
+  it("accepts modeLabel without treating it as the title subhead", () => {
+    const input = baseInput({
+      modeLabel: "Casual Head to Head",
+      username: "ace",
+    });
+    expect(input.modeLabel).toBe("Casual Head to Head");
+    expect(input.subhead).toBeUndefined();
+    expect(resolveShareCardTitle(input)).toBe("Midnight Foxes");
+  });
 });
 
 const sharePlayer = (
