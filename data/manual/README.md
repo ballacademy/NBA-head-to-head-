@@ -31,10 +31,22 @@ Required columns per row:
 - `minutes`
 - `points`, `rebounds`, `assists`, `steals`, `blocks`
 
-Optional columns include shooting splits, advanced defense rates, and
-`true_shooting`.
+Optional columns include shooting splits, advanced defense rates,
+`true_shooting`, and `height_inches` (listed height in inches).
 
 See `fixtures/player-stats-mini.csv` for a two-player example.
+
+### Player heights (Basketball Reference)
+
+Heights are not in the per-game CSV export. Sync them from BBR team rosters:
+
+```bash
+npm run data:heights
+```
+
+This writes `data/nba-player-heights.json` and merges `heightInches` onto each
+player in the season stats JSON. The app prefers that field, then the heights
+lookup file, then a position estimate.
 
 ### Option B: Existing per-game CSV export (no live scraping)
 

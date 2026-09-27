@@ -1,0 +1,3651 @@
+{
+  "description": "NBA player heights (inches) synced from Basketball Reference rosters.",
+  "source": "basketball-reference-rosters",
+  "seasonYears": [
+    2026,
+    2027
+  ],
+  "generatedAt": "2026-09-26T17:53:46.182340+00:00",
+  "playerCount": 603,
+  "byPlayerId": {
+    "achiupr01": {
+      "name": "Precious Achiuwa",
+      "heightInches": 80,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "adamsst01": {
+      "name": "Steven Adams",
+      "heightInches": 83,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "adebaba01": {
+      "name": "Bam Adebayo",
+      "heightInches": 81,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "agbajoc01": {
+      "name": "Ochai Agbaji",
+      "heightInches": 77,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "aldamsa01": {
+      "name": "Santi Aldama",
+      "heightInches": 84,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "alexani01": {
+      "name": "Nickeil Alexander-Walker",
+      "heightInches": 77,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "alexatr01": {
+      "name": "Trey Alexander",
+      "heightInches": 77,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "allengr01": {
+      "name": "Grayson Allen",
+      "heightInches": 75,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "allenja01": {
+      "name": "Jarrett Allen",
+      "heightInches": 81,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "alvarjo01": {
+      "name": "Jose Alvarado",
+      "heightInches": 72,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "anderky01": {
+      "name": "Kyle Anderson",
+      "heightInches": 80,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "antetal01": {
+      "name": "Alex Antetokounmpo",
+      "heightInches": 80,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "antetgi01": {
+      "name": "Giannis Antetokounmpo",
+      "heightInches": 83,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "antetth01": {
+      "name": "Thanasis Antetokounmpo",
+      "heightInches": 79,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "anthoco01": {
+      "name": "Cole Anthony",
+      "heightInches": 74,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "anunoog01": {
+      "name": "OG Anunoby",
+      "heightInches": 79,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "avdijde01": {
+      "name": "Deni Avdija",
+      "heightInches": 80,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "aytonde01": {
+      "name": "Deandre Ayton",
+      "heightInches": 84,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "baglema01": {
+      "name": "Marvin Bagley III",
+      "heightInches": 82,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "baileac01": {
+      "name": "Ace Bailey",
+      "heightInches": 81,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "balad01": {
+      "name": "Adama-Alpha Bal",
+      "heightInches": 79,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "baldwpa01": {
+      "name": "Patrick Baldwin Jr.",
+      "heightInches": 84,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "ballla01": {
+      "name": "LaMelo Ball",
+      "heightInches": 79,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "balllo01": {
+      "name": "Lonzo Ball",
+      "heightInches": 77,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "bambamo01": {
+      "name": "Mo Bamba",
+      "heightInches": 84,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "banchpa01": {
+      "name": "Paolo Banchero",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "banede01": {
+      "name": "Desmond Bane",
+      "heightInches": 78,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "bantoda01": {
+      "name": "Dalano Banton",
+      "heightInches": 80,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "barlodo01": {
+      "name": "Dominick Barlow",
+      "heightInches": 81,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "barneha02": {
+      "name": "Harrison Barnes",
+      "heightInches": 79,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "barnesc01": {
+      "name": "Scottie Barnes",
+      "heightInches": 80,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "barnhbr01": {
+      "name": "Brooks Barnhizer",
+      "heightInches": 77,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "barrerj01": {
+      "name": "RJ Barrett",
+      "heightInches": 78,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "bassech01": {
+      "name": "Charles Bassey",
+      "heightInches": 82,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "battlja01": {
+      "name": "Jamison Battle",
+      "heightInches": 79,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "batumni01": {
+      "name": "Nicolas Batum",
+      "heightInches": 79,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "bealbr01": {
+      "name": "Bradley Beal",
+      "heightInches": 76,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "beaslma01": {
+      "name": "Malik Beasley",
+      "heightInches": 76,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "beaucma01": {
+      "name": "MarJon Beauchamp",
+      "heightInches": 79,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "berinjo01": {
+      "name": "Joan Beringer",
+      "heightInches": 83,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "beysa01": {
+      "name": "Saddiq Bey",
+      "heightInches": 80,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "bitadgo01": {
+      "name": "Goga Bitadze",
+      "heightInches": 83,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "biyombi01": {
+      "name": "Bismack Biyombo",
+      "heightInches": 80,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "blackan01": {
+      "name": "Anthony Black",
+      "heightInches": 79,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "blackle01": {
+      "name": "Leaky Black",
+      "heightInches": 78,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "boehebu01": {
+      "name": "Buddy Boeheim",
+      "heightInches": 77,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "bogdabo01": {
+      "name": "Bogdan Bogdanovi\u0107",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "bolbo01": {
+      "name": "Bol Bol",
+      "heightInches": 87,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "bonaad01": {
+      "name": "Adem Bona",
+      "heightInches": 82,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "bookede01": {
+      "name": "Devin Booker",
+      "heightInches": 77,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "bouchch01": {
+      "name": "Chris Boucher",
+      "heightInches": 80,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "bouyeja01": {
+      "name": "Jamaree Bouyea",
+      "heightInches": 74,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "bradlto01": {
+      "name": "Tony Bradley",
+      "heightInches": 82,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "branhma01": {
+      "name": "Malaki Branham",
+      "heightInches": 76,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "braunch01": {
+      "name": "Christian Braun",
+      "heightInches": 78,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "breako01": {
+      "name": "Koby Brea",
+      "heightInches": 77,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "bridgmi01": {
+      "name": "Mikal Bridges",
+      "heightInches": 78,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "bridgmi02": {
+      "name": "Miles Bridges",
+      "heightInches": 79,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "brookdi01": {
+      "name": "Dillon Brooks",
+      "heightInches": 79,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "broomjo01": {
+      "name": "Johni Broome",
+      "heightInches": 82,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "brownbr01": {
+      "name": "Bruce Brown",
+      "heightInches": 76,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "brownda04": {
+      "name": "Darius Brown II",
+      "heightInches": 74,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "brownja02": {
+      "name": "Jaylen Brown",
+      "heightInches": 78,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "brownko01": {
+      "name": "Kobe Brown",
+      "heightInches": 79,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "brunsja01": {
+      "name": "Jalen Brunson",
+      "heightInches": 74,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "bryanca01": {
+      "name": "Carter Bryant",
+      "heightInches": 78,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "bryanth01": {
+      "name": "Thomas Bryant",
+      "heightInches": 81,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "bufkiko01": {
+      "name": "Kobe Bufkin",
+      "heightInches": 76,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "burksal01": {
+      "name": "Alec Burks",
+      "heightInches": 77,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "burtoty01": {
+      "name": "Tyler Burton",
+      "heightInches": 79,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "butleji01": {
+      "name": "Jimmy Butler",
+      "heightInches": 78,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "buzelma01": {
+      "name": "Matas Buzelis",
+      "heightInches": 80,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "cainja01": {
+      "name": "Jamal Cain",
+      "heightInches": 79,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "caldwke01": {
+      "name": "Kentavious Caldwell-Pope",
+      "heightInches": 77,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "camarto01": {
+      "name": "Toumani Camara",
+      "heightInches": 79,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "capelca01": {
+      "name": "Clint Capela",
+      "heightInches": 82,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "cardwdy01": {
+      "name": "Dylan Cardwell",
+      "heightInches": 82,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "carlsbr01": {
+      "name": "Branden Carlson",
+      "heightInches": 84,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "carrica01": {
+      "name": "Bub Carrington",
+      "heightInches": 76,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "cartede02": {
+      "name": "Devin Carter",
+      "heightInches": 74,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "carteje01": {
+      "name": "Jevon Carter",
+      "heightInches": 72,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "cartewe01": {
+      "name": "Wendell Carter Jr.",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "carusal01": {
+      "name": "Alex Caruso",
+      "heightInches": 77,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "castlco01": {
+      "name": "Colin Castleton",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "castlst01": {
+      "name": "Stephon Castle",
+      "heightInches": 78,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "champju01": {
+      "name": "Justin Champagnie",
+      "heightInches": 78,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "champju02": {
+      "name": "Julian Champagnie",
+      "heightInches": 79,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "chandke01": {
+      "name": "Kennedy Chandler",
+      "heightInches": 72,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "chrisca02": {
+      "name": "Cam Christie",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "chrisma02": {
+      "name": "Max Christie",
+      "heightInches": 77,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "cissemo01": {
+      "name": "Moussa Cisse",
+      "heightInches": 83,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "cissosi01": {
+      "name": "Sidy Cissoko",
+      "heightInches": 78,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "clarkbr01": {
+      "name": "Brandon Clarke",
+      "heightInches": 80,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "clarkja02": {
+      "name": "Jaylen Clark",
+      "heightInches": 77,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "clarkjo01": {
+      "name": "Jordan Clarkson",
+      "heightInches": 77,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "claxtni01": {
+      "name": "Nic Claxton",
+      "heightInches": 83,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "claytwa01": {
+      "name": "Walter Clayton",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "cliffni01": {
+      "name": "Nique Clifford",
+      "heightInches": 77,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "clingdo01": {
+      "name": "Donovan Clingan",
+      "heightInches": 86,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "clownno01": {
+      "name": "Noah Clowney",
+      "heightInches": 82,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "coffeam01": {
+      "name": "Amir Coffey",
+      "heightInches": 79,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "colliis01": {
+      "name": "Isaiah Collier",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "collijo01": {
+      "name": "John Collins",
+      "heightInches": 81,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "colliza01": {
+      "name": "Zach Collins",
+      "heightInches": 81,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "conlemi01": {
+      "name": "Mike Conley",
+      "heightInches": 73,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "connapa01": {
+      "name": "Pat Connaughton",
+      "heightInches": 77,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "cookeja01": {
+      "name": "Javonte Cooke",
+      "heightInches": 78,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "coopesh01": {
+      "name": "Sharife Cooper",
+      "heightInches": 72,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "coulibi01": {
+      "name": "Bilal Coulibaly",
+      "heightInches": 79,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "cowarce01": {
+      "name": "Cedric Coward",
+      "heightInches": 77,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "craigto01": {
+      "name": "Torrey Craig",
+      "heightInches": 77,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "crawfis01": {
+      "name": "Isaiah Crawford",
+      "heightInches": 78,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "crowdja01": {
+      "name": "Jae Crowder",
+      "heightInches": 78,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "cryerlj01": {
+      "name": "LJ Cryer",
+      "heightInches": 73,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "cunnica01": {
+      "name": "Cade Cunningham",
+      "heightInches": 78,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "curryse01": {
+      "name": "Seth Curry",
+      "heightInches": 73,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "curryst01": {
+      "name": "Stephen Curry",
+      "heightInches": 74,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "dadiepa01": {
+      "name": "Pac\u00f4me Dadiet",
+      "heightInches": 81,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "daniedy01": {
+      "name": "Dyson Daniels",
+      "heightInches": 79,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "dasiltr01": {
+      "name": "Tristan Da Silva",
+      "heightInches": 80,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "davisan02": {
+      "name": "Anthony Davis",
+      "heightInches": 82,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "davisjd01": {
+      "name": "JD Davison",
+      "heightInches": 73,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "demineg01": {
+      "name": "Egor D\u00ebmin",
+      "heightInches": 80,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "dennira01": {
+      "name": "RayJ Dennis",
+      "heightInches": 73,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "derozde01": {
+      "name": "DeMar DeRozan",
+      "heightInches": 78,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "diabamo01": {
+      "name": "Moussa Diabat\u00e9",
+      "heightInches": 82,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "diawamo01": {
+      "name": "Mohamed Diawara",
+      "heightInches": 81,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "dickgr01": {
+      "name": "Gradey Dick",
+      "heightInches": 79,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "dickihu01": {
+      "name": "Hunter Dickinson",
+      "heightInches": 85,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "diengou01": {
+      "name": "Ousmane Dieng",
+      "heightInches": 81,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "dilliro01": {
+      "name": "Rob Dillingham",
+      "heightInches": 74,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "divindo01": {
+      "name": "Donte DiVincenzo",
+      "heightInches": 76,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "doncilu01": {
+      "name": "Luka Don\u010di\u0107",
+      "heightInches": 80,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "dortlu01": {
+      "name": "Luguentz Dort",
+      "heightInches": 76,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "dosunay01": {
+      "name": "Ayo Dosunmu",
+      "heightInches": 76,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "drumman01": {
+      "name": "Andre Drummond",
+      "heightInches": 83,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "dunnkr01": {
+      "name": "Kris Dunn",
+      "heightInches": 75,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "dunnry01": {
+      "name": "Ryan Dunn",
+      "heightInches": 79,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "duranke01": {
+      "name": "Kevin Durant",
+      "heightInches": 83,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "durenja01": {
+      "name": "Jalen Duren",
+      "heightInches": 82,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "easonta01": {
+      "name": "Tari Eason",
+      "heightInches": 80,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "edeyza01": {
+      "name": "Zach Edey",
+      "heightInches": 87,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "edgecvj01": {
+      "name": "VJ Edgecombe",
+      "heightInches": 76,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "edwaran01": {
+      "name": "Anthony Edwards",
+      "heightInches": 76,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "edwarju01": {
+      "name": "Justin Edwards",
+      "heightInches": 79,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "elliske01": {
+      "name": "Keon Ellis",
+      "heightInches": 76,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "embiijo01": {
+      "name": "Joel Embiid",
+      "heightInches": 84,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "enarutr01": {
+      "name": "Tristan Enaruna",
+      "heightInches": 79,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "essenno01": {
+      "name": "Noa Essengue",
+      "heightInches": 80,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "etienty01": {
+      "name": "Tyson Etienne",
+      "heightInches": 72,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "eubandr01": {
+      "name": "Drew Eubanks",
+      "heightInches": 82,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "evbuoto01": {
+      "name": "Tosan Evbuomwan",
+      "heightInches": 80,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "fearsje01": {
+      "name": "Jeremiah Fears",
+      "heightInches": 75,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "filipky01": {
+      "name": "Kyle Filipowski",
+      "heightInches": 83,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "finnedo01": {
+      "name": "Dorian Finney-Smith",
+      "heightInches": 79,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "flaggco01": {
+      "name": "Cooper Flagg",
+      "heightInches": 81,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "flemira01": {
+      "name": "Rasheer Fleming",
+      "heightInches": 81,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "flowetr01": {
+      "name": "Trentyn Flowers",
+      "heightInches": 81,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "fontesi01": {
+      "name": "Simone Fontecchio",
+      "heightInches": 79,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "foxde01": {
+      "name": "De'Aaron Fox",
+      "heightInches": 75,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "freemen01": {
+      "name": "Enrique Freeman",
+      "heightInches": 81,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "fultzma01": {
+      "name": "Markelle Fultz",
+      "heightInches": 76,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "furphjo01": {
+      "name": "Johnny Furphy",
+      "heightInches": 80,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "gaffoda01": {
+      "name": "Daniel Gafford",
+      "heightInches": 82,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "garcian01": {
+      "name": "Andersson Garcia",
+      "heightInches": 79,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "gardnmy01": {
+      "name": "Myron Gardner",
+      "heightInches": 77,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "garlada01": {
+      "name": "Darius Garland",
+      "heightInches": 73,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "garzalu01": {
+      "name": "Luka Garza",
+      "heightInches": 82,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "georgke01": {
+      "name": "Keyonte George",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "georgky01": {
+      "name": "Kyshawn George",
+      "heightInches": 80,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "georgpa01": {
+      "name": "Paul George",
+      "heightInches": 80,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "gibsota01": {
+      "name": "Taj Gibson",
+      "heightInches": 81,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "giddejo01": {
+      "name": "Josh Giddey",
+      "heightInches": 79,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "gilbeke01": {
+      "name": "Keshon Gilbert",
+      "heightInches": 76,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "gilgesh01": {
+      "name": "Shai Gilgeous-Alexander",
+      "heightInches": 78,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "gillan01": {
+      "name": "Anthony Gill",
+      "heightInches": 79,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "gilleco01": {
+      "name": "Collin Gillespie",
+      "heightInches": 73,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "goberru01": {
+      "name": "Rudy Gobert",
+      "heightInches": 85,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "goldivl01": {
+      "name": "Vladislav Goldin",
+      "heightInches": 84,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "gonzahu01": {
+      "name": "Hugo Gonz\u00e1lez",
+      "heightInches": 78,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "goodwjo01": {
+      "name": "Jordan Goodwin",
+      "heightInches": 75,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "gordoaa01": {
+      "name": "Aaron Gordon",
+      "heightInches": 80,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "gordoer01": {
+      "name": "Eric Gordon",
+      "heightInches": 75,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "grantje01": {
+      "name": "Jerami Grant",
+      "heightInches": 79,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "grayha01": {
+      "name": "Hayden Gray",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "greenaj01": {
+      "name": "A.J. Green",
+      "heightInches": 76,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "greendr01": {
+      "name": "Draymond Green",
+      "heightInches": 78,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "greenja02": {
+      "name": "Javonte Green",
+      "heightInches": 77,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "greenja05": {
+      "name": "Jalen Green",
+      "heightInches": 76,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "greenje02": {
+      "name": "Jeff Green",
+      "heightInches": 80,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "greenjo02": {
+      "name": "Josh Green",
+      "heightInches": 78,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "grimequ01": {
+      "name": "Quentin Grimes",
+      "heightInches": 76,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "gueyemo01": {
+      "name": "Mouhamadou Gueye",
+      "heightInches": 81,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "gueyemo02": {
+      "name": "Mouhamed Gueye",
+      "heightInches": 83,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "hachiru01": {
+      "name": "Rui Hachimura",
+      "heightInches": 80,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "halibty01": {
+      "name": "Tyrese Haliburton",
+      "heightInches": 77,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "hallpj01": {
+      "name": "PJ Hall",
+      "heightInches": 80,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "hardati02": {
+      "name": "Tim Hardaway Jr.",
+      "heightInches": 77,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "hardeja01": {
+      "name": "James Harden",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "hardyja02": {
+      "name": "Jaden Hardy",
+      "heightInches": 75,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "harklej01": {
+      "name": "Elijah Harkless",
+      "heightInches": 75,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "harpedy01": {
+      "name": "Dylan Harper",
+      "heightInches": 77,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "harpero02": {
+      "name": "Ron Harper Jr.",
+      "heightInches": 77,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "harriga01": {
+      "name": "Gary Harris",
+      "heightInches": 76,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "harrito02": {
+      "name": "Tobias Harris",
+      "heightInches": 80,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "harteis01": {
+      "name": "Isaiah Hartenstein",
+      "heightInches": 84,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "hartjo01": {
+      "name": "Josh Hart",
+      "heightInches": 77,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "hausesa01": {
+      "name": "Sam Hauser",
+      "heightInches": 79,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "hawkijo01": {
+      "name": "Jordan Hawkins",
+      "heightInches": 77,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "hayesja02": {
+      "name": "Jaxson Hayes",
+      "heightInches": 84,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "hayeski01": {
+      "name": "Killian Hayes",
+      "heightInches": 76,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "hayesni01": {
+      "name": "Nigel Hayes-Davis",
+      "heightInches": 79,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "hendesc01": {
+      "name": "Scoot Henderson",
+      "heightInches": 75,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "hendrta01": {
+      "name": "Taylor Hendricks",
+      "heightInches": 81,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "hepbuch01": {
+      "name": "Chucky Hepburn",
+      "heightInches": 72,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "herroty01": {
+      "name": "Tyler Herro",
+      "heightInches": 77,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "hieldbu01": {
+      "name": "Buddy Hield",
+      "heightInches": 76,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "highsha01": {
+      "name": "Haywood Highsmith",
+      "heightInches": 77,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "hinsobl01": {
+      "name": "Blake Hinson",
+      "heightInches": 80,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "holidaa01": {
+      "name": "Aaron Holiday",
+      "heightInches": 72,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "holidjr01": {
+      "name": "Jrue Holiday",
+      "heightInches": 76,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "hollaro01": {
+      "name": "Ron Holland",
+      "heightInches": 80,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "holmeda01": {
+      "name": "DaRon Holmes",
+      "heightInches": 81,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "holmgch01": {
+      "name": "Chet Holmgren",
+      "heightInches": 85,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "horfoal01": {
+      "name": "Al Horford",
+      "heightInches": 80,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "houstca01": {
+      "name": "Caleb Houstan",
+      "heightInches": 80,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "howarje01": {
+      "name": "Jett Howard",
+      "heightInches": 80,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "huertke01": {
+      "name": "Kevin Huerter",
+      "heightInches": 78,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "huffja01": {
+      "name": "Jay Huff",
+      "heightInches": 85,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "hukpoar01": {
+      "name": "Ariel Hukporti",
+      "heightInches": 84,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "huntede01": {
+      "name": "De'Andre Hunter",
+      "heightInches": 79,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "huntlcj01": {
+      "name": "CJ Huntley",
+      "heightInches": 81,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "hylanbo01": {
+      "name": "Bones Hyland",
+      "heightInches": 74,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "ighodos01": {
+      "name": "Oso Ighodaro",
+      "heightInches": 83,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "inglejo01": {
+      "name": "Joe Ingles",
+      "heightInches": 80,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "ingrabr01": {
+      "name": "Brandon Ingram",
+      "heightInches": 80,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "ingraha01": {
+      "name": "Harrison Ingram",
+      "heightInches": 77,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "irvinky01": {
+      "name": "Kyrie Irving",
+      "heightInches": 74,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "isaacjo01": {
+      "name": "Jonathan Isaac",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "iveyja01": {
+      "name": "Jaden Ivey",
+      "heightInches": 75,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "jacksan01": {
+      "name": "Andre Jackson Jr.",
+      "heightInches": 78,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "jacksgg01": {
+      "name": "GG Jackson II",
+      "heightInches": 81,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "jacksis01": {
+      "name": "Isaiah Jackson",
+      "heightInches": 80,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "jacksja02": {
+      "name": "Jaren Jackson Jr.",
+      "heightInches": 82,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "jacksqu01": {
+      "name": "Quenton Jackson",
+      "heightInches": 76,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "jacksre01": {
+      "name": "Reggie Jackson",
+      "heightInches": 74,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "jackstr02": {
+      "name": "Trayce Jackson-Davis",
+      "heightInches": 81,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "jakucka01": {
+      "name": "Kasparas Jaku\u010dionis",
+      "heightInches": 77,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "jamesbr02": {
+      "name": "Bronny James",
+      "heightInches": 74,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "jamesle01": {
+      "name": "LeBron James",
+      "heightInches": 81,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "jamessi01": {
+      "name": "Sion James",
+      "heightInches": 77,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "jaqueja01": {
+      "name": "Jaime Jaquez Jr.",
+      "heightInches": 78,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "jarrede01": {
+      "name": "DeJon Jarreau",
+      "heightInches": 77,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "jeffrda01": {
+      "name": "DaQuan Jeffries",
+      "heightInches": 77,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "jemistr01": {
+      "name": "Trey Jemison",
+      "heightInches": 82,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "jenkida01": {
+      "name": "Daniss Jenkins",
+      "heightInches": 76,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "jeromty01": {
+      "name": "Ty Jerome",
+      "heightInches": 77,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "joeis01": {
+      "name": "Isaiah Joe",
+      "heightInches": 76,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "johnsaj01": {
+      "name": "AJ Johnson",
+      "heightInches": 77,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "johnsca02": {
+      "name": "Cameron Johnson",
+      "heightInches": 80,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "johnsch06": {
+      "name": "Chaney Johnson",
+      "heightInches": 79,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "johnsja05": {
+      "name": "Jalen Johnson",
+      "heightInches": 80,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "johnske04": {
+      "name": "Keldon Johnson",
+      "heightInches": 78,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "johnske10": {
+      "name": "Keshad Johnson",
+      "heightInches": 78,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "johnstr03": {
+      "name": "Tre Johnson",
+      "heightInches": 77,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "jokicni01": {
+      "name": "Nikola Joki\u0107",
+      "heightInches": 83,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "jonesco02": {
+      "name": "Colby Jones",
+      "heightInches": 78,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "jonescu01": {
+      "name": "Curtis Jones",
+      "heightInches": 75,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "jonesda06": {
+      "name": "David Jones Garc\u00eda",
+      "heightInches": 76,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "jonesde02": {
+      "name": "Derrick Jones Jr.",
+      "heightInches": 78,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "jonesdi01": {
+      "name": "Dillon Jones",
+      "heightInches": 77,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "joneshe01": {
+      "name": "Herbert Jones",
+      "heightInches": 79,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "jonesis01": {
+      "name": "Isaac Jones",
+      "heightInches": 80,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "joneska03": {
+      "name": "Kam Jones",
+      "heightInches": 76,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "jonessp01": {
+      "name": "Spencer Jones",
+      "heightInches": 79,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "jonestr01": {
+      "name": "Tre Jones",
+      "heightInches": 73,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "jonesty01": {
+      "name": "Tyus Jones",
+      "heightInches": 72,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "jordade01": {
+      "name": "DeAndre Jordan",
+      "heightInches": 83,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "jovicni01": {
+      "name": "Nikola Jovi\u0107",
+      "heightInches": 82,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "juzanjo01": {
+      "name": "Johnny Juzang",
+      "heightInches": 79,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "kalkbry01": {
+      "name": "Ryan Kalkbrenner",
+      "heightInches": 85,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "kawamyu01": {
+      "name": "Yuki Kawamura",
+      "heightInches": 67,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "keelstr01": {
+      "name": "Trevor Keels",
+      "heightInches": 75,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "kellymi02": {
+      "name": "Miles Kelly",
+      "heightInches": 76,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "kennalu01": {
+      "name": "Luke Kennard",
+      "heightInches": 77,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "kentja01": {
+      "name": "Jayson Kent",
+      "heightInches": 80,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "kesslwa01": {
+      "name": "Walker Kessler",
+      "heightInches": 86,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "kispeco01": {
+      "name": "Corey Kispert",
+      "heightInches": 78,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "klebima01": {
+      "name": "Maxi Kleber",
+      "heightInches": 82,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "klintbo01": {
+      "name": "Bobi Klintman",
+      "heightInches": 81,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "knechda01": {
+      "name": "Dalton Knecht",
+      "heightInches": 78,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "knuepko01": {
+      "name": "Kon Knueppel",
+      "heightInches": 78,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "kolekty01": {
+      "name": "Tyler Kolek",
+      "heightInches": 74,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "kolokch01": {
+      "name": "Christian Koloko",
+      "heightInches": 83,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "konanya01": {
+      "name": "Yanic Konan Niederh\u00e4user",
+      "heightInches": 83,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "konchjo01": {
+      "name": "John Konchar",
+      "heightInches": 77,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "kornelu01": {
+      "name": "Luke Kornet",
+      "heightInches": 85,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "krejcvi01": {
+      "name": "V\u00edt Krej\u010d\u00ed",
+      "heightInches": 80,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "kuminjo01": {
+      "name": "Jonathan Kuminga",
+      "heightInches": 79,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "kuzmaky01": {
+      "name": "Kyle Kuzma",
+      "heightInches": 80,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "labissk01": {
+      "name": "Skal Labissi\u00e8re",
+      "heightInches": 82,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "landajo01": {
+      "name": "Jock Landale",
+      "heightInches": 83,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "laniech01": {
+      "name": "Chaz Lanier",
+      "heightInches": 75,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "laravja01": {
+      "name": "Jake LaRavia",
+      "heightInches": 79,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "larsspe01": {
+      "name": "Pelle Larsson",
+      "heightInches": 77,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "lavinza01": {
+      "name": "Zach LaVine",
+      "heightInches": 77,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "lawsoaj01": {
+      "name": "A.J. Lawson",
+      "heightInches": 78,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "leonaka01": {
+      "name": "Kawhi Leonard",
+      "heightInches": 78,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "leonsma01": {
+      "name": "Malevy Leons",
+      "heightInches": 81,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "leverca01": {
+      "name": "Caris LeVert",
+      "heightInches": 79,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "liddeej01": {
+      "name": "E.J. Liddell",
+      "heightInches": 78,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "lillada01": {
+      "name": "Damian Lillard",
+      "heightInches": 74,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "livelde01": {
+      "name": "Dereck Lively II",
+      "heightInches": 85,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "liveris01": {
+      "name": "Isaiah Livers",
+      "heightInches": 78,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "livinch01": {
+      "name": "Chris Livingston",
+      "heightInches": 78,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "looneke01": {
+      "name": "Kevon Looney",
+      "heightInches": 81,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "lopezbr01": {
+      "name": "Brook Lopez",
+      "heightInches": 85,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "loveca01": {
+      "name": "Caleb Love",
+      "heightInches": 75,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "loveke01": {
+      "name": "Kevin Love",
+      "heightInches": 82,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "loverla01": {
+      "name": "Lawson Lovering",
+      "heightInches": 84,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "lowryky01": {
+      "name": "Kyle Lowry",
+      "heightInches": 72,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "maluakh01": {
+      "name": "Khaman Maluach",
+      "heightInches": 85,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "mamuksa01": {
+      "name": "Sandro Mamukelashvili",
+      "heightInches": 81,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "mannte01": {
+      "name": "Terance Mann",
+      "heightInches": 78,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "manntr01": {
+      "name": "Tre Mann",
+      "heightInches": 76,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "manonch01": {
+      "name": "Chris Ma\u00f1on",
+      "heightInches": 76,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "markkla01": {
+      "name": "Lauri Markkanen",
+      "heightInches": 85,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "marshna01": {
+      "name": "Naji Marshall",
+      "heightInches": 78,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "martial01": {
+      "name": "Alijah Martin",
+      "heightInches": 74,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "martica02": {
+      "name": "Caleb Martin",
+      "heightInches": 77,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "martico01": {
+      "name": "Cody Martin",
+      "heightInches": 78,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "martity01": {
+      "name": "Tyrese Martin",
+      "heightInches": 78,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "mashaja01": {
+      "name": "Jahmai Mashack",
+      "heightInches": 76,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "mathega01": {
+      "name": "Garrison Mathews",
+      "heightInches": 77,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "mathube01": {
+      "name": "Bennedict Mathurin",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "matkoka01": {
+      "name": "Karlo Matkovi\u0107",
+      "heightInches": 82,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "maxeyty01": {
+      "name": "Tyrese Maxey",
+      "heightInches": 74,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "mbengbe01": {
+      "name": "Bez Mbeng",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "mcbrimi01": {
+      "name": "Miles McBride",
+      "heightInches": 74,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "mccaija01": {
+      "name": "Jared McCain",
+      "heightInches": 75,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "mccluma01": {
+      "name": "Mac McClung",
+      "heightInches": 74,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "mccolcj01": {
+      "name": "CJ McCollum",
+      "heightInches": 75,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "mccontj01": {
+      "name": "T.J. McConnell",
+      "heightInches": 73,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "mcculke01": {
+      "name": "Kevin McCullar Jr.",
+      "heightInches": 78,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "mcdanja02": {
+      "name": "Jaden McDaniels",
+      "heightInches": 81,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "mcderdo01": {
+      "name": "Doug McDermott",
+      "heightInches": 79,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "mcgowbr01": {
+      "name": "Bryce McGowens",
+      "heightInches": 78,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "mclaujo01": {
+      "name": "Jordan McLaughlin",
+      "heightInches": 71,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "mcneeli01": {
+      "name": "Liam McNeeley",
+      "heightInches": 79,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "meltode01": {
+      "name": "De'Anthony Melton",
+      "heightInches": 74,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "merrisa01": {
+      "name": "Sam Merrill",
+      "heightInches": 76,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "middlkh01": {
+      "name": "Khris Middleton",
+      "heightInches": 79,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "millebr02": {
+      "name": "Brandon Miller",
+      "heightInches": 79,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "milleem01": {
+      "name": "Emanuel Miller",
+      "heightInches": 77,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "millejo02": {
+      "name": "Jordan Miller",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "millele01": {
+      "name": "Leonard Miller",
+      "heightInches": 82,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "millspa02": {
+      "name": "Patty Mills",
+      "heightInches": 74,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "minixri01": {
+      "name": "Riley Minix",
+      "heightInches": 79,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "minotjo01": {
+      "name": "Josh Minott",
+      "heightInches": 80,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "missiyv01": {
+      "name": "Yves Missi",
+      "heightInches": 83,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "mitchaj01": {
+      "name": "Ajay Mitchell",
+      "heightInches": 76,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "mitchda01": {
+      "name": "Davion Mitchell",
+      "heightInches": 72,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "mitchdo01": {
+      "name": "Donovan Mitchell",
+      "heightInches": 74,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "mobleev01": {
+      "name": "Evan Mobley",
+      "heightInches": 83,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "mogbojo01": {
+      "name": "Jonathan Mogbo",
+      "heightInches": 81,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "monkma01": {
+      "name": "Malik Monk",
+      "heightInches": 75,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "moodymo01": {
+      "name": "Moses Moody",
+      "heightInches": 77,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "moorewe01": {
+      "name": "Wendell Moore Jr.",
+      "heightInches": 77,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "moralal01": {
+      "name": "Alex Morales",
+      "heightInches": 78,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "moranja01": {
+      "name": "Ja Morant",
+      "heightInches": 74,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "morrimo01": {
+      "name": "Monte Morris",
+      "heightInches": 74,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "murphtr02": {
+      "name": "Trey Murphy III",
+      "heightInches": 80,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "murraco01": {
+      "name": "Collin Murray-Boyles",
+      "heightInches": 79,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "murrade01": {
+      "name": "Dejounte Murray",
+      "heightInches": 76,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "murraja01": {
+      "name": "Jamal Murray",
+      "heightInches": 76,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "murrake02": {
+      "name": "Keegan Murray",
+      "heightInches": 80,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "murrakr01": {
+      "name": "Kris Murray",
+      "heightInches": 80,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "mykhasv01": {
+      "name": "Svi Mykhailiuk",
+      "heightInches": 79,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "nancela02": {
+      "name": "Larry Nance Jr.",
+      "heightInches": 78,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "nancepe01": {
+      "name": "Pete Nance",
+      "heightInches": 81,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "nelsogr02": {
+      "name": "Grant Nelson",
+      "heightInches": 84,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "nembhan01": {
+      "name": "Andrew Nembhard",
+      "heightInches": 76,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "nembhry01": {
+      "name": "Ryan Nembhard",
+      "heightInches": 71,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "nesmiaa01": {
+      "name": "Aaron Nesmith",
+      "heightInches": 77,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "newelas01": {
+      "name": "Asa Newell",
+      "heightInches": 82,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "newtotr01": {
+      "name": "Tristen Newton",
+      "heightInches": 77,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "nfalyda01": {
+      "name": "N'Faly Dante",
+      "heightInches": 83,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "niangge01": {
+      "name": "Georges Niang",
+      "heightInches": 78,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "nnajize01": {
+      "name": "Zeke Nnaji",
+      "heightInches": 82,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "nurkiju01": {
+      "name": "Jusuf Nurki\u0107",
+      "heightInches": 83,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "odurojo01": {
+      "name": "Josh Oduro",
+      "heightInches": 81,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "okanito01": {
+      "name": "Toby Okani",
+      "heightInches": 80,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "okogijo01": {
+      "name": "Josh Okogie",
+      "heightInches": 76,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "okongon01": {
+      "name": "Onyeka Okongwu",
+      "heightInches": 82,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "okorois01": {
+      "name": "Isaac Okoro",
+      "heightInches": 76,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "olbrila01": {
+      "name": "Lachlan Olbrich",
+      "heightInches": 80,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "olynyke01": {
+      "name": "Kelly Olynyk",
+      "heightInches": 84,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "omierno01": {
+      "name": "Norchad Omier",
+      "heightInches": 77,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "onealro01": {
+      "name": "Royce O'Neale",
+      "heightInches": 78,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "oubreke01": {
+      "name": "Kelly Oubre Jr.",
+      "heightInches": 80,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "paulch01": {
+      "name": "Chris Paul",
+      "heightInches": 72,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "payneca01": {
+      "name": "Cameron Payne",
+      "heightInches": 74,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "paytoga02": {
+      "name": "Gary Payton II",
+      "heightInches": 74,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "peavymi01": {
+      "name": "Micah Peavy",
+      "heightInches": 79,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "pedulse01": {
+      "name": "Sean Pedulla",
+      "heightInches": 73,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "pendano01": {
+      "name": "Noah Penda",
+      "heightInches": 79,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "peterdr01": {
+      "name": "Drew Peterson",
+      "heightInches": 80,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "peterta01": {
+      "name": "Taelon Peter",
+      "heightInches": 75,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "phillju01": {
+      "name": "Julian Phillips",
+      "heightInches": 78,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "pickeja02": {
+      "name": "Jalen Pickett",
+      "heightInches": 74,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "pippesc02": {
+      "name": "Scotty Pippen Jr.",
+      "heightInches": 74,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "plowdda01": {
+      "name": "Daeqwon Plowden",
+      "heightInches": 76,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "plumlma01": {
+      "name": "Mason Plumlee",
+      "heightInches": 84,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "podzibr01": {
+      "name": "Brandin Podziemski",
+      "heightInches": 76,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "poeltja01": {
+      "name": "Jakob Poeltl",
+      "heightInches": 84,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "poolejo01": {
+      "name": "Jordan Poole",
+      "heightInches": 76,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "portecr01": {
+      "name": "Craig Porter Jr.",
+      "heightInches": 73,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "porteke02": {
+      "name": "Kevin Porter Jr.",
+      "heightInches": 77,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "portemi01": {
+      "name": "Michael Porter Jr.",
+      "heightInches": 82,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "porteot01": {
+      "name": "Otto Porter Jr.",
+      "heightInches": 80,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "portibo01": {
+      "name": "Bobby Portis",
+      "heightInches": 81,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "porzikr01": {
+      "name": "Kristaps Porzi\u0146\u0123is",
+      "heightInches": 86,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "postqu01": {
+      "name": "Quinten Post",
+      "heightInches": 84,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "pottemi01": {
+      "name": "Micah Potter",
+      "heightInches": 81,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "poulajo01": {
+      "name": "John Poulakidas",
+      "heightInches": 78,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "poweldr01": {
+      "name": "Drake Powell",
+      "heightInches": 77,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "poweldw01": {
+      "name": "Dwight Powell",
+      "heightInches": 82,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "powelno01": {
+      "name": "Norman Powell",
+      "heightInches": 75,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "princta02": {
+      "name": "Taurean Prince",
+      "heightInches": 78,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "pritcpa01": {
+      "name": "Payton Pritchard",
+      "heightInches": 73,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "proctty01": {
+      "name": "Tyrese Proctor",
+      "heightInches": 76,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "prospol01": {
+      "name": "Olivier-Maxence Prosper",
+      "heightInches": 79,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "pullizy01": {
+      "name": "Zyon Pullin",
+      "heightInches": 76,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "queende01": {
+      "name": "Derik Queen",
+      "heightInches": 81,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "quetane01": {
+      "name": "Neemias Queta",
+      "heightInches": 84,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "quickim01": {
+      "name": "Immanuel Quickley",
+      "heightInches": 74,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "randlju01": {
+      "name": "Julius Randle",
+      "heightInches": 81,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "raynama01": {
+      "name": "Maxime Raynaud",
+      "heightInches": 85,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "reathdu01": {
+      "name": "Duop Reath",
+      "heightInches": 81,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "reaveau01": {
+      "name": "Austin Reaves",
+      "heightInches": 77,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "reddica01": {
+      "name": "Cam Reddish",
+      "heightInches": 79,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "reedpa01": {
+      "name": "Paul Reed",
+      "heightInches": 81,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "reeseju01": {
+      "name": "Julian Reese",
+      "heightInches": 81,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "reevean01": {
+      "name": "Antonio Reeves",
+      "heightInches": 77,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "reidna01": {
+      "name": "Naz Reid",
+      "heightInches": 81,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "richaja02": {
+      "name": "Jase Richardson",
+      "heightInches": 73,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "richajo01": {
+      "name": "Josh Richardson",
+      "heightInches": 77,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "richani01": {
+      "name": "Nick Richards",
+      "heightInches": 83,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "richawi02": {
+      "name": "Will Richard",
+      "heightInches": 75,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "richmka01": {
+      "name": "Kadary Richmond",
+      "heightInches": 77,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "rileywi01": {
+      "name": "Will Riley",
+      "heightInches": 81,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "risacza01": {
+      "name": "Zaccharie Risacher",
+      "heightInches": 80,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "robindu01": {
+      "name": "Duncan Robinson",
+      "heightInches": 79,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "robinje02": {
+      "name": "Jeremiah Robinson-Earl",
+      "heightInches": 81,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "robinmi01": {
+      "name": "Mitchell Robinson",
+      "heightInches": 84,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "robinor01": {
+      "name": "Orlando Robinson",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "roddyda01": {
+      "name": "David Roddy",
+      "heightInches": 77,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "rolliry01": {
+      "name": "Ryan Rollins",
+      "heightInches": 75,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "rosste01": {
+      "name": "Terrence Ross",
+      "heightInches": 78,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "ruperra01": {
+      "name": "Rayan Rupert",
+      "heightInches": 79,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "russeda01": {
+      "name": "D'Angelo Russell",
+      "heightInches": 75,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "ryanco01": {
+      "name": "Cormac Ryan",
+      "heightInches": 77,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "sabondo01": {
+      "name": "Domantas Sabonis",
+      "heightInches": 82,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "salauti01": {
+      "name": "Tidjane Sala\u00fcn",
+      "heightInches": 82,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "sallihu01": {
+      "name": "Hunter Sallis",
+      "heightInches": 76,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "sandeko01": {
+      "name": "Kobe Sanders",
+      "heightInches": 80,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "sandfpa01": {
+      "name": "Payton Sandfort",
+      "heightInches": 79,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "santogu01": {
+      "name": "Gui Santos",
+      "heightInches": 79,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "sarafbe01": {
+      "name": "Ben Saraf",
+      "heightInches": 78,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "saricda01": {
+      "name": "Dario \u0160ari\u0107",
+      "heightInches": 82,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "sarral01": {
+      "name": "Alex Sarr",
+      "heightInches": 84,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "sarrol01": {
+      "name": "Olivier Sarr",
+      "heightInches": 82,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "sassema01": {
+      "name": "Marcus Sasser",
+      "heightInches": 73,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "scheiba01": {
+      "name": "Baylor Scheierman",
+      "heightInches": 78,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "schrode01": {
+      "name": "Dennis Schr\u00f6der",
+      "heightInches": 73,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "scotttr01": {
+      "name": "Tre Scott",
+      "heightInches": 80,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "searsma01": {
+      "name": "Mark Sears",
+      "heightInches": 72,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "sengual01": {
+      "name": "Alperen \u015eeng\u00fcn",
+      "heightInches": 83,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "sensabr01": {
+      "name": "Brice Sensabaugh",
+      "heightInches": 78,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "sextoco01": {
+      "name": "Collin Sexton",
+      "heightInches": 75,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "shamela01": {
+      "name": "Landry Shamet",
+      "heightInches": 77,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "shannte01": {
+      "name": "Terrence Shannon Jr.",
+      "heightInches": 78,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "sharpda01": {
+      "name": "Day'Ron Sharpe",
+      "heightInches": 82,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "sharpsh01": {
+      "name": "Shaedon Sharpe",
+      "heightInches": 77,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "sheadja01": {
+      "name": "Jamal Shead",
+      "heightInches": 73,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "sheppbe01": {
+      "name": "Ben Sheppard",
+      "heightInches": 78,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "sheppre01": {
+      "name": "Reed Sheppard",
+      "heightInches": 74,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "shulgma01": {
+      "name": "Max Shulga",
+      "heightInches": 76,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "siakapa01": {
+      "name": "Pascal Siakam",
+      "heightInches": 80,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "simmobe01": {
+      "name": "Ben Simmons",
+      "heightInches": 82,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "simonan01": {
+      "name": "Anfernee Simons",
+      "heightInches": 75,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "simpskj01": {
+      "name": "KJ Simpson",
+      "heightInches": 74,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "simsje01": {
+      "name": "Jericho Sims",
+      "heightInches": 82,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "slawsja01": {
+      "name": "Jalen Slawson",
+      "heightInches": 79,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "smallja01": {
+      "name": "Javon Small",
+      "heightInches": 73,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "smartma01": {
+      "name": "Marcus Smart",
+      "heightInches": 75,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "smithde03": {
+      "name": "Dennis Smith Jr.",
+      "heightInches": 74,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "smithdr01": {
+      "name": "Dru Smith",
+      "heightInches": 74,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "smithja04": {
+      "name": "Jalen Smith",
+      "heightInches": 80,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "smithja05": {
+      "name": "Jabari Smith Jr.",
+      "heightInches": 83,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "smithma02": {
+      "name": "Malachi Smith",
+      "heightInches": 76,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "smithni01": {
+      "name": "Nick Smith Jr.",
+      "heightInches": 74,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "smithto05": {
+      "name": "Tolu Smith",
+      "heightInches": 83,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "smithty02": {
+      "name": "Tyler Smith",
+      "heightInches": 81,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "sochaje01": {
+      "name": "Jeremy Sochan",
+      "heightInches": 80,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "spencca01": {
+      "name": "Cam Spencer",
+      "heightInches": 75,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "spencpa01": {
+      "name": "Pat Spencer",
+      "heightInches": 74,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "steveis01": {
+      "name": "Isaiah Stevens",
+      "heightInches": 71,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "stewais01": {
+      "name": "Isaiah Stewart",
+      "heightInches": 80,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "strawju01": {
+      "name": "Julian Strawther",
+      "heightInches": 78,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "strusma01": {
+      "name": "Max Strus",
+      "heightInches": 77,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "suggsja01": {
+      "name": "Jalen Suggs",
+      "heightInches": 77,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "tateja01": {
+      "name": "Jae'Sean Tate",
+      "heightInches": 76,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "tatumja01": {
+      "name": "Jayson Tatum",
+      "heightInches": 80,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "telfoja01": {
+      "name": "Jahmyl Telfort",
+      "heightInches": 79,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "templga01": {
+      "name": "Garrett Temple",
+      "heightInches": 77,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "terryda01": {
+      "name": "Dalen Terry",
+      "heightInches": 78,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "thierad01": {
+      "name": "Adou Thiero",
+      "heightInches": 79,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "thomaca02": {
+      "name": "Cam Thomas",
+      "heightInches": 75,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "thompam01": {
+      "name": "Amen Thompson",
+      "heightInches": 79,
+      "team": "HOU",
+      "seasonYear": 2026
+    },
+    "thompau01": {
+      "name": "Ausar Thompson",
+      "heightInches": 79,
+      "team": "DET",
+      "seasonYear": 2026
+    },
+    "thompet01": {
+      "name": "Ethan Thompson",
+      "heightInches": 76,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "thompkl01": {
+      "name": "Klay Thompson",
+      "heightInches": 77,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "thomptr01": {
+      "name": "Tristan Thompson",
+      "heightInches": 81,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "thybuma01": {
+      "name": "Matisse Thybulle",
+      "heightInches": 77,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "tillmxa01": {
+      "name": "Xavier Tillman Sr.",
+      "heightInches": 80,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "timmedr01": {
+      "name": "Drew Timme",
+      "heightInches": 81,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "tomlina01": {
+      "name": "Nae'Qwan Tomlin",
+      "heightInches": 80,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "tonjejo01": {
+      "name": "John Tonje",
+      "heightInches": 76,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "topicni01": {
+      "name": "Nikola Topi\u0107",
+      "heightInches": 78,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "toppija01": {
+      "name": "Jacob Toppin",
+      "heightInches": 81,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "toppiob01": {
+      "name": "Obi Toppin",
+      "heightInches": 81,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "townska01": {
+      "name": "Karl-Anthony Towns",
+      "heightInches": 84,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "traorno01": {
+      "name": "Nolan Traor\u00e9",
+      "heightInches": 75,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "travelu01": {
+      "name": "Luke Travers",
+      "heightInches": 78,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "trentga02": {
+      "name": "Gary Trent Jr.",
+      "heightInches": 77,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "tshieos01": {
+      "name": "Oscar Tshiebwe",
+      "heightInches": 80,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "turnemy01": {
+      "name": "Myles Turner",
+      "heightInches": 83,
+      "team": "MIL",
+      "seasonYear": 2026
+    },
+    "tysonhu01": {
+      "name": "Hunter Tyson",
+      "heightInches": 80,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "tysonja01": {
+      "name": "Jaylon Tyson",
+      "heightInches": 78,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "umudest01": {
+      "name": "Stanley Umude",
+      "heightInches": 78,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "valanjo01": {
+      "name": "Jonas Valan\u010di\u016bnas",
+      "heightInches": 83,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "vandeja01": {
+      "name": "Jarred Vanderbilt",
+      "heightInches": 80,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "vanvlfr01": {
+      "name": "Fred VanVleet",
+      "heightInches": 72,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "vassede01": {
+      "name": "Devin Vassell",
+      "heightInches": 77,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "vincega01": {
+      "name": "Gabe Vincent",
+      "heightInches": 74,
+      "team": "LAL",
+      "seasonYear": 2026
+    },
+    "vucevni01": {
+      "name": "Nikola Vu\u010devi\u0107",
+      "heightInches": 81,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "vukcetr01": {
+      "name": "Tristan Vukcevic",
+      "heightInches": 84,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "wadede01": {
+      "name": "Dean Wade",
+      "heightInches": 81,
+      "team": "CLE",
+      "seasonYear": 2026
+    },
+    "wagnefr01": {
+      "name": "Franz Wagner",
+      "heightInches": 82,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "wagnemo01": {
+      "name": "Moritz Wagner",
+      "heightInches": 83,
+      "team": "ORL",
+      "seasonYear": 2026
+    },
+    "walkeja01": {
+      "name": "Jabari Walker",
+      "heightInches": 79,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "walkeja02": {
+      "name": "Jarace Walker",
+      "heightInches": 79,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "walkelo01": {
+      "name": "Lonnie Walker IV",
+      "heightInches": 76,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "wallaca01": {
+      "name": "Cason Wallace",
+      "heightInches": 75,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "wallake01": {
+      "name": "Keaton Wallace",
+      "heightInches": 75,
+      "team": "ATL",
+      "seasonYear": 2026
+    },
+    "walshjo01": {
+      "name": "Jordan Walsh",
+      "heightInches": 78,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "walteja01": {
+      "name": "Ja'Kobe Walter",
+      "heightInches": 76,
+      "team": "TOR",
+      "seasonYear": 2026
+    },
+    "wareke01": {
+      "name": "Kel'el Ware",
+      "heightInches": 84,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "washipj01": {
+      "name": "P.J. Washington",
+      "heightInches": 79,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "washity02": {
+      "name": "TyTy Washington Jr.",
+      "heightInches": 75,
+      "team": "LAC",
+      "seasonYear": 2026
+    },
+    "waterli01": {
+      "name": "Lindy Waters III",
+      "heightInches": 77,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "watfotr01": {
+      "name": "Trendon Watford",
+      "heightInches": 80,
+      "team": "PHI",
+      "seasonYear": 2026
+    },
+    "watkija01": {
+      "name": "Jamir Watkins",
+      "heightInches": 78,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "watsope01": {
+      "name": "Peyton Watson",
+      "heightInches": 80,
+      "team": "DEN",
+      "seasonYear": 2026
+    },
+    "wellsja01": {
+      "name": "Jaylen Wells",
+      "heightInches": 79,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "wembavi01": {
+      "name": "Victor Wembanyama",
+      "heightInches": 88,
+      "team": "SAS",
+      "seasonYear": 2026
+    },
+    "weslebl01": {
+      "name": "Blake Wesley",
+      "heightInches": 76,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "westbru01": {
+      "name": "Russell Westbrook",
+      "heightInches": 76,
+      "team": "SAC",
+      "seasonYear": 2026
+    },
+    "whiteco01": {
+      "name": "Coby White",
+      "heightInches": 76,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "whiteda01": {
+      "name": "Dariq Whitehead",
+      "heightInches": 78,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "whitede01": {
+      "name": "Derrick White",
+      "heightInches": 76,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "whitmca01": {
+      "name": "Cam Whitmore",
+      "heightInches": 78,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "wiggiaa01": {
+      "name": "Aaron Wiggins",
+      "heightInches": 77,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "wiggian01": {
+      "name": "Andrew Wiggins",
+      "heightInches": 78,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "willial06": {
+      "name": "Alondes Williams",
+      "heightInches": 76,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "william01": {
+      "name": "Amari Williams",
+      "heightInches": 83,
+      "team": "BOS",
+      "seasonYear": 2026
+    },
+    "willibr03": {
+      "name": "Brandon Williams",
+      "heightInches": 73,
+      "team": "DAL",
+      "seasonYear": 2026
+    },
+    "willico04": {
+      "name": "Cody Williams",
+      "heightInches": 80,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "willigr01": {
+      "name": "Grant Williams",
+      "heightInches": 79,
+      "team": "CHO",
+      "seasonYear": 2026
+    },
+    "willija06": {
+      "name": "Jalen Williams",
+      "heightInches": 77,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "willija07": {
+      "name": "Jaylin Williams",
+      "heightInches": 81,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "willije02": {
+      "name": "Nate Williams",
+      "heightInches": 77,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "willike04": {
+      "name": "Kenrich Williams",
+      "heightInches": 79,
+      "team": "OKC",
+      "seasonYear": 2026
+    },
+    "willilu01": {
+      "name": "Lucas Williamson",
+      "heightInches": 76,
+      "team": "MEM",
+      "seasonYear": 2026
+    },
+    "willima07": {
+      "name": "Mark Williams",
+      "heightInches": 85,
+      "team": "PHO",
+      "seasonYear": 2026
+    },
+    "willipa01": {
+      "name": "Patrick Williams",
+      "heightInches": 78,
+      "team": "CHI",
+      "seasonYear": 2026
+    },
+    "williro04": {
+      "name": "Robert Williams",
+      "heightInches": 81,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "willivi01": {
+      "name": "Vince Williams Jr.",
+      "heightInches": 76,
+      "team": "UTA",
+      "seasonYear": 2026
+    },
+    "willizi01": {
+      "name": "Zion Williamson",
+      "heightInches": 78,
+      "team": "NOP",
+      "seasonYear": 2026
+    },
+    "willizi02": {
+      "name": "Ziaire Williams",
+      "heightInches": 81,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "wilsoja03": {
+      "name": "Jalen Wilson",
+      "heightInches": 78,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "wisemja01": {
+      "name": "James Wiseman",
+      "heightInches": 83,
+      "team": "IND",
+      "seasonYear": 2026
+    },
+    "wolfda01": {
+      "name": "Danny Wolf",
+      "heightInches": 83,
+      "team": "BRK",
+      "seasonYear": 2026
+    },
+    "wrighde01": {
+      "name": "Delon Wright",
+      "heightInches": 76,
+      "team": "FA",
+      "seasonYear": 2027,
+      "source": "player-page"
+    },
+    "yabusgu01": {
+      "name": "Guerschon Yabusele",
+      "heightInches": 79,
+      "team": "NYK",
+      "seasonYear": 2026
+    },
+    "yangha01": {
+      "name": "Yang Hansen",
+      "heightInches": 85,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "youngch01": {
+      "name": "Chris Youngblood",
+      "heightInches": 76,
+      "team": "POR",
+      "seasonYear": 2026
+    },
+    "youngja05": {
+      "name": "Jahmir Young",
+      "heightInches": 72,
+      "team": "MIA",
+      "seasonYear": 2026
+    },
+    "youngtr01": {
+      "name": "Trae Young",
+      "heightInches": 74,
+      "team": "WAS",
+      "seasonYear": 2026
+    },
+    "yurtsom01": {
+      "name": "Omer Yurtseven",
+      "heightInches": 83,
+      "team": "GSW",
+      "seasonYear": 2026
+    },
+    "zikarro01": {
+      "name": "Rocco Zikarsky",
+      "heightInches": 87,
+      "team": "MIN",
+      "seasonYear": 2026
+    },
+    "zubaciv01": {
+      "name": "Ivica Zubac",
+      "heightInches": 84,
+      "team": "LAC",
+      "seasonYear": 2026
+    }
+  }
+}

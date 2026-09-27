@@ -15,6 +15,7 @@
     "data:headshots": "python3 scripts/build_espn_headshot_map.py",
     "data:rookies": "python3 scripts/sync_espn_rookies_udfa.py && python3 scripts/build_espn_headshot_map.py",
     "data:stats:csv": "python3 scripts/csv_to_stats_json.py --output data/nba-stats/nba-player-stats-202526-regular-season.json",
+    "data:heights": "python3 scripts/sync_player_heights.py --fill-missing-player-pages",
     "data:salaries:export-pool": "python3 scripts/csv_to_salaries_json.py --export-csv data/manual/nba-salaries.csv --from-json data/nba-salaries-202627.json --stats-pool data/nba-stats/nba-player-stats-202526-regular-season.json",
     "data:salaries:build": "python3 scripts/csv_to_salaries_json.py --input data/manual/nba-salaries.csv --output data/nba-salaries-202627.json --season 2026-27 --stats-pool data/nba-stats/nba-player-stats-202526-regular-season.json --warn-missing-pool",
     "data:signings:apply": "python3 scripts/apply_free_agent_signings.py",
