@@ -1438,7 +1438,6 @@ export function LandingPage({
                           eventRestriction: weeklyEvent.restriction,
                           salaryCapMode: true,
                           salaryCapLimit: weeklyEvent.salaryCapLimit,
-                          sharedDraftSlots: weeklyEvent.sharedSlots,
                         })
                       }
                     >

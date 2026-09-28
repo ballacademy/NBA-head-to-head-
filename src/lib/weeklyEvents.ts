@@ -238,17 +238,17 @@ export const getEventTitle = (restriction: EventRestrictionId) => {
 export const getEventDescription = (restriction: EventRestrictionId) => {
   switch (restriction) {
     case "u25":
-      return "Head-to-head with a shared board. Only players age 25 and under are eligible.";
+      return "Head-to-head with a fresh shared board each match. Only players age 25 and under are eligible.";
     case "intl":
-      return "Head-to-head with a shared board. Only international players are eligible.";
+      return "Head-to-head with a fresh shared board each match. Only international players are eligible.";
     case "nostars":
-      return "Head-to-head with a shared board. All-Stars and superstars are locked out.";
+      return "Head-to-head with a fresh shared board each match. All-Stars and superstars are locked out.";
     case "bargain":
-      return "Head-to-head with a shared board and a strict $50M salary cap.";
+      return "Head-to-head with a fresh shared board each match and a strict $50M salary cap.";
     case "blind":
-      return "Shared division + position board. Player lists are hidden — type the exact name to draft.";
+      return "Fresh shared division + position board each match. Player lists are hidden — type the exact name to draft.";
     case "agepos":
-      return "Shared board where each slot is a position plus an age band instead of a division.";
+      return "Fresh shared board each match — each slot is a position plus an age band instead of a division.";
     default: {
       const _exhaustive: never = restriction;
       return _exhaustive;
@@ -256,16 +256,27 @@ export const getEventDescription = (restriction: EventRestrictionId) => {
   }
 };
 
+/**
+ * Shared position/division (or age-band) board for an event matchup.
+ * Pass `matchId` so each queued match gets a fresh board; both players
+ * independently regenerate the same slots from `eventId` + `matchId`.
+ * Omit `matchId` only for week-level feasibility probes (Play card).
+ */
 export const buildSharedEventDraftSlots = (
   pool: Player[],
   eventId: string,
   salaryCapLimit = EVENT_SALARY_CAP,
   restriction?: EventRestrictionId,
-): DraftSlotConstraint[] =>
-  generateFeasibleDraftSlotsUnderSalaryCap(pool, salaryCapLimit, 5, {
-    random: createSeededRandom(`event-slots:${eventId}`),
+  matchId?: string,
+): DraftSlotConstraint[] => {
+  const seed = matchId?.trim()
+    ? `event-slots:${eventId}:${matchId.trim()}`
+    : `event-slots:${eventId}`;
+  return generateFeasibleDraftSlotsUnderSalaryCap(pool, salaryCapLimit, 5, {
+    random: createSeededRandom(seed),
     slotAxis: restriction === "agepos" ? "age" : "division",
   });
+};
 
 export interface ScheduledWeeklyEventMeta {
   weekId: string;

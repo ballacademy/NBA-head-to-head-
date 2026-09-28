@@ -119,6 +119,7 @@ import {
 } from "./lib/matchmaking";
 import { canPlayEventMatch, loadEventProfile } from "./lib/eventProfile";
 import {
+  buildSharedEventDraftSlots,
   filterPlayersForEventRestriction,
   getCurrentWeeklyEvent,
   getWeeklyEventForEventId,
@@ -1833,7 +1834,19 @@ function App() {
             : pool,
         );
     const setupSlots = setup?.slots;
-    const sharedSlots = options.sharedDraftSlots;
+    // Events: roll a fresh shared board per matchId so rematches/queues
+    // don't reuse the same divisions/positions all week. Both clients
+    // derive identical slots from eventId + matchId (no server payload).
+    const sharedSlots =
+      eventMode && eventId && liveOpponent?.matchId
+        ? buildSharedEventDraftSlots(
+            draftPool,
+            eventId,
+            salaryCapLimit ?? undefined,
+            eventRestriction,
+            liveOpponent.matchId,
+          )
+        : options.sharedDraftSlots;
     const slotsAreFeasible = (
       players: typeof draftPool,
       slots: ReturnType<typeof generateFeasibleDraftSlots>,
@@ -2539,12 +2552,12 @@ function App() {
       }
 
       // On failure, stay on results so MatchResults can show startMatchError.
+      // Slots are generated after queue pairing from the new matchId.
       await startMatch(team, {
         eventId: event.id,
         eventRestriction: event.restriction,
         salaryCapMode: true,
         salaryCapLimit: event.salaryCapLimit,
-        sharedDraftSlots: event.sharedSlots,
       });
       return;
     }
