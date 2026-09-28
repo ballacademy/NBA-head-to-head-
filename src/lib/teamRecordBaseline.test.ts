@@ -137,11 +137,17 @@ describe("teamRecordBaseline", () => {
   });
 
   it("does not over-inflate injured small-market teams beyond recovery cap", () => {
+    // Prefer players whose stats-season club is still NOP so the same-team
+    // anchor applies (recent arrivals keep their prior club for quality).
     const pelicans = players
-      .filter((player) => player.team === "NOP")
+      .filter(
+        (player) =>
+          player.team === "NOP" && getPlayerTeamQualityTeam(player) === "NOP",
+      )
       .sort((left, right) => right.minutes - left.minutes)
       .slice(0, 5);
 
+    expect(pelicans).toHaveLength(5);
     const score = calculateLineupScore(pelicans);
     const anchor = getSameTeamRecordAnchor(pelicans);
 
