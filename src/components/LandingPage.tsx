@@ -93,6 +93,7 @@ import {
 } from "../lib/eventHistory";
 import {
   fetchEventLeaderboard,
+  formatEventLeaderboardLabel,
   type EventLeaderboardEntry,
 } from "../lib/eventLeaderboard";
 import {
@@ -1536,7 +1537,7 @@ export function LandingPage({
                             </span>
                             <span className="event-leaderboard__identity">
                               <span className="event-leaderboard__team">
-                                {entry.teamName}
+                                {formatEventLeaderboardLabel(entry)}
                               </span>
                               {entry.isViewer ? (
                                 <span className="leaderboard-row__you-chip">
