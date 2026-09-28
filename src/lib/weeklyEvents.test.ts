@@ -9,6 +9,7 @@ import {
 } from "./draft";
 import {
   buildEventId,
+  buildSharedEventDraftSlots,
   EVENT_BARGAIN_SALARY_CAP,
   EVENT_RESTRICTION_ROTATION,
   EVENT_SALARY_CAP,
@@ -128,6 +129,39 @@ describe("weeklyEvents", () => {
     expect(event!.sharedSlots).toHaveLength(5);
     expect(event!.salaryCapLimit).toBe(getEventSalaryCap(event!.restriction));
     expect(event!.maxMatches).toBe(30);
+  });
+
+  it("gives each match a distinct shared board while keeping both sides identical", () => {
+    const event = getCurrentWeeklyEvent(players);
+    expect(event).not.toBeNull();
+    const pool = filterPlayersForEventRestriction(players, event!.restriction);
+
+    const matchA = buildSharedEventDraftSlots(
+      pool,
+      event!.id,
+      event!.salaryCapLimit,
+      event!.restriction,
+      "match-aaa",
+    );
+    const matchAAgain = buildSharedEventDraftSlots(
+      pool,
+      event!.id,
+      event!.salaryCapLimit,
+      event!.restriction,
+      "match-aaa",
+    );
+    const matchB = buildSharedEventDraftSlots(
+      pool,
+      event!.id,
+      event!.salaryCapLimit,
+      event!.restriction,
+      "match-bbb",
+    );
+
+    expect(matchA).toHaveLength(5);
+    expect(matchB).toHaveLength(5);
+    expect(matchA).toEqual(matchAAgain);
+    expect(matchA).not.toEqual(matchB);
   });
 
   it("builds age-band slots for Age Bracket Draft", () => {
