@@ -1,6 +1,6 @@
 bbr_player_id,name,salary_usd,notes
-durenja01,Jalen Duren,6483144,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN)
-mathube01,Bennedict Mathurin,9187573,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN)
+durenja01,Jalen Duren,40160000,"5-year $200M DET re-sign (Oct 1 2026); 2026-27 year-1 $40,160,000 (Free Press/Spotrac)"
+mathube01,Bennedict Mathurin,7500000,"2-year $16M NOP (player option Y2); 2026-27 year-1 $7,500,000 (NBA.com/JJNBA)"
 watsope01,Peyton Watson,20000000,4-year $88M S&T from DEN (player option Y4 + 7.5% kicker); Y1 estimated $20M pending Spotrac
 ryanco01,Cormac Ryan,1361969,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN); floored to NBA minimum for draft cap
 newtotr01,Tristen Newton,1361969,Carry-forward 2025-26 salary pending 2026-27 confirmation (rostered on ESPN); floored to NBA minimum for draft cap
@@ -88,3 +88,7 @@ simmobe01,Ben Simmons,3500000,1-year up to $3.5M non-guaranteed ($1M if opening-
 reathdu01,Duop Reath,2449142,1-year veteran minimum (Mark Williams injury depth)
 branhma01,Malaki Branham,2625627,"1-year Exhibit 10 $2,625,627 (non-guaranteed training camp)"
 johnske10,Keshad Johnson,678882,"1-year two-way $678,882 ($91K guaranteed)"
+agbajoc01,Ochai Agbaji,2625627,"1-year Exhibit 9 non-guaranteed $2,625,627 (NYK)"
+brownbr01,Bruce Brown,2625627,"1-year Exhibit 9 non-guaranteed $2,625,627 (NYK)"
+eubandr01,Drew Eubanks,2625627,"1-year Exhibit 9 non-guaranteed $2,625,627 (NYK)"
+wisemja01,James Wiseman,2625627,"1-year Exhibit 9 non-guaranteed $2,625,627 (NYK)"
