@@ -101,23 +101,49 @@ const drawLogoWithShadow = (
   context.drawImage(image, x, y, size, size);
 };
 
-const bannerPath = (context: CanvasRenderingContext2D, scale: number) => {
-  const x = 18 * scale;
-  const top = 8 * scale;
-  const right = 1182 * scale;
-  const bodyBottom = 118 * scale;
-  const tabLeft = 355 * scale;
-  const tabRight = 845 * scale;
-  const tabBottom = 192 * scale;
+const drawTrackedText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  font: string,
+  tracking: number,
+  fill: string,
+  strokeWidth: number,
+) => {
+  context.font = font;
+  const chars = [...text];
+  const widths = chars.map((char) => context.measureText(char).width);
+  const total =
+    widths.reduce((sum, value) => sum + value, 0) +
+    Math.max(0, chars.length - 1) * tracking;
+  let cursor = x - total / 2;
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  for (let i = 0; i < chars.length; i += 1) {
+    const char = chars[i] ?? "";
+    if (strokeWidth > 0) {
+      context.strokeStyle = "#000";
+      context.lineWidth = strokeWidth;
+      context.strokeText(char, cursor, y);
+    }
+    context.fillStyle = fill;
+    context.fillText(char, cursor, y);
+    cursor += (widths[i] ?? 0) + tracking;
+  }
+};
+
+const bannerPath = (context: CanvasRenderingContext2D, s: number) => {
   context.beginPath();
-  context.moveTo(x, top);
-  context.lineTo(right, top);
-  context.lineTo(right, bodyBottom);
-  context.lineTo(tabRight, bodyBottom);
-  context.lineTo(tabRight, tabBottom);
-  context.lineTo(tabLeft, tabBottom);
-  context.lineTo(tabLeft, bodyBottom);
-  context.lineTo(x, bodyBottom);
+  context.moveTo(54 * s, 83 * s);
+  context.lineTo(1145 * s, 83 * s);
+  context.lineTo(1145 * s, 187 * s);
+  context.lineTo(849 * s, 187 * s);
+  context.lineTo(849 * s, 240 * s);
+  context.lineTo(349 * s, 240 * s);
+  context.lineTo(349 * s, 187 * s);
+  context.lineTo(54 * s, 187 * s);
   context.closePath();
 };
 
@@ -158,46 +184,43 @@ export const renderStandingsCanvas = async (
   const cellW = width / 3;
   const cellH = gridH / 5;
 
-  drawOutlinedText(
+  drawTrackedText(
     context,
     input.brand.trim() || " ",
     width / 2,
-    40 * scale,
-    `700 ${26.4 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    42 * scale,
+    `700 ${26 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    6.2 * scale,
     "#fff",
     0,
   );
 
-  context.save();
-  context.translate(width * 0.045, 56 * scale);
-  const bannerScale = (width * 0.91) / 1200;
-  context.scale(bannerScale, bannerScale * 1.12);
-  bannerPath(context, 1);
+  bannerPath(context, scale);
   context.fillStyle = "#050505";
   context.fill();
   context.strokeStyle = "#fff";
-  context.lineWidth = 7;
+  context.lineWidth = 6 * scale;
   context.lineJoin = "miter";
   context.stroke();
-  context.restore();
 
   drawOutlinedText(
     context,
     input.title.trim() || " ",
     width / 2,
-    118 * scale,
-    `700 ${61.8 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    132 * scale,
+    `700 ${58 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
     "#fff",
-    6.8 * scale,
+    6 * scale,
   );
-  drawOutlinedText(
+  drawTrackedText(
     context,
     input.subtitle.trim() || " ",
     width / 2,
-    198 * scale,
-    `700 ${36.6 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    214 * scale,
+    `700 ${32 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    4.2 * scale,
     "#fff",
-    4.4 * scale,
+    4.2 * scale,
   );
 
   const logos = await Promise.all(
