@@ -3,6 +3,9 @@ export interface OpaqueBounds {
   y: number;
   w: number;
   h: number;
+  /** Alpha-weighted centroid in source-image pixels. */
+  cx?: number;
+  cy?: number;
 }
 
 export interface LogoRect {
@@ -17,6 +20,14 @@ const ALPHA_CUTOFF = 16;
 /** Fit the trimmed artwork inside the cell; wide marks can use cell width. */
 export const LOGO_FIT_X = 0.82;
 export const LOGO_FIT_Y = 0.76;
+/** Nudge every mark up by this fraction of cell height. */
+export const LOGO_LIFT = 0.05;
+/** Ignore left/right mass below this fraction of the trimmed width. */
+export const OPTICAL_DEADZONE = 0.06;
+/** How much of the centroid offset to apply (1 = full mass center). */
+export const OPTICAL_GAIN = 0.8;
+/** Cap horizontal optical shift as a fraction of cell width. */
+export const OPTICAL_CLAMP = 0.055;
 
 export const getOpaqueBoundsFromImageData = (
   data: Uint8ClampedArray,
@@ -27,6 +38,9 @@ export const getOpaqueBoundsFromImageData = (
   let minY = height;
   let maxX = -1;
   let maxY = -1;
+  let massX = 0;
+  let massY = 0;
+  let mass = 0;
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
@@ -38,14 +52,31 @@ export const getOpaqueBoundsFromImageData = (
       if (y < minY) minY = y;
       if (x > maxX) maxX = x;
       if (y > maxY) maxY = y;
+      massX += x * alpha;
+      massY += y * alpha;
+      mass += alpha;
     }
   }
 
   if (maxX < minX || maxY < minY) {
-    return { x: 0, y: 0, w: width, h: height };
+    return {
+      x: 0,
+      y: 0,
+      w: width,
+      h: height,
+      cx: width / 2,
+      cy: height / 2,
+    };
   }
 
-  return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  return {
+    x: minX,
+    y: minY,
+    w: maxX - minX + 1,
+    h: maxY - minY + 1,
+    cx: mass > 0 ? massX / mass : (minX + maxX) / 2,
+    cy: mass > 0 ? massY / mass : (minY + maxY) / 2,
+  };
 };
 
 export const getOpaqueBounds = (
@@ -59,7 +90,7 @@ export const getOpaqueBounds = (
   const width = image.naturalWidth || image.width || 0;
   const height = image.naturalHeight || image.height || 0;
   if (width < 1 || height < 1) {
-    return { x: 0, y: 0, w: 1, h: 1 };
+    return { x: 0, y: 0, w: 1, h: 1, cx: 0.5, cy: 0.5 };
   }
 
   const canvas = document.createElement("canvas");
@@ -67,7 +98,14 @@ export const getOpaqueBounds = (
   canvas.height = height;
   const context = canvas.getContext("2d", { willReadFrequently: true });
   if (!context) {
-    return { x: 0, y: 0, w: width, h: height };
+    return {
+      x: 0,
+      y: 0,
+      w: width,
+      h: height,
+      cx: width / 2,
+      cy: height / 2,
+    };
   }
   context.drawImage(image, 0, 0);
   return getOpaqueBoundsFromImageData(
@@ -92,9 +130,33 @@ export const getCachedOpaqueBounds = (
   return bounds;
 };
 
+const boxCenterX = (bounds: OpaqueBounds) => bounds.x + bounds.w / 2;
+
 /**
- * Place the trimmed artwork so its bounding-box center sits on the cell
- * center. No extra translate — shadow is drawn separately around this rect.
+ * Horizontal shift (positive = right) that counters extra visual mass so the
+ * mark *looks* centered. Balanced circular logos stay put.
+ */
+export const opticalShiftX = (
+  bounds: OpaqueBounds,
+  destW: number,
+  cellW: number,
+) => {
+  if (bounds.w < 1) {
+    return 0;
+  }
+  const cx = bounds.cx ?? boxCenterX(bounds);
+  const frac = (cx - boxCenterX(bounds)) / bounds.w;
+  if (Math.abs(frac) < OPTICAL_DEADZONE) {
+    return 0;
+  }
+  const raw = destW * frac * OPTICAL_GAIN;
+  const clamp = cellW * OPTICAL_CLAMP;
+  return Math.max(-clamp, Math.min(clamp, raw));
+};
+
+/**
+ * Place the trimmed artwork in the cell: lifted 5%, then optically shifted
+ * when visual mass sits off the bounding-box center.
  */
 export const fittedLogoRect = (
   bounds: OpaqueBounds,
@@ -114,8 +176,8 @@ export const fittedLogoRect = (
   const w = bounds.w * scale;
   const h = bounds.h * scale;
   return {
-    x: cellX + (cellW - w) / 2,
-    y: cellY + (cellH - h) / 2,
+    x: cellX + (cellW - w) / 2 - opticalShiftX(bounds, w, cellW),
+    y: cellY + (cellH - h) / 2 - cellH * LOGO_LIFT,
     w,
     h,
   };
@@ -154,9 +216,18 @@ const makeSilhouette = (
   return canvas;
 };
 
+const withCentroid = (bounds: OpaqueBounds): OpaqueBounds =>
+  bounds.cx != null && bounds.cy != null
+    ? bounds
+    : {
+        ...bounds,
+        cx: bounds.x + bounds.w / 2,
+        cy: bounds.y + bounds.h / 2,
+      };
+
 /**
- * Draw trimmed logo artwork at the true center of a cell. Shadow is offset
- * from that centered mark so it does not shift the logo.
+ * Draw trimmed logo artwork, lifted and optically centered. Shadow is offset
+ * from that mark so it does not shift the logo.
  */
 export const drawCenteredLogo = (
   context: CanvasRenderingContext2D,
@@ -167,9 +238,11 @@ export const drawCenteredLogo = (
   cellH: number,
   options?: { fitX?: number; fitY?: number; shadow?: number; cacheKey?: string },
 ) => {
-  const bounds = options?.cacheKey
-    ? getCachedOpaqueBounds(options.cacheKey, image)
-    : getOpaqueBounds(image);
+  const bounds = withCentroid(
+    options?.cacheKey
+      ? getCachedOpaqueBounds(options.cacheKey, image)
+      : getOpaqueBounds(image),
+  );
   const dest = fittedLogoRect(
     bounds,
     cellX,

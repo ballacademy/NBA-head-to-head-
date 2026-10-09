@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  LOGO_LIFT,
   fittedLogoRect,
   getOpaqueBoundsFromImageData,
   logoShadowPx,
+  opticalShiftX,
 } from "./logoDraw";
 import {
   BANNER_SHAPE,
@@ -35,16 +37,49 @@ describe("getOpaqueBoundsFromImageData", () => {
       y: 3,
       w: 5,
       h: 5,
+      cx: 4,
+      cy: 5,
     });
+  });
+
+  it("reports a right-weighted centroid for a Magic-like mark", () => {
+    const width = 20;
+    const height = 10;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const paint = (x: number, y: number, a = 255) => {
+      const i = (y * width + x) * 4;
+      data[i] = 255;
+      data[i + 3] = a;
+    };
+    for (let x = 2; x <= 8; x += 1) {
+      paint(x, 4, 80);
+    }
+    for (let x = 12; x <= 18; x += 1) {
+      paint(x, 5, 255);
+      paint(x, 6, 255);
+    }
+    const bounds = getOpaqueBoundsFromImageData(data, width, height);
+    expect(bounds.x).toBe(2);
+    expect(bounds.w).toBe(17);
+    expect(bounds.cx).toBeGreaterThan(bounds.x + bounds.w / 2);
   });
 });
 
 describe("fittedLogoRect", () => {
-  it("puts the trimmed artwork center on the cell center", () => {
+  it("lifts the trimmed artwork ~5% of cell height", () => {
     const cell = { x: 10, y: 20, w: 400, h: 246 };
-    const dest = fittedLogoRect({ x: 40, y: 80, w: 200, h: 120 }, cell.x, cell.y, cell.w, cell.h);
+    const dest = fittedLogoRect(
+      { x: 40, y: 80, w: 200, h: 120 },
+      cell.x,
+      cell.y,
+      cell.w,
+      cell.h,
+    );
     expect(dest.x + dest.w / 2).toBeCloseTo(cell.x + cell.w / 2, 6);
-    expect(dest.y + dest.h / 2).toBeCloseTo(cell.y + cell.h / 2, 6);
+    expect(dest.y + dest.h / 2).toBeCloseTo(
+      cell.y + cell.h / 2 - cell.h * LOGO_LIFT,
+      6,
+    );
   });
 
   it("ignores extra PNG padding in the bottom-right of the file", () => {
@@ -53,7 +88,7 @@ describe("fittedLogoRect", () => {
     const tight = fittedLogoRect({ x: 0, y: 0, w: 100, h: 80 }, 0, 0, 300, 200);
     expect(padded).toEqual(tight);
     expect(padded.x + padded.w / 2).toBeCloseTo(cell.w / 2, 6);
-    expect(padded.y + padded.h / 2).toBeCloseTo(cell.h / 2, 6);
+    expect(padded.y + padded.h / 2).toBeCloseTo(cell.h / 2 - cell.h * LOGO_LIFT, 6);
   });
 
   it("lets a wide wordmark use cell width instead of a square cap", () => {
@@ -61,7 +96,42 @@ describe("fittedLogoRect", () => {
     const round = fittedLogoRect({ x: 0, y: 0, w: 460, h: 460 }, 0, 0, 400, 246);
     expect(wide.w).toBeGreaterThan(round.w);
     expect(wide.x + wide.w / 2).toBeCloseTo(200, 6);
-    expect(wide.y + wide.h / 2).toBeCloseTo(123, 6);
+    expect(wide.y + wide.h / 2).toBeCloseTo(123 - 246 * LOGO_LIFT, 6);
+  });
+
+  it("shifts a right-heavy mark like Magic slightly left", () => {
+    const cellW = 400;
+    const cellH = 246;
+    const balanced = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 230, cy: 165 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    const magic = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 272, cy: 178 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    expect(magic.x).toBeLessThan(balanced.x);
+    expect(balanced.x - magic.x).toBeGreaterThan(cellW * 0.02);
+    expect(balanced.x - magic.x).toBeLessThan(cellW * 0.06);
+    expect(opticalShiftX({ x: 0, y: 0, w: 460, h: 330, cx: 230 }, 200, cellW)).toBe(0);
+  });
+
+  it("does not optically shift a balanced circular mark", () => {
+    const dest = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460, cx: 250, cy: 250 },
+      0,
+      0,
+      400,
+      246,
+    );
+    const box = fittedLogoRect({ x: 20, y: 20, w: 460, h: 460 }, 0, 0, 400, 246);
+    expect(dest.x).toBeCloseTo(box.x, 6);
   });
 
   it("keeps shadow length in cell pixels without shifting the dest rect", () => {
