@@ -328,7 +328,7 @@ main.sc-stage {
   object-fit: contain;
   object-position: center center;
   /* Long drop-shadow sits down-right; nudge the mark so it reads centered. */
-  transform: translate(3%, 8%);
+  transform: translate(2%, 5%);
   pointer-events: none;
   filter:
     drop-shadow(calc(2 * var(--u)) calc(2 * var(--u)) 0 #000)

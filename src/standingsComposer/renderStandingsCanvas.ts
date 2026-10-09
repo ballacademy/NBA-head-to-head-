@@ -251,8 +251,8 @@ export const renderStandingsCanvas = async (
       drawLogoWithShadow(
         context,
         logo,
-        x + (cellW - size) / 2 + cellW * 0.03,
-        y + (cellH - size) / 2 + cellH * 0.08,
+        x + (cellW - size) / 2 + cellW * 0.02,
+        y + (cellH - size) / 2 + cellH * 0.05,
         size,
         30 * scale,
       );
