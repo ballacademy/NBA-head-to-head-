@@ -76,7 +76,12 @@ export function StandingsComposerApp() {
     setActiveIndex(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportStandingsPng(node, exportFilename(subtitle, title));
+      await exportStandingsPng(node, exportFilename(subtitle, title), {
+        brand,
+        title,
+        subtitle,
+        slots,
+      });
       setStatus("Download started.");
     } catch (error) {
       console.error(error);
