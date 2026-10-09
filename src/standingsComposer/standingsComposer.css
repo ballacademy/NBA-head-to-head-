@@ -174,6 +174,7 @@ main.sc-stage {
 /* —— 4:5 Instagram board —— */
 .ig-board {
   --u: 1px;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
@@ -201,10 +202,10 @@ main.sc-stage {
   background: transparent;
   color: #fff;
   text-align: center;
-  font-family: Oswald, "Arial Narrow", Impact, sans-serif;
-  font-size: calc(26.4 * var(--u));
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-family: var(--ig-poster);
+  font-size: calc(24 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1;
 }
@@ -239,26 +240,26 @@ main.sc-stage {
   background: transparent;
   color: #fff;
   text-align: center;
-  font-family: Oswald, "Arial Narrow", Impact, sans-serif;
-  font-weight: 700;
+  font-family: var(--ig-poster);
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   line-height: 0.95;
-  -webkit-text-stroke: calc(3.4 * var(--u)) #000;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
   paint-order: stroke fill;
 }
 
 .ig-banner__title {
   top: 14%;
   height: 46%;
-  font-size: calc(61.8 * var(--u));
+  font-size: calc(52 * var(--u));
 }
 
 .ig-banner__sub {
   top: 62%;
   height: 30%;
-  font-size: calc(36.6 * var(--u));
-  letter-spacing: 0.12em;
+  font-size: calc(32 * var(--u));
+  letter-spacing: 0.08em;
 }
 
 .ig-banner__title:focus,
@@ -305,37 +306,29 @@ main.sc-stage {
 
 .ig-slot__rank {
   position: absolute;
-  top: 2.1%;
-  left: 3.4%;
+  top: 2.4%;
+  left: 3.6%;
   z-index: 2;
-  font-family: Oswald, "Arial Narrow", Impact, sans-serif;
-  font-size: calc(52 * var(--u));
-  font-weight: 700;
+  font-family: var(--ig-poster);
+  font-size: calc(48 * var(--u));
+  font-weight: 900;
   line-height: 1;
   color: #fff;
   pointer-events: none;
   text-shadow:
-    calc(1.4 * var(--u)) calc(1.4 * var(--u)) 0 #000,
-    calc(2.8 * var(--u)) calc(2.8 * var(--u)) 0 #000,
-    calc(4.2 * var(--u)) calc(4.2 * var(--u)) 0 #000,
-    calc(5.6 * var(--u)) calc(5.6 * var(--u)) 0 #000,
-    calc(7 * var(--u)) calc(7 * var(--u)) 0 #000,
-    calc(8.4 * var(--u)) calc(8.4 * var(--u)) 0 #000,
-    calc(10 * var(--u)) calc(10 * var(--u)) 0 #000,
-    calc(11.5 * var(--u)) calc(11.5 * var(--u)) 0 #000,
-    calc(13 * var(--u)) calc(13 * var(--u)) 0 #000,
-    calc(15 * var(--u)) calc(15 * var(--u)) 0 #000,
-    calc(17 * var(--u)) calc(17 * var(--u)) 0 #000,
-    calc(19 * var(--u)) calc(19 * var(--u)) 0 #000,
-    calc(22 * var(--u)) calc(22 * var(--u)) 0 #000,
-    calc(25 * var(--u)) calc(25 * var(--u)) 0 #000,
-    calc(28 * var(--u)) calc(28 * var(--u)) 0 #000;
+    calc(0.7 * var(--u)) calc(0.7 * var(--u)) 0 rgba(0, 0, 0, 0.85),
+    calc(1.4 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.65),
+    calc(2.2 * var(--u)) calc(2.2 * var(--u)) calc(0.4 * var(--u)) rgba(0, 0, 0, 0.4),
+    calc(3.2 * var(--u)) calc(3.2 * var(--u)) calc(1.1 * var(--u)) rgba(0, 0, 0, 0.22);
 }
 
 .ig-slot__logo {
-  width: 72%;
-  height: 72%;
+  width: 68%;
+  height: 68%;
   object-fit: contain;
+  object-position: center center;
+  /* Long drop-shadow sits down-right; nudge the mark so it reads centered. */
+  transform: translate(3%, 8%);
   pointer-events: none;
   filter:
     drop-shadow(calc(2 * var(--u)) calc(2 * var(--u)) 0 #000)

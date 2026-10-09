@@ -13,8 +13,7 @@ import {
 import { exportFilename, exportStandingsPng } from "./exportPng";
 import { StandingsGraphic } from "./StandingsGraphic";
 import { TeamPicker } from "./TeamPicker";
-import "@fontsource/oswald/latin-600.css";
-import "@fontsource/oswald/latin-700.css";
+import "@fontsource/montserrat/latin-900.css";
 import "./standingsComposer.css";
 
 const STORAGE_KEY = "ddgm:standings-composer";

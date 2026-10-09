@@ -7,7 +7,7 @@ import {
 } from "./rankingState";
 import { getTeam } from "./teams";
 
-const FONT = '700 16px Oswald, "Arial Narrow", Impact, sans-serif';
+const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement | null>((resolve) => {
@@ -67,8 +67,8 @@ const drawLongShadowText = (
   context.font = font;
   context.textAlign = "left";
   context.textBaseline = "top";
-  context.fillStyle = "#000";
-  for (let i = 1; i <= length; i += 1) {
+  context.fillStyle = "rgba(0, 0, 0, 0.45)";
+  for (let i = 2; i <= length; i += 2) {
     context.fillText(text, x + i, y + i);
   }
   context.fillStyle = "#fff";
@@ -160,8 +160,8 @@ export const renderStandingsCanvas = async (
 ): Promise<HTMLCanvasElement> => {
   if (typeof document !== "undefined" && document.fonts?.load) {
     await Promise.all([
-      document.fonts.load(`700 26px Oswald`),
-      document.fonts.load(FONT),
+      document.fonts.load(`900 26px ${POSTER_FONT}`),
+      document.fonts.load(`900 58px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
 
@@ -187,7 +187,7 @@ export const renderStandingsCanvas = async (
     input.brand.trim() || " ",
     width / 2,
     42 * scale,
-    `700 ${26 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    `900 ${24 * scale}px ${POSTER_FONT}`,
     6.2 * scale,
     "#fff",
     0,
@@ -206,7 +206,7 @@ export const renderStandingsCanvas = async (
     input.title.trim() || " ",
     width / 2,
     132 * scale,
-    `700 ${58 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    `900 ${52 * scale}px ${POSTER_FONT}`,
     "#fff",
     6 * scale,
   );
@@ -215,7 +215,7 @@ export const renderStandingsCanvas = async (
     input.subtitle.trim() || " ",
     width / 2,
     214 * scale,
-    `700 ${32 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
+    `900 ${32 * scale}px ${POSTER_FONT}`,
     4.2 * scale,
     "#fff",
     4.2 * scale,
@@ -247,12 +247,12 @@ export const renderStandingsCanvas = async (
 
     const logo = logos[index];
     if (logo) {
-      const size = cellW * 0.72;
+      const size = cellW * 0.68;
       drawLogoWithShadow(
         context,
         logo,
-        x + (cellW - size) / 2,
-        y + (cellH - size) / 2,
+        x + (cellW - size) / 2 + cellW * 0.03,
+        y + (cellH - size) / 2 + cellH * 0.08,
         size,
         30 * scale,
       );
@@ -261,10 +261,10 @@ export const renderStandingsCanvas = async (
     drawLongShadowText(
       context,
       String(index + 1),
-      x + cellW * 0.034,
-      y + cellH * 0.021,
-      `700 ${52 * scale}px Oswald, "Arial Narrow", Impact, sans-serif`,
-      28 * scale,
+      x + cellW * 0.036,
+      y + cellH * 0.024,
+      `900 ${48 * scale}px ${POSTER_FONT}`,
+      8 * scale,
     );
   }
 
