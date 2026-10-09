@@ -1,8 +1,8 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-10-03T15:38:11.001514+00:00",
-  "updatedAt": "2026-10-03T15:38:11.001514+00:00",
+  "generatedAt": "2026-10-09T00:57:13.361775+00:00",
+  "updatedAt": "2026-10-09T00:57:13.361775+00:00",
   "rosterSource": "espn",
   "playerCount": 603,
   "byPlayerId": {
@@ -103,7 +103,7 @@
     },
     "bradlto01": {
       "jerseyNumber": 13,
-      "team": "FA",
+      "team": "NYK",
       "name": "Tony Bradley"
     },
     "risacza01": {
@@ -592,7 +592,7 @@
       "name": "John Poulakidas"
     },
     "thompkl01": {
-      "jerseyNumber": 31,
+      "jerseyNumber": 11,
       "team": "MIA",
       "name": "Klay Thompson"
     },
@@ -647,7 +647,7 @@
       "name": "Aaron Gordon"
     },
     "brownbr01": {
-      "jerseyNumber": 11,
+      "jerseyNumber": 1,
       "team": "NYK",
       "name": "Bruce Brown"
     },
@@ -1007,7 +1007,7 @@
       "name": "Jahmyl Telfort"
     },
     "wisemja01": {
-      "jerseyNumber": 11,
+      "jerseyNumber": 35,
       "team": "NYK",
       "name": "James Wiseman"
     },
@@ -1128,7 +1128,7 @@
     },
     "labissk01": {
       "jerseyNumber": 17,
-      "team": "FA",
+      "team": "WAS",
       "name": "Skal Labissière"
     },
     "umudest01": {
@@ -1998,7 +1998,7 @@
     },
     "hawkijo01": {
       "jerseyNumber": 19,
-      "team": "MEM",
+      "team": "CHI",
       "name": "Jordan Hawkins"
     },
     "poolejo01": {
@@ -2333,7 +2333,7 @@
     },
     "broomjo01": {
       "jerseyNumber": 22,
-      "team": "LAC",
+      "team": "MIL",
       "name": "Johni Broome"
     },
     "edwarju01": {
@@ -2832,7 +2832,7 @@
       "name": "Ace Bailey"
     },
     "mbengbe01": {
-      "jerseyNumber": 21,
+      "jerseyNumber": 19,
       "team": "MIA",
       "name": "Bez Mbeng"
     },
@@ -3033,7 +3033,7 @@
     {
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "FA",
+      "team": "NYK",
       "jerseyNumber": 13,
       "position": "C"
     },
@@ -4133,7 +4133,7 @@
       "bbrPlayerId": "thompkl01",
       "name": "Klay Thompson",
       "team": "MIA",
-      "jerseyNumber": 31,
+      "jerseyNumber": 11,
       "position": "SF"
     },
     {
@@ -4161,7 +4161,7 @@
       "bbrPlayerId": "brownbr01",
       "name": "Bruce Brown",
       "team": "NYK",
-      "jerseyNumber": 11,
+      "jerseyNumber": 1,
       "position": "SG"
     },
     {
@@ -4692,7 +4692,7 @@
     {
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "FA",
+      "team": "NYK",
       "jerseyNumber": 13,
       "position": "C"
     },
@@ -4868,7 +4868,7 @@
       "bbrPlayerId": "wisemja01",
       "name": "James Wiseman",
       "team": "NYK",
-      "jerseyNumber": 11,
+      "jerseyNumber": 35,
       "position": "C"
     },
     {
@@ -5875,7 +5875,7 @@
     {
       "bbrPlayerId": "hawkijo01",
       "name": "Jordan Hawkins",
-      "team": "MEM",
+      "team": "CHI",
       "jerseyNumber": 19,
       "position": "SG"
     },
@@ -6414,7 +6414,7 @@
     {
       "bbrPlayerId": "broomjo01",
       "name": "Johni Broome",
-      "team": "LAC",
+      "team": "MIL",
       "jerseyNumber": 22,
       "position": "C"
     },
@@ -7388,7 +7388,7 @@
       "bbrPlayerId": "mbengbe01",
       "name": "Bez Mbeng",
       "team": "MIA",
-      "jerseyNumber": 21,
+      "jerseyNumber": 19,
       "position": "SG"
     },
     {
@@ -7534,7 +7534,7 @@
     {
       "bbrPlayerId": "labissk01",
       "name": "Skal Labissière",
-      "team": "FA",
+      "team": "WAS",
       "jerseyNumber": 17,
       "position": "PF"
     },
