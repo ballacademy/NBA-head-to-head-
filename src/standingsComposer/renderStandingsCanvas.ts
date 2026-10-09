@@ -181,8 +181,6 @@ export const renderStandingsCanvas = async (
   const headerH = Math.round(height * 0.17866);
   const gridY = headerH;
   const gridH = height - headerH;
-  const cellW = width / 3;
-  const cellH = gridH / 5;
 
   drawTrackedText(
     context,
@@ -230,17 +228,21 @@ export const renderStandingsCanvas = async (
     }),
   );
 
+  context.fillStyle = EMPTY_SLOT_COLOR;
+  context.fillRect(0, gridY, width, gridH);
+
   for (let index = 0; index < SLOT_COUNT; index += 1) {
     const col = index % 3;
     const row = Math.floor(index / 3);
-    const x = col * cellW;
-    const y = gridY + row * cellH;
+    const x = Math.round((col * width) / 3);
+    const x2 = Math.round(((col + 1) * width) / 3);
+    const y = Math.round(gridY + (row * gridH) / 5);
+    const y2 = Math.round(gridY + ((row + 1) * gridH) / 5);
+    const cellW = x2 - x;
+    const cellH = y2 - y;
     const team = getTeam(input.slots[index] ?? null);
     if (team) {
       fillCellGradient(context, x, y, cellW, cellH, team.cellFrom, team.cellTo);
-    } else {
-      context.fillStyle = EMPTY_SLOT_COLOR;
-      context.fillRect(x, y, cellW, cellH);
     }
 
     const logo = logos[index];
