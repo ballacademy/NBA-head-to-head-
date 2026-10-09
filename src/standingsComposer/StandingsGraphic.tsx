@@ -1,10 +1,18 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  BANNER_SHAPE,
+  BANNER_VIEW,
+  SUB_BAND,
+  TITLE_BAND,
+  notchFromMeasuredWidth,
+} from "./bannerLayout";
+import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
   type RankingSlots,
 } from "./rankingState";
+import { TeamLogo } from "./TeamLogo";
 import { getTeam } from "./teams";
 
 interface StandingsGraphicProps {
@@ -19,6 +27,21 @@ interface StandingsGraphicProps {
   onSubtitleChange: (value: string) => void;
   onSelectSlot: (index: number) => void;
 }
+
+const bannerPath = (notchLeft: number, notchRight: number) => {
+  const right = BANNER_VIEW.width - BANNER_SHAPE.insetX;
+  return [
+    `M ${BANNER_SHAPE.insetX} ${BANNER_SHAPE.top}`,
+    `H ${right}`,
+    `V ${BANNER_SHAPE.waist}`,
+    `H ${notchRight.toFixed(1)}`,
+    `V ${BANNER_SHAPE.bottom}`,
+    `H ${notchLeft.toFixed(1)}`,
+    `V ${BANNER_SHAPE.waist}`,
+    `H ${BANNER_SHAPE.insetX}`,
+    "Z",
+  ].join(" ");
+};
 
 export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
   function StandingsGraphic(
@@ -37,7 +60,10 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const bannerRef = useRef<HTMLDivElement | null>(null);
+    const measureRef = useRef<HTMLSpanElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [notch, setNotch] = useState({ left: 360, right: 840 });
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -68,6 +94,30 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       return () => observer.disconnect();
     }, []);
 
+    useLayoutEffect(() => {
+      const banner = bannerRef.current;
+      const measure = measureRef.current;
+      if (!banner || !measure) {
+        return;
+      }
+      const sync = () => {
+        const bannerW = banner.clientWidth;
+        if (bannerW < 8) {
+          return;
+        }
+        setNotch(notchFromMeasuredWidth(measure.offsetWidth, bannerW));
+      };
+      sync();
+      void document.fonts?.ready.then(sync);
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      const observer = new ResizeObserver(sync);
+      observer.observe(banner);
+      observer.observe(measure);
+      return () => observer.disconnect();
+    }, [subtitle, unit]);
+
     return (
       <article
         ref={setRefs}
@@ -84,10 +134,10 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             aria-label="Brand label"
             onChange={(event) => onBrandChange(event.target.value.toUpperCase())}
           />
-          <div className="ig-banner">
+          <div className="ig-banner" ref={bannerRef}>
             <svg
               className="ig-banner__svg"
-              viewBox="0 0 1200 200"
+              viewBox={`0 0 ${BANNER_VIEW.width} ${BANNER_VIEW.height}`}
               preserveAspectRatio="none"
               aria-hidden="true"
             >
@@ -104,31 +154,52 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 </pattern>
               </defs>
               <path
-                d="M 18 8 H 1182 V 118 H 845 V 192 H 355 V 118 H 18 Z"
+                d={bannerPath(notch.left, notch.right)}
                 fill="url(#ig-carbon)"
                 stroke="#fff"
                 strokeWidth="7"
                 strokeLinejoin="miter"
               />
             </svg>
-            <input
-              className="ig-banner__title"
-              value={title}
-              maxLength={36}
-              spellCheck={false}
-              aria-label="Banner title"
-              onChange={(event) => onTitleChange(event.target.value.toUpperCase())}
-            />
-            <input
-              className="ig-banner__sub"
-              value={subtitle}
-              maxLength={28}
-              spellCheck={false}
-              aria-label="Conference subtitle"
-              onChange={(event) =>
-                onSubtitleChange(event.target.value.toUpperCase())
-              }
-            />
+            <div
+              className="ig-banner__title-slot"
+              style={{
+                top: `${TITLE_BAND.topFrac * 100}%`,
+                height: `${TITLE_BAND.heightFrac * 100}%`,
+              }}
+            >
+              <input
+                className="ig-banner__title"
+                value={title}
+                maxLength={36}
+                spellCheck={false}
+                aria-label="Banner title"
+                onChange={(event) => onTitleChange(event.target.value.toUpperCase())}
+              />
+            </div>
+            <span ref={measureRef} className="ig-banner__sub-measure" aria-hidden="true">
+              {subtitle || "\u00a0"}
+            </span>
+            <div
+              className="ig-banner__sub-slot"
+              style={{
+                top: `${SUB_BAND.topFrac * 100}%`,
+                height: `${SUB_BAND.heightFrac * 100}%`,
+                left: `${(notch.left / BANNER_VIEW.width) * 100}%`,
+                width: `${((notch.right - notch.left) / BANNER_VIEW.width) * 100}%`,
+              }}
+            >
+              <input
+                className="ig-banner__sub"
+                value={subtitle}
+                maxLength={28}
+                spellCheck={false}
+                aria-label="Conference subtitle"
+                onChange={(event) =>
+                  onSubtitleChange(event.target.value.toUpperCase())
+                }
+              />
+            </div>
           </div>
         </header>
         <div className="ig-grid">
@@ -162,14 +233,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 }
               >
                 <span className="ig-slot__rank">{rank}</span>
-                {team ? (
-                  <img
-                    className="ig-slot__logo"
-                    src={team.logoSrc}
-                    alt=""
-                    draggable={false}
-                  />
-                ) : null}
+                {team ? <TeamLogo src={team.logoSrc} label={team.id} /> : null}
               </button>
             );
           })}

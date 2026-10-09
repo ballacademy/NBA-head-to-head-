@@ -1,4 +1,15 @@
 import {
+  BANNER_SHAPE,
+  BANNER_VIEW,
+  SUB_BAND,
+  TITLE_BAND,
+  bandCenterY,
+  bannerBoardRect,
+  notchFromMeasuredWidth,
+  trackedTextWidth,
+} from "./bannerLayout";
+import { drawCenteredLogo } from "./logoDraw";
+import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -75,30 +86,18 @@ const drawLongShadowText = (
   context.fillText(text, x, y);
 };
 
-const drawLogoWithShadow = (
+const measureTrackedWidth = (
   context: CanvasRenderingContext2D,
-  image: HTMLImageElement,
-  x: number,
-  y: number,
-  size: number,
-  shadow: number,
+  text: string,
+  font: string,
+  tracking: number,
 ) => {
-  const silhouette = document.createElement("canvas");
-  silhouette.width = size;
-  silhouette.height = size;
-  const stamp = silhouette.getContext("2d");
-  if (!stamp) {
-    context.drawImage(image, x, y, size, size);
-    return;
-  }
-  stamp.drawImage(image, 0, 0, size, size);
-  stamp.globalCompositeOperation = "source-in";
-  stamp.fillStyle = "#000";
-  stamp.fillRect(0, 0, size, size);
-  for (let i = 2; i <= shadow; i += 2) {
-    context.drawImage(silhouette, x + i, y + i);
-  }
-  context.drawImage(image, x, y, size, size);
+  context.font = font;
+  const chars = [...text];
+  return trackedTextWidth(
+    chars.map((char) => context.measureText(char).width),
+    tracking,
+  );
 };
 
 const drawTrackedText = (
@@ -114,9 +113,7 @@ const drawTrackedText = (
   context.font = font;
   const chars = [...text];
   const widths = chars.map((char) => context.measureText(char).width);
-  const total =
-    widths.reduce((sum, value) => sum + value, 0) +
-    Math.max(0, chars.length - 1) * tracking;
+  const total = trackedTextWidth(widths, tracking);
   let cursor = x - total / 2;
   context.textAlign = "left";
   context.textBaseline = "middle";
@@ -134,16 +131,29 @@ const drawTrackedText = (
   }
 };
 
-const bannerPath = (context: CanvasRenderingContext2D, s: number) => {
+const drawBannerPath = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  notchLeft: number,
+  notchRight: number,
+) => {
+  const sx = w / BANNER_VIEW.width;
+  const sy = h / BANNER_VIEW.height;
+  const X = (vx: number) => x + vx * sx;
+  const Y = (vy: number) => y + vy * sy;
+  const right = BANNER_VIEW.width - BANNER_SHAPE.insetX;
   context.beginPath();
-  context.moveTo(54 * s, 83 * s);
-  context.lineTo(1145 * s, 83 * s);
-  context.lineTo(1145 * s, 187 * s);
-  context.lineTo(849 * s, 187 * s);
-  context.lineTo(849 * s, 240 * s);
-  context.lineTo(349 * s, 240 * s);
-  context.lineTo(349 * s, 187 * s);
-  context.lineTo(54 * s, 187 * s);
+  context.moveTo(X(BANNER_SHAPE.insetX), Y(BANNER_SHAPE.top));
+  context.lineTo(X(right), Y(BANNER_SHAPE.top));
+  context.lineTo(X(right), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(notchRight), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(notchRight), Y(BANNER_SHAPE.bottom));
+  context.lineTo(X(notchLeft), Y(BANNER_SHAPE.bottom));
+  context.lineTo(X(notchLeft), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(BANNER_SHAPE.insetX), Y(BANNER_SHAPE.waist));
   context.closePath();
 };
 
@@ -178,7 +188,8 @@ export const renderStandingsCanvas = async (
   context.fillStyle = "#000";
   context.fillRect(0, 0, width, height);
 
-  const headerH = Math.round(height * 0.17866);
+  const board = bannerBoardRect(scale);
+  const { headerH, x: bannerX, y: bannerY, w: bannerW, h: bannerH } = board;
   const gridY = headerH;
   const gridH = height - headerH;
 
@@ -193,7 +204,13 @@ export const renderStandingsCanvas = async (
     0,
   );
 
-  bannerPath(context, scale);
+  const subFont = `900 ${30 * scale}px ${POSTER_FONT}`;
+  const subTracking = 2.4 * scale;
+  const subText = input.subtitle.trim() || " ";
+  const subWidth = measureTrackedWidth(context, subText, subFont, subTracking);
+  const notch = notchFromMeasuredWidth(subWidth, bannerW);
+
+  drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
   context.fillStyle = "#050505";
   context.fill();
   context.strokeStyle = "#fff";
@@ -201,22 +218,25 @@ export const renderStandingsCanvas = async (
   context.lineJoin = "miter";
   context.stroke();
 
+  const titleY = bandCenterY(bannerY, bannerH, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
+  const subY = bandCenterY(bannerY, bannerH, SUB_BAND.topFrac, SUB_BAND.heightFrac);
+
   drawOutlinedText(
     context,
     input.title.trim() || " ",
     width / 2,
-    132 * scale,
-    `900 ${52 * scale}px ${POSTER_FONT}`,
+    titleY,
+    `900 ${50 * scale}px ${POSTER_FONT}`,
     "#fff",
     6 * scale,
   );
   drawTrackedText(
     context,
-    input.subtitle.trim() || " ",
+    subText,
     width / 2,
-    214 * scale,
-    `900 ${32 * scale}px ${POSTER_FONT}`,
-    4.2 * scale,
+    subY,
+    subFont,
+    subTracking,
     "#fff",
     4.2 * scale,
   );
@@ -246,16 +266,10 @@ export const renderStandingsCanvas = async (
     }
 
     const logo = logos[index];
-    if (logo) {
-      const size = cellW * 0.68;
-      drawLogoWithShadow(
-        context,
-        logo,
-        x + (cellW - size) / 2 + cellW * 0.02,
-        y + (cellH - size) / 2 + cellH * 0.05,
-        size,
-        30 * scale,
-      );
+    if (logo && team) {
+      drawCenteredLogo(context, logo, x, y, cellW, cellH, {
+        cacheKey: team.logoSrc,
+      });
     }
 
     drawLongShadowText(
