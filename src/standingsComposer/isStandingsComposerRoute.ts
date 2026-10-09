@@ -5,22 +5,38 @@ const COMPOSER_HUB_TOKENS = new Set([
   "standings-composer",
 ]);
 
+/** Explicit Draft Day GM entry — otherwise this branch opens the composer. */
+const GAME_APP_HUB_TOKENS = new Set(["play", "draft", "game", "ddgm"]);
+
+const normalizeToken = (value: string | null | undefined) =>
+  value?.trim().toLowerCase().replace(/[\s_]+/g, "-") ?? "";
+
 export const isStandingsComposerHub = (
   value: string | null | undefined,
 ): boolean => {
-  const token = value?.trim().toLowerCase().replace(/[\s_]+/g, "-");
+  const token = normalizeToken(value);
   return Boolean(token && COMPOSER_HUB_TOKENS.has(token));
 };
 
 export const isStandingsComposerPath = (pathname: string): boolean => {
   const path = pathname.replace(/\/+$/, "") || "/";
   return (
+    path === "/" ||
     path === "/rankings" ||
     path.endsWith("/rankings.html") ||
     path === "/standings-composer"
   );
 };
 
+export const isGameAppHub = (value: string | null | undefined): boolean => {
+  const token = normalizeToken(value);
+  return Boolean(token && GAME_APP_HUB_TOKENS.has(token));
+};
+
+/**
+ * This branch’s product is the standings composer. `/`, `/rankings`, and
+ * `?hub=rankings` all open it. Draft Day GM only loads for `?hub=play`.
+ */
 export const isStandingsComposerRoute = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
@@ -29,8 +45,11 @@ export const isStandingsComposerRoute = (
     const hub = new URLSearchParams(
       search.startsWith("?") ? search.slice(1) : search,
     ).get("hub");
-    return isStandingsComposerHub(hub) || isStandingsComposerPath(pathname);
+    if (isGameAppHub(hub)) {
+      return false;
+    }
+    return true;
   } catch {
-    return false;
+    return true;
   }
 };

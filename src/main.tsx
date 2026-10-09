@@ -27,6 +27,7 @@ if (!root) {
   throw new Error("Root element not found");
 }
 
+// This branch defaults to the standings composer (including `/`).
 const composer = isStandingsComposerRoute();
 
 createRoot(root).render(

@@ -48,6 +48,10 @@ export function StandingsComposerApp() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    document.title = "Standings graphic";
+  }, []);
+
+  useEffect(() => {
     const draft = loadDraft();
     setBrand(draft.brand);
     setTitle(draft.title);

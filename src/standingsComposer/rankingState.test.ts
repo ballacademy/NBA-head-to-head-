@@ -56,11 +56,17 @@ describe("graphic export constants", () => {
 });
 
 describe("composer route", () => {
-  it("opens on hub=rankings and /rankings", () => {
+  it("defaults `/` to the composer and keeps rankings aliases", () => {
+    expect(isStandingsComposerRoute("", "/")).toBe(true);
     expect(isStandingsComposerRoute("?hub=rankings", "/")).toBe(true);
     expect(isStandingsComposerRoute("?hub=ig-rankings", "/")).toBe(true);
     expect(isStandingsComposerRoute("", "/rankings")).toBe(true);
-    expect(isStandingsComposerRoute("?hub=ranks", "/")).toBe(false);
-    expect(isStandingsComposerRoute("", "/")).toBe(false);
+    expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
+  });
+
+  it("only opens Draft Day GM for an explicit play hub", () => {
+    expect(isStandingsComposerRoute("?hub=play", "/")).toBe(false);
+    expect(isStandingsComposerRoute("?hub=ddgm", "/")).toBe(false);
+    expect(isStandingsComposerRoute("?hub=ranks", "/")).toBe(true);
   });
 });

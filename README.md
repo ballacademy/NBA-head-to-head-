@@ -16,15 +16,17 @@ The app can export a shareable lineup image from match and Daily results.
 
 ## Instagram standings composer
 
-Compose-only ranking graphics for an NBA fan page (no Instagram posting). Open:
+On this branch the composer **is the home page**. Compose-only ranking graphics for an NBA fan page (no Instagram posting).
 
 ```bash
 npm run dev
 ```
 
-Then visit [http://localhost:5173/?hub=rankings](http://localhost:5173/?hub=rankings) (or `/rankings`).
+Then open [http://localhost:5173/](http://localhost:5173/) (`/?hub=rankings` and `/rankings` also work).
 
 Click a grey slot to pick a team, edit the three header lines, and **Export PNG** for a 4:5 Instagram still (2400×3000). Logos are vendored ESPN 500px marks — see `public/nba-logos/README.md`.
+
+Draft Day GM remains at `/?hub=play` if you need the game.
 
 ## Scripts
 
