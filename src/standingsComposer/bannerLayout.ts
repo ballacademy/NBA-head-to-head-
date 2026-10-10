@@ -79,19 +79,35 @@ export const bannerBoardRect = (scale = 1) => {
   return { x, y, w, h, headerH, width, height };
 };
 
-/** Top of the white banner stroke in board pixels. */
+/** Banner outline thickness in SVG viewBox units (matches CSS strokeWidth). */
+export const BANNER_STROKE_VB = 7;
+
+/** Centerline of the white banner stroke in board pixels. */
 export const bannerStrokeTop = (scale = 1) => {
   const { y, h } = bannerBoardRect(scale);
   return y + (BANNER_SHAPE.top / BANNER_VIEW.height) * h;
 };
 
+/** Outer (visual) top of the white title-box border. */
+export const bannerStrokeOuterTop = (scale = 1) => {
+  const { h } = bannerBoardRect(scale);
+  const strokePx = (BANNER_STROKE_VB / BANNER_VIEW.height) * h;
+  return bannerStrokeTop(scale) - strokePx / 2;
+};
+
 /**
- * CSS top of the brand em-box so the cap-height sits in the middle of the
- * gap between the graphic top and the banner stroke.
+ * Montserrat Black cap-mid in em (top sidebearing + half cap-height).
+ * Used so the letters even-split the gap above the banner.
+ */
+export const BRAND_CAP_MID_EM = 0.43;
+
+/**
+ * CSS top of the brand em-box so the caps sit in the middle of the
+ * gap between the graphic top and the title-box border.
  */
 export const brandEmTop = (scale = 1) => {
   const font = BRAND_FONT * scale;
-  return bannerStrokeTop(scale) / 2 - font * 0.36;
+  return bannerStrokeOuterTop(scale) / 2 - font * BRAND_CAP_MID_EM;
 };
 
 /** Canvas baseline (middle) matching brandEmTop. */

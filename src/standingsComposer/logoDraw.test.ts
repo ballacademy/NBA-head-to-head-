@@ -9,6 +9,7 @@ import {
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
+  BRAND_CAP_MID_EM,
   BRAND_FONT,
   BANNER_MARGIN_TOP,
   BRAND_SLOT,
@@ -16,7 +17,7 @@ import {
   TITLE_BAND,
   bandCenterY,
   bannerBoardRect,
-  bannerStrokeTop,
+  bannerStrokeOuterTop,
   brandBaselineY,
   brandEmTop,
   notchFromMeasuredWidth,
@@ -180,12 +181,13 @@ describe("banner notch and bands", () => {
 
   it("places a larger BALLACADEMY optically in the gap above the banner stroke", () => {
     expect(BRAND_FONT).toBe(28);
-    const strokeTop = bannerStrokeTop(1);
-    const capCenter = brandEmTop(1) + BRAND_FONT * 0.36;
-    expect(capCenter).toBeCloseTo(strokeTop / 2, 5);
+    const strokeOuter = bannerStrokeOuterTop(1);
+    const capCenter = brandEmTop(1) + BRAND_FONT * BRAND_CAP_MID_EM;
+    expect(capCenter).toBeCloseTo(strokeOuter / 2, 5);
     expect(brandBaselineY(1)).toBeCloseTo(brandEmTop(1) + BRAND_FONT / 2, 8);
     expect(brandEmTop(1)).toBeGreaterThan(0);
-    expect(brandEmTop(1) + BRAND_FONT).toBeLessThan(strokeTop);
+    expect(brandEmTop(1) + BRAND_FONT).toBeLessThan(strokeOuter);
+    expect(strokeOuter).toBeLessThan(bannerBoardRect(1).y + 8);
   });
 });
 
