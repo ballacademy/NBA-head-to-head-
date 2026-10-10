@@ -8,10 +8,10 @@ import {
   notchFromMeasuredWidth,
   trackedTextWidth,
 } from "./bannerLayout";
-import { fillHeaderTexture } from "./headerTexture";
 import { drawCenteredLogo } from "./logoDraw";
 import {
   EMPTY_SLOT_COLOR,
+  GRAPHIC_BG,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
@@ -186,14 +186,13 @@ export const renderStandingsCanvas = async (
     throw new Error("Could not open export canvas");
   }
 
-  context.fillStyle = "#000";
+  context.fillStyle = GRAPHIC_BG;
   context.fillRect(0, 0, width, height);
 
   const board = bannerBoardRect(scale);
   const { headerH, x: bannerX, y: bannerY, w: bannerW, h: bannerH } = board;
   const gridY = headerH;
   const gridH = height - headerH;
-  fillHeaderTexture(context, 0, 0, width, headerH);
 
   drawTrackedText(
     context,

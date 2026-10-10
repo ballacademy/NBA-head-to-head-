@@ -65,6 +65,8 @@ export const DEFAULT_TITLE = "PROJECTED NBA STANDINGS";
 export const DEFAULT_SUBTITLE = "EASTERN CONFERENCE";
 
 export const EMPTY_SLOT_COLOR = "#8d8d8d";
+/** Graphic canvas / header field — near-black, no grain. */
+export const GRAPHIC_BG = "#0B0B0B";
 
 const slugify = (value: string) =>
   value

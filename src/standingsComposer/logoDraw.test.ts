@@ -66,7 +66,7 @@ describe("getOpaqueBoundsFromImageData", () => {
 });
 
 describe("fittedLogoRect", () => {
-  it("lifts the trimmed artwork ~5% of cell height", () => {
+  it("lifts the trimmed artwork ~3% of cell height", () => {
     const cell = { x: 10, y: 20, w: 400, h: 246 };
     const dest = fittedLogoRect(
       { x: 40, y: 80, w: 200, h: 120 },

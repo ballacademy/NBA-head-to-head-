@@ -20,8 +20,8 @@ const ALPHA_CUTOFF = 16;
 /** Fit the trimmed artwork inside the cell; wide marks can use cell width. */
 export const LOGO_FIT_X = 0.82;
 export const LOGO_FIT_Y = 0.76;
-/** Nudge every mark up by this fraction of cell height. */
-export const LOGO_LIFT = 0.05;
+/** Nudge every mark up by this fraction of cell height (~3% above geometric center). */
+export const LOGO_LIFT = 0.03;
 /** Ignore left/right mass below this fraction of the trimmed width. */
 export const OPTICAL_DEADZONE = 0.06;
 /** How much of the centroid offset to apply (1 = full mass center). */
