@@ -153,7 +153,8 @@ main.sc-stage {
 .sc-stage__frame {
   width: min(100%, calc((100dvh - 140px) * 0.8));
   max-width: 520px;
-  filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.55));
+  /* box-shadow keeps type vector-sharp; filter: drop-shadow rasterizes the board. */
+  box-shadow: 0 28px 48px rgba(0, 0, 0, 0.55);
 }
 
 .sc-hint {
@@ -201,16 +202,26 @@ main.sc-stage {
   margin: 0;
   margin-top: calc(32 * var(--u));
   width: 80%;
+  height: 1em;
+  padding: 0;
   border: 0;
+  appearance: none;
   background: transparent;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
   font-size: calc(24 * var(--u));
   font-weight: 900;
+  font-synthesis: none;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
 }
 
 .ig-brand:focus {
@@ -268,12 +279,19 @@ main.sc-stage {
   text-align: center;
   font-family: var(--ig-poster);
   font-weight: 900;
+  font-synthesis: none;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   line-height: 1.05em;
   pointer-events: auto;
-  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  -webkit-text-stroke: calc(2 * var(--u)) #000;
   paint-order: stroke fill;
+  text-shadow:
+    calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.78),
+    calc(2.4 * var(--u)) calc(2.8 * var(--u)) 0 rgba(0, 0, 0, 0.28);
 }
 
 .ig-banner__title {

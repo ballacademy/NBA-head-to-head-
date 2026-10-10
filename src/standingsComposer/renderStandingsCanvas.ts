@@ -49,6 +49,32 @@ const fillCellGradient = (
   context.fillRect(x, y, w, h);
 };
 
+const withHeaderDropShadow = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+  paint: () => void,
+) => {
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.78)";
+  context.shadowOffsetX = Math.round(1.2 * scale);
+  context.shadowOffsetY = Math.round(1.5 * scale);
+  context.shadowBlur = 0;
+  paint();
+  context.restore();
+};
+
+const setLetterSpacing = (
+  context: CanvasRenderingContext2D,
+  tracking: number,
+) => {
+  const spaced = context as CanvasRenderingContext2D & { letterSpacing: string };
+  if (typeof spaced.letterSpacing === "string") {
+    spaced.letterSpacing = `${tracking}px`;
+    return true;
+  }
+  return false;
+};
+
 const drawOutlinedText = (
   context: CanvasRenderingContext2D,
   text: string,
@@ -63,13 +89,15 @@ const drawOutlinedText = (
   context.textBaseline = "middle";
   context.lineJoin = "round";
   context.miterLimit = 2;
+  const px = Math.round(x);
+  const py = Math.round(y);
   if (strokeWidth > 0) {
     context.strokeStyle = "#000";
     context.lineWidth = strokeWidth;
-    context.strokeText(text, x, y);
+    context.strokeText(text, px, py);
   }
   context.fillStyle = fill;
-  context.fillText(text, x, y);
+  context.fillText(text, px, py);
 };
 
 const drawLongShadowText = (
@@ -98,6 +126,11 @@ const measureTrackedWidth = (
   tracking: number,
 ) => {
   context.font = font;
+  if (setLetterSpacing(context, tracking)) {
+    const width = context.measureText(text).width;
+    setLetterSpacing(context, 0);
+    return width;
+  }
   const chars = [...text];
   return trackedTextWidth(
     chars.map((char) => context.measureText(char).width),
@@ -116,22 +149,35 @@ const drawTrackedText = (
   strokeWidth: number,
 ) => {
   context.font = font;
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  const py = Math.round(y);
+  if (setLetterSpacing(context, tracking)) {
+    context.textAlign = "center";
+    if (strokeWidth > 0) {
+      context.strokeStyle = "#000";
+      context.lineWidth = strokeWidth;
+      context.strokeText(text, Math.round(x), py);
+    }
+    context.fillStyle = fill;
+    context.fillText(text, Math.round(x), py);
+    setLetterSpacing(context, 0);
+    return;
+  }
   const chars = [...text];
   const widths = chars.map((char) => context.measureText(char).width);
   const total = trackedTextWidth(widths, tracking);
   let cursor = x - total / 2;
   context.textAlign = "left";
-  context.textBaseline = "middle";
-  context.lineJoin = "round";
   for (let i = 0; i < chars.length; i += 1) {
     const char = chars[i] ?? "";
     if (strokeWidth > 0) {
       context.strokeStyle = "#000";
       context.lineWidth = strokeWidth;
-      context.strokeText(char, cursor, y);
+      context.strokeText(char, cursor, py);
     }
     context.fillStyle = fill;
-    context.fillText(char, cursor, y);
+    context.fillText(char, cursor, py);
     cursor += (widths[i] ?? 0) + tracking;
   }
 };
@@ -175,8 +221,9 @@ export const renderStandingsCanvas = async (
 ): Promise<HTMLCanvasElement> => {
   if (typeof document !== "undefined" && document.fonts?.load) {
     await Promise.all([
-      document.fonts.load(`900 26px ${POSTER_FONT}`),
-      document.fonts.load(`900 58px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${24 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${30 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${50 * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
 
@@ -203,16 +250,18 @@ export const renderStandingsCanvas = async (
     drawCoveredTexture(context, headerTexture, 0, 0, width, headerH);
   }
 
-  drawTrackedText(
-    context,
-    input.brand.trim() || " ",
-    width / 2,
-    42 * scale,
-    `900 ${24 * scale}px ${POSTER_FONT}`,
-    6.2 * scale,
-    "#fff",
-    0,
-  );
+  withHeaderDropShadow(context, scale, () => {
+    drawTrackedText(
+      context,
+      input.brand.trim() || " ",
+      width / 2,
+      42 * scale,
+      `900 ${24 * scale}px ${POSTER_FONT}`,
+      0.18 * 24 * scale,
+      "#fff",
+      0,
+    );
+  });
 
   const subFont = `900 ${30 * scale}px ${POSTER_FONT}`;
   const subTracking = 2.4 * scale;
@@ -229,25 +278,27 @@ export const renderStandingsCanvas = async (
   const titleY = bandCenterY(bannerY, bannerH, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
   const subY = bandCenterY(bannerY, bannerH, SUB_BAND.topFrac, SUB_BAND.heightFrac);
 
-  drawOutlinedText(
-    context,
-    input.title.trim() || " ",
-    width / 2,
-    titleY,
-    `900 ${50 * scale}px ${POSTER_FONT}`,
-    "#fff",
-    6 * scale,
-  );
-  drawTrackedText(
-    context,
-    subText,
-    width / 2,
-    subY,
-    subFont,
-    subTracking,
-    "#fff",
-    4.2 * scale,
-  );
+  withHeaderDropShadow(context, scale, () => {
+    drawOutlinedText(
+      context,
+      input.title.trim() || " ",
+      width / 2,
+      titleY,
+      `900 ${50 * scale}px ${POSTER_FONT}`,
+      "#fff",
+      2 * scale,
+    );
+    drawTrackedText(
+      context,
+      subText,
+      width / 2,
+      subY,
+      subFont,
+      subTracking,
+      "#fff",
+      2 * scale,
+    );
+  });
 
   const logos = await Promise.all(
     input.slots.map((id) => {
