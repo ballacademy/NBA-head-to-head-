@@ -177,8 +177,11 @@ describe("banner notch and bands", () => {
   it("raises EASTERN CONFERENCE into the inner notch pocket", () => {
     const { top, bottom } = notchInnerY(1);
     const geo = (top + bottom) / 2;
+    const pocketH = bottom - top;
     const capCenter = subEmTop(1) + SUB_FONT * BRAND_CAP_MID_EM;
-    expect(capCenter).toBeCloseTo(geo - (bottom - top) * SUB_OPTICAL_LIFT, 5);
+    expect(SUB_OPTICAL_LIFT).toBeGreaterThan(0.15);
+    expect(capCenter).toBeCloseTo(geo - pocketH * SUB_OPTICAL_LIFT, 5);
+    expect(geo - capCenter).toBeGreaterThan(pocketH * 0.15);
     expect(subBaselineY(1)).toBeLessThan(geo);
     expect(subEmTop(1)).toBeGreaterThan(top);
     expect(subEmTop(1) + SUB_FONT).toBeLessThan(bottom);

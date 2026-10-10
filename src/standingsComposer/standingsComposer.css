@@ -285,8 +285,8 @@ main.sc-stage {
   top: var(--sub-top);
   height: 1em;
   padding: 0 2.5%;
-  /* Input cap-height sits low in the em-box; nudge into the notch pocket. */
-  transform: translateY(-0.12em);
+  /* Input cap-height sits low in the em-box; keep the raise on-screen. */
+  transform: translateY(-0.18em);
 }
 
 .ig-banner__title,

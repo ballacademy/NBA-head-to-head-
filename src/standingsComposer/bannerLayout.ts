@@ -34,8 +34,11 @@ export const SUB_BAND = {
 } as const;
 
 export const SUB_FONT = 30;
-/** Slight raise off the bottom stroke (fraction of the inner notch height). */
-export const SUB_OPTICAL_LIFT = 0.06;
+/**
+ * Raise conference caps toward the shoulder (fraction of inner notch height).
+ * Original layout used the geometric pocket center (lift 0).
+ */
+export const SUB_OPTICAL_LIFT = 0.22;
 
 export interface BannerNotch {
   left: number;
