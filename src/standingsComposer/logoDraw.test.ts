@@ -13,7 +13,8 @@ import {
   BRAND_FONT,
   BANNER_MARGIN_TOP,
   BRAND_SLOT,
-  SUB_BAND,
+  SUB_FONT,
+  SUB_OPTICAL_LIFT,
   TITLE_BAND,
   bandCenterY,
   bannerBoardRect,
@@ -21,9 +22,16 @@ import {
   brandBaselineY,
   brandEmTop,
   notchFromMeasuredWidth,
+  notchInnerY,
+  subBaselineY,
+  subEmTop,
   trackedTextWidth,
 } from "./bannerLayout";
-import { coverRect } from "./headerTexture";
+import {
+  BANNER_FILL_SHIFT,
+  bannerFillImageRect,
+  coverRect,
+} from "./headerTexture";
 
 describe("getOpaqueBoundsFromImageData", () => {
   it("trims transparent padding so the opaque mark can be centered", () => {
@@ -162,11 +170,18 @@ describe("banner notch and bands", () => {
     expect(TITLE_BAND.topFrac + TITLE_BAND.heightFrac).toBeCloseTo(
       BANNER_SHAPE.waist / BANNER_VIEW.height,
     );
-    expect(SUB_BAND.topFrac).toBeCloseTo(BANNER_SHAPE.waist / BANNER_VIEW.height);
     const titleY = bandCenterY(0, 200, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
-    const subY = bandCenterY(0, 200, SUB_BAND.topFrac, SUB_BAND.heightFrac);
     expect(titleY).toBeCloseTo((BANNER_SHAPE.top + BANNER_SHAPE.waist) / 2);
-    expect(subY).toBeCloseTo((BANNER_SHAPE.waist + BANNER_SHAPE.bottom) / 2);
+  });
+
+  it("raises EASTERN CONFERENCE into the inner notch pocket", () => {
+    const { top, bottom } = notchInnerY(1);
+    const geo = (top + bottom) / 2;
+    const capCenter = subEmTop(1) + SUB_FONT * BRAND_CAP_MID_EM;
+    expect(capCenter).toBeCloseTo(geo - (bottom - top) * SUB_OPTICAL_LIFT, 5);
+    expect(subBaselineY(1)).toBeLessThan(geo);
+    expect(subEmTop(1)).toBeGreaterThan(top);
+    expect(subEmTop(1) + SUB_FONT).toBeLessThan(bottom);
   });
 
   it("includes letter-spacing when measuring subtitle width", () => {
@@ -198,5 +213,13 @@ describe("header texture cover", () => {
     expect(placed.dh).toBeGreaterThanOrEqual(268);
     expect(placed.dx + placed.dw).toBeGreaterThanOrEqual(1200);
     expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(268);
+  });
+
+  it("shifts the title-box grain so it does not match the header field", () => {
+    const dest = bannerFillImageRect(10, 20, 100, 50);
+    expect(dest.x).toBeCloseTo(10 - 100 * BANNER_FILL_SHIFT.x);
+    expect(dest.y).toBeCloseTo(20 - 50 * BANNER_FILL_SHIFT.y);
+    expect(dest.w).toBeCloseTo(100 + 200 * BANNER_FILL_SHIFT.x);
+    expect(dest.h).toBeCloseTo(50 + 100 * BANNER_FILL_SHIFT.y);
   });
 });

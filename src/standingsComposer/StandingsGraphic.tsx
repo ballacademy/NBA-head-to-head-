@@ -2,11 +2,17 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
-  SUB_BAND,
   TITLE_BAND,
+  bannerBoardRect,
   brandEmTop,
   notchFromMeasuredWidth,
+  subEmTop,
 } from "./bannerLayout";
+import {
+  BANNER_FILL_OVERLAY,
+  HEADER_TEXTURE_SRC,
+  bannerFillImageRect,
+} from "./headerTexture";
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
@@ -119,6 +125,8 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       return () => observer.disconnect();
     }, [subtitle, unit]);
 
+    const bannerFill = bannerFillImageRect(0, 0, BANNER_VIEW.width, BANNER_VIEW.height);
+
     return (
       <article
         ref={setRefs}
@@ -127,6 +135,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
           {
             ["--u" as string]: `${unit}px`,
             ["--brand-top" as string]: `${brandEmTop(unit)}px`,
+            ["--sub-top" as string]: `${
+              subEmTop(unit) - bannerBoardRect(unit).y
+            }px`,
           } as React.CSSProperties
         }
         aria-label="Instagram standings graphic"
@@ -148,6 +159,25 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               preserveAspectRatio="none"
               aria-hidden="true"
             >
+              <defs>
+                <pattern
+                  id="ig-banner-fill"
+                  patternUnits="userSpaceOnUse"
+                  width={BANNER_VIEW.width}
+                  height={BANNER_VIEW.height}
+                >
+                  <image
+                    href={HEADER_TEXTURE_SRC}
+                    x={bannerFill.x}
+                    y={bannerFill.y}
+                    width={bannerFill.w}
+                    height={bannerFill.h}
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                </pattern>
+              </defs>
+              <path d={bannerPath(notch.left, notch.right)} fill="url(#ig-banner-fill)" />
+              <path d={bannerPath(notch.left, notch.right)} fill={BANNER_FILL_OVERLAY} />
               <path
                 d={bannerPath(notch.left, notch.right)}
                 fill="none"
@@ -178,8 +208,6 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             <div
               className="ig-banner__sub-slot"
               style={{
-                top: `${SUB_BAND.topFrac * 100}%`,
-                height: `${SUB_BAND.heightFrac * 100}%`,
                 left: `${(notch.left / BANNER_VIEW.width) * 100}%`,
                 width: `${((notch.right - notch.left) / BANNER_VIEW.width) * 100}%`,
               }}

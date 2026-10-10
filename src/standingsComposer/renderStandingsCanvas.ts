@@ -3,16 +3,18 @@ import {
   BANNER_VIEW,
   BRAND_FONT,
   BRAND_TRACKING_EM,
-  SUB_BAND,
+  SUB_FONT,
   TITLE_BAND,
   bandCenterY,
   bannerBoardRect,
   brandBaselineY,
   notchFromMeasuredWidth,
+  subBaselineY,
   trackedTextWidth,
 } from "./bannerLayout";
 import {
   HEADER_TEXTURE_SRC,
+  drawBannerInterior,
   drawCoveredTexture,
 } from "./headerTexture";
 import { drawCenteredLogo } from "./logoDraw";
@@ -225,7 +227,7 @@ export const renderStandingsCanvas = async (
   if (typeof document !== "undefined" && document.fonts?.load) {
     await Promise.all([
       document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
-      document.fonts.load(`900 ${30 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${SUB_FONT * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${50 * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
@@ -266,20 +268,25 @@ export const renderStandingsCanvas = async (
     );
   });
 
-  const subFont = `900 ${30 * scale}px ${POSTER_FONT}`;
+  const subFont = `900 ${SUB_FONT * scale}px ${POSTER_FONT}`;
   const subTracking = 2.4 * scale;
   const subText = input.subtitle.trim() || " ";
   const subWidth = measureTrackedWidth(context, subText, subFont, subTracking);
   const notch = notchFromMeasuredWidth(subWidth, bannerW);
 
-  drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
+  const buildBannerPath = () =>
+    drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
+  if (headerTexture) {
+    drawBannerInterior(context, headerTexture, bannerX, bannerY, bannerW, bannerH, buildBannerPath);
+  }
+  buildBannerPath();
   context.strokeStyle = "#fff";
   context.lineWidth = 6 * scale;
   context.lineJoin = "miter";
   context.stroke();
 
   const titleY = bandCenterY(bannerY, bannerH, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
-  const subY = bandCenterY(bannerY, bannerH, SUB_BAND.topFrac, SUB_BAND.heightFrac);
+  const subY = subBaselineY(scale);
 
   withHeaderDropShadow(context, scale, () => {
     drawOutlinedText(

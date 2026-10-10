@@ -33,6 +33,10 @@ export const SUB_BAND = {
   heightFrac: (BANNER_SHAPE.bottom - BANNER_SHAPE.waist) / BANNER_VIEW.height,
 } as const;
 
+export const SUB_FONT = 30;
+/** Extra raise so caps even-split the notch pocket (fraction of inner height). */
+export const SUB_OPTICAL_LIFT = 0.1;
+
 export interface BannerNotch {
   left: number;
   right: number;
@@ -113,6 +117,34 @@ export const brandEmTop = (scale = 1) => {
 /** Canvas baseline (middle) matching brandEmTop. */
 export const brandBaselineY = (scale = 1) =>
   brandEmTop(scale) + (BRAND_FONT * scale) / 2;
+
+/** Inner notch pocket between the shoulder underside and the bottom stroke. */
+export const notchInnerY = (scale = 1) => {
+  const { y, h } = bannerBoardRect(scale);
+  const strokePx = (BANNER_STROKE_VB / BANNER_VIEW.height) * h;
+  const waist = y + (BANNER_SHAPE.waist / BANNER_VIEW.height) * h;
+  const bottom = y + (BANNER_SHAPE.bottom / BANNER_VIEW.height) * h;
+  return {
+    top: waist + strokePx / 2,
+    bottom: bottom - strokePx / 2,
+  };
+};
+
+/**
+ * CSS top of the subtitle em-box so the caps sit in the middle of the
+ * lower notch, a little above the bottom stroke.
+ */
+export const subEmTop = (scale = 1) => {
+  const font = SUB_FONT * scale;
+  const { top, bottom } = notchInnerY(scale);
+  const pocketH = bottom - top;
+  const capCenter = (top + bottom) / 2 - pocketH * SUB_OPTICAL_LIFT;
+  return capCenter - font * BRAND_CAP_MID_EM;
+};
+
+/** Canvas baseline (middle) matching subEmTop. */
+export const subBaselineY = (scale = 1) =>
+  subEmTop(scale) + (SUB_FONT * scale) / 2;
 
 export const bandCenterY = (
   bannerY: number,

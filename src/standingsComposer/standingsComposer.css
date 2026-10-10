@@ -270,6 +270,8 @@ main.sc-stage {
 
 .ig-banner__sub-slot {
   box-sizing: border-box;
+  top: var(--sub-top);
+  height: 1em;
   padding: 0 2.5%;
 }
 
@@ -310,6 +312,8 @@ main.sc-stage {
 .ig-banner__sub {
   font-size: calc(30 * var(--u));
   letter-spacing: 0.08em;
+  height: 1em;
+  line-height: 1;
 }
 
 .ig-banner__sub-measure {

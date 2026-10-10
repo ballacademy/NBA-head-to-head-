@@ -1,5 +1,9 @@
 export const HEADER_TEXTURE_SRC = "/standings-header-texture.png";
 
+/** Inside the title box: same grain, shifted and slightly darkened. */
+export const BANNER_FILL_OVERLAY = "rgba(0, 0, 0, 0.22)";
+export const BANNER_FILL_SHIFT = { x: 0.16, y: 0.26 } as const;
+
 export interface CoverRect {
   dx: number;
   dy: number;
@@ -46,5 +50,37 @@ export const drawCoveredTexture = (
   context.rect(x, y, w, h);
   context.clip();
   context.drawImage(image, dx, dy, dw, dh);
+  context.restore();
+};
+
+/** Cover the dest rect with an offset sample so the grain does not match the header field. */
+export const bannerFillImageRect = (x: number, y: number, w: number, h: number) => {
+  const ox = w * BANNER_FILL_SHIFT.x;
+  const oy = h * BANNER_FILL_SHIFT.y;
+  return { x: x - ox, y: y - oy, w: w + ox * 2, h: h + oy * 2 };
+};
+
+export const drawBannerInterior = (
+  context: CanvasRenderingContext2D,
+  image: CanvasImageSource & {
+    width?: number;
+    height?: number;
+    naturalWidth?: number;
+    naturalHeight?: number;
+  },
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  buildPath: () => void,
+) => {
+  context.save();
+  buildPath();
+  context.clip();
+  const placed = bannerFillImageRect(x, y, w, h);
+  drawCoveredTexture(context, image, placed.x, placed.y, placed.w, placed.h);
+  context.fillStyle = BANNER_FILL_OVERLAY;
+  buildPath();
+  context.fill();
   context.restore();
 };
