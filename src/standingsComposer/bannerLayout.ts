@@ -3,6 +3,14 @@ import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "./rankingState";
 /** Fraction of the 4:5 board given to the header (brand + banner). */
 export const HEADER_RATIO = 0.17866;
 
+/** BALLACADEMY size in 1200-wide board units (was 24). */
+export const BRAND_FONT = 28;
+export const BRAND_TRACKING_EM = 0.18;
+/** Old 32+24 slot so the title banner does not move. */
+export const BRAND_SLOT = 56;
+export const BANNER_MARGIN_TOP = 16;
+export const BANNER_MARGIN_BOTTOM = 26;
+
 /** Banner SVG viewBox — CSS slots and canvas map to this. */
 export const BANNER_VIEW = { width: 1200, height: 200 } as const;
 
@@ -66,10 +74,29 @@ export const bannerBoardRect = (scale = 1) => {
   const headerH = Math.round(height * HEADER_RATIO);
   const x = Math.round(width * 0.045);
   const w = width - 2 * x;
-  const y = (32 + 24 + 16) * scale;
-  const h = headerH - y - 26 * scale;
+  const y = (BRAND_SLOT + BANNER_MARGIN_TOP) * scale;
+  const h = headerH - y - BANNER_MARGIN_BOTTOM * scale;
   return { x, y, w, h, headerH, width, height };
 };
+
+/** Top of the white banner stroke in board pixels. */
+export const bannerStrokeTop = (scale = 1) => {
+  const { y, h } = bannerBoardRect(scale);
+  return y + (BANNER_SHAPE.top / BANNER_VIEW.height) * h;
+};
+
+/**
+ * CSS top of the brand em-box so the cap-height sits in the middle of the
+ * gap between the graphic top and the banner stroke.
+ */
+export const brandEmTop = (scale = 1) => {
+  const font = BRAND_FONT * scale;
+  return bannerStrokeTop(scale) / 2 - font * 0.36;
+};
+
+/** Canvas baseline (middle) matching brandEmTop. */
+export const brandBaselineY = (scale = 1) =>
+  brandEmTop(scale) + (BRAND_FONT * scale) / 2;
 
 export const bandCenterY = (
   bannerY: number,

@@ -1,10 +1,13 @@
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
+  BRAND_FONT,
+  BRAND_TRACKING_EM,
   SUB_BAND,
   TITLE_BAND,
   bandCenterY,
   bannerBoardRect,
+  brandBaselineY,
   notchFromMeasuredWidth,
   trackedTextWidth,
 } from "./bannerLayout";
@@ -221,7 +224,7 @@ export const renderStandingsCanvas = async (
 ): Promise<HTMLCanvasElement> => {
   if (typeof document !== "undefined" && document.fonts?.load) {
     await Promise.all([
-      document.fonts.load(`900 ${24 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${30 * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${50 * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
@@ -255,9 +258,9 @@ export const renderStandingsCanvas = async (
       context,
       input.brand.trim() || " ",
       width / 2,
-      42 * scale,
-      `900 ${24 * scale}px ${POSTER_FONT}`,
-      0.18 * 24 * scale,
+      brandBaselineY(scale),
+      `900 ${BRAND_FONT * scale}px ${POSTER_FONT}`,
+      BRAND_TRACKING_EM * BRAND_FONT * scale,
       "#fff",
       0,
     );

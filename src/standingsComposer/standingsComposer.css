@@ -198,10 +198,19 @@ main.sc-stage {
   background-position: center;
 }
 
+.ig-brand-slot {
+  flex: 0 0 auto;
+  width: 100%;
+  height: calc(56 * var(--u));
+}
+
 .ig-brand {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: var(--brand-top);
   margin: 0;
-  margin-top: calc(32 * var(--u));
-  width: 80%;
+  width: auto;
   height: 1em;
   padding: 0;
   border: 0;
@@ -210,7 +219,7 @@ main.sc-stage {
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(24 * var(--u));
+  font-size: calc(28 * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.18em;

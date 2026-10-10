@@ -4,6 +4,7 @@ import {
   BANNER_VIEW,
   SUB_BAND,
   TITLE_BAND,
+  brandEmTop,
   notchFromMeasuredWidth,
 } from "./bannerLayout";
 import {
@@ -122,10 +123,16 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       <article
         ref={setRefs}
         className={exporting ? "ig-board is-exporting" : "ig-board"}
-        style={{ ["--u" as string]: `${unit}px` }}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--brand-top" as string]: `${brandEmTop(unit)}px`,
+          } as React.CSSProperties
+        }
         aria-label="Instagram standings graphic"
       >
         <header className="ig-header">
+          <div className="ig-brand-slot" aria-hidden="true" />
           <input
             className="ig-brand"
             value={brand}

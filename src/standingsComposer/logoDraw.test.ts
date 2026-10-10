@@ -9,9 +9,16 @@ import {
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
+  BRAND_FONT,
+  BANNER_MARGIN_TOP,
+  BRAND_SLOT,
   SUB_BAND,
   TITLE_BAND,
   bandCenterY,
+  bannerBoardRect,
+  bannerStrokeTop,
+  brandBaselineY,
+  brandEmTop,
   notchFromMeasuredWidth,
   trackedTextWidth,
 } from "./bannerLayout";
@@ -164,6 +171,21 @@ describe("banner notch and bands", () => {
   it("includes letter-spacing when measuring subtitle width", () => {
     expect(trackedTextWidth([10, 10, 10], 4)).toBe(38);
     expect(trackedTextWidth([], 4)).toBe(0);
+  });
+
+  it("keeps the title banner origin so logos and title layout do not shift", () => {
+    expect(bannerBoardRect(1).y).toBe(BRAND_SLOT + BANNER_MARGIN_TOP);
+    expect(bannerBoardRect(1).y).toBe(72);
+  });
+
+  it("places a larger BALLACADEMY optically in the gap above the banner stroke", () => {
+    expect(BRAND_FONT).toBe(28);
+    const strokeTop = bannerStrokeTop(1);
+    const capCenter = brandEmTop(1) + BRAND_FONT * 0.36;
+    expect(capCenter).toBeCloseTo(strokeTop / 2, 5);
+    expect(brandBaselineY(1)).toBeCloseTo(brandEmTop(1) + BRAND_FONT / 2, 8);
+    expect(brandEmTop(1)).toBeGreaterThan(0);
+    expect(brandEmTop(1) + BRAND_FONT).toBeLessThan(strokeTop);
   });
 });
 
