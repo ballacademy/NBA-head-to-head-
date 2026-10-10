@@ -250,12 +250,27 @@ main.sc-stage {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-color: #0b0b0b;
+  /* Near-black + faint square studs — not the brushed header metal. */
+  background-color: #111111;
   background-image:
-    linear-gradient(var(--banner-fill-overlay, rgba(0, 0, 0, 0.3)), var(--banner-fill-overlay, rgba(0, 0, 0, 0.3))),
-    url("/standings-header-texture.png");
-  background-size: auto, 132% 152%;
-  background-position: 0 0, 18% 72%;
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(3.75 * var(--u)),
+      #1c1c1c calc(3.75 * var(--u)),
+      #1c1c1c calc(6.25 * var(--u)),
+      transparent calc(6.25 * var(--u)),
+      transparent calc(10 * var(--u))
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      #111111 0,
+      #111111 calc(3.75 * var(--u)),
+      transparent calc(3.75 * var(--u)),
+      transparent calc(6.25 * var(--u)),
+      #111111 calc(6.25 * var(--u)),
+      #111111 calc(10 * var(--u))
+    );
 }
 
 .ig-banner__svg {

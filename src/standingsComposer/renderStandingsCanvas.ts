@@ -276,9 +276,15 @@ export const renderStandingsCanvas = async (
 
   const buildBannerPath = () =>
     drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
-  if (headerTexture) {
-    drawBannerInterior(context, headerTexture, bannerX, bannerY, bannerW, bannerH, buildBannerPath);
-  }
+  drawBannerInterior(
+    context,
+    bannerX,
+    bannerY,
+    bannerW,
+    bannerH,
+    scale,
+    buildBannerPath,
+  );
   buildBannerPath();
   context.strokeStyle = "#fff";
   context.lineWidth = 6 * scale;

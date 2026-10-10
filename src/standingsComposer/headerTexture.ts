@@ -1,8 +1,11 @@
 export const HEADER_TEXTURE_SRC = "/standings-header-texture.png";
 
-/** Inside the title box: same grain, shifted and slightly darkened. */
-export const BANNER_FILL_OVERLAY = "rgba(0, 0, 0, 0.30)";
-export const BANNER_FILL_SHIFT = { x: 0.16, y: 0.26 } as const;
+/** Title-box interior — near-black, not the brushed header metal. */
+export const BANNER_FILL_BASE = "#111111";
+export const BANNER_STUD_FILL = "#1c1c1c";
+/** Board-unit grid for the subtle square studs. */
+export const BANNER_STUD_STEP = 10;
+export const BANNER_STUD_SIZE = 2.5;
 
 export interface CoverRect {
   dx: number;
@@ -53,34 +56,35 @@ export const drawCoveredTexture = (
   context.restore();
 };
 
-/** Cover the dest rect with an offset sample so the grain does not match the header field. */
-export const bannerFillImageRect = (x: number, y: number, w: number, h: number) => {
-  const ox = w * BANNER_FILL_SHIFT.x;
-  const oy = h * BANNER_FILL_SHIFT.y;
-  return { x: x - ox, y: y - oy, w: w + ox * 2, h: h + oy * 2 };
+export const bannerStudMetrics = (scale = 1) => {
+  const step = BANNER_STUD_STEP * scale;
+  const size = BANNER_STUD_SIZE * scale;
+  return { step, size, inset: (step - size) / 2 };
 };
 
+/** Near-black field with a faint square-stud grid, clipped to the title box. */
 export const drawBannerInterior = (
   context: CanvasRenderingContext2D,
-  image: CanvasImageSource & {
-    width?: number;
-    height?: number;
-    naturalWidth?: number;
-    naturalHeight?: number;
-  },
   x: number,
   y: number,
   w: number,
   h: number,
+  scale: number,
   buildPath: () => void,
 ) => {
   context.save();
   buildPath();
   context.clip();
-  const placed = bannerFillImageRect(x, y, w, h);
-  drawCoveredTexture(context, image, placed.x, placed.y, placed.w, placed.h);
-  context.fillStyle = BANNER_FILL_OVERLAY;
-  buildPath();
-  context.fill();
+  context.fillStyle = BANNER_FILL_BASE;
+  context.fillRect(x, y, w, h);
+  const { step, size, inset } = bannerStudMetrics(scale);
+  context.fillStyle = BANNER_STUD_FILL;
+  const x0 = Math.floor(x / step) * step;
+  const y0 = Math.floor(y / step) * step;
+  for (let py = y0; py < y + h + step; py += step) {
+    for (let px = x0; px < x + w + step; px += step) {
+      context.fillRect(px + inset, py + inset, size, size);
+    }
+  }
   context.restore();
 };

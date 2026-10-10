@@ -8,7 +8,6 @@ import {
   notchFromMeasuredWidth,
   subEmTop,
 } from "./bannerLayout";
-import { BANNER_FILL_OVERLAY } from "./headerTexture";
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
@@ -149,7 +148,6 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             ["--sub-top" as string]: `${
               subEmTop(unit) - bannerBoardRect(unit).y
             }px`,
-            ["--banner-fill-overlay" as string]: BANNER_FILL_OVERLAY,
           } as React.CSSProperties
         }
         aria-label="Instagram standings graphic"

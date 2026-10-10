@@ -28,8 +28,11 @@ import {
   trackedTextWidth,
 } from "./bannerLayout";
 import {
-  BANNER_FILL_SHIFT,
-  bannerFillImageRect,
+  BANNER_FILL_BASE,
+  BANNER_STUD_FILL,
+  BANNER_STUD_SIZE,
+  BANNER_STUD_STEP,
+  bannerStudMetrics,
   coverRect,
 } from "./headerTexture";
 
@@ -218,11 +221,13 @@ describe("header texture cover", () => {
     expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(268);
   });
 
-  it("shifts the title-box grain so it does not match the header field", () => {
-    const dest = bannerFillImageRect(10, 20, 100, 50);
-    expect(dest.x).toBeCloseTo(10 - 100 * BANNER_FILL_SHIFT.x);
-    expect(dest.y).toBeCloseTo(20 - 50 * BANNER_FILL_SHIFT.y);
-    expect(dest.w).toBeCloseTo(100 + 200 * BANNER_FILL_SHIFT.x);
-    expect(dest.h).toBeCloseTo(50 + 100 * BANNER_FILL_SHIFT.y);
+  it("uses a near-black studded fill instead of the brushed header metal", () => {
+    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#111111");
+    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_STUD_SIZE).toBeLessThan(BANNER_STUD_STEP / 2);
+    const { step, size, inset } = bannerStudMetrics(2);
+    expect(step).toBe(20);
+    expect(size).toBe(5);
+    expect(inset).toBeCloseTo(7.5);
   });
 });
