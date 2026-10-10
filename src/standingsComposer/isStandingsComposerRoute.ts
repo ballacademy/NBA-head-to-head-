@@ -24,7 +24,10 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/" ||
     path === "/rankings" ||
     path.endsWith("/rankings.html") ||
-    path === "/standings-composer"
+    path === "/standings-composer" ||
+    path === "/tier-list" ||
+    path === "/tiers" ||
+    path === "/tierlist"
   );
 };
 
@@ -34,8 +37,9 @@ export const isGameAppHub = (value: string | null | undefined): boolean => {
 };
 
 /**
- * This branch’s product is the standings composer. `/`, `/rankings`, and
- * `?hub=rankings` all open it. Draft Day GM only loads for `?hub=play`.
+ * This branch’s product is the Instagram composer hub. `/`, `/rankings`,
+ * `/tier-list`, and `?hub=rankings` all open it. Draft Day GM only loads
+ * for `?hub=play`.
  */
 export const isStandingsComposerRoute = (
   search = typeof window !== "undefined" ? window.location.search : "",

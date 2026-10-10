@@ -14,17 +14,20 @@ Lineups are scored on:
 
 The app can export a shareable lineup image from match and Daily results.
 
-## Instagram standings composer
+## Instagram composers
 
-On this branch the composer **is the home page**. Compose-only ranking graphics for an NBA fan page (no Instagram posting).
+On this branch the composer hub **is the home page**. Compose-only Instagram graphics (no posting). Switch **Standings** vs **Tier list** in the top tabs.
 
 ```bash
 npm run dev
 ```
 
-Then open [http://localhost:5173/](http://localhost:5173/) (`/?hub=rankings` and `/rankings` also work).
+Then open [http://localhost:5173/](http://localhost:5173/) for standings (`/?hub=rankings` and `/rankings` also work). The tier list is at [http://localhost:5173/tier-list](http://localhost:5173/tier-list) (`?composer=tier` also works).
 
-Click a grey slot to pick a team, edit the three header lines, and **Export PNG** for a 4:5 Instagram still (2400×3000). Logos are vendored ESPN 500px marks — see `public/nba-logos/README.md`.
+- **Standings:** click a grey slot to pick a team, edit the three header lines, export a 4:5 PNG (2400×3000).
+- **Tier list:** 3–10 labeled rows (default S–F), click a square to add NBA logos, edit the title and letters, export the same 4:5 PNG.
+
+Logos are vendored ESPN 500px marks — see `public/nba-logos/README.md`.
 
 Draft Day GM remains at `/?hub=play` if you need the game.
 

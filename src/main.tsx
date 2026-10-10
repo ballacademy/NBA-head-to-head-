@@ -15,9 +15,9 @@ import "@fontsource/montserrat/latin-800.css";
 import "@fontsource/montserrat/latin-900.css";
 import "./styles.css";
 
-const StandingsComposerApp = lazyWithChunkReload(() =>
-  import("./standingsComposer/StandingsComposerApp").then((m) => ({
-    default: m.StandingsComposerApp,
+const ComposerHub = lazyWithChunkReload(() =>
+  import("./instagramComposer/ComposerHub").then((m) => ({
+    default: m.ComposerHub,
   })),
 );
 
@@ -41,7 +41,7 @@ createRoot(root).render(
             </div>
           }
         >
-          <StandingsComposerApp />
+          <ComposerHub />
         </Suspense>
       ) : (
         <>

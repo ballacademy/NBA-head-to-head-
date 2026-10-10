@@ -1,6 +1,6 @@
 # NBA team logos
 
-30 club marks used by the Instagram standings composer (`/?hub=rankings`).
+30 club marks used by the Instagram standings and tier-list composers (`/` and `/tier-list`).
 
 **Source:** ESPN’s public NBA team logo CDN, 500px PNGs:
 

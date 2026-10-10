@@ -61,10 +61,12 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("?hub=rankings", "/")).toBe(true);
     expect(isStandingsComposerRoute("?hub=ig-rankings", "/")).toBe(true);
     expect(isStandingsComposerRoute("", "/rankings")).toBe(true);
+    expect(isStandingsComposerRoute("", "/tier-list")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 
   it("only opens Draft Day GM for an explicit play hub", () => {
+    expect(isStandingsComposerRoute("?hub=play", "/tier-list")).toBe(false);
     expect(isStandingsComposerRoute("?hub=play", "/")).toBe(false);
     expect(isStandingsComposerRoute("?hub=ddgm", "/")).toBe(false);
     expect(isStandingsComposerRoute("?hub=ranks", "/")).toBe(true);

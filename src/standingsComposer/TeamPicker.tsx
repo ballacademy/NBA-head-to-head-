@@ -1,28 +1,32 @@
 import { useMemo, useRef, useState } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
-import type { RankingSlots } from "./rankingState";
 import { NBA_TEAMS, type Conference, type NbaTeam } from "./teams";
 
 type Filter = "all" | Conference;
 
 interface TeamPickerProps {
-  slotIndex: number;
-  slots: RankingSlots;
+  heading: string;
+  hint?: string;
+  currentId?: string | null;
+  usedLabels: Record<string, string>;
+  clearLabel?: string;
   onPick: (teamId: string) => void;
-  onClear: () => void;
+  onClear?: () => void;
   onClose: () => void;
 }
 
 export function TeamPicker({
-  slotIndex,
-  slots,
+  heading,
+  hint = "Click a club to fill this slot. Used teams move here.",
+  currentId = null,
+  usedLabels,
+  clearLabel = "Clear slot",
   onPick,
   onClear,
   onClose,
 }: TeamPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<Filter>("all");
-  const currentId = slots[slotIndex];
   const filled = Boolean(currentId);
 
   useDialogA11y({
@@ -58,8 +62,8 @@ export function TeamPicker({
       >
         <div className="sc-picker__top">
           <div>
-            <h2 id="sc-picker-title">Pick team · #{slotIndex + 1}</h2>
-            <p>Click a club to fill this slot. Used teams move here.</p>
+            <h2 id="sc-picker-title">{heading}</h2>
+            <p>{hint}</p>
           </div>
           <button type="button" className="sc-picker__close" onClick={onClose}>
             Close
@@ -84,8 +88,8 @@ export function TeamPicker({
             <TeamButton
               key={team.id}
               team={team}
-              slots={slots}
               currentId={currentId ?? null}
+              usedLabel={usedLabels[team.id]}
               onPick={onPick}
             />
           ))}
@@ -94,10 +98,10 @@ export function TeamPicker({
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
-            onClick={onClear}
-            disabled={!filled}
+            onClick={() => onClear?.()}
+            disabled={!filled || !onClear}
           >
-            Clear slot
+            {clearLabel}
           </button>
         </div>
       </div>
@@ -107,18 +111,17 @@ export function TeamPicker({
 
 function TeamButton({
   team,
-  slots,
   currentId,
+  usedLabel,
   onPick,
 }: {
   team: NbaTeam;
-  slots: RankingSlots;
   currentId: string | null;
+  usedLabel?: string;
   onPick: (teamId: string) => void;
 }) {
-  const usedAt = slots.indexOf(team.id);
   const isCurrent = currentId === team.id;
-  const isUsed = usedAt >= 0 && !isCurrent;
+  const isUsed = Boolean(usedLabel) && !isCurrent;
 
   return (
     <button
@@ -136,11 +139,7 @@ function TeamButton({
       <span>
         <span className="sc-team__name">{team.name}</span>
         <span className="sc-team__meta">
-          {isCurrent
-            ? "This slot"
-            : isUsed
-              ? `Now #${usedAt + 1}`
-              : team.conference}
+          {isCurrent ? "This slot" : isUsed ? usedLabel : team.conference}
         </span>
       </span>
     </button>

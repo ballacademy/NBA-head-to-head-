@@ -103,8 +103,19 @@ export function StandingsComposerApp() {
     setStatus("Board cleared.");
   };
 
+  const pickerLabels: Record<string, string> = {};
+  if (activeIndex != null) {
+    slots.forEach((id, index) => {
+      if (!id) {
+        return;
+      }
+      pickerLabels[id] =
+        index === activeIndex ? "This slot" : `Now #${index + 1}`;
+    });
+  }
+
   return (
-    <div className="sc-root">
+    <div className="sc-composer">
       <header className="sc-toolbar">
         <div className="sc-toolbar__brand">
           <p className="sc-toolbar__eyebrow">Compose only</p>
@@ -175,8 +186,9 @@ export function StandingsComposerApp() {
 
       {activeIndex != null ? (
         <TeamPicker
-          slotIndex={activeIndex}
-          slots={slots}
+          heading={`Pick team · #${activeIndex + 1}`}
+          currentId={slots[activeIndex]}
+          usedLabels={pickerLabels}
           onPick={(teamId) => {
             setSlots((current) => assignTeam(current, activeIndex, teamId));
             setActiveIndex(null);
