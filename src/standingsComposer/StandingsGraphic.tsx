@@ -141,21 +141,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              <defs>
-                <pattern
-                  id="ig-carbon"
-                  width="4"
-                  height="4"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <rect width="4" height="4" fill="#050505" />
-                  <rect width="1" height="4" fill="rgba(255,255,255,0.045)" />
-                  <rect width="4" height="1" fill="rgba(255,255,255,0.03)" />
-                </pattern>
-              </defs>
               <path
                 d={bannerPath(notch.left, notch.right)}
-                fill="url(#ig-carbon)"
+                fill="none"
                 stroke="#fff"
                 strokeWidth="7"
                 strokeLinejoin="miter"

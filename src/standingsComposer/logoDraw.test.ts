@@ -15,6 +15,7 @@ import {
   notchFromMeasuredWidth,
   trackedTextWidth,
 } from "./bannerLayout";
+import { coverRect } from "./headerTexture";
 
 describe("getOpaqueBoundsFromImageData", () => {
   it("trims transparent padding so the opaque mark can be centered", () => {
@@ -163,5 +164,15 @@ describe("banner notch and bands", () => {
   it("includes letter-spacing when measuring subtitle width", () => {
     expect(trackedTextWidth([10, 10, 10], 4)).toBe(38);
     expect(trackedTextWidth([], 4)).toBe(0);
+  });
+});
+
+describe("header texture cover", () => {
+  it("covers a wide header without letterboxing", () => {
+    const placed = coverRect(679, 350, 0, 0, 1200, 268);
+    expect(placed.dw).toBeGreaterThanOrEqual(1200);
+    expect(placed.dh).toBeGreaterThanOrEqual(268);
+    expect(placed.dx + placed.dw).toBeGreaterThanOrEqual(1200);
+    expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(268);
   });
 });

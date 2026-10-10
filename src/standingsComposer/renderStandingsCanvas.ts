@@ -8,6 +8,10 @@ import {
   notchFromMeasuredWidth,
   trackedTextWidth,
 } from "./bannerLayout";
+import {
+  HEADER_TEXTURE_SRC,
+  drawCoveredTexture,
+} from "./headerTexture";
 import { drawCenteredLogo } from "./logoDraw";
 import {
   EMPTY_SLOT_COLOR,
@@ -194,6 +198,11 @@ export const renderStandingsCanvas = async (
   const gridY = headerH;
   const gridH = height - headerH;
 
+  const headerTexture = await loadImage(HEADER_TEXTURE_SRC);
+  if (headerTexture) {
+    drawCoveredTexture(context, headerTexture, 0, 0, width, headerH);
+  }
+
   drawTrackedText(
     context,
     input.brand.trim() || " ",
@@ -212,8 +221,6 @@ export const renderStandingsCanvas = async (
   const notch = notchFromMeasuredWidth(subWidth, bannerW);
 
   drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
-  context.fillStyle = "#050505";
-  context.fill();
   context.strokeStyle = "#fff";
   context.lineWidth = 6 * scale;
   context.lineJoin = "miter";
