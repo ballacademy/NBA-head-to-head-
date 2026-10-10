@@ -1,7 +1,7 @@
 export const HEADER_TEXTURE_SRC = "/standings-header-texture.png";
 
 /** Inside the title box: same grain, shifted and slightly darkened. */
-export const BANNER_FILL_OVERLAY = "rgba(0, 0, 0, 0.22)";
+export const BANNER_FILL_OVERLAY = "rgba(0, 0, 0, 0.30)";
 export const BANNER_FILL_SHIFT = { x: 0.16, y: 0.26 } as const;
 
 export interface CoverRect {

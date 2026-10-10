@@ -34,8 +34,8 @@ export const SUB_BAND = {
 } as const;
 
 export const SUB_FONT = 30;
-/** Extra raise so caps even-split the notch pocket (fraction of inner height). */
-export const SUB_OPTICAL_LIFT = 0.1;
+/** Slight raise off the bottom stroke (fraction of the inner notch height). */
+export const SUB_OPTICAL_LIFT = 0.06;
 
 export interface BannerNotch {
   left: number;

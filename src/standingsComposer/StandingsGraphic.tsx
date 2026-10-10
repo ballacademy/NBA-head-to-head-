@@ -8,11 +8,7 @@ import {
   notchFromMeasuredWidth,
   subEmTop,
 } from "./bannerLayout";
-import {
-  BANNER_FILL_OVERLAY,
-  HEADER_TEXTURE_SRC,
-  bannerFillImageRect,
-} from "./headerTexture";
+import { BANNER_FILL_OVERLAY } from "./headerTexture";
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
@@ -46,6 +42,23 @@ const bannerPath = (notchLeft: number, notchRight: number) => {
     `H ${notchLeft.toFixed(1)}`,
     `V ${BANNER_SHAPE.waist}`,
     `H ${BANNER_SHAPE.insetX}`,
+    "Z",
+  ].join(" ");
+};
+
+const bannerPathBbox = (notchLeft: number, notchRight: number) => {
+  const X = (value: number) => (value / BANNER_VIEW.width).toFixed(4);
+  const Y = (value: number) => (value / BANNER_VIEW.height).toFixed(4);
+  const right = BANNER_VIEW.width - BANNER_SHAPE.insetX;
+  return [
+    `M ${X(BANNER_SHAPE.insetX)} ${Y(BANNER_SHAPE.top)}`,
+    `H ${X(right)}`,
+    `V ${Y(BANNER_SHAPE.waist)}`,
+    `H ${X(notchRight)}`,
+    `V ${Y(BANNER_SHAPE.bottom)}`,
+    `H ${X(notchLeft)}`,
+    `V ${Y(BANNER_SHAPE.waist)}`,
+    `H ${X(BANNER_SHAPE.insetX)}`,
     "Z",
   ].join(" ");
 };
@@ -125,8 +138,6 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       return () => observer.disconnect();
     }, [subtitle, unit]);
 
-    const bannerFill = bannerFillImageRect(0, 0, BANNER_VIEW.width, BANNER_VIEW.height);
-
     return (
       <article
         ref={setRefs}
@@ -138,6 +149,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             ["--sub-top" as string]: `${
               subEmTop(unit) - bannerBoardRect(unit).y
             }px`,
+            ["--banner-fill-overlay" as string]: BANNER_FILL_OVERLAY,
           } as React.CSSProperties
         }
         aria-label="Instagram standings graphic"
@@ -153,6 +165,11 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             onChange={(event) => onBrandChange(event.target.value.toUpperCase())}
           />
           <div className="ig-banner" ref={bannerRef}>
+            <div
+              className="ig-banner__fill"
+              style={{ clipPath: "url(#ig-banner-clip)" }}
+              aria-hidden="true"
+            />
             <svg
               className="ig-banner__svg"
               viewBox={`0 0 ${BANNER_VIEW.width} ${BANNER_VIEW.height}`}
@@ -160,24 +177,10 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               aria-hidden="true"
             >
               <defs>
-                <pattern
-                  id="ig-banner-fill"
-                  patternUnits="userSpaceOnUse"
-                  width={BANNER_VIEW.width}
-                  height={BANNER_VIEW.height}
-                >
-                  <image
-                    href={HEADER_TEXTURE_SRC}
-                    x={bannerFill.x}
-                    y={bannerFill.y}
-                    width={bannerFill.w}
-                    height={bannerFill.h}
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                </pattern>
+                <clipPath id="ig-banner-clip" clipPathUnits="objectBoundingBox">
+                  <path d={bannerPathBbox(notch.left, notch.right)} />
+                </clipPath>
               </defs>
-              <path d={bannerPath(notch.left, notch.right)} fill="url(#ig-banner-fill)" />
-              <path d={bannerPath(notch.left, notch.right)} fill={BANNER_FILL_OVERLAY} />
               <path
                 d={bannerPath(notch.left, notch.right)}
                 fill="none"
