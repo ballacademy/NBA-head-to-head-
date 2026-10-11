@@ -39,6 +39,37 @@ export const neonCellBlur = (size: number) =>
 export const headshotGlowPx = (size: number) =>
   Math.max(6, Math.round(size * 0.12));
 
+/** Outline-following drop shadow for player PNGs — not a square box-shadow. */
+export const headshotSilhouettePx = (size: number) => ({
+  tightX: Math.max(2, Math.round(size * 0.03)),
+  tightY: Math.max(3, Math.round(size * 0.038)),
+  softX: Math.max(4, Math.round(size * 0.052)),
+  softY: Math.max(5, Math.round(size * 0.064)),
+  softBlur: Math.max(2, Math.round(size * 0.03)),
+});
+
+export const paintHeadshotSilhouette = (
+  context: CanvasRenderingContext2D,
+  paint: () => void,
+  size: number,
+) => {
+  const shadow = headshotSilhouettePx(size);
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.38)";
+  context.shadowOffsetX = shadow.softX;
+  context.shadowOffsetY = shadow.softY;
+  context.shadowBlur = shadow.softBlur;
+  paint();
+  context.restore();
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.78)";
+  context.shadowOffsetX = shadow.tightX;
+  context.shadowOffsetY = shadow.tightY;
+  context.shadowBlur = 0;
+  paint();
+  context.restore();
+};
+
 export const paintNeonCellSheen = (
   context: CanvasRenderingContext2D,
   x: number,

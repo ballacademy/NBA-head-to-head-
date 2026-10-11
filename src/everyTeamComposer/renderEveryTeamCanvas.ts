@@ -252,10 +252,6 @@ export const renderEveryTeamCanvas = async (
       context.beginPath();
       context.rect(x, y, size, size);
       context.clip();
-      context.shadowColor = "rgba(0, 0, 0, 0.82)";
-      context.shadowOffsetX = Math.round(2 * scale);
-      context.shadowOffsetY = Math.round(2.4 * scale);
-      context.shadowBlur = 0;
       drawCoverHeadshot(context, cell.headshot, x, y, size, size, {
         glow: isNeonLook(input.look),
       });

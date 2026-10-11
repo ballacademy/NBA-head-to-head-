@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { headshotGlowPx } from "../instagramComposer/composerLook";
+import {
+  headshotGlowPx,
+  paintHeadshotSilhouette,
+} from "../instagramComposer/composerLook";
 
 interface PlayerHeadshotProps {
   src: string;
@@ -49,31 +52,35 @@ export const drawCoverHeadshot = (
   y: number,
   w: number,
   h: number,
-  options?: { glow?: boolean },
+  options?: { glow?: boolean; silhouette?: boolean },
 ) => {
   const nw = image.naturalWidth || image.width || 1;
   const nh = image.naturalHeight || image.height || 1;
   const sourceSize = Math.min(nw, nh);
   const sx = (nw - sourceSize) / 2;
   const sy = Math.max(0, (nh - sourceSize) * 0.18);
+  const size = Math.min(w, h);
   const paint = () => {
     context.drawImage(image, sx, sy, sourceSize, sourceSize, x, y, w, h);
   };
   if (options?.glow) {
     context.save();
     context.shadowColor = "rgba(210, 235, 255, 0.92)";
-    context.shadowBlur = headshotGlowPx(Math.min(w, h));
+    context.shadowBlur = headshotGlowPx(size);
     context.shadowOffsetX = 0;
     context.shadowOffsetY = 0;
     paint();
     context.restore();
     context.save();
     context.shadowColor = "rgba(255, 255, 255, 0.7)";
-    context.shadowBlur = Math.max(4, Math.round(headshotGlowPx(Math.min(w, h)) * 0.4));
+    context.shadowBlur = Math.max(4, Math.round(headshotGlowPx(size) * 0.4));
     context.shadowOffsetX = 0;
     context.shadowOffsetY = 0;
     paint();
     context.restore();
+  }
+  if (options?.silhouette !== false) {
+    paintHeadshotSilhouette(context, paint, size);
   }
   paint();
 };

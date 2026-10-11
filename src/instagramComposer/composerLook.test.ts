@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   composerLookClass,
   headshotGlowPx,
+  headshotSilhouettePx,
   isNeonLook,
   neonCellBlur,
   neonCellInset,
@@ -29,6 +30,14 @@ describe("composer look", () => {
     expect(neonCellBlur(200)).toBe(22);
     expect(neonCellInset(200) * 2 + neonCellLine(200)).toBeLessThan(200);
     expect(headshotGlowPx(120)).toBe(14);
+  });
+
+  it("keeps player silhouette shadows inside a modest outline offset", () => {
+    const shadow = headshotSilhouettePx(180);
+    expect(shadow.tightX).toBe(5);
+    expect(shadow.tightY).toBe(7);
+    expect(shadow.softY).toBeGreaterThan(shadow.tightY);
+    expect(shadow.softX + shadow.softBlur).toBeLessThan(180 * 0.12);
   });
 
   it("does not change the wrap-after-8 tier grid", () => {

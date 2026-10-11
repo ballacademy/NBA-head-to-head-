@@ -205,10 +205,25 @@
     inset 0 0 calc(16 * var(--u)) rgba(210, 235, 255, 0.4);
 }
 
+.tl-headshot {
+  /* Alpha outline — not a square box-shadow. */
+  filter:
+    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(
+      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+        rgba(0, 0, 0, 0.34)
+    );
+}
+
 .tl-board.is-neon .tl-headshot {
   filter:
     drop-shadow(0 0 calc(6 * var(--u)) rgba(255, 255, 255, 0.88))
-    drop-shadow(0 0 calc(14 * var(--u)) rgba(190, 225, 255, 0.42));
+    drop-shadow(0 0 calc(14 * var(--u)) rgba(190, 225, 255, 0.42))
+    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(
+      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+        rgba(0, 0, 0, 0.34)
+    );
 }
 
 .tl-cell--add {
