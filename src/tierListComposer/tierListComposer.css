@@ -174,6 +174,43 @@
   background: linear-gradient(135deg, var(--cell-from) 0%, var(--cell-to) 100%);
 }
 
+.tl-board.is-neon .tl-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  box-shadow:
+    inset 0 0 0 calc(2.2 * var(--u)) rgba(255, 255, 255, 0.38),
+    inset 0 0 calc(14 * var(--u)) rgba(210, 235, 255, 0.26);
+}
+
+.tl-board.is-neon .tl-cell--filled::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+.tl-board.is-neon .tl-cell--filled::after {
+  box-shadow:
+    inset 0 0 0 calc(2.4 * var(--u)) rgba(255, 255, 255, 0.62),
+    inset 0 0 calc(16 * var(--u)) rgba(210, 235, 255, 0.4);
+}
+
+.tl-board.is-neon .tl-headshot {
+  filter:
+    drop-shadow(0 0 calc(6 * var(--u)) rgba(255, 255, 255, 0.88))
+    drop-shadow(0 0 calc(14 * var(--u)) rgba(190, 225, 255, 0.42));
+}
+
 .tl-cell--add {
   background: #1a1a1a;
   color: rgba(255, 255, 255, 0.72);

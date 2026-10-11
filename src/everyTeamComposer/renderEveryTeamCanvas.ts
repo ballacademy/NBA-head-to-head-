@@ -1,4 +1,10 @@
 import {
+  isNeonLook,
+  paintNeonCellRim,
+  paintNeonCellSheen,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
+import {
   BANNER_STROKE_VB,
   BRAND_FONT,
   BRAND_TRACKING_EM,
@@ -112,6 +118,7 @@ export interface EveryTeamRenderInput {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
+  look?: ComposerLook;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -223,6 +230,9 @@ export const renderEveryTeamCanvas = async (
     gradient.addColorStop(1, cell.team.cellTo);
     context.fillStyle = gradient;
     context.fillRect(x, y, size, size);
+    if (isNeonLook(input.look)) {
+      paintNeonCellSheen(context, x, y, size, size);
+    }
     if (cell.logo) {
       context.save();
       context.beginPath();
@@ -233,6 +243,7 @@ export const renderEveryTeamCanvas = async (
         fitX: ET_LOGO_FIT,
         fitY: ET_LOGO_FIT,
         cacheKey: cell.team.logoSrc,
+        glow: isNeonLook(input.look),
       });
       context.restore();
     }
@@ -245,8 +256,13 @@ export const renderEveryTeamCanvas = async (
       context.shadowOffsetX = Math.round(2 * scale);
       context.shadowOffsetY = Math.round(2.4 * scale);
       context.shadowBlur = 0;
-      drawCoverHeadshot(context, cell.headshot, x, y, size, size);
+      drawCoverHeadshot(context, cell.headshot, x, y, size, size, {
+        glow: isNeonLook(input.look),
+      });
       context.restore();
+    }
+    if (isNeonLook(input.look)) {
+      paintNeonCellRim(context, x, y, size, size);
     }
     context.strokeStyle = cell.team.cellFrom;
     context.lineWidth = ET_BORDER * scale;

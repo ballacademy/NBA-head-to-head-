@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import {
+  TIER_LOOK_KEY,
+  useComposerLook,
+} from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
@@ -103,6 +108,7 @@ export function TierListComposerApp() {
   const [playerFilters, setPlayerFilters] =
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
+  const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const filteredPlayerCount = useMemo(
     () => searchPlayers("", playerFilters).length,
     [playerFilters],
@@ -164,6 +170,7 @@ export function TierListComposerApp() {
         title,
         rows,
         subject,
+        look,
       });
       setStatus("Download started.");
     } catch (error) {
@@ -223,6 +230,7 @@ export function TierListComposerApp() {
             }
           />
         </label>
+        <ComposerLookToggle look={look} onChange={setLook} />
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -270,6 +278,7 @@ export function TierListComposerApp() {
             title={title}
             rows={rows}
             subject={subject}
+            look={look}
             active={exporting ? null : active}
             exporting={exporting}
             onTitleChange={setTitle}

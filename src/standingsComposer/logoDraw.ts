@@ -186,11 +186,24 @@ export const fittedLogoRect = (
 export const logoShadowPx = (cellW: number, cellH: number) =>
   Math.max(6, Math.round(Math.min(cellW, cellH) * 0.12));
 
+/** Halo radius that stays inside leftover cell padding around the fitted mark. */
+export const logoGlowPx = (
+  cellW: number,
+  cellH: number,
+  fitX = LOGO_FIT_X,
+  fitY = LOGO_FIT_Y,
+) => {
+  const size = Math.min(cellW, cellH);
+  const pad = Math.max(0.04, Math.min(1 - fitX, 1 - fitY));
+  return Math.max(6, Math.round(size * Math.min(0.16, pad * 1.15)));
+};
+
 const makeSilhouette = (
   image: HTMLImageElement,
   bounds: OpaqueBounds,
   destW: number,
   destH: number,
+  fill = "#000",
 ) => {
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(destW));
@@ -211,7 +224,7 @@ const makeSilhouette = (
     canvas.height,
   );
   context.globalCompositeOperation = "source-in";
-  context.fillStyle = "#000";
+  context.fillStyle = fill;
   context.fillRect(0, 0, canvas.width, canvas.height);
   return canvas;
 };
@@ -236,7 +249,13 @@ export const drawCenteredLogo = (
   cellY: number,
   cellW: number,
   cellH: number,
-  options?: { fitX?: number; fitY?: number; shadow?: number; cacheKey?: string },
+  options?: {
+    fitX?: number;
+    fitY?: number;
+    shadow?: number;
+    cacheKey?: string;
+    glow?: boolean;
+  },
 ) => {
   const bounds = withCentroid(
     options?.cacheKey
@@ -256,12 +275,36 @@ export const drawCenteredLogo = (
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)
       : Math.max(0, options.shadow);
+  const glow = Boolean(options?.glow);
+  const glowPx = glow
+    ? logoGlowPx(cellW, cellH, options?.fitX, options?.fitY)
+    : 0;
+
+  if (glowPx > 0) {
+    const halo = makeSilhouette(image, bounds, dest.w, dest.h, "#f7fbff");
+    context.save();
+    context.shadowColor = "rgba(210, 235, 255, 0.95)";
+    context.shadowBlur = glowPx;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    context.drawImage(halo, dest.x, dest.y);
+    context.restore();
+    context.save();
+    context.globalAlpha = 0.55;
+    context.shadowColor = "rgba(255, 255, 255, 0.9)";
+    context.shadowBlur = Math.max(4, Math.round(glowPx * 0.4));
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    context.drawImage(halo, dest.x, dest.y);
+    context.restore();
+  }
 
   if (shadow > 0) {
     const stamp = makeSilhouette(image, bounds, dest.w, dest.h);
+    const depth = glow ? Math.max(shadow, Math.round(shadow * 1.25)) : shadow;
     context.save();
     context.globalAlpha = 0.92;
-    for (let i = 2; i <= shadow; i += 2) {
+    for (let i = 2; i <= depth; i += 2) {
       context.drawImage(stamp, dest.x + i, dest.y + i);
     }
     context.restore();

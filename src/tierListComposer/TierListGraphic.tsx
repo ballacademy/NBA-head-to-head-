@@ -1,5 +1,10 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import {
+  composerLookClass,
+  isNeonLook,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
@@ -27,6 +32,7 @@ interface TierListGraphicProps {
   title: string;
   rows: TierRow[];
   subject?: TierSubject;
+  look?: ComposerLook;
   active: TierPickerTarget | null;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
@@ -64,6 +70,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       title,
       rows,
       subject = "teams",
+      look = "classic",
       active,
       exporting = false,
       onTitleChange,
@@ -116,7 +123,9 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={exporting ? "tl-board is-exporting" : "tl-board"}
+        className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+          .filter(Boolean)
+          .join(" ")}
         style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
         aria-label="Instagram NBA tier list graphic"
       >
@@ -282,7 +291,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             />
                           </>
                         ) : team ? (
-                          <TeamLogo src={team.logoSrc} label={team.id} />
+                          <TeamLogo
+                            src={team.logoSrc}
+                            label={team.id}
+                            glow={isNeonLook(look)}
+                          />
                         ) : null}
                         {exporting ? null : (
                           <button

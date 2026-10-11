@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  LOGO_FIT_X,
+  LOGO_FIT_Y,
   LOGO_LIFT,
   fittedLogoRect,
   getOpaqueBoundsFromImageData,
+  logoGlowPx,
   logoShadowPx,
   opticalShiftX,
 } from "./logoDraw";
@@ -164,6 +167,16 @@ describe("fittedLogoRect", () => {
       148,
     );
     expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+  });
+
+  it("sizes neon logo glow from leftover cell padding", () => {
+    const standings = logoGlowPx(400, 246);
+    const tight = logoGlowPx(180, 180, 0.94, 0.94);
+    expect(standings).toBeGreaterThanOrEqual(6);
+    expect(standings).toBeLessThanOrEqual(Math.round(246 * (1 - LOGO_FIT_Y)));
+    expect(tight).toBeGreaterThanOrEqual(6);
+    expect(tight).toBeLessThan(standings);
+    expect(logoGlowPx(400, 246, LOGO_FIT_X, LOGO_FIT_Y)).toBe(standings);
   });
 });
 

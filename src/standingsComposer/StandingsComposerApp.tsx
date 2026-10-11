@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import {
+  STANDINGS_LOOK_KEY,
+  useComposerLook,
+} from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
@@ -49,6 +54,7 @@ export function StandingsComposerApp() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
 
   useEffect(() => {
     document.title = "Standings graphic";
@@ -88,6 +94,7 @@ export function StandingsComposerApp() {
         title,
         subtitle,
         slots,
+        look,
       });
       setStatus("Download started.");
     } catch (error) {
@@ -149,6 +156,7 @@ export function StandingsComposerApp() {
             onChange={(event) => onComposerTextChange(event, setSubtitle, 28)}
           />
         </label>
+        <ComposerLookToggle look={look} onChange={setLook} />
         <div className="sc-toolbar__actions">
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
@@ -172,6 +180,7 @@ export function StandingsComposerApp() {
             title={title}
             subtitle={subtitle}
             slots={slots}
+            look={look}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
             onBrandChange={setBrand}

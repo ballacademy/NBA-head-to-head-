@@ -16,6 +16,12 @@ import {
   drawBannerInterior,
   drawCoveredTexture,
 } from "./headerTexture";
+import {
+  isNeonLook,
+  paintNeonCellRim,
+  paintNeonCellSheen,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
 import {
   EMPTY_SLOT_COLOR,
@@ -195,6 +201,7 @@ export interface StandingsRenderInput {
   title: string;
   subtitle: string;
   slots: RankingSlots;
+  look?: ComposerLook;
 }
 
 export const renderStandingsCanvas = async (
@@ -327,12 +334,19 @@ export const renderStandingsCanvas = async (
     if (team) {
       fillCellGradient(context, x, y, cellW, cellH, team.cellFrom, team.cellTo);
     }
+    if (isNeonLook(input.look) && team) {
+      paintNeonCellSheen(context, x, y, cellW, cellH);
+    }
 
     const logo = logos[index];
     if (logo && team) {
       drawCenteredLogo(context, logo, x, y, cellW, cellH, {
         cacheKey: team.logoSrc,
+        glow: isNeonLook(input.look),
       });
+    }
+    if (isNeonLook(input.look)) {
+      paintNeonCellRim(context, x, y, cellW, cellH);
     }
 
     drawLongShadowText(

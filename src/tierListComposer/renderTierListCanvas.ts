@@ -1,4 +1,10 @@
 import {
+  isNeonLook,
+  paintNeonCellRim,
+  paintNeonCellSheen,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
+import {
   HEADER_TEXTURE_SRC,
   drawCoveredTexture,
 } from "../standingsComposer/headerTexture";
@@ -115,6 +121,7 @@ export interface TierListRenderInput {
   title: string;
   rows: TierRow[];
   subject?: TierSubject;
+  look?: ComposerLook;
 }
 
 export const renderTierListCanvas = async (
@@ -281,6 +288,9 @@ export const renderTierListCanvas = async (
         context.fillStyle = "#2a2a2a";
         context.fillRect(x, cellY, size, size);
       }
+      if (isNeonLook(input.look) && team) {
+        paintNeonCellSheen(context, x, cellY, size, size);
+      }
       const art = cellArt[rowIndex]?.[index];
       if (player && art?.watermark) {
         context.save();
@@ -306,11 +316,17 @@ export const renderTierListCanvas = async (
         context.restore();
       }
       if (art?.mark && player) {
-        drawCoverHeadshot(context, art.mark, x, cellY, size, size);
+        drawCoverHeadshot(context, art.mark, x, cellY, size, size, {
+          glow: isNeonLook(input.look),
+        });
       } else if (art?.mark && team) {
         drawCenteredLogo(context, art.mark, x, cellY, size, size, {
           cacheKey: team.logoSrc,
+          glow: isNeonLook(input.look),
         });
+      }
+      if (isNeonLook(input.look)) {
+        paintNeonCellRim(context, x, cellY, size, size);
       }
     });
     tierTop += laneCount * layout.laneH;

@@ -1,5 +1,10 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import {
+  composerLookClass,
+  isNeonLook,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import {
   BANNER_SHAPE,
@@ -26,6 +31,7 @@ interface StandingsGraphicProps {
   subtitle: string;
   slots: RankingSlots;
   activeIndex: number | null;
+  look?: ComposerLook;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -73,6 +79,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       subtitle,
       slots,
       activeIndex,
+      look = "classic",
       exporting = false,
       onBrandChange,
       onTitleChange,
@@ -144,7 +151,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={exporting ? "ig-board is-exporting" : "ig-board"}
+        className={["ig-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+          .filter(Boolean)
+          .join(" ")}
         style={
           {
             ["--u" as string]: `${unit}px`,
@@ -261,7 +270,13 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 }
               >
                 <span className="ig-slot__rank">{rank}</span>
-                {team ? <TeamLogo src={team.logoSrc} label={team.id} /> : null}
+                {team ? (
+                  <TeamLogo
+                    src={team.logoSrc}
+                    label={team.id}
+                    glow={isNeonLook(look)}
+                  />
+                ) : null}
               </button>
             );
           })}

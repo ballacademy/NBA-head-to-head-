@@ -1,5 +1,10 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import {
+  composerLookClass,
+  isNeonLook,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import {
   BANNER_SHAPE,
@@ -25,6 +30,7 @@ interface EveryTeamGraphicProps {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
+  look?: ComposerLook;
   activeIndex: number | null;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -63,6 +69,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       brand,
       title,
       slots,
+      look = "classic",
       activeIndex,
       exporting = false,
       onBrandChange,
@@ -109,7 +116,14 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={exporting ? "ig-board et-board is-exporting" : "ig-board et-board"}
+        className={[
+          "ig-board",
+          "et-board",
+          exporting ? "is-exporting" : "",
+          composerLookClass(look),
+        ]
+          .filter(Boolean)
+          .join(" ")}
         style={
           {
             ["--u" as string]: `${unit}px`,
@@ -206,6 +220,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   shadow={0}
                   fitX={ET_LOGO_FIT}
                   fitY={ET_LOGO_FIT}
+                  glow={isNeonLook(look)}
                 />
                 {shown ? (
                   <PlayerHeadshot

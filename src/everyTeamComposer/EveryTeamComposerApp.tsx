@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import {
+  EVERY_TEAM_LOOK_KEY,
+  useComposerLook,
+} from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
@@ -54,6 +59,7 @@ export function EveryTeamComposerApp() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [look, setLook] = useComposerLook(EVERY_TEAM_LOOK_KEY);
 
   useEffect(() => {
     document.title = "Every team graphic";
@@ -91,6 +97,7 @@ export function EveryTeamComposerApp() {
         brand,
         title,
         slots,
+        look,
       });
       setStatus("Download started.");
     } catch (error) {
@@ -127,6 +134,7 @@ export function EveryTeamComposerApp() {
             onChange={(event) => onComposerTextChange(event, setTitle)}
           />
         </label>
+        <ComposerLookToggle look={look} onChange={setLook} />
         <div className="sc-toolbar__actions">
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
@@ -149,6 +157,7 @@ export function EveryTeamComposerApp() {
             brand={brand}
             title={title}
             slots={slots}
+            look={look}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
             onBrandChange={setBrand}
