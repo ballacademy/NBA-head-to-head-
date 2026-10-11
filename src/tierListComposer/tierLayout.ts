@@ -13,6 +13,8 @@ export const TIER_CELLS_INSET = 12;
 export const TIER_PAD_RIGHT = 32;
 export const TIER_CELL_GAP = 8;
 export const TIER_CELL_MAX = 148;
+/** Logos stay this wide; extra items wrap onto another lane in the same tier. */
+export const TIER_WRAP_COLS = 8;
 export const TIER_ROW_PAD_Y = 12;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
@@ -38,16 +40,53 @@ export const rowMetrics = (rowCount: number) => {
   return { bodyH, rowH };
 };
 
+/** How many vertical lanes a tier needs so items wrap at 8 per row. */
+export const tierLaneCount = (itemCount: number) =>
+  Math.max(1, Math.ceil(Math.max(0, itemCount) / TIER_WRAP_COLS));
+
 export const cellSize = (
-  rowH: number,
+  laneH: number,
   contentW: number,
-  slotCount: number,
+  slotCount = TIER_WRAP_COLS,
 ) => {
-  const n = Math.max(1, slotCount);
-  const innerH = Math.max(28, rowH - TIER_ROW_PAD_Y * 2);
-  const availableW = contentW - TIER_CELL_GAP * (n - 1);
-  return Math.max(28, Math.min(TIER_CELL_MAX, innerH, availableW / n));
+  const cols = Math.min(TIER_WRAP_COLS, Math.max(1, slotCount));
+  const innerH = Math.max(28, laneH - TIER_ROW_PAD_Y * 2);
+  const availableW = contentW - TIER_CELL_GAP * (cols - 1);
+  return Math.max(28, Math.min(TIER_CELL_MAX, innerH, availableW / cols));
 };
+
+export interface TierBoardLayout {
+  lanes: number[];
+  totalLanes: number;
+  bodyH: number;
+  laneH: number;
+  size: number;
+  contentW: number;
+  gridTemplate: string;
+}
+
+export const tierBoardLayout = (itemCounts: number[]): TierBoardLayout => {
+  const lanes = itemCounts.map((count) => tierLaneCount(count));
+  const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
+  const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
+  const laneH = bodyH / totalLanes;
+  const contentW = cellsContentWidth();
+  const size = cellSize(laneH, contentW, TIER_WRAP_COLS);
+  return {
+    lanes,
+    totalLanes,
+    bodyH,
+    laneH,
+    size,
+    contentW,
+    gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
+  };
+};
+
+export const cellGridPosition = (index: number) => ({
+  col: index % TIER_WRAP_COLS,
+  wrapRow: Math.floor(index / TIER_WRAP_COLS),
+});
 
 export const baBadgeRect = () => ({
   x: GRAPHIC_WIDTH - TIER_BADGE_INSET - TIER_BADGE_SIZE,

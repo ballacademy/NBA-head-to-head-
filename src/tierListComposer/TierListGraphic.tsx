@@ -10,11 +10,9 @@ import { PlayerHeadshot } from "./PlayerHeadshot";
 import {
   BA_LOGO_SRC,
   baBadgeRect,
-  cellSize,
-  cellsContentWidth,
   GRAPHIC_WIDTH,
   labelFontSize,
-  rowMetrics,
+  tierBoardLayout,
 } from "./tierLayout";
 import {
   splitTierTitle,
@@ -83,9 +81,10 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const [unit, setUnit] = useState(0.4);
     const [dropKey, setDropKey] = useState<string | null>(null);
     const titleLines = splitTierTitle(title);
-    const { rowH } = rowMetrics(rows.length);
-    const contentW = cellsContentWidth();
     const badge = baBadgeRect();
+    const layout = tierBoardLayout(
+      rows.map((row) => (exporting ? row.teams.length : row.teams.length + 1)),
+    );
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -158,11 +157,15 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         </header>
         <div
           className="tl-rows"
-          style={{ ["--tier-count" as string]: String(rows.length) }}
+          style={
+            {
+              ["--tier-count" as string]: String(rows.length),
+              ["--tier-rows" as string]: layout.gridTemplate,
+              ["--cell" as string]: `calc(${layout.size} * var(--u))`,
+            } as React.CSSProperties
+          }
         >
           {rows.map((row, rowIndex) => {
-            const slots = exporting ? row.teams.length : row.teams.length + 1;
-            const size = cellSize(rowH, contentW, Math.max(1, slots));
             const labelSize = labelFontSize(row.label);
             return (
               <div
@@ -170,7 +173,6 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                 className="tl-row"
                 style={
                   {
-                    ["--cell" as string]: `calc(${size} * var(--u))`,
                     ["--label-size" as string]: `calc(${labelSize} * var(--u))`,
                   } as React.CSSProperties
                 }

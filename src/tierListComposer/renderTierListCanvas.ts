@@ -13,14 +13,12 @@ import { loadCorsImage } from "../lib/playerHeadshots";
 import { getPlayer } from "./nbaActivePlayers";
 import { drawCoverHeadshot } from "./PlayerHeadshot";
 import {
-  cellSize,
-  cellsContentWidth,
+  baBadgeRect,
+  BA_LOGO_SRC,
+  cellGridPosition,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   labelFontSize,
-  rowMetrics,
-  baBadgeRect,
-  BA_LOGO_SRC,
   PLAYER_LOGO_WATERMARK_ALPHA,
   PLAYER_LOGO_WATERMARK_OVERSCAN,
   TIER_CELL_GAP,
@@ -30,6 +28,8 @@ import {
   TIER_LABEL_W,
   TIER_TITLE_SIZE,
   TIER_TITLE_TRACK,
+  TIER_WRAP_COLS,
+  tierBoardLayout,
 } from "./tierLayout";
 import {
   splitTierTitle,
@@ -206,8 +206,7 @@ export const renderTierListCanvas = async (
     );
   }
 
-  const { rowH } = rowMetrics(input.rows.length);
-  const contentW = cellsContentWidth();
+  const layout = tierBoardLayout(input.rows.map((row) => row.teams.length));
   const subject = input.subject ?? "teams";
   const cellArt = await Promise.all(
     input.rows.map((row) =>
@@ -237,12 +236,13 @@ export const renderTierListCanvas = async (
     ),
   );
 
+  let tierTop = TIER_HEADER_H;
   input.rows.forEach((row, rowIndex) => {
-    const y = (TIER_HEADER_H + rowH * rowIndex) * scale;
-    const h = rowH * scale;
-    const hairY = y + (rowIndex === 0 ? 0 : 0);
+    const laneCount = layout.lanes[rowIndex] ?? 1;
+    const y = tierTop * scale;
+    const h = laneCount * layout.laneH * scale;
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
-    context.fillRect(0, hairY, width, Math.max(1, 1.5 * scale));
+    context.fillRect(0, y, width, Math.max(1, 1.5 * scale));
 
     const label = row.label.trim() || " ";
     const fontPx = labelFontSize(label) * scale;
@@ -254,21 +254,24 @@ export const renderTierListCanvas = async (
       context.fillText(label, (TIER_LABEL_W / 2) * scale, y + h / 2);
     });
 
-    const slotCount = Math.max(1, row.teams.length);
-    const size = cellSize(rowH, contentW, slotCount) * scale;
+    const size = layout.size * scale;
     const gap = TIER_CELL_GAP * scale;
     const startX = (TIER_LABEL_W + TIER_CELLS_INSET) * scale;
-    const startY = y + (h - size) / 2;
+    const wrapRows = Math.max(1, Math.ceil(row.teams.length / TIER_WRAP_COLS));
+    const blockH = wrapRows * size + Math.max(0, wrapRows - 1) * gap;
+    const startY = y + (h - blockH) / 2;
 
     row.teams.forEach((entityId, index) => {
       const player = subject === "players" ? getPlayer(entityId) : null;
       const team = player ? getTeam(player.team) : getTeam(entityId);
-      const x = startX + index * (size + gap);
+      const { col, wrapRow } = cellGridPosition(index);
+      const x = startX + col * (size + gap);
+      const cellY = startY + wrapRow * (size + gap);
       if (team) {
         fillCellGradient(
           context,
           x,
-          startY,
+          cellY,
           size,
           size,
           team.cellFrom,
@@ -276,13 +279,13 @@ export const renderTierListCanvas = async (
         );
       } else {
         context.fillStyle = "#2a2a2a";
-        context.fillRect(x, startY, size, size);
+        context.fillRect(x, cellY, size, size);
       }
       const art = cellArt[rowIndex]?.[index];
       if (player && art?.watermark) {
         context.save();
         context.beginPath();
-        context.rect(x, startY, size, size);
+        context.rect(x, cellY, size, size);
         context.clip();
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
         const overscan = size * PLAYER_LOGO_WATERMARK_OVERSCAN;
@@ -290,7 +293,7 @@ export const renderTierListCanvas = async (
           context,
           art.watermark,
           x - overscan,
-          startY - overscan,
+          cellY - overscan,
           size + overscan * 2,
           size + overscan * 2,
           {
@@ -303,13 +306,14 @@ export const renderTierListCanvas = async (
         context.restore();
       }
       if (art?.mark && player) {
-        drawCoverHeadshot(context, art.mark, x, startY, size, size);
+        drawCoverHeadshot(context, art.mark, x, cellY, size, size);
       } else if (art?.mark && team) {
-        drawCenteredLogo(context, art.mark, x, startY, size, size, {
+        drawCenteredLogo(context, art.mark, x, cellY, size, size, {
           cacheKey: team.logoSrc,
         });
       }
     });
+    tierTop += laneCount * layout.laneH;
   });
 
   context.fillStyle = "rgba(255, 255, 255, 0.2)";

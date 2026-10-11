@@ -104,7 +104,7 @@
 
 .tl-rows {
   display: grid;
-  grid-template-rows: repeat(var(--tier-count), 1fr);
+  grid-template-rows: var(--tier-rows, repeat(var(--tier-count), 1fr));
   min-height: 0;
 }
 
@@ -144,17 +144,20 @@
 }
 
 .tl-cells {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(8, var(--cell, 120px));
+  grid-auto-rows: var(--cell, 120px);
+  align-content: center;
+  justify-content: start;
   gap: calc(8 * var(--u));
   min-width: 0;
-  padding: 0 calc(32 * var(--u)) 0 calc(12 * var(--u));
+  padding: calc(12 * var(--u)) calc(32 * var(--u)) calc(12 * var(--u))
+    calc(12 * var(--u));
   overflow: hidden;
 }
 
 .tl-cell {
   position: relative;
-  flex: 0 0 var(--cell, 120px);
   width: var(--cell, 120px);
   height: var(--cell, 120px);
   border: 0;

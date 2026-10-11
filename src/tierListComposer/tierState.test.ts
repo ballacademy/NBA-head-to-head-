@@ -3,13 +3,18 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   BA_LOGO_SRC,
   baBadgeRect,
+  cellGridPosition,
   cellSize,
   rowMetrics,
   TIER_BADGE_INSET,
   TIER_BADGE_SIZE,
+  TIER_CELL_GAP,
   TIER_CELL_MAX,
   TIER_HEADER_H,
   TIER_PAD_RIGHT,
+  TIER_WRAP_COLS,
+  tierBoardLayout,
+  tierLaneCount,
 } from "./tierLayout";
 import {
   addTeamToRow,
@@ -127,5 +132,27 @@ describe("tier layout", () => {
     expect(empty).toBeLessThanOrEqual(TIER_CELL_MAX);
     expect(packed).toBeLessThan(empty);
     expect(rowMetrics(10).rowH).toBeLessThan(rowMetrics(3).rowH);
+  });
+
+  it("grows a tier and wraps after 8 logos instead of shrinking", () => {
+    expect(TIER_WRAP_COLS).toBe(8);
+    expect(tierLaneCount(0)).toBe(1);
+    expect(tierLaneCount(8)).toBe(1);
+    expect(tierLaneCount(9)).toBe(2);
+    expect(tierLaneCount(16)).toBe(2);
+    expect(tierLaneCount(17)).toBe(3);
+    expect(cellGridPosition(7)).toEqual({ col: 7, wrapRow: 0 });
+    expect(cellGridPosition(8)).toEqual({ col: 0, wrapRow: 1 });
+
+    const eight = tierBoardLayout([8, 1, 1, 1, 1, 1]);
+    const nine = tierBoardLayout([9, 1, 1, 1, 1, 1]);
+    expect(eight.lanes[0]).toBe(1);
+    expect(nine.lanes[0]).toBe(2);
+    expect(nine.totalLanes).toBe(eight.totalLanes + 1);
+    expect(nine.gridTemplate.startsWith("2fr")).toBe(true);
+    expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
+    const squeezedOntoOneRow =
+      (nine.contentW - TIER_CELL_GAP * 8) / 9;
+    expect(nine.size).toBeGreaterThan(squeezedOntoOneRow);
   });
 });
