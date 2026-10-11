@@ -12,8 +12,10 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
   splitStandingsTitle,
+  standingsSubtitleLabel,
   usedTeamIds,
 } from "./rankingState";
 
@@ -66,6 +68,16 @@ describe("graphic export constants", () => {
 
   it("uses the original single-line banner title size", () => {
     expect(STANDINGS_TITLE_SIZE).toBe(50);
+  });
+
+  it("uppercases the conference subtitle for PNG export", () => {
+    expect(standingsSubtitleLabel("eastern conference")).toBe(
+      "EASTERN CONFERENCE",
+    );
+    expect(standingsSubtitleLabel("Western Conference")).toBe(
+      "WESTERN CONFERENCE",
+    );
+    expect(STANDINGS_BOARD_BG.toLowerCase()).toBe("#161616");
   });
 });
 

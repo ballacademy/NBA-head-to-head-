@@ -65,6 +65,12 @@ export const EXPORT_HEIGHT = GRAPHIC_HEIGHT * EXPORT_PIXEL_RATIO;
 export const DEFAULT_BRAND = "BALLACADEMY";
 export const DEFAULT_TITLE = "PROJECTED NBA STANDINGS";
 export const DEFAULT_SUBTITLE = "EASTERN CONFERENCE";
+
+/** Bake CSS `text-transform: uppercase` into PNG pixels. */
+export const standingsBrandLabel = (brand: string) =>
+  normalizeComposerTitle(brand, DEFAULT_BRAND);
+export const standingsSubtitleLabel = (subtitle: string) =>
+  normalizeComposerTitle(subtitle, DEFAULT_SUBTITLE);
 /** Single-line banner title in 1200-wide board units (pre-wrap size). */
 export const STANDINGS_TITLE_SIZE = 50;
 export const STANDINGS_TITLE_TRACK = 0.02;
@@ -74,8 +80,10 @@ export const splitStandingsTitle = (title: string): string[] => [
 ];
 
 export const EMPTY_SLOT_COLOR = "#8d8d8d";
-/** Graphic canvas / header field — near-black, no grain. */
+/** Shared near-black field for other composers. */
 export const GRAPHIC_BG = "#0B0B0B";
+/** Standings board / header — modest lift from GRAPHIC_BG. */
+export const STANDINGS_BOARD_BG = "#161616";
 
 const slugify = (value: string) =>
   value

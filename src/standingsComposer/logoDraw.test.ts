@@ -35,6 +35,7 @@ import {
   BANNER_STUD_FILL,
   BANNER_STUD_SIZE,
   BANNER_STUD_STEP,
+  HEADER_METAL_LIFT,
   bannerStudMetrics,
   coverRect,
 } from "./headerTexture";
@@ -243,8 +244,9 @@ describe("header texture cover", () => {
   });
 
   it("uses a near-black studded fill instead of the brushed header metal", () => {
-    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#111111");
-    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
+    expect(HEADER_METAL_LIFT).toBe("rgba(255, 255, 255, 0.1)");
     expect(BANNER_STUD_SIZE).toBeLessThan(BANNER_STUD_STEP / 2);
     const { step, size, inset } = bannerStudMetrics(2);
     expect(step).toBe(20);

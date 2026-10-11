@@ -1,8 +1,10 @@
 export const HEADER_TEXTURE_SRC = "/standings-header-texture.png";
 
-/** Title-box interior — near-black, not the brushed header metal. */
-export const BANNER_FILL_BASE = "#111111";
-export const BANNER_STUD_FILL = "#1c1c1c";
+/** Title-box interior — lifted near-black, not the brushed header metal. */
+export const BANNER_FILL_BASE = "#1c1c1c";
+export const BANNER_STUD_FILL = "#2a2a2a";
+/** Modest wash over the brushed header metal (preview CSS matches). */
+export const HEADER_METAL_LIFT = "rgba(255, 255, 255, 0.1)";
 /** Board-unit grid for the subtle square studs. */
 export const BANNER_STUD_STEP = 10;
 export const BANNER_STUD_SIZE = 2.5;
@@ -53,6 +55,22 @@ export const drawCoveredTexture = (
   context.rect(x, y, w, h);
   context.clip();
   context.drawImage(image, dx, dy, dw, dh);
+  context.restore();
+};
+
+export const liftHeaderMetal = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) => {
+  if (w < 1 || h < 1) {
+    return;
+  }
+  context.save();
+  context.fillStyle = HEADER_METAL_LIFT;
+  context.fillRect(x, y, w, h);
   context.restore();
 };
 

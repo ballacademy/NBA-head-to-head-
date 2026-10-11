@@ -15,6 +15,7 @@ import {
   HEADER_TEXTURE_SRC,
   drawBannerInterior,
   drawCoveredTexture,
+  liftHeaderMetal,
 } from "./headerTexture";
 import {
   isNeonLook,
@@ -25,13 +26,15 @@ import {
 import { drawCenteredLogo } from "./logoDraw";
 import {
   EMPTY_SLOT_COLOR,
-  GRAPHIC_BG,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
   STANDINGS_TITLE_TRACK,
   splitStandingsTitle,
+  standingsBrandLabel,
+  standingsSubtitleLabel,
   type RankingSlots,
 } from "./rankingState";
 import { getTeam } from "./teams";
@@ -226,7 +229,7 @@ export const renderStandingsCanvas = async (
     throw new Error("Could not open export canvas");
   }
 
-  context.fillStyle = GRAPHIC_BG;
+  context.fillStyle = STANDINGS_BOARD_BG;
   context.fillRect(0, 0, width, height);
 
   const board = bannerBoardRect(scale);
@@ -237,12 +240,13 @@ export const renderStandingsCanvas = async (
   const headerTexture = await loadImage(HEADER_TEXTURE_SRC);
   if (headerTexture) {
     drawCoveredTexture(context, headerTexture, 0, 0, width, headerH);
+    liftHeaderMetal(context, 0, 0, width, headerH);
   }
 
   withHeaderDropShadow(context, scale, () => {
     drawTrackedText(
       context,
-      input.brand.trim() || " ",
+      standingsBrandLabel(input.brand) || " ",
       width / 2,
       brandBaselineY(scale),
       `900 ${BRAND_FONT * scale}px ${POSTER_FONT}`,
@@ -254,7 +258,7 @@ export const renderStandingsCanvas = async (
 
   const subFont = `900 ${SUB_FONT * scale}px ${POSTER_FONT}`;
   const subTracking = 2.4 * scale;
-  const subText = input.subtitle.trim() || " ";
+  const subText = standingsSubtitleLabel(input.subtitle) || " ";
   const subWidth = measureTrackedWidth(context, subText, subFont, subTracking);
   const notch = notchFromMeasuredWidth(subWidth, bannerW);
 
