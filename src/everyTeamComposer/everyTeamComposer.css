@@ -169,6 +169,14 @@
   z-index: 3;
 }
 
+.et-cell__backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .et-cell .ig-slot__logo {
   position: absolute;
   inset: 0;

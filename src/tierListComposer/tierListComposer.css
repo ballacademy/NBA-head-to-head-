@@ -275,11 +275,15 @@
 }
 
 .tl-cell__watermark {
-  inset: -14%;
-  width: 128%;
-  height: 128%;
+  overflow: hidden;
   z-index: 0;
   opacity: 0.22;
+}
+
+.tl-cell__watermark .ig-slot__logo {
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .tl-headshot {

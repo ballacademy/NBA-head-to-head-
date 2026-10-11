@@ -26,7 +26,6 @@ import {
   GRAPHIC_WIDTH,
   labelFontSize,
   PLAYER_LOGO_WATERMARK_ALPHA,
-  PLAYER_LOGO_WATERMARK_OVERSCAN,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
@@ -298,14 +297,13 @@ export const renderTierListCanvas = async (
         context.rect(x, cellY, size, size);
         context.clip();
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
-        const overscan = size * PLAYER_LOGO_WATERMARK_OVERSCAN;
         drawCenteredLogo(
           context,
           art.watermark,
-          x - overscan,
-          cellY - overscan,
-          size + overscan * 2,
-          size + overscan * 2,
+          x,
+          cellY,
+          size,
+          size,
           {
             shadow: 0,
             fitX: 0.9,

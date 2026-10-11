@@ -25,9 +25,8 @@ export const TIER_BADGE_SIZE = 108;
  */
 export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
 export const TIER_TITLE_SIZE = 54;
-/** Faded team-logo backdrop behind a player headshot. */
+/** Faded team-logo backdrop behind a player headshot. Fitted to the cell. */
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
-export const PLAYER_LOGO_WATERMARK_OVERSCAN = 0.14;
 export const TIER_TITLE_TRACK = 0.04;
 
 export const cellsContentWidth = () =>

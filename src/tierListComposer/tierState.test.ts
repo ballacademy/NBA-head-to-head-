@@ -10,6 +10,7 @@ import {
   TIER_BADGE_SIZE,
   TIER_CELL_GAP,
   TIER_CELL_MAX,
+  PLAYER_LOGO_WATERMARK_ALPHA,
   TIER_HEADER_H,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
@@ -154,5 +155,13 @@ describe("tier layout", () => {
     const squeezedOntoOneRow =
       (nine.contentW - TIER_CELL_GAP * 8) / 9;
     expect(nine.size).toBeGreaterThan(squeezedOntoOneRow);
+  });
+
+  it("fits player watermark logos to the shared cell size", () => {
+    expect(PLAYER_LOGO_WATERMARK_ALPHA).toBe(0.22);
+    const wrapped = tierBoardLayout([9, 1, 1, 1, 1, 1]);
+    expect(wrapped.size).toBe(
+      cellSize(wrapped.laneH, wrapped.contentW, TIER_WRAP_COLS),
+    );
   });
 });

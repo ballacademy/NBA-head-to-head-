@@ -215,14 +215,16 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                       : `${team.name}, empty. Pick a player`
                   }
                 />
-                <TeamLogo
-                  src={team.logoSrc}
-                  label={team.id}
-                  shadow={0}
-                  fitX={ET_LOGO_FIT}
-                  fitY={ET_LOGO_FIT}
-                  glow={isNeonLook(look)}
-                />
+                <div className="et-cell__backdrop" aria-hidden="true">
+                  <TeamLogo
+                    src={team.logoSrc}
+                    label={team.id}
+                    shadow={0}
+                    fitX={ET_LOGO_FIT}
+                    fitY={ET_LOGO_FIT}
+                    glow={isNeonLook(look)}
+                  />
+                </div>
                 {shown ? (
                   <PlayerHeadshot
                     className="et-headshot"
