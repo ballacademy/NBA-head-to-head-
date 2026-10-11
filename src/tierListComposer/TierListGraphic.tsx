@@ -2,6 +2,7 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  BA_LOGO_SRC,
   cellSize,
   cellsContentWidth,
   GRAPHIC_WIDTH,
@@ -126,9 +127,12 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
               }
             />
           </div>
-          <div className="tl-badge" aria-hidden="true">
-            <span>BA</span>
-          </div>
+          <img
+            className="tl-badge"
+            src={BA_LOGO_SRC}
+            alt=""
+            aria-hidden="true"
+          />
         </header>
         <div
           className="tl-rows"

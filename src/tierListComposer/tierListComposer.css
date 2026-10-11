@@ -96,24 +96,15 @@
 .tl-badge {
   position: absolute;
   top: 50%;
-  right: calc(32 * var(--u));
-  width: calc(64 * var(--u));
-  height: calc(64 * var(--u));
-  display: grid;
-  place-items: center;
-  border: calc(3 * var(--u)) solid #fff;
-  border-radius: 50%;
-  background: #111111;
+  right: calc(28 * var(--u));
+  width: calc(72 * var(--u));
+  height: calc(72 * var(--u));
   transform: translateY(-50%);
   pointer-events: none;
-}
-
-.tl-badge span {
-  font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  line-height: 1;
+  object-fit: contain;
+  display: block;
+  background: none;
+  border: 0;
 }
 
 .tl-rows {

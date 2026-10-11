@@ -2,7 +2,10 @@ import {
   HEADER_TEXTURE_SRC,
   drawCoveredTexture,
 } from "../standingsComposer/headerTexture";
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import {
+  drawCenteredLogo,
+  getOpaqueBounds,
+} from "../standingsComposer/logoDraw";
 import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
@@ -13,6 +16,7 @@ import {
   GRAPHIC_WIDTH,
   labelFontSize,
   rowMetrics,
+  BA_LOGO_SRC,
   TIER_BADGE_SIZE,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
@@ -170,23 +174,27 @@ export const renderTierListCanvas = async (
     });
   });
 
-  const badge = TIER_BADGE_SIZE * scale;
-  const badgeX = width - TIER_PAD_RIGHT * scale - badge;
-  const badgeY = (TIER_HEADER_H * scale - badge) / 2;
-  context.beginPath();
-  context.arc(badgeX + badge / 2, badgeY + badge / 2, badge / 2, 0, Math.PI * 2);
-  context.fillStyle = "#111111";
-  context.fill();
-  context.lineWidth = 3 * scale;
-  context.strokeStyle = "#fff";
-  context.stroke();
-  withDropShadow(context, scale, () => {
-    context.font = `900 ${22 * scale}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillStyle = "#fff";
-    context.fillText("BA", badgeX + badge / 2, badgeY + badge / 2 + 1 * scale);
-  });
+  const ba = await loadImage(BA_LOGO_SRC);
+  if (ba) {
+    const badge = TIER_BADGE_SIZE * scale;
+    const badgeX = width - TIER_PAD_RIGHT * scale - badge;
+    const badgeY = (TIER_HEADER_H * scale - badge) / 2;
+    const bounds = getOpaqueBounds(ba);
+    const fit = badge / Math.max(1, bounds.w, bounds.h);
+    const dw = bounds.w * fit;
+    const dh = bounds.h * fit;
+    context.drawImage(
+      ba,
+      bounds.x,
+      bounds.y,
+      bounds.w,
+      bounds.h,
+      badgeX + (badge - dw) / 2,
+      badgeY + (badge - dh) / 2,
+      dw,
+      dh,
+    );
+  }
 
   const { rowH } = rowMetrics(input.rows.length);
   const contentW = cellsContentWidth();

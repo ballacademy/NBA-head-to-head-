@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { cellSize, rowMetrics, TIER_CELL_MAX } from "./tierLayout";
+import {
+  BA_LOGO_SRC,
+  cellSize,
+  rowMetrics,
+  TIER_CELL_MAX,
+} from "./tierLayout";
 import {
   addTeamToRow,
   addTier,
@@ -97,6 +102,10 @@ describe("tier rows", () => {
 });
 
 describe("tier layout", () => {
+  it("uses the circled BA lockup, not a drawn circle", () => {
+    expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
+  });
+
   it("keeps cells square and capped", () => {
     const { rowH } = rowMetrics(6);
     const empty = cellSize(rowH, 1000, 1);

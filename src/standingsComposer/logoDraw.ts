@@ -176,7 +176,11 @@ export const fittedLogoRect = (
   const w = bounds.w * scale;
   const h = bounds.h * scale;
   return {
-    x: cellX + (cellW - w) / 2 - opticalShiftX(bounds, w, cellW),
+    x:
+      cellX +
+      (cellW - w) / 2 -
+      opticalShiftX(bounds, w, cellW) -
+      shadowCompensateX(cellW, cellH),
     y: cellY + (cellH - h) / 2 - cellH * LOGO_LIFT,
     w,
     h,
@@ -185,6 +189,13 @@ export const fittedLogoRect = (
 
 export const logoShadowPx = (cellW: number, cellH: number) =>
   Math.max(6, Math.round(Math.min(cellW, cellH) * 0.12));
+
+/**
+ * Down-right silhouette shadow pulls the mark visually right. Shift artwork
+ * left by half that offset so the pair sits in the cell.
+ */
+export const shadowCompensateX = (cellW: number, cellH: number) =>
+  logoShadowPx(cellW, cellH) / 2;
 
 const makeSilhouette = (
   image: HTMLImageElement,
