@@ -12,6 +12,7 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  STANDINGS_TITLE_SIZE,
   splitStandingsTitle,
   usedTeamIds,
 } from "./rankingState";
@@ -61,6 +62,10 @@ describe("graphic export constants", () => {
     expect(splitStandingsTitle("projected\nnba standings")).toEqual([
       DEFAULT_TITLE,
     ]);
+  });
+
+  it("uses the original single-line banner title size", () => {
+    expect(STANDINGS_TITLE_SIZE).toBe(50);
   });
 });
 

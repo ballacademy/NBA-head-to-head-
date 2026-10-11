@@ -360,7 +360,7 @@ main.sc-stage {
 }
 
 .ig-banner__title-line {
-  font-size: calc(34 * var(--u));
+  font-size: calc(50 * var(--u));
   line-height: 1.12;
   white-space: nowrap;
   pointer-events: none;
@@ -382,7 +382,7 @@ main.sc-stage {
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(34 * var(--u));
+  font-size: calc(50 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   line-height: 1.12;

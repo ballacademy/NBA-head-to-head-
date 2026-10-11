@@ -65,8 +65,8 @@ export const EXPORT_HEIGHT = GRAPHIC_HEIGHT * EXPORT_PIXEL_RATIO;
 export const DEFAULT_BRAND = "BALLACADEMY";
 export const DEFAULT_TITLE = "PROJECTED NBA STANDINGS";
 export const DEFAULT_SUBTITLE = "EASTERN CONFERENCE";
-/** Single-line banner title in 1200-wide board units. */
-export const STANDINGS_TITLE_SIZE = 34;
+/** Single-line banner title in 1200-wide board units (pre-wrap size). */
+export const STANDINGS_TITLE_SIZE = 50;
 export const STANDINGS_TITLE_TRACK = 0.02;
 
 export const splitStandingsTitle = (title: string): string[] => [
