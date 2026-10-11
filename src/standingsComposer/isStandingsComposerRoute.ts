@@ -27,7 +27,11 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/standings-composer" ||
     path === "/tier-list" ||
     path === "/tiers" ||
-    path === "/tierlist"
+    path === "/tierlist" ||
+    path === "/every-team" ||
+    path === "/everyteam" ||
+    path === "/by-team" ||
+    path === "/byteam"
   );
 };
 
@@ -38,8 +42,8 @@ export const isGameAppHub = (value: string | null | undefined): boolean => {
 
 /**
  * This branch’s product is the Instagram composer hub. `/`, `/rankings`,
- * `/tier-list`, and `?hub=rankings` all open it. Draft Day GM only loads
- * for `?hub=play`.
+ * `/tier-list`, `/every-team`, and `?hub=rankings` all open it. Draft Day GM
+ * only loads for `?hub=play`.
  */
 export const isStandingsComposerRoute = (
   search = typeof window !== "undefined" ? window.location.search : "",

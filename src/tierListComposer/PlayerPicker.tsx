@@ -18,6 +18,8 @@ interface PlayerPickerProps {
   currentId?: string | null;
   usedLabels: Record<string, string>;
   clearLabel?: string;
+  /** When set, the picker is locked to this club’s roster. */
+  lockedTeam?: string;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -29,6 +31,7 @@ export function PlayerPicker({
   currentId = null,
   usedLabels,
   clearLabel = "Clear slot",
+  lockedTeam,
   onPick,
   onClear,
   onClose,
@@ -36,7 +39,7 @@ export function PlayerPicker({
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<PlayerSearchFilters>({
-    team: ALL_PLAYER_FILTER,
+    team: lockedTeam ?? ALL_PLAYER_FILTER,
     age: ALL_PLAYER_FILTER,
     height: ALL_PLAYER_FILTER,
     division: ALL_PLAYER_FILTER,
@@ -52,8 +55,12 @@ export function PlayerPicker({
   });
 
   const players = useMemo(
-    () => searchPlayers(query, filters),
-    [query, filters],
+    () =>
+      searchPlayers(query, {
+        ...filters,
+        team: lockedTeam ?? filters.team,
+      }),
+    [query, filters, lockedTeam],
   );
 
   const setFilter =
@@ -92,18 +99,28 @@ export function PlayerPicker({
           <input
             type="search"
             value={query}
-            placeholder="Name or team (LAL, Curry…)"
+            placeholder={
+              lockedTeam ? "Search this roster…" : "Name or team (LAL, Curry…)"
+            }
             autoFocus
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <div className="sc-picker__dropdowns">
-          <FilterSelect
-            label="Team"
-            value={filters.team ?? ALL_PLAYER_FILTER}
-            options={TEAM_FILTERS}
-            onChange={setFilter("team")}
-          />
+        <div
+          className={
+            lockedTeam
+              ? "sc-picker__dropdowns sc-picker__dropdowns--locked"
+              : "sc-picker__dropdowns"
+          }
+        >
+          {lockedTeam ? null : (
+            <FilterSelect
+              label="Team"
+              value={filters.team ?? ALL_PLAYER_FILTER}
+              options={TEAM_FILTERS}
+              onChange={setFilter("team")}
+            />
+          )}
           <FilterSelect
             label="Age"
             value={filters.age ?? ALL_PLAYER_FILTER}
@@ -116,12 +133,14 @@ export function PlayerPicker({
             options={HEIGHT_FILTERS}
             onChange={setFilter("height")}
           />
-          <FilterSelect
-            label="Division"
-            value={filters.division ?? ALL_PLAYER_FILTER}
-            options={DIVISION_FILTERS}
-            onChange={setFilter("division")}
-          />
+          {lockedTeam ? null : (
+            <FilterSelect
+              label="Division"
+              value={filters.division ?? ALL_PLAYER_FILTER}
+              options={DIVISION_FILTERS}
+              onChange={setFilter("division")}
+            />
+          )}
           <FilterSelect
             label="Position"
             value={filters.position ?? ALL_PLAYER_FILTER}

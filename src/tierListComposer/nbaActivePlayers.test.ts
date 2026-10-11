@@ -77,5 +77,10 @@ describe("active NBA player catalog", () => {
     const named = searchPlayers("curry", { team: "GSW", position: "PG" });
     expect(named.some((player) => player.id === "3975")).toBe(true);
     expect(searchPlayers("curry", { team: "BOS" })).toHaveLength(0);
+
+    const knicks = searchPlayers("", { team: "NYK" });
+    expect(knicks.length).toBeGreaterThan(5);
+    expect(knicks.every((player) => player.team === "NYK")).toBe(true);
+    expect(knicks.some((player) => player.team === "BKN")).toBe(false);
   });
 });

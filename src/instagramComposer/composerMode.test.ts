@@ -17,4 +17,17 @@ describe("composer mode", () => {
     expect(readComposerMode("?composer=tier", "/")).toBe("tier");
     expect(composerHref("tier")).toBe("/tier-list");
   });
+
+  it("opens the every-team grid from path or query", () => {
+    expect(readComposerMode("", "/every-team")).toBe("every-team");
+    expect(readComposerMode("", "/by-team")).toBe("every-team");
+    expect(readComposerMode("?composer=every-team", "/")).toBe("every-team");
+    expect(readComposerMode("?composer=by-team", "/")).toBe("every-team");
+    expect(composerHref("every-team")).toBe("/every-team");
+  });
+
+  it("lets the path win when query and path disagree", () => {
+    expect(readComposerMode("?composer=tier", "/every-team")).toBe("every-team");
+    expect(readComposerMode("?composer=every-team", "/tier-list")).toBe("tier");
+  });
 });

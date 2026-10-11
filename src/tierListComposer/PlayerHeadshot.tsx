@@ -1,12 +1,13 @@
 interface PlayerHeadshotProps {
   src: string;
   label: string;
+  className?: string;
 }
 
-export function PlayerHeadshot({ src, label }: PlayerHeadshotProps) {
+export function PlayerHeadshot({ src, label, className }: PlayerHeadshotProps) {
   return (
     <img
-      className="tl-headshot"
+      className={["tl-headshot", className].filter(Boolean).join(" ")}
       src={src}
       alt=""
       data-player={label}

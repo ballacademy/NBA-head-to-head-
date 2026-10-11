@@ -62,6 +62,8 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("?hub=ig-rankings", "/")).toBe(true);
     expect(isStandingsComposerRoute("", "/rankings")).toBe(true);
     expect(isStandingsComposerRoute("", "/tier-list")).toBe(true);
+    expect(isStandingsComposerRoute("", "/every-team")).toBe(true);
+    expect(isStandingsComposerRoute("", "/by-team")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 
