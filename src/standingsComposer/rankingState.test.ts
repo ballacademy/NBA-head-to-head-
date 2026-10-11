@@ -4,6 +4,7 @@ import {
   assignTeam,
   clearSlot,
   createEmptySlots,
+  DEFAULT_TITLE,
   exportFilename,
   EXPORT_HEIGHT,
   EXPORT_WIDTH,
@@ -11,6 +12,7 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  splitStandingsTitle,
   usedTeamIds,
 } from "./rankingState";
 
@@ -52,6 +54,12 @@ describe("graphic export constants", () => {
       "eastern-conference.png",
     );
     expect(exportFilename("   ", "Projected NBA")).toBe("projected-nba.png");
+  });
+
+  it("splits the banner title into two balanced lines", () => {
+    const lines = splitStandingsTitle(DEFAULT_TITLE);
+    expect(lines).toHaveLength(2);
+    expect(`${lines[0]} ${lines[1]}`).toBe(DEFAULT_TITLE);
   });
 });
 

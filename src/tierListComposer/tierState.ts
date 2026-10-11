@@ -1,3 +1,5 @@
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+
 export const MIN_TIERS = 3;
 export const MAX_TIERS = 10;
 export const DEFAULT_TIER_LABELS = ["S", "A", "B", "C", "D", "F"] as const;
@@ -80,7 +82,7 @@ export const setTierLabel = (
     return rows;
   }
   const next = rows.slice();
-  next[index] = { ...next[index]!, label: label.slice(0, 8).toUpperCase() };
+  next[index] = { ...next[index]!, label: label.slice(0, 8) };
   return next;
 };
 
@@ -231,14 +233,8 @@ export const createExampleRows = (): TierRow[] =>
     teams: row.teams.slice(),
   }));
 
-export const splitTierTitle = (title: string): string[] => {
-  const text = title.trim().toUpperCase() || DEFAULT_TIER_TITLE;
-  if (text.endsWith("TIER LIST") && text.length > "TIER LIST".length) {
-    const head = text.slice(0, -"TIER LIST".length).trim();
-    return head ? [head, "TIER LIST"] : [text];
-  }
-  return [text];
-};
+export const splitTierTitle = (title: string): string[] =>
+  splitBalancedTitle(title, DEFAULT_TIER_TITLE, 0.04);
 
 const slugify = (value: string) =>
   value

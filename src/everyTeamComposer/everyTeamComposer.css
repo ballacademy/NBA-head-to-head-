@@ -63,7 +63,6 @@
   margin: 0;
   padding: 0;
   border: 0;
-  resize: none;
   appearance: none;
   background: transparent;
   color: transparent;
@@ -148,6 +147,7 @@
   object-position: center 18%;
   pointer-events: none;
   z-index: 1;
+  filter: drop-shadow(calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.82));
 }
 
 .et-cell__clear {
@@ -180,5 +180,5 @@
 }
 
 .sc-picker__dropdowns--locked {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }

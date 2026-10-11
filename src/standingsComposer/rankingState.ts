@@ -1,3 +1,5 @@
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+
 export const SLOT_COUNT = 15;
 
 export type RankingSlots = Array<string | null>;
@@ -63,6 +65,12 @@ export const EXPORT_HEIGHT = GRAPHIC_HEIGHT * EXPORT_PIXEL_RATIO;
 export const DEFAULT_BRAND = "BALLACADEMY";
 export const DEFAULT_TITLE = "PROJECTED NBA STANDINGS";
 export const DEFAULT_SUBTITLE = "EASTERN CONFERENCE";
+/** Two-line banner title in 1200-wide board units. */
+export const STANDINGS_TITLE_SIZE = 34;
+export const STANDINGS_TITLE_TRACK = 0.02;
+
+export const splitStandingsTitle = (title: string): string[] =>
+  splitBalancedTitle(title, DEFAULT_TITLE, STANDINGS_TITLE_TRACK);
 
 export const EMPTY_SLOT_COLOR = "#8d8d8d";
 /** Graphic canvas / header field — near-black, no grain. */

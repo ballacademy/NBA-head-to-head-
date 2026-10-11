@@ -34,6 +34,7 @@ export const SUB_BAND = {
 } as const;
 
 export const SUB_FONT = 30;
+export { STANDINGS_TITLE_SIZE, STANDINGS_TITLE_TRACK } from "./rankingState";
 /**
  * Raise conference caps toward the shoulder (fraction of inner notch height).
  * Original layout used the geometric pocket center (lift 0).

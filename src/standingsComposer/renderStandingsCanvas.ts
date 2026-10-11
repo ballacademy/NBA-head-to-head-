@@ -5,7 +5,6 @@ import {
   BRAND_TRACKING_EM,
   SUB_FONT,
   TITLE_BAND,
-  bandCenterY,
   bannerBoardRect,
   brandBaselineY,
   notchFromMeasuredWidth,
@@ -24,6 +23,9 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  STANDINGS_TITLE_SIZE,
+  STANDINGS_TITLE_TRACK,
+  splitStandingsTitle,
   type RankingSlots,
 } from "./rankingState";
 import { getTeam } from "./teams";
@@ -78,31 +80,6 @@ const setLetterSpacing = (
     return true;
   }
   return false;
-};
-
-const drawOutlinedText = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  font: string,
-  fill: string,
-  strokeWidth: number,
-) => {
-  context.font = font;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.lineJoin = "round";
-  context.miterLimit = 2;
-  const px = Math.round(x);
-  const py = Math.round(y);
-  if (strokeWidth > 0) {
-    context.strokeStyle = "#000";
-    context.lineWidth = strokeWidth;
-    context.strokeText(text, px, py);
-  }
-  context.fillStyle = fill;
-  context.fillText(text, px, py);
 };
 
 const drawLongShadowText = (
@@ -228,7 +205,7 @@ export const renderStandingsCanvas = async (
     await Promise.all([
       document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${SUB_FONT * scale}px ${POSTER_FONT}`),
-      document.fonts.load(`900 ${50 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${STANDINGS_TITLE_SIZE * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
 
@@ -291,19 +268,30 @@ export const renderStandingsCanvas = async (
   context.lineJoin = "miter";
   context.stroke();
 
-  const titleY = bandCenterY(bannerY, bannerH, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
+  const titleLines = splitStandingsTitle(input.title);
+  const titleSize = STANDINGS_TITLE_SIZE * scale;
+  const titleFont = `900 ${titleSize}px ${POSTER_FONT}`;
+  const titleTracking = STANDINGS_TITLE_TRACK * titleSize;
+  const titleLineH = titleSize * 1.12;
+  const bandTop = bannerY + TITLE_BAND.topFrac * bannerH;
+  const bandH = TITLE_BAND.heightFrac * bannerH;
+  const titleBlockH = titleLineH * titleLines.length;
+  const titleTop = bandTop + (bandH - titleBlockH) / 2 + titleLineH / 2;
   const subY = subBaselineY(scale);
 
   withHeaderDropShadow(context, scale, () => {
-    drawOutlinedText(
-      context,
-      input.title.trim() || " ",
-      width / 2,
-      titleY,
-      `900 ${50 * scale}px ${POSTER_FONT}`,
-      "#fff",
-      2 * scale,
-    );
+    titleLines.forEach((line, index) => {
+      drawTrackedText(
+        context,
+        line,
+        width / 2,
+        titleTop + index * titleLineH,
+        titleFont,
+        titleTracking,
+        "#fff",
+        2 * scale,
+      );
+    });
     drawTrackedText(
       context,
       subText,

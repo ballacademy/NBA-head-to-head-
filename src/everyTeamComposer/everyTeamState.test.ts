@@ -72,11 +72,15 @@ describe("every-team order and slots", () => {
     expect(clearEveryTeamSlot(filled, 13)[13]).toBeNull();
   });
 
-  it("splits the default title like the example and names the PNG", () => {
-    expect(splitEveryTeamTitle("MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM")).toEqual(
-      ["MOST DISAPPOINTING PLAYER", "ON EVERY NBA TEAM"],
+  it("splits titles into two balanced lines and names the PNG", () => {
+    const lines = splitEveryTeamTitle(
+      "MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM",
     );
-    expect(splitEveryTeamTitle("BEST PLAYER")).toEqual(["BEST PLAYER"]);
+    expect(lines).toHaveLength(2);
+    expect(`${lines[0]} ${lines[1]}`).toBe(
+      "MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM",
+    );
+    expect(splitEveryTeamTitle("BEST PLAYER")).toEqual(["BEST", "PLAYER"]);
     expect(exportEveryTeamFilename("MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM")).toBe(
       "most-disappointing-player-on-every-nba-team.png",
     );

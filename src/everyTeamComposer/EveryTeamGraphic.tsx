@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
+import {
   BANNER_SHAPE,
   BANNER_VIEW,
   brandEmTop,
@@ -126,7 +130,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             maxLength={24}
             spellCheck={false}
             aria-label="Brand label"
-            onChange={(event) => onBrandChange(event.target.value.toUpperCase())}
+            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
           />
           <div className="ig-banner et-banner">
             <div
@@ -159,16 +163,13 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   {line}
                 </span>
               ))}
-              <textarea
+              <input
                 className="et-title-input"
                 value={title}
-                maxLength={72}
-                rows={2}
+                maxLength={COMPOSER_TITLE_MAX_LENGTH}
                 spellCheck={false}
                 aria-label="Every-team title"
-                onChange={(event) =>
-                  onTitleChange(event.target.value.toUpperCase())
-                }
+                onChange={(event) => onComposerTextChange(event, onTitleChange)}
               />
             </div>
           </div>

@@ -1,12 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { exportTierFilename, exportTierListPng } from "./exportTierPng";
+import { PlayerFilterBar } from "./PlayerFilterBar";
 import { PlayerPicker } from "./PlayerPicker";
 import {
   TierListGraphic,
   type TierPickerTarget,
 } from "./TierListGraphic";
+import {
+  EMPTY_PLAYER_FILTERS,
+  searchPlayers,
+  type PlayerSearchFilters,
+} from "./nbaActivePlayers";
 import {
   addTeamToRow,
   addTier,
@@ -90,6 +100,18 @@ export function TierListComposerApp() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [playerFilters, setPlayerFilters] =
+    useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
+  const [filterEpoch, setFilterEpoch] = useState(0);
+  const filteredPlayerCount = useMemo(
+    () => searchPlayers("", playerFilters).length,
+    [playerFilters],
+  );
+
+  const resetPlayerFilters = () => {
+    setPlayerFilters({ ...EMPTY_PLAYER_FILTERS });
+    setFilterEpoch((value) => value + 1);
+  };
 
   useEffect(() => {
     document.title =
@@ -195,8 +217,10 @@ export function TierListComposerApp() {
           Title
           <input
             value={title}
-            maxLength={48}
-            onChange={(event) => setTitle(event.target.value.toUpperCase())}
+            maxLength={COMPOSER_TITLE_MAX_LENGTH}
+            onChange={(event) =>
+              onComposerTextChange(event, setTitle, COMPOSER_TITLE_MAX_LENGTH)
+            }
           />
         </label>
         <div className="sc-toolbar__actions">
@@ -229,6 +253,15 @@ export function TierListComposerApp() {
           </button>
         </div>
       </header>
+
+      {subject === "players" ? (
+        <PlayerFilterBar
+          filters={playerFilters}
+          matchCount={filteredPlayerCount}
+          onChange={setPlayerFilters}
+          onReset={resetPlayerFilters}
+        />
+      ) : null}
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
@@ -305,7 +338,10 @@ export function TierListComposerApp() {
 
       {active && pickerRow && subject === "players" ? (
         <PlayerPicker
+          key={filterEpoch}
           heading={`Pick player · ${pickerRow.label || "tier"}`}
+          hint="Board filters already applied. Search by name within that subset."
+          lockedFilters={playerFilters}
           currentId={active.replaceId}
           usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}
           clearLabel={active.replaceId ? "Remove from row" : "Clear slot"}

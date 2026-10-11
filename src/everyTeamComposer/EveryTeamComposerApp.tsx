@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
@@ -119,8 +123,8 @@ export function EveryTeamComposerApp() {
           Title
           <input
             value={title}
-            maxLength={72}
-            onChange={(event) => setTitle(event.target.value.toUpperCase())}
+            maxLength={COMPOSER_TITLE_MAX_LENGTH}
+            onChange={(event) => onComposerTextChange(event, setTitle)}
           />
         </label>
         <div className="sc-toolbar__actions">

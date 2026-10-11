@@ -86,10 +86,9 @@ describe("tier rows", () => {
     const rows = setTierLabel(createDefaultRows(), 0, "ELITE!!!");
     expect(rows[0]!.label).toBe("ELITE!!!");
     expect(setTierLabel(rows, 0, "TOOLONGNAME")[0]!.label).toHaveLength(8);
-    expect(splitTierTitle(DEFAULT_TIER_TITLE)).toEqual([
-      "GUESS THE NBA",
-      "TIER LIST",
-    ]);
+    const titleLines = splitTierTitle(DEFAULT_TIER_TITLE);
+    expect(titleLines).toHaveLength(2);
+    expect(`${titleLines[0]} ${titleLines[1]}`).toBe(DEFAULT_TIER_TITLE);
     expect(splitTierTitle("WESTERN")).toEqual(["WESTERN"]);
     expect(exportTierFilename(DEFAULT_TIER_TITLE)).toBe(
       "guess-the-nba-tier-list.png",

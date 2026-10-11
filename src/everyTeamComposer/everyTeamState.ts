@@ -1,3 +1,4 @@
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 
@@ -107,20 +108,8 @@ export const clearEveryTeamSlot = (
   return next;
 };
 
-export const splitEveryTeamTitle = (title: string): string[] => {
-  const text = title.trim().toUpperCase() || DEFAULT_EVERY_TEAM_TITLE;
-  const marker = " ON EVERY ";
-  const at = text.indexOf(marker);
-  if (at > 0) {
-    return [text.slice(0, at).trim(), text.slice(at + 1).trim()];
-  }
-  const words = text.split(/\s+/).filter(Boolean);
-  if (words.length <= 4) {
-    return [text];
-  }
-  const mid = Math.ceil(words.length / 2);
-  return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
-};
+export const splitEveryTeamTitle = (title: string): string[] =>
+  splitBalancedTitle(title, DEFAULT_EVERY_TEAM_TITLE);
 
 const slugify = (value: string) =>
   value

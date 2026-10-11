@@ -1,4 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import { getPlayer } from "./nbaActivePlayers";
@@ -129,11 +133,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             <input
               className="tl-title-input"
               value={title}
-              maxLength={48}
+              maxLength={COMPOSER_TITLE_MAX_LENGTH}
               spellCheck={false}
               aria-label="Tier list title"
               onChange={(event) =>
-                onTitleChange(event.target.value.toUpperCase())
+                onComposerTextChange(event, onTitleChange)
               }
             />
           </div>
@@ -192,7 +196,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                   spellCheck={false}
                   aria-label={`Tier ${rowIndex + 1} label`}
                   onChange={(event) =>
-                    onLabelChange(rowIndex, event.target.value.toUpperCase())
+                    onComposerTextChange(event, (value) => onLabelChange(rowIndex, value), 8)
                   }
                 />
                 <div className="tl-cells">

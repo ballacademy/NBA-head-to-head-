@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
+import {
   BANNER_SHAPE,
   BANNER_VIEW,
   TITLE_BAND,
@@ -12,6 +16,7 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
   SLOT_COUNT,
+  splitStandingsTitle,
   type RankingSlots,
 } from "./rankingState";
 import { TeamLogo } from "./TeamLogo";
@@ -83,6 +88,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
     const measureRef = useRef<HTMLSpanElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const [notch, setNotch] = useState({ left: 360, right: 840 });
+    const titleLines = splitStandingsTitle(title);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -160,7 +166,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             maxLength={24}
             spellCheck={false}
             aria-label="Brand label"
-            onChange={(event) => onBrandChange(event.target.value.toUpperCase())}
+            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
           />
           <div className="ig-banner" ref={bannerRef}>
             <div
@@ -194,13 +200,20 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 height: `${TITLE_BAND.heightFrac * 100}%`,
               }}
             >
+              {titleLines.map((line, index) => (
+                <span key={`${index}-${line}`} className="ig-banner__title-line">
+                  {line}
+                </span>
+              ))}
               <input
                 className="ig-banner__title"
                 value={title}
-                maxLength={36}
+                maxLength={COMPOSER_TITLE_MAX_LENGTH}
                 spellCheck={false}
                 aria-label="Banner title"
-                onChange={(event) => onTitleChange(event.target.value.toUpperCase())}
+                onChange={(event) =>
+                  onComposerTextChange(event, onTitleChange)
+                }
               />
             </div>
             <span ref={measureRef} className="ig-banner__sub-measure" aria-hidden="true">
@@ -220,7 +233,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 spellCheck={false}
                 aria-label="Conference subtitle"
                 onChange={(event) =>
-                  onSubtitleChange(event.target.value.toUpperCase())
+                  onComposerTextChange(event, onSubtitleChange, 28)
                 }
               />
             </div>

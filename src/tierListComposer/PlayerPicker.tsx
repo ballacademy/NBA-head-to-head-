@@ -1,12 +1,14 @@
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { FilterSelect } from "./PlayerFilterBar";
 import {
   AGE_FILTERS,
   ALL_PLAYER_FILTER,
-  DIVISION_FILTERS,
+  ALL_STAR_FILTERS,
+  DRAFT_CLASS_FILTERS,
+  EMPTY_PLAYER_FILTERS,
   HEIGHT_FILTERS,
   POSITION_FILTERS,
-  TEAM_FILTERS,
   searchPlayers,
   type PlayerSearchFilters,
   type TierPlayer,
@@ -20,6 +22,8 @@ interface PlayerPickerProps {
   clearLabel?: string;
   /** When set, the picker is locked to this club’s roster. */
   lockedTeam?: string;
+  /** Board-level filters for the player tier list. Search still runs here. */
+  lockedFilters?: PlayerSearchFilters;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -32,20 +36,20 @@ export function PlayerPicker({
   usedLabels,
   clearLabel = "Clear slot",
   lockedTeam,
+  lockedFilters,
   onPick,
   onClear,
   onClose,
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<PlayerSearchFilters>({
+  const [localFilters, setLocalFilters] = useState<PlayerSearchFilters>({
+    ...EMPTY_PLAYER_FILTERS,
     team: lockedTeam ?? ALL_PLAYER_FILTER,
-    age: ALL_PLAYER_FILTER,
-    height: ALL_PLAYER_FILTER,
-    division: ALL_PLAYER_FILTER,
-    position: ALL_PLAYER_FILTER,
   });
+  const boardFilters = lockedFilters ?? localFilters;
   const filled = Boolean(currentId);
+  const hideBoardFilters = Boolean(lockedFilters);
 
   useDialogA11y({
     open: true,
@@ -57,17 +61,11 @@ export function PlayerPicker({
   const players = useMemo(
     () =>
       searchPlayers(query, {
-        ...filters,
-        team: lockedTeam ?? filters.team,
+        ...boardFilters,
+        team: lockedTeam ?? boardFilters.team,
       }),
-    [query, filters, lockedTeam],
+    [query, boardFilters, lockedTeam],
   );
-
-  const setFilter =
-    (key: keyof PlayerSearchFilters) =>
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setFilters((current) => ({ ...current, [key]: event.target.value }));
-    };
 
   return (
     <div
@@ -106,48 +104,75 @@ export function PlayerPicker({
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <div
-          className={
-            lockedTeam
-              ? "sc-picker__dropdowns sc-picker__dropdowns--locked"
-              : "sc-picker__dropdowns"
-          }
-        >
-          {lockedTeam ? null : (
+        {hideBoardFilters ? (
+          <p className="sc-picker__filter-hint">
+            Showing the board’s filtered roster. Name search still applies.
+          </p>
+        ) : (
+          <div
+            className={
+              lockedTeam
+                ? "sc-picker__dropdowns sc-picker__dropdowns--locked"
+                : "sc-picker__dropdowns"
+            }
+          >
             <FilterSelect
-              label="Team"
-              value={filters.team ?? ALL_PLAYER_FILTER}
-              options={TEAM_FILTERS}
-              onChange={setFilter("team")}
+              label="Age"
+              value={localFilters.age ?? ALL_PLAYER_FILTER}
+              options={AGE_FILTERS}
+              onChange={(event) =>
+                setLocalFilters((current) => ({
+                  ...current,
+                  age: event.target.value,
+                }))
+              }
             />
-          )}
-          <FilterSelect
-            label="Age"
-            value={filters.age ?? ALL_PLAYER_FILTER}
-            options={AGE_FILTERS}
-            onChange={setFilter("age")}
-          />
-          <FilterSelect
-            label="Height"
-            value={filters.height ?? ALL_PLAYER_FILTER}
-            options={HEIGHT_FILTERS}
-            onChange={setFilter("height")}
-          />
-          {lockedTeam ? null : (
             <FilterSelect
-              label="Division"
-              value={filters.division ?? ALL_PLAYER_FILTER}
-              options={DIVISION_FILTERS}
-              onChange={setFilter("division")}
+              label="Height"
+              value={localFilters.height ?? ALL_PLAYER_FILTER}
+              options={HEIGHT_FILTERS}
+              onChange={(event) =>
+                setLocalFilters((current) => ({
+                  ...current,
+                  height: event.target.value,
+                }))
+              }
             />
-          )}
-          <FilterSelect
-            label="Position"
-            value={filters.position ?? ALL_PLAYER_FILTER}
-            options={POSITION_FILTERS}
-            onChange={setFilter("position")}
-          />
-        </div>
+            <FilterSelect
+              label="Position"
+              value={localFilters.position ?? ALL_PLAYER_FILTER}
+              options={POSITION_FILTERS}
+              onChange={(event) =>
+                setLocalFilters((current) => ({
+                  ...current,
+                  position: event.target.value,
+                }))
+              }
+            />
+            <FilterSelect
+              label="Draft class"
+              value={localFilters.draftClass ?? ALL_PLAYER_FILTER}
+              options={DRAFT_CLASS_FILTERS}
+              onChange={(event) =>
+                setLocalFilters((current) => ({
+                  ...current,
+                  draftClass: event.target.value,
+                }))
+              }
+            />
+            <FilterSelect
+              label="All-Star"
+              value={localFilters.allStar ?? ALL_PLAYER_FILTER}
+              options={ALL_STAR_FILTERS}
+              onChange={(event) =>
+                setLocalFilters((current) => ({
+                  ...current,
+                  allStar: event.target.value,
+                }))
+              }
+            />
+          </div>
+        )}
         <div className="sc-picker__grid">
           {players.map((player) => (
             <PlayerButton
@@ -172,31 +197,6 @@ export function PlayerPicker({
         </div>
       </div>
     </div>
-  );
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: ReadonlyArray<{ id: string; label: string }>;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-}) {
-  return (
-    <label className="sc-picker__dropdown">
-      {label}
-      <select value={value} onChange={onChange} aria-label={label}>
-        {options.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
 

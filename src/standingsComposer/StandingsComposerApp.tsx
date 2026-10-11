@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import {
   assignTeam,
@@ -126,15 +130,15 @@ export function StandingsComposerApp() {
           <input
             value={brand}
             maxLength={24}
-            onChange={(event) => setBrand(event.target.value.toUpperCase())}
+            onChange={(event) => onComposerTextChange(event, setBrand, 24)}
           />
         </label>
         <label className="sc-field sc-field--wide">
           Title
           <input
             value={title}
-            maxLength={36}
-            onChange={(event) => setTitle(event.target.value.toUpperCase())}
+            maxLength={COMPOSER_TITLE_MAX_LENGTH}
+            onChange={(event) => onComposerTextChange(event, setTitle)}
           />
         </label>
         <label className="sc-field">
@@ -142,7 +146,7 @@ export function StandingsComposerApp() {
           <input
             value={subtitle}
             maxLength={28}
-            onChange={(event) => setSubtitle(event.target.value.toUpperCase())}
+            onChange={(event) => onComposerTextChange(event, setSubtitle, 28)}
           />
         </label>
         <div className="sc-toolbar__actions">
