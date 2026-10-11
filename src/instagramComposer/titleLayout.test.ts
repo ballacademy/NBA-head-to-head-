@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   commitComposerText,
+  linedComposerTitle,
   measureTitleAdvance,
   splitBalancedTitle,
 } from "./titleLayout";
@@ -55,5 +56,17 @@ describe("composer title layout", () => {
     const tier = splitBalancedTitle("GUESS THE NBA TIER LIST");
     expect(tier).toHaveLength(2);
     expect(widthDelta(tier)).toBeCloseTo(bestDelta("GUESS THE NBA TIER LIST"), 8);
+  });
+
+  it("mirrors the overlay wrap with a newline so the textarea caret can land mid-line", () => {
+    const long = "MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM";
+    const lines = splitBalancedTitle(long);
+    const lined = linedComposerTitle(long, lines);
+    expect(lined).toBe(`${lines[0]}\n${lines[1]}`);
+    expect(commitComposerText(lined)).toBe(long);
+    expect(
+      linedComposerTitle("Most Disappointing Player On Every NBA Team", lines),
+    ).toBe("Most Disappointing\nPlayer On Every NBA Team");
+    expect(linedComposerTitle("WESTERN", ["WESTERN"])).toBe("WESTERN");
   });
 });

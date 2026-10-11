@@ -1,8 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
-import {
-  COMPOSER_TITLE_MAX_LENGTH,
-  onComposerTextChange,
-} from "../instagramComposer/titleLayout";
+import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
@@ -158,18 +156,13 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
               />
             </svg>
             <div className="et-title-block">
-              {titleLines.map((line, index) => (
-                <span key={`${index}-${line}`} className="et-title-line">
-                  {line}
-                </span>
-              ))}
-              <input
-                className="et-title-input"
+              <ComposerTitleField
                 value={title}
-                maxLength={COMPOSER_TITLE_MAX_LENGTH}
-                spellCheck={false}
-                aria-label="Every-team title"
-                onChange={(event) => onComposerTextChange(event, onTitleChange)}
+                lines={titleLines}
+                ariaLabel="Every-team title"
+                inputClassName="et-title-input"
+                lineClassName="et-title-line"
+                onChange={onTitleChange}
               />
             </div>
           </div>

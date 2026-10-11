@@ -317,6 +317,16 @@ main.sc-stage {
   flex-direction: column;
 }
 
+.composer-title-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  pointer-events: none;
+}
+
 .ig-banner__sub-slot {
   box-sizing: border-box;
   top: var(--sub-top);
@@ -363,15 +373,19 @@ main.sc-stage {
   margin: 0;
   padding: 0;
   border: 0;
+  resize: none;
+  overflow: hidden;
   appearance: none;
   background: transparent;
   color: transparent;
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(34 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
+  line-height: 1.12;
+  white-space: pre;
   text-transform: uppercase;
   pointer-events: auto;
 }

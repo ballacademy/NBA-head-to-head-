@@ -1,8 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
-import {
-  COMPOSER_TITLE_MAX_LENGTH,
-  onComposerTextChange,
-} from "../instagramComposer/titleLayout";
+import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import { getPlayer } from "./nbaActivePlayers";
@@ -124,20 +122,13 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       >
         <header className="tl-header">
           <div className="tl-title-block">
-            {titleLines.map((line, index) => (
-              <span key={`${index}-${line}`} className="tl-title-line">
-                {line}
-              </span>
-            ))}
-            <input
-              className="tl-title-input"
+            <ComposerTitleField
               value={title}
-              maxLength={COMPOSER_TITLE_MAX_LENGTH}
-              spellCheck={false}
-              aria-label="Tier list title"
-              onChange={(event) =>
-                onComposerTextChange(event, onTitleChange)
-              }
+              lines={titleLines}
+              ariaLabel="Tier list title"
+              inputClassName="tl-title-input"
+              lineClassName="tl-title-line"
+              onChange={onTitleChange}
             />
           </div>
           <img

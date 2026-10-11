@@ -63,17 +63,20 @@
   margin: 0;
   padding: 0;
   border: 0;
+  resize: none;
+  overflow: hidden;
   appearance: none;
   background: transparent;
   color: transparent;
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(42 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.12;
+  white-space: pre;
   pointer-events: auto;
 }
 

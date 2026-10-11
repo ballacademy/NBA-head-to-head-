@@ -79,6 +79,50 @@ export const onComposerTextChange = (
   onChange(commitComposerText(event.target.value, maxLength));
 };
 
+/**
+ * Insert a newline at the same word break the overlay uses so a textarea’s
+ * caret lands on the visible two-line title instead of the start of a
+ * single hidden line.
+ */
+export const linedComposerTitle = (raw: string, lines: string[]): string => {
+  const compact = raw.replace(/[\r\n]+/g, " ");
+  if (lines.length < 2) {
+    return compact;
+  }
+  const wordTarget = lines[0]!.split(" ").filter(Boolean).length;
+  if (wordTarget < 1) {
+    return compact;
+  }
+  const leading = compact.match(/^\s*/)?.[0] ?? "";
+  const body = compact.slice(leading.length);
+  const parts = body.split(/(\s+)/);
+  let words = 0;
+  let cut = leading.length;
+  for (const part of parts) {
+    if (!part) {
+      continue;
+    }
+    if (/^\s+$/.test(part)) {
+      if (words >= wordTarget) {
+        break;
+      }
+      cut += part.length;
+      continue;
+    }
+    words += 1;
+    cut += part.length;
+    if (words >= wordTarget) {
+      break;
+    }
+  }
+  const first = compact.slice(0, cut);
+  const rest = compact.slice(cut).replace(/^\s+/, "");
+  if (!rest) {
+    return compact;
+  }
+  return `${first}\n${rest}`;
+};
+
 export const splitBalancedTitle = (
   title: string,
   fallback = "",

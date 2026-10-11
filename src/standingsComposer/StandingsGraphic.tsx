@@ -1,8 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
-import {
-  COMPOSER_TITLE_MAX_LENGTH,
-  onComposerTextChange,
-} from "../instagramComposer/titleLayout";
+import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import {
   BANNER_SHAPE,
   BANNER_VIEW,
@@ -200,20 +198,13 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 height: `${TITLE_BAND.heightFrac * 100}%`,
               }}
             >
-              {titleLines.map((line, index) => (
-                <span key={`${index}-${line}`} className="ig-banner__title-line">
-                  {line}
-                </span>
-              ))}
-              <input
-                className="ig-banner__title"
+              <ComposerTitleField
                 value={title}
-                maxLength={COMPOSER_TITLE_MAX_LENGTH}
-                spellCheck={false}
-                aria-label="Banner title"
-                onChange={(event) =>
-                  onComposerTextChange(event, onTitleChange)
-                }
+                lines={titleLines}
+                ariaLabel="Banner title"
+                inputClassName="ig-banner__title"
+                lineClassName="ig-banner__title-line"
+                onChange={onTitleChange}
               />
             </div>
             <span ref={measureRef} className="ig-banner__sub-measure" aria-hidden="true">
