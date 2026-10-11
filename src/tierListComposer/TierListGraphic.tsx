@@ -5,6 +5,7 @@ import { getPlayer } from "./nbaActivePlayers";
 import { PlayerHeadshot } from "./PlayerHeadshot";
 import {
   BA_LOGO_SRC,
+  baBadgeRect,
   cellSize,
   cellsContentWidth,
   GRAPHIC_WIDTH,
@@ -80,6 +81,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const titleLines = splitTierTitle(title);
     const { rowH } = rowMetrics(rows.length);
     const contentW = cellsContentWidth();
+    const badge = baBadgeRect();
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -140,6 +142,14 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             src={BA_LOGO_SRC}
             alt=""
             aria-hidden="true"
+            style={
+              {
+                top: `calc(${badge.y} * var(--u))`,
+                right: `calc(${GRAPHIC_WIDTH - badge.x - badge.size} * var(--u))`,
+                width: `calc(${badge.size} * var(--u))`,
+                height: `calc(${badge.size} * var(--u))`,
+              } as React.CSSProperties
+            }
           />
         </header>
         <div
@@ -254,10 +264,26 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                           aria-label={`${row.label} tier, ${labelName}. Change`}
                         />
                         {player ? (
-                          <PlayerHeadshot
-                            src={player.headshotUrl}
-                            label={player.id}
-                          />
+                          <>
+                            {team ? (
+                              <div
+                                className="tl-cell__watermark"
+                                aria-hidden="true"
+                              >
+                                <TeamLogo
+                                  src={team.logoSrc}
+                                  label={team.id}
+                                  shadow={0}
+                                  fitX={0.9}
+                                  fitY={0.9}
+                                />
+                              </div>
+                            ) : null}
+                            <PlayerHeadshot
+                              src={player.headshotUrl}
+                              label={player.id}
+                            />
+                          </>
                         ) : team ? (
                           <TeamLogo src={team.logoSrc} label={team.id} />
                         ) : null}

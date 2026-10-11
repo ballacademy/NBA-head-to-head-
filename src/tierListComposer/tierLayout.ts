@@ -17,7 +17,15 @@ export const TIER_ROW_PAD_Y = 12;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
 export const TIER_BADGE_SIZE = 108;
+/**
+ * Equal inset from the graphic’s top edge and right edge so the lockup is
+ * not hugging the right. Matches the header’s vertical centering gap.
+ */
+export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
 export const TIER_TITLE_SIZE = 54;
+/** Faded team-logo backdrop behind a player headshot. */
+export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
+export const PLAYER_LOGO_WATERMARK_OVERSCAN = 0.14;
 export const TIER_TITLE_TRACK = 0.04;
 
 export const cellsContentWidth = () =>
@@ -40,6 +48,12 @@ export const cellSize = (
   const availableW = contentW - TIER_CELL_GAP * (n - 1);
   return Math.max(28, Math.min(TIER_CELL_MAX, innerH, availableW / n));
 };
+
+export const baBadgeRect = () => ({
+  x: GRAPHIC_WIDTH - TIER_BADGE_INSET - TIER_BADGE_SIZE,
+  y: TIER_BADGE_INSET,
+  size: TIER_BADGE_SIZE,
+});
 
 export const labelFontSize = (label: string) => {
   const len = Math.max(1, label.trim().length);

@@ -4,9 +4,20 @@ import { drawCenteredLogo } from "./logoDraw";
 interface TeamLogoProps {
   src: string;
   label: string;
+  className?: string;
+  shadow?: number;
+  fitX?: number;
+  fitY?: number;
 }
 
-export function TeamLogo({ src, label }: TeamLogoProps) {
+export function TeamLogo({
+  src,
+  label,
+  className,
+  shadow,
+  fitX,
+  fitY,
+}: TeamLogoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -38,6 +49,9 @@ export function TeamLogo({ src, label }: TeamLogoProps) {
       context.clearRect(0, 0, width, height);
       drawCenteredLogo(context, loaded, 0, 0, width, height, {
         cacheKey: src,
+        shadow,
+        fitX,
+        fitY,
       });
     };
 
@@ -62,12 +76,12 @@ export function TeamLogo({ src, label }: TeamLogoProps) {
       cancelled = true;
       observer?.disconnect();
     };
-  }, [src]);
+  }, [src, shadow, fitX, fitY]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="ig-slot__logo"
+      className={["ig-slot__logo", className].filter(Boolean).join(" ")}
       aria-hidden="true"
       data-team={label}
     />

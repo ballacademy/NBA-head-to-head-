@@ -1,9 +1,14 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
-import type { Conference } from "../standingsComposer/teams";
 import {
+  AGE_FILTERS,
+  ALL_PLAYER_FILTER,
+  DIVISION_FILTERS,
+  HEIGHT_FILTERS,
+  POSITION_FILTERS,
+  TEAM_FILTERS,
   searchPlayers,
-  type PlayerConferenceFilter,
+  type PlayerSearchFilters,
   type TierPlayer,
 } from "./nbaActivePlayers";
 
@@ -30,7 +35,13 @@ export function PlayerPicker({
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<PlayerConferenceFilter>("all");
+  const [filters, setFilters] = useState<PlayerSearchFilters>({
+    team: ALL_PLAYER_FILTER,
+    age: ALL_PLAYER_FILTER,
+    height: ALL_PLAYER_FILTER,
+    division: ALL_PLAYER_FILTER,
+    position: ALL_PLAYER_FILTER,
+  });
   const filled = Boolean(currentId);
 
   useDialogA11y({
@@ -41,9 +52,15 @@ export function PlayerPicker({
   });
 
   const players = useMemo(
-    () => searchPlayers(query, filter),
-    [query, filter],
+    () => searchPlayers(query, filters),
+    [query, filters],
   );
+
+  const setFilter =
+    (key: keyof PlayerSearchFilters) =>
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      setFilters((current) => ({ ...current, [key]: event.target.value }));
+    };
 
   return (
     <div
@@ -80,19 +97,37 @@ export function PlayerPicker({
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <div className="sc-picker__filters" role="tablist" aria-label="Conference">
-          {(["all", "East", "West"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={filter === value}
-              className={filter === value ? "sc-chip is-on" : "sc-chip"}
-              onClick={() => setFilter(value as "all" | Conference)}
-            >
-              {value === "all" ? "All" : value}
-            </button>
-          ))}
+        <div className="sc-picker__dropdowns">
+          <FilterSelect
+            label="Team"
+            value={filters.team ?? ALL_PLAYER_FILTER}
+            options={TEAM_FILTERS}
+            onChange={setFilter("team")}
+          />
+          <FilterSelect
+            label="Age"
+            value={filters.age ?? ALL_PLAYER_FILTER}
+            options={AGE_FILTERS}
+            onChange={setFilter("age")}
+          />
+          <FilterSelect
+            label="Height"
+            value={filters.height ?? ALL_PLAYER_FILTER}
+            options={HEIGHT_FILTERS}
+            onChange={setFilter("height")}
+          />
+          <FilterSelect
+            label="Division"
+            value={filters.division ?? ALL_PLAYER_FILTER}
+            options={DIVISION_FILTERS}
+            onChange={setFilter("division")}
+          />
+          <FilterSelect
+            label="Position"
+            value={filters.position ?? ALL_PLAYER_FILTER}
+            options={POSITION_FILTERS}
+            onChange={setFilter("position")}
+          />
         </div>
         <div className="sc-picker__grid">
           {players.map((player) => (
@@ -118,6 +153,31 @@ export function PlayerPicker({
         </div>
       </div>
     </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+}) {
+  return (
+    <label className="sc-picker__dropdown">
+      {label}
+      <select value={value} onChange={onChange} aria-label={label}>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -156,7 +216,11 @@ function PlayerButton({
       <span>
         <span className="sc-team__name">{player.name}</span>
         <span className="sc-team__meta">
-          {isCurrent ? "This slot" : isUsed ? usedLabel : player.team}
+          {isCurrent
+            ? "This slot"
+            : isUsed
+              ? usedLabel
+              : `${player.team} · ${player.position}`}
         </span>
       </span>
     </button>

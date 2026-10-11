@@ -95,11 +95,6 @@
 
 .tl-badge {
   position: absolute;
-  top: 50%;
-  right: calc(22 * var(--u));
-  width: calc(108 * var(--u));
-  height: calc(108 * var(--u));
-  transform: translateY(-50%);
   pointer-events: none;
   object-fit: contain;
   display: block;
@@ -208,7 +203,8 @@
 }
 
 .tl-cell .ig-slot__logo,
-.tl-headshot {
+.tl-headshot,
+.tl-cell__watermark {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -216,7 +212,16 @@
   pointer-events: none;
 }
 
+.tl-cell__watermark {
+  inset: -14%;
+  width: 128%;
+  height: 128%;
+  z-index: 0;
+  opacity: 0.22;
+}
+
 .tl-headshot {
+  z-index: 1;
   object-fit: cover;
   object-position: center 18%;
 }

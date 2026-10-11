@@ -25,7 +25,7 @@ npm run dev
 Then open [http://localhost:5173/](http://localhost:5173/) for standings (`/?hub=rankings` and `/rankings` also work). The tier list is at [http://localhost:5173/tier-list](http://localhost:5173/tier-list) (`?composer=tier` also works).
 
 - **Standings:** click a grey slot to pick a team, edit the three header lines, export a 4:5 PNG (2400×3000).
-- **Tier list:** 3–10 labeled rows (default S–F). Toggle **Teams** vs **Players**. Teams use NBA logos; players use ESPN headshots from the current 30-team rosters (`data/nba-active-tier-players.json`, CDN `a.espncdn.com/i/headshots/nba/...`). Search the player picker by name or team.
+- **Tier list:** 3–10 labeled rows (default S–F). Toggle **Teams** vs **Players**. Teams use NBA logos; players use ESPN headshots from the current 30-team rosters (`data/nba-active-tier-players.json`, CDN `a.espncdn.com/i/headshots/nba/...`) with the club mark faded behind the face. Search the player picker by name, and filter by team, age, height, division, and position.
 
 Logos are vendored ESPN 500px marks — see `public/nba-logos/README.md`. Player headshots load on demand from ESPN’s public CDN (metadata is vendored so the picker does not scrape live).
 

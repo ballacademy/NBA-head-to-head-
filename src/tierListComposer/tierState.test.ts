@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   BA_LOGO_SRC,
+  baBadgeRect,
   cellSize,
   rowMetrics,
+  TIER_BADGE_INSET,
   TIER_BADGE_SIZE,
   TIER_CELL_MAX,
+  TIER_HEADER_H,
+  TIER_PAD_RIGHT,
 } from "./tierLayout";
 import {
   addTeamToRow,
@@ -106,6 +111,14 @@ describe("tier layout", () => {
   it("uses the circled BA lockup, not a drawn circle", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
     expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(100);
+  });
+
+  it("pads the BA lockup equally from the top and right edges", () => {
+    const badge = baBadgeRect();
+    expect(TIER_BADGE_INSET).toBe((TIER_HEADER_H - TIER_BADGE_SIZE) / 2);
+    expect(badge.y).toBe(TIER_BADGE_INSET);
+    expect(GRAPHIC_WIDTH - badge.x - badge.size).toBe(TIER_BADGE_INSET);
+    expect(TIER_BADGE_INSET).toBeGreaterThan(TIER_PAD_RIGHT);
   });
 
   it("keeps cells square and capped", () => {

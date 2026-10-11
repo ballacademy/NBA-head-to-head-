@@ -19,14 +19,15 @@ import {
   GRAPHIC_WIDTH,
   labelFontSize,
   rowMetrics,
+  baBadgeRect,
   BA_LOGO_SRC,
-  TIER_BADGE_SIZE,
+  PLAYER_LOGO_WATERMARK_ALPHA,
+  PLAYER_LOGO_WATERMARK_OVERSCAN,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
   TIER_HEADER_H,
   TIER_LABEL_W,
-  TIER_PAD_RIGHT,
   TIER_TITLE_SIZE,
   TIER_TITLE_TRACK,
 } from "./tierLayout";
@@ -184,9 +185,10 @@ export const renderTierListCanvas = async (
 
   const ba = await loadImage(BA_LOGO_SRC);
   if (ba) {
-    const badge = TIER_BADGE_SIZE * scale;
-    const badgeX = width - TIER_PAD_RIGHT * scale - badge;
-    const badgeY = (TIER_HEADER_H * scale - badge) / 2;
+    const slot = baBadgeRect();
+    const badge = slot.size * scale;
+    const badgeX = slot.x * scale;
+    const badgeY = slot.y * scale;
     const bounds = getOpaqueBounds(ba);
     const fit = badge / Math.max(1, bounds.w, bounds.h);
     const dw = bounds.w * fit;
@@ -207,18 +209,29 @@ export const renderTierListCanvas = async (
   const { rowH } = rowMetrics(input.rows.length);
   const contentW = cellsContentWidth();
   const subject = input.subject ?? "teams";
-  const logos = await Promise.all(
+  const cellArt = await Promise.all(
     input.rows.map((row) =>
       Promise.all(
-        row.teams.map((id) => {
+        row.teams.map(async (id) => {
           if (subject === "players") {
             const player = getPlayer(id);
-            return player
-              ? loadCorsImage(player.headshotUrl)
-              : Promise.resolve(null);
+            const team = player ? getTeam(player.team) : null;
+            const [headshot, watermark] = await Promise.all([
+              player ? loadCorsImage(player.headshotUrl) : Promise.resolve(null),
+              team ? loadImage(team.logoSrc) : Promise.resolve(null),
+            ]);
+            return {
+              mark: headshot,
+              watermark,
+              cacheKey: team?.logoSrc,
+            };
           }
           const team = getTeam(id);
-          return team ? loadImage(team.logoSrc) : Promise.resolve(null);
+          return {
+            mark: team ? await loadImage(team.logoSrc) : null,
+            watermark: null,
+            cacheKey: team?.logoSrc,
+          };
         }),
       ),
     ),
@@ -265,11 +278,34 @@ export const renderTierListCanvas = async (
         context.fillStyle = "#2a2a2a";
         context.fillRect(x, startY, size, size);
       }
-      const image = logos[rowIndex]?.[index];
-      if (image && player) {
-        drawCoverHeadshot(context, image, x, startY, size, size);
-      } else if (image && team) {
-        drawCenteredLogo(context, image, x, startY, size, size, {
+      const art = cellArt[rowIndex]?.[index];
+      if (player && art?.watermark) {
+        context.save();
+        context.beginPath();
+        context.rect(x, startY, size, size);
+        context.clip();
+        context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
+        const overscan = size * PLAYER_LOGO_WATERMARK_OVERSCAN;
+        drawCenteredLogo(
+          context,
+          art.watermark,
+          x - overscan,
+          startY - overscan,
+          size + overscan * 2,
+          size + overscan * 2,
+          {
+            shadow: 0,
+            fitX: 0.9,
+            fitY: 0.9,
+            cacheKey: art.cacheKey,
+          },
+        );
+        context.restore();
+      }
+      if (art?.mark && player) {
+        drawCoverHeadshot(context, art.mark, x, startY, size, size);
+      } else if (art?.mark && team) {
+        drawCenteredLogo(context, art.mark, x, startY, size, size, {
           cacheKey: team.logoSrc,
         });
       }
