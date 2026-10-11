@@ -13,6 +13,7 @@
     "deploy:qa": "npm run build && wrangler pages deploy dist --project-name=nba-head-to-head-qa --branch=qa --commit-dirty=true -c wrangler.qa.toml",
     "build:impact-rankings": "npx tsx scripts/build_impact_ranking_overrides.ts",
     "data:headshots": "python3 scripts/build_espn_headshot_map.py",
+    "data:tier-players": "python3 scripts/build_nba_active_tier_players.py",
     "data:rookies": "python3 scripts/sync_espn_rookies_udfa.py && python3 scripts/build_espn_headshot_map.py",
     "data:stats:csv": "python3 scripts/csv_to_stats_json.py --output data/nba-stats/nba-player-stats-202526-regular-season.json",
     "data:heights": "python3 scripts/sync_player_heights.py --fill-missing-player-pages",
