@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { headshotGlowPx } from "../instagramComposer/composerLook";
 
 interface PlayerHeadshotProps {
@@ -6,15 +7,37 @@ interface PlayerHeadshotProps {
   className?: string;
 }
 
+const collegeHeadshotUrl = (src: string) => {
+  if (!src.includes("/i/headshots/nba/players/full/")) {
+    return null;
+  }
+  return src.replace(
+    "/i/headshots/nba/players/full/",
+    "/i/headshots/mens-college-basketball/players/full/",
+  );
+};
+
 export function PlayerHeadshot({ src, label, className }: PlayerHeadshotProps) {
+  const [url, setUrl] = useState(src);
+
+  useEffect(() => {
+    setUrl(src);
+  }, [src]);
+
   return (
     <img
       className={["tl-headshot", className].filter(Boolean).join(" ")}
-      src={src}
+      src={url}
       alt=""
       data-player={label}
       loading="lazy"
       referrerPolicy="no-referrer"
+      onError={() => {
+        const fallback = collegeHeadshotUrl(src);
+        if (fallback && url !== fallback) {
+          setUrl(fallback);
+        }
+      }}
     />
   );
 }

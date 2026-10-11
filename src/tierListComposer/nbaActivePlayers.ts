@@ -31,6 +31,14 @@ export interface TierPlayer {
   allStar: boolean;
 }
 
+type HeadshotFallback = {
+  id: string;
+  name: string;
+  team: string;
+  source: string;
+  url: string;
+};
+
 type CatalogFile = {
   description: string;
   source: string;
@@ -41,6 +49,7 @@ type CatalogFile = {
       conference?: Conference;
     }
   >;
+  headshotFallbacks?: HeadshotFallback[];
 };
 
 const data = catalog as CatalogFile;
@@ -56,6 +65,11 @@ export const NBA_ACTIVE_PLAYERS: TierPlayer[] = data.players.map((player) => ({
 export const NBA_ACTIVE_PLAYER_COUNT = data.playerCount;
 export const NBA_HEADSHOT_CDN = data.headshotCdn;
 export const NBA_ROSTER_SOURCE = data.source;
+export const NBA_HEADSHOT_FALLBACKS = data.headshotFallbacks ?? [];
+
+export const isComposerHeadshotUrl = (url: string) =>
+  url.startsWith("https://a.espncdn.com/i/headshots/") ||
+  url.startsWith("/composer-headshots/");
 
 export const NBA_ACTIVE_PLAYERS_BY_ID: Record<string, TierPlayer> =
   Object.fromEntries(NBA_ACTIVE_PLAYERS.map((player) => [player.id, player]));

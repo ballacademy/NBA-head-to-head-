@@ -1,5 +1,5 @@
 {
-  "description": "Currently active NBA roster players for the Instagram player tier-list composer. Metadata only \u2014 headshots load from ESPN CDN on demand. Age/height/positionGroup from ESPN site roster API; five-spot position filled from Basketball-Reference when an ESPN id matches. Draft, country, and experience from ESPN core athlete; All-Star from BBR career/recent/2026 lists mapped through ESPN ids.",
+  "description": "Currently active NBA roster players for the Instagram player tier-list composer. Metadata only \u2014 headshots load from ESPN CDN on demand, with college ESPN or a vendored previous-team NBA.com shot when the current NBA ESPN PNG 404s. Age/height/positionGroup from ESPN site roster API; five-spot position filled from Basketball-Reference when an ESPN id matches. Draft, country, and experience from ESPN core athlete; All-Star from BBR career/recent/2026 lists mapped through ESPN ids.",
   "source": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster",
   "headshotCdn": "https://a.espncdn.com/i/headshots/nba/players/full/{espnId}.png",
   "generatedAt": "2026-10-11T01:51:15Z",
@@ -639,7 +639,7 @@
       "id": "4897155",
       "name": "Anthony Pritchard",
       "team": "OKC",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4897155.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4897155.png",
       "age": 23,
       "heightInches": 73,
       "displayHeight": "6' 1\"",
@@ -1611,7 +1611,7 @@
       "id": "4712902",
       "name": "Cameron Corhen",
       "team": "ATL",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4712902.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4712902.png",
       "age": 22,
       "heightInches": 82,
       "displayHeight": "6' 10\"",
@@ -3483,7 +3483,7 @@
       "id": "5105853",
       "name": "Fletcher Loyer",
       "team": "LAC",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/5105853.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/5105853.png",
       "age": 23,
       "heightInches": 75,
       "displayHeight": "6' 3\"",
@@ -3537,7 +3537,7 @@
       "id": "4432753",
       "name": "Gabe Madsen",
       "team": "MIA",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4432753.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4432753.png",
       "age": 25,
       "heightInches": 78,
       "displayHeight": "6' 6\"",
@@ -4185,7 +4185,7 @@
       "id": "4702784",
       "name": "J'Vonne Hadley",
       "team": "MIA",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4702784.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4702784.png",
       "age": 24,
       "heightInches": 77,
       "displayHeight": "6' 5\"",
@@ -4293,7 +4293,7 @@
       "id": "4683730",
       "name": "Jaden Akins",
       "team": "NYK",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4683730.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4683730.png",
       "age": 23,
       "heightInches": 76,
       "displayHeight": "6' 4\"",
@@ -5139,7 +5139,7 @@
       "id": "4684737",
       "name": "Jaylen Martin",
       "team": "POR",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4684737.png",
+      "headshotUrl": "/composer-headshots/4684737.png",
       "age": 22,
       "heightInches": 78,
       "displayHeight": "6' 6\"",
@@ -6543,7 +6543,7 @@
       "id": "4997530",
       "name": "Khalifa Diop",
       "team": "CLE",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4997530.png",
+      "headshotUrl": "/composer-headshots/4997530.png",
       "age": 24,
       "heightInches": 83,
       "displayHeight": "6' 11\"",
@@ -6705,7 +6705,7 @@
       "id": "4683857",
       "name": "Kobe Johnson",
       "team": "ATL",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4683857.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4683857.png",
       "age": 23,
       "heightInches": 78,
       "displayHeight": "6' 6\"",
@@ -8325,7 +8325,7 @@
       "id": "4702134",
       "name": "Norchad Omier",
       "team": "MIN",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4702134.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4702134.png",
       "age": 25,
       "heightInches": 77,
       "displayHeight": "6' 5\"",
@@ -8901,7 +8901,7 @@
       "id": "4684443",
       "name": "Rafael Castro",
       "team": "LAL",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4684443.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4684443.png",
       "age": 23,
       "heightInches": 81,
       "displayHeight": "6' 9\"",
@@ -9873,7 +9873,7 @@
       "id": "4278395",
       "name": "Taylor Funk",
       "team": "UTA",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4278395.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4278395.png",
       "age": 28,
       "heightInches": 80,
       "displayHeight": "6' 8\"",
@@ -10611,7 +10611,7 @@
       "id": "4898260",
       "name": "Tyson Degenhart",
       "team": "TOR",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4898260.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4898260.png",
       "age": 23,
       "heightInches": 79,
       "displayHeight": "6' 7\"",
@@ -10827,7 +10827,7 @@
       "id": "4897504",
       "name": "Wyatt Fricks",
       "team": "CHA",
-      "headshotUrl": "https://a.espncdn.com/i/headshots/nba/players/full/4897504.png",
+      "headshotUrl": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4897504.png",
       "age": 23,
       "heightInches": 81,
       "displayHeight": "6' 9\"",
@@ -11128,6 +11128,128 @@
       "country": "United States",
       "experienceYears": 3,
       "allStar": false
+    }
+  ],
+  "headshotFallbacks": [
+    {
+      "id": "4897155",
+      "name": "Anthony Pritchard",
+      "team": "OKC",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4897155.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4897155.png"
+    },
+    {
+      "id": "4712902",
+      "name": "Cameron Corhen",
+      "team": "ATL",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4712902.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4712902.png"
+    },
+    {
+      "id": "5105853",
+      "name": "Fletcher Loyer",
+      "team": "LAC",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/5105853.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/5105853.png"
+    },
+    {
+      "id": "4432753",
+      "name": "Gabe Madsen",
+      "team": "MIA",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4432753.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4432753.png"
+    },
+    {
+      "id": "4702784",
+      "name": "J'Vonne Hadley",
+      "team": "MIA",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4702784.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4702784.png"
+    },
+    {
+      "id": "4683730",
+      "name": "Jaden Akins",
+      "team": "NYK",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4683730.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4683730.png"
+    },
+    {
+      "id": "4684737",
+      "name": "Jaylen Martin",
+      "team": "POR",
+      "source": "nba-cdn-local",
+      "url": "/composer-headshots/4684737.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4684737.png"
+    },
+    {
+      "id": "4997530",
+      "name": "Khalifa Diop",
+      "team": "CLE",
+      "source": "nba-cdn-local",
+      "url": "/composer-headshots/4997530.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4997530.png"
+    },
+    {
+      "id": "4683857",
+      "name": "Kobe Johnson",
+      "team": "ATL",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4683857.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4683857.png"
+    },
+    {
+      "id": "4702134",
+      "name": "Norchad Omier",
+      "team": "MIN",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4702134.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4702134.png"
+    },
+    {
+      "id": "4909710",
+      "name": "Phillip Wheeler",
+      "team": "PHX",
+      "source": "nba-espn-missing",
+      "url": "https://a.espncdn.com/i/headshots/nba/players/full/4909710.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4909710.png"
+    },
+    {
+      "id": "4684443",
+      "name": "Rafael Castro",
+      "team": "LAL",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4684443.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4684443.png"
+    },
+    {
+      "id": "4278395",
+      "name": "Taylor Funk",
+      "team": "UTA",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4278395.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4278395.png"
+    },
+    {
+      "id": "4898260",
+      "name": "Tyson Degenhart",
+      "team": "TOR",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4898260.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4898260.png"
+    },
+    {
+      "id": "4897504",
+      "name": "Wyatt Fricks",
+      "team": "CHA",
+      "source": "college-espn",
+      "url": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4897504.png",
+      "previousNbaEspn": "https://a.espncdn.com/i/headshots/nba/players/full/4897504.png"
     }
   ]
 }

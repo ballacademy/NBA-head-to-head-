@@ -20,9 +20,20 @@ ESPN_TEAMS_URL = (
     "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=50"
 )
 HEADSHOT_CDN = "https://a.espncdn.com/i/headshots/nba/players/full/{espnId}.png"
+COLLEGE_HEADSHOT_CDN = (
+    "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/{espnId}.png"
+)
+NBA_HEADSHOT_CDN = "https://cdn.nba.com/headshots/nba/latest/1040x760/{nbaId}.png"
+LOCAL_HEADSHOT = "/composer-headshots/{espnId}.png"
 ROSTER_SOURCE = (
     "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster"
 )
+# ESPN ids whose NBA.com headshot is a real previous/current-team photo (not a silhouette).
+NBA_ID_BY_ESPN_ID = {
+    "4997530": "1631215",  # Khalifa Diop — Cavaliers
+    "4684737": "1641798",  # Jaylen Martin — Wizards (previous team)
+}
+MIN_REAL_HEADSHOT_BYTES = 40_000
 
 # ESPN team abbreviation → app team id (stands/tier composer).
 ESPN_TO_APP = {
@@ -58,6 +69,49 @@ def fetch_json(url: str) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 NBA-tier-list"})
     with urllib.request.urlopen(req, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def head_ok(url: str, min_bytes: int = MIN_REAL_HEADSHOT_BYTES) -> bool:
+    req = urllib.request.Request(
+        url,
+        method="HEAD",
+        headers={"User-Agent": "Mozilla/5.0 NBA-tier-list"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as response:
+            if response.status != 200:
+                return False
+            length = int(response.headers.get("Content-Length") or 0)
+            content_type = str(response.headers.get("Content-Type") or "")
+            return "image" in content_type and length >= min_bytes
+    except Exception:
+        return False
+
+
+def resolve_headshot(espn_id: str, roster_href: str | None = None) -> tuple[str, str]:
+    """Return (url, source). Prefer a live NBA ESPN shot; else college; else NBA.com."""
+    nba_url = HEADSHOT_CDN.replace("{espnId}", espn_id)
+    if head_ok(nba_url):
+        return nba_url, "nba-espn"
+    if roster_href and head_ok(roster_href):
+        source = (
+            "college-espn"
+            if "mens-college-basketball" in roster_href
+            else "roster-espn"
+        )
+        return roster_href, source
+    college_url = COLLEGE_HEADSHOT_CDN.replace("{espnId}", espn_id)
+    if head_ok(college_url):
+        return college_url, "college-espn"
+    nba_id = NBA_ID_BY_ESPN_ID.get(espn_id)
+    if nba_id:
+        local = ROOT / "public" / "composer-headshots" / f"{espn_id}.png"
+        if local.exists():
+            return LOCAL_HEADSHOT.replace("{espnId}", espn_id), "nba-cdn-local"
+        remote = NBA_HEADSHOT_CDN.replace("{nbaId}", nba_id)
+        if head_ok(remote):
+            return remote, "nba-cdn"
+    return nba_url, "nba-espn-missing"
 
 
 def normalize_name(name: str) -> str:
@@ -360,12 +414,14 @@ def main() -> None:
                 missing_age += 1
             if height_inches is None:
                 missing_height += 1
+            roster_href = ((athlete.get("headshot") or {}) or {}).get("href")
+            headshot_url, _source = resolve_headshot(espn_id, roster_href)
             players.append(
                 {
                     "id": espn_id,
                     "name": name,
                     "team": app_id,
-                    "headshotUrl": HEADSHOT_CDN.replace("{espnId}", espn_id),
+                    "headshotUrl": headshot_url,
                     "age": age,
                     "heightInches": height_inches,
                     "displayHeight": display_height,

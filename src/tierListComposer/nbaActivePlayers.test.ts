@@ -8,11 +8,13 @@ import {
   NBA_ACTIVE_PLAYER_COUNT,
   NBA_ACTIVE_PLAYERS,
   NBA_HEADSHOT_CDN,
+  NBA_HEADSHOT_FALLBACKS,
   NBA_ROSTER_SOURCE,
   NEVER_ALL_STAR_FILTER,
   NON_LOTTERY_FILTER,
   UNDRAFTED_FILTER,
   getPlayer,
+  isComposerHeadshotUrl,
   searchPlayers,
 } from "./nbaActivePlayers";
 
@@ -27,7 +29,7 @@ describe("active NBA player catalog", () => {
     expect(
       NBA_ACTIVE_PLAYERS.every(
         (player) =>
-          player.headshotUrl.startsWith("https://a.espncdn.com/i/headshots/nba/") &&
+          isComposerHeadshotUrl(player.headshotUrl) &&
           Number.isFinite(player.age) &&
           Number.isFinite(player.heightInches) &&
           POSITIONS.has(player.position) &&
@@ -44,6 +46,35 @@ describe("active NBA player catalog", () => {
           Number.isFinite(player.experienceYears) &&
           typeof player.allStar === "boolean" &&
           (player.conference === "East" || player.conference === "West"),
+      ),
+    ).toBe(true);
+  });
+
+  it("uses a previous-team or college shot when the NBA ESPN PNG 404s", () => {
+    const payton = getPlayer("4066354");
+    expect(payton?.name).toBe("Payton Pritchard");
+    expect(payton?.headshotUrl).toBe(
+      "https://a.espncdn.com/i/headshots/nba/players/full/4066354.png",
+    );
+
+    const corhen = getPlayer("4712902");
+    expect(corhen?.name).toBe("Cameron Corhen");
+    expect(corhen?.headshotUrl).toContain("mens-college-basketball");
+
+    const anthony = getPlayer("4897155");
+    expect(anthony?.name).toBe("Anthony Pritchard");
+    expect(anthony?.headshotUrl).toContain("mens-college-basketball");
+
+    expect(getPlayer("4997530")?.headshotUrl).toBe("/composer-headshots/4997530.png");
+    expect(getPlayer("4684737")?.headshotUrl).toBe("/composer-headshots/4684737.png");
+
+    const solved = NBA_HEADSHOT_FALLBACKS.filter(
+      (row) => row.source !== "nba-espn-missing",
+    );
+    expect(solved.length).toBeGreaterThanOrEqual(14);
+    expect(
+      NBA_HEADSHOT_FALLBACKS.some(
+        (row) => row.name === "Phillip Wheeler" && row.source === "nba-espn-missing",
       ),
     ).toBe(true);
   });
