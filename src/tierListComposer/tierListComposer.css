@@ -46,7 +46,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 78%;
+  width: 66%;
   pointer-events: none;
 }
 
@@ -96,9 +96,9 @@
 .tl-badge {
   position: absolute;
   top: 50%;
-  right: calc(28 * var(--u));
-  width: calc(72 * var(--u));
-  height: calc(72 * var(--u));
+  right: calc(22 * var(--u));
+  width: calc(108 * var(--u));
+  height: calc(108 * var(--u));
   transform: translateY(-50%);
   pointer-events: none;
   object-fit: contain;
@@ -207,12 +207,18 @@
   z-index: 3;
 }
 
-.tl-cell .ig-slot__logo {
+.tl-cell .ig-slot__logo,
+.tl-headshot {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.tl-headshot {
+  object-fit: cover;
+  object-position: center 18%;
 }
 
 .tl-cell__remove {

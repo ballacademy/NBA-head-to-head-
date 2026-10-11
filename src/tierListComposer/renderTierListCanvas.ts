@@ -9,6 +9,9 @@ import {
 import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { loadCorsImage } from "../lib/playerHeadshots";
+import { getPlayer } from "./nbaActivePlayers";
+import { drawCoverHeadshot } from "./PlayerHeadshot";
 import {
   cellSize,
   cellsContentWidth,
@@ -27,7 +30,11 @@ import {
   TIER_TITLE_SIZE,
   TIER_TITLE_TRACK,
 } from "./tierLayout";
-import { splitTierTitle, type TierRow } from "./tierState";
+import {
+  splitTierTitle,
+  type TierRow,
+  type TierSubject,
+} from "./tierState";
 
 export { canvasToPngBlob };
 
@@ -106,6 +113,7 @@ const drawCenteredLine = (
 export interface TierListRenderInput {
   title: string;
   rows: TierRow[];
+  subject?: TierSubject;
 }
 
 export const renderTierListCanvas = async (
@@ -198,10 +206,17 @@ export const renderTierListCanvas = async (
 
   const { rowH } = rowMetrics(input.rows.length);
   const contentW = cellsContentWidth();
+  const subject = input.subject ?? "teams";
   const logos = await Promise.all(
     input.rows.map((row) =>
       Promise.all(
         row.teams.map((id) => {
+          if (subject === "players") {
+            const player = getPlayer(id);
+            return player
+              ? loadCorsImage(player.headshotUrl)
+              : Promise.resolve(null);
+          }
           const team = getTeam(id);
           return team ? loadImage(team.logoSrc) : Promise.resolve(null);
         }),
@@ -232,8 +247,9 @@ export const renderTierListCanvas = async (
     const startX = (TIER_LABEL_W + TIER_CELLS_INSET) * scale;
     const startY = y + (h - size) / 2;
 
-    row.teams.forEach((teamId, index) => {
-      const team = getTeam(teamId);
+    row.teams.forEach((entityId, index) => {
+      const player = subject === "players" ? getPlayer(entityId) : null;
+      const team = player ? getTeam(player.team) : getTeam(entityId);
       const x = startX + index * (size + gap);
       if (team) {
         fillCellGradient(
@@ -249,9 +265,11 @@ export const renderTierListCanvas = async (
         context.fillStyle = "#2a2a2a";
         context.fillRect(x, startY, size, size);
       }
-      const logo = logos[rowIndex]?.[index];
-      if (logo && team) {
-        drawCenteredLogo(context, logo, x, startY, size, size, {
+      const image = logos[rowIndex]?.[index];
+      if (image && player) {
+        drawCoverHeadshot(context, image, x, startY, size, size);
+      } else if (image && team) {
+        drawCenteredLogo(context, image, x, startY, size, size, {
           cacheKey: team.logoSrc,
         });
       }

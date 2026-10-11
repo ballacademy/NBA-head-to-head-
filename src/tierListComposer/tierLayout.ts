@@ -16,7 +16,7 @@ export const TIER_CELL_MAX = 148;
 export const TIER_ROW_PAD_Y = 12;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
-export const TIER_BADGE_SIZE = 72;
+export const TIER_BADGE_SIZE = 108;
 export const TIER_TITLE_SIZE = 54;
 export const TIER_TITLE_TRACK = 0.04;
 

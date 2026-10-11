@@ -5,7 +5,6 @@ import {
   getOpaqueBoundsFromImageData,
   logoShadowPx,
   opticalShiftX,
-  shadowCompensateX,
 } from "./logoDraw";
 import {
   BANNER_SHAPE,
@@ -96,10 +95,7 @@ describe("fittedLogoRect", () => {
       cell.w,
       cell.h,
     );
-    expect(dest.x + dest.w / 2).toBeCloseTo(
-      cell.x + cell.w / 2 - shadowCompensateX(cell.w, cell.h),
-      6,
-    );
+    expect(dest.x + dest.w / 2).toBeCloseTo(cell.x + cell.w / 2, 6);
     expect(dest.y + dest.h / 2).toBeCloseTo(
       cell.y + cell.h / 2 - cell.h * LOGO_LIFT,
       6,
@@ -111,10 +107,7 @@ describe("fittedLogoRect", () => {
     const padded = fittedLogoRect({ x: 80, y: 90, w: 100, h: 80 }, 0, 0, 300, 200);
     const tight = fittedLogoRect({ x: 0, y: 0, w: 100, h: 80 }, 0, 0, 300, 200);
     expect(padded).toEqual(tight);
-    expect(padded.x + padded.w / 2).toBeCloseTo(
-      cell.w / 2 - shadowCompensateX(cell.w, cell.h),
-      6,
-    );
+    expect(padded.x + padded.w / 2).toBeCloseTo(cell.w / 2, 6);
     expect(padded.y + padded.h / 2).toBeCloseTo(cell.h / 2 - cell.h * LOGO_LIFT, 6);
   });
 
@@ -122,7 +115,7 @@ describe("fittedLogoRect", () => {
     const wide = fittedLogoRect({ x: 0, y: 0, w: 460, h: 200 }, 0, 0, 400, 246);
     const round = fittedLogoRect({ x: 0, y: 0, w: 460, h: 460 }, 0, 0, 400, 246);
     expect(wide.w).toBeGreaterThan(round.w);
-    expect(wide.x + wide.w / 2).toBeCloseTo(200 - shadowCompensateX(400, 246), 6);
+    expect(wide.x + wide.w / 2).toBeCloseTo(200, 6);
     expect(wide.y + wide.h / 2).toBeCloseTo(123 - 246 * LOGO_LIFT, 6);
   });
 
@@ -161,22 +154,16 @@ describe("fittedLogoRect", () => {
     expect(dest.x).toBeCloseTo(box.x, 6);
   });
 
-  it("shifts artwork left by half the down-right shadow so cells do not read right-heavy", () => {
+  it("keeps shadow length in cell pixels without shifting the dest rect", () => {
     expect(logoShadowPx(400, 246)).toBe(Math.round(246 * 0.12));
-    expect(shadowCompensateX(148, 148)).toBe(logoShadowPx(148, 148) / 2);
-    const cell = { w: 148, h: 148 };
     const dest = fittedLogoRect(
       { x: 0, y: 0, w: 460, h: 460, cx: 230, cy: 230 },
       0,
       0,
-      cell.w,
-      cell.h,
+      148,
+      148,
     );
-    expect(dest.x + dest.w / 2).toBeCloseTo(
-      cell.w / 2 - shadowCompensateX(cell.w, cell.h),
-      6,
-    );
-    expect(shadowCompensateX(cell.w, cell.h)).toBeGreaterThan(cell.w * 0.04);
+    expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
   });
 });
 

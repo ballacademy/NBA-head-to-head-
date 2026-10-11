@@ -3,6 +3,7 @@ import {
   BA_LOGO_SRC,
   cellSize,
   rowMetrics,
+  TIER_BADGE_SIZE,
   TIER_CELL_MAX,
 } from "./tierLayout";
 import {
@@ -104,6 +105,7 @@ describe("tier rows", () => {
 describe("tier layout", () => {
   it("uses the circled BA lockup, not a drawn circle", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
+    expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(100);
   });
 
   it("keeps cells square and capped", () => {

@@ -3,6 +3,7 @@ export const MAX_TIERS = 10;
 export const DEFAULT_TIER_LABELS = ["S", "A", "B", "C", "D", "F"] as const;
 export const EXTRA_TIER_LABELS = ["G", "H", "I", "J"] as const;
 export const DEFAULT_TIER_TITLE = "GUESS THE NBA TIER LIST";
+export type TierSubject = "teams" | "players";
 
 export interface TierRow {
   id: string;

@@ -1,6 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
+import { getPlayer } from "./nbaActivePlayers";
+import { PlayerHeadshot } from "./PlayerHeadshot";
 import {
   BA_LOGO_SRC,
   cellSize,
@@ -9,7 +11,11 @@ import {
   labelFontSize,
   rowMetrics,
 } from "./tierLayout";
-import { splitTierTitle, type TierRow } from "./tierState";
+import {
+  splitTierTitle,
+  type TierRow,
+  type TierSubject,
+} from "./tierState";
 
 export interface TierPickerTarget {
   rowIndex: number;
@@ -19,6 +25,7 @@ export interface TierPickerTarget {
 interface TierListGraphicProps {
   title: string;
   rows: TierRow[];
+  subject?: TierSubject;
   active: TierPickerTarget | null;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
@@ -55,6 +62,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     {
       title,
       rows,
+      subject = "teams",
       active,
       exporting = false,
       onTitleChange,
@@ -178,18 +186,23 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                   }
                 />
                 <div className="tl-cells">
-                  {row.teams.map((teamId, index) => {
-                    const team = getTeam(teamId);
-                    if (!team) {
+                  {row.teams.map((entityId, index) => {
+                    const player =
+                      subject === "players" ? getPlayer(entityId) : null;
+                    const team = player
+                      ? getTeam(player.team)
+                      : getTeam(entityId);
+                    if (!team && !player) {
                       return null;
                     }
                     const isActive =
                       active?.rowIndex === rowIndex &&
-                      active.replaceId === teamId;
+                      active.replaceId === entityId;
                     const isDrop = dropKey === `${rowIndex}-${index}`;
+                    const labelName = player?.name ?? team?.name ?? entityId;
                     return (
                       <div
-                        key={teamId}
+                        key={entityId}
                         className={[
                           "tl-cell",
                           "tl-cell--filled",
@@ -199,20 +212,22 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                           .filter(Boolean)
                           .join(" ")}
                         style={
-                          {
-                            ["--cell-from" as string]: team.cellFrom,
-                            ["--cell-to" as string]: team.cellTo,
-                          } as React.CSSProperties
+                          team
+                            ? ({
+                                ["--cell-from" as string]: team.cellFrom,
+                                ["--cell-to" as string]: team.cellTo,
+                              } as React.CSSProperties)
+                            : undefined
                         }
                         draggable={!exporting}
                         onDragStart={(event) => {
                           event.dataTransfer.setData(
                             "application/x-tier-team",
-                            dragPayload(rowIndex, teamId),
+                            dragPayload(rowIndex, entityId),
                           );
                           event.dataTransfer.setData(
                             "text/plain",
-                            dragPayload(rowIndex, teamId),
+                            dragPayload(rowIndex, entityId),
                           );
                           event.dataTransfer.effectAllowed = "move";
                         }}
@@ -235,18 +250,25 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                         <button
                           type="button"
                           className="tl-cell__hit"
-                          onClick={() => onSelectTeam(rowIndex, teamId)}
-                          aria-label={`${row.label} tier, ${team.name}. Change team`}
+                          onClick={() => onSelectTeam(rowIndex, entityId)}
+                          aria-label={`${row.label} tier, ${labelName}. Change`}
                         />
-                        <TeamLogo src={team.logoSrc} label={team.id} />
+                        {player ? (
+                          <PlayerHeadshot
+                            src={player.headshotUrl}
+                            label={player.id}
+                          />
+                        ) : team ? (
+                          <TeamLogo src={team.logoSrc} label={team.id} />
+                        ) : null}
                         {exporting ? null : (
                           <button
                             type="button"
                             className="tl-cell__remove"
-                            aria-label={`Remove ${team.name}`}
+                            aria-label={`Remove ${labelName}`}
                             onClick={(event) => {
                               event.stopPropagation();
-                              onRemoveTeam(rowIndex, teamId);
+                              onRemoveTeam(rowIndex, entityId);
                             }}
                           >
                             ×
@@ -269,7 +291,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                         .filter(Boolean)
                         .join(" ")}
                       onClick={() => onSelectAdd(rowIndex)}
-                      aria-label={`Add team to ${row.label} tier`}
+                      aria-label={`Add ${subject === "players" ? "player" : "team"} to ${row.label} tier`}
                     >
                       +
                     </button>

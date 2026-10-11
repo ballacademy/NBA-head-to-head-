@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { exportTierFilename, exportTierListPng } from "./exportTierPng";
+import { PlayerPicker } from "./PlayerPicker";
 import {
   TierListGraphic,
   type TierPickerTarget,
@@ -21,19 +22,56 @@ import {
   setTierLabel,
   usedLabelsForPicker,
   type TierRow,
+  type TierSubject,
 } from "./tierState";
 import "@fontsource/montserrat/latin-900.css";
 import "./tierListComposer.css";
 
-const STORAGE_KEY = "ddgm:tier-list-composer";
+const TEAM_STORAGE_KEY = "ddgm:tier-list-composer";
+const PLAYER_STORAGE_KEY = "ddgm:tier-list-composer-players";
+const SUBJECT_STORAGE_KEY = "ddgm:tier-list-subject";
 
 interface TierComposerDraft {
   title: string;
   rows: TierRow[];
 }
 
-const loadDraft = (): TierComposerDraft => {
-  const stored = readJson<Partial<TierComposerDraft>>(STORAGE_KEY);
+const storageKeyFor = (subject: TierSubject) =>
+  subject === "players" ? PLAYER_STORAGE_KEY : TEAM_STORAGE_KEY;
+
+const readSubject = (): TierSubject => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("subject")?.toLowerCase() === "players") {
+      return "players";
+    }
+  } catch {
+    // ignore
+  }
+  const stored = readJson<string>(SUBJECT_STORAGE_KEY);
+  return stored === "players" ? "players" : "teams";
+};
+
+const writeSubject = (subject: TierSubject) => {
+  writeJson(SUBJECT_STORAGE_KEY, subject);
+  try {
+    const url = new URL(window.location.href);
+    if (subject === "players") {
+      url.searchParams.set("subject", "players");
+    } else {
+      url.searchParams.delete("subject");
+    }
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== next) {
+      window.history.replaceState({}, "", next);
+    }
+  } catch {
+    // ignore
+  }
+};
+
+const loadDraft = (subject: TierSubject): TierComposerDraft => {
+  const stored = readJson<Partial<TierComposerDraft>>(storageKeyFor(subject));
   if (isTierDraft(stored)) {
     return { title: stored.title.trim() || DEFAULT_TIER_TITLE, rows: stored.rows };
   }
@@ -45,6 +83,7 @@ const loadDraft = (): TierComposerDraft => {
 
 export function TierListComposerApp() {
   const boardRef = useRef<HTMLElement | null>(null);
+  const [subject, setSubject] = useState<TierSubject>("teams");
   const [title, setTitle] = useState(DEFAULT_TIER_TITLE);
   const [rows, setRows] = useState<TierRow[]>(createDefaultRows);
   const [active, setActive] = useState<TierPickerTarget | null>(null);
@@ -53,11 +92,14 @@ export function TierListComposerApp() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    document.title = "Tier list graphic";
-  }, []);
+    document.title =
+      subject === "players" ? "Player tier list graphic" : "Tier list graphic";
+  }, [subject]);
 
   useEffect(() => {
-    const draft = loadDraft();
+    const initial = readSubject();
+    const draft = loadDraft(initial);
+    setSubject(initial);
     setTitle(draft.title);
     setRows(draft.rows);
     setHydrated(true);
@@ -67,8 +109,21 @@ export function TierListComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { title, rows });
-  }, [title, rows, hydrated]);
+    writeJson(storageKeyFor(subject), { title, rows });
+  }, [title, rows, subject, hydrated]);
+
+  const selectSubject = (next: TierSubject) => {
+    if (next === subject) {
+      return;
+    }
+    writeJson(storageKeyFor(subject), { title, rows });
+    const draft = loadDraft(next);
+    setSubject(next);
+    setTitle(draft.title);
+    setRows(draft.rows);
+    setActive(null);
+    writeSubject(next);
+  };
 
   const closePicker = useCallback(() => setActive(null), []);
 
@@ -83,7 +138,11 @@ export function TierListComposerApp() {
     setActive(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportTierListPng(node, exportTierFilename(title), { title, rows });
+      await exportTierListPng(node, exportTierFilename(title), {
+        title,
+        rows,
+        subject,
+      });
       setStatus("Download started.");
     } catch (error) {
       console.error(error);
@@ -101,13 +160,36 @@ export function TierListComposerApp() {
   };
 
   const pickerRow = active ? rows[active.rowIndex] : null;
+  const noun = subject === "players" ? "player" : "team";
 
   return (
     <div className="sc-composer">
       <header className="sc-toolbar">
         <div className="sc-toolbar__brand">
           <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Tier list graphic</h1>
+          <h1 className="sc-toolbar__title">
+            {subject === "players" ? "Player tier list" : "Team tier list"}
+          </h1>
+        </div>
+        <div className="sc-subject" role="tablist" aria-label="Tier list subject">
+          <button
+            type="button"
+            role="tab"
+            className={subject === "teams" ? "sc-chip is-on" : "sc-chip"}
+            aria-selected={subject === "teams"}
+            onClick={() => selectSubject("teams")}
+          >
+            Teams
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={subject === "players" ? "sc-chip is-on" : "sc-chip"}
+            aria-selected={subject === "players"}
+            onClick={() => selectSubject("players")}
+          >
+            Players
+          </button>
         </div>
         <label className="sc-field sc-field--wide">
           Title
@@ -154,6 +236,7 @@ export function TierListComposerApp() {
             ref={boardRef}
             title={title}
             rows={rows}
+            subject={subject}
             active={exporting ? null : active}
             exporting={exporting}
             onTitleChange={setTitle}
@@ -174,15 +257,15 @@ export function TierListComposerApp() {
             }
           />
           <p className="sc-hint">
-            Click a square to add a team. Tiers range from 3 to 10. Title and
-            letters are editable. Downloads a 4:5 Instagram PNG — nothing is
+            Click a square to add a {noun}. Switch Teams / Players in the bar.
+            Tiers range from 3 to 10. Downloads a 4:5 Instagram PNG — nothing is
             posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
       </main>
 
-      {active && pickerRow ? (
+      {active && pickerRow && subject === "teams" ? (
         <TeamPicker
           heading={`Pick team · ${pickerRow.label || "tier"}`}
           hint="Click a club to add it to this tier. Used teams move here."
@@ -199,6 +282,43 @@ export function TierListComposerApp() {
                     teamId,
                   )
                 : addTeamToRow(current, active.rowIndex, teamId),
+            );
+            setActive(null);
+          }}
+          onClear={
+            active.replaceId
+              ? () => {
+                  setRows((current) =>
+                    removeTeamFromRow(
+                      current,
+                      active.rowIndex,
+                      active.replaceId as string,
+                    ),
+                  );
+                  setActive(null);
+                }
+              : undefined
+          }
+          onClose={closePicker}
+        />
+      ) : null}
+
+      {active && pickerRow && subject === "players" ? (
+        <PlayerPicker
+          heading={`Pick player · ${pickerRow.label || "tier"}`}
+          currentId={active.replaceId}
+          usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}
+          clearLabel={active.replaceId ? "Remove from row" : "Clear slot"}
+          onPick={(playerId) => {
+            setRows((current) =>
+              active.replaceId
+                ? replaceTeamInRow(
+                    current,
+                    active.rowIndex,
+                    active.replaceId,
+                    playerId,
+                  )
+                : addTeamToRow(current, active.rowIndex, playerId),
             );
             setActive(null);
           }}
