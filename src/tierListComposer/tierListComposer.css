@@ -4,20 +4,33 @@
   --u: 1px;
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --tier-count: 6;
+  position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
   grid-template-rows: 16.533fr 83.467fr;
   background-color: #0b0b0b;
-  background-image:
-    radial-gradient(120% 90% at 50% 30%, rgba(255, 255, 255, 0.04), transparent 55%),
-    url("/standings-header-texture.png");
-  background-size: cover, cover;
-  background-position: center;
-  background-blend-mode: soft-light, normal;
   color: #fff;
   overflow: hidden;
   user-select: none;
+}
+
+.tl-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/standings-header-texture.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tl-header,
+.tl-rows {
+  position: relative;
+  z-index: 1;
 }
 
 .tl-header {
@@ -170,7 +183,7 @@
 
 .tl-cell--add {
   background: #1a1a1a;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.72);
   box-shadow: inset 0 0 0 calc(2 * var(--u)) rgba(255, 255, 255, 0.18);
   font-family: var(--ig-poster);
   font-size: calc(42 * var(--u));
