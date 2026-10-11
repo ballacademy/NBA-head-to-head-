@@ -248,14 +248,9 @@ export const renderEveryTeamCanvas = async (
       context.restore();
     }
     if (cell.headshot) {
-      context.save();
-      context.beginPath();
-      context.rect(x, y, size, size);
-      context.clip();
       drawCoverHeadshot(context, cell.headshot, x, y, size, size, {
         glow: isNeonLook(input.look),
       });
-      context.restore();
     }
     if (isNeonLook(input.look)) {
       paintNeonCellRim(context, x, y, size, size);

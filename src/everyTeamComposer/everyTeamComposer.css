@@ -129,13 +129,18 @@
   );
 }
 
+.et-cell--filled {
+  overflow: visible;
+  z-index: 1;
+}
+
 .et-board.is-neon .et-headshot {
   filter:
     drop-shadow(0 0 calc(6 * var(--u)) rgba(255, 255, 255, 0.88))
     drop-shadow(0 0 calc(12 * var(--u)) rgba(190, 225, 255, 0.4))
-    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(var(--hs) calc(var(--hs) * 1.25) 0 rgba(0, 0, 0, 0.78))
     drop-shadow(
-      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+      calc(var(--hs) * 1.65) calc(var(--hs) * 2) calc(var(--hs) * 0.7)
         rgba(0, 0, 0, 0.34)
     );
 }
@@ -182,10 +187,11 @@
   object-position: center 18%;
   pointer-events: none;
   z-index: 1;
+  --hs: calc(0.055 * var(--cell, 180px));
   filter:
-    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(var(--hs) calc(var(--hs) * 1.25) 0 rgba(0, 0, 0, 0.78))
     drop-shadow(
-      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+      calc(var(--hs) * 1.65) calc(var(--hs) * 2) calc(var(--hs) * 0.7)
         rgba(0, 0, 0, 0.34)
     );
 }

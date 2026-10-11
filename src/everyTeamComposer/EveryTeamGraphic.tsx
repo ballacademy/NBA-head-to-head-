@@ -192,6 +192,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 key={team.id}
                 className={[
                   "et-cell",
+                  shown ? "et-cell--filled" : "",
                   activeIndex === index ? "is-active" : "",
                 ]
                   .filter(Boolean)

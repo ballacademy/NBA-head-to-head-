@@ -157,7 +157,7 @@
   min-width: 0;
   padding: calc(12 * var(--u)) calc(32 * var(--u)) calc(12 * var(--u))
     calc(12 * var(--u));
-  overflow: hidden;
+  overflow: visible;
 }
 
 .tl-cell {
@@ -171,6 +171,8 @@
 }
 
 .tl-cell--filled {
+  overflow: visible;
+  z-index: 1;
   background: linear-gradient(135deg, var(--cell-from) 0%, var(--cell-to) 100%);
 }
 
@@ -206,11 +208,12 @@
 }
 
 .tl-headshot {
-  /* Alpha outline — not a square box-shadow. */
+  /* Alpha outline sized from the cell — not a square box-shadow. */
+  --hs: calc(0.055 * var(--cell, 120px));
   filter:
-    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(var(--hs) calc(var(--hs) * 1.25) 0 rgba(0, 0, 0, 0.78))
     drop-shadow(
-      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+      calc(var(--hs) * 1.65) calc(var(--hs) * 2) calc(var(--hs) * 0.7)
         rgba(0, 0, 0, 0.34)
     );
 }
@@ -219,9 +222,9 @@
   filter:
     drop-shadow(0 0 calc(6 * var(--u)) rgba(255, 255, 255, 0.88))
     drop-shadow(0 0 calc(14 * var(--u)) rgba(190, 225, 255, 0.42))
-    drop-shadow(calc(5 * var(--u)) calc(6.5 * var(--u)) 0 rgba(0, 0, 0, 0.74))
+    drop-shadow(var(--hs) calc(var(--hs) * 1.25) 0 rgba(0, 0, 0, 0.78))
     drop-shadow(
-      calc(9 * var(--u)) calc(11 * var(--u)) calc(4.5 * var(--u))
+      calc(var(--hs) * 1.65) calc(var(--hs) * 2) calc(var(--hs) * 0.7)
         rgba(0, 0, 0, 0.34)
     );
 }

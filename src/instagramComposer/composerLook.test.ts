@@ -34,10 +34,10 @@ describe("composer look", () => {
 
   it("keeps player silhouette shadows inside a modest outline offset", () => {
     const shadow = headshotSilhouettePx(180);
-    expect(shadow.tightX).toBe(5);
-    expect(shadow.tightY).toBe(7);
+    expect(shadow.tightX).toBe(8);
+    expect(shadow.tightY).toBe(10);
     expect(shadow.softY).toBeGreaterThan(shadow.tightY);
-    expect(shadow.softX + shadow.softBlur).toBeLessThan(180 * 0.12);
+    expect(shadow.softX + shadow.softBlur).toBeLessThan(180 * 0.14);
   });
 
   it("does not change the wrap-after-8 tier grid", () => {

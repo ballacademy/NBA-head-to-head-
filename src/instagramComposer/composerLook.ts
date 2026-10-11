@@ -41,11 +41,11 @@ export const headshotGlowPx = (size: number) =>
 
 /** Outline-following drop shadow for player PNGs — not a square box-shadow. */
 export const headshotSilhouettePx = (size: number) => ({
-  tightX: Math.max(2, Math.round(size * 0.03)),
-  tightY: Math.max(3, Math.round(size * 0.038)),
-  softX: Math.max(4, Math.round(size * 0.052)),
-  softY: Math.max(5, Math.round(size * 0.064)),
-  softBlur: Math.max(2, Math.round(size * 0.03)),
+  tightX: Math.max(3, Math.round(size * 0.045)),
+  tightY: Math.max(4, Math.round(size * 0.055)),
+  softX: Math.max(5, Math.round(size * 0.07)),
+  softY: Math.max(6, Math.round(size * 0.085)),
+  softBlur: Math.max(2, Math.round(size * 0.035)),
 });
 
 export const paintHeadshotSilhouette = (
