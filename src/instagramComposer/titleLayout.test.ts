@@ -48,11 +48,6 @@ describe("composer title layout", () => {
     expect(`${lines[0]} ${lines[1]}`).toBe(long);
     expect(widthDelta(lines)).toBeCloseTo(bestDelta(long), 8);
 
-    const standings = splitBalancedTitle("PROJECTED NBA STANDINGS");
-    expect(standings).toHaveLength(2);
-    expect(`${standings[0]} ${standings[1]}`).toBe("PROJECTED NBA STANDINGS");
-    expect(widthDelta(standings)).toBeCloseTo(bestDelta("PROJECTED NBA STANDINGS"), 8);
-
     const tier = splitBalancedTitle("GUESS THE NBA TIER LIST");
     expect(tier).toHaveLength(2);
     expect(widthDelta(tier)).toBeCloseTo(bestDelta("GUESS THE NBA TIER LIST"), 8);

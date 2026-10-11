@@ -56,10 +56,11 @@ describe("graphic export constants", () => {
     expect(exportFilename("   ", "Projected NBA")).toBe("projected-nba.png");
   });
 
-  it("splits the banner title into two balanced lines", () => {
-    const lines = splitStandingsTitle(DEFAULT_TITLE);
-    expect(lines).toHaveLength(2);
-    expect(`${lines[0]} ${lines[1]}`).toBe(DEFAULT_TITLE);
+  it("keeps the banner title on one line", () => {
+    expect(splitStandingsTitle(DEFAULT_TITLE)).toEqual([DEFAULT_TITLE]);
+    expect(splitStandingsTitle("projected\nnba standings")).toEqual([
+      DEFAULT_TITLE,
+    ]);
   });
 });
 

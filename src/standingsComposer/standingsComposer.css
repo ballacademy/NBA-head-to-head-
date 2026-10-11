@@ -362,6 +362,7 @@ main.sc-stage {
 .ig-banner__title-line {
   font-size: calc(34 * var(--u));
   line-height: 1.12;
+  white-space: nowrap;
   pointer-events: none;
 }
 
