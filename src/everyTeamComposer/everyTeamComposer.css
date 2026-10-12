@@ -9,7 +9,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: 17.866fr 82.134fr;
+  grid-template-rows: 15.2fr 84.8fr;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -29,7 +29,7 @@
 
 .et-title-block {
   position: absolute;
-  inset: 8% 4%;
+  inset: 4% 3%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,7 +39,7 @@
 
 .et-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(42 * var(--u));
+  font-size: calc(54 * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.02em;
@@ -72,7 +72,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(42 * var(--u));
+  font-size: calc(54 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;

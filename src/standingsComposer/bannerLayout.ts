@@ -1,7 +1,7 @@
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "./rankingState";
 
 /** Fraction of the 4:5 board given to the header (brand + banner). */
-export const HEADER_RATIO = 0.17866;
+export const HEADER_RATIO = 0.152;
 
 /** BALLACADEMY size in 1200-wide board units (was 24). */
 export const BRAND_FONT = 28;
@@ -9,7 +9,7 @@ export const BRAND_TRACKING_EM = 0.18;
 /** Old 32+24 slot so the title banner does not move. */
 export const BRAND_SLOT = 56;
 export const BANNER_MARGIN_TOP = 16;
-export const BANNER_MARGIN_BOTTOM = 26;
+export const BANNER_MARGIN_BOTTOM = 14;
 
 /** Banner SVG viewBox — CSS slots and canvas map to this. */
 export const BANNER_VIEW = { width: 1200, height: 200 } as const;

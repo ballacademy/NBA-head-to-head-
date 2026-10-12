@@ -173,7 +173,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
               <path
                 d={bannerRectPath()}
                 fill="none"
-                stroke="#fff"
+                stroke="currentColor"
                 strokeWidth="7"
                 strokeLinejoin="miter"
               />

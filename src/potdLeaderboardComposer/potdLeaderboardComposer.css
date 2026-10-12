@@ -2,15 +2,17 @@
 
 .plb-board {
   --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --plb-yellow: #f5c400;
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(148 * var(--u)) 1fr;
+  grid-template-rows: calc(100 * var(--u)) 1fr;
   gap: calc(28 * var(--u));
-  padding: calc(48 * var(--u)) calc(56 * var(--u)) calc(48 * var(--u));
+  padding: calc(36 * var(--u)) calc(56 * var(--u)) calc(48 * var(--u));
   box-sizing: border-box;
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
@@ -19,6 +21,10 @@
   color: var(--plb-yellow);
   overflow: hidden;
   user-select: none;
+}
+
+.plb-board.is-black {
+  --frame-color: #0a0a0a;
 }
 
 .plb-title-plate,
@@ -32,11 +38,11 @@
 
 .plb-title-plate {
   position: relative;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   min-height: 0;
-  border: calc(8 * var(--u)) solid var(--plb-yellow);
-  box-shadow: 0 0 0 calc(2 * var(--u)) #050505;
+  border: var(--frame-w) solid var(--frame-color);
 }
 
 .plb-title-block {
@@ -48,7 +54,7 @@
 
 .plb-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(72 * var(--u));
+  font-size: calc(76 * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.04em;

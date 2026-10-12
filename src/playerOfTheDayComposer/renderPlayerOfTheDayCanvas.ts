@@ -1,5 +1,6 @@
 import {
   clipToInnerFrame,
+  paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { getTeamColors } from "../lib/teamColors";
@@ -23,6 +24,9 @@ import {
   POTD_DATE_SIZE,
   POTD_FOOTER,
   POTD_HEADER_H,
+  POTD_PLATE_H,
+  POTD_PLATE_X,
+  POTD_PLATE_Y,
   POTD_LOGO_WATERMARK,
   POTD_NAME_H,
   POTD_NAME_SIZE,
@@ -163,20 +167,16 @@ export const renderPlayerOfTheDayCanvas = async (
   });
 
   const plate = {
-    x: 48 * s,
-    y: 58 * s,
-    w: width - 96 * s,
-    h: 168 * s,
+    x: POTD_PLATE_X * s,
+    y: POTD_PLATE_Y * s,
+    w: width - POTD_PLATE_X * 2 * s,
+    h: POTD_PLATE_H * s,
   };
-  context.fillStyle = "#0a0a0a";
-  context.fillRect(plate.x - 6 * s, plate.y - 6 * s, plate.w + 12 * s, plate.h + 12 * s);
-  context.strokeStyle = "#fff";
-  context.lineWidth = 3 * s;
-  context.strokeRect(plate.x - 3 * s, plate.y - 3 * s, plate.w + 6 * s, plate.h + 6 * s);
   drawBannerInterior(context, plate.x, plate.y, plate.w, plate.h, s, () => {
     context.beginPath();
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
+  paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
 
   const titleLines = splitPotdTitle(input.title);
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
@@ -369,6 +369,7 @@ export const renderPlayerOfTheDayCanvas = async (
       x + w / 2,
       resultY + resultH / 2,
     );
+    paintPotdPlateBorder(context, x, resultY, w, resultH, s, input.look);
 
     context.fillStyle = "#0a0a0a";
     context.fillRect(x, nameY, w, nameH);

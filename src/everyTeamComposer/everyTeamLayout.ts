@@ -16,7 +16,7 @@ export const ET_GRID_PAD_TOP = 10;
 export const ET_GRID_PAD_BOTTOM = 22;
 export const ET_CELL_GAP = 7;
 export const ET_BORDER = 4;
-export const ET_TITLE_SIZE = 42;
+export const ET_TITLE_SIZE = 54;
 export const ET_TITLE_TRACK = 0.02;
 export const ET_LOGO_FIT = 0.94;
 

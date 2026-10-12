@@ -142,10 +142,9 @@ describe("tier layout", () => {
     expect(TIER_HEADER_H).toBeGreaterThan(128);
     expect(TIER_HEADER_H).toBeLessThan(168);
     expect(TIER_HEADER_H / GRAPHIC_HEIGHT).toBeLessThan(0.12);
-    expect(TIER_TITLE_SIZE).toBe(46);
-    expect(TIER_TITLE_SIZE).toBe(Math.round(38 * 1.2));
+    expect(TIER_TITLE_SIZE).toBe(50);
     const twoLineTitleH = TIER_TITLE_SIZE * 1.12 * 2;
-    expect(twoLineTitleH + 2.8).toBeLessThan(TIER_HEADER_H);
+    expect(twoLineTitleH + 16).toBeLessThan(TIER_HEADER_H);
   });
 
   it("pads the BA lockup equally from the top and right edges", () => {

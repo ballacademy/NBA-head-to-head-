@@ -269,11 +269,11 @@ describe("banner notch and bands", () => {
 
 describe("header texture cover", () => {
   it("covers a wide header without letterboxing", () => {
-    const placed = coverRect(679, 350, 0, 0, 1200, 268);
+    const placed = coverRect(679, 350, 0, 0, 1200, 228);
     expect(placed.dw).toBeGreaterThanOrEqual(1200);
-    expect(placed.dh).toBeGreaterThanOrEqual(268);
+    expect(placed.dh).toBeGreaterThanOrEqual(228);
     expect(placed.dx + placed.dw).toBeGreaterThanOrEqual(1200);
-    expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(268);
+    expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(228);
   });
 
   it("covers a 4:5 board with the stacked metal without stretching", () => {

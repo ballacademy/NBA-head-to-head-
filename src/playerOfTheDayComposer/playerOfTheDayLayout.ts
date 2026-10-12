@@ -16,12 +16,15 @@ export const POTD_PAD_X = 64;
 export const POTD_GAP = 32;
 export const POTD_CARD_W = (GRAPHIC_WIDTH - POTD_PAD_X * 2 - POTD_GAP) / 2;
 
-export const POTD_HEADER_H = 268;
+export const POTD_HEADER_H = 208;
 export const POTD_FOOTER = 28;
 export const POTD_NAME_H = 116;
 export const POTD_RESULT_H = 52;
 export const POTD_STATS_H = 236;
-export const POTD_TITLE_SIZE = 52;
+export const POTD_TITLE_SIZE = 66;
+export const POTD_PLATE_X = 56;
+export const POTD_PLATE_Y = 48;
+export const POTD_PLATE_H = 124;
 export const POTD_BRAND_SIZE = 28;
 export const POTD_DATE_SIZE = 22;
 export const POTD_STAT_SIZE = 38;

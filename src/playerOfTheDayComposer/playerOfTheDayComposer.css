@@ -9,7 +9,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(268 * var(--u)) 1fr;
+  grid-template-rows: calc(208 * var(--u)) 1fr;
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;
@@ -67,18 +67,16 @@
 
 .pod-title-plate {
   position: relative;
-  margin-top: calc(8 * var(--u));
-  width: 92%;
-  flex: 1;
-  min-height: 0;
+  box-sizing: border-box;
+  margin-top: calc(6 * var(--u));
+  width: 90.7%;
+  flex: 0 0 calc(124 * var(--u));
+  height: calc(124 * var(--u));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: calc(5 * var(--u)) solid #0a0a0a;
-  box-shadow:
-    0 0 0 calc(3 * var(--u)) #fff,
-    0 0 0 calc(6 * var(--u)) #0a0a0a;
+  border: var(--frame-w) solid var(--frame-color);
   /* Same studded near-black as the other composers' title boxes. */
   background-color: #1c1c1c;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
@@ -97,7 +95,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(52 * var(--u));
+  font-size: calc(66 * var(--u));
   font-weight: 900;
   font-style: italic;
   font-synthesis: none;
@@ -127,7 +125,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(52 * var(--u));
+  font-size: calc(66 * var(--u));
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.02em;
@@ -420,10 +418,11 @@
 }
 
 .pod-result {
+  box-sizing: border-box;
   height: calc(52 * var(--u));
   margin: 0;
   padding: 0 calc(8 * var(--u));
-  border: 0;
+  border: var(--frame-w) solid var(--frame-color);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 40%),
     color-mix(in srgb, var(--team-fill) 82%, #000);

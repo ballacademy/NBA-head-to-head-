@@ -153,15 +153,17 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         aria-label="Instagram NBA tier list graphic"
       >
         <header className="tl-header">
-          <div className="tl-title-block">
-            <ComposerTitleField
-              value={title}
-              lines={titleLines}
-              ariaLabel="Tier list title"
-              inputClassName="tl-title-input"
-              lineClassName="tl-title-line"
-              onChange={onTitleChange}
-            />
+          <div className="tl-title-plate">
+            <div className="tl-title-block">
+              <ComposerTitleField
+                value={title}
+                lines={titleLines}
+                ariaLabel="Tier list title"
+                inputClassName="tl-title-input"
+                lineClassName="tl-title-line"
+                onChange={onTitleChange}
+              />
+            </div>
           </div>
           {showBa ? (
             <img

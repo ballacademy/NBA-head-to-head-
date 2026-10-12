@@ -169,6 +169,12 @@ describe("player of the day state", () => {
     expect(covered.w).toBeGreaterThanOrEqual(520);
     expect(potdLayout.POTD_NAME_SIZE).toBe(36);
     expect(potdLayout.POTD_STAT_SIZE).toBe(38);
+    expect(potdLayout.POTD_TITLE_SIZE).toBe(66);
+    expect(potdLayout.POTD_HEADER_H).toBe(208);
+    expect(potdLayout.POTD_TITLE_SIZE * 0.9 * 2).toBeGreaterThan(
+      potdLayout.POTD_PLATE_H * 0.85,
+    );
+    expect(potdLayout.POTD_PLATE_H).toBeLessThan(150);
   });
 
   it("always frames the photo and centers larger stat pairs", () => {

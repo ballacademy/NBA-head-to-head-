@@ -199,7 +199,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               <path
                 d={bannerPath(notch.left, notch.right)}
                 fill="none"
-                stroke="#fff"
+                stroke="currentColor"
                 strokeWidth="7"
                 strokeLinejoin="miter"
               />

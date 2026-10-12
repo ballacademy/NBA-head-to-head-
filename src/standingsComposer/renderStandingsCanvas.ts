@@ -18,6 +18,7 @@ import {
 } from "./headerTexture";
 import {
   clipToInnerFrame,
+  frameColor,
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -267,7 +268,7 @@ export const renderStandingsCanvas = async (
     buildBannerPath,
   );
   buildBannerPath();
-  context.strokeStyle = "#fff";
+  context.strokeStyle = frameColor(input.look);
   context.lineWidth = 6 * scale;
   context.lineJoin = "miter";
   context.stroke();

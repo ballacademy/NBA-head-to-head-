@@ -1,5 +1,6 @@
 import {
   clipToInnerFrame,
+  frameColor,
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -169,7 +170,7 @@ export const renderEveryTeamCanvas = async (
     buildBannerPath,
   );
   buildBannerPath();
-  context.strokeStyle = "#fff";
+  context.strokeStyle = frameColor(input.look);
   context.lineWidth = (BANNER_STROKE_VB / 200) * board.h;
   context.lineJoin = "miter";
   context.stroke();

@@ -1,4 +1,7 @@
-import { type ComposerLook } from "../instagramComposer/composerLook";
+import {
+  paintCellFrame,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   FIELD_TEXTURE_SRC,
@@ -128,14 +131,7 @@ export const renderPotdLeaderboardCanvas = async (
   const stroke = PLB_STROKE * s;
 
   paintStuddedBox(context, titleX, titleY, titleW, titleH, s);
-  context.strokeStyle = PLB_YELLOW;
-  context.lineWidth = stroke;
-  context.strokeRect(
-    titleX + stroke / 2,
-    titleY + stroke / 2,
-    titleW - stroke,
-    titleH - stroke,
-  );
+  paintCellFrame(context, titleX, titleY, titleW, titleH, input.look, s);
 
   const title = normalizeComposerTitle(
     input.title,
