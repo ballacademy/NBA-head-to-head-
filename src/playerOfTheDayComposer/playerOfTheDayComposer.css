@@ -260,7 +260,6 @@
 }
 
 .pod-photo__tool,
-.pod-photo__zoom,
 .pod-photo__file {
   pointer-events: auto;
   font-family: inherit;
@@ -286,11 +285,12 @@
 
 .pod-photo__file {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: 0;
+  height: 0;
   overflow: hidden;
   opacity: 0;
-  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+  border: 0;
 }
 
 .pod-photo__zoom {
@@ -299,6 +299,7 @@
   align-items: center;
   justify-content: center;
   gap: calc(6 * var(--u));
+  pointer-events: none;
 }
 
 .pod-photo__zoom .pod-photo__tool {

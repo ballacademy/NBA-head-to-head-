@@ -118,7 +118,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
       <div className="totw-strips">
         {Array.from({ length: TOTW_STRIP_COUNT }, (_, index) => {
           const strip = strips[index]!;
-          const empty = !strip.playerId;
+          const empty = !strip.photoSrc;
           const label = strip.lastName || `player ${index + 1}`;
           return (
             <section

@@ -30,6 +30,7 @@ import {
   DEFAULT_TOTW_TITLE,
   defaultTotwDraft,
   defaultWeekLabel,
+  patchStrip,
   setStripPhoto,
   splitTotwTitle,
   TOTW_STRIP_COUNT,
@@ -116,6 +117,16 @@ describe("team of the week state", () => {
     expect(five[4]!.playerId).toBeNull();
     const custom = setStripPhoto(five, 0, "data:image/png;base64,aaa");
     expect(custom[0]!.customPhoto).toBe(true);
+    expect(custom[0]!.photoSrc).toBe("data:image/png;base64,aaa");
+    const uploadedEmpty = setStripPhoto(createEmptyStrips(), 0, "data:image/jpeg;base64,bbb");
+    expect(uploadedEmpty[0]!.playerId).toBeNull();
+    expect(uploadedEmpty[0]!.customPhoto).toBe(true);
+    expect(Boolean(uploadedEmpty[0]!.photoSrc)).toBe(true);
+    const panned = patchStrip(uploadedEmpty, 0, {
+      pan: { x: 0.2, y: 0.8, zoom: 3, rotate: 0 },
+    });
+    expect(panned[0]!.pan.zoom).toBe(3);
+    expect(panned[0]!.pan.x).toBe(0.2);
     expect(custom[0]!.photoSrc).toBe("data:image/png;base64,aaa");
     expect(custom[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
     const kept = applyPlayerPick(

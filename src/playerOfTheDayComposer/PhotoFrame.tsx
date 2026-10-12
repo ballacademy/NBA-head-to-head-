@@ -30,13 +30,13 @@ interface PhotoFrameProps {
 
 const PHOTO_CHROME_CLASSES = [
   "pod-photo__tool",
-  "pod-photo__tools",
   "pod-photo__file",
   "pod-photo__pick",
-  "pod-photo__zoom",
   "pod-photo__zoom-in",
   "pod-photo__rotate",
 ] as const;
+
+export const photoFrameFilled = (src: string | null) => Boolean(src);
 
 export const isPhotoChromeClassName = (className: string) =>
   PHOTO_CHROME_CLASSES.some((name) => className.split(/\s+/).includes(name));
@@ -87,7 +87,7 @@ export function PhotoFrame({
   label,
   pan,
   custom,
-  empty,
+  empty: _empty,
   zoomStep = 0.25,
   onPan,
   onUpload,
@@ -103,10 +103,11 @@ export function PhotoFrame({
   const gestureScale = useRef(photoZoom(pan));
   const zoom = photoZoom(pan);
   const rotate = photoRotate(pan);
+  const filled = photoFrameFilled(src);
 
   useEffect(() => {
     const node = rootRef.current;
-    if (!node || empty) {
+    if (!node || !filled) {
       return;
     }
     const onWheel = (event: WheelEvent) => {
@@ -141,7 +142,7 @@ export function PhotoFrame({
       node.removeEventListener("gesturestart", onGestureStart);
       node.removeEventListener("gesturechange", onGestureChange);
     };
-  }, [empty]);
+  }, [filled]);
 
   const handleFiles = async (files: FileList | null) => {
     const file = files?.[0];
@@ -224,12 +225,12 @@ export function PhotoFrame({
   return (
     <div
       ref={rootRef}
-      className={["pod-photo", empty ? "is-empty" : "", custom ? "is-custom" : ""]
+      className={["pod-photo", filled ? "" : "is-empty", custom ? "is-custom" : ""]
         .filter(Boolean)
         .join(" ")}
       onPointerDown={(event) => {
         if (
-          empty ||
+          !filled ||
           isPhotoChromeTarget(event.target) ||
           (event.pointerType === "mouse" && event.button !== 0)
         ) {
@@ -298,10 +299,11 @@ export function PhotoFrame({
             onChange={(event) => {
               void handleFiles(event.target.files);
               event.currentTarget.value = "";
+              event.currentTarget.blur();
             }}
           />
         </label>
-        {empty ? null : (
+        {filled ? (
           <button
             type="button"
             className="pod-photo__tool"
@@ -313,8 +315,8 @@ export function PhotoFrame({
           >
             Change player
           </button>
-        )}
-        {empty ? null : (
+        ) : null}
+        {filled ? (
           <div className="pod-photo__zoom">
             <button
               type="button"
@@ -358,7 +360,7 @@ export function PhotoFrame({
               Reset
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

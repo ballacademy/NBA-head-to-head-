@@ -219,6 +219,7 @@
   flex: 1 1 100%;
   justify-content: flex-end;
   gap: calc(6 * var(--u));
+  pointer-events: none;
 }
 
 .twp-cell .pod-photo__zoom .pod-photo__tool {

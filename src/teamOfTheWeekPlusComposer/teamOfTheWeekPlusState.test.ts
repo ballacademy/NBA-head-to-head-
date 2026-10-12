@@ -30,6 +30,7 @@ import {
   PLUS_SLOT_COUNT,
   PLUS_STANDOUT_COUNT,
   PLUS_STARTER_COUNT,
+  patchStrip,
   setStripPhoto,
   standoutSlots,
   starterSlots,
@@ -116,6 +117,18 @@ describe("team of the week plus", () => {
     const custom = setStripPhoto(slots, 0, "data:image/png;base64,aaa");
     expect(custom[0]!.customPhoto).toBe(true);
     expect(custom[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
+    const uploadedEmpty = setStripPhoto(
+      createEmptyPlusSlots(),
+      0,
+      "data:image/jpeg;base64,bbb",
+    );
+    expect(uploadedEmpty[0]!.playerId).toBeNull();
+    expect(uploadedEmpty[0]!.customPhoto).toBe(true);
+    expect(
+      patchStrip(uploadedEmpty, 0, {
+        pan: { x: 0.15, y: 0.7, zoom: 4, rotate: 0 },
+      })[0]!.pan.zoom,
+    ).toBe(4);
     const kept = applyPlayerPick(
       [
         {

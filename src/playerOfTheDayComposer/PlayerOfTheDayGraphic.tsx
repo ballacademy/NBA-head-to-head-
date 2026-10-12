@@ -157,7 +157,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
       <div className="pod-cards">
         {cards.map((card, index) => {
           const team = getTeam(card.teamId);
-          const empty = !card.playerId;
+          const empty = !card.photoSrc;
           return (
             <section
               key={`pod-card-${index}`}

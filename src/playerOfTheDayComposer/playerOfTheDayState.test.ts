@@ -8,7 +8,7 @@ import {
   FIELD_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
 import { coveredLogoRect } from "../standingsComposer/logoDraw";
-import { isPhotoChromeClassName } from "./PhotoFrame";
+import { isPhotoChromeClassName, photoFrameFilled } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
 import { coverPanDraw, statsFillForTeam } from "./playerOfTheDayLayout";
 import {
@@ -222,10 +222,13 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__tool")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__file")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
-    expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__zoom-in")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__rotate")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__tools")).toBe(false);
+    expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
+    expect(photoFrameFilled(null)).toBe(false);
+    expect(photoFrameFilled("data:image/png;base64,aaa")).toBe(true);
   });
 
   it("rotates custom photos in 90-degree steps and keeps rotate while panning", () => {

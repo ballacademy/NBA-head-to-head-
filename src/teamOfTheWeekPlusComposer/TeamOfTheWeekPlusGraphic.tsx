@@ -68,7 +68,7 @@ const PortraitCell = ({
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (index: number, lastName: string) => void;
 }) => {
-  const empty = !slot.playerId;
+  const empty = !slot.photoSrc;
   const label = slot.lastName || slotLabel(index);
   const team = getTeam(slot.teamId);
   return (

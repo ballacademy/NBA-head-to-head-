@@ -100,12 +100,14 @@
   right: calc(4 * var(--u));
   bottom: calc(6 * var(--u));
   gap: calc(4 * var(--u));
+  pointer-events: none;
 }
 
 .totw-strip .pod-photo__tool {
   height: calc(22 * var(--u));
   font-size: calc(9 * var(--u));
   padding: 0 calc(4 * var(--u));
+  pointer-events: auto;
 }
 
 .totw-strip .pod-photo__zoom {
