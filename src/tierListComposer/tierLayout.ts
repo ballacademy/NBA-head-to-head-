@@ -23,7 +23,8 @@ export const TIER_LABEL_SIZE_MIN = 16;
 export const TIER_CELLS_INSET = 8;
 export const TIER_PAD_RIGHT = 12;
 export const TIER_CELL_GAP = 6;
-export const TIER_CELL_MAX = 172;
+/** Cap for sparse boards; packed 8-across is still limited by content width. */
+export const TIER_CELL_MAX = 440;
 /** Logos stay this wide; extra items wrap onto another lane in the same tier. */
 export const TIER_WRAP_COLS = 8;
 export const TIER_ROW_PAD_Y = 4;
@@ -72,8 +73,13 @@ export interface TierBoardLayout {
   laneH: number;
   size: number;
   contentW: number;
+  cols: number;
   gridTemplate: string;
 }
+
+/** How many squares a lane actually has to hold (1–8), for sizing. */
+export const laneSlotCount = (itemCount: number) =>
+  Math.min(TIER_WRAP_COLS, Math.max(1, itemCount));
 
 export const tierBoardLayout = (
   itemCounts: number[],
@@ -87,7 +93,10 @@ export const tierBoardLayout = (
   const contentW = cellsContentWidth();
   /** Stretch lanes so the last tier meets the footer, 3–10 rows alike. */
   const laneH = bodyH / totalLanes;
-  const size = cellSize(laneH, contentW, TIER_WRAP_COLS);
+  const cols = itemCounts.length
+    ? Math.max(1, ...itemCounts.map((count) => laneSlotCount(count)))
+    : 1;
+  const size = cellSize(laneH, contentW, cols);
   return {
     lanes,
     totalLanes,
@@ -95,6 +104,7 @@ export const tierBoardLayout = (
     laneH,
     size,
     contentW,
+    cols,
     gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
   };
 };

@@ -239,7 +239,7 @@
 
 .tl-cells {
   display: grid;
-  grid-template-columns: repeat(8, var(--cell, 120px));
+  grid-template-columns: repeat(var(--cell-cols, 8), var(--cell, 120px));
   grid-auto-rows: var(--cell, 120px);
   align-content: center;
   justify-content: start;

@@ -222,6 +222,22 @@ describe("tier layout", () => {
     expect(even.size).toBeGreaterThan(120);
   });
 
+  it("grows square cells as the board has fewer tiers", () => {
+    const three = tierBoardLayout([3, 3, 3]);
+    const six = tierBoardLayout([3, 3, 3, 3, 3, 3]);
+    const ten = tierBoardLayout(Array.from({ length: 10 }, () => 3));
+    expect(three.size).toBeGreaterThan(six.size);
+    expect(six.size).toBeGreaterThan(ten.size);
+    expect(three.cols).toBe(3);
+    const packed = tierBoardLayout([8, 8, 8, 8, 8, 8]);
+    expect(packed.cols).toBe(TIER_WRAP_COLS);
+    expect(
+      packed.size * TIER_WRAP_COLS + TIER_CELL_GAP * (TIER_WRAP_COLS - 1),
+    ).toBeLessThanOrEqual(packed.contentW + 0.01);
+    expect(tierLaneCount(8)).toBe(1);
+    expect(tierLaneCount(9)).toBe(2);
+  });
+
   it("fills the 4:5 body for 3, 6, and 10 tiers", () => {
     const three = tierBoardLayout([1, 1, 1]);
     const six = tierBoardLayout([1, 1, 1, 1, 1, 1]);

@@ -184,6 +184,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
               ["--tier-count" as string]: String(rows.length),
               ["--tier-rows" as string]: layout.gridTemplate,
               ["--cell" as string]: `calc(${layout.size} * var(--u))`,
+              ["--cell-cols" as string]: String(layout.cols),
               ["--cell-gap" as string]: String(TIER_CELL_GAP),
               ["--row-pad" as string]: String(TIER_ROW_PAD_Y),
               ["--pad-right" as string]: String(TIER_PAD_RIGHT),
