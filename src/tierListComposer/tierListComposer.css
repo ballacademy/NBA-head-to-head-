@@ -52,7 +52,7 @@
 
 .tl-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 38) * var(--u));
+  font-size: calc(var(--title-size, 46) * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.04em;
@@ -83,7 +83,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 38) * var(--u));
+  font-size: calc(var(--title-size, 46) * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1.12;

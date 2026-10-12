@@ -7,7 +7,10 @@ import {
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 /** Board-space (1200×1500) layout shared by the on-screen graphic and PNG. */
-/** Title/BA strip — modest bump from 128 so the title can sit a bit larger. */
+/**
+ * Title/BA strip stays compact. Grow only if a two-line title at
+ * `TIER_TITLE_SIZE` would clip — do not return to a large header.
+ */
 export const TIER_HEADER_H = 156;
 export const TIER_FOOTER = 8;
 export const TIER_LABEL_W = 140;
@@ -36,7 +39,8 @@ export const TIER_BADGE_SIZE = 72;
  * not hugging the right. Matches the header’s vertical centering gap.
  */
 export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
-export const TIER_TITLE_SIZE = 38;
+/** 20% larger than the previous 38px compact title. */
+export const TIER_TITLE_SIZE = 46;
 /** Faded team-logo backdrop behind a player headshot. Fitted to the cell. */
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
 export const TIER_TITLE_TRACK = 0.04;

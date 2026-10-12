@@ -140,10 +140,12 @@ describe("tier layout", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
     expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(72);
     expect(TIER_HEADER_H).toBeGreaterThan(128);
-    expect(TIER_HEADER_H).toBeLessThan(200);
-    expect(TIER_HEADER_H / GRAPHIC_HEIGHT).toBeLessThan(0.14);
-    expect(TIER_TITLE_SIZE).toBeGreaterThan(32);
-    expect(TIER_TITLE_SIZE).toBeLessThan(50);
+    expect(TIER_HEADER_H).toBeLessThan(168);
+    expect(TIER_HEADER_H / GRAPHIC_HEIGHT).toBeLessThan(0.12);
+    expect(TIER_TITLE_SIZE).toBe(46);
+    expect(TIER_TITLE_SIZE).toBe(Math.round(38 * 1.2));
+    const twoLineTitleH = TIER_TITLE_SIZE * 1.12 * 2;
+    expect(twoLineTitleH + 2.8).toBeLessThan(TIER_HEADER_H);
   });
 
   it("pads the BA lockup equally from the top and right edges", () => {
