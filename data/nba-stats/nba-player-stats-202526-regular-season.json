@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-10-03T15:38:10.984023+00:00",
-  "rosterAsOf": "2026-10-03",
+  "generatedAt": "2026-10-09T00:57:13.345611+00:00",
+  "rosterAsOf": "2026-10-09",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -17213,10 +17213,10 @@
       "heightInches": 80
     },
     {
-      "id": "hawkijo01-mem",
+      "id": "hawkijo01-chi",
       "bbrPlayerId": "hawkijo01",
       "name": "Jordan Hawkins",
-      "team": "MEM",
+      "team": "CHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -18789,10 +18789,10 @@
       "heightInches": 81
     },
     {
-      "id": "labissk01-fa",
+      "id": "labissk01-was",
       "bbrPlayerId": "labissk01",
       "name": "Skal Labissière",
-      "team": "FA",
+      "team": "WAS",
       "position": "PF",
       "positions": [
         "PF"
@@ -19287,10 +19287,10 @@
       "heightInches": 79
     },
     {
-      "id": "bradlto01-fa",
+      "id": "bradlto01-nyk",
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "FA",
+      "team": "NYK",
       "position": "C",
       "positions": [
         "C",
@@ -24498,10 +24498,10 @@
       "heightInches": 80
     },
     {
-      "id": "broomjo01-lac",
+      "id": "broomjo01-mil",
       "bbrPlayerId": "broomjo01",
       "name": "Johni Broome",
-      "team": "LAC",
+      "team": "MIL",
       "position": "C",
       "positions": [
         "C",

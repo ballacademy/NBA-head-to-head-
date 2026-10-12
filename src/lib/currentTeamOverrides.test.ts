@@ -27,6 +27,10 @@ describe("current team overrides", () => {
     expect(CURRENT_TEAM_OVERRIDES.nembhry01).toBe("DEN");
     expect(CURRENT_TEAM_OVERRIDES.hieldbu01).toBe("CHI");
     expect(CURRENT_TEAM_OVERRIDES.mathube01).toBe("NOP");
+    expect(CURRENT_TEAM_OVERRIDES.hawkijo01).toBe("CHI");
+    expect(CURRENT_TEAM_OVERRIDES.broomjo01).toBe("MIL");
+    expect(CURRENT_TEAM_OVERRIDES.bradlto01).toBe("NYK");
+    expect(CURRENT_TEAM_OVERRIDES.labissk01).toBe("WAS");
   });
 
   it("applies synced teams to active player objects", () => {
@@ -55,5 +59,8 @@ describe("current team overrides", () => {
     expect(duren?.salary).toBe(40_160_000);
     expect(mathurin?.team).toBe("NOP");
     expect(mathurin?.salary).toBe(7_500_000);
+    const hawkins = playersById.get("hawkijo01-chi");
+    expect(hawkins?.team).toBe("CHI");
+    expect(hawkins?.salary).toBe(678_882);
   });
 });
