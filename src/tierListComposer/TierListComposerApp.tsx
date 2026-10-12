@@ -19,6 +19,8 @@ import {
 } from "./TierListGraphic";
 import {
   EMPTY_PLAYER_FILTERS,
+  PLAYER_FILTERS_KEY,
+  parsePlayerSearchFilters,
   searchPlayers,
   type PlayerSearchFilters,
 } from "./nbaActivePlayers";
@@ -130,6 +132,7 @@ export function TierListComposerApp() {
     setSubject(initial);
     setTitle(draft.title);
     setRows(draft.rows);
+    setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
   }, []);
 
@@ -139,6 +142,13 @@ export function TierListComposerApp() {
     }
     writeJson(storageKeyFor(subject), { title, rows });
   }, [title, rows, subject, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    writeJson(PLAYER_FILTERS_KEY, playerFilters);
+  }, [playerFilters, hydrated]);
 
   const selectSubject = (next: TierSubject) => {
     if (next === subject) {

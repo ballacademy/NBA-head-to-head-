@@ -1,18 +1,22 @@
 import type { ChangeEvent } from "react";
 import {
-  AGE_FILTERS,
   ALL_PLAYER_FILTER,
   ALL_STAR_FILTERS,
+  AGE_SPAN,
   CONFERENCE_FILTERS,
   COUNTRY_FILTERS,
   DIVISION_FILTERS,
   DRAFT_CLASS_FILTERS,
   DRAFT_STATUS_FILTERS,
-  EXPERIENCE_FILTERS,
-  HEIGHT_FILTERS,
+  EXPERIENCE_SPAN,
+  HEIGHT_SPAN,
   POSITION_FILTERS,
   TEAM_FILTERS,
+  clampRange,
+  formatHeightInches,
   isEmptyPlayerFilters,
+  isFullRange,
+  type NumberRange,
   type PlayerSearchFilters,
 } from "./nbaActivePlayers";
 
@@ -41,6 +45,71 @@ export function FilterSelect({
   );
 }
 
+export function FilterRange({
+  label,
+  span,
+  value,
+  format = String,
+  onChange,
+}: {
+  label: string;
+  span: NumberRange;
+  value: NumberRange | undefined;
+  format?: (value: number) => string;
+  onChange: (range: NumberRange) => void;
+}) {
+  const range = clampRange(value, span);
+  const full = isFullRange(range, span);
+  const lo = range.min;
+  const hi = range.max;
+  const loPct = ((lo - span.min) / Math.max(1, span.max - span.min)) * 100;
+  const hiPct = ((hi - span.min) / Math.max(1, span.max - span.min)) * 100;
+
+  return (
+    <div className="sc-picker__range">
+      <div className="sc-picker__range-head">
+        <span>{label}</span>
+        <span className="sc-picker__range-value">
+          {full ? "All" : `${format(lo)}–${format(hi)}`}
+        </span>
+      </div>
+      <div
+        className="sc-picker__range-track"
+        style={{ ["--lo" as string]: `${loPct}%`, ["--hi" as string]: `${hiPct}%` }}
+      >
+        <input
+          type="range"
+          min={span.min}
+          max={span.max}
+          step={1}
+          value={lo}
+          aria-label={`${label} minimum`}
+          onChange={(event) =>
+            onChange({
+              min: Math.min(Number(event.target.value), hi),
+              max: hi,
+            })
+          }
+        />
+        <input
+          type="range"
+          min={span.min}
+          max={span.max}
+          step={1}
+          value={hi}
+          aria-label={`${label} maximum`}
+          onChange={(event) =>
+            onChange({
+              min: lo,
+              max: Math.max(Number(event.target.value), lo),
+            })
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
 interface PlayerFilterBarProps {
   filters: PlayerSearchFilters;
   matchCount: number;
@@ -58,6 +127,11 @@ export function PlayerFilterBar({
     (key: keyof PlayerSearchFilters) =>
     (event: ChangeEvent<HTMLSelectElement>) => {
       onChange({ ...filters, [key]: event.target.value });
+    };
+  const setRange =
+    (key: "ageRange" | "heightRange" | "experienceRange") =>
+    (range: NumberRange) => {
+      onChange({ ...filters, [key]: range });
     };
 
   return (
@@ -87,18 +161,6 @@ export function PlayerFilterBar({
         onChange={setFilter("position")}
       />
       <FilterSelect
-        label="Age"
-        value={filters.age ?? ALL_PLAYER_FILTER}
-        options={AGE_FILTERS}
-        onChange={setFilter("age")}
-      />
-      <FilterSelect
-        label="Height"
-        value={filters.height ?? ALL_PLAYER_FILTER}
-        options={HEIGHT_FILTERS}
-        onChange={setFilter("height")}
-      />
-      <FilterSelect
         label="Draft class"
         value={filters.draftClass ?? ALL_PLAYER_FILTER}
         options={DRAFT_CLASS_FILTERS}
@@ -122,12 +184,28 @@ export function PlayerFilterBar({
         options={COUNTRY_FILTERS}
         onChange={setFilter("country")}
       />
-      <FilterSelect
-        label="Experience"
-        value={filters.experience ?? ALL_PLAYER_FILTER}
-        options={EXPERIENCE_FILTERS}
-        onChange={setFilter("experience")}
-      />
+      <div className="sc-player-filters__ranges">
+        <FilterRange
+          label="Age"
+          span={AGE_SPAN}
+          value={filters.ageRange}
+          onChange={setRange("ageRange")}
+        />
+        <FilterRange
+          label="Height"
+          span={HEIGHT_SPAN}
+          value={filters.heightRange}
+          format={formatHeightInches}
+          onChange={setRange("heightRange")}
+        />
+        <FilterRange
+          label="Experience"
+          span={EXPERIENCE_SPAN}
+          value={filters.experienceRange}
+          format={(years) => `${years}y`}
+          onChange={setRange("experienceRange")}
+        />
+      </div>
       <div className="sc-player-filters__aside">
         <p className="sc-player-filters__count">{matchCount} players match</p>
         <button

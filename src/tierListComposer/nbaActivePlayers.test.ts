@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { DIVISIONS } from "../lib/divisions";
 import { NBA_TEAMS } from "../standingsComposer/teams";
 import {
+  AGE_SPAN,
   ALL_STAR_FILTER,
+  EMPTY_PLAYER_FILTERS,
+  EXPERIENCE_SPAN,
+  HEIGHT_SPAN,
   INTERNATIONAL_FILTER,
   LOTTERY_FILTER,
   NBA_ACTIVE_PLAYER_COUNT,
@@ -12,10 +16,16 @@ import {
   NBA_ROSTER_SOURCE,
   NEVER_ALL_STAR_FILTER,
   NON_LOTTERY_FILTER,
+  PLAYER_SCORING_SEASON,
+  PLAYER_SCORING_SOURCE,
   UNDRAFTED_FILTER,
   getPlayer,
   isComposerHeadshotUrl,
+  isEmptyPlayerFilters,
+  parsePlayerPickerSort,
+  parsePlayerSearchFilters,
   searchPlayers,
+  sortPlayers,
 } from "./nbaActivePlayers";
 
 const POSITIONS = new Set(["PG", "SG", "SF", "PF", "C", "G", "F"]);
@@ -45,6 +55,7 @@ describe("active NBA player catalog", () => {
           (player.country == null || player.country.length > 1) &&
           Number.isFinite(player.experienceYears) &&
           typeof player.allStar === "boolean" &&
+          Number.isFinite(player.ppg) &&
           (player.conference === "East" || player.conference === "West"),
       ),
     ).toBe(true);
@@ -89,16 +100,25 @@ describe("active NBA player catalog", () => {
     expect(lakers.every((player) => player.team === "LAL")).toBe(true);
   });
 
-  it("AND-combines team, age, height, division, and position dropdowns", () => {
+  it("AND-combines team, age, height, division, and position filters", () => {
     const lakers = searchPlayers("", { team: "LAL" });
     expect(lakers.length).toBeGreaterThan(5);
     expect(lakers.every((player) => player.team === "LAL")).toBe(true);
 
-    const veterans = searchPlayers("", { age: "35+" });
+    const veterans = searchPlayers("", { ageRange: { min: 35, max: AGE_SPAN.max } });
     expect(veterans.every((player) => player.age >= 35)).toBe(true);
     expect(veterans.some((player) => player.id === "1966")).toBe(true);
 
-    const sevenFooters = searchPlayers("", { height: "84+" });
+    const ages2123 = searchPlayers("", { ageRange: { min: 21, max: 23 } });
+    expect(ages2123.every((player) => player.age >= 21 && player.age <= 23)).toBe(
+      true,
+    );
+    expect(ages2123.length).toBeGreaterThan(0);
+    expect(ages2123.length).toBeLessThan(NBA_ACTIVE_PLAYER_COUNT);
+
+    const sevenFooters = searchPlayers("", {
+      heightRange: { min: 84, max: HEIGHT_SPAN.max },
+    });
     expect(sevenFooters.every((player) => player.heightInches >= 84)).toBe(true);
     expect(sevenFooters.some((player) => player.id === "5104157")).toBe(true);
 
@@ -156,9 +176,15 @@ describe("active NBA player catalog", () => {
     );
     expect(international.length).toBeGreaterThan(20);
 
-    const vets = searchPlayers("", { experience: "11+" });
+    const vets = searchPlayers("", {
+      experienceRange: { min: 11, max: EXPERIENCE_SPAN.max },
+    });
     expect(vets.every((player) => player.experienceYears >= 11)).toBe(true);
     expect(vets.some((player) => player.id === "1966")).toBe(true);
+
+    const young = searchPlayers("", { experienceRange: { min: 0, max: 2 } });
+    expect(young.every((player) => player.experienceYears <= 2)).toBe(true);
+    expect(young.length).toBeGreaterThan(0);
 
     const class2014 = searchPlayers("", { draftClass: "2014" });
     expect(class2014.every((player) => player.draftYear === 2014)).toBe(true);
@@ -196,5 +222,48 @@ describe("active NBA player catalog", () => {
       ),
     ).toBe(true);
     expect(westAllStars.length).toBeLessThan(allStars.length);
+  });
+
+  it("sorts the picker by 2025-26 Basketball-Reference PPG, then by name", () => {
+    expect(PLAYER_SCORING_SEASON).toBe("2025-26");
+    expect(PLAYER_SCORING_SOURCE).toContain("basketball-reference.com");
+    expect(PLAYER_SCORING_SOURCE).toContain("NBA_2026_per_game");
+
+    const luka = getPlayer("3945274");
+    const shai = getPlayer("4278073");
+    expect(luka?.ppg).toBe(33.5);
+    expect(shai?.ppg).toBe(31.1);
+    expect(NBA_ACTIVE_PLAYERS.filter((player) => player.ppg > 0).length).toBeGreaterThan(
+      450,
+    );
+
+    const byPoints = sortPlayers(NBA_ACTIVE_PLAYERS, "points");
+    expect(byPoints[0]?.id).toBe("3945274");
+    expect(byPoints[1]?.id).toBe("4278073");
+    for (let index = 1; index < byPoints.length; index += 1) {
+      expect(byPoints[index - 1].ppg).toBeGreaterThanOrEqual(byPoints[index].ppg);
+    }
+
+    const byName = sortPlayers(NBA_ACTIVE_PLAYERS, "name");
+    expect(byName[0]?.name.localeCompare(byName[1]?.name ?? "")).toBeLessThanOrEqual(0);
+    expect(parsePlayerPickerSort("points")).toBe("points");
+    expect(parsePlayerPickerSort("name")).toBe("name");
+    expect(parsePlayerPickerSort("nope")).toBe("name");
+  });
+
+  it("round-trips range filters and treats full spans as cleared", () => {
+    expect(isEmptyPlayerFilters(EMPTY_PLAYER_FILTERS)).toBe(true);
+    const stored = parsePlayerSearchFilters({
+      team: "BOS",
+      ageRange: { min: 21, max: 25 },
+      heightRange: { min: 78, max: 81 },
+      experienceRange: { min: 1, max: 4 },
+    });
+    expect(stored.team).toBe("BOS");
+    expect(stored.ageRange).toEqual({ min: 21, max: 25 });
+    expect(stored.heightRange).toEqual({ min: 78, max: 81 });
+    expect(stored.experienceRange).toEqual({ min: 1, max: 4 });
+    expect(isEmptyPlayerFilters(stored)).toBe(false);
+    expect(isEmptyPlayerFilters(parsePlayerSearchFilters({}))).toBe(true);
   });
 });

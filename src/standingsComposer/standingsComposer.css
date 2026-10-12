@@ -614,16 +614,45 @@ main.sc-stage {
   grid-template-rows: auto auto auto 1fr auto;
 }
 
+.sc-picker__toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 16px;
+  align-items: end;
+  padding: 0 16px 10px;
+}
+
 .sc-picker__search {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0 16px 10px;
+  padding: 0;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #a1a1aa;
+}
+
+.sc-picker__sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-bottom: 1px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.sc-picker__sort-source {
+  margin-left: 4px;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  font-weight: 600;
+  color: #71717a;
 }
 
 .sc-picker__search input {
@@ -658,11 +687,23 @@ main.sc-stage {
   padding: 0 16px 10px;
 }
 
+.sc-picker__board-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 10px;
+}
+
 .sc-picker__dropdowns {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   padding: 0 16px 10px;
+}
+
+.sc-picker__board-filters .sc-picker__dropdowns {
+  padding: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .sc-picker__filter-hint {
@@ -673,7 +714,7 @@ main.sc-stage {
 
 .sc-player-filters {
   display: grid;
-  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  grid-template-columns: repeat(8, minmax(110px, 1fr));
   gap: 8px 10px;
   padding: 10px 18px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -681,7 +722,129 @@ main.sc-stage {
   align-items: end;
 }
 
+.sc-player-filters__ranges {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 16px;
+  padding-top: 4px;
+}
+
+.sc-picker__range {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.sc-picker__range-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sc-picker__range-value {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-weight: 700;
+  color: #e4e4e7;
+}
+
+.sc-picker__range-track {
+  position: relative;
+  height: 28px;
+}
+
+.sc-picker__range-track::before,
+.sc-picker__range-track::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.sc-picker__range-track::before {
+  left: 0;
+  right: 0;
+  background: #2a2c32;
+}
+
+.sc-picker__range-track::after {
+  left: var(--lo, 0%);
+  width: calc(var(--hi, 100%) - var(--lo, 0%));
+  background: #f4f4f5;
+}
+
+.sc-picker__range-track input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.sc-picker__range-track input[type="range"]:focus {
+  outline: none;
+}
+
+.sc-picker__range-track input[type="range"]:nth-of-type(1) {
+  z-index: 2;
+}
+
+.sc-picker__range-track input[type="range"]:nth-of-type(2) {
+  z-index: 3;
+}
+
+.sc-picker__range-track input[type="range"]::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+  border: 0;
+}
+
+.sc-picker__range-track input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 2px solid #111113;
+  background: #fafafa;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  cursor: grab;
+}
+
+.sc-picker__range-track input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #111113;
+  background: #fafafa;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  cursor: grab;
+}
+
+.sc-picker__range-track input[type="range"]::-moz-range-track {
+  background: transparent;
+  border: 0;
+}
+
 .sc-player-filters__aside {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -830,8 +993,14 @@ main.sc-stage {
     width: min(100%, 100dvw - 20px);
   }
 
+  .sc-picker__toolbar {
+    grid-template-columns: 1fr;
+  }
+
   .sc-picker__dropdowns,
-  .sc-player-filters {
+  .sc-picker__board-filters .sc-picker__dropdowns,
+  .sc-player-filters,
+  .sc-player-filters__ranges {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
