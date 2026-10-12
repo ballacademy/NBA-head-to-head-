@@ -11,7 +11,7 @@ import {
 } from "../standingsComposer/headerTexture";
 import {
   drawCenteredLogo,
-  drawStretchedLogo,
+  drawCoveredLogo,
 } from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { getTeam } from "../standingsComposer/teams";
@@ -38,6 +38,7 @@ import {
 } from "./playerOfTheDayLayout";
 import {
   POTD_TITLE_TRACK,
+  photoZoom,
   splitPotdTitle,
   type PotdCard,
 } from "./playerOfTheDayState";
@@ -256,6 +257,7 @@ export const renderPlayerOfTheDayCanvas = async (
           photoH,
           card.pan.x,
           card.pan.y,
+          photoZoom(card.pan),
         );
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
@@ -347,8 +349,8 @@ export const renderPlayerOfTheDayCanvas = async (
       if (logo) {
         context.save();
         context.globalAlpha = 0.88;
-        drawStretchedLogo(context, logo, x, nameY, w, nameH, {
-          cacheKey: `${team.logoSrc}-name-fill`,
+        drawCoveredLogo(context, logo, x, nameY, w, nameH, {
+          cacheKey: `${team.logoSrc}-name-cover`,
         });
         context.restore();
       }
@@ -356,13 +358,15 @@ export const renderPlayerOfTheDayCanvas = async (
     context.fillStyle = "#fff";
     context.font = `900 ${POTD_NAME_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
+    setLetterSpacing(context, 0.04 * POTD_NAME_SIZE * s);
     const nameCX = x + w / 2;
     withShadow(context, s, () => {
       if (card.firstName || card.lastName) {
-        context.fillText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.38);
-        context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.68);
+        context.fillText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
+        context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
       }
     });
+    setLetterSpacing(context, 0);
     if (neon) {
       paintNeonCellRim(context, x, nameY, w, nameH);
     }

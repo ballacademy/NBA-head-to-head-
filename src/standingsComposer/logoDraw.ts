@@ -333,7 +333,7 @@ export const drawCenteredLogo = (
   );
 };
 
-/** Stretch trimmed artwork to fill the dest box — no contain, no optical center. */
+/** Stretch trimmed artwork to fill the dest box — distorts aspect. Prefer cover. */
 export const stretchedLogoRect = (
   cellX: number,
   cellY: number,
@@ -345,6 +345,62 @@ export const stretchedLogoRect = (
   w: cellW,
   h: cellH,
 });
+
+/** Scale trimmed artwork uniformly so it covers the dest (may overflow). */
+export const coveredLogoRect = (
+  bounds: OpaqueBounds,
+  cellX: number,
+  cellY: number,
+  cellW: number,
+  cellH: number,
+): LogoRect => {
+  const scale = Math.max(
+    cellW / Math.max(1, bounds.w),
+    cellH / Math.max(1, bounds.h),
+  );
+  const w = bounds.w * scale;
+  const h = bounds.h * scale;
+  return {
+    x: cellX + (cellW - w) / 2,
+    y: cellY + (cellH - h) / 2,
+    w,
+    h,
+  };
+};
+
+export const drawCoveredLogo = (
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  cellX: number,
+  cellY: number,
+  cellW: number,
+  cellH: number,
+  options?: { cacheKey?: string },
+) => {
+  if (cellW < 1 || cellH < 1) {
+    return;
+  }
+  const bounds = options?.cacheKey
+    ? getCachedOpaqueBounds(options.cacheKey, image)
+    : getOpaqueBounds(image);
+  const dest = coveredLogoRect(bounds, cellX, cellY, cellW, cellH);
+  context.save();
+  context.beginPath();
+  context.rect(cellX, cellY, cellW, cellH);
+  context.clip();
+  context.drawImage(
+    image,
+    bounds.x,
+    bounds.y,
+    Math.max(1, bounds.w),
+    Math.max(1, bounds.h),
+    dest.x,
+    dest.y,
+    dest.w,
+    dest.h,
+  );
+  context.restore();
+};
 
 export const drawStretchedLogo = (
   context: CanvasRenderingContext2D,

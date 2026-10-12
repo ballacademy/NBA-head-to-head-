@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { drawCenteredLogo, drawStretchedLogo } from "./logoDraw";
+import { drawCenteredLogo, drawCoveredLogo } from "./logoDraw";
 
 interface TeamLogoProps {
   src: string;
@@ -10,8 +10,8 @@ interface TeamLogoProps {
   fitY?: number;
   glow?: boolean;
   balanceStamp?: boolean;
-  /** Stretch trimmed artwork to fill the parent box (name plates). */
-  fill?: boolean;
+  /** Scale trimmed artwork to cover the parent box and clip overflow. */
+  cover?: boolean;
 }
 
 export function TeamLogo({
@@ -23,7 +23,7 @@ export function TeamLogo({
   fitY,
   glow = false,
   balanceStamp = false,
-  fill = false,
+  cover = false,
 }: TeamLogoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -54,8 +54,8 @@ export function TeamLogo({
         return;
       }
       context.clearRect(0, 0, width, height);
-      if (fill) {
-        drawStretchedLogo(context, loaded, 0, 0, width, height, {
+      if (cover) {
+        drawCoveredLogo(context, loaded, 0, 0, width, height, {
           cacheKey: src,
         });
         return;
@@ -91,7 +91,7 @@ export function TeamLogo({
       cancelled = true;
       observer?.disconnect();
     };
-  }, [src, shadow, fitX, fitY, glow, balanceStamp, fill]);
+  }, [src, shadow, fitX, fitY, glow, balanceStamp, cover]);
 
   return (
     <canvas

@@ -1,6 +1,10 @@
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
-import type { PhotoPan } from "./playerOfTheDayState";
-import { clampPan } from "./playerOfTheDayState";
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  clampPan,
+  clampZoom,
+  photoZoom,
+  type PhotoPan,
+} from "./playerOfTheDayState";
 
 interface PhotoFrameProps {
   src: string | null;
@@ -18,6 +22,7 @@ const PHOTO_CHROME_CLASSES = [
   "pod-photo__tools",
   "pod-photo__file",
   "pod-photo__pick",
+  "pod-photo__zoom",
 ] as const;
 
 export const isPhotoChromeClassName = (className: string) =>
@@ -65,12 +70,28 @@ export function PhotoFrame({
   onUpload,
   onPick,
 }: PhotoFrameProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     pointer: number;
     x: number;
     y: number;
     pan: PhotoPan;
   } | null>(null);
+  const zoom = photoZoom(pan);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || !custom || empty) {
+      return;
+    }
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const delta = event.deltaY < 0 ? 0.12 : -0.12;
+      onPan(clampPan({ ...pan, zoom: zoom + delta }));
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [custom, empty, onPan, pan, zoom]);
 
   const handleFiles = async (files: FileList | null) => {
     const file = files?.[0];
@@ -80,8 +101,13 @@ export function PhotoFrame({
     onUpload(await readFile(file));
   };
 
+  const bumpZoom = (delta: number) => {
+    onPan(clampPan({ ...pan, zoom: zoom + delta }));
+  };
+
   return (
     <div
+      ref={rootRef}
       className={["pod-photo", empty ? "is-empty" : "", custom ? "is-custom" : ""]
         .filter(Boolean)
         .join(" ")}
@@ -105,10 +131,12 @@ export function PhotoFrame({
         const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
         const dx = event.clientX - start.x;
         const dy = event.clientY - start.y;
+        const span = Math.max(1, zoom);
         onPan(
           clampPan({
-            x: start.pan.x - dx / Math.max(1, box.width),
-            y: start.pan.y - dy / Math.max(1, box.height),
+            x: start.pan.x - dx / Math.max(1, box.width * span),
+            y: start.pan.y - dy / Math.max(1, box.height * span),
+            zoom: photoZoom(start.pan),
           }),
         );
       }}
@@ -129,6 +157,8 @@ export function PhotoFrame({
           draggable={false}
           style={{
             objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
+            transform: `scale(${zoom})`,
+            transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
           }}
         />
       ) : (
@@ -168,6 +198,27 @@ export function PhotoFrame({
             Change player
           </button>
         )}
+        {custom ? (
+          <div className="pod-photo__zoom">
+            <button
+              type="button"
+              className="pod-photo__tool"
+              aria-label={`Zoom out photo for ${label}`}
+              onClick={() => bumpZoom(-0.25)}
+            >
+              −
+            </button>
+            <span>{zoom.toFixed(1)}×</span>
+            <button
+              type="button"
+              className="pod-photo__tool"
+              aria-label={`Zoom in photo for ${label}`}
+              onClick={() => bumpZoom(0.25)}
+            >
+              +
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

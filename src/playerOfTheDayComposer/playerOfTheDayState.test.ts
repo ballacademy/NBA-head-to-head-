@@ -3,19 +3,23 @@ import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { parseLastGamePayload } from "./lastGame";
 import { BANNER_FILL_BASE, BANNER_STUD_FILL } from "../standingsComposer/headerTexture";
-import { stretchedLogoRect } from "../standingsComposer/logoDraw";
+import { coveredLogoRect } from "../standingsComposer/logoDraw";
 import { isPhotoChromeClassName } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
 import { coverPanDraw, statsFillForTeam } from "./playerOfTheDayLayout";
 import {
   DEFAULT_CUSTOM_PAN,
   DEFAULT_HEADSHOT_PAN,
+  DEFAULT_PHOTO_ZOOM,
   DEFAULT_POTD_TITLE,
+  MAX_PHOTO_ZOOM,
   applyPlayerPick,
   clampPan,
+  clampZoom,
   createEmptyCards,
   exportPotdFilename,
   fillCardFromPlayer,
+  photoZoom,
   setCardPhoto,
   splitPlayerName,
   splitPotdTitle,
@@ -108,11 +112,17 @@ describe("player of the day state", () => {
     expect(withPhoto[0]!.customPhoto).toBe(true);
     expect(withPhoto[0]!.photoSrc).toBe("data:image/png;base64,aaa");
     expect(withPhoto[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
-    expect(clampPan({ x: -1, y: 2 })).toEqual({ x: 0, y: 1 });
+    expect(clampPan({ x: -1, y: 2 })).toEqual({ x: 0, y: 1, zoom: DEFAULT_PHOTO_ZOOM });
     const drawn = coverPanDraw(2000, 1000, 0, 0, 520, 640, 1, 0.5);
     expect(drawn.dw).toBeGreaterThanOrEqual(520);
     expect(drawn.dh).toBeGreaterThanOrEqual(640);
     expect(drawn.dx).toBeLessThanOrEqual(0);
+    const zoomed = coverPanDraw(2000, 1000, 0, 0, 520, 640, 0.5, 0.5, 2);
+    expect(zoomed.dw).toBeCloseTo(drawn.dw * 2);
+    expect(zoomed.dh).toBeCloseTo(drawn.dh * 2);
+    expect(clampZoom(0.2)).toBe(1);
+    expect(clampZoom(9)).toBe(MAX_PHOTO_ZOOM);
+    expect(photoZoom({ x: 0.5, y: 0.5 })).toBe(DEFAULT_PHOTO_ZOOM);
     expect(usedPlayerIds(withPhoto)["3945274"]).toBe("Left card");
   });
 
@@ -142,18 +152,18 @@ describe("player of the day state", () => {
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect("POTD_BA_SRC" in potdLayout).toBe(false);
     expect("potdBadgeRect" in potdLayout).toBe(false);
-    expect(stretchedLogoRect(0, 0, 520, 116)).toEqual({
-      x: 0,
-      y: 0,
-      w: 520,
-      h: 116,
-    });
+    const covered = coveredLogoRect({ x: 0, y: 0, w: 500, h: 500 }, 0, 0, 520, 116);
+    expect(covered.w / covered.h).toBeCloseTo(1);
+    expect(covered.w).toBeGreaterThanOrEqual(520);
+    expect(potdLayout.POTD_NAME_SIZE).toBe(36);
+    expect(potdLayout.POTD_STAT_SIZE).toBe(30);
   });
 
   it("treats upload and change-player chrome as non-pan targets", () => {
     expect(isPhotoChromeClassName("pod-photo__tool")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__file")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
   });
 });

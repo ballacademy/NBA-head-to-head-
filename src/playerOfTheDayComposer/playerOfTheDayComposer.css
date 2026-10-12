@@ -232,6 +232,7 @@
   right: calc(8 * var(--u));
   bottom: calc(8 * var(--u));
   display: flex;
+  flex-wrap: wrap;
   gap: calc(6 * var(--u));
   opacity: 0;
   pointer-events: auto;
@@ -277,6 +278,28 @@
   overflow: hidden;
   opacity: 0;
   clip: rect(0, 0, 0, 0);
+}
+
+.pod-photo__zoom {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+}
+
+.pod-photo__zoom .pod-photo__tool {
+  flex: 0 0 calc(28 * var(--u));
+}
+
+.pod-photo__zoom span {
+  min-width: calc(36 * var(--u));
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(12 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .pod-total {
@@ -336,30 +359,35 @@
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: calc(6 * var(--u)) calc(10 * var(--u));
-  padding: calc(16 * var(--u)) calc(14 * var(--u));
+  gap: calc(4 * var(--u)) calc(12 * var(--u));
+  padding: calc(18 * var(--u)) calc(16 * var(--u));
   height: 100%;
   box-sizing: border-box;
+  align-content: space-evenly;
 }
 
 .pod-stat {
   display: flex;
+  flex-direction: row;
   align-items: baseline;
-  gap: calc(6 * var(--u));
+  justify-content: flex-start;
+  gap: calc(8 * var(--u));
   min-width: 0;
+  white-space: nowrap;
 }
 
 .pod-stat input {
-  width: 100%;
-  min-width: 0;
-  flex: 1;
+  width: auto;
+  min-width: 1.2em;
+  flex: 0 1 auto;
+  field-sizing: content;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
   color: #fff;
   font-family: var(--ig-poster);
-  font-size: calc(26 * var(--u));
+  font-size: calc(30 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -369,7 +397,7 @@
 .pod-stat span {
   flex: 0 0 auto;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(30 * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
 }
@@ -420,13 +448,14 @@
   position: relative;
   z-index: 1;
   margin: 0;
+  max-width: 96%;
   color: #fff;
   font-family: var(--ig-poster);
-  font-size: calc(28 * var(--u));
+  font-size: calc(36 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  line-height: 1.05;
+  line-height: 0.98;
   text-shadow:
     calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 #000,
     calc(-1 * var(--u)) 0 0 #000,

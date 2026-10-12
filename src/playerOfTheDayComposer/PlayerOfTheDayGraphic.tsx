@@ -223,7 +223,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
               >
                 {team ? (
                   <div className="pod-name__logo">
-                    <TeamLogo src={team.logoSrc} label="" fill />
+                    <TeamLogo src={team.logoSrc} label="" cover />
                   </div>
                 ) : null}
                 {card.lastName || card.firstName ? (

@@ -10,6 +10,7 @@ import {
   opticalShiftX,
   stampBalanceOffset,
   stretchedLogoRect,
+  coveredLogoRect,
 } from "./logoDraw";
 import {
   BANNER_SHAPE,
@@ -190,25 +191,15 @@ describe("fittedLogoRect", () => {
     );
   });
 
-  it("stretches name-plate logos to the full dest box", () => {
-    expect(stretchedLogoRect(12, 40, 520, 116)).toEqual({
-      x: 12,
-      y: 40,
-      w: 520,
-      h: 116,
-    });
-    const contained = fittedLogoRect(
-      { x: 0, y: 0, w: 500, h: 500, cx: 250, cy: 250 },
-      12,
-      40,
-      520,
-      116,
-      1,
-      1,
-    );
-    expect(contained.w).toBeLessThan(520);
-    expect(stretchedLogoRect(12, 40, 520, 116).w).toBe(520);
-    expect(stretchedLogoRect(12, 40, 520, 116).h).toBe(116);
+  it("covers the name plate without stretching the logo", () => {
+    const dest = coveredLogoRect({ x: 0, y: 0, w: 500, h: 500 }, 12, 40, 520, 116);
+    expect(dest.w / dest.h).toBeCloseTo(1);
+    expect(dest.w).toBeGreaterThanOrEqual(520);
+    expect(dest.h).toBeGreaterThanOrEqual(116);
+    expect(dest.y).toBeLessThan(40);
+    const squashed = stretchedLogoRect(12, 40, 520, 116);
+    expect(squashed.w / squashed.h).toBeCloseTo(520 / 116);
+    expect(dest.w / dest.h).not.toBeCloseTo(squashed.w / squashed.h);
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {

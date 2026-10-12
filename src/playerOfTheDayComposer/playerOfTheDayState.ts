@@ -18,10 +18,23 @@ export const POTD_CARD_COUNT = 2;
 export interface PhotoPan {
   x: number;
   y: number;
+  zoom?: number;
 }
 
-export const DEFAULT_HEADSHOT_PAN: PhotoPan = { x: 0.5, y: 0.22 };
-export const DEFAULT_CUSTOM_PAN: PhotoPan = { x: 0.5, y: 0.5 };
+export const MIN_PHOTO_ZOOM = 1;
+export const MAX_PHOTO_ZOOM = 4;
+export const DEFAULT_PHOTO_ZOOM = 1;
+
+export const DEFAULT_HEADSHOT_PAN: PhotoPan = {
+  x: 0.5,
+  y: 0.22,
+  zoom: DEFAULT_PHOTO_ZOOM,
+};
+export const DEFAULT_CUSTOM_PAN: PhotoPan = {
+  x: 0.5,
+  y: 0.5,
+  zoom: DEFAULT_PHOTO_ZOOM,
+};
 
 export interface PotdCard {
   playerId: string | null;
@@ -78,12 +91,23 @@ export const isPhotoPan = (value: unknown): value is PhotoPan =>
     value &&
       typeof value === "object" &&
       Number.isFinite((value as PhotoPan).x) &&
-      Number.isFinite((value as PhotoPan).y),
+      Number.isFinite((value as PhotoPan).y) &&
+      ((value as PhotoPan).zoom === undefined ||
+        Number.isFinite((value as PhotoPan).zoom)),
+  );
+
+export const clampZoom = (zoom: number) =>
+  Math.min(MAX_PHOTO_ZOOM, Math.max(MIN_PHOTO_ZOOM, zoom));
+
+export const photoZoom = (pan: PhotoPan) =>
+  clampZoom(
+    Number.isFinite(pan.zoom) ? (pan.zoom as number) : DEFAULT_PHOTO_ZOOM,
   );
 
 export const clampPan = (pan: PhotoPan): PhotoPan => ({
   x: Math.min(1, Math.max(0, pan.x)),
   y: Math.min(1, Math.max(0, pan.y)),
+  zoom: photoZoom(pan),
 });
 
 const isStats = (value: unknown): value is LastGameStats =>

@@ -19,8 +19,8 @@ export const POTD_STATS_H = 236;
 export const POTD_TITLE_SIZE = 52;
 export const POTD_BRAND_SIZE = 28;
 export const POTD_DATE_SIZE = 22;
-export const POTD_STAT_SIZE = 28;
-export const POTD_NAME_SIZE = 28;
+export const POTD_STAT_SIZE = 30;
+export const POTD_NAME_SIZE = 36;
 export const POTD_TOTAL_SIZE = 20;
 export const POTD_LOGO_WATERMARK = 0.2;
 
@@ -62,8 +62,11 @@ export const coverPanDraw = (
   h: number,
   panX: number,
   panY: number,
+  zoom = 1,
 ) => {
-  const scale = Math.max(w / Math.max(1, imageW), h / Math.max(1, imageH));
+  const scale =
+    Math.max(w / Math.max(1, imageW), h / Math.max(1, imageH)) *
+    Math.max(1, zoom);
   const dw = imageW * scale;
   const dh = imageH * scale;
   return {
