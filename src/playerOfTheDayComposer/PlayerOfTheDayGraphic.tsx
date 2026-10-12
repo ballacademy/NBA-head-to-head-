@@ -179,7 +179,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
               aria-label={index === 0 ? "Left player" : "Right player"}
             >
               <div className="pod-photo-stack">
-                <PhotoFrame>
+                <PhotoFrame
                   src={card.photoSrc}
                   label={card.lastName || `player ${index + 1}`}
                   pan={card.pan}
