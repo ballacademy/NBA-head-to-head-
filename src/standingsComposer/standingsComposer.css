@@ -745,8 +745,8 @@ main.sc-stage {
 .sc-picker__range-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 8px;
+  min-width: 0;
 }
 
 .sc-picker__range-value {
@@ -754,6 +754,9 @@ main.sc-stage {
   text-transform: none;
   font-weight: 700;
   color: #e4e4e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sc-picker__range-track {
