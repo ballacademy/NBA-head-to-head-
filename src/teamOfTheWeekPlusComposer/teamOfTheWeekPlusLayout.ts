@@ -36,8 +36,10 @@ export const PLUS_STANDOUT_NAME_H = 32;
 export const PLUS_NAME_SIZE = 16;
 export const PLUS_STANDOUT_NAME_SIZE = 14;
 export const PLUS_BRAND_SIZE = 13;
-export const PLUS_BA_SIZE = 44;
-export const PLUS_BA_INSET = 22;
+/** Circled BA lockup — same size as the tier-list corner mark. */
+export const PLUS_BA_SIZE = 72;
+export const PLUS_BA_INSET = (PLUS_HEADER_H - PLUS_BA_SIZE) / 2;
+export const PLUS_HEADER_PAD_X = PLUS_BA_INSET + PLUS_BA_SIZE + 8;
 export const PLUS_ZOOM_STEP = 0.5;
 
 const photoStackH = () =>

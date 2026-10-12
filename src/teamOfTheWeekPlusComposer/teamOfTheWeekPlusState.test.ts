@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { TIER_BADGE_SIZE } from "../tierListComposer/tierLayout";
 import { DEFAULT_CUSTOM_PAN } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  PLUS_BA_INSET,
+  PLUS_BA_SIZE,
   PLUS_BRAND_SIZE,
+  PLUS_HEADER_H,
+  PLUS_HEADER_PAD_X,
   PLUS_SECTION_SIZE,
   PLUS_STARTER_SHARE,
   PLUS_TITLE_SIZE,
@@ -73,6 +78,9 @@ describe("team of the week plus", () => {
     expect(draft.standoutCaption).toBe(DEFAULT_PLUS_STANDOUT_CAPTION);
     expect(PLUS_TITLE_SIZE).toBeGreaterThan(PLUS_SECTION_SIZE);
     expect(PLUS_SECTION_SIZE).toBeGreaterThan(PLUS_BRAND_SIZE * 2);
+    expect(PLUS_BA_SIZE).toBe(TIER_BADGE_SIZE);
+    expect(PLUS_BA_INSET).toBe((PLUS_HEADER_H - PLUS_BA_SIZE) / 2);
+    expect(PLUS_HEADER_PAD_X).toBeGreaterThan(PLUS_BA_SIZE);
     expect(PLUS_WEEK_SIZE).toBeGreaterThanOrEqual(20);
     expect(draft.slots).toHaveLength(10);
     expect("title" in draft).toBe(false);

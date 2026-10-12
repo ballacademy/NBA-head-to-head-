@@ -1,4 +1,4 @@
-/* Team of the Week Plus — large centered titles, readable week, small BA mark. */
+/* Team of the Week Plus — large centered titles, readable week, tier-size BA. */
 
 .twp-board {
   --u: 1px;
@@ -12,6 +12,9 @@
   --standout-pad: 56;
   --starter-name-h: 38;
   --standout-name-h: 32;
+  --header-pad-x: 105;
+  --ba-size: 72;
+  --ba-inset: 25;
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
@@ -36,10 +39,10 @@
 }
 
 .twp-ba {
-  top: calc(22 * var(--u));
-  right: calc(22 * var(--u));
-  width: calc(44 * var(--u));
-  height: calc(44 * var(--u));
+  top: calc(var(--ba-inset) * var(--u));
+  right: calc(var(--ba-inset) * var(--u));
+  width: calc(var(--ba-size) * var(--u));
+  height: calc(var(--ba-size) * var(--u));
 }
 
 .twp-header {
@@ -50,7 +53,7 @@
   align-items: center;
   justify-content: flex-end;
   min-height: 0;
-  padding: calc(10 * var(--u)) calc(72 * var(--u)) calc(6 * var(--u));
+  padding: calc(10 * var(--u)) calc(var(--header-pad-x) * var(--u)) calc(6 * var(--u));
 }
 
 .twp-brand {
@@ -207,7 +210,7 @@
   bottom: auto;
 }
 
-.twp-cell .pod-photo.is-custom .pod-photo__tools {
+.twp-cell .pod-photo:not(.is-empty) .pod-photo__tools {
   opacity: 1;
   pointer-events: none;
 }

@@ -6,7 +6,13 @@ import {
   zoomFromPinch,
   zoomFromWheelDelta,
 } from "./photoGestures";
-import { DEFAULT_CUSTOM_PAN, MAX_PHOTO_ZOOM, MIN_PHOTO_ZOOM } from "./playerOfTheDayState";
+import {
+  DEFAULT_CUSTOM_PAN,
+  DEFAULT_HEADSHOT_PAN,
+  MAX_PHOTO_ZOOM,
+  MIN_PHOTO_ZOOM,
+  photoZoom,
+} from "./playerOfTheDayState";
 
 describe("photo gestures", () => {
   it("pinch-zooms from the distance ratio and clamps", () => {
@@ -43,5 +49,19 @@ describe("photo gestures", () => {
     expect(zoomFromWheelDelta(2, -100)).toBeGreaterThan(2);
     expect(zoomFromWheelDelta(2, 100)).toBeLessThan(2);
     expect(zoomFromWheelDelta(2, 0)).toBe(2);
+    expect(
+      panFromPinch(
+        DEFAULT_HEADSHOT_PAN,
+        80,
+        240,
+        { x: 100, y: 100 },
+        { x: 100, y: 100 },
+        200,
+        280,
+      ).zoom,
+    ).toBeGreaterThan(photoZoom(DEFAULT_HEADSHOT_PAN));
+    expect(zoomFromWheelDelta(photoZoom(DEFAULT_HEADSHOT_PAN), -160)).toBeGreaterThan(
+      photoZoom(DEFAULT_HEADSHOT_PAN),
+    );
   });
 });

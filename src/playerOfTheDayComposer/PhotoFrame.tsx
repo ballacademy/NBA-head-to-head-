@@ -10,6 +10,7 @@ import {
 import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
+  DEFAULT_HEADSHOT_PAN,
   photoRotate,
   photoZoom,
   type PhotoPan,
@@ -97,8 +98,6 @@ export function PhotoFrame({
   panRef.current = pan;
   const onPanRef = useRef(onPan);
   onPanRef.current = onPan;
-  const customRef = useRef(custom);
-  customRef.current = custom;
   const pointers = useRef(new Map<number, PhotoPoint>());
   const gesture = useRef<Gesture | null>(null);
   const gestureScale = useRef(photoZoom(pan));
@@ -111,9 +110,6 @@ export function PhotoFrame({
       return;
     }
     const onWheel = (event: WheelEvent) => {
-      if (!customRef.current) {
-        return;
-      }
       event.preventDefault();
       const current = panRef.current;
       onPanRef.current(
@@ -124,16 +120,10 @@ export function PhotoFrame({
       );
     };
     const onGestureStart = (event: Event) => {
-      if (!customRef.current) {
-        return;
-      }
       event.preventDefault();
       gestureScale.current = photoZoom(panRef.current);
     };
     const onGestureChange = (event: Event) => {
-      if (!customRef.current) {
-        return;
-      }
       event.preventDefault();
       const scale = (event as Event & { scale?: number }).scale;
       if (typeof scale !== "number") {
@@ -167,7 +157,7 @@ export function PhotoFrame({
 
   const beginGesture = () => {
     const pts = [...pointers.current.entries()];
-    if (pts.length >= 2 && customRef.current) {
+    if (pts.length >= 2) {
       const [, a] = pts[0]!;
       const [, b] = pts[1]!;
       gesture.current = {
@@ -324,7 +314,7 @@ export function PhotoFrame({
             Change player
           </button>
         )}
-        {custom ? (
+        {empty ? null : (
           <div className="pod-photo__zoom">
             <button
               type="button"
@@ -343,26 +333,32 @@ export function PhotoFrame({
             >
               +
             </button>
-            <button
-              type="button"
-              className="pod-photo__tool pod-photo__rotate"
-              aria-label={`Rotate photo for ${label}`}
-              onClick={() =>
-                onPan(clampPan({ ...pan, rotate: rotate + 90 }))
-              }
-            >
-              Rotate
-            </button>
+            {custom ? (
+              <button
+                type="button"
+                className="pod-photo__tool pod-photo__rotate"
+                aria-label={`Rotate photo for ${label}`}
+                onClick={() =>
+                  onPan(clampPan({ ...pan, rotate: rotate + 90 }))
+                }
+              >
+                Rotate
+              </button>
+            ) : null}
             <button
               type="button"
               className="pod-photo__tool"
               aria-label={`Reset photo for ${label}`}
-              onClick={() => onPan({ ...DEFAULT_CUSTOM_PAN })}
+              onClick={() =>
+                onPan({
+                  ...(custom ? DEFAULT_CUSTOM_PAN : DEFAULT_HEADSHOT_PAN),
+                })
+              }
             >
               Reset
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

@@ -10,8 +10,11 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  PLUS_BA_INSET,
+  PLUS_BA_SIZE,
   PLUS_FOOTER,
   PLUS_HEADER_H,
+  PLUS_HEADER_PAD_X,
   PLUS_SECTION_H,
   PLUS_STANDOUT_COUNT,
   PLUS_STANDOUT_NAME_H,
@@ -183,6 +186,9 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         {
           ["--u" as string]: `${unit}px`,
           ["--header-h" as string]: String(PLUS_HEADER_H),
+          ["--header-pad-x" as string]: String(PLUS_HEADER_PAD_X),
+          ["--ba-size" as string]: String(PLUS_BA_SIZE),
+          ["--ba-inset" as string]: String(PLUS_BA_INSET),
           ["--section-h" as string]: String(PLUS_SECTION_H),
           ["--footer-h" as string]: String(PLUS_FOOTER),
           ["--starter-pad" as string]: String(PLUS_STARTER_PAD_X),
