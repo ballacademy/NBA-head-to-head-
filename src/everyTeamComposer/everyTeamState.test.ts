@@ -9,8 +9,10 @@ import {
   createEmptyEveryTeamSlots,
   exportEveryTeamFilename,
   isEveryTeamSlots,
+  nextEmptyEveryTeamSlot,
   splitEveryTeamTitle,
   teamAtSlot,
+  usedEveryTeamLabels,
 } from "./everyTeamState";
 import {
   FIELD_TEXTURE_SRC,
@@ -88,6 +90,13 @@ describe("every-team order and slots", () => {
     expect(exportEveryTeamFilename("MOST DISAPPOINTING PLAYER ON EVERY NBA TEAM")).toBe(
       "most-disappointing-player-on-every-nba-team.png",
     );
+    const empty = createEmptyEveryTeamSlots();
+    empty[0] = "1";
+    empty[2] = "2";
+    expect(nextEmptyEveryTeamSlot(empty, 0)).toBe(1);
+    expect(nextEmptyEveryTeamSlot(empty, 1)).toBe(3);
+    expect(usedEveryTeamLabels(empty, 0)["1"]).toBe("This slot");
+    expect(usedEveryTeamLabels(empty, 0)["2"]).toBe(teamAtSlot(2)?.id);
   });
 
   it("lays out a 5×6 square grid", () => {

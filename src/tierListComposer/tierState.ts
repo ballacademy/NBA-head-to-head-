@@ -51,6 +51,7 @@ export const hexToRgba = (hex: string, alpha: number) => {
 export interface TierDraft {
   title: string;
   rows: TierRow[];
+  showBa?: boolean;
 }
 
 const nextId = () =>

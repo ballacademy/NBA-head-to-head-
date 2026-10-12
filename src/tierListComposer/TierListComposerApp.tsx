@@ -1,16 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import {
   TIER_LOOK_KEY,
   useComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  TIER_TITLE_PRESETS,
+  exportDateStamp,
+  exportFilenameFromTitle,
+} from "../instagramComposer/composerPresets";
+import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { useComposerUndo } from "../instagramComposer/useComposerUndo";
+import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
-import { exportTierFilename, exportTierListPng } from "./exportTierPng";
+import { exportTierListPng } from "./exportTierPng";
 import { PlayerFilterBar } from "./PlayerFilterBar";
 import { PlayerPicker } from "./PlayerPicker";
 import {
@@ -52,6 +60,7 @@ const SUBJECT_STORAGE_KEY = "ddgm:tier-list-subject";
 interface TierComposerDraft {
   title: string;
   rows: TierRow[];
+  showBa?: boolean;
 }
 
 const storageKeyFor = (subject: TierSubject) =>
@@ -91,11 +100,16 @@ const writeSubject = (subject: TierSubject) => {
 const loadDraft = (subject: TierSubject): TierComposerDraft => {
   const stored = readJson<Partial<TierComposerDraft>>(storageKeyFor(subject));
   if (isTierDraft(stored)) {
-    return { title: stored.title.trim() || DEFAULT_TIER_TITLE, rows: stored.rows };
+    return {
+      title: stored.title.trim() || DEFAULT_TIER_TITLE,
+      rows: stored.rows,
+      showBa: stored.showBa !== false,
+    };
   }
   return {
     title: stored?.title?.trim() ? stored.title : DEFAULT_TIER_TITLE,
     rows: createDefaultRows(),
+    showBa: stored?.showBa !== false,
   };
 };
 
@@ -112,6 +126,8 @@ export function TierListComposerApp() {
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
+  const [showBa, setShowBa] = useState(true);
+  const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
   const filteredPlayerCount = useMemo(
     () => searchPlayers("", playerFilters).length,
     [playerFilters],
@@ -133,6 +149,7 @@ export function TierListComposerApp() {
     setSubject(initial);
     setTitle(draft.title);
     setRows(draft.rows);
+    setShowBa(draft.showBa !== false);
     setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
   }, []);
@@ -141,8 +158,8 @@ export function TierListComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(storageKeyFor(subject), { title, rows });
-  }, [title, rows, subject, hydrated]);
+    writeJson(storageKeyFor(subject), { title, rows, showBa });
+  }, [title, rows, showBa, subject, hydrated]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -155,11 +172,12 @@ export function TierListComposerApp() {
     if (next === subject) {
       return;
     }
-    writeJson(storageKeyFor(subject), { title, rows });
+    writeJson(storageKeyFor(subject), { title, rows, showBa });
     const draft = loadDraft(next);
     setSubject(next);
     setTitle(draft.title);
     setRows(draft.rows);
+    setShowBa(draft.showBa !== false);
     setActive(null);
     writeSubject(next);
   };
@@ -177,12 +195,17 @@ export function TierListComposerApp() {
     setActive(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportTierListPng(node, exportTierFilename(title), {
-        title,
-        rows,
-        subject,
-        look,
-      });
+      await exportTierListPng(
+        node,
+        exportFilenameFromTitle(title, "nba-tier-list", exportDateStamp()),
+        {
+          title,
+          rows,
+          subject,
+          look,
+          showBa,
+        },
+      );
       setStatus("Download started.");
     } catch (error) {
       console.error(error);
@@ -193,10 +216,34 @@ export function TierListComposerApp() {
   };
 
   const handleReset = () => {
+    push(rows);
     setTitle(DEFAULT_TIER_TITLE);
     setRows(createDefaultRows());
     setActive(null);
     setStatus("Board cleared.");
+  };
+
+  const handleExportStory = async () => {
+    const node = boardRef.current;
+    if (!node) {
+      return;
+    }
+    setExporting(true);
+    setActive(null);
+    try {
+      await exportTierListPng(
+        node,
+        exportFilenameFromTitle(title, "nba-tier-list", exportDateStamp(), true),
+        { title, rows, subject, look, showBa },
+        true,
+      );
+      setStatus("Story PNG download started.");
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not export story PNG.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const pickerRow = active ? rows[active.rowIndex] : null;
@@ -241,12 +288,21 @@ export function TierListComposerApp() {
             }
           />
         </label>
+        <TitlePresetSelect
+          value={title}
+          presets={TIER_TITLE_PRESETS}
+          onChange={setTitle}
+        />
         <ComposerLookToggle look={look} onChange={setLook} />
+        <BaMarkToggle on={showBa} onChange={setShowBa} />
         <div className="sc-toolbar__actions">
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
-            onClick={() => setRows((current) => addTier(current))}
+            onClick={() => {
+              push(rows);
+              setRows((current) => addTier(current));
+            }}
             disabled={rows.length >= MAX_TIERS}
           >
             Add tier
@@ -254,13 +310,38 @@ export function TierListComposerApp() {
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
-            onClick={() => setRows((current) => removeLastTier(current))}
+            onClick={() => {
+              push(rows);
+              setRows((current) => removeLastTier(current));
+            }}
             disabled={rows.length <= MIN_TIERS}
           >
             Remove tier
           </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const previous = pop();
+              if (previous) {
+                setRows(previous);
+                setStatus("Undid last change.");
+              }
+            }}
+            disabled={!canUndo}
+          >
+            Undo
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => void handleExportStory()}
+            disabled={exporting}
+          >
+            Export 9:16
           </button>
           <button
             type="button"
@@ -290,6 +371,7 @@ export function TierListComposerApp() {
             rows={rows}
             subject={subject}
             look={look}
+            showBa={showBa}
             active={exporting ? null : active}
             exporting={exporting}
             onTitleChange={setTitle}
@@ -305,12 +387,14 @@ export function TierListComposerApp() {
             onSelectTeam={(rowIndex, teamId) =>
               setActive({ rowIndex, replaceId: teamId })
             }
-            onRemoveTeam={(rowIndex, teamId) =>
-              setRows((current) => removeTeamFromRow(current, rowIndex, teamId))
-            }
-            onPlaceTeam={(rowIndex, index, teamId) =>
-              setRows((current) => placeTeamAt(current, rowIndex, index, teamId))
-            }
+            onRemoveTeam={(rowIndex, teamId) => {
+              push(rows);
+              setRows((current) => removeTeamFromRow(current, rowIndex, teamId));
+            }}
+            onPlaceTeam={(rowIndex, index, teamId) => {
+              push(rows);
+              setRows((current) => placeTeamAt(current, rowIndex, index, teamId));
+            }}
           />
           <p className="sc-hint">
             Click a square to add a {noun}. Switch Teams / Players in the bar.
@@ -329,6 +413,7 @@ export function TierListComposerApp() {
           usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}
           clearLabel={active.replaceId ? "Remove from row" : "Clear slot"}
           onPick={(teamId) => {
+            push(rows);
             setRows((current) =>
               active.replaceId
                 ? replaceTeamInRow(
@@ -344,6 +429,7 @@ export function TierListComposerApp() {
           onClear={
             active.replaceId
               ? () => {
+                  push(rows);
                   setRows((current) =>
                     removeTeamFromRow(
                       current,
@@ -369,6 +455,7 @@ export function TierListComposerApp() {
           usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}
           clearLabel={active.replaceId ? "Remove from row" : "Clear slot"}
           onPick={(playerId) => {
+            push(rows);
             setRows((current) =>
               active.replaceId
                 ? replaceTeamInRow(
@@ -384,6 +471,7 @@ export function TierListComposerApp() {
           onClear={
             active.replaceId
               ? () => {
+                  push(rows);
                   setRows((current) =>
                     removeTeamFromRow(
                       current,

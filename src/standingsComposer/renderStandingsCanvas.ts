@@ -204,6 +204,7 @@ export interface StandingsRenderInput {
   subtitle: string;
   slots: RankingSlots;
   look?: ComposerLook;
+  showBa?: boolean;
 }
 
 export const renderStandingsCanvas = async (
@@ -353,6 +354,15 @@ export const renderStandingsCanvas = async (
       `900 ${48 * scale}px ${POSTER_FONT}`,
       8 * scale,
     );
+  }
+
+  if (input.showBa) {
+    const ba = await loadImage("/ba-logo-circled.png");
+    if (ba) {
+      const size = 72 * scale;
+      const inset = 42 * scale;
+      context.drawImage(ba, width - inset - size, inset, size, size);
+    }
   }
 
   return canvas;

@@ -30,6 +30,7 @@ interface EveryTeamGraphicProps {
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  showBa?: boolean;
   activeIndex: number | null;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -69,6 +70,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       title,
       slots,
       look = "classic",
+      showBa = false,
       activeIndex,
       exporting = false,
       onBrandChange,
@@ -133,6 +135,14 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
         }
         aria-label="Instagram every-team graphic"
       >
+        {showBa ? (
+          <img
+            className="composer-ba"
+            src="/ba-logo-circled.png"
+            alt=""
+            aria-hidden="true"
+          />
+        ) : null}
         <header className="ig-header">
           <div className="ig-brand-slot" aria-hidden="true" />
           <input

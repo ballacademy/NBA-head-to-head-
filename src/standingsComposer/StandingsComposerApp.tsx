@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   STANDINGS_LOOK_KEY,
   useComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  STANDINGS_TITLE_PRESETS,
+  exportDateStamp,
+  exportFilenameFromTitle,
+} from "../instagramComposer/composerPresets";
+import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { fetchConferenceStandings } from "./nbaStandings";
 import {
   assignTeam,
   clearSlot,
@@ -19,7 +28,7 @@ import {
   isRankingSlots,
   type RankingSlots,
 } from "./rankingState";
-import { exportFilename, exportStandingsPng } from "./exportPng";
+import { exportStandingsPng } from "./exportPng";
 import { StandingsGraphic } from "./StandingsGraphic";
 import { TeamPicker } from "./TeamPicker";
 import "@fontsource/montserrat/latin-900.css";
@@ -32,6 +41,7 @@ interface ComposerDraft {
   title: string;
   subtitle: string;
   slots: RankingSlots;
+  showBa?: boolean;
 }
 
 const loadDraft = (): ComposerDraft => {
@@ -41,6 +51,7 @@ const loadDraft = (): ComposerDraft => {
     title: stored?.title?.trim() ? stored.title : DEFAULT_TITLE,
     subtitle: stored?.subtitle?.trim() ? stored.subtitle : DEFAULT_SUBTITLE,
     slots: isRankingSlots(stored?.slots) ? stored.slots : createEmptySlots(),
+    showBa: stored?.showBa === true,
   };
 };
 
@@ -55,6 +66,9 @@ export function StandingsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
+  const [showBa, setShowBa] = useState(false);
+  const [filling, setFilling] = useState(false);
+  const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
 
   useEffect(() => {
     document.title = "Standings graphic";
@@ -66,6 +80,7 @@ export function StandingsComposerApp() {
     setTitle(draft.title);
     setSubtitle(draft.subtitle);
     setSlots(draft.slots);
+    setShowBa(draft.showBa === true);
     setHydrated(true);
   }, []);
 
@@ -73,8 +88,8 @@ export function StandingsComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, subtitle, slots });
-  }, [brand, title, subtitle, slots, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, subtitle, slots, showBa });
+  }, [brand, title, subtitle, slots, showBa, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -89,13 +104,15 @@ export function StandingsComposerApp() {
     setActiveIndex(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportStandingsPng(node, exportFilename(subtitle, title), {
-        brand,
-        title,
-        subtitle,
-        slots,
-        look,
-      });
+      await exportStandingsPng(
+        node,
+        exportFilenameFromTitle(
+          title,
+          "nba-standings",
+          `${subtitle} ${exportDateStamp()}`,
+        ),
+        { brand, title, subtitle, slots, look, showBa },
+      );
       setStatus("Download started.");
     } catch (error) {
       console.error(error);
@@ -109,9 +126,56 @@ export function StandingsComposerApp() {
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_TITLE);
     setSubtitle(DEFAULT_SUBTITLE);
+    push(slots);
     setSlots(createEmptySlots());
     setActiveIndex(null);
     setStatus("Board cleared.");
+  };
+
+  const fillConference = async (conference: "East" | "West") => {
+    setFilling(true);
+    setStatus(`Loading ${conference} standings…`);
+    try {
+      const next = await fetchConferenceStandings(conference);
+      push(slots);
+      setSlots(next);
+      setSubtitle(
+        conference === "East" ? "EASTERN CONFERENCE" : "WESTERN CONFERENCE",
+      );
+      setStatus(`Filled ${conference} standings. Swap any team you want.`);
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not load NBA standings.");
+    } finally {
+      setFilling(false);
+    }
+  };
+
+  const exportStory = async () => {
+    const node = boardRef.current;
+    if (!node) {
+      return;
+    }
+    setExporting(true);
+    try {
+      await exportStandingsPng(
+        node,
+        exportFilenameFromTitle(
+          title,
+          "nba-standings",
+          `${subtitle} ${exportDateStamp()}`,
+          true,
+        ),
+        { brand, title, subtitle, slots, look, showBa },
+        true,
+      );
+      setStatus("Story PNG download started.");
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not export story PNG.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const pickerLabels: Record<string, string> = {};
@@ -148,6 +212,11 @@ export function StandingsComposerApp() {
             onChange={(event) => onComposerTextChange(event, setTitle)}
           />
         </label>
+        <TitlePresetSelect
+          value={title}
+          presets={STANDINGS_TITLE_PRESETS}
+          onChange={setTitle}
+        />
         <label className="sc-field">
           Subtitle
           <input
@@ -157,9 +226,48 @@ export function StandingsComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <BaMarkToggle on={showBa} onChange={setShowBa} />
         <div className="sc-toolbar__actions">
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => void fillConference("East")}
+            disabled={filling || exporting}
+          >
+            Fill East
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => void fillConference("West")}
+            disabled={filling || exporting}
+          >
+            Fill West
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const previous = pop();
+              if (previous) {
+                setSlots(previous);
+                setStatus("Undid last change.");
+              }
+            }}
+            disabled={!canUndo}
+          >
+            Undo
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => void exportStory()}
+            disabled={exporting}
+          >
+            Export 9:16
           </button>
           <button
             type="button"
@@ -181,6 +289,7 @@ export function StandingsComposerApp() {
             subtitle={subtitle}
             slots={slots}
             look={look}
+            showBa={showBa}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
             onBrandChange={setBrand}
@@ -203,10 +312,12 @@ export function StandingsComposerApp() {
           currentId={slots[activeIndex]}
           usedLabels={pickerLabels}
           onPick={(teamId) => {
+            push(slots);
             setSlots((current) => assignTeam(current, activeIndex, teamId));
             setActiveIndex(null);
           }}
           onClear={() => {
+            push(slots);
             setSlots((current) => clearSlot(current, activeIndex));
             setActiveIndex(null);
           }}

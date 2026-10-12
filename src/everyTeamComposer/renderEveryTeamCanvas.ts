@@ -119,6 +119,7 @@ export interface EveryTeamRenderInput {
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  showBa?: boolean;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -258,6 +259,15 @@ export const renderEveryTeamCanvas = async (
       size - ET_BORDER * scale,
     );
   });
+
+  if (input.showBa) {
+    const ba = await loadImage("/ba-logo-circled.png");
+    if (ba) {
+      const size = 72 * scale;
+      const inset = 42 * scale;
+      context.drawImage(ba, width - inset - size, inset, size, size);
+    }
+  }
 
   return canvas;
 };

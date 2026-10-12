@@ -32,6 +32,7 @@ interface StandingsGraphicProps {
   activeIndex: number | null;
   look?: ComposerLook;
   exporting?: boolean;
+  showBa?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
@@ -80,6 +81,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       activeIndex,
       look = "classic",
       exporting = false,
+      showBa = false,
       onBrandChange,
       onTitleChange,
       onSubtitleChange,
@@ -165,6 +167,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
         aria-label="Instagram standings graphic"
       >
         <header className="ig-header">
+          {showBa ? (
+            <img className="composer-ba" src="/ba-logo-circled.png" alt="" aria-hidden="true" />
+          ) : null}
           <div className="ig-brand-slot" aria-hidden="true" />
           <input
             className="ig-brand"

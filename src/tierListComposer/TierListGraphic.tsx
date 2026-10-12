@@ -42,6 +42,7 @@ interface TierListGraphicProps {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  showBa?: boolean;
   active: TierPickerTarget | null;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
@@ -81,6 +82,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       rows,
       subject = "teams",
       look = "classic",
+      showBa = true,
       active,
       exporting = false,
       onTitleChange,
@@ -161,20 +163,22 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
               onChange={onTitleChange}
             />
           </div>
-          <img
-            className="tl-badge"
-            src={BA_LOGO_SRC}
-            alt=""
-            aria-hidden="true"
-            style={
-              {
-                top: `calc(${badge.y} * var(--u))`,
-                right: `calc(${GRAPHIC_WIDTH - badge.x - badge.size} * var(--u))`,
-                width: `calc(${badge.size} * var(--u))`,
-                height: `calc(${badge.size} * var(--u))`,
-              } as React.CSSProperties
-            }
-          />
+          {showBa ? (
+            <img
+              className="tl-badge"
+              src={BA_LOGO_SRC}
+              alt=""
+              aria-hidden="true"
+              style={
+                {
+                  top: `calc(${badge.y} * var(--u))`,
+                  right: `calc(${GRAPHIC_WIDTH - badge.x - badge.size} * var(--u))`,
+                  width: `calc(${badge.size} * var(--u))`,
+                  height: `calc(${badge.size} * var(--u))`,
+                } as React.CSSProperties
+              }
+            />
+          ) : null}
         </header>
         <div
           className="tl-rows"

@@ -1,5 +1,8 @@
 import {
-  canvasToPngBlob,
+  downloadCanvasPng,
+  toStoryCanvas,
+} from "../instagramComposer/exportDownload";
+import {
   renderEveryTeamCanvas,
   type EveryTeamRenderInput,
 } from "./renderEveryTeamCanvas";
@@ -10,16 +13,8 @@ export const exportEveryTeamPng = async (
   _node: HTMLElement,
   filename: string,
   input: EveryTeamRenderInput,
+  story = false,
 ) => {
   const canvas = await renderEveryTeamCanvas(input, 2);
-  const blob = await canvasToPngBlob(canvas);
-  const objectUrl = URL.createObjectURL(blob);
-  try {
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = objectUrl;
-    link.click();
-  } finally {
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
-  }
+  await downloadCanvasPng(story ? await toStoryCanvas(canvas) : canvas, filename);
 };

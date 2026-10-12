@@ -127,6 +127,7 @@ export interface TierListRenderInput {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  showBa?: boolean;
 }
 
 export const renderTierListCanvas = async (
@@ -174,7 +175,7 @@ export const renderTierListCanvas = async (
     });
   });
 
-  const ba = await loadImage(BA_LOGO_SRC);
+  const ba = input.showBa === false ? null : await loadImage(BA_LOGO_SRC);
   if (ba) {
     const slot = baBadgeRect();
     const badge = slot.size * scale;

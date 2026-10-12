@@ -65,6 +65,7 @@ export interface EveryTeamDraft {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
+  showBa?: boolean;
 }
 
 export const isEveryTeamDraft = (value: unknown): value is EveryTeamDraft =>
@@ -106,6 +107,34 @@ export const clearEveryTeamSlot = (
   const next = slots.slice();
   next[index] = null;
   return next;
+};
+
+export const nextEmptyEveryTeamSlot = (
+  slots: EveryTeamSlots,
+  fromIndex: number,
+): number | null => {
+  for (let step = 1; step <= EVERY_TEAM_COUNT; step += 1) {
+    const index = (fromIndex + step) % EVERY_TEAM_COUNT;
+    if (!slots[index]) {
+      return index;
+    }
+  }
+  return null;
+};
+
+export const usedEveryTeamLabels = (
+  slots: EveryTeamSlots,
+  activeIndex: number | null,
+): Record<string, string> => {
+  const labels: Record<string, string> = {};
+  slots.forEach((id, index) => {
+    if (!id) {
+      return;
+    }
+    const team = teamAtSlot(index);
+    labels[id] = index === activeIndex ? "This slot" : team?.id ?? "Used";
+  });
+  return labels;
 };
 
 export const splitEveryTeamTitle = (title: string): string[] =>
