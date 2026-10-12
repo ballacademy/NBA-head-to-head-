@@ -1,4 +1,9 @@
-export type ComposerMode = "standings" | "tier" | "every-team" | "player-of-the-day";
+export type ComposerMode =
+  | "standings"
+  | "tier"
+  | "every-team"
+  | "player-of-the-day"
+  | "potd-leaderboard";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -23,6 +28,16 @@ const PLAYER_OF_THE_DAY_QUERY = new Set([
   "player-of-the-day",
   "potd",
   "player-of-day",
+]);
+const POTD_LEADERBOARD_PATHS = new Set([
+  "/potd-leaderboard",
+  "/leaderboard",
+  "/potd-lb",
+]);
+const POTD_LEADERBOARD_QUERY = new Set([
+  "potd-leaderboard",
+  "leaderboard",
+  "potd-lb",
 ]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
@@ -60,6 +75,9 @@ export const isEveryTeamQuery = (search: string) => {
   }
 };
 
+export const isPotdLeaderboardPath = (pathname: string) =>
+  POTD_LEADERBOARD_PATHS.has(normalizePath(pathname));
+
 export const isPlayerOfTheDayQuery = (search: string) => {
   try {
     const params = new URLSearchParams(
@@ -72,10 +90,25 @@ export const isPlayerOfTheDayQuery = (search: string) => {
   }
 };
 
+export const isPotdLeaderboardQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return POTD_LEADERBOARD_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isPotdLeaderboardPath(pathname)) {
+    return "potd-leaderboard";
+  }
   if (isPlayerOfTheDayPath(pathname)) {
     return "player-of-the-day";
   }
@@ -84,6 +117,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isPotdLeaderboardQuery(search)) {
+    return "potd-leaderboard";
   }
   if (isPlayerOfTheDayQuery(search)) {
     return "player-of-the-day";
@@ -106,6 +142,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "player-of-the-day") {
     return "/player-of-the-day";
+  }
+  if (mode === "potd-leaderboard") {
+    return "/potd-leaderboard";
   }
   return "/";
 };

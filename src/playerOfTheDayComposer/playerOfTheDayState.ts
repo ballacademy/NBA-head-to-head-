@@ -1,4 +1,8 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import {
+  readLeaderboardDraft,
+  winsForName,
+} from "../potdLeaderboardComposer/potdLeaderboardState";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -19,6 +23,7 @@ export interface PhotoPan {
   x: number;
   y: number;
   zoom?: number;
+  rotate?: number;
 }
 
 export const MIN_PHOTO_ZOOM = 1;
@@ -29,11 +34,13 @@ export const DEFAULT_HEADSHOT_PAN: PhotoPan = {
   x: 0.5,
   y: 0.22,
   zoom: DEFAULT_PHOTO_ZOOM,
+  rotate: 0,
 };
 export const DEFAULT_CUSTOM_PAN: PhotoPan = {
   x: 0.5,
   y: 0.5,
   zoom: DEFAULT_PHOTO_ZOOM,
+  rotate: 0,
 };
 
 export interface PotdCard {
@@ -54,6 +61,7 @@ export interface PotdDraft {
   title: string;
   date: string;
   cards: PotdCard[];
+  showBa?: boolean;
 }
 
 export const splitPlayerName = (name: string) => {
@@ -93,7 +101,9 @@ export const isPhotoPan = (value: unknown): value is PhotoPan =>
       Number.isFinite((value as PhotoPan).x) &&
       Number.isFinite((value as PhotoPan).y) &&
       ((value as PhotoPan).zoom === undefined ||
-        Number.isFinite((value as PhotoPan).zoom)),
+        Number.isFinite((value as PhotoPan).zoom)) &&
+      ((value as PhotoPan).rotate === undefined ||
+        Number.isFinite((value as PhotoPan).rotate)),
   );
 
 export const clampZoom = (zoom: number) =>
@@ -104,10 +114,17 @@ export const photoZoom = (pan: PhotoPan) =>
     Number.isFinite(pan.zoom) ? (pan.zoom as number) : DEFAULT_PHOTO_ZOOM,
   );
 
+export const photoRotate = (pan: PhotoPan) => {
+  const value = Number.isFinite(pan.rotate) ? (pan.rotate as number) : 0;
+  const wrapped = ((value % 360) + 360) % 360;
+  return wrapped;
+};
+
 export const clampPan = (pan: PhotoPan): PhotoPan => ({
   x: Math.min(1, Math.max(0, pan.x)),
   y: Math.min(1, Math.max(0, pan.y)),
   zoom: photoZoom(pan),
+  rotate: photoRotate(pan),
 });
 
 const isStats = (value: unknown): value is LastGameStats =>
@@ -156,7 +173,8 @@ export const splitPotdTitle = (title: string): string[] =>
 export const fillCardFromPlayer = (
   player: TierPlayer,
   game: LastGame | null,
-  previous?: PotdCard,
+  _previous?: PotdCard,
+  total = "0",
 ): PotdCard => {
   const names = splitPlayerName(player.name);
   const teamId = game?.teamId || player.team;
@@ -168,7 +186,7 @@ export const fillCardFromPlayer = (
     photoSrc: player.headshotUrl,
     customPhoto: false,
     pan: { ...DEFAULT_HEADSHOT_PAN },
-    total: previous?.total ?? "0",
+    total,
     stats: game?.stats ?? emptyStats(),
     result: game?.resultLine ?? "",
   };
@@ -179,12 +197,15 @@ export const applyPlayerPick = (
   index: number,
   player: TierPlayer,
   game: LastGame | null,
+  total = "0",
 ): PotdCard[] => {
   if (index < 0 || index >= cards.length) {
     return cards;
   }
   const next = cards.map((card, cardIndex) =>
-    cardIndex === index ? fillCardFromPlayer(player, game, card) : { ...card },
+    cardIndex === index
+      ? fillCardFromPlayer(player, game, card, total)
+      : { ...card },
   );
   const pickedId = player.id;
   return next.map((card, cardIndex) => {
@@ -245,6 +266,23 @@ export const usedPlayerIds = (cards: PotdCard[]) => {
 };
 
 export const playerForCard = (card: PotdCard) => getPlayer(card.playerId);
+
+export const cardPlayerName = (card: PotdCard) =>
+  `${card.firstName} ${card.lastName}`.replace(/\s+/g, " ").trim();
+
+export const leaderboardTotalForName = (name: string) =>
+  String(winsForName(name, readLeaderboardDraft().entries));
+
+export const applyLeaderboardTotals = (cards: PotdCard[]): PotdCard[] => {
+  const entries = readLeaderboardDraft().entries;
+  return cards.map((card) => {
+    const name = cardPlayerName(card);
+    if (!name) {
+      return card;
+    }
+    return { ...card, total: String(winsForName(name, entries)) };
+  });
+};
 
 const slugify = (value: string) =>
   value

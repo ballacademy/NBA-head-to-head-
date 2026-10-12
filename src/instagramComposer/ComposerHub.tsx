@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { EveryTeamComposerApp } from "../everyTeamComposer/EveryTeamComposerApp";
 import { PlayerOfTheDayComposerApp } from "../playerOfTheDayComposer/PlayerOfTheDayComposerApp";
+import { PotdLeaderboardComposerApp } from "../potdLeaderboardComposer/PotdLeaderboardComposerApp";
 import { StandingsComposerApp } from "../standingsComposer/StandingsComposerApp";
 import { TierListComposerApp } from "../tierListComposer/TierListComposerApp";
 import {
@@ -13,6 +14,7 @@ import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
 import "../everyTeamComposer/everyTeamComposer.css";
 import "../playerOfTheDayComposer/playerOfTheDayComposer.css";
+import "../potdLeaderboardComposer/potdLeaderboardComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -40,6 +42,8 @@ export function ComposerHub() {
         <EveryTeamComposerApp />
       ) : mode === "player-of-the-day" ? (
         <PlayerOfTheDayComposerApp />
+      ) : mode === "potd-leaderboard" ? (
+        <PotdLeaderboardComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

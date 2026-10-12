@@ -2,6 +2,8 @@ import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react
 import {
   clampPan,
   clampZoom,
+  DEFAULT_CUSTOM_PAN,
+  photoRotate,
   photoZoom,
   type PhotoPan,
 } from "./playerOfTheDayState";
@@ -23,6 +25,7 @@ const PHOTO_CHROME_CLASSES = [
   "pod-photo__file",
   "pod-photo__pick",
   "pod-photo__zoom",
+  "pod-photo__rotate",
 ] as const;
 
 export const isPhotoChromeClassName = (className: string) =>
@@ -78,6 +81,7 @@ export function PhotoFrame({
     pan: PhotoPan;
   } | null>(null);
   const zoom = photoZoom(pan);
+  const rotate = photoRotate(pan);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -137,6 +141,7 @@ export function PhotoFrame({
             x: start.pan.x - dx / Math.max(1, box.width * span),
             y: start.pan.y - dy / Math.max(1, box.height * span),
             zoom: photoZoom(start.pan),
+            rotate: photoRotate(start.pan),
           }),
         );
       }}
@@ -157,7 +162,7 @@ export function PhotoFrame({
           draggable={false}
           style={{
             objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
-            transform: `scale(${zoom})`,
+            transform: `rotate(${rotate}deg) scale(${zoom})`,
             transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
           }}
         />
@@ -216,6 +221,24 @@ export function PhotoFrame({
               onClick={() => bumpZoom(0.25)}
             >
               +
+            </button>
+            <button
+              type="button"
+              className="pod-photo__tool pod-photo__rotate"
+              aria-label={`Rotate photo for ${label}`}
+              onClick={() =>
+                onPan(clampPan({ ...pan, rotate: rotate + 90 }))
+              }
+            >
+              Rotate
+            </button>
+            <button
+              type="button"
+              className="pod-photo__tool"
+              aria-label={`Reset photo for ${label}`}
+              onClick={() => onPan({ ...DEFAULT_CUSTOM_PAN })}
+            >
+              Reset
             </button>
           </div>
         ) : null}

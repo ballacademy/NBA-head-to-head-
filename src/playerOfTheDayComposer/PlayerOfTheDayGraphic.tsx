@@ -23,6 +23,7 @@ interface PlayerOfTheDayGraphicProps {
   date: string;
   cards: PotdCard[];
   look?: ComposerLook;
+  showBa?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -56,6 +57,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     date,
     cards,
     look = "classic",
+    showBa = false,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -111,6 +113,14 @@ export const PlayerOfTheDayGraphic = forwardRef<
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
       aria-label="Instagram player of the day graphic"
     >
+      {showBa ? (
+        <img
+          className="composer-ba"
+          src="/ba-logo-circled.png"
+          alt=""
+          aria-hidden="true"
+        />
+      ) : null}
       <header className="pod-header">
         <input
           className="pod-brand"

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAYER_OF_THE_DAY_LOOK_KEY,
   useComposerLook,
@@ -11,15 +13,19 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { fetchLastGame } from "./lastGame";
+import { fetchRecentGames, type LastGame } from "./lastGame";
+import { GamePicker } from "./GamePicker";
+import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
+import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { PlayerOfTheDayGraphic } from "./PlayerOfTheDayGraphic";
 import { dataUrlFromClipboard } from "./PhotoFrame";
 import {
   exportPlayerOfTheDayPng,
-  exportPotdFilename,
 } from "./exportPlayerOfTheDayPng";
 import {
+  applyLeaderboardTotals,
   applyPlayerPick,
+  leaderboardTotalForName,
   clearCard,
   defaultPotdDraft,
   isPotdDraft,
@@ -29,6 +35,7 @@ import {
   type PotdCard,
   type PotdDraft,
 } from "./playerOfTheDayState";
+import { subscribeLeaderboard } from "../potdLeaderboardComposer/potdLeaderboardState";
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./playerOfTheDayComposer.css";
@@ -46,6 +53,7 @@ const loadDraft = (): PotdDraft => {
     title: stored?.title?.trim() ? stored.title : empty.title,
     date: stored?.date?.trim() ? stored.date : empty.date,
     cards: empty.cards,
+    showBa: stored?.showBa === true,
   };
 };
 
@@ -62,6 +70,14 @@ export function PlayerOfTheDayComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
+  const [showBa, setShowBa] = useState(false);
+  const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
+  const pendingPick = useRef<{
+    index: number;
+    playerId: string;
+    playerName: string;
+  } | null>(null);
+  const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
 
   useEffect(() => {
     document.title = "Player of the Day graphic";
@@ -72,20 +88,25 @@ export function PlayerOfTheDayComposerApp() {
     setBrand(draft.brand);
     setTitle(draft.title);
     setDate(draft.date);
-    setCards(draft.cards);
+    setCards(applyLeaderboardTotals(draft.cards));
+    setShowBa(draft.showBa === true);
     setHydrated(true);
   }, []);
+
+  useEffect(() => subscribeLeaderboard(() => {
+    setCards((current) => applyLeaderboardTotals(current));
+  }), []);
 
   useEffect(() => {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, date, cards });
-  }, [brand, title, date, cards, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, date, cards, showBa });
+  }, [brand, title, date, cards, showBa, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
-  const handleExport = async () => {
+  const handleExport = async (filename?: string, story = false) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -96,14 +117,13 @@ export function PlayerOfTheDayComposerApp() {
     setActiveIndex(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportPlayerOfTheDayPng(node, exportPotdFilename(title), {
-        brand,
-        title,
-        date,
-        cards,
-        look,
-      });
-      setStatus("Download started.");
+      await exportPlayerOfTheDayPng(
+        node,
+        filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
+        { brand, title, date, cards, look, showBa },
+        story,
+      );
+      setStatus(story ? "Story PNG download started." : "Download started.");
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -114,6 +134,7 @@ export function PlayerOfTheDayComposerApp() {
 
   const handleReset = () => {
     const next = defaultPotdDraft();
+    push(cards);
     setBrand(next.brand);
     setTitle(next.title);
     setDate(next.date);
@@ -130,13 +151,38 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
-    setStatus("Loading latest game…");
-    const game = await fetchLastGame(player.id);
-    setCards((current) => applyPlayerPick(current, activeIndex, player, game));
+    setStatus("Loading recent games…");
+    const games = await fetchRecentGames(player.id);
+    pendingPick.current = {
+      index: activeIndex,
+      playerId: player.id,
+      playerName: player.name,
+    };
+    if (games.length > 1) {
+      setGameChoices(games);
+      setStatus(`Pick a game for ${player.name}.`);
+      return;
+    }
+    applyPickedGame(games[0] ?? null);
+  };
+
+  const applyPickedGame = (game: LastGame | null) => {
+    const pending = pendingPick.current;
+    const player = pending ? getPlayer(pending.playerId) : null;
+    const index = pending?.index ?? activeIndex;
+    if (player == null || index == null) {
+      setGameChoices(null);
+      return;
+    }
+    const total = leaderboardTotalForName(player.name);
+    push(cards);
+    setCards((current) => applyPlayerPick(current, index, player, game, total));
     if (game?.dateLabel) {
       setDate(game.dateLabel);
     }
     setActiveIndex(null);
+    setGameChoices(null);
+    pendingPick.current = null;
     setStatus(
       game
         ? `Filled ${player.name} from ${game.dateLabel}.`
@@ -178,10 +224,43 @@ export function PlayerOfTheDayComposerApp() {
             onChange={(event) => onComposerTextChange(event, setTitle)}
           />
         </label>
+        <TitlePresetSelect
+          value={title}
+          presets={POTD_TITLE_PRESETS}
+          onChange={setTitle}
+        />
         <ComposerLookToggle look={look} onChange={setLook} />
+        <BaMarkToggle on={showBa} onChange={setShowBa} />
         <div className="sc-toolbar__actions">
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const previous = pop();
+              if (previous) {
+                setCards(previous);
+                setStatus("Undid last change.");
+              }
+            }}
+            disabled={!canUndo}
+          >
+            Undo
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() =>
+              void handleExport(
+                exportFilenameFromTitle(title, "player-of-the-day", date, true),
+                true,
+              )
+            }
+            disabled={exporting}
+          >
+            Export 9:16
           </button>
           <button
             type="button"
@@ -203,6 +282,7 @@ export function PlayerOfTheDayComposerApp() {
             date={date}
             cards={cards}
             look={look}
+            showBa={showBa}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
@@ -231,9 +311,9 @@ export function PlayerOfTheDayComposerApp() {
             }}
           />
           <p className="sc-hint">
-            Pick a player to auto-fill their latest game. Upload or paste a
-            photo, then scale and drag it inside the frame. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            Pick a player, then choose a recent box score — the date matches
+            that game. Upload or paste a photo, then scale, rotate, and drag it
+            inside the frame. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -249,10 +329,22 @@ export function PlayerOfTheDayComposerApp() {
             void handlePick(playerId);
           }}
           onClear={() => {
+            push(cards);
             setCards((current) => clearCard(current, activeIndex));
             setActiveIndex(null);
           }}
           onClose={closePicker}
+        />
+      ) : null}
+      {gameChoices ? (
+        <GamePicker
+          playerName={pendingPick.current?.playerName ?? "this player"}
+          games={gameChoices}
+          onPick={(game) => applyPickedGame(game)}
+          onClose={() => {
+            setGameChoices(null);
+            applyPickedGame(gameChoices[0] ?? null);
+          }}
         />
       ) : null}
     </div>

@@ -44,6 +44,7 @@ import {
 } from "./playerOfTheDayLayout";
 import {
   POTD_TITLE_TRACK,
+  photoRotate,
   photoZoom,
   splitPotdTitle,
   type PotdCard,
@@ -125,6 +126,7 @@ export interface PlayerOfTheDayRenderInput {
   date: string;
   cards: PotdCard[];
   look?: ComposerLook;
+  showBa?: boolean;
 }
 
 export const renderPlayerOfTheDayCanvas = async (
@@ -278,7 +280,22 @@ export const renderPlayerOfTheDayCanvas = async (
           card.pan.y,
           photoZoom(card.pan),
         );
-        context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+        const rotate = photoRotate(card.pan);
+        if (rotate) {
+          context.save();
+          context.translate(x + w / 2, photoY + photoH / 2);
+          context.rotate((rotate * Math.PI) / 180);
+          context.drawImage(
+            photo,
+            dest.dx - (x + w / 2),
+            dest.dy - (photoY + photoH / 2),
+            dest.dw,
+            dest.dh,
+          );
+          context.restore();
+        } else {
+          context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+        }
       }
     }
     context.restore();
@@ -361,30 +378,47 @@ export const renderPlayerOfTheDayCanvas = async (
       const logo = await loadImage(team.logoSrc);
       if (logo) {
         context.save();
-        context.globalAlpha = 0.88;
+        context.globalAlpha = 0.26;
         drawCoveredLogo(context, logo, x, nameY, w, nameH, {
           cacheKey: `${team.logoSrc}-name-cover`,
         });
         context.restore();
       }
     }
-    context.fillStyle = "#fff";
+    const nameShade = context.createLinearGradient(x, nameY, x, nameY + nameH);
+    nameShade.addColorStop(0, "rgba(0, 0, 0, 0.42)");
+    nameShade.addColorStop(1, "rgba(0, 0, 0, 0.82)");
+    context.fillStyle = nameShade;
+    context.fillRect(x, nameY, w, nameH);
     context.font = `900 ${POTD_NAME_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     setLetterSpacing(context, 0.04 * POTD_NAME_SIZE * s);
     const nameCX = x + w / 2;
-    withShadow(context, s, () => {
-      if (card.firstName || card.lastName) {
-        context.fillText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
-        context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
-      }
-    });
+    context.lineJoin = "round";
+    context.strokeStyle = "#000";
+    context.lineWidth = 4.2 * s;
+    context.fillStyle = "#fff";
+    if (card.firstName || card.lastName) {
+      context.strokeText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
+      context.fillText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
+      context.strokeText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
+      context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
+    }
     setLetterSpacing(context, 0);
     if (improved) {
       paintImproveCellLight(context, x, nameY, w, nameH);
       paintImproveCellRim(context, x, nameY, w, nameH, IMPROVE_RIM_WHITE);
     }
     context.restore();
+  }
+
+  if (input.showBa) {
+    const ba = await loadImage("/ba-logo-circled.png");
+    if (ba) {
+      const size = 72 * s;
+      const inset = 42 * s;
+      context.drawImage(ba, width - inset - size, inset, size, size);
+    }
   }
 
   return canvas;

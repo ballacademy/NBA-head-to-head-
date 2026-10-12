@@ -35,6 +35,16 @@ describe("composer mode", () => {
     expect(composerHref("player-of-the-day")).toBe("/player-of-the-day");
   });
 
+  it("opens the POTD leaderboard next to player of the day", () => {
+    expect(readComposerMode("", "/potd-leaderboard")).toBe("potd-leaderboard");
+    expect(readComposerMode("", "/leaderboard")).toBe("potd-leaderboard");
+    expect(readComposerMode("?composer=potd-leaderboard", "/")).toBe(
+      "potd-leaderboard",
+    );
+    expect(readComposerMode("", "/potd")).toBe("player-of-the-day");
+    expect(composerHref("potd-leaderboard")).toBe("/potd-leaderboard");
+  });
+
   it("lets the path win when query and path disagree", () => {
     expect(readComposerMode("?composer=tier", "/every-team")).toBe("every-team");
     expect(readComposerMode("?composer=every-team", "/tier-list")).toBe("tier");

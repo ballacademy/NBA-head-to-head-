@@ -7,6 +7,7 @@ export const STANDINGS_LOOK_KEY = "ddgm:standings-composer-look";
 export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
 export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
 export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
+export const POTD_LEADERBOARD_LOOK_KEY = "ddgm:potd-leaderboard-composer-look";
 
 /** Improve rims: black by default, white on dark fills where black would vanish. */
 export const IMPROVE_RIM_BLACK = "#0a0a0a";

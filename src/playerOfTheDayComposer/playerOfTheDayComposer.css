@@ -453,8 +453,21 @@
 .pod-name__logo {
   position: absolute;
   inset: 0;
-  opacity: 0.88;
+  opacity: 0.26;
   pointer-events: none;
+}
+
+.pod-name::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
 }
 
 .pod-name__logo canvas {
@@ -465,7 +478,7 @@
 
 .pod-name__line {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   margin: 0;
   max-width: 96%;
   color: #fff;
@@ -475,10 +488,14 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 0.98;
+  -webkit-text-stroke: calc(4.2 * var(--u)) #000;
+  paint-order: stroke fill;
   text-shadow:
-    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 #000,
-    calc(-1 * var(--u)) 0 0 #000,
-    calc(1 * var(--u)) 0 0 #000;
+    0 0 calc(12 * var(--u)) #000,
+    0 0 calc(5 * var(--u)) #000,
+    calc(1.6 * var(--u)) calc(1.8 * var(--u)) 0 #000,
+    calc(-1.4 * var(--u)) 0 0 #000,
+    calc(1.4 * var(--u)) 0 0 #000;
 }
 
 .pod-name__empty {

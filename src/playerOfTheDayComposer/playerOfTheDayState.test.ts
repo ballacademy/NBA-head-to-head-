@@ -23,6 +23,7 @@ import {
   createEmptyCards,
   exportPotdFilename,
   fillCardFromPlayer,
+  photoRotate,
   photoZoom,
   setCardPhoto,
   splitPlayerName,
@@ -116,7 +117,12 @@ describe("player of the day state", () => {
     expect(withPhoto[0]!.customPhoto).toBe(true);
     expect(withPhoto[0]!.photoSrc).toBe("data:image/png;base64,aaa");
     expect(withPhoto[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
-    expect(clampPan({ x: -1, y: 2 })).toEqual({ x: 0, y: 1, zoom: DEFAULT_PHOTO_ZOOM });
+    expect(clampPan({ x: -1, y: 2 })).toEqual({
+      x: 0,
+      y: 1,
+      zoom: DEFAULT_PHOTO_ZOOM,
+      rotate: 0,
+    });
     const drawn = coverPanDraw(2000, 1000, 0, 0, 520, 640, 1, 0.5);
     expect(drawn.dw).toBeGreaterThanOrEqual(520);
     expect(drawn.dh).toBeGreaterThanOrEqual(640);
@@ -188,6 +194,21 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__file")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__rotate")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
+  });
+
+  it("rotates custom photos in 90-degree steps and keeps rotate while panning", () => {
+    expect(photoRotate({ x: 0.5, y: 0.5, rotate: 90 })).toBe(90);
+    expect(photoRotate({ x: 0.5, y: 0.5, rotate: 360 })).toBe(0);
+    expect(photoRotate({ x: 0.5, y: 0.5, rotate: -90 })).toBe(270);
+    const panned = clampPan({
+      x: 0.2,
+      y: 0.3,
+      zoom: 1.5,
+      rotate: 90,
+    });
+    expect(panned.rotate).toBe(90);
+    expect(panned.zoom).toBe(1.5);
   });
 });

@@ -4,6 +4,7 @@ import {
   emptyStats,
   formatDateLabel,
   formatResultLine,
+  parseGamelogGames,
   parseLastGamePayload,
   resolveTeamId,
   type EspnGamelogPayload,
@@ -146,6 +147,27 @@ describe("last NBA game parsing", () => {
     expect(game?.stats.fg).toBe("2-8");
     expect(game?.stats.three).toBe("0-6");
     expect(game?.stats.tov).toBe("5");
+  });
+
+  it("lists recent box scores so a game can be picked, not only the latest", () => {
+    const games = parseGamelogGames(payload());
+    expect(games.map((game) => game.eventId)).toEqual(["401873344"]);
+    expect(games[0]?.dateLabel).toBe("5/26");
+    const withPre = parseGamelogGames({
+      ...payload(),
+      seasonTypes: [
+        payload().seasonTypes![0]!,
+        {
+          displayName: "2025-26 Regular Season",
+          categories: payload().seasonTypes![1]!.categories,
+        },
+      ],
+    });
+    expect(withPre.map((game) => game.eventId)).toEqual([
+      "401873344",
+      "401812725",
+    ]);
+    expect(withPre[1]?.dateLabel).toBe("10/8");
   });
 
   it("falls back to preseason only when that is the whole log", () => {

@@ -176,39 +176,28 @@ export const formatResultLine = (
     " ",
   ).trim();
 
-export const parseLastGamePayload = (
-  payload: EspnGamelogPayload | null | undefined,
-): LastGame | null => {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  const labels = payload.labels ?? [];
-  const events = payload.events ?? {};
-  const ids = walkEvents(payload, false);
-  const fallback = ids.length ? ids : walkEvents(payload, true);
-  const eventId = fallback[0];
-  if (!eventId) {
-    return null;
-  }
-  const event = events[eventId];
-  if (!event) {
-    return null;
-  }
-
-  let rawStats: string[] = [];
+const statsForEvent = (payload: EspnGamelogPayload, eventId: string) => {
   for (const season of payload.seasonTypes ?? []) {
     for (const category of season.categories ?? []) {
       const hit = category.events?.find((item) => item.eventId === eventId);
       if (hit?.stats) {
-        rawStats = hit.stats;
-        break;
+        return hit.stats;
       }
     }
-    if (rawStats.length) {
-      break;
-    }
   }
+  return [] as string[];
+};
 
+export const gameFromEvent = (
+  payload: EspnGamelogPayload,
+  eventId: string,
+): LastGame | null => {
+  const event = payload.events?.[eventId];
+  if (!event) {
+    return null;
+  }
+  const labels = payload.labels ?? [];
+  const rawStats = statsForEvent(payload, eventId);
   const teamId =
     resolveTeamId(event.team?.abbreviation, event.team?.displayName) ?? "";
   const opponentId =
@@ -249,17 +238,44 @@ export const parseLastGamePayload = (
   };
 };
 
-const cache = new Map<string, LastGame | null>();
+export const parseGamelogGames = (
+  payload: EspnGamelogPayload | null | undefined,
+): LastGame[] => {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+  const ids = walkEvents(payload, false);
+  const ordered = ids.length ? ids : walkEvents(payload, true);
+  const games: LastGame[] = [];
+  const seen = new Set<string>();
+  for (const eventId of ordered) {
+    if (seen.has(eventId)) {
+      continue;
+    }
+    seen.add(eventId);
+    const game = gameFromEvent(payload, eventId);
+    if (game) {
+      games.push(game);
+    }
+  }
+  return games;
+};
 
-export const fetchLastGame = async (
+export const parseLastGamePayload = (
+  payload: EspnGamelogPayload | null | undefined,
+): LastGame | null => parseGamelogGames(payload)[0] ?? null;
+
+const cache = new Map<string, LastGame[]>();
+
+export const fetchRecentGames = async (
   athleteId: string,
-): Promise<LastGame | null> => {
+): Promise<LastGame[]> => {
   const id = athleteId.trim();
   if (!id) {
-    return null;
+    return [];
   }
   if (cache.has(id)) {
-    return cache.get(id) ?? null;
+    return cache.get(id) ?? [];
   }
   try {
     const response = await fetch(ESPN_GAMELOG_URL(id), {
@@ -267,13 +283,17 @@ export const fetchLastGame = async (
       credentials: "omit",
     });
     if (!response.ok) {
-      return null;
+      return [];
     }
     const payload = (await response.json()) as EspnGamelogPayload;
-    const game = parseLastGamePayload(payload);
-    cache.set(id, game);
-    return game;
+    const games = parseGamelogGames(payload);
+    cache.set(id, games);
+    return games;
   } catch {
-    return null;
+    return [];
   }
 };
+
+export const fetchLastGame = async (
+  athleteId: string,
+): Promise<LastGame | null> => (await fetchRecentGames(athleteId))[0] ?? null;
