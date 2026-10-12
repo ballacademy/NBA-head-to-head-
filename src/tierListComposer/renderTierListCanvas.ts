@@ -1,7 +1,7 @@
 import {
-  isNeonLook,
-  paintNeonCellRim,
-  paintNeonCellSheen,
+  isImprovedLook,
+  paintImproveCellLight,
+  paintImproveCellRim,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -315,8 +315,8 @@ export const renderTierListCanvas = async (
         context.fillStyle = "#2a2a2a";
         context.fillRect(x, cellY, size, size);
       }
-      if (isNeonLook(input.look) && team) {
-        paintNeonCellSheen(context, x, cellY, size, size);
+      if (isImprovedLook(input.look) && team) {
+        paintImproveCellLight(context, x, cellY, size, size);
       }
       const art = cellArt[rowIndex]?.[index];
       if (player && art?.watermark) {
@@ -343,17 +343,16 @@ export const renderTierListCanvas = async (
       }
       if (art?.mark && player) {
         drawCoverHeadshot(context, art.mark, x, cellY, size, size, {
-          glow: isNeonLook(input.look),
+          silhouette: true,
         });
       } else if (art?.mark && team) {
         drawCenteredLogo(context, art.mark, x, cellY, size, size, {
           cacheKey: team.logoSrc,
-          glow: isNeonLook(input.look),
           balanceStamp: true,
         });
       }
-      if (isNeonLook(input.look)) {
-        paintNeonCellRim(context, x, cellY, size, size);
+      if (isImprovedLook(input.look)) {
+        paintImproveCellRim(context, x, cellY, size, size);
       }
     });
     tierTop += laneCount * layout.laneH;

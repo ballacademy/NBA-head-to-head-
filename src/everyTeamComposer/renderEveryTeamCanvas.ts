@@ -1,7 +1,7 @@
 import {
-  isNeonLook,
-  paintNeonCellRim,
-  paintNeonCellSheen,
+  isImprovedLook,
+  paintImproveCellLight,
+  paintImproveCellRim,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -230,8 +230,8 @@ export const renderEveryTeamCanvas = async (
     gradient.addColorStop(1, cell.team.cellTo);
     context.fillStyle = gradient;
     context.fillRect(x, y, size, size);
-    if (isNeonLook(input.look)) {
-      paintNeonCellSheen(context, x, y, size, size);
+    if (isImprovedLook(input.look)) {
+      paintImproveCellLight(context, x, y, size, size);
     }
     if (cell.logo) {
       context.save();
@@ -243,17 +243,16 @@ export const renderEveryTeamCanvas = async (
         fitX: ET_LOGO_FIT,
         fitY: ET_LOGO_FIT,
         cacheKey: cell.team.logoSrc,
-        glow: isNeonLook(input.look),
       });
       context.restore();
     }
     if (cell.headshot) {
       drawCoverHeadshot(context, cell.headshot, x, y, size, size, {
-        glow: isNeonLook(input.look),
+        silhouette: true,
       });
     }
-    if (isNeonLook(input.look)) {
-      paintNeonCellRim(context, x, y, size, size);
+    if (isImprovedLook(input.look)) {
+      paintImproveCellRim(context, x, y, size, size);
     }
     context.strokeStyle = cell.team.cellFrom;
     context.lineWidth = ET_BORDER * scale;

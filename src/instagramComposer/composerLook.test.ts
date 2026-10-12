@@ -3,32 +3,31 @@ import {
   composerLookClass,
   headshotGlowPx,
   headshotSilhouettePx,
-  isNeonLook,
-  neonCellBlur,
-  neonCellInset,
-  neonCellLine,
+  improveCellInset,
+  improveCellLine,
+  isImprovedLook,
   parseComposerLook,
 } from "./composerLook";
 import { TIER_WRAP_COLS } from "../tierListComposer/tierLayout";
 
 describe("composer look", () => {
-  it("treats only neon as the alternate look", () => {
-    expect(parseComposerLook("neon")).toBe("neon");
+  it("treats only improve as the alternate look", () => {
+    expect(parseComposerLook("improve")).toBe("improve");
     expect(parseComposerLook("classic")).toBe("classic");
+    expect(parseComposerLook("neon")).toBe("classic");
     expect(parseComposerLook("glow")).toBe("classic");
     expect(parseComposerLook(null)).toBe("classic");
-    expect(parseComposerLook({ look: "neon" })).toBe("classic");
-    expect(isNeonLook("neon")).toBe(true);
-    expect(isNeonLook("classic")).toBe(false);
-    expect(composerLookClass("neon")).toBe("is-neon");
+    expect(parseComposerLook({ look: "improve" })).toBe("classic");
+    expect(isImprovedLook("improve")).toBe(true);
+    expect(isImprovedLook("classic")).toBe(false);
+    expect(composerLookClass("improve")).toBe("is-improve");
     expect(composerLookClass("classic")).toBe("");
   });
 
-  it("keeps neon cell metrics inside the box", () => {
-    expect(neonCellInset(200)).toBe(6);
-    expect(neonCellLine(200)).toBe(4);
-    expect(neonCellBlur(200)).toBe(22);
-    expect(neonCellInset(200) * 2 + neonCellLine(200)).toBeLessThan(200);
+  it("keeps improve cell metrics inside the box with no glow size", () => {
+    expect(improveCellInset(200)).toBe(6);
+    expect(improveCellLine(200)).toBe(3);
+    expect(improveCellInset(200) * 2 + improveCellLine(200)).toBeLessThan(200);
     expect(headshotGlowPx(120)).toBe(14);
   });
 

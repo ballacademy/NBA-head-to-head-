@@ -1,6 +1,7 @@
 import {
-  isNeonLook,
-  paintNeonCellRim,
+  isImprovedLook,
+  paintImproveCellLight,
+  paintImproveCellRim,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { getTeamColors } from "../lib/teamColors";
@@ -174,6 +175,9 @@ export const renderPlayerOfTheDayCanvas = async (
     context.beginPath();
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
+  if (isImprovedLook(input.look)) {
+    paintImproveCellRim(context, plate.x, plate.y, plate.w, plate.h);
+  }
 
   const titleLines = splitPotdTitle(input.title);
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
@@ -224,7 +228,7 @@ export const renderPlayerOfTheDayCanvas = async (
   const resultH = POTD_RESULT_H * s;
   const statsH = POTD_STATS_H * s;
   const photoH = bodyH - nameH - resultH - statsH;
-  const neon = isNeonLook(input.look);
+  const improved = isImprovedLook(input.look);
 
   for (let index = 0; index < input.cards.length; index += 1) {
     const card = input.cards[index]!;
@@ -263,8 +267,8 @@ export const renderPlayerOfTheDayCanvas = async (
       }
     }
     context.restore();
-    if (neon) {
-      paintNeonCellRim(context, x, photoY, w, photoH);
+    if (improved) {
+      paintImproveCellRim(context, x, photoY, w, photoH);
     }
 
     context.font = `900 ${POTD_TOTAL_SIZE * s}px ${POSTER_FONT}`;
@@ -321,8 +325,9 @@ export const renderPlayerOfTheDayCanvas = async (
         );
       });
     });
-    if (neon) {
-      paintNeonCellRim(context, x, statsY, w, statsH);
+    if (improved) {
+      paintImproveCellLight(context, x, statsY, w, statsH);
+      paintImproveCellRim(context, x, statsY, w, statsH);
     }
 
     const resultFill = team
@@ -367,8 +372,9 @@ export const renderPlayerOfTheDayCanvas = async (
       }
     });
     setLetterSpacing(context, 0);
-    if (neon) {
-      paintNeonCellRim(context, x, nameY, w, nameH);
+    if (improved) {
+      paintImproveCellLight(context, x, nameY, w, nameH);
+      paintImproveCellRim(context, x, nameY, w, nameH);
     }
   }
 

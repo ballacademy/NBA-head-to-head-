@@ -19,11 +19,11 @@ export function ComposerLookToggle({ look, onChange }: ComposerLookToggleProps) 
       </button>
       <button
         type="button"
-        className={look === "neon" ? "sc-chip is-on" : "sc-chip"}
-        aria-pressed={look === "neon"}
-        onClick={() => onChange("neon")}
+        className={look === "improve" ? "sc-chip is-on" : "sc-chip"}
+        aria-pressed={look === "improve"}
+        onClick={() => onChange("improve")}
       >
-        Neon
+        Improve graphic
       </button>
     </div>
   );

@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 
-export type ComposerLook = "classic" | "neon";
+export type ComposerLook = "classic" | "improve";
 
 export const STANDINGS_LOOK_KEY = "ddgm:standings-composer-look";
 export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
 export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
 export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
 
-export const NEON_HALO = "rgba(210, 235, 255, 0.92)";
-export const NEON_HOT = "rgba(255, 255, 255, 0.88)";
-export const NEON_RIM = "rgba(255, 255, 255, 0.68)";
+/** Champagne gold hairline — print-poster, not neon glow. */
+export const IMPROVE_GOLD = "rgba(212, 181, 106, 0.9)";
+export const IMPROVE_GOLD_EDGE = "rgba(236, 214, 148, 0.95)";
+export const IMPROVE_LIGHT_TOP = "rgba(255, 244, 214, 0.2)";
+export const IMPROVE_LIGHT_MID = "rgba(255, 255, 255, 0.04)";
+export const IMPROVE_LIGHT_BASE = "rgba(0, 0, 0, 0.18)";
 
 export const parseComposerLook = (value: unknown): ComposerLook =>
-  value === "neon" ? "neon" : "classic";
+  value === "improve" ? "improve" : "classic";
 
-export const isNeonLook = (look: ComposerLook | null | undefined) =>
-  look === "neon";
+export const isImprovedLook = (look: ComposerLook | null | undefined) =>
+  look === "improve";
 
 export const composerLookClass = (look: ComposerLook) =>
-  look === "neon" ? "is-neon" : "";
+  look === "improve" ? "is-improve" : "";
 
 export const readComposerLook = (key: string): ComposerLook =>
   parseComposerLook(readJson<unknown>(key));
@@ -28,14 +31,11 @@ export const writeComposerLook = (key: string, look: ComposerLook) => {
   writeJson(key, look);
 };
 
-export const neonCellInset = (size: number) =>
-  Math.max(2, Math.round(size * 0.032));
+export const improveCellInset = (size: number) =>
+  Math.max(2, Math.round(size * 0.03));
 
-export const neonCellLine = (size: number) =>
-  Math.max(2, Math.round(size * 0.022));
-
-export const neonCellBlur = (size: number) =>
-  Math.max(6, Math.round(size * 0.11));
+export const improveCellLine = (size: number) =>
+  Math.max(2, Math.round(size * 0.016));
 
 export const headshotGlowPx = (size: number) =>
   Math.max(6, Math.round(size * 0.12));
@@ -71,7 +71,8 @@ export const paintHeadshotSilhouette = (
   context.restore();
 };
 
-export const paintNeonCellSheen = (
+/** Top-down studio wash — no bloom. */
+export const paintImproveCellLight = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -79,17 +80,17 @@ export const paintNeonCellSheen = (
   h: number,
 ) => {
   context.save();
-  const sheen = context.createLinearGradient(x, y, x + w, y + h);
-  sheen.addColorStop(0, "rgba(255, 255, 255, 0.12)");
-  sheen.addColorStop(0.45, "rgba(255, 255, 255, 0.02)");
-  sheen.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+  const sheen = context.createLinearGradient(x, y, x, y + h);
+  sheen.addColorStop(0, IMPROVE_LIGHT_TOP);
+  sheen.addColorStop(0.4, IMPROVE_LIGHT_MID);
+  sheen.addColorStop(1, IMPROVE_LIGHT_BASE);
   context.fillStyle = sheen;
   context.fillRect(x, y, w, h);
   context.restore();
 };
 
-/** Inner neon rim. Drawn after artwork so PNG export keeps the box glow. */
-export const paintNeonCellRim = (
+/** Sharp gold inner frame. Drawn after artwork so PNG matches preview. */
+export const paintImproveCellRim = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -97,17 +98,25 @@ export const paintNeonCellRim = (
   h: number,
 ) => {
   const size = Math.min(w, h);
-  const inset = neonCellInset(size);
+  const inset = improveCellInset(size);
   context.save();
-  context.shadowColor = NEON_HALO;
-  context.shadowBlur = neonCellBlur(size);
-  context.strokeStyle = NEON_RIM;
-  context.lineWidth = neonCellLine(size);
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  context.strokeStyle = IMPROVE_GOLD_EDGE;
+  context.lineWidth = improveCellLine(size);
   context.strokeRect(x + inset, y + inset, w - inset * 2, h - inset * 2);
+  context.strokeStyle = IMPROVE_GOLD;
+  context.lineWidth = Math.max(1, improveCellLine(size) - 1);
+  context.strokeRect(
+    x + inset + 1,
+    y + inset + 1,
+    w - inset * 2 - 2,
+    h - inset * 2 - 2,
+  );
   context.restore();
 };
 
-export const paintNeonCell = (
+export const paintImproveCell = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -116,9 +125,9 @@ export const paintNeonCell = (
   filled = true,
 ) => {
   if (filled) {
-    paintNeonCellSheen(context, x, y, w, h);
+    paintImproveCellLight(context, x, y, w, h);
   }
-  paintNeonCellRim(context, x, y, w, h);
+  paintImproveCellRim(context, x, y, w, h);
 };
 
 export const useComposerLook = (storageKey: string) => {

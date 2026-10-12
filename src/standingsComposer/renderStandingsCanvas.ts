@@ -18,9 +18,9 @@ import {
   liftHeaderMetal,
 } from "./headerTexture";
 import {
-  isNeonLook,
-  paintNeonCellRim,
-  paintNeonCellSheen,
+  isImprovedLook,
+  paintImproveCellLight,
+  paintImproveCellRim,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
@@ -338,19 +338,18 @@ export const renderStandingsCanvas = async (
     if (team) {
       fillCellGradient(context, x, y, cellW, cellH, team.cellFrom, team.cellTo);
     }
-    if (isNeonLook(input.look) && team) {
-      paintNeonCellSheen(context, x, y, cellW, cellH);
+    if (isImprovedLook(input.look) && team) {
+      paintImproveCellLight(context, x, y, cellW, cellH);
     }
 
     const logo = logos[index];
     if (logo && team) {
       drawCenteredLogo(context, logo, x, y, cellW, cellH, {
         cacheKey: team.logoSrc,
-        glow: isNeonLook(input.look),
       });
     }
-    if (isNeonLook(input.look)) {
-      paintNeonCellRim(context, x, y, cellW, cellH);
+    if (isImprovedLook(input.look)) {
+      paintImproveCellRim(context, x, y, cellW, cellH);
     }
 
     drawLongShadowText(

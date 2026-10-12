@@ -2,7 +2,6 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerLookClass,
-  isNeonLook,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
@@ -340,7 +339,6 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                           <TeamLogo
                             src={team.logoSrc}
                             label={team.id}
-                            glow={isNeonLook(look)}
                             balanceStamp
                           />
                         ) : null}

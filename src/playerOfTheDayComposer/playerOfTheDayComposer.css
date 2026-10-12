@@ -473,10 +473,33 @@
   color: rgba(255, 255, 255, 0.72);
 }
 
-.pod-board.is-neon .pod-photo,
-.pod-board.is-neon .pod-stats,
-.pod-board.is-neon .pod-name {
-  box-shadow: inset 0 0 calc(14 * var(--u)) rgba(210, 235, 255, 0.55);
+.pod-board.is-improve .pod-photo,
+.pod-board.is-improve .pod-stats,
+.pod-board.is-improve .pod-name {
+  box-shadow:
+    inset 0 0 0 calc(2.4 * var(--u)) rgba(236, 214, 148, 0.92),
+    inset 0 calc(4 * var(--u)) calc(10 * var(--u)) rgba(255, 244, 214, 0.12),
+    inset 0 calc(-8 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, 0.28);
+}
+
+.pod-board.is-improve .pod-stats::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 244, 214, 0.16) 0%,
+    transparent 42%,
+    rgba(0, 0, 0, 0.14) 100%
+  );
+}
+
+.pod-board.is-improve .pod-title-plate {
+  box-shadow:
+    0 0 0 calc(3 * var(--u)) #fff,
+    0 0 0 calc(6 * var(--u)) #0a0a0a,
+    inset 0 0 0 calc(2.5 * var(--u)) rgba(212, 181, 106, 0.8);
 }
 
 .pod-board.is-exporting .pod-brand:focus,

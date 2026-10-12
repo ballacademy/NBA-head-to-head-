@@ -2,7 +2,6 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerLookClass,
-  isNeonLook,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
@@ -274,7 +273,6 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                   <TeamLogo
                     src={team.logoSrc}
                     label={team.id}
-                    glow={isNeonLook(look)}
                   />
                 ) : null}
               </button>
