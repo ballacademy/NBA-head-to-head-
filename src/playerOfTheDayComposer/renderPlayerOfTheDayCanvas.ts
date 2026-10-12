@@ -34,6 +34,8 @@ import {
   POTD_STATS_H,
   POTD_TITLE_SIZE,
   POTD_TOTAL_SIZE,
+  POTD_CARD_RADIUS,
+  addRoundRectPath,
   coverPanDraw,
   paintPotdPhotoBorder,
   potdCardX,
@@ -250,10 +252,17 @@ export const renderPlayerOfTheDayCanvas = async (
     const nameY = resultY + resultH;
     const fill = statsFillForTeam(card.teamId);
     const team = getTeam(card.teamId);
+    const radius = POTD_CARD_RADIUS * s;
+    const cardH = nameY + nameH - photoY;
 
     context.save();
     context.beginPath();
-    context.rect(x, photoY, w, photoH);
+    addRoundRectPath(context, x, photoY, w, cardH, radius);
+    context.clip();
+
+    context.save();
+    context.beginPath();
+    addRoundRectPath(context, x, photoY, w, photoH, [radius, radius, 0, 0]);
     context.clip();
     context.fillStyle = "#111";
     context.fillRect(x, photoY, w, photoH);
@@ -379,6 +388,7 @@ export const renderPlayerOfTheDayCanvas = async (
       paintImproveCellLight(context, x, nameY, w, nameH);
       paintImproveCellRim(context, x, nameY, w, nameH, IMPROVE_RIM_WHITE);
     }
+    context.restore();
   }
 
   return canvas;

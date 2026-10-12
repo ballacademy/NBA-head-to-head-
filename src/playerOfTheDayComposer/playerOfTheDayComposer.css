@@ -172,11 +172,14 @@
 
 .pod-card {
   --team-fill: #1a1a1a;
+  --card-radius: calc(14 * var(--u));
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto auto auto;
   min-height: 0;
   min-width: 0;
   height: 100%;
+  border-radius: var(--card-radius);
+  overflow: hidden;
 }
 
 .pod-photo-stack {
@@ -192,6 +195,7 @@
   background: #111;
   cursor: grab;
   touch-action: none;
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
 }
 
 /* Overlay sits above the img so cover-fit custom photos cannot hide the frame. */
@@ -201,6 +205,7 @@
   inset: 0;
   z-index: 3;
   pointer-events: none;
+  border-radius: inherit;
   box-shadow: inset 0 0 0 calc(4 * var(--u)) #fff;
 }
 
@@ -442,6 +447,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border-radius: 0 0 var(--card-radius) var(--card-radius);
 }
 
 .pod-name__logo {

@@ -172,6 +172,9 @@ describe("player of the day state", () => {
     expect(left.cy).toBeCloseTo(nextRow.cy - (236 * 0.8) / 4);
     expect(left.cy).toBeGreaterThan(20);
     expect(left.cy).toBeLessThan(80);
+    expect(potdLayout.POTD_CARD_RADIUS).toBe(14);
+    expect(potdLayout.POTD_CARD_RADIUS).toBeGreaterThan(8);
+    expect(potdLayout.POTD_CARD_RADIUS).toBeLessThan(28);
   });
 
   it("treats upload and change-player chrome as non-pan targets", () => {

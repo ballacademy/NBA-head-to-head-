@@ -29,6 +29,8 @@ export const POTD_NAME_SIZE = 36;
 export const POTD_PHOTO_BORDER = 4;
 export const POTD_PHOTO_BORDER_CLASSIC = "#ffffff";
 export const POTD_PHOTO_BORDER_IMPROVE = IMPROVE_RIM_BLACK;
+/** Modest card radius for the two player columns only. Grids stay square. */
+export const POTD_CARD_RADIUS = 14;
 export const POTD_TOTAL_SIZE = 20;
 export const POTD_LOGO_WATERMARK = 0.2;
 
@@ -83,6 +85,40 @@ export const potdStatCell = (
   };
 };
 
+export const addRoundRectPath = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radii: number | readonly [number, number, number, number],
+) => {
+  const [tl, tr, br, bl] =
+    typeof radii === "number" ? [radii, radii, radii, radii] : radii;
+  const cap = Math.max(0, Math.min(w, h) / 2);
+  const clamp = (value: number) => Math.max(0, Math.min(value, cap));
+  const corners = [clamp(tl), clamp(tr), clamp(br), clamp(bl)] as [
+    number,
+    number,
+    number,
+    number,
+  ];
+  if (typeof context.roundRect === "function") {
+    context.roundRect(x, y, w, h, corners);
+    return;
+  }
+  context.moveTo(x + corners[0], y);
+  context.lineTo(x + w - corners[1], y);
+  context.quadraticCurveTo(x + w, y, x + w, y + corners[1]);
+  context.lineTo(x + w, y + h - corners[2]);
+  context.quadraticCurveTo(x + w, y + h, x + w - corners[2], y + h);
+  context.lineTo(x + corners[3], y + h);
+  context.quadraticCurveTo(x, y + h, x, y + h - corners[3]);
+  context.lineTo(x, y + corners[0]);
+  context.quadraticCurveTo(x, y, x + corners[0], y);
+  context.closePath();
+};
+
 export const paintPotdPhotoBorder = (
   context: CanvasRenderingContext2D,
   x: number,
@@ -93,12 +129,21 @@ export const paintPotdPhotoBorder = (
   look?: ComposerLook | null,
 ) => {
   const line = Math.max(2, POTD_PHOTO_BORDER * scale);
+  const inset = line / 2;
+  const radius = Math.max(0, POTD_CARD_RADIUS * scale - inset);
   context.save();
   context.shadowBlur = 0;
   context.shadowColor = "transparent";
   context.strokeStyle = potdPhotoBorderColor(look);
   context.lineWidth = line;
-  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  context.beginPath();
+  addRoundRectPath(context, x + inset, y + inset, w - line, h - line, [
+    radius,
+    radius,
+    0,
+    0,
+  ]);
+  context.stroke();
   context.restore();
 };
 
