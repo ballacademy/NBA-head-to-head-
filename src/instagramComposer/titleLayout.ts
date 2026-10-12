@@ -79,6 +79,10 @@ export const onComposerTextChange = (
   onChange(commitComposerText(event.target.value, maxLength));
 };
 
+/** HTML maxlength must cover overlay newlines or wrapping labels block typing. */
+export const composerInputMaxLength = (maxLength: number, lineCount: number) =>
+  maxLength + Math.max(0, lineCount - 1);
+
 const cutAfterWords = (text: string, wordTarget: number) => {
   const leading = text.match(/^\s*/)?.[0] ?? "";
   const body = text.slice(leading.length);

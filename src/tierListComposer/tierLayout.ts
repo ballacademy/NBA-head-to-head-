@@ -7,13 +7,15 @@ import {
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 /** Board-space (1200×1500) layout shared by the on-screen graphic and PNG. */
-export const TIER_HEADER_H = 184;
+/** Compact title/BA strip so S sits near the top of the 4:5 board. */
+export const TIER_HEADER_H = 128;
 export const TIER_FOOTER = 8;
 export const TIER_LABEL_W = 140;
 export const TIER_LABEL_PAD_X = 8;
 export const TIER_LABEL_INNER_W = TIER_LABEL_W - TIER_LABEL_PAD_X * 2;
 export const TIER_LABEL_TRACK = 0.02;
-export const TIER_LABEL_MAX_LENGTH = 32;
+/** Long names wrap in the label column; this is not an 8-character typing cap. */
+export const TIER_LABEL_MAX_LENGTH = 48;
 export const TIER_LABEL_SIZE_ONE = 72;
 export const TIER_LABEL_SIZE_TWO = 48;
 export const TIER_LABEL_SIZE_LONG = 28;
@@ -27,13 +29,13 @@ export const TIER_WRAP_COLS = 8;
 export const TIER_ROW_PAD_Y = 4;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
-export const TIER_BADGE_SIZE = 80;
+export const TIER_BADGE_SIZE = 72;
 /**
  * Equal inset from the graphic’s top edge and right edge so the lockup is
  * not hugging the right. Matches the header’s vertical centering gap.
  */
 export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
-export const TIER_TITLE_SIZE = 44;
+export const TIER_TITLE_SIZE = 32;
 /** Faded team-logo backdrop behind a player headshot. Fitted to the cell. */
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
 export const TIER_TITLE_TRACK = 0.04;

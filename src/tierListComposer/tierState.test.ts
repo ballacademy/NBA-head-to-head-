@@ -14,6 +14,7 @@ import {
   TIER_HEADER_H,
   TIER_LABEL_MAX_LENGTH,
   TIER_LABEL_SIZE_ONE,
+  TIER_TITLE_SIZE,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
   labelFontSize,
@@ -97,7 +98,12 @@ describe("tier rows", () => {
     expect(rows[0]!.label).toBe("ELITE!!!");
     expect(setTierLabel(rows, 0, "All-Stars")[0]!.label).toBe("All-Stars");
     expect(setTierLabel(rows, 0, "Role Players")[0]!.label).toBe("Role Players");
-    expect(setTierLabel(rows, 0, "x".repeat(40))[0]!.label).toHaveLength(
+    expect(setTierLabel(rows, 0, "ROLE PLAYERS")[0]!.label).toBe("ROLE PLAYERS");
+    expect(setTierLabel(rows, 0, "All NBA First Team")[0]!.label).toBe(
+      "All NBA First Team",
+    );
+    expect(TIER_LABEL_MAX_LENGTH).toBeGreaterThanOrEqual(48);
+    expect(setTierLabel(rows, 0, "x".repeat(80))[0]!.label).toHaveLength(
       TIER_LABEL_MAX_LENGTH,
     );
     const titleLines = splitTierTitle(DEFAULT_TIER_TITLE);
@@ -124,7 +130,8 @@ describe("tier layout", () => {
   it("uses the circled BA lockup, not a drawn circle", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
     expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(72);
-    expect(TIER_HEADER_H).toBeLessThan(220);
+    expect(TIER_HEADER_H).toBeLessThanOrEqual(128);
+    expect(TIER_TITLE_SIZE).toBeLessThanOrEqual(32);
   });
 
   it("pads the BA lockup equally from the top and right edges", () => {
@@ -186,8 +193,14 @@ describe("tier layout", () => {
     const allStars = layoutTierLabel("All-Stars");
     expect(allStars.lines.join("")).toMatch(/ALL-STARS/i);
     expect(allStars.fontSize).toBeGreaterThanOrEqual(16);
-    const role = layoutTierLabel("Role Players");
+    const role = layoutTierLabel("ROLE PLAYERS");
     expect(role.lines.length).toBeGreaterThan(1);
+    expect(role.lines.join(" ")).toMatch(/ROLE PLAYERS/i);
+    const firstTeam = layoutTierLabel("All NBA First Team");
+    expect(firstTeam.lines.length).toBeGreaterThan(1);
+    expect(firstTeam.lines.join(" ").replace(/\s+/g, " ")).toMatch(
+      /ALL NBA FIRST TEAM/i,
+    );
     const grown = tierBoardLayout(
       [1, 1, 1, 1, 1, 1],
       role.lines.length > 1 ? [role.lines.length, 1, 1, 1, 1, 1] : undefined,

@@ -1,5 +1,6 @@
 import {
   COMPOSER_TITLE_MAX_LENGTH,
+  composerInputMaxLength,
   linedComposerTitle,
   onComposerTextChange,
 } from "./titleLayout";
@@ -35,7 +36,7 @@ export function ComposerTitleField({
         className={inputClassName}
         value={lined}
         rows={Math.max(1, lines.length)}
-        maxLength={maxLength + (lines.length > 1 ? 1 : 0)}
+        maxLength={composerInputMaxLength(maxLength, lines.length)}
         spellCheck={false}
         aria-label={ariaLabel}
         onKeyDown={(event) => {

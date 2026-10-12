@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   commitComposerText,
+  composerInputMaxLength,
   linedComposerTitle,
   measureTitleAdvance,
   splitBalancedTitle,
@@ -65,6 +66,17 @@ describe("composer title layout", () => {
     expect(linedComposerTitle("WESTERN", ["WESTERN"])).toBe("WESTERN");
     expect(linedComposerTitle("Role Players Extra", ["Role", "Players", "Extra"])).toBe(
       "Role\nPlayers\nExtra",
+    );
+    expect(composerInputMaxLength(48, 1)).toBe(48);
+    expect(composerInputMaxLength(48, 3)).toBe(50);
+    const firstTeam = linedComposerTitle("All NBA First Team", [
+      "All NBA",
+      "First",
+      "Team",
+    ]);
+    expect(firstTeam).toBe("All NBA\nFirst\nTeam");
+    expect(firstTeam.length).toBeLessThanOrEqual(
+      composerInputMaxLength(48, 3),
     );
   });
 });

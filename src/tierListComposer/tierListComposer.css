@@ -8,7 +8,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(var(--header-h, 184) * var(--u)) 1fr;
+  grid-template-rows: calc(var(--header-h, 128) * var(--u)) 1fr;
   background-color: #0b0b0b;
   color: #fff;
   overflow: hidden;
@@ -52,7 +52,7 @@
 
 .tl-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 44) * var(--u));
+  font-size: calc(var(--title-size, 32) * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.04em;
@@ -83,7 +83,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 44) * var(--u));
+  font-size: calc(var(--title-size, 32) * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1.12;
