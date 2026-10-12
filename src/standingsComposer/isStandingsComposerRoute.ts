@@ -37,7 +37,10 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/player-of-day" ||
     path === "/potd-leaderboard" ||
     path === "/leaderboard" ||
-    path === "/potd-lb"
+    path === "/potd-lb" ||
+    path === "/team-of-the-week" ||
+    path === "/totw" ||
+    path === "/team-of-week"
   );
 };
 

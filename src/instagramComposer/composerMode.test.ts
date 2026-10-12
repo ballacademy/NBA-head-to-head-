@@ -45,11 +45,24 @@ describe("composer mode", () => {
     expect(composerHref("potd-leaderboard")).toBe("/potd-leaderboard");
   });
 
+  it("opens team of the week from path or query", () => {
+    expect(readComposerMode("", "/team-of-the-week")).toBe("team-of-the-week");
+    expect(readComposerMode("", "/totw")).toBe("team-of-the-week");
+    expect(readComposerMode("?composer=team-of-the-week", "/")).toBe(
+      "team-of-the-week",
+    );
+    expect(readComposerMode("?composer=totw", "/")).toBe("team-of-the-week");
+    expect(composerHref("team-of-the-week")).toBe("/team-of-the-week");
+  });
+
   it("lets the path win when query and path disagree", () => {
     expect(readComposerMode("?composer=tier", "/every-team")).toBe("every-team");
     expect(readComposerMode("?composer=every-team", "/tier-list")).toBe("tier");
     expect(readComposerMode("?composer=tier", "/player-of-the-day")).toBe(
       "player-of-the-day",
+    );
+    expect(readComposerMode("?composer=potd", "/team-of-the-week")).toBe(
+      "team-of-the-week",
     );
   });
 });

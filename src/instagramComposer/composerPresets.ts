@@ -29,6 +29,13 @@ export const LEADERBOARD_TITLE_PRESETS = [
   "POTD WINS",
 ];
 
+export const TOTW_TITLE_PRESETS = [
+  "TEAM OF THE WEEK",
+  "EASTERN TEAM OF THE WEEK",
+  "WESTERN TEAM OF THE WEEK",
+  "ROOKIE TEAM OF THE WEEK",
+];
+
 export const slugifyExport = (value: string) =>
   value
     .trim()

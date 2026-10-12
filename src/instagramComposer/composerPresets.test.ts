@@ -9,6 +9,7 @@ import { STORY_HEIGHT, STORY_WIDTH } from "./exportDownload";
 describe("composer export names and story size", () => {
   it("builds a filename from title and date", () => {
     expect(slugifyExport("POTD LEADERBOARD")).toBe("potd-leaderboard");
+    expect(slugifyExport("TEAM OF THE WEEK")).toBe("team-of-the-week");
     expect(
       exportFilenameFromTitle("PLAYER OF THE DAY?", "player-of-the-day", "10/12"),
     ).toBe("player-of-the-day-10-12.png");

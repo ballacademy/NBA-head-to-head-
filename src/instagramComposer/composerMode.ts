@@ -3,7 +3,8 @@ export type ComposerMode =
   | "tier"
   | "every-team"
   | "player-of-the-day"
-  | "potd-leaderboard";
+  | "potd-leaderboard"
+  | "team-of-the-week";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -38,6 +39,16 @@ const POTD_LEADERBOARD_QUERY = new Set([
   "potd-leaderboard",
   "leaderboard",
   "potd-lb",
+]);
+const TEAM_OF_THE_WEEK_PATHS = new Set([
+  "/team-of-the-week",
+  "/totw",
+  "/team-of-week",
+]);
+const TEAM_OF_THE_WEEK_QUERY = new Set([
+  "team-of-the-week",
+  "totw",
+  "team-of-week",
 ]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
@@ -102,10 +113,28 @@ export const isPotdLeaderboardQuery = (search: string) => {
   }
 };
 
+export const isTeamOfTheWeekPath = (pathname: string) =>
+  TEAM_OF_THE_WEEK_PATHS.has(normalizePath(pathname));
+
+export const isTeamOfTheWeekQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return TEAM_OF_THE_WEEK_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isTeamOfTheWeekPath(pathname)) {
+    return "team-of-the-week";
+  }
   if (isPotdLeaderboardPath(pathname)) {
     return "potd-leaderboard";
   }
@@ -117,6 +146,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isTeamOfTheWeekQuery(search)) {
+    return "team-of-the-week";
   }
   if (isPotdLeaderboardQuery(search)) {
     return "potd-leaderboard";
@@ -145,6 +177,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "potd-leaderboard") {
     return "/potd-leaderboard";
+  }
+  if (mode === "team-of-the-week") {
+    return "/team-of-the-week";
   }
   return "/";
 };
