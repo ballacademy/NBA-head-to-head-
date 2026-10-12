@@ -156,7 +156,22 @@ describe("player of the day state", () => {
     expect(covered.w / covered.h).toBeCloseTo(1);
     expect(covered.w).toBeGreaterThanOrEqual(520);
     expect(potdLayout.POTD_NAME_SIZE).toBe(36);
-    expect(potdLayout.POTD_STAT_SIZE).toBe(30);
+    expect(potdLayout.POTD_STAT_SIZE).toBe(38);
+  });
+
+  it("always frames the photo and centers larger stat pairs", () => {
+    expect(potdLayout.POTD_PHOTO_BORDER).toBe(4);
+    expect(potdLayout.potdPhotoBorderColor("classic")).toBe("#ffffff");
+    expect(potdLayout.potdPhotoBorderColor("improve")).toBe("#0a0a0a");
+    expect(potdLayout.potdPhotoBorderColor("improve")).not.toMatch(/d4|ec|ff.?f4/i);
+    const left = potdLayout.potdStatCell(0, 520, 0, 236, 0);
+    const right = potdLayout.potdStatCell(0, 520, 0, 236, 1);
+    const nextRow = potdLayout.potdStatCell(0, 520, 0, 236, 2);
+    expect(left.cx).toBeCloseTo(130);
+    expect(right.cx).toBeCloseTo(390);
+    expect(left.cy).toBeCloseTo(nextRow.cy - (236 * 0.8) / 4);
+    expect(left.cy).toBeGreaterThan(20);
+    expect(left.cy).toBeLessThan(80);
   });
 
   it("treats upload and change-player chrome as non-pan targets", () => {

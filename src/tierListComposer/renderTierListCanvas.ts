@@ -1,4 +1,5 @@
 import {
+  IMPROVE_RIM_WHITE,
   isImprovedLook,
   paintImproveCellLight,
   paintImproveCellRim,
@@ -352,7 +353,14 @@ export const renderTierListCanvas = async (
         });
       }
       if (isImprovedLook(input.look)) {
-        paintImproveCellRim(context, x, cellY, size, size);
+        paintImproveCellRim(
+          context,
+          x,
+          cellY,
+          size,
+          size,
+          team ? undefined : IMPROVE_RIM_WHITE,
+        );
       }
     });
     tierTop += laneCount * layout.laneH;

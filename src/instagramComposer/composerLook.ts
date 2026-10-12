@@ -8,10 +8,10 @@ export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
 export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
 export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
 
-/** Champagne gold hairline — print-poster, not neon glow. */
-export const IMPROVE_GOLD = "rgba(212, 181, 106, 0.9)";
-export const IMPROVE_GOLD_EDGE = "rgba(236, 214, 148, 0.95)";
-export const IMPROVE_LIGHT_TOP = "rgba(255, 244, 214, 0.2)";
+/** Improve rims: black by default, white on dark fills where black would vanish. */
+export const IMPROVE_RIM_BLACK = "#0a0a0a";
+export const IMPROVE_RIM_WHITE = "#ffffff";
+export const IMPROVE_LIGHT_TOP = "rgba(255, 255, 255, 0.16)";
 export const IMPROVE_LIGHT_MID = "rgba(255, 255, 255, 0.04)";
 export const IMPROVE_LIGHT_BASE = "rgba(0, 0, 0, 0.18)";
 
@@ -89,30 +89,23 @@ export const paintImproveCellLight = (
   context.restore();
 };
 
-/** Sharp gold inner frame. Drawn after artwork so PNG matches preview. */
+/** Sharp inner frame. Drawn after artwork so PNG matches preview. */
 export const paintImproveCellRim = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
+  color: string = IMPROVE_RIM_BLACK,
 ) => {
   const size = Math.min(w, h);
   const inset = improveCellInset(size);
   context.save();
   context.shadowBlur = 0;
   context.shadowColor = "transparent";
-  context.strokeStyle = IMPROVE_GOLD_EDGE;
+  context.strokeStyle = color;
   context.lineWidth = improveCellLine(size);
   context.strokeRect(x + inset, y + inset, w - inset * 2, h - inset * 2);
-  context.strokeStyle = IMPROVE_GOLD;
-  context.lineWidth = Math.max(1, improveCellLine(size) - 1);
-  context.strokeRect(
-    x + inset + 1,
-    y + inset + 1,
-    w - inset * 2 - 2,
-    h - inset * 2 - 2,
-  );
   context.restore();
 };
 

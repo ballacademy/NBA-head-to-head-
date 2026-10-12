@@ -1,4 +1,5 @@
 import {
+  IMPROVE_RIM_WHITE,
   isImprovedLook,
   paintImproveCellLight,
   paintImproveCellRim,
@@ -34,7 +35,9 @@ import {
   POTD_TITLE_SIZE,
   POTD_TOTAL_SIZE,
   coverPanDraw,
+  paintPotdPhotoBorder,
   potdCardX,
+  potdStatCell,
   statsFillForTeam,
 } from "./playerOfTheDayLayout";
 import {
@@ -176,7 +179,14 @@ export const renderPlayerOfTheDayCanvas = async (
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
   if (isImprovedLook(input.look)) {
-    paintImproveCellRim(context, plate.x, plate.y, plate.w, plate.h);
+    paintImproveCellRim(
+      context,
+      plate.x,
+      plate.y,
+      plate.w,
+      plate.h,
+      IMPROVE_RIM_WHITE,
+    );
   }
 
   const titleLines = splitPotdTitle(input.title);
@@ -267,9 +277,7 @@ export const renderPlayerOfTheDayCanvas = async (
       }
     }
     context.restore();
-    if (improved) {
-      paintImproveCellRim(context, x, photoY, w, photoH);
-    }
+    paintPotdPhotoBorder(context, x, photoY, w, photoH, s, input.look);
 
     context.font = `900 ${POTD_TOTAL_SIZE * s}px ${POSTER_FONT}`;
     context.fillStyle = "#fff";
@@ -309,14 +317,9 @@ export const renderPlayerOfTheDayCanvas = async (
     context.font = `900 ${POTD_STAT_SIZE * s}px ${POSTER_FONT}`;
     context.fillStyle = "#fff";
     context.textBaseline = "middle";
-    const colW = w / 2;
-    const rowH = statsH / 4;
+    context.textAlign = "center";
     STAT_FIELDS.forEach((field, statIndex) => {
-      const col = statIndex % 2;
-      const row = Math.floor(statIndex / 2);
-      const cx = x + 16 * s + col * colW;
-      const cy = statsY + rowH * (row + 0.5);
-      context.textAlign = "left";
+      const { cx, cy } = potdStatCell(x, w, statsY, statsH, statIndex);
       withShadow(context, s, () => {
         context.fillText(
           `${card.stats[field.key]} ${field.label}`.toUpperCase(),
@@ -327,7 +330,7 @@ export const renderPlayerOfTheDayCanvas = async (
     });
     if (improved) {
       paintImproveCellLight(context, x, statsY, w, statsH);
-      paintImproveCellRim(context, x, statsY, w, statsH);
+      paintImproveCellRim(context, x, statsY, w, statsH, IMPROVE_RIM_WHITE);
     }
 
     const resultFill = team
@@ -374,7 +377,7 @@ export const renderPlayerOfTheDayCanvas = async (
     setLetterSpacing(context, 0);
     if (improved) {
       paintImproveCellLight(context, x, nameY, w, nameH);
-      paintImproveCellRim(context, x, nameY, w, nameH);
+      paintImproveCellRim(context, x, nameY, w, nameH, IMPROVE_RIM_WHITE);
     }
   }
 

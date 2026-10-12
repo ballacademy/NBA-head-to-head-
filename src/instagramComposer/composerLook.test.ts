@@ -3,6 +3,9 @@ import {
   composerLookClass,
   headshotGlowPx,
   headshotSilhouettePx,
+  IMPROVE_LIGHT_TOP,
+  IMPROVE_RIM_BLACK,
+  IMPROVE_RIM_WHITE,
   improveCellInset,
   improveCellLine,
   isImprovedLook,
@@ -24,7 +27,10 @@ describe("composer look", () => {
     expect(composerLookClass("classic")).toBe("");
   });
 
-  it("keeps improve cell metrics inside the box with no glow size", () => {
+  it("uses black rims, white on dark, and no gold wash", () => {
+    expect(IMPROVE_RIM_BLACK).toBe("#0a0a0a");
+    expect(IMPROVE_RIM_WHITE).toBe("#ffffff");
+    expect(IMPROVE_LIGHT_TOP.toLowerCase()).not.toMatch(/d4b56a|ecd694|fff4d6/);
     expect(improveCellInset(200)).toBe(6);
     expect(improveCellLine(200)).toBe(3);
     expect(improveCellInset(200) * 2 + improveCellLine(200)).toBeLessThan(200);
