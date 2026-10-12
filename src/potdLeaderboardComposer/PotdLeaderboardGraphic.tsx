@@ -4,9 +4,12 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeam } from "../standingsComposer/teams";
+import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   formatWinsLabel,
+  isPotdPairName,
   parseWinsInput,
   rankLeaderboard,
   type LeaderboardEntry,
@@ -17,6 +20,8 @@ interface PotdLeaderboardGraphicProps {
   entries: LeaderboardEntry[];
   look?: ComposerLook;
   showBa?: boolean;
+  showPips?: boolean;
+  potdKeys?: string[];
   exporting?: boolean;
   onTitleChange: (value: string) => void;
   onNameChange: (id: string, name: string) => void;
@@ -33,6 +38,8 @@ export const PotdLeaderboardGraphic = forwardRef<
     entries,
     look = "white",
     showBa = false,
+    showPips = true,
+    potdKeys = [],
     exporting = false,
     onTitleChange,
     onNameChange,
@@ -78,7 +85,12 @@ export const PotdLeaderboardGraphic = forwardRef<
   return (
     <article
       ref={setRefs}
-      className={["plb-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+      className={[
+        "plb-board",
+        exporting ? "is-exporting" : "",
+        showPips ? "is-pips-on" : "is-pips-off",
+        composerLookClass(look),
+      ]
         .filter(Boolean)
         .join(" ")}
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
@@ -112,45 +124,83 @@ export const PotdLeaderboardGraphic = forwardRef<
         {ranked.length === 0 ? (
           <p className="plb-empty">Add players</p>
         ) : (
-          ranked.map((entry) => (
-            <div key={entry.id} className="plb-row">
-              <span className="plb-rank">{entry.rankLabel}</span>
-              <input
-                className="plb-name"
-                value={
-                  editingId === entry.id
-                    ? entry.name
-                    : entry.displayName || entry.name
-                }
-                maxLength={40}
-                spellCheck={false}
-                aria-label="Player name"
-                onFocus={() => setEditingId(entry.id)}
-                onBlur={() => setEditingId(null)}
-                onChange={(event) => onNameChange(entry.id, event.target.value)}
-              />
-              <input
-                className="plb-wins"
-                value={formatWinsLabel(entry.wins)}
-                maxLength={6}
-                inputMode="numeric"
-                aria-label={`${entry.name || "Player"} win total`}
-                onChange={(event) =>
-                  onWinsChange(entry.id, parseWinsInput(event.target.value))
-                }
-              />
-              {exporting ? null : (
-                <button
-                  type="button"
-                  className="plb-remove"
-                  aria-label={`Remove ${entry.name || "player"}`}
-                  onClick={() => onRemove(entry.id)}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          ))
+          ranked.map((entry, index) => {
+            const team = showPips ? getTeam(entry.teamId) : null;
+            const highlighted = isPotdPairName(entry.name, potdKeys);
+            const wrap = entry.displayLines.length > 1;
+            return (
+              <div
+                key={entry.id}
+                className={[
+                  "plb-row",
+                  index % 2 === 1 ? "is-alt" : "",
+                  highlighted ? "is-potd" : "",
+                  wrap ? "is-wrap" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {showPips ? (
+                  <span className="plb-pip" aria-hidden="true">
+                    {team ? (
+                      <TeamLogo
+                        src={team.logoSrc}
+                        label=""
+                        fitX={0.9}
+                        fitY={0.9}
+                      />
+                    ) : (
+                      <span className="plb-pip__bar" />
+                    )}
+                  </span>
+                ) : null}
+                <span className="plb-rank">{entry.rankLabel}</span>
+                <textarea
+                  className="plb-name"
+                  rows={wrap ? 2 : 1}
+                  value={
+                    editingId === entry.id
+                      ? entry.name
+                      : entry.displayLines.join("\n")
+                  }
+                  maxLength={40}
+                  spellCheck={false}
+                  aria-label="Player name"
+                  style={{
+                    fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
+                  }}
+                  onFocus={() => setEditingId(entry.id)}
+                  onBlur={() => setEditingId(null)}
+                  onChange={(event) =>
+                    onNameChange(
+                      entry.id,
+                      event.target.value.replace(/[\r\n]+/g, " "),
+                    )
+                  }
+                />
+                <input
+                  className="plb-wins"
+                  value={formatWinsLabel(entry.wins)}
+                  maxLength={6}
+                  inputMode="numeric"
+                  aria-label={`${entry.name || "Player"} win total`}
+                  onChange={(event) =>
+                    onWinsChange(entry.id, parseWinsInput(event.target.value))
+                  }
+                />
+                {exporting ? null : (
+                  <button
+                    type="button"
+                    className="plb-remove"
+                    aria-label={`Remove ${entry.name || "player"}`}
+                    onClick={() => onRemove(entry.id)}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </article>

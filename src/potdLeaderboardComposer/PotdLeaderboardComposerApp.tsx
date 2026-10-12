@@ -24,6 +24,7 @@ import {
   LEADERBOARD_MAX_ROWS,
   patchLeaderboardEntry,
   readLeaderboardDraft,
+  readPotdPairKeys,
   removeLeaderboardEntry,
   writeLeaderboardDraft,
   type LeaderboardEntry,
@@ -41,6 +42,8 @@ export function PotdLeaderboardComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(POTD_LEADERBOARD_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
+  const [showPips, setShowPips] = useState(true);
+  const [potdKeys, setPotdKeys] = useState<string[]>([]);
   const { push, pop, canUndo } = useComposerUndo<LeaderboardEntry[]>();
 
   useEffect(() => {
@@ -52,6 +55,8 @@ export function PotdLeaderboardComposerApp() {
     setTitle(draft.title);
     setEntries(draft.entries);
     setShowBa(draft.showBa === true);
+    setShowPips(draft.showPips !== false);
+    setPotdKeys(readPotdPairKeys());
     setHydrated(true);
   }, []);
 
@@ -59,8 +64,8 @@ export function PotdLeaderboardComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeLeaderboardDraft({ title, entries, showBa });
-  }, [title, entries, showBa, hydrated]);
+    writeLeaderboardDraft({ title, entries, showBa, showPips });
+  }, [title, entries, showBa, showPips, hydrated]);
 
   const filenameFor = (story = false) =>
     exportFilenameFromTitle(title, "potd-leaderboard", exportDateStamp(), story);
@@ -78,7 +83,7 @@ export function PotdLeaderboardComposerApp() {
       await exportPotdLeaderboardPng(
         node,
         filenameFor(story),
-        { title, entries, look, showBa },
+        { title, entries, look, showBa, showPips, potdKeys },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -95,6 +100,7 @@ export function PotdLeaderboardComposerApp() {
     push(entries);
     setTitle(next.title);
     setEntries(next.entries);
+    setShowPips(next.showPips !== false);
     setStatus("Board cleared.");
   };
 
@@ -120,6 +126,18 @@ export function PotdLeaderboardComposerApp() {
         />
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Team pip</span>
+          <button
+            type="button"
+            className={showPips ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showPips}
+            aria-label="Team pip"
+            onClick={() => setShowPips((on) => !on)}
+          >
+            {showPips ? "On" : "Off"}
+          </button>
+        </label>
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -176,6 +194,8 @@ export function PotdLeaderboardComposerApp() {
             entries={entries}
             look={look}
             showBa={showBa}
+            showPips={showPips}
+            potdKeys={potdKeys}
             exporting={exporting}
             onTitleChange={setTitle}
             onNameChange={(id, name) =>
@@ -191,8 +211,9 @@ export function PotdLeaderboardComposerApp() {
           />
           <p className="sc-hint">
             Add names and win totals. Ranks (and T for ties) fill in
-            automatically. Player of the Day TOTAL uses these counts.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            automatically. Team pip adds a small logo; off is all yellow.
+            Today’s Player of the Day pair is highlighted. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

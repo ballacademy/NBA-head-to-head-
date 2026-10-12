@@ -1,5 +1,11 @@
 import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
+import {
+  PLB_NAME_ADVANCE,
+  PLB_ROW_SMALL,
+  PLB_ROW_TRACK,
+} from "./potdLeaderboardLayout";
 
 export const POTD_LEADERBOARD_STORAGE_KEY = "ddgm:potd-leaderboard";
 export const POTD_LEADERBOARD_EVENT = "ddgm:potd-leaderboard";
@@ -17,6 +23,7 @@ export interface LeaderboardDraft {
   title: string;
   entries: LeaderboardEntry[];
   showBa?: boolean;
+  showPips?: boolean;
 }
 
 export interface RankedLeaderboardEntry extends LeaderboardEntry {
@@ -24,7 +31,12 @@ export interface RankedLeaderboardEntry extends LeaderboardEntry {
   rankLabel: string;
   winsLabel: string;
   displayName: string;
+  displayLines: string[];
+  nameScale: number;
+  teamId: string | null;
 }
+
+export const POTD_BOARD_STORAGE_KEY = "ddgm:player-of-the-day-composer";
 
 let entrySeq = 0;
 
@@ -45,6 +57,7 @@ export const createLeaderboardEntry = (
 export const defaultLeaderboardDraft = (): LeaderboardDraft => ({
   title: DEFAULT_POTD_LEADERBOARD_TITLE,
   entries: [],
+  showPips: true,
 });
 
 export const normalizePlayerNameKey = (name: string) =>
@@ -67,11 +80,29 @@ export const parseWinsInput = (raw: string) => {
 
 export const formatWinsLabel = (wins: number) => `(${Math.max(0, wins)})`;
 
-/** Truncate long names with a period, matching the example (GIANNIS ANTETOKO.). */
+const nameAdvance = (text: string) => measureTitleAdvance(text, PLB_ROW_TRACK);
+
+const nameFits = (text: string, maxAdvance: number, scale = 1) =>
+  nameAdvance(text) * scale <= maxAdvance;
+
+/** First name(s) on line one, last token on line two. */
+export const splitLeaderboardName = (name: string): string[] => {
+  const upper = name.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!upper) {
+    return [];
+  }
+  const parts = upper.split(" ");
+  if (parts.length < 2) {
+    return [upper];
+  }
+  return [parts.slice(0, -1).join(" "), parts.at(-1)!];
+};
+
+/** Period-ellipsis only as a last resort for a single overflowing token. */
 export const truncateLeaderboardName = (
   name: string,
-  maxAdvance = 10.24,
-  trackingEm = 0.02,
+  maxAdvance = PLB_NAME_ADVANCE,
+  trackingEm = PLB_ROW_TRACK,
 ) => {
   const upper = name.replace(/\s+/g, " ").trim().toUpperCase();
   if (!upper) {
@@ -90,6 +121,82 @@ export const truncateLeaderboardName = (
     }
   }
   return fit || ".";
+};
+
+export const fitLeaderboardName = (
+  name: string,
+  maxAdvance = PLB_NAME_ADVANCE,
+): { lines: string[]; scale: number } => {
+  const upper = name.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!upper) {
+    return { lines: [""], scale: 1 };
+  }
+  if (nameFits(upper, maxAdvance)) {
+    return { lines: [upper], scale: 1 };
+  }
+  const split = splitLeaderboardName(upper);
+  if (split.length > 1 && split.every((line) => nameFits(line, maxAdvance))) {
+    return { lines: split, scale: 1 };
+  }
+  if (nameFits(upper, maxAdvance, PLB_ROW_SMALL)) {
+    return { lines: [upper], scale: PLB_ROW_SMALL };
+  }
+  if (
+    split.length > 1 &&
+    split.every((line) => nameFits(line, maxAdvance, PLB_ROW_SMALL))
+  ) {
+    return { lines: split, scale: PLB_ROW_SMALL };
+  }
+  const scaledMax = maxAdvance / PLB_ROW_SMALL;
+  return {
+    lines: (split.length > 1 ? split : [upper]).map((line) =>
+      nameFits(line, maxAdvance, PLB_ROW_SMALL)
+        ? line
+        : truncateLeaderboardName(line, scaledMax),
+    ),
+    scale: PLB_ROW_SMALL,
+  };
+};
+
+export const teamForLeaderboardName = (name: string): string | null => {
+  const key = normalizePlayerNameKey(name);
+  if (!key) {
+    return null;
+  }
+  const exact = NBA_ACTIVE_PLAYERS.find(
+    (player) => normalizePlayerNameKey(player.name) === key,
+  );
+  if (exact) {
+    return exact.team;
+  }
+  const last = key.split(" ").at(-1);
+  if (!last) {
+    return null;
+  }
+  const lastHits = NBA_ACTIVE_PLAYERS.filter((player) => {
+    const playerKey = normalizePlayerNameKey(player.name);
+    return playerKey === last || playerKey.endsWith(` ${last}`);
+  });
+  return lastHits.length === 1 ? lastHits[0]!.team : null;
+};
+
+export const readPotdPairKeys = (): string[] => {
+  const stored = readJson<{
+    cards?: Array<{ firstName?: string; lastName?: string }>;
+  }>(POTD_BOARD_STORAGE_KEY);
+  if (!Array.isArray(stored?.cards)) {
+    return [];
+  }
+  return stored.cards
+    .map((card) =>
+      normalizePlayerNameKey(`${card.firstName ?? ""} ${card.lastName ?? ""}`),
+    )
+    .filter(Boolean);
+};
+
+export const isPotdPairName = (name: string, keys: string[]) => {
+  const key = normalizePlayerNameKey(name);
+  return Boolean(key && keys.includes(key));
 };
 
 export const rankLeaderboard = (
@@ -118,12 +225,16 @@ export const rankLeaderboard = (
     const better = sorted.filter((other) => other.wins > entry.wins).length;
     const rank = better + 1;
     const tied = (countByWins.get(entry.wins) ?? 1) > 1;
+    const fitted = fitLeaderboardName(entry.name);
     return {
       ...entry,
       rank,
       rankLabel: tied ? `T${rank}.` : `${rank}.`,
       winsLabel: formatWinsLabel(entry.wins),
-      displayName: truncateLeaderboardName(entry.name),
+      displayName: fitted.lines.join(" "),
+      displayLines: fitted.lines,
+      nameScale: fitted.scale,
+      teamId: teamForLeaderboardName(entry.name),
     };
   });
   const blanks = unnamed.map((entry) => ({
@@ -132,6 +243,9 @@ export const rankLeaderboard = (
     rankLabel: "",
     winsLabel: formatWinsLabel(entry.wins),
     displayName: "",
+    displayLines: [""],
+    nameScale: 1,
+    teamId: null as string | null,
   }));
   return [...ranked, ...blanks];
 };
@@ -178,6 +292,7 @@ export const readLeaderboardDraft = (): LeaderboardDraft => {
         wins: Math.max(0, Math.round(entry.wins)),
       })),
       showBa: stored.showBa === true,
+      showPips: stored.showPips !== false,
     };
   }
   return defaultLeaderboardDraft();
@@ -188,6 +303,7 @@ export const writeLeaderboardDraft = (draft: LeaderboardDraft) => {
     title: draft.title,
     entries: draft.entries.slice(0, LEADERBOARD_MAX_ROWS),
     showBa: draft.showBa === true,
+    showPips: draft.showPips !== false,
   });
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(POTD_LEADERBOARD_EVENT));

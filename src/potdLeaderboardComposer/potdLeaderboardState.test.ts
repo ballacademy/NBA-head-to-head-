@@ -15,11 +15,14 @@ import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   createLeaderboardEntry,
   defaultLeaderboardDraft,
+  fitLeaderboardName,
   formatWinsLabel,
+  isPotdPairName,
   parseWinsInput,
   rankLeaderboard,
   readLeaderboardDraft,
-  truncateLeaderboardName,
+  splitLeaderboardName,
+  teamForLeaderboardName,
   winsForName,
   writeLeaderboardDraft,
 } from "./potdLeaderboardState";
@@ -88,15 +91,28 @@ describe("POTD leaderboard ranks", () => {
     );
   });
 
-  it("truncates long names with a period like the example", () => {
-    expect(truncateLeaderboardName("Giannis Antetokounmpo")).toBe(
-      "GIANNIS ANTETOKO.",
-    );
-    expect(truncateLeaderboardName("Shai Gilgeous-Alexander")).toBe(
-      "SHAI GILGEOUS-AL.",
-    );
-    expect(truncateLeaderboardName("Luka Doncic")).toBe("LUKA DONCIC");
-    expect(truncateLeaderboardName("Nikola Jokic")).toBe("NIKOLA JOKIC");
+  it("wraps long names onto two lines instead of GILGEOUS-AL.", () => {
+    expect(splitLeaderboardName("Shai Gilgeous-Alexander")).toEqual([
+      "SHAI",
+      "GILGEOUS-ALEXANDER",
+    ]);
+    const shai = fitLeaderboardName("Shai Gilgeous-Alexander");
+    expect(shai.lines.join(" ")).toContain("GILGEOUS-ALEXANDER");
+    expect(shai.lines.join(" ")).not.toContain("GILGEOUS-AL.");
+    expect(shai.lines.length).toBe(2);
+    const giannis = fitLeaderboardName("Giannis Antetokounmpo");
+    expect(giannis.lines).toEqual(["GIANNIS", "ANTETOKOUNMPO"]);
+    expect(fitLeaderboardName("Luka Doncic").lines).toEqual(["LUKA DONCIC"]);
+    const ranked = rankLeaderboard([entry("Shai Gilgeous-Alexander", 7)]);
+    expect(ranked[0]!.displayLines[1]).toBe("GILGEOUS-ALEXANDER");
+    expect(ranked[0]!.teamId).toBe("OKC");
+    expect(teamForLeaderboardName("Luka Doncic")).toBe("LAL");
+    expect(isPotdPairName("Luka Doncic", ["LUKA DONCIC"])).toBe(true);
+    expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);
+  });
+
+  it("defaults team pips on and stores the toggle", () => {
+    expect(defaultLeaderboardDraft().showPips).toBe(true);
   });
 
   it("looks up win totals for Player of the Day by name", () => {
@@ -137,10 +153,12 @@ describe("POTD leaderboard ranks", () => {
       ...draft,
       entries: [entry("Luka Doncic", 12)],
       showBa: true,
+      showPips: false,
     });
     const stored = readLeaderboardDraft();
     expect(stored.entries[0]!.name).toBe("Luka Doncic");
     expect(stored.entries[0]!.wins).toBe(12);
     expect(stored.showBa).toBe(true);
+    expect(stored.showPips).toBe(false);
   });
 });
