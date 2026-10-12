@@ -7,8 +7,6 @@ export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 export const PLB_YELLOW = "#f5c400";
 export const PLB_INK = "#050505";
-export const PLB_LIST_FILL = "#070707";
-export const PLB_DOT = "#2a2a2a";
 export const PLB_TITLE_SIZE = 72;
 export const PLB_TITLE_TRACK = 0.04;
 export const PLB_ROW_SIZE = 42;

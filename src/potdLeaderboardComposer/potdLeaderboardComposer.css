@@ -21,13 +21,21 @@
   user-select: none;
 }
 
+.plb-title-plate,
+.plb-list {
+  /* Same studded near-black as the Player of the Day title box. */
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
 .plb-title-plate {
   position: relative;
   display: grid;
   place-items: center;
   min-height: 0;
   border: calc(8 * var(--u)) solid var(--plb-yellow);
-  background: #050505;
   box-shadow: 0 0 0 calc(2 * var(--u)) #050505;
 }
 
@@ -87,9 +95,6 @@
   justify-content: flex-start;
   padding: calc(18 * var(--u)) calc(22 * var(--u)) calc(14 * var(--u));
   border: calc(8 * var(--u)) solid var(--plb-yellow);
-  background-color: #070707;
-  background-image: radial-gradient(#2a2a2a 1.1px, transparent 1.2px);
-  background-size: calc(5 * var(--u)) calc(5 * var(--u));
   overflow: hidden;
 }
 
@@ -191,18 +196,6 @@
 .plb-board.is-improve .plb-list {
   box-shadow:
     0 0 0 calc(3 * var(--u)) #fff,
-    0 0 0 calc(6 * var(--u)) #0a0a0a;
-}
-
-.plb-board.is-improve .plb-list::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    transparent 28%,
-    rgba(0, 0, 0, 0.18) 100%
-  );
+    0 0 0 calc(6 * var(--u)) #0a0a0a,
+    inset 0 0 0 calc(2.5 * var(--u)) #fff;
 }

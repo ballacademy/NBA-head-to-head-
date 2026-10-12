@@ -7,16 +7,15 @@ import {
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   FIELD_TEXTURE_SRC,
+  drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  PLB_DOT,
   PLB_GAP,
   PLB_INK,
-  PLB_LIST_FILL,
   PLB_LIST_INSET,
   PLB_PAD_BOTTOM,
   PLB_PAD_TOP,
@@ -79,7 +78,7 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
-const paintDottedFill = (
+const paintStuddedBox = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -87,21 +86,10 @@ const paintDottedFill = (
   h: number,
   scale: number,
 ) => {
-  context.save();
-  context.beginPath();
-  context.rect(x, y, w, h);
-  context.clip();
-  context.fillStyle = PLB_LIST_FILL;
-  context.fillRect(x, y, w, h);
-  const step = 5 * scale;
-  const dot = Math.max(1, 1.1 * scale);
-  context.fillStyle = PLB_DOT;
-  for (let py = y; py < y + h; py += step) {
-    for (let px = x; px < x + w; px += step) {
-      context.fillRect(px, py, dot, dot);
-    }
-  }
-  context.restore();
+  drawBannerInterior(context, x, y, w, h, scale, () => {
+    context.beginPath();
+    context.rect(x, y, w, h);
+  });
 };
 
 export interface PotdLeaderboardRenderInput {
@@ -144,8 +132,7 @@ export const renderPotdLeaderboardCanvas = async (
   const listH = height - listY - PLB_PAD_BOTTOM * s;
   const stroke = PLB_STROKE * s;
 
-  context.fillStyle = PLB_INK;
-  context.fillRect(titleX, titleY, titleW, titleH);
+  paintStuddedBox(context, titleX, titleY, titleW, titleH, s);
   context.strokeStyle = PLB_YELLOW;
   context.lineWidth = stroke;
   context.strokeRect(
@@ -174,7 +161,7 @@ export const renderPotdLeaderboardCanvas = async (
   );
   setLetterSpacing(context, 0);
 
-  paintDottedFill(context, listX, listY, listW, listH, s);
+  paintStuddedBox(context, listX, listY, listW, listH, s);
   context.strokeStyle = PLB_YELLOW;
   context.lineWidth = stroke;
   context.strokeRect(

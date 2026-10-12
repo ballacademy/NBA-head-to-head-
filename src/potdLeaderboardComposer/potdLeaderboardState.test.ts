@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
+import {
+  BANNER_FILL_BASE,
+  BANNER_STUD_FILL,
+} from "../standingsComposer/headerTexture";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
+import { PLB_INK } from "./potdLeaderboardLayout";
 import { applyPlayerPick, createEmptyCards } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
@@ -23,6 +28,12 @@ describe("POTD leaderboard ranks", () => {
   it("keeps the Instagram 4:5 PNG size", () => {
     expect(EXPORT_WIDTH).toBe(2400);
     expect(EXPORT_HEIGHT).toBe(3000);
+  });
+
+  it("uses the Player of the Day title-box studded fill on both boxes", () => {
+    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
+    expect(PLB_INK.toLowerCase()).toBe("#050505");
   });
 
   it("computes competition ranks and T labels from win totals", () => {
