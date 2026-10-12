@@ -157,6 +157,27 @@ describe("player of the day state", () => {
     expect(replaced[1]!.playerId).toBeNull();
   });
 
+  it("can keep a custom photo and pan when changing player", () => {
+    const luka = getPlayer("3945274")!;
+    const lebron = getPlayer("1966")!;
+    const once = applyPlayerPick(createEmptyCards(), 0, luka, null);
+    const custom = setCardPhoto(once, 0, "data:image/png;base64,aaa");
+    const panned = {
+      ...custom[0]!.pan,
+      zoom: 3.5,
+      rotate: 90,
+      x: 0.2,
+      y: 0.8,
+    };
+    custom[0] = { ...custom[0]!, pan: panned };
+    const kept = applyPlayerPick(custom, 0, lebron, null, "0", true);
+    expect(kept[0]!.playerId).toBe("1966");
+    expect(kept[0]!.lastName).toBe("James");
+    expect(kept[0]!.photoSrc).toBe("data:image/png;base64,aaa");
+    expect(kept[0]!.customPhoto).toBe(true);
+    expect(kept[0]!.pan).toEqual(panned);
+  });
+
   it("uses the studded near-black title fill and no circled BA mark", () => {
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
@@ -202,6 +223,7 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__file")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__zoom-in")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__rotate")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
   });

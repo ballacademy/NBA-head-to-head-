@@ -38,6 +38,7 @@ export const PLUS_STANDOUT_NAME_SIZE = 14;
 export const PLUS_BRAND_SIZE = 13;
 export const PLUS_BA_SIZE = 44;
 export const PLUS_BA_INSET = 22;
+export const PLUS_ZOOM_STEP = 0.5;
 
 const photoStackH = () =>
   GRAPHIC_HEIGHT - PLUS_HEADER_H - PLUS_SECTION_H - PLUS_FOOTER;

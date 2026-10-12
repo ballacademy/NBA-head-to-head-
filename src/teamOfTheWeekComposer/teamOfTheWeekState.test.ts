@@ -118,5 +118,22 @@ describe("team of the week state", () => {
     expect(custom[0]!.customPhoto).toBe(true);
     expect(custom[0]!.photoSrc).toBe("data:image/png;base64,aaa");
     expect(custom[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
+    const kept = applyPlayerPick(
+      [
+        {
+          ...custom[0]!,
+          pan: { x: 0.2, y: 0.8, zoom: 4, rotate: 90 },
+        },
+        ...custom.slice(1),
+      ],
+      0,
+      lebron,
+      true,
+    );
+    expect(kept[0]!.playerId).toBe("1966");
+    expect(kept[0]!.lastName).toBe("James");
+    expect(kept[0]!.photoSrc).toBe("data:image/png;base64,aaa");
+    expect(kept[0]!.customPhoto).toBe(true);
+    expect(kept[0]!.pan).toEqual({ x: 0.2, y: 0.8, zoom: 4, rotate: 90 });
   });
 });

@@ -7,6 +7,8 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { getTeam } from "../standingsComposer/teams";
 import {
   PLUS_FOOTER,
   PLUS_HEADER_H,
@@ -17,6 +19,7 @@ import {
   PLUS_STARTER_COUNT,
   PLUS_STARTER_NAME_H,
   PLUS_STARTER_PAD_X,
+  PLUS_ZOOM_STEP,
 } from "./teamOfTheWeekPlusLayout";
 import {
   slotLabel,
@@ -33,6 +36,7 @@ interface TeamOfTheWeekPlusGraphicProps {
   slots: TotwStrip[];
   look?: ComposerLook;
   showBa?: boolean;
+  showNames?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onWeekChange: (value: string) => void;
@@ -47,6 +51,7 @@ interface TeamOfTheWeekPlusGraphicProps {
 const PortraitCell = ({
   slot,
   index,
+  showNames,
   onPick,
   onPan,
   onUpload,
@@ -54,6 +59,7 @@ const PortraitCell = ({
 }: {
   slot: TotwStrip;
   index: number;
+  showNames: boolean;
   onPick: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
@@ -61,6 +67,7 @@ const PortraitCell = ({
 }) => {
   const empty = !slot.playerId;
   const label = slot.lastName || slotLabel(index);
+  const team = getTeam(slot.teamId);
   return (
     <section className="twp-cell" aria-label={slotLabel(index)}>
       <PhotoFrame
@@ -69,25 +76,35 @@ const PortraitCell = ({
         pan={slot.pan}
         custom={slot.customPhoto}
         empty={empty}
+        zoomStep={PLUS_ZOOM_STEP}
         onPan={(pan) => onPan(index, pan)}
         onUpload={(dataUrl) => onUpload(index, dataUrl)}
         onPick={() => onPick(index)}
       />
-      <input
-        className="twp-name"
-        value={slot.lastName}
-        maxLength={18}
-        placeholder={empty ? "" : "NAME"}
-        aria-label={`${slotLabel(index)} name`}
-        onChange={(event) =>
-          onNameChange(index, event.target.value.slice(0, 18))
-        }
-        onClick={() => {
-          if (empty) {
-            onPick(index);
-          }
-        }}
-      />
+      {showNames ? (
+        <div className="twp-meta">
+          {team ? (
+            <div className="twp-meta__logo">
+              <TeamLogo src={team.logoSrc} label="" fitX={0.88} fitY={0.88} />
+            </div>
+          ) : null}
+          <input
+            className="twp-name"
+            value={slot.lastName}
+            maxLength={18}
+            placeholder={empty ? "" : "NAME"}
+            aria-label={`${slotLabel(index)} name`}
+            onChange={(event) =>
+              onNameChange(index, event.target.value.slice(0, 18))
+            }
+            onClick={() => {
+              if (empty) {
+                onPick(index);
+              }
+            }}
+          />
+        </div>
+      ) : null}
     </section>
   );
 };
@@ -104,6 +121,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     slots,
     look = "white",
     showBa = false,
+    showNames = true,
     exporting = false,
     onBrandChange,
     onWeekChange,
@@ -156,6 +174,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
       className={[
         "twp-board",
         exporting ? "is-exporting" : "",
+        showNames ? "" : "is-names-off",
         composerLookClass(look),
       ]
         .filter(Boolean)
@@ -218,6 +237,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             key={`starter-${index}`}
             slot={starters[index]!}
             index={index}
+            showNames={showNames}
             onPick={onPick}
             onPan={onPan}
             onUpload={onUpload}
@@ -243,6 +263,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             key={`standout-${index}`}
             slot={standouts[index]!}
             index={PLUS_STARTER_COUNT + index}
+            showNames={showNames}
             onPick={onPick}
             onPan={onPan}
             onUpload={onUpload}

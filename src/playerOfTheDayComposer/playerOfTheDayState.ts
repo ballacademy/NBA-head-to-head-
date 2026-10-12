@@ -27,7 +27,7 @@ export interface PhotoPan {
 }
 
 export const MIN_PHOTO_ZOOM = 1;
-export const MAX_PHOTO_ZOOM = 4;
+export const MAX_PHOTO_ZOOM = 6;
 export const DEFAULT_PHOTO_ZOOM = 1;
 
 export const DEFAULT_HEADSHOT_PAN: PhotoPan = {
@@ -170,22 +170,29 @@ export const isPotdDraft = (value: unknown): value is PotdDraft =>
 export const splitPotdTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_POTD_TITLE, POTD_TITLE_TRACK);
 
+export const hasCustomPhoto = (slot: {
+  customPhoto: boolean;
+  photoSrc: string | null;
+}) => Boolean(slot.customPhoto && slot.photoSrc);
+
 export const fillCardFromPlayer = (
   player: TierPlayer,
   game: LastGame | null,
-  _previous?: PotdCard,
+  previous?: PotdCard,
   total = "0",
+  keepCustomPhoto = false,
 ): PotdCard => {
   const names = splitPlayerName(player.name);
   const teamId = game?.teamId || player.team;
+  const keep = keepCustomPhoto && previous ? hasCustomPhoto(previous) : false;
   return {
     playerId: player.id,
     teamId: getTeam(teamId)?.id ?? player.team,
     firstName: names.firstName,
     lastName: names.lastName,
-    photoSrc: player.headshotUrl,
-    customPhoto: false,
-    pan: { ...DEFAULT_HEADSHOT_PAN },
+    photoSrc: keep ? previous!.photoSrc : player.headshotUrl,
+    customPhoto: keep,
+    pan: keep ? { ...previous!.pan } : { ...DEFAULT_HEADSHOT_PAN },
     total,
     stats: game?.stats ?? emptyStats(),
     result: game?.resultLine ?? "",
@@ -198,13 +205,14 @@ export const applyPlayerPick = (
   player: TierPlayer,
   game: LastGame | null,
   total = "0",
+  keepCustomPhoto = false,
 ): PotdCard[] => {
   if (index < 0 || index >= cards.length) {
     return cards;
   }
   const next = cards.map((card, cardIndex) =>
     cardIndex === index
-      ? fillCardFromPlayer(player, game, card, total)
+      ? fillCardFromPlayer(player, game, card, total, keepCustomPhoto)
       : { ...card },
   );
   const pickedId = player.id;

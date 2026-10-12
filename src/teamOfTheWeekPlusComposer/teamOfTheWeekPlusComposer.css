@@ -205,6 +205,34 @@
   bottom: auto;
 }
 
+.twp-cell .pod-photo.is-custom .pod-photo__tools {
+  opacity: 1;
+}
+
+.twp-cell .pod-photo__zoom {
+  flex: 1 1 100%;
+  justify-content: flex-end;
+  gap: calc(6 * var(--u));
+}
+
+.twp-cell .pod-photo__zoom .pod-photo__tool {
+  height: calc(32 * var(--u));
+  flex: 0 0 calc(36 * var(--u));
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+}
+
+.twp-cell .pod-photo__zoom span {
+  min-width: calc(44 * var(--u));
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+}
+
+.twp-cell .pod-photo__zoom-in {
+  background: #fff;
+  color: #111;
+}
+
 .twp-cell .pod-photo__pick {
   font-size: calc(13 * var(--u));
   letter-spacing: 0.06em;
@@ -225,17 +253,51 @@
   display: none;
 }
 
-.twp-name {
+.twp-meta {
   position: absolute;
   z-index: 3;
   left: var(--frame-w);
   right: var(--frame-w);
   bottom: var(--frame-w);
+  display: flex;
+  align-items: center;
   height: calc(var(--starter-name-h) * var(--u) - var(--frame-w));
+  background: rgba(8, 8, 8, 0.84);
+  pointer-events: auto;
+}
+
+.twp-bar--standouts .twp-meta {
+  height: calc(var(--standout-name-h) * var(--u) - var(--frame-w));
+}
+
+.twp-cell:not(:first-child) .twp-meta {
+  left: 0;
+}
+
+.twp-meta__logo {
+  flex: 0 0 calc(var(--starter-name-h) * var(--u) - var(--frame-w));
+  height: 100%;
+  min-width: 0;
+}
+
+.twp-bar--standouts .twp-meta__logo {
+  flex-basis: calc(var(--standout-name-h) * var(--u) - var(--frame-w));
+}
+
+.twp-meta__logo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.twp-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   margin: 0;
   padding: 0 calc(4 * var(--u));
   border: 0;
-  background: rgba(8, 8, 8, 0.84);
+  background: transparent;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
@@ -246,14 +308,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  pointer-events: auto;
 }
 
 .twp-bar--standouts .twp-name {
-  height: calc(var(--standout-name-h) * var(--u) - var(--frame-w));
   font-size: calc(14 * var(--u));
 }
 
-.twp-cell:not(:first-child) .twp-name {
-  left: 0;
+.twp-board.is-names-off .twp-cell .pod-photo__pick {
+  padding-bottom: 0;
 }

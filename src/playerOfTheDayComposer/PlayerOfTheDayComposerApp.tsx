@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAYER_OF_THE_DAY_LOOK_KEY,
@@ -25,6 +26,7 @@ import {
 import {
   applyLeaderboardTotals,
   applyPlayerPick,
+  hasCustomPhoto,
   leaderboardTotalForName,
   clearCard,
   defaultPotdDraft,
@@ -72,6 +74,13 @@ export function PlayerOfTheDayComposerApp() {
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
+  const [keepPrompt, setKeepPrompt] = useState<{
+    index: number;
+    playerId: string;
+    playerName: string;
+    game: LastGame | null;
+    total: string;
+  } | null>(null);
   const pendingPick = useRef<{
     index: number;
     playerId: string;
@@ -166,6 +175,37 @@ export function PlayerOfTheDayComposerApp() {
     applyPickedGame(games[0] ?? null);
   };
 
+  const commitPick = (
+    index: number,
+    playerId: string,
+    game: LastGame | null,
+    total: string,
+    keepCustomPhoto: boolean,
+  ) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    push(cards);
+    setCards((current) =>
+      applyPlayerPick(current, index, player, game, total, keepCustomPhoto),
+    );
+    if (game?.dateLabel) {
+      setDate(game.dateLabel);
+    }
+    setActiveIndex(null);
+    setGameChoices(null);
+    setKeepPrompt(null);
+    pendingPick.current = null;
+    setStatus(
+      keepCustomPhoto
+        ? `Kept the photo for ${player.name}.`
+        : game
+          ? `Filled ${player.name} from ${game.dateLabel}.`
+          : `Filled ${player.name}. No recent game stats found.`,
+    );
+  };
+
   const applyPickedGame = (game: LastGame | null) => {
     const pending = pendingPick.current;
     const player = pending ? getPlayer(pending.playerId) : null;
@@ -175,19 +215,20 @@ export function PlayerOfTheDayComposerApp() {
       return;
     }
     const total = leaderboardTotalForName(player.name);
-    push(cards);
-    setCards((current) => applyPlayerPick(current, index, player, game, total));
-    if (game?.dateLabel) {
-      setDate(game.dateLabel);
+    const current = cards[index];
+    if (current && hasCustomPhoto(current)) {
+      setKeepPrompt({
+        index,
+        playerId: player.id,
+        playerName: player.name,
+        game,
+        total,
+      });
+      setGameChoices(null);
+      setActiveIndex(null);
+      return;
     }
-    setActiveIndex(null);
-    setGameChoices(null);
-    pendingPick.current = null;
-    setStatus(
-      game
-        ? `Filled ${player.name} from ${game.dateLabel}.`
-        : `Filled ${player.name}. No recent game stats found.`,
-    );
+    commitPick(index, player.id, game, total, false);
   };
 
   useEffect(() => {
@@ -344,6 +385,33 @@ export function PlayerOfTheDayComposerApp() {
           onClose={() => {
             setGameChoices(null);
             applyPickedGame(gameChoices[0] ?? null);
+          }}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() =>
+            commitPick(
+              keepPrompt.index,
+              keepPrompt.playerId,
+              keepPrompt.game,
+              keepPrompt.total,
+              true,
+            )
+          }
+          onReplace={() =>
+            commitPick(
+              keepPrompt.index,
+              keepPrompt.playerId,
+              keepPrompt.game,
+              keepPrompt.total,
+              false,
+            )
+          }
+          onClose={() => {
+            setKeepPrompt(null);
+            pendingPick.current = null;
           }}
         />
       ) : null}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
@@ -25,6 +26,7 @@ import {
   applyPlayerPick,
   clearStrip,
   defaultTotwDraft,
+  hasCustomPhoto,
   isTotwDraft,
   patchStrip,
   setStripPhoto,
@@ -67,6 +69,11 @@ export function TeamOfTheWeekComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
+  const [keepPrompt, setKeepPrompt] = useState<{
+    index: number;
+    playerId: string;
+    playerName: string;
+  } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
 
   useEffect(() => {
@@ -129,6 +136,28 @@ export function TeamOfTheWeekComposerApp() {
     setStatus("Board cleared.");
   };
 
+  const commitPick = (
+    index: number,
+    playerId: string,
+    keepCustomPhoto: boolean,
+  ) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    push(strips);
+    setStrips((current) =>
+      applyPlayerPick(current, index, player, keepCustomPhoto),
+    );
+    setActiveIndex(null);
+    setKeepPrompt(null);
+    setStatus(
+      keepCustomPhoto
+        ? `Kept the photo for ${player.name} in strip ${index + 1}.`
+        : `Filled ${player.name} in strip ${index + 1}.`,
+    );
+  };
+
   const handlePick = (playerId: string) => {
     if (activeIndex == null) {
       return;
@@ -137,10 +166,17 @@ export function TeamOfTheWeekComposerApp() {
     if (!player) {
       return;
     }
-    push(strips);
-    setStrips((current) => applyPlayerPick(current, activeIndex, player));
-    setActiveIndex(null);
-    setStatus(`Filled ${player.name} in strip ${activeIndex + 1}.`);
+    const current = strips[activeIndex];
+    if (current && hasCustomPhoto(current)) {
+      setKeepPrompt({
+        index: activeIndex,
+        playerId: player.id,
+        playerName: player.name,
+      });
+      setActiveIndex(null);
+      return;
+    }
+    commitPick(activeIndex, player.id, false);
   };
 
   useEffect(() => {
@@ -286,6 +322,16 @@ export function TeamOfTheWeekComposerApp() {
             setActiveIndex(null);
           }}
           onClose={closePicker}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() => commitPick(keepPrompt.index, keepPrompt.playerId, true)}
+          onReplace={() =>
+            commitPick(keepPrompt.index, keepPrompt.playerId, false)
+          }
+          onClose={() => setKeepPrompt(null)}
         />
       ) : null}
     </div>

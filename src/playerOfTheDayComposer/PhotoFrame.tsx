@@ -14,6 +14,7 @@ interface PhotoFrameProps {
   pan: PhotoPan;
   custom: boolean;
   empty: boolean;
+  zoomStep?: number;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -25,6 +26,7 @@ const PHOTO_CHROME_CLASSES = [
   "pod-photo__file",
   "pod-photo__pick",
   "pod-photo__zoom",
+  "pod-photo__zoom-in",
   "pod-photo__rotate",
 ] as const;
 
@@ -69,6 +71,7 @@ export function PhotoFrame({
   pan,
   custom,
   empty,
+  zoomStep = 0.25,
   onPan,
   onUpload,
   onPick,
@@ -90,12 +93,12 @@ export function PhotoFrame({
     }
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      const delta = event.deltaY < 0 ? 0.12 : -0.12;
+      const delta = event.deltaY < 0 ? zoomStep * 0.4 : -zoomStep * 0.4;
       onPan(clampPan({ ...pan, zoom: zoom + delta }));
     };
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
-  }, [custom, empty, onPan, pan, zoom]);
+  }, [custom, empty, onPan, pan, zoom, zoomStep]);
 
   const handleFiles = async (files: FileList | null) => {
     const file = files?.[0];
@@ -209,16 +212,16 @@ export function PhotoFrame({
               type="button"
               className="pod-photo__tool"
               aria-label={`Zoom out photo for ${label}`}
-              onClick={() => bumpZoom(-0.25)}
+              onClick={() => bumpZoom(-zoomStep)}
             >
               −
             </button>
             <span>{zoom.toFixed(1)}×</span>
             <button
               type="button"
-              className="pod-photo__tool"
+              className="pod-photo__tool pod-photo__zoom-in"
               aria-label={`Zoom in photo for ${label}`}
-              onClick={() => bumpZoom(0.25)}
+              onClick={() => bumpZoom(zoomStep)}
             >
               +
             </button>

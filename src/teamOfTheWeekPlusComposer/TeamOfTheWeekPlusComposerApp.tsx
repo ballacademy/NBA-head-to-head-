@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import {
   TEAM_OF_THE_WEEK_PLUS_LOOK_KEY,
   useComposerLook,
@@ -24,6 +25,7 @@ import {
   clearStrip,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   defaultTotwPlusDraft,
+  hasCustomPhoto,
   isTotwPlusDraft,
   patchStrip,
   setStripPhoto,
@@ -46,6 +48,7 @@ const loadDraft = (): TotwPlusDraft => {
         stored.standoutCaption.trim() === "STANDOUTS"
           ? DEFAULT_PLUS_STANDOUT_CAPTION
           : stored.standoutCaption,
+      showNames: stored.showNames !== false,
     };
   }
   const empty = defaultTotwPlusDraft();
@@ -60,6 +63,7 @@ const loadDraft = (): TotwPlusDraft => {
       : empty.standoutCaption,
     slots: empty.slots,
     showBa: stored?.showBa === true,
+    showNames: stored?.showNames !== false,
   };
 };
 
@@ -78,6 +82,12 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
+  const [showNames, setShowNames] = useState(true);
+  const [keepPrompt, setKeepPrompt] = useState<{
+    index: number;
+    playerId: string;
+    playerName: string;
+  } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
 
   useEffect(() => {
@@ -92,6 +102,7 @@ export function TeamOfTheWeekPlusComposerApp() {
     setStandoutCaption(draft.standoutCaption);
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
+    setShowNames(draft.showNames !== false);
     setHydrated(true);
   }, []);
 
@@ -106,8 +117,9 @@ export function TeamOfTheWeekPlusComposerApp() {
       standoutCaption,
       slots,
       showBa,
+      showNames,
     });
-  }, [brand, week, starterCaption, standoutCaption, slots, showBa, hydrated]);
+  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -134,6 +146,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           slots,
           look,
           showBa,
+          showNames,
         },
         story,
       );
@@ -154,8 +167,31 @@ export function TeamOfTheWeekPlusComposerApp() {
     setStarterCaption(next.starterCaption);
     setStandoutCaption(next.standoutCaption);
     setSlots(next.slots);
+    setShowNames(next.showNames !== false);
     setActiveIndex(null);
     setStatus("Board cleared.");
+  };
+
+  const commitPick = (
+    index: number,
+    playerId: string,
+    keepCustomPhoto: boolean,
+  ) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    push(slots);
+    setSlots((current) =>
+      applyPlayerPick(current, index, player, keepCustomPhoto),
+    );
+    setActiveIndex(null);
+    setKeepPrompt(null);
+    setStatus(
+      keepCustomPhoto
+        ? `Kept the photo for ${player.name} as ${slotLabel(index)}.`
+        : `Filled ${player.name} as ${slotLabel(index)}.`,
+    );
   };
 
   const handlePick = (playerId: string) => {
@@ -166,10 +202,17 @@ export function TeamOfTheWeekPlusComposerApp() {
     if (!player) {
       return;
     }
-    push(slots);
-    setSlots((current) => applyPlayerPick(current, activeIndex, player));
-    setActiveIndex(null);
-    setStatus(`Filled ${player.name} as ${slotLabel(activeIndex)}.`);
+    const current = slots[activeIndex];
+    if (current && hasCustomPhoto(current)) {
+      setKeepPrompt({
+        index: activeIndex,
+        playerId: player.id,
+        playerName: player.name,
+      });
+      setActiveIndex(null);
+      return;
+    }
+    commitPick(activeIndex, player.id, false);
   };
 
   useEffect(() => {
@@ -239,6 +282,18 @@ export function TeamOfTheWeekPlusComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Name + logo</span>
+          <button
+            type="button"
+            className={showNames ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showNames}
+            aria-label="Name and team logo"
+            onClick={() => setShowNames((on) => !on)}
+          >
+            {showNames ? "On" : "Off"}
+          </button>
+        </label>
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -297,6 +352,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             slots={slots}
             look={look}
             showBa={showBa}
+            showNames={showNames}
             exporting={exporting}
             onBrandChange={setBrand}
             onWeekChange={setWeek}
@@ -325,6 +381,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           <p className="sc-hint">
             Five starters on the hero row, five standouts on the shorter bench.
             Pick a player for a headshot, or upload/paste and pan a custom photo.
+            Zoom in with + or the scroll wheel. Name + logo can be toggled off.
             Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
@@ -344,6 +401,16 @@ export function TeamOfTheWeekPlusComposerApp() {
             setActiveIndex(null);
           }}
           onClose={closePicker}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() => commitPick(keepPrompt.index, keepPrompt.playerId, true)}
+          onReplace={() =>
+            commitPick(keepPrompt.index, keepPrompt.playerId, false)
+          }
+          onClose={() => setKeepPrompt(null)}
         />
       ) : null}
     </div>

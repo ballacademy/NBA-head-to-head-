@@ -121,16 +121,24 @@ export const isTotwDraft = (value: unknown): value is TotwDraft =>
 export const splitTotwTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_TOTW_TITLE, TOTW_TITLE_TRACK);
 
-export const fillStripFromPlayer = (player: TierPlayer): TotwStrip => {
+export const hasCustomPhoto = (strip: TotwStrip) =>
+  Boolean(strip.customPhoto && strip.photoSrc);
+
+export const fillStripFromPlayer = (
+  player: TierPlayer,
+  previous?: TotwStrip,
+  keepCustomPhoto = false,
+): TotwStrip => {
   const names = splitPlayerName(player.name);
+  const keep = keepCustomPhoto && previous ? hasCustomPhoto(previous) : false;
   return {
     playerId: player.id,
     teamId: getTeam(player.team)?.id ?? player.team,
     firstName: names.firstName,
     lastName: names.lastName,
-    photoSrc: player.headshotUrl,
-    customPhoto: false,
-    pan: { ...DEFAULT_HEADSHOT_PAN },
+    photoSrc: keep ? previous!.photoSrc : player.headshotUrl,
+    customPhoto: keep,
+    pan: keep ? { ...previous!.pan } : { ...DEFAULT_HEADSHOT_PAN },
   };
 };
 
@@ -138,12 +146,15 @@ export const applyPlayerPick = (
   strips: TotwStrip[],
   index: number,
   player: TierPlayer,
+  keepCustomPhoto = false,
 ): TotwStrip[] => {
   if (index < 0 || index >= strips.length) {
     return strips;
   }
   const next = strips.map((strip, stripIndex) =>
-    stripIndex === index ? fillStripFromPlayer(player) : { ...strip },
+    stripIndex === index
+      ? fillStripFromPlayer(player, strip, keepCustomPhoto)
+      : { ...strip },
   );
   const pickedId = player.id;
   return next.map((strip, stripIndex) => {

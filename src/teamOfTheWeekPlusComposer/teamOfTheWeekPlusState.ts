@@ -4,6 +4,7 @@ import {
   clearStrip,
   createEmptyStrip,
   defaultWeekLabel,
+  hasCustomPhoto,
   isTotwStrip,
   patchStrip,
   setStripPhoto,
@@ -15,6 +16,7 @@ export {
   clearStrip,
   DEFAULT_BRAND,
   defaultWeekLabel,
+  hasCustomPhoto,
   patchStrip,
   setStripPhoto,
   type TotwStrip,
@@ -33,6 +35,7 @@ export interface TotwPlusDraft {
   standoutCaption: string;
   slots: TotwStrip[];
   showBa?: boolean;
+  showNames?: boolean;
 }
 
 export const createEmptyPlusSlots = (): TotwStrip[] =>
@@ -82,4 +85,5 @@ export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
   starterCaption: DEFAULT_PLUS_STARTER_CAPTION,
   standoutCaption: DEFAULT_PLUS_STANDOUT_CAPTION,
   slots: createEmptyPlusSlots(),
+  showNames: true,
 });

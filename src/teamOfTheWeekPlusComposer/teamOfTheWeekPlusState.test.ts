@@ -11,6 +11,7 @@ import {
   PLUS_STARTER_SHARE,
   PLUS_TITLE_SIZE,
   PLUS_WEEK_SIZE,
+  PLUS_ZOOM_STEP,
   plusBarRect,
   plusBoardMetrics,
   plusCellRect,
@@ -77,6 +78,8 @@ describe("team of the week plus", () => {
     expect("title" in draft).toBe(false);
     expect(starterSlots(draft.slots)).toHaveLength(5);
     expect(standoutSlots(draft.slots)).toHaveLength(5);
+    expect(draft.showNames).toBe(true);
+    expect(PLUS_ZOOM_STEP).toBeGreaterThan(0.25);
   });
 
   it("fills ten unique portraits and accepts a custom panned photo", () => {
@@ -105,5 +108,22 @@ describe("team of the week plus", () => {
     const custom = setStripPhoto(slots, 0, "data:image/png;base64,aaa");
     expect(custom[0]!.customPhoto).toBe(true);
     expect(custom[0]!.pan).toEqual(DEFAULT_CUSTOM_PAN);
+    const kept = applyPlayerPick(
+      [
+        {
+          ...custom[0]!,
+          pan: { x: 0.15, y: 0.7, zoom: 5, rotate: 180 },
+        },
+        ...custom.slice(1),
+      ],
+      0,
+      getPlayer("1966")!,
+      true,
+    );
+    expect(kept[0]!.playerId).toBe("1966");
+    expect(kept[0]!.photoSrc).toBe("data:image/png;base64,aaa");
+    expect(kept[0]!.customPhoto).toBe(true);
+    expect(kept[0]!.pan.zoom).toBe(5);
+    expect(kept[0]!.pan.rotate).toBe(180);
   });
 });
