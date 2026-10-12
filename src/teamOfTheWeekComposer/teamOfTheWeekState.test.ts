@@ -19,6 +19,7 @@ import {
   TOTW_STRIP_COUNT as LAYOUT_STRIP_COUNT,
   TOTW_STRIP_H,
   TOTW_STRIP_W,
+  TOTW_TITLE_PAD,
   TOTW_TITLE_PLATE_H,
   TOTW_TITLE_SIZE,
   totwStripX,
@@ -69,8 +70,12 @@ describe("team of the week state", () => {
       "TEAM OF",
       "THE WEEK",
     ]);
-    expect(TOTW_TITLE_SIZE).toBe(54);
-    expect(TOTW_TITLE_PLATE_H).toBeLessThan(130);
+    expect(TOTW_TITLE_SIZE).toBe(42);
+    expect(TOTW_TITLE_PAD).toBe(12);
+    expect(TOTW_TITLE_PLATE_H).toBe(116);
+    expect(
+      TOTW_TITLE_SIZE * 0.92 * 2 + 3.2 + 8 + TOTW_TITLE_PAD * 2,
+    ).toBeLessThanOrEqual(TOTW_TITLE_PLATE_H);
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");

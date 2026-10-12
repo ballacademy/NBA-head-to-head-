@@ -1,4 +1,5 @@
 import {
+  clipToInnerFrame,
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -22,6 +23,7 @@ import {
   PLB_ROW_TRACK,
   PLB_STROKE,
   PLB_TITLE_H,
+  PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
   PLB_TITLE_TRACK,
   PLB_YELLOW,
@@ -137,6 +139,24 @@ export const renderPotdLeaderboardCanvas = async (
     input.title,
     DEFAULT_POTD_LEADERBOARD_TITLE,
   );
+  context.save();
+  const titleInner = clipToInnerFrame(
+    context,
+    titleX,
+    titleY,
+    titleW,
+    titleH,
+    s,
+  );
+  const titlePad = PLB_TITLE_PAD * s;
+  context.beginPath();
+  context.rect(
+    titleInner.x + titlePad,
+    titleInner.y + titlePad,
+    titleInner.w - titlePad * 2,
+    titleInner.h - titlePad * 2,
+  );
+  context.clip();
   context.font = `900 ${PLB_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -151,6 +171,7 @@ export const renderPotdLeaderboardCanvas = async (
     5 * s,
   );
   setLetterSpacing(context, 0);
+  context.restore();
 
   paintStuddedBox(context, listX, listY, listW, listH, s);
   context.strokeStyle = PLB_YELLOW;

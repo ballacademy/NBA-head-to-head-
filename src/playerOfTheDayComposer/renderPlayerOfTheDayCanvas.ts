@@ -33,6 +33,7 @@ import {
   POTD_RESULT_H,
   POTD_STAT_SIZE,
   POTD_STATS_H,
+  POTD_TITLE_PAD,
   POTD_TITLE_SIZE,
   POTD_TOTAL_SIZE,
   POTD_CARD_RADIUS,
@@ -182,6 +183,24 @@ export const renderPlayerOfTheDayCanvas = async (
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
   const titleBlock = lineH * titleLines.length;
   let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
+  context.save();
+  const titleInner = clipToInnerFrame(
+    context,
+    plate.x,
+    plate.y,
+    plate.w,
+    plate.h,
+    s,
+  );
+  const titlePad = POTD_TITLE_PAD * s;
+  context.beginPath();
+  context.rect(
+    titleInner.x + titlePad,
+    titleInner.y + titlePad,
+    titleInner.w - titlePad * 2,
+    titleInner.h - titlePad * 2,
+  );
+  context.clip();
   context.font = `italic 900 ${POTD_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -201,6 +220,7 @@ export const renderPlayerOfTheDayCanvas = async (
     titleY += lineH;
   });
   setLetterSpacing(context, 0);
+  context.restore();
 
   const dateText = `DATE: ${input.date}`.toUpperCase();
   context.font = `900 ${POTD_DATE_SIZE * s}px ${POSTER_FONT}`;

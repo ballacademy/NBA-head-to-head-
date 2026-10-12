@@ -4,7 +4,12 @@ import {
   BANNER_STUD_FILL,
 } from "../standingsComposer/headerTexture";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
-import { PLB_INK } from "./potdLeaderboardLayout";
+import {
+  PLB_INK,
+  PLB_TITLE_H,
+  PLB_TITLE_PAD,
+  PLB_TITLE_SIZE,
+} from "./potdLeaderboardLayout";
 import { applyPlayerPick, createEmptyCards } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
@@ -34,6 +39,15 @@ describe("POTD leaderboard ranks", () => {
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(PLB_INK.toLowerCase()).toBe("#050505");
+  });
+
+  it("keeps leaderboard title type inside the plate with padding", () => {
+    expect(PLB_TITLE_H).toBe(100);
+    expect(PLB_TITLE_SIZE).toBe(54);
+    expect(PLB_TITLE_PAD).toBe(14);
+    expect(PLB_TITLE_SIZE + 5 + 8 + PLB_TITLE_PAD * 2).toBeLessThanOrEqual(
+      PLB_TITLE_H,
+    );
   });
 
   it("computes competition ranks and T labels from win totals", () => {

@@ -7,7 +7,9 @@ export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 export const PLB_YELLOW = "#f5c400";
 export const PLB_INK = "#050505";
-export const PLB_TITLE_SIZE = 76;
+/** Fits one yellow line plus stroke inside the 100-tall plate with padding. */
+export const PLB_TITLE_SIZE = 54;
+export const PLB_TITLE_PAD = 14;
 export const PLB_TITLE_TRACK = 0.04;
 export const PLB_ROW_SIZE = 42;
 export const PLB_ROW_TRACK = 0.02;

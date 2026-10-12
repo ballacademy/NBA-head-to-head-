@@ -5,7 +5,6 @@ import {
 } from "../instagramComposer/composerLook";
 import {
   FIELD_TEXTURE_SRC,
-  drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import {
@@ -159,16 +158,7 @@ export const renderTierListCanvas = async (
   const titleTracking = TIER_TITLE_TRACK * TIER_TITLE_SIZE * scale;
   const lineH = TIER_TITLE_SIZE * 1.12 * scale;
   const titleBlockH = lineH * titleLines.length;
-  const plateW = width * 0.72;
-  const plateH = titleBlockH + 14 * scale;
-  const plateX = (width - plateW) / 2;
-  const plateY = (TIER_HEADER_H * scale - plateH) / 2;
-  drawBannerInterior(context, plateX, plateY, plateW, plateH, scale, () => {
-    context.beginPath();
-    context.rect(plateX, plateY, plateW, plateH);
-  });
-  paintCellFrame(context, plateX, plateY, plateW, plateH, input.look, scale);
-  const titleTop = plateY + (plateH - titleBlockH) / 2 + lineH / 2;
+  const titleTop = (TIER_HEADER_H * scale - titleBlockH) / 2 + lineH / 2;
 
   withDropShadow(context, scale, () => {
     titleLines.forEach((line, index) => {

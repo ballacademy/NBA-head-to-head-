@@ -21,7 +21,9 @@ export const POTD_FOOTER = 28;
 export const POTD_NAME_H = 116;
 export const POTD_RESULT_H = 52;
 export const POTD_STATS_H = 236;
-export const POTD_TITLE_SIZE = 66;
+/** Small enough that two italic lines plus stroke sit inside the plate padding. */
+export const POTD_TITLE_SIZE = 46;
+export const POTD_TITLE_PAD = 14;
 export const POTD_PLATE_X = 56;
 export const POTD_PLATE_Y = 48;
 export const POTD_PLATE_H = 124;

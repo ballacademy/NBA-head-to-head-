@@ -141,6 +141,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: calc(12 * var(--u)) calc(16 * var(--u));
   border: var(--frame-w) solid var(--frame-color);
   background-color: #1c1c1c;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
@@ -159,7 +160,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(54 * var(--u));
+  font-size: calc(42 * var(--u));
   font-weight: 900;
   font-style: italic;
   font-synthesis: none;
@@ -188,7 +189,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(54 * var(--u));
+  font-size: calc(42 * var(--u));
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.02em;

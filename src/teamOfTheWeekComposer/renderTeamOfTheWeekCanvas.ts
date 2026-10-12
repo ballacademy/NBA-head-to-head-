@@ -24,6 +24,7 @@ import {
   TOTW_STRIP_H,
   TOTW_STRIP_W,
   TOTW_STRIPS_TOP,
+  TOTW_TITLE_PAD,
   TOTW_TITLE_PLATE_H,
   TOTW_TITLE_SIZE,
   TOTW_WEEK_H,
@@ -231,6 +232,24 @@ export const renderTeamOfTheWeekCanvas = async (
   const lineH = TOTW_TITLE_SIZE * 0.92 * s;
   const titleBlock = lineH * titleLines.length;
   let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
+  context.save();
+  const titleInner = clipToInnerFrame(
+    context,
+    plate.x,
+    plate.y,
+    plate.w,
+    plate.h,
+    s,
+  );
+  const titlePad = TOTW_TITLE_PAD * s;
+  context.beginPath();
+  context.rect(
+    titleInner.x + titlePad,
+    titleInner.y + titlePad,
+    titleInner.w - titlePad * 2,
+    titleInner.h - titlePad * 2,
+  );
+  context.clip();
   context.font = `italic 900 ${TOTW_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -250,6 +269,7 @@ export const renderTeamOfTheWeekCanvas = async (
     titleY += lineH;
   });
   setLetterSpacing(context, 0);
+  context.restore();
 
   const weekText = input.week.trim().toUpperCase() || "WEEK 1";
   context.font = `900 ${TOTW_WEEK_SIZE * s}px ${POSTER_FONT}`;

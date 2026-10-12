@@ -76,6 +76,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: calc(14 * var(--u)) calc(18 * var(--u));
   border: var(--frame-w) solid var(--frame-color);
   /* Same studded near-black as the other composers' title boxes. */
   background-color: #1c1c1c;
@@ -95,7 +96,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(66 * var(--u));
+  font-size: calc(46 * var(--u));
   font-weight: 900;
   font-style: italic;
   font-synthesis: none;
@@ -125,7 +126,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(66 * var(--u));
+  font-size: calc(46 * var(--u));
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.02em;

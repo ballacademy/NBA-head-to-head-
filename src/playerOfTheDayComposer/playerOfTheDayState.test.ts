@@ -169,12 +169,14 @@ describe("player of the day state", () => {
     expect(covered.w).toBeGreaterThanOrEqual(520);
     expect(potdLayout.POTD_NAME_SIZE).toBe(36);
     expect(potdLayout.POTD_STAT_SIZE).toBe(38);
-    expect(potdLayout.POTD_TITLE_SIZE).toBe(66);
+    expect(potdLayout.POTD_TITLE_SIZE).toBe(46);
+    expect(potdLayout.POTD_TITLE_PAD).toBe(14);
     expect(potdLayout.POTD_HEADER_H).toBe(208);
-    expect(potdLayout.POTD_TITLE_SIZE * 0.9 * 2).toBeGreaterThan(
-      potdLayout.POTD_PLATE_H * 0.85,
-    );
-    expect(potdLayout.POTD_PLATE_H).toBeLessThan(150);
+    expect(potdLayout.POTD_PLATE_H).toBe(124);
+    const typeH = potdLayout.POTD_TITLE_SIZE * 0.92 * 2;
+    expect(
+      typeH + 3.2 + 8 + potdLayout.POTD_TITLE_PAD * 2,
+    ).toBeLessThanOrEqual(potdLayout.POTD_PLATE_H);
   });
 
   it("always frames the photo and centers larger stat pairs", () => {
