@@ -2,6 +2,8 @@
 
 .pod-board {
   --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   aspect-ratio: 4 / 5;
@@ -15,6 +17,10 @@
   color: #fff;
   overflow: hidden;
   user-select: none;
+}
+
+.pod-board.is-black {
+  --frame-color: #0a0a0a;
 }
 
 .pod-header,
@@ -191,22 +197,13 @@
 .pod-photo {
   position: absolute;
   inset: 0;
+  box-sizing: border-box;
+  border: var(--frame-w) solid var(--frame-color);
   overflow: hidden;
   background: #111;
   cursor: grab;
   touch-action: none;
   border-radius: var(--card-radius) var(--card-radius) 0 0;
-}
-
-/* Overlay sits above the img so cover-fit custom photos cannot hide the frame. */
-.pod-photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 calc(4 * var(--u)) #fff;
 }
 
 .pod-photo.is-empty {
@@ -350,6 +347,8 @@
 
 .pod-stats {
   position: relative;
+  box-sizing: border-box;
+  border: var(--frame-w) solid var(--frame-color);
   overflow: hidden;
   min-height: calc(236 * var(--u));
   background: var(--team-fill);
@@ -439,6 +438,8 @@
 
 .pod-name {
   position: relative;
+  box-sizing: border-box;
+  border: var(--frame-w) solid var(--frame-color);
   overflow: hidden;
   height: calc(116 * var(--u));
   background: #0a0a0a;
@@ -507,39 +508,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.72);
-}
-
-.pod-board.is-improve .pod-photo::after {
-  box-shadow: inset 0 0 0 calc(4 * var(--u)) #0a0a0a;
-}
-
-.pod-board.is-improve .pod-stats,
-.pod-board.is-improve .pod-name {
-  /* Team fills and name plates are dark — white is the rim that reads. */
-  box-shadow:
-    inset 0 0 0 calc(2.4 * var(--u)) #fff,
-    inset 0 calc(4 * var(--u)) calc(10 * var(--u)) rgba(255, 255, 255, 0.1),
-    inset 0 calc(-8 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, 0.28);
-}
-
-.pod-board.is-improve .pod-stats::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    transparent 42%,
-    rgba(0, 0, 0, 0.14) 100%
-  );
-}
-
-.pod-board.is-improve .pod-title-plate {
-  box-shadow:
-    0 0 0 calc(3 * var(--u)) #fff,
-    0 0 0 calc(6 * var(--u)) #0a0a0a,
-    inset 0 0 0 calc(2.5 * var(--u)) #fff;
 }
 
 .pod-board.is-exporting .pod-brand:focus,

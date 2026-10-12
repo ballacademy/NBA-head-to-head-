@@ -1,39 +1,46 @@
 import { describe, expect, it } from "vitest";
 import {
   composerLookClass,
+  FRAME_BLACK,
+  FRAME_WHITE,
+  FRAME_WIDTH,
+  frameColor,
+  frameLinePx,
   headshotGlowPx,
   headshotSilhouettePx,
-  IMPROVE_LIGHT_TOP,
-  IMPROVE_RIM_BLACK,
-  IMPROVE_RIM_WHITE,
-  improveCellInset,
-  improveCellLine,
-  isImprovedLook,
+  innerFrameRect,
   parseComposerLook,
 } from "./composerLook";
 import { TIER_WRAP_COLS } from "../tierListComposer/tierLayout";
 
 describe("composer look", () => {
-  it("treats only improve as the alternate look", () => {
-    expect(parseComposerLook("improve")).toBe("improve");
-    expect(parseComposerLook("classic")).toBe("classic");
-    expect(parseComposerLook("neon")).toBe("classic");
-    expect(parseComposerLook("glow")).toBe("classic");
-    expect(parseComposerLook(null)).toBe("classic");
-    expect(parseComposerLook({ look: "improve" })).toBe("classic");
-    expect(isImprovedLook("improve")).toBe(true);
-    expect(isImprovedLook("classic")).toBe(false);
-    expect(composerLookClass("improve")).toBe("is-improve");
-    expect(composerLookClass("classic")).toBe("");
+  it("treats the toggle as white or black frames, not a restyle", () => {
+    expect(parseComposerLook("white")).toBe("white");
+    expect(parseComposerLook("classic")).toBe("white");
+    expect(parseComposerLook("black")).toBe("black");
+    expect(parseComposerLook("improve")).toBe("black");
+    expect(parseComposerLook("neon")).toBe("white");
+    expect(parseComposerLook(null)).toBe("white");
+    expect(parseComposerLook({ look: "black" })).toBe("white");
+    expect(composerLookClass("white")).toBe("is-white");
+    expect(composerLookClass("black")).toBe("is-black");
+    expect(frameColor("white")).toBe(FRAME_WHITE);
+    expect(frameColor("black")).toBe(FRAME_BLACK);
+    expect(frameColor(null)).toBe(FRAME_WHITE);
   });
 
-  it("uses black rims, white on dark, and no gold wash", () => {
-    expect(IMPROVE_RIM_BLACK).toBe("#0a0a0a");
-    expect(IMPROVE_RIM_WHITE).toBe("#ffffff");
-    expect(IMPROVE_LIGHT_TOP.toLowerCase()).not.toMatch(/d4b56a|ecd694|fff4d6/);
-    expect(improveCellInset(200)).toBe(6);
-    expect(improveCellLine(200)).toBe(3);
-    expect(improveCellInset(200) * 2 + improveCellLine(200)).toBeLessThan(200);
+  it("keeps the stroke in the outer band so artwork cannot cover it", () => {
+    expect(FRAME_WHITE).toBe("#ffffff");
+    expect(FRAME_BLACK).toBe("#0a0a0a");
+    expect(FRAME_WIDTH).toBe(4);
+    const inner = innerFrameRect(10, 20, 200, 200, 1);
+    expect(inner.line).toBe(4);
+    expect(inner.x).toBe(14);
+    expect(inner.y).toBe(24);
+    expect(inner.w).toBe(192);
+    expect(inner.h).toBe(192);
+    expect(inner.x + inner.w).toBe(10 + 200 - inner.line);
+    expect(frameLinePx(2)).toBe(8);
     expect(headshotGlowPx(120)).toBe(14);
   });
 

@@ -79,7 +79,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       subtitle,
       slots,
       activeIndex,
-      look = "classic",
+      look = "white",
       exporting = false,
       showBa = false,
       onBrandChange,

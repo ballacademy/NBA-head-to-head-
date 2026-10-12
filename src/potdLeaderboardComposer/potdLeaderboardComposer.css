@@ -192,10 +192,3 @@
   outline: none;
 }
 
-.plb-board.is-improve .plb-title-plate,
-.plb-board.is-improve .plb-list {
-  box-shadow:
-    0 0 0 calc(3 * var(--u)) #fff,
-    0 0 0 calc(6 * var(--u)) #0a0a0a,
-    inset 0 0 0 calc(2.5 * var(--u)) #fff;
-}

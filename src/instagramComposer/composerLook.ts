@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 
-export type ComposerLook = "classic" | "improve";
+export type ComposerLook = "white" | "black";
 
 export const STANDINGS_LOOK_KEY = "ddgm:standings-composer-look";
 export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
@@ -9,21 +9,19 @@ export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
 export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
 export const POTD_LEADERBOARD_LOOK_KEY = "ddgm:potd-leaderboard-composer-look";
 
-/** Improve rims: black by default, white on dark fills where black would vanish. */
-export const IMPROVE_RIM_BLACK = "#0a0a0a";
-export const IMPROVE_RIM_WHITE = "#ffffff";
-export const IMPROVE_LIGHT_TOP = "rgba(255, 255, 255, 0.16)";
-export const IMPROVE_LIGHT_MID = "rgba(255, 255, 255, 0.04)";
-export const IMPROVE_LIGHT_BASE = "rgba(0, 0, 0, 0.18)";
+export const FRAME_WHITE = "#ffffff";
+export const FRAME_BLACK = "#0a0a0a";
+/** Design-px stroke. Sits in the cell’s outer band so artwork never covers it. */
+export const FRAME_WIDTH = 4;
 
 export const parseComposerLook = (value: unknown): ComposerLook =>
-  value === "improve" ? "improve" : "classic";
+  value === "black" || value === "improve" ? "black" : "white";
 
-export const isImprovedLook = (look: ComposerLook | null | undefined) =>
-  look === "improve";
+export const frameColor = (look?: ComposerLook | null) =>
+  look === "black" ? FRAME_BLACK : FRAME_WHITE;
 
 export const composerLookClass = (look: ComposerLook) =>
-  look === "improve" ? "is-improve" : "";
+  look === "black" ? "is-black" : "is-white";
 
 export const readComposerLook = (key: string): ComposerLook =>
   parseComposerLook(readJson<unknown>(key));
@@ -32,11 +30,60 @@ export const writeComposerLook = (key: string, look: ComposerLook) => {
   writeJson(key, look);
 };
 
-export const improveCellInset = (size: number) =>
-  Math.max(2, Math.round(size * 0.03));
+export const frameLinePx = (scale: number) =>
+  Math.max(2, Math.round(FRAME_WIDTH * scale));
 
-export const improveCellLine = (size: number) =>
-  Math.max(2, Math.round(size * 0.016));
+export const innerFrameRect = (
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  const line = frameLinePx(scale);
+  return {
+    x: x + line,
+    y: y + line,
+    w: w - line * 2,
+    h: h - line * 2,
+    line,
+  };
+};
+
+export const clipToInnerFrame = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  const inner = innerFrameRect(x, y, w, h, scale);
+  context.beginPath();
+  context.rect(inner.x, inner.y, inner.w, inner.h);
+  context.clip();
+  return inner;
+};
+
+/** Opaque perimeter in the outer band — outside the logo/headshot square. */
+export const paintCellFrame = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  look?: ComposerLook | null,
+  scale = 1,
+) => {
+  const line = frameLinePx(scale);
+  context.save();
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  context.strokeStyle = frameColor(look);
+  context.lineWidth = line;
+  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  context.restore();
+};
 
 export const headshotGlowPx = (size: number) =>
   Math.max(6, Math.round(size * 0.12));
@@ -72,60 +119,8 @@ export const paintHeadshotSilhouette = (
   context.restore();
 };
 
-/** Top-down studio wash — no bloom. */
-export const paintImproveCellLight = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) => {
-  context.save();
-  const sheen = context.createLinearGradient(x, y, x, y + h);
-  sheen.addColorStop(0, IMPROVE_LIGHT_TOP);
-  sheen.addColorStop(0.4, IMPROVE_LIGHT_MID);
-  sheen.addColorStop(1, IMPROVE_LIGHT_BASE);
-  context.fillStyle = sheen;
-  context.fillRect(x, y, w, h);
-  context.restore();
-};
-
-/** Sharp inner frame. Drawn after artwork so PNG matches preview. */
-export const paintImproveCellRim = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  color: string = IMPROVE_RIM_BLACK,
-) => {
-  const size = Math.min(w, h);
-  const inset = improveCellInset(size);
-  context.save();
-  context.shadowBlur = 0;
-  context.shadowColor = "transparent";
-  context.strokeStyle = color;
-  context.lineWidth = improveCellLine(size);
-  context.strokeRect(x + inset, y + inset, w - inset * 2, h - inset * 2);
-  context.restore();
-};
-
-export const paintImproveCell = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  filled = true,
-) => {
-  if (filled) {
-    paintImproveCellLight(context, x, y, w, h);
-  }
-  paintImproveCellRim(context, x, y, w, h);
-};
-
 export const useComposerLook = (storageKey: string) => {
-  const [look, setLook] = useState<ComposerLook>("classic");
+  const [look, setLook] = useState<ComposerLook>("white");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

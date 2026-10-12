@@ -1,8 +1,5 @@
 import {
-  IMPROVE_RIM_WHITE,
-  isImprovedLook,
-  paintImproveCellLight,
-  paintImproveCellRim,
+  clipToInnerFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { getTeamColors } from "../lib/teamColors";
@@ -35,9 +32,11 @@ import {
   POTD_TITLE_SIZE,
   POTD_TOTAL_SIZE,
   POTD_CARD_RADIUS,
+  POTD_PHOTO_BORDER,
   addRoundRectPath,
   coverPanDraw,
   paintPotdPhotoBorder,
+  paintPotdPlateBorder,
   potdCardX,
   potdStatCell,
   statsFillForTeam,
@@ -178,16 +177,6 @@ export const renderPlayerOfTheDayCanvas = async (
     context.beginPath();
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
-  if (isImprovedLook(input.look)) {
-    paintImproveCellRim(
-      context,
-      plate.x,
-      plate.y,
-      plate.w,
-      plate.h,
-      IMPROVE_RIM_WHITE,
-    );
-  }
 
   const titleLines = splitPotdTitle(input.title);
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
@@ -238,7 +227,6 @@ export const renderPlayerOfTheDayCanvas = async (
   const resultH = POTD_RESULT_H * s;
   const statsH = POTD_STATS_H * s;
   const photoH = bodyH - nameH - resultH - statsH;
-  const improved = isImprovedLook(input.look);
 
   for (let index = 0; index < input.cards.length; index += 1) {
     const card = input.cards[index]!;
@@ -264,6 +252,17 @@ export const renderPlayerOfTheDayCanvas = async (
     context.clip();
     context.fillStyle = "#111";
     context.fillRect(x, photoY, w, photoH);
+    const photoLine = Math.max(2, POTD_PHOTO_BORDER * s);
+    context.beginPath();
+    addRoundRectPath(
+      context,
+      x + photoLine,
+      photoY + photoLine,
+      w - photoLine * 2,
+      photoH - photoLine * 2,
+      [Math.max(0, radius - photoLine), Math.max(0, radius - photoLine), 0, 0],
+    );
+    context.clip();
     if (card.photoSrc) {
       const photo = card.photoSrc.startsWith("data:")
         ? await loadImage(card.photoSrc)
@@ -319,21 +318,22 @@ export const renderPlayerOfTheDayCanvas = async (
 
     context.fillStyle = fill;
     context.fillRect(x, statsY, w, statsH);
+    context.save();
+    const statsInner = clipToInnerFrame(context, x, statsY, w, statsH, s);
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
-        context.save();
         context.globalAlpha = POTD_LOGO_WATERMARK;
         drawCenteredLogo(
           context,
           logo,
-          x + w * 0.08,
-          statsY + statsH * 0.08,
-          w * 0.84,
-          statsH * 0.84,
+          statsInner.x + statsInner.w * 0.08,
+          statsInner.y + statsInner.h * 0.08,
+          statsInner.w * 0.84,
+          statsInner.h * 0.84,
           { cacheKey: team.logoSrc, fitX: 0.92, fitY: 0.92 },
         );
-        context.restore();
+        context.globalAlpha = 1;
       }
     }
     context.font = `900 ${POTD_STAT_SIZE * s}px ${POSTER_FONT}`;
@@ -350,10 +350,8 @@ export const renderPlayerOfTheDayCanvas = async (
         );
       });
     });
-    if (improved) {
-      paintImproveCellLight(context, x, statsY, w, statsH);
-      paintImproveCellRim(context, x, statsY, w, statsH, IMPROVE_RIM_WHITE);
-    }
+    context.restore();
+    paintPotdPlateBorder(context, x, statsY, w, statsH, s, input.look);
 
     const resultFill = team
       ? getTeamColors(team.id).primary
@@ -374,15 +372,16 @@ export const renderPlayerOfTheDayCanvas = async (
 
     context.fillStyle = "#0a0a0a";
     context.fillRect(x, nameY, w, nameH);
+    context.save();
+    clipToInnerFrame(context, x, nameY, w, nameH, s);
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
-        context.save();
         context.globalAlpha = 0.26;
         drawCoveredLogo(context, logo, x, nameY, w, nameH, {
           cacheKey: `${team.logoSrc}-name-cover`,
         });
-        context.restore();
+        context.globalAlpha = 1;
       }
     }
     const nameShade = context.createLinearGradient(x, nameY, x, nameY + nameH);
@@ -405,10 +404,13 @@ export const renderPlayerOfTheDayCanvas = async (
       context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
     }
     setLetterSpacing(context, 0);
-    if (improved) {
-      paintImproveCellLight(context, x, nameY, w, nameH);
-      paintImproveCellRim(context, x, nameY, w, nameH, IMPROVE_RIM_WHITE);
-    }
+    context.restore();
+    paintPotdPlateBorder(context, x, nameY, w, nameH, s, input.look, [
+      0,
+      0,
+      radius,
+      radius,
+    ]);
     context.restore();
   }
 

@@ -1,9 +1,4 @@
-import {
-  IMPROVE_RIM_WHITE,
-  isImprovedLook,
-  paintImproveCellRim,
-  type ComposerLook,
-} from "../instagramComposer/composerLook";
+import { type ComposerLook } from "../instagramComposer/composerLook";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   FIELD_TEXTURE_SRC,
@@ -170,11 +165,6 @@ export const renderPotdLeaderboardCanvas = async (
     listW - stroke,
     listH - stroke,
   );
-
-  if (isImprovedLook(input.look)) {
-    paintImproveCellRim(context, titleX, titleY, titleW, titleH, IMPROVE_RIM_WHITE);
-    paintImproveCellRim(context, listX, listY, listW, listH, IMPROVE_RIM_WHITE);
-  }
 
   const ranked = rankLeaderboard(input.entries);
   const inset = PLB_LIST_INSET * s;

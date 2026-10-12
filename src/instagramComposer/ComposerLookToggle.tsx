@@ -7,23 +7,23 @@ interface ComposerLookToggleProps {
 
 export function ComposerLookToggle({ look, onChange }: ComposerLookToggleProps) {
   return (
-    <div className="sc-look" role="group" aria-label="Graphic style">
-      <span className="sc-look__label">Style</span>
+    <div className="sc-look" role="group" aria-label="Frame color">
+      <span className="sc-look__label">Frames</span>
       <button
         type="button"
-        className={look === "classic" ? "sc-chip is-on" : "sc-chip"}
-        aria-pressed={look === "classic"}
-        onClick={() => onChange("classic")}
+        className={look === "white" ? "sc-chip is-on" : "sc-chip"}
+        aria-pressed={look === "white"}
+        onClick={() => onChange("white")}
       >
-        Classic
+        White frames
       </button>
       <button
         type="button"
-        className={look === "improve" ? "sc-chip is-on" : "sc-chip"}
-        aria-pressed={look === "improve"}
-        onClick={() => onChange("improve")}
+        className={look === "black" ? "sc-chip is-on" : "sc-chip"}
+        aria-pressed={look === "black"}
+        onClick={() => onChange("black")}
       >
-        Improve graphic
+        Black frames
       </button>
     </div>
   );

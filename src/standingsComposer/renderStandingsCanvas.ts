@@ -17,9 +17,8 @@ import {
   paintBoardField,
 } from "./headerTexture";
 import {
-  isImprovedLook,
-  paintImproveCellLight,
-  paintImproveCellRim,
+  clipToInnerFrame,
+  paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
@@ -332,19 +331,17 @@ export const renderStandingsCanvas = async (
     if (team) {
       fillCellGradient(context, x, y, cellW, cellH, team.cellFrom, team.cellTo);
     }
-    if (isImprovedLook(input.look) && team) {
-      paintImproveCellLight(context, x, y, cellW, cellH);
-    }
 
     const logo = logos[index];
     if (logo && team) {
-      drawCenteredLogo(context, logo, x, y, cellW, cellH, {
+      context.save();
+      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale);
+      drawCenteredLogo(context, logo, inner.x, inner.y, inner.w, inner.h, {
         cacheKey: team.logoSrc,
       });
+      context.restore();
     }
-    if (isImprovedLook(input.look)) {
-      paintImproveCellRim(context, x, y, cellW, cellH);
-    }
+    paintCellFrame(context, x, y, cellW, cellH, input.look, scale);
 
     drawLongShadowText(
       context,

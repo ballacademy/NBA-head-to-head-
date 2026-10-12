@@ -1,8 +1,6 @@
 import {
-  IMPROVE_RIM_WHITE,
-  isImprovedLook,
-  paintImproveCellLight,
-  paintImproveCellRim,
+  clipToInnerFrame,
+  paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -296,23 +294,18 @@ export const renderTierListCanvas = async (
         context.fillStyle = "#2a2a2a";
         context.fillRect(x, cellY, size, size);
       }
-      if (isImprovedLook(input.look) && team) {
-        paintImproveCellLight(context, x, cellY, size, size);
-      }
       const art = cellArt[rowIndex]?.[index];
+      context.save();
+      const inner = clipToInnerFrame(context, x, cellY, size, size, scale);
       if (player && art?.watermark) {
-        context.save();
-        context.beginPath();
-        context.rect(x, cellY, size, size);
-        context.clip();
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
         drawCenteredLogo(
           context,
           art.watermark,
-          x,
-          cellY,
-          size,
-          size,
+          inner.x,
+          inner.y,
+          inner.w,
+          inner.h,
           {
             shadow: 0,
             fitX: 0.9,
@@ -320,28 +313,20 @@ export const renderTierListCanvas = async (
             cacheKey: art.cacheKey,
           },
         );
-        context.restore();
+        context.globalAlpha = 1;
       }
       if (art?.mark && player) {
-        drawCoverHeadshot(context, art.mark, x, cellY, size, size, {
+        drawCoverHeadshot(context, art.mark, inner.x, inner.y, inner.w, inner.h, {
           silhouette: true,
         });
       } else if (art?.mark && team) {
-        drawCenteredLogo(context, art.mark, x, cellY, size, size, {
+        drawCenteredLogo(context, art.mark, inner.x, inner.y, inner.w, inner.h, {
           cacheKey: team.logoSrc,
           balanceStamp: true,
         });
       }
-      if (isImprovedLook(input.look)) {
-        paintImproveCellRim(
-          context,
-          x,
-          cellY,
-          size,
-          size,
-          team ? undefined : IMPROVE_RIM_WHITE,
-        );
-      }
+      context.restore();
+      paintCellFrame(context, x, cellY, size, size, input.look, scale);
     });
     tierTop += laneCount * layout.laneH;
   });

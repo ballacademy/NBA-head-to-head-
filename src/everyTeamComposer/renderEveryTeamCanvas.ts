@@ -1,7 +1,6 @@
 import {
-  isImprovedLook,
-  paintImproveCellLight,
-  paintImproveCellRim,
+  clipToInnerFrame,
+  paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -23,7 +22,6 @@ import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
-  ET_BORDER,
   ET_LOGO_FIT,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
@@ -226,38 +224,31 @@ export const renderEveryTeamCanvas = async (
     gradient.addColorStop(1, cell.team.cellTo);
     context.fillStyle = gradient;
     context.fillRect(x, y, size, size);
-    if (isImprovedLook(input.look)) {
-      paintImproveCellLight(context, x, y, size, size);
-    }
+    context.save();
+    const inner = clipToInnerFrame(context, x, y, size, size, scale);
     if (cell.logo) {
-      context.save();
-      context.beginPath();
-      context.rect(x, y, size, size);
-      context.clip();
-      drawCenteredLogo(context, cell.logo, x, y, size, size, {
+      drawCenteredLogo(context, cell.logo, inner.x, inner.y, inner.w, inner.h, {
         shadow: 0,
         fitX: ET_LOGO_FIT,
         fitY: ET_LOGO_FIT,
         cacheKey: cell.team.logoSrc,
       });
-      context.restore();
     }
     if (cell.headshot) {
-      drawCoverHeadshot(context, cell.headshot, x, y, size, size, {
-        silhouette: true,
-      });
+      drawCoverHeadshot(
+        context,
+        cell.headshot,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        {
+          silhouette: true,
+        },
+      );
     }
-    if (isImprovedLook(input.look)) {
-      paintImproveCellRim(context, x, y, size, size);
-    }
-    context.strokeStyle = cell.team.cellFrom;
-    context.lineWidth = ET_BORDER * scale;
-    context.strokeRect(
-      x + (ET_BORDER * scale) / 2,
-      y + (ET_BORDER * scale) / 2,
-      size - ET_BORDER * scale,
-      size - ET_BORDER * scale,
-    );
+    context.restore();
+    paintCellFrame(context, x, y, size, size, input.look, scale);
   });
 
   if (input.showBa) {

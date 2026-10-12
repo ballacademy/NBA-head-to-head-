@@ -56,7 +56,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     title,
     date,
     cards,
-    look = "classic",
+    look = "white",
     showBa = false,
     exporting = false,
     onBrandChange,

@@ -31,7 +31,7 @@ export const PotdLeaderboardGraphic = forwardRef<
   {
     title,
     entries,
-    look = "classic",
+    look = "white",
     showBa = false,
     exporting = false,
     onTitleChange,

@@ -173,9 +173,9 @@ describe("player of the day state", () => {
 
   it("always frames the photo and centers larger stat pairs", () => {
     expect(potdLayout.POTD_PHOTO_BORDER).toBe(4);
-    expect(potdLayout.potdPhotoBorderColor("classic")).toBe("#ffffff");
-    expect(potdLayout.potdPhotoBorderColor("improve")).toBe("#0a0a0a");
-    expect(potdLayout.potdPhotoBorderColor("improve")).not.toMatch(/d4|ec|ff.?f4/i);
+    expect(potdLayout.potdPhotoBorderColor("white")).toBe("#ffffff");
+    expect(potdLayout.potdPhotoBorderColor("black")).toBe("#0a0a0a");
+    expect(potdLayout.potdPhotoBorderColor("black")).not.toMatch(/d4|ec|ff.?f4/i);
     const left = potdLayout.potdStatCell(0, 520, 0, 236, 0);
     const right = potdLayout.potdStatCell(0, 520, 0, 236, 1);
     const nextRow = potdLayout.potdStatCell(0, 520, 0, 236, 2);

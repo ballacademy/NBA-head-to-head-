@@ -69,7 +69,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       brand,
       title,
       slots,
-      look = "classic",
+      look = "white",
       showBa = false,
       activeIndex,
       exporting = false,
@@ -210,7 +210,6 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   {
                     ["--cell-from" as string]: team.cellFrom,
                     ["--cell-to" as string]: team.cellTo,
-                    ["--border" as string]: team.cellFrom,
                   } as React.CSSProperties
                 }
               >

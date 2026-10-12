@@ -81,7 +81,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       title,
       rows,
       subject = "teams",
-      look = "classic",
+      look = "white",
       showBa = true,
       active,
       exporting = false,
