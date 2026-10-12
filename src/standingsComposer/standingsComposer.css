@@ -217,7 +217,10 @@ main.sc-stage {
   width: 100%;
   display: grid;
   grid-template-rows: 17.866fr 82.134fr;
-  background: #161616;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -229,12 +232,7 @@ main.sc-stage {
   flex-direction: column;
   align-items: center;
   min-height: 0;
-  background-color: #161616;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)),
-    url("/standings-header-texture.png");
-  background-size: cover;
-  background-position: center;
+  background: transparent;
 }
 
 .ig-brand-slot {

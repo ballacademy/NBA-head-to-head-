@@ -8,10 +8,9 @@ import {
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
-  POTD_VIGNETTE_STRENGTH,
+  FIELD_TEXTURE_SRC,
   drawBannerInterior,
-  drawCoveredTexture,
-  drawFieldVignette,
+  paintBoardField,
 } from "../standingsComposer/headerTexture";
 import {
   drawCenteredLogo,
@@ -24,7 +23,6 @@ import {
   GRAPHIC_WIDTH,
   POTD_BRAND_SIZE,
   POTD_CARD_W,
-  POTD_CRACKS_SRC,
   POTD_DATE_SIZE,
   POTD_FOOTER,
   POTD_HEADER_H,
@@ -149,13 +147,8 @@ export const renderPlayerOfTheDayCanvas = async (
     document.fonts?.load(`italic 900 ${POTD_TITLE_SIZE * scale}px ${POSTER_FONT}`),
   ]).catch(() => undefined);
 
-  context.fillStyle = "#1c1c1c";
-  context.fillRect(0, 0, width, height);
-  const cracks = await loadImage(POTD_CRACKS_SRC);
-  if (cracks) {
-    drawCoveredTexture(context, cracks, 0, 0, width, height);
-  }
-  drawFieldVignette(context, width, height, POTD_VIGNETTE_STRENGTH);
+  const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
+  paintBoardField(context, fieldTexture, width, height);
 
   const s = scale;
   withShadow(context, s, () => {

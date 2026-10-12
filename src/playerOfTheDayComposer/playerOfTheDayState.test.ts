@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { parseLastGamePayload } from "./lastGame";
-import { BANNER_FILL_BASE, BANNER_STUD_FILL } from "../standingsComposer/headerTexture";
+import {
+  BANNER_FILL_BASE,
+  BANNER_STUD_FILL,
+  FIELD_TEXTURE_SRC,
+} from "../standingsComposer/headerTexture";
 import { coveredLogoRect } from "../standingsComposer/logoDraw";
 import { isPhotoChromeClassName } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
@@ -150,6 +154,8 @@ describe("player of the day state", () => {
   it("uses the studded near-black title fill and no circled BA mark", () => {
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
+    expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");
+    expect("POTD_CRACKS_SRC" in potdLayout).toBe(false);
     expect("POTD_BA_SRC" in potdLayout).toBe(false);
     expect("potdBadgeRect" in potdLayout).toBe(false);
     const covered = coveredLogoRect({ x: 0, y: 0, w: 500, h: 500 }, 0, 0, 520, 116);

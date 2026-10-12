@@ -12,10 +12,9 @@ import {
   trackedTextWidth,
 } from "./bannerLayout";
 import {
-  HEADER_TEXTURE_SRC,
+  FIELD_TEXTURE_SRC,
   drawBannerInterior,
-  drawCoveredTexture,
-  liftHeaderMetal,
+  paintBoardField,
 } from "./headerTexture";
 import {
   isImprovedLook,
@@ -229,19 +228,13 @@ export const renderStandingsCanvas = async (
     throw new Error("Could not open export canvas");
   }
 
-  context.fillStyle = STANDINGS_BOARD_BG;
-  context.fillRect(0, 0, width, height);
-
   const board = bannerBoardRect(scale);
   const { headerH, x: bannerX, y: bannerY, w: bannerW, h: bannerH } = board;
   const gridY = headerH;
   const gridH = height - headerH;
 
-  const headerTexture = await loadImage(HEADER_TEXTURE_SRC);
-  if (headerTexture) {
-    drawCoveredTexture(context, headerTexture, 0, 0, width, headerH);
-    liftHeaderMetal(context, 0, 0, width, headerH);
-  }
+  const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
+  paintBoardField(context, fieldTexture, width, height, STANDINGS_BOARD_BG);
 
   withHeaderDropShadow(context, scale, () => {
     drawTrackedText(

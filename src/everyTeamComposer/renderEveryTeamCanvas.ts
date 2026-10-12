@@ -12,12 +12,9 @@ import {
   brandBaselineY,
 } from "../standingsComposer/bannerLayout";
 import {
-  EVERY_TEAM_VIGNETTE_STRENGTH,
-  HEADER_TEXTURE_SRC,
+  FIELD_TEXTURE_SRC,
   drawBannerInterior,
-  drawCoveredTexture,
-  drawFieldVignette,
-  liftHeaderMetal,
+  paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { GRAPHIC_BG } from "../standingsComposer/rankingState";
@@ -145,15 +142,8 @@ export const renderEveryTeamCanvas = async (
     throw new Error("Could not open export canvas");
   }
 
-  context.fillStyle = GRAPHIC_BG;
-  context.fillRect(0, 0, width, height);
-
-  const metal = await loadImage(HEADER_TEXTURE_SRC);
-  if (metal) {
-    drawCoveredTexture(context, metal, 0, 0, width, height);
-    liftHeaderMetal(context, 0, 0, width, height);
-  }
-  drawFieldVignette(context, width, height, EVERY_TEAM_VIGNETTE_STRENGTH);
+  const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
+  paintBoardField(context, fieldTexture, width, height, GRAPHIC_BG);
 
   withDropShadow(context, scale, () => {
     drawTrackedText(

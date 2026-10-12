@@ -10,7 +10,6 @@ import {
 
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
-export const POTD_CRACKS_SRC = "/player-of-the-day-cracks.png";
 export const POTD_PAD_X = 64;
 export const POTD_GAP = 32;
 export const POTD_CARD_W = (GRAPHIC_WIDTH - POTD_PAD_X * 2 - POTD_GAP) / 2;
