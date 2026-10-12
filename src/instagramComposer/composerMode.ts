@@ -1,4 +1,4 @@
-export type ComposerMode = "standings" | "tier" | "every-team";
+export type ComposerMode = "standings" | "tier" | "every-team" | "player-of-the-day";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -14,6 +14,16 @@ const EVERY_TEAM_QUERY = new Set([
   "by-team",
   "byteam",
 ]);
+const PLAYER_OF_THE_DAY_PATHS = new Set([
+  "/player-of-the-day",
+  "/potd",
+  "/player-of-day",
+]);
+const PLAYER_OF_THE_DAY_QUERY = new Set([
+  "player-of-the-day",
+  "potd",
+  "player-of-day",
+]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -22,6 +32,9 @@ export const isTierListPath = (pathname: string) =>
 
 export const isEveryTeamPath = (pathname: string) =>
   EVERY_TEAM_PATHS.has(normalizePath(pathname));
+
+export const isPlayerOfTheDayPath = (pathname: string) =>
+  PLAYER_OF_THE_DAY_PATHS.has(normalizePath(pathname));
 
 export const isTierListQuery = (search: string) => {
   try {
@@ -47,15 +60,33 @@ export const isEveryTeamQuery = (search: string) => {
   }
 };
 
+export const isPlayerOfTheDayQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return PLAYER_OF_THE_DAY_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isPlayerOfTheDayPath(pathname)) {
+    return "player-of-the-day";
+  }
   if (isEveryTeamPath(pathname)) {
     return "every-team";
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isPlayerOfTheDayQuery(search)) {
+    return "player-of-the-day";
   }
   if (isEveryTeamQuery(search)) {
     return "every-team";
@@ -72,6 +103,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "every-team") {
     return "/every-team";
+  }
+  if (mode === "player-of-the-day") {
+    return "/player-of-the-day";
   }
   return "/";
 };

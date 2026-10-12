@@ -6,6 +6,7 @@ export type ComposerLook = "classic" | "neon";
 export const STANDINGS_LOOK_KEY = "ddgm:standings-composer-look";
 export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
 export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
+export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
 
 export const NEON_HALO = "rgba(210, 235, 255, 0.92)";
 export const NEON_HOT = "rgba(255, 255, 255, 0.88)";

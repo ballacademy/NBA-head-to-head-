@@ -9,6 +9,7 @@ const TABS: { mode: ComposerMode; label: string }[] = [
   { mode: "standings", label: "Standings" },
   { mode: "tier", label: "Tier list" },
   { mode: "every-team", label: "Every team" },
+  { mode: "player-of-the-day", label: "Player of the Day" },
 ];
 
 export function ComposerTabs({ mode, onSelect }: ComposerTabsProps) {

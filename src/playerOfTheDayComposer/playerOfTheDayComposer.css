@@ -1,0 +1,448 @@
+/* Instagram Player of the Day — 4:5 board. */
+
+.pod-board {
+  --u: 1px;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: grid;
+  grid-template-rows: calc(268 * var(--u)) 1fr;
+  background-color: #1c1c1c;
+  background-image: url("/player-of-the-day-cracks.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pod-header,
+.pod-cards {
+  position: relative;
+  z-index: 1;
+}
+
+.pod-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: calc(8 * var(--u)) calc(48 * var(--u)) 0;
+}
+
+.pod-brand {
+  margin: calc(6 * var(--u)) 0 0;
+  width: 70%;
+  height: calc(34 * var(--u));
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.pod-brand:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.pod-title-plate {
+  position: relative;
+  margin-top: calc(8 * var(--u));
+  width: 92%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  border: calc(5 * var(--u)) solid #0a0a0a;
+  box-shadow:
+    0 0 0 calc(3 * var(--u)) #fff,
+    0 0 0 calc(6 * var(--u)) #0a0a0a;
+}
+
+.pod-title-block {
+  position: relative;
+  width: 96%;
+  pointer-events: none;
+}
+
+.pod-title-line {
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(52 * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  font-synthesis: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.92;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow:
+    calc(1.5 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
+.pod-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(52 * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  white-space: pre;
+  pointer-events: auto;
+}
+
+.pod-title-input:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.pod-date-notch {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-2 * var(--u));
+  min-width: 28%;
+  height: calc(36 * var(--u));
+  padding: 0 calc(14 * var(--u));
+  border: 0;
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+}
+
+.pod-date-notch:focus {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+
+.pod-badge {
+  position: absolute;
+  pointer-events: none;
+  object-fit: contain;
+  display: block;
+}
+
+.pod-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(32 * var(--u));
+  min-height: 0;
+  padding: calc(10 * var(--u)) calc(64 * var(--u)) calc(28 * var(--u));
+}
+
+.pod-card {
+  --team-fill: #1a1a1a;
+  display: grid;
+  grid-template-rows: 1fr auto auto auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.pod-photo {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: #111;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pod-photo.is-empty {
+  cursor: pointer;
+}
+
+.pod-photo.is-custom {
+  cursor: grab;
+}
+
+.pod-photo__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  display: block;
+}
+
+.pod-photo__pick {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pod-photo__tools {
+  position: absolute;
+  left: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  bottom: calc(8 * var(--u));
+  display: flex;
+  gap: calc(6 * var(--u));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.pod-photo:hover .pod-photo__tools,
+.pod-photo:focus-within .pod-photo__tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pod-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.pod-photo__tool,
+.pod-photo__file {
+  font-family: inherit;
+}
+
+.pod-photo__tool {
+  flex: 1;
+  height: calc(28 * var(--u));
+  border: 0;
+  border-radius: calc(4 * var(--u));
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: calc(11 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pod-photo__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pod-total {
+  position: absolute;
+  top: calc(10 * var(--u));
+  z-index: 2;
+  width: 42%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow:
+    calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 #000,
+    calc(-1 * var(--u)) 0 0 #000,
+    calc(1 * var(--u)) 0 0 #000;
+}
+
+.pod-card:first-child .pod-total {
+  left: calc(10 * var(--u));
+  text-align: left;
+}
+
+.pod-card:last-child .pod-total {
+  right: calc(10 * var(--u));
+  text-align: right;
+}
+
+.pod-stats {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(236 * var(--u));
+  background: var(--team-fill);
+  color: #fff;
+}
+
+.pod-stats__logo {
+  position: absolute;
+  inset: 8%;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.pod-stats__logo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pod-stats__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(6 * var(--u)) calc(10 * var(--u));
+  padding: calc(16 * var(--u)) calc(14 * var(--u));
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.pod-stat {
+  display: flex;
+  align-items: baseline;
+  gap: calc(6 * var(--u));
+  min-width: 0;
+}
+
+.pod-stat input {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(26 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.8);
+}
+
+.pod-stat span {
+  flex: 0 0 auto;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.pod-result {
+  height: calc(52 * var(--u));
+  margin: 0;
+  padding: 0 calc(8 * var(--u));
+  border: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 40%),
+    color-mix(in srgb, var(--team-fill) 82%, #000);
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pod-name {
+  position: relative;
+  overflow: hidden;
+  height: calc(116 * var(--u));
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.pod-name__logo {
+  position: absolute;
+  inset: -8%;
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.pod-name__logo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pod-name__line {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  text-shadow:
+    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 #000,
+    calc(-1 * var(--u)) 0 0 #000,
+    calc(1 * var(--u)) 0 0 #000;
+}
+
+.pod-name__empty {
+  position: relative;
+  z-index: 1;
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pod-board.is-neon .pod-photo,
+.pod-board.is-neon .pod-stats,
+.pod-board.is-neon .pod-name {
+  box-shadow: inset 0 0 calc(14 * var(--u)) rgba(210, 235, 255, 0.55);
+}
+
+.pod-board.is-exporting .pod-brand:focus,
+.pod-board.is-exporting .pod-title-input:focus,
+.pod-board.is-exporting .pod-date-notch:focus,
+.pod-board.is-exporting .pod-stat input:focus,
+.pod-board.is-exporting .pod-result:focus,
+.pod-board.is-exporting .pod-total:focus {
+  outline: none;
+}

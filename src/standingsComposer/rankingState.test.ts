@@ -90,6 +90,7 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/tier-list")).toBe(true);
     expect(isStandingsComposerRoute("", "/every-team")).toBe(true);
     expect(isStandingsComposerRoute("", "/by-team")).toBe(true);
+    expect(isStandingsComposerRoute("", "/player-of-the-day")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

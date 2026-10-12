@@ -26,8 +26,20 @@ describe("composer mode", () => {
     expect(composerHref("every-team")).toBe("/every-team");
   });
 
+  it("opens player of the day from path or query", () => {
+    expect(readComposerMode("", "/player-of-the-day")).toBe("player-of-the-day");
+    expect(readComposerMode("", "/potd")).toBe("player-of-the-day");
+    expect(readComposerMode("?composer=player-of-the-day", "/")).toBe(
+      "player-of-the-day",
+    );
+    expect(composerHref("player-of-the-day")).toBe("/player-of-the-day");
+  });
+
   it("lets the path win when query and path disagree", () => {
     expect(readComposerMode("?composer=tier", "/every-team")).toBe("every-team");
     expect(readComposerMode("?composer=every-team", "/tier-list")).toBe("tier");
+    expect(readComposerMode("?composer=tier", "/player-of-the-day")).toBe(
+      "player-of-the-day",
+    );
   });
 });
