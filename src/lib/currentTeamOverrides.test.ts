@@ -21,6 +21,12 @@ describe("current team overrides", () => {
     expect(CURRENT_TEAM_OVERRIDES.middlkh01).toBe("WAS");
     expect(CURRENT_TEAM_OVERRIDES.willizi02).toBe("LAL");
     expect(CURRENT_TEAM_OVERRIDES.nancela02).toBe("IND");
+    // Oct 2026 camp / two-way moves.
+    expect(CURRENT_TEAM_OVERRIDES.agbajoc01).toBe("NYK");
+    expect(CURRENT_TEAM_OVERRIDES.brownbr01).toBe("NYK");
+    expect(CURRENT_TEAM_OVERRIDES.nembhry01).toBe("DEN");
+    expect(CURRENT_TEAM_OVERRIDES.hieldbu01).toBe("CHI");
+    expect(CURRENT_TEAM_OVERRIDES.mathube01).toBe("NOP");
   });
 
   it("applies synced teams to active player objects", () => {
@@ -32,6 +38,8 @@ describe("current team overrides", () => {
     const ingram = playersById.get("ingrabr01-lac");
     const hardaway = playersById.get("hardati02-mia");
     const post = playersById.get("postqu01-mem");
+    const duren = playersById.get("durenja01-det");
+    const mathurin = playersById.get("mathube01-nop");
 
     expect(randle?.team).toBe("BRK");
     expect(lamelo?.team).toBe("MIN");
@@ -43,5 +51,9 @@ describe("current team overrides", () => {
     expect(hardaway?.salary).toBe(6_500_000);
     expect(post?.team).toBe("MEM");
     expect(post?.salary).toBe(8_285_714);
+    expect(duren?.team).toBe("DET");
+    expect(duren?.salary).toBe(40_160_000);
+    expect(mathurin?.team).toBe("NOP");
+    expect(mathurin?.salary).toBe(7_500_000);
   });
 });

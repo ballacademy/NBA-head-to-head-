@@ -2,15 +2,15 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-09-19T21:18:55.025467+00:00",
-  "rosterAsOf": "2026-09-19",
+  "generatedAt": "2026-10-03T15:38:10.984023+00:00",
+  "rosterAsOf": "2026-10-03",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
     {
       "id": "doncilu01-lal",
       "bbrPlayerId": "doncilu01",
-      "name": "Luka Don\u010di\u0107",
+      "name": "Luka Dončić",
       "team": "LAL",
       "position": "PG",
       "positions": [
@@ -303,7 +303,7 @@
     {
       "id": "jokicni01-den",
       "bbrPlayerId": "jokicni01",
-      "name": "Nikola Joki\u0107",
+      "name": "Nikola Jokić",
       "team": "DEN",
       "position": "C",
       "positions": [
@@ -1679,7 +1679,7 @@
     {
       "id": "sengual01-hou",
       "bbrPlayerId": "sengual01",
-      "name": "Alperen \u015eeng\u00fcn",
+      "name": "Alperen Şengün",
       "team": "HOU",
       "position": "C",
       "positions": [
@@ -3343,7 +3343,7 @@
     {
       "id": "porzikr01-gsw",
       "bbrPlayerId": "porzikr01",
-      "name": "Kristaps Porzi\u0146\u0123is",
+      "name": "Kristaps Porziņģis",
       "team": "GSW",
       "position": "C",
       "positions": [
@@ -4259,7 +4259,7 @@
     {
       "id": "vucevni01-orl",
       "bbrPlayerId": "vucevni01",
-      "name": "Nikola Vu\u010devi\u0107",
+      "name": "Nikola Vučević",
       "team": "ORL",
       "position": "C",
       "positions": [
@@ -4340,10 +4340,10 @@
       "heightInches": 79
     },
     {
-      "id": "chandke01-fa",
+      "id": "chandke01-pho",
       "bbrPlayerId": "chandke01",
       "name": "Kennedy Chandler",
-      "team": "FA",
+      "team": "PHO",
       "position": "PG",
       "positions": [
         "PG",
@@ -6949,10 +6949,10 @@
       "heightInches": 74
     },
     {
-      "id": "newtotr01-hou",
+      "id": "newtotr01-sac",
       "bbrPlayerId": "newtotr01",
       "name": "Tristen Newton",
-      "team": "HOU",
+      "team": "SAC",
       "position": "SG",
       "positions": [
         "SG"
@@ -7156,10 +7156,10 @@
       "heightInches": 77
     },
     {
-      "id": "reeseju01-was",
+      "id": "reeseju01-nop",
       "bbrPlayerId": "reeseju01",
       "name": "Julian Reese",
-      "team": "WAS",
+      "team": "NOP",
       "position": "PF",
       "positions": [
         "PF",
@@ -8030,7 +8030,7 @@
     {
       "id": "nurkiju01-uta",
       "bbrPlayerId": "nurkiju01",
-      "name": "Jusuf Nurki\u0107",
+      "name": "Jusuf Nurkić",
       "team": "UTA",
       "position": "C",
       "positions": [
@@ -8195,7 +8195,7 @@
     {
       "id": "schrode01-cho",
       "bbrPlayerId": "schrode01",
-      "name": "Dennis Schr\u00f6der",
+      "name": "Dennis Schröder",
       "team": "CHO",
       "position": "PG",
       "positions": [
@@ -10427,10 +10427,10 @@
       "heightInches": 83
     },
     {
-      "id": "cartede02-atl",
+      "id": "cartede02-bos",
       "bbrPlayerId": "cartede02",
       "name": "Devin Carter",
-      "team": "ATL",
+      "team": "BOS",
       "position": "PG",
       "positions": [
         "PG"
@@ -10511,7 +10511,7 @@
     {
       "id": "traorno01-brk",
       "bbrPlayerId": "traorno01",
-      "name": "Nolan Traor\u00e9",
+      "name": "Nolan Traoré",
       "team": "BRK",
       "position": "PG",
       "positions": [
@@ -10718,7 +10718,7 @@
     {
       "id": "valanjo01-fa",
       "bbrPlayerId": "valanjo01",
-      "name": "Jonas Valan\u010di\u016bnas",
+      "name": "Jonas Valančiūnas",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -11172,7 +11172,7 @@
     {
       "id": "krejcvi01-por",
       "bbrPlayerId": "krejcvi01",
-      "name": "V\u00edt Krej\u010d\u00ed",
+      "name": "Vít Krejčí",
       "team": "POR",
       "position": "PG",
       "positions": [
@@ -11458,10 +11458,10 @@
       "heightInches": 81
     },
     {
-      "id": "richmka01-fa",
+      "id": "richmka01-cle",
       "bbrPlayerId": "richmka01",
       "name": "Kadary Richmond",
-      "team": "FA",
+      "team": "CLE",
       "position": "SG",
       "positions": [
         "SG"
@@ -11541,10 +11541,10 @@
       "heightInches": 76
     },
     {
-      "id": "smithma02-fa",
+      "id": "smithma02-tor",
       "bbrPlayerId": "smithma02",
       "name": "Malachi Smith",
-      "team": "FA",
+      "team": "TOR",
       "position": "SG",
       "positions": [
         "SG"
@@ -11831,10 +11831,10 @@
       "heightInches": 80
     },
     {
-      "id": "mbengbe01-uta",
+      "id": "mbengbe01-mia",
       "bbrPlayerId": "mbengbe01",
       "name": "Bez Mbeng",
-      "team": "UTA",
+      "team": "MIA",
       "position": "SG",
       "positions": [
         "SG",
@@ -12246,10 +12246,10 @@
       "heightInches": 80
     },
     {
-      "id": "brownbr01-fa",
+      "id": "brownbr01-nyk",
       "bbrPlayerId": "brownbr01",
       "name": "Bruce Brown",
-      "team": "FA",
+      "team": "NYK",
       "position": "SG",
       "positions": [
         "SG"
@@ -12331,7 +12331,7 @@
     {
       "id": "diabamo01-cho",
       "bbrPlayerId": "diabamo01",
-      "name": "Moussa Diabat\u00e9",
+      "name": "Moussa Diabaté",
       "team": "CHO",
       "position": "C",
       "positions": [
@@ -12411,10 +12411,10 @@
       "heightInches": 82
     },
     {
-      "id": "tshieos01-uta",
+      "id": "tshieos01-hou",
       "bbrPlayerId": "tshieos01",
       "name": "Oscar Tshiebwe",
-      "team": "UTA",
+      "team": "HOU",
       "position": "C",
       "positions": [
         "C",
@@ -12619,10 +12619,10 @@
       "heightInches": 84
     },
     {
-      "id": "hieldbu01-atl",
+      "id": "hieldbu01-chi",
       "bbrPlayerId": "hieldbu01",
       "name": "Buddy Hield",
-      "team": "ATL",
+      "team": "CHI",
       "position": "SG",
       "positions": [
         "SG"
@@ -12954,7 +12954,7 @@
     {
       "id": "bogdabo01-hou",
       "bbrPlayerId": "bogdabo01",
-      "name": "Bogdan Bogdanovi\u0107",
+      "name": "Bogdan Bogdanović",
       "team": "HOU",
       "position": "SG",
       "positions": [
@@ -13409,7 +13409,7 @@
     {
       "id": "jovicni01-mia",
       "bbrPlayerId": "jovicni01",
-      "name": "Nikola Jovi\u0107",
+      "name": "Nikola Jović",
       "team": "MIA",
       "position": "PF",
       "positions": [
@@ -13653,10 +13653,10 @@
       "heightInches": 78
     },
     {
-      "id": "blackle01-fa",
+      "id": "blackle01-sac",
       "bbrPlayerId": "blackle01",
       "name": "Leaky Black",
-      "team": "FA",
+      "team": "SAC",
       "position": "SF",
       "positions": [
         "SF"
@@ -14361,10 +14361,10 @@
       "heightInches": 74
     },
     {
-      "id": "nembhry01-atl",
+      "id": "nembhry01-den",
       "bbrPlayerId": "nembhry01",
       "name": "Ryan Nembhard",
-      "team": "ATL",
+      "team": "DEN",
       "position": "PG",
       "positions": [
         "PG",
@@ -14982,7 +14982,7 @@
     {
       "id": "jakucka01-mil",
       "bbrPlayerId": "jakucka01",
-      "name": "Kasparas Jaku\u010dionis",
+      "name": "Kasparas Jakučionis",
       "team": "MIL",
       "position": "PG",
       "positions": [
@@ -15228,10 +15228,10 @@
       "heightInches": 79
     },
     {
-      "id": "grayha01-fa",
+      "id": "grayha01-bos",
       "bbrPlayerId": "grayha01",
       "name": "Hayden Gray",
-      "team": "FA",
+      "team": "BOS",
       "position": "SG",
       "positions": [
         "SG"
@@ -15313,7 +15313,7 @@
     {
       "id": "salauti01-cho",
       "bbrPlayerId": "salauti01",
-      "name": "Tidjane Sala\u00fcn",
+      "name": "Tidjane Salaün",
       "team": "CHO",
       "position": "PF",
       "positions": [
@@ -15975,7 +15975,7 @@
     {
       "id": "matkoka01-nop",
       "bbrPlayerId": "matkoka01",
-      "name": "Karlo Matkovi\u0107",
+      "name": "Karlo Matković",
       "team": "NOP",
       "position": "PF",
       "positions": [
@@ -16881,10 +16881,10 @@
       "heightInches": 82
     },
     {
-      "id": "eubandr01-fa",
+      "id": "eubandr01-nyk",
       "bbrPlayerId": "eubandr01",
       "name": "Drew Eubanks",
-      "team": "FA",
+      "team": "NYK",
       "position": "C",
       "positions": [
         "C",
@@ -17050,7 +17050,7 @@
     {
       "id": "topicni01-okc",
       "bbrPlayerId": "topicni01",
-      "name": "Nikola Topi\u0107",
+      "name": "Nikola Topić",
       "team": "OKC",
       "position": "PG",
       "positions": [
@@ -17254,10 +17254,10 @@
       "heightInches": 77
     },
     {
-      "id": "agbajoc01-fa",
+      "id": "agbajoc01-nyk",
       "bbrPlayerId": "agbajoc01",
       "name": "Ochai Agbaji",
-      "team": "FA",
+      "team": "NYK",
       "position": "SG",
       "positions": [
         "SG"
@@ -17463,10 +17463,10 @@
       "heightInches": 82
     },
     {
-      "id": "weslebl01-fa",
+      "id": "weslebl01-lac",
       "bbrPlayerId": "weslebl01",
       "name": "Blake Wesley",
-      "team": "FA",
+      "team": "LAC",
       "position": "SG",
       "positions": [
         "SG"
@@ -17961,10 +17961,10 @@
       "heightInches": 80
     },
     {
-      "id": "peterta01-fa",
+      "id": "peterta01-sas",
       "bbrPlayerId": "peterta01",
       "name": "Taelon Peter",
-      "team": "FA",
+      "team": "SAS",
       "position": "SG",
       "positions": [
         "SG"
@@ -18169,10 +18169,10 @@
       "heightInches": 73
     },
     {
-      "id": "konchjo01-min",
+      "id": "konchjo01-fa",
       "bbrPlayerId": "konchjo01",
       "name": "John Konchar",
-      "team": "MIN",
+      "team": "FA",
       "position": "SG",
       "positions": [
         "SG"
@@ -18207,7 +18207,8 @@
       "effectiveFieldGoalPct": 0.543,
       "trueShooting": 0.557,
       "statsTeam": "MEM",
-      "heightInches": 77
+      "heightInches": 77,
+      "lastTeam": "MEM"
     },
     {
       "id": "joneska03-mil",
@@ -18457,10 +18458,10 @@
       "heightInches": 85
     },
     {
-      "id": "nelsogr02-fa",
+      "id": "nelsogr02-brk",
       "bbrPlayerId": "nelsogr02",
       "name": "Grant Nelson",
-      "team": "FA",
+      "team": "BRK",
       "position": "PF",
       "positions": [
         "PF"
@@ -18790,7 +18791,7 @@
     {
       "id": "labissk01-fa",
       "bbrPlayerId": "labissk01",
-      "name": "Skal Labissi\u00e8re",
+      "name": "Skal Labissière",
       "team": "FA",
       "position": "PF",
       "positions": [
@@ -18832,7 +18833,7 @@
     {
       "id": "konanya01-lac",
       "bbrPlayerId": "konanya01",
-      "name": "Yanic Konan Niederh\u00e4user",
+      "name": "Yanic Konan Niederhäuser",
       "team": "LAC",
       "position": "C",
       "positions": [
@@ -19454,7 +19455,7 @@
     {
       "id": "gonzahu01-bos",
       "bbrPlayerId": "gonzahu01",
-      "name": "Hugo Gonz\u00e1lez",
+      "name": "Hugo González",
       "team": "BOS",
       "position": "SF",
       "positions": [
@@ -19743,10 +19744,10 @@
       "heightInches": 81
     },
     {
-      "id": "terryda01-fa",
+      "id": "terryda01-gsw",
       "bbrPlayerId": "terryda01",
       "name": "Dalen Terry",
-      "team": "FA",
+      "team": "GSW",
       "position": "SG",
       "positions": [
         "SG"
@@ -20157,10 +20158,10 @@
       "heightInches": 82
     },
     {
-      "id": "timmedr01-fa",
+      "id": "timmedr01-min",
       "bbrPlayerId": "timmedr01",
       "name": "Drew Timme",
-      "team": "FA",
+      "team": "MIN",
       "position": "PF",
       "positions": [
         "PF"
@@ -20283,10 +20284,10 @@
       "heightInches": 81
     },
     {
-      "id": "kawamyu01-fa",
+      "id": "kawamyu01-lac",
       "bbrPlayerId": "kawamyu01",
       "name": "Yuki Kawamura",
-      "team": "FA",
+      "team": "LAC",
       "position": "PG",
       "positions": [
         "PG"
@@ -20366,10 +20367,10 @@
       "heightInches": 77
     },
     {
-      "id": "finnedo01-cho",
+      "id": "finnedo01-atl",
       "bbrPlayerId": "finnedo01",
       "name": "Dorian Finney-Smith",
-      "team": "CHO",
+      "team": "ATL",
       "position": "PF",
       "positions": [
         "PF"
@@ -20407,10 +20408,10 @@
       "heightInches": 79
     },
     {
-      "id": "poweldw01-fa",
+      "id": "poweldw01-dal",
       "bbrPlayerId": "poweldw01",
       "name": "Dwight Powell",
-      "team": "FA",
+      "team": "DAL",
       "position": "C",
       "positions": [
         "C",
@@ -20491,10 +20492,10 @@
       "heightInches": 81
     },
     {
-      "id": "wisemja01-fa",
+      "id": "wisemja01-nyk",
       "bbrPlayerId": "wisemja01",
       "name": "James Wiseman",
-      "team": "FA",
+      "team": "NYK",
       "position": "C",
       "positions": [
         "C",
@@ -20911,10 +20912,10 @@
       "heightInches": 72
     },
     {
-      "id": "kellymi02-fa",
+      "id": "kellymi02-gsw",
       "bbrPlayerId": "kellymi02",
       "name": "Miles Kelly",
-      "team": "FA",
+      "team": "GSW",
       "position": "PG",
       "positions": [
         "PG"
@@ -20994,10 +20995,10 @@
       "heightInches": 81
     },
     {
-      "id": "livinch01-fa",
+      "id": "livinch01-was",
       "bbrPlayerId": "livinch01",
       "name": "Chris Livingston",
-      "team": "FA",
+      "team": "WAS",
       "position": "SF",
       "positions": [
         "SF"
@@ -21036,10 +21037,10 @@
       "heightInches": 78
     },
     {
-      "id": "milleem01-sas",
+      "id": "milleem01-den",
       "bbrPlayerId": "milleem01",
       "name": "Emanuel Miller",
-      "team": "SAS",
+      "team": "DEN",
       "position": "PF",
       "positions": [
         "PF"
@@ -21285,10 +21286,10 @@
       "heightInches": 72
     },
     {
-      "id": "jonescu01-fa",
+      "id": "jonescu01-cle",
       "bbrPlayerId": "jonescu01",
       "name": "Curtis Jones",
-      "team": "FA",
+      "team": "CLE",
       "position": "SG",
       "positions": [
         "SG"
@@ -21329,7 +21330,7 @@
     {
       "id": "jonesda06-sas",
       "bbrPlayerId": "jonesda06",
-      "name": "David Jones Garc\u00eda",
+      "name": "David Jones García",
       "team": "SAS",
       "position": "SF",
       "positions": [
@@ -21411,10 +21412,10 @@
       "heightInches": 81
     },
     {
-      "id": "phillju01-min",
+      "id": "phillju01-hou",
       "bbrPlayerId": "phillju01",
       "name": "Julian Phillips",
-      "team": "MIN",
+      "team": "HOU",
       "position": "SF",
       "positions": [
         "SF"
@@ -21452,10 +21453,10 @@
       "heightInches": 78
     },
     {
-      "id": "bufkiko01-fa",
+      "id": "bufkiko01-nop",
       "bbrPlayerId": "bufkiko01",
       "name": "Kobe Bufkin",
-      "team": "FA",
+      "team": "NOP",
       "position": "SG",
       "positions": [
         "SG"
@@ -21659,10 +21660,10 @@
       "heightInches": 87
     },
     {
-      "id": "omierno01-fa",
+      "id": "omierno01-min",
       "bbrPlayerId": "omierno01",
       "name": "Norchad Omier",
-      "team": "FA",
+      "team": "MIN",
       "position": "PF",
       "positions": [
         "PF"
@@ -21742,10 +21743,10 @@
       "heightInches": 76
     },
     {
-      "id": "reevean01-fa",
+      "id": "reevean01-min",
       "bbrPlayerId": "reevean01",
       "name": "Antonio Reeves",
-      "team": "FA",
+      "team": "MIN",
       "position": "SG",
       "positions": [
         "SG"
@@ -21784,10 +21785,10 @@
       "heightInches": 77
     },
     {
-      "id": "kolokch01-atl",
+      "id": "kolokch01-nop",
       "bbrPlayerId": "kolokch01",
       "name": "Christian Koloko",
-      "team": "ATL",
+      "team": "NOP",
       "position": "C",
       "positions": [
         "C",
@@ -23326,10 +23327,10 @@
       "heightInches": 72
     },
     {
-      "id": "robinor01-fa",
+      "id": "robinor01-chi",
       "bbrPlayerId": "robinor01",
       "name": "Orlando Robinson",
-      "team": "FA",
+      "team": "CHI",
       "position": "C",
       "positions": [
         "C",
@@ -23453,7 +23454,7 @@
     {
       "id": "dadiepa01-nyk",
       "bbrPlayerId": "dadiepa01",
-      "name": "Pac\u00f4me Dadiet",
+      "name": "Pacôme Dadiet",
       "team": "NYK",
       "position": "SG",
       "positions": [
@@ -23575,10 +23576,10 @@
       "heightInches": 77
     },
     {
-      "id": "ingraha01-sas",
+      "id": "ingraha01-uta",
       "bbrPlayerId": "ingraha01",
       "name": "Harrison Ingram",
-      "team": "SAS",
+      "team": "UTA",
       "position": "SF",
       "positions": [
         "SF"
@@ -24246,7 +24247,7 @@
     {
       "id": "saricda01-fa",
       "bbrPlayerId": "saricda01",
-      "name": "Dario \u0160ari\u0107",
+      "name": "Dario Šarić",
       "team": "FA",
       "position": "C",
       "positions": [
@@ -24371,10 +24372,10 @@
       "heightInches": 78
     },
     {
-      "id": "keelstr01-mia",
+      "id": "keelstr01-was",
       "bbrPlayerId": "keelstr01",
       "name": "Trevor Keels",
-      "team": "MIA",
+      "team": "WAS",
       "position": "SG",
       "positions": [
         "SG"
@@ -24539,10 +24540,10 @@
       "heightInches": 82
     },
     {
-      "id": "peterdr01-fa",
+      "id": "peterdr01-chi",
       "bbrPlayerId": "peterdr01",
       "name": "Drew Peterson",
-      "team": "FA",
+      "team": "CHI",
       "position": "PF",
       "positions": [
         "PF"
@@ -24583,7 +24584,7 @@
     {
       "id": "manonch01-lal",
       "bbrPlayerId": "manonch01",
-      "name": "Chris Ma\u00f1on",
+      "name": "Chris Mañon",
       "team": "LAL",
       "position": "SG",
       "positions": [
