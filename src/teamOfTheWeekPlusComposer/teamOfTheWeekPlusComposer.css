@@ -194,6 +194,11 @@
   border-radius: 0;
   touch-action: none;
   cursor: grab;
+  overflow: hidden;
+}
+
+.twp-cell .pod-photo__surface {
+  z-index: 1;
 }
 
 .twp-cell:not(:first-child) .pod-photo {

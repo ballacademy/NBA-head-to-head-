@@ -36,6 +36,8 @@ const PHOTO_CHROME_CLASSES = [
   "pod-photo__rotate",
 ] as const;
 
+const PHOTO_SURFACE_CLASS = "pod-photo__surface";
+
 export const photoFrameFilled = (src: string | null) => Boolean(src);
 
 export const isPhotoChromeClassName = (className: string) =>
@@ -237,7 +239,7 @@ export function PhotoFrame({
           return;
         }
         event.preventDefault();
-        (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+        event.currentTarget.setPointerCapture(event.pointerId);
         pointers.current.set(event.pointerId, {
           x: event.clientX,
           y: event.clientY,
@@ -267,27 +269,25 @@ export function PhotoFrame({
       }}
     >
       {src ? (
-        <img
-          className="pod-photo__img"
-          src={src}
-          alt=""
-          draggable={false}
-          style={{
-            objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
-            transform: `rotate(${rotate}deg) scale(${zoom})`,
-            transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
-          }}
-        />
+        <div className={PHOTO_SURFACE_CLASS}>
+          <img
+            className="pod-photo__img"
+            src={src}
+            alt=""
+            draggable={false}
+            style={{
+              objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
+              transform: `rotate(${rotate}deg) scale(${zoom})`,
+              transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
+            }}
+          />
+        </div>
       ) : (
         <button type="button" className="pod-photo__pick" onClick={onPick}>
           Pick player
         </button>
       )}
-      <div
-        className="pod-photo__tools"
-        onPointerDown={stopChromePointer}
-        onPointerUp={stopChromePointer}
-      >
+      <div className="pod-photo__tools">
         <label className="pod-photo__tool">
           Upload photo
           <input

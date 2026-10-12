@@ -227,8 +227,10 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__tools")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
+    expect(isPhotoChromeClassName("pod-photo__surface")).toBe(false);
     expect(photoFrameFilled(null)).toBe(false);
     expect(photoFrameFilled("data:image/png;base64,aaa")).toBe(true);
+    expect(photoFrameFilled("data:image/jpeg;base64,/9j/aaaa")).toBe(true);
   });
 
   it("rotates custom photos in 90-degree steps and keeps rotate while panning", () => {

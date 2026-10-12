@@ -87,6 +87,11 @@
   border-radius: 0;
   touch-action: none;
   cursor: grab;
+  overflow: hidden;
+}
+
+.totw-strip .pod-photo__surface {
+  z-index: 1;
 }
 
 .totw-strip .pod-photo__pick {
