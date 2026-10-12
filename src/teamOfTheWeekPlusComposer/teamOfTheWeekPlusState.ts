@@ -8,6 +8,8 @@ import {
   isTotwStrip,
   patchStrip,
   setStripPhoto,
+  splitPlayerName,
+  stripPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 
@@ -19,6 +21,8 @@ export {
   hasCustomPhoto,
   patchStrip,
   setStripPhoto,
+  splitPlayerName,
+  stripPlayerName,
   type TotwStrip,
 };
 

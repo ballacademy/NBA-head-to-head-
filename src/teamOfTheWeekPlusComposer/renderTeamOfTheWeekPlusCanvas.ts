@@ -23,10 +23,12 @@ import {
   PLUS_BA_INSET,
   PLUS_BA_SIZE,
   PLUS_BRAND_SIZE,
+  PLUS_NAME_GIVEN_SIZE,
   PLUS_NAME_SIZE,
   PLUS_SECTION_SIZE,
   PLUS_SECTION_TRACK,
   PLUS_STANDOUT_COUNT,
+  PLUS_STANDOUT_GIVEN_SIZE,
   PLUS_STANDOUT_NAME_SIZE,
   PLUS_STARTER_COUNT,
   PLUS_TITLE_SIZE,
@@ -125,6 +127,8 @@ const drawPortrait = async (
   h: number,
   nameH: number,
   nameSize: number,
+  givenSize: number,
+  logoSize: number,
   scale: number,
   first: boolean,
   showNames: boolean,
@@ -178,32 +182,61 @@ const drawPortrait = async (
   const barY = y + h - line - barH;
   const barX = first ? x + line : x;
   const barW = w - (first ? line : 0) - line;
-  context.fillStyle = "rgba(8, 8, 8, 0.84)";
+  const fade = context.createLinearGradient(barX, barY, barX, barY + barH);
+  fade.addColorStop(0, "rgba(0, 0, 0, 0)");
+  fade.addColorStop(0.36, "rgba(0, 0, 0, 0.42)");
+  fade.addColorStop(0.68, "rgba(0, 0, 0, 0.78)");
+  fade.addColorStop(1, "rgba(0, 0, 0, 0.94)");
+  context.fillStyle = fade;
   context.fillRect(barX, barY, barW, barH);
+  const pad = 6 * scale;
+  const mark = logoSize * scale;
   const team = getTeam(slot.teamId);
   let logoW = 0;
   if (team) {
     const logo = await loadImage(team.logoSrc);
     if (logo) {
-      logoW = barH;
-      drawCenteredLogo(context, logo, barX, barY, logoW, barH, {
-        cacheKey: team.logoSrc,
-        fitX: 0.88,
-        fitY: 0.88,
-      });
+      logoW = mark;
+      drawCenteredLogo(
+        context,
+        logo,
+        barX + 4 * scale,
+        barY + barH - pad - mark,
+        mark,
+        mark,
+        {
+          cacheKey: team.logoSrc,
+          fitX: 0.88,
+          fitY: 0.88,
+        },
+      );
     }
   }
-  const name = (slot.lastName || slot.firstName).toUpperCase();
-  if (name) {
-    const textX = barX + logoW;
-    const textW = barW - logoW;
+  const given = slot.firstName.trim().toUpperCase();
+  const family = slot.lastName.trim().toUpperCase();
+  const textX = barX + (logoW ? logoW + 8 * scale : 4 * scale);
+  const familyY = barY + barH - pad - 2 * scale;
+  context.textAlign = "left";
+  context.fillStyle = "#fff";
+  if (family) {
     context.font = `900 ${nameSize * scale}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.08 * nameSize * scale);
-    context.fillStyle = "#fff";
+    context.textBaseline = "bottom";
+    setLetterSpacing(context, 0.05 * nameSize * scale);
     withShadow(context, scale, () => {
-      context.fillText(name, textX + textW / 2, barY + barH / 2 + 0.5 * scale);
+      context.fillText(family, textX, familyY);
+    });
+    setLetterSpacing(context, 0);
+  }
+  if (given) {
+    context.font = `900 ${givenSize * scale}px ${POSTER_FONT}`;
+    context.textBaseline = "bottom";
+    setLetterSpacing(context, 0.1 * givenSize * scale);
+    withShadow(context, scale, () => {
+      context.fillText(
+        given,
+        textX,
+        familyY - (family ? nameSize * scale * 1.05 : 0),
+      );
     });
     setLetterSpacing(context, 0);
   }
@@ -375,6 +408,8 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       rect.h * s,
       rect.nameH,
       PLUS_NAME_SIZE,
+      PLUS_NAME_GIVEN_SIZE,
+      rect.logoSize,
       s,
       index === 0,
       input.showNames !== false,
@@ -415,6 +450,8 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       rect.h * s,
       rect.nameH,
       PLUS_STANDOUT_NAME_SIZE,
+      PLUS_STANDOUT_GIVEN_SIZE,
+      rect.logoSize,
       s,
       index === 0,
       input.showNames !== false,

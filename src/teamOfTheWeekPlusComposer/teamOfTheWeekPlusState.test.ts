@@ -14,7 +14,12 @@ import {
   PLUS_HEADER_PAD_X,
   PLUS_SECTION_SIZE,
   PLUS_STARTER_SHARE,
+  PLUS_STANDOUT_NAME_H,
+  PLUS_STARTER_NAME_H,
+  PLUS_TITLE_BAND_H,
   PLUS_TITLE_SIZE,
+  PLUS_WEEK_BOTTOM,
+  PLUS_WEEK_H,
   PLUS_WEEK_SIZE,
   PLUS_ZOOM_STEP,
   plusBarRect,
@@ -34,6 +39,7 @@ import {
   setStripPhoto,
   standoutSlots,
   starterSlots,
+  stripPlayerName,
   usedPlusPlayerIds,
 } from "./teamOfTheWeekPlusState";
 
@@ -83,6 +89,16 @@ describe("team of the week plus", () => {
     expect(PLUS_BA_INSET).toBe((PLUS_HEADER_H - PLUS_BA_SIZE) / 2);
     expect(PLUS_HEADER_PAD_X).toBeGreaterThan(PLUS_BA_SIZE);
     expect(PLUS_WEEK_SIZE).toBeGreaterThanOrEqual(20);
+    const metrics = plusBoardMetrics();
+    expect(PLUS_TITLE_BAND_H).toBe(
+      PLUS_HEADER_H - PLUS_WEEK_BOTTOM - PLUS_WEEK_H,
+    );
+    expect(metrics.weekY).toBe(PLUS_TITLE_BAND_H);
+    expect(metrics.titleY).toBeCloseTo(metrics.weekY / 2);
+    expect(metrics.weekY + metrics.weekH + PLUS_WEEK_BOTTOM).toBe(PLUS_HEADER_H);
+    expect(metrics.titleY).toBeLessThan(58);
+    expect(PLUS_STARTER_NAME_H).toBeGreaterThan(38);
+    expect(PLUS_STANDOUT_NAME_H).toBeGreaterThan(32);
     expect(draft.slots).toHaveLength(10);
     expect("title" in draft).toBe(false);
     expect(starterSlots(draft.slots)).toHaveLength(5);
@@ -111,6 +127,10 @@ describe("team of the week plus", () => {
       slots = applyPlayerPick(slots, index, player!);
     });
     expect(slots.every((slot) => slot.playerId)).toBe(true);
+    expect(stripPlayerName(slots[0]!)).toMatch(/Luka/i);
+    expect(stripPlayerName(slots[0]!)).toMatch(/Doncic/i);
+    expect(stripPlayerName(slots[1]!)).toMatch(/LeBron/i);
+    expect(stripPlayerName(slots[1]!)).toMatch(/James/i);
     expect(Object.keys(usedPlusPlayerIds(slots))).toHaveLength(10);
     expect(usedPlusPlayerIds(slots)["3945274"]).toBe("Starter 1");
     expect(usedPlusPlayerIds(slots)[ids[9]!]).toBe("Standout 5");

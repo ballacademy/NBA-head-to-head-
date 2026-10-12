@@ -17,17 +17,22 @@ import {
   PLUS_HEADER_PAD_X,
   PLUS_SECTION_H,
   PLUS_STANDOUT_COUNT,
+  PLUS_STANDOUT_LOGO,
   PLUS_STANDOUT_NAME_H,
   PLUS_STANDOUT_PAD_X,
   PLUS_STARTER_COUNT,
+  PLUS_STARTER_LOGO,
   PLUS_STARTER_NAME_H,
   PLUS_STARTER_PAD_X,
+  PLUS_WEEK_BOTTOM,
+  PLUS_WEEK_H,
   PLUS_ZOOM_STEP,
 } from "./teamOfTheWeekPlusLayout";
 import {
   slotLabel,
   standoutSlots,
   starterSlots,
+  stripPlayerName,
   type TotwStrip,
 } from "./teamOfTheWeekPlusState";
 
@@ -48,7 +53,10 @@ interface TeamOfTheWeekPlusGraphicProps {
   onPick: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
-  onNameChange: (index: number, lastName: string) => void;
+  onNameChange: (
+    index: number,
+    names: { firstName?: string; lastName?: string },
+  ) => void;
 }
 
 const PortraitCell = ({
@@ -66,10 +74,13 @@ const PortraitCell = ({
   onPick: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
-  onNameChange: (index: number, lastName: string) => void;
+  onNameChange: (
+    index: number,
+    names: { firstName?: string; lastName?: string },
+  ) => void;
 }) => {
   const empty = !slot.photoSrc;
-  const label = slot.lastName || slotLabel(index);
+  const label = stripPlayerName(slot) || slotLabel(index);
   const team = getTeam(slot.teamId);
   return (
     <section className="twp-cell" aria-label={slotLabel(index)}>
@@ -91,21 +102,42 @@ const PortraitCell = ({
               <TeamLogo src={team.logoSrc} label="" fitX={0.88} fitY={0.88} />
             </div>
           ) : null}
-          <input
-            className="twp-name"
-            value={slot.lastName}
-            maxLength={18}
-            placeholder={empty ? "" : "NAME"}
-            aria-label={`${slotLabel(index)} name`}
-            onChange={(event) =>
-              onNameChange(index, event.target.value.slice(0, 18))
-            }
-            onClick={() => {
-              if (empty) {
-                onPick(index);
+          <div className="twp-name-stack">
+            <input
+              className="twp-name twp-name--given"
+              value={slot.firstName}
+              maxLength={16}
+              placeholder={empty ? "" : "FIRST"}
+              aria-label={`${slotLabel(index)} first name`}
+              onChange={(event) =>
+                onNameChange(index, {
+                  firstName: event.target.value.slice(0, 16),
+                })
               }
-            }}
-          />
+              onClick={() => {
+                if (empty) {
+                  onPick(index);
+                }
+              }}
+            />
+            <input
+              className="twp-name twp-name--family"
+              value={slot.lastName}
+              maxLength={18}
+              placeholder={empty ? "" : "LAST"}
+              aria-label={`${slotLabel(index)} last name`}
+              onChange={(event) =>
+                onNameChange(index, {
+                  lastName: event.target.value.slice(0, 18),
+                })
+              }
+              onClick={() => {
+                if (empty) {
+                  onPick(index);
+                }
+              }}
+            />
+          </div>
         </div>
       ) : null}
     </section>
@@ -195,6 +227,10 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
           ["--standout-pad" as string]: String(PLUS_STANDOUT_PAD_X),
           ["--starter-name-h" as string]: String(PLUS_STARTER_NAME_H),
           ["--standout-name-h" as string]: String(PLUS_STANDOUT_NAME_H),
+          ["--starter-logo" as string]: String(PLUS_STARTER_LOGO),
+          ["--standout-logo" as string]: String(PLUS_STANDOUT_LOGO),
+          ["--week-h" as string]: String(PLUS_WEEK_H),
+          ["--week-bottom" as string]: String(PLUS_WEEK_BOTTOM),
         } as React.CSSProperties
       }
       aria-label="Instagram team of the week plus graphic"

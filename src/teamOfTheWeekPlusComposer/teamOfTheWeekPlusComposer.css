@@ -10,8 +10,12 @@
   --footer-h: 16;
   --starter-pad: 28;
   --standout-pad: 56;
-  --starter-name-h: 38;
-  --standout-name-h: 32;
+  --starter-name-h: 90;
+  --standout-name-h: 74;
+  --starter-logo: 30;
+  --standout-logo: 26;
+  --week-h: 36;
+  --week-bottom: 4;
   --header-pad-x: 105;
   --ba-size: 72;
   --ba-inset: 25;
@@ -48,12 +52,13 @@
 .twp-header {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) calc(var(--week-h) * var(--u));
+  align-items: stretch;
+  justify-items: center;
   min-height: 0;
-  padding: calc(10 * var(--u)) calc(var(--header-pad-x) * var(--u)) calc(6 * var(--u));
+  padding: 0 calc(var(--header-pad-x) * var(--u))
+    calc(var(--week-bottom) * var(--u));
 }
 
 .twp-brand {
@@ -103,7 +108,7 @@
 
 .twp-title {
   width: 100%;
-  height: calc(56 * var(--u));
+  height: 100%;
   font-size: calc(50 * var(--u));
   letter-spacing: 0.02em;
   -webkit-text-stroke: calc(3.4 * var(--u)) #000;
@@ -130,10 +135,10 @@
 .twp-week {
   position: relative;
   z-index: 1;
-  margin: calc(2 * var(--u)) 0 0;
+  margin: 0;
   min-width: 40%;
   max-width: 78%;
-  height: calc(36 * var(--u));
+  height: calc(var(--week-h) * var(--u));
   padding: 0 calc(18 * var(--u));
   border: 0;
   appearance: none;
@@ -272,14 +277,23 @@
   right: var(--frame-w);
   bottom: var(--frame-w);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  gap: calc(2 * var(--u));
   height: calc(var(--starter-name-h) * var(--u) - var(--frame-w));
-  background: rgba(8, 8, 8, 0.84);
+  padding: 0 calc(4 * var(--u)) calc(6 * var(--u));
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.94) 0%,
+    rgba(0, 0, 0, 0.78) 32%,
+    rgba(0, 0, 0, 0.42) 64%,
+    rgba(0, 0, 0, 0) 100%
+  );
   pointer-events: auto;
 }
 
 .twp-bar--standouts .twp-meta {
   height: calc(var(--standout-name-h) * var(--u) - var(--frame-w));
+  padding-bottom: calc(5 * var(--u));
 }
 
 .twp-cell:not(:first-child) .twp-meta {
@@ -287,13 +301,15 @@
 }
 
 .twp-meta__logo {
-  flex: 0 0 calc(var(--starter-name-h) * var(--u) - var(--frame-w));
-  height: 100%;
+  flex: 0 0 calc(var(--starter-logo) * var(--u));
+  height: calc(var(--starter-logo) * var(--u));
   min-width: 0;
+  margin-bottom: calc(2 * var(--u));
 }
 
 .twp-bar--standouts .twp-meta__logo {
-  flex-basis: calc(var(--standout-name-h) * var(--u) - var(--frame-w));
+  flex-basis: calc(var(--standout-logo) * var(--u));
+  height: calc(var(--standout-logo) * var(--u));
 }
 
 .twp-meta__logo canvas {
@@ -302,28 +318,53 @@
   display: block;
 }
 
-.twp-name {
+.twp-name-stack {
   flex: 1 1 auto;
   min-width: 0;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.twp-name {
+  width: 100%;
+  min-width: 0;
   margin: 0;
-  padding: 0 calc(4 * var(--u));
+  padding: 0;
   border: 0;
   background: transparent;
   color: #fff;
-  text-align: center;
+  text-align: left;
   font-family: var(--ig-poster);
-  font-size: calc(16 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.78);
 }
 
-.twp-bar--standouts .twp-name {
+.twp-name--given {
+  height: calc(14 * var(--u));
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.1em;
+  opacity: 0.92;
+}
+
+.twp-name--family {
+  height: calc(18 * var(--u));
   font-size: calc(14 * var(--u));
+  letter-spacing: 0.05em;
+}
+
+.twp-bar--standouts .twp-name--given {
+  height: calc(12 * var(--u));
+  font-size: calc(10 * var(--u));
+}
+
+.twp-bar--standouts .twp-name--family {
+  height: calc(16 * var(--u));
+  font-size: calc(12 * var(--u));
 }
 
 .twp-board.is-names-off .twp-cell .pod-photo__pick {

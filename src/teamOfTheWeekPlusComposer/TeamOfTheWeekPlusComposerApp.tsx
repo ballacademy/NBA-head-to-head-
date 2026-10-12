@@ -374,8 +374,8 @@ export function TeamOfTheWeekPlusComposerApp() {
                 "Photo cropped inside the portrait — pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
-            onNameChange={(index, lastName) =>
-              setSlots((current) => patchStrip(current, index, { lastName }))
+            onNameChange={(index, names) =>
+              setSlots((current) => patchStrip(current, index, names))
             }
           />
           <p className="sc-hint">

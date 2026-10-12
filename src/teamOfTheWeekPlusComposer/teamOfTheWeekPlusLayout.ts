@@ -24,6 +24,8 @@ export const PLUS_TITLE_SIZE = 50;
 export const PLUS_TITLE_TRACK = 0.02;
 export const PLUS_WEEK_H = 36;
 export const PLUS_WEEK_SIZE = 20;
+export const PLUS_WEEK_BOTTOM = 4;
+export const PLUS_TITLE_BAND_H = PLUS_HEADER_H - PLUS_WEEK_BOTTOM - PLUS_WEEK_H;
 export const PLUS_SECTION_H = 54;
 export const PLUS_SECTION_SIZE = 34;
 export const PLUS_SECTION_TRACK = 0.04;
@@ -31,10 +33,14 @@ export const PLUS_FOOTER = 16;
 export const PLUS_STARTER_PAD_X = 28;
 export const PLUS_STANDOUT_PAD_X = 56;
 export const PLUS_STARTER_SHARE = 0.55;
-export const PLUS_STARTER_NAME_H = 38;
-export const PLUS_STANDOUT_NAME_H = 32;
-export const PLUS_NAME_SIZE = 16;
-export const PLUS_STANDOUT_NAME_SIZE = 14;
+export const PLUS_STARTER_NAME_H = 90;
+export const PLUS_STANDOUT_NAME_H = 74;
+export const PLUS_STARTER_LOGO = 30;
+export const PLUS_STANDOUT_LOGO = 26;
+export const PLUS_NAME_SIZE = 14;
+export const PLUS_NAME_GIVEN_SIZE = 11;
+export const PLUS_STANDOUT_NAME_SIZE = 12;
+export const PLUS_STANDOUT_GIVEN_SIZE = 10;
 export const PLUS_BRAND_SIZE = 13;
 /** Circled BA lockup — same size as the tier-list corner mark. */
 export const PLUS_BA_SIZE = 72;
@@ -80,8 +86,8 @@ export const plusBoardMetrics = (): PlusBoardMetrics => {
     standoutY,
     starterW: (GRAPHIC_WIDTH - PLUS_STARTER_PAD_X * 2) / PLUS_STARTER_COUNT,
     standoutW: (GRAPHIC_WIDTH - PLUS_STANDOUT_PAD_X * 2) / PLUS_STANDOUT_COUNT,
-    titleY: 58,
-    weekY: 82,
+    titleY: PLUS_TITLE_BAND_H / 2,
+    weekY: PLUS_TITLE_BAND_H,
     weekH: PLUS_WEEK_H,
     sectionY,
   };
@@ -99,6 +105,7 @@ export const plusCellRect = (
       w: metrics.starterW,
       h: metrics.starterH,
       nameH: PLUS_STARTER_NAME_H,
+      logoSize: PLUS_STARTER_LOGO,
     };
   }
   return {
@@ -107,6 +114,7 @@ export const plusCellRect = (
     w: metrics.standoutW,
     h: metrics.standoutH,
     nameH: PLUS_STANDOUT_NAME_H,
+    logoSize: PLUS_STANDOUT_LOGO,
   };
 };
 
