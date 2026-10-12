@@ -6,7 +6,11 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  PLUS_BRAND_SIZE,
+  PLUS_SECTION_SIZE,
   PLUS_STARTER_SHARE,
+  PLUS_TITLE_SIZE,
+  PLUS_WEEK_SIZE,
   plusBarRect,
   plusBoardMetrics,
   plusCellRect,
@@ -59,11 +63,16 @@ describe("team of the week plus", () => {
     expect(starterBar.w).toBeGreaterThan(standoutBar.w);
   });
 
-  it("defaults compact branding and row captions, with no title plate", () => {
+  it("uses large centered titles, a readable week, and a small brand mark", () => {
     const draft = defaultTotwPlusDraft();
     expect(draft.brand.toUpperCase()).toBe("BALLACADEMY");
+    expect(draft.starterCaption).toBe("TEAM OF THE WEEK");
+    expect(draft.standoutCaption).toBe("STANDOUTS OF THE WEEK");
     expect(draft.starterCaption).toBe(DEFAULT_PLUS_STARTER_CAPTION);
     expect(draft.standoutCaption).toBe(DEFAULT_PLUS_STANDOUT_CAPTION);
+    expect(PLUS_TITLE_SIZE).toBeGreaterThan(PLUS_SECTION_SIZE);
+    expect(PLUS_SECTION_SIZE).toBeGreaterThan(PLUS_BRAND_SIZE * 2);
+    expect(PLUS_WEEK_SIZE).toBeGreaterThanOrEqual(20);
     expect(draft.slots).toHaveLength(10);
     expect("title" in draft).toBe(false);
     expect(starterSlots(draft.slots)).toHaveLength(5);

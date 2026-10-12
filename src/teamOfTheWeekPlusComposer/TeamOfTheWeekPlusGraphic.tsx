@@ -8,10 +8,9 @@ import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
-  PLUS_CAPTION_H,
-  PLUS_CHROME_H,
   PLUS_FOOTER,
-  PLUS_ROW_GAP,
+  PLUS_HEADER_H,
+  PLUS_SECTION_H,
   PLUS_STANDOUT_COUNT,
   PLUS_STANDOUT_NAME_H,
   PLUS_STANDOUT_PAD_X,
@@ -44,30 +43,6 @@ interface TeamOfTheWeekPlusGraphicProps {
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (index: number, lastName: string) => void;
 }
-
-const CaptionRow = ({
-  value,
-  ariaLabel,
-  onChange,
-  bench = false,
-}: {
-  value: string;
-  ariaLabel: string;
-  onChange: (value: string) => void;
-  bench?: boolean;
-}) => (
-  <div className={["twp-caption-row", bench ? "is-bench" : ""].filter(Boolean).join(" ")}>
-    <input
-      className="twp-caption"
-      value={value}
-      maxLength={36}
-      spellCheck={false}
-      aria-label={ariaLabel}
-      onChange={(event) => onComposerTextChange(event, onChange, 36)}
-    />
-    <span className="twp-caption-rule" aria-hidden="true" />
-  </div>
-);
 
 const PortraitCell = ({
   slot,
@@ -188,9 +163,8 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--chrome-h" as string]: String(PLUS_CHROME_H),
-          ["--caption-h" as string]: String(PLUS_CAPTION_H),
-          ["--row-gap" as string]: String(PLUS_ROW_GAP),
+          ["--header-h" as string]: String(PLUS_HEADER_H),
+          ["--section-h" as string]: String(PLUS_SECTION_H),
           ["--footer-h" as string]: String(PLUS_FOOTER),
           ["--starter-pad" as string]: String(PLUS_STARTER_PAD_X),
           ["--standout-pad" as string]: String(PLUS_STANDOUT_PAD_X),
@@ -200,24 +174,34 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
       }
       aria-label="Instagram team of the week plus graphic"
     >
-      <header className="twp-chrome">
-        {showBa ? (
-          <img
-            className="twp-ba"
-            src="/ba-logo-circled.png"
-            alt=""
-            aria-hidden="true"
-          />
-        ) : (
-          <input
-            className="twp-brand"
-            value={brand}
-            maxLength={24}
-            spellCheck={false}
-            aria-label="Brand label"
-            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
-          />
-        )}
+      {showBa ? (
+        <img
+          className="composer-ba twp-ba"
+          src="/ba-logo-circled.png"
+          alt=""
+          aria-hidden="true"
+        />
+      ) : (
+        <input
+          className="twp-brand"
+          value={brand}
+          maxLength={24}
+          spellCheck={false}
+          aria-label="Brand mark"
+          onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+        />
+      )}
+      <header className="twp-header">
+        <input
+          className="twp-title"
+          value={starterCaption}
+          maxLength={48}
+          spellCheck={false}
+          aria-label="Team of the Week title"
+          onChange={(event) =>
+            onComposerTextChange(event, onStarterCaptionChange, 48)
+          }
+        />
         <input
           className="twp-week"
           value={week}
@@ -228,11 +212,6 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
           onChange={(event) => onWeekChange(event.target.value.slice(0, 32))}
         />
       </header>
-      <CaptionRow
-        value={starterCaption}
-        ariaLabel="Team of the Week row caption"
-        onChange={onStarterCaptionChange}
-      />
       <div className="twp-bar twp-bar--starters">
         {Array.from({ length: PLUS_STARTER_COUNT }, (_, index) => (
           <PortraitCell
@@ -246,13 +225,18 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
           />
         ))}
       </div>
-      <div className="twp-row-gap" />
-      <CaptionRow
-        value={standoutCaption}
-        ariaLabel="Standouts row caption"
-        onChange={onStandoutCaptionChange}
-        bench
-      />
+      <div className="twp-section">
+        <input
+          className="twp-section-title"
+          value={standoutCaption}
+          maxLength={48}
+          spellCheck={false}
+          aria-label="Standouts of the Week title"
+          onChange={(event) =>
+            onComposerTextChange(event, onStandoutCaptionChange, 48)
+          }
+        />
+      </div>
       <div className="twp-bar twp-bar--standouts">
         {Array.from({ length: PLUS_STANDOUT_COUNT }, (_, index) => (
           <PortraitCell

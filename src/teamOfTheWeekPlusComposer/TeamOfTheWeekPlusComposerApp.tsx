@@ -22,6 +22,7 @@ import { TeamOfTheWeekPlusGraphic } from "./TeamOfTheWeekPlusGraphic";
 import {
   applyPlayerPick,
   clearStrip,
+  DEFAULT_PLUS_STANDOUT_CAPTION,
   defaultTotwPlusDraft,
   isTotwPlusDraft,
   patchStrip,
@@ -39,7 +40,13 @@ const STORAGE_KEY = "ddgm:team-of-the-week-plus-composer";
 const loadDraft = (): TotwPlusDraft => {
   const stored = readJson<Partial<TotwPlusDraft>>(STORAGE_KEY);
   if (isTotwPlusDraft(stored)) {
-    return stored;
+    return {
+      ...stored,
+      standoutCaption:
+        stored.standoutCaption.trim() === "STANDOUTS"
+          ? DEFAULT_PLUS_STANDOUT_CAPTION
+          : stored.standoutCaption,
+    };
   }
   const empty = defaultTotwPlusDraft();
   return {
@@ -193,12 +200,12 @@ export function TeamOfTheWeekPlusComposerApp() {
           <h1 className="sc-toolbar__title">TOTW Plus</h1>
         </div>
         <label className="sc-field sc-field--wide">
-          Starters
+          Title
           <input
             value={starterCaption}
-            maxLength={36}
+            maxLength={48}
             onChange={(event) =>
-              onComposerTextChange(event, setStarterCaption, 36)
+              onComposerTextChange(event, setStarterCaption, 48)
             }
           />
         </label>
@@ -208,12 +215,12 @@ export function TeamOfTheWeekPlusComposerApp() {
           onChange={setStarterCaption}
         />
         <label className="sc-field sc-field--wide">
-          Standouts
+          Section
           <input
             value={standoutCaption}
-            maxLength={36}
+            maxLength={48}
             onChange={(event) =>
-              onComposerTextChange(event, setStandoutCaption, 36)
+              onComposerTextChange(event, setStandoutCaption, 48)
             }
           />
         </label>

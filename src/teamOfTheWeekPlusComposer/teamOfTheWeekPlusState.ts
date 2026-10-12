@@ -24,7 +24,7 @@ export const PLUS_STARTER_COUNT = 5;
 export const PLUS_STANDOUT_COUNT = 5;
 export const PLUS_SLOT_COUNT = PLUS_STARTER_COUNT + PLUS_STANDOUT_COUNT;
 export const DEFAULT_PLUS_STARTER_CAPTION = "TEAM OF THE WEEK";
-export const DEFAULT_PLUS_STANDOUT_CAPTION = "STANDOUTS";
+export const DEFAULT_PLUS_STANDOUT_CAPTION = "STANDOUTS OF THE WEEK";
 
 export interface TotwPlusDraft {
   brand: string;

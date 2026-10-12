@@ -1,16 +1,15 @@
-/* Team of the Week Plus — 4:5 hero starters + shorter standouts bench. */
+/* Team of the Week Plus — large centered titles, readable week, small BA mark. */
 
 .twp-board {
   --u: 1px;
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
-  --chrome-h: 70;
-  --caption-h: 26;
-  --row-gap: 22;
-  --footer-h: 22;
+  --header-h: 122;
+  --section-h: 54;
+  --footer-h: 16;
   --starter-pad: 28;
-  --standout-pad: 64;
+  --standout-pad: 56;
   --starter-name-h: 38;
   --standout-name-h: 32;
   position: relative;
@@ -18,11 +17,9 @@
   width: 100%;
   display: grid;
   grid-template-rows:
-    calc(var(--chrome-h) * var(--u))
-    calc(var(--caption-h) * var(--u))
+    calc(var(--header-h) * var(--u))
     minmax(0, 11fr)
-    calc(var(--row-gap) * var(--u))
-    calc(var(--caption-h) * var(--u))
+    calc(var(--section-h) * var(--u))
     minmax(0, 9fr)
     calc(var(--footer-h) * var(--u));
   background-color: #0b0b0b;
@@ -39,37 +36,41 @@
 }
 
 .twp-ba {
-  position: relative;
-  width: calc(36 * var(--u));
-  height: calc(36 * var(--u));
-  margin: 0;
-  display: block;
+  top: calc(22 * var(--u));
+  right: calc(22 * var(--u));
+  width: calc(44 * var(--u));
+  height: calc(44 * var(--u));
 }
 
-.twp-chrome {
+.twp-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   min-height: 0;
-  padding: 0 calc(48 * var(--u));
+  padding: calc(10 * var(--u)) calc(72 * var(--u)) calc(6 * var(--u));
 }
 
 .twp-brand {
+  position: absolute;
+  top: calc(16 * var(--u));
+  left: calc(22 * var(--u));
+  width: 34%;
+  height: calc(20 * var(--u));
   margin: 0;
-  width: 64%;
-  height: calc(30 * var(--u));
   padding: 0;
   border: 0;
   appearance: none;
   background: transparent;
   color: #fff;
-  text-align: center;
+  text-align: left;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(13 * var(--u));
   font-weight: 900;
   font-synthesis: none;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   line-height: 1;
   -webkit-font-smoothing: antialiased;
@@ -78,76 +79,86 @@
     calc(2 * var(--u)) calc(2.2 * var(--u)) 0 rgba(0, 0, 0, 0.28);
 }
 
-.twp-week {
-  margin: calc(2 * var(--u)) 0 0;
-  width: 46%;
-  height: calc(18 * var(--u));
-  padding: 0;
-  border: 0;
-  appearance: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.78);
-  text-align: center;
-  font-family: var(--ig-poster);
-  font-size: calc(13 * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.twp-brand:focus,
-.twp-week:focus,
-.twp-caption:focus,
-.twp-name:focus {
-  outline: 1px dashed rgba(255, 255, 255, 0.45);
-  outline-offset: 3px;
-}
-
-.twp-caption-row {
-  display: flex;
-  align-items: center;
-  gap: calc(12 * var(--u));
-  min-height: 0;
-  padding: 0 calc(var(--starter-pad) * var(--u));
-}
-
-.twp-caption-row.is-bench {
-  padding: 0 calc(var(--standout-pad) * var(--u));
-}
-
-.twp-caption {
-  flex: 0 1 auto;
-  min-width: 22%;
-  max-width: 72%;
-  height: calc(24 * var(--u));
+.twp-title,
+.twp-section-title {
   margin: 0;
   padding: 0;
   border: 0;
   appearance: none;
   background: transparent;
   color: #fff;
+  text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(16 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.16em;
+  font-style: italic;
+  font-synthesis: none;
   text-transform: uppercase;
-  text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.8);
+  line-height: 0.92;
+  -webkit-font-smoothing: antialiased;
+  paint-order: stroke fill;
+}
+
+.twp-title {
+  width: 100%;
+  height: calc(56 * var(--u));
+  font-size: calc(50 * var(--u));
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: calc(3.4 * var(--u)) #000;
+  text-shadow: calc(1.5 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
+.twp-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0 calc(48 * var(--u));
+}
+
+.twp-section-title {
+  width: 100%;
+  height: calc(42 * var(--u));
+  font-size: calc(34 * var(--u));
+  letter-spacing: 0.04em;
+  -webkit-text-stroke: calc(2.4 * var(--u)) #000;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.82);
+}
+
+.twp-week {
+  position: relative;
+  z-index: 1;
+  margin: calc(2 * var(--u)) 0 0;
+  min-width: 40%;
+  max-width: 78%;
+  height: calc(36 * var(--u));
+  padding: 0 calc(18 * var(--u));
+  border: 0;
+  appearance: none;
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
   field-sizing: content;
 }
 
-.twp-caption-row.is-bench .twp-caption {
-  font-size: calc(14 * var(--u));
-  letter-spacing: 0.18em;
+.twp-brand:focus,
+.twp-title:focus,
+.twp-section-title:focus,
+.twp-name:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
 }
 
-.twp-caption-rule {
-  flex: 1 1 auto;
-  height: calc(1.2 * var(--u));
-  min-width: calc(24 * var(--u));
-  background: rgba(255, 255, 255, 0.28);
+.twp-week:focus {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
 }
 
-.twp-row-gap,
 .twp-footer {
   min-height: 0;
 }
@@ -232,6 +243,9 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   pointer-events: auto;
 }
 

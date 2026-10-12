@@ -18,16 +18,17 @@ import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  PLUS_BA_INSET,
+  PLUS_BA_SIZE,
   PLUS_BRAND_SIZE,
-  PLUS_CAPTION_SIZE,
-  PLUS_CHROME_H,
   PLUS_NAME_SIZE,
-  PLUS_STANDOUT_CAPTION_SIZE,
+  PLUS_SECTION_SIZE,
+  PLUS_SECTION_TRACK,
   PLUS_STANDOUT_COUNT,
   PLUS_STANDOUT_NAME_SIZE,
-  PLUS_STANDOUT_PAD_X,
   PLUS_STARTER_COUNT,
-  PLUS_STARTER_PAD_X,
+  PLUS_TITLE_SIZE,
+  PLUS_TITLE_TRACK,
   PLUS_WEEK_SIZE,
   plusBarRect,
   plusBoardMetrics,
@@ -71,6 +72,24 @@ const withShadow = (
   context.shadowBlur = 0;
   paint();
   context.restore();
+};
+
+const strokeFillText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  fill: string,
+  stroke: string,
+  strokeWidth: number,
+) => {
+  context.lineJoin = "round";
+  context.miterLimit = 2;
+  context.strokeStyle = stroke;
+  context.lineWidth = strokeWidth;
+  context.strokeText(text, x, y);
+  context.fillStyle = fill;
+  context.fillText(text, x, y);
 };
 
 const clipBarCell = (
@@ -187,35 +206,65 @@ const paintBarChrome = (
   }
 };
 
-const drawCaption = (
+const drawHeadline = (
   context: CanvasRenderingContext2D,
   text: string,
-  x: number,
   y: number,
-  w: number,
-  h: number,
   size: number,
+  tracking: number,
+  stroke: number,
   scale: number,
+  width: number,
 ) => {
   const label = text.trim().toUpperCase();
-  context.font = `900 ${size * scale}px ${POSTER_FONT}`;
-  context.textAlign = "left";
+  if (!label) {
+    return;
+  }
+  context.font = `900 italic ${size * scale}px ${POSTER_FONT}`;
+  context.textAlign = "center";
   context.textBaseline = "middle";
-  setLetterSpacing(context, 0.16 * size * scale);
-  const labelW = label
-    ? Math.min(w * 0.72, context.measureText(label).width + 8 * scale)
-    : 0;
+  setLetterSpacing(context, tracking * size * scale);
   withShadow(context, scale, () => {
-    context.fillStyle = "#fff";
-    context.fillText(label, x, y + h / 2);
+    strokeFillText(context, label, width / 2, y, "#fff", "#000", stroke * scale);
   });
   setLetterSpacing(context, 0);
-  const ruleX = x + labelW + 12 * scale;
-  const ruleW = x + w - ruleX;
-  if (ruleW > 16 * scale) {
-    context.fillStyle = "rgba(255, 255, 255, 0.28)";
-    context.fillRect(ruleX, y + h / 2, ruleW, Math.max(1, 1.2 * scale));
+};
+
+const drawWeekNotch = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  y: number,
+  h: number,
+  scale: number,
+  width: number,
+) => {
+  const label = text.trim().toUpperCase();
+  if (!label) {
+    return;
   }
+  context.font = `900 ${PLUS_WEEK_SIZE * scale}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  setLetterSpacing(context, 0.04 * PLUS_WEEK_SIZE * scale);
+  const textW = context.measureText(label).width;
+  const pad = 18 * scale;
+  const notchW = Math.min(
+    width * 0.78,
+    Math.max(width * 0.4, textW + pad * 2),
+  );
+  const x = (width - notchW) / 2;
+  const inset = notchW * 0.06;
+  context.beginPath();
+  context.moveTo(x + inset, y);
+  context.lineTo(x + notchW - inset, y);
+  context.lineTo(x + notchW, y + h);
+  context.lineTo(x, y + h);
+  context.closePath();
+  context.fillStyle = "#fff";
+  context.fill();
+  context.fillStyle = "#111";
+  context.fillText(label, width / 2, y + h / 2 + 0.5 * scale);
+  setLetterSpacing(context, 0);
 };
 
 export interface TeamOfTheWeekPlusRenderInput {
@@ -244,7 +293,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
 
   await document.fonts?.ready.catch(() => undefined);
   await document.fonts
-    ?.load(`900 ${PLUS_BRAND_SIZE * scale}px ${POSTER_FONT}`)
+    ?.load(`900 italic ${PLUS_TITLE_SIZE * scale}px ${POSTER_FONT}`)
     .catch(() => undefined);
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
@@ -252,61 +301,44 @@ export const renderTeamOfTheWeekPlusCanvas = async (
 
   const s = scale;
   const metrics = plusBoardMetrics();
-  const week = input.week.trim().toUpperCase();
+
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
-      const size = 36 * s;
-      context.drawImage(
-        ba,
-        (width - size) / 2,
-        week ? 8 * s : (PLUS_CHROME_H * s - size) / 2,
-        size,
-        size,
-      );
+      const size = PLUS_BA_SIZE * s;
+      const inset = PLUS_BA_INSET * s;
+      context.drawImage(ba, width - inset - size, inset, size, size);
     }
   } else {
-    const brand = input.brand.trim() || "BALLACADEMY";
+    const brand = (input.brand.trim() || "BALLACADEMY").toUpperCase();
     withShadow(context, s, () => {
       context.font = `900 ${PLUS_BRAND_SIZE * s}px ${POSTER_FONT}`;
-      context.textAlign = "center";
+      context.textAlign = "left";
       context.textBaseline = "middle";
-      setLetterSpacing(context, 0.2 * PLUS_BRAND_SIZE * s);
+      setLetterSpacing(context, 0.16 * PLUS_BRAND_SIZE * s);
       context.fillStyle = "#fff";
-      context.fillText(brand.toUpperCase(), width / 2, (week ? 28 : 35) * s);
+      context.fillText(brand, 22 * s, 26 * s);
       setLetterSpacing(context, 0);
     });
   }
 
-  if (week) {
-    context.font = `900 ${PLUS_WEEK_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.12 * PLUS_WEEK_SIZE * s);
-    context.fillStyle = "rgba(255, 255, 255, 0.78)";
-    context.fillText(week, width / 2, 50 * s);
-    setLetterSpacing(context, 0);
-  }
-
-  drawCaption(
+  drawHeadline(
     context,
-    input.starterCaption,
-    PLUS_STARTER_PAD_X * s,
-    metrics.starterCaptionY * s,
-    width - PLUS_STARTER_PAD_X * 2 * s,
-    metrics.captionH * s,
-    PLUS_CAPTION_SIZE,
+    input.starterCaption || "TEAM OF THE WEEK",
+    metrics.titleY * s,
+    PLUS_TITLE_SIZE,
+    PLUS_TITLE_TRACK,
+    3.4,
     s,
+    width,
   );
-  drawCaption(
+  drawWeekNotch(
     context,
-    input.standoutCaption,
-    PLUS_STANDOUT_PAD_X * s,
-    metrics.standoutCaptionY * s,
-    width - PLUS_STANDOUT_PAD_X * 2 * s,
-    metrics.captionH * s,
-    PLUS_STANDOUT_CAPTION_SIZE,
+    input.week,
+    metrics.weekY * s,
+    metrics.weekH * s,
     s,
+    width,
   );
 
   for (let index = 0; index < PLUS_STARTER_COUNT; index += 1) {
@@ -335,6 +367,17 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     PLUS_STARTER_COUNT,
     input.look,
     s,
+  );
+
+  drawHeadline(
+    context,
+    input.standoutCaption || "STANDOUTS OF THE WEEK",
+    (metrics.sectionY + metrics.sectionH / 2) * s,
+    PLUS_SECTION_SIZE,
+    PLUS_SECTION_TRACK,
+    2.4,
+    s,
+    width,
   );
 
   for (let index = 0; index < PLUS_STANDOUT_COUNT; index += 1) {
