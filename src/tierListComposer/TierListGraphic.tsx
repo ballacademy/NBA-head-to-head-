@@ -266,6 +266,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                         className={[
                           "tl-cell",
                           "tl-cell--filled",
+                          player ? "tl-cell--player" : "tl-cell--team",
                           isActive ? "is-active" : "",
                           isDrop ? "is-drop" : "",
                         ]
@@ -339,6 +340,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             src={team.logoSrc}
                             label={team.id}
                             glow={isNeonLook(look)}
+                            balanceStamp
                           />
                         ) : null}
                         {exporting ? null : (

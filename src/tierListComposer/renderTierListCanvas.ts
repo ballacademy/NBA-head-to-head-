@@ -349,6 +349,7 @@ export const renderTierListCanvas = async (
         drawCenteredLogo(context, art.mark, x, cellY, size, size, {
           cacheKey: team.logoSrc,
           glow: isNeonLook(input.look),
+          balanceStamp: true,
         });
       }
       if (isNeonLook(input.look)) {

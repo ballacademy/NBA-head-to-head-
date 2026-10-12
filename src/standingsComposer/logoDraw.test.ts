@@ -8,6 +8,7 @@ import {
   logoGlowPx,
   logoShadowPx,
   opticalShiftX,
+  stampBalanceOffset,
 } from "./logoDraw";
 import {
   BANNER_SHAPE,
@@ -168,6 +169,24 @@ describe("fittedLogoRect", () => {
       148,
     );
     expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+  });
+
+  it("balances the down-right stamp by half the shadow length", () => {
+    expect(stampBalanceOffset(0)).toBe(0);
+    expect(stampBalanceOffset(10)).toBe(5);
+    const cell = 148;
+    const dest = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 460, cx: 230, cy: 230 },
+      0,
+      0,
+      cell,
+      cell,
+    );
+    const shadow = logoShadowPx(cell, cell);
+    expect(dest.x - stampBalanceOffset(shadow) + dest.w / 2).toBeCloseTo(
+      cell / 2 - stampBalanceOffset(shadow),
+      6,
+    );
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {

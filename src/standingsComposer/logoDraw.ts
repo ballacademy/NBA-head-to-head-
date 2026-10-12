@@ -28,6 +28,11 @@ export const OPTICAL_DEADZONE = 0.06;
 export const OPTICAL_GAIN = 0.8;
 /** Cap horizontal optical shift as a fraction of cell width. */
 export const OPTICAL_CLAMP = 0.055;
+/** How much of the down-right stamp to counter so the composite stays centered. */
+export const STAMP_BALANCE = 0.5;
+
+export const stampBalanceOffset = (shadow: number) =>
+  shadow > 0 ? shadow * STAMP_BALANCE : 0;
 
 export const getOpaqueBoundsFromImageData = (
   data: Uint8ClampedArray,
@@ -255,6 +260,8 @@ export const drawCenteredLogo = (
     shadow?: number;
     cacheKey?: string;
     glow?: boolean;
+    /** Counter the down-right 3D stamp so square cells do not look right-heavy. */
+    balanceStamp?: boolean;
   },
 ) => {
   const bounds = withCentroid(
@@ -275,6 +282,9 @@ export const drawCenteredLogo = (
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)
       : Math.max(0, options.shadow);
+  const nudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
+  dest.x -= nudge;
+  dest.y -= nudge;
   const glow = Boolean(options?.glow);
   const glowPx = glow
     ? logoGlowPx(cellW, cellH, options?.fitX, options?.fitY)

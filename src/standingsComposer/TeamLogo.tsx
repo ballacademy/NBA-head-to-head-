@@ -9,6 +9,7 @@ interface TeamLogoProps {
   fitX?: number;
   fitY?: number;
   glow?: boolean;
+  balanceStamp?: boolean;
 }
 
 export function TeamLogo({
@@ -19,6 +20,7 @@ export function TeamLogo({
   fitX,
   fitY,
   glow = false,
+  balanceStamp = false,
 }: TeamLogoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -55,6 +57,7 @@ export function TeamLogo({
         fitX,
         fitY,
         glow,
+        balanceStamp,
       });
     };
 
@@ -79,7 +82,7 @@ export function TeamLogo({
       cancelled = true;
       observer?.disconnect();
     };
-  }, [src, shadow, fitX, fitY, glow]);
+  }, [src, shadow, fitX, fitY, glow, balanceStamp]);
 
   return (
     <canvas

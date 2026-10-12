@@ -267,6 +267,10 @@
   background: linear-gradient(135deg, var(--cell-from) 0%, var(--cell-to) 100%);
 }
 
+.tl-cell--team {
+  overflow: hidden;
+}
+
 .tl-board.is-neon .tl-cell::after {
   content: "";
   position: absolute;
@@ -363,6 +367,13 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.tl-cell--team .ig-slot__logo {
+  display: block;
+  /* Artwork is centered in canvas pixels; no CSS translate / filter. */
+  transform: none;
+  filter: none;
 }
 
 .tl-cell__watermark {
