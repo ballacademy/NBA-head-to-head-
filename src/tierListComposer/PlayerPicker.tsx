@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { FilterRange, FilterSelect } from "./PlayerFilterBar";
 import {
@@ -274,13 +275,10 @@ function PlayerButton({
 }) {
   const isCurrent = currentId === player.id;
   const isUsed = Boolean(usedLabel) && !isCurrent;
-  const meta = isCurrent
-    ? "This slot"
-    : isUsed
-      ? usedLabel
-      : showPpg
-        ? `${player.team} · ${formatPpg(player.ppg)}`
-        : `${player.team} · ${player.position}`;
+  const identity = showPpg
+    ? `${player.team} · ${formatPpg(player.ppg)}`
+    : `${player.team} · ${player.position}`;
+  const meta = isCurrent ? "This slot" : identity;
 
   return (
     <button
@@ -292,17 +290,32 @@ function PlayerButton({
       ]
         .filter(Boolean)
         .join(" ")}
+      aria-label={
+        isUsed
+          ? `${player.name}, already on the board, ${usedLabel}`
+          : player.name
+      }
       onClick={() => onPick(player.id)}
     >
-      <img
-        src={player.headshotUrl}
-        alt=""
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
+      <span className="sc-team__shot">
+        <img
+          src={player.headshotUrl}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+        {isUsed ? (
+          <span className="sc-team__taken-mark" aria-hidden="true">
+            ✓
+          </span>
+        ) : null}
+      </span>
       <span>
         <span className="sc-team__name">{player.name}</span>
         <span className="sc-team__meta">{meta}</span>
+        {isUsed && usedLabel ? (
+          <span className="sc-team__used">{usedChipLabel(usedLabel)}</span>
+        ) : null}
       </span>
     </button>
   );

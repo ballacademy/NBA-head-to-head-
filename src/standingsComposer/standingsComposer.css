@@ -943,7 +943,16 @@ main.sc-stage {
 }
 
 .sc-team.is-used {
-  opacity: 0.72;
+  background: #0c0d10;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #d4d4d8;
+}
+
+.sc-team.is-used:hover,
+.sc-team.is-used:focus-visible {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: #14151a;
 }
 
 .sc-team.is-current {
@@ -951,10 +960,37 @@ main.sc-stage {
   box-shadow: inset 0 0 0 1px #f4f4f5;
 }
 
+.sc-team__shot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
 .sc-team img {
   width: 44px;
   height: 44px;
   object-fit: contain;
+}
+
+.sc-team.is-used img {
+  opacity: 0.38;
+}
+
+.sc-team__taken-mark {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f4f4f5;
+  color: #111113;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .sc-team__name {
@@ -964,11 +1000,32 @@ main.sc-stage {
   line-height: 1.2;
 }
 
+.sc-team.is-used .sc-team__name {
+  color: #a1a1aa;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(244, 244, 245, 0.7);
+}
+
 .sc-team__meta {
   display: block;
   margin-top: 2px;
   font-size: 11px;
   color: #a1a1aa;
+}
+
+.sc-team__used {
+  display: inline-flex;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 244, 245, 0.28);
+  background: rgba(244, 244, 245, 0.14);
+  color: #f4f4f5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sc-picker__footer {

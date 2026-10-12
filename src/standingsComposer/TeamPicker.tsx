@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { NBA_TEAMS, type Conference, type NbaTeam } from "./teams";
 
 type Filter = "all" | Conference;
@@ -133,14 +134,27 @@ function TeamButton({
       ]
         .filter(Boolean)
         .join(" ")}
+      aria-label={
+        isUsed ? `${team.name}, already on the board, ${usedLabel}` : team.name
+      }
       onClick={() => onPick(team.id)}
     >
-      <img src={team.logoSrc} alt="" />
+      <span className="sc-team__shot">
+        <img src={team.logoSrc} alt="" />
+        {isUsed ? (
+          <span className="sc-team__taken-mark" aria-hidden="true">
+            ✓
+          </span>
+        ) : null}
+      </span>
       <span>
         <span className="sc-team__name">{team.name}</span>
         <span className="sc-team__meta">
-          {isCurrent ? "This slot" : isUsed ? usedLabel : team.conference}
+          {isCurrent ? "This slot" : team.conference}
         </span>
+        {isUsed && usedLabel ? (
+          <span className="sc-team__used">{usedChipLabel(usedLabel)}</span>
+        ) : null}
       </span>
     </button>
   );
