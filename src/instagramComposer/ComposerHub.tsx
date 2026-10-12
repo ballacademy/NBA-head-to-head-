@@ -4,6 +4,7 @@ import { PlayerOfTheDayComposerApp } from "../playerOfTheDayComposer/PlayerOfThe
 import { PotdLeaderboardComposerApp } from "../potdLeaderboardComposer/PotdLeaderboardComposerApp";
 import { StandingsComposerApp } from "../standingsComposer/StandingsComposerApp";
 import { TeamOfTheWeekComposerApp } from "../teamOfTheWeekComposer/TeamOfTheWeekComposerApp";
+import { TeamOfTheWeekPlusComposerApp } from "../teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp";
 import { TierListComposerApp } from "../tierListComposer/TierListComposerApp";
 import {
   composerHref,
@@ -17,6 +18,7 @@ import "../everyTeamComposer/everyTeamComposer.css";
 import "../playerOfTheDayComposer/playerOfTheDayComposer.css";
 import "../potdLeaderboardComposer/potdLeaderboardComposer.css";
 import "../teamOfTheWeekComposer/teamOfTheWeekComposer.css";
+import "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -48,6 +50,8 @@ export function ComposerHub() {
         <PotdLeaderboardComposerApp />
       ) : mode === "team-of-the-week" ? (
         <TeamOfTheWeekComposerApp />
+      ) : mode === "team-of-the-week-plus" ? (
+        <TeamOfTheWeekPlusComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

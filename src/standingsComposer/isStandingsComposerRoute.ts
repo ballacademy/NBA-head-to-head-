@@ -40,7 +40,10 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/potd-lb" ||
     path === "/team-of-the-week" ||
     path === "/totw" ||
-    path === "/team-of-week"
+    path === "/team-of-week" ||
+    path === "/team-of-the-week-plus" ||
+    path === "/totw-plus" ||
+    path === "/team-of-week-plus"
   );
 };
 

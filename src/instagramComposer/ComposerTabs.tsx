@@ -12,6 +12,7 @@ const TABS: { mode: ComposerMode; label: string }[] = [
   { mode: "player-of-the-day", label: "Player of the Day" },
   { mode: "potd-leaderboard", label: "POTD Leaderboard" },
   { mode: "team-of-the-week", label: "Team of the Week" },
+  { mode: "team-of-the-week-plus", label: "TOTW Plus" },
 ];
 
 export function ComposerTabs({ mode, onSelect }: ComposerTabsProps) {

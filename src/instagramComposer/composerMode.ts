@@ -4,7 +4,8 @@ export type ComposerMode =
   | "every-team"
   | "player-of-the-day"
   | "potd-leaderboard"
-  | "team-of-the-week";
+  | "team-of-the-week"
+  | "team-of-the-week-plus";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -49,6 +50,16 @@ const TEAM_OF_THE_WEEK_QUERY = new Set([
   "team-of-the-week",
   "totw",
   "team-of-week",
+]);
+const TEAM_OF_THE_WEEK_PLUS_PATHS = new Set([
+  "/team-of-the-week-plus",
+  "/totw-plus",
+  "/team-of-week-plus",
+]);
+const TEAM_OF_THE_WEEK_PLUS_QUERY = new Set([
+  "team-of-the-week-plus",
+  "totw-plus",
+  "team-of-week-plus",
 ]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
@@ -128,10 +139,28 @@ export const isTeamOfTheWeekQuery = (search: string) => {
   }
 };
 
+export const isTeamOfTheWeekPlusPath = (pathname: string) =>
+  TEAM_OF_THE_WEEK_PLUS_PATHS.has(normalizePath(pathname));
+
+export const isTeamOfTheWeekPlusQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return TEAM_OF_THE_WEEK_PLUS_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isTeamOfTheWeekPlusPath(pathname)) {
+    return "team-of-the-week-plus";
+  }
   if (isTeamOfTheWeekPath(pathname)) {
     return "team-of-the-week";
   }
@@ -146,6 +175,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isTeamOfTheWeekPlusQuery(search)) {
+    return "team-of-the-week-plus";
   }
   if (isTeamOfTheWeekQuery(search)) {
     return "team-of-the-week";
@@ -180,6 +212,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "team-of-the-week") {
     return "/team-of-the-week";
+  }
+  if (mode === "team-of-the-week-plus") {
+    return "/team-of-the-week-plus";
   }
   return "/";
 };

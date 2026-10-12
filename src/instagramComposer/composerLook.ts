@@ -9,6 +9,8 @@ export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
 export const PLAYER_OF_THE_DAY_LOOK_KEY = "ddgm:player-of-the-day-composer-look";
 export const POTD_LEADERBOARD_LOOK_KEY = "ddgm:potd-leaderboard-composer-look";
 export const TEAM_OF_THE_WEEK_LOOK_KEY = "ddgm:team-of-the-week-composer-look";
+export const TEAM_OF_THE_WEEK_PLUS_LOOK_KEY =
+  "ddgm:team-of-the-week-plus-composer-look";
 
 export const FRAME_WHITE = "#ffffff";
 export const FRAME_BLACK = "#0a0a0a";

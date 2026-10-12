@@ -55,6 +55,23 @@ describe("composer mode", () => {
     expect(composerHref("team-of-the-week")).toBe("/team-of-the-week");
   });
 
+  it("opens the plus composer from a separate path", () => {
+    expect(readComposerMode("", "/team-of-the-week-plus")).toBe(
+      "team-of-the-week-plus",
+    );
+    expect(readComposerMode("", "/totw-plus")).toBe("team-of-the-week-plus");
+    expect(readComposerMode("?composer=totw-plus", "/")).toBe(
+      "team-of-the-week-plus",
+    );
+    expect(readComposerMode("", "/team-of-the-week")).toBe("team-of-the-week");
+    expect(readComposerMode("?composer=totw", "/team-of-the-week-plus")).toBe(
+      "team-of-the-week-plus",
+    );
+    expect(composerHref("team-of-the-week-plus")).toBe(
+      "/team-of-the-week-plus",
+    );
+  });
+
   it("lets the path win when query and path disagree", () => {
     expect(readComposerMode("?composer=tier", "/every-team")).toBe("every-team");
     expect(readComposerMode("?composer=every-team", "/tier-list")).toBe("tier");

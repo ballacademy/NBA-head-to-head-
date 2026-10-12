@@ -92,6 +92,7 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/by-team")).toBe(true);
     expect(isStandingsComposerRoute("", "/player-of-the-day")).toBe(true);
     expect(isStandingsComposerRoute("", "/team-of-the-week")).toBe(true);
+    expect(isStandingsComposerRoute("", "/team-of-the-week-plus")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

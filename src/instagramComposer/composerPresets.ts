@@ -36,6 +36,18 @@ export const TOTW_TITLE_PRESETS = [
   "ROOKIE TEAM OF THE WEEK",
 ];
 
+export const TOTW_PLUS_STARTER_PRESETS = [
+  "TEAM OF THE WEEK",
+  "EASTERN TEAM OF THE WEEK",
+  "WESTERN TEAM OF THE WEEK",
+];
+
+export const TOTW_PLUS_STANDOUT_PRESETS = [
+  "STANDOUTS",
+  "SIXTH MEN",
+  "HONORABLE MENTIONS",
+];
+
 export const slugifyExport = (value: string) =>
   value
     .trim()
