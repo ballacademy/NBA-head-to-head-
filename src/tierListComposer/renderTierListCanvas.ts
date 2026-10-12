@@ -38,6 +38,9 @@ import {
   tierBoardLayout,
 } from "./tierLayout";
 import {
+  hexToRgba,
+  isDefaultTierColor,
+  parseTierColor,
   splitTierTitle,
   type TierRow,
   type TierSubject,
@@ -104,11 +107,12 @@ const drawCenteredLine = (
   y: number,
   font: string,
   tracking: number,
+  fill = "#fff",
 ) => {
   context.font = font;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillStyle = "#fff";
+  context.fillStyle = fill;
   if (setLetterSpacing(context, tracking)) {
     context.fillText(text, Math.round(x), Math.round(y));
     setLetterSpacing(context, 0);
@@ -252,6 +256,15 @@ export const renderTierListCanvas = async (
     const laneCount = layout.lanes[rowIndex] ?? 1;
     const y = tierTop * scale;
     const h = laneCount * layout.laneH * scale;
+    const color = parseTierColor(row.color);
+    if (!isDefaultTierColor(color)) {
+      context.fillStyle = hexToRgba(color, 0.22);
+      context.fillRect(0, y, TIER_LABEL_W * scale, h);
+      context.fillStyle = hexToRgba(color, 0.08);
+      context.fillRect(TIER_LABEL_W * scale, y, width - TIER_LABEL_W * scale, h);
+      context.fillStyle = color;
+      context.fillRect(0, y, Math.max(2, 7 * scale), h);
+    }
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
     context.fillRect(0, y, width, Math.max(1, 1.5 * scale));
 
@@ -270,6 +283,7 @@ export const renderTierListCanvas = async (
           labelTop + lineIndex * labelLineH,
           `900 ${fontPx}px ${POSTER_FONT}`,
           TIER_LABEL_TRACK * fontPx,
+          color,
         );
       });
     });

@@ -36,6 +36,7 @@ import {
   removeLastTier,
   removeTeamFromRow,
   replaceTeamInRow,
+  setTierColor,
   setTierLabel,
   usedLabelsForPicker,
   type TierRow,
@@ -294,6 +295,9 @@ export function TierListComposerApp() {
             onTitleChange={setTitle}
             onLabelChange={(index, label) =>
               setRows((current) => setTierLabel(current, index, label))
+            }
+            onColorChange={(index, color) =>
+              setRows((current) => setTierColor(current, index, color))
             }
             onSelectAdd={(rowIndex) =>
               setActive({ rowIndex, replaceId: null })

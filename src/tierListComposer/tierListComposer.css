@@ -8,7 +8,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(var(--header-h, 128) * var(--u)) 1fr;
+  grid-template-rows: calc(var(--header-h, 156) * var(--u)) 1fr;
   background-color: #0b0b0b;
   color: #fff;
   overflow: hidden;
@@ -52,7 +52,7 @@
 
 .tl-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 32) * var(--u));
+  font-size: calc(var(--title-size, 38) * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.04em;
@@ -83,7 +83,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(var(--title-size, 32) * var(--u));
+  font-size: calc(var(--title-size, 38) * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1.12;
@@ -109,15 +109,35 @@
 .tl-rows {
   display: grid;
   grid-template-rows: var(--tier-rows, repeat(var(--tier-count), 1fr));
-  align-content: start;
+  align-content: stretch;
   min-height: 0;
+  padding-bottom: calc(var(--footer-h, 8) * var(--u));
+  box-sizing: border-box;
 }
 
 .tl-row {
+  --tier-color: #ffffff;
   display: grid;
   grid-template-columns: calc(var(--label-w, 140) * var(--u)) 1fr;
   min-height: 0;
   border-top: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.22);
+}
+
+.tl-row:last-child {
+  border-bottom: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.22);
+}
+
+.tl-row.is-tinted {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tier-color) 22%, transparent) 0,
+    color-mix(in srgb, var(--tier-color) 22%, transparent)
+      calc(var(--label-w, 140) * var(--u)),
+    color-mix(in srgb, var(--tier-color) 8%, transparent)
+      calc(var(--label-w, 140) * var(--u)),
+    transparent 52%
+  );
+  box-shadow: inset calc(7 * var(--u)) 0 0 var(--tier-color);
 }
 
 .tl-label-stack {
@@ -138,6 +158,7 @@
 
 .tl-label-line {
   width: 100%;
+  color: var(--tier-color, #fff);
   font-family: var(--ig-poster);
   font-size: var(--label-size, calc(72 * var(--u)));
   font-weight: 900;
@@ -167,7 +188,7 @@
   appearance: none;
   background: transparent;
   color: transparent;
-  caret-color: #fff;
+  caret-color: var(--tier-color, #fff);
   text-align: center;
   font-family: var(--ig-poster);
   font-size: var(--label-size, calc(72 * var(--u)));
@@ -182,6 +203,38 @@
 .tl-label:focus {
   outline: 1px dashed rgba(255, 255, 255, 0.45);
   outline-offset: -6px;
+}
+
+.tl-color {
+  position: absolute;
+  left: calc(6 * var(--u));
+  bottom: calc(6 * var(--u));
+  z-index: 4;
+  box-sizing: border-box;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  padding: 0;
+  border: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.55);
+  border-radius: calc(4 * var(--u));
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.tl-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.tl-color::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(2 * var(--u));
+}
+
+.tl-color::-moz-color-swatch {
+  border: 0;
+  border-radius: calc(2 * var(--u));
 }
 
 .tl-cells {
@@ -358,4 +411,8 @@
 .tl-board.is-exporting .tl-title-input:focus,
 .tl-board.is-exporting .tl-label:focus {
   outline: none;
+}
+
+.tl-board.is-exporting .tl-color {
+  display: none;
 }

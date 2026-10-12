@@ -16,6 +16,7 @@ import {
   layoutTierLabel,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
+  TIER_FOOTER,
   TIER_HEADER_H,
   TIER_LABEL_MAX_LENGTH,
   TIER_LABEL_W,
@@ -25,6 +26,8 @@ import {
   tierBoardLayout,
 } from "./tierLayout";
 import {
+  isDefaultTierColor,
+  parseTierColor,
   splitTierTitle,
   type TierRow,
   type TierSubject,
@@ -44,6 +47,7 @@ interface TierListGraphicProps {
   exporting?: boolean;
   onTitleChange: (value: string) => void;
   onLabelChange: (index: number, value: string) => void;
+  onColorChange: (index: number, color: string) => void;
   onSelectAdd: (rowIndex: number) => void;
   onSelectTeam: (rowIndex: number, teamId: string) => void;
   onRemoveTeam: (rowIndex: number, teamId: string) => void;
@@ -82,6 +86,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       exporting = false,
       onTitleChange,
       onLabelChange,
+      onColorChange,
       onSelectAdd,
       onSelectTeam,
       onRemoveTeam,
@@ -141,6 +146,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             ["--title-size" as string]: String(TIER_TITLE_SIZE),
             ["--label-w" as string]: String(TIER_LABEL_W),
             ["--header-h" as string]: String(TIER_HEADER_H),
+            ["--footer-h" as string]: String(TIER_FOOTER),
           } as React.CSSProperties
         }
         aria-label="Instagram NBA tier list graphic"
@@ -187,13 +193,18 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         >
           {rows.map((row, rowIndex) => {
             const labelLayout = labelLayouts[rowIndex]!;
+            const color = parseTierColor(row.color);
+            const tinted = !isDefaultTierColor(color);
             return (
               <div
                 key={row.id}
-                className="tl-row"
+                className={["tl-row", tinted ? "is-tinted" : ""]
+                  .filter(Boolean)
+                  .join(" ")}
                 style={
                   {
                     ["--label-size" as string]: `calc(${labelLayout.fontSize} * var(--u))`,
+                    ["--tier-color" as string]: color,
                   } as React.CSSProperties
                 }
                 onDragOver={(event) => {
@@ -221,6 +232,18 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                     maxLength={TIER_LABEL_MAX_LENGTH}
                     onChange={(value) => onLabelChange(rowIndex, value)}
                   />
+                  {exporting ? null : (
+                    <input
+                      type="color"
+                      className="tl-color"
+                      value={color}
+                      aria-label={`Color for ${row.label || `tier ${rowIndex + 1}`}`}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={(event) =>
+                        onColorChange(rowIndex, event.target.value)
+                      }
+                    />
+                  )}
                 </div>
                 <div className="tl-cells">
                   {row.teams.map((entityId, index) => {

@@ -6,13 +6,47 @@ export const MAX_TIERS = 10;
 export const DEFAULT_TIER_LABELS = ["S", "A", "B", "C", "D", "F"] as const;
 export const EXTRA_TIER_LABELS = ["G", "H", "I", "J"] as const;
 export const DEFAULT_TIER_TITLE = "GUESS THE NBA TIER LIST";
+export const DEFAULT_TIER_COLOR = "#ffffff";
 export type TierSubject = "teams" | "players";
 
 export interface TierRow {
   id: string;
   label: string;
   teams: string[];
+  color?: string;
 }
+
+const HEX6 = /^#([0-9a-f]{6})$/i;
+const HEX3 = /^#([0-9a-f]{3})$/i;
+
+export const parseTierColor = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return DEFAULT_TIER_COLOR;
+  }
+  const hex = value.trim();
+  const six = HEX6.exec(hex);
+  if (six) {
+    return `#${six[1]!.toLowerCase()}`;
+  }
+  const three = HEX3.exec(hex);
+  if (three) {
+    const [r, g, b] = three[1]!;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return DEFAULT_TIER_COLOR;
+};
+
+export const isDefaultTierColor = (value: unknown) =>
+  parseTierColor(value) === DEFAULT_TIER_COLOR;
+
+export const hexToRgba = (hex: string, alpha: number) => {
+  const color = parseTierColor(hex);
+  const n = Number.parseInt(color.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 export interface TierDraft {
   title: string;
@@ -86,6 +120,23 @@ export const setTierLabel = (
   next[index] = {
     ...next[index]!,
     label: label.slice(0, TIER_LABEL_MAX_LENGTH),
+  };
+  return next;
+};
+
+export const setTierColor = (
+  rows: TierRow[],
+  index: number,
+  color: string,
+): TierRow[] => {
+  if (index < 0 || index >= rows.length) {
+    return rows;
+  }
+  const next = rows.slice();
+  const parsed = parseTierColor(color);
+  next[index] = {
+    ...next[index]!,
+    color: isDefaultTierColor(parsed) ? undefined : parsed,
   };
   return next;
 };

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+} from "../standingsComposer/rankingState";
 import {
   BA_LOGO_SRC,
   baBadgeRect,
@@ -11,6 +14,7 @@ import {
   TIER_CELL_GAP,
   TIER_CELL_MAX,
   PLAYER_LOGO_WATERMARK_ALPHA,
+  TIER_FOOTER,
   TIER_HEADER_H,
   TIER_LABEL_MAX_LENGTH,
   TIER_LABEL_SIZE_ONE,
@@ -37,6 +41,11 @@ import {
   removeLastTier,
   removeTeamFromRow,
   replaceTeamInRow,
+  DEFAULT_TIER_COLOR,
+  hexToRgba,
+  isDefaultTierColor,
+  parseTierColor,
+  setTierColor,
   setTierLabel,
   splitTierTitle,
   usedLabelsForPicker,
@@ -130,8 +139,11 @@ describe("tier layout", () => {
   it("uses the circled BA lockup, not a drawn circle", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
     expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(72);
-    expect(TIER_HEADER_H).toBeLessThanOrEqual(128);
-    expect(TIER_TITLE_SIZE).toBeLessThanOrEqual(32);
+    expect(TIER_HEADER_H).toBeGreaterThan(128);
+    expect(TIER_HEADER_H).toBeLessThan(200);
+    expect(TIER_HEADER_H / GRAPHIC_HEIGHT).toBeLessThan(0.14);
+    expect(TIER_TITLE_SIZE).toBeGreaterThan(32);
+    expect(TIER_TITLE_SIZE).toBeLessThan(50);
   });
 
   it("pads the BA lockup equally from the top and right edges", () => {
@@ -166,7 +178,7 @@ describe("tier layout", () => {
     expect(eight.lanes[0]).toBe(1);
     expect(nine.lanes[0]).toBe(2);
     expect(nine.totalLanes).toBe(eight.totalLanes + 1);
-    expect(nine.gridTemplate.startsWith("calc(")).toBe(true);
+    expect(nine.gridTemplate).toBe("2fr 1fr 1fr 1fr 1fr 1fr");
     expect(nine.lanes[0]! * nine.laneH).toBeGreaterThan(eight.laneH);
     expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
     const squeezedOntoOneRow =
@@ -208,5 +220,37 @@ describe("tier layout", () => {
     const even = tierBoardLayout([1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]);
     expect(grown.lanes[0]).toBeGreaterThan(even.lanes[0]!);
     expect(even.size).toBeGreaterThan(120);
+  });
+
+  it("fills the 4:5 body for 3, 6, and 10 tiers", () => {
+    const three = tierBoardLayout([1, 1, 1]);
+    const six = tierBoardLayout([1, 1, 1, 1, 1, 1]);
+    const ten = tierBoardLayout(Array.from({ length: 10 }, () => 1));
+    for (const layout of [three, six, ten]) {
+      expect(layout.laneH * layout.totalLanes).toBeCloseTo(layout.bodyH, 8);
+      expect(layout.bodyH).toBe(GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER);
+      expect(layout.gridTemplate.split(" ").every((part) => part.endsWith("fr"))).toBe(
+        true,
+      );
+    }
+    expect(three.laneH).toBeGreaterThan(six.laneH);
+    expect(six.laneH).toBeGreaterThan(ten.laneH);
+    expect(three.gridTemplate).toBe("1fr 1fr 1fr");
+  });
+});
+
+describe("tier colors", () => {
+  it("defaults to white and stores a picked hex", () => {
+    expect(parseTierColor(undefined)).toBe(DEFAULT_TIER_COLOR);
+    expect(parseTierColor("#F90")).toBe("#ff9900");
+    expect(parseTierColor("nope")).toBe(DEFAULT_TIER_COLOR);
+    expect(isDefaultTierColor("#FFFFFF")).toBe(true);
+    expect(hexToRgba("#ff0000", 0.5)).toBe("rgba(255, 0, 0, 0.5)");
+    const gold = setTierColor(createDefaultRows(), 0, "#E2B007");
+    expect(gold[0]!.color).toBe("#e2b007");
+    expect(setTierColor(gold, 0, "#fff")[0]!.color).toBeUndefined();
+    expect(createDefaultRows().every((row) => row.color === undefined)).toBe(
+      true,
+    );
   });
 });

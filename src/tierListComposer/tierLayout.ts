@@ -7,8 +7,8 @@ import {
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 /** Board-space (1200×1500) layout shared by the on-screen graphic and PNG. */
-/** Compact title/BA strip so S sits near the top of the 4:5 board. */
-export const TIER_HEADER_H = 128;
+/** Title/BA strip — modest bump from 128 so the title can sit a bit larger. */
+export const TIER_HEADER_H = 156;
 export const TIER_FOOTER = 8;
 export const TIER_LABEL_W = 140;
 export const TIER_LABEL_PAD_X = 8;
@@ -35,7 +35,7 @@ export const TIER_BADGE_SIZE = 72;
  * not hugging the right. Matches the header’s vertical centering gap.
  */
 export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
-export const TIER_TITLE_SIZE = 32;
+export const TIER_TITLE_SIZE = 38;
 /** Faded team-logo backdrop behind a player headshot. Fitted to the cell. */
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
 export const TIER_TITLE_TRACK = 0.04;
@@ -85,20 +85,9 @@ export const tierBoardLayout = (
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
   const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
   const contentW = cellsContentWidth();
-  const cols = TIER_WRAP_COLS;
-  const fromWidth = Math.max(
-    28,
-    Math.min(
-      TIER_CELL_MAX,
-      (contentW - TIER_CELL_GAP * (cols - 1)) / cols,
-    ),
-  );
-  const fromHeight = Math.max(
-    28,
-    Math.min(TIER_CELL_MAX, bodyH / totalLanes - TIER_ROW_PAD_Y * 2),
-  );
-  const size = Math.min(fromWidth, fromHeight);
-  const laneH = size + TIER_ROW_PAD_Y * 2;
+  /** Stretch lanes so the last tier meets the footer, 3–10 rows alike. */
+  const laneH = bodyH / totalLanes;
+  const size = cellSize(laneH, contentW, TIER_WRAP_COLS);
   return {
     lanes,
     totalLanes,
@@ -106,9 +95,7 @@ export const tierBoardLayout = (
     laneH,
     size,
     contentW,
-    gridTemplate: lanes
-      .map((count) => `calc(${count * laneH} * var(--u))`)
-      .join(" "),
+    gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
   };
 };
 
