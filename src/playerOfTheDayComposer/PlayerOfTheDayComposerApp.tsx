@@ -348,13 +348,13 @@ export function PlayerOfTheDayComposerApp() {
             onUpload={(index, dataUrl) => {
               setPhotoTarget(index);
               setCards((current) => setCardPhoto(current, index, dataUrl));
-              setStatus("Photo cropped inside the frame — scroll or +/− to scale, drag to pan.");
+              setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
             }}
           />
           <p className="sc-hint">
             Pick a player, then choose a recent box score — the date matches
-            that game. Upload or paste a photo, then scale, rotate, and drag it
-            inside the frame. Downloads a 4:5 Instagram PNG — nothing is posted.
+            that game. Upload or paste a photo, then drag to pan and pinch or
+            scroll to zoom. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

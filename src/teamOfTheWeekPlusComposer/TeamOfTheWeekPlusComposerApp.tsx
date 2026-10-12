@@ -371,7 +371,7 @@ export function TeamOfTheWeekPlusComposerApp() {
               push(slots);
               setSlots((current) => setStripPhoto(current, index, dataUrl));
               setStatus(
-                "Photo cropped inside the portrait — scroll or +/− to scale, drag to pan.",
+                "Photo cropped inside the portrait — pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
             onNameChange={(index, lastName) =>
@@ -380,8 +380,9 @@ export function TeamOfTheWeekPlusComposerApp() {
           />
           <p className="sc-hint">
             Five starters on the hero row, five standouts on the shorter bench.
-            Pick a player for a headshot, or upload/paste and pan a custom photo.
-            Zoom in with + or the scroll wheel. Name + logo can be toggled off.
+            Pick a player for a headshot, or upload/paste a custom photo. Drag to
+            pan, pinch or scroll to zoom — same as Player of the Day. +/− still
+            work. Name + logo can be toggled off.
             Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

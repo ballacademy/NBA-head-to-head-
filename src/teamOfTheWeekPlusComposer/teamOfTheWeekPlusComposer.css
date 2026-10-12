@@ -189,6 +189,8 @@
 
 .twp-cell .pod-photo {
   border-radius: 0;
+  touch-action: none;
+  cursor: grab;
 }
 
 .twp-cell:not(:first-child) .pod-photo {
@@ -207,6 +209,7 @@
 
 .twp-cell .pod-photo.is-custom .pod-photo__tools {
   opacity: 1;
+  pointer-events: none;
 }
 
 .twp-cell .pod-photo__zoom {

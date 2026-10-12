@@ -85,6 +85,8 @@
 
 .totw-strip .pod-photo {
   border-radius: 0;
+  touch-action: none;
+  cursor: grab;
 }
 
 .totw-strip .pod-photo__pick {

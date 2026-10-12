@@ -1,7 +1,14 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import {
+  panFromPinch,
+  panFromPointerDrag,
+  photoPointDistance,
+  photoPointMid,
+  zoomFromWheelDelta,
+  type PhotoPoint,
+} from "./photoGestures";
+import {
   clampPan,
-  clampZoom,
   DEFAULT_CUSTOM_PAN,
   photoRotate,
   photoZoom,
@@ -65,6 +72,15 @@ const readFile = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+type Gesture =
+  | { type: "pan"; pointer: number; x: number; y: number; pan: PhotoPan }
+  | {
+      type: "pinch";
+      dist: number;
+      mid: PhotoPoint;
+      pan: PhotoPan;
+    };
+
 export function PhotoFrame({
   src,
   label,
@@ -77,28 +93,65 @@ export function PhotoFrame({
   onPick,
 }: PhotoFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{
-    pointer: number;
-    x: number;
-    y: number;
-    pan: PhotoPan;
-  } | null>(null);
+  const panRef = useRef(pan);
+  panRef.current = pan;
+  const onPanRef = useRef(onPan);
+  onPanRef.current = onPan;
+  const customRef = useRef(custom);
+  customRef.current = custom;
+  const pointers = useRef(new Map<number, PhotoPoint>());
+  const gesture = useRef<Gesture | null>(null);
+  const gestureScale = useRef(photoZoom(pan));
   const zoom = photoZoom(pan);
   const rotate = photoRotate(pan);
 
   useEffect(() => {
     const node = rootRef.current;
-    if (!node || !custom || empty) {
+    if (!node || empty) {
       return;
     }
     const onWheel = (event: WheelEvent) => {
+      if (!customRef.current) {
+        return;
+      }
       event.preventDefault();
-      const delta = event.deltaY < 0 ? zoomStep * 0.4 : -zoomStep * 0.4;
-      onPan(clampPan({ ...pan, zoom: zoom + delta }));
+      const current = panRef.current;
+      onPanRef.current(
+        clampPan({
+          ...current,
+          zoom: zoomFromWheelDelta(photoZoom(current), event.deltaY),
+        }),
+      );
+    };
+    const onGestureStart = (event: Event) => {
+      if (!customRef.current) {
+        return;
+      }
+      event.preventDefault();
+      gestureScale.current = photoZoom(panRef.current);
+    };
+    const onGestureChange = (event: Event) => {
+      if (!customRef.current) {
+        return;
+      }
+      event.preventDefault();
+      const scale = (event as Event & { scale?: number }).scale;
+      if (typeof scale !== "number") {
+        return;
+      }
+      onPanRef.current(
+        clampPan({ ...panRef.current, zoom: gestureScale.current * scale }),
+      );
     };
     node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
-  }, [custom, empty, onPan, pan, zoom, zoomStep]);
+    node.addEventListener("gesturestart", onGestureStart, { passive: false });
+    node.addEventListener("gesturechange", onGestureChange, { passive: false });
+    return () => {
+      node.removeEventListener("wheel", onWheel);
+      node.removeEventListener("gesturestart", onGestureStart);
+      node.removeEventListener("gesturechange", onGestureChange);
+    };
+  }, [empty]);
 
   const handleFiles = async (files: FileList | null) => {
     const file = files?.[0];
@@ -112,6 +165,72 @@ export function PhotoFrame({
     onPan(clampPan({ ...pan, zoom: zoom + delta }));
   };
 
+  const beginGesture = () => {
+    const pts = [...pointers.current.entries()];
+    if (pts.length >= 2 && customRef.current) {
+      const [, a] = pts[0]!;
+      const [, b] = pts[1]!;
+      gesture.current = {
+        type: "pinch",
+        dist: photoPointDistance(a, b),
+        mid: photoPointMid(a, b),
+        pan: { ...panRef.current },
+      };
+      return;
+    }
+    if (pts.length === 1) {
+      const [id, point] = pts[0]!;
+      gesture.current = {
+        type: "pan",
+        pointer: id,
+        x: point.x,
+        y: point.y,
+        pan: { ...panRef.current },
+      };
+      return;
+    }
+    gesture.current = null;
+  };
+
+  const applyMove = (target: HTMLElement) => {
+    const box = target.getBoundingClientRect();
+    const current = gesture.current;
+    if (!current) {
+      return;
+    }
+    if (current.type === "pinch") {
+      const pts = [...pointers.current.values()];
+      if (pts.length < 2) {
+        return;
+      }
+      onPanRef.current(
+        panFromPinch(
+          current.pan,
+          current.dist,
+          photoPointDistance(pts[0]!, pts[1]!),
+          current.mid,
+          photoPointMid(pts[0]!, pts[1]!),
+          box.width,
+          box.height,
+        ),
+      );
+      return;
+    }
+    const point = pointers.current.get(current.pointer);
+    if (!point) {
+      return;
+    }
+    onPanRef.current(
+      panFromPointerDrag(
+        current.pan,
+        point.x - current.x,
+        point.y - current.y,
+        box.width,
+        box.height,
+      ),
+    );
+  };
+
   return (
     <div
       ref={rootRef}
@@ -119,42 +238,41 @@ export function PhotoFrame({
         .filter(Boolean)
         .join(" ")}
       onPointerDown={(event) => {
-        if (empty || event.button !== 0 || isPhotoChromeTarget(event.target)) {
+        if (
+          empty ||
+          isPhotoChromeTarget(event.target) ||
+          (event.pointerType === "mouse" && event.button !== 0)
+        ) {
           return;
         }
+        event.preventDefault();
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-        drag.current = {
-          pointer: event.pointerId,
+        pointers.current.set(event.pointerId, {
           x: event.clientX,
           y: event.clientY,
-          pan,
-        };
+        });
+        beginGesture();
       }}
       onPointerMove={(event) => {
-        const start = drag.current;
-        if (!start || start.pointer !== event.pointerId) {
+        if (!pointers.current.has(event.pointerId)) {
           return;
         }
-        const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-        const dx = event.clientX - start.x;
-        const dy = event.clientY - start.y;
-        const span = Math.max(1, zoom);
-        onPan(
-          clampPan({
-            x: start.pan.x - dx / Math.max(1, box.width * span),
-            y: start.pan.y - dy / Math.max(1, box.height * span),
-            zoom: photoZoom(start.pan),
-            rotate: photoRotate(start.pan),
-          }),
-        );
+        pointers.current.set(event.pointerId, {
+          x: event.clientX,
+          y: event.clientY,
+        });
+        applyMove(event.currentTarget);
       }}
       onPointerUp={(event) => {
-        if (drag.current?.pointer === event.pointerId) {
-          drag.current = null;
+        pointers.current.delete(event.pointerId);
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
         }
+        beginGesture();
       }}
-      onPointerCancel={() => {
-        drag.current = null;
+      onPointerCancel={(event) => {
+        pointers.current.delete(event.pointerId);
+        beginGesture();
       }}
     >
       {src ? (

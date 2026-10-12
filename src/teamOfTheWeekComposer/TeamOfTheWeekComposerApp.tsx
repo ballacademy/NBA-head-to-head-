@@ -296,14 +296,14 @@ export function TeamOfTheWeekComposerApp() {
               setPhotoTarget(index);
               setStrips((current) => setStripPhoto(current, index, dataUrl));
               setStatus(
-                "Photo cropped inside the strip — scroll or +/− to scale, drag to pan.",
+                "Photo cropped inside the strip — pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
           />
           <p className="sc-hint">
-            Pick a player for each strip, then upload or paste a photo and pan,
-            scale, or rotate it inside the frame. Downloads a 4:5 Instagram PNG
-            — nothing is posted.
+            Pick a player for each strip, then upload or paste a photo. Drag to
+            pan, pinch or scroll to zoom — same as Player of the Day. +/− still
+            work. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
