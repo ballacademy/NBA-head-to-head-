@@ -38,7 +38,11 @@ import {
   BANNER_STUD_FILL,
   BANNER_STUD_SIZE,
   BANNER_STUD_STEP,
+  EVERY_TEAM_VIGNETTE_STRENGTH,
+  FIELD_VIGNETTE_STRENGTH,
   HEADER_METAL_LIFT,
+  POTD_VIGNETTE_STRENGTH,
+  TIER_METAL_ALPHA,
   bannerStudMetrics,
   coverRect,
 } from "./headerTexture";
@@ -279,6 +283,11 @@ describe("header texture cover", () => {
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(HEADER_METAL_LIFT).toBe("rgba(255, 255, 255, 0.1)");
+    expect(TIER_METAL_ALPHA).toBeGreaterThan(0.3);
+    expect(TIER_METAL_ALPHA).toBeLessThan(0.5);
+    expect(FIELD_VIGNETTE_STRENGTH).toBeLessThan(0.4);
+    expect(EVERY_TEAM_VIGNETTE_STRENGTH).toBeLessThan(0.4);
+    expect(POTD_VIGNETTE_STRENGTH).toBeLessThan(0.3);
     expect(BANNER_STUD_SIZE).toBeLessThan(BANNER_STUD_STEP / 2);
     const { step, size, inset } = bannerStudMetrics(2);
     expect(step).toBe(20);

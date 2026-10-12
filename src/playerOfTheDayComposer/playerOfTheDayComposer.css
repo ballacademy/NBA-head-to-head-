@@ -17,6 +17,19 @@
   user-select: none;
 }
 
+.pod-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at 50% 38%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
 .pod-header,
 .pod-cards {
   position: relative;

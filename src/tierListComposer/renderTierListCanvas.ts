@@ -6,8 +6,11 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  FIELD_VIGNETTE_STRENGTH,
   HEADER_TEXTURE_SRC,
+  TIER_METAL_ALPHA,
   drawCoveredTexture,
+  drawFieldVignette,
 } from "../standingsComposer/headerTexture";
 import {
   drawCenteredLogo,
@@ -157,23 +160,11 @@ export const renderTierListCanvas = async (
   const metal = await loadImage(HEADER_TEXTURE_SRC);
   if (metal) {
     context.save();
-    context.globalAlpha = 0.16;
+    context.globalAlpha = TIER_METAL_ALPHA;
     drawCoveredTexture(context, metal, 0, 0, width, height);
     context.restore();
   }
-
-  const vignette = context.createRadialGradient(
-    width / 2,
-    height * 0.42,
-    height * 0.12,
-    width / 2,
-    height * 0.5,
-    height * 0.78,
-  );
-  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
-  vignette.addColorStop(1, "rgba(0, 0, 0, 0.38)");
-  context.fillStyle = vignette;
-  context.fillRect(0, 0, width, height);
+  drawFieldVignette(context, width, height, FIELD_VIGNETTE_STRENGTH);
 
   const titleLines = splitTierTitle(input.title);
   const titleFont = `900 ${TIER_TITLE_SIZE * scale}px ${POSTER_FONT}`;

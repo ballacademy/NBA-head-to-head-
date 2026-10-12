@@ -12,6 +12,11 @@ import {
   splitEveryTeamTitle,
   teamAtSlot,
 } from "./everyTeamState";
+import {
+  EVERY_TEAM_VIGNETTE_STRENGTH,
+  HEADER_METAL_LIFT,
+  HEADER_TEXTURE_SRC,
+} from "../standingsComposer/headerTexture";
 import { everyTeamCellRect, everyTeamGrid } from "./everyTeamLayout";
 
 const EXPECTED_CITIES = [
@@ -96,5 +101,12 @@ describe("every-team order and slots", () => {
     expect(second.x).toBe(first.x + grid.cell + grid.gap);
     expect(sixth.y).toBe(first.y + grid.cell + grid.gap);
     expect(first.size).toBe(grid.cell);
+  });
+
+  it("uses the brushed metal field with the same lift as standings headers", () => {
+    expect(HEADER_TEXTURE_SRC).toBe("/standings-header-texture.png");
+    expect(HEADER_METAL_LIFT).toBe("rgba(255, 255, 255, 0.1)");
+    expect(EVERY_TEAM_VIGNETTE_STRENGTH).toBeGreaterThan(0.15);
+    expect(EVERY_TEAM_VIGNETTE_STRENGTH).toBeLessThan(0.4);
   });
 });

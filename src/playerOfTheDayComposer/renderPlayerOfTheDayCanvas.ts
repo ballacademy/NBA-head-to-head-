@@ -8,8 +8,10 @@ import {
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
+  POTD_VIGNETTE_STRENGTH,
   drawBannerInterior,
   drawCoveredTexture,
+  drawFieldVignette,
 } from "../standingsComposer/headerTexture";
 import {
   drawCenteredLogo,
@@ -153,6 +155,7 @@ export const renderPlayerOfTheDayCanvas = async (
   if (cracks) {
     drawCoveredTexture(context, cracks, 0, 0, width, height);
   }
+  drawFieldVignette(context, width, height, POTD_VIGNETTE_STRENGTH);
 
   const s = scale;
   withShadow(context, s, () => {
