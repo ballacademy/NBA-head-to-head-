@@ -21,7 +21,11 @@ export const PLB_TITLE_H = 100;
 export const PLB_GAP = 28;
 export const PLB_STROKE = 8;
 export const PLB_LIST_INSET = 28;
+/** Left-column mark only — never a row-width watermark. */
 export const PLB_PIP_W = 40;
+export const PLB_PIP_SIZE = 36;
+export const PLB_PIP_BAR_W = 6;
+export const PLB_PIP_BAR_H = 28;
 export const PLB_RANK_W = 88;
 export const PLB_WINS_W = 108;
 /** Wide enough for a last name like GILGEOUS-ALEXANDER on its own line. */

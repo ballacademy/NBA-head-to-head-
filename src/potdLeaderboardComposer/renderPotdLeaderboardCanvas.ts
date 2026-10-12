@@ -23,6 +23,9 @@ import {
   PLB_PAD_BOTTOM,
   PLB_PAD_TOP,
   PLB_PAD_X,
+  PLB_PIP_BAR_H,
+  PLB_PIP_BAR_W,
+  PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_POTD_FILL,
   PLB_RANK_W,
@@ -247,18 +250,33 @@ export const renderPotdLeaderboardCanvas = async (
     context.lineTo(innerX + innerW, top + rowH);
     context.stroke();
 
-    if (showPips && entry.teamId) {
-      const logo = logos.get(entry.teamId);
+    if (showPips) {
+      const pipSize = Math.min(PLB_PIP_SIZE * s, rowH - 8 * s);
+      const pipX = innerX + (pipW - pipSize) / 2;
+      const pipY = y - pipSize / 2;
+      const logo = entry.teamId ? logos.get(entry.teamId) : undefined;
       if (logo) {
-        const size = Math.min(36 * s, rowH - 8 * s);
-        drawCenteredLogo(
-          context,
-          logo,
-          innerX + (pipW - size) / 2,
-          y - size / 2,
-          size,
-          size,
-          { fitX: 0.9, fitY: 0.9, cacheKey: entry.teamId, shadow: 0 },
+        context.save();
+        context.beginPath();
+        context.rect(pipX, pipY, pipSize, pipSize);
+        context.clip();
+        drawCenteredLogo(context, logo, pipX, pipY, pipSize, pipSize, {
+          fitX: 0.88,
+          fitY: 0.88,
+          cacheKey: entry.teamId ?? undefined,
+          shadow: 0,
+        });
+        context.restore();
+      } else {
+        const barW = PLB_PIP_BAR_W * s;
+        const barH = Math.min(PLB_PIP_BAR_H * s, rowH - 12 * s);
+        const team = entry.teamId ? getTeam(entry.teamId) : null;
+        context.fillStyle = team?.cellFrom ?? "rgba(245, 196, 0, 0.55)";
+        context.fillRect(
+          innerX + (pipW - barW) / 2,
+          y - barH / 2,
+          barW,
+          barH,
         );
       }
     }

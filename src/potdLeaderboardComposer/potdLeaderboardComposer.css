@@ -151,16 +151,27 @@
 }
 
 .plb-pip {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   width: calc(36 * var(--u));
   height: calc(36 * var(--u));
   justify-self: center;
   pointer-events: none;
 }
 
-.plb-pip canvas {
+/* TeamLogo uses .ig-slot__logo { position:absolute; inset:0 }. The pip
+   must be the containing block so the mark stays a left square, not a
+   row-wide smear behind the name. */
+.plb-pip .ig-slot__logo,
+.plb-pip canvas,
+.plb-pip__logo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: contain;
 }
 
 .plb-pip__bar {
@@ -168,7 +179,8 @@
   width: calc(6 * var(--u));
   height: calc(28 * var(--u));
   margin: calc(4 * var(--u)) auto;
-  background: color-mix(in srgb, var(--plb-yellow) 55%, #7a5a00);
+  border-radius: calc(1 * var(--u));
+  background: var(--plb-pip, color-mix(in srgb, var(--plb-yellow) 55%, #7a5a00));
 }
 
 .plb-rank,

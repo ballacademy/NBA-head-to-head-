@@ -3,9 +3,12 @@ import {
   BANNER_FILL_BASE,
   BANNER_STUD_FILL,
 } from "../standingsComposer/headerTexture";
-import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
+import { EXPORT_HEIGHT, EXPORT_WIDTH, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   PLB_INK,
+  PLB_PIP_SIZE,
+  PLB_PIP_W,
+  PLB_RANK_W,
   PLB_TITLE_H,
   PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
@@ -113,6 +116,9 @@ describe("POTD leaderboard ranks", () => {
 
   it("defaults team pips on and stores the toggle", () => {
     expect(defaultLeaderboardDraft().showPips).toBe(true);
+    expect(PLB_PIP_SIZE).toBeLessThanOrEqual(PLB_PIP_W);
+    expect(PLB_PIP_W).toBeLessThan(PLB_RANK_W);
+    expect(PLB_PIP_W).toBeLessThan(GRAPHIC_WIDTH / 10);
   });
 
   it("looks up win totals for Player of the Day by name", () => {

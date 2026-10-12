@@ -144,10 +144,11 @@ export const PotdLeaderboardGraphic = forwardRef<
                   <span className="plb-pip" aria-hidden="true">
                     {team ? (
                       <TeamLogo
+                        className="plb-pip__logo"
                         src={team.logoSrc}
                         label=""
-                        fitX={0.9}
-                        fitY={0.9}
+                        fitX={0.88}
+                        fitY={0.88}
                       />
                     ) : (
                       <span className="plb-pip__bar" />
