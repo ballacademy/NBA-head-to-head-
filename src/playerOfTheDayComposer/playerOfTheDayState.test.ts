@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { parseLastGamePayload } from "./lastGame";
+import { BANNER_FILL_BASE, BANNER_STUD_FILL } from "../standingsComposer/headerTexture";
+import { stretchedLogoRect } from "../standingsComposer/logoDraw";
+import { isPhotoChromeClassName } from "./PhotoFrame";
+import * as potdLayout from "./playerOfTheDayLayout";
 import { coverPanDraw, statsFillForTeam } from "./playerOfTheDayLayout";
 import {
   DEFAULT_CUSTOM_PAN,
@@ -118,5 +122,38 @@ describe("player of the day state", () => {
     const twice = applyPlayerPick(once, 1, luka, null);
     expect(twice[0]!.playerId).toBeNull();
     expect(twice[1]!.playerId).toBe("3945274");
+  });
+
+  it("replacing a player overwrites that slot's name and photo", () => {
+    const luka = getPlayer("3945274")!;
+    const lebron = getPlayer("1966")!;
+    const once = applyPlayerPick(createEmptyCards(), 0, luka, null);
+    const custom = setCardPhoto(once, 0, "data:image/png;base64,aaa");
+    const replaced = applyPlayerPick(custom, 0, lebron, null);
+    expect(replaced[0]!.playerId).toBe("1966");
+    expect(replaced[0]!.lastName).toBe("James");
+    expect(replaced[0]!.photoSrc).toBe(lebron.headshotUrl);
+    expect(replaced[0]!.customPhoto).toBe(false);
+    expect(replaced[1]!.playerId).toBeNull();
+  });
+
+  it("uses the studded near-black title fill and no circled BA mark", () => {
+    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
+    expect("POTD_BA_SRC" in potdLayout).toBe(false);
+    expect("potdBadgeRect" in potdLayout).toBe(false);
+    expect(stretchedLogoRect(0, 0, 520, 116)).toEqual({
+      x: 0,
+      y: 0,
+      w: 520,
+      h: 116,
+    });
+  });
+
+  it("treats upload and change-player chrome as non-pan targets", () => {
+    expect(isPhotoChromeClassName("pod-photo__tool")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__file")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);
   });
 });

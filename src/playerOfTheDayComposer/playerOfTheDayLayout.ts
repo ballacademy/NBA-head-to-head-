@@ -7,9 +7,6 @@ import {
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 export const POTD_CRACKS_SRC = "/player-of-the-day-cracks.png";
-export const POTD_BA_SRC = "/ba-logo-circled.png";
-export const POTD_BADGE_SIZE = 64;
-export const POTD_BADGE_INSET = 16;
 export const POTD_PAD_X = 64;
 export const POTD_GAP = 32;
 export const POTD_CARD_W = (GRAPHIC_WIDTH - POTD_PAD_X * 2 - POTD_GAP) / 2;
@@ -26,12 +23,6 @@ export const POTD_STAT_SIZE = 28;
 export const POTD_NAME_SIZE = 28;
 export const POTD_TOTAL_SIZE = 20;
 export const POTD_LOGO_WATERMARK = 0.2;
-
-export const potdBadgeRect = () => ({
-  x: GRAPHIC_WIDTH - POTD_BADGE_INSET - POTD_BADGE_SIZE,
-  y: POTD_BADGE_INSET,
-  size: POTD_BADGE_SIZE,
-});
 
 export const potdCardX = (index: number) =>
   POTD_PAD_X + index * (POTD_CARD_W + POTD_GAP);

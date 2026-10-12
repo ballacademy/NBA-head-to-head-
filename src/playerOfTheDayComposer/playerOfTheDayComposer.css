@@ -69,11 +69,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0a0a0a;
   border: calc(5 * var(--u)) solid #0a0a0a;
   box-shadow:
     0 0 0 calc(3 * var(--u)) #fff,
     0 0 0 calc(6 * var(--u)) #0a0a0a;
+  /* Same studded near-black as the other composers' title boxes. */
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
 }
 
 .pod-title-block {
@@ -156,13 +160,6 @@
   outline-offset: 2px;
 }
 
-.pod-badge {
-  position: absolute;
-  pointer-events: none;
-  object-fit: contain;
-  display: block;
-}
-
 .pod-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -215,6 +212,7 @@
 
 .pod-photo__pick {
   position: absolute;
+  z-index: 1;
   inset: 0;
   border: 0;
   background: rgba(0, 0, 0, 0.35);
@@ -229,20 +227,20 @@
 
 .pod-photo__tools {
   position: absolute;
+  z-index: 4;
   left: calc(8 * var(--u));
   right: calc(8 * var(--u));
   bottom: calc(8 * var(--u));
   display: flex;
   gap: calc(6 * var(--u));
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
   transition: opacity 0.12s ease;
 }
 
 .pod-photo:hover .pod-photo__tools,
 .pod-photo:focus-within .pod-photo__tools {
   opacity: 1;
-  pointer-events: auto;
 }
 
 .pod-board.is-exporting .pod-photo__tools {
@@ -255,7 +253,11 @@
 }
 
 .pod-photo__tool {
+  position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: calc(28 * var(--u));
   border: 0;
   border-radius: calc(4 * var(--u));
@@ -272,8 +274,9 @@
   position: absolute;
   width: 1px;
   height: 1px;
+  overflow: hidden;
   opacity: 0;
-  pointer-events: none;
+  clip: rect(0, 0, 0, 0);
 }
 
 .pod-total {
@@ -402,7 +405,7 @@
 
 .pod-name__logo {
   position: absolute;
-  inset: -8%;
+  inset: 0;
   opacity: 0.88;
   pointer-events: none;
 }

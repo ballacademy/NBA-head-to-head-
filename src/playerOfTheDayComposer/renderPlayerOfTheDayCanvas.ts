@@ -6,17 +6,18 @@ import {
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
+  drawBannerInterior,
   drawCoveredTexture,
 } from "../standingsComposer/headerTexture";
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import {
+  drawCenteredLogo,
+  drawStretchedLogo,
+} from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  POTD_BA_SRC,
-  POTD_BADGE_INSET,
-  POTD_BADGE_SIZE,
   POTD_BRAND_SIZE,
   POTD_CARD_W,
   POTD_CRACKS_SRC,
@@ -26,7 +27,6 @@ import {
   POTD_LOGO_WATERMARK,
   POTD_NAME_H,
   POTD_NAME_SIZE,
-  POTD_PAD_X,
   POTD_RESULT_H,
   POTD_STAT_SIZE,
   POTD_STATS_H,
@@ -169,8 +169,10 @@ export const renderPlayerOfTheDayCanvas = async (
   context.strokeStyle = "#fff";
   context.lineWidth = 3 * s;
   context.strokeRect(plate.x - 3 * s, plate.y - 3 * s, plate.w + 6 * s, plate.h + 6 * s);
-  context.fillStyle = "#0a0a0a";
-  context.fillRect(plate.x, plate.y, plate.w, plate.h);
+  drawBannerInterior(context, plate.x, plate.y, plate.w, plate.h, s, () => {
+    context.beginPath();
+    context.rect(plate.x, plate.y, plate.w, plate.h);
+  });
 
   const titleLines = splitPotdTitle(input.title);
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
@@ -214,17 +216,6 @@ export const renderPlayerOfTheDayCanvas = async (
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText(dateText, width / 2, dateY + dateH / 2);
-
-  const badge = await loadImage(POTD_BA_SRC);
-  if (badge) {
-    context.drawImage(
-      badge,
-      (GRAPHIC_WIDTH - POTD_BADGE_INSET - POTD_BADGE_SIZE) * s,
-      POTD_BADGE_INSET * s,
-      POTD_BADGE_SIZE * s,
-      POTD_BADGE_SIZE * s,
-    );
-  }
 
   const bodyTop = POTD_HEADER_H * s;
   const bodyH = height - bodyTop - POTD_FOOTER * s;
@@ -354,11 +345,12 @@ export const renderPlayerOfTheDayCanvas = async (
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
-        drawCenteredLogo(context, logo, x, nameY, w, nameH, {
-          cacheKey: `${team.logoSrc}-name`,
-          fitX: 1,
-          fitY: 1,
+        context.save();
+        context.globalAlpha = 0.88;
+        drawStretchedLogo(context, logo, x, nameY, w, nameH, {
+          cacheKey: `${team.logoSrc}-name-fill`,
         });
+        context.restore();
       }
     }
     context.fillStyle = "#fff";

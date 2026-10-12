@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import type { PhotoPan } from "./playerOfTheDayState";
 import { clampPan } from "./playerOfTheDayState";
 
@@ -12,6 +12,34 @@ interface PhotoFrameProps {
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
 }
+
+const PHOTO_CHROME_CLASSES = [
+  "pod-photo__tool",
+  "pod-photo__tools",
+  "pod-photo__file",
+  "pod-photo__pick",
+] as const;
+
+export const isPhotoChromeClassName = (className: string) =>
+  PHOTO_CHROME_CLASSES.some((name) => className.split(/\s+/).includes(name));
+
+export const isPhotoChromeTarget = (target: EventTarget | null) => {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  let node: Element | null = target;
+  while (node) {
+    if (isPhotoChromeClassName(node.className?.toString?.() ?? "")) {
+      return true;
+    }
+    node = node.parentElement;
+  }
+  return false;
+};
+
+const stopChromePointer = (event: ReactPointerEvent) => {
+  event.stopPropagation();
+};
 
 const readFile = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -43,7 +71,6 @@ export function PhotoFrame({
     y: number;
     pan: PhotoPan;
   } | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = async (files: FileList | null) => {
     const file = files?.[0];
@@ -59,7 +86,7 @@ export function PhotoFrame({
         .filter(Boolean)
         .join(" ")}
       onPointerDown={(event) => {
-        if (empty || event.button !== 0) {
+        if (empty || event.button !== 0 || isPhotoChromeTarget(event.target)) {
           return;
         }
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -109,31 +136,39 @@ export function PhotoFrame({
           Pick player
         </button>
       )}
-      <div className="pod-photo__tools">
-        <button
-          type="button"
-          className="pod-photo__tool"
-          onClick={() => fileRef.current?.click()}
-        >
+      <div
+        className="pod-photo__tools"
+        onPointerDown={stopChromePointer}
+        onPointerUp={stopChromePointer}
+      >
+        <label className="pod-photo__tool">
           Upload photo
-        </button>
+          <input
+            className="pod-photo__file"
+            type="file"
+            accept="image/*"
+            aria-label={`Upload photo for ${label}`}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => {
+              void handleFiles(event.target.files);
+              event.currentTarget.value = "";
+            }}
+          />
+        </label>
         {empty ? null : (
-          <button type="button" className="pod-photo__tool" onClick={onPick}>
+          <button
+            type="button"
+            className="pod-photo__tool"
+            onPointerDown={stopChromePointer}
+            onClick={(event) => {
+              event.stopPropagation();
+              onPick();
+            }}
+          >
             Change player
           </button>
         )}
       </div>
-      <input
-        ref={fileRef}
-        className="pod-photo__file"
-        type="file"
-        accept="image/*"
-        aria-label={`Upload photo for ${label}`}
-        onChange={(event) => {
-          void handleFiles(event.target.files);
-          event.currentTarget.value = "";
-        }}
-      />
     </div>
   );
 }

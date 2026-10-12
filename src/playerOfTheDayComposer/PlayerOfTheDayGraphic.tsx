@@ -9,12 +9,7 @@ import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { PhotoFrame } from "./PhotoFrame";
-import {
-  POTD_BA_SRC,
-  POTD_BADGE_INSET,
-  POTD_BADGE_SIZE,
-  statsFillForTeam,
-} from "./playerOfTheDayLayout";
+import { statsFillForTeam } from "./playerOfTheDayLayout";
 import {
   splitPotdTitle,
   type PhotoPan,
@@ -148,20 +143,6 @@ export const PlayerOfTheDayGraphic = forwardRef<
             onDateChange(raw.slice(0, 16));
           }}
         />
-        <img
-          className="pod-badge"
-          src={POTD_BA_SRC}
-          alt=""
-          aria-hidden="true"
-          style={
-            {
-              top: `calc(${POTD_BADGE_INSET} * var(--u))`,
-              right: `calc(${POTD_BADGE_INSET} * var(--u))`,
-              width: `calc(${POTD_BADGE_SIZE} * var(--u))`,
-              height: `calc(${POTD_BADGE_SIZE} * var(--u))`,
-            } as React.CSSProperties
-          }
-        />
       </header>
       <div className="pod-cards">
         {cards.map((card, index) => {
@@ -242,7 +223,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
               >
                 {team ? (
                   <div className="pod-name__logo">
-                    <TeamLogo src={team.logoSrc} label="" fitX={1} fitY={1} />
+                    <TeamLogo src={team.logoSrc} label="" fill />
                   </div>
                 ) : null}
                 {card.lastName || card.firstName ? (

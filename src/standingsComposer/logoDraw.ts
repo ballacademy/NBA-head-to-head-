@@ -332,3 +332,50 @@ export const drawCenteredLogo = (
     dest.h,
   );
 };
+
+/** Stretch trimmed artwork to fill the dest box — no contain, no optical center. */
+export const stretchedLogoRect = (
+  cellX: number,
+  cellY: number,
+  cellW: number,
+  cellH: number,
+): LogoRect => ({
+  x: cellX,
+  y: cellY,
+  w: cellW,
+  h: cellH,
+});
+
+export const drawStretchedLogo = (
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  cellX: number,
+  cellY: number,
+  cellW: number,
+  cellH: number,
+  options?: { cacheKey?: string },
+) => {
+  if (cellW < 1 || cellH < 1) {
+    return;
+  }
+  const bounds = options?.cacheKey
+    ? getCachedOpaqueBounds(options.cacheKey, image)
+    : getOpaqueBounds(image);
+  const dest = stretchedLogoRect(cellX, cellY, cellW, cellH);
+  context.save();
+  context.beginPath();
+  context.rect(dest.x, dest.y, dest.w, dest.h);
+  context.clip();
+  context.drawImage(
+    image,
+    bounds.x,
+    bounds.y,
+    Math.max(1, bounds.w),
+    Math.max(1, bounds.h),
+    dest.x,
+    dest.y,
+    dest.w,
+    dest.h,
+  );
+  context.restore();
+};

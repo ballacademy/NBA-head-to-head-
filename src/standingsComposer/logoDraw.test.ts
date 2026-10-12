@@ -9,6 +9,7 @@ import {
   logoShadowPx,
   opticalShiftX,
   stampBalanceOffset,
+  stretchedLogoRect,
 } from "./logoDraw";
 import {
   BANNER_SHAPE,
@@ -187,6 +188,27 @@ describe("fittedLogoRect", () => {
       cell / 2 - stampBalanceOffset(shadow),
       6,
     );
+  });
+
+  it("stretches name-plate logos to the full dest box", () => {
+    expect(stretchedLogoRect(12, 40, 520, 116)).toEqual({
+      x: 12,
+      y: 40,
+      w: 520,
+      h: 116,
+    });
+    const contained = fittedLogoRect(
+      { x: 0, y: 0, w: 500, h: 500, cx: 250, cy: 250 },
+      12,
+      40,
+      520,
+      116,
+      1,
+      1,
+    );
+    expect(contained.w).toBeLessThan(520);
+    expect(stretchedLogoRect(12, 40, 520, 116).w).toBe(520);
+    expect(stretchedLogoRect(12, 40, 520, 116).h).toBe(116);
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {
