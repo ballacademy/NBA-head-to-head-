@@ -12,8 +12,12 @@ import {
   TIER_CELL_MAX,
   PLAYER_LOGO_WATERMARK_ALPHA,
   TIER_HEADER_H,
+  TIER_LABEL_MAX_LENGTH,
+  TIER_LABEL_SIZE_ONE,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
+  labelFontSize,
+  layoutTierLabel,
   tierBoardLayout,
   tierLaneCount,
 } from "./tierLayout";
@@ -91,7 +95,11 @@ describe("tier rows", () => {
   it("edits labels and titles", () => {
     const rows = setTierLabel(createDefaultRows(), 0, "ELITE!!!");
     expect(rows[0]!.label).toBe("ELITE!!!");
-    expect(setTierLabel(rows, 0, "TOOLONGNAME")[0]!.label).toHaveLength(8);
+    expect(setTierLabel(rows, 0, "All-Stars")[0]!.label).toBe("All-Stars");
+    expect(setTierLabel(rows, 0, "Role Players")[0]!.label).toBe("Role Players");
+    expect(setTierLabel(rows, 0, "x".repeat(40))[0]!.label).toHaveLength(
+      TIER_LABEL_MAX_LENGTH,
+    );
     const titleLines = splitTierTitle(DEFAULT_TIER_TITLE);
     expect(titleLines).toHaveLength(2);
     expect(`${titleLines[0]} ${titleLines[1]}`).toBe(DEFAULT_TIER_TITLE);
@@ -115,7 +123,8 @@ describe("tier rows", () => {
 describe("tier layout", () => {
   it("uses the circled BA lockup, not a drawn circle", () => {
     expect(BA_LOGO_SRC).toBe("/ba-logo-circled.png");
-    expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(100);
+    expect(TIER_BADGE_SIZE).toBeGreaterThanOrEqual(72);
+    expect(TIER_HEADER_H).toBeLessThan(220);
   });
 
   it("pads the BA lockup equally from the top and right edges", () => {
@@ -150,7 +159,8 @@ describe("tier layout", () => {
     expect(eight.lanes[0]).toBe(1);
     expect(nine.lanes[0]).toBe(2);
     expect(nine.totalLanes).toBe(eight.totalLanes + 1);
-    expect(nine.gridTemplate.startsWith("2fr")).toBe(true);
+    expect(nine.gridTemplate.startsWith("calc(")).toBe(true);
+    expect(nine.lanes[0]! * nine.laneH).toBeGreaterThan(eight.laneH);
     expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
     const squeezedOntoOneRow =
       (nine.contentW - TIER_CELL_GAP * 8) / 9;
@@ -163,5 +173,27 @@ describe("tier layout", () => {
     expect(wrapped.size).toBe(
       cellSize(wrapped.laneH, wrapped.contentW, TIER_WRAP_COLS),
     );
+  });
+
+  it("gives every one-letter label the same size and wraps long names", () => {
+    const letters = ["S", "A", "B", "C", "D", "F"].map((letter) =>
+      layoutTierLabel(letter),
+    );
+    expect(letters.every((item) => item.fontSize === TIER_LABEL_SIZE_ONE)).toBe(
+      true,
+    );
+    expect(labelFontSize("S")).toBe(labelFontSize("A"));
+    const allStars = layoutTierLabel("All-Stars");
+    expect(allStars.lines.join("")).toMatch(/ALL-STARS/i);
+    expect(allStars.fontSize).toBeGreaterThanOrEqual(16);
+    const role = layoutTierLabel("Role Players");
+    expect(role.lines.length).toBeGreaterThan(1);
+    const grown = tierBoardLayout(
+      [1, 1, 1, 1, 1, 1],
+      role.lines.length > 1 ? [role.lines.length, 1, 1, 1, 1, 1] : undefined,
+    );
+    const even = tierBoardLayout([1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]);
+    expect(grown.lanes[0]).toBeGreaterThan(even.lanes[0]!);
+    expect(even.size).toBeGreaterThan(120);
   });
 });

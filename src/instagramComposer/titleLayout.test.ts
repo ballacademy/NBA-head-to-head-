@@ -63,5 +63,8 @@ describe("composer title layout", () => {
       linedComposerTitle("Most Disappointing Player On Every NBA Team", lines),
     ).toBe("Most Disappointing\nPlayer On Every NBA Team");
     expect(linedComposerTitle("WESTERN", ["WESTERN"])).toBe("WESTERN");
+    expect(linedComposerTitle("Role Players Extra", ["Role", "Players", "Extra"])).toBe(
+      "Role\nPlayers\nExtra",
+    );
   });
 });

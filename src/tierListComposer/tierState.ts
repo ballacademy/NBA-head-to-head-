@@ -1,4 +1,5 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { TIER_LABEL_MAX_LENGTH } from "./tierLayout";
 
 export const MIN_TIERS = 3;
 export const MAX_TIERS = 10;
@@ -82,7 +83,10 @@ export const setTierLabel = (
     return rows;
   }
   const next = rows.slice();
-  next[index] = { ...next[index]!, label: label.slice(0, 8) };
+  next[index] = {
+    ...next[index]!,
+    label: label.slice(0, TIER_LABEL_MAX_LENGTH),
+  };
   return next;
 };
 

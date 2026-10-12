@@ -24,12 +24,13 @@ import {
   cellGridPosition,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  labelFontSize,
+  layoutTierLabel,
   PLAYER_LOGO_WATERMARK_ALPHA,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
   TIER_HEADER_H,
+  TIER_LABEL_TRACK,
   TIER_LABEL_W,
   TIER_TITLE_SIZE,
   TIER_TITLE_TRACK,
@@ -130,7 +131,7 @@ export const renderTierListCanvas = async (
   if (typeof document !== "undefined" && document.fonts?.load) {
     await Promise.all([
       document.fonts.load(`900 ${TIER_TITLE_SIZE * scale}px ${POSTER_FONT}`),
-      document.fonts.load(`900 ${76 * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${72 * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${28 * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
@@ -212,7 +213,11 @@ export const renderTierListCanvas = async (
     );
   }
 
-  const layout = tierBoardLayout(input.rows.map((row) => row.teams.length));
+  const labelLayouts = input.rows.map((row) => layoutTierLabel(row.label));
+  const layout = tierBoardLayout(
+    input.rows.map((row) => row.teams.length),
+    labelLayouts.map((item) => item.lines.length),
+  );
   const subject = input.subject ?? "teams";
   const cellArt = await Promise.all(
     input.rows.map((row) =>
@@ -250,14 +255,23 @@ export const renderTierListCanvas = async (
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
     context.fillRect(0, y, width, Math.max(1, 1.5 * scale));
 
-    const label = row.label.trim() || " ";
-    const fontPx = labelFontSize(label) * scale;
+    const labelLayout = labelLayouts[rowIndex] ?? layoutTierLabel(row.label);
+    const fontPx = labelLayout.fontSize * scale;
+    const labelLineH = fontPx * 0.95;
+    const labelBlockH = labelLineH * labelLayout.lines.length;
+    const labelX = (TIER_LABEL_W / 2) * scale;
+    const labelTop = y + (h - labelBlockH) / 2 + labelLineH / 2;
     withDropShadow(context, scale, () => {
-      context.font = `900 ${fontPx}px ${POSTER_FONT}`;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillStyle = "#fff";
-      context.fillText(label, (TIER_LABEL_W / 2) * scale, y + h / 2);
+      labelLayout.lines.forEach((line, lineIndex) => {
+        drawCenteredLine(
+          context,
+          line.toUpperCase(),
+          labelX,
+          labelTop + lineIndex * labelLineH,
+          `900 ${fontPx}px ${POSTER_FONT}`,
+          TIER_LABEL_TRACK * fontPx,
+        );
+      });
     });
 
     const size = layout.size * scale;

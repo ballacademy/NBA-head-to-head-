@@ -79,22 +79,9 @@ export const onComposerTextChange = (
   onChange(commitComposerText(event.target.value, maxLength));
 };
 
-/**
- * Insert a newline at the same word break the overlay uses so a textarea’s
- * caret lands on the visible two-line title instead of the start of a
- * single hidden line.
- */
-export const linedComposerTitle = (raw: string, lines: string[]): string => {
-  const compact = raw.replace(/[\r\n]+/g, " ");
-  if (lines.length < 2) {
-    return compact;
-  }
-  const wordTarget = lines[0]!.split(" ").filter(Boolean).length;
-  if (wordTarget < 1) {
-    return compact;
-  }
-  const leading = compact.match(/^\s*/)?.[0] ?? "";
-  const body = compact.slice(leading.length);
+const cutAfterWords = (text: string, wordTarget: number) => {
+  const leading = text.match(/^\s*/)?.[0] ?? "";
+  const body = text.slice(leading.length);
   const parts = body.split(/(\s+)/);
   let words = 0;
   let cut = leading.length;
@@ -115,12 +102,41 @@ export const linedComposerTitle = (raw: string, lines: string[]): string => {
       break;
     }
   }
-  const first = compact.slice(0, cut);
-  const rest = compact.slice(cut).replace(/^\s+/, "");
-  if (!rest) {
+  return {
+    first: text.slice(0, cut),
+    rest: text.slice(cut).replace(/^\s+/, ""),
+  };
+};
+
+/**
+ * Insert newlines at the same word breaks the overlay uses so a textarea’s
+ * caret lands on the visible wrapped lines instead of one hidden line.
+ */
+export const linedComposerTitle = (raw: string, lines: string[]): string => {
+  const compact = raw.replace(/[\r\n]+/g, " ");
+  if (lines.length < 2) {
     return compact;
   }
-  return `${first}\n${rest}`;
+  let remaining = compact;
+  const chunks: string[] = [];
+  for (let index = 0; index < lines.length - 1; index += 1) {
+    const wordTarget = lines[index]!.split(" ").filter(Boolean).length;
+    if (wordTarget < 1) {
+      break;
+    }
+    const { first, rest } = cutAfterWords(remaining, wordTarget);
+    if (!rest) {
+      chunks.push(remaining);
+      remaining = "";
+      break;
+    }
+    chunks.push(first);
+    remaining = rest;
+  }
+  if (remaining || chunks.length === 0) {
+    chunks.push(remaining);
+  }
+  return chunks.join("\n");
 };
 
 export const splitBalancedTitle = (

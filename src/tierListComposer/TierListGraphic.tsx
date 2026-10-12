@@ -5,7 +5,6 @@ import {
   isNeonLook,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import { getPlayer } from "./nbaActivePlayers";
@@ -14,7 +13,15 @@ import {
   BA_LOGO_SRC,
   baBadgeRect,
   GRAPHIC_WIDTH,
-  labelFontSize,
+  layoutTierLabel,
+  TIER_CELL_GAP,
+  TIER_CELLS_INSET,
+  TIER_HEADER_H,
+  TIER_LABEL_MAX_LENGTH,
+  TIER_LABEL_W,
+  TIER_PAD_RIGHT,
+  TIER_ROW_PAD_Y,
+  TIER_TITLE_SIZE,
   tierBoardLayout,
 } from "./tierLayout";
 import {
@@ -87,8 +94,10 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const [dropKey, setDropKey] = useState<string | null>(null);
     const titleLines = splitTierTitle(title);
     const badge = baBadgeRect();
+    const labelLayouts = rows.map((row) => layoutTierLabel(row.label));
     const layout = tierBoardLayout(
       rows.map((row) => (exporting ? row.teams.length : row.teams.length + 1)),
+      labelLayouts.map((item) => item.lines.length),
     );
 
     const setRefs = (node: HTMLElement | null) => {
@@ -126,7 +135,14 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look)]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--title-size" as string]: String(TIER_TITLE_SIZE),
+            ["--label-w" as string]: String(TIER_LABEL_W),
+            ["--header-h" as string]: String(TIER_HEADER_H),
+          } as React.CSSProperties
+        }
         aria-label="Instagram NBA tier list graphic"
       >
         <header className="tl-header">
@@ -162,18 +178,22 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
               ["--tier-count" as string]: String(rows.length),
               ["--tier-rows" as string]: layout.gridTemplate,
               ["--cell" as string]: `calc(${layout.size} * var(--u))`,
+              ["--cell-gap" as string]: String(TIER_CELL_GAP),
+              ["--row-pad" as string]: String(TIER_ROW_PAD_Y),
+              ["--pad-right" as string]: String(TIER_PAD_RIGHT),
+              ["--cells-inset" as string]: String(TIER_CELLS_INSET),
             } as React.CSSProperties
           }
         >
           {rows.map((row, rowIndex) => {
-            const labelSize = labelFontSize(row.label);
+            const labelLayout = labelLayouts[rowIndex]!;
             return (
               <div
                 key={row.id}
                 className="tl-row"
                 style={
                   {
-                    ["--label-size" as string]: `calc(${labelSize} * var(--u))`,
+                    ["--label-size" as string]: `calc(${labelLayout.fontSize} * var(--u))`,
                   } as React.CSSProperties
                 }
                 onDragOver={(event) => {
@@ -191,16 +211,17 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                   onPlaceTeam(rowIndex, row.teams.length, payload.teamId);
                 }}
               >
-                <input
-                  className="tl-label"
-                  value={row.label}
-                  maxLength={8}
-                  spellCheck={false}
-                  aria-label={`Tier ${rowIndex + 1} label`}
-                  onChange={(event) =>
-                    onComposerTextChange(event, (value) => onLabelChange(rowIndex, value), 8)
-                  }
-                />
+                <div className="tl-label-stack">
+                  <ComposerTitleField
+                    value={row.label}
+                    lines={labelLayout.lines}
+                    ariaLabel={`Tier ${rowIndex + 1} label`}
+                    inputClassName="tl-label"
+                    lineClassName="tl-label-line"
+                    maxLength={TIER_LABEL_MAX_LENGTH}
+                    onChange={(value) => onLabelChange(rowIndex, value)}
+                  />
+                </div>
                 <div className="tl-cells">
                   {row.teams.map((entityId, index) => {
                     const player =

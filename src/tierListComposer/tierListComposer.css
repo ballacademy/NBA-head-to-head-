@@ -8,7 +8,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: 16.533fr 83.467fr;
+  grid-template-rows: calc(var(--header-h, 184) * var(--u)) 1fr;
   background-color: #0b0b0b;
   color: #fff;
   overflow: hidden;
@@ -52,7 +52,7 @@
 
 .tl-title-line {
   font-family: var(--ig-poster);
-  font-size: calc(54 * var(--u));
+  font-size: calc(var(--title-size, 44) * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.04em;
@@ -83,7 +83,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(54 * var(--u));
+  font-size: calc(var(--title-size, 44) * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1.12;
@@ -109,37 +109,74 @@
 .tl-rows {
   display: grid;
   grid-template-rows: var(--tier-rows, repeat(var(--tier-count), 1fr));
+  align-content: start;
   min-height: 0;
 }
 
 .tl-row {
   display: grid;
-  grid-template-columns: calc(140 * var(--u)) 1fr;
+  grid-template-columns: calc(var(--label-w, 140) * var(--u)) 1fr;
   min-height: 0;
   border-top: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.22);
 }
 
-.tl-label {
+.tl-label-stack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0 calc(6 * var(--u));
-  border: 0;
-  appearance: none;
-  background: transparent;
-  color: #fff;
-  text-align: center;
+  min-height: 0;
+  padding: 0 calc(8 * var(--u));
+}
+
+.tl-label-stack .composer-title-stack {
+  width: 100%;
+  height: 100%;
+}
+
+.tl-label-line {
+  width: 100%;
   font-family: var(--ig-poster);
-  font-size: var(--label-size, calc(76 * var(--u)));
+  font-size: var(--label-size, calc(72 * var(--u)));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.02em;
+  line-height: 0.95;
   text-transform: uppercase;
+  text-align: center;
+  overflow: visible;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
   text-shadow:
     calc(1.2 * var(--u)) calc(1.5 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+}
+
+.tl-label {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 calc(8 * var(--u));
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: var(--label-size, calc(72 * var(--u)));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  pointer-events: auto;
 }
 
 .tl-label:focus {
@@ -153,10 +190,11 @@
   grid-auto-rows: var(--cell, 120px);
   align-content: center;
   justify-content: start;
-  gap: calc(8 * var(--u));
+  gap: calc(var(--cell-gap, 6) * var(--u));
   min-width: 0;
-  padding: calc(12 * var(--u)) calc(32 * var(--u)) calc(12 * var(--u))
-    calc(12 * var(--u));
+  padding: calc(var(--row-pad, 4) * var(--u))
+    calc(var(--pad-right, 12) * var(--u)) calc(var(--row-pad, 4) * var(--u))
+    calc(var(--cells-inset, 8) * var(--u));
   overflow: visible;
 }
 

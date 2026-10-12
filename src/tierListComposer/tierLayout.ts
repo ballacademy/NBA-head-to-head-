@@ -1,3 +1,4 @@
+import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -6,25 +7,33 @@ import {
 export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 /** Board-space (1200×1500) layout shared by the on-screen graphic and PNG. */
-export const TIER_HEADER_H = 248;
-export const TIER_FOOTER = 16;
+export const TIER_HEADER_H = 184;
+export const TIER_FOOTER = 8;
 export const TIER_LABEL_W = 140;
-export const TIER_CELLS_INSET = 12;
-export const TIER_PAD_RIGHT = 32;
-export const TIER_CELL_GAP = 8;
-export const TIER_CELL_MAX = 148;
+export const TIER_LABEL_PAD_X = 8;
+export const TIER_LABEL_INNER_W = TIER_LABEL_W - TIER_LABEL_PAD_X * 2;
+export const TIER_LABEL_TRACK = 0.02;
+export const TIER_LABEL_MAX_LENGTH = 32;
+export const TIER_LABEL_SIZE_ONE = 72;
+export const TIER_LABEL_SIZE_TWO = 48;
+export const TIER_LABEL_SIZE_LONG = 28;
+export const TIER_LABEL_SIZE_MIN = 16;
+export const TIER_CELLS_INSET = 8;
+export const TIER_PAD_RIGHT = 12;
+export const TIER_CELL_GAP = 6;
+export const TIER_CELL_MAX = 172;
 /** Logos stay this wide; extra items wrap onto another lane in the same tier. */
 export const TIER_WRAP_COLS = 8;
-export const TIER_ROW_PAD_Y = 12;
+export const TIER_ROW_PAD_Y = 4;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
-export const TIER_BADGE_SIZE = 108;
+export const TIER_BADGE_SIZE = 80;
 /**
  * Equal inset from the graphic’s top edge and right edge so the lockup is
  * not hugging the right. Matches the header’s vertical centering gap.
  */
 export const TIER_BADGE_INSET = (TIER_HEADER_H - TIER_BADGE_SIZE) / 2;
-export const TIER_TITLE_SIZE = 54;
+export const TIER_TITLE_SIZE = 44;
 /** Faded team-logo backdrop behind a player headshot. Fitted to the cell. */
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
 export const TIER_TITLE_TRACK = 0.04;
@@ -64,13 +73,30 @@ export interface TierBoardLayout {
   gridTemplate: string;
 }
 
-export const tierBoardLayout = (itemCounts: number[]): TierBoardLayout => {
-  const lanes = itemCounts.map((count) => tierLaneCount(count));
+export const tierBoardLayout = (
+  itemCounts: number[],
+  labelLineCounts: number[] = [],
+): TierBoardLayout => {
+  const lanes = itemCounts.map((count, index) =>
+    Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1)),
+  );
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
   const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
-  const laneH = bodyH / totalLanes;
   const contentW = cellsContentWidth();
-  const size = cellSize(laneH, contentW, TIER_WRAP_COLS);
+  const cols = TIER_WRAP_COLS;
+  const fromWidth = Math.max(
+    28,
+    Math.min(
+      TIER_CELL_MAX,
+      (contentW - TIER_CELL_GAP * (cols - 1)) / cols,
+    ),
+  );
+  const fromHeight = Math.max(
+    28,
+    Math.min(TIER_CELL_MAX, bodyH / totalLanes - TIER_ROW_PAD_Y * 2),
+  );
+  const size = Math.min(fromWidth, fromHeight);
+  const laneH = size + TIER_ROW_PAD_Y * 2;
   return {
     lanes,
     totalLanes,
@@ -78,7 +104,9 @@ export const tierBoardLayout = (itemCounts: number[]): TierBoardLayout => {
     laneH,
     size,
     contentW,
-    gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
+    gridTemplate: lanes
+      .map((count) => `calc(${count * laneH} * var(--u))`)
+      .join(" "),
   };
 };
 
@@ -93,16 +121,83 @@ export const baBadgeRect = () => ({
   size: TIER_BADGE_SIZE,
 });
 
-export const labelFontSize = (label: string) => {
-  const len = Math.max(1, label.trim().length);
+const labelWidthAt = (text: string, fontSize: number) =>
+  measureTitleAdvance(text.toUpperCase(), TIER_LABEL_TRACK) * fontSize;
+
+const lineFits = (text: string, fontSize: number) =>
+  labelWidthAt(text, fontSize) <= TIER_LABEL_INNER_W + 0.01;
+
+export const wrapTierLabel = (label: string, fontSize: number): string[] => {
+  const text = label.replace(/\s+/g, " ").trim();
+  if (!text) {
+    return [" "];
+  }
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  const pushWord = (word: string) => {
+    if (lineFits(word, fontSize) || fontSize <= TIER_LABEL_SIZE_MIN) {
+      current = word;
+      return;
+    }
+    let chunk = "";
+    for (const char of word) {
+      const next = chunk + char;
+      if (chunk && !lineFits(next, fontSize)) {
+        lines.push(chunk);
+        chunk = char;
+      } else {
+        chunk = next;
+      }
+    }
+    current = chunk;
+  };
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (!current || lineFits(next, fontSize)) {
+      current = next;
+      continue;
+    }
+    lines.push(current);
+    pushWord(word);
+  }
+  if (current) {
+    lines.push(current);
+  }
+  return lines.length > 0 ? lines : [" "];
+};
+
+const startingLabelSize = (label: string) => {
+  const len = label.replace(/\s+/g, " ").trim().length;
   if (len <= 1) {
-    return 76;
+    return TIER_LABEL_SIZE_ONE;
   }
   if (len === 2) {
-    return 48;
+    return TIER_LABEL_SIZE_TWO;
   }
-  if (len <= 4) {
-    return 30;
-  }
-  return 20;
+  return TIER_LABEL_SIZE_LONG;
 };
+
+export interface TierLabelLayout {
+  lines: string[];
+  fontSize: number;
+}
+
+export const layoutTierLabel = (label: string): TierLabelLayout => {
+  const trimmed = label.replace(/\s+/g, " ").trim();
+  let fontSize = startingLabelSize(trimmed);
+  while (fontSize > TIER_LABEL_SIZE_MIN) {
+    const lines = wrapTierLabel(trimmed, fontSize);
+    const overflow = lines.some((line) => !lineFits(line.trim() || " ", fontSize));
+    if (!overflow && lines.length <= 4) {
+      return { lines, fontSize };
+    }
+    fontSize -= 1;
+  }
+  return {
+    lines: wrapTierLabel(trimmed, TIER_LABEL_SIZE_MIN),
+    fontSize: TIER_LABEL_SIZE_MIN,
+  };
+};
+
+export const labelFontSize = (label: string) => layoutTierLabel(label).fontSize;
