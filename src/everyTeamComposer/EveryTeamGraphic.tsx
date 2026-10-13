@@ -13,6 +13,7 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   ET_CELL_GAP,
@@ -34,6 +35,7 @@ interface EveryTeamGraphicProps {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  showNames?: boolean;
   activeIndex: number | null;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -77,6 +79,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       showBa = false,
       ranked = false,
       rankedOrder,
+      showNames = false,
       activeIndex,
       exporting = false,
       onBrandChange,
@@ -225,6 +228,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             const player = getPlayer(stored);
             const shown =
               player && player.team === team.id ? player : null;
+            const names = shown ? splitPlayerName(shown.name) : null;
             const rank = index + 1;
             return (
               <div
@@ -340,6 +344,16 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 {ranked ? (
                   <span className="et-cell__rank" aria-hidden="true">
                     {rank}
+                  </span>
+                ) : null}
+                {showNames && shown && names ? (
+                  <span className="et-cell__name">
+                    {names.firstName ? (
+                      <span className="et-cell__given">{names.firstName}</span>
+                    ) : null}
+                    <span className="et-cell__family">
+                      {names.lastName || shown.name}
+                    </span>
                   </span>
                 ) : null}
                 {exporting || !shown ? null : (

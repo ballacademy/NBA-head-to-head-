@@ -129,6 +129,52 @@
   z-index: 4;
 }
 
+.et-cell__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22% 5% 5%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.72) 42%,
+    rgba(0, 0, 0, 0.28) 74%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  text-align: center;
+  line-height: 0.95;
+}
+
+.et-cell__given,
+.et-cell__family {
+  display: block;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
+}
+
+.et-cell__given {
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.08em;
+  opacity: 0.92;
+}
+
+.et-cell__family {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.04em;
+}
+
 .et-cell__rank {
   position: absolute;
   top: 3%;
@@ -141,8 +187,8 @@
   color: #fff;
   pointer-events: none;
   text-shadow:
-    calc(0.55 * var(--u)) calc(0.55 * var(--u)) 0 rgba(0, 0, 0, 0.72),
-    calc(1.1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.38);
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.9 * var(--u)) calc(2.1 * var(--u)) 0 rgba(0, 0, 0, 0.5);
 }
 
 .et-cell__hit {

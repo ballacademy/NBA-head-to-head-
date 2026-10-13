@@ -2,33 +2,82 @@ import type { ComposerMode } from "./composerMode";
 
 interface ComposerTabsProps {
   mode: ComposerMode;
+  photoEdit: boolean;
   onSelect: (mode: ComposerMode) => void;
+  onPhotoEditChange: (on: boolean) => void;
 }
 
-const TABS: { mode: ComposerMode; label: string }[] = [
-  { mode: "standings", label: "Standings" },
-  { mode: "tier", label: "Tier list" },
-  { mode: "every-team", label: "Every team" },
-  { mode: "player-of-the-day", label: "Player of the Day" },
-  { mode: "potd-leaderboard", label: "POTD Leaderboard" },
-  { mode: "team-of-the-week", label: "Team of the Week" },
-  { mode: "team-of-the-week-plus", label: "TOTW Plus" },
+export const COMPOSER_TAB_GROUPS: {
+  label: string;
+  tabs: { mode: ComposerMode; label: string }[];
+}[] = [
+  {
+    label: "Rankings",
+    tabs: [
+      { mode: "standings", label: "Standings" },
+      { mode: "every-team", label: "Every team" },
+      { mode: "tier", label: "Tier list" },
+    ],
+  },
+  {
+    label: "Week",
+    tabs: [
+      { mode: "team-of-the-week", label: "Team of the Week" },
+      { mode: "team-of-the-week-plus", label: "TOTW Plus" },
+    ],
+  },
+  {
+    label: "POTD",
+    tabs: [
+      { mode: "player-of-the-day", label: "Matchup" },
+      { mode: "potd-leaderboard", label: "Leaderboard" },
+    ],
+  },
 ];
 
-export function ComposerTabs({ mode, onSelect }: ComposerTabsProps) {
+export function ComposerTabs({
+  mode,
+  photoEdit,
+  onSelect,
+  onPhotoEditChange,
+}: ComposerTabsProps) {
   return (
     <nav className="sc-tabs" aria-label="Composer type">
-      {TABS.map((tab) => (
-        <button
-          key={tab.mode}
-          type="button"
-          className={mode === tab.mode ? "is-on" : ""}
-          aria-current={mode === tab.mode ? "page" : undefined}
-          onClick={() => onSelect(tab.mode)}
+      {COMPOSER_TAB_GROUPS.map((group) => (
+        <div
+          key={group.label}
+          className="sc-tabs__group"
+          role="group"
+          aria-label={group.label}
         >
-          {tab.label}
-        </button>
+          <span className="sc-tabs__label">{group.label}</span>
+          <div className="sc-tabs__pills">
+            {group.tabs.map((tab) => (
+              <button
+                key={tab.mode}
+                type="button"
+                className={mode === tab.mode ? "is-on" : ""}
+                aria-current={mode === tab.mode ? "page" : undefined}
+                onClick={() => onSelect(tab.mode)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       ))}
+      <div className="sc-tabs__edit">
+        <span className="sc-tabs__label">HUD</span>
+        <button
+          type="button"
+          className={photoEdit ? "is-on" : ""}
+          aria-pressed={photoEdit}
+          aria-label="Show upload, change player, and zoom controls"
+          onClick={() => onPhotoEditChange(!photoEdit)}
+        >
+          Edit
+        </button>
+      </div>
     </nav>
   );
 }

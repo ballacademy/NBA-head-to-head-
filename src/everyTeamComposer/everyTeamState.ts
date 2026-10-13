@@ -70,6 +70,7 @@ export interface EveryTeamDraft {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  showNames?: boolean;
 }
 
 export const createDefaultRankedOrder = (): string[] =>

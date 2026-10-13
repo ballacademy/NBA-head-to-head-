@@ -260,8 +260,10 @@
 }
 
 .pod-photo:hover .pod-photo__tools,
-.pod-photo:focus-within .pod-photo__tools {
+.pod-photo:focus-within .pod-photo__tools,
+.sc-root.is-photo-edit .pod-photo__tools {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .pod-board.is-exporting .pod-photo__tools {

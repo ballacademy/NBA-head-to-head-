@@ -38,6 +38,7 @@ export interface TotwDraft {
   week: string;
   strips: TotwStrip[];
   showBa?: boolean;
+  showNames?: boolean;
 }
 
 export const splitPlayerName = (name: string) => {
@@ -55,6 +56,21 @@ export const splitPlayerName = (name: string) => {
 };
 
 const padDate = (value: number) => String(value);
+
+const WEEK_MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
 
 export const weekRangeFor = (now = new Date()) => {
   const day = now.getDay();
@@ -75,7 +91,7 @@ export const weekRangeFor = (now = new Date()) => {
 };
 
 export const defaultWeekLabel = (now = new Date()) =>
-  `WEEK 1: ${weekRangeFor(now)}`;
+  `WEEK OF ${WEEK_MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
 export const createEmptyStrip = (): TotwStrip => ({
   playerId: null,
@@ -221,4 +237,5 @@ export const defaultTotwDraft = (): TotwDraft => ({
   title: DEFAULT_TOTW_TITLE,
   week: defaultWeekLabel(),
   strips: createEmptyStrips(),
+  showNames: false,
 });

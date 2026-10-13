@@ -4,11 +4,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import { TeamLogo } from "../standingsComposer/TeamLogo";
-import { getTeam } from "../standingsComposer/teams";
 import {
   PLUS_BA_INSET,
   PLUS_BA_SIZE,
@@ -81,7 +80,6 @@ const PortraitCell = ({
 }) => {
   const empty = !slot.photoSrc;
   const label = stripPlayerName(slot) || slotLabel(index);
-  const team = getTeam(slot.teamId);
   return (
     <section className="twp-cell" aria-label={slotLabel(index)}>
       <PhotoFrame
@@ -96,49 +94,18 @@ const PortraitCell = ({
         onPick={() => onPick(index)}
       />
       {showNames ? (
-        <div className="twp-meta">
-          {team ? (
-            <div className="twp-meta__logo">
-              <TeamLogo src={team.logoSrc} label="" fitX={0.88} fitY={0.88} />
-            </div>
-          ) : null}
-          <div className="twp-name-stack">
-            <input
-              className="twp-name twp-name--given"
-              value={slot.firstName}
-              maxLength={16}
-              placeholder={empty ? "" : "FIRST"}
-              aria-label={`${slotLabel(index)} first name`}
-              onChange={(event) =>
-                onNameChange(index, {
-                  firstName: event.target.value.slice(0, 16),
-                })
-              }
-              onClick={() => {
-                if (empty) {
-                  onPick(index);
-                }
-              }}
-            />
-            <input
-              className="twp-name twp-name--family"
-              value={slot.lastName}
-              maxLength={18}
-              placeholder={empty ? "" : "LAST"}
-              aria-label={`${slotLabel(index)} last name`}
-              onChange={(event) =>
-                onNameChange(index, {
-                  lastName: event.target.value.slice(0, 18),
-                })
-              }
-              onClick={() => {
-                if (empty) {
-                  onPick(index);
-                }
-              }}
-            />
-          </div>
-        </div>
+        <PlayerNameFade
+          firstName={slot.firstName}
+          lastName={slot.lastName}
+          teamId={slot.teamId}
+          empty={empty}
+          givenAria={`${slotLabel(index)} first name`}
+          familyAria={`${slotLabel(index)} last name`}
+          flushLeft={index !== 0 && index !== PLUS_STARTER_COUNT}
+          onFirstChange={(firstName) => onNameChange(index, { firstName })}
+          onLastChange={(lastName) => onNameChange(index, { lastName })}
+          onEmptyClick={() => onPick(index)}
+        />
       ) : null}
     </section>
   );
