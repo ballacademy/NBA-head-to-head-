@@ -3,6 +3,7 @@ import {
   frameLinePx,
   innerFrameRect,
   paintCellFrame,
+  paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -157,6 +158,7 @@ const drawStripPhoto = async (
   scale: number,
   look?: ComposerLook | null,
   showFade = false,
+  showTeamHairline = true,
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -199,27 +201,29 @@ const drawStripPhoto = async (
   }
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
-  if (!showFade) {
-    return;
+  if (showFade) {
+    const line = frameLinePx(scale);
+    const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
+    const team = getTeam(strip.teamId);
+    const logo = team ? await loadImage(team.logoSrc) : null;
+    drawPlayerNameFade(context, {
+      x: x + line,
+      y: y + h - line - barH,
+      w: w - line * 2,
+      h: barH,
+      given: strip.firstName,
+      family: strip.lastName,
+      logo,
+      logoSrc: team?.logoSrc,
+      logoSize: RL_NAME_LOGO * scale,
+      familySize: RL_NAME_FAMILY_SIZE * scale,
+      givenSize: RL_NAME_GIVEN_SIZE * scale,
+      scale,
+    });
   }
-  const line = frameLinePx(scale);
-  const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
-  const team = getTeam(strip.teamId);
-  const logo = team ? await loadImage(team.logoSrc) : null;
-  drawPlayerNameFade(context, {
-    x: x + line,
-    y: y + h - line - barH,
-    w: w - line * 2,
-    h: barH,
-    given: strip.firstName,
-    family: strip.lastName,
-    logo,
-    logoSrc: team?.logoSrc,
-    logoSize: RL_NAME_LOGO * scale,
-    familySize: RL_NAME_FAMILY_SIZE * scale,
-    givenSize: RL_NAME_GIVEN_SIZE * scale,
-    scale,
-  });
+  if (showTeamHairline) {
+    paintTeamHairline(context, x, y, w, h, look, scale, strip.teamId);
+  }
 };
 
 export interface RankedLineupsRenderInput {
@@ -230,6 +234,7 @@ export interface RankedLineupsRenderInput {
   look?: ComposerLook;
   showBa?: boolean;
   showFade?: boolean;
+  showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
 }
 
@@ -383,6 +388,7 @@ export const renderRankedLineupsCanvas = async (
       s,
       input.look,
       input.showFade === true,
+      input.showTeamHairline !== false,
     );
   }
 

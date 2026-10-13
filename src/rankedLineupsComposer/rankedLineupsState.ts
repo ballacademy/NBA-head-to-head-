@@ -67,6 +67,7 @@ export interface RankedLineupsDraft {
   activeSlide?: number;
   showBa?: boolean;
   showFade?: boolean;
+  showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
 }
 
@@ -116,6 +117,7 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     activeSlide: 0,
     showBa: false,
     showFade: false,
+    showTeamHairline: true,
     rankDisplay: DEFAULT_RANK_DISPLAY,
   };
 };

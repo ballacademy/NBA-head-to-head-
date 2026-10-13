@@ -153,4 +153,8 @@ describe("team of the week state", () => {
   it("paints a light vignette over five-strip photos", () => {
     expect(typeof paintPhotoVignette).toBe("function");
   });
+
+  it("defaults the inner team-color hairline on", () => {
+    expect(defaultTotwDraft().showTeamHairline).toBe(true);
+  });
 });

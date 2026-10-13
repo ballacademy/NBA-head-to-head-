@@ -82,6 +82,7 @@ describe("ranked lineups", () => {
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);
     expect(draft.showFade).toBe(false);
+    expect(draft.showTeamHairline).toBe(true);
     expect(draft.rankDisplay).toBe(DEFAULT_RANK_DISPLAY);
     expect(DEFAULT_RANK_DISPLAY).toBe("pill");
     expect(parseRankDisplay(undefined)).toBe("pill");

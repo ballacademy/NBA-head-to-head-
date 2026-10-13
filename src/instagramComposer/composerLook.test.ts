@@ -8,8 +8,12 @@ import {
   frameLinePx,
   headshotGlowPx,
   headshotSilhouettePx,
+  hairlineLinePx,
   innerFrameRect,
   parseComposerLook,
+  parseShowTeamHairline,
+  TEAM_HAIRLINE_PX,
+  teamHairlineColor,
 } from "./composerLook";
 import { TIER_WRAP_COLS } from "../tierListComposer/tierLayout";
 
@@ -54,5 +58,19 @@ describe("composer look", () => {
 
   it("does not change the wrap-after-8 tier grid", () => {
     expect(TIER_WRAP_COLS).toBe(8);
+  });
+
+  it("keeps a 1px team hairline inside the white/black frame and off by default only when toggled", () => {
+    expect(TEAM_HAIRLINE_PX).toBe(1);
+    expect(hairlineLinePx(1)).toBe(1);
+    expect(hairlineLinePx(2)).toBe(2);
+    expect(parseShowTeamHairline(undefined)).toBe(true);
+    expect(parseShowTeamHairline(false)).toBe(false);
+    expect(teamHairlineColor(null, "white")).toBeNull();
+    expect(teamHairlineColor("LAL", "white")).toBe("#552583");
+    expect(teamHairlineColor("BKN", "black")).toBe("#FFFFFF");
+    const inner = innerFrameRect(0, 0, 200, 400, 1);
+    expect(inner.x).toBe(FRAME_WIDTH);
+    expect(inner.x + hairlineLinePx(1)).toBeGreaterThan(FRAME_WIDTH);
   });
 });

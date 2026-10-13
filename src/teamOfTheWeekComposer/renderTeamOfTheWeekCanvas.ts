@@ -2,6 +2,7 @@ import {
   clipToInnerFrame,
   frameLinePx,
   paintCellFrame,
+  paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -112,6 +113,7 @@ const drawStripPhoto = async (
   scale: number,
   look?: ComposerLook | null,
   showNames = false,
+  showTeamHairline = true,
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -154,27 +156,29 @@ const drawStripPhoto = async (
   }
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
-  if (!showNames) {
-    return;
+  if (showNames) {
+    const line = frameLinePx(scale);
+    const barH = Math.max(line, TOTW_NAME_H * scale - line);
+    const team = getTeam(strip.teamId);
+    const logo = team ? await loadImage(team.logoSrc) : null;
+    drawPlayerNameFade(context, {
+      x: x + line,
+      y: y + h - line - barH,
+      w: w - line * 2,
+      h: barH,
+      given: strip.firstName,
+      family: strip.lastName,
+      logo,
+      logoSrc: team?.logoSrc,
+      logoSize: TOTW_NAME_LOGO * scale,
+      familySize: TOTW_NAME_SIZE * scale,
+      givenSize: TOTW_NAME_GIVEN_SIZE * scale,
+      scale,
+    });
   }
-  const line = frameLinePx(scale);
-  const barH = Math.max(line, TOTW_NAME_H * scale - line);
-  const team = getTeam(strip.teamId);
-  const logo = team ? await loadImage(team.logoSrc) : null;
-  drawPlayerNameFade(context, {
-    x: x + line,
-    y: y + h - line - barH,
-    w: w - line * 2,
-    h: barH,
-    given: strip.firstName,
-    family: strip.lastName,
-    logo,
-    logoSrc: team?.logoSrc,
-    logoSize: TOTW_NAME_LOGO * scale,
-    familySize: TOTW_NAME_SIZE * scale,
-    givenSize: TOTW_NAME_GIVEN_SIZE * scale,
-    scale,
-  });
+  if (showTeamHairline) {
+    paintTeamHairline(context, x, y, w, h, look, scale, strip.teamId);
+  }
 };
 
 export interface TeamOfTheWeekRenderInput {
@@ -185,6 +189,7 @@ export interface TeamOfTheWeekRenderInput {
   look?: ComposerLook;
   showBa?: boolean;
   showNames?: boolean;
+  showTeamHairline?: boolean;
 }
 
 export const renderTeamOfTheWeekCanvas = async (
@@ -246,6 +251,7 @@ export const renderTeamOfTheWeekCanvas = async (
       s,
       input.look,
       input.showNames === true,
+      input.showTeamHairline !== false,
     );
   }
 

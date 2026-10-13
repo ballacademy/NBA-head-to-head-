@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { getTeamColors } from "../lib/teamColors";
 
 export type ComposerLook = "white" | "black";
 
@@ -86,6 +87,70 @@ export const paintCellFrame = (
   context.strokeStyle = frameColor(look);
   context.lineWidth = line;
   context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  context.restore();
+};
+
+/** 1px inner team-color line, inside the White/Black frame — not instead of it. */
+export const TEAM_HAIRLINE_PX = 1;
+
+export const parseShowTeamHairline = (value: unknown) => value !== false;
+
+const hexLum = (hex: string) => {
+  const n = Number.parseInt(hex.replace("#", "").slice(0, 6), 16);
+  if (Number.isNaN(n)) {
+    return 0.5;
+  }
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+};
+
+export const hairlineLinePx = (scale: number) =>
+  Math.max(1, Math.round(TEAM_HAIRLINE_PX * scale));
+
+export const teamHairlineColor = (
+  teamId: string | null | undefined,
+  look?: ComposerLook | null,
+): string | null => {
+  if (!teamId) {
+    return null;
+  }
+  const { primary, secondary } = getTeamColors(teamId);
+  const frameLum = look === "black" ? 0.04 : 1;
+  if (Math.abs(hexLum(primary) - frameLum) < 0.18) {
+    return secondary;
+  }
+  return primary;
+};
+
+export const paintTeamHairline = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  look: ComposerLook | null | undefined,
+  scale: number,
+  teamId: string | null | undefined,
+) => {
+  const color = teamHairlineColor(teamId, look);
+  if (!color) {
+    return;
+  }
+  const inner = innerFrameRect(x, y, w, h, scale);
+  const line = hairlineLinePx(scale);
+  context.save();
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  context.strokeStyle = color;
+  context.lineWidth = line;
+  context.strokeRect(
+    inner.x + line / 2,
+    inner.y + line / 2,
+    Math.max(0, inner.w - line),
+    Math.max(0, inner.h - line),
+  );
   context.restore();
 };
 

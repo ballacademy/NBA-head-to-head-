@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   copyGraphicCaption,
@@ -11,6 +12,7 @@ import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialo
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
+  parseShowTeamHairline,
   useComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -50,7 +52,11 @@ const SAVES_KEY = "ddgm:team-of-the-week-composer:saves";
 const loadDraft = (): TotwDraft => {
   const stored = readJson<Partial<TotwDraft>>(STORAGE_KEY);
   if (isTotwDraft(stored)) {
-    return { ...stored, showNames: stored.showNames === true };
+    return {
+      ...stored,
+      showNames: stored.showNames === true,
+      showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
+    };
   }
   const empty = defaultTotwDraft();
   return {
@@ -60,6 +66,7 @@ const loadDraft = (): TotwDraft => {
     strips: empty.strips,
     showBa: stored?.showBa === true,
     showNames: stored?.showNames === true,
+    showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
   };
 };
 
@@ -78,6 +85,7 @@ export function TeamOfTheWeekComposerApp() {
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
+  const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -97,6 +105,7 @@ export function TeamOfTheWeekComposerApp() {
     setStrips(draft.strips);
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames === true);
+    setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setHydrated(true);
   }, []);
 
@@ -104,8 +113,16 @@ export function TeamOfTheWeekComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, week, strips, showBa, showNames });
-  }, [brand, title, week, strips, showBa, showNames, hydrated]);
+    writeJson(STORAGE_KEY, {
+      brand,
+      title,
+      week,
+      strips,
+      showBa,
+      showNames,
+      showTeamHairline,
+    });
+  }, [brand, title, week, strips, showBa, showNames, showTeamHairline, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -123,7 +140,7 @@ export function TeamOfTheWeekComposerApp() {
       await exportTeamOfTheWeekPng(
         node,
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, showBa, showNames },
+        { brand, title, week, strips, look, showBa, showNames, showTeamHairline },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -143,6 +160,7 @@ export function TeamOfTheWeekComposerApp() {
     setWeek(next.week);
     setStrips(next.strips);
     setShowNames(next.showNames === true);
+    setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -239,9 +257,18 @@ export function TeamOfTheWeekComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ brand, title, week, strips, showBa, showNames }}
+          board={{
+            brand,
+            title,
+            week,
+            strips,
+            showBa,
+            showNames,
+            showTeamHairline,
+          }}
           onLoad={(next) => {
             setBrand(next.brand);
             setTitle(next.title);
@@ -249,6 +276,7 @@ export function TeamOfTheWeekComposerApp() {
             setStrips(next.strips);
             setShowBa(next.showBa === true);
             setShowNames(next.showNames === true);
+            setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -335,6 +363,7 @@ export function TeamOfTheWeekComposerApp() {
             look={look}
             showBa={showBa}
             showNames={showNames}
+            showTeamHairline={showTeamHairline}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   RANKED_LINEUPS_LOOK_KEY,
+  parseShowTeamHairline,
   useComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -68,6 +70,7 @@ const loadDraft = (): RankedLineupsDraft => {
         ...stored,
         showBa: stored.showBa === true,
         showFade: stored.showFade === true,
+        showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
         rankDisplay: parseRankDisplay(stored.rankDisplay),
       },
       slides,
@@ -80,6 +83,7 @@ const loadDraft = (): RankedLineupsDraft => {
     title: stored?.title?.trim() ? stored.title : empty.title,
     showBa: stored?.showBa === true,
     showFade: stored?.showFade === true,
+    showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
     rankDisplay: parseRankDisplay(stored?.rankDisplay),
   };
 };
@@ -101,6 +105,7 @@ export function RankedLineupsComposerApp() {
   const [look, setLook] = useComposerLook(RANKED_LINEUPS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
+  const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [rankDisplay, setRankDisplay] = useState(DEFAULT_RANK_DISPLAY);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
@@ -136,6 +141,7 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(draft.activeSlide ?? 0);
     setShowBa(draft.showBa === true);
     setShowFade(draft.showFade === true);
+    setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setRankDisplay(parseRankDisplay(draft.rankDisplay));
     setHydrated(true);
   }, []);
@@ -153,9 +159,10 @@ export function RankedLineupsComposerApp() {
       activeSlide,
       showBa,
       showFade,
+      showTeamHairline,
       rankDisplay,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, rankDisplay, hydrated]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -173,6 +180,7 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(next.activeSlide ?? 0);
     setShowBa(next.showBa === true);
     setShowFade(next.showFade === true);
+    setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
     setActiveIndex(null);
   };
@@ -208,7 +216,7 @@ export function RankedLineupsComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, showBa, showFade, rankDisplay },
+        { brand, title, rank, strips, look, showBa, showFade, showTeamHairline, rankDisplay },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -246,6 +254,7 @@ export function RankedLineupsComposerApp() {
             look,
             showBa,
             showFade,
+            showTeamHairline,
             rankDisplay,
           },
         );
@@ -362,6 +371,7 @@ export function RankedLineupsComposerApp() {
     activeSlide,
     showBa,
     showFade,
+    showTeamHairline,
     rankDisplay,
   };
 
@@ -445,6 +455,7 @@ export function RankedLineupsComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names in photo</span>
           <button
@@ -554,6 +565,7 @@ export function RankedLineupsComposerApp() {
             look={look}
             showBa={showBa}
             showFade={showFade}
+            showTeamHairline={showTeamHairline}
             rankDisplay={rankDisplay}
             exporting={exporting}
             onBrandChange={setBrand}

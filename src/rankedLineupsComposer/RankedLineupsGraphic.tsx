@@ -2,6 +2,7 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerLookClass,
+  teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { NAME_FIRST_MAX, NAME_LAST_MAX } from "../instagramComposer/nameFit";
@@ -38,6 +39,7 @@ interface RankedLineupsGraphicProps {
   look?: ComposerLook;
   showBa?: boolean;
   showFade?: boolean;
+  showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -65,6 +67,7 @@ export const RankedLineupsGraphic = forwardRef<
     look = "white",
     showBa = false,
     showFade = false,
+    showTeamHairline = true,
     rankDisplay = "pill",
     exporting = false,
     onBrandChange,
@@ -118,6 +121,7 @@ export const RankedLineupsGraphic = forwardRef<
         "rl-board",
         exporting ? "is-exporting" : "",
         showFade ? "is-fade" : "",
+        showTeamHairline ? "is-hairline" : "",
         rankDisplay === "pill" ? "is-pill" : "is-headline",
         composerLookClass(look),
       ]
@@ -189,10 +193,20 @@ export const RankedLineupsGraphic = forwardRef<
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
           const label = strip.lastName || position;
+          const hair = showTeamHairline
+            ? teamHairlineColor(strip.teamId, look)
+            : null;
           return (
             <section
               key={`rl-strip-${position}`}
-              className="rl-strip"
+              className={["rl-strip", hair ? "has-hairline" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                hair
+                  ? ({ ["--team-hairline" as string]: hair } as React.CSSProperties)
+                  : undefined
+              }
               aria-label={`${position} strip`}
               onPointerEnter={() => onHover?.(index)}
             >

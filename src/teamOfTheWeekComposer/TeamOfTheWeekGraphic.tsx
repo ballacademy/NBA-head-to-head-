@@ -2,6 +2,7 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerLookClass,
+  teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
@@ -24,6 +25,7 @@ interface TeamOfTheWeekGraphicProps {
   look?: ComposerLook;
   showBa?: boolean;
   showNames?: boolean;
+  showTeamHairline?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -50,6 +52,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     look = "white",
     showBa = false,
     showNames = false,
+    showTeamHairline = true,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -102,6 +105,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
         "totw-board",
         exporting ? "is-exporting" : "",
         showNames ? "" : "is-names-off",
+        showTeamHairline ? "is-hairline" : "",
         composerLookClass(look),
       ]
         .filter(Boolean)
@@ -138,10 +142,20 @@ export const TeamOfTheWeekGraphic = forwardRef<
           const strip = strips[index]!;
           const empty = !strip.photoSrc;
           const label = strip.lastName || `player ${index + 1}`;
+          const hair = showTeamHairline
+            ? teamHairlineColor(strip.teamId, look)
+            : null;
           return (
             <section
               key={`totw-strip-${index}`}
-              className="totw-strip"
+              className={["totw-strip", hair ? "has-hairline" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                hair
+                  ? ({ ["--team-hairline" as string]: hair } as React.CSSProperties)
+                  : undefined
+              }
               aria-label={`Player strip ${index + 1}`}
               onPointerEnter={() => onHover?.(index)}
             >
