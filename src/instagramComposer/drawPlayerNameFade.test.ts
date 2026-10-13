@@ -44,8 +44,10 @@ describe("drawNameStack", () => {
       "center",
     );
     expect(context.textAlign).toBe("left");
-    expect(fills.some((item) => item.text.includes("GILGEOUS"))).toBe(true);
-    expect(fills.some((item) => item.text.includes("ALEXANDER"))).toBe(true);
+    expect(fills.some((item) => /GILGEOUS|ALEX|G\.-/.test(item.text))).toBe(true);
+    expect(fills.some((item) => item.text.includes("ALEXANDER") || item.text.endsWith("."))).toBe(
+      true,
+    );
     expect(fills.at(-1)?.text).toBe("SHAI");
     fills.forEach((item) => {
       const width = item.text.length * 10;

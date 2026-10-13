@@ -3,6 +3,9 @@ import {
   LOGO_FIT_X,
   LOGO_FIT_Y,
   LOGO_LIFT,
+  LOGO_SHADOW_FRAC,
+  TEAM_TIER_NUDGE_LEFT,
+  applyTeamTierNudgeX,
   fittedLogoRect,
   getOpaqueBoundsFromImageData,
   logoGlowPx,
@@ -181,7 +184,8 @@ describe("fittedLogoRect", () => {
   });
 
   it("keeps shadow length in cell pixels without shifting the dest rect", () => {
-    expect(logoShadowPx(400, 246)).toBe(Math.round(246 * 0.12));
+    expect(LOGO_SHADOW_FRAC).toBeGreaterThan(0.12);
+    expect(logoShadowPx(400, 246)).toBe(Math.round(246 * LOGO_SHADOW_FRAC));
     const dest = fittedLogoRect(
       { x: 0, y: 0, w: 460, h: 460, cx: 230, cy: 230 },
       0,
@@ -250,6 +254,34 @@ describe("fittedLogoRect", () => {
     expect(stretchedLogoRect(0, 0, 80, 140).w / stretchedLogoRect(0, 0, 80, 140).h).toBeCloseTo(
       80 / 140,
     );
+  });
+
+  it("nudges balanced team-tier logos 2–3% left without stacking Magic off the box", () => {
+    const cellW = 400;
+    const cellH = 246;
+    const balanced = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 230, cy: 165 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    const magic = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 272, cy: 178 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    const nudgedBalanced = applyTeamTierNudgeX(balanced, 0, cellW);
+    const nudgedMagic = applyTeamTierNudgeX(magic, 0, cellW);
+    expect(TEAM_TIER_NUDGE_LEFT).toBeGreaterThanOrEqual(0.02);
+    expect(TEAM_TIER_NUDGE_LEFT).toBeLessThanOrEqual(0.03);
+    expect(balanced.x - nudgedBalanced.x).toBeCloseTo(cellW * TEAM_TIER_NUDGE_LEFT, 6);
+    expect(magic.x - nudgedMagic.x).toBeLessThan(cellW * 0.01);
+    expect(nudgedMagic.x).toBeGreaterThan(0);
+    expect(nudgedMagic.x + nudgedMagic.w).toBeLessThan(cellW);
+    expect(nudgedBalanced.x).toBeGreaterThan(0);
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {

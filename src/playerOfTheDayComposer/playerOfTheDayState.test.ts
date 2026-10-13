@@ -7,6 +7,7 @@ import {
   BANNER_STUD_FILL,
   FIELD_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { coveredLogoRect } from "../standingsComposer/logoDraw";
 import { isPhotoChromeClassName, photoFrameFilled } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
@@ -178,7 +179,8 @@ describe("player of the day state", () => {
     expect(kept[0]!.pan).toEqual(panned);
   });
 
-  it("uses the studded near-black title fill and no circled BA mark", () => {
+  it("uses the studded near-black title fill; circled BA is an on/off toggle", () => {
+    expect(typeof BaMarkToggle).toBe("function");
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");

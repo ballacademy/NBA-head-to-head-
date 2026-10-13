@@ -522,17 +522,24 @@ main.sc-stage {
   z-index: 3;
 }
 
-.ig-slot__rank {
+.ig-slot__meta {
   position: absolute;
   top: 2.4%;
   left: 3.6%;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(2 * var(--u));
+  pointer-events: none;
+}
+
+.ig-slot__rank {
   font-family: var(--ig-poster);
   font-size: calc(48 * var(--u));
   font-weight: 900;
   line-height: 1;
   color: #fff;
-  pointer-events: none;
   text-shadow:
     calc(0.7 * var(--u)) calc(0.7 * var(--u)) 0 rgba(0, 0, 0, 0.85),
     calc(1.4 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.65),
@@ -567,18 +574,12 @@ main.sc-stage {
 }
 
 .ig-slot__record {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 5%;
-  z-index: 2;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(16 * var(--u));
   font-weight: 900;
   letter-spacing: 0.04em;
-  text-align: center;
+  text-align: left;
   color: #fff;
-  pointer-events: none;
   text-shadow:
     calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
     calc(1.8 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.45);

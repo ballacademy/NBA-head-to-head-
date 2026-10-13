@@ -26,10 +26,11 @@ import {
   TIER_TITLE_SIZE,
   tierBoardLayout,
 } from "./tierLayout";
+import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
-  isDefaultTierColor,
-  parseTierColor,
+  inkOnTierColor,
+  resolvedTierColor,
   splitTeamCellName,
   splitTierTitle,
   type TierRow,
@@ -206,15 +207,14 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         >
           {rows.map((row, rowIndex) => {
             const labelLayout = labelLayouts[rowIndex]!;
-            const color = parseTierColor(row.color);
-            const tinted = !isDefaultTierColor(color);
+            const color = resolvedTierColor(row.label, row.color, rowIndex);
+            const ink = inkOnTierColor(color);
             const addChip = addChipPlacement(row.teams.length, layout.cols);
             return (
               <div
                 key={row.id}
                 className={[
                   "tl-row",
-                  tinted ? "is-tinted" : "",
                   row.teams.length === 0 ? "is-empty" : "",
                 ]
                   .filter(Boolean)
@@ -223,6 +223,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                   {
                     ["--label-size" as string]: `calc(${labelLayout.fontSize} * var(--u))`,
                     ["--tier-color" as string]: color,
+                    ["--tier-ink" as string]: ink,
                   } as React.CSSProperties
                 }
                 onDragOver={(event) => {
@@ -283,6 +284,15 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       : team
                         ? splitTeamCellName(team.name, team.shortName)
                         : null;
+                    const caption = names
+                      ? fittedCellNames(
+                          names.firstName,
+                          names.lastName || labelName,
+                          layout.cellW * 0.84,
+                          14,
+                          11,
+                        )
+                      : null;
                     return (
                       <div
                         key={entityId}
@@ -363,18 +373,19 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             <TeamLogo
                               src={team.logoSrc}
                               label={team.id}
+                              nudgeLeft
                             />
                           </div>
                         ) : null}
-                        {showNames && names ? (
+                        {showNames && caption ? (
                           <span className="tl-cell__name">
-                            {names.firstName ? (
+                            {caption.firstName ? (
                               <span className="tl-cell__given">
-                                {names.firstName}
+                                {caption.firstName}
                               </span>
                             ) : null}
                             <span className="tl-cell__family">
-                              {names.lastName || labelName}
+                              {caption.lastName}
                             </span>
                           </span>
                         ) : null}

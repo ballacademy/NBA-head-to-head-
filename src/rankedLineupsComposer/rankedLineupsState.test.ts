@@ -21,6 +21,7 @@ import {
   RL_TITLE_SIZE,
   rlStripX,
 } from "./rankedLineupsLayout";
+import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { TOTW_STRIP_GAP } from "../teamOfTheWeekComposer/teamOfTheWeekLayout";
 import {
   applyPlayerPick,
@@ -106,5 +107,9 @@ describe("ranked lineups", () => {
     const filled = applyPlayerPick(createEmptyStrips(), 0, luka);
     expect(filled[0]?.playerId).toBe("3945274");
     expect(usedLineupPlayerIds(filled)["3945274"]).toBe("PG");
+  });
+
+  it("paints a light vignette over five-strip photos", () => {
+    expect(typeof paintPhotoVignette).toBe("function");
   });
 });

@@ -203,27 +203,40 @@
   font-size: calc(11 * var(--u));
   letter-spacing: 0.08em;
   opacity: 0.92;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .et-cell__family {
   font-size: calc(14 * var(--u));
   letter-spacing: 0.04em;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .et-cell__rank {
   position: absolute;
-  top: 3%;
-  left: 4.2%;
+  top: calc(6 * var(--u));
+  left: calc(6 * var(--u));
   z-index: 3;
+  box-sizing: border-box;
+  min-width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+  padding: 0 calc(7 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(13 * var(--u));
+  background: rgba(0, 0, 0, 0.62);
   font-family: var(--ig-poster);
-  font-size: calc(34 * var(--u));
+  font-size: calc(15 * var(--u));
   font-weight: 900;
   line-height: 1;
   color: #fff;
   pointer-events: none;
-  text-shadow:
-    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
-    calc(1.9 * var(--u)) calc(2.1 * var(--u)) 0 rgba(0, 0, 0, 0.5);
+  text-shadow: calc(0.8 * var(--u)) calc(0.9 * var(--u)) 0 rgba(0, 0, 0, 0.7);
 }
 
 .et-cell__hit {

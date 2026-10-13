@@ -7,6 +7,19 @@ export const DEFAULT_TIER_LABELS = ["S", "A", "B", "C", "D", "F"] as const;
 export const EXTRA_TIER_LABELS = ["G", "H", "I", "J"] as const;
 export const DEFAULT_TIER_TITLE = "GUESS THE NBA TIER LIST";
 export const DEFAULT_TIER_COLOR = "#ffffff";
+/** Filled label-column palette — S gold, A red, then orange / yellow / green / blue. */
+export const DEFAULT_TIER_PALETTE: Record<string, string> = {
+  S: "#f5c400",
+  A: "#e23b3b",
+  B: "#f08a24",
+  C: "#e8d44d",
+  D: "#3cb371",
+  F: "#5b8def",
+  G: "#8b5cf6",
+  H: "#ec4899",
+  I: "#14b8a6",
+  J: "#a8a29e",
+};
 export type TierSubject = "teams" | "players";
 
 export interface TierRow {
@@ -38,6 +51,38 @@ export const parseTierColor = (value: unknown): string => {
 
 export const isDefaultTierColor = (value: unknown) =>
   parseTierColor(value) === DEFAULT_TIER_COLOR;
+
+export const paletteColorForLabel = (label: string, index = 0) => {
+  const key = label.replace(/\s+/g, " ").trim().toUpperCase();
+  if (DEFAULT_TIER_PALETTE[key]) {
+    return DEFAULT_TIER_PALETTE[key]!;
+  }
+  const extras = Object.values(DEFAULT_TIER_PALETTE);
+  return extras[index % extras.length] ?? "#f5c400";
+};
+
+/** Fill color for the label column — custom hex, else the S/A/B palette. */
+export const resolvedTierColor = (
+  label: string,
+  color: unknown,
+  index = 0,
+) => {
+  if (typeof color === "string" && color.trim() && !isDefaultTierColor(color)) {
+    return parseTierColor(color);
+  }
+  return paletteColorForLabel(label, index);
+};
+
+/** Black or white letter so the filled column stays readable. */
+export const inkOnTierColor = (hex: string) => {
+  const color = parseTierColor(hex);
+  const n = Number.parseInt(color.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum > 0.55 ? "#111111" : "#ffffff";
+};
 
 export const hexToRgba = (hex: string, alpha: number) => {
   const color = parseTierColor(hex);
@@ -77,10 +122,11 @@ const nextId = () =>
   `tier-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
 export const createDefaultRows = (): TierRow[] =>
-  DEFAULT_TIER_LABELS.map((label) => ({
+  DEFAULT_TIER_LABELS.map((label, index) => ({
     id: `tier-${label.toLowerCase()}`,
     label,
     teams: [],
+    color: paletteColorForLabel(label, index),
   }));
 
 export const isTierRows = (value: unknown): value is TierRow[] =>
@@ -118,7 +164,15 @@ export const addTier = (rows: TierRow[]): TierRow[] => {
     (label) => !rows.some((row) => row.label === label),
   );
   const label = extras[0] ?? `T${rows.length + 1}`;
-  return [...rows, { id: nextId(), label, teams: [] }];
+  return [
+    ...rows,
+    {
+      id: nextId(),
+      label,
+      teams: [],
+      color: paletteColorForLabel(label, rows.length),
+    },
+  ];
 };
 
 export const removeLastTier = (rows: TierRow[]): TierRow[] => {
@@ -302,10 +356,11 @@ export const EXAMPLE_TIER_PLACEMENT: { label: string; teams: string[] }[] = [
 ];
 
 export const createExampleRows = (): TierRow[] =>
-  EXAMPLE_TIER_PLACEMENT.map((row) => ({
+  EXAMPLE_TIER_PLACEMENT.map((row, index) => ({
     id: `tier-${row.label.toLowerCase()}`,
     label: row.label,
     teams: row.teams.slice(),
+    color: paletteColorForLabel(row.label, index),
   }));
 
 export const splitTierTitle = (title: string): string[] =>
