@@ -291,7 +291,6 @@
 }
 
 .tl-cell--add {
-  position: absolute;
   z-index: 5;
   background: #1a1a1a;
   color: rgba(255, 255, 255, 0.72);
@@ -302,12 +301,13 @@
 }
 
 .tl-cell--add.is-slot {
-  inset: 0;
-  width: auto;
-  height: auto;
+  position: relative;
 }
 
-.tl-cell--add.is-compact {
+.tl-row > .tl-cell--add.is-compact {
+  position: absolute;
+  grid-column: 2;
+  grid-row: 1;
   width: calc(var(--add-compact, 48) * var(--u));
   height: calc(var(--add-compact, 48) * var(--u));
   font-size: calc(28 * var(--u));
@@ -315,11 +315,13 @@
   transform: translateY(-50%);
 }
 
-.tl-cell--add.is-empty-chip {
+.tl-row > .tl-cell--add.is-empty-chip {
   left: calc(var(--cells-inset, 4) * var(--u));
+  right: auto;
 }
 
-.tl-cell--add.is-end-chip {
+.tl-row > .tl-cell--add.is-end-chip {
+  left: auto;
   right: calc(var(--pad-right, 4) * var(--u));
 }
 
@@ -470,6 +472,8 @@
   outline: none;
 }
 
-.tl-board.is-exporting .tl-color {
+.tl-board.is-exporting .tl-color,
+.tl-board.is-exporting .tl-cell--add,
+.tl-board.is-exporting .tl-cell__remove {
   display: none;
 }

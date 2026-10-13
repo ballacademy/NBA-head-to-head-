@@ -394,19 +394,13 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       </div>
                     );
                   })}
-                  {exporting ? null : (
+                  {exporting || addChip.kind !== "slot" ? null : (
                     <button
                       type="button"
                       className={[
                         "tl-cell",
                         "tl-cell--add",
-                        addChip.kind === "slot" ? "is-slot" : "is-compact",
-                        addChip.kind === "compact" && addChip.empty
-                          ? "is-empty-chip"
-                          : "",
-                        addChip.kind === "compact" && !addChip.empty
-                          ? "is-end-chip"
-                          : "",
+                        "is-slot",
                         active?.rowIndex === rowIndex && !active.replaceId
                           ? "is-active"
                           : "",
@@ -414,14 +408,6 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       ]
                         .filter(Boolean)
                         .join(" ")}
-                      style={
-                        addChip.kind === "slot"
-                          ? ({
-                              gridColumn: addChip.col + 1,
-                              gridRow: addChip.wrapRow + 1,
-                            } as React.CSSProperties)
-                          : undefined
-                      }
                       onClick={() => onSelectAdd(rowIndex)}
                       aria-label={`Add ${subject === "players" ? "player" : "team"} to ${row.label} tier`}
                     >
@@ -429,6 +415,27 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                     </button>
                   )}
                 </div>
+                {exporting || addChip.kind === "slot" ? null : (
+                  <button
+                    type="button"
+                    className={[
+                      "tl-cell",
+                      "tl-cell--add",
+                      "is-compact",
+                      addChip.empty ? "is-empty-chip" : "is-end-chip",
+                      active?.rowIndex === rowIndex && !active.replaceId
+                        ? "is-active"
+                        : "",
+                      dropKey === `row-${rowIndex}` ? "is-drop" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => onSelectAdd(rowIndex)}
+                    aria-label={`Add ${subject === "players" ? "player" : "team"} to ${row.label} tier`}
+                  >
+                    +
+                  </button>
+                )}
               </div>
             );
           })}
