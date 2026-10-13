@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
@@ -24,12 +24,13 @@ import {
   ALL_PLAYER_FILTER,
   EMPTY_PLAYER_FILTERS,
   POSITION_FILTERS,
-  getPlayer,
 } from "../tierListComposer/nbaActivePlayers";
 import { EveryTeamGraphic } from "./EveryTeamGraphic";
 import { exportEveryTeamPng } from "./exportEveryTeamPng";
 import {
   assignPlayerToTeam,
+  autoSortMetricLabel,
+  autoSortRankedOrder,
   clearEveryTeamTeam,
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
@@ -38,11 +39,31 @@ import {
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
   insertRankedOrder,
+  pruneSlotsToSeasons,
   slotIndexForTeam,
   teamAtSlot,
   usedEveryTeamLabels,
   type EveryTeamSlots,
 } from "./everyTeamState";
+import {
+  EVERY_TEAM_SORT_KEY,
+  everyTeamCurrentSeason,
+  everyTeamSeasons,
+  getRosterPlayer,
+  historyLabel,
+  isEveryTeamRostersReady,
+  isMissingSeason,
+  loadEveryTeamRosters,
+  missingSeasonReason,
+  parseCellSeasons,
+  parseEveryTeamSeason,
+  rosterAsTierPlayers,
+  rosterHasPlayer,
+  rosterStatValue,
+  seasonForTeam,
+  setCellSeason,
+  type EveryTeamStatMetric,
+} from "./historicalRosters";
 import "@fontsource/montserrat/latin-900.css";
 import "./everyTeamComposer.css";
 
@@ -51,6 +72,8 @@ const STORAGE_KEY = "ddgm:every-team-composer";
 interface EveryTeamBoardSnapshot {
   slots: EveryTeamSlots;
   rankedOrder: string[];
+  season: string;
+  cellSeasons: Record<string, string>;
 }
 
 interface EveryTeamComposerDraft {
@@ -61,29 +84,27 @@ interface EveryTeamComposerDraft {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
 }
 
 const loadDraft = (): EveryTeamComposerDraft => {
   const stored = readJson<Partial<EveryTeamComposerDraft>>(STORAGE_KEY);
-  if (isEveryTeamDraft(stored)) {
-    return {
-      brand: stored.brand.trim() || DEFAULT_BRAND,
-      title: stored.title.trim() || DEFAULT_EVERY_TEAM_TITLE,
-      slots: stored.slots,
-      showBa: stored.showBa === true,
-      ranked: stored.ranked === true,
-      rankedOrder: normalizeRankedOrder(stored.rankedOrder),
-      showNames: stored.showNames === true,
-    };
-  }
+  const season = parseEveryTeamSeason(stored?.season);
+  const cellSeasons = parseCellSeasons(stored?.cellSeasons);
+  const slots = isEveryTeamDraft(stored)
+    ? pruneSlotsToSeasons(stored.slots, season, cellSeasons)
+    : createEmptyEveryTeamSlots();
   return {
     brand: stored?.brand?.trim() ? stored.brand : DEFAULT_BRAND,
     title: stored?.title?.trim() ? stored.title : DEFAULT_EVERY_TEAM_TITLE,
-    slots: createEmptyEveryTeamSlots(),
+    slots,
     showBa: stored?.showBa === true,
     ranked: stored?.ranked === true,
     rankedOrder: normalizeRankedOrder(stored?.rankedOrder),
     showNames: stored?.showNames === true,
+    season,
+    cellSeasons,
   };
 };
 
@@ -94,10 +115,13 @@ export function EveryTeamComposerApp() {
   const [slots, setSlots] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
   const [ranked, setRanked] = useState(false);
   const [rankedOrder, setRankedOrder] = useState<string[]>(createDefaultRankedOrder);
+  const [season, setSeason] = useState(everyTeamCurrentSeason);
+  const [cellSeasons, setCellSeasons] = useState<Record<string, string>>({});
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [rostersReady, setRostersReady] = useState(isEveryTeamRostersReady);
   const [look, setLook] = useComposerLook(EVERY_TEAM_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
@@ -110,15 +134,26 @@ export function EveryTeamComposerApp() {
   }, []);
 
   useEffect(() => {
-    const draft = loadDraft();
-    setBrand(draft.brand);
-    setTitle(draft.title);
-    setSlots(draft.slots);
-    setShowBa(draft.showBa === true);
-    setRanked(draft.ranked === true);
-    setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
-    setShowNames(draft.showNames === true);
-    setHydrated(true);
+    void loadEveryTeamRosters()
+      .then(() => {
+        setRostersReady(true);
+        const draft = loadDraft();
+        setBrand(draft.brand);
+        setTitle(draft.title);
+        setSlots(draft.slots);
+        setShowBa(draft.showBa === true);
+        setRanked(draft.ranked === true);
+        setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
+        setShowNames(draft.showNames === true);
+        setSeason(draft.season ?? everyTeamCurrentSeason());
+        setCellSeasons(draft.cellSeasons ?? {});
+        setHydrated(true);
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+        setStatus("Could not load historical rosters.");
+        setHydrated(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -133,10 +168,30 @@ export function EveryTeamComposerApp() {
       ranked,
       rankedOrder,
       showNames,
+      season,
+      cellSeasons,
     });
-  }, [brand, title, slots, showBa, ranked, rankedOrder, showNames, hydrated]);
+  }, [
+    brand,
+    title,
+    slots,
+    showBa,
+    ranked,
+    rankedOrder,
+    showNames,
+    season,
+    cellSeasons,
+    hydrated,
+  ]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
+
+  const snapshot = (): EveryTeamBoardSnapshot => ({
+    slots,
+    rankedOrder,
+    season,
+    cellSeasons,
+  });
 
   const filenameFor = (story = false) =>
     exportFilenameFromTitle(title, "every-nba-team", exportDateStamp(), story);
@@ -155,7 +210,18 @@ export function EveryTeamComposerApp() {
       await exportEveryTeamPng(
         node,
         filenameFor(story),
-        { brand, title, slots, look, showBa, ranked, rankedOrder, showNames },
+        {
+          brand,
+          title,
+          slots,
+          look,
+          showBa,
+          ranked,
+          rankedOrder,
+          showNames,
+          season,
+          cellSeasons,
+        },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -168,17 +234,69 @@ export function EveryTeamComposerApp() {
   };
 
   const handleReset = () => {
-    push({ slots, rankedOrder });
+    push(snapshot());
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_EVERY_TEAM_TITLE);
     setSlots(createEmptyEveryTeamSlots());
     setRankedOrder(createDefaultRankedOrder());
+    setSeason(everyTeamCurrentSeason());
+    setCellSeasons({});
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
 
+  const changeBoardSeason = (nextSeason: string) => {
+    if (nextSeason === season) {
+      return;
+    }
+    push(snapshot());
+    const nextCells = { ...cellSeasons };
+    Object.keys(nextCells).forEach((teamId) => {
+      if (nextCells[teamId] === nextSeason) {
+        delete nextCells[teamId];
+      }
+    });
+    setSeason(nextSeason);
+    setCellSeasons(nextCells);
+    setSlots((current) => pruneSlotsToSeasons(current, nextSeason, nextCells));
+    setStatus(`Board year ${nextSeason}. Cells without that roster cleared.`);
+  };
+
+  const handleAutoSort = (metric: EveryTeamStatMetric) => {
+    const teams = ranked
+      ? normalizeRankedOrder(rankedOrder)
+      : createDefaultRankedOrder();
+    const values = teams.map((teamId) => {
+      const cellSeason = seasonForTeam(teamId, season, cellSeasons);
+      const player = getRosterPlayer(
+        teamId,
+        cellSeason,
+        slots[slotIndexForTeam(teamId)] ?? null,
+      );
+      return rosterStatValue(player, metric);
+    });
+    const result = autoSortRankedOrder(teams, values);
+    if (result.ranked === 0) {
+      setStatus(
+        `No ${autoSortMetricLabel(metric)} for this board’s seasons — order left as-is.`,
+      );
+      return;
+    }
+    push(snapshot());
+    setRanked(true);
+    setRankedOrder(result.order);
+    setStatus(
+      result.held
+        ? `Sorted ${result.ranked} by ${autoSortMetricLabel(metric)}. ${result.held} empty or without stats stayed at the bottom.`
+        : `Sorted 1–${result.ranked} by ${autoSortMetricLabel(metric)}. Drag still overrides.`,
+    );
+  };
+
   const activeTeam =
     activeIndex != null ? teamAtSlot(activeIndex, ranked, rankedOrder) : null;
+  const activeSeason = activeTeam
+    ? seasonForTeam(activeTeam.id, season, cellSeasons)
+    : season;
   const currentId =
     activeTeam != null
       ? (slots[slotIndexForTeam(activeTeam.id)] ?? null)
@@ -187,6 +305,13 @@ export function EveryTeamComposerApp() {
     samePosition && fillPosition !== ALL_PLAYER_FILTER
       ? { ...EMPTY_PLAYER_FILTERS, position: fillPosition }
       : undefined;
+  const rosterPlayers = useMemo(
+    () =>
+      activeTeam ? rosterAsTierPlayers(activeTeam.id, activeSeason) : [],
+    [activeTeam, activeSeason],
+  );
+  const missingActive =
+    activeTeam != null && isMissingSeason(activeTeam.id, activeSeason);
 
   return (
     <div className="sc-composer">
@@ -208,6 +333,22 @@ export function EveryTeamComposerApp() {
           presets={EVERY_TEAM_TITLE_PRESETS}
           onChange={setTitle}
         />
+        <label className="sc-field">
+          Board year
+          <select
+            value={season}
+            aria-label="Board season"
+            disabled={!rostersReady}
+            onChange={(event) => changeBoardSeason(event.target.value)}
+          >
+            {everyTeamSeasons().map((option) => (
+              <option key={option} value={option}>
+                {option}
+                {option === everyTeamCurrentSeason() ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Same position</span>
           <button
@@ -264,6 +405,32 @@ export function EveryTeamComposerApp() {
             Ranked
           </button>
         </div>
+        {ranked ? (
+          <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
+            <span className="sc-look__label">Auto-sort</span>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => handleAutoSort("pra")}
+            >
+              PRA
+            </button>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => handleAutoSort("points")}
+            >
+              Points
+            </button>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => handleAutoSort("stocks")}
+            >
+              STL+BLK
+            </button>
+          </div>
+        ) : null}
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>
           <button
@@ -288,15 +455,21 @@ export function EveryTeamComposerApp() {
             ranked,
             rankedOrder,
             showNames,
+            season,
+            cellSeasons,
           }}
           onLoad={(next) => {
+            const nextSeason = parseEveryTeamSeason(next.season);
+            const nextCells = parseCellSeasons(next.cellSeasons);
             setBrand(next.brand);
             setTitle(next.title);
-            setSlots(next.slots);
+            setSlots(pruneSlotsToSeasons(next.slots, nextSeason, nextCells));
             setShowBa(next.showBa === true);
             setRanked(next.ranked === true);
             setRankedOrder(normalizeRankedOrder(next.rankedOrder));
             setShowNames(next.showNames === true);
+            setSeason(nextSeason);
+            setCellSeasons(nextCells);
             setStatus("Loaded named graphic.");
           }}
         />
@@ -309,6 +482,8 @@ export function EveryTeamComposerApp() {
               if (previous) {
                 setSlots(previous.slots);
                 setRankedOrder(normalizeRankedOrder(previous.rankedOrder));
+                setSeason(previous.season);
+                setCellSeasons(previous.cellSeasons);
                 setStatus("Undid last change.");
               }
             }}
@@ -350,6 +525,8 @@ export function EveryTeamComposerApp() {
             ranked={ranked}
             rankedOrder={rankedOrder}
             showNames={showNames}
+            season={season}
+            cellSeasons={cellSeasons}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
             onBrandChange={setBrand}
@@ -360,7 +537,7 @@ export function EveryTeamComposerApp() {
               if (!team) {
                 return;
               }
-              push({ slots, rankedOrder });
+              push(snapshot());
               setSlots((current) => clearEveryTeamTeam(current, team.id));
             }}
             onMoveSlots={
@@ -369,7 +546,7 @@ export function EveryTeamComposerApp() {
                     if (fromIndex === toIndex) {
                       return;
                     }
-                    push({ slots, rankedOrder });
+                    push(snapshot());
                     setRankedOrder((current) =>
                       insertRankedOrder(current, fromIndex, toIndex),
                     );
@@ -382,10 +559,10 @@ export function EveryTeamComposerApp() {
             }
           />
           <p className="sc-hint">
-            Each square is a fixed NBA team. Unranked is A–Z by city with no
-            numbers. Ranked shows 1–30; drag a square to insert it at a new
-            rank — everyone between shifts. Click without dragging to pick a
-            player from that roster. Downloads a 4:5 Instagram PNG — nothing is
+            Each square is a fixed NBA franchise. Board year applies that
+            season’s roster to every cell; a cell can override the year. Unranked
+            is A–Z by city. Ranked shows 1–30 — auto-sort by PRA / points /
+            stocks, or drag to insert. Downloads a 4:5 Instagram PNG — nothing is
             posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
@@ -394,23 +571,31 @@ export function EveryTeamComposerApp() {
 
       {activeIndex != null && activeTeam ? (
         <PlayerPicker
-          key={activeTeam.id}
-          heading={`Pick ${activeTeam.name} player`}
+          key={`${activeTeam.id}-${activeSeason}`}
+          heading={`Pick ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)}`}
           hint={
-            samePosition
-              ? `Only ${fillPosition} on the ${activeTeam.name} roster. After you pick, the next empty team opens.`
-              : `Only current ${activeTeam.name} roster players. Use Position to filter this list.`
+            missingActive
+              ? missingSeasonReason(activeTeam.id, activeSeason)
+              : samePosition
+                ? `Only ${fillPosition} on the ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} roster, depth-chart order. After you pick, the next empty team opens.`
+                : `Only the ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} roster. Sort by depth chart for starter PG–C, then backups.`
           }
           currentId={currentId}
           usedLabels={usedEveryTeamLabels(slots, activeIndex, ranked, rankedOrder)}
           lockedTeam={activeTeam.id}
           lockedFilters={lockedFilters}
+          rosterPlayers={rosterPlayers}
+          simple
+          showDepthSort
+          defaultSort="depth"
+          sortStorageKey={EVERY_TEAM_SORT_KEY}
+          scoringLabel={`${activeSeason} per game`}
           onPick={(playerId) => {
-            const player = getPlayer(playerId);
-            if (!player || player.team !== activeTeam.id) {
+            if (!rosterHasPlayer(activeTeam.id, activeSeason, playerId)) {
               return;
             }
-            push({ slots, rankedOrder });
+            const player = getRosterPlayer(activeTeam.id, activeSeason, playerId);
+            push(snapshot());
             const nextSlots = assignPlayerToTeam(slots, activeTeam.id, playerId);
             setSlots(nextSlots);
             if (samePosition) {
@@ -423,19 +608,60 @@ export function EveryTeamComposerApp() {
               setActiveIndex(nextIndex);
               setStatus(
                 nextIndex == null
-                  ? `Picked ${player.name}. Board filled.`
-                  : `Picked ${player.name}. Next: ${teamAtSlot(nextIndex, ranked, rankedOrder)?.name}.`,
+                  ? `Picked ${player?.name ?? "player"}. Board filled.`
+                  : `Picked ${player?.name ?? "player"}. Next: ${teamAtSlot(nextIndex, ranked, rankedOrder)?.name}.`,
               );
             } else {
               setActiveIndex(null);
             }
           }}
           onClear={() => {
-            push({ slots, rankedOrder });
+            push(snapshot());
             setSlots((current) => clearEveryTeamTeam(current, activeTeam.id));
             setActiveIndex(null);
           }}
           onClose={closePicker}
+          toolbarExtra={
+            <label className="sc-field">
+              Cell year
+              <select
+                value={activeSeason}
+                aria-label={`${activeTeam.id} season override`}
+                onChange={(event) => {
+                  const nextSeason = event.target.value;
+                  const nextCells = setCellSeason(
+                    cellSeasons,
+                    activeTeam.id,
+                    nextSeason,
+                    season,
+                  );
+                  push(snapshot());
+                  setCellSeasons(nextCells);
+                  const playerId = slots[slotIndexForTeam(activeTeam.id)];
+                  if (
+                    playerId &&
+                    !rosterHasPlayer(activeTeam.id, nextSeason, playerId)
+                  ) {
+                    setSlots((current) =>
+                      clearEveryTeamTeam(current, activeTeam.id),
+                    );
+                  }
+                  setStatus(
+                    nextSeason === season
+                      ? `${activeTeam.name} uses the board year ${season}.`
+                      : `${activeTeam.name} overridden to ${nextSeason}.`,
+                  );
+                }}
+              >
+                {everyTeamSeasons().map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                    {option === season ? " (board)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          }
         />
       ) : null}
     </div>

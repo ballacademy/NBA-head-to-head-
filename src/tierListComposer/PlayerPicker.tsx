@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { readJson, writeJson } from "../lib/browserStorage";
@@ -15,6 +15,7 @@ import {
   PLAYER_SCORING_SOURCE,
   PLAYER_SORT_KEY,
   POSITION_FILTERS,
+  depthChartLabel,
   formatHeightInches,
   formatPpg,
   parsePlayerPickerSort,
@@ -36,6 +37,15 @@ interface PlayerPickerProps {
   lockedTeam?: string;
   /** Board-level filters for the player tier list. Search still runs here. */
   lockedFilters?: PlayerSearchFilters;
+  /** Season roster instead of the current NBA catalog. */
+  rosterPlayers?: TierPlayer[];
+  /** Hide age/draft filters; keep search, position, and sort. */
+  simple?: boolean;
+  sortStorageKey?: string;
+  defaultSort?: PlayerPickerSort;
+  showDepthSort?: boolean;
+  scoringLabel?: string;
+  toolbarExtra?: ReactNode;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -49,15 +59,30 @@ export function PlayerPicker({
   clearLabel = "Clear slot",
   lockedTeam,
   lockedFilters,
+  rosterPlayers,
+  simple = false,
+  sortStorageKey = PLAYER_SORT_KEY,
+  defaultSort,
+  showDepthSort = false,
+  scoringLabel,
+  toolbarExtra,
   onPick,
   onClear,
   onClose,
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<PlayerPickerSort>(() =>
-    parsePlayerPickerSort(readJson(PLAYER_SORT_KEY)),
-  );
+  const [sort, setSort] = useState<PlayerPickerSort>(() => {
+    const storedRaw = readJson(sortStorageKey);
+    if (storedRaw == null) {
+      return defaultSort ?? "name";
+    }
+    const stored = parsePlayerPickerSort(storedRaw);
+    if (!showDepthSort && stored === "depth") {
+      return defaultSort ?? "name";
+    }
+    return stored;
+  });
   const [localFilters, setLocalFilters] = useState<PlayerSearchFilters>({
     ...EMPTY_PLAYER_FILTERS,
     team: lockedTeam ?? ALL_PLAYER_FILTER,
@@ -74,19 +99,23 @@ export function PlayerPicker({
   });
 
   useEffect(() => {
-    writeJson(PLAYER_SORT_KEY, sort);
-  }, [sort]);
+    writeJson(sortStorageKey, sort);
+  }, [sort, sortStorageKey]);
 
   const players = useMemo(
     () =>
       sortPlayers(
-        searchPlayers(query, {
-          ...boardFilters,
-          team: lockedTeam ?? boardFilters.team,
-        }),
+        searchPlayers(
+          query,
+          {
+            ...boardFilters,
+            team: lockedTeam ?? boardFilters.team,
+          },
+          rosterPlayers,
+        ),
         sort,
       ),
-    [query, boardFilters, lockedTeam, sort],
+    [query, boardFilters, lockedTeam, sort, rosterPlayers],
   );
 
   const setLocalRange =
@@ -151,20 +180,56 @@ export function PlayerPicker({
             >
               Points
             </button>
+            {showDepthSort ? (
+              <button
+                type="button"
+                className={sort === "depth" ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={sort === "depth"}
+                onClick={() => setSort("depth")}
+              >
+                Depth chart
+              </button>
+            ) : null}
             <span
               className="sc-picker__sort-source"
-              title={`${PLAYER_SCORING_SOURCE} · ${PLAYER_SCORING_SEASON} regular-season PPG`}
+              title={
+                scoringLabel ??
+                `${PLAYER_SCORING_SOURCE} · ${PLAYER_SCORING_SEASON} regular-season PPG`
+              }
             >
-              {PLAYER_SCORING_SEASON} PPG
+              {scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`}
             </span>
           </div>
+          {toolbarExtra}
         </div>
         {hideBoardFilters ? (
           <p className="sc-picker__filter-hint">
-            Showing the board’s filtered roster. Name search still applies.
-            Points sort uses Basketball-Reference {PLAYER_SCORING_SEASON}{" "}
-            regular-season PPG.
+            {simple
+              ? "Same position on every team. Depth chart is starter, then backups, for that season."
+              : `Showing the board’s filtered roster. Name search still applies.
+            Points sort uses Basketball-Reference ${PLAYER_SCORING_SEASON}
+            regular-season PPG.`}
           </p>
+        ) : simple ? (
+          <div className="sc-picker__board-filters">
+            <p className="sc-picker__filter-hint">
+              Depth chart is starter PG–C, then backup PG–C, from that season’s
+              roster slots.
+            </p>
+            <div className="sc-picker__dropdowns sc-picker__dropdowns--locked">
+              <FilterSelect
+                label="Position"
+                value={localFilters.position ?? ALL_PLAYER_FILTER}
+                options={POSITION_FILTERS}
+                onChange={(event) =>
+                  setLocalFilters((current) => ({
+                    ...current,
+                    position: event.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
         ) : (
           <div className="sc-picker__board-filters">
             <div className="sc-player-filters__ranges">
@@ -240,6 +305,8 @@ export function PlayerPicker({
               currentId={currentId}
               usedLabel={usedLabels[player.id]}
               showPpg={sort === "points"}
+              showDepth={sort === "depth"}
+              ppgEmptyLabel={simple ? "No stats" : undefined}
               onPick={onPick}
             />
           ))}
@@ -265,19 +332,25 @@ function PlayerButton({
   currentId,
   usedLabel,
   showPpg,
+  showDepth,
+  ppgEmptyLabel,
   onPick,
 }: {
   player: TierPlayer;
   currentId: string | null;
   usedLabel?: string;
   showPpg: boolean;
+  showDepth: boolean;
+  ppgEmptyLabel?: string;
   onPick: (playerId: string) => void;
 }) {
   const isCurrent = currentId === player.id;
   const isUsed = Boolean(usedLabel) && !isCurrent;
   const identity = showPpg
-    ? `${player.team} · ${formatPpg(player.ppg)}`
-    : `${player.team} · ${player.position}`;
+    ? `${player.team} · ${formatPpg(player.ppg, ppgEmptyLabel)}`
+    : showDepth
+      ? `${player.team} · ${depthChartLabel(player)}`
+      : `${player.team} · ${player.position}`;
   const meta = isCurrent ? "This slot" : identity;
 
   return (

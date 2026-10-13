@@ -23,7 +23,13 @@ import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  everyTeamCurrentSeason,
+  formatSeasonShort,
+  getRosterPlayer,
+  isMissingSeason,
+  seasonForTeam,
+} from "./historicalRosters";
 import {
   ET_LOGO_FIT,
   ET_RANK_SIZE,
@@ -126,6 +132,8 @@ export interface EveryTeamRenderInput {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -218,13 +226,25 @@ export const renderEveryTeamCanvas = async (
   const teams = displayedTeams(ranked, input.rankedOrder);
   const art = await Promise.all(
     teams.map(async (team) => {
-      const player = getPlayer(input.slots[slotIndexForTeam(team.id)] ?? null);
-      const shown = player && player.team === team.id ? player : null;
+      const cellSeason = seasonForTeam(
+        team.id,
+        input.season ?? everyTeamCurrentSeason(),
+        input.cellSeasons,
+      );
+      const missing = isMissingSeason(team.id, cellSeason);
+      const shown = getRosterPlayer(
+        team.id,
+        cellSeason,
+        input.slots[slotIndexForTeam(team.id)] ?? null,
+      );
+      const overridden = Boolean(input.cellSeasons?.[team.id]);
+      const showYear =
+        overridden || cellSeason !== everyTeamCurrentSeason();
       const [logo, headshot] = await Promise.all([
         loadImage(team.logoSrc),
         shown ? loadCorsImage(shown.headshotUrl) : Promise.resolve(null),
       ]);
-      return { team, logo, headshot, shown };
+      return { team, logo, headshot, shown, missing, cellSeason, showYear, overridden };
     }),
   );
 
@@ -278,6 +298,31 @@ export const renderEveryTeamCanvas = async (
       context.shadowOffsetX = Math.round(1 * scale);
       context.shadowOffsetY = Math.round(1.1 * scale);
       context.fillText(rankLabel, rankX, rankY);
+      context.restore();
+    }
+    if (cell.missing) {
+      context.save();
+      context.font = `900 ${11 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.92)";
+      context.fillText(
+        `NO ${formatSeasonShort(cell.cellSeason)} ROSTER`,
+        x + size / 2,
+        y + size * 0.78,
+      );
+      context.restore();
+    } else if (cell.showYear) {
+      context.save();
+      context.font = `900 ${10 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.textBaseline = "top";
+      context.fillStyle = cell.overridden ? "#facc15" : "rgba(255,255,255,0.88)";
+      context.fillText(
+        formatSeasonShort(cell.cellSeason),
+        x + size * 0.94,
+        y + size * 0.06,
+      );
       context.restore();
     }
     if (input.showNames === true && cell.shown) {

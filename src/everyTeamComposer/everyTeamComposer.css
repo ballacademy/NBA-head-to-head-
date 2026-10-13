@@ -312,3 +312,59 @@
 .sc-picker__dropdowns--locked {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
+
+.et-cell__year,
+.et-cell__nostats,
+.et-cell__missing {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    calc(0.8 * var(--u)) calc(0.9 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.4);
+}
+
+.et-cell__year {
+  top: 5%;
+  right: 5%;
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.06em;
+  padding: calc(2 * var(--u)) calc(5 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.et-cell__year.is-override {
+  color: #facc15;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.et-cell__nostats {
+  left: 4%;
+  bottom: 5%;
+  font-size: calc(9 * var(--u));
+  letter-spacing: 0.08em;
+  padding: calc(2 * var(--u)) calc(5 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(127, 29, 29, 0.82);
+}
+
+.et-cell__missing {
+  inset: auto 6% 8%;
+  font-size: calc(12 * var(--u));
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.et-cell--missing .et-headshot {
+  display: none;
+}
+
+.sc-look--sort {
+  flex-wrap: wrap;
+}

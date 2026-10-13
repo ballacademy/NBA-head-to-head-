@@ -32,6 +32,8 @@ export interface TierPlayer {
   allStar: boolean;
   /** 2025-26 regular-season points per game; 0 when Basketball-Reference has no row. */
   ppg: number;
+  /** Depth-chart unit (1 = starter) when the roster is a season depth chart. */
+  depth?: number;
 }
 
 type HeadshotFallback = {
@@ -84,10 +86,10 @@ export const PLAYER_SCORING_SOURCE = scoringData.source;
 export const PLAYER_SCORING_METRIC = "pointsPerGame";
 export const PLAYER_SORT_KEY = "ddgm:tier-list-player-sort";
 export const PLAYER_FILTERS_KEY = "ddgm:tier-list-player-filters";
-export type PlayerPickerSort = "name" | "points";
+export type PlayerPickerSort = "name" | "points" | "depth";
 
 export const parsePlayerPickerSort = (value: unknown): PlayerPickerSort =>
-  value === "points" ? "points" : "name";
+  value === "points" || value === "depth" ? value : "name";
 
 export const isComposerHeadshotUrl = (url: string) =>
   url.startsWith("https://a.espncdn.com/i/headshots/") ||
@@ -365,6 +367,7 @@ const matchesCountry = (player: TierPlayer, country: string | undefined) => {
 export const searchPlayers = (
   query: string,
   filters: PlayerSearchFilters = {},
+  catalog: readonly TierPlayer[] | undefined = NBA_ACTIVE_PLAYERS,
 ): TierPlayer[] => {
   const needle = query.trim().toLowerCase();
   const team =
@@ -388,7 +391,7 @@ export const searchPlayers = (
   const heightOpen = isFullRange(height, HEIGHT_SPAN);
   const experienceOpen = isFullRange(experience, EXPERIENCE_SPAN);
 
-  return NBA_ACTIVE_PLAYERS.filter((player) => {
+  return (catalog ?? NBA_ACTIVE_PLAYERS).filter((player) => {
     if (team && player.team !== team) {
       return false;
     }
@@ -439,6 +442,16 @@ export const searchPlayers = (
   });
 };
 
+const POSITION_DEPTH_RANK: Record<string, number> = {
+  PG: 0,
+  SG: 1,
+  SF: 2,
+  PF: 3,
+  C: 4,
+  G: 1,
+  F: 2,
+};
+
 export const sortPlayers = (
   players: TierPlayer[],
   sort: PlayerPickerSort,
@@ -451,6 +464,22 @@ export const sortPlayers = (
     );
     return next;
   }
+  if (sort === "depth") {
+    next.sort((left, right) => {
+      const depth = (left.depth ?? 99) - (right.depth ?? 99);
+      if (depth) {
+        return depth;
+      }
+      const position =
+        (POSITION_DEPTH_RANK[left.position] ?? 9) -
+        (POSITION_DEPTH_RANK[right.position] ?? 9);
+      if (position) {
+        return position;
+      }
+      return left.name.localeCompare(right.name) || left.id.localeCompare(right.id);
+    });
+    return next;
+  }
   next.sort(
     (left, right) =>
       left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
@@ -458,8 +487,18 @@ export const sortPlayers = (
   return next;
 };
 
-export const formatPpg = (ppg: number) =>
-  ppg > 0 ? `${ppg.toFixed(1)} PPG` : "No 25–26 PPG";
+export const depthChartLabel = (player: Pick<TierPlayer, "position" | "depth">) => {
+  const unit = player.depth;
+  if (unit == null || unit >= 99) {
+    return player.position;
+  }
+  const rank =
+    unit === 1 ? "Starter" : unit === 2 ? "2nd" : unit === 3 ? "3rd" : `${unit}th`;
+  return `${player.position} · ${rank}`;
+};
+
+export const formatPpg = (ppg: number, emptyLabel = "No 25–26 PPG") =>
+  ppg > 0 ? `${ppg.toFixed(1)} PPG` : emptyLabel;
 
 /** A few stars for screenshots / seed boards. */
 export const EXAMPLE_PLAYER_IDS = {

@@ -248,6 +248,7 @@ describe("active NBA player catalog", () => {
     expect(byName[0]?.name.localeCompare(byName[1]?.name ?? "")).toBeLessThanOrEqual(0);
     expect(parsePlayerPickerSort("points")).toBe("points");
     expect(parsePlayerPickerSort("name")).toBe("name");
+    expect(parsePlayerPickerSort("depth")).toBe("depth");
     expect(parsePlayerPickerSort("nope")).toBe("name");
   });
 
