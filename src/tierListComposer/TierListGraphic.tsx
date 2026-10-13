@@ -106,7 +106,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const badge = baBadgeRect();
     const labelLayouts = rows.map((row) => layoutTierLabel(row.label));
     const layout = tierBoardLayout(
-      rows.map((row) => (exporting ? row.teams.length : row.teams.length + 1)),
+      rows.map((row) => row.teams.length),
       labelLayouts.map((item) => item.lines.length),
     );
 
@@ -208,7 +208,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             return (
               <div
                 key={row.id}
-                className={["tl-row", tinted ? "is-tinted" : ""]
+                className={[
+                  "tl-row",
+                  tinted ? "is-tinted" : "",
+                  row.teams.length === 0 ? "is-empty" : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
                 style={

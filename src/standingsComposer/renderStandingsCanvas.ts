@@ -27,7 +27,9 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  formatStandingRecord,
   lastWeekDelta,
+  lastWeekMark,
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
@@ -36,6 +38,7 @@ import {
   standingsBrandLabel,
   standingsSubtitleLabel,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { getTeam } from "./teams";
 
@@ -207,6 +210,8 @@ export interface StandingsRenderInput {
   look?: ComposerLook;
   showBa?: boolean;
   showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
   lastWeekSlots?: RankingSlots | null;
 }
 
@@ -359,16 +364,29 @@ export const renderStandingsCanvas = async (
       input.showArrows === true
         ? lastWeekDelta(input.slots, input.lastWeekSlots, index)
         : null;
-    if (delta != null) {
-      context.font = `900 ${28 * scale}px ${POSTER_FONT}`;
+    const mark = lastWeekMark(delta);
+    if (mark) {
+      context.font = `900 ${36 * scale}px ${POSTER_FONT}`;
       context.textAlign = "right";
       context.textBaseline = "top";
-      context.fillStyle = delta > 0 ? "#22c55e" : "#ef4444";
-      context.fillText(
-        delta > 0 ? "▲" : "▼",
-        x + cellW * 0.96,
-        y + cellH * 0.032,
-      );
+      context.fillStyle =
+        mark.kind === "up"
+          ? "#22c55e"
+          : mark.kind === "down"
+            ? "#ef4444"
+            : "#9ca3af";
+      context.fillText(mark.text, x + cellW * 0.96, y + cellH * 0.026);
+    }
+    const recordLabel =
+      input.showRecord === true
+        ? formatStandingRecord(team ? input.records?.[team.id] : null)
+        : null;
+    if (recordLabel) {
+      context.font = `900 ${22 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "bottom";
+      context.fillStyle = "#fff";
+      context.fillText(recordLabel, x + cellW / 2, y + cellH * 0.94);
     }
   }
 

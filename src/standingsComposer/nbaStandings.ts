@@ -1,6 +1,6 @@
 import { ESPN_ABBREV_TO_TEAM } from "../playerOfTheDayComposer/lastGame";
 import { NBA_TEAMS_BY_ID, type Conference } from "./teams";
-import type { RankingSlots } from "./rankingState";
+import type { RankingSlots, StandingRecord } from "./rankingState";
 import { SLOT_COUNT } from "./rankingState";
 
 export const ESPN_STANDINGS_URL =
@@ -11,8 +11,16 @@ interface EspnStandingTeam {
   displayName?: string;
 }
 
+interface EspnStandingStat {
+  name?: string;
+  abbreviation?: string;
+  displayValue?: string;
+  value?: number | string;
+}
+
 interface EspnStandingEntry {
   team?: EspnStandingTeam;
+  stats?: EspnStandingStat[];
 }
 
 interface EspnStandingsGroup {
@@ -25,6 +33,30 @@ interface EspnStandingsGroup {
 export interface EspnStandingsPayload {
   children?: EspnStandingsGroup[];
 }
+
+const statNumber = (entry: EspnStandingEntry, names: string[]) => {
+  const tokens = names.map((name) => name.toLowerCase());
+  for (const stat of entry.stats ?? []) {
+    const label = `${stat.name ?? ""} ${stat.abbreviation ?? ""}`.toLowerCase();
+    if (!tokens.some((token) => label.includes(token))) {
+      continue;
+    }
+    const value = Number(stat.value ?? stat.displayValue);
+    if (Number.isFinite(value)) {
+      return value;
+    }
+  }
+  return null;
+};
+
+const recordFromEntry = (entry: EspnStandingEntry): StandingRecord | null => {
+  const wins = statNumber(entry, ["wins", " w"]);
+  const losses = statNumber(entry, ["losses", " l"]);
+  if (wins == null || losses == null) {
+    return null;
+  }
+  return { wins, losses };
+};
 
 const teamIdFromAbbrev = (abbreviation?: string) => {
   const token = (abbreviation ?? "").trim().toUpperCase();
@@ -57,10 +89,15 @@ const collectGroups = (groups: EspnStandingsGroup[] | undefined): EspnStandingsG
   return out;
 };
 
-export const parseConferenceStandings = (
+export interface ConferenceStandingRow {
+  id: string;
+  record: StandingRecord | null;
+}
+
+export const parseConferenceStandingRows = (
   payload: EspnStandingsPayload | null | undefined,
   conference: Conference,
-): string[] => {
+): ConferenceStandingRow[] => {
   if (!payload || typeof payload !== "object") {
     return [];
   }
@@ -73,7 +110,7 @@ export const parseConferenceStandings = (
         return id && NBA_TEAMS_BY_ID[id]?.conference === conference;
       }),
     );
-  const ids: string[] = [];
+  const rows: ConferenceStandingRow[] = [];
   const seen = new Set<string>();
   for (const entry of match?.standings?.entries ?? []) {
     const id = teamIdFromAbbrev(entry.team?.abbreviation);
@@ -81,12 +118,29 @@ export const parseConferenceStandings = (
       continue;
     }
     seen.add(id);
-    ids.push(id);
-    if (ids.length >= SLOT_COUNT) {
+    rows.push({ id, record: recordFromEntry(entry) });
+    if (rows.length >= SLOT_COUNT) {
       break;
     }
   }
-  return ids;
+  return rows;
+};
+
+export const parseConferenceStandings = (
+  payload: EspnStandingsPayload | null | undefined,
+  conference: Conference,
+): string[] => parseConferenceStandingRows(payload, conference).map((row) => row.id);
+
+export const recordsFromStandingRows = (
+  rows: ConferenceStandingRow[],
+): Record<string, StandingRecord> => {
+  const records: Record<string, StandingRecord> = {};
+  rows.forEach((row) => {
+    if (row.record) {
+      records[row.id] = row.record;
+    }
+  });
+  return records;
 };
 
 export const slotsFromTeamIds = (ids: string[]): RankingSlots => {
@@ -97,9 +151,9 @@ export const slotsFromTeamIds = (ids: string[]): RankingSlots => {
   return slots;
 };
 
-export const fetchConferenceStandings = async (
+export const fetchConferenceStandingsBundle = async (
   conference: Conference,
-): Promise<RankingSlots> => {
+): Promise<{ slots: RankingSlots; records: Record<string, StandingRecord> }> => {
   const response = await fetch(ESPN_STANDINGS_URL, {
     mode: "cors",
     credentials: "omit",
@@ -108,5 +162,16 @@ export const fetchConferenceStandings = async (
     throw new Error("Could not load NBA standings");
   }
   const payload = (await response.json()) as EspnStandingsPayload;
-  return slotsFromTeamIds(parseConferenceStandings(payload, conference));
+  const rows = parseConferenceStandingRows(payload, conference);
+  return {
+    slots: slotsFromTeamIds(rows.map((row) => row.id)),
+    records: recordsFromStandingRows(rows),
+  };
+};
+
+export const fetchConferenceStandings = async (
+  conference: Conference,
+): Promise<RankingSlots> => {
+  const bundle = await fetchConferenceStandingsBundle(conference);
+  return bundle.slots;
 };

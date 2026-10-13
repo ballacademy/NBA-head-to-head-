@@ -118,6 +118,7 @@ describe("POTD leaderboard ranks", () => {
     const ranked = rankLeaderboard([entry("Shai Gilgeous-Alexander", 7)]);
     expect(ranked[0]!.displayLines[1]).toBe("GILGEOUS-ALEXANDER");
     expect(ranked[0]!.teamId).toBe("OKC");
+    expect(ranked[0]!.headshotUrl).toContain("4278073");
     expect(teamForLeaderboardName("Luka Doncic")).toBe("LAL");
     expect(isPotdPairName("Luka Doncic", ["LUKA DONCIC"])).toBe(true);
     expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);

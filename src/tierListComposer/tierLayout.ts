@@ -115,13 +115,20 @@ export interface TierBoardLayout {
 export const laneSlotCount = (itemCount: number) =>
   Math.min(TIER_WRAP_COLS, Math.max(1, itemCount));
 
+/** Collapsed empty-tier weight so filled rows eat leftover board. */
+export const EMPTY_TIER_LANES = 0.32;
+
 export const tierBoardLayout = (
   itemCounts: number[],
   labelLineCounts: number[] = [],
 ): TierBoardLayout => {
-  const lanes = itemCounts.map((count, index) =>
-    Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1)),
-  );
+  const anyFilled = itemCounts.some((count) => count > 0);
+  const lanes = itemCounts.map((count, index) => {
+    if (anyFilled && count === 0) {
+      return EMPTY_TIER_LANES;
+    }
+    return Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1));
+  });
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
   const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
   const contentW = cellsContentWidth();

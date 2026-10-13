@@ -29,6 +29,7 @@ import { EveryTeamGraphic } from "./EveryTeamGraphic";
 import { exportEveryTeamPng } from "./exportEveryTeamPng";
 import {
   assignPlayerToTeam,
+  autoFillEveryTeamSlots,
   autoSortMetricLabel,
   autoSortRankedOrder,
   clearEveryTeamTeam,
@@ -47,6 +48,7 @@ import {
 } from "./everyTeamState";
 import {
   EVERY_TEAM_SORT_KEY,
+  EVERY_TEAM_STAT_METRICS,
   everyTeamCurrentSeason,
   everyTeamSeasons,
   getRosterPlayer,
@@ -84,6 +86,7 @@ interface EveryTeamComposerDraft {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
 }
@@ -103,6 +106,7 @@ const loadDraft = (): EveryTeamComposerDraft => {
     ranked: stored?.ranked === true,
     rankedOrder: normalizeRankedOrder(stored?.rankedOrder),
     showNames: stored?.showNames === true,
+    showHistoricalLogos: stored?.showHistoricalLogos === true,
     season,
     cellSeasons,
   };
@@ -125,6 +129,8 @@ export function EveryTeamComposerApp() {
   const [look, setLook] = useComposerLook(EVERY_TEAM_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
+  const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
+  const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
@@ -145,6 +151,7 @@ export function EveryTeamComposerApp() {
         setRanked(draft.ranked === true);
         setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
         setShowNames(draft.showNames === true);
+        setShowHistoricalLogos(draft.showHistoricalLogos === true);
         setSeason(draft.season ?? everyTeamCurrentSeason());
         setCellSeasons(draft.cellSeasons ?? {});
         setHydrated(true);
@@ -168,6 +175,7 @@ export function EveryTeamComposerApp() {
       ranked,
       rankedOrder,
       showNames,
+      showHistoricalLogos,
       season,
       cellSeasons,
     });
@@ -179,6 +187,7 @@ export function EveryTeamComposerApp() {
     ranked,
     rankedOrder,
     showNames,
+    showHistoricalLogos,
     season,
     cellSeasons,
     hydrated,
@@ -219,6 +228,7 @@ export function EveryTeamComposerApp() {
           ranked,
           rankedOrder,
           showNames,
+          showHistoricalLogos,
           season,
           cellSeasons,
         },
@@ -278,7 +288,7 @@ export function EveryTeamComposerApp() {
     const result = autoSortRankedOrder(teams, values);
     if (result.ranked === 0) {
       setStatus(
-        `No ${autoSortMetricLabel(metric)} for this board’s seasons — order left as-is.`,
+        `No ${autoSortMetricLabel(metric)} yet — using last season’s table when this year has none. Fill players first, then sort.`,
       );
       return;
     }
@@ -289,6 +299,22 @@ export function EveryTeamComposerApp() {
       result.held
         ? `Sorted ${result.ranked} by ${autoSortMetricLabel(metric)}. ${result.held} empty or without stats stayed at the bottom.`
         : `Sorted 1–${result.ranked} by ${autoSortMetricLabel(metric)}. Drag still overrides.`,
+    );
+  };
+
+  const handleAutoFill = (metric: EveryTeamStatMetric) => {
+    const next = autoFillEveryTeamSlots(season, cellSeasons, metric);
+    const filled = next.filter(Boolean).length;
+    if (filled === 0) {
+      setStatus(
+        `No ${autoSortMetricLabel(metric)} leaders for this board’s seasons.`,
+      );
+      return;
+    }
+    push(snapshot());
+    setSlots(next);
+    setStatus(
+      `Filled ${filled} teams with the ${autoSortMetricLabel(metric)} leader. Current year uses last season until this year’s table exists.`,
     );
   };
 
@@ -405,30 +431,42 @@ export function EveryTeamComposerApp() {
             Ranked
           </button>
         </div>
+        <div className="sc-look sc-look--sort" role="group" aria-label="Auto-fill every team">
+          <span className="sc-look__label">Auto-fill</span>
+          <select
+            value={fillMetric}
+            aria-label="Auto-fill stat"
+            onChange={(event) =>
+              setFillMetric(event.target.value as EveryTeamStatMetric)
+            }
+          >
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <option key={metric.id} value={metric.id}>
+                {metric.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => handleAutoFill(fillMetric)}
+          >
+            Fill leaders
+          </button>
+        </div>
         {ranked ? (
           <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
             <span className="sc-look__label">Auto-sort</span>
-            <button
-              type="button"
-              className="sc-chip"
-              onClick={() => handleAutoSort("pra")}
-            >
-              PRA
-            </button>
-            <button
-              type="button"
-              className="sc-chip"
-              onClick={() => handleAutoSort("points")}
-            >
-              Points
-            </button>
-            <button
-              type="button"
-              className="sc-chip"
-              onClick={() => handleAutoSort("stocks")}
-            >
-              STL+BLK
-            </button>
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <button
+                key={metric.id}
+                type="button"
+                className="sc-chip"
+                onClick={() => handleAutoSort(metric.id)}
+              >
+                {metric.label}
+              </button>
+            ))}
           </div>
         ) : null}
         <label className="sc-field">
@@ -443,6 +481,18 @@ export function EveryTeamComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Historical logos</span>
+          <button
+            type="button"
+            className={showHistoricalLogos ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showHistoricalLogos}
+            aria-label="Use historical team logos"
+            onClick={() => setShowHistoricalLogos((on) => !on)}
+          >
+            {showHistoricalLogos ? "On" : "Off"}
+          </button>
+        </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
@@ -455,6 +505,7 @@ export function EveryTeamComposerApp() {
             ranked,
             rankedOrder,
             showNames,
+            showHistoricalLogos,
             season,
             cellSeasons,
           }}
@@ -468,6 +519,7 @@ export function EveryTeamComposerApp() {
             setRanked(next.ranked === true);
             setRankedOrder(normalizeRankedOrder(next.rankedOrder));
             setShowNames(next.showNames === true);
+            setShowHistoricalLogos(next.showHistoricalLogos === true);
             setSeason(nextSeason);
             setCellSeasons(nextCells);
             setStatus("Loaded named graphic.");
@@ -525,6 +577,7 @@ export function EveryTeamComposerApp() {
             ranked={ranked}
             rankedOrder={rankedOrder}
             showNames={showNames}
+            showHistoricalLogos={showHistoricalLogos}
             season={season}
             cellSeasons={cellSeasons}
             activeIndex={exporting ? null : activeIndex}
@@ -561,8 +614,8 @@ export function EveryTeamComposerApp() {
           <p className="sc-hint">
             Each square is a fixed NBA franchise. Board year applies that
             season’s roster to every cell; a cell can override the year. Unranked
-            is A–Z by city. Ranked shows 1–30 — auto-sort by PRA / points /
-            stocks, or drag to insert. Downloads a 4:5 Instagram PNG — nothing is
+            is A–Z by city. Ranked shows 1–30 — auto-fill by a chosen stat, then
+            auto-sort, or drag to insert. Downloads a 4:5 Instagram PNG — nothing is
             posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

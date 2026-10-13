@@ -1,5 +1,6 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import type { RankDisplay } from "./rankedLineupsLayout";
 import {
   applyPlayerPick,
   clearStrip,
@@ -35,6 +36,9 @@ export const DEFAULT_RANKED_LINEUP_TITLE =
 export const RANKED_LINEUP_TITLE_TRACK = 0.02;
 export const DEFAULT_RANK_PILL = "BEST";
 export const RANK_PILL_MAX = 12;
+export const RANK_HEADLINE_TOTAL = 10;
+export type { RankDisplay };
+export const DEFAULT_RANK_DISPLAY: RankDisplay = "headline";
 
 export const RANK_PILL_PRESETS = [
   "BEST",
@@ -63,6 +67,7 @@ export interface RankedLineupsDraft {
   activeSlide?: number;
   showBa?: boolean;
   showFade?: boolean;
+  rankDisplay?: RankDisplay;
 }
 
 export const lineupPosition = (index: number): LineupPosition =>
@@ -111,8 +116,33 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     activeSlide: 0,
     showBa: false,
     showFade: false,
+    rankDisplay: DEFAULT_RANK_DISPLAY,
   };
 };
+
+export const parseRankDisplay = (value: unknown): RankDisplay =>
+  value === "pill" ? "pill" : DEFAULT_RANK_DISPLAY;
+
+export const rankOrdinalNumber = (rank: string) => {
+  const upper = rank.trim().toUpperCase() || DEFAULT_RANK_PILL;
+  const preset = (RANK_PILL_PRESETS as readonly string[]).indexOf(upper);
+  if (preset >= 0) {
+    return preset + 1;
+  }
+  const digits = upper.match(/(\d+)/);
+  if (digits) {
+    return Number(digits[1]);
+  }
+  return 1;
+};
+
+export const rankHeadlinePrimary = (rank: string) =>
+  `#${rankOrdinalNumber(rank)}`;
+
+export const rankHeadlineSecondary = (
+  rank: string,
+  total = RANK_HEADLINE_TOTAL,
+) => `${rankOrdinalNumber(rank)} OF ${total}`;
 
 export const isRankedLineupSlide = (value: unknown): value is RankedLineupSlide =>
   Boolean(

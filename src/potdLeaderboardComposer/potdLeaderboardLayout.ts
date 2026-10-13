@@ -23,6 +23,8 @@ export const PLB_STROKE = 8;
 export const PLB_LIST_INSET = 28;
 /** Left-column mark only — never a row-width watermark. */
 export const PLB_PIP_W = 40;
+export const PLB_HEAD_W = 44;
+export const PLB_HEAD_SIZE = 36;
 export const PLB_PIP_SIZE = 36;
 export const PLB_PIP_BAR_W = 6;
 export const PLB_PIP_BAR_H = 28;

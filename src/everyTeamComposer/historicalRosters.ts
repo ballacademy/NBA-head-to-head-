@@ -127,7 +127,7 @@ export const isMissingSeason = (teamId: string, season: string) =>
 export const missingSeasonReason = (teamId: string, season: string) =>
   getSeasonCell(teamId, season)?.reason ?? `No ${season} roster for ${teamId}.`;
 
-export const listRosterPlayers = (
+const rawRosterPlayers = (
   teamId: string,
   season: string,
 ): EveryTeamRosterPlayer[] => {
@@ -136,6 +136,102 @@ export const listRosterPlayers = (
     return [];
   }
   return cell.players ?? [];
+};
+
+export const previousSeason = (season: string) => {
+  const [start] = season.split("-");
+  const startYear = Number(start);
+  if (!startYear) {
+    return season;
+  }
+  const end = String(startYear).slice(-2).padStart(2, "0");
+  return `${startYear - 1}-${end}`;
+};
+
+const highScorerCount = (season: string) => {
+  let count = 0;
+  Object.keys(rosters).forEach((teamId) => {
+    rawRosterPlayers(teamId, season).forEach((player) => {
+      if (player.pts != null && player.pts >= 27) {
+        count += 1;
+      }
+    });
+  });
+  return count;
+};
+
+/**
+ * Upcoming/current year often has ESPN preseason scraps, not a BBR table.
+ * Until this year’s scoring looks like a real table, borrow last season by id.
+ */
+export const statsSeasonFor = (season: string) => {
+  if (season !== currentSeason) {
+    return season;
+  }
+  const prev = previousSeason(season);
+  if (!seasons.includes(prev)) {
+    return season;
+  }
+  if (highScorerCount(season) < 3 && highScorerCount(prev) >= 3) {
+    return prev;
+  }
+  return season;
+};
+
+const overlayLastSeasonStats = (
+  player: EveryTeamRosterPlayer,
+  teamId: string,
+  season: string,
+): EveryTeamRosterPlayer => {
+  const statsSeason = statsSeasonFor(season);
+  if (statsSeason === season) {
+    return player;
+  }
+  const prior = rawRosterPlayers(teamId, statsSeason).find(
+    (candidate) => candidate.id === player.id,
+  );
+  if (!prior) {
+    return {
+      ...player,
+      pts: null,
+      reb: null,
+      ast: null,
+      stl: null,
+      blk: null,
+    };
+  }
+  return {
+    ...player,
+    pts: prior.pts,
+    reb: prior.reb,
+    ast: prior.ast,
+    stl: prior.stl,
+    blk: prior.blk,
+  };
+};
+
+export const listRosterPlayers = (
+  teamId: string,
+  season: string,
+): EveryTeamRosterPlayer[] =>
+  rawRosterPlayers(teamId, season).map((player) =>
+    overlayLastSeasonStats(player, teamId, season),
+  );
+
+export const teamLogoSrc = (
+  teamId: string,
+  season: string,
+  historical = false,
+) => {
+  const modern = NBA_TEAMS_BY_ID[teamId]?.logoSrc ?? `/nba-logos/${teamId}.png`;
+  if (!historical) {
+    return modern;
+  }
+  const historyId = getSeasonCell(teamId, season)?.historyId;
+  if (historyId && historyId !== teamId) {
+    return `/nba-logos/${historyId}.png`;
+  }
+  return modern;
 };
 
 export const getRosterPlayer = (
@@ -207,7 +303,27 @@ export const rosterAsTierPlayers = (
   }));
 };
 
-export type EveryTeamStatMetric = "pra" | "points" | "stocks";
+export type EveryTeamStatMetric =
+  | "points"
+  | "rebounds"
+  | "assists"
+  | "steals"
+  | "blocks"
+  | "pra"
+  | "stocks";
+
+export const EVERY_TEAM_STAT_METRICS: Array<{
+  id: EveryTeamStatMetric;
+  label: string;
+}> = [
+  { id: "points", label: "PTS" },
+  { id: "rebounds", label: "REB" },
+  { id: "assists", label: "AST" },
+  { id: "steals", label: "STL" },
+  { id: "blocks", label: "BLK" },
+  { id: "pra", label: "PRA" },
+  { id: "stocks", label: "STL+BLK" },
+];
 
 export const rosterStatValue = (
   player: EveryTeamRosterPlayer | null,
@@ -218,6 +334,18 @@ export const rosterStatValue = (
   }
   if (metric === "points") {
     return player.pts;
+  }
+  if (metric === "rebounds") {
+    return player.reb;
+  }
+  if (metric === "assists") {
+    return player.ast;
+  }
+  if (metric === "steals") {
+    return player.stl;
+  }
+  if (metric === "blocks") {
+    return player.blk;
   }
   if (metric === "pra") {
     if (player.pts == null || player.reb == null || player.ast == null) {
@@ -231,6 +359,24 @@ export const rosterStatValue = (
   return roundStat(player.stl + player.blk);
 };
 
+export const pickSeasonLeader = (
+  teamId: string,
+  season: string,
+  metric: EveryTeamStatMetric,
+): EveryTeamRosterPlayer | null => {
+  let best: EveryTeamRosterPlayer | null = null;
+  let bestValue = Number.NEGATIVE_INFINITY;
+  listRosterPlayers(teamId, season).forEach((player) => {
+    const value = rosterStatValue(player, metric);
+    if (value == null || value < bestValue) {
+      return;
+    }
+    best = player;
+    bestValue = value;
+  });
+  return best;
+};
+
 export const roundStat = (value: number) => Math.round(value * 10) / 10;
 
 export const formatRosterStat = (
@@ -241,11 +387,7 @@ export const formatRosterStat = (
   if (value == null) {
     return "No stats";
   }
-  if (metric === "points") {
-    return `${value.toFixed(1)} PTS`;
-  }
-  if (metric === "pra") {
-    return `${value.toFixed(1)} PRA`;
-  }
-  return `${value.toFixed(1)} STL+BLK`;
+  const label =
+    EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+  return `${value.toFixed(1)} ${label}`;
 };

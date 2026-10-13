@@ -7,10 +7,10 @@ import { TOTW_STRIP_COUNT } from "./teamOfTheWeekState";
 
 export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH, TOTW_STRIP_COUNT };
 
-export const TOTW_PAD_X = 28;
-export const TOTW_STRIP_GAP = 16;
-export const TOTW_BRAND_H = 58;
-export const TOTW_BRAND_SIZE = 28;
+export const TOTW_PAD_X = 10;
+export const TOTW_STRIP_GAP = 6;
+export const TOTW_BRAND_H = 40;
+export const TOTW_BRAND_SIZE = 26;
 export const TOTW_TITLE_PLATE_H = 116;
 export const TOTW_TITLE_SIZE = 42;
 export const TOTW_TITLE_PAD = 12;

@@ -29,7 +29,10 @@ export const slotIndexForTeam = (
 
 export const LAST_WEEK_STORAGE_KEY = "ddgm:standings-composer:last-week";
 
-/** Positive = moved up vs last week. Null when there is no snapshot or no change. */
+/**
+ * Positive = moved up vs last week. Zero = same rank.
+ * Null when there is no snapshot or the team was not in last week (missing ≠ unchanged).
+ */
 export const lastWeekDelta = (
   slots: RankingSlots,
   previous: RankingSlots | null | undefined,
@@ -43,8 +46,46 @@ export const lastWeekDelta = (
   if (prior < 0) {
     return null;
   }
-  const delta = prior - index;
-  return delta === 0 ? null : delta;
+  return prior - index;
+};
+
+export const lastWeekMark = (delta: number | null) => {
+  if (delta == null) {
+    return null;
+  }
+  if (delta === 0) {
+    return {
+      kind: "same" as const,
+      text: "=",
+      label: "Same rank as last week",
+    };
+  }
+  if (delta > 0) {
+    return {
+      kind: "up" as const,
+      text: `▲${delta}`,
+      label: `Up ${delta} from last week`,
+    };
+  }
+  return {
+    kind: "down" as const,
+    text: `▼${Math.abs(delta)}`,
+    label: `Down ${Math.abs(delta)} from last week`,
+  };
+};
+
+export interface StandingRecord {
+  wins: number;
+  losses: number;
+}
+
+export const formatStandingRecord = (
+  record: StandingRecord | null | undefined,
+) => {
+  if (!record) {
+    return null;
+  }
+  return `${record.wins}–${record.losses}`;
 };
 
 /** Place a team in a slot. If it already occupies another slot, it moves. */

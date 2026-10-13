@@ -108,7 +108,8 @@
 .plb-row {
   position: relative;
   display: grid;
-  grid-template-columns: calc(88 * var(--u)) 1fr calc(108 * var(--u));
+  grid-template-columns:
+    calc(44 * var(--u)) calc(80 * var(--u)) 1fr calc(108 * var(--u));
   align-items: center;
   min-height: calc(52 * var(--u));
   flex: 0 0 auto;
@@ -117,7 +118,8 @@
 
 .plb-board.is-pips-on .plb-row {
   grid-template-columns:
-    calc(40 * var(--u)) calc(80 * var(--u)) 1fr calc(108 * var(--u));
+    calc(40 * var(--u)) calc(44 * var(--u)) calc(80 * var(--u)) 1fr
+    calc(108 * var(--u));
 }
 
 .plb-row.is-alt {
@@ -170,6 +172,25 @@
   margin: calc(4 * var(--u)) auto;
   border-radius: calc(1 * var(--u));
   background: var(--plb-pip, color-mix(in srgb, var(--plb-yellow) 55%, #7a5a00));
+}
+
+.plb-head {
+  position: relative;
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba(245, 196, 0, 0.08);
+  pointer-events: none;
+}
+
+.plb-head__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  display: block;
 }
 
 .plb-rank,

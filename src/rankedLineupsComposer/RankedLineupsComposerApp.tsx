@@ -38,6 +38,8 @@ import {
   lineupPosition,
   nextRankPill,
   patchStrip,
+  DEFAULT_RANK_DISPLAY,
+  parseRankDisplay,
   RANK_PILL_MAX,
   RANK_PILL_PRESETS,
   setStripPhoto,
@@ -66,6 +68,7 @@ const loadDraft = (): RankedLineupsDraft => {
         ...stored,
         showBa: stored.showBa === true,
         showFade: stored.showFade === true,
+        rankDisplay: parseRankDisplay(stored.rankDisplay),
       },
       slides,
       stored.activeSlide ?? 0,
@@ -77,6 +80,7 @@ const loadDraft = (): RankedLineupsDraft => {
     title: stored?.title?.trim() ? stored.title : empty.title,
     showBa: stored?.showBa === true,
     showFade: stored?.showFade === true,
+    rankDisplay: parseRankDisplay(stored?.rankDisplay),
   };
 };
 
@@ -97,6 +101,7 @@ export function RankedLineupsComposerApp() {
   const [look, setLook] = useComposerLook(RANKED_LINEUPS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
+  const [rankDisplay, setRankDisplay] = useState(DEFAULT_RANK_DISPLAY);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -131,6 +136,7 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(draft.activeSlide ?? 0);
     setShowBa(draft.showBa === true);
     setShowFade(draft.showFade === true);
+    setRankDisplay(parseRankDisplay(draft.rankDisplay));
     setHydrated(true);
   }, []);
 
@@ -147,8 +153,9 @@ export function RankedLineupsComposerApp() {
       activeSlide,
       showBa,
       showFade,
+      rankDisplay,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, hydrated]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, rankDisplay, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -166,6 +173,7 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(next.activeSlide ?? 0);
     setShowBa(next.showBa === true);
     setShowFade(next.showFade === true);
+    setRankDisplay(parseRankDisplay(next.rankDisplay));
     setActiveIndex(null);
   };
 
@@ -200,7 +208,7 @@ export function RankedLineupsComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, showBa, showFade },
+        { brand, title, rank, strips, look, showBa, showFade, rankDisplay },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -238,6 +246,7 @@ export function RankedLineupsComposerApp() {
             look,
             showBa,
             showFade,
+            rankDisplay,
           },
         );
         await new Promise((resolve) => window.setTimeout(resolve, 280));
@@ -353,6 +362,7 @@ export function RankedLineupsComposerApp() {
     activeSlide,
     showBa,
     showFade,
+    rankDisplay,
   };
 
   return (
@@ -401,6 +411,25 @@ export function RankedLineupsComposerApp() {
             ))}
           </select>
         </label>
+        <div className="sc-look" role="group" aria-label="Rank style">
+          <span className="sc-look__label">Rank style</span>
+          <button
+            type="button"
+            className={rankDisplay === "headline" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={rankDisplay === "headline"}
+            onClick={() => setRankDisplay("headline")}
+          >
+            #1
+          </button>
+          <button
+            type="button"
+            className={rankDisplay === "pill" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={rankDisplay === "pill"}
+            onClick={() => setRankDisplay("pill")}
+          >
+            Pill
+          </button>
+        </div>
         <label className="sc-field">
           Pill
           <input
@@ -525,6 +554,7 @@ export function RankedLineupsComposerApp() {
             look={look}
             showBa={showBa}
             showFade={showFade}
+            rankDisplay={rankDisplay}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}

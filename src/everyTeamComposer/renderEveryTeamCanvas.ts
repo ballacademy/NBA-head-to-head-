@@ -16,7 +16,7 @@ import {
   drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import { drawCoveredLogo } from "../standingsComposer/logoDraw";
 import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -29,9 +29,9 @@ import {
   getRosterPlayer,
   isMissingSeason,
   seasonForTeam,
+  teamLogoSrc,
 } from "./historicalRosters";
 import {
-  ET_LOGO_FIT,
   ET_RANK_SIZE,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
@@ -132,6 +132,7 @@ export interface EveryTeamRenderInput {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
 }
@@ -240,11 +241,26 @@ export const renderEveryTeamCanvas = async (
       const overridden = Boolean(input.cellSeasons?.[team.id]);
       const showYear =
         overridden || cellSeason !== everyTeamCurrentSeason();
+      const logoSrc = teamLogoSrc(
+        team.id,
+        cellSeason,
+        input.showHistoricalLogos === true,
+      );
       const [logo, headshot] = await Promise.all([
-        loadImage(team.logoSrc),
+        loadImage(logoSrc),
         shown ? loadCorsImage(shown.headshotUrl) : Promise.resolve(null),
       ]);
-      return { team, logo, headshot, shown, missing, cellSeason, showYear, overridden };
+      return {
+        team,
+        logo,
+        logoSrc,
+        headshot,
+        shown,
+        missing,
+        cellSeason,
+        showYear,
+        overridden,
+      };
     }),
   );
 
@@ -258,21 +274,29 @@ export const renderEveryTeamCanvas = async (
     context.save();
     const inner = clipToInnerFrame(context, x, y, size, size, scale);
     if (cell.logo) {
-      drawCenteredLogo(context, cell.logo, inner.x, inner.y, inner.w, inner.h, {
-        shadow: 0,
-        fitX: ET_LOGO_FIT,
-        fitY: ET_LOGO_FIT,
-        cacheKey: cell.team.logoSrc,
-      });
-    }
-    if (cell.headshot) {
-      drawCoverHeadshot(
+      context.save();
+      context.globalAlpha = 0.34;
+      drawCoveredLogo(
         context,
-        cell.headshot,
+        cell.logo,
         inner.x,
         inner.y,
         inner.w,
         inner.h,
+        { cacheKey: `${cell.logoSrc}-cover` },
+      );
+      context.restore();
+    }
+    if (cell.headshot) {
+      const hx = inner.x - inner.w * 0.04;
+      const hy = inner.y - inner.h * 0.08;
+      drawCoverHeadshot(
+        context,
+        cell.headshot,
+        hx,
+        hy,
+        inner.w * 1.08,
+        inner.h * 1.1,
         {
           silhouette: true,
         },

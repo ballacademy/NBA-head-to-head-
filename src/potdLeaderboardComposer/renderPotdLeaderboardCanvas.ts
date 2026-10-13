@@ -11,7 +11,9 @@ import {
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { loadCorsImage } from "../lib/playerHeadshots";
 import { getTeam } from "../standingsComposer/teams";
+import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -25,6 +27,8 @@ import {
   PLB_PAD_X,
   PLB_PIP_BAR_H,
   PLB_PIP_BAR_W,
+  PLB_HEAD_SIZE,
+  PLB_HEAD_W,
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_POTD_FILL,
@@ -210,9 +214,11 @@ export const renderPotdLeaderboardCanvas = async (
   const innerW = listW - inset * 2;
   const innerY = listY + 18 * s;
   const pipW = showPips ? PLB_PIP_W * s : 0;
+  const headW = PLB_HEAD_W * s;
   const rankW = PLB_RANK_W * s;
-  const nameX = innerX + pipW + rankW;
+  const nameX = innerX + pipW + headW + rankW;
   const logos = new Map<string, HTMLImageElement>();
+  const heads = new Map<string, HTMLImageElement>();
   if (showPips) {
     const ids = [
       ...new Set(ranked.map((entry) => entry.teamId).filter(Boolean)),
@@ -230,6 +236,17 @@ export const renderPotdLeaderboardCanvas = async (
       }),
     );
   }
+  await Promise.all(
+    ranked.map(async (entry) => {
+      if (!entry.headshotUrl || heads.has(entry.headshotUrl)) {
+        return;
+      }
+      const image = await loadCorsImage(entry.headshotUrl);
+      if (image) {
+        heads.set(entry.headshotUrl, image);
+      }
+    }),
+  );
 
   const paintHairlineRow = (top: number, rowH: number, index: number) => {
     if (index % 2 === 1) {
@@ -289,6 +306,21 @@ export const renderPotdLeaderboardCanvas = async (
       }
     }
 
+    const headSize = Math.min(PLB_HEAD_SIZE * s, rowH - 10 * s);
+    const headX = innerX + pipW + (headW - headSize) / 2;
+    const headY = y - headSize / 2;
+    const head = entry.headshotUrl ? heads.get(entry.headshotUrl) : undefined;
+    if (head) {
+      context.save();
+      context.beginPath();
+      context.arc(headX + headSize / 2, y, headSize / 2, 0, Math.PI * 2);
+      context.clip();
+      drawCoverHeadshot(context, head, headX, headY, headSize, headSize, {
+        silhouette: false,
+      });
+      context.restore();
+    }
+
     const size = PLB_ROW_SIZE * entry.nameScale * s;
     context.font = `900 ${size}px ${POSTER_FONT}`;
     context.textBaseline = "middle";
@@ -296,7 +328,7 @@ export const renderPotdLeaderboardCanvas = async (
     const medal = medalForRank(entry.rank);
     context.fillStyle = medal ? LEADERBOARD_MEDALS[medal] : PLB_YELLOW;
     context.textAlign = "left";
-    context.fillText(entry.rankLabel, innerX + pipW, y);
+    context.fillText(entry.rankLabel, innerX + pipW + headW, y);
     context.fillStyle = PLB_YELLOW;
     const lines = entry.displayLines.filter(Boolean);
     if (lines.length > 1) {

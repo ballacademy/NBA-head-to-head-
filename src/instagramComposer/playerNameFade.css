@@ -3,10 +3,11 @@
 .ig-name-fade {
   --name-fade: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.97) 0%,
-    rgba(0, 0, 0, 0.92) 26%,
-    rgba(0, 0, 0, 0.78) 52%,
-    rgba(0, 0, 0, 0.42) 78%,
+    rgba(0, 0, 0, 0.98) 0%,
+    rgba(0, 0, 0, 0.95) 22%,
+    rgba(0, 0, 0, 0.88) 42%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.28) 84%,
     rgba(0, 0, 0, 0) 100%
   );
   position: absolute;

@@ -22,7 +22,6 @@ import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
   ET_CELL_GAP,
-  ET_LOGO_FIT,
   everyTeamGrid,
 } from "./everyTeamLayout";
 import {
@@ -37,6 +36,7 @@ import {
   getRosterPlayer,
   isMissingSeason,
   seasonForTeam,
+  teamLogoSrc,
 } from "./historicalRosters";
 
 interface EveryTeamGraphicProps {
@@ -48,6 +48,7 @@ interface EveryTeamGraphicProps {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
   activeIndex: number | null;
@@ -94,6 +95,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       ranked = false,
       rankedOrder,
       showNames = false,
+      showHistoricalLogos = false,
       season,
       cellSeasons,
       activeIndex,
@@ -381,11 +383,10 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 />
                 <div className="et-cell__backdrop" aria-hidden="true">
                   <TeamLogo
-                    src={team.logoSrc}
+                    src={teamLogoSrc(team.id, cellSeason, showHistoricalLogos)}
                     label={team.id}
                     shadow={0}
-                    fitX={ET_LOGO_FIT}
-                    fitY={ET_LOGO_FIT}
+                    cover
                   />
                 </div>
                 {shown ? (

@@ -290,6 +290,18 @@
   line-height: 1;
 }
 
+.tl-row.is-empty .tl-cells {
+  grid-template-columns: calc(48 * var(--u));
+  grid-auto-rows: calc(48 * var(--u));
+  align-content: center;
+}
+
+.tl-row.is-empty .tl-cell--add {
+  width: calc(48 * var(--u));
+  height: calc(48 * var(--u));
+  font-size: calc(28 * var(--u));
+}
+
 .tl-cell__hit {
   position: absolute;
   inset: 0;
@@ -348,6 +360,7 @@
   z-index: 1;
   object-fit: cover;
   object-position: center 18%;
+  /* Never squash into portrait packed cells. */
 }
 
 .tl-cell__name {
@@ -360,12 +373,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding: 22% 8% 6%;
+  padding: 28% 8% 6%;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.92) 0%,
-    rgba(0, 0, 0, 0.72) 42%,
-    rgba(0, 0, 0, 0.28) 74%,
+    rgba(0, 0, 0, 0.97) 0%,
+    rgba(0, 0, 0, 0.9) 34%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.22) 84%,
     rgba(0, 0, 0, 0) 100%
   );
   pointer-events: none;
