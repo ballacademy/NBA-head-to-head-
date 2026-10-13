@@ -97,6 +97,10 @@
   padding: 0 calc(28 * var(--u)) calc(18 * var(--u));
 }
 
+.et-cell img {
+  -webkit-user-drag: none;
+}
+
 .et-cell {
   position: relative;
   width: var(--cell, 180px);
@@ -114,27 +118,39 @@
   z-index: 1;
 }
 
-.et-board.is-ranked .et-cell {
-  cursor: pointer;
-}
-
-.et-board.is-ranked .et-cell__hit {
-  cursor: pointer;
-}
-
-.et-cell__drag {
+.et-board.is-ranked .et-cell--movable {
   cursor: grab;
   touch-action: none;
-  border: 0;
-  padding: 3% 5% 8% 4%;
-  min-width: 34%;
-  min-height: 28%;
-  text-align: left;
-  background: transparent;
+  user-select: none;
 }
 
-.et-cell__drag:active {
+.et-board.is-ranked .et-cell--movable .et-cell__hit {
+  cursor: grab;
+  touch-action: none;
+}
+
+.et-cell--dragging,
+.et-cell--dragging .et-cell__hit {
   cursor: grabbing;
+  opacity: 0.78;
+}
+
+.et-cell__handle {
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  z-index: 5;
+  width: 18%;
+  height: 16%;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0 1.15px,
+    transparent 1.25px
+  );
+  background-size: 5px 5px;
+  background-repeat: repeat;
+  opacity: 0.72;
 }
 
 .et-cell.is-drop {
@@ -203,11 +219,6 @@
   text-shadow:
     calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
     calc(1.9 * var(--u)) calc(2.1 * var(--u)) 0 rgba(0, 0, 0, 0.5);
-}
-
-.et-cell__rank.et-cell__drag {
-  pointer-events: auto;
-  z-index: 5;
 }
 
 .et-cell__hit {

@@ -360,9 +360,10 @@ export function EveryTeamComposerApp() {
           />
           <p className="sc-hint">
             Each square is a fixed NBA team. Unranked is A–Z by city with no
-            numbers. Ranked shows 1–30; drag the number to insert a team at a
-            new rank — everyone between shifts. Click a square to pick a player
-            from that roster. Downloads a 4:5 Instagram PNG — nothing is posted.
+            numbers. Ranked shows 1–30; drag a square to insert it at a new
+            rank — everyone between shifts. Click without dragging to pick a
+            player from that roster. Downloads a 4:5 Instagram PNG — nothing is
+            posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
