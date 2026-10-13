@@ -4,7 +4,9 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurpleInnerHairline,
+  paintPurplePathStroke,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -236,6 +238,7 @@ const drawHeadline = (
   stroke: number,
   scale: number,
   width: number,
+  purpleFlair = false,
 ) => {
   const label = text.trim().toUpperCase();
   if (!label) {
@@ -245,9 +248,24 @@ const drawHeadline = (
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, tracking * size * scale);
-  withShadow(context, scale, () => {
-    strokeFillText(context, label, width / 2, y, "#fff", "#000", stroke * scale);
-  });
+  const paint = () => {
+    withShadow(context, scale, () => {
+      strokeFillText(
+        context,
+        label,
+        width / 2,
+        y,
+        "#fff",
+        "#000",
+        stroke * scale,
+      );
+    });
+  };
+  if (purpleFlair) {
+    paintPurpleTitleGlow(context, scale, paint);
+  } else {
+    paint();
+  }
   setLetterSpacing(context, 0);
 };
 
@@ -258,6 +276,7 @@ const drawWeekNotch = (
   h: number,
   scale: number,
   width: number,
+  purpleFlair = false,
 ) => {
   const label = text.trim().toUpperCase();
   if (!label) {
@@ -283,6 +302,9 @@ const drawWeekNotch = (
   context.closePath();
   context.fillStyle = "#fff";
   context.fill();
+  if (purpleFlair) {
+    paintPurplePathStroke(context, scale);
+  }
   context.fillStyle = "#111";
   context.fillText(label, width / 2, y + h / 2 + 0.5 * scale);
   setLetterSpacing(context, 0);
@@ -361,6 +383,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     3.4,
     s,
     width,
+    input.purpleFlair === true,
   );
   drawWeekNotch(
     context,
@@ -369,6 +392,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     metrics.weekH * s,
     s,
     width,
+    input.purpleFlair === true,
   );
 
   for (let index = 0; index < PLUS_STARTER_COUNT; index += 1) {
@@ -412,6 +436,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     2.4,
     s,
     width,
+    input.purpleFlair === true,
   );
 
   for (let index = 0; index < PLUS_STANDOUT_COUNT; index += 1) {
@@ -447,23 +472,21 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   );
 
   if (input.purpleFlair) {
-    paintPurpleInnerHairline(
+    paintPurplePlateEdge(
       context,
       starterBar.x * s,
       starterBar.y * s,
       starterBar.w * s,
       starterBar.h * s,
       s,
-      input.look,
     );
-    paintPurpleInnerHairline(
+    paintPurplePlateEdge(
       context,
       standoutBar.x * s,
       standoutBar.y * s,
       standoutBar.w * s,
       standoutBar.h * s,
       s,
-      input.look,
     );
   }
 

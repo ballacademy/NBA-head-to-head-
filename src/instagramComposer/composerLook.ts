@@ -217,8 +217,45 @@ export const paintPurpleCornerBloom = (
   };
   context.save();
   context.globalCompositeOperation = "screen";
-  paint(width * 0.06, height * 0.08, 280 * scale, "rgba(176, 38, 255, 0.34)");
-  paint(width * 0.94, height * 0.94, 320 * scale, "rgba(106, 0, 230, 0.28)");
+  paint(width * 0.05, height * 0.06, 220 * scale, "rgba(176, 38, 255, 0.22)");
+  paint(width * 0.95, height * 0.95, 250 * scale, "rgba(106, 0, 230, 0.18)");
+  context.restore();
+};
+
+/** Kyber glow behind open titles (tier, TOTW Plus, pyramid) — type stays sharp. */
+export const paintPurpleTitleGlow = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+  paint: () => void,
+) => {
+  context.save();
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = Math.round(16 * scale);
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 0;
+  paint();
+  context.restore();
+  paint();
+};
+
+export const paintPurpleUnderline = (
+  context: CanvasRenderingContext2D,
+  cx: number,
+  y: number,
+  width: number,
+  scale: number,
+) => {
+  const w = Math.max(120 * scale, width * 0.42);
+  const line = Math.max(2, Math.round(2.5 * scale));
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE;
+  context.lineWidth = line;
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = Math.round(10 * scale);
+  context.beginPath();
+  context.moveTo(cx - w / 2, y);
+  context.lineTo(cx + w / 2, y);
+  context.stroke();
   context.restore();
 };
 
@@ -230,13 +267,28 @@ export const paintPurplePlateEdge = (
   h: number,
   scale: number,
 ) => {
+  const line = Math.max(2, Math.round(2.5 * scale));
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE;
+  context.lineWidth = line;
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = Math.round(18 * scale);
+  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  context.restore();
+};
+
+/** Stroke the current path with a kyber rim (week notches). */
+export const paintPurplePathStroke = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+) => {
   const line = Math.max(2, Math.round(2 * scale));
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
   context.lineWidth = line;
   context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(12 * scale);
-  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  context.shadowBlur = Math.round(10 * scale);
+  context.stroke();
   context.restore();
 };
 
@@ -248,9 +300,10 @@ export const paintPurpleBaGlow = (
 ) => {
   const cx = x + size / 2;
   const cy = y + size / 2;
-  const radius = size * 0.72;
-  const glow = context.createRadialGradient(cx, cy, size * 0.22, cx, cy, radius);
-  glow.addColorStop(0, "rgba(176, 38, 255, 0.55)");
+  const radius = size * 0.82;
+  const glow = context.createRadialGradient(cx, cy, size * 0.18, cx, cy, radius);
+  glow.addColorStop(0, "rgba(176, 38, 255, 0.62)");
+  glow.addColorStop(0.42, "rgba(233, 213, 255, 0.18)");
   glow.addColorStop(1, "rgba(176, 38, 255, 0)");
   context.save();
   context.globalCompositeOperation = "screen";

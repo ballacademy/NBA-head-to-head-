@@ -2,7 +2,6 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurpleInnerHairline,
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -217,9 +216,6 @@ export const renderHeadlineCanvas = async (
   }
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
-  if (input.purpleFlair) {
-    paintPurpleInnerHairline(context, 0, 0, width, height, s, input.look);
-  }
 
   const plateW = width - HL_PAD_X * 2 * s;
   const plateH = HL_HEADLINE_H * s;

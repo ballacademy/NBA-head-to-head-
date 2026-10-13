@@ -4,6 +4,9 @@ import {
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurpleInnerHairline,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
+  paintPurpleUnderline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -170,18 +173,40 @@ export const renderTierListCanvas = async (
   const titleBlockH = lineH * titleLines.length;
   const titleTop = (TIER_HEADER_H * scale - titleBlockH) / 2 + lineH / 2;
 
-  withDropShadow(context, scale, () => {
-    titleLines.forEach((line, index) => {
-      drawCenteredLine(
-        context,
-        line,
-        width / 2,
-        titleTop + index * lineH,
-        titleFont,
-        titleTracking,
-      );
+  const paintTitle = () => {
+    withDropShadow(context, scale, () => {
+      titleLines.forEach((line, index) => {
+        drawCenteredLine(
+          context,
+          line,
+          width / 2,
+          titleTop + index * lineH,
+          titleFont,
+          titleTracking,
+        );
+      });
     });
-  });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, scale, paintTitle);
+    paintPurpleUnderline(
+      context,
+      width / 2,
+      titleTop + (titleLines.length - 1) * lineH + lineH / 2 + 8 * scale,
+      width,
+      scale,
+    );
+    paintPurplePlateEdge(
+      context,
+      0,
+      TIER_HEADER_H * scale,
+      TIER_LABEL_W * scale,
+      (GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER) * scale,
+      scale,
+    );
+  } else {
+    paintTitle();
+  }
 
   const ba = input.showBa === false ? null : await loadImage(BA_LOGO_SRC);
   if (ba) {

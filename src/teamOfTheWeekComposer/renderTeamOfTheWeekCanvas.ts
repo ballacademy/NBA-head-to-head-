@@ -4,8 +4,9 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurpleInnerHairline,
+  paintPurplePathStroke,
   paintPurplePlateEdge,
+  paintPurpleTitleGlow,
   paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -225,15 +226,22 @@ export const renderTeamOfTheWeekCanvas = async (
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
-  withShadow(context, s, () => {
-    context.font = `900 ${TOTW_BRAND_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.18 * TOTW_BRAND_SIZE * s);
-    context.fillStyle = "#fff";
-    context.fillText(input.brand.toUpperCase(), width / 2, 30 * s);
-    setLetterSpacing(context, 0);
-  });
+  const paintBrand = () => {
+    withShadow(context, s, () => {
+      context.font = `900 ${TOTW_BRAND_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.18 * TOTW_BRAND_SIZE * s);
+      context.fillStyle = "#fff";
+      context.fillText(input.brand.toUpperCase(), width / 2, 30 * s);
+      setLetterSpacing(context, 0);
+    });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, s, paintBrand);
+  } else {
+    paintBrand();
+  }
 
   const stripY = TOTW_STRIPS_TOP * s;
   const stripH = TOTW_STRIP_H * s;
@@ -261,14 +269,13 @@ export const renderTeamOfTheWeekCanvas = async (
       input.showTeamHairline !== false,
     );
     if (input.purpleFlair) {
-      paintPurpleInnerHairline(
+      paintPurplePlateEdge(
         context,
         totwStripX(index) * s,
         stripY,
         stripW,
         stripH,
         s,
-        input.look,
       );
     }
   }
@@ -346,6 +353,9 @@ export const renderTeamOfTheWeekCanvas = async (
   context.lineTo(weekX, weekY + weekH);
   context.closePath();
   context.fill();
+  if (input.purpleFlair) {
+    paintPurplePathStroke(context, s);
+  }
   context.fillStyle = "#111";
   context.textAlign = "center";
   context.textBaseline = "middle";

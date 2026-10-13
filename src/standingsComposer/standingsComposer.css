@@ -329,7 +329,7 @@ main.sc-stage {
   left: -16%;
   background: radial-gradient(
     circle at 42% 40%,
-    rgba(176, 38, 255, 0.4),
+    rgba(176, 38, 255, 0.28),
     transparent 70%
   );
 }
@@ -339,7 +339,7 @@ main.sc-stage {
   bottom: -16%;
   background: radial-gradient(
     circle at 58% 62%,
-    rgba(106, 0, 230, 0.32),
+    rgba(106, 0, 230, 0.22),
     transparent 72%
   );
 }
@@ -347,8 +347,8 @@ main.sc-stage {
 .is-purple .composer-ba,
 .is-purple .twp-ba {
   filter:
-    drop-shadow(0 0 calc(10 * var(--u)) #b026ff)
-    drop-shadow(0 0 calc(2 * var(--u)) rgba(233, 213, 255, 0.75));
+    drop-shadow(0 0 calc(14 * var(--u)) #b026ff)
+    drop-shadow(0 0 calc(4 * var(--u)) rgba(233, 213, 255, 0.9));
 }
 
 .is-purple .ig-banner,
@@ -362,28 +362,65 @@ main.sc-stage {
 .is-purple .plb-title-plate,
 .is-purple .hl-headline-plate {
   box-shadow:
-    0 0 0 calc(2 * var(--u)) #b026ff,
-    0 0 calc(16 * var(--u)) rgba(176, 38, 255, 0.45);
+    0 0 0 calc(2.5 * var(--u)) #b026ff,
+    0 0 calc(18 * var(--u)) rgba(176, 38, 255, 0.5);
 }
 
 .is-purple .tl-title-line,
 .is-purple .pyr-title,
-.is-purple .hl-headline {
+.is-purple .twp-title,
+.is-purple .twp-section-title,
+.is-purple .totw-brand {
   text-shadow:
-    0 0 calc(12 * var(--u)) rgba(176, 38, 255, 0.72),
+    0 0 calc(14 * var(--u)) rgba(176, 38, 255, 0.78),
     calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82);
+}
+
+.is-purple .tl-title-block::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(-10 * var(--u));
+  width: 42%;
+  height: calc(2.5 * var(--u));
+  transform: translateX(-50%);
+  background: #b026ff;
+  box-shadow: 0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.7);
+  pointer-events: none;
+}
+
+.is-purple .tl-label-stack {
+  box-shadow:
+    0 0 0 calc(2 * var(--u)) #b026ff,
+    0 0 calc(12 * var(--u)) rgba(176, 38, 255, 0.4);
+}
+
+.is-purple .totw-week-notch,
+.is-purple .twp-week {
+  box-shadow:
+    0 0 0 calc(2 * var(--u)) #b026ff,
+    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.45);
+}
+
+.is-purple .totw-strip,
+.is-purple .twp-bar,
+.is-purple .pyr-cell .pod-photo {
+  box-shadow:
+    0 0 0 calc(2 * var(--u)) #b026ff,
+    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.35);
 }
 
 .is-purple .ig-slot,
 .is-purple .tl-cell--team,
 .is-purple .tl-cell--player,
 .is-purple .et-cell,
-.is-purple .totw-strip,
 .is-purple .rl-strip,
-.is-purple .pod-photo,
-.is-purple .twp-cell .pod-photo,
-.is-purple .pyr-cell {
+.is-purple .pod-board .pod-photo {
   box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(176, 38, 255, 0.92);
+}
+
+.hl-board.is-purple .pod-photo {
+  box-shadow: none;
 }
 
 .ig-header {
