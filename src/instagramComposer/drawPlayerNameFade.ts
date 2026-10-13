@@ -46,9 +46,10 @@ export const drawNameStack = (
   familySize: number,
   givenSize: number,
   scale: number,
+  align: "left" | "center" = "left",
 ) => {
   const measure = (value: string) => context.measureText(value).width;
-  context.textAlign = "left";
+  context.textAlign = align;
   context.textBaseline = "bottom";
   context.fillStyle = "#fff";
   context.shadowColor = "rgba(0, 0, 0, 0.78)";

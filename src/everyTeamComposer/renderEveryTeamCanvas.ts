@@ -333,12 +333,13 @@ export const renderEveryTeamCanvas = async (
         context,
         names.firstName,
         names.lastName || cell.shown.name,
-        x + size * 0.08,
+        x + size / 2,
         y + size - size * 0.06,
         size * 0.84,
         14 * scale,
         11 * scale,
         scale,
+        "center",
       );
     }
   });
