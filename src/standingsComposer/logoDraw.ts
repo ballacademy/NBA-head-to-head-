@@ -190,15 +190,16 @@ export const fittedLogoRect = (
 
 /** Longer, softer stamp than the old 12% hard stack. Andrew may revert. */
 export const LOGO_SHADOW_FRAC = 0.18;
-/** Team-tier only: shift the centered mark this fraction of cell width left. */
-export const TEAM_TIER_NUDGE_LEFT = 0.025;
+/** Team-tier only: ~5.5% left after optical center (prior 2.5% plus another 3%). */
+export const TEAM_TIER_NUDGE_LEFT = 0.055;
 
 export const logoShadowPx = (cellW: number, cellH: number) =>
   Math.max(8, Math.round(Math.min(cellW, cellH) * LOGO_SHADOW_FRAC));
 
 /**
- * Extra 2–3% left on team-tier logos after trim + optical center. Magic
- * already sits left from optical mass — do not stack the full extra on it.
+ * Extra ~5.5% left on team-tier logos after trim + optical center, then
+ * stamp the shadow. Magic already sits left from optical mass — leftover
+ * extra is clamped so the mark never leaves the cell.
  */
 export const applyTeamTierNudgeX = (
   dest: LogoRect,

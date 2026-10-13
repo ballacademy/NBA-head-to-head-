@@ -256,9 +256,10 @@ describe("fittedLogoRect", () => {
     );
   });
 
-  it("nudges balanced team-tier logos 2–3% left without stacking Magic off the box", () => {
+  it("nudges balanced team-tier logos ~5.5% left without stacking Magic off the box", () => {
     const cellW = 400;
     const cellH = 246;
+    const pad = cellW * 0.02;
     const balanced = fittedLogoRect(
       { x: 0, y: 0, w: 460, h: 330, cx: 230, cy: 165 },
       0,
@@ -275,13 +276,13 @@ describe("fittedLogoRect", () => {
     );
     const nudgedBalanced = applyTeamTierNudgeX(balanced, 0, cellW);
     const nudgedMagic = applyTeamTierNudgeX(magic, 0, cellW);
-    expect(TEAM_TIER_NUDGE_LEFT).toBeGreaterThanOrEqual(0.02);
-    expect(TEAM_TIER_NUDGE_LEFT).toBeLessThanOrEqual(0.03);
+    expect(TEAM_TIER_NUDGE_LEFT).toBeGreaterThanOrEqual(0.05);
+    expect(TEAM_TIER_NUDGE_LEFT).toBeLessThanOrEqual(0.06);
     expect(balanced.x - nudgedBalanced.x).toBeCloseTo(cellW * TEAM_TIER_NUDGE_LEFT, 6);
-    expect(magic.x - nudgedMagic.x).toBeLessThan(cellW * 0.01);
-    expect(nudgedMagic.x).toBeGreaterThan(0);
-    expect(nudgedMagic.x + nudgedMagic.w).toBeLessThan(cellW);
-    expect(nudgedBalanced.x).toBeGreaterThan(0);
+    expect(nudgedMagic.x).toBeGreaterThanOrEqual(pad);
+    expect(nudgedMagic.x + nudgedMagic.w).toBeLessThanOrEqual(cellW - pad);
+    expect(nudgedBalanced.x).toBeGreaterThanOrEqual(pad);
+    expect(nudgedBalanced.x + nudgedBalanced.w).toBeLessThanOrEqual(cellW - pad);
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {
