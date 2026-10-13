@@ -49,12 +49,20 @@ export const RANK_PILL_PRESETS = [
   "10TH",
 ] as const;
 
+export interface RankedLineupSlide {
+  rank: string;
+  strips: TotwStrip[];
+}
+
 export interface RankedLineupsDraft {
   brand: string;
   title: string;
   rank: string;
   strips: TotwStrip[];
+  slides?: RankedLineupSlide[];
+  activeSlide?: number;
   showBa?: boolean;
+  showFade?: boolean;
 }
 
 export const lineupPosition = (index: number): LineupPosition =>
@@ -92,10 +100,89 @@ export const usedLineupPlayerIds = (strips: TotwStrip[]) => {
   return used;
 };
 
-export const defaultRankedLineupsDraft = (): RankedLineupsDraft => ({
-  brand: DEFAULT_BRAND,
-  title: DEFAULT_RANKED_LINEUP_TITLE,
-  rank: DEFAULT_RANK_PILL,
+export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
+  const slide = emptyLineupSlide();
+  return {
+    brand: DEFAULT_BRAND,
+    title: DEFAULT_RANKED_LINEUP_TITLE,
+    rank: slide.rank,
+    strips: slide.strips,
+    slides: [slide],
+    activeSlide: 0,
+    showBa: false,
+    showFade: false,
+  };
+};
+
+export const isRankedLineupSlide = (value: unknown): value is RankedLineupSlide =>
+  Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as RankedLineupSlide).rank === "string" &&
+      Array.isArray((value as RankedLineupSlide).strips) &&
+      (value as RankedLineupSlide).strips.length === RANKED_LINEUP_STRIP_COUNT &&
+      (value as RankedLineupSlide).strips.every(isTotwStrip),
+  );
+
+const ordinalPill = (value: number) => {
+  const teen = value % 100;
+  if (teen >= 11 && teen <= 13) {
+    return `${value}TH`;
+  }
+  switch (value % 10) {
+    case 1:
+      return `${value}ST`;
+    case 2:
+      return `${value}ND`;
+    case 3:
+      return `${value}RD`;
+    default:
+      return `${value}TH`;
+  }
+};
+
+export const nextRankPill = (rank: string) => {
+  const upper = rank.trim().toUpperCase() || DEFAULT_RANK_PILL;
+  const preset = (RANK_PILL_PRESETS as readonly string[]).indexOf(upper);
+  if (preset >= 0 && preset < RANK_PILL_PRESETS.length - 1) {
+    return RANK_PILL_PRESETS[preset + 1]!;
+  }
+  const digits = upper.match(/^(\d+)/);
+  if (digits) {
+    return ordinalPill(Number(digits[1]) + 1);
+  }
+  return "2ND";
+};
+
+export const emptyLineupSlide = (rank = DEFAULT_RANK_PILL): RankedLineupSlide => ({
+  rank,
   strips: createEmptyStrips(),
-  showBa: false,
 });
+
+export const slidesFromDraft = (
+  draft: Pick<RankedLineupsDraft, "rank" | "strips" | "slides">,
+): RankedLineupSlide[] => {
+  if (Array.isArray(draft.slides) && draft.slides.length > 0 && draft.slides.every(isRankedLineupSlide)) {
+    return draft.slides;
+  }
+  return [{ rank: draft.rank, strips: draft.strips }];
+};
+
+export const clampActiveSlide = (slides: RankedLineupSlide[], index: number) =>
+  Math.max(0, Math.min(slides.length - 1, index));
+
+export const withActiveSlide = (
+  draft: RankedLineupsDraft,
+  slides: RankedLineupSlide[],
+  activeSlide: number,
+): RankedLineupsDraft => {
+  const index = clampActiveSlide(slides, activeSlide);
+  const slide = slides[index] ?? emptyLineupSlide(draft.rank);
+  return {
+    ...draft,
+    slides,
+    activeSlide: index,
+    rank: slide.rank,
+    strips: slide.strips,
+  };
+};

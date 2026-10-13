@@ -44,6 +44,8 @@ import {
 import {
   DEFAULT_POTD_LEADERBOARD_TITLE,
   isPotdPairName,
+  LEADERBOARD_MEDALS,
+  medalForRank,
   rankLeaderboard,
   type LeaderboardEntry,
 } from "./potdLeaderboardState";
@@ -291,9 +293,11 @@ export const renderPotdLeaderboardCanvas = async (
     context.font = `900 ${size}px ${POSTER_FONT}`;
     context.textBaseline = "middle";
     setLetterSpacing(context, PLB_ROW_TRACK * size);
-    context.fillStyle = PLB_YELLOW;
+    const medal = medalForRank(entry.rank);
+    context.fillStyle = medal ? LEADERBOARD_MEDALS[medal] : PLB_YELLOW;
     context.textAlign = "left";
     context.fillText(entry.rankLabel, innerX + pipW, y);
+    context.fillStyle = PLB_YELLOW;
     const lines = entry.displayLines.filter(Boolean);
     if (lines.length > 1) {
       const step = size * 0.95;

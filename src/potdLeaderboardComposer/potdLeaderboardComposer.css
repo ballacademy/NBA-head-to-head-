@@ -197,6 +197,21 @@
   pointer-events: none;
 }
 
+.plb-rank.is-gold {
+  color: #ffd700;
+  text-shadow: 0 0 calc(10 * var(--u)) rgba(255, 215, 0, 0.45);
+}
+
+.plb-rank.is-silver {
+  color: #c0c7d0;
+  text-shadow: 0 0 calc(8 * var(--u)) rgba(192, 199, 208, 0.35);
+}
+
+.plb-rank.is-bronze {
+  color: #cd7f32;
+  text-shadow: 0 0 calc(8 * var(--u)) rgba(205, 127, 50, 0.4);
+}
+
 .plb-name {
   text-align: left;
   width: 100%;

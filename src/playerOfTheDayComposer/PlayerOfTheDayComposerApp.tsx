@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+  stripCaptionName,
+} from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -43,6 +49,7 @@ import "@fontsource/montserrat/latin-900-italic.css";
 import "./playerOfTheDayComposer.css";
 
 const STORAGE_KEY = "ddgm:player-of-the-day-composer";
+const SAVES_KEY = "ddgm:player-of-the-day-composer:saves";
 
 const loadDraft = (): PotdDraft => {
   const stored = readJson<Partial<PotdDraft>>(STORAGE_KEY);
@@ -272,6 +279,18 @@ export function PlayerOfTheDayComposerApp() {
         />
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{ brand, title, date, cards, showBa }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setDate(next.date);
+            setCards(next.cards);
+            setShowBa(next.showBa === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -289,6 +308,24 @@ export function PlayerOfTheDayComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  cards.map(stripCaptionName).filter(Boolean),
+                  [date],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"

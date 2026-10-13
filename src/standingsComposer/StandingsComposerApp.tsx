@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   STANDINGS_LOOK_KEY,
@@ -26,6 +27,7 @@ import {
   DEFAULT_SUBTITLE,
   DEFAULT_TITLE,
   isRankingSlots,
+  LAST_WEEK_STORAGE_KEY,
   type RankingSlots,
 } from "./rankingState";
 import { exportStandingsPng } from "./exportPng";
@@ -35,6 +37,7 @@ import "@fontsource/montserrat/latin-900.css";
 import "./standingsComposer.css";
 
 const STORAGE_KEY = "ddgm:standings-composer";
+const SAVES_KEY = "ddgm:standings-composer:saves";
 
 interface ComposerDraft {
   brand: string;
@@ -42,6 +45,7 @@ interface ComposerDraft {
   subtitle: string;
   slots: RankingSlots;
   showBa?: boolean;
+  showArrows?: boolean;
 }
 
 const loadDraft = (): ComposerDraft => {
@@ -52,7 +56,13 @@ const loadDraft = (): ComposerDraft => {
     subtitle: stored?.subtitle?.trim() ? stored.subtitle : DEFAULT_SUBTITLE,
     slots: isRankingSlots(stored?.slots) ? stored.slots : createEmptySlots(),
     showBa: stored?.showBa === true,
+    showArrows: stored?.showArrows === true,
   };
+};
+
+const loadLastWeek = (): RankingSlots | null => {
+  const stored = readJson<unknown>(LAST_WEEK_STORAGE_KEY);
+  return isRankingSlots(stored) ? stored : null;
 };
 
 export function StandingsComposerApp() {
@@ -67,6 +77,8 @@ export function StandingsComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
+  const [showArrows, setShowArrows] = useState(false);
+  const [lastWeekSlots, setLastWeekSlots] = useState<RankingSlots | null>(null);
   const [filling, setFilling] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
 
@@ -81,6 +93,8 @@ export function StandingsComposerApp() {
     setSubtitle(draft.subtitle);
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
+    setShowArrows(draft.showArrows === true);
+    setLastWeekSlots(loadLastWeek());
     setHydrated(true);
   }, []);
 
@@ -88,8 +102,8 @@ export function StandingsComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, subtitle, slots, showBa });
-  }, [brand, title, subtitle, slots, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, subtitle, slots, showBa, showArrows });
+  }, [brand, title, subtitle, slots, showBa, showArrows, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -111,7 +125,7 @@ export function StandingsComposerApp() {
           "nba-standings",
           `${subtitle} ${exportDateStamp()}`,
         ),
-        { brand, title, subtitle, slots, look, showBa },
+        { brand, title, subtitle, slots, look, showBa, showArrows, lastWeekSlots },
       );
       setStatus("Download started.");
     } catch (error) {
@@ -166,7 +180,7 @@ export function StandingsComposerApp() {
           `${subtitle} ${exportDateStamp()}`,
           true,
         ),
-        { brand, title, subtitle, slots, look, showBa },
+        { brand, title, subtitle, slots, look, showBa, showArrows, lastWeekSlots },
         true,
       );
       setStatus("Story PNG download started.");
@@ -227,6 +241,31 @@ export function StandingsComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Last-week arrows</span>
+          <button
+            type="button"
+            className={showArrows ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showArrows}
+            aria-label="Last-week movement arrows"
+            onClick={() => setShowArrows((on) => !on)}
+          >
+            {showArrows ? "On" : "Off"}
+          </button>
+        </label>
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{ brand, title, subtitle, slots, showBa, showArrows }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setSubtitle(next.subtitle);
+            setSlots(next.slots);
+            setShowBa(next.showBa === true);
+            setShowArrows(next.showArrows === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -264,6 +303,17 @@ export function StandingsComposerApp() {
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              writeJson(LAST_WEEK_STORAGE_KEY, slots);
+              setLastWeekSlots(slots.slice());
+              setStatus("Saved this ranking as last week.");
+            }}
+          >
+            Save as last week
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
             onClick={() => void exportStory()}
             disabled={exporting}
           >
@@ -288,6 +338,8 @@ export function StandingsComposerApp() {
             title={title}
             subtitle={subtitle}
             slots={slots}
+            lastWeekSlots={lastWeekSlots}
+            showArrows={showArrows}
             look={look}
             showBa={showBa}
             activeIndex={exporting ? null : activeIndex}

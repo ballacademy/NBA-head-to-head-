@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   POTD_LEADERBOARD_LOOK_KEY,
   useComposerLook,
@@ -126,6 +127,17 @@ export function PotdLeaderboardComposerApp() {
         />
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <ComposerSaves
+          storageKey="ddgm:potd-leaderboard-composer:saves"
+          board={{ title, entries, showBa, showPips }}
+          onLoad={(next) => {
+            setTitle(next.title);
+            setEntries(next.entries);
+            setShowBa(next.showBa === true);
+            setShowPips(next.showPips !== false);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Team pip</span>
           <button

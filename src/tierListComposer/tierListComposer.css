@@ -124,17 +124,8 @@
   border-bottom: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.22);
 }
 
-.tl-row.is-tinted {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--tier-color) 22%, transparent) 0,
-    color-mix(in srgb, var(--tier-color) 22%, transparent)
-      calc(var(--label-w, 140) * var(--u)),
-    color-mix(in srgb, var(--tier-color) 8%, transparent)
-      calc(var(--label-w, 140) * var(--u)),
-    transparent 52%
-  );
-  box-shadow: inset calc(7 * var(--u)) 0 0 var(--tier-color);
+.tl-row.is-tinted .tl-label-stack {
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--tier-color);
 }
 
 .tl-label-stack {

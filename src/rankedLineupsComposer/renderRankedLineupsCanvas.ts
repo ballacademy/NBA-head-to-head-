@@ -1,9 +1,10 @@
 import {
   clipToInnerFrame,
-  frameColor,
+  frameLinePx,
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { wrapNameToWidth } from "../instagramComposer/nameFit";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -16,14 +17,17 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   RL_BRAND_H,
   RL_BRAND_SIZE,
+  RL_FADE_NAME_H,
   RL_FOOTER_H,
   RL_NAME_FAMILY_SIZE,
   RL_NAME_GIVEN_SIZE,
+  RL_NAME_LOGO,
   RL_PILL_GAP,
   RL_PILL_H,
   RL_PILL_SIZE,
@@ -33,6 +37,7 @@ import {
   RL_STRIP_W,
   RL_STRIPS_TOP,
   RL_TITLE_BLOCK_H,
+  RL_TITLE_GRADIENT,
   RL_TITLE_SIZE,
   rlStripX,
 } from "./rankedLineupsLayout";
@@ -87,7 +92,7 @@ const strokeFillText = (
   text: string,
   x: number,
   y: number,
-  fill: string,
+  fill: string | CanvasGradient,
   stroke: string,
   strokeWidth: number,
 ) => {
@@ -98,6 +103,18 @@ const strokeFillText = (
   context.strokeText(text, x, y);
   context.fillStyle = fill;
   context.fillText(text, x, y);
+};
+
+const titleGradient = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+) => {
+  const width = Math.max(1, context.measureText(text).width);
+  const gradient = context.createLinearGradient(x - width / 2, y, x + width / 2, y);
+  RL_TITLE_GRADIENT.forEach(([stop, color]) => gradient.addColorStop(stop, color));
+  return gradient;
 };
 
 const roundRectPath = (
@@ -127,6 +144,7 @@ const drawStripPhoto = async (
   h: number,
   scale: number,
   look?: ComposerLook | null,
+  showFade = false,
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -168,6 +186,27 @@ const drawStripPhoto = async (
   }
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
+  if (!showFade) {
+    return;
+  }
+  const line = frameLinePx(scale);
+  const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
+  const team = getTeam(strip.teamId);
+  const logo = team ? await loadImage(team.logoSrc) : null;
+  drawPlayerNameFade(context, {
+    x: x + line,
+    y: y + h - line - barH,
+    w: w - line * 2,
+    h: barH,
+    given: strip.firstName,
+    family: strip.lastName,
+    logo,
+    logoSrc: team?.logoSrc,
+    logoSize: RL_NAME_LOGO * scale,
+    familySize: RL_NAME_FAMILY_SIZE * scale,
+    givenSize: RL_NAME_GIVEN_SIZE * scale,
+    scale,
+  });
 };
 
 export interface RankedLineupsRenderInput {
@@ -177,6 +216,7 @@ export interface RankedLineupsRenderInput {
   strips: RankedLineupStrip[];
   look?: ComposerLook;
   showBa?: boolean;
+  showFade?: boolean;
 }
 
 export const renderRankedLineupsCanvas = async (
@@ -227,7 +267,15 @@ export const renderRankedLineupsCanvas = async (
   setLetterSpacing(context, RANKED_LINEUP_TITLE_TRACK * RL_TITLE_SIZE * s);
   titleLines.forEach((line) => {
     withShadow(context, s, () => {
-      strokeFillText(context, line, width / 2, titleY, "#fff", "#000", 3 * s);
+      strokeFillText(
+        context,
+        line,
+        width / 2,
+        titleY,
+        titleGradient(context, line, width / 2, titleY),
+        "#050505",
+        3.4 * s,
+      );
     });
     titleY += lineH;
   });
@@ -244,12 +292,12 @@ export const renderRankedLineupsCanvas = async (
   const pillX = (width - pillW) / 2;
   const pillY = (RL_BRAND_H + RL_TITLE_BLOCK_H + RL_PILL_GAP) * s;
   roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
-  context.fillStyle = input.look === "black" ? "#0a0a0a" : "#fff";
+  context.fillStyle = "#fff";
   context.fill();
   context.lineWidth = 2 * s;
-  context.strokeStyle = frameColor(input.look);
+  context.strokeStyle = "#fff";
   context.stroke();
-  context.fillStyle = input.look === "black" ? "#fff" : "#111";
+  context.fillStyle = "#111";
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText(rankText, width / 2, pillY + pillH / 2);
@@ -277,6 +325,7 @@ export const renderRankedLineupsCanvas = async (
       stripH,
       s,
       input.look,
+      input.showFade === true,
     );
   }
 
@@ -288,18 +337,22 @@ export const renderRankedLineupsCanvas = async (
     context.font = `900 ${RL_POS_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
+    const pos = lineupPosition(index);
     withShadow(context, s, () => {
       strokeFillText(
         context,
-        lineupPosition(index),
+        pos,
         cx,
         footerY + (RL_POS_H * s) / 2,
-        "#fff",
-        "#000",
+        titleGradient(context, pos, cx, footerY + (RL_POS_H * s) / 2),
+        "#050505",
         2.4 * s,
       );
     });
 
+    if (input.showFade) {
+      continue;
+    }
     const given = (strip?.firstName ?? "").trim().toUpperCase();
     const family = (strip?.lastName ?? "").trim().toUpperCase();
     const nameTop = footerY + RL_POS_H * s;

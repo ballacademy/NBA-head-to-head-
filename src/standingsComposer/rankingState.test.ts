@@ -16,6 +16,7 @@ import {
   STANDINGS_TITLE_SIZE,
   splitStandingsTitle,
   standingsSubtitleLabel,
+  lastWeekDelta,
   usedTeamIds,
 } from "./rankingState";
 
@@ -40,6 +41,15 @@ describe("ranking slots", () => {
     slots = clearSlot(slots, 0);
     expect(slots[0]).toBeNull();
     expect(slots[1]).toBe("BOS");
+  });
+
+  it("hides last-week arrows when missing, unchanged, or new", () => {
+    const now = assignTeam(assignTeam(createEmptySlots(), 0, "BOS"), 1, "NYK");
+    const last = assignTeam(assignTeam(createEmptySlots(), 0, "NYK"), 2, "BOS");
+    expect(lastWeekDelta(now, last, 0)).toBe(2);
+    expect(lastWeekDelta(now, last, 1)).toBe(-1);
+    expect(lastWeekDelta(now, now, 0)).toBeNull();
+    expect(lastWeekDelta(now, null, 0)).toBeNull();
   });
 });
 

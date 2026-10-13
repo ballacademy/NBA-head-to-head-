@@ -5,14 +5,17 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { NAME_FIRST_MAX, NAME_LAST_MAX } from "../instagramComposer/nameFit";
+import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import type { PhotoPan } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
+  RL_FADE_NAME_H,
   RL_FOOTER_H,
   RL_HEADER_H,
   RL_NAME_H,
+  RL_NAME_LOGO,
   RL_POS_H,
 } from "./rankedLineupsLayout";
 import {
@@ -30,11 +33,13 @@ interface RankedLineupsGraphicProps {
   strips: RankedLineupStrip[];
   look?: ComposerLook;
   showBa?: boolean;
+  showFade?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onRankChange: (value: string) => void;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (
@@ -54,11 +59,13 @@ export const RankedLineupsGraphic = forwardRef<
     strips,
     look = "white",
     showBa = false,
+    showFade = false,
     exporting = false,
     onBrandChange,
     onTitleChange,
     onRankChange,
     onPick,
+    onHover,
     onPan,
     onUpload,
     onNameChange,
@@ -104,6 +111,7 @@ export const RankedLineupsGraphic = forwardRef<
       className={[
         "rl-board",
         exporting ? "is-exporting" : "",
+        showFade ? "is-fade" : "",
         composerLookClass(look),
       ]
         .filter(Boolean)
@@ -114,7 +122,8 @@ export const RankedLineupsGraphic = forwardRef<
           ["--header-h" as string]: String(RL_HEADER_H),
           ["--footer-h" as string]: String(RL_FOOTER_H),
           ["--pos-h" as string]: String(RL_POS_H),
-          ["--name-h" as string]: String(RL_NAME_H),
+          ["--name-h" as string]: String(showFade ? RL_FADE_NAME_H : RL_NAME_H),
+          ["--name-logo" as string]: String(RL_NAME_LOGO),
         } as React.CSSProperties
       }
       aria-label="Instagram ranked lineups graphic"
@@ -168,6 +177,7 @@ export const RankedLineupsGraphic = forwardRef<
               key={`rl-strip-${position}`}
               className="rl-strip"
               aria-label={`${position} strip`}
+              onPointerEnter={() => onHover?.(index)}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -179,6 +189,23 @@ export const RankedLineupsGraphic = forwardRef<
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onPick={() => onPick(index)}
               />
+              {showFade ? (
+                <PlayerNameFade
+                  firstName={strip.firstName}
+                  lastName={strip.lastName}
+                  teamId={strip.teamId}
+                  empty={empty}
+                  givenAria={`${position} first name on photo`}
+                  familyAria={`${position} last name on photo`}
+                  onFirstChange={(firstName) =>
+                    onNameChange(index, { firstName })
+                  }
+                  onLastChange={(lastName) =>
+                    onNameChange(index, { lastName })
+                  }
+                  onEmptyClick={() => onPick(index)}
+                />
+              ) : null}
             </section>
           );
         })}

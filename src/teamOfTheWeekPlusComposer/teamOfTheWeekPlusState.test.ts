@@ -105,6 +105,12 @@ describe("team of the week plus", () => {
     expect(standoutSlots(draft.slots)).toHaveLength(5);
     expect(draft.showNames).toBe(true);
     expect(PLUS_ZOOM_STEP).toBeGreaterThan(0.25);
+    const below = plusBoardMetrics(true);
+    expect(below.titlesBelow).toBe(true);
+    expect(below.headerH).toBeLessThan(PLUS_HEADER_H);
+    expect(below.titleY).toBeGreaterThan(below.starterY + below.starterH);
+    expect(below.sectionY).toBe(below.standoutY + below.standoutH);
+    expect(below.weekY + below.weekH).toBeLessThanOrEqual(below.headerH);
   });
 
   it("fills ten unique portraits and accepts a custom panned photo", () => {

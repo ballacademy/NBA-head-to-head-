@@ -8,10 +8,13 @@ import {
   GRAPHIC_WIDTH,
   RL_FOOTER_H,
   RL_HEADER_H,
+  RL_PAD_X,
+  RL_STRIP_GAP,
   RL_STRIP_H,
   RL_STRIP_W,
   rlStripX,
 } from "./rankedLineupsLayout";
+import { TOTW_STRIP_GAP } from "../teamOfTheWeekComposer/teamOfTheWeekLayout";
 import {
   applyPlayerPick,
   createEmptyStrips,
@@ -20,8 +23,10 @@ import {
   defaultRankedLineupsDraft,
   LINEUP_POSITIONS,
   lineupPosition,
+  nextRankPill,
   RANK_PILL_PRESETS,
   RANKED_LINEUP_STRIP_COUNT,
+  slidesFromDraft,
   splitRankedLineupTitle,
   usedLineupPlayerIds,
 } from "./rankedLineupsState";
@@ -57,6 +62,14 @@ describe("ranked lineups", () => {
       "TOP 10 NBA PLAYERS",
       "AT EACH POSITION",
     ]);
+    expect(RL_PAD_X).toBe(12);
+    expect(RL_STRIP_GAP).toBe(4);
+    expect(TOTW_STRIP_GAP).toBeGreaterThan(RL_STRIP_GAP);
+    expect(nextRankPill("BEST")).toBe("2ND");
+    expect(nextRankPill("2ND")).toBe("3RD");
+    expect(nextRankPill("10TH")).toBe("11TH");
+    expect(slidesFromDraft(draft)).toHaveLength(1);
+    expect(draft.showFade).toBe(false);
   });
 
   it("fills a position from the picker and tags used players by slot", () => {

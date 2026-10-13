@@ -37,7 +37,6 @@ import {
   tierBoardLayout,
 } from "./tierLayout";
 import {
-  hexToRgba,
   isDefaultTierColor,
   parseTierColor,
   splitTierTitle,
@@ -237,12 +236,14 @@ export const renderTierListCanvas = async (
     const h = laneCount * layout.laneH * scale;
     const color = parseTierColor(row.color);
     if (!isDefaultTierColor(color)) {
-      context.fillStyle = hexToRgba(color, 0.22);
-      context.fillRect(0, y, TIER_LABEL_W * scale, h);
-      context.fillStyle = hexToRgba(color, 0.08);
-      context.fillRect(TIER_LABEL_W * scale, y, width - TIER_LABEL_W * scale, h);
-      context.fillStyle = color;
-      context.fillRect(0, y, Math.max(2, 7 * scale), h);
+      context.strokeStyle = color;
+      context.lineWidth = Math.max(1, 2 * scale);
+      context.strokeRect(
+        context.lineWidth / 2,
+        y + context.lineWidth / 2,
+        TIER_LABEL_W * scale - context.lineWidth,
+        h - context.lineWidth,
+      );
     }
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
     context.fillRect(0, y, width, Math.max(1, 1.5 * scale));

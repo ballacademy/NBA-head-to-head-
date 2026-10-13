@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   TIER_LOOK_KEY,
   useComposerLook,
@@ -295,6 +296,20 @@ export function TierListComposerApp() {
         />
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <ComposerSaves
+          storageKey={
+            subject === "players"
+              ? "ddgm:tier-list-composer-players:saves"
+              : "ddgm:tier-list-composer:saves"
+          }
+          board={{ title, rows, showBa }}
+          onLoad={(next) => {
+            setTitle(next.title);
+            setRows(next.rows);
+            setShowBa(next.showBa !== false);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <div className="sc-toolbar__actions">
           <button
             type="button"

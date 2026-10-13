@@ -29,6 +29,7 @@ interface TeamOfTheWeekGraphicProps {
   onTitleChange: (value: string) => void;
   onWeekChange: (value: string) => void;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (
@@ -54,6 +55,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     onTitleChange,
     onWeekChange,
     onPick,
+    onHover,
     onPan,
     onUpload,
     onNameChange,
@@ -141,6 +143,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
               key={`totw-strip-${index}`}
               className="totw-strip"
               aria-label={`Player strip ${index + 1}`}
+              onPointerEnter={() => onHover?.(index)}
             >
               <PhotoFrame
                 src={strip.photoSrc}

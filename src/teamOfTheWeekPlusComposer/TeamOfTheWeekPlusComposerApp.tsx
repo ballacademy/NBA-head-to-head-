@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+  stripCaptionName,
+} from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import {
   TEAM_OF_THE_WEEK_PLUS_LOOK_KEY,
@@ -38,6 +44,7 @@ import "@fontsource/montserrat/latin-900.css";
 import "./teamOfTheWeekPlusComposer.css";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-plus-composer";
+const SAVES_KEY = "ddgm:team-of-the-week-plus-composer:saves";
 
 const loadDraft = (): TotwPlusDraft => {
   const stored = readJson<Partial<TotwPlusDraft>>(STORAGE_KEY);
@@ -83,6 +90,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
+  const [titlesBelow, setTitlesBelow] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -103,6 +111,7 @@ export function TeamOfTheWeekPlusComposerApp() {
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames !== false);
+    setTitlesBelow(draft.titlesBelow === true);
     setHydrated(true);
   }, []);
 
@@ -118,8 +127,9 @@ export function TeamOfTheWeekPlusComposerApp() {
       slots,
       showBa,
       showNames,
+      titlesBelow,
     });
-  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, hydrated]);
+  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, titlesBelow, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -147,6 +157,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           look,
           showBa,
           showNames,
+          titlesBelow,
         },
         story,
       );
@@ -168,6 +179,7 @@ export function TeamOfTheWeekPlusComposerApp() {
     setStandoutCaption(next.standoutCaption);
     setSlots(next.slots);
     setShowNames(next.showNames !== false);
+    setTitlesBelow(next.titlesBelow === true);
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -294,6 +306,42 @@ export function TeamOfTheWeekPlusComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Titles under rows</span>
+          <button
+            type="button"
+            className={titlesBelow ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={titlesBelow}
+            aria-label="Place section titles under the player rows"
+            onClick={() => setTitlesBelow((on) => !on)}
+          >
+            {titlesBelow ? "On" : "Off"}
+          </button>
+        </label>
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{
+            brand,
+            week,
+            starterCaption,
+            standoutCaption,
+            slots,
+            showBa,
+            showNames,
+            titlesBelow,
+          }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setWeek(next.week);
+            setStarterCaption(next.starterCaption);
+            setStandoutCaption(next.standoutCaption);
+            setSlots(next.slots);
+            setShowBa(next.showBa === true);
+            setShowNames(next.showNames !== false);
+            setTitlesBelow(next.titlesBelow === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -311,6 +359,24 @@ export function TeamOfTheWeekPlusComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                graphicCaption(
+                  starterCaption,
+                  slots.map(stripCaptionName).filter(Boolean),
+                  [standoutCaption, week],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"
@@ -353,11 +419,13 @@ export function TeamOfTheWeekPlusComposerApp() {
             look={look}
             showBa={showBa}
             showNames={showNames}
+            titlesBelow={titlesBelow}
             exporting={exporting}
             onBrandChange={setBrand}
             onWeekChange={setWeek}
             onStarterCaptionChange={setStarterCaption}
             onStandoutCaptionChange={setStandoutCaption}
+            onHover={setPhotoTarget}
             onPick={(index) => {
               setPhotoTarget(index);
               setActiveIndex(index);

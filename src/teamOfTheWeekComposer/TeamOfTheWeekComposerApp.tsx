@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+  stripCaptionName,
+} from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -39,6 +45,7 @@ import "@fontsource/montserrat/latin-900-italic.css";
 import "./teamOfTheWeekComposer.css";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-composer";
+const SAVES_KEY = "ddgm:team-of-the-week-composer:saves";
 
 const loadDraft = (): TotwDraft => {
   const stored = readJson<Partial<TotwDraft>>(STORAGE_KEY);
@@ -232,6 +239,19 @@ export function TeamOfTheWeekComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{ brand, title, week, strips, showBa, showNames }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setWeek(next.week);
+            setStrips(next.strips);
+            setShowBa(next.showBa === true);
+            setShowNames(next.showNames === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>
           <button
@@ -261,6 +281,24 @@ export function TeamOfTheWeekComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  strips.map(stripCaptionName).filter(Boolean),
+                  [week],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"
@@ -301,6 +339,7 @@ export function TeamOfTheWeekComposerApp() {
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onWeekChange={setWeek}
+            onHover={setPhotoTarget}
             onPick={(index) => {
               setPhotoTarget(index);
               setActiveIndex(index);
