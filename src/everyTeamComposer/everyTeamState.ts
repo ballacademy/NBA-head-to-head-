@@ -1,6 +1,11 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import {
+  rosterHasPlayer,
+  seasonForTeam,
+  type EveryTeamStatMetric,
+} from "./historicalRosters";
 
 export { DEFAULT_BRAND };
 
@@ -71,6 +76,8 @@ export interface EveryTeamDraft {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
 }
 
 export const createDefaultRankedOrder = (): string[] =>
@@ -269,6 +276,54 @@ export const usedEveryTeamLabels = (
   });
   return labels;
 };
+
+export const pruneSlotsToSeasons = (
+  slots: EveryTeamSlots,
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+): EveryTeamSlots =>
+  slots.map((playerId, index) => {
+    if (!playerId) {
+      return null;
+    }
+    const team = EVERY_TEAM_ORDER[index];
+    if (!team) {
+      return null;
+    }
+    return rosterHasPlayer(
+      team.id,
+      seasonForTeam(team.id, boardSeason, cellSeasons),
+      playerId,
+    )
+      ? playerId
+      : null;
+  });
+
+export const autoSortRankedOrder = (
+  rankedOrder: string[],
+  metricValues: Array<number | null>,
+): { order: string[]; ranked: number; held: number } => {
+  const order = normalizeRankedOrder(rankedOrder);
+  const entries = order.map((teamId, index) => ({
+    teamId,
+    index,
+    value: metricValues[index] ?? null,
+  }));
+  const scored = entries.filter((entry) => entry.value != null);
+  const held = entries.filter((entry) => entry.value == null);
+  scored.sort(
+    (left, right) =>
+      (right.value as number) - (left.value as number) || left.index - right.index,
+  );
+  return {
+    order: [...scored, ...held].map((entry) => entry.teamId),
+    ranked: scored.length,
+    held: held.length,
+  };
+};
+
+export const autoSortMetricLabel = (metric: EveryTeamStatMetric) =>
+  metric === "pra" ? "PRA" : metric === "points" ? "points" : "steals + blocks";
 
 export const splitEveryTeamTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_EVERY_TEAM_TITLE);

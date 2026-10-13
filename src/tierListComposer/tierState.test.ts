@@ -47,6 +47,7 @@ import {
   parseTierColor,
   setTierColor,
   setTierLabel,
+  splitTeamCellName,
   splitTierTitle,
   usedLabelsForPicker,
   usedTeamIds,
@@ -127,11 +128,33 @@ describe("tier rows", () => {
   it("accepts a stored draft and labels used teams for the picker", () => {
     const rows = createExampleRows();
     expect(isTierDraft({ title: DEFAULT_TIER_TITLE, rows })).toBe(true);
+    expect(
+      isTierDraft({ title: DEFAULT_TIER_TITLE, rows, showNames: true }),
+    ).toBe(true);
     expect(isTierDraft({ title: "x", rows: [] })).toBe(false);
     expect(usedTeamIds(rows).size).toBe(30);
     expect(EXAMPLE_TIER_PLACEMENT).toHaveLength(6);
     expect(usedLabelsForPicker(rows, 0, "LAL").LAL).toBe("This slot");
     expect(usedLabelsForPicker(rows, 0).CHI).toBe("On A");
+  });
+
+  it("splits team names into a centered city + nickname stack", () => {
+    expect(splitTeamCellName("Golden State Warriors", "Warriors")).toEqual({
+      firstName: "Golden State",
+      lastName: "Warriors",
+    });
+    expect(splitTeamCellName("Portland Trail Blazers", "Trail Blazers")).toEqual({
+      firstName: "Portland",
+      lastName: "Trail Blazers",
+    });
+    expect(splitTeamCellName("Minnesota Timberwolves", "Timberwolves")).toEqual({
+      firstName: "Minnesota",
+      lastName: "Timberwolves",
+    });
+    expect(splitTeamCellName("LA Clippers", "Clippers")).toEqual({
+      firstName: "LA",
+      lastName: "Clippers",
+    });
   });
 });
 

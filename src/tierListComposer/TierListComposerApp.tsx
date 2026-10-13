@@ -62,6 +62,7 @@ interface TierComposerDraft {
   title: string;
   rows: TierRow[];
   showBa?: boolean;
+  showNames?: boolean;
 }
 
 const storageKeyFor = (subject: TierSubject) =>
@@ -105,12 +106,14 @@ const loadDraft = (subject: TierSubject): TierComposerDraft => {
       title: stored.title.trim() || DEFAULT_TIER_TITLE,
       rows: stored.rows,
       showBa: stored.showBa !== false,
+      showNames: stored.showNames === true,
     };
   }
   return {
     title: stored?.title?.trim() ? stored.title : DEFAULT_TIER_TITLE,
     rows: createDefaultRows(),
     showBa: stored?.showBa !== false,
+    showNames: stored?.showNames === true,
   };
 };
 
@@ -128,6 +131,7 @@ export function TierListComposerApp() {
   const [filterEpoch, setFilterEpoch] = useState(0);
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [showBa, setShowBa] = useState(true);
+  const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
   const filteredPlayerCount = useMemo(
     () => searchPlayers("", playerFilters).length,
@@ -151,6 +155,7 @@ export function TierListComposerApp() {
     setTitle(draft.title);
     setRows(draft.rows);
     setShowBa(draft.showBa !== false);
+    setShowNames(draft.showNames === true);
     setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
   }, []);
@@ -159,8 +164,8 @@ export function TierListComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(storageKeyFor(subject), { title, rows, showBa });
-  }, [title, rows, showBa, subject, hydrated]);
+    writeJson(storageKeyFor(subject), { title, rows, showBa, showNames });
+  }, [title, rows, showBa, showNames, subject, hydrated]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -173,12 +178,13 @@ export function TierListComposerApp() {
     if (next === subject) {
       return;
     }
-    writeJson(storageKeyFor(subject), { title, rows, showBa });
+    writeJson(storageKeyFor(subject), { title, rows, showBa, showNames });
     const draft = loadDraft(next);
     setSubject(next);
     setTitle(draft.title);
     setRows(draft.rows);
     setShowBa(draft.showBa !== false);
+    setShowNames(draft.showNames === true);
     setActive(null);
     writeSubject(next);
   };
@@ -205,6 +211,7 @@ export function TierListComposerApp() {
           subject,
           look,
           showBa,
+          showNames,
         },
       );
       setStatus("Download started.");
@@ -235,7 +242,7 @@ export function TierListComposerApp() {
       await exportTierListPng(
         node,
         exportFilenameFromTitle(title, "nba-tier-list", exportDateStamp(), true),
-        { title, rows, subject, look, showBa },
+        { title, rows, subject, look, showBa, showNames },
         true,
       );
       setStatus("Story PNG download started.");
@@ -294,6 +301,18 @@ export function TierListComposerApp() {
           presets={TIER_TITLE_PRESETS}
           onChange={setTitle}
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Names</span>
+          <button
+            type="button"
+            className={showNames ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showNames}
+            aria-label="Show names on cells"
+            onClick={() => setShowNames((on) => !on)}
+          >
+            {showNames ? "On" : "Off"}
+          </button>
+        </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
@@ -302,11 +321,12 @@ export function TierListComposerApp() {
               ? "ddgm:tier-list-composer-players:saves"
               : "ddgm:tier-list-composer:saves"
           }
-          board={{ title, rows, showBa }}
+          board={{ title, rows, showBa, showNames }}
           onLoad={(next) => {
             setTitle(next.title);
             setRows(next.rows);
             setShowBa(next.showBa !== false);
+            setShowNames(next.showNames === true);
             setStatus("Loaded named graphic.");
           }}
         />
@@ -387,6 +407,7 @@ export function TierListComposerApp() {
             subject={subject}
             look={look}
             showBa={showBa}
+            showNames={showNames}
             active={exporting ? null : active}
             exporting={exporting}
             onTitleChange={setTitle}
