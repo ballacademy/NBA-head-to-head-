@@ -23,6 +23,7 @@ import {
   fitLeaderboardName,
   formatWinsLabel,
   isPotdPairName,
+  medalForRank,
   parseWinsInput,
   rankLeaderboard,
   readLeaderboardDraft,
@@ -94,6 +95,12 @@ describe("POTD leaderboard ranks", () => {
     expect(ranked.every((row) => !row.name.toUpperCase().startsWith("T1"))).toBe(
       true,
     );
+    expect(medalForRank(1)).toBe("gold");
+    expect(medalForRank(2)).toBe("silver");
+    expect(medalForRank(3)).toBe("bronze");
+    expect(medalForRank(4)).toBeNull();
+    expect(medalForRank(ranked[0]!.rank)).toBe("gold");
+    expect(medalForRank(ranked[2]!.rank)).toBe("bronze");
   });
 
   it("wraps long names onto two lines instead of GILGEOUS-AL.", () => {

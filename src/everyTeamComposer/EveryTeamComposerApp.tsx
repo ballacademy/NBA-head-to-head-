@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   EVERY_TEAM_LOOK_KEY,
   useComposerLook,
@@ -277,6 +278,28 @@ export function EveryTeamComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <ComposerSaves
+          storageKey="ddgm:every-team-composer:saves"
+          board={{
+            brand,
+            title,
+            slots,
+            showBa,
+            ranked,
+            rankedOrder,
+            showNames,
+          }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setSlots(next.slots);
+            setShowBa(next.showBa === true);
+            setRanked(next.ranked === true);
+            setRankedOrder(normalizeRankedOrder(next.rankedOrder));
+            setShowNames(next.showNames === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
         <div className="sc-toolbar__actions">
           <button
             type="button"

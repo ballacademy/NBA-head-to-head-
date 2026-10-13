@@ -11,6 +11,7 @@ import { leaderboardBlankCount } from "./potdLeaderboardLayout";
 import {
   formatWinsLabel,
   isPotdPairName,
+  medalForRank,
   parseWinsInput,
   rankLeaderboard,
   type LeaderboardEntry,
@@ -122,6 +123,7 @@ export const PotdLeaderboardGraphic = forwardRef<
             const team = showPips ? getTeam(entry.teamId) : null;
             const highlighted = isPotdPairName(entry.name, potdKeys);
             const wrap = entry.displayLines.length > 1;
+            const medal = medalForRank(entry.rank);
             return (
               <div
                 key={entry.id}
@@ -149,7 +151,13 @@ export const PotdLeaderboardGraphic = forwardRef<
                     )}
                   </span>
                 ) : null}
-                <span className="plb-rank">{entry.rankLabel}</span>
+                <span
+                  className={["plb-rank", medal ? `is-${medal}` : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {entry.rankLabel}
+                </span>
                 <textarea
                   className="plb-name"
                   rows={wrap ? 2 : 1}

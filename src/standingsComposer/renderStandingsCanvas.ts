@@ -27,6 +27,7 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  lastWeekDelta,
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
@@ -205,6 +206,8 @@ export interface StandingsRenderInput {
   slots: RankingSlots;
   look?: ComposerLook;
   showBa?: boolean;
+  showArrows?: boolean;
+  lastWeekSlots?: RankingSlots | null;
 }
 
 export const renderStandingsCanvas = async (
@@ -352,6 +355,21 @@ export const renderStandingsCanvas = async (
       `900 ${48 * scale}px ${POSTER_FONT}`,
       8 * scale,
     );
+    const delta =
+      input.showArrows === true
+        ? lastWeekDelta(input.slots, input.lastWeekSlots, index)
+        : null;
+    if (delta != null) {
+      context.font = `900 ${28 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.textBaseline = "top";
+      context.fillStyle = delta > 0 ? "#22c55e" : "#ef4444";
+      context.fillText(
+        delta > 0 ? "▲" : "▼",
+        x + cellW * 0.96,
+        y + cellH * 0.032,
+      );
+    }
   }
 
   if (input.showBa) {

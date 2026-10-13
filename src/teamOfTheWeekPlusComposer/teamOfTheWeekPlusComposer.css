@@ -42,6 +42,30 @@
   --frame-color: #0a0a0a;
 }
 
+.twp-board.is-titles-below {
+  --header-h: 52;
+  grid-template-rows:
+    calc(var(--header-h) * var(--u))
+    minmax(0, 11fr)
+    calc(var(--section-h) * var(--u))
+    minmax(0, 9fr)
+    calc(var(--section-h) * var(--u))
+    calc(var(--footer-h) * var(--u));
+}
+
+.twp-board.is-titles-below .twp-header {
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  padding-bottom: 0;
+}
+
+.twp-section-title--hero {
+  height: calc(50 * var(--u));
+  font-size: calc(42 * var(--u));
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: calc(3 * var(--u)) #000;
+}
+
 .twp-ba {
   top: calc(var(--ba-inset) * var(--u));
   right: calc(var(--ba-inset) * var(--u));

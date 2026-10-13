@@ -27,6 +27,26 @@ export const slotIndexForTeam = (
   teamId: string,
 ): number => slots.indexOf(teamId);
 
+export const LAST_WEEK_STORAGE_KEY = "ddgm:standings-composer:last-week";
+
+/** Positive = moved up vs last week. Null when there is no snapshot or no change. */
+export const lastWeekDelta = (
+  slots: RankingSlots,
+  previous: RankingSlots | null | undefined,
+  index: number,
+): number | null => {
+  const teamId = slots[index];
+  if (!teamId || !previous) {
+    return null;
+  }
+  const prior = previous.indexOf(teamId);
+  if (prior < 0) {
+    return null;
+  }
+  const delta = prior - index;
+  return delta === 0 ? null : delta;
+};
+
 /** Place a team in a slot. If it already occupies another slot, it moves. */
 export const assignTeam = (
   slots: RankingSlots,

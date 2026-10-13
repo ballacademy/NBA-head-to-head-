@@ -289,6 +289,7 @@ export interface TeamOfTheWeekPlusRenderInput {
   look?: ComposerLook;
   showBa?: boolean;
   showNames?: boolean;
+  titlesBelow?: boolean;
 }
 
 export const renderTeamOfTheWeekPlusCanvas = async (
@@ -314,7 +315,8 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   paintBoardField(context, fieldTexture, width, height);
 
   const s = scale;
-  const metrics = plusBoardMetrics();
+  const titlesBelow = input.titlesBelow === true;
+  const metrics = plusBoardMetrics(titlesBelow);
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");
@@ -356,7 +358,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   );
 
   for (let index = 0; index < PLUS_STARTER_COUNT; index += 1) {
-    const rect = plusCellRect("starters", index);
+    const rect = plusCellRect("starters", index, titlesBelow);
     await drawPortrait(
       context,
       input.slots[index]!,
@@ -373,7 +375,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       input.showNames !== false,
     );
   }
-  const starterBar = plusBarRect("starters");
+  const starterBar = plusBarRect("starters", titlesBelow);
   paintBarChrome(
     context,
     starterBar.x * s,
@@ -398,7 +400,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   );
 
   for (let index = 0; index < PLUS_STANDOUT_COUNT; index += 1) {
-    const rect = plusCellRect("standouts", index);
+    const rect = plusCellRect("standouts", index, titlesBelow);
     await drawPortrait(
       context,
       input.slots[PLUS_STARTER_COUNT + index]!,
@@ -415,7 +417,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       input.showNames !== false,
     );
   }
-  const standoutBar = plusBarRect("standouts");
+  const standoutBar = plusBarRect("standouts", titlesBelow);
   paintBarChrome(
     context,
     standoutBar.x * s,

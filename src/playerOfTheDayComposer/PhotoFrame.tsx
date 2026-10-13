@@ -267,6 +267,25 @@ export function PhotoFrame({
         pointers.current.delete(event.pointerId);
         beginGesture();
       }}
+      onDragOver={(event) => {
+        if (
+          [...event.dataTransfer.types].some((type) =>
+            type.toLowerCase().includes("files"),
+          )
+        ) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+        }
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        const file = [...event.dataTransfer.files].find((item) =>
+          item.type.startsWith("image/"),
+        );
+        if (file) {
+          void readFile(file).then(onUpload);
+        }
+      }}
     >
       {src ? (
         <div className={PHOTO_SURFACE_CLASS}>

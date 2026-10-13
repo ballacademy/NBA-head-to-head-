@@ -32,12 +32,16 @@
   height: calc(var(--name-logo, 30) * var(--u));
   min-width: 0;
   margin-bottom: calc(2 * var(--u));
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .ig-name-fade__logo canvas {
   width: 100%;
   height: 100%;
   display: block;
+  transform: none;
+  filter: none;
 }
 
 .ig-name-fade__stack {

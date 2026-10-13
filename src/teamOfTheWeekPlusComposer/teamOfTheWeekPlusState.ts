@@ -40,6 +40,7 @@ export interface TotwPlusDraft {
   slots: TotwStrip[];
   showBa?: boolean;
   showNames?: boolean;
+  titlesBelow?: boolean;
 }
 
 export const createEmptyPlusSlots = (): TotwStrip[] =>

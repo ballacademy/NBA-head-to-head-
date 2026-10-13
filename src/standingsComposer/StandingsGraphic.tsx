@@ -17,6 +17,7 @@ import {
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
+  lastWeekDelta,
   SLOT_COUNT,
   splitStandingsTitle,
   type RankingSlots,
@@ -29,6 +30,8 @@ interface StandingsGraphicProps {
   title: string;
   subtitle: string;
   slots: RankingSlots;
+  lastWeekSlots?: RankingSlots | null;
+  showArrows?: boolean;
   activeIndex: number | null;
   look?: ComposerLook;
   exporting?: boolean;
@@ -78,6 +81,8 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       title,
       subtitle,
       slots,
+      lastWeekSlots = null,
+      showArrows = false,
       activeIndex,
       look = "white",
       exporting = false,
@@ -247,6 +252,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
           {Array.from({ length: SLOT_COUNT }, (_, index) => {
             const team = getTeam(slots[index] ?? null);
             const rank = index + 1;
+            const delta = showArrows
+              ? lastWeekDelta(slots, lastWeekSlots, index)
+              : null;
             return (
               <button
                 key={rank}
@@ -274,6 +282,20 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 }
               >
                 <span className="ig-slot__rank">{rank}</span>
+                {delta != null ? (
+                  <span
+                    className={
+                      delta > 0 ? "ig-slot__delta is-up" : "ig-slot__delta is-down"
+                    }
+                    aria-label={
+                      delta > 0
+                        ? `Up ${delta} from last week`
+                        : `Down ${Math.abs(delta)} from last week`
+                    }
+                  >
+                    {delta > 0 ? "▲" : "▼"}
+                  </span>
+                ) : null}
                 {team ? (
                   <TeamLogo
                     src={team.logoSrc}

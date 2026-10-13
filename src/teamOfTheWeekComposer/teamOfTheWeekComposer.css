@@ -69,10 +69,10 @@
 .totw-strips {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: calc(8 * var(--u));
+  gap: calc(16 * var(--u));
   min-height: 0;
   height: 100%;
-  padding: calc(4 * var(--u)) calc(22 * var(--u)) calc(8 * var(--u));
+  padding: calc(4 * var(--u)) calc(28 * var(--u)) calc(8 * var(--u));
   box-sizing: border-box;
 }
 

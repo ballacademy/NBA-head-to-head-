@@ -340,11 +340,13 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             />
                           </>
                         ) : team ? (
-                          <TeamLogo
-                            src={team.logoSrc}
-                            label={team.id}
-                            balanceStamp
-                          />
+                          <div className="tl-cell__logo" aria-hidden="true">
+                            <TeamLogo
+                              src={team.logoSrc}
+                              label={team.id}
+                              balanceStamp
+                            />
+                          </div>
                         ) : null}
                         {exporting ? null : (
                           <button

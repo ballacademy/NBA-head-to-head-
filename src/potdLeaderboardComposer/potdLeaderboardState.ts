@@ -8,6 +8,29 @@ import {
 } from "./potdLeaderboardLayout";
 
 export const POTD_LEADERBOARD_STORAGE_KEY = "ddgm:potd-leaderboard";
+
+export const LEADERBOARD_MEDALS = {
+  gold: "#ffd700",
+  silver: "#c0c7d0",
+  bronze: "#cd7f32",
+} as const;
+
+export type LeaderboardMedal = keyof typeof LEADERBOARD_MEDALS;
+
+export const medalForRank = (
+  rank: number | null,
+): LeaderboardMedal | null => {
+  if (rank === 1) {
+    return "gold";
+  }
+  if (rank === 2) {
+    return "silver";
+  }
+  if (rank === 3) {
+    return "bronze";
+  }
+  return null;
+};
 export const POTD_LEADERBOARD_EVENT = "ddgm:potd-leaderboard";
 export const DEFAULT_POTD_LEADERBOARD_TITLE = "POTD LEADERBOARD";
 export const LEADERBOARD_MAX_ROWS = 24;

@@ -1,4 +1,4 @@
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import { drawCoveredLogo } from "../standingsComposer/logoDraw";
 import { wrapNameToWidth } from "./nameFit";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
@@ -110,18 +110,16 @@ export const drawPlayerNameFade = (
   paintNameFadeRect(context, input.x, input.y, input.w, input.h);
   let textX = input.x + 4 * input.scale;
   if (input.logo) {
-    drawCenteredLogo(
+    const logoX = input.x + 4 * input.scale;
+    const logoY = input.y + input.h - pad - input.logoSize;
+    drawCoveredLogo(
       context,
       input.logo,
-      input.x + 4 * input.scale,
-      input.y + input.h - pad - input.logoSize,
+      logoX,
+      logoY,
       input.logoSize,
       input.logoSize,
-      {
-        cacheKey: input.logoSrc,
-        fitX: 0.88,
-        fitY: 0.88,
-      },
+      { cacheKey: `${input.logoSrc ?? ""}-fade-cover` },
     );
     textX = input.x + input.logoSize + 8 * input.scale;
   }

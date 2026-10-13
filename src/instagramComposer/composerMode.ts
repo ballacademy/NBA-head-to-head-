@@ -5,7 +5,8 @@ export type ComposerMode =
   | "player-of-the-day"
   | "potd-leaderboard"
   | "team-of-the-week"
-  | "team-of-the-week-plus";
+  | "team-of-the-week-plus"
+  | "ranked-lineups";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -60,6 +61,16 @@ const TEAM_OF_THE_WEEK_PLUS_QUERY = new Set([
   "team-of-the-week-plus",
   "totw-plus",
   "team-of-week-plus",
+]);
+const RANKED_LINEUPS_PATHS = new Set([
+  "/ranked-lineups",
+  "/ranked-lineup",
+  "/lineups",
+]);
+const RANKED_LINEUPS_QUERY = new Set([
+  "ranked-lineups",
+  "ranked-lineup",
+  "lineups",
 ]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
@@ -154,10 +165,28 @@ export const isTeamOfTheWeekPlusQuery = (search: string) => {
   }
 };
 
+export const isRankedLineupsPath = (pathname: string) =>
+  RANKED_LINEUPS_PATHS.has(normalizePath(pathname));
+
+export const isRankedLineupsQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return RANKED_LINEUPS_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isRankedLineupsPath(pathname)) {
+    return "ranked-lineups";
+  }
   if (isTeamOfTheWeekPlusPath(pathname)) {
     return "team-of-the-week-plus";
   }
@@ -175,6 +204,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isRankedLineupsQuery(search)) {
+    return "ranked-lineups";
   }
   if (isTeamOfTheWeekPlusQuery(search)) {
     return "team-of-the-week-plus";
@@ -215,6 +247,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "team-of-the-week-plus") {
     return "/team-of-the-week-plus";
+  }
+  if (mode === "ranked-lineups") {
+    return "/ranked-lineups";
   }
   return "/";
 };

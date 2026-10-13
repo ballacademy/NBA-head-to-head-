@@ -162,6 +162,24 @@ describe("fittedLogoRect", () => {
     expect(dest.x).toBeCloseTo(box.x, 6);
   });
 
+  it("centers in the inner content box so a cell frame cannot clip the mark top-left", () => {
+    const outer = 148;
+    const inner = outer - 4 * 2;
+    const dest = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460, cx: 250, cy: 250 },
+      0,
+      0,
+      inner,
+      inner,
+    );
+    expect(dest.x + dest.w / 2).toBeCloseTo(inner / 2, 6);
+    expect(dest.y + dest.h / 2).toBeCloseTo(inner / 2 - inner * LOGO_LIFT, 6);
+    expect(dest.x).toBeGreaterThan(0);
+    expect(dest.y).toBeGreaterThan(0);
+    expect(dest.x + dest.w).toBeLessThan(inner);
+    expect(dest.y + dest.h).toBeLessThan(inner);
+  });
+
   it("keeps shadow length in cell pixels without shifting the dest rect", () => {
     expect(logoShadowPx(400, 246)).toBe(Math.round(246 * 0.12));
     const dest = fittedLogoRect(
@@ -190,6 +208,28 @@ describe("fittedLogoRect", () => {
       cell / 2 - stampBalanceOffset(shadow),
       6,
     );
+  });
+
+  it("covers a fade logo chip without stretching or a padded stamp", () => {
+    const dest = coveredLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(dest.w).toBeGreaterThanOrEqual(28);
+    expect(dest.h).toBeGreaterThanOrEqual(28);
+    expect(dest.w / dest.h).toBeCloseTo(1);
+    const fitted = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(fitted.w).toBeLessThan(28);
+    expect(fitted.h).toBeLessThan(28);
   });
 
   it("covers the name plate without stretching the logo", () => {
