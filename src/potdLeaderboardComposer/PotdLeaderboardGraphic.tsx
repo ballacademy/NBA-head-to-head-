@@ -7,6 +7,7 @@ import {
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { leaderboardBlankCount } from "./potdLeaderboardLayout";
 import {
   formatWinsLabel,
   isPotdPairName,
@@ -116,15 +117,8 @@ export const PotdLeaderboardGraphic = forwardRef<
           />
         </div>
       </header>
-      <div
-        className={["plb-list", ranked.length === 0 ? "plb-list--empty" : ""]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {ranked.length === 0 ? (
-          <p className="plb-empty">Add players</p>
-        ) : (
-          ranked.map((entry, index) => {
+      <div className="plb-list">
+        {ranked.map((entry, index) => {
             const team = showPips ? getTeam(entry.teamId) : null;
             const highlighted = isPotdPairName(entry.name, potdKeys);
             const wrap = entry.displayLines.length > 1;
@@ -201,7 +195,22 @@ export const PotdLeaderboardGraphic = forwardRef<
                 )}
               </div>
             );
-          })
+          })}
+        {Array.from(
+          { length: leaderboardBlankCount(ranked) },
+          (_, index) => (
+            <div
+              key={`plb-blank-${index}`}
+              className={[
+                "plb-row",
+                "is-blank",
+                (ranked.length + index) % 2 === 1 ? "is-alt" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-hidden="true"
+            />
+          ),
         )}
       </div>
     </article>

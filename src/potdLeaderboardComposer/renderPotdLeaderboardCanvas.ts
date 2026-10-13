@@ -29,6 +29,7 @@ import {
   PLB_PIP_W,
   PLB_POTD_FILL,
   PLB_RANK_W,
+  PLB_ROW_H,
   PLB_ROW_SIZE,
   PLB_ROW_TRACK,
   PLB_STROKE,
@@ -37,6 +38,8 @@ import {
   PLB_TITLE_SIZE,
   PLB_TITLE_TRACK,
   PLB_YELLOW,
+  leaderboardBlankCount,
+  leaderboardRowH,
 } from "./potdLeaderboardLayout";
 import {
   DEFAULT_POTD_LEADERBOARD_TITLE,
@@ -199,15 +202,11 @@ export const renderPotdLeaderboardCanvas = async (
   );
 
   const ranked = rankLeaderboard(input.entries);
+  const blanks = leaderboardBlankCount(ranked);
   const inset = PLB_LIST_INSET * s;
   const innerX = listX + inset;
   const innerW = listW - inset * 2;
   const innerY = listY + 18 * s;
-  const innerH = listH - 32 * s;
-  const rowH =
-    ranked.length > 0
-      ? Math.min(68 * s, innerH / ranked.length)
-      : 52 * s;
   const pipW = showPips ? PLB_PIP_W * s : 0;
   const rankW = PLB_RANK_W * s;
   const nameX = innerX + pipW + rankW;
@@ -230,18 +229,10 @@ export const renderPotdLeaderboardCanvas = async (
     );
   }
 
-  ranked.forEach((entry, index) => {
-    const top = innerY + index * rowH;
-    const y = top + rowH / 2;
+  const paintHairlineRow = (top: number, rowH: number, index: number) => {
     if (index % 2 === 1) {
       context.fillStyle = PLB_ALT_FILL;
       context.fillRect(innerX, top, innerW, rowH);
-    }
-    if (isPotdPairName(entry.name, potdKeys)) {
-      context.fillStyle = PLB_POTD_FILL;
-      context.fillRect(innerX, top, innerW, rowH);
-      context.fillStyle = PLB_YELLOW;
-      context.fillRect(innerX, top + 4 * s, 4 * s, rowH - 8 * s);
     }
     context.strokeStyle = PLB_HAIRLINE;
     context.lineWidth = Math.max(1, s * 0.5);
@@ -249,6 +240,21 @@ export const renderPotdLeaderboardCanvas = async (
     context.moveTo(innerX, top + rowH);
     context.lineTo(innerX + innerW, top + rowH);
     context.stroke();
+  };
+
+  let cursorY = innerY;
+  ranked.forEach((entry, index) => {
+    const rowH = leaderboardRowH(entry.displayLines.length > 1) * s;
+    const top = cursorY;
+    cursorY += rowH;
+    const y = top + rowH / 2;
+    paintHairlineRow(top, rowH, index);
+    if (isPotdPairName(entry.name, potdKeys)) {
+      context.fillStyle = PLB_POTD_FILL;
+      context.fillRect(innerX, top, innerW, rowH);
+      context.fillStyle = PLB_YELLOW;
+      context.fillRect(innerX, top + 4 * s, 4 * s, rowH - 8 * s);
+    }
 
     if (showPips) {
       const pipSize = Math.min(PLB_PIP_SIZE * s, rowH - 8 * s);
@@ -305,6 +311,12 @@ export const renderPotdLeaderboardCanvas = async (
     context.fillText(entry.winsLabel, innerX + innerW, y);
     setLetterSpacing(context, 0);
   });
+
+  for (let index = 0; index < blanks; index += 1) {
+    const rowH = PLB_ROW_H * s;
+    paintHairlineRow(cursorY, rowH, ranked.length + index);
+    cursorY += rowH;
+  }
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");

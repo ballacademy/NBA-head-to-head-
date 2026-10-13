@@ -70,6 +70,7 @@ export interface EveryTeamDraft {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  showNames?: boolean;
 }
 
 export const createDefaultRankedOrder = (): string[] =>
@@ -147,6 +148,28 @@ export const swapRankedOrder = (
   const fromId = next[fromIndex]!;
   next[fromIndex] = next[toIndex]!;
   next[toIndex] = fromId;
+  return next;
+};
+
+/** Move a team to a rank; everyone between that slot and the origin shifts. */
+export const insertRankedOrder = (
+  rankedOrder: string[],
+  fromIndex: number,
+  toIndex: number,
+): string[] => {
+  const order = normalizeRankedOrder(rankedOrder);
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= order.length ||
+    toIndex >= order.length
+  ) {
+    return order;
+  }
+  const next = order.slice();
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved!);
   return next;
 };
 

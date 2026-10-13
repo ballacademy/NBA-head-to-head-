@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerLookClass,
@@ -13,6 +19,7 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   ET_CELL_GAP,
@@ -34,13 +41,14 @@ interface EveryTeamGraphicProps {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  showNames?: boolean;
   activeIndex: number | null;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onSelectSlot: (index: number) => void;
   onClearSlot: (index: number) => void;
-  onSwapSlots?: (fromIndex: number, toIndex: number) => void;
+  onMoveSlots?: (fromIndex: number, toIndex: number) => void;
 }
 
 const bannerRectPath = () => {
@@ -77,13 +85,14 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       showBa = false,
       ranked = false,
       rankedOrder,
+      showNames = false,
       activeIndex,
       exporting = false,
       onBrandChange,
       onTitleChange,
       onSelectSlot,
       onClearSlot,
-      onSwapSlots,
+      onMoveSlots,
     },
     ref,
   ) {
@@ -95,12 +104,16 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       moved: boolean;
     } | null>(null);
     const skipClickRef = useRef(false);
+    const onMoveSlotsRef = useRef(onMoveSlots);
+    onMoveSlotsRef.current = onMoveSlots;
+    const dragListenersRef = useRef<(() => void) | null>(null);
     const [unit, setUnit] = useState(0.4);
     const [dropIndex, setDropIndex] = useState<number | null>(null);
+    const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
     const titleLines = splitEveryTeamTitle(title);
     const grid = everyTeamGrid(1);
     const teams = displayedTeams(ranked, rankedOrder);
-    const dragEnabled = ranked && !exporting && Boolean(onSwapSlots);
+    const dragEnabled = ranked && !exporting && Boolean(onMoveSlots);
 
     const cellIndexFromPoint = (x: number, y: number) => {
       const node = document.elementFromPoint(x, y);
@@ -111,6 +124,79 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       const raw = cell?.getAttribute("data-index");
       const index = Number.parseInt(raw ?? "", 10);
       return Number.isInteger(index) ? index : null;
+    };
+
+    const stopDragListeners = () => {
+      dragListenersRef.current?.();
+      dragListenersRef.current = null;
+    };
+
+    const startRankedDrag = (index: number, event: ReactPointerEvent) => {
+      if (!dragEnabled || event.button !== 0) {
+        return;
+      }
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".et-cell__clear")
+      ) {
+        return;
+      }
+      stopDragListeners();
+      dragRef.current = {
+        from: index,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+      };
+
+      const onMove = (moveEvent: PointerEvent) => {
+        const drag = dragRef.current;
+        if (!drag) {
+          return;
+        }
+        if (
+          !drag.moved &&
+          Math.hypot(moveEvent.clientX - drag.x, moveEvent.clientY - drag.y) > 8
+        ) {
+          drag.moved = true;
+          setDraggingFrom(drag.from);
+        }
+        if (drag.moved) {
+          moveEvent.preventDefault();
+          setDropIndex(
+            cellIndexFromPoint(moveEvent.clientX, moveEvent.clientY),
+          );
+        }
+      };
+
+      const finish = (endEvent: PointerEvent) => {
+        stopDragListeners();
+        const drag = dragRef.current;
+        dragRef.current = null;
+        setDropIndex(null);
+        setDraggingFrom(null);
+        if (!drag?.moved) {
+          return;
+        }
+        skipClickRef.current = true;
+        window.setTimeout(() => {
+          skipClickRef.current = false;
+        }, 0);
+        const toIndex = cellIndexFromPoint(endEvent.clientX, endEvent.clientY);
+        const move = onMoveSlotsRef.current;
+        if (move && toIndex != null && toIndex !== drag.from) {
+          move(drag.from, toIndex);
+        }
+      };
+
+      window.addEventListener("pointermove", onMove, { passive: false });
+      window.addEventListener("pointerup", finish);
+      window.addEventListener("pointercancel", finish);
+      dragListenersRef.current = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", finish);
+        window.removeEventListener("pointercancel", finish);
+      };
     };
 
     const setRefs = (node: HTMLElement | null) => {
@@ -141,6 +227,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       observer.observe(node);
       return () => observer.disconnect();
     }, []);
+
+    useLayoutEffect(() => () => stopDragListeners(), []);
 
     return (
       <article
@@ -225,15 +313,19 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             const player = getPlayer(stored);
             const shown =
               player && player.team === team.id ? player : null;
+            const names = shown ? splitPlayerName(shown.name) : null;
             const rank = index + 1;
             return (
               <div
                 key={team.id}
                 data-index={index}
+                data-team={team.id}
                 className={[
                   "et-cell",
                   shown ? "et-cell--filled" : "",
                   ranked ? "et-cell--ranked" : "",
+                  dragEnabled ? "et-cell--movable" : "",
+                  draggingFrom === index ? "et-cell--dragging" : "",
                   activeIndex === index ? "is-active" : "",
                   dropIndex === index ? "is-drop" : "",
                 ]
@@ -245,68 +337,13 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                     ["--cell-to" as string]: team.cellTo,
                   } as React.CSSProperties
                 }
-                onPointerDown={(event) => {
-                  if (
-                    !dragEnabled ||
-                    event.button !== 0 ||
-                    (event.target instanceof Element &&
-                      event.target.closest(".et-cell__clear"))
-                  ) {
-                    return;
-                  }
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  dragRef.current = {
-                    from: index,
-                    x: event.clientX,
-                    y: event.clientY,
-                    moved: false,
-                  };
-                }}
-                onPointerMove={(event) => {
-                  const drag = dragRef.current;
-                  if (!drag || drag.from !== index) {
-                    return;
-                  }
-                  if (
-                    !drag.moved &&
-                    Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 8
-                  ) {
-                    drag.moved = true;
-                  }
-                  if (drag.moved) {
-                    setDropIndex(cellIndexFromPoint(event.clientX, event.clientY));
-                  }
-                }}
-                onPointerUp={(event) => {
-                  const drag = dragRef.current;
-                  dragRef.current = null;
-                  setDropIndex(null);
-                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                    event.currentTarget.releasePointerCapture(event.pointerId);
-                  }
-                  if (!drag?.moved || !onSwapSlots) {
-                    return;
-                  }
-                  skipClickRef.current = true;
-                  window.setTimeout(() => {
-                    skipClickRef.current = false;
-                  }, 0);
-                  const toIndex = cellIndexFromPoint(event.clientX, event.clientY);
-                  if (toIndex != null && toIndex !== drag.from) {
-                    onSwapSlots(drag.from, toIndex);
-                  }
-                }}
-                onPointerCancel={() => {
-                  dragRef.current = null;
-                  setDropIndex(null);
-                }}
+                onPointerDown={(event) => startRankedDrag(index, event)}
               >
                 <button
                   type="button"
                   className="et-cell__hit"
                   onClick={() => {
                     if (skipClickRef.current) {
-                      skipClickRef.current = false;
                       return;
                     }
                     onSelectSlot(index);
@@ -340,6 +377,19 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 {ranked ? (
                   <span className="et-cell__rank" aria-hidden="true">
                     {rank}
+                  </span>
+                ) : null}
+                {dragEnabled ? (
+                  <span className="et-cell__handle" aria-hidden="true" />
+                ) : null}
+                {showNames && shown && names ? (
+                  <span className="et-cell__name">
+                    {names.firstName ? (
+                      <span className="et-cell__given">{names.firstName}</span>
+                    ) : null}
+                    <span className="et-cell__family">
+                      {names.lastName || shown.name}
+                    </span>
                   </span>
                 ) : null}
                 {exporting || !shown ? null : (

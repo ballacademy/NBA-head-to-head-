@@ -105,21 +105,6 @@
   overflow: hidden;
 }
 
-.plb-list--empty {
-  justify-content: center;
-  align-items: center;
-}
-
-.plb-empty {
-  margin: 0;
-  font-family: var(--ig-poster);
-  font-size: calc(28 * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(245, 196, 0, 0.35);
-}
-
 .plb-row {
   position: relative;
   display: grid;
@@ -148,6 +133,10 @@
 
 .plb-row.is-wrap {
   min-height: calc(68 * var(--u));
+}
+
+.plb-row.is-blank {
+  pointer-events: none;
 }
 
 .plb-pip {

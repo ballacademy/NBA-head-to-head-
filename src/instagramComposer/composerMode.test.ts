@@ -3,6 +3,7 @@ import {
   composerHref,
   readComposerMode,
 } from "./composerMode";
+import { COMPOSER_TAB_GROUPS } from "./ComposerTabs";
 
 describe("composer mode", () => {
   it("keeps `/` on standings", () => {
@@ -70,6 +71,27 @@ describe("composer mode", () => {
     expect(composerHref("team-of-the-week-plus")).toBe(
       "/team-of-the-week-plus",
     );
+  });
+
+  it("groups hub tabs as Rankings, Week, and POTD", () => {
+    expect(COMPOSER_TAB_GROUPS.map((group) => group.label)).toEqual([
+      "Rankings",
+      "Week",
+      "POTD",
+    ]);
+    expect(COMPOSER_TAB_GROUPS[0]!.tabs.map((tab) => tab.mode)).toEqual([
+      "standings",
+      "every-team",
+      "tier",
+    ]);
+    expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
+      "team-of-the-week",
+      "team-of-the-week-plus",
+    ]);
+    expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.label)).toEqual([
+      "Matchup",
+      "Leaderboard",
+    ]);
   });
 
   it("lets the path win when query and path disagree", () => {

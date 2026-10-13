@@ -4,6 +4,7 @@ import {
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
@@ -14,7 +15,6 @@ import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -182,64 +182,22 @@ const drawPortrait = async (
   const barY = y + h - line - barH;
   const barX = first ? x + line : x;
   const barW = w - (first ? line : 0) - line;
-  const fade = context.createLinearGradient(barX, barY, barX, barY + barH);
-  fade.addColorStop(0, "rgba(0, 0, 0, 0)");
-  fade.addColorStop(0.36, "rgba(0, 0, 0, 0.42)");
-  fade.addColorStop(0.68, "rgba(0, 0, 0, 0.78)");
-  fade.addColorStop(1, "rgba(0, 0, 0, 0.94)");
-  context.fillStyle = fade;
-  context.fillRect(barX, barY, barW, barH);
-  const pad = 6 * scale;
-  const mark = logoSize * scale;
   const team = getTeam(slot.teamId);
-  let logoW = 0;
-  if (team) {
-    const logo = await loadImage(team.logoSrc);
-    if (logo) {
-      logoW = mark;
-      drawCenteredLogo(
-        context,
-        logo,
-        barX + 4 * scale,
-        barY + barH - pad - mark,
-        mark,
-        mark,
-        {
-          cacheKey: team.logoSrc,
-          fitX: 0.88,
-          fitY: 0.88,
-        },
-      );
-    }
-  }
-  const given = slot.firstName.trim().toUpperCase();
-  const family = slot.lastName.trim().toUpperCase();
-  const textX = barX + (logoW ? logoW + 8 * scale : 4 * scale);
-  const familyY = barY + barH - pad - 2 * scale;
-  context.textAlign = "left";
-  context.fillStyle = "#fff";
-  if (family) {
-    context.font = `900 ${nameSize * scale}px ${POSTER_FONT}`;
-    context.textBaseline = "bottom";
-    setLetterSpacing(context, 0.05 * nameSize * scale);
-    withShadow(context, scale, () => {
-      context.fillText(family, textX, familyY);
-    });
-    setLetterSpacing(context, 0);
-  }
-  if (given) {
-    context.font = `900 ${givenSize * scale}px ${POSTER_FONT}`;
-    context.textBaseline = "bottom";
-    setLetterSpacing(context, 0.1 * givenSize * scale);
-    withShadow(context, scale, () => {
-      context.fillText(
-        given,
-        textX,
-        familyY - (family ? nameSize * scale * 1.05 : 0),
-      );
-    });
-    setLetterSpacing(context, 0);
-  }
+  const logo = team ? await loadImage(team.logoSrc) : null;
+  drawPlayerNameFade(context, {
+    x: barX,
+    y: barY,
+    w: barW,
+    h: barH,
+    given: slot.firstName,
+    family: slot.lastName,
+    logo,
+    logoSrc: team?.logoSrc,
+    logoSize: logoSize * scale,
+    familySize: nameSize * scale,
+    givenSize: givenSize * scale,
+    scale,
+  });
 };
 
 const paintBarChrome = (

@@ -21,6 +21,8 @@ import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
+import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   ET_LOGO_FIT,
@@ -123,6 +125,7 @@ export interface EveryTeamRenderInput {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  showNames?: boolean;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -221,7 +224,7 @@ export const renderEveryTeamCanvas = async (
         loadImage(team.logoSrc),
         shown ? loadCorsImage(shown.headshotUrl) : Promise.resolve(null),
       ]);
-      return { team, logo, headshot };
+      return { team, logo, headshot, shown };
     }),
   );
 
@@ -258,17 +261,40 @@ export const renderEveryTeamCanvas = async (
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
     if (ranked) {
+      const rankX = x + size * 0.06;
+      const rankY = y + size * 0.045;
+      const rankLabel = String(index + 1);
       context.save();
       context.font = `900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`;
       context.textAlign = "left";
       context.textBaseline = "top";
       context.fillStyle = "#fff";
-      context.shadowColor = "rgba(0, 0, 0, 0.72)";
-      context.shadowOffsetX = Math.round(0.55 * scale);
-      context.shadowOffsetY = Math.round(0.55 * scale);
       context.shadowBlur = 0;
-      context.fillText(String(index + 1), x + size * 0.06, y + size * 0.045);
+      context.shadowColor = "rgba(0, 0, 0, 0.5)";
+      context.shadowOffsetX = Math.round(1.9 * scale);
+      context.shadowOffsetY = Math.round(2.1 * scale);
+      context.fillText(rankLabel, rankX, rankY);
+      context.shadowColor = "rgba(0, 0, 0, 0.88)";
+      context.shadowOffsetX = Math.round(1 * scale);
+      context.shadowOffsetY = Math.round(1.1 * scale);
+      context.fillText(rankLabel, rankX, rankY);
       context.restore();
+    }
+    if (input.showNames === true && cell.shown) {
+      const names = splitPlayerName(cell.shown.name);
+      const fadeH = size * 0.38;
+      paintNameFadeRect(context, x, y + size - fadeH, size, fadeH);
+      drawNameStack(
+        context,
+        names.firstName,
+        names.lastName || cell.shown.name,
+        x + size * 0.08,
+        y + size - size * 0.06,
+        size * 0.84,
+        14 * scale,
+        11 * scale,
+        scale,
+      );
     }
   });
 

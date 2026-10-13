@@ -5,8 +5,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { TOTW_NAME_H, TOTW_NAME_LOGO } from "./teamOfTheWeekLayout";
 import {
   splitTotwTitle,
   TOTW_STRIP_COUNT,
@@ -21,6 +23,7 @@ interface TeamOfTheWeekGraphicProps {
   strips: TotwStrip[];
   look?: ComposerLook;
   showBa?: boolean;
+  showNames?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -28,6 +31,10 @@ interface TeamOfTheWeekGraphicProps {
   onPick: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
+  onNameChange: (
+    index: number,
+    names: { firstName?: string; lastName?: string },
+  ) => void;
 }
 
 export const TeamOfTheWeekGraphic = forwardRef<
@@ -41,6 +48,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     strips,
     look = "white",
     showBa = false,
+    showNames = false,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -48,6 +56,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     onPick,
     onPan,
     onUpload,
+    onNameChange,
   },
   ref,
 ) {
@@ -90,11 +99,18 @@ export const TeamOfTheWeekGraphic = forwardRef<
       className={[
         "totw-board",
         exporting ? "is-exporting" : "",
+        showNames ? "" : "is-names-off",
         composerLookClass(look),
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+      style={
+        {
+          ["--u" as string]: `${unit}px`,
+          ["--name-h" as string]: String(TOTW_NAME_H),
+          ["--name-logo" as string]: String(TOTW_NAME_LOGO),
+        } as React.CSSProperties
+      }
       aria-label="Instagram team of the week graphic"
     >
       {showBa ? (
@@ -136,6 +152,23 @@ export const TeamOfTheWeekGraphic = forwardRef<
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onPick={() => onPick(index)}
               />
+              {showNames ? (
+                <PlayerNameFade
+                  firstName={strip.firstName}
+                  lastName={strip.lastName}
+                  teamId={strip.teamId}
+                  empty={empty}
+                  givenAria={`Player ${index + 1} first name`}
+                  familyAria={`Player ${index + 1} last name`}
+                  onFirstChange={(firstName) =>
+                    onNameChange(index, { firstName })
+                  }
+                  onLastChange={(lastName) =>
+                    onNameChange(index, { lastName })
+                  }
+                  onEmptyClick={() => onPick(index)}
+                />
+              ) : null}
             </section>
           );
         })}

@@ -11,6 +11,7 @@ import {
   readComposerMode,
   type ComposerMode,
 } from "./composerMode";
+import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
 import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
@@ -22,6 +23,7 @@ import "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
+  const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
 
   useEffect(() => {
     const sync = () => setMode(readComposerMode());
@@ -38,8 +40,13 @@ export function ComposerHub() {
   }, []);
 
   return (
-    <div className="sc-root">
-      <ComposerTabs mode={mode} onSelect={select} />
+    <div className={["sc-root", photoEdit ? "is-photo-edit" : ""].filter(Boolean).join(" ")}>
+      <ComposerTabs
+        mode={mode}
+        photoEdit={photoEdit}
+        onSelect={select}
+        onPhotoEditChange={setPhotoEdit}
+      />
       {mode === "tier" ? (
         <TierListComposerApp />
       ) : mode === "every-team" ? (

@@ -97,6 +97,10 @@
   padding: 0 calc(28 * var(--u)) calc(18 * var(--u));
 }
 
+.et-cell img {
+  -webkit-user-drag: none;
+}
+
 .et-cell {
   position: relative;
   width: var(--cell, 180px);
@@ -114,19 +118,91 @@
   z-index: 1;
 }
 
-.et-board.is-ranked .et-cell {
+.et-board.is-ranked .et-cell--movable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.et-board.is-ranked .et-cell--movable .et-cell__hit {
   cursor: grab;
   touch-action: none;
 }
 
-.et-board.is-ranked .et-cell__hit {
-  cursor: grab;
+.et-cell--dragging,
+.et-cell--dragging .et-cell__hit {
+  cursor: grabbing;
+  opacity: 0.78;
+}
+
+.et-cell__handle {
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  z-index: 5;
+  width: 18%;
+  height: 16%;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0 1.15px,
+    transparent 1.25px
+  );
+  background-size: 5px 5px;
+  background-repeat: repeat;
+  opacity: 0.72;
 }
 
 .et-cell.is-drop {
   outline: calc(4 * var(--u)) solid #facc15;
   outline-offset: calc(-4 * var(--u));
   z-index: 4;
+}
+
+.et-cell__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22% 5% 5%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.72) 42%,
+    rgba(0, 0, 0, 0.28) 74%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  text-align: center;
+  line-height: 0.95;
+}
+
+.et-cell__given,
+.et-cell__family {
+  display: block;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
+}
+
+.et-cell__given {
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.08em;
+  opacity: 0.92;
+}
+
+.et-cell__family {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.04em;
 }
 
 .et-cell__rank {
@@ -141,8 +217,8 @@
   color: #fff;
   pointer-events: none;
   text-shadow:
-    calc(0.55 * var(--u)) calc(0.55 * var(--u)) 0 rgba(0, 0, 0, 0.72),
-    calc(1.1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.38);
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.9 * var(--u)) calc(2.1 * var(--u)) 0 rgba(0, 0, 0, 0.5);
 }
 
 .et-cell__hit {

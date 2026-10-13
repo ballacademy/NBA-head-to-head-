@@ -65,8 +65,9 @@ describe("team of the week state", () => {
     expect(draft.title).toBe("TEAM OF THE WEEK");
     expect(draft.brand.toUpperCase()).toBe("BALLACADEMY");
     expect(draft.week).toBe(defaultWeekLabel());
-    expect(draft.week).toMatch(/^WEEK 1: \d{1,2}\/\d{1,2} - \d{1,2}\/\d{1,2}$/);
+    expect(defaultWeekLabel(new Date(2026, 9, 13))).toBe("WEEK OF OCT 13, 2026");
     expect(weekRangeFor(new Date(2026, 9, 12))).toBe("10/12 - 10/18");
+    expect(draft.showNames).toBe(false);
     expect(splitTotwTitle(DEFAULT_TOTW_TITLE)).toEqual([
       "TEAM OF",
       "THE WEEK",

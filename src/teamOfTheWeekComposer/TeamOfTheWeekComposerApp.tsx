@@ -43,7 +43,7 @@ const STORAGE_KEY = "ddgm:team-of-the-week-composer";
 const loadDraft = (): TotwDraft => {
   const stored = readJson<Partial<TotwDraft>>(STORAGE_KEY);
   if (isTotwDraft(stored)) {
-    return stored;
+    return { ...stored, showNames: stored.showNames === true };
   }
   const empty = defaultTotwDraft();
   return {
@@ -52,6 +52,7 @@ const loadDraft = (): TotwDraft => {
     week: stored?.week?.trim() ? stored.week : empty.week,
     strips: empty.strips,
     showBa: stored?.showBa === true,
+    showNames: stored?.showNames === true,
   };
 };
 
@@ -69,6 +70,7 @@ export function TeamOfTheWeekComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
+  const [showNames, setShowNames] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -87,6 +89,7 @@ export function TeamOfTheWeekComposerApp() {
     setWeek(draft.week);
     setStrips(draft.strips);
     setShowBa(draft.showBa === true);
+    setShowNames(draft.showNames === true);
     setHydrated(true);
   }, []);
 
@@ -94,8 +97,8 @@ export function TeamOfTheWeekComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, week, strips, showBa });
-  }, [brand, title, week, strips, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, week, strips, showBa, showNames });
+  }, [brand, title, week, strips, showBa, showNames, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -113,7 +116,7 @@ export function TeamOfTheWeekComposerApp() {
       await exportTeamOfTheWeekPng(
         node,
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, showBa },
+        { brand, title, week, strips, look, showBa, showNames },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -132,6 +135,7 @@ export function TeamOfTheWeekComposerApp() {
     setTitle(next.title);
     setWeek(next.week);
     setStrips(next.strips);
+    setShowNames(next.showNames === true);
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -228,6 +232,18 @@ export function TeamOfTheWeekComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Names</span>
+          <button
+            type="button"
+            className={showNames ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showNames}
+            aria-label="Show first and last names"
+            onClick={() => setShowNames((on) => !on)}
+          >
+            {showNames ? "On" : "Off"}
+          </button>
+        </label>
         <div className="sc-toolbar__actions">
           <button
             type="button"
@@ -280,6 +296,7 @@ export function TeamOfTheWeekComposerApp() {
             strips={strips}
             look={look}
             showBa={showBa}
+            showNames={showNames}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
@@ -298,6 +315,9 @@ export function TeamOfTheWeekComposerApp() {
               setStatus(
                 "Photo cropped inside the strip — pinch, scroll, or +/− to scale, drag to pan.",
               );
+            }}
+            onNameChange={(index, names) => {
+              setStrips((current) => patchStrip(current, index, names));
             }}
           />
           <p className="sc-hint">
