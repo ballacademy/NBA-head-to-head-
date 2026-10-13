@@ -380,9 +380,9 @@ main.sc-stage {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: calc(-10 * var(--u));
+  bottom: calc(2 * var(--u));
   width: 42%;
-  height: calc(2.5 * var(--u));
+  height: calc(3.5 * var(--u));
   transform: translateX(-50%);
   background: #b026ff;
   box-shadow: 0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.7);
@@ -390,9 +390,7 @@ main.sc-stage {
 }
 
 .is-purple .tl-label-stack {
-  box-shadow:
-    0 0 0 calc(2 * var(--u)) #b026ff,
-    0 0 calc(12 * var(--u)) rgba(176, 38, 255, 0.4);
+  box-shadow: inset 0 0 0 calc(2.5 * var(--u)) #b026ff;
 }
 
 .is-purple .totw-week-notch,
