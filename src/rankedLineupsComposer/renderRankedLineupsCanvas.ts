@@ -1,6 +1,7 @@
 import {
   clipToInnerFrame,
   frameLinePx,
+  innerFrameRect,
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -14,6 +15,7 @@ import {
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
   FIELD_TEXTURE_SRC,
+  drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
@@ -35,8 +37,12 @@ import {
   RL_POS_H,
   RL_POS_SIZE,
   RL_STRIP_W,
-  RL_TITLE_BLOCK_H,
+  RL_TITLE_BOX_H,
+  RL_TITLE_BOX_X,
   RL_TITLE_GRADIENT,
+  RL_TITLE_LINE,
+  RL_TITLE_PAD_X,
+  RL_TITLE_PAD_Y,
   RL_TITLE_SIZE,
   rankedFooterH,
   rankedHeaderH,
@@ -242,9 +248,6 @@ export const renderRankedLineupsCanvas = async (
   await document.fonts?.ready.catch(() => undefined);
   await Promise.all([
     document.fonts?.load(`900 ${RL_TITLE_SIZE * scale}px ${POSTER_FONT}`),
-    document.fonts?.load(
-      `italic 900 ${RL_TITLE_SIZE * scale}px ${POSTER_FONT}`,
-    ),
   ]).catch(() => undefined);
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
@@ -261,13 +264,35 @@ export const renderRankedLineupsCanvas = async (
     setLetterSpacing(context, 0);
   });
 
+  const plate = {
+    x: RL_TITLE_BOX_X * s,
+    y: RL_BRAND_H * s,
+    w: width - RL_TITLE_BOX_X * 2 * s,
+    h: RL_TITLE_BOX_H * s,
+  };
+  drawBannerInterior(context, plate.x, plate.y, plate.w, plate.h, s, () => {
+    context.beginPath();
+    context.rect(plate.x, plate.y, plate.w, plate.h);
+  });
+  paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+
   const titleLines = splitRankedLineupTitle(input.title);
-  const lineH = RL_TITLE_SIZE * 0.92 * s;
-  let titleY =
-    RL_BRAND_H * s +
-    (RL_TITLE_BLOCK_H * s - lineH * titleLines.length) / 2 +
-    lineH / 2;
-  context.font = `italic 900 ${RL_TITLE_SIZE * s}px ${POSTER_FONT}`;
+  const lineH = RL_TITLE_SIZE * RL_TITLE_LINE * s;
+  const titleInner = innerFrameRect(plate.x, plate.y, plate.w, plate.h, s);
+  const titlePadX = RL_TITLE_PAD_X * s;
+  const titlePadY = RL_TITLE_PAD_Y * s;
+  context.save();
+  context.beginPath();
+  context.rect(
+    titleInner.x + titlePadX,
+    titleInner.y + titlePadY,
+    titleInner.w - titlePadX * 2,
+    titleInner.h - titlePadY * 2,
+  );
+  context.clip();
+  const titleBlock = lineH * titleLines.length;
+  let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
+  context.font = `900 ${RL_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, RANKED_LINEUP_TITLE_TRACK * RL_TITLE_SIZE * s);
@@ -280,15 +305,16 @@ export const renderRankedLineupsCanvas = async (
         titleY,
         titleGradient(context, line, width / 2, titleY),
         "#050505",
-        3.4 * s,
+        1.2 * s,
       );
     });
     titleY += lineH;
   });
   setLetterSpacing(context, 0);
+  context.restore();
 
   const rankDisplay: RankDisplay =
-    input.rankDisplay === "pill" ? "pill" : "headline";
+    input.rankDisplay === "headline" ? "headline" : "pill";
   const rankText = input.rank.trim().toUpperCase() || "BEST";
   if (rankDisplay === "pill") {
     context.font = `900 ${RL_PILL_SIZE * s}px ${POSTER_FONT}`;
@@ -299,7 +325,7 @@ export const renderRankedLineupsCanvas = async (
     );
     const pillH = RL_PILL_H * s;
     const pillX = (width - pillW) / 2;
-    const pillY = (RL_BRAND_H + RL_TITLE_BLOCK_H + RL_PILL_GAP) * s;
+    const pillY = (RL_BRAND_H + RL_TITLE_BOX_H + RL_PILL_GAP) * s;
     roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
     context.fillStyle = "#fff";
     context.fill();
@@ -312,7 +338,7 @@ export const renderRankedLineupsCanvas = async (
     context.fillText(rankText, width / 2, pillY + pillH / 2);
     setLetterSpacing(context, 0);
   } else {
-    const headlineY = (RL_BRAND_H + RL_TITLE_BLOCK_H + 22) * s;
+    const headlineY = (RL_BRAND_H + RL_TITLE_BOX_H + 22) * s;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#fff";

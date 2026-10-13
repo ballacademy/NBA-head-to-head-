@@ -49,7 +49,7 @@
   flex-direction: column;
   align-items: center;
   min-height: 0;
-  padding: 0 calc(16 * var(--u)) calc(10 * var(--u));
+  padding: 0 0 calc(6 * var(--u));
 }
 
 .rl-brand {
@@ -84,11 +84,27 @@
   outline-offset: 3px;
 }
 
+.rl-title-plate {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(100% - 96 * var(--u));
+  flex: 0 0 calc(var(--title-box-h, 115) * var(--u));
+  height: calc(var(--title-box-h, 115) * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(12 * var(--u)) calc(22 * var(--u));
+  border: var(--frame-w) solid var(--frame-color);
+  /* Same studded near-black as the other composers' title boxes. */
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
 .rl-title-block {
   position: relative;
-  width: 96%;
-  flex: 0 0 calc(62 * var(--u));
-  height: calc(62 * var(--u));
+  width: 100%;
   pointer-events: none;
 }
 
@@ -107,16 +123,16 @@
   font-family: var(--ig-poster);
   font-size: calc(38 * var(--u));
   font-weight: 900;
-  font-style: italic;
+  font-style: normal;
   font-synthesis: none;
+  font-stretch: normal;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 0.92;
+  line-height: 1.08;
   -webkit-font-smoothing: antialiased;
-  -webkit-text-stroke: calc(3.4 * var(--u)) #050505;
-  paint-order: stroke fill;
+  text-rendering: geometricPrecision;
   filter: drop-shadow(
-    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.85)
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.78)
   );
 }
 
@@ -138,9 +154,9 @@
   font-family: var(--ig-poster);
   font-size: calc(38 * var(--u));
   font-weight: 900;
-  font-style: italic;
+  font-style: normal;
   letter-spacing: 0.02em;
-  line-height: 0.92;
+  line-height: 1.08;
   text-transform: uppercase;
   white-space: pre;
   pointer-events: auto;

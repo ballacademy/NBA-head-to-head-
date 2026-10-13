@@ -15,6 +15,7 @@ import {
   RL_NAME_H,
   RL_NAME_LOGO,
   RL_POS_H,
+  RL_TITLE_BOX_H,
   rankedFooterH,
   rankedHeaderH,
   type RankDisplay,
@@ -64,7 +65,7 @@ export const RankedLineupsGraphic = forwardRef<
     look = "white",
     showBa = false,
     showFade = false,
-    rankDisplay = "headline",
+    rankDisplay = "pill",
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -126,6 +127,7 @@ export const RankedLineupsGraphic = forwardRef<
         {
           ["--u" as string]: `${unit}px`,
           ["--header-h" as string]: String(rankedHeaderH(rankDisplay)),
+          ["--title-box-h" as string]: String(RL_TITLE_BOX_H),
           ["--footer-h" as string]: String(rankedFooterH(showFade)),
           ["--pos-h" as string]: String(RL_POS_H),
           ["--name-h" as string]: String(showFade ? RL_FADE_NAME_H : RL_NAME_H),
@@ -151,15 +153,17 @@ export const RankedLineupsGraphic = forwardRef<
           aria-label="Brand label"
           onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
         />
-        <div className="rl-title-block">
-          <ComposerTitleField
-            value={title}
-            lines={titleLines}
-            ariaLabel="Ranked lineups title"
-            inputClassName="rl-title-input"
-            lineClassName="rl-title-line"
-            onChange={onTitleChange}
-          />
+        <div className="rl-title-plate">
+          <div className="rl-title-block">
+            <ComposerTitleField
+              value={title}
+              lines={titleLines}
+              ariaLabel="Ranked lineups title"
+              inputClassName="rl-title-input"
+              lineClassName="rl-title-line"
+              onChange={onTitleChange}
+            />
+          </div>
         </div>
         {rankDisplay === "pill" ? (
           <input

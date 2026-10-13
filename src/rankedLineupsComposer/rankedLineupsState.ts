@@ -38,7 +38,7 @@ export const DEFAULT_RANK_PILL = "BEST";
 export const RANK_PILL_MAX = 12;
 export const RANK_HEADLINE_TOTAL = 10;
 export type { RankDisplay };
-export const DEFAULT_RANK_DISPLAY: RankDisplay = "headline";
+export const DEFAULT_RANK_DISPLAY: RankDisplay = "pill";
 
 export const RANK_PILL_PRESETS = [
   "BEST",
@@ -121,7 +121,7 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
 };
 
 export const parseRankDisplay = (value: unknown): RankDisplay =>
-  value === "pill" ? "pill" : DEFAULT_RANK_DISPLAY;
+  value === "headline" ? "headline" : "pill";
 
 export const rankOrdinalNumber = (rank: string) => {
   const upper = rank.trim().toUpperCase() || DEFAULT_RANK_PILL;

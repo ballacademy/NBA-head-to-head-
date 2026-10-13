@@ -1,3 +1,4 @@
+import { FRAME_WIDTH } from "../instagramComposer/composerLook";
 import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
@@ -17,13 +18,21 @@ export const RL_STRIP_GAP = 4;
 export const RL_BRAND_H = 40;
 export const RL_BRAND_SIZE = 24;
 export const RL_TITLE_SIZE = 38;
+export const RL_TITLE_LINE = 1.08;
+export const RL_TITLE_PAD_Y = 12;
+export const RL_TITLE_PAD_X = 22;
+export const RL_TITLE_BOX_X = 48;
 export const RL_TITLE_GRADIENT: Array<[number, string]> = [
   [0, "#2dd4bf"],
   [0.28, "#67e8f9"],
   [0.72, "#e879f9"],
   [1, "#f472b6"],
 ];
-export const RL_TITLE_BLOCK_H = 62;
+/** Tight plate around two Montserrat Black lines + stroke + padding. */
+export const RL_TITLE_BOX_H =
+  FRAME_WIDTH * 2 +
+  RL_TITLE_PAD_Y * 2 +
+  Math.ceil(RL_TITLE_SIZE * RL_TITLE_LINE * 2);
 export const RL_PILL_H = 34;
 export const RL_PILL_SIZE = 18;
 export const RL_PILL_GAP = 8;
@@ -42,15 +51,15 @@ export const RL_FOOTER_PAD = 6;
 
 export type RankDisplay = "headline" | "pill";
 
-export const rankedHeaderH = (display: RankDisplay = "headline") =>
-  display === "pill"
-    ? RL_BRAND_H + RL_TITLE_BLOCK_H + RL_PILL_GAP + RL_PILL_H + RL_HEADER_PAD
-    : RL_BRAND_H + RL_TITLE_BLOCK_H + RL_HEADLINE_H + RL_HEADER_PAD;
+export const rankedHeaderH = (display: RankDisplay = "pill") =>
+  display === "headline"
+    ? RL_BRAND_H + RL_TITLE_BOX_H + RL_HEADLINE_H + RL_HEADER_PAD
+    : RL_BRAND_H + RL_TITLE_BOX_H + RL_PILL_GAP + RL_PILL_H + RL_HEADER_PAD;
 
 export const rankedFooterH = (showFade = false) =>
   (showFade ? RL_POS_H : RL_POS_H + RL_NAME_H) + RL_FOOTER_PAD;
 
-export const RL_HEADER_H = rankedHeaderH("headline");
+export const RL_HEADER_H = rankedHeaderH("pill");
 export const RL_FOOTER_H = rankedFooterH(false);
 export const RL_STRIPS_TOP = RL_HEADER_H;
 export const RL_STRIPS_BOTTOM = GRAPHIC_HEIGHT - RL_FOOTER_H;
@@ -62,11 +71,11 @@ export const RL_STRIP_W =
   RANKED_LINEUP_STRIP_COUNT;
 
 export const rankedStripH = (
-  display: RankDisplay = "headline",
+  display: RankDisplay = "pill",
   showFade = false,
 ) => GRAPHIC_HEIGHT - rankedHeaderH(display) - rankedFooterH(showFade);
 
-export const RL_STRIP_H = rankedStripH("headline", false);
+export const RL_STRIP_H = rankedStripH("pill", false);
 
 export const rlStripX = (index: number) =>
   RL_PAD_X + index * (RL_STRIP_W + RL_STRIP_GAP);
