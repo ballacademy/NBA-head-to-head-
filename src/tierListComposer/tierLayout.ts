@@ -157,6 +157,33 @@ export const cellGridPosition = (index: number) => ({
   wrapRow: Math.floor(index / TIER_WRAP_COLS),
 });
 
+/** Compact add control when a full-size slot would wrap a new editor-only lane. */
+export const ADD_CHIP_COMPACT = 48;
+
+export type AddChipPlacement =
+  | { kind: "slot"; col: number; wrapRow: number }
+  | { kind: "compact"; empty: boolean; wrapRow: number };
+
+/**
+ * Editor + chip. Preview packing uses filled items only — same as the PNG —
+ * so this chip overlays and never creates an extra wrap row.
+ */
+export const addChipPlacement = (
+  itemCount: number,
+  cols: number,
+): AddChipPlacement => {
+  const filled = Math.max(0, itemCount);
+  if (filled === 0) {
+    return { kind: "compact", empty: true, wrapRow: 0 };
+  }
+  const next = cellGridPosition(filled);
+  const lastWrap = Math.floor((filled - 1) / TIER_WRAP_COLS);
+  if (next.wrapRow === lastWrap && next.col < Math.max(1, cols)) {
+    return { kind: "slot", col: next.col, wrapRow: next.wrapRow };
+  }
+  return { kind: "compact", empty: false, wrapRow: lastWrap };
+};
+
 export const baBadgeRect = () => ({
   x: GRAPHIC_WIDTH - TIER_BADGE_INSET - TIER_BADGE_SIZE,
   y: TIER_BADGE_INSET,

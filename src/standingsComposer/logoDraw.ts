@@ -282,6 +282,8 @@ export const drawCenteredLogo = (
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)
       : Math.max(0, options.shadow);
+  // Never shift the mark to “center” the logo+shadow bbox — that pulls
+  // artwork top-left. Opt-in balanceStamp is a standings-era counter only.
   const nudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
   dest.x -= nudge;
   dest.y -= nudge;

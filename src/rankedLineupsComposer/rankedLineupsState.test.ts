@@ -15,6 +15,10 @@ import {
   RL_STRIP_GAP,
   RL_STRIP_H,
   RL_STRIP_W,
+  RL_TITLE_BOX_H,
+  RL_TITLE_LINE,
+  RL_TITLE_PAD_Y,
+  RL_TITLE_SIZE,
   rlStripX,
 } from "./rankedLineupsLayout";
 import { TOTW_STRIP_GAP } from "../teamOfTheWeekComposer/teamOfTheWeekLayout";
@@ -30,6 +34,7 @@ import {
   LINEUP_POSITIONS,
   lineupPosition,
   nextRankPill,
+  parseRankDisplay,
   RANK_PILL_PRESETS,
   RANKED_LINEUP_STRIP_COUNT,
   slidesFromDraft,
@@ -77,6 +82,12 @@ describe("ranked lineups", () => {
     expect(slidesFromDraft(draft)).toHaveLength(1);
     expect(draft.showFade).toBe(false);
     expect(draft.rankDisplay).toBe(DEFAULT_RANK_DISPLAY);
+    expect(DEFAULT_RANK_DISPLAY).toBe("pill");
+    expect(parseRankDisplay(undefined)).toBe("pill");
+    expect(parseRankDisplay("headline")).toBe("headline");
+    expect(RL_TITLE_PAD_Y).toBeGreaterThanOrEqual(10);
+    expect(RL_TITLE_BOX_H).toBeGreaterThan(RL_TITLE_SIZE * RL_TITLE_LINE * 2);
+    expect(RL_HEADER_H).toBe(rankedHeaderH("pill"));
     expect(rankHeadlinePrimary("BEST")).toBe("#1");
     expect(rankHeadlineSecondary("BEST")).toBe("1 OF 10");
     expect(rankHeadlinePrimary("2ND")).toBe("#2");

@@ -22,6 +22,8 @@ import {
   TIER_TITLE_SIZE,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
+  ADD_CHIP_COMPACT,
+  addChipPlacement,
   labelFontSize,
   layoutTierLabel,
   tierBoardLayout,
@@ -299,6 +301,32 @@ describe("tier layout", () => {
     );
     const allEmpty = tierBoardLayout([0, 0, 0, 0, 0, 0]);
     expect(allEmpty.lanes.every((lane) => lane === 1)).toBe(true);
+  });
+
+  it("packs preview from filled cells only so an editor + cannot wrap a new lane", () => {
+    const eight = tierBoardLayout([8, 2, 0, 0, 0, 0]);
+    expect(eight.lanes[0]).toBe(1);
+    expect(eight.cols).toBe(8);
+    expect(addChipPlacement(8, eight.cols).kind).toBe("compact");
+    expect(addChipPlacement(3, eight.cols)).toEqual({
+      kind: "slot",
+      col: 3,
+      wrapRow: 0,
+    });
+    expect(addChipPlacement(0, eight.cols)).toEqual({
+      kind: "compact",
+      empty: true,
+      wrapRow: 0,
+    });
+    const sparse = tierBoardLayout([3, 3, 3, 3, 3, 3]);
+    expect(sparse.cols).toBe(3);
+    expect(addChipPlacement(3, sparse.cols).kind).toBe("compact");
+    expect(addChipPlacement(2, sparse.cols)).toEqual({
+      kind: "slot",
+      col: 2,
+      wrapRow: 0,
+    });
+    expect(ADD_CHIP_COMPACT).toBe(48);
   });
 });
 
