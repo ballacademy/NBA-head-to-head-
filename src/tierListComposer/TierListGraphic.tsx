@@ -13,6 +13,8 @@ import {
   baBadgeRect,
   GRAPHIC_WIDTH,
   layoutTierLabel,
+  ADD_CHIP_COMPACT,
+  addChipPlacement,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
@@ -152,6 +154,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             ["--label-w" as string]: String(TIER_LABEL_W),
             ["--header-h" as string]: String(TIER_HEADER_H),
             ["--footer-h" as string]: String(TIER_FOOTER),
+            ["--add-compact" as string]: String(ADD_CHIP_COMPACT),
           } as React.CSSProperties
         }
         aria-label="Instagram NBA tier list graphic"
@@ -205,6 +208,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             const labelLayout = labelLayouts[rowIndex]!;
             const color = parseTierColor(row.color);
             const tinted = !isDefaultTierColor(color);
+            const addChip = addChipPlacement(row.teams.length, layout.cols);
             return (
               <div
                 key={row.id}
@@ -359,7 +363,6 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             <TeamLogo
                               src={team.logoSrc}
                               label={team.id}
-                              balanceStamp
                             />
                           </div>
                         ) : null}
@@ -397,6 +400,13 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       className={[
                         "tl-cell",
                         "tl-cell--add",
+                        addChip.kind === "slot" ? "is-slot" : "is-compact",
+                        addChip.kind === "compact" && addChip.empty
+                          ? "is-empty-chip"
+                          : "",
+                        addChip.kind === "compact" && !addChip.empty
+                          ? "is-end-chip"
+                          : "",
                         active?.rowIndex === rowIndex && !active.replaceId
                           ? "is-active"
                           : "",
@@ -404,6 +414,14 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       ]
                         .filter(Boolean)
                         .join(" ")}
+                      style={
+                        addChip.kind === "slot"
+                          ? ({
+                              gridColumn: addChip.col + 1,
+                              gridRow: addChip.wrapRow + 1,
+                            } as React.CSSProperties)
+                          : undefined
+                      }
                       onClick={() => onSelectAdd(rowIndex)}
                       aria-label={`Add ${subject === "players" ? "player" : "team"} to ${row.label} tier`}
                     >

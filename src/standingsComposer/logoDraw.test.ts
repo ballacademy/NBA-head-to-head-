@@ -190,6 +190,9 @@ describe("fittedLogoRect", () => {
       148,
     );
     expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+    const shadow = logoShadowPx(148, 148);
+    expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+    expect(dest.x - stampBalanceOffset(shadow)).toBeLessThan(dest.x);
   });
 
   it("balances the down-right stamp by half the shadow length", () => {
