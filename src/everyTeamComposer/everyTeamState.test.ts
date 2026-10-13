@@ -17,6 +17,7 @@ import {
   normalizeRankedOrder,
   slotIndexForTeam,
   splitEveryTeamTitle,
+  insertRankedOrder,
   swapRankedOrder,
   teamAtSlot,
   usedEveryTeamLabels,
@@ -151,5 +152,14 @@ describe("every-team order and slots", () => {
     expect(nextEmptyEveryTeamSlot(empty, 0, true, swapped)).toBe(1);
     expect(slotIndexForTeam("NYK")).toBe(19);
     expect(swapRankedOrder(order, 3, 3)).toEqual(order);
+    const up = insertRankedOrder(order, 7, 2);
+    expect(up[2]).toBe(order[7]);
+    expect(up[3]).toBe(order[2]);
+    expect(up[7]).toBe(order[6]);
+    expect(up[8]).toBe(order[8]);
+    const down = insertRankedOrder(order, 2, 7);
+    expect(down[7]).toBe(order[2]);
+    expect(down[2]).toBe(order[3]);
+    expect(insertRankedOrder(order, 4, 4)).toEqual(order);
   });
 });

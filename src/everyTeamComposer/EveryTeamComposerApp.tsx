@@ -36,8 +36,8 @@ import {
   isEveryTeamDraft,
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
+  insertRankedOrder,
   slotIndexForTeam,
-  swapRankedOrder,
   teamAtSlot,
   usedEveryTeamLabels,
   type EveryTeamSlots,
@@ -340,7 +340,7 @@ export function EveryTeamComposerApp() {
               push({ slots, rankedOrder });
               setSlots((current) => clearEveryTeamTeam(current, team.id));
             }}
-            onSwapSlots={
+            onMoveSlots={
               ranked
                 ? (fromIndex, toIndex) => {
                     if (fromIndex === toIndex) {
@@ -348,20 +348,21 @@ export function EveryTeamComposerApp() {
                     }
                     push({ slots, rankedOrder });
                     setRankedOrder((current) =>
-                      swapRankedOrder(current, fromIndex, toIndex),
+                      insertRankedOrder(current, fromIndex, toIndex),
                     );
                     setActiveIndex(null);
-                    setStatus("Swapped ranked teams. Numbers stay on the rank.");
+                    setStatus(
+                      "Moved the team to that rank. Numbers stay put; the rest shift.",
+                    );
                   }
                 : undefined
             }
           />
           <p className="sc-hint">
             Each square is a fixed NBA team. Unranked is A–Z by city with no
-            numbers. Ranked shows 1–30; drag a cell onto another to swap —
-            the number stays with the rank, the logo and player move together.
-            Click a square to pick a player from that roster. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            numbers. Ranked shows 1–30; drag the number to insert a team at a
+            new rank — everyone between shifts. Click a square to pick a player
+            from that roster. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

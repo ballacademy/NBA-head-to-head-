@@ -151,6 +151,28 @@ export const swapRankedOrder = (
   return next;
 };
 
+/** Move a team to a rank; everyone between that slot and the origin shifts. */
+export const insertRankedOrder = (
+  rankedOrder: string[],
+  fromIndex: number,
+  toIndex: number,
+): string[] => {
+  const order = normalizeRankedOrder(rankedOrder);
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= order.length ||
+    toIndex >= order.length
+  ) {
+    return order;
+  }
+  const next = order.slice();
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved!);
+  return next;
+};
+
 export const isEveryTeamDraft = (value: unknown): value is EveryTeamDraft =>
   Boolean(
     value &&

@@ -42,7 +42,7 @@ interface EveryTeamGraphicProps {
   onTitleChange: (value: string) => void;
   onSelectSlot: (index: number) => void;
   onClearSlot: (index: number) => void;
-  onSwapSlots?: (fromIndex: number, toIndex: number) => void;
+  onMoveSlots?: (fromIndex: number, toIndex: number) => void;
 }
 
 const bannerRectPath = () => {
@@ -86,7 +86,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       onTitleChange,
       onSelectSlot,
       onClearSlot,
-      onSwapSlots,
+      onMoveSlots,
     },
     ref,
   ) {
@@ -97,13 +97,12 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       y: number;
       moved: boolean;
     } | null>(null);
-    const skipClickRef = useRef(false);
     const [unit, setUnit] = useState(0.4);
     const [dropIndex, setDropIndex] = useState<number | null>(null);
     const titleLines = splitEveryTeamTitle(title);
     const grid = everyTeamGrid(1);
     const teams = displayedTeams(ranked, rankedOrder);
-    const dragEnabled = ranked && !exporting && Boolean(onSwapSlots);
+    const dragEnabled = ranked && !exporting && Boolean(onMoveSlots);
 
     const cellIndexFromPoint = (x: number, y: number) => {
       const node = document.elementFromPoint(x, y);
@@ -234,6 +233,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
               <div
                 key={team.id}
                 data-index={index}
+                data-team={team.id}
                 className={[
                   "et-cell",
                   shown ? "et-cell--filled" : "",
@@ -249,72 +249,11 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                     ["--cell-to" as string]: team.cellTo,
                   } as React.CSSProperties
                 }
-                onPointerDown={(event) => {
-                  if (
-                    !dragEnabled ||
-                    event.button !== 0 ||
-                    (event.target instanceof Element &&
-                      event.target.closest(".et-cell__clear"))
-                  ) {
-                    return;
-                  }
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  dragRef.current = {
-                    from: index,
-                    x: event.clientX,
-                    y: event.clientY,
-                    moved: false,
-                  };
-                }}
-                onPointerMove={(event) => {
-                  const drag = dragRef.current;
-                  if (!drag || drag.from !== index) {
-                    return;
-                  }
-                  if (
-                    !drag.moved &&
-                    Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 8
-                  ) {
-                    drag.moved = true;
-                  }
-                  if (drag.moved) {
-                    setDropIndex(cellIndexFromPoint(event.clientX, event.clientY));
-                  }
-                }}
-                onPointerUp={(event) => {
-                  const drag = dragRef.current;
-                  dragRef.current = null;
-                  setDropIndex(null);
-                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                    event.currentTarget.releasePointerCapture(event.pointerId);
-                  }
-                  if (!drag?.moved || !onSwapSlots) {
-                    return;
-                  }
-                  skipClickRef.current = true;
-                  window.setTimeout(() => {
-                    skipClickRef.current = false;
-                  }, 0);
-                  const toIndex = cellIndexFromPoint(event.clientX, event.clientY);
-                  if (toIndex != null && toIndex !== drag.from) {
-                    onSwapSlots(drag.from, toIndex);
-                  }
-                }}
-                onPointerCancel={() => {
-                  dragRef.current = null;
-                  setDropIndex(null);
-                }}
               >
                 <button
                   type="button"
                   className="et-cell__hit"
-                  onClick={() => {
-                    if (skipClickRef.current) {
-                      skipClickRef.current = false;
-                      return;
-                    }
-                    onSelectSlot(index);
-                  }}
+                  onClick={() => onSelectSlot(index)}
                   aria-label={
                     ranked
                       ? shown
@@ -342,9 +281,73 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   />
                 ) : null}
                 {ranked ? (
-                  <span className="et-cell__rank" aria-hidden="true">
-                    {rank}
-                  </span>
+                  dragEnabled ? (
+                    <button
+                      type="button"
+                      className="et-cell__rank et-cell__drag"
+                      aria-label={`Drag to set rank ${rank}`}
+                      onPointerDown={(event) => {
+                        if (event.button !== 0) {
+                          return;
+                        }
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                        dragRef.current = {
+                          from: index,
+                          x: event.clientX,
+                          y: event.clientY,
+                          moved: false,
+                        };
+                      }}
+                      onPointerMove={(event) => {
+                        const drag = dragRef.current;
+                        if (!drag || drag.from !== index) {
+                          return;
+                        }
+                        if (
+                          !drag.moved &&
+                          Math.hypot(event.clientX - drag.x, event.clientY - drag.y) >
+                            8
+                        ) {
+                          drag.moved = true;
+                        }
+                        if (drag.moved) {
+                          setDropIndex(
+                            cellIndexFromPoint(event.clientX, event.clientY),
+                          );
+                        }
+                      }}
+                      onPointerUp={(event) => {
+                        const drag = dragRef.current;
+                        dragRef.current = null;
+                        setDropIndex(null);
+                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                          event.currentTarget.releasePointerCapture(event.pointerId);
+                        }
+                        if (!drag?.moved || !onMoveSlots) {
+                          return;
+                        }
+                        const toIndex = cellIndexFromPoint(
+                          event.clientX,
+                          event.clientY,
+                        );
+                        if (toIndex != null && toIndex !== drag.from) {
+                          onMoveSlots(drag.from, toIndex);
+                        }
+                      }}
+                      onPointerCancel={() => {
+                        dragRef.current = null;
+                        setDropIndex(null);
+                      }}
+                    >
+                      {rank}
+                    </button>
+                  ) : (
+                    <span className="et-cell__rank" aria-hidden="true">
+                      {rank}
+                    </span>
+                  )
                 ) : null}
                 {showNames && shown && names ? (
                   <span className="et-cell__name">
