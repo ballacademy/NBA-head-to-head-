@@ -34,6 +34,13 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "potd-leaderboard", label: "Leaderboard" },
     ],
   },
+  {
+    label: "Posts",
+    tabs: [
+      { mode: "pyramid", label: "Pyramid" },
+      { mode: "headline", label: "Headline" },
+    ],
+  },
 ];
 
 export function ComposerTabs({

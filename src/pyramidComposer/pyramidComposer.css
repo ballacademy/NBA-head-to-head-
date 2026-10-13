@@ -1,0 +1,135 @@
+/* Instagram pyramid — 4:5 1–2–3–4 photo stack. */
+
+.pyr-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --pyr-cell: 270;
+  --pyr-gap: 16;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: grid;
+  grid-template-rows: calc(120 * var(--u)) minmax(0, 1fr);
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pyr-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.pyr-header,
+.pyr-rows {
+  position: relative;
+  z-index: 1;
+}
+
+.pyr-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: calc(22 * var(--u)) calc(48 * var(--u)) 0;
+}
+
+.pyr-title {
+  margin: 0;
+  width: 88%;
+  height: calc(72 * var(--u));
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(54 * var(--u));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.pyr-title:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.pyr-rows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--pyr-gap) * var(--u));
+  padding: calc(4 * var(--u)) calc(36 * var(--u)) calc(40 * var(--u));
+  min-height: 0;
+}
+
+.pyr-row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), calc(var(--pyr-cell) * var(--u)));
+  gap: calc(var(--pyr-gap) * var(--u));
+  height: calc(var(--pyr-cell) * var(--u));
+}
+
+.pyr-cell {
+  position: relative;
+  width: calc(var(--pyr-cell) * var(--u));
+  height: calc(var(--pyr-cell) * var(--u));
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #111;
+}
+
+.pyr-cell .pod-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.pyr-cell .pod-photo__surface {
+  z-index: 1;
+}
+
+.pyr-cell .pod-photo__pick {
+  font-size: calc(15 * var(--u));
+  letter-spacing: 0.06em;
+  padding: 0 calc(8 * var(--u));
+}
+
+.pyr-cell .pod-photo__tools {
+  left: calc(6 * var(--u));
+  right: calc(6 * var(--u));
+  bottom: calc(8 * var(--u));
+  gap: calc(4 * var(--u));
+}
+
+.pyr-cell .pod-photo__tool {
+  height: calc(22 * var(--u));
+  font-size: calc(9 * var(--u));
+}
+
+.pyr-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.pyr-board .composer-ba {
+  z-index: 4;
+}

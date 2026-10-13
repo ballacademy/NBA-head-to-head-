@@ -6,7 +6,9 @@ export type ComposerMode =
   | "potd-leaderboard"
   | "team-of-the-week"
   | "team-of-the-week-plus"
-  | "ranked-lineups";
+  | "ranked-lineups"
+  | "pyramid"
+  | "headline";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -72,6 +74,10 @@ const RANKED_LINEUPS_QUERY = new Set([
   "ranked-lineup",
   "lineups",
 ]);
+const PYRAMID_PATHS = new Set(["/pyramid", "/coy-pyramid"]);
+const PYRAMID_QUERY = new Set(["pyramid", "coy-pyramid"]);
+const HEADLINE_PATHS = new Set(["/headline", "/hot-take", "/hottake"]);
+const HEADLINE_QUERY = new Set(["headline", "hot-take", "hottake"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -180,10 +186,46 @@ export const isRankedLineupsQuery = (search: string) => {
   }
 };
 
+export const isPyramidPath = (pathname: string) =>
+  PYRAMID_PATHS.has(normalizePath(pathname));
+
+export const isPyramidQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return PYRAMID_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
+export const isHeadlinePath = (pathname: string) =>
+  HEADLINE_PATHS.has(normalizePath(pathname));
+
+export const isHeadlineQuery = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    const token = params.get("composer")?.trim().toLowerCase() ?? "";
+    return HEADLINE_QUERY.has(token);
+  } catch {
+    return false;
+  }
+};
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isHeadlinePath(pathname)) {
+    return "headline";
+  }
+  if (isPyramidPath(pathname)) {
+    return "pyramid";
+  }
   if (isRankedLineupsPath(pathname)) {
     return "ranked-lineups";
   }
@@ -204,6 +246,12 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isHeadlineQuery(search)) {
+    return "headline";
+  }
+  if (isPyramidQuery(search)) {
+    return "pyramid";
   }
   if (isRankedLineupsQuery(search)) {
     return "ranked-lineups";
@@ -250,6 +298,12 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "ranked-lineups") {
     return "/ranked-lineups";
+  }
+  if (mode === "pyramid") {
+    return "/pyramid";
+  }
+  if (mode === "headline") {
+    return "/headline";
   }
   return "/";
 };
