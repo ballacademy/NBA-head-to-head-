@@ -1,5 +1,5 @@
 import { drawCoveredLogo } from "../standingsComposer/logoDraw";
-import { wrapNameToWidth } from "./nameFit";
+import { abbreviateOverflowName } from "./nameFit";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
@@ -69,30 +69,21 @@ export const drawNameStack = (
 
   context.font = `900 ${familySize}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * familySize);
-  const familyLines = wrapNameToWidth(family, maxWidth, measure, 2);
+  const familyLine = abbreviateOverflowName(family, maxWidth, measure);
   let cursor = bottom;
-  [...familyLines].reverse().forEach((line) => {
-    let size = familySize;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
-    while (size > familySize * 0.72 && measure(line) > maxWidth) {
-      size -= 0.5 * scale;
-      context.font = `900 ${size}px ${POSTER_FONT}`;
-    }
-    paintLine(line, cursor);
-    cursor -= size * 1.02;
-  });
+  if (familyLine) {
+    paintLine(familyLine, cursor);
+    cursor -= familySize * 1.02;
+  }
   setLetterSpacing(context, 0);
 
-  const givenLine = given.trim().toUpperCase();
-  if (givenLine) {
-    let size = givenSize;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.08 * size);
-    while (size > givenSize * 0.72 && measure(givenLine) > maxWidth) {
-      size -= 0.5 * scale;
-      context.font = `900 ${size}px ${POSTER_FONT}`;
+  if (given.trim()) {
+    context.font = `900 ${givenSize}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.08 * givenSize);
+    const givenLine = abbreviateOverflowName(given, maxWidth, measure);
+    if (givenLine) {
+      paintLine(givenLine, cursor);
     }
-    paintLine(givenLine, cursor);
     setLetterSpacing(context, 0);
   }
 

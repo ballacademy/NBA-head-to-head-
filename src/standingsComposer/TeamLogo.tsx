@@ -12,6 +12,8 @@ interface TeamLogoProps {
   balanceStamp?: boolean;
   /** Scale trimmed artwork to cover the parent box and clip overflow. */
   cover?: boolean;
+  /** Team-tier cells: 2–3% left after optical center. */
+  nudgeLeft?: boolean;
 }
 
 export function TeamLogo({
@@ -24,6 +26,7 @@ export function TeamLogo({
   glow = false,
   balanceStamp = false,
   cover = false,
+  nudgeLeft = false,
 }: TeamLogoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -74,6 +77,7 @@ export function TeamLogo({
         fitY,
         glow,
         balanceStamp,
+        nudgeLeft,
       });
     };
 
@@ -98,7 +102,7 @@ export function TeamLogo({
       cancelled = true;
       observer?.disconnect();
     };
-  }, [src, shadow, fitX, fitY, glow, balanceStamp, cover]);
+  }, [src, shadow, fitX, fitY, glow, balanceStamp, cover, nudgeLeft]);
 
   return (
     <canvas

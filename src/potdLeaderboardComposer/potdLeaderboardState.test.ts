@@ -124,7 +124,7 @@ describe("POTD leaderboard ranks", () => {
     expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);
   });
 
-  it("fills leftover list height with blank hairline rows instead of scaling type", () => {
+  it("keeps real names and at most two blank hairlines, never a dummy spreadsheet", () => {
     const five = rankLeaderboard([
       entry("Luka Doncic", 12),
       entry("Nikola Jokic", 11),
@@ -133,10 +133,12 @@ describe("POTD leaderboard ranks", () => {
       entry("LeBron James", 5),
     ]);
     const blanks = leaderboardBlankCount(five);
-    expect(blanks).toBeGreaterThan(8);
+    expect(blanks).toBeGreaterThanOrEqual(0);
+    expect(blanks).toBeLessThanOrEqual(2);
     expect(PLB_ROW_H).toBe(52);
-    expect(five.length + blanks).toBeGreaterThan(15);
-    expect(leaderboardBlankCount([])).toBeGreaterThan(blanks);
+    expect(five.length + blanks).toBeLessThanOrEqual(7);
+    expect(leaderboardBlankCount([])).toBe(2);
+    expect(leaderboardBlankCount([])).toBeLessThanOrEqual(2);
   });
 
   it("defaults team pips on and stores the toggle", () => {

@@ -19,7 +19,11 @@ export const ET_BORDER = 4;
 export const ET_TITLE_SIZE = 54;
 export const ET_TITLE_TRACK = 0.02;
 export const ET_LOGO_FIT = 0.94;
-export const ET_RANK_SIZE = 34;
+/** Small corner badge so 1–30 do not fight the face. */
+export const ET_RANK_SIZE = 15;
+export const ET_RANK_BADGE_H = 26;
+export const ET_RANK_BADGE_PAD_X = 8;
+export const ET_RANK_BADGE_INSET = 8;
 
 export interface EveryTeamGridMetrics {
   headerH: number;

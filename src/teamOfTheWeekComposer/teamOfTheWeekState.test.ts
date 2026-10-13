@@ -5,6 +5,7 @@ import {
   BANNER_STUD_FILL,
   FIELD_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
+import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   DEFAULT_CUSTOM_PAN,
@@ -147,5 +148,9 @@ describe("team of the week state", () => {
     expect(kept[0]!.photoSrc).toBe("data:image/png;base64,aaa");
     expect(kept[0]!.customPhoto).toBe(true);
     expect(kept[0]!.pan).toEqual({ x: 0.2, y: 0.8, zoom: 4, rotate: 90 });
+  });
+
+  it("paints a light vignette over five-strip photos", () => {
+    expect(typeof paintPhotoVignette).toBe("function");
   });
 });

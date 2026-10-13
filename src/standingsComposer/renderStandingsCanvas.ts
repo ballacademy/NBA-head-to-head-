@@ -352,11 +352,13 @@ export const renderStandingsCanvas = async (
     }
     paintCellFrame(context, x, y, cellW, cellH, input.look, scale);
 
+    const rankX = x + cellW * 0.036;
+    const rankY = y + cellH * 0.024;
     drawLongShadowText(
       context,
       String(index + 1),
-      x + cellW * 0.036,
-      y + cellH * 0.024,
+      rankX,
+      rankY,
       `900 ${48 * scale}px ${POSTER_FONT}`,
       8 * scale,
     );
@@ -382,11 +384,11 @@ export const renderStandingsCanvas = async (
         ? formatStandingRecord(team ? input.records?.[team.id] : null)
         : null;
     if (recordLabel) {
-      context.font = `900 ${22 * scale}px ${POSTER_FONT}`;
-      context.textAlign = "center";
-      context.textBaseline = "bottom";
+      context.font = `900 ${16 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
       context.fillStyle = "#fff";
-      context.fillText(recordLabel, x + cellW / 2, y + cellH * 0.94);
+      context.fillText(recordLabel, rankX, rankY + 48 * scale + 4 * scale);
     }
   }
 

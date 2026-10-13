@@ -39,8 +39,8 @@ import {
   tierBoardLayout,
 } from "./tierLayout";
 import {
-  isDefaultTierColor,
-  parseTierColor,
+  inkOnTierColor,
+  resolvedTierColor,
   splitTeamCellName,
   splitTierTitle,
   type TierRow,
@@ -238,17 +238,10 @@ export const renderTierListCanvas = async (
     const laneCount = layout.lanes[rowIndex] ?? 1;
     const y = tierTop * scale;
     const h = laneCount * layout.laneH * scale;
-    const color = parseTierColor(row.color);
-    if (!isDefaultTierColor(color)) {
-      context.strokeStyle = color;
-      context.lineWidth = Math.max(1, 2 * scale);
-      context.strokeRect(
-        context.lineWidth / 2,
-        y + context.lineWidth / 2,
-        TIER_LABEL_W * scale - context.lineWidth,
-        h - context.lineWidth,
-      );
-    }
+    const color = resolvedTierColor(row.label, row.color, rowIndex);
+    const ink = inkOnTierColor(color);
+    context.fillStyle = color;
+    context.fillRect(0, y, TIER_LABEL_W * scale, h);
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
     context.fillRect(0, y, width, Math.max(1, 1.5 * scale));
 
@@ -267,7 +260,7 @@ export const renderTierListCanvas = async (
           labelTop + lineIndex * labelLineH,
           `900 ${fontPx}px ${POSTER_FONT}`,
           TIER_LABEL_TRACK * fontPx,
-          color,
+          ink,
         );
       });
     });
@@ -328,6 +321,7 @@ export const renderTierListCanvas = async (
       } else if (art?.mark && team) {
         drawCenteredLogo(context, art.mark, inner.x, inner.y, inner.w, inner.h, {
           cacheKey: team.logoSrc,
+          nudgeLeft: true,
         });
       }
       context.restore();

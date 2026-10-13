@@ -5,6 +5,7 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
+import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
   FIELD_TEXTURE_SRC,
@@ -148,6 +149,7 @@ const drawStripPhoto = async (
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
+      paintPhotoVignette(context, inner.x, inner.y, inner.w, inner.h);
     }
   }
   context.restore();

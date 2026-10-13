@@ -45,9 +45,12 @@ import {
   removeTeamFromRow,
   replaceTeamInRow,
   DEFAULT_TIER_COLOR,
+  DEFAULT_TIER_PALETTE,
   hexToRgba,
+  inkOnTierColor,
   isDefaultTierColor,
   parseTierColor,
+  resolvedTierColor,
   setTierColor,
   setTierLabel,
   splitTeamCellName,
@@ -328,20 +331,38 @@ describe("tier layout", () => {
     });
     expect(ADD_CHIP_COMPACT).toBe(48);
   });
+
+  it("keeps empty plus chips off the packed board used by the PNG", () => {
+    const packed = tierBoardLayout([8, 2, 0, 0, 0, 0]);
+    expect(packed.lanes[0]).toBe(1);
+    expect(addChipPlacement(8, packed.cols).kind).toBe("compact");
+    expect(addChipPlacement(0, packed.cols).kind).toBe("compact");
+    expect(tierBoardLayout([8, 2, 0, 0, 0, 0]).cols).toBe(8);
+  });
 });
 
 describe("tier colors", () => {
-  it("defaults to white and stores a picked hex", () => {
+  it("fills the label column from a gold-to-blue palette, not an outline ring", () => {
     expect(parseTierColor(undefined)).toBe(DEFAULT_TIER_COLOR);
     expect(parseTierColor("#F90")).toBe("#ff9900");
     expect(parseTierColor("nope")).toBe(DEFAULT_TIER_COLOR);
     expect(isDefaultTierColor("#FFFFFF")).toBe(true);
     expect(hexToRgba("#ff0000", 0.5)).toBe("rgba(255, 0, 0, 0.5)");
-    const gold = setTierColor(createDefaultRows(), 0, "#E2B007");
-    expect(gold[0]!.color).toBe("#e2b007");
-    expect(setTierColor(gold, 0, "#fff")[0]!.color).toBeUndefined();
-    expect(createDefaultRows().every((row) => row.color === undefined)).toBe(
-      true,
-    );
+    const rows = createDefaultRows();
+    expect(rows.map((row) => row.color)).toEqual([
+      DEFAULT_TIER_PALETTE.S,
+      DEFAULT_TIER_PALETTE.A,
+      DEFAULT_TIER_PALETTE.B,
+      DEFAULT_TIER_PALETTE.C,
+      DEFAULT_TIER_PALETTE.D,
+      DEFAULT_TIER_PALETTE.F,
+    ]);
+    expect(resolvedTierColor("S", undefined, 0)).toBe(DEFAULT_TIER_PALETTE.S);
+    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.S!)).toBe("#111111");
+    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.A!)).toBe("#ffffff");
+    const custom = setTierColor(rows, 0, "#E2B007");
+    expect(custom[0]!.color).toBe("#e2b007");
+    expect(setTierColor(custom, 0, "#fff")[0]!.color).toBeUndefined();
+    expect(resolvedTierColor("S", undefined, 0)).toBe(DEFAULT_TIER_PALETTE.S);
   });
 });

@@ -46,7 +46,12 @@ import {
   FIELD_TEXTURE_SRC,
   HEADER_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
-import { everyTeamCellRect, everyTeamGrid } from "./everyTeamLayout";
+import {
+  ET_RANK_BADGE_H,
+  ET_RANK_SIZE,
+  everyTeamCellRect,
+  everyTeamGrid,
+} from "./everyTeamLayout";
 
 const EXPECTED_CITIES = [
   "Atlanta",
@@ -131,6 +136,8 @@ describe("every-team order and slots", () => {
     const grid = everyTeamGrid(1);
     expect(grid.cols * grid.rows).toBe(30);
     expect(grid.cell).toBeGreaterThan(160);
+    expect(ET_RANK_SIZE).toBeLessThan(22);
+    expect(ET_RANK_BADGE_H).toBeLessThan(grid.cell * 0.22);
     const first = everyTeamCellRect(0, grid);
     const second = everyTeamCellRect(1, grid);
     const sixth = everyTeamCellRect(5, grid);

@@ -23,6 +23,7 @@ interface PhotoFrameProps {
   custom: boolean;
   empty: boolean;
   zoomStep?: number;
+  vignette?: boolean;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -91,6 +92,7 @@ export function PhotoFrame({
   custom,
   empty: _empty,
   zoomStep = 0.25,
+  vignette = false,
   onPan,
   onUpload,
   onPick,
@@ -227,7 +229,12 @@ export function PhotoFrame({
   return (
     <div
       ref={rootRef}
-      className={["pod-photo", filled ? "" : "is-empty", custom ? "is-custom" : ""]
+      className={[
+        "pod-photo",
+        filled ? "" : "is-empty",
+        custom ? "is-custom" : "",
+        vignette ? "is-vignette" : "",
+      ]
         .filter(Boolean)
         .join(" ")}
       onPointerDown={(event) => {
@@ -300,6 +307,9 @@ export function PhotoFrame({
               transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
             }}
           />
+          {vignette ? (
+            <div className="pod-photo__vignette" aria-hidden="true" />
+          ) : null}
         </div>
       ) : (
         <button type="button" className="pod-photo__pick" onClick={onPick}>

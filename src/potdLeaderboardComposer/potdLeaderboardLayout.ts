@@ -53,7 +53,11 @@ export const leaderboardListInnerH = () =>
 export const leaderboardRowH = (wrap: boolean) =>
   wrap ? PLB_WRAP_ROW_H : PLB_ROW_H;
 
-/** Blank hairline rows that fill leftover list height. Font size stays put. */
+/** At most two dummy hairlines — never a 15-row empty spreadsheet. */
+export const LEADERBOARD_MAX_BLANKS = 2;
+export const LEADERBOARD_EMPTY_BLANKS = 2;
+
+/** Blank hairline rows after real names. Cap at 1–2; empty board gets two. */
 export const leaderboardBlankCount = (
   rows: Array<{ displayLines: string[] }>,
 ) => {
@@ -61,5 +65,12 @@ export const leaderboardBlankCount = (
     (sum, row) => sum + leaderboardRowH(row.displayLines.length > 1),
     0,
   );
-  return Math.max(0, Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H));
+  const leftover = Math.max(
+    0,
+    Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H),
+  );
+  if (rows.length === 0) {
+    return Math.min(LEADERBOARD_MAX_BLANKS, Math.max(LEADERBOARD_EMPTY_BLANKS, leftover));
+  }
+  return Math.min(LEADERBOARD_MAX_BLANKS, leftover);
 };

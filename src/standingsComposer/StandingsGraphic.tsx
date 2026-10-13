@@ -292,18 +292,20 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                     : `Rank ${rank}, empty. Pick a team`
                 }
               >
-                <span className="ig-slot__rank">{rank}</span>
+                <span className="ig-slot__meta">
+                  <span className="ig-slot__rank">{rank}</span>
+                  {recordLabel ? (
+                    <span className="ig-slot__record" aria-label={`${team?.name} record ${recordLabel}`}>
+                      {recordLabel}
+                    </span>
+                  ) : null}
+                </span>
                 {mark ? (
                   <span
                     className={`ig-slot__delta is-${mark.kind}`}
                     aria-label={mark.label}
                   >
                     {mark.text}
-                  </span>
-                ) : null}
-                {recordLabel ? (
-                  <span className="ig-slot__record" aria-label={`${team?.name} record ${recordLabel}`}>
-                    {recordLabel}
                   </span>
                 ) : null}
                 {team ? (

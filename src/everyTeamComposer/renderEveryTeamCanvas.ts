@@ -32,6 +32,9 @@ import {
   teamLogoSrc,
 } from "./historicalRosters";
 import {
+  ET_RANK_BADGE_H,
+  ET_RANK_BADGE_INSET,
+  ET_RANK_BADGE_PAD_X,
   ET_RANK_SIZE,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
@@ -305,23 +308,32 @@ export const renderEveryTeamCanvas = async (
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
     if (ranked) {
-      const rankX = x + size * 0.06;
-      const rankY = y + size * 0.045;
       const rankLabel = String(index + 1);
       context.save();
       context.font = `900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`;
-      context.textAlign = "left";
-      context.textBaseline = "top";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      const textW = context.measureText(rankLabel).width;
+      const badgeH = ET_RANK_BADGE_H * scale;
+      const badgeW = Math.max(badgeH, textW + ET_RANK_BADGE_PAD_X * 2 * scale);
+      const badgeX = x + ET_RANK_BADGE_INSET * scale;
+      const badgeY = y + ET_RANK_BADGE_INSET * scale;
+      const radius = badgeH / 2;
+      context.beginPath();
+      context.moveTo(badgeX + radius, badgeY);
+      context.arcTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + badgeH, radius);
+      context.arcTo(badgeX + badgeW, badgeY + badgeH, badgeX, badgeY + badgeH, radius);
+      context.arcTo(badgeX, badgeY + badgeH, badgeX, badgeY, radius);
+      context.arcTo(badgeX, badgeY, badgeX + badgeW, badgeY, radius);
+      context.closePath();
+      context.fillStyle = "rgba(0, 0, 0, 0.62)";
+      context.fill();
       context.fillStyle = "#fff";
+      context.shadowColor = "rgba(0, 0, 0, 0.7)";
+      context.shadowOffsetX = Math.round(0.8 * scale);
+      context.shadowOffsetY = Math.round(0.9 * scale);
       context.shadowBlur = 0;
-      context.shadowColor = "rgba(0, 0, 0, 0.5)";
-      context.shadowOffsetX = Math.round(1.9 * scale);
-      context.shadowOffsetY = Math.round(2.1 * scale);
-      context.fillText(rankLabel, rankX, rankY);
-      context.shadowColor = "rgba(0, 0, 0, 0.88)";
-      context.shadowOffsetX = Math.round(1 * scale);
-      context.shadowOffsetY = Math.round(1.1 * scale);
-      context.fillText(rankLabel, rankX, rankY);
+      context.fillText(rankLabel, badgeX + badgeW / 2, badgeY + badgeH / 2);
       context.restore();
     }
     if (cell.missing) {

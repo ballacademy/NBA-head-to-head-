@@ -202,6 +202,7 @@ export const RankedLineupsGraphic = forwardRef<
                 pan={strip.pan}
                 custom={strip.customPhoto}
                 empty={empty}
+                vignette
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onPick={() => onPick(index)}

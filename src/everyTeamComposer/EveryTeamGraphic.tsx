@@ -19,6 +19,7 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
+import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
   ET_CELL_GAP,
@@ -330,6 +331,15 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             const missing = isMissingSeason(team.id, cellSeason);
             const shown = getRosterPlayer(team.id, cellSeason, stored);
             const names = shown ? splitPlayerName(shown.name) : null;
+            const caption = names
+              ? fittedCellNames(
+                  names.firstName,
+                  names.lastName || shown!.name,
+                  grid.cell * 0.84,
+                  14,
+                  11,
+                )
+              : null;
             const rank = index + 1;
             const overridden = Boolean(cellSeasons?.[team.id]);
             const showYear =
@@ -421,14 +431,12 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 {exporting || !noStats ? null : (
                   <span className="et-cell__nostats">No stats</span>
                 )}
-                {showNames && shown && names ? (
+                {showNames && shown && caption ? (
                   <span className="et-cell__name">
-                    {names.firstName ? (
-                      <span className="et-cell__given">{names.firstName}</span>
+                    {caption.firstName ? (
+                      <span className="et-cell__given">{caption.firstName}</span>
                     ) : null}
-                    <span className="et-cell__family">
-                      {names.lastName || shown.name}
-                    </span>
+                    <span className="et-cell__family">{caption.lastName}</span>
                   </span>
                 ) : null}
                 {exporting || !shown ? null : (

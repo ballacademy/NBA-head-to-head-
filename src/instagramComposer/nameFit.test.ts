@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { wrapNameToWidth } from "./nameFit";
+import {
+  abbreviateOverflowName,
+  fittedCellNames,
+  wrapNameToWidth,
+} from "./nameFit";
 
 const measure = (value: string) => value.length;
 
@@ -16,5 +20,42 @@ describe("name wrap", () => {
       "GILGEOUS-",
       "ALEXANDER",
     ]);
+  });
+});
+
+describe("overflow abbreviation", () => {
+  it("keeps names that already fit", () => {
+    expect(abbreviateOverflowName("Doncic", 10, measure)).toBe("DONCIC");
+    expect(abbreviateOverflowName("James", 8, measure)).toBe("JAMES");
+  });
+
+  it("shortens a hyphenated last name with a period, preferring the longer fit", () => {
+    expect(abbreviateOverflowName("Gilgeous-Alexander", 11, measure)).toBe(
+      "GILGEOUS-A.",
+    );
+    expect(abbreviateOverflowName("Gilgeous-Alexander", 13, measure)).toBe(
+      "G.-ALEXANDER",
+    );
+    expect(abbreviateOverflowName("Gilgeous-Alexander", 18, measure)).toBe(
+      "GILGEOUS-ALEXANDER",
+    );
+  });
+
+  it("truncates a long unhyphenated last name with a period", () => {
+    expect(abbreviateOverflowName("Antetokounmpo", 8, measure)).toBe(
+      "ANTETOK.",
+    );
+    expect(abbreviateOverflowName("Antetokounmpo", 13, measure)).toBe(
+      "ANTETOKOUNMPO",
+    );
+  });
+
+  it("fits cell captions without shrinking the type size", () => {
+    const names = fittedCellNames("Shai", "Gilgeous-Alexander", 84, 14, 11);
+    expect(names.firstName).toBe("SHAI");
+    expect(names.lastName.endsWith(".")).toBe(true);
+    expect(names.lastName).not.toBe("GILGEOUS-ALEXANDER");
+    const short = fittedCellNames("Luka", "Doncic", 84, 14, 11);
+    expect(short).toEqual({ firstName: "LUKA", lastName: "DONCIC" });
   });
 });

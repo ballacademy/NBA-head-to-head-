@@ -188,8 +188,33 @@ export const fittedLogoRect = (
   };
 };
 
+/** Longer, softer stamp than the old 12% hard stack. Andrew may revert. */
+export const LOGO_SHADOW_FRAC = 0.18;
+/** Team-tier only: shift the centered mark this fraction of cell width left. */
+export const TEAM_TIER_NUDGE_LEFT = 0.025;
+
 export const logoShadowPx = (cellW: number, cellH: number) =>
-  Math.max(6, Math.round(Math.min(cellW, cellH) * 0.12));
+  Math.max(8, Math.round(Math.min(cellW, cellH) * LOGO_SHADOW_FRAC));
+
+/**
+ * Extra 2–3% left on team-tier logos after trim + optical center. Magic
+ * already sits left from optical mass — do not stack the full extra on it.
+ */
+export const applyTeamTierNudgeX = (
+  dest: LogoRect,
+  cellX: number,
+  cellW: number,
+): LogoRect => {
+  const unshiftedX = cellX + (cellW - dest.w) / 2;
+  const opticalLeft = Math.max(0, unshiftedX - dest.x);
+  const extra = Math.max(0, cellW * TEAM_TIER_NUDGE_LEFT - opticalLeft);
+  const x = dest.x - extra;
+  const pad = cellW * 0.02;
+  return {
+    ...dest,
+    x: Math.max(cellX + pad, Math.min(x, cellX + cellW - dest.w - pad)),
+  };
+};
 
 /** Halo radius that stays inside leftover cell padding around the fitted mark. */
 export const logoGlowPx = (
@@ -262,6 +287,8 @@ export const drawCenteredLogo = (
     glow?: boolean;
     /** Counter the down-right 3D stamp so square cells do not look right-heavy. */
     balanceStamp?: boolean;
+    /** Team-tier cells only — 2–3% left after optical center, clamped in-box. */
+    nudgeLeft?: boolean;
   },
 ) => {
   const bounds = withCentroid(
@@ -269,7 +296,7 @@ export const drawCenteredLogo = (
       ? getCachedOpaqueBounds(options.cacheKey, image)
       : getOpaqueBounds(image),
   );
-  const dest = fittedLogoRect(
+  const placed = fittedLogoRect(
     bounds,
     cellX,
     cellY,
@@ -278,15 +305,18 @@ export const drawCenteredLogo = (
     options?.fitX,
     options?.fitY,
   );
+  const dest = options?.nudgeLeft
+    ? applyTeamTierNudgeX(placed, cellX, cellW)
+    : placed;
   const shadow =
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)
       : Math.max(0, options.shadow);
   // Never shift the mark to “center” the logo+shadow bbox — that pulls
   // artwork top-left. Opt-in balanceStamp is a standings-era counter only.
-  const nudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
-  dest.x -= nudge;
-  dest.y -= nudge;
+  const stampNudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
+  dest.x -= stampNudge;
+  dest.y -= stampNudge;
   const glow = Boolean(options?.glow);
   const glowPx = glow
     ? logoGlowPx(cellW, cellH, options?.fitX, options?.fitY)
@@ -313,12 +343,23 @@ export const drawCenteredLogo = (
 
   if (shadow > 0) {
     const stamp = makeSilhouette(image, bounds, dest.w, dest.h);
-    const depth = glow ? Math.max(shadow, Math.round(shadow * 1.25)) : shadow;
+    const offsetX = Math.round(shadow * 0.42);
+    const offsetY = Math.round(shadow * 0.58);
     context.save();
-    context.globalAlpha = 0.92;
-    for (let i = 2; i <= depth; i += 2) {
-      context.drawImage(stamp, dest.x + i, dest.y + i);
-    }
+    context.globalAlpha = 0.42;
+    context.shadowColor = "rgba(0, 0, 0, 0.5)";
+    context.shadowBlur = Math.max(10, Math.round(shadow * 1.05));
+    context.shadowOffsetX = offsetX;
+    context.shadowOffsetY = offsetY;
+    context.drawImage(stamp, dest.x, dest.y);
+    context.restore();
+    context.save();
+    context.globalAlpha = 0.22;
+    context.shadowColor = "rgba(0, 0, 0, 0.38)";
+    context.shadowBlur = Math.max(14, Math.round(shadow * 1.35));
+    context.shadowOffsetX = Math.round(shadow * 0.7);
+    context.shadowOffsetY = Math.round(shadow * 0.92);
+    context.drawImage(stamp, dest.x, dest.y);
     context.restore();
   }
 

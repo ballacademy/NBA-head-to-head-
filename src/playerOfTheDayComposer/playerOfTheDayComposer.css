@@ -230,6 +230,19 @@
   display: block;
 }
 
+.pod-photo__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 40%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.08) 55%,
+    rgba(0, 0, 0, 0.38) 100%
+  );
+}
+
 .pod-photo__pick {
   position: absolute;
   z-index: 1;

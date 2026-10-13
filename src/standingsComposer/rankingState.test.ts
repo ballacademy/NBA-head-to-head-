@@ -14,6 +14,7 @@ import {
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
+  formatStandingRecord,
   splitStandingsTitle,
   standingsSubtitleLabel,
   lastWeekDelta,
@@ -85,6 +86,11 @@ describe("graphic export constants", () => {
 
   it("uses the original single-line banner title size", () => {
     expect(STANDINGS_TITLE_SIZE).toBe(50);
+  });
+
+  it("formats W–L as a rank caption, not a logo caption", () => {
+    expect(formatStandingRecord({ wins: 64, losses: 18 })).toBe("64–18");
+    expect(formatStandingRecord(null)).toBeNull();
   });
 
   it("uppercases the conference subtitle for PNG export", () => {
