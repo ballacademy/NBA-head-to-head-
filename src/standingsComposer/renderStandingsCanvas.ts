@@ -360,7 +360,7 @@ export const renderStandingsCanvas = async (
         ? lastWeekDelta(input.slots, input.lastWeekSlots, index)
         : null;
     if (delta != null) {
-      context.font = `900 ${22 * scale}px ${POSTER_FONT}`;
+      context.font = `900 ${28 * scale}px ${POSTER_FONT}`;
       context.textAlign = "right";
       context.textBaseline = "top";
       context.fillStyle = delta > 0 ? "#22c55e" : "#ef4444";

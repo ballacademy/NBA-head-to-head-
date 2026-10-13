@@ -90,7 +90,6 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
-  const [titlesBelow, setTitlesBelow] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -111,7 +110,6 @@ export function TeamOfTheWeekPlusComposerApp() {
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames !== false);
-    setTitlesBelow(draft.titlesBelow === true);
     setHydrated(true);
   }, []);
 
@@ -127,9 +125,8 @@ export function TeamOfTheWeekPlusComposerApp() {
       slots,
       showBa,
       showNames,
-      titlesBelow,
     });
-  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, titlesBelow, hydrated]);
+  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -157,7 +154,6 @@ export function TeamOfTheWeekPlusComposerApp() {
           look,
           showBa,
           showNames,
-          titlesBelow,
         },
         story,
       );
@@ -179,7 +175,6 @@ export function TeamOfTheWeekPlusComposerApp() {
     setStandoutCaption(next.standoutCaption);
     setSlots(next.slots);
     setShowNames(next.showNames !== false);
-    setTitlesBelow(next.titlesBelow === true);
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -306,18 +301,6 @@ export function TeamOfTheWeekPlusComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Titles under rows</span>
-          <button
-            type="button"
-            className={titlesBelow ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={titlesBelow}
-            aria-label="Place section titles under the player rows"
-            onClick={() => setTitlesBelow((on) => !on)}
-          >
-            {titlesBelow ? "On" : "Off"}
-          </button>
-        </label>
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{
@@ -328,7 +311,6 @@ export function TeamOfTheWeekPlusComposerApp() {
             slots,
             showBa,
             showNames,
-            titlesBelow,
           }}
           onLoad={(next) => {
             setBrand(next.brand);
@@ -338,7 +320,6 @@ export function TeamOfTheWeekPlusComposerApp() {
             setSlots(next.slots);
             setShowBa(next.showBa === true);
             setShowNames(next.showNames !== false);
-            setTitlesBelow(next.titlesBelow === true);
             setStatus("Loaded named graphic.");
           }}
         />
@@ -419,7 +400,6 @@ export function TeamOfTheWeekPlusComposerApp() {
             look={look}
             showBa={showBa}
             showNames={showNames}
-            titlesBelow={titlesBelow}
             exporting={exporting}
             onBrandChange={setBrand}
             onWeekChange={setWeek}
