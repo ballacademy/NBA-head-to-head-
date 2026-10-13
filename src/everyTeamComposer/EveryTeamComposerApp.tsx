@@ -577,8 +577,8 @@ export function EveryTeamComposerApp() {
             missingActive
               ? missingSeasonReason(activeTeam.id, activeSeason)
               : samePosition
-                ? `Only ${fillPosition} on the ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} roster, depth-chart order. After you pick, the next empty team opens.`
-                : `Only the ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} roster. Sort by depth chart for starter PG–C, then backups.`
+                ? `Only ${fillPosition} on the ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} full roster, depth-chart order first. After you pick, the next empty team opens.`
+                : `The ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} full roster (camp / two-way / end of bench included). Depth-chart sort is starter PG–C, then backups, then everyone else.`
           }
           currentId={currentId}
           usedLabels={usedEveryTeamLabels(slots, activeIndex, ranked, rankedOrder)}

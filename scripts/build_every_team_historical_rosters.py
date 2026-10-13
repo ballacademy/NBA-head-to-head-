@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Build data/every-team-historical-rosters.json from ESPN depth charts + BBR stats.
+"""Build data/every-team-historical-rosters.json from ESPN rosters + BBR stats.
 
 ESPN core depth charts (`seasons/{startYear}/teams/{id}/depthcharts`) carry real
-PG–C roster slots from 2003-04 onward. 2001-02 and 2002-03 have no ESPN charts,
-so depth is Basketball-Reference games-started within position. Per-game PTS /
-REB / AST / STL / BLK always come from Basketball-Reference for that season.
+PG–C slots from 2003-04 onward. The picker also includes the rest of that
+season’s roster: ESPN’s current team roster (camp / Exhibit / two-way / end of
+bench) for the live year, and Basketball-Reference per-game leftovers for
+historical years. 2001-02 and 2002-03 have no ESPN charts, so depth is BBR
+games-started within position.
+
+Per-game PTS / REB / AST / STL / BLK come from Basketball-Reference when that
+season’s table exists. If it does not (early 2026-27), ESPN regular-season then
+preseason gamelog averages fill in so Ranked auto-sort still reorders.
 """
 
 from __future__ import annotations
@@ -111,6 +117,7 @@ BBR_TO_APP = {
 
 POSITIONS = ("PG", "SG", "SF", "PF", "C")
 POS_INDEX = {pos: i for i, pos in enumerate(POSITIONS)}
+EXTRA_DEPTH = 99
 HEADSHOT_CDN = "https://a.espncdn.com/i/headshots/nba/players/full/{id}.png"
 FIRST_SEASON = "2001-02"
 SUFFIX_PATTERN = re.compile(r"\b(jr|sr|ii|iii|iv|v)\b", re.I)
@@ -353,6 +360,20 @@ def espn_team_url(start_year: int, espn_team_id: str) -> str:
     )
 
 
+def espn_site_roster_url(espn_team_id: str) -> str:
+    return (
+        "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
+        f"teams/{espn_team_id}/roster"
+    )
+
+
+def espn_gamelog_url(espn_id: str, season_end_year: int) -> str:
+    return (
+        "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/"
+        f"athletes/{espn_id}/gamelog?season={season_end_year}"
+    )
+
+
 def parse_depthchart(payload: dict) -> list[tuple[str, int, str]]:
     items = payload.get("items") or []
     if not items:
@@ -403,6 +424,115 @@ def fetch_depth_and_team(start_year: int, espn_team_id: str) -> dict:
         }
 
     return cached_json("espn-depth", key, loader)
+
+
+def parse_site_roster(payload: dict) -> list[tuple[str, str, str]]:
+    athletes = payload.get("athletes") or []
+    items: list[dict] = []
+    if (
+        athletes
+        and isinstance(athletes[0], dict)
+        and athletes[0].get("id")
+        and athletes[0].get("displayName")
+    ):
+        items = [row for row in athletes if isinstance(row, dict)]
+    else:
+        for group in athletes:
+            if not isinstance(group, dict):
+                continue
+            if group.get("id") and group.get("displayName"):
+                items.append(group)
+                continue
+            items.extend(row for row in (group.get("items") or []) if isinstance(row, dict))
+    rows: list[tuple[str, str, str]] = []
+    for player in items:
+        espn_id = str(player.get("id") or "")
+        name = str(player.get("displayName") or player.get("fullName") or "").strip()
+        pos_raw = player.get("position")
+        if isinstance(pos_raw, dict):
+            pos_raw = pos_raw.get("abbreviation") or pos_raw.get("displayName") or ""
+        if espn_id and name:
+            rows.append((espn_id, name, parse_position(str(pos_raw or ""))))
+    return rows
+
+
+def fetch_site_roster(espn_team_id: str) -> list[tuple[str, str, str]]:
+    def loader():
+        try:
+            payload = fetch_json(espn_site_roster_url(espn_team_id))
+        except Exception as exc:  # noqa: BLE001
+            print(f"  roster {espn_team_id} failed ({exc})")
+            return {"athletes": []}
+        return payload if isinstance(payload, dict) else {"athletes": []}
+
+    return parse_site_roster(cached_json("espn-roster", espn_team_id, loader))
+
+
+def _gamelog_type_rank(display: str) -> int:
+    text = (display or "").lower()
+    if "regular" in text:
+        return 0
+    if "preseason" in text:
+        return 1
+    return 2
+
+
+def parse_espn_gamelog_avg(payload: dict) -> dict | None:
+    names = payload.get("names") or []
+    idx = {name: i for i, name in enumerate(names)}
+    needed = ("points", "totalRebounds", "assists", "steals", "blocks")
+    if any(key not in idx for key in needed):
+        return None
+    min_idx = idx.get("minutes")
+    types = sorted(
+        payload.get("seasonTypes") or [],
+        key=lambda row: _gamelog_type_rank(str(row.get("displayName") or "")),
+    )
+    for block in types:
+        events: list[dict] = []
+        for cat in block.get("categories") or []:
+            if cat.get("type") == "event":
+                events.extend(cat.get("events") or [])
+        totals = {key: 0.0 for key in needed}
+        games = 0
+        for event in events:
+            stats = event.get("stats") or []
+            if len(stats) <= max(idx[key] for key in needed):
+                continue
+            if min_idx is not None and min_idx < len(stats):
+                try:
+                    if float(stats[min_idx] or 0) <= 0:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+            try:
+                for key in needed:
+                    totals[key] += float(stats[idx[key]])
+            except (TypeError, ValueError):
+                continue
+            games += 1
+        if games:
+            return {
+                "pts": round(totals["points"] / games, 1),
+                "reb": round(totals["totalRebounds"] / games, 1),
+                "ast": round(totals["assists"] / games, 1),
+                "stl": round(totals["steals"] / games, 1),
+                "blk": round(totals["blocks"] / games, 1),
+            }
+    return None
+
+
+def fetch_espn_gamelog_avg(espn_id: str, season_end_year: int) -> dict | None:
+    key = f"{season_end_year}-{espn_id}"
+
+    def loader():
+        try:
+            payload = fetch_json(espn_gamelog_url(espn_id, season_end_year))
+        except Exception:
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    return parse_espn_gamelog_avg(cached_json("espn-gamelog", key, loader))
 
 
 def fetch_athlete_name(espn_id: str) -> str:
@@ -553,13 +683,17 @@ def build_from_espn(
     franchise: str,
     depth_raw: dict,
     bbr_index: dict[str, list[dict]],
+    bbr_rows: list[dict],
     names: dict[str, str],
+    name_to_espn: dict[str, str],
+    roster_extras: list[tuple[str, str, str]],
 ) -> dict | None:
     slots = depth_raw.get("slots") or []
     if not slots:
         return None
     history_id, history_name = history_label(depth_raw, franchise, season)
     used: set[str] = set()
+    seen_ids: set[str] = set()
     players: list[dict] = []
     for pos, rank, espn_id in sorted(
         slots, key=lambda item: (item[1], POS_INDEX.get(item[0], 9), item[2])
@@ -567,6 +701,35 @@ def build_from_espn(
         name = names.get(espn_id) or ""
         stats = take_bbr_match(bbr_index.get(normalize_name(name), []), used) if name else None
         players.append(player_payload(espn_id, name or f"Player {espn_id}", pos, rank, stats))
+        seen_ids.add(espn_id)
+    extras = [
+        (espn_id, name, pos)
+        for espn_id, name, pos in roster_extras
+        if espn_id not in seen_ids
+    ]
+    for row in bbr_rows:
+        key = row["bbrId"] or normalize_name(row["name"])
+        if key in used:
+            continue
+        espn_id = name_to_espn.get(normalize_name(row["name"]))
+        if espn_id and espn_id in seen_ids:
+            take_bbr_match(bbr_index.get(normalize_name(row["name"]), []), used)
+            continue
+        extras.append(
+            (
+                espn_id
+                or (f"bbr-{row['bbrId']}" if row["bbrId"] else normalize_name(row["name"])),
+                row["name"],
+                row["position"],
+            )
+        )
+    extras.sort(key=lambda item: (POS_INDEX.get(item[2], 9), item[1], item[0]))
+    for espn_id, name, pos in extras:
+        if espn_id in seen_ids:
+            continue
+        stats = take_bbr_match(bbr_index.get(normalize_name(name), []), used) if name else None
+        players.append(player_payload(espn_id, name or f"Player {espn_id}", pos, EXTRA_DEPTH, stats))
+        seen_ids.add(espn_id)
     return {
         "historyId": history_id,
         "historyName": history_name,
@@ -653,11 +816,28 @@ def main() -> None:
             if done % 60 == 0:
                 print(f"  depth {done}/{len(jobs)}")
 
+    print("Fetching ESPN current team rosters…")
+    site_rosters: dict[str, list[tuple[str, str, str]]] = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {
+            pool.submit(fetch_site_roster, APP_TO_ESPN[franchise]): franchise
+            for franchise in franchises
+        }
+        for future in as_completed(futures):
+            franchise = futures[future]
+            site_rosters[franchise] = future.result()
+            print(f"  {franchise}: {len(site_rosters[franchise])} roster names")
+
     athlete_ids = sorted(
         {
             espn_id
             for raw in depth_by_key.values()
             for _, _, espn_id in raw.get("slots") or []
+        }
+        | {
+            espn_id
+            for rows in site_rosters.values()
+            for espn_id, _, _ in rows
         }
     )
     print(f"Resolving {len(athlete_ids)} ESPN athlete names…")
@@ -701,7 +881,10 @@ def main() -> None:
                     franchise,
                     depth_raw,
                     bbr_index_all.get(franchise) or {},
+                    bbr_rows_by_team.get(franchise) or [],
                     names,
+                    name_to_espn,
+                    site_rosters.get(franchise, []) if season == last else [],
                 )
                 if cell:
                     espn_cells += 1
@@ -725,18 +908,58 @@ def main() -> None:
             else:
                 rosters[franchise][season] = cell
 
+    thin_seasons = {
+        season for season, rows in bbr_by_season.items() if len(rows) < 200
+    }
+    missing_stats: list[tuple[str, str, dict]] = []
+    for franchise, by_season in rosters.items():
+        for season, cell in by_season.items():
+            if cell.get("missing") or season not in thin_seasons:
+                continue
+            for player in cell.get("players") or []:
+                if player.get("pts") is None and str(player.get("id") or "").isdigit():
+                    missing_stats.append((franchise, season, player))
+    if missing_stats:
+        print(f"Filling {len(missing_stats)} missing stat rows from ESPN gamelogs…")
+        patched = 0
+        with ThreadPoolExecutor(max_workers=12) as pool:
+            futures = {
+                pool.submit(
+                    fetch_espn_gamelog_avg,
+                    player["id"],
+                    season_end_year(season),
+                ): player
+                for _, season, player in missing_stats
+            }
+            done = 0
+            for future in as_completed(futures):
+                player = futures[future]
+                avg = future.result()
+                if avg:
+                    player.update(avg)
+                    patched += 1
+                done += 1
+                if done % 80 == 0:
+                    print(f"  gamelog {done}/{len(missing_stats)}")
+        print(f"  patched {patched}/{len(missing_stats)} from ESPN")
+
     payload = {
         "description": (
             "Every Team composer historical rosters, 2001-02 through the current "
             "NBA season. Depth order is ESPN core depth charts (starter PG–C, then "
             "backups) when ESPN publishes that team-season; otherwise Basketball-"
-            "Reference games started within position. Per-game PTS/REB/AST/STL/BLK "
-            "are Basketball-Reference for that season. Relocated franchises keep "
-            "the current cell (SEA→OKC, NJN→BKN, CHH 2001-02→CHA)."
+            "Reference games started within position. Camp, Exhibit, two-way, and "
+            "end-of-bench names from ESPN’s current team roster (and BBR leftovers "
+            "historically) sit after the depth units. Per-game PTS/REB/AST/STL/BLK "
+            "are Basketball-Reference when that table exists; otherwise ESPN "
+            "regular-season then preseason gamelog averages. Relocated franchises "
+            "keep the current cell (SEA→OKC, NJN→BKN, CHH 2001-02→CHA)."
         ),
         "source": {
             "depth": "https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/{year}/teams/{id}/depthcharts",
+            "roster": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster",
             "stats": "https://www.basketball-reference.com/leagues/NBA_{endYear}_per_game.html",
+            "gamelog": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/{id}/gamelog?season={endYear}",
             "headshots": HEADSHOT_CDN,
         },
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

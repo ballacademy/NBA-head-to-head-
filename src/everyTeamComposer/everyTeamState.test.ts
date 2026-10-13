@@ -239,6 +239,48 @@ describe("every-team order and slots", () => {
     ).toBe(westbrook);
   });
 
+  it("lists 2026-27 Knicks and Magic extras after depth units, with live averages", () => {
+    const knicks = listRosterPlayers("NYK", "2026-27");
+    const brown = knicks.find((player) => player.id === "4065670");
+    expect(brown?.name).toBe("Bruce Brown");
+    expect(brown?.depth).toBeGreaterThanOrEqual(99);
+    const lastDepth = Math.max(
+      ...knicks.filter((player) => player.depth < 99).map((player) => player.depth),
+      0,
+    );
+    expect(brown?.depth).toBeGreaterThan(lastDepth);
+    const depthSorted = sortPlayers(rosterAsTierPlayers("NYK", "2026-27"), "depth");
+    const brownAt = depthSorted.findIndex((player) => player.id === "4065670");
+    const lastSlotted = depthSorted.reduce(
+      (index, player, at) => ((player.depth ?? 99) < 99 ? at : index),
+      -1,
+    );
+    expect(brownAt).toBeGreaterThan(lastSlotted);
+    const magic = listRosterPlayers("ORL", "2026-27");
+    const branham = magic.find((player) => player.id === "4565201");
+    expect(branham?.name).toBe("Malaki Branham");
+    expect(branham?.depth).toBeGreaterThanOrEqual(99);
+    const scored = knicks.filter((player) => player.pts != null).length;
+    expect(scored).toBeGreaterThan(8);
+    expect(rosterStatValue(knicks.find((player) => player.pts != null) ?? null, "pra")).not.toBeNull();
+  });
+
+  it("auto-sorts 2026-27 starter PGs by PRA using ESPN fallback averages", () => {
+    const order = createDefaultRankedOrder();
+    const values = order.map((teamId) => {
+      const pg = listRosterPlayers(teamId, "2026-27").find(
+        (player) => player.position === "PG" && player.depth === 1,
+      );
+      return rosterStatValue(pg ?? null, "pra");
+    });
+    const scored = values.filter((value) => value != null).length;
+    expect(scored).toBeGreaterThan(20);
+    const result = autoSortRankedOrder(order, values);
+    expect(result.ranked).toBe(scored);
+    expect(result.order).not.toEqual(order);
+    expect(result.order.slice(0, result.ranked)).not.toEqual(order.slice(0, result.ranked));
+  });
+
   it("auto-sorts ranked order by PRA and keeps missing stats in original order at the bottom", () => {
     const order = ["OKC", "LAL", "MIA", "BOS"];
     const result = autoSortRankedOrder(order.concat(createDefaultRankedOrder()).slice(0, 30), [
