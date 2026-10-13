@@ -53,7 +53,6 @@ export const PotdLeaderboardGraphic = forwardRef<
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const ranked = rankLeaderboard(entries);
 
   const setRefs = (node: HTMLElement | null) => {
@@ -171,19 +170,13 @@ export const PotdLeaderboardGraphic = forwardRef<
                 <textarea
                   className="plb-name"
                   rows={wrap ? 2 : 1}
-                  value={
-                    editingId === entry.id
-                      ? entry.name
-                      : entry.displayLines.join("\n")
-                  }
+                  value={entry.name}
                   maxLength={40}
                   spellCheck={false}
                   aria-label="Player name"
                   style={{
                     fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
                   }}
-                  onFocus={() => setEditingId(entry.id)}
-                  onBlur={() => setEditingId(null)}
                   onChange={(event) =>
                     onNameChange(
                       entry.id,

@@ -32,6 +32,7 @@ import {
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_POTD_FILL,
+  PLB_META_SIZE,
   PLB_RANK_W,
   PLB_ROW_H,
   PLB_ROW_SIZE,
@@ -322,14 +323,17 @@ export const renderPotdLeaderboardCanvas = async (
     }
 
     const size = PLB_ROW_SIZE * entry.nameScale * s;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
+    const meta = PLB_META_SIZE * s;
     context.textBaseline = "middle";
-    setLetterSpacing(context, PLB_ROW_TRACK * size);
     const medal = medalForRank(entry.rank);
     context.fillStyle = medal ? LEADERBOARD_MEDALS[medal] : PLB_YELLOW;
     context.textAlign = "left";
+    context.font = `900 ${meta}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * meta);
     context.fillText(entry.rankLabel, innerX + pipW + headW, y);
     context.fillStyle = PLB_YELLOW;
+    context.font = `900 ${size}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * size);
     const lines = entry.displayLines.filter(Boolean);
     if (lines.length > 1) {
       const step = size * 0.95;
@@ -343,8 +347,10 @@ export const renderPotdLeaderboardCanvas = async (
     } else {
       context.fillText(entry.displayName || entry.name.toUpperCase(), nameX, y);
     }
+    context.font = `900 ${meta}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * meta);
     context.textAlign = "right";
-    context.fillText(entry.winsLabel, innerX + innerW, y);
+    context.fillText(entry.winsLabel, innerX + innerW - 4 * s, y);
     setLetterSpacing(context, 0);
   });
 
