@@ -29,7 +29,7 @@ describe("drawNameStack", () => {
     expect(fills.every((item) => item.x === 24)).toBe(true);
   });
 
-  it("centers each wrapped last-name line on the given x", () => {
+  it("left-draws each wrapped line from the midpoint so export stays centered", () => {
     const { context, fills } = mockContext();
     drawNameStack(
       context,
@@ -43,10 +43,13 @@ describe("drawNameStack", () => {
       1,
       "center",
     );
-    expect(context.textAlign).toBe("center");
+    expect(context.textAlign).toBe("left");
     expect(fills.some((item) => item.text.includes("GILGEOUS"))).toBe(true);
     expect(fills.some((item) => item.text.includes("ALEXANDER"))).toBe(true);
     expect(fills.at(-1)?.text).toBe("SHAI");
-    expect(fills.every((item) => item.x === 100)).toBe(true);
+    fills.forEach((item) => {
+      const width = item.text.length * 10;
+      expect(item.x).toBe(100 - width / 2);
+    });
   });
 });

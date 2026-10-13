@@ -49,13 +49,22 @@ export const drawNameStack = (
   align: "left" | "center" = "left",
 ) => {
   const measure = (value: string) => context.measureText(value).width;
-  context.textAlign = align;
+  // Chrome's canvas `letterSpacing` does not honor `textAlign: "center"`.
+  // Measure each line and left-draw from the midpoint so export matches CSS.
+  context.textAlign = "left";
   context.textBaseline = "bottom";
   context.fillStyle = "#fff";
   context.shadowColor = "rgba(0, 0, 0, 0.78)";
   context.shadowOffsetX = Math.round(1 * scale);
   context.shadowOffsetY = Math.round(1.1 * scale);
   context.shadowBlur = 0;
+
+  const paintLine = (line: string, cursor: number) => {
+    const width = measure(line);
+    const drawX = align === "center" ? x - width / 2 : x;
+    context.fillText(line, drawX, cursor);
+    return width;
+  };
 
   context.font = `900 ${familySize}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * familySize);
@@ -68,7 +77,7 @@ export const drawNameStack = (
       size -= 0.5 * scale;
       context.font = `900 ${size}px ${POSTER_FONT}`;
     }
-    context.fillText(line, x, cursor);
+    paintLine(line, cursor);
     cursor -= size * 1.02;
   });
   setLetterSpacing(context, 0);
@@ -82,7 +91,7 @@ export const drawNameStack = (
       size -= 0.5 * scale;
       context.font = `900 ${size}px ${POSTER_FONT}`;
     }
-    context.fillText(givenLine, x, cursor);
+    paintLine(givenLine, cursor);
     setLetterSpacing(context, 0);
   }
 
