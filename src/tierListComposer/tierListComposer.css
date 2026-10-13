@@ -347,6 +347,56 @@
   object-position: center 18%;
 }
 
+.tl-cell__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 22% 5% 5%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.72) 42%,
+    rgba(0, 0, 0, 0.28) 74%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  text-align: center;
+  line-height: 0.95;
+}
+
+.tl-cell__given,
+.tl-cell__family {
+  display: block;
+  width: 100%;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
+}
+
+.tl-cell__given {
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.08em;
+  opacity: 0.92;
+}
+
+.tl-cell__family {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.04em;
+}
+
 .tl-cell__remove {
   position: absolute;
   top: 4%;

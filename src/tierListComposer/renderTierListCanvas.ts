@@ -15,6 +15,8 @@ import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
+import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "./nbaActivePlayers";
 import { drawCoverHeadshot } from "./PlayerHeadshot";
 import {
@@ -39,6 +41,7 @@ import {
 import {
   isDefaultTierColor,
   parseTierColor,
+  splitTeamCellName,
   splitTierTitle,
   type TierRow,
   type TierSubject,
@@ -125,6 +128,7 @@ export interface TierListRenderInput {
   subject?: TierSubject;
   look?: ComposerLook;
   showBa?: boolean;
+  showNames?: boolean;
 }
 
 export const renderTierListCanvas = async (
@@ -328,6 +332,30 @@ export const renderTierListCanvas = async (
       }
       context.restore();
       paintCellFrame(context, x, cellY, size, size, input.look, scale);
+      if (input.showNames === true) {
+        const names = player
+          ? splitPlayerName(player.name)
+          : team
+            ? splitTeamCellName(team.name, team.shortName)
+            : null;
+        const family = names?.lastName || player?.name || team?.name || "";
+        if (names && family) {
+          const fadeH = size * 0.38;
+          paintNameFadeRect(context, x, cellY + size - fadeH, size, fadeH);
+          drawNameStack(
+            context,
+            names.firstName,
+            family,
+            x + size / 2,
+            cellY + size - size * 0.06,
+            size * 0.84,
+            14 * scale,
+            11 * scale,
+            scale,
+            "center",
+          );
+        }
+      }
     });
     tierTop += laneCount * layout.laneH;
   });

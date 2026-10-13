@@ -52,7 +52,26 @@ export interface TierDraft {
   title: string;
   rows: TierRow[];
   showBa?: boolean;
+  showNames?: boolean;
 }
+
+/** City on the given line, nickname on the family line — same stack as player names. */
+export const splitTeamCellName = (name: string, shortName: string) => {
+  const full = name.replace(/\s+/g, " ").trim();
+  const short = shortName.replace(/\s+/g, " ").trim();
+  if (!full) {
+    return { firstName: "", lastName: "" };
+  }
+  if (!short) {
+    return { firstName: "", lastName: full };
+  }
+  const escaped = short.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const city = full.replace(new RegExp(`\\s+${escaped}$`, "i"), "").trim();
+  if (city && city !== full) {
+    return { firstName: city, lastName: short };
+  }
+  return { firstName: "", lastName: full };
+};
 
 const nextId = () =>
   `tier-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;

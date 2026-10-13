@@ -24,9 +24,11 @@ import {
   TIER_TITLE_SIZE,
   tierBoardLayout,
 } from "./tierLayout";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
   isDefaultTierColor,
   parseTierColor,
+  splitTeamCellName,
   splitTierTitle,
   type TierRow,
   type TierSubject,
@@ -43,6 +45,7 @@ interface TierListGraphicProps {
   subject?: TierSubject;
   look?: ComposerLook;
   showBa?: boolean;
+  showNames?: boolean;
   active: TierPickerTarget | null;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
@@ -83,6 +86,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       subject = "teams",
       look = "white",
       showBa = true,
+      showNames = false,
       active,
       exporting = false,
       onTitleChange,
@@ -264,6 +268,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       active.replaceId === entityId;
                     const isDrop = dropKey === `${rowIndex}-${index}`;
                     const labelName = player?.name ?? team?.name ?? entityId;
+                    const names = player
+                      ? splitPlayerName(player.name)
+                      : team
+                        ? splitTeamCellName(team.name, team.shortName)
+                        : null;
                     return (
                       <div
                         key={entityId}
@@ -347,6 +356,18 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                               balanceStamp
                             />
                           </div>
+                        ) : null}
+                        {showNames && names ? (
+                          <span className="tl-cell__name">
+                            {names.firstName ? (
+                              <span className="tl-cell__given">
+                                {names.firstName}
+                              </span>
+                            ) : null}
+                            <span className="tl-cell__family">
+                              {names.lastName || labelName}
+                            </span>
+                          </span>
                         ) : null}
                         {exporting ? null : (
                           <button
