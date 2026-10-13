@@ -38,6 +38,10 @@ let seasons: string[] = [];
 let rosters: Record<string, Record<string, EveryTeamSeasonCell>> = {};
 let loaded = false;
 let loading: Promise<void> | null = null;
+let priorStatsCache: {
+  season: string;
+  byId: Map<string, EveryTeamRosterPlayer>;
+} | null = null;
 
 export const EVERY_TEAM_SORT_KEY = "ddgm:every-team-player-sort";
 
@@ -52,6 +56,7 @@ export const hydrateEveryTeamRosters = (payload: HistoricalCatalog) => {
   seasons = payload.seasons.slice();
   rosters = payload.rosters;
   loaded = true;
+  priorStatsCache = null;
 };
 
 export const loadEveryTeamRosters = async () => {
@@ -178,6 +183,34 @@ export const statsSeasonFor = (season: string) => {
   return season;
 };
 
+const priorStatsById = (statsSeason: string) => {
+  if (priorStatsCache?.season === statsSeason) {
+    return priorStatsCache.byId;
+  }
+  const byId = new Map<string, EveryTeamRosterPlayer>();
+  Object.keys(rosters).forEach((teamId) => {
+    rawRosterPlayers(teamId, statsSeason).forEach((player) => {
+      if (!byId.has(player.id)) {
+        byId.set(player.id, player);
+      }
+    });
+  });
+  priorStatsCache = { season: statsSeason, byId };
+  return byId;
+};
+
+/** Last season’s row for this player, even if they switched teams. */
+const priorPlayerStats = (
+  playerId: string,
+  teamId: string,
+  statsSeason: string,
+): EveryTeamRosterPlayer | null =>
+  rawRosterPlayers(teamId, statsSeason).find(
+    (candidate) => candidate.id === playerId,
+  ) ??
+  priorStatsById(statsSeason).get(playerId) ??
+  null;
+
 const overlayLastSeasonStats = (
   player: EveryTeamRosterPlayer,
   teamId: string,
@@ -187,9 +220,7 @@ const overlayLastSeasonStats = (
   if (statsSeason === season) {
     return player;
   }
-  const prior = rawRosterPlayers(teamId, statsSeason).find(
-    (candidate) => candidate.id === player.id,
-  );
+  const prior = priorPlayerStats(player.id, teamId, statsSeason);
   if (!prior) {
     return {
       ...player,

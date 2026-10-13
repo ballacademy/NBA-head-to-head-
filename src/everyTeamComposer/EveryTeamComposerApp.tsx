@@ -32,6 +32,7 @@ import {
   autoFillEveryTeamSlots,
   autoSortMetricLabel,
   autoSortRankedOrder,
+  rankedMetricValues,
   clearEveryTeamTeam,
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
@@ -61,7 +62,6 @@ import {
   parseEveryTeamSeason,
   rosterAsTierPlayers,
   rosterHasPlayer,
-  rosterStatValue,
   seasonForTeam,
   setCellSeason,
   type EveryTeamStatMetric,
@@ -276,45 +276,54 @@ export function EveryTeamComposerApp() {
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
-    const values = teams.map((teamId) => {
-      const cellSeason = seasonForTeam(teamId, season, cellSeasons);
-      const player = getRosterPlayer(
-        teamId,
-        cellSeason,
-        slots[slotIndexForTeam(teamId)] ?? null,
-      );
-      return rosterStatValue(player, metric);
-    });
+    const values = rankedMetricValues(
+      teams,
+      slots,
+      season,
+      cellSeasons,
+      metric,
+    );
     const result = autoSortRankedOrder(teams, values);
-    if (result.ranked === 0) {
-      setStatus(
-        `No ${autoSortMetricLabel(metric)} yet — using last season’s table when this year has none. Fill players first, then sort.`,
-      );
-      return;
-    }
+    const label = autoSortMetricLabel(metric);
     push(snapshot());
     setRanked(true);
     setRankedOrder(result.order);
+    if (result.ranked === 0) {
+      setStatus(
+        `No ${label} yet — last season’s table is used when this year has none. Fill players first, then sort.`,
+      );
+      return;
+    }
     setStatus(
       result.held
-        ? `Sorted ${result.ranked} by ${autoSortMetricLabel(metric)}. ${result.held} empty or without stats stayed at the bottom.`
-        : `Sorted 1–${result.ranked} by ${autoSortMetricLabel(metric)}. Drag still overrides.`,
+        ? `Sorted ${result.ranked} by ${label}. ${result.held} empty or without stats stayed at the bottom.`
+        : `Sorted 1–${result.ranked} by ${label}. Drag still overrides.`,
     );
   };
 
   const handleAutoFill = (metric: EveryTeamStatMetric) => {
     const next = autoFillEveryTeamSlots(season, cellSeasons, metric);
     const filled = next.filter(Boolean).length;
+    const label = autoSortMetricLabel(metric);
     if (filled === 0) {
-      setStatus(
-        `No ${autoSortMetricLabel(metric)} leaders for this board’s seasons.`,
-      );
+      setStatus(`No ${label} leaders for this board’s seasons.`);
       return;
     }
+    const teams = ranked
+      ? normalizeRankedOrder(rankedOrder)
+      : createDefaultRankedOrder();
+    const result = autoSortRankedOrder(
+      teams,
+      rankedMetricValues(teams, next, season, cellSeasons, metric),
+    );
     push(snapshot());
     setSlots(next);
+    setRanked(true);
+    setRankedOrder(result.order);
     setStatus(
-      `Filled ${filled} teams with the ${autoSortMetricLabel(metric)} leader. Current year uses last season until this year’s table exists.`,
+      result.held
+        ? `Filled ${filled} ${label} leaders and sorted ${result.ranked}. ${result.held} without stats stayed at the bottom.`
+        : `Filled ${filled} teams with the ${label} leader and sorted 1–${result.ranked}. Current year uses last season until this year’s table exists.`,
     );
   };
 
@@ -454,21 +463,19 @@ export function EveryTeamComposerApp() {
             Fill leaders
           </button>
         </div>
-        {ranked ? (
-          <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
-            <span className="sc-look__label">Auto-sort</span>
-            {EVERY_TEAM_STAT_METRICS.map((metric) => (
-              <button
-                key={metric.id}
-                type="button"
-                className="sc-chip"
-                onClick={() => handleAutoSort(metric.id)}
-              >
-                {metric.label}
-              </button>
-            ))}
-          </div>
-        ) : null}
+        <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
+          <span className="sc-look__label">Auto-sort</span>
+          {EVERY_TEAM_STAT_METRICS.map((metric) => (
+            <button
+              key={metric.id}
+              type="button"
+              className="sc-chip"
+              onClick={() => handleAutoSort(metric.id)}
+            >
+              {metric.label}
+            </button>
+          ))}
+        </div>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>
           <button
