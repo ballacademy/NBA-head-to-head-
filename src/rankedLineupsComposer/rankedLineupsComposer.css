@@ -303,11 +303,19 @@
 }
 
 .rl-pos-slot {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
+  width: 100%;
+}
+
+.rl-pos-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
 }
 
 .rl-pos {
@@ -344,18 +352,22 @@
 
 .rl-pos__hide {
   position: absolute;
-  right: calc(-2 * var(--u));
+  left: 100%;
   top: 50%;
-  transform: translate(100%, -50%);
-  width: calc(18 * var(--u));
-  height: calc(18 * var(--u));
+  transform: translate(calc(3 * var(--u)), -50%);
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  min-width: 18px;
+  min-height: 18px;
+  z-index: 3;
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.7);
   color: #fff;
-  font-size: calc(12 * var(--u));
+  font-size: calc(14 * var(--u));
   line-height: 1;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .rl-board.is-exporting .rl-pos__hide {

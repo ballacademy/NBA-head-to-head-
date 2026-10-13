@@ -259,30 +259,32 @@ export const RankedLineupsGraphic = forwardRef<
           return (
             <div key={`rl-meta-${position}`} className="rl-meta">
               <div className="rl-pos-slot">
-                <input
-                  className="rl-pos"
-                  value={posLabel}
-                  maxLength={POSITION_LABEL_MAX}
-                  placeholder={DEFAULT_POSITION_LABELS[index]}
-                  spellCheck={false}
-                  aria-label={`${position} position label`}
-                  onChange={(event) =>
-                    onPositionChange(
-                      index,
-                      event.target.value.slice(0, POSITION_LABEL_MAX),
-                    )
-                  }
-                />
-                {exporting || !posLabel ? null : (
-                  <button
-                    type="button"
-                    className="rl-pos__hide"
-                    aria-label={`Hide ${position} position`}
-                    onClick={() => onPositionChange(index, "")}
-                  >
-                    ×
-                  </button>
-                )}
+                <div className="rl-pos-wrap">
+                  <input
+                    className="rl-pos"
+                    value={posLabel}
+                    maxLength={POSITION_LABEL_MAX}
+                    placeholder={DEFAULT_POSITION_LABELS[index]}
+                    spellCheck={false}
+                    aria-label={`${position} position label`}
+                    onChange={(event) =>
+                      onPositionChange(
+                        index,
+                        event.target.value.slice(0, POSITION_LABEL_MAX),
+                      )
+                    }
+                  />
+                  {exporting || !posLabel ? null : (
+                    <button
+                      type="button"
+                      className="rl-pos__hide"
+                      aria-label={`Hide ${position} position`}
+                      onClick={() => onPositionChange(index, "")}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               </div>
               {showFade ? null : (
                 <>
