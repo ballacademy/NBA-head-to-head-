@@ -7,6 +7,7 @@ import {
   BA_LOGO_SRC,
   baBadgeRect,
   cellGridPosition,
+  cellMetrics,
   cellSize,
   rowMetrics,
   TIER_BADGE_INSET,
@@ -178,12 +179,15 @@ describe("tier layout", () => {
     expect(TIER_BADGE_INSET).toBeGreaterThan(TIER_PAD_RIGHT);
   });
 
-  it("keeps cells square and capped", () => {
+  it("keeps sparse cells square and packed cells as tall as the lane", () => {
     const { rowH } = rowMetrics(6);
-    const empty = cellSize(rowH, 1000, 1);
-    const packed = cellSize(rowH, 1000, 8);
-    expect(empty).toBeLessThanOrEqual(TIER_CELL_MAX);
-    expect(packed).toBeLessThan(empty);
+    const empty = cellMetrics(rowH, 1000, 1);
+    const packed = cellMetrics(rowH, 1000, 8);
+    expect(empty.width).toBeLessThanOrEqual(TIER_CELL_MAX);
+    expect(empty.width).toBe(empty.height);
+    expect(packed.width).toBeLessThan(empty.width);
+    expect(packed.height).toBe(empty.height);
+    expect(packed.height).toBeGreaterThan(packed.width);
     expect(rowMetrics(10).rowH).toBeLessThan(rowMetrics(3).rowH);
   });
 
@@ -205,6 +209,8 @@ describe("tier layout", () => {
     expect(nine.gridTemplate).toBe("2fr 1fr 1fr 1fr 1fr 1fr");
     expect(nine.lanes[0]! * nine.laneH).toBeGreaterThan(eight.laneH);
     expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
+    expect(nine.cellW).toBe(nine.size);
+    expect(nine.cellH).toBeGreaterThan(nine.cellW);
     const squeezedOntoOneRow =
       (nine.contentW - TIER_CELL_GAP * 8) / 9;
     expect(nine.size).toBeGreaterThan(squeezedOntoOneRow);
@@ -256,8 +262,11 @@ describe("tier layout", () => {
     const packed = tierBoardLayout([8, 8, 8, 8, 8, 8]);
     expect(packed.cols).toBe(TIER_WRAP_COLS);
     expect(
-      packed.size * TIER_WRAP_COLS + TIER_CELL_GAP * (TIER_WRAP_COLS - 1),
+      packed.cellW * TIER_WRAP_COLS + TIER_CELL_GAP * (TIER_WRAP_COLS - 1),
     ).toBeLessThanOrEqual(packed.contentW + 0.01);
+    expect(packed.cellH).toBeGreaterThan(packed.cellW);
+    expect(TIER_CELL_GAP).toBeGreaterThan(0);
+    expect(TIER_CELL_GAP).toBeLessThan(4);
     expect(tierLaneCount(8)).toBe(1);
     expect(tierLaneCount(9)).toBe(2);
   });

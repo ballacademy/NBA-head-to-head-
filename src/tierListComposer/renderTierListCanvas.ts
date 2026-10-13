@@ -272,36 +272,37 @@ export const renderTierListCanvas = async (
       });
     });
 
-    const size = layout.size * scale;
+    const cellW = layout.cellW * scale;
+    const cellH = layout.cellH * scale;
     const gap = TIER_CELL_GAP * scale;
     const startX = (TIER_LABEL_W + TIER_CELLS_INSET) * scale;
     const wrapRows = Math.max(1, Math.ceil(row.teams.length / TIER_WRAP_COLS));
-    const blockH = wrapRows * size + Math.max(0, wrapRows - 1) * gap;
+    const blockH = wrapRows * cellH + Math.max(0, wrapRows - 1) * gap;
     const startY = y + (h - blockH) / 2;
 
     row.teams.forEach((entityId, index) => {
       const player = subject === "players" ? getPlayer(entityId) : null;
       const team = player ? getTeam(player.team) : getTeam(entityId);
       const { col, wrapRow } = cellGridPosition(index);
-      const x = startX + col * (size + gap);
-      const cellY = startY + wrapRow * (size + gap);
+      const x = startX + col * (cellW + gap);
+      const cellY = startY + wrapRow * (cellH + gap);
       if (team) {
         fillCellGradient(
           context,
           x,
           cellY,
-          size,
-          size,
+          cellW,
+          cellH,
           team.cellFrom,
           team.cellTo,
         );
       } else {
         context.fillStyle = "#2a2a2a";
-        context.fillRect(x, cellY, size, size);
+        context.fillRect(x, cellY, cellW, cellH);
       }
       const art = cellArt[rowIndex]?.[index];
       context.save();
-      const inner = clipToInnerFrame(context, x, cellY, size, size, scale);
+      const inner = clipToInnerFrame(context, x, cellY, cellW, cellH, scale);
       if (player && art?.watermark) {
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
         drawCenteredLogo(
@@ -331,7 +332,7 @@ export const renderTierListCanvas = async (
         });
       }
       context.restore();
-      paintCellFrame(context, x, cellY, size, size, input.look, scale);
+      paintCellFrame(context, x, cellY, cellW, cellH, input.look, scale);
       if (input.showNames === true) {
         const names = player
           ? splitPlayerName(player.name)
@@ -340,15 +341,15 @@ export const renderTierListCanvas = async (
             : null;
         const family = names?.lastName || player?.name || team?.name || "";
         if (names && family) {
-          const fadeH = size * 0.38;
-          paintNameFadeRect(context, x, cellY + size - fadeH, size, fadeH);
+          const fadeH = Math.min(cellW, cellH) * 0.38;
+          paintNameFadeRect(context, x, cellY + cellH - fadeH, cellW, fadeH);
           drawNameStack(
             context,
             names.firstName,
             family,
-            x + size / 2,
-            cellY + size - size * 0.06,
-            size * 0.84,
+            x + cellW / 2,
+            cellY + cellH - Math.min(cellW, cellH) * 0.06,
+            cellW * 0.84,
             14 * scale,
             11 * scale,
             scale,
