@@ -315,6 +315,27 @@ export const paintPurpleUnderline = (
   context.restore();
 };
 
+/** Matches CSS `box-shadow: 0 0 0 2.5u #b026ff` — fully outside the plate. */
+export const purplePlateLinePx = (scale: number) =>
+  Math.max(2, Math.round(2.5 * scale));
+
+export const purplePlateOutsetRect = (
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  const line = purplePlateLinePx(scale);
+  return {
+    x: x - line / 2,
+    y: y - line / 2,
+    w: w + line,
+    h: h + line,
+    line,
+  };
+};
+
 export const paintPurplePlateEdge = (
   context: CanvasRenderingContext2D,
   x: number,
@@ -343,13 +364,40 @@ export const paintPurplePlateEdges = (
   if (edges.length === 0) {
     return;
   }
-  const line = Math.max(2, Math.round(2.5 * scale));
+  const outer = purplePlateOutsetRect(x, y, w, h, scale);
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = line;
+  context.lineWidth = outer.line;
   context.shadowColor = IDENTITY_PURPLE_GLOW;
   context.shadowBlur = Math.round(18 * scale);
-  paintRectEdges(context, x, y, w, h, line, edges);
+  paintRectEdges(
+    context,
+    outer.x,
+    outer.y,
+    outer.w,
+    outer.h,
+    outer.line,
+    edges,
+  );
+  context.restore();
+};
+
+/** Kyber halo around a custom banner path, sitting outside the white/black stroke. */
+export const paintPurplePathHalo = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+  buildPath: () => void,
+  frameLine: number,
+) => {
+  const outset = purplePlateLinePx(scale);
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE;
+  context.lineWidth = Math.max(0, frameLine) + outset * 2;
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = Math.round(14 * scale);
+  context.lineJoin = "miter";
+  buildPath();
+  context.stroke();
   context.restore();
 };
 
@@ -376,10 +424,10 @@ export const paintPurpleBaGlow = (
 ) => {
   const cx = x + size / 2;
   const cy = y + size / 2;
-  const radius = size * 0.82;
-  const glow = context.createRadialGradient(cx, cy, size * 0.18, cx, cy, radius);
-  glow.addColorStop(0, "rgba(176, 38, 255, 0.62)");
-  glow.addColorStop(0.42, "rgba(233, 213, 255, 0.18)");
+  const radius = size * 0.95;
+  const glow = context.createRadialGradient(cx, cy, size * 0.16, cx, cy, radius);
+  glow.addColorStop(0, "rgba(176, 38, 255, 0.78)");
+  glow.addColorStop(0.38, "rgba(233, 213, 255, 0.28)");
   glow.addColorStop(1, "rgba(176, 38, 255, 0)");
   context.save();
   context.globalCompositeOperation = "screen";
@@ -390,9 +438,11 @@ export const paintPurpleBaGlow = (
   context.restore();
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = Math.max(2, Math.round(size * 0.045));
+  context.lineWidth = Math.max(3, Math.round(size * 0.06));
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = Math.round(size * 0.18);
   context.beginPath();
-  context.arc(cx, cy, size * 0.48, 0, Math.PI * 2);
+  context.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
   context.stroke();
   context.restore();
 };
@@ -407,10 +457,10 @@ export const paintPurpleInnerHairline = (
   look?: ComposerLook | null,
 ) => {
   const inner = innerFrameRect(x, y, w, h, scale, look);
-  const line = hairlineLinePx(scale);
+  const line = Math.max(2, Math.round(1.5 * scale));
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
-  context.globalAlpha = 0.9;
+  context.globalAlpha = 0.92;
   context.lineWidth = line;
   context.strokeRect(
     inner.x + line / 2,

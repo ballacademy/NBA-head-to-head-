@@ -5,6 +5,7 @@ import {
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurpleInnerHairline,
+  paintPurplePathHalo,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -196,11 +197,18 @@ export const renderEveryTeamCanvas = async (
     scale,
     buildBannerPath,
   );
-  buildBannerPath();
-  context.strokeStyle = frameColor(input.look);
-  context.lineWidth = (BANNER_STROKE_VB / 200) * board.h;
-  context.lineJoin = "miter";
-  context.stroke();
+  const bannerLine =
+    input.look === "none" ? 0 : (BANNER_STROKE_VB / 200) * board.h;
+  if (input.purpleFlair) {
+    paintPurplePathHalo(context, scale, buildBannerPath, bannerLine);
+  }
+  if (bannerLine > 0) {
+    buildBannerPath();
+    context.strokeStyle = frameColor(input.look);
+    context.lineWidth = bannerLine;
+    context.lineJoin = "miter";
+    context.stroke();
+  }
 
   const titleLines = splitEveryTeamTitle(input.title);
   const titleFont = `900 ${ET_TITLE_SIZE * scale}px ${POSTER_FONT}`;

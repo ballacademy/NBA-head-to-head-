@@ -23,6 +23,7 @@ import {
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurpleInnerHairline,
+  paintPurplePathHalo,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
@@ -282,11 +283,17 @@ export const renderStandingsCanvas = async (
     scale,
     buildBannerPath,
   );
-  buildBannerPath();
-  context.strokeStyle = frameColor(input.look);
-  context.lineWidth = 6 * scale;
-  context.lineJoin = "miter";
-  context.stroke();
+  const bannerLine = input.look === "none" ? 0 : 6 * scale;
+  if (input.purpleFlair) {
+    paintPurplePathHalo(context, scale, buildBannerPath, bannerLine);
+  }
+  if (bannerLine > 0) {
+    buildBannerPath();
+    context.strokeStyle = frameColor(input.look);
+    context.lineWidth = bannerLine;
+    context.lineJoin = "miter";
+    context.stroke();
+  }
 
   const titleLines = splitStandingsTitle(input.title);
   const titleSize = STANDINGS_TITLE_SIZE * scale;

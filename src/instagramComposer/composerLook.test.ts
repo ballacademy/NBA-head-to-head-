@@ -13,6 +13,7 @@ import {
   hairlineLinePx,
   IDENTITY_PURPLE,
   innerFrameRect,
+  purplePlateOutsetRect,
   parseComposerLook,
   parsePurpleFlair,
   parseShowTeamHairline,
@@ -94,6 +95,15 @@ describe("composer look", () => {
     const r = Number.parseInt(IDENTITY_PURPLE.slice(1, 3), 16);
     const b = Number.parseInt(IDENTITY_PURPLE.slice(5, 7), 16);
     expect(b).toBeGreaterThan(r);
+  });
+
+  it("paints the kyber title-plate ring outside the box, matching preview box-shadow", () => {
+    const outer = purplePlateOutsetRect(100, 200, 400, 80, 2);
+    expect(outer.line).toBe(5);
+    expect(outer.x).toBeLessThan(100);
+    expect(outer.y).toBeLessThan(200);
+    expect(outer.x + outer.w).toBeGreaterThan(500);
+    expect(outer.y + outer.h).toBeGreaterThan(280);
   });
 
   it("keeps a 1px team hairline inside the white/black frame and off by default only when toggled", () => {
