@@ -12,15 +12,18 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import type { PhotoPan } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
   RL_FADE_NAME_H,
-  RL_FOOTER_H,
-  RL_HEADER_H,
   RL_NAME_H,
   RL_NAME_LOGO,
   RL_POS_H,
+  rankedFooterH,
+  rankedHeaderH,
+  type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
   lineupPosition,
   RANK_PILL_MAX,
+  rankHeadlinePrimary,
+  rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
   splitRankedLineupTitle,
   type RankedLineupStrip,
@@ -34,6 +37,7 @@ interface RankedLineupsGraphicProps {
   look?: ComposerLook;
   showBa?: boolean;
   showFade?: boolean;
+  rankDisplay?: RankDisplay;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -60,6 +64,7 @@ export const RankedLineupsGraphic = forwardRef<
     look = "white",
     showBa = false,
     showFade = false,
+    rankDisplay = "headline",
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -112,6 +117,7 @@ export const RankedLineupsGraphic = forwardRef<
         "rl-board",
         exporting ? "is-exporting" : "",
         showFade ? "is-fade" : "",
+        rankDisplay === "pill" ? "is-pill" : "is-headline",
         composerLookClass(look),
       ]
         .filter(Boolean)
@@ -119,8 +125,8 @@ export const RankedLineupsGraphic = forwardRef<
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--header-h" as string]: String(RL_HEADER_H),
-          ["--footer-h" as string]: String(RL_FOOTER_H),
+          ["--header-h" as string]: String(rankedHeaderH(rankDisplay)),
+          ["--footer-h" as string]: String(rankedFooterH(showFade)),
           ["--pos-h" as string]: String(RL_POS_H),
           ["--name-h" as string]: String(showFade ? RL_FADE_NAME_H : RL_NAME_H),
           ["--name-logo" as string]: String(RL_NAME_LOGO),
@@ -155,16 +161,23 @@ export const RankedLineupsGraphic = forwardRef<
             onChange={onTitleChange}
           />
         </div>
-        <input
-          className="rl-pill"
-          value={rank}
-          maxLength={RANK_PILL_MAX}
-          spellCheck={false}
-          aria-label="Carousel rank pill"
-          onChange={(event) =>
-            onRankChange(event.target.value.slice(0, RANK_PILL_MAX))
-          }
-        />
+        {rankDisplay === "pill" ? (
+          <input
+            className="rl-pill"
+            value={rank}
+            maxLength={RANK_PILL_MAX}
+            spellCheck={false}
+            aria-label="Carousel rank pill"
+            onChange={(event) =>
+              onRankChange(event.target.value.slice(0, RANK_PILL_MAX))
+            }
+          />
+        ) : (
+          <div className="rl-headline" aria-label="Carousel rank headline">
+            <span className="rl-headline__mark">{rankHeadlinePrimary(rank)}</span>
+            <span className="rl-headline__of">{rankHeadlineSecondary(rank)}</span>
+          </div>
+        )}
       </header>
       <div className="rl-strips">
         {Array.from({ length: RANKED_LINEUP_STRIP_COUNT }, (_, index) => {
@@ -218,41 +231,45 @@ export const RankedLineupsGraphic = forwardRef<
           return (
             <div key={`rl-meta-${position}`} className="rl-meta">
               <span className="rl-pos">{position}</span>
-              <input
-                className="rl-given"
-                value={strip.firstName}
-                maxLength={NAME_FIRST_MAX}
-                placeholder={empty ? "" : "FIRST"}
-                aria-label={`${position} first name`}
-                onChange={(event) =>
-                  onNameChange(index, {
-                    firstName: event.target.value.slice(0, NAME_FIRST_MAX),
-                  })
-                }
-                onClick={() => {
-                  if (empty) {
-                    onPick(index);
-                  }
-                }}
-              />
-              <textarea
-                className="rl-family"
-                value={strip.lastName}
-                maxLength={NAME_LAST_MAX}
-                rows={2}
-                placeholder={empty ? "" : "LAST"}
-                aria-label={`${position} last name`}
-                onChange={(event) =>
-                  onNameChange(index, {
-                    lastName: event.target.value.slice(0, NAME_LAST_MAX),
-                  })
-                }
-                onClick={() => {
-                  if (empty) {
-                    onPick(index);
-                  }
-                }}
-              />
+              {showFade ? null : (
+                <>
+                  <input
+                    className="rl-given"
+                    value={strip.firstName}
+                    maxLength={NAME_FIRST_MAX}
+                    placeholder={empty ? "" : "FIRST"}
+                    aria-label={`${position} first name`}
+                    onChange={(event) =>
+                      onNameChange(index, {
+                        firstName: event.target.value.slice(0, NAME_FIRST_MAX),
+                      })
+                    }
+                    onClick={() => {
+                      if (empty) {
+                        onPick(index);
+                      }
+                    }}
+                  />
+                  <textarea
+                    className="rl-family"
+                    value={strip.lastName}
+                    maxLength={NAME_LAST_MAX}
+                    rows={2}
+                    placeholder={empty ? "" : "LAST"}
+                    aria-label={`${position} last name`}
+                    onChange={(event) =>
+                      onNameChange(index, {
+                        lastName: event.target.value.slice(0, NAME_LAST_MAX),
+                      })
+                    }
+                    onClick={() => {
+                      if (empty) {
+                        onPick(index);
+                      }
+                    }}
+                  />
+                </>
+              )}
             </div>
           );
         })}

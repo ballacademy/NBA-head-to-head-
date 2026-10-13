@@ -6,6 +6,7 @@ import {
 } from "../instagramComposer/composerLook";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { leaderboardBlankCount } from "./potdLeaderboardLayout";
 import {
@@ -151,6 +152,15 @@ export const PotdLeaderboardGraphic = forwardRef<
                     )}
                   </span>
                 ) : null}
+                <span className="plb-head" aria-hidden="true">
+                  {entry.headshotUrl ? (
+                    <PlayerHeadshot
+                      className="plb-head__img"
+                      src={entry.headshotUrl}
+                      label={entry.name}
+                    />
+                  ) : null}
+                </span>
                 <span
                   className={["plb-rank", medal ? `is-${medal}` : ""]
                     .filter(Boolean)

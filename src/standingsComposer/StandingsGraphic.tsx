@@ -17,10 +17,13 @@ import {
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
+  formatStandingRecord,
   lastWeekDelta,
+  lastWeekMark,
   SLOT_COUNT,
   splitStandingsTitle,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { TeamLogo } from "./TeamLogo";
 import { getTeam } from "./teams";
@@ -32,6 +35,8 @@ interface StandingsGraphicProps {
   slots: RankingSlots;
   lastWeekSlots?: RankingSlots | null;
   showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
   activeIndex: number | null;
   look?: ComposerLook;
   exporting?: boolean;
@@ -83,6 +88,8 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       slots,
       lastWeekSlots = null,
       showArrows = false,
+      showRecord = false,
+      records,
       activeIndex,
       look = "white",
       exporting = false,
@@ -255,6 +262,10 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             const delta = showArrows
               ? lastWeekDelta(slots, lastWeekSlots, index)
               : null;
+            const mark = lastWeekMark(delta);
+            const recordLabel = showRecord
+              ? formatStandingRecord(team ? records?.[team.id] : null)
+              : null;
             return (
               <button
                 key={rank}
@@ -282,18 +293,17 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                 }
               >
                 <span className="ig-slot__rank">{rank}</span>
-                {delta != null ? (
+                {mark ? (
                   <span
-                    className={
-                      delta > 0 ? "ig-slot__delta is-up" : "ig-slot__delta is-down"
-                    }
-                    aria-label={
-                      delta > 0
-                        ? `Up ${delta} from last week`
-                        : `Down ${Math.abs(delta)} from last week`
-                    }
+                    className={`ig-slot__delta is-${mark.kind}`}
+                    aria-label={mark.label}
                   >
-                    {delta > 0 ? "▲" : "▼"}
+                    {mark.text}
+                  </span>
+                ) : null}
+                {recordLabel ? (
+                  <span className="ig-slot__record" aria-label={`${team?.name} record ${recordLabel}`}>
+                    {recordLabel}
                   </span>
                 ) : null}
                 {team ? (

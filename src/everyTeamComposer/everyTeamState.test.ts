@@ -6,6 +6,7 @@ import {
   EVERY_TEAM_ORDER,
   assignPlayer,
   assignPlayerToTeam,
+  autoFillEveryTeamSlots,
   autoSortRankedOrder,
   clearEveryTeamSlot,
   createDefaultRankedOrder,
@@ -28,10 +29,13 @@ import catalog from "../../data/every-team-historical-rosters.json";
 import {
   hydrateEveryTeamRosters,
   listRosterPlayers,
+  pickSeasonLeader,
   rosterAsTierPlayers,
   rosterStatValue,
   seasonForTeam,
   setCellSeason,
+  statsSeasonFor,
+  teamLogoSrc,
 } from "./historicalRosters";
 import { sortPlayers } from "../tierListComposer/nbaActivePlayers";
 
@@ -265,7 +269,28 @@ describe("every-team order and slots", () => {
     expect(rosterStatValue(knicks.find((player) => player.pts != null) ?? null, "pra")).not.toBeNull();
   });
 
-  it("auto-sorts 2026-27 starter PGs by PRA using ESPN fallback averages", () => {
+  it("uses 2025-26 stats on the current season until that year has a real table", () => {
+    expect(statsSeasonFor("2026-27")).toBe("2025-26");
+    expect(statsSeasonFor("2012-13")).toBe("2012-13");
+    const sga = listRosterPlayers("OKC", "2026-27").find(
+      (player) => player.id === "4278073",
+    );
+    expect(sga?.pts).toBe(31.1);
+    expect(rosterStatValue(sga ?? null, "points")).toBe(31.1);
+    expect(pickSeasonLeader("OKC", "2026-27", "points")?.id).toBe("4278073");
+    expect(pickSeasonLeader("OKC", "2025-26", "points")?.name).toBe(
+      "Shai Gilgeous-Alexander",
+    );
+    const filled = autoFillEveryTeamSlots("2026-27", {}, "points");
+    expect(filled[slotIndexForTeam("OKC")]).toBe("4278073");
+    expect(filled.filter(Boolean).length).toBeGreaterThan(20);
+    expect(teamLogoSrc("OKC", "2001-02", false)).toContain("OKC");
+    expect(teamLogoSrc("OKC", "2001-02", true)).toContain("SEA");
+    expect(teamLogoSrc("BKN", "2011-12", true)).toContain("NJN");
+    expect(teamLogoSrc("OKC", "2025-26", true)).toContain("OKC");
+  });
+
+  it("auto-sorts 2026-27 starter PGs by PRA using last season’s table", () => {
     const order = createDefaultRankedOrder();
     const values = order.map((teamId) => {
       const pg = listRosterPlayers(teamId, "2026-27").find(

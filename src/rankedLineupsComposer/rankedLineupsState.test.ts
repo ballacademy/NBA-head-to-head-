@@ -6,6 +6,9 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  rankedFooterH,
+  rankedHeaderH,
+  rankedStripH,
   RL_FOOTER_H,
   RL_HEADER_H,
   RL_PAD_X,
@@ -18,8 +21,11 @@ import { TOTW_STRIP_GAP } from "../teamOfTheWeekComposer/teamOfTheWeekLayout";
 import {
   applyPlayerPick,
   createEmptyStrips,
+  DEFAULT_RANK_DISPLAY,
   DEFAULT_RANK_PILL,
   DEFAULT_RANKED_LINEUP_TITLE,
+  rankHeadlinePrimary,
+  rankHeadlineSecondary,
   defaultRankedLineupsDraft,
   LINEUP_POSITIONS,
   lineupPosition,
@@ -62,7 +68,7 @@ describe("ranked lineups", () => {
       "TOP 10 NBA PLAYERS",
       "AT EACH POSITION",
     ]);
-    expect(RL_PAD_X).toBe(12);
+    expect(RL_PAD_X).toBe(10);
     expect(RL_STRIP_GAP).toBe(4);
     expect(TOTW_STRIP_GAP).toBeGreaterThan(RL_STRIP_GAP);
     expect(nextRankPill("BEST")).toBe("2ND");
@@ -70,6 +76,18 @@ describe("ranked lineups", () => {
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);
     expect(draft.showFade).toBe(false);
+    expect(draft.rankDisplay).toBe(DEFAULT_RANK_DISPLAY);
+    expect(rankHeadlinePrimary("BEST")).toBe("#1");
+    expect(rankHeadlineSecondary("BEST")).toBe("1 OF 10");
+    expect(rankHeadlinePrimary("2ND")).toBe("#2");
+    expect(rankedStripH("headline", true)).toBeGreaterThan(
+      rankedStripH("headline", false),
+    );
+    expect(
+      rankedHeaderH("headline") +
+        rankedStripH("headline", true) +
+        rankedFooterH(true),
+    ).toBe(GRAPHIC_HEIGHT);
   });
 
   it("fills a position from the picker and tags used players by slot", () => {

@@ -17,6 +17,7 @@ import {
   splitStandingsTitle,
   standingsSubtitleLabel,
   lastWeekDelta,
+  lastWeekMark,
   usedTeamIds,
 } from "./rankingState";
 
@@ -48,8 +49,14 @@ describe("ranking slots", () => {
     const last = assignTeam(assignTeam(createEmptySlots(), 0, "NYK"), 2, "BOS");
     expect(lastWeekDelta(now, last, 0)).toBe(2);
     expect(lastWeekDelta(now, last, 1)).toBe(-1);
-    expect(lastWeekDelta(now, now, 0)).toBeNull();
+    expect(lastWeekDelta(now, now, 0)).toBe(0);
     expect(lastWeekDelta(now, null, 0)).toBeNull();
+    expect(lastWeekMark(2)?.text).toBe("▲2");
+    expect(lastWeekMark(-1)?.text).toBe("▼1");
+    expect(lastWeekMark(0)?.text).toBe("=");
+    expect(lastWeekMark(null)).toBeNull();
+    const missingLast = assignTeam(createEmptySlots(), 0, "BOS");
+    expect(lastWeekDelta(now, missingLast, 1)).toBeNull();
   });
 });
 

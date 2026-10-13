@@ -241,6 +241,12 @@ describe("fittedLogoRect", () => {
     const squashed = stretchedLogoRect(12, 40, 520, 116);
     expect(squashed.w / squashed.h).toBeCloseTo(520 / 116);
     expect(dest.w / dest.h).not.toBeCloseTo(squashed.w / squashed.h);
+    const portrait = coveredLogoRect({ x: 0, y: 0, w: 400, h: 200 }, 0, 0, 80, 140);
+    expect(portrait.w / portrait.h).toBeCloseTo(2);
+    expect(portrait.h).toBeGreaterThanOrEqual(140);
+    expect(stretchedLogoRect(0, 0, 80, 140).w / stretchedLogoRect(0, 0, 80, 140).h).toBeCloseTo(
+      80 / 140,
+    );
   });
 
   it("sizes neon logo glow from leftover cell padding", () => {

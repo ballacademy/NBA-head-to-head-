@@ -9,7 +9,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(58 * var(--u)) minmax(0, 1fr) calc(160 * var(--u));
+  grid-template-rows: calc(40 * var(--u)) minmax(0, 1fr) calc(160 * var(--u));
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;
@@ -69,10 +69,10 @@
 .totw-strips {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: calc(16 * var(--u));
+  gap: calc(6 * var(--u));
   min-height: 0;
   height: 100%;
-  padding: calc(4 * var(--u)) calc(28 * var(--u)) calc(8 * var(--u));
+  padding: calc(2 * var(--u)) calc(10 * var(--u)) calc(4 * var(--u));
   box-sizing: border-box;
 }
 

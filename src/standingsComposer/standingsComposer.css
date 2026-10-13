@@ -542,11 +542,11 @@ main.sc-stage {
 
 .ig-slot__delta {
   position: absolute;
-  top: 3.2%;
-  right: 4%;
+  top: 2.6%;
+  right: 3.2%;
   z-index: 2;
   font-family: var(--ig-poster);
-  font-size: calc(28 * var(--u));
+  font-size: calc(36 * var(--u));
   font-weight: 900;
   line-height: 1;
   pointer-events: none;
@@ -559,6 +559,29 @@ main.sc-stage {
 
 .ig-slot__delta.is-down {
   color: #ef4444;
+}
+
+.ig-slot__delta.is-same {
+  color: #9ca3af;
+  font-size: calc(40 * var(--u));
+}
+
+.ig-slot__record {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5%;
+  z-index: 2;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: #fff;
+  pointer-events: none;
+  text-shadow:
+    calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.45);
 }
 
 .ig-slot__logo {

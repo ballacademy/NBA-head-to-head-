@@ -18,7 +18,7 @@ import {
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
-import { fetchConferenceStandings } from "./nbaStandings";
+import { fetchConferenceStandingsBundle } from "./nbaStandings";
 import {
   assignTeam,
   clearSlot,
@@ -29,6 +29,7 @@ import {
   isRankingSlots,
   LAST_WEEK_STORAGE_KEY,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { exportStandingsPng } from "./exportPng";
 import { StandingsGraphic } from "./StandingsGraphic";
@@ -46,6 +47,8 @@ interface ComposerDraft {
   slots: RankingSlots;
   showBa?: boolean;
   showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
 }
 
 const loadDraft = (): ComposerDraft => {
@@ -57,6 +60,11 @@ const loadDraft = (): ComposerDraft => {
     slots: isRankingSlots(stored?.slots) ? stored.slots : createEmptySlots(),
     showBa: stored?.showBa === true,
     showArrows: stored?.showArrows === true,
+    showRecord: stored?.showRecord === true,
+    records:
+      stored?.records && typeof stored.records === "object"
+        ? stored.records
+        : {},
   };
 };
 
@@ -78,6 +86,8 @@ export function StandingsComposerApp() {
   const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
   const [showBa, setShowBa] = useState(false);
   const [showArrows, setShowArrows] = useState(false);
+  const [showRecord, setShowRecord] = useState(false);
+  const [records, setRecords] = useState<Record<string, StandingRecord>>({});
   const [lastWeekSlots, setLastWeekSlots] = useState<RankingSlots | null>(null);
   const [filling, setFilling] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
@@ -94,6 +104,8 @@ export function StandingsComposerApp() {
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
     setShowArrows(draft.showArrows === true);
+    setShowRecord(draft.showRecord === true);
+    setRecords(draft.records ?? {});
     setLastWeekSlots(loadLastWeek());
     setHydrated(true);
   }, []);
@@ -102,8 +114,17 @@ export function StandingsComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, subtitle, slots, showBa, showArrows });
-  }, [brand, title, subtitle, slots, showBa, showArrows, hydrated]);
+    writeJson(STORAGE_KEY, {
+      brand,
+      title,
+      subtitle,
+      slots,
+      showBa,
+      showArrows,
+      showRecord,
+      records,
+    });
+  }, [brand, title, subtitle, slots, showBa, showArrows, showRecord, records, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -125,7 +146,18 @@ export function StandingsComposerApp() {
           "nba-standings",
           `${subtitle} ${exportDateStamp()}`,
         ),
-        { brand, title, subtitle, slots, look, showBa, showArrows, lastWeekSlots },
+        {
+          brand,
+          title,
+          subtitle,
+          slots,
+          look,
+          showBa,
+          showArrows,
+          showRecord,
+          records,
+          lastWeekSlots,
+        },
       );
       setStatus("Download started.");
     } catch (error) {
@@ -150,9 +182,10 @@ export function StandingsComposerApp() {
     setFilling(true);
     setStatus(`Loading ${conference} standings…`);
     try {
-      const next = await fetchConferenceStandings(conference);
+      const next = await fetchConferenceStandingsBundle(conference);
       push(slots);
-      setSlots(next);
+      setSlots(next.slots);
+      setRecords((current) => ({ ...current, ...next.records }));
       setSubtitle(
         conference === "East" ? "EASTERN CONFERENCE" : "WESTERN CONFERENCE",
       );
@@ -180,7 +213,18 @@ export function StandingsComposerApp() {
           `${subtitle} ${exportDateStamp()}`,
           true,
         ),
-        { brand, title, subtitle, slots, look, showBa, showArrows, lastWeekSlots },
+        {
+          brand,
+          title,
+          subtitle,
+          slots,
+          look,
+          showBa,
+          showArrows,
+          showRecord,
+          records,
+          lastWeekSlots,
+        },
         true,
       );
       setStatus("Story PNG download started.");
@@ -253,9 +297,30 @@ export function StandingsComposerApp() {
             {showArrows ? "On" : "Off"}
           </button>
         </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">W–L</span>
+          <button
+            type="button"
+            className={showRecord ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showRecord}
+            aria-label="Show wins and losses in each square"
+            onClick={() => setShowRecord((on) => !on)}
+          >
+            {showRecord ? "On" : "Off"}
+          </button>
+        </label>
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ brand, title, subtitle, slots, showBa, showArrows }}
+          board={{
+            brand,
+            title,
+            subtitle,
+            slots,
+            showBa,
+            showArrows,
+            showRecord,
+            records,
+          }}
           onLoad={(next) => {
             setBrand(next.brand);
             setTitle(next.title);
@@ -263,6 +328,8 @@ export function StandingsComposerApp() {
             setSlots(next.slots);
             setShowBa(next.showBa === true);
             setShowArrows(next.showArrows === true);
+            setShowRecord(next.showRecord === true);
+            setRecords(next.records ?? {});
             setStatus("Loaded named graphic.");
           }}
         />
@@ -340,6 +407,8 @@ export function StandingsComposerApp() {
             slots={slots}
             lastWeekSlots={lastWeekSlots}
             showArrows={showArrows}
+            showRecord={showRecord}
+            records={records}
             look={look}
             showBa={showBa}
             activeIndex={exporting ? null : activeIndex}

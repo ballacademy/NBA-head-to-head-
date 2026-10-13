@@ -5,10 +5,11 @@ const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
 export const NAME_FADE_STOPS: Array<[number, string]> = [
   [0, "rgba(0, 0, 0, 0)"],
-  [0.22, "rgba(0, 0, 0, 0.42)"],
-  [0.48, "rgba(0, 0, 0, 0.78)"],
-  [0.74, "rgba(0, 0, 0, 0.92)"],
-  [1, "rgba(0, 0, 0, 0.97)"],
+  [0.16, "rgba(0, 0, 0, 0.28)"],
+  [0.36, "rgba(0, 0, 0, 0.62)"],
+  [0.58, "rgba(0, 0, 0, 0.88)"],
+  [0.78, "rgba(0, 0, 0, 0.95)"],
+  [1, "rgba(0, 0, 0, 0.98)"],
 ];
 
 export const paintNameFadeRect = (

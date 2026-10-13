@@ -24,7 +24,8 @@ import {
   RL_BRAND_H,
   RL_BRAND_SIZE,
   RL_FADE_NAME_H,
-  RL_FOOTER_H,
+  RL_HEADLINE_SIZE,
+  RL_HEADLINE_SUB_SIZE,
   RL_NAME_FAMILY_SIZE,
   RL_NAME_GIVEN_SIZE,
   RL_NAME_LOGO,
@@ -33,16 +34,20 @@ import {
   RL_PILL_SIZE,
   RL_POS_H,
   RL_POS_SIZE,
-  RL_STRIP_H,
   RL_STRIP_W,
-  RL_STRIPS_TOP,
   RL_TITLE_BLOCK_H,
   RL_TITLE_GRADIENT,
   RL_TITLE_SIZE,
+  rankedFooterH,
+  rankedHeaderH,
+  rankedStripH,
   rlStripX,
+  type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
   lineupPosition,
+  rankHeadlinePrimary,
+  rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
   RANKED_LINEUP_TITLE_TRACK,
   splitRankedLineupTitle,
@@ -217,6 +222,7 @@ export interface RankedLineupsRenderInput {
   look?: ComposerLook;
   showBa?: boolean;
   showFade?: boolean;
+  rankDisplay?: RankDisplay;
 }
 
 export const renderRankedLineupsCanvas = async (
@@ -281,30 +287,53 @@ export const renderRankedLineupsCanvas = async (
   });
   setLetterSpacing(context, 0);
 
+  const rankDisplay: RankDisplay =
+    input.rankDisplay === "pill" ? "pill" : "headline";
   const rankText = input.rank.trim().toUpperCase() || "BEST";
-  context.font = `900 ${RL_PILL_SIZE * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.12 * RL_PILL_SIZE * s);
-  const pillW = Math.max(
-    148 * s,
-    context.measureText(rankText).width + 44 * s,
-  );
-  const pillH = RL_PILL_H * s;
-  const pillX = (width - pillW) / 2;
-  const pillY = (RL_BRAND_H + RL_TITLE_BLOCK_H + RL_PILL_GAP) * s;
-  roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
-  context.fillStyle = "#fff";
-  context.fill();
-  context.lineWidth = 2 * s;
-  context.strokeStyle = "#fff";
-  context.stroke();
-  context.fillStyle = "#111";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(rankText, width / 2, pillY + pillH / 2);
-  setLetterSpacing(context, 0);
+  if (rankDisplay === "pill") {
+    context.font = `900 ${RL_PILL_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.12 * RL_PILL_SIZE * s);
+    const pillW = Math.max(
+      148 * s,
+      context.measureText(rankText).width + 44 * s,
+    );
+    const pillH = RL_PILL_H * s;
+    const pillX = (width - pillW) / 2;
+    const pillY = (RL_BRAND_H + RL_TITLE_BLOCK_H + RL_PILL_GAP) * s;
+    roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
+    context.fillStyle = "#fff";
+    context.fill();
+    context.lineWidth = 2 * s;
+    context.strokeStyle = "#fff";
+    context.stroke();
+    context.fillStyle = "#111";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(rankText, width / 2, pillY + pillH / 2);
+    setLetterSpacing(context, 0);
+  } else {
+    const headlineY = (RL_BRAND_H + RL_TITLE_BLOCK_H + 22) * s;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#fff";
+    context.font = `900 ${RL_HEADLINE_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.04 * RL_HEADLINE_SIZE * s);
+    withShadow(context, s, () => {
+      context.fillText(rankHeadlinePrimary(input.rank), width / 2, headlineY);
+    });
+    setLetterSpacing(context, 0.18 * RL_HEADLINE_SUB_SIZE * s);
+    context.font = `900 ${RL_HEADLINE_SUB_SIZE * s}px ${POSTER_FONT}`;
+    context.fillStyle = "rgba(255,255,255,0.86)";
+    context.fillText(
+      rankHeadlineSecondary(input.rank),
+      width / 2,
+      headlineY + 22 * s,
+    );
+    setLetterSpacing(context, 0);
+  }
 
-  const stripY = RL_STRIPS_TOP * s;
-  const stripH = RL_STRIP_H * s;
+  const stripY = rankedHeaderH(rankDisplay) * s;
+  const stripH = rankedStripH(rankDisplay, input.showFade === true) * s;
   const stripW = RL_STRIP_W * s;
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index] ?? {
@@ -329,7 +358,7 @@ export const renderRankedLineupsCanvas = async (
     );
   }
 
-  const footerY = (GRAPHIC_HEIGHT - RL_FOOTER_H) * s;
+  const footerY = (GRAPHIC_HEIGHT - rankedFooterH(input.showFade === true)) * s;
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index];
     const x = rlStripX(index) * s;

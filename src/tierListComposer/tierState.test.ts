@@ -286,6 +286,20 @@ describe("tier layout", () => {
     expect(six.laneH).toBeGreaterThan(ten.laneH);
     expect(three.gridTemplate).toBe("1fr 1fr 1fr");
   });
+
+  it("collapses empty tiers so filled rows eat leftover board", () => {
+    const even = tierBoardLayout([1, 1, 1, 1, 1, 1]);
+    const mixed = tierBoardLayout([8, 0, 0, 4, 0, 0]);
+    expect(even.lanes.every((lane) => lane === 1)).toBe(true);
+    expect(mixed.lanes[0]).toBe(1);
+    expect(mixed.lanes[1]).toBeLessThan(1);
+    expect(mixed.lanes[3]).toBe(1);
+    expect(mixed.lanes[0]! * mixed.laneH).toBeGreaterThan(
+      even.lanes[0]! * even.laneH,
+    );
+    const allEmpty = tierBoardLayout([0, 0, 0, 0, 0, 0]);
+    expect(allEmpty.lanes.every((lane) => lane === 1)).toBe(true);
+  });
 });
 
 describe("tier colors", () => {

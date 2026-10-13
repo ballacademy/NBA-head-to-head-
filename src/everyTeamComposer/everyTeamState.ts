@@ -2,6 +2,8 @@ import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
+  EVERY_TEAM_STAT_METRICS,
+  pickSeasonLeader,
   rosterHasPlayer,
   seasonForTeam,
   type EveryTeamStatMetric,
@@ -76,6 +78,7 @@ export interface EveryTeamDraft {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
 }
@@ -323,7 +326,21 @@ export const autoSortRankedOrder = (
 };
 
 export const autoSortMetricLabel = (metric: EveryTeamStatMetric) =>
-  metric === "pra" ? "PRA" : metric === "points" ? "points" : "steals + blocks";
+  EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+
+export const autoFillEveryTeamSlots = (
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+  metric: EveryTeamStatMetric = "points",
+): EveryTeamSlots =>
+  EVERY_TEAM_ORDER.map(
+    (team) =>
+      pickSeasonLeader(
+        team.id,
+        seasonForTeam(team.id, boardSeason, cellSeasons),
+        metric,
+      )?.id ?? null,
+  );
 
 export const splitEveryTeamTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_EVERY_TEAM_TITLE);

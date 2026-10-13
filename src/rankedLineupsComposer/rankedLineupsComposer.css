@@ -21,9 +21,9 @@
   width: 100%;
   display: grid;
   grid-template-rows:
-    calc(var(--header-h, 180) * var(--u))
+    calc(var(--header-h, 162) * var(--u))
     minmax(0, 1fr)
-    calc(var(--footer-h, 138) * var(--u));
+    calc(var(--footer-h, 126) * var(--u));
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;
@@ -55,7 +55,7 @@
 .rl-brand {
   margin: 0;
   width: 70%;
-  height: calc(50 * var(--u));
+  height: calc(40 * var(--u));
   padding: 0;
   border: 0;
   appearance: none;
@@ -87,8 +87,8 @@
 .rl-title-block {
   position: relative;
   width: 96%;
-  flex: 0 0 calc(76 * var(--u));
-  height: calc(76 * var(--u));
+  flex: 0 0 calc(62 * var(--u));
+  height: calc(62 * var(--u));
   pointer-events: none;
 }
 
@@ -105,7 +105,7 @@
   -webkit-text-fill-color: transparent;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(40 * var(--u));
+  font-size: calc(38 * var(--u));
   font-weight: 900;
   font-style: italic;
   font-synthesis: none;
@@ -136,7 +136,7 @@
   caret-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(40 * var(--u));
+  font-size: calc(38 * var(--u));
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.02em;
@@ -146,8 +146,37 @@
   pointer-events: auto;
 }
 
+.rl-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: calc(4 * var(--u));
+  min-height: calc(54 * var(--u));
+  line-height: 0.9;
+}
+
+.rl-headline__mark {
+  font-family: var(--ig-poster);
+  font-size: calc(44 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow:
+    calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.85),
+    calc(2.2 * var(--u)) calc(2.6 * var(--u)) 0 rgba(0, 0, 0, 0.35);
+}
+
+.rl-headline__of {
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .rl-pill {
-  margin-top: calc(10 * var(--u));
+  margin-top: calc(8 * var(--u));
   min-width: calc(148 * var(--u));
   height: calc(34 * var(--u));
   padding: 0 calc(22 * var(--u));
@@ -238,7 +267,7 @@
 
 .rl-board.is-fade .rl-given,
 .rl-board.is-fade .rl-family {
-  visibility: hidden;
+  display: none;
 }
 
 .rl-meta {
