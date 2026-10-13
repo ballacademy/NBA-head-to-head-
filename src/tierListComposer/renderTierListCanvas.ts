@@ -321,7 +321,6 @@ export const renderTierListCanvas = async (
       } else if (art?.mark && team) {
         drawCenteredLogo(context, art.mark, inner.x, inner.y, inner.w, inner.h, {
           cacheKey: team.logoSrc,
-          nudgeLeft: true,
         });
       }
       context.restore();
