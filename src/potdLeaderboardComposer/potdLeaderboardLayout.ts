@@ -33,3 +33,31 @@ export const PLB_NAME_ADVANCE = 12.2;
 export const PLB_HAIRLINE = "rgba(245, 196, 0, 0.22)";
 export const PLB_ALT_FILL = "rgba(245, 196, 0, 0.05)";
 export const PLB_POTD_FILL = "rgba(245, 196, 0, 0.16)";
+export const PLB_ROW_H = 52;
+export const PLB_WRAP_ROW_H = 68;
+export const PLB_LIST_PAD_TOP = 18;
+export const PLB_LIST_PAD_BOTTOM = 14;
+
+export const leaderboardListInnerH = () =>
+  GRAPHIC_HEIGHT -
+  PLB_PAD_TOP -
+  PLB_TITLE_H -
+  PLB_GAP -
+  PLB_PAD_BOTTOM -
+  PLB_STROKE * 2 -
+  PLB_LIST_PAD_TOP -
+  PLB_LIST_PAD_BOTTOM;
+
+export const leaderboardRowH = (wrap: boolean) =>
+  wrap ? PLB_WRAP_ROW_H : PLB_ROW_H;
+
+/** Blank hairline rows that fill leftover list height. Font size stays put. */
+export const leaderboardBlankCount = (
+  rows: Array<{ displayLines: string[] }>,
+) => {
+  const used = rows.reduce(
+    (sum, row) => sum + leaderboardRowH(row.displayLines.length > 1),
+    0,
+  );
+  return Math.max(0, Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H));
+};

@@ -9,9 +9,11 @@ import {
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_RANK_W,
+  PLB_ROW_H,
   PLB_TITLE_H,
   PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
+  leaderboardBlankCount,
 } from "./potdLeaderboardLayout";
 import { applyPlayerPick, createEmptyCards } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -112,6 +114,21 @@ describe("POTD leaderboard ranks", () => {
     expect(teamForLeaderboardName("Luka Doncic")).toBe("LAL");
     expect(isPotdPairName("Luka Doncic", ["LUKA DONCIC"])).toBe(true);
     expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);
+  });
+
+  it("fills leftover list height with blank hairline rows instead of scaling type", () => {
+    const five = rankLeaderboard([
+      entry("Luka Doncic", 12),
+      entry("Nikola Jokic", 11),
+      entry("Joel Embiid", 10),
+      entry("Stephen Curry", 6),
+      entry("LeBron James", 5),
+    ]);
+    const blanks = leaderboardBlankCount(five);
+    expect(blanks).toBeGreaterThan(8);
+    expect(PLB_ROW_H).toBe(52);
+    expect(five.length + blanks).toBeGreaterThan(15);
+    expect(leaderboardBlankCount([])).toBeGreaterThan(blanks);
   });
 
   it("defaults team pips on and stores the toggle", () => {
