@@ -30,6 +30,8 @@ export {
 export const RANKED_LINEUP_STRIP_COUNT = 5;
 export const LINEUP_POSITIONS = ["PG", "SG", "SF", "PF", "C"] as const;
 export type LineupPosition = (typeof LINEUP_POSITIONS)[number];
+export const DEFAULT_POSITION_LABELS = [...LINEUP_POSITIONS];
+export const POSITION_LABEL_MAX = 8;
 
 export const DEFAULT_RANKED_LINEUP_TITLE =
   "TOP 10 NBA PLAYERS AT EACH POSITION";
@@ -69,6 +71,7 @@ export interface RankedLineupsDraft {
   showFade?: boolean;
   showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
+  positionLabels?: string[];
 }
 
 export const lineupPosition = (index: number): LineupPosition =>
@@ -119,8 +122,24 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     showFade: false,
     showTeamHairline: true,
     rankDisplay: DEFAULT_RANK_DISPLAY,
+    positionLabels: [...DEFAULT_POSITION_LABELS],
   };
 };
+
+export const parsePositionLabels = (value: unknown): string[] => {
+  if (!Array.isArray(value) || value.length !== RANKED_LINEUP_STRIP_COUNT) {
+    return [...DEFAULT_POSITION_LABELS];
+  }
+  return value.map((item, index) => {
+    if (typeof item !== "string") {
+      return DEFAULT_POSITION_LABELS[index]!;
+    }
+    return item.replace(/\s+/g, " ").trim().slice(0, POSITION_LABEL_MAX);
+  });
+};
+
+export const positionLabelAt = (labels: string[] | undefined, index: number) =>
+  parsePositionLabels(labels)[index] ?? "";
 
 export const parseRankDisplay = (value: unknown): RankDisplay =>
   value === "headline" ? "headline" : "pill";

@@ -53,7 +53,7 @@ import {
   type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
-  lineupPosition,
+  parsePositionLabels,
   rankHeadlinePrimary,
   rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
@@ -236,6 +236,7 @@ export interface RankedLineupsRenderInput {
   showFade?: boolean;
   showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
+  positionLabels?: string[];
 }
 
 export const renderRankedLineupsCanvas = async (
@@ -393,25 +394,31 @@ export const renderRankedLineupsCanvas = async (
   }
 
   const footerY = (GRAPHIC_HEIGHT - rankedFooterH(input.showFade === true)) * s;
+  const positionLabels = parsePositionLabels(input.positionLabels);
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index];
     const x = rlStripX(index) * s;
     const cx = x + stripW / 2;
-    context.font = `900 ${RL_POS_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    const pos = lineupPosition(index);
-    withShadow(context, s, () => {
-      strokeFillText(
-        context,
-        pos,
-        cx,
-        footerY + (RL_POS_H * s) / 2,
-        titleGradient(context, pos, cx, footerY + (RL_POS_H * s) / 2),
-        "#050505",
-        2.4 * s,
+    const pos = (positionLabels[index] ?? "").trim().toUpperCase();
+    if (pos) {
+      context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.06 * 16 * s);
+      const pillH = 28 * s;
+      const pillW = Math.min(
+        stripW * 0.72,
+        Math.max(48 * s, context.measureText(pos).width + 20 * s),
       );
-    });
+      const pillX = cx - pillW / 2;
+      const pillY = footerY + (RL_POS_H * s - pillH) / 2;
+      roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
+      context.fillStyle = "#fff";
+      context.fill();
+      context.fillStyle = "#111";
+      context.fillText(pos, cx, pillY + pillH / 2);
+      setLetterSpacing(context, 0);
+    }
 
     if (input.showFade) {
       continue;

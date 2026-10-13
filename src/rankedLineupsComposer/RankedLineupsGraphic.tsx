@@ -22,7 +22,10 @@ import {
   type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
+  DEFAULT_POSITION_LABELS,
   lineupPosition,
+  parsePositionLabels,
+  POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   rankHeadlinePrimary,
   rankHeadlineSecondary,
@@ -41,6 +44,7 @@ interface RankedLineupsGraphicProps {
   showFade?: boolean;
   showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
+  positionLabels?: string[];
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -53,6 +57,7 @@ interface RankedLineupsGraphicProps {
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onPositionChange: (index: number, label: string) => void;
 }
 
 export const RankedLineupsGraphic = forwardRef<
@@ -69,6 +74,7 @@ export const RankedLineupsGraphic = forwardRef<
     showFade = false,
     showTeamHairline = true,
     rankDisplay = "pill",
+    positionLabels,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -78,12 +84,14 @@ export const RankedLineupsGraphic = forwardRef<
     onPan,
     onUpload,
     onNameChange,
+    onPositionChange,
   },
   ref,
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
   const titleLines = splitRankedLineupTitle(title);
+  const labels = parsePositionLabels(positionLabels);
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -247,9 +255,35 @@ export const RankedLineupsGraphic = forwardRef<
           const strip = strips[index]!;
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
+          const posLabel = labels[index] ?? "";
           return (
             <div key={`rl-meta-${position}`} className="rl-meta">
-              <span className="rl-pos">{position}</span>
+              <div className="rl-pos-slot">
+                <input
+                  className="rl-pos"
+                  value={posLabel}
+                  maxLength={POSITION_LABEL_MAX}
+                  placeholder={DEFAULT_POSITION_LABELS[index]}
+                  spellCheck={false}
+                  aria-label={`${position} position label`}
+                  onChange={(event) =>
+                    onPositionChange(
+                      index,
+                      event.target.value.slice(0, POSITION_LABEL_MAX),
+                    )
+                  }
+                />
+                {exporting || !posLabel ? null : (
+                  <button
+                    type="button"
+                    className="rl-pos__hide"
+                    aria-label={`Hide ${position} position`}
+                    onClick={() => onPositionChange(index, "")}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               {showFade ? null : (
                 <>
                   <input

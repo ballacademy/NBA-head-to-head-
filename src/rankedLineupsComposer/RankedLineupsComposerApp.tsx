@@ -41,7 +41,9 @@ import {
   nextRankPill,
   patchStrip,
   DEFAULT_RANK_DISPLAY,
+  parsePositionLabels,
   parseRankDisplay,
+  POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   RANK_PILL_PRESETS,
   setStripPhoto,
@@ -72,6 +74,7 @@ const loadDraft = (): RankedLineupsDraft => {
         showFade: stored.showFade === true,
         showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
         rankDisplay: parseRankDisplay(stored.rankDisplay),
+        positionLabels: parsePositionLabels(stored.positionLabels),
       },
       slides,
       stored.activeSlide ?? 0,
@@ -85,6 +88,7 @@ const loadDraft = (): RankedLineupsDraft => {
     showFade: stored?.showFade === true,
     showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
     rankDisplay: parseRankDisplay(stored?.rankDisplay),
+    positionLabels: parsePositionLabels(stored?.positionLabels),
   };
 };
 
@@ -107,6 +111,9 @@ export function RankedLineupsComposerApp() {
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [rankDisplay, setRankDisplay] = useState(DEFAULT_RANK_DISPLAY);
+  const [positionLabels, setPositionLabels] = useState(
+    parsePositionLabels(empty.positionLabels),
+  );
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -143,6 +150,7 @@ export function RankedLineupsComposerApp() {
     setShowFade(draft.showFade === true);
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setRankDisplay(parseRankDisplay(draft.rankDisplay));
+    setPositionLabels(parsePositionLabels(draft.positionLabels));
     setHydrated(true);
   }, []);
 
@@ -161,8 +169,9 @@ export function RankedLineupsComposerApp() {
       showFade,
       showTeamHairline,
       rankDisplay,
+      positionLabels,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, hydrated]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -182,6 +191,7 @@ export function RankedLineupsComposerApp() {
     setShowFade(next.showFade === true);
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
+    setPositionLabels(parsePositionLabels(next.positionLabels));
     setActiveIndex(null);
   };
 
@@ -216,7 +226,7 @@ export function RankedLineupsComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, showBa, showFade, showTeamHairline, rankDisplay },
+        { brand, title, rank, strips, look, showBa, showFade, showTeamHairline, rankDisplay, positionLabels },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -256,6 +266,7 @@ export function RankedLineupsComposerApp() {
             showFade,
             showTeamHairline,
             rankDisplay,
+            positionLabels,
           },
         );
         await new Promise((resolve) => window.setTimeout(resolve, 280));
@@ -373,6 +384,7 @@ export function RankedLineupsComposerApp() {
     showFade,
     showTeamHairline,
     rankDisplay,
+    positionLabels,
   };
 
   return (
@@ -567,6 +579,14 @@ export function RankedLineupsComposerApp() {
             showFade={showFade}
             showTeamHairline={showTeamHairline}
             rankDisplay={rankDisplay}
+            positionLabels={positionLabels}
+            onPositionChange={(index, label) =>
+              setPositionLabels((current) => {
+                const next = parsePositionLabels(current);
+                next[index] = label.slice(0, POSITION_LABEL_MAX);
+                return next;
+              })
+            }
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
