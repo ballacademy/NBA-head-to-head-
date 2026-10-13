@@ -1,12 +1,11 @@
 import {
-  clipToInnerFrame,
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
@@ -21,13 +20,14 @@ import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  PYRAMID_SLOT_COUNT,
   PYR_BA_INSET,
   PYR_BA_SIZE,
+  PYR_DEFAULT_ROWS,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
   PYR_TITLE_Y,
   pyramidCellRect,
+  pyramidSlotCount,
 } from "./pyramidLayout";
 import { pyramidTitle, type PyramidSlot } from "./pyramidState";
 
@@ -90,6 +90,7 @@ const strokeFillText = (
 export interface PyramidRenderInput {
   title: string;
   slots: PyramidSlot[];
+  rows?: number;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -126,30 +127,44 @@ export const renderPyramidCanvas = async (
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, PYR_TITLE_TRACK * PYR_TITLE_SIZE * s);
-  withShadow(context, s, () => {
-    strokeFillText(
-      context,
-      title,
-      width / 2,
-      (PYR_TITLE_Y + 46) * s,
-      "#fff",
-      "#000",
-      3.2 * s,
-    );
-  });
+  const paintTitle = () => {
+    withShadow(context, s, () => {
+      strokeFillText(
+        context,
+        title,
+        width / 2,
+        (PYR_TITLE_Y + 46) * s,
+        "#fff",
+        "#000",
+        3.2 * s,
+      );
+    });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, s, paintTitle);
+  } else {
+    paintTitle();
+  }
   setLetterSpacing(context, 0);
 
-  for (let index = 0; index < PYRAMID_SLOT_COUNT; index += 1) {
+  const rowCount = input.rows ?? PYR_DEFAULT_ROWS;
+  const slotCount = Math.min(input.slots.length, pyramidSlotCount(rowCount));
+  for (let index = slotCount - 1; index >= 0; index -= 1) {
     const slot = input.slots[index]!;
-    const rect = pyramidCellRect(index);
+    const rect = pyramidCellRect(index, rowCount);
     const x = rect.x * s;
     const y = rect.y * s;
     const w = rect.w * s;
     const h = rect.h * s;
+    const pop = rect.pop * s;
+    const drawY = y - pop;
+    const drawH = h + pop;
     context.save();
+    context.beginPath();
+    context.rect(x, drawY, w, drawH);
+    context.clip();
     context.fillStyle = "#111";
     context.fillRect(x, y, w, h);
-    const inner = clipToInnerFrame(context, x, y, w, h, s, input.look);
     if (slot?.photoSrc) {
       const photo = slot.photoSrc.startsWith("data:")
         ? await loadImage(slot.photoSrc)
@@ -158,10 +173,10 @@ export const renderPyramidCanvas = async (
         const dest = coverPanDraw(
           photo.naturalWidth || photo.width,
           photo.naturalHeight || photo.height,
-          inner.x,
-          inner.y,
-          inner.w,
-          inner.h,
+          x,
+          drawY,
+          w,
+          drawH,
           slot.pan.x,
           slot.pan.y,
           photoZoom(slot.pan),
@@ -169,12 +184,12 @@ export const renderPyramidCanvas = async (
         const rotate = photoRotate(slot.pan);
         if (rotate) {
           context.save();
-          context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
+          context.translate(x + w / 2, drawY + drawH / 2);
           context.rotate((rotate * Math.PI) / 180);
           context.drawImage(
             photo,
-            dest.dx - (inner.x + inner.w / 2),
-            dest.dy - (inner.y + inner.h / 2),
+            dest.dx - (x + w / 2),
+            dest.dy - (drawY + drawH / 2),
             dest.dw,
             dest.dh,
           );
@@ -182,13 +197,12 @@ export const renderPyramidCanvas = async (
         } else {
           context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
         }
-        paintPhotoVignette(context, inner.x, inner.y, inner.w, inner.h);
       }
     }
     context.restore();
     paintCellFrame(context, x, y, w, h, input.look, s);
     if (input.purpleFlair) {
-      paintPurpleInnerHairline(context, x, y, w, h, s, input.look);
+      paintPurplePlateEdge(context, x, y, w, h, s);
     }
   }
 

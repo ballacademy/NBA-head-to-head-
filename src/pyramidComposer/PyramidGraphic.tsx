@@ -6,19 +6,15 @@ import {
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import {
-  PYRAMID_ROWS,
-  PYRAMID_SLOT_COUNT,
-  PYR_CELL,
-  PYR_GAP,
-} from "./pyramidLayout";
-import type { PyramidSlot } from "./pyramidState";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
+import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { pyramidMetrics, PYR_DEFAULT_ROWS } from "./pyramidLayout";
+import type { PyramidSlot } from "./pyramidState";
 
 interface PyramidGraphicProps {
   title: string;
   slots: PyramidSlot[];
+  rows?: number;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -35,6 +31,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
     {
       title,
       slots,
+      rows = PYR_DEFAULT_ROWS,
       look = "white",
       purpleFlair = false,
       showBa = true,
@@ -49,6 +46,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const metrics = pyramidMetrics(rows);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -95,8 +93,10 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
         style={
           {
             ["--u" as string]: `${unit}px`,
-            ["--pyr-cell" as string]: String(PYR_CELL),
-            ["--pyr-gap" as string]: String(PYR_GAP),
+            ["--pyr-cell" as string]: String(metrics.cell),
+            ["--pyr-col-gap" as string]: String(metrics.colGap),
+            ["--pyr-row-gap" as string]: String(metrics.rowGap),
+            ["--pyr-pop" as string]: String(metrics.pop),
           } as React.CSSProperties
         }
         aria-label="Instagram pyramid graphic"
@@ -120,25 +120,30 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
           />
         </header>
         <div className="pyr-rows">
-          {PYRAMID_ROWS.map((count, row) => {
+          {metrics.rows.map((count, row) => {
             const start = cursor;
             cursor += count;
             return (
               <div
                 key={`pyr-row-${row}`}
                 className="pyr-row"
-                style={{ ["--cols" as string]: count } as React.CSSProperties}
+                style={
+                  {
+                    ["--cols" as string]: count,
+                    ["--z" as string]: String(20 - row),
+                  } as React.CSSProperties
+                }
               >
                 {Array.from({ length: count }, (_, col) => {
                   const index = start + col;
-                  const slot = slots[index] ?? slots[0]!;
-                  const empty = !slot?.photoSrc;
-                  const label =
-                    `${slot?.firstName ?? ""} ${slot?.lastName ?? ""}`.trim() ||
-                    `slot ${index + 1}`;
-                  if (index >= PYRAMID_SLOT_COUNT) {
+                  const slot = slots[index];
+                  if (!slot) {
                     return null;
                   }
+                  const empty = !slot.photoSrc;
+                  const label =
+                    `${slot.firstName} ${slot.lastName}`.trim() ||
+                    `slot ${index + 1}`;
                   return (
                     <section
                       key={`pyr-cell-${index}`}
@@ -152,7 +157,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         pan={slot.pan}
                         custom={slot.customPhoto}
                         empty={empty}
-                        vignette
+                        pop={!empty}
                         onPan={(pan) => onPan(index, pan)}
                         onUpload={(dataUrl) => onUpload(index, dataUrl)}
                         onPick={() => onPick(index)}

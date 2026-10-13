@@ -1,17 +1,21 @@
-/* Instagram pyramid — 4:5 1–2–3–4 photo stack. */
+/* Instagram pyramid — 4:5 stack pinned to the bottom, heads pop out. */
 
 .pyr-board {
   --u: 1px;
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
-  --pyr-cell: 270;
-  --pyr-gap: 16;
+  --pyr-cell: 248;
+  --pyr-col-gap: 12;
+  --pyr-row-gap: 88;
+  --pyr-pop: 74;
+  --pyr-pad-x: 28;
+  --pyr-pad-bottom: 36;
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(120 * var(--u)) minmax(0, 1fr);
+  grid-template-rows: calc(118 * var(--u)) minmax(0, 1fr);
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;
@@ -25,13 +29,9 @@
   --frame-color: #0a0a0a;
 }
 
-.pyr-header,
-.pyr-rows {
-  position: relative;
-  z-index: 1;
-}
-
 .pyr-header {
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,20 +70,27 @@
 }
 
 .pyr-rows {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: calc(var(--pyr-gap) * var(--u));
-  padding: calc(4 * var(--u)) calc(36 * var(--u)) calc(40 * var(--u));
+  justify-content: flex-end;
+  gap: calc(var(--pyr-row-gap) * var(--u));
+  padding: 0 calc(var(--pyr-pad-x) * var(--u))
+    calc(var(--pyr-pad-bottom) * var(--u));
   min-height: 0;
+  overflow: visible;
 }
 
 .pyr-row {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(var(--cols), calc(var(--pyr-cell) * var(--u)));
-  gap: calc(var(--pyr-gap) * var(--u));
+  gap: calc(var(--pyr-col-gap) * var(--u));
   height: calc(var(--pyr-cell) * var(--u));
+  overflow: visible;
+  z-index: var(--z);
 }
 
 .pyr-cell {
@@ -92,19 +99,35 @@
   height: calc(var(--pyr-cell) * var(--u));
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
-  background: #111;
+  overflow: visible;
+  background: transparent;
 }
 
 .pyr-cell .pod-photo {
   position: absolute;
   inset: 0;
+  border: 0;
   border-radius: 0;
+  overflow: visible;
   touch-action: none;
   cursor: grab;
+  background: #111;
 }
 
-.pyr-cell .pod-photo__surface {
+/* Frame sits on top of the photo so the top stroke cuts across the neck. */
+.pyr-cell .pod-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.pyr-cell .pod-photo.is-pop .pod-photo__surface {
+  top: calc(var(--pyr-pop) * var(--u) * -1);
+  height: calc(100% + var(--pyr-pop) * var(--u));
+  overflow: hidden;
   z-index: 1;
 }
 
@@ -119,6 +142,7 @@
   right: calc(6 * var(--u));
   bottom: calc(8 * var(--u));
   gap: calc(4 * var(--u));
+  z-index: 5;
 }
 
 .pyr-cell .pod-photo__tool {
@@ -131,5 +155,5 @@
 }
 
 .pyr-board .composer-ba {
-  z-index: 4;
+  z-index: 24;
 }

@@ -30,13 +30,18 @@ import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PyramidGraphic } from "./PyramidGraphic";
 import { exportPyramidPng } from "./exportPyramidPng";
+import { pyramidSlotCount } from "./pyramidLayout";
 import {
   applyPyramidPick,
   clearPyramidSlot,
   defaultPyramidDraft,
   hasCustomPhoto,
   isPyramidDraft,
+  parsePyramidRows,
   patchStrip,
+  PYR_MAX_ROWS,
+  PYR_MIN_ROWS,
+  resizePyramidSlots,
   setStripPhoto,
   usedPyramidPlayerIds,
   type PyramidDraft,
@@ -51,12 +56,19 @@ const SAVES_KEY = "ddgm:pyramid-composer:saves";
 const loadDraft = (): PyramidDraft => {
   const stored = readJson<Partial<PyramidDraft>>(STORAGE_KEY);
   if (isPyramidDraft(stored)) {
-    return { ...stored, showBa: stored.showBa !== false };
+    const rows = parsePyramidRows(stored.rows, stored.slots.length);
+    return {
+      ...stored,
+      rows,
+      slots: resizePyramidSlots(stored.slots, rows),
+      showBa: stored.showBa !== false,
+    };
   }
   const empty = defaultPyramidDraft();
   return {
     title: stored?.title?.trim() ? stored.title : empty.title,
     slots: empty.slots,
+    rows: empty.rows,
     showBa: stored?.showBa !== false,
   };
 };
@@ -66,6 +78,7 @@ export function PyramidComposerApp() {
   const empty = defaultPyramidDraft();
   const [title, setTitle] = useState(empty.title);
   const [slots, setSlots] = useState<PyramidSlot[]>(empty.slots);
+  const [rows, setRows] = useState(empty.rows ?? 4);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [photoTarget, setPhotoTarget] = useState(0);
   const [exporting, setExporting] = useState(false);
@@ -79,7 +92,10 @@ export function PyramidComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<PyramidSlot[]>();
+  const { push, pop, canUndo } = useComposerUndo<{
+    slots: PyramidSlot[];
+    rows: number;
+  }>();
 
   useEffect(() => {
     document.title = "Pyramid graphic";
@@ -89,6 +105,7 @@ export function PyramidComposerApp() {
     const draft = loadDraft();
     setTitle(draft.title);
     setSlots(draft.slots);
+    setRows(draft.rows ?? 4);
     setShowBa(draft.showBa !== false);
     setHydrated(true);
   }, []);
@@ -97,8 +114,8 @@ export function PyramidComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { title, slots, showBa });
-  }, [title, slots, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { title, slots, rows, showBa });
+  }, [title, slots, rows, showBa, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -116,7 +133,7 @@ export function PyramidComposerApp() {
       await exportPyramidPng(
         node,
         filename ?? exportFilenameFromTitle(title, "pyramid"),
-        { title, slots, look, purpleFlair, showBa },
+        { title, slots, rows, look, purpleFlair, showBa },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -130,9 +147,10 @@ export function PyramidComposerApp() {
 
   const handleReset = () => {
     const next = defaultPyramidDraft();
-    push(slots);
+    push({ slots, rows });
     setTitle(next.title);
     setSlots(next.slots);
+    setRows(next.rows ?? 4);
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -146,7 +164,7 @@ export function PyramidComposerApp() {
     if (!player) {
       return;
     }
-    push(slots);
+    push({ slots, rows });
     setSlots((current) =>
       applyPyramidPick(current, index, player, keepCustomPhoto),
     );
@@ -222,12 +240,42 @@ export function PyramidComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <div className="sc-look" role="group" aria-label="Pyramid rows">
+          <span className="sc-look__label">Rows</span>
+          {Array.from(
+            { length: PYR_MAX_ROWS - PYR_MIN_ROWS + 1 },
+            (_, index) => PYR_MIN_ROWS + index,
+          ).map((count) => (
+            <button
+              key={`pyr-rows-${count}`}
+              type="button"
+              className={rows === count ? "sc-chip is-on" : "sc-chip"}
+              aria-pressed={rows === count}
+              onClick={() => {
+                if (count === rows) {
+                  return;
+                }
+                push({ slots, rows });
+                setRows(count);
+                setSlots((current) => resizePyramidSlots(current, count));
+                setActiveIndex(null);
+                setStatus(
+                  `${count} rows · ${pyramidSlotCount(count)} photo squares.`,
+                );
+              }}
+            >
+              {count}
+            </button>
+          ))}
+        </div>
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ title, slots, showBa }}
+          board={{ title, slots, rows, showBa }}
           onLoad={(next) => {
+            const nextRows = parsePyramidRows(next.rows, next.slots.length);
             setTitle(next.title);
-            setSlots(next.slots);
+            setRows(nextRows);
+            setSlots(resizePyramidSlots(next.slots, nextRows));
             setShowBa(next.showBa !== false);
             setStatus("Loaded named graphic.");
           }}
@@ -239,7 +287,8 @@ export function PyramidComposerApp() {
             onClick={() => {
               const previous = pop();
               if (previous) {
-                setSlots(previous);
+                setSlots(previous.slots);
+                setRows(previous.rows);
                 setStatus("Undid last change.");
               }
             }}
@@ -297,6 +346,7 @@ export function PyramidComposerApp() {
             ref={boardRef}
             title={title}
             slots={slots}
+            rows={rows}
             look={look}
             purpleFlair={purpleFlair}
             showBa={showBa}
@@ -315,14 +365,15 @@ export function PyramidComposerApp() {
               setPhotoTarget(index);
               setSlots((current) => setStripPhoto(current, index, dataUrl));
               setStatus(
-                "Photo cropped inside the square — pinch, scroll, or +/− to scale, drag to pan.",
+                "Photo cropped in the square — heads pop out the top. Pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
           />
           <p className="sc-hint">
-            Ten photo squares in a 1–2–3–4 stack. Pick a player or upload/paste
-            a custom photo, then pan and zoom like Team of the Week. Downloads a
-            4:5 Instagram PNG — nothing is posted.
+            Photo squares in a 1–2–3–4 (or 5 / 6) stack, sitting toward the
+            bottom. Default headshots pop out of the top of each box. Pick a
+            player or upload/paste a custom photo. Downloads a 4:5 Instagram PNG
+            — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -336,7 +387,7 @@ export function PyramidComposerApp() {
           usedLabels={usedPyramidPlayerIds(slots)}
           onPick={handlePick}
           onClear={() => {
-            push(slots);
+            push({ slots, rows });
             setSlots((current) => clearPyramidSlot(current, activeIndex));
             setActiveIndex(null);
           }}

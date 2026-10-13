@@ -6,41 +6,129 @@ import {
 
 export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
-export const PYRAMID_ROWS = [1, 2, 3, 4] as const;
-export const PYRAMID_SLOT_COUNT = PYRAMID_ROWS.reduce(
-  (sum, count) => sum + count,
-  0,
-);
-
-export const PYR_PAD_X = 36;
-export const PYR_GAP = 16;
-export const PYR_CELL =
-  (GRAPHIC_WIDTH - PYR_PAD_X * 2 - PYR_GAP * (PYRAMID_ROWS[3] - 1)) /
-  PYRAMID_ROWS[3];
-export const PYR_TITLE_Y = 28;
-export const PYR_TITLE_H = 92;
+export const PYR_MIN_ROWS = 4;
+export const PYR_MAX_ROWS = 6;
+export const PYR_DEFAULT_ROWS = 4;
+export const PYR_PAD_X = 28;
+export const PYR_COL_GAP = 12;
+export const PYR_PAD_BOTTOM = 36;
+export const PYR_TITLE_Y = 22;
+export const PYR_TITLE_H = 96;
 export const PYR_TITLE_SIZE = 54;
 export const PYR_TITLE_TRACK = 0.04;
-export const PYR_ROWS_Y = 132;
 export const PYR_BA_SIZE = 72;
 export const PYR_BA_INSET = 36;
+export const PYR_POP_RATIO = 0.3;
+export const PYR_POP_GUTTER = 14;
 
-export const pyramidRowOf = (index: number) => {
+/** @deprecated Use pyramidSlotCount(rowCount). 4-row default. */
+export const PYRAMID_ROWS = [1, 2, 3, 4] as const;
+/** @deprecated Use pyramidSlotCount(rowCount). */
+export const PYRAMID_SLOT_COUNT = 10;
+
+export const clampPyramidRows = (value: number) =>
+  Math.min(PYR_MAX_ROWS, Math.max(PYR_MIN_ROWS, Math.round(value)));
+
+export const pyramidRowsFor = (rowCount: number) => {
+  const n = clampPyramidRows(rowCount);
+  return Array.from({ length: n }, (_, index) => index + 1);
+};
+
+export const pyramidSlotCount = (rowCount: number) => {
+  const n = clampPyramidRows(rowCount);
+  return (n * (n + 1)) / 2;
+};
+
+export interface PyramidMetrics {
+  rows: number[];
+  rowCount: number;
+  slotCount: number;
+  cell: number;
+  pop: number;
+  rowGap: number;
+  colGap: number;
+  originY: number;
+}
+
+const stackFits = (rowCount: number, cell: number) => {
+  const pop = cell * PYR_POP_RATIO;
+  const rowGap = pop + PYR_POP_GUTTER;
+  const stackH = rowCount * cell + (rowCount - 1) * rowGap;
+  const originY = GRAPHIC_HEIGHT - PYR_PAD_BOTTOM - stackH;
+  const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
+  return originY - pop >= titleBottom + 6 && originY > 0;
+};
+
+export const pyramidMetrics = (rowCount = PYR_DEFAULT_ROWS): PyramidMetrics => {
+  const rows = pyramidRowsFor(rowCount);
+  const n = rows.length;
+  const widthCell =
+    (GRAPHIC_WIDTH - PYR_PAD_X * 2 - PYR_COL_GAP * (n - 1)) / n;
+  let cell = widthCell;
+  if (!stackFits(n, cell)) {
+    let lo = 72;
+    let hi = cell;
+    for (let step = 0; step < 24; step += 1) {
+      const mid = (lo + hi) / 2;
+      if (stackFits(n, mid)) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    cell = lo;
+  }
+  const pop = cell * PYR_POP_RATIO;
+  const rowGap = pop + PYR_POP_GUTTER;
+  const stackH = n * cell + (n - 1) * rowGap;
+  const originY = GRAPHIC_HEIGHT - PYR_PAD_BOTTOM - stackH;
+  return {
+    rows,
+    rowCount: n,
+    slotCount: pyramidSlotCount(n),
+    cell,
+    pop,
+    rowGap,
+    colGap: PYR_COL_GAP,
+    originY,
+  };
+};
+
+export const pyramidRowOf = (index: number, rowCount = PYR_DEFAULT_ROWS) => {
+  const rows = pyramidRowsFor(rowCount);
   let cursor = 0;
-  for (let row = 0; row < PYRAMID_ROWS.length; row += 1) {
-    const count = PYRAMID_ROWS[row]!;
+  for (let row = 0; row < rows.length; row += 1) {
+    const count = rows[row]!;
     if (index < cursor + count) {
       return { row, col: index - cursor, count };
     }
     cursor += count;
   }
-  return { row: PYRAMID_ROWS.length - 1, col: 0, count: PYRAMID_ROWS[3] };
+  const last = rows.length - 1;
+  return { row: last, col: 0, count: rows[last]! };
 };
 
-export const pyramidCellRect = (index: number) => {
-  const { row, col, count } = pyramidRowOf(index);
-  const totalW = count * PYR_CELL + (count - 1) * PYR_GAP;
-  const x = (GRAPHIC_WIDTH - totalW) / 2 + col * (PYR_CELL + PYR_GAP);
-  const y = PYR_ROWS_Y + row * (PYR_CELL + PYR_GAP);
-  return { x, y, w: PYR_CELL, h: PYR_CELL, row, col };
+export const pyramidCellRect = (
+  index: number,
+  rowCount = PYR_DEFAULT_ROWS,
+) => {
+  const metrics = pyramidMetrics(rowCount);
+  const { row, col, count } = pyramidRowOf(index, rowCount);
+  const totalW = count * metrics.cell + (count - 1) * metrics.colGap;
+  const x = (GRAPHIC_WIDTH - totalW) / 2 + col * (metrics.cell + metrics.colGap);
+  const y = metrics.originY + row * (metrics.cell + metrics.rowGap);
+  return {
+    x,
+    y,
+    w: metrics.cell,
+    h: metrics.cell,
+    pop: metrics.pop,
+    row,
+    col,
+  };
 };
+
+/** Largest cell used by the 4-row board — kept for tests that size the default. */
+export const PYR_CELL = pyramidMetrics(PYR_DEFAULT_ROWS).cell;
+export const PYR_GAP = pyramidMetrics(PYR_DEFAULT_ROWS).rowGap;
+export const PYR_ROWS_Y = pyramidMetrics(PYR_DEFAULT_ROWS).originY;

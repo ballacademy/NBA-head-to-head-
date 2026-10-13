@@ -24,6 +24,7 @@ interface PhotoFrameProps {
   empty: boolean;
   zoomStep?: number;
   vignette?: boolean;
+  pop?: boolean;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -93,6 +94,7 @@ export function PhotoFrame({
   empty: _empty,
   zoomStep = 0.25,
   vignette = false,
+  pop = false,
   onPan,
   onUpload,
   onPick,
@@ -234,6 +236,7 @@ export function PhotoFrame({
         filled ? "" : "is-empty",
         custom ? "is-custom" : "",
         vignette ? "is-vignette" : "",
+        pop ? "is-pop" : "",
       ]
         .filter(Boolean)
         .join(" ")}
