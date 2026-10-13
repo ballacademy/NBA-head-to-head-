@@ -210,6 +210,28 @@ describe("fittedLogoRect", () => {
     );
   });
 
+  it("covers a fade logo chip without stretching or a padded stamp", () => {
+    const dest = coveredLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(dest.w).toBeGreaterThanOrEqual(28);
+    expect(dest.h).toBeGreaterThanOrEqual(28);
+    expect(dest.w / dest.h).toBeCloseTo(1);
+    const fitted = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(fitted.w).toBeLessThan(28);
+    expect(fitted.h).toBeLessThan(28);
+  });
+
   it("covers the name plate without stretching the logo", () => {
     const dest = coveredLogoRect({ x: 0, y: 0, w: 500, h: 500 }, 12, 40, 520, 116);
     expect(dest.w / dest.h).toBeCloseTo(1);
