@@ -260,6 +260,13 @@
   overflow: hidden;
 }
 
+.tl-cell__logo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .tl-headshot {
   /* Alpha outline sized from the cell — not a square box-shadow. */
   --hs: calc(0.055 * var(--cell, 120px));
@@ -315,7 +322,7 @@
   pointer-events: none;
 }
 
-.tl-cell--team .ig-slot__logo {
+.tl-cell .ig-slot__logo {
   display: block;
   /* Artwork is centered in canvas pixels; no CSS translate / filter. */
   transform: none;
