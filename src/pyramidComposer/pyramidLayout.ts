@@ -20,6 +20,9 @@ export const PYR_BA_SIZE = 72;
 export const PYR_BA_INSET = 36;
 export const PYR_POP_RATIO = 0.3;
 export const PYR_POP_GUTTER = 14;
+/** Kyber cell fill — deep violet, not a flat flood. Studs use IDENTITY_PURPLE. */
+export const PYR_CELL_FILL = "#3a0078";
+export const PYR_CELL_STUD = "#b026ff";
 
 /** @deprecated Use pyramidSlotCount(rowCount). 4-row default. */
 export const PYRAMID_ROWS = [1, 2, 3, 4] as const;

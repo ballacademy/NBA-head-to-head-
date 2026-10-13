@@ -1,10 +1,11 @@
 import {
-  paintCellFrame,
+  paintCellFrameEdges,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurplePlateEdge,
+  paintPurplePlateEdges,
   paintPurpleTitleGlow,
   type ComposerLook,
+  type FrameEdge,
 } from "../instagramComposer/composerLook";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -13,7 +14,10 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
+  BANNER_STUD_SIZE,
+  BANNER_STUD_STEP,
   FIELD_TEXTURE_SRC,
+  drawCoveredTexture,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
@@ -22,6 +26,8 @@ import {
   GRAPHIC_WIDTH,
   PYR_BA_INSET,
   PYR_BA_SIZE,
+  PYR_CELL_FILL,
+  PYR_CELL_STUD,
   PYR_DEFAULT_ROWS,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
@@ -34,6 +40,51 @@ import { pyramidTitle, type PyramidSlot } from "./pyramidState";
 export { canvasToPngBlob };
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
+const FRAME_TOP: FrameEdge[] = ["top"];
+const FRAME_FRONT: FrameEdge[] = ["right", "bottom", "left"];
+const FRAME_ALL: FrameEdge[] = ["top", "right", "bottom", "left"];
+
+const paintPyramidCellFill = (
+  context: CanvasRenderingContext2D,
+  texture: HTMLImageElement | null,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  context.save();
+  context.beginPath();
+  context.rect(x, y, w, h);
+  context.clip();
+  context.fillStyle = PYR_CELL_FILL;
+  context.fillRect(x, y, w, h);
+  if (texture) {
+    context.globalAlpha = 0.62;
+    context.globalCompositeOperation = "overlay";
+    drawCoveredTexture(context, texture, x, y, w, h);
+    context.globalAlpha = 1;
+    context.globalCompositeOperation = "source-over";
+  }
+  const wash = context.createLinearGradient(x, y, x + w, y + h);
+  wash.addColorStop(0, "rgba(176, 38, 255, 0.22)");
+  wash.addColorStop(1, "rgba(106, 0, 230, 0.38)");
+  context.fillStyle = wash;
+  context.fillRect(x, y, w, h);
+  const step = BANNER_STUD_STEP * scale;
+  const size = BANNER_STUD_SIZE * scale;
+  const inset = (step - size) / 2;
+  context.fillStyle = PYR_CELL_STUD;
+  context.globalAlpha = 0.5;
+  const x0 = Math.floor(x / step) * step;
+  const y0 = Math.floor(y / step) * step;
+  for (let py = y0; py < y + h + step; py += step) {
+    for (let px = x0; px < x + w + step; px += step) {
+      context.fillRect(px + inset, py + inset, size, size);
+    }
+  }
+  context.restore();
+};
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement | null>((resolve) => {
@@ -159,12 +210,18 @@ export const renderPyramidCanvas = async (
     const pop = rect.pop * s;
     const drawY = y - pop;
     const drawH = h + pop;
+    const filled = Boolean(slot?.photoSrc);
+    paintPyramidCellFill(context, fieldTexture, x, y, w, h, s);
+    if (filled) {
+      paintCellFrameEdges(context, x, y, w, h, input.look, s, FRAME_TOP);
+      if (input.purpleFlair) {
+        paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
+      }
+    }
     context.save();
     context.beginPath();
     context.rect(x, drawY, w, drawH);
     context.clip();
-    context.fillStyle = "#111";
-    context.fillRect(x, y, w, h);
     if (slot?.photoSrc) {
       const photo = slot.photoSrc.startsWith("data:")
         ? await loadImage(slot.photoSrc)
@@ -200,9 +257,10 @@ export const renderPyramidCanvas = async (
       }
     }
     context.restore();
-    paintCellFrame(context, x, y, w, h, input.look, s);
+    const rest = filled ? FRAME_FRONT : FRAME_ALL;
+    paintCellFrameEdges(context, x, y, w, h, input.look, s, rest);
     if (input.purpleFlair) {
-      paintPurplePlateEdge(context, x, y, w, h, s);
+      paintPurplePlateEdges(context, x, y, w, h, s, rest);
     }
   }
 

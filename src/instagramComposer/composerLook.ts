@@ -108,6 +108,43 @@ export const clipToInnerFrame = (
   return inner;
 };
 
+export type FrameEdge = "top" | "right" | "bottom" | "left";
+
+const paintRectEdges = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  line: number,
+  edges: FrameEdge[],
+) => {
+  const inset = line / 2;
+  const left = x + inset;
+  const right = x + w - inset;
+  const top = y + inset;
+  const bottom = y + h - inset;
+  context.lineCap = "square";
+  context.lineJoin = "miter";
+  for (const edge of edges) {
+    context.beginPath();
+    if (edge === "top") {
+      context.moveTo(left, top);
+      context.lineTo(right, top);
+    } else if (edge === "right") {
+      context.moveTo(right, top);
+      context.lineTo(right, bottom);
+    } else if (edge === "bottom") {
+      context.moveTo(left, bottom);
+      context.lineTo(right, bottom);
+    } else {
+      context.moveTo(left, top);
+      context.lineTo(left, bottom);
+    }
+    context.stroke();
+  }
+};
+
 /** Opaque perimeter in the outer band — outside the logo/headshot square. */
 export const paintCellFrame = (
   context: CanvasRenderingContext2D,
@@ -118,7 +155,26 @@ export const paintCellFrame = (
   look?: ComposerLook | null,
   scale = 1,
 ) => {
-  if (look === "none") {
+  paintCellFrameEdges(context, x, y, w, h, look, scale, [
+    "top",
+    "right",
+    "bottom",
+    "left",
+  ]);
+};
+
+/** Draw only the listed sides so a popped head can cover the top stroke. */
+export const paintCellFrameEdges = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  look: ComposerLook | null | undefined,
+  scale: number,
+  edges: FrameEdge[],
+) => {
+  if (look === "none" || edges.length === 0) {
     return;
   }
   const line = frameLinePx(scale, look);
@@ -127,7 +183,7 @@ export const paintCellFrame = (
   context.shadowColor = "transparent";
   context.strokeStyle = frameColor(look);
   context.lineWidth = line;
-  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  paintRectEdges(context, x, y, w, h, line, edges);
   context.restore();
 };
 
@@ -267,13 +323,33 @@ export const paintPurplePlateEdge = (
   h: number,
   scale: number,
 ) => {
+  paintPurplePlateEdges(context, x, y, w, h, scale, [
+    "top",
+    "right",
+    "bottom",
+    "left",
+  ]);
+};
+
+export const paintPurplePlateEdges = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+  edges: FrameEdge[],
+) => {
+  if (edges.length === 0) {
+    return;
+  }
   const line = Math.max(2, Math.round(2.5 * scale));
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
   context.lineWidth = line;
   context.shadowColor = IDENTITY_PURPLE_GLOW;
   context.shadowBlur = Math.round(18 * scale);
-  context.strokeRect(x + line / 2, y + line / 2, w - line, h - line);
+  paintRectEdges(context, x, y, w, h, line, edges);
   context.restore();
 };
 

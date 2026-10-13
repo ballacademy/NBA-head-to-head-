@@ -401,11 +401,25 @@ main.sc-stage {
 }
 
 .is-purple .totw-strip,
-.is-purple .twp-bar,
+.is-purple .twp-bar {
+  box-shadow:
+    0 0 0 calc(2 * var(--u)) #b026ff,
+    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.35);
+}
+
 .is-purple .pyr-cell .pod-photo {
   box-shadow:
     0 0 0 calc(2 * var(--u)) #b026ff,
     0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.35);
+}
+
+/* Outer kyber rim skips the top so it does not redraw across the neck. */
+.is-purple .pyr-cell .pod-photo.is-pop {
+  box-shadow:
+    calc(-2 * var(--u)) 0 0 #b026ff,
+    calc(2 * var(--u)) 0 0 #b026ff,
+    0 calc(2 * var(--u)) 0 #b026ff,
+    0 calc(8 * var(--u)) calc(10 * var(--u)) rgba(176, 38, 255, 0.28);
 }
 
 .is-purple .ig-slot,

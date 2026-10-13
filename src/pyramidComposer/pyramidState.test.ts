@@ -8,6 +8,8 @@ import {
   PYRAMID_ROWS,
   PYRAMID_SLOT_COUNT,
   PYR_CELL,
+  PYR_CELL_FILL,
+  PYR_CELL_STUD,
   PYR_DEFAULT_ROWS,
   PYR_MAX_ROWS,
   PYR_MIN_ROWS,
@@ -90,6 +92,15 @@ describe("pyramid composer", () => {
     expect(draft.showBa).toBe(true);
     expect(draft.rows).toBe(4);
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
+  });
+
+  it("fills each square with a kyber studded violet, not a flat black flood", () => {
+    expect(PYR_CELL_STUD.toLowerCase()).toBe("#b026ff");
+    const r = Number.parseInt(PYR_CELL_FILL.slice(1, 3), 16);
+    const b = Number.parseInt(PYR_CELL_FILL.slice(5, 7), 16);
+    expect(b).toBeGreaterThan(r);
+    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#111111");
+    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#000000");
   });
 
   it("fills a slot from a player and frames the default headshot for the pop crop", () => {
