@@ -5,12 +5,19 @@ import {
   EVERY_TEAM_COUNT,
   EVERY_TEAM_ORDER,
   assignPlayer,
+  assignPlayerToTeam,
   clearEveryTeamSlot,
+  createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
+  displayedTeams,
   exportEveryTeamFilename,
+  isEveryTeamDraft,
   isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
+  normalizeRankedOrder,
+  slotIndexForTeam,
   splitEveryTeamTitle,
+  swapRankedOrder,
   teamAtSlot,
   usedEveryTeamLabels,
 } from "./everyTeamState";
@@ -114,5 +121,35 @@ describe("every-team order and slots", () => {
   it("uses the stacked metal as the true board field", () => {
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");
     expect(HEADER_TEXTURE_SRC).toBe(FIELD_TEXTURE_SRC);
+  });
+
+  it("keeps unranked alphabetical and swaps ranked order without moving numbers", () => {
+    const order = createDefaultRankedOrder();
+    expect(order[0]).toBe("ATL");
+    expect(displayedTeams(false)[0]?.id).toBe("ATL");
+    expect(displayedTeams(false)[19]?.id).toBe("NYK");
+    const swapped = swapRankedOrder(order, 0, 19);
+    expect(swapped[0]).toBe("NYK");
+    expect(swapped[19]).toBe("ATL");
+    expect(displayedTeams(true, swapped)[0]?.id).toBe("NYK");
+    expect(displayedTeams(true, swapped)[19]?.id).toBe("ATL");
+    expect(displayedTeams(false, swapped)[0]?.id).toBe("ATL");
+    const slots = assignPlayerToTeam(createEmptyEveryTeamSlots(), "NYK", "1966");
+    expect(slots[19]).toBe("1966");
+    expect(assignPlayerToTeam(slots, "ATL", "1966")[19]).toBeNull();
+    expect(normalizeRankedOrder(["NYK", "LAL", "NYK", "NOPE"])[0]).toBe("NYK");
+    expect(normalizeRankedOrder(["NYK"]).length).toBe(30);
+    expect(
+      isEveryTeamDraft({
+        brand: "BALLACADEMY",
+        title: "EVERY TEAM",
+        slots: createEmptyEveryTeamSlots(),
+      }),
+    ).toBe(true);
+    const empty = createEmptyEveryTeamSlots();
+    empty[19] = "1966";
+    expect(nextEmptyEveryTeamSlot(empty, 0, true, swapped)).toBe(1);
+    expect(slotIndexForTeam("NYK")).toBe(19);
+    expect(swapRankedOrder(order, 3, 3)).toEqual(order);
   });
 });

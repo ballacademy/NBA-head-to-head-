@@ -24,6 +24,7 @@ import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   ET_LOGO_FIT,
+  ET_RANK_SIZE,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
   everyTeamBannerRectPath,
@@ -33,7 +34,8 @@ import {
   GRAPHIC_WIDTH,
 } from "./everyTeamLayout";
 import {
-  EVERY_TEAM_ORDER,
+  displayedTeams,
+  slotIndexForTeam,
   splitEveryTeamTitle,
   type EveryTeamSlots,
 } from "./everyTeamState";
@@ -119,6 +121,8 @@ export interface EveryTeamRenderInput {
   slots: EveryTeamSlots;
   look?: ComposerLook;
   showBa?: boolean;
+  ranked?: boolean;
+  rankedOrder?: string[];
 }
 
 export const renderEveryTeamCanvas = async (
@@ -129,6 +133,7 @@ export const renderEveryTeamCanvas = async (
     await Promise.all([
       document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${ET_TITLE_SIZE * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
 
@@ -206,9 +211,11 @@ export const renderEveryTeamCanvas = async (
   });
 
   const grid = everyTeamGrid(scale);
+  const ranked = input.ranked === true;
+  const teams = displayedTeams(ranked, input.rankedOrder);
   const art = await Promise.all(
-    EVERY_TEAM_ORDER.map(async (team, index) => {
-      const player = getPlayer(input.slots[index] ?? null);
+    teams.map(async (team) => {
+      const player = getPlayer(input.slots[slotIndexForTeam(team.id)] ?? null);
       const shown = player && player.team === team.id ? player : null;
       const [logo, headshot] = await Promise.all([
         loadImage(team.logoSrc),
@@ -250,6 +257,19 @@ export const renderEveryTeamCanvas = async (
     }
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
+    if (ranked) {
+      context.save();
+      context.font = `900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "#fff";
+      context.shadowColor = "rgba(0, 0, 0, 0.72)";
+      context.shadowOffsetX = Math.round(0.55 * scale);
+      context.shadowOffsetY = Math.round(0.55 * scale);
+      context.shadowBlur = 0;
+      context.fillText(String(index + 1), x + size * 0.06, y + size * 0.045);
+      context.restore();
+    }
   });
 
   if (input.showBa) {

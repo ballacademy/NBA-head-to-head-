@@ -114,6 +114,37 @@
   z-index: 1;
 }
 
+.et-board.is-ranked .et-cell {
+  cursor: grab;
+  touch-action: none;
+}
+
+.et-board.is-ranked .et-cell__hit {
+  cursor: grab;
+}
+
+.et-cell.is-drop {
+  outline: calc(4 * var(--u)) solid #facc15;
+  outline-offset: calc(-4 * var(--u));
+  z-index: 4;
+}
+
+.et-cell__rank {
+  position: absolute;
+  top: 3%;
+  left: 4.2%;
+  z-index: 3;
+  font-family: var(--ig-poster);
+  font-size: calc(34 * var(--u));
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  pointer-events: none;
+  text-shadow:
+    calc(0.55 * var(--u)) calc(0.55 * var(--u)) 0 rgba(0, 0, 0, 0.72),
+    calc(1.1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.38);
+}
+
 .et-cell__hit {
   position: absolute;
   inset: 0;

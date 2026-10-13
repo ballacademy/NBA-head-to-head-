@@ -19,6 +19,7 @@ export const ET_BORDER = 4;
 export const ET_TITLE_SIZE = 54;
 export const ET_TITLE_TRACK = 0.02;
 export const ET_LOGO_FIT = 0.94;
+export const ET_RANK_SIZE = 34;
 
 export interface EveryTeamGridMetrics {
   headerH: number;

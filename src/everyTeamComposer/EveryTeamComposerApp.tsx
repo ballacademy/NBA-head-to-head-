@@ -28,12 +28,16 @@ import {
 import { EveryTeamGraphic } from "./EveryTeamGraphic";
 import { exportEveryTeamPng } from "./exportEveryTeamPng";
 import {
-  assignPlayer,
-  clearEveryTeamSlot,
+  assignPlayerToTeam,
+  clearEveryTeamTeam,
+  createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
   DEFAULT_EVERY_TEAM_TITLE,
   isEveryTeamDraft,
   nextEmptyEveryTeamSlot,
+  normalizeRankedOrder,
+  slotIndexForTeam,
+  swapRankedOrder,
   teamAtSlot,
   usedEveryTeamLabels,
   type EveryTeamSlots,
@@ -43,11 +47,18 @@ import "./everyTeamComposer.css";
 
 const STORAGE_KEY = "ddgm:every-team-composer";
 
+interface EveryTeamBoardSnapshot {
+  slots: EveryTeamSlots;
+  rankedOrder: string[];
+}
+
 interface EveryTeamComposerDraft {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
   showBa?: boolean;
+  ranked?: boolean;
+  rankedOrder?: string[];
 }
 
 const loadDraft = (): EveryTeamComposerDraft => {
@@ -58,6 +69,8 @@ const loadDraft = (): EveryTeamComposerDraft => {
       title: stored.title.trim() || DEFAULT_EVERY_TEAM_TITLE,
       slots: stored.slots,
       showBa: stored.showBa === true,
+      ranked: stored.ranked === true,
+      rankedOrder: normalizeRankedOrder(stored.rankedOrder),
     };
   }
   return {
@@ -65,6 +78,8 @@ const loadDraft = (): EveryTeamComposerDraft => {
     title: stored?.title?.trim() ? stored.title : DEFAULT_EVERY_TEAM_TITLE,
     slots: createEmptyEveryTeamSlots(),
     showBa: stored?.showBa === true,
+    ranked: stored?.ranked === true,
+    rankedOrder: normalizeRankedOrder(stored?.rankedOrder),
   };
 };
 
@@ -73,6 +88,8 @@ export function EveryTeamComposerApp() {
   const [brand, setBrand] = useState(DEFAULT_BRAND);
   const [title, setTitle] = useState(DEFAULT_EVERY_TEAM_TITLE);
   const [slots, setSlots] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
+  const [ranked, setRanked] = useState(false);
+  const [rankedOrder, setRankedOrder] = useState<string[]>(createDefaultRankedOrder);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -81,7 +98,7 @@ export function EveryTeamComposerApp() {
   const [showBa, setShowBa] = useState(false);
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
-  const { push, pop, canUndo } = useComposerUndo<EveryTeamSlots>();
+  const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
 
   useEffect(() => {
     document.title = "Every team graphic";
@@ -93,6 +110,8 @@ export function EveryTeamComposerApp() {
     setTitle(draft.title);
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
+    setRanked(draft.ranked === true);
+    setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
     setHydrated(true);
   }, []);
 
@@ -100,8 +119,8 @@ export function EveryTeamComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, slots, showBa });
-  }, [brand, title, slots, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, slots, showBa, ranked, rankedOrder });
+  }, [brand, title, slots, showBa, ranked, rankedOrder, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -122,7 +141,7 @@ export function EveryTeamComposerApp() {
       await exportEveryTeamPng(
         node,
         filenameFor(story),
-        { brand, title, slots, look, showBa },
+        { brand, title, slots, look, showBa, ranked, rankedOrder },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -135,16 +154,21 @@ export function EveryTeamComposerApp() {
   };
 
   const handleReset = () => {
-    push(slots);
+    push({ slots, rankedOrder });
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_EVERY_TEAM_TITLE);
     setSlots(createEmptyEveryTeamSlots());
+    setRankedOrder(createDefaultRankedOrder());
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
 
-  const activeTeam = activeIndex != null ? teamAtSlot(activeIndex) : null;
-  const currentId = activeIndex != null ? slots[activeIndex] : null;
+  const activeTeam =
+    activeIndex != null ? teamAtSlot(activeIndex, ranked, rankedOrder) : null;
+  const currentId =
+    activeTeam != null
+      ? (slots[slotIndexForTeam(activeTeam.id)] ?? null)
+      : null;
   const lockedFilters =
     samePosition && fillPosition !== ALL_PLAYER_FILTER
       ? { ...EMPTY_PLAYER_FILTERS, position: fillPosition }
@@ -207,6 +231,25 @@ export function EveryTeamComposerApp() {
             </select>
           </label>
         ) : null}
+        <div className="sc-look" role="group" aria-label="Board order">
+          <span className="sc-look__label">Order</span>
+          <button
+            type="button"
+            className={!ranked ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={!ranked}
+            onClick={() => setRanked(false)}
+          >
+            Unranked
+          </button>
+          <button
+            type="button"
+            className={ranked ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={ranked}
+            onClick={() => setRanked(true)}
+          >
+            Ranked
+          </button>
+        </div>
         <ComposerLookToggle look={look} onChange={setLook} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <div className="sc-toolbar__actions">
@@ -216,7 +259,8 @@ export function EveryTeamComposerApp() {
             onClick={() => {
               const previous = pop();
               if (previous) {
-                setSlots(previous);
+                setSlots(previous.slots);
+                setRankedOrder(normalizeRankedOrder(previous.rankedOrder));
                 setStatus("Undid last change.");
               }
             }}
@@ -255,21 +299,43 @@ export function EveryTeamComposerApp() {
             slots={slots}
             look={look}
             showBa={showBa}
+            ranked={ranked}
+            rankedOrder={rankedOrder}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onSelectSlot={setActiveIndex}
             onClearSlot={(index) => {
-              push(slots);
-              setSlots((current) => clearEveryTeamSlot(current, index));
+              const team = teamAtSlot(index, ranked, rankedOrder);
+              if (!team) {
+                return;
+              }
+              push({ slots, rankedOrder });
+              setSlots((current) => clearEveryTeamTeam(current, team.id));
             }}
+            onSwapSlots={
+              ranked
+                ? (fromIndex, toIndex) => {
+                    if (fromIndex === toIndex) {
+                      return;
+                    }
+                    push({ slots, rankedOrder });
+                    setRankedOrder((current) =>
+                      swapRankedOrder(current, fromIndex, toIndex),
+                    );
+                    setActiveIndex(null);
+                    setStatus("Swapped ranked teams. Numbers stay on the rank.");
+                  }
+                : undefined
+            }
           />
           <p className="sc-hint">
-            Each square is a fixed NBA team. Click it to pick a player from that
-            roster. Filter the picker by position, or turn on same position to
-            fill one spot on every team. Downloads a 4:5 Instagram PNG — nothing
-            is posted.
+            Each square is a fixed NBA team. Unranked is A–Z by city with no
+            numbers. Ranked shows 1–30; drag a cell onto another to swap —
+            the number stays with the rank, the logo and player move together.
+            Click a square to pick a player from that roster. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -285,7 +351,7 @@ export function EveryTeamComposerApp() {
               : `Only current ${activeTeam.name} roster players. Use Position to filter this list.`
           }
           currentId={currentId}
-          usedLabels={usedEveryTeamLabels(slots, activeIndex)}
+          usedLabels={usedEveryTeamLabels(slots, activeIndex, ranked, rankedOrder)}
           lockedTeam={activeTeam.id}
           lockedFilters={lockedFilters}
           onPick={(playerId) => {
@@ -293,24 +359,29 @@ export function EveryTeamComposerApp() {
             if (!player || player.team !== activeTeam.id) {
               return;
             }
-            push(slots);
-            const nextSlots = assignPlayer(slots, activeIndex, playerId);
+            push({ slots, rankedOrder });
+            const nextSlots = assignPlayerToTeam(slots, activeTeam.id, playerId);
             setSlots(nextSlots);
             if (samePosition) {
-              const nextIndex = nextEmptyEveryTeamSlot(nextSlots, activeIndex);
+              const nextIndex = nextEmptyEveryTeamSlot(
+                nextSlots,
+                activeIndex,
+                ranked,
+                rankedOrder,
+              );
               setActiveIndex(nextIndex);
               setStatus(
                 nextIndex == null
                   ? `Picked ${player.name}. Board filled.`
-                  : `Picked ${player.name}. Next: ${teamAtSlot(nextIndex)?.name}.`,
+                  : `Picked ${player.name}. Next: ${teamAtSlot(nextIndex, ranked, rankedOrder)?.name}.`,
               );
             } else {
               setActiveIndex(null);
             }
           }}
           onClear={() => {
-            push(slots);
-            setSlots((current) => clearEveryTeamSlot(current, activeIndex));
+            push({ slots, rankedOrder });
+            setSlots((current) => clearEveryTeamTeam(current, activeTeam.id));
             setActiveIndex(null);
           }}
           onClose={closePicker}

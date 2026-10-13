@@ -61,12 +61,94 @@ export const isEveryTeamSlots = (value: unknown): value is EveryTeamSlots =>
   value.length === EVERY_TEAM_COUNT &&
   value.every((slot) => slot === null || typeof slot === "string");
 
+export type EveryTeamMode = "unranked" | "ranked";
+
 export interface EveryTeamDraft {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
   showBa?: boolean;
+  ranked?: boolean;
+  rankedOrder?: string[];
 }
+
+export const createDefaultRankedOrder = (): string[] =>
+  EVERY_TEAM_ORDER.map((team) => team.id);
+
+export const isRankedOrder = (value: unknown): value is string[] => {
+  if (!Array.isArray(value) || value.length !== EVERY_TEAM_COUNT) {
+    return false;
+  }
+  const allowed = new Set(EVERY_TEAM_ORDER.map((team) => team.id));
+  const seen = new Set<string>();
+  return value.every((id) => {
+    if (typeof id !== "string" || !allowed.has(id) || seen.has(id)) {
+      return false;
+    }
+    seen.add(id);
+    return true;
+  });
+};
+
+export const normalizeRankedOrder = (value: unknown): string[] => {
+  if (isRankedOrder(value)) {
+    return value;
+  }
+  const allowed = new Set(EVERY_TEAM_ORDER.map((team) => team.id));
+  const seen = new Set<string>();
+  const next: string[] = [];
+  if (Array.isArray(value)) {
+    value.forEach((id) => {
+      if (typeof id === "string" && allowed.has(id) && !seen.has(id)) {
+        seen.add(id);
+        next.push(id);
+      }
+    });
+  }
+  EVERY_TEAM_ORDER.forEach((team) => {
+    if (!seen.has(team.id)) {
+      next.push(team.id);
+    }
+  });
+  return next;
+};
+
+export const slotIndexForTeam = (teamId: string) =>
+  EVERY_TEAM_ORDER.findIndex((team) => team.id === teamId);
+
+export const displayedTeams = (
+  ranked: boolean,
+  rankedOrder: string[] = createDefaultRankedOrder(),
+): NbaTeam[] => {
+  if (!ranked) {
+    return EVERY_TEAM_ORDER;
+  }
+  return normalizeRankedOrder(rankedOrder).map(
+    (id) => EVERY_TEAM_ORDER[slotIndexForTeam(id)]!,
+  );
+};
+
+export const swapRankedOrder = (
+  rankedOrder: string[],
+  fromIndex: number,
+  toIndex: number,
+): string[] => {
+  const order = normalizeRankedOrder(rankedOrder);
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= order.length ||
+    toIndex >= order.length
+  ) {
+    return order;
+  }
+  const next = order.slice();
+  const fromId = next[fromIndex]!;
+  next[fromIndex] = next[toIndex]!;
+  next[toIndex] = fromId;
+  return next;
+};
 
 export const isEveryTeamDraft = (value: unknown): value is EveryTeamDraft =>
   Boolean(
@@ -77,8 +159,11 @@ export const isEveryTeamDraft = (value: unknown): value is EveryTeamDraft =>
       isEveryTeamSlots((value as EveryTeamDraft).slots),
   );
 
-export const teamAtSlot = (index: number): NbaTeam | null =>
-  EVERY_TEAM_ORDER[index] ?? null;
+export const teamAtSlot = (
+  index: number,
+  ranked = false,
+  rankedOrder: string[] = createDefaultRankedOrder(),
+): NbaTeam | null => displayedTeams(ranked, rankedOrder)[index] ?? null;
 
 export const assignPlayer = (
   slots: EveryTeamSlots,
@@ -97,6 +182,17 @@ export const assignPlayer = (
   return next;
 };
 
+export const assignPlayerToTeam = (
+  slots: EveryTeamSlots,
+  teamId: string,
+  playerId: string,
+): EveryTeamSlots => assignPlayer(slots, slotIndexForTeam(teamId), playerId);
+
+export const clearEveryTeamTeam = (
+  slots: EveryTeamSlots,
+  teamId: string,
+): EveryTeamSlots => clearEveryTeamSlot(slots, slotIndexForTeam(teamId));
+
 export const clearEveryTeamSlot = (
   slots: EveryTeamSlots,
   index: number,
@@ -112,10 +208,18 @@ export const clearEveryTeamSlot = (
 export const nextEmptyEveryTeamSlot = (
   slots: EveryTeamSlots,
   fromIndex: number,
+  ranked = false,
+  rankedOrder: string[] = createDefaultRankedOrder(),
 ): number | null => {
+  const teams = displayedTeams(ranked, rankedOrder);
   for (let step = 1; step <= EVERY_TEAM_COUNT; step += 1) {
     const index = (fromIndex + step) % EVERY_TEAM_COUNT;
-    if (!slots[index]) {
+    const team = teams[index];
+    if (!team) {
+      continue;
+    }
+    const slotIndex = slotIndexForTeam(team.id);
+    if (slotIndex >= 0 && !slots[slotIndex]) {
       return index;
     }
   }
@@ -125,14 +229,20 @@ export const nextEmptyEveryTeamSlot = (
 export const usedEveryTeamLabels = (
   slots: EveryTeamSlots,
   activeIndex: number | null,
+  ranked = false,
+  rankedOrder: string[] = createDefaultRankedOrder(),
 ): Record<string, string> => {
   const labels: Record<string, string> = {};
+  const teams = displayedTeams(ranked, rankedOrder);
+  const activeTeamId =
+    activeIndex != null ? teams[activeIndex]?.id ?? null : null;
   slots.forEach((id, index) => {
     if (!id) {
       return;
     }
-    const team = teamAtSlot(index);
-    labels[id] = index === activeIndex ? "This slot" : team?.id ?? "Used";
+    const team = EVERY_TEAM_ORDER[index];
+    labels[id] =
+      team?.id && team.id === activeTeamId ? "This slot" : team?.id ?? "Used";
   });
   return labels;
 };
