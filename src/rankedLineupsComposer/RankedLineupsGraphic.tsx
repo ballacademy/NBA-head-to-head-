@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   teamHairlineColor,
   type ComposerLook,
@@ -40,6 +41,7 @@ interface RankedLineupsGraphicProps {
   rank: string;
   strips: RankedLineupStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showFade?: boolean;
   showTeamHairline?: boolean;
@@ -70,6 +72,7 @@ export const RankedLineupsGraphic = forwardRef<
     rank,
     strips,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showFade = false,
     showTeamHairline = true,
@@ -132,6 +135,7 @@ export const RankedLineupsGraphic = forwardRef<
         showTeamHairline ? "is-hairline" : "",
         rankDisplay === "pill" ? "is-pill" : "is-headline",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}

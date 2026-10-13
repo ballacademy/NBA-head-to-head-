@@ -1,6 +1,10 @@
 import {
   clipToInnerFrame,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
@@ -117,6 +121,7 @@ export interface PotdLeaderboardRenderInput {
   title: string;
   entries: LeaderboardEntry[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
@@ -143,8 +148,10 @@ export const renderPotdLeaderboardCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   const titleX = PLB_PAD_X * s;
   const titleY = PLB_PAD_TOP * s;
   const titleW = width - titleX * 2;
@@ -159,6 +166,9 @@ export const renderPotdLeaderboardCanvas = async (
 
   paintStuddedBox(context, titleX, titleY, titleW, titleH, s);
   paintCellFrame(context, titleX, titleY, titleW, titleH, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, titleX, titleY, titleW, titleH, s);
+  }
 
   const title = normalizeComposerTitle(
     input.title,
@@ -172,6 +182,7 @@ export const renderPotdLeaderboardCanvas = async (
     titleW,
     titleH,
     s,
+    input.look,
   );
   const titlePad = PLB_TITLE_PAD * s;
   context.beginPath();
@@ -199,14 +210,19 @@ export const renderPotdLeaderboardCanvas = async (
   context.restore();
 
   paintStuddedBox(context, listX, listY, listW, listH, s);
-  context.strokeStyle = PLB_YELLOW;
-  context.lineWidth = stroke;
-  context.strokeRect(
-    listX + stroke / 2,
-    listY + stroke / 2,
-    listW - stroke,
-    listH - stroke,
-  );
+  if (input.look !== "none") {
+    context.strokeStyle = PLB_YELLOW;
+    context.lineWidth = stroke;
+    context.strokeRect(
+      listX + stroke / 2,
+      listY + stroke / 2,
+      listW - stroke,
+      listH - stroke,
+    );
+  }
+  if (input.purpleFlair) {
+    paintPurpleInnerHairline(context, listX, listY, listW, listH, s, input.look);
+  }
 
   const ranked = rankLeaderboard(input.entries);
   const blanks = leaderboardBlankCount(ranked);
@@ -365,6 +381,9 @@ export const renderPotdLeaderboardCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

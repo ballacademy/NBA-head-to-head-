@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   copyGraphicCaption,
@@ -12,6 +13,7 @@ import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAYER_OF_THE_DAY_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -79,6 +81,7 @@ export function PlayerOfTheDayComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -136,7 +139,7 @@ export function PlayerOfTheDayComposerApp() {
       await exportPlayerOfTheDayPng(
         node,
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
-        { brand, title, date, cards, look, showBa },
+        { brand, title, date, cards, look, purpleFlair, showBa },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -278,6 +281,7 @@ export function PlayerOfTheDayComposerApp() {
           onChange={setTitle}
         />
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
           storageKey={SAVES_KEY}
@@ -360,6 +364,7 @@ export function PlayerOfTheDayComposerApp() {
             date={date}
             cards={cards}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             exporting={exporting}
             onBrandChange={setBrand}

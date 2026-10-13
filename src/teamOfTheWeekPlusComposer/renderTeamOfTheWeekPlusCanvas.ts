@@ -2,6 +2,9 @@ import {
   frameColor,
   frameLinePx,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -103,9 +106,10 @@ const clipBarCell = (
   w: number,
   h: number,
   scale: number,
+  look: ComposerLook | undefined,
   first: boolean,
 ) => {
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
   const inner = {
     x: first ? x + line : x,
     y: y + line,
@@ -130,14 +134,15 @@ const drawPortrait = async (
   givenSize: number,
   logoSize: number,
   scale: number,
+  look: ComposerLook | undefined,
   first: boolean,
   showNames: boolean,
 ) => {
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
-  const inner = clipBarCell(context, x, y, w, h, scale, first);
+  const inner = clipBarCell(context, x, y, w, h, scale, look, first);
   if (slot.photoSrc) {
     const photo = slot.photoSrc.startsWith("data:")
       ? await loadImage(slot.photoSrc)
@@ -212,7 +217,10 @@ const paintBarChrome = (
   scale: number,
 ) => {
   paintCellFrame(context, x, y, w, h, look, scale);
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
+  if (line <= 0) {
+    return;
+  }
   context.fillStyle = frameColor(look);
   for (let index = 1; index < count; index += 1) {
     context.fillRect(x + index * cellW - line, y, line, h);
@@ -287,6 +295,7 @@ export interface TeamOfTheWeekPlusRenderInput {
   standoutCaption: string;
   slots: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
@@ -313,8 +322,10 @@ export const renderTeamOfTheWeekPlusCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   const titlesBelow = input.titlesBelow === true;
   const metrics = plusBoardMetrics(titlesBelow);
 
@@ -323,6 +334,9 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     if (ba) {
       const size = PLUS_BA_SIZE * s;
       const inset = PLUS_BA_INSET * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   } else {
@@ -371,6 +385,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       PLUS_NAME_GIVEN_SIZE,
       rect.logoSize,
       s,
+      input.look,
       index === 0,
       input.showNames !== false,
     );
@@ -413,6 +428,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       PLUS_STANDOUT_GIVEN_SIZE,
       rect.logoSize,
       s,
+      input.look,
       index === 0,
       input.showNames !== false,
     );
@@ -429,6 +445,27 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     input.look,
     s,
   );
+
+  if (input.purpleFlair) {
+    paintPurpleInnerHairline(
+      context,
+      starterBar.x * s,
+      starterBar.y * s,
+      starterBar.w * s,
+      starterBar.h * s,
+      s,
+      input.look,
+    );
+    paintPurpleInnerHairline(
+      context,
+      standoutBar.x * s,
+      standoutBar.y * s,
+      standoutBar.w * s,
+      standoutBar.h * s,
+      s,
+      input.look,
+    );
+  }
 
   return canvas;
 };

@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   teamHairlineColor,
   type ComposerLook,
@@ -23,6 +24,7 @@ interface TeamOfTheWeekGraphicProps {
   week: string;
   strips: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   showTeamHairline?: boolean;
@@ -50,6 +52,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     week,
     strips,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showNames = false,
     showTeamHairline = true,
@@ -107,6 +110,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
         showNames ? "" : "is-names-off",
         showTeamHairline ? "is-hairline" : "",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}

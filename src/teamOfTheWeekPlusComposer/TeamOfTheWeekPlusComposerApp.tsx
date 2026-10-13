@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   copyGraphicCaption,
@@ -11,6 +12,7 @@ import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialo
 import {
   TEAM_OF_THE_WEEK_PLUS_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   TOTW_PLUS_STANDOUT_PRESETS,
@@ -88,6 +90,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -152,6 +155,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           standoutCaption,
           slots,
           look,
+          purpleFlair,
           showBa,
           showNames,
         },
@@ -288,6 +292,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Name + logo</span>
@@ -398,6 +403,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             standoutCaption={standoutCaption}
             slots={slots}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}

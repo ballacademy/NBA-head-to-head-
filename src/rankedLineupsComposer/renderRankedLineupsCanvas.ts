@@ -3,6 +3,10 @@ import {
   frameLinePx,
   innerFrameRect,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
   paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -163,7 +167,7 @@ const drawStripPhoto = async (
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
-  const inner = clipToInnerFrame(context, x, y, w, h, scale);
+  const inner = clipToInnerFrame(context, x, y, w, h, scale, look);
   if (strip.photoSrc) {
     const photo = strip.photoSrc.startsWith("data:")
       ? await loadImage(strip.photoSrc)
@@ -202,7 +206,7 @@ const drawStripPhoto = async (
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
   if (showFade) {
-    const line = frameLinePx(scale);
+    const line = frameLinePx(scale, look);
     const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
     const team = getTeam(strip.teamId);
     const logo = team ? await loadImage(team.logoSrc) : null;
@@ -232,6 +236,7 @@ export interface RankedLineupsRenderInput {
   rank: string;
   strips: RankedLineupStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showFade?: boolean;
   showTeamHairline?: boolean;
@@ -260,8 +265,10 @@ export const renderRankedLineupsCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   withShadow(context, s, () => {
     context.font = `900 ${RL_BRAND_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
@@ -283,10 +290,13 @@ export const renderRankedLineupsCanvas = async (
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
   paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
+  }
 
   const titleLines = splitRankedLineupTitle(input.title);
   const lineH = RL_TITLE_SIZE * RL_TITLE_LINE * s;
-  const titleInner = innerFrameRect(plate.x, plate.y, plate.w, plate.h, s);
+  const titleInner = innerFrameRect(plate.x, plate.y, plate.w, plate.h, s, input.look);
   const titlePadX = RL_TITLE_PAD_X * s;
   const titlePadY = RL_TITLE_PAD_Y * s;
   context.save();
@@ -391,6 +401,17 @@ export const renderRankedLineupsCanvas = async (
       input.showFade === true,
       input.showTeamHairline !== false,
     );
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(
+        context,
+        rlStripX(index) * s,
+        stripY,
+        stripW,
+        stripH,
+        s,
+        input.look,
+      );
+    }
   }
 
   const footerY = (GRAPHIC_HEIGHT - rankedFooterH(input.showFade === true)) * s;
@@ -464,6 +485,9 @@ export const renderRankedLineupsCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

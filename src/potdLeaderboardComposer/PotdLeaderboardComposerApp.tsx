@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   POTD_LEADERBOARD_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   LEADERBOARD_TITLE_PRESETS,
@@ -42,6 +44,7 @@ export function PotdLeaderboardComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(POTD_LEADERBOARD_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showPips, setShowPips] = useState(true);
   const [potdKeys, setPotdKeys] = useState<string[]>([]);
@@ -84,7 +87,7 @@ export function PotdLeaderboardComposerApp() {
       await exportPotdLeaderboardPng(
         node,
         filenameFor(story),
-        { title, entries, look, showBa, showPips, potdKeys },
+        { title, entries, look, purpleFlair, showBa, showPips, potdKeys },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -126,6 +129,7 @@ export function PotdLeaderboardComposerApp() {
           onChange={setTitle}
         />
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
           storageKey="ddgm:potd-leaderboard-composer:saves"
@@ -205,6 +209,7 @@ export function PotdLeaderboardComposerApp() {
             title={title}
             entries={entries}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showPips={showPips}
             potdKeys={potdKeys}

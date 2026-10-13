@@ -1,6 +1,10 @@
 import {
   clipToInnerFrame,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { getTeamColors } from "../lib/teamColors";
@@ -130,6 +134,7 @@ export interface PlayerOfTheDayRenderInput {
   date: string;
   cards: PotdCard[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
 }
 
@@ -155,8 +160,10 @@ export const renderPlayerOfTheDayCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   withShadow(context, s, () => {
     context.font = `900 ${POTD_BRAND_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
@@ -178,6 +185,9 @@ export const renderPlayerOfTheDayCanvas = async (
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
   paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
+  }
 
   const titleLines = splitPotdTitle(input.title);
   const lineH = POTD_TITLE_SIZE * 0.92 * s;
@@ -191,6 +201,7 @@ export const renderPlayerOfTheDayCanvas = async (
     plate.w,
     plate.h,
     s,
+    input.look,
   );
   const titlePad = POTD_TITLE_PAD * s;
   context.beginPath();
@@ -272,7 +283,8 @@ export const renderPlayerOfTheDayCanvas = async (
     context.clip();
     context.fillStyle = "#111";
     context.fillRect(x, photoY, w, photoH);
-    const photoLine = Math.max(2, POTD_PHOTO_BORDER * s);
+    const photoLine =
+      input.look === "none" ? 0 : Math.max(2, POTD_PHOTO_BORDER * s);
     context.beginPath();
     addRoundRectPath(
       context,
@@ -339,7 +351,15 @@ export const renderPlayerOfTheDayCanvas = async (
     context.fillStyle = fill;
     context.fillRect(x, statsY, w, statsH);
     context.save();
-    const statsInner = clipToInnerFrame(context, x, statsY, w, statsH, s);
+    const statsInner = clipToInnerFrame(
+      context,
+      x,
+      statsY,
+      w,
+      statsH,
+      s,
+      input.look,
+    );
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
@@ -394,7 +414,7 @@ export const renderPlayerOfTheDayCanvas = async (
     context.fillStyle = "#0a0a0a";
     context.fillRect(x, nameY, w, nameH);
     context.save();
-    clipToInnerFrame(context, x, nameY, w, nameH, s);
+    clipToInnerFrame(context, x, nameY, w, nameH, s, input.look);
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
@@ -432,6 +452,11 @@ export const renderPlayerOfTheDayCanvas = async (
       radius,
       radius,
     ]);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, photoY, w, photoH, s, input.look);
+      paintPurpleInnerHairline(context, x, statsY, w, statsH, s, input.look);
+      paintPurpleInnerHairline(context, x, nameY, w, nameH, s, input.look);
+    }
     context.restore();
   }
 
@@ -440,6 +465,9 @@ export const renderPlayerOfTheDayCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

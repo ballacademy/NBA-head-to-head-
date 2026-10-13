@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   TIER_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   TIER_TITLE_PRESETS,
@@ -130,6 +132,7 @@ export function TierListComposerApp() {
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
@@ -210,6 +213,7 @@ export function TierListComposerApp() {
           rows,
           subject,
           look,
+          purpleFlair,
           showBa,
           showNames,
         },
@@ -242,7 +246,7 @@ export function TierListComposerApp() {
       await exportTierListPng(
         node,
         exportFilenameFromTitle(title, "nba-tier-list", exportDateStamp(), true),
-        { title, rows, subject, look, showBa, showNames },
+        { title, rows, subject, look, purpleFlair, showBa, showNames },
         true,
       );
       setStatus("Story PNG download started.");
@@ -314,6 +318,7 @@ export function TierListComposerApp() {
           </button>
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
           storageKey={
@@ -406,6 +411,7 @@ export function TierListComposerApp() {
             rows={rows}
             subject={subject}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showNames={showNames}
             active={exporting ? null : active}

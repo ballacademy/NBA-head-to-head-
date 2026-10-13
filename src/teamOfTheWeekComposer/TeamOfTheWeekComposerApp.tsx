@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
@@ -14,6 +15,7 @@ import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
   parseShowTeamHairline,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -83,6 +85,7 @@ export function TeamOfTheWeekComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -140,7 +143,7 @@ export function TeamOfTheWeekComposerApp() {
       await exportTeamOfTheWeekPng(
         node,
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, showBa, showNames, showTeamHairline },
+        { brand, title, week, strips, look, purpleFlair, showBa, showNames, showTeamHairline },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -256,6 +259,7 @@ export function TeamOfTheWeekComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <ComposerSaves
@@ -361,6 +365,7 @@ export function TeamOfTheWeekComposerApp() {
             week={week}
             strips={strips}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showNames={showNames}
             showTeamHairline={showTeamHairline}

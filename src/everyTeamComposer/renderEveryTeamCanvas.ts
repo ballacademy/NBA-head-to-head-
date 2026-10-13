@@ -2,6 +2,9 @@ import {
   clipToInnerFrame,
   frameColor,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -131,6 +134,7 @@ export interface EveryTeamRenderInput {
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
@@ -164,6 +168,9 @@ export const renderEveryTeamCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, GRAPHIC_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   withDropShadow(context, scale, () => {
     drawTrackedText(
@@ -275,7 +282,7 @@ export const renderEveryTeamCanvas = async (
     context.fillStyle = gradient;
     context.fillRect(x, y, size, size);
     context.save();
-    const inner = clipToInnerFrame(context, x, y, size, size, scale);
+    const inner = clipToInnerFrame(context, x, y, size, size, scale, input.look);
     if (cell.logo) {
       context.save();
       context.globalAlpha = 0.34;
@@ -307,6 +314,9 @@ export const renderEveryTeamCanvas = async (
     }
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, y, size, size, scale, input.look);
+    }
     if (ranked) {
       const rankLabel = String(index + 1);
       context.save();
@@ -385,6 +395,9 @@ export const renderEveryTeamCanvas = async (
     if (ba) {
       const size = 72 * scale;
       const inset = 42 * scale;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

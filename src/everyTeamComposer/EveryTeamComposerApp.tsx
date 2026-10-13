@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import {
   EVERY_TEAM_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   EVERY_TEAM_TITLE_PRESETS,
@@ -127,6 +129,7 @@ export function EveryTeamComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [rostersReady, setRostersReady] = useState(isEveryTeamRostersReady);
   const [look, setLook] = useComposerLook(EVERY_TEAM_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
@@ -224,6 +227,7 @@ export function EveryTeamComposerApp() {
           title,
           slots,
           look,
+          purpleFlair,
           showBa,
           ranked,
           rankedOrder,
@@ -501,6 +505,7 @@ export function EveryTeamComposerApp() {
           </button>
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerSaves
           storageKey="ddgm:every-team-composer:saves"
@@ -580,6 +585,7 @@ export function EveryTeamComposerApp() {
             title={title}
             slots={slots}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             ranked={ranked}
             rankedOrder={rankedOrder}

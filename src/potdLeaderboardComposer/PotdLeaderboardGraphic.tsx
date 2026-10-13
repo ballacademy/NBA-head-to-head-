@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -22,6 +23,7 @@ interface PotdLeaderboardGraphicProps {
   title: string;
   entries: LeaderboardEntry[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
@@ -40,6 +42,7 @@ export const PotdLeaderboardGraphic = forwardRef<
     title,
     entries,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showPips = true,
     potdKeys = [],
@@ -92,6 +95,7 @@ export const PotdLeaderboardGraphic = forwardRef<
         exporting ? "is-exporting" : "",
         showPips ? "is-pips-on" : "is-pips-off",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}

@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -23,6 +24,7 @@ interface PlayerOfTheDayGraphicProps {
   date: string;
   cards: PotdCard[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -57,6 +59,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     date,
     cards,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     exporting = false,
     onBrandChange,
@@ -107,7 +110,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
   return (
     <article
       ref={setRefs}
-      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
         .filter(Boolean)
         .join(" ")}
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}

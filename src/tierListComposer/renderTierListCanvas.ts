@@ -1,6 +1,9 @@
 import {
   clipToInnerFrame,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -127,6 +130,7 @@ export interface TierListRenderInput {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
 }
@@ -155,6 +159,9 @@ export const renderTierListCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, GRAPHIC_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   const titleLines = splitTierTitle(input.title);
   const titleFont = `900 ${TIER_TITLE_SIZE * scale}px ${POSTER_FONT}`;
@@ -186,6 +193,9 @@ export const renderTierListCanvas = async (
     const fit = badge / Math.max(1, bounds.w, bounds.h);
     const dw = bounds.w * fit;
     const dh = bounds.h * fit;
+    if (input.purpleFlair) {
+      paintPurpleBaGlow(context, badgeX, badgeY, badge);
+    }
     context.drawImage(
       ba,
       bounds.x,
@@ -295,7 +305,7 @@ export const renderTierListCanvas = async (
       }
       const art = cellArt[rowIndex]?.[index];
       context.save();
-      const inner = clipToInnerFrame(context, x, cellY, cellW, cellH, scale);
+      const inner = clipToInnerFrame(context, x, cellY, cellW, cellH, scale, input.look);
       if (player && art?.watermark) {
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
         drawCenteredLogo(
@@ -325,6 +335,9 @@ export const renderTierListCanvas = async (
       }
       context.restore();
       paintCellFrame(context, x, cellY, cellW, cellH, input.look, scale);
+      if (input.purpleFlair) {
+        paintPurpleInnerHairline(context, x, cellY, cellW, cellH, scale, input.look);
+      }
       if (input.showNames === true) {
         const names = player
           ? splitPlayerName(player.name)

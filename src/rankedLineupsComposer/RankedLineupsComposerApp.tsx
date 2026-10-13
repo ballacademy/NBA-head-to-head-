@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
@@ -9,6 +10,7 @@ import {
   RANKED_LINEUPS_LOOK_KEY,
   parseShowTeamHairline,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   copyGraphicCaption,
@@ -107,6 +109,7 @@ export function RankedLineupsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(RANKED_LINEUPS_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -226,7 +229,7 @@ export function RankedLineupsComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, showBa, showFade, showTeamHairline, rankDisplay, positionLabels },
+        { brand, title, rank, strips, look, purpleFlair, showBa, showFade, showTeamHairline, rankDisplay, positionLabels },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -262,6 +265,7 @@ export function RankedLineupsComposerApp() {
             rank: slide.rank,
             strips: slide.strips,
             look,
+            purpleFlair,
             showBa,
             showFade,
             showTeamHairline,
@@ -466,6 +470,7 @@ export function RankedLineupsComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
@@ -575,6 +580,7 @@ export function RankedLineupsComposerApp() {
             rank={rank}
             strips={strips}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showFade={showFade}
             showTeamHairline={showTeamHairline}

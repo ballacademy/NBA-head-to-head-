@@ -20,6 +20,9 @@ import {
   clipToInnerFrame,
   frameColor,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
@@ -208,6 +211,7 @@ export interface StandingsRenderInput {
   subtitle: string;
   slots: RankingSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showArrows?: boolean;
   showRecord?: boolean;
@@ -244,6 +248,9 @@ export const renderStandingsCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, STANDINGS_BOARD_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   withHeaderDropShadow(context, scale, () => {
     drawTrackedText(
@@ -344,13 +351,16 @@ export const renderStandingsCanvas = async (
     const logo = logos[index];
     if (logo && team) {
       context.save();
-      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale);
+      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale, input.look);
       drawCenteredLogo(context, logo, inner.x, inner.y, inner.w, inner.h, {
         cacheKey: team.logoSrc,
       });
       context.restore();
     }
     paintCellFrame(context, x, y, cellW, cellH, input.look, scale);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, y, cellW, cellH, scale, input.look);
+    }
 
     const rankX = x + cellW * 0.036;
     const rankY = y + cellH * 0.024;
@@ -397,6 +407,9 @@ export const renderStandingsCanvas = async (
     if (ba) {
       const size = 72 * scale;
       const inset = 42 * scale;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

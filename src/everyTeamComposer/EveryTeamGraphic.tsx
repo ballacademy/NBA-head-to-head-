@@ -7,6 +7,7 @@ import {
 } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -45,6 +46,7 @@ interface EveryTeamGraphicProps {
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
@@ -92,6 +94,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       title,
       slots,
       look = "white",
+      purpleFlair = false,
       showBa = false,
       ranked = false,
       rankedOrder,
@@ -252,6 +255,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
           ranked ? "is-ranked" : "",
           exporting ? "is-exporting" : "",
           composerLookClass(look),
+          composerFlairClass(purpleFlair),
         ]
           .filter(Boolean)
           .join(" ")}
