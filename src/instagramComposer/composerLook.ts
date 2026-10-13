@@ -11,6 +11,7 @@ export const POTD_LEADERBOARD_LOOK_KEY = "ddgm:potd-leaderboard-composer-look";
 export const TEAM_OF_THE_WEEK_LOOK_KEY = "ddgm:team-of-the-week-composer-look";
 export const TEAM_OF_THE_WEEK_PLUS_LOOK_KEY =
   "ddgm:team-of-the-week-plus-composer-look";
+export const RANKED_LINEUPS_LOOK_KEY = "ddgm:ranked-lineups-composer-look";
 
 export const FRAME_WHITE = "#ffffff";
 export const FRAME_BLACK = "#0a0a0a";

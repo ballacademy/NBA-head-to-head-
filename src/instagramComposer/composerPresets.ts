@@ -48,6 +48,13 @@ export const TOTW_PLUS_STANDOUT_PRESETS = [
   "HONORABLE MENTIONS",
 ];
 
+export const RANKED_LINEUP_TITLE_PRESETS = [
+  "TOP 10 NBA PLAYERS AT EACH POSITION",
+  "BEST NBA LINEUP AT EACH POSITION",
+  "NBA ALL-DEFENSE AT EACH POSITION",
+  "NBA ALL-ROOKIE AT EACH POSITION",
+];
+
 export const slugifyExport = (value: string) =>
   value
     .trim()

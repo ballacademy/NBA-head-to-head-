@@ -1,0 +1,285 @@
+/* Ranked lineups — 4:5 five-strip PG–C carousel part. */
+
+.rl-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --pill-fill: #fff;
+  --pill-ink: #111;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: grid;
+  grid-template-rows:
+    calc(var(--header-h, 180) * var(--u))
+    minmax(0, 1fr)
+    calc(var(--footer-h, 138) * var(--u));
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.rl-board.is-black {
+  --frame-color: #0a0a0a;
+  --pill-fill: #0a0a0a;
+  --pill-ink: #fff;
+}
+
+.rl-header,
+.rl-strips,
+.rl-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.rl-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: 0 calc(40 * var(--u)) calc(10 * var(--u));
+}
+
+.rl-brand {
+  margin: 0;
+  width: 70%;
+  height: calc(50 * var(--u));
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(26 * var(--u));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.rl-brand:focus,
+.rl-title-input:focus,
+.rl-pill:focus,
+.rl-given:focus,
+.rl-family:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
+}
+
+.rl-title-block {
+  position: relative;
+  width: 96%;
+  flex: 0 0 calc(76 * var(--u));
+  height: calc(76 * var(--u));
+  pointer-events: none;
+}
+
+.rl-title-block .composer-title-stack {
+  height: 100%;
+}
+
+.rl-title-line {
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(38 * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  font-synthesis: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.92;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: calc(3 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
+.rl-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(38 * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  white-space: pre;
+  pointer-events: auto;
+}
+
+.rl-pill {
+  margin-top: calc(10 * var(--u));
+  min-width: calc(148 * var(--u));
+  height: calc(34 * var(--u));
+  padding: 0 calc(22 * var(--u));
+  border: calc(2 * var(--u)) solid var(--frame-color);
+  border-radius: calc(18 * var(--u));
+  background: var(--pill-fill);
+  color: var(--pill-ink);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: calc(1.2 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+}
+
+.rl-strips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+  height: 100%;
+  padding: 0 calc(22 * var(--u));
+  box-sizing: border-box;
+}
+
+.rl-strip {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.rl-strip .pod-photo {
+  border-radius: 0;
+  touch-action: none;
+  cursor: grab;
+  overflow: hidden;
+}
+
+.rl-strip .pod-photo__surface {
+  z-index: 1;
+}
+
+.rl-strip .pod-photo__pick {
+  font-size: calc(15 * var(--u));
+  letter-spacing: 0.06em;
+}
+
+.rl-strip .pod-photo__tools {
+  left: calc(4 * var(--u));
+  right: calc(4 * var(--u));
+  bottom: calc(6 * var(--u));
+  gap: calc(4 * var(--u));
+}
+
+.rl-strip .pod-photo__tool {
+  height: calc(22 * var(--u));
+  font-size: calc(9 * var(--u));
+  padding: 0 calc(4 * var(--u));
+}
+
+.rl-strip .pod-photo__zoom {
+  gap: calc(4 * var(--u));
+}
+
+.rl-strip .pod-photo__zoom .pod-photo__tool {
+  flex: 0 0 calc(22 * var(--u));
+}
+
+.rl-strip .pod-photo__zoom span {
+  min-width: calc(28 * var(--u));
+  font-size: calc(10 * var(--u));
+}
+
+.rl-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.rl-footer {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+  padding: calc(6 * var(--u)) calc(22 * var(--u)) calc(8 * var(--u));
+  box-sizing: border-box;
+}
+
+.rl-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.rl-pos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--pos-h, 40) * var(--u));
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  -webkit-text-stroke: calc(2.4 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.8);
+}
+
+.rl-given,
+.rl-family {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  font-synthesis: none;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.6 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.4);
+}
+
+.rl-given {
+  height: calc(22 * var(--u));
+  font-size: calc(12 * var(--u));
+  letter-spacing: 0.08em;
+  line-height: 1;
+  opacity: 0.92;
+}
+
+.rl-family {
+  resize: none;
+  overflow: hidden;
+  height: calc(48 * var(--u));
+  font-size: calc(15 * var(--u));
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+}

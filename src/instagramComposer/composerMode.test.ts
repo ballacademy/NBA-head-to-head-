@@ -83,6 +83,7 @@ describe("composer mode", () => {
       "standings",
       "every-team",
       "tier",
+      "ranked-lineups",
     ]);
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
       "team-of-the-week",
@@ -92,6 +93,15 @@ describe("composer mode", () => {
       "Matchup",
       "Leaderboard",
     ]);
+  });
+
+  it("opens ranked lineups from path or query", () => {
+    expect(readComposerMode("", "/ranked-lineups")).toBe("ranked-lineups");
+    expect(readComposerMode("", "/lineups")).toBe("ranked-lineups");
+    expect(readComposerMode("?composer=ranked-lineups", "/")).toBe(
+      "ranked-lineups",
+    );
+    expect(composerHref("ranked-lineups")).toBe("/ranked-lineups");
   });
 
   it("lets the path win when query and path disagree", () => {

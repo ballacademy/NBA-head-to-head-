@@ -17,6 +17,7 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "standings", label: "Standings" },
       { mode: "every-team", label: "Every team" },
       { mode: "tier", label: "Tier list" },
+      { mode: "ranked-lineups", label: "Ranked lineups" },
     ],
   },
   {
