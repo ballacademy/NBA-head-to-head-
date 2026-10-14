@@ -111,7 +111,7 @@ export const RankedLineupsGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }
@@ -133,7 +133,11 @@ export const RankedLineupsGraphic = forwardRef<
         exporting ? "is-exporting" : "",
         showFade ? "is-fade" : "",
         showTeamHairline ? "is-hairline" : "",
-        rankDisplay === "pill" ? "is-pill" : "is-headline",
+        rankDisplay === "none"
+          ? "is-plain"
+          : rankDisplay === "pill"
+            ? "is-pill"
+            : "is-headline",
         composerLookClass(look),
         composerFlairClass(purpleFlair),
       ]
@@ -181,7 +185,7 @@ export const RankedLineupsGraphic = forwardRef<
             />
           </div>
         </div>
-        {rankDisplay === "pill" ? (
+        {rankDisplay === "none" ? null : rankDisplay === "pill" ? (
           <input
             className="rl-pill"
             value={rank}

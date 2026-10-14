@@ -246,6 +246,23 @@ main.sc-stage {
   box-shadow: 0 28px 48px rgba(0, 0, 0, 0.55);
 }
 
+.sc-stage__board {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  position: relative;
+  overflow: hidden;
+}
+
+.sc-stage__board-inner {
+  position: absolute;
+  inset: 0 auto auto 0;
+}
+
+.sc-stage__board-inner > article {
+  width: 100%;
+  height: 100%;
+}
+
 .sc-hint {
   margin: 12px 0 0;
   text-align: center;
@@ -360,7 +377,11 @@ main.sc-stage {
 .is-purple .pod-title-plate,
 .is-purple .totw-title-plate,
 .is-purple .plb-title-plate,
-.is-purple .hl-headline-plate {
+.is-purple .hl-headline-plate,
+.is-purple .cmp-title-plate,
+.is-purple .cmp-sub-plate,
+.is-purple .pi-slot,
+.is-purple .qt-shot {
   box-shadow:
     0 0 0 calc(2.5 * var(--u)) #b026ff,
     0 0 calc(18 * var(--u)) rgba(176, 38, 255, 0.5);

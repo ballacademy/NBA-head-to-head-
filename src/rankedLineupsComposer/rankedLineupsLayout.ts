@@ -49,12 +49,14 @@ export const RL_FADE_NAME_H = 108;
 export const RL_NAME_LOGO = 28;
 export const RL_FOOTER_PAD = 6;
 
-export type RankDisplay = "headline" | "pill";
+export type RankDisplay = "headline" | "pill" | "none";
 
 export const rankedHeaderH = (display: RankDisplay = "pill") =>
-  display === "headline"
-    ? RL_BRAND_H + RL_TITLE_BOX_H + RL_HEADLINE_H + RL_HEADER_PAD
-    : RL_BRAND_H + RL_TITLE_BOX_H + RL_PILL_GAP + RL_PILL_H + RL_HEADER_PAD;
+  display === "none"
+    ? RL_BRAND_H + RL_TITLE_BOX_H + RL_HEADER_PAD
+    : display === "headline"
+      ? RL_BRAND_H + RL_TITLE_BOX_H + RL_HEADLINE_H + RL_HEADER_PAD
+      : RL_BRAND_H + RL_TITLE_BOX_H + RL_PILL_GAP + RL_PILL_H + RL_HEADER_PAD;
 
 export const rankedFooterH = (showFade = false) =>
   (showFade ? RL_POS_H : RL_POS_H + RL_NAME_H) + RL_FOOTER_PAD;

@@ -8,6 +8,7 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { getTeam } from "../standingsComposer/teams";
 import { pyramidMetrics, PYR_DEFAULT_ROWS } from "./pyramidLayout";
 import type { PyramidSlot } from "./pyramidState";
 
@@ -15,6 +16,7 @@ interface PyramidGraphicProps {
   title: string;
   slots: PyramidSlot[];
   rows?: number;
+  rowLabels?: string[];
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -32,6 +34,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       title,
       slots,
       rows = PYR_DEFAULT_ROWS,
+      rowLabels = [],
       look = "white",
       purpleFlair = false,
       showBa = true,
@@ -63,7 +66,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -123,6 +126,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
           {metrics.rows.map((count, row) => {
             const start = cursor;
             cursor += count;
+            const rowLabel = (rowLabels[row] ?? "").trim();
             return (
               <div
                 key={`pyr-row-${row}`}
@@ -134,6 +138,9 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                   } as React.CSSProperties
                 }
               >
+                {rowLabel ? (
+                  <span className="pyr-row-label">{rowLabel}</span>
+                ) : null}
                 {Array.from({ length: count }, (_, col) => {
                   const index = start + col;
                   const slot = slots[index];
@@ -144,10 +151,21 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                   const label =
                     `${slot.firstName} ${slot.lastName}`.trim() ||
                     `slot ${index + 1}`;
+                  const team = getTeam(slot.teamId);
                   return (
                     <section
                       key={`pyr-cell-${index}`}
-                      className="pyr-cell"
+                      className={["pyr-cell", team ? "has-team" : ""]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={
+                        team
+                          ? ({
+                              ["--team-from" as string]: team.cellFrom,
+                              ["--team-to" as string]: team.cellTo,
+                            } as React.CSSProperties)
+                          : undefined
+                      }
                       aria-label={`Pyramid slot ${index + 1}`}
                       onPointerEnter={() => onHover?.(index)}
                     >

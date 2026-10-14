@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -579,6 +580,7 @@ export function EveryTeamComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <EveryTeamGraphic
             ref={boardRef}
             brand={brand}
@@ -624,6 +626,7 @@ export function EveryTeamComposerApp() {
                 : undefined
             }
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Each square is a fixed NBA franchise. Board year applies that
             season’s roster to every cell; a cell can override the year. Unranked

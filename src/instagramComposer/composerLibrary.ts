@@ -18,12 +18,16 @@ export const COMPOSER_LIBRARY_KEYS = [
   "ddgm:tier-list-composer-players:saves",
   "ddgm:every-team-composer:saves",
   "ddgm:ranked-lineups-composer:saves",
+  "ddgm:lineup-composer:saves",
   "ddgm:team-of-the-week-composer:saves",
   "ddgm:team-of-the-week-plus-composer:saves",
   "ddgm:player-of-the-day-composer:saves",
   "ddgm:potd-leaderboard-composer:saves",
   "ddgm:pyramid-composer:saves",
   "ddgm:headline-composer:saves",
+  "ddgm:compare-composer:saves",
+  "ddgm:quote-composer:saves",
+  "ddgm:play-in-composer:saves",
 ] as const;
 
 export interface ComposerLibraryFile {

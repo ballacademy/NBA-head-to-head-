@@ -35,6 +35,7 @@ export const POSITION_LABEL_MAX = 8;
 
 export const DEFAULT_RANKED_LINEUP_TITLE =
   "TOP 10 NBA PLAYERS AT EACH POSITION";
+export const DEFAULT_LINEUP_TITLE = "STARTING LINEUP";
 export const RANKED_LINEUP_TITLE_TRACK = 0.02;
 export const DEFAULT_RANK_PILL = "BEST";
 export const RANK_PILL_MAX = 12;
@@ -141,8 +142,15 @@ export const parsePositionLabels = (value: unknown): string[] => {
 export const positionLabelAt = (labels: string[] | undefined, index: number) =>
   parsePositionLabels(labels)[index] ?? "";
 
-export const parseRankDisplay = (value: unknown): RankDisplay =>
-  value === "headline" ? "headline" : "pill";
+export const parseRankDisplay = (
+  value: unknown,
+  fallback: RankDisplay = "pill",
+): RankDisplay => {
+  if (value === "headline" || value === "pill" || value === "none") {
+    return value;
+  }
+  return fallback;
+};
 
 export const rankOrdinalNumber = (rank: string) => {
   const upper = rank.trim().toUpperCase() || DEFAULT_RANK_PILL;

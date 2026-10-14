@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -395,6 +396,7 @@ export function TeamOfTheWeekPlusComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <TeamOfTheWeekPlusGraphic
             ref={boardRef}
             brand={brand}
@@ -432,6 +434,7 @@ export function TeamOfTheWeekPlusComposerApp() {
               setSlots((current) => patchStrip(current, index, names))
             }
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Five starters on the hero row, five standouts on the shorter bench.
             Pick a player for a headshot, or upload/paste a custom photo. Drag to

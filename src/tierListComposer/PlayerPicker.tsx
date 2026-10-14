@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
+import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { FilterRange, FilterSelect } from "./PlayerFilterBar";
 import {
@@ -11,6 +12,7 @@ import {
   EMPTY_PLAYER_FILTERS,
   EXPERIENCE_SPAN,
   HEIGHT_SPAN,
+  NBA_ACTIVE_PLAYERS,
   PLAYER_SCORING_SEASON,
   PLAYER_SCORING_SOURCE,
   PLAYER_SORT_KEY,
@@ -39,6 +41,8 @@ interface PlayerPickerProps {
   lockedFilters?: PlayerSearchFilters;
   /** Season roster instead of the current NBA catalog. */
   rosterPlayers?: TierPlayer[];
+  /** Include 2026-27 head coaches as picker rows. */
+  includeCoaches?: boolean;
   /** Hide age/draft filters; keep search, position, and sort. */
   simple?: boolean;
   sortStorageKey?: string;
@@ -60,6 +64,7 @@ export function PlayerPicker({
   lockedTeam,
   lockedFilters,
   rosterPlayers,
+  includeCoaches = false,
   simple = false,
   sortStorageKey = PLAYER_SORT_KEY,
   defaultSort,
@@ -102,21 +107,22 @@ export function PlayerPicker({
     writeJson(sortStorageKey, sort);
   }, [sort, sortStorageKey]);
 
-  const players = useMemo(
-    () =>
-      sortPlayers(
-        searchPlayers(
-          query,
-          {
-            ...boardFilters,
-            team: lockedTeam ?? boardFilters.team,
-          },
-          rosterPlayers,
-        ),
-        sort,
+  const players = useMemo(() => {
+    const catalog = includeCoaches
+      ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
+      : rosterPlayers;
+    return sortPlayers(
+      searchPlayers(
+        query,
+        {
+          ...boardFilters,
+          team: lockedTeam ?? boardFilters.team,
+        },
+        catalog,
       ),
-    [query, boardFilters, lockedTeam, sort, rosterPlayers],
-  );
+      sort,
+    );
+  }, [query, boardFilters, lockedTeam, sort, rosterPlayers, includeCoaches]);
 
   const setLocalRange =
     (key: "ageRange" | "heightRange" | "experienceRange") =>
@@ -312,7 +318,9 @@ export function PlayerPicker({
           ))}
         </div>
         <div className="sc-picker__footer">
-          <p className="sc-picker__count">{players.length} players</p>
+          <p className="sc-picker__count">
+            {players.length} {includeCoaches ? "people" : "players"}
+          </p>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -350,7 +358,9 @@ function PlayerButton({
     ? `${player.team} · ${formatPpg(player.ppg, ppgEmptyLabel)}`
     : showDepth
       ? `${player.team} · ${depthChartLabel(player)}`
-      : `${player.team} · ${player.position}`;
+      : player.role === "coach"
+        ? `${player.team} · HC`
+        : `${player.team} · ${player.position}`;
   const meta = isCurrent ? "This slot" : identity;
 
   return (

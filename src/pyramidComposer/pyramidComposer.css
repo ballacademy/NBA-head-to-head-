@@ -103,6 +103,27 @@
   background: transparent;
 }
 
+.pyr-row-label {
+  position: absolute;
+  right: calc(100% + 10 * var(--u));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  max-width: calc(88 * var(--u));
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
 .pyr-cell .pod-photo {
   position: absolute;
   inset: 0;
@@ -112,6 +133,27 @@
   isolation: isolate;
   touch-action: none;
   cursor: grab;
+  background-color: #161616;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.pyr-cell.has-team .pod-photo {
+  background-color: var(--team-from, #161616);
+  background-image:
+    linear-gradient(
+      158deg,
+      var(--team-from, #2a2a2a) 0%,
+      var(--team-to, #0a0a0a) 100%
+    ),
+    url("/composer-background-texture.png");
+  background-size: auto, cover;
+  background-blend-mode: normal, overlay;
+}
+
+.pyr-board.is-purple .pyr-cell .pod-photo,
+.pyr-board.is-purple .pyr-cell.has-team .pod-photo {
   background-color: #6a00e6;
   background-image:
     linear-gradient(
@@ -215,6 +257,10 @@
 .pyr-cell .pod-photo__tool {
   height: calc(22 * var(--u));
   font-size: calc(9 * var(--u));
+}
+
+.pyr-board:not(.is-purple) .pyr-cell .pod-photo.is-pop .pod-photo__pop-rim {
+  display: none;
 }
 
 .pyr-board.is-exporting .pod-photo__tools {

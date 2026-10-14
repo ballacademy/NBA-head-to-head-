@@ -26,6 +26,7 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -63,11 +64,34 @@ const paintPyramidCellFill = (
   w: number,
   h: number,
   scale: number,
+  purpleFlair: boolean,
+  teamFrom?: string | null,
+  teamTo?: string | null,
 ) => {
   context.save();
   context.beginPath();
   context.rect(x, y, w, h);
   context.clip();
+  if (!purpleFlair) {
+    if (teamFrom && teamTo) {
+      const fill = context.createLinearGradient(x, y, x + w, y + h);
+      fill.addColorStop(0, teamFrom);
+      fill.addColorStop(1, teamTo);
+      context.fillStyle = fill;
+    } else {
+      context.fillStyle = "#161616";
+    }
+    context.fillRect(x, y, w, h);
+    if (texture) {
+      context.globalAlpha = teamFrom ? 0.38 : 1;
+      context.globalCompositeOperation = teamFrom ? "overlay" : "source-over";
+      drawCoveredTexture(context, texture, x, y, w, h);
+      context.globalAlpha = 1;
+      context.globalCompositeOperation = "source-over";
+    }
+    context.restore();
+    return;
+  }
   context.fillStyle = PYR_CELL_FILL;
   context.fillRect(x, y, w, h);
   const blade = context.createLinearGradient(x, y, x + w, y + h);
@@ -369,6 +393,7 @@ export interface PyramidRenderInput {
   title: string;
   slots: PyramidSlot[];
   rows?: number;
+  rowLabels?: string[];
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -438,7 +463,19 @@ export const renderPyramidCanvas = async (
     const drawY = y - pop;
     const drawH = h + pop;
     const filled = Boolean(slot?.photoSrc);
-    paintPyramidCellFill(context, fieldTexture, x, y, w, h, s);
+    const team = getTeam(slot?.teamId);
+    paintPyramidCellFill(
+      context,
+      fieldTexture,
+      x,
+      y,
+      w,
+      h,
+      s,
+      Boolean(input.purpleFlair),
+      team?.cellFrom,
+      team?.cellTo,
+    );
     let photo: HTMLImageElement | null = null;
     if (slot?.photoSrc) {
       photo = slot.photoSrc.startsWith("data:")
@@ -454,7 +491,7 @@ export const renderPyramidCanvas = async (
       context.drawImage(sprite, x, drawY);
     }
     context.restore();
-    if (sprite) {
+    if (sprite && input.purpleFlair) {
       paintPopHeadRim(context, sprite, x, drawY, pop, s);
     }
     const rest = filled ? FRAME_FRONT : FRAME_ALL;
@@ -500,6 +537,26 @@ export const renderPyramidCanvas = async (
       paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
     }
   }
+
+  const labels = input.rowLabels ?? [];
+  labels.forEach((label, row) => {
+    const text = label.replace(/\s+/g, " ").trim().toUpperCase();
+    if (!text) {
+      return;
+    }
+    const first = pyramidCellRect((row * (row + 1)) / 2, rowCount);
+    context.font = `900 ${18 * s}px ${POSTER_FONT}`;
+    context.textAlign = "right";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.08 * 18 * s);
+    context.fillStyle = "#fff";
+    context.shadowColor = "rgba(0,0,0,0.85)";
+    context.shadowOffsetX = s;
+    context.shadowOffsetY = 1.2 * s;
+    context.fillText(text, first.x * s - 10 * s, (first.y + first.h / 2) * s);
+    context.shadowColor = "transparent";
+    setLetterSpacing(context, 0);
+  });
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

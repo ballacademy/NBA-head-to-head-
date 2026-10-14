@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -204,6 +205,7 @@ export function PotdLeaderboardComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <PotdLeaderboardGraphic
             ref={boardRef}
             title={title}
@@ -226,6 +228,7 @@ export function PotdLeaderboardComposerApp() {
               setEntries((current) => removeLeaderboardEntry(current, id));
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Add names and win totals. Ranks (and T for ties) fill in
             automatically. Team pip adds a small logo; off is all yellow.

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -405,6 +406,7 @@ export function TierListComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <TierListGraphic
             ref={boardRef}
             title={title}
@@ -438,6 +440,7 @@ export function TierListComposerApp() {
               setRows((current) => placeTeamAt(current, rowIndex, index, teamId));
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Click a square to add a {noun}. Switch Teams / Players in the bar.
             Tiers range from 3 to 10. Downloads a 4:5 Instagram PNG — nothing is
@@ -491,7 +494,8 @@ export function TierListComposerApp() {
         <PlayerPicker
           key={filterEpoch}
           heading={`Pick player · ${pickerRow.label || "tier"}`}
-          hint="Board filters already applied. Search by name within that subset."
+          hint="Players and head coaches. Board filters already applied."
+          includeCoaches
           lockedFilters={playerFilters}
           currentId={active.replaceId}
           usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}

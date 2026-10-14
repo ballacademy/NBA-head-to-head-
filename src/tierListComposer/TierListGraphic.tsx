@@ -30,6 +30,7 @@ import {
 import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
+  fillForBlackInk,
   inkOnTierColor,
   resolvedTierColor,
   splitTeamCellName,
@@ -131,7 +132,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -210,7 +211,9 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         >
           {rows.map((row, rowIndex) => {
             const labelLayout = labelLayouts[rowIndex]!;
-            const color = resolvedTierColor(row.label, row.color, rowIndex);
+            const color = fillForBlackInk(
+              resolvedTierColor(row.label, row.color, rowIndex),
+            );
             const ink = inkOnTierColor(color);
             const addChip = addChipPlacement(row.teams.length, layout.cols);
             return (

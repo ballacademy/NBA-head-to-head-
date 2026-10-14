@@ -2,11 +2,12 @@ import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
-  DEFAULT_HEADSHOT_PAN,
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
-import { getTeam } from "../standingsComposer/teams";
+import { getTeam, type NbaTeam } from "../standingsComposer/teams";
+import type { LastGame } from "../playerOfTheDayComposer/lastGame";
+import type { StandingRecord } from "../standingsComposer/rankingState";
 import {
   hasCustomPhoto as stripHasCustomPhoto,
   splitPlayerName,
@@ -86,10 +87,54 @@ export const fillHeadlineFromPlayer = (
     teamId: getTeam(player.team)?.id ?? player.team,
     firstName: names.firstName,
     lastName: names.lastName,
-    photoSrc: keep ? previous.photoSrc : player.headshotUrl,
+    photoSrc: keep ? previous.photoSrc : null,
     customPhoto: keep,
-    pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
+    pan: keep ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
   };
+};
+
+export const splitTeamWordmark = (team: NbaTeam | null) => {
+  if (!team) {
+    return { city: "", nick: "" };
+  }
+  const full = team.name.replace(/\s+/g, " ").trim();
+  const nick = team.shortName.replace(/\s+/g, " ").trim();
+  const escaped = nick.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const city = full.replace(new RegExp(`\\s+${escaped}$`, "i"), "").trim();
+  return {
+    city: (city && city !== full ? city : full).toUpperCase(),
+    nick: nick.toUpperCase(),
+  };
+};
+
+export const formatHeadlineBody = (
+  team: NbaTeam | null,
+  game: LastGame | null,
+  record: StandingRecord | null,
+) => {
+  if (!team) {
+    return "";
+  }
+  const nick = team.shortName.toUpperCase();
+  const rec = record ? `${record.wins}-${record.losses}` : "";
+  if (game && rec) {
+    const score = `${game.playerScore}-${game.opponentScore}`;
+    const lead =
+      game.result === "W"
+        ? `AFTER BEATING ${game.opponentAbbrev} ${score} LAST NIGHT`
+        : `AFTER LOSING TO ${game.opponentAbbrev} ${score} LAST NIGHT`;
+    return `${lead}, THE ${nick} HAVE A RECORD OF ${rec}`;
+  }
+  if (game) {
+    const score = `${game.playerScore}-${game.opponentScore}`;
+    return game.result === "W"
+      ? `AFTER BEATING ${game.opponentAbbrev} ${score} LAST NIGHT`
+      : `AFTER LOSING TO ${game.opponentAbbrev} ${score} LAST NIGHT`;
+  }
+  if (rec) {
+    return `THE ${nick} HAVE A RECORD OF ${rec}`;
+  }
+  return "";
 };
 
 export const setHeadlinePhoto = (

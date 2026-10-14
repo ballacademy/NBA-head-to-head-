@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -358,6 +359,7 @@ export function TeamOfTheWeekComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <TeamOfTheWeekGraphic
             ref={boardRef}
             brand={brand}
@@ -393,6 +395,7 @@ export function TeamOfTheWeekComposerApp() {
               setStrips((current) => patchStrip(current, index, names));
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Pick a player for each strip, then upload or paste a photo. Drag to
             pan, pinch or scroll to zoom — same as Player of the Day. +/− still

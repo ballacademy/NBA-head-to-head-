@@ -28,8 +28,11 @@ import {
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { downloadExportPack } from "../instagramComposer/exportPack";
 import { PyramidGraphic } from "./PyramidGraphic";
 import { exportPyramidPng } from "./exportPyramidPng";
+import { renderPyramidCanvas } from "./renderPyramidCanvas";
 import { pyramidSlotCount } from "./pyramidLayout";
 import {
   applyPyramidPick,
@@ -37,8 +40,10 @@ import {
   defaultPyramidDraft,
   hasCustomPhoto,
   isPyramidDraft,
+  parsePyramidRowLabels,
   parsePyramidRows,
   patchStrip,
+  PYR_ROW_LABEL_MAX,
   PYR_MAX_ROWS,
   PYR_MIN_ROWS,
   resizePyramidSlots,
@@ -62,6 +67,7 @@ const loadDraft = (): PyramidDraft => {
       rows,
       slots: resizePyramidSlots(stored.slots, rows),
       showBa: stored.showBa !== false,
+      rowLabels: parsePyramidRowLabels(stored.rowLabels, rows),
     };
   }
   const empty = defaultPyramidDraft();
@@ -70,6 +76,7 @@ const loadDraft = (): PyramidDraft => {
     slots: empty.slots,
     rows: empty.rows,
     showBa: stored?.showBa !== false,
+    rowLabels: empty.rowLabels,
   };
 };
 
@@ -87,6 +94,9 @@ export function PyramidComposerApp() {
   const [look, setLook] = useComposerLook(PYRAMID_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(true);
+  const [rowLabels, setRowLabels] = useState(() =>
+    parsePyramidRowLabels(undefined, empty.rows ?? 4),
+  );
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -107,6 +117,7 @@ export function PyramidComposerApp() {
     setSlots(draft.slots);
     setRows(draft.rows ?? 4);
     setShowBa(draft.showBa !== false);
+    setRowLabels(parsePyramidRowLabels(draft.rowLabels, draft.rows ?? 4));
     setHydrated(true);
   }, []);
 
@@ -114,8 +125,8 @@ export function PyramidComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { title, slots, rows, showBa });
-  }, [title, slots, rows, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { title, slots, rows, showBa, rowLabels });
+  }, [title, slots, rows, showBa, rowLabels, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -133,7 +144,7 @@ export function PyramidComposerApp() {
       await exportPyramidPng(
         node,
         filename ?? exportFilenameFromTitle(title, "pyramid"),
-        { title, slots, rows, look, purpleFlair, showBa },
+        { title, slots, rows, rowLabels, look, purpleFlair, showBa },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -151,6 +162,7 @@ export function PyramidComposerApp() {
     setTitle(next.title);
     setSlots(next.slots);
     setRows(next.rows ?? 4);
+    setRowLabels(parsePyramidRowLabels(next.rowLabels, next.rows ?? 4));
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -240,6 +252,25 @@ export function PyramidComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        {Array.from({ length: rows }, (_, index) => (
+          <label key={`pyr-label-${index}`} className="sc-field">
+            Row {index + 1}
+            <input
+              value={rowLabels[index] ?? ""}
+              maxLength={PYR_ROW_LABEL_MAX}
+              placeholder={`${index + 1} / COY`}
+              aria-label={`Row ${index + 1} label`}
+              onChange={(event) =>
+                setRowLabels((current) => {
+                  const next = parsePyramidRowLabels(current, rows);
+                  next[index] = event.target.value
+                    .slice(0, PYR_ROW_LABEL_MAX);
+                  return next;
+                })
+              }
+            />
+          </label>
+        ))}
         <div className="sc-look" role="group" aria-label="Pyramid rows">
           <span className="sc-look__label">Rows</span>
           {Array.from(
@@ -258,6 +289,7 @@ export function PyramidComposerApp() {
                 push({ slots, rows });
                 setRows(count);
                 setSlots((current) => resizePyramidSlots(current, count));
+                setRowLabels((current) => parsePyramidRowLabels(current, count));
                 setActiveIndex(null);
                 setStatus(
                   `${count} rows · ${pyramidSlotCount(count)} photo squares.`,
@@ -270,13 +302,14 @@ export function PyramidComposerApp() {
         </div>
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ title, slots, rows, showBa }}
+          board={{ title, slots, rows, showBa, rowLabels }}
           onLoad={(next) => {
             const nextRows = parsePyramidRows(next.rows, next.slots.length);
             setTitle(next.title);
             setRows(nextRows);
             setSlots(resizePyramidSlots(next.slots, nextRows));
             setShowBa(next.showBa !== false);
+            setRowLabels(parsePyramidRowLabels(next.rowLabels, nextRows));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -331,6 +364,43 @@ export function PyramidComposerApp() {
           </button>
           <button
             type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering pack…");
+                try {
+                  await downloadExportPack(
+                    () =>
+                      renderPyramidCanvas(
+                        {
+                          title,
+                          slots,
+                          rows,
+                          rowLabels,
+                          look,
+                          purpleFlair,
+                          showBa,
+                        },
+                        2,
+                      ),
+                    exportFilenameFromTitle(title, "pyramid"),
+                  );
+                  setStatus("Pack download started (4:5 + 9:16).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
+          </button>
+          <button
+            type="button"
             className="sc-btn sc-btn--primary"
             onClick={() => void handleExport()}
             disabled={exporting}
@@ -342,11 +412,13 @@ export function PyramidComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <PyramidGraphic
             ref={boardRef}
             title={title}
             slots={slots}
             rows={rows}
+            rowLabels={rowLabels}
             look={look}
             purpleFlair={purpleFlair}
             showBa={showBa}
@@ -369,6 +441,7 @@ export function PyramidComposerApp() {
               );
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Photo squares in a 1–2–3–4 (or 5 / 6) stack, sitting toward the
             bottom. Default headshots pop out of the top of each box. Pick a
@@ -382,7 +455,8 @@ export function PyramidComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={`Pick person ${activeIndex + 1}`}
-          hint="Search a player. Coaches are not in the NBA data — upload or paste a custom photo for them."
+          hint="Players and head coaches. Upload or paste a custom photo anytime."
+          includeCoaches
           currentId={currentId}
           usedLabels={usedPyramidPlayerIds(slots)}
           onPick={handlePick}

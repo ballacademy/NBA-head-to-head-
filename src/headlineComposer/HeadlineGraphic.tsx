@@ -10,7 +10,11 @@ import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
-import { HEADLINE_BODY_MAX, headlineLabel } from "./headlineState";
+import {
+  HEADLINE_BODY_MAX,
+  headlineLabel,
+  splitTeamWordmark,
+} from "./headlineState";
 
 interface HeadlineGraphicProps {
   headline: string;
@@ -70,7 +74,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -125,10 +129,10 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
         ) : null}
         <div className="hl-type">
           {team ? (
-            <p className="hl-wordmark">{team.name}</p>
-          ) : (
-            <p className="hl-wordmark">PICK A TEAM</p>
-          )}
+            <p className="hl-wordmark-city" aria-hidden="true">
+              {splitTeamWordmark(team).city}
+            </p>
+          ) : null}
           <div className="hl-headline-plate">
             <input
               className="hl-headline"
@@ -141,6 +145,11 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
               }
             />
           </div>
+          {team ? (
+            <p className="hl-wordmark-nick" aria-hidden="true">
+              {splitTeamWordmark(team).nick}
+            </p>
+          ) : null}
           <textarea
             className="hl-body"
             value={body}

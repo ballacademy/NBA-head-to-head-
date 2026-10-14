@@ -7,8 +7,12 @@ export type ComposerMode =
   | "team-of-the-week"
   | "team-of-the-week-plus"
   | "ranked-lineups"
+  | "lineup"
   | "pyramid"
-  | "headline";
+  | "headline"
+  | "compare"
+  | "quote"
+  | "play-in";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -74,10 +78,18 @@ const RANKED_LINEUPS_QUERY = new Set([
   "ranked-lineup",
   "lineups",
 ]);
+const LINEUP_PATHS = new Set(["/lineup", "/starting-lineup"]);
+const LINEUP_QUERY = new Set(["lineup", "starting-lineup"]);
 const PYRAMID_PATHS = new Set(["/pyramid", "/coy-pyramid"]);
 const PYRAMID_QUERY = new Set(["pyramid", "coy-pyramid"]);
 const HEADLINE_PATHS = new Set(["/headline", "/hot-take", "/hottake"]);
 const HEADLINE_QUERY = new Set(["headline", "hot-take", "hottake"]);
+const COMPARE_PATHS = new Set(["/compare", "/comparison", "/split"]);
+const COMPARE_QUERY = new Set(["compare", "comparison", "split"]);
+const QUOTE_PATHS = new Set(["/quote", "/pull-quote"]);
+const QUOTE_QUERY = new Set(["quote", "pull-quote"]);
+const PLAY_IN_PATHS = new Set(["/play-in", "/playin", "/mini-bracket"]);
+const PLAY_IN_QUERY = new Set(["play-in", "playin", "mini-bracket"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -216,6 +228,39 @@ export const isHeadlineQuery = (search: string) => {
   }
 };
 
+const queryToken = (search: string) => {
+  try {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    return params.get("composer")?.trim().toLowerCase() ?? "";
+  } catch {
+    return "";
+  }
+};
+
+export const isLineupPath = (pathname: string) =>
+  LINEUP_PATHS.has(normalizePath(pathname));
+
+export const isLineupQuery = (search: string) => LINEUP_QUERY.has(queryToken(search));
+
+export const isComparePath = (pathname: string) =>
+  COMPARE_PATHS.has(normalizePath(pathname));
+
+export const isCompareQuery = (search: string) =>
+  COMPARE_QUERY.has(queryToken(search));
+
+export const isQuotePath = (pathname: string) =>
+  QUOTE_PATHS.has(normalizePath(pathname));
+
+export const isQuoteQuery = (search: string) => QUOTE_QUERY.has(queryToken(search));
+
+export const isPlayInPath = (pathname: string) =>
+  PLAY_IN_PATHS.has(normalizePath(pathname));
+
+export const isPlayInQuery = (search: string) =>
+  PLAY_IN_QUERY.has(queryToken(search));
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
@@ -225,6 +270,18 @@ export const readComposerMode = (
   }
   if (isPyramidPath(pathname)) {
     return "pyramid";
+  }
+  if (isComparePath(pathname)) {
+    return "compare";
+  }
+  if (isQuotePath(pathname)) {
+    return "quote";
+  }
+  if (isPlayInPath(pathname)) {
+    return "play-in";
+  }
+  if (isLineupPath(pathname)) {
+    return "lineup";
   }
   if (isRankedLineupsPath(pathname)) {
     return "ranked-lineups";
@@ -252,6 +309,18 @@ export const readComposerMode = (
   }
   if (isPyramidQuery(search)) {
     return "pyramid";
+  }
+  if (isCompareQuery(search)) {
+    return "compare";
+  }
+  if (isQuoteQuery(search)) {
+    return "quote";
+  }
+  if (isPlayInQuery(search)) {
+    return "play-in";
+  }
+  if (isLineupQuery(search)) {
+    return "lineup";
   }
   if (isRankedLineupsQuery(search)) {
     return "ranked-lineups";
@@ -299,11 +368,23 @@ export const composerHref = (mode: ComposerMode) => {
   if (mode === "ranked-lineups") {
     return "/ranked-lineups";
   }
+  if (mode === "lineup") {
+    return "/lineup";
+  }
   if (mode === "pyramid") {
     return "/pyramid";
   }
   if (mode === "headline") {
     return "/headline";
+  }
+  if (mode === "compare") {
+    return "/compare";
+  }
+  if (mode === "quote") {
+    return "/quote";
+  }
+  if (mode === "play-in") {
+    return "/play-in";
   }
   return "/";
 };

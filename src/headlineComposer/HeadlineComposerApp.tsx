@@ -25,13 +25,20 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { NBA_TEAMS } from "../standingsComposer/teams";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { downloadExportPack } from "../instagramComposer/exportPack";
+import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import { fetchAllStandingRecords } from "../standingsComposer/nbaStandings";
+import { getTeam } from "../standingsComposer/teams";
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
+import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
 import {
   clearHeadlineSubject,
   clipHeadlineBody,
   defaultHeadlineDraft,
   fillHeadlineFromPlayer,
+  formatHeadlineBody,
   hasCustomPhoto,
   HEADLINE_BODY_MAX,
   isHeadlineDraft,
@@ -87,6 +94,30 @@ export function HeadlineComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
+  const fillAutoBody = async (next: HeadlineDraft) => {
+    const team = getTeam(next.teamId);
+    if (!team) {
+      return;
+    }
+    try {
+      const [game, records] = await Promise.all([
+        next.playerId ? fetchLastGame(next.playerId) : Promise.resolve(null),
+        fetchAllStandingRecords(),
+      ]);
+      const body = formatHeadlineBody(team, game, records[team.id] ?? null);
+      if (!body) {
+        return;
+      }
+      setDraft((current) =>
+        current.playerId === next.playerId && current.teamId === next.teamId
+          ? { ...current, body: clipHeadlineBody(body) }
+          : current,
+      );
+    } catch {
+      /* still editable */
+    }
+  };
+
   const handleExport = async (filename?: string, story = false) => {
     const node = boardRef.current;
     if (!node) {
@@ -128,14 +159,16 @@ export function HeadlineComposerApp() {
       return;
     }
     push(draft);
-    setDraft((current) => fillHeadlineFromPlayer(player, current, keepCustomPhoto));
+    const next = fillHeadlineFromPlayer(player, draft, keepCustomPhoto);
+    setDraft(next);
     setPickerOpen(false);
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto
         ? `Kept the photo for ${player.name}.`
-        : `Filled ${player.name}.`,
+        : `Filled ${player.name} — upload a photo. Last-night line is editable.`,
     );
+    void fillAutoBody(next);
   };
 
   const handlePick = (playerId: string) => {
@@ -210,12 +243,11 @@ export function HeadlineComposerApp() {
           <select
             value={draft.teamId ?? ""}
             aria-label="Team watermark"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                teamId: event.target.value || null,
-              }))
-            }
+            onChange={(event) => {
+              const teamId = event.target.value || null;
+              setDraft((current) => ({ ...current, teamId }));
+              void fillAutoBody({ ...draft, teamId });
+            }}
           >
             <option value="">None</option>
             {NBA_TEAMS.map((team) => (
@@ -294,6 +326,44 @@ export function HeadlineComposerApp() {
           </button>
           <button
             type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering pack…");
+                try {
+                  await downloadExportPack(
+                    () =>
+                      renderHeadlineCanvas(
+                        {
+                          headline: draft.headline,
+                          body: draft.body,
+                          teamId: draft.teamId,
+                          photoSrc: draft.photoSrc,
+                          pan: draft.pan,
+                          look,
+                          purpleFlair,
+                          showBa: draft.showBa,
+                        },
+                        2,
+                      ),
+                    exportFilenameFromTitle(draft.headline, "headline"),
+                  );
+                  setStatus("Pack download started (4:5 + 9:16).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
+          </button>
+          <button
+            type="button"
             className="sc-btn sc-btn--primary"
             onClick={() => void handleExport()}
             disabled={exporting}
@@ -305,6 +375,7 @@ export function HeadlineComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <HeadlineGraphic
             ref={boardRef}
             headline={draft.headline}
@@ -330,10 +401,11 @@ export function HeadlineComposerApp() {
             }}
             onPick={() => setPickerOpen(true)}
           />
+          </ComposerBoard>
           <p className="sc-hint">
-            Full-bleed photo with a headline plate and body line. Pick a team
-            for the watermark, then upload or paste a photo and pan/zoom like
-            Player of the Day. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Empty photo first — pick a team or player for the wordmark and last-
+            night body, then upload or paste an action shot. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -342,7 +414,7 @@ export function HeadlineComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a player"
-          hint="Optional — drops their headshot in. Upload or paste a custom action photo anytime."
+          hint="Sets the team wordmark and last-night body. No mugshot — upload or paste the photo."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Headline" } : {}

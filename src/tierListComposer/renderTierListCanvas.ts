@@ -45,6 +45,7 @@ import {
   tierBoardLayout,
 } from "./tierLayout";
 import {
+  fillForBlackInk,
   inkOnTierColor,
   resolvedTierColor,
   splitTeamCellName,
@@ -273,7 +274,9 @@ export const renderTierListCanvas = async (
     const laneCount = layout.lanes[rowIndex] ?? 1;
     const y = tierTop * scale;
     const h = laneCount * layout.laneH * scale;
-    const color = resolvedTierColor(row.label, row.color, rowIndex);
+    const color = fillForBlackInk(
+      resolvedTierColor(row.label, row.color, rowIndex),
+    );
     const ink = inkOnTierColor(color);
     context.fillStyle = color;
     context.fillRect(0, y, TIER_LABEL_W * scale, h);

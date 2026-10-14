@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -405,6 +406,7 @@ export function StandingsComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <StandingsGraphic
             ref={boardRef}
             brand={brand}
@@ -425,6 +427,7 @@ export function StandingsComposerApp() {
             onSubtitleChange={setSubtitle}
             onSelectSlot={setActiveIndex}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Click a numbered slot to pick a team. Header text is editable on the
             graphic or in the bar above. Downloads a 4:5 Instagram PNG — nothing

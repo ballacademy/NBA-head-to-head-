@@ -1,0 +1,112 @@
+.pi-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pi-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.pi-title {
+  position: absolute;
+  top: calc(36 * var(--u));
+  left: calc(80 * var(--u));
+  right: calc(80 * var(--u));
+  height: calc(88 * var(--u));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(52 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  -webkit-text-stroke: calc(3 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.pi-cols {
+  position: absolute;
+  left: calc(48 * var(--u));
+  right: calc(48 * var(--u));
+  top: calc(160 * var(--u));
+  bottom: calc(48 * var(--u));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(36 * var(--u));
+}
+
+.pi-col {
+  display: flex;
+  flex-direction: column;
+  gap: calc(16 * var(--u));
+  min-width: 0;
+}
+
+.pi-conf {
+  margin: 0;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.pi-slot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border: var(--frame-w) solid var(--frame-color);
+  background: rgba(12, 12, 14, 0.55);
+  cursor: pointer;
+}
+
+.pi-slot canvas,
+.pi-slot img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.pi-seed {
+  position: absolute;
+  left: calc(10 * var(--u));
+  top: calc(8 * var(--u));
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+}
+
+.pi-empty {
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+.pi-board .composer-ba {
+  z-index: 5;
+}
+
+.pi-title:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}

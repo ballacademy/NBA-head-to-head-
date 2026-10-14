@@ -73,16 +73,37 @@ export const resolvedTierColor = (
   return paletteColorForLabel(label, index);
 };
 
-/** Black or white letter so the filled column stays readable. */
-export const inkOnTierColor = (hex: string) => {
+/** One letter color on every filled label. */
+export const TIER_LABEL_INK = "#111111";
+
+const channelLum = (r: number, g: number, b: number) =>
+  (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+export const fillLuminance = (hex: string) => {
   const color = parseTierColor(hex);
   const n = Number.parseInt(color.slice(1), 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  return lum > 0.55 ? "#111111" : "#ffffff";
+  return channelLum((n >> 16) & 255, (n >> 8) & 255, n & 255);
 };
+
+/** Lighten a dark fill until black type stays readable — never switch letter color. */
+export const fillForBlackInk = (hex: string, minLum = 0.58) => {
+  let color = parseTierColor(hex);
+  for (let step = 0; step < 16; step += 1) {
+    if (fillLuminance(color) >= minLum) {
+      return color;
+    }
+    const n = Number.parseInt(color.slice(1), 16);
+    const mix = (channel: number) =>
+      Math.min(255, Math.round(channel + (255 - channel) * 0.22));
+    const r = mix((n >> 16) & 255);
+    const g = mix((n >> 8) & 255);
+    const b = mix(n & 255);
+    color = `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+  }
+  return color;
+};
+
+export const inkOnTierColor = (_hex?: string) => TIER_LABEL_INK;
 
 export const hexToRgba = (hex: string, alpha: number) => {
   const color = parseTierColor(hex);

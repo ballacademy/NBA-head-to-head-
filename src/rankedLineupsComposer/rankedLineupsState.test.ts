@@ -98,6 +98,8 @@ describe("ranked lineups", () => {
     expect(DEFAULT_RANK_DISPLAY).toBe("pill");
     expect(parseRankDisplay(undefined)).toBe("pill");
     expect(parseRankDisplay("headline")).toBe("headline");
+    expect(parseRankDisplay("none")).toBe("none");
+    expect(parseRankDisplay("nope", "none")).toBe("none");
     expect(RL_TITLE_PAD_Y).toBeGreaterThanOrEqual(10);
     expect(RL_TITLE_BOX_H).toBeGreaterThan(RL_TITLE_SIZE * RL_TITLE_LINE * 2);
     expect(RL_HEADER_H).toBe(rankedHeaderH("pill"));
