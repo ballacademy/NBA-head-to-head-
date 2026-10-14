@@ -29,6 +29,7 @@ export const DEFAULT_COMPARE_TITLE = "NOT A SIXTH MAN";
 export const DEFAULT_COMPARE_SUBTITLE = "CAREER START VS CAREER BENCH APPEARANCES";
 export const DEFAULT_STATS_LABEL = "CAREER STATS";
 export const COMPARE_STAT_COUNT = 5;
+export const COMPARE_STAT_MAX = 10;
 
 export type CompareStatsMode = "season" | "game";
 export type CompareStatKey =
@@ -58,11 +59,11 @@ export const COMPARE_STAT_PRESETS: CompareStatPreset[] = [
   { key: "fg3Pct", label: "3P%", metric: "fg3Pct", game: "three", pctFromMakes: true },
   { key: "reb", label: "REB", metric: "rebounds", game: "reb" },
   { key: "ast", label: "AST", metric: "assists", game: "ast" },
-  { key: "stl", label: "STL", metric: "steals", game: "stl" },
+  { key: "min", label: "MIN", metric: "minutes", game: "min" },
   { key: "blk", label: "BLK", metric: "blocks", game: "blk" },
+  { key: "stl", label: "STL", metric: "steals", game: "stl" },
   { key: "tov", label: "TOV", metric: "turnovers", game: "tov" },
   { key: "ftPct", label: "FT%", metric: "ftPct" },
-  { key: "min", label: "MIN", metric: "minutes", game: "min" },
   { key: "gp", label: "GP", metric: "games" },
 ];
 
@@ -184,7 +185,7 @@ export const parseCompareStats = (value: unknown): CompareStat[] => {
       } satisfies CompareStat;
     })
     .filter((row): row is CompareStat => Boolean(row));
-  return rows.length ? rows.slice(0, 8) : defaultCompareStats();
+  return rows.length ? rows.slice(0, COMPARE_STAT_MAX) : defaultCompareStats();
 };
 
 export const isCompareSide = (value: unknown): value is CompareSide =>
@@ -418,3 +419,22 @@ export const setCompareStatKey = (
     label: preset.label,
   });
 };
+
+export const nextCompareStat = (stats: CompareStat[]): CompareStat | null => {
+  if (stats.length >= COMPARE_STAT_MAX) {
+    return null;
+  }
+  const used = new Set(stats.map((stat) => stat.key));
+  const next = COMPARE_STAT_PRESETS.find((preset) => !used.has(preset.key));
+  return next ? emptyCompareStat(next.key) : null;
+};
+
+export const addCompareStat = (stats: CompareStat[]): CompareStat[] => {
+  const next = nextCompareStat(stats);
+  return next ? [...stats, next] : stats;
+};
+
+export const removeCompareStat = (stats: CompareStat[], index: number) =>
+  stats.length <= COMPARE_STAT_COUNT
+    ? stats
+    : stats.filter((_, statIndex) => statIndex !== index);

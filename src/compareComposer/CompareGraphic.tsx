@@ -7,6 +7,7 @@ import {
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
   compareSideName,
@@ -55,6 +56,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
+    const type = compareStatType(draft.stats.length);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -96,7 +98,15 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--cmp-value" as string]: String(type.value),
+            ["--cmp-label" as string]: String(type.label),
+            ["--cmp-rule" as string]: String(type.rule),
+            ["--cmp-stroke" as string]: String(type.stroke),
+          } as React.CSSProperties
+        }
         aria-label="Instagram comparison graphic"
       >
         {draft.showBa !== false ? (

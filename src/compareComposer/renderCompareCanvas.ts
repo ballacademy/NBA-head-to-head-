@@ -25,15 +25,14 @@ import {
   CMP_PHOTO_H,
   CMP_PHOTO_TOP,
   CMP_PHOTO_W,
-  CMP_STAT_SIZE,
   CMP_STATS_W,
   CMP_SUB_H,
   CMP_SUB_SIZE,
   CMP_TITLE_H,
   CMP_TITLE_SIZE,
-  CMP_LABEL_SIZE,
   CMP_NAME_SIZE,
   CMP_LEAD,
+  compareStatType,
 } from "./compareLayout";
 import {
   compareSideCaption,
@@ -212,6 +211,7 @@ export const renderCompareCanvas = async (
     }
   }
 
+  const type = compareStatType(input.stats.length);
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -220,49 +220,55 @@ export const renderCompareCanvas = async (
   context.fillText(
     (input.statsLabel || "STATS").toUpperCase(),
     statsX + statsW / 2,
-    photoY + 36 * s,
+    photoY + 29 * s,
     statsW,
   );
   setLetterSpacing(context, 0);
 
   const rowCount = Math.max(input.stats.length, 1);
-  const rowStart = photoY + 88 * s;
-  const rowSpan = Math.min(150 * s, (photoH - 120 * s) / rowCount);
+  const bodyTop = photoY + 46 * s;
+  const bodyH = photoH - 70 * s;
+  const rowSpan = bodyH / rowCount;
   input.stats.forEach((stat, index) => {
-    const y = rowStart + index * rowSpan;
+    const y = bodyTop + index * rowSpan + rowSpan / 2;
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
     context.fillStyle = "rgba(255,255,255,0.45)";
-    context.fillRect(mid - s, y - 26 * s, 2 * s, 52 * s);
-    context.font = `900 ${CMP_STAT_SIZE * s}px ${POSTER_FONT}`;
+    context.fillRect(
+      mid - s,
+      y - (type.rule * s) / 2,
+      2 * s,
+      type.rule * s,
+    );
+    context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textBaseline = "middle";
     context.textAlign = "right";
     strokeFill(
       context,
       stat.left,
       mid - 16 * s,
-      y - 6 * s,
+      y - type.label * 0.55 * s,
       lead === 0 ? CMP_LEAD : "#fff",
-      2.4 * s,
+      type.stroke * s,
     );
     context.textAlign = "left";
     strokeFill(
       context,
       stat.right,
       mid + 16 * s,
-      y - 6 * s,
+      y - type.label * 0.55 * s,
       lead === 1 ? CMP_LEAD : "#fff",
-      2.4 * s,
+      type.stroke * s,
     );
     const unit = (stat.label || "").toUpperCase();
-    context.font = `900 ${CMP_LABEL_SIZE * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.14 * CMP_LABEL_SIZE * s);
+    context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.14 * type.label * s);
     context.textAlign = "right";
     context.fillStyle = lead === 0 ? CMP_LEAD : "rgba(255,255,255,0.78)";
-    context.fillText(unit, mid - 16 * s, y + 22 * s);
+    context.fillText(unit, mid - 16 * s, y + type.value * 0.42 * s);
     context.textAlign = "left";
     context.fillStyle = lead === 1 ? CMP_LEAD : "rgba(255,255,255,0.78)";
-    context.fillText(unit, mid + 16 * s, y + 22 * s);
+    context.fillText(unit, mid + 16 * s, y + type.value * 0.42 * s);
     setLetterSpacing(context, 0);
   });
 

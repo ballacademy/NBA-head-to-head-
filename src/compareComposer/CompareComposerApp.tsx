@@ -40,11 +40,15 @@ import { CompareGraphic } from "./CompareGraphic";
 import { exportComparePng } from "./exportComparePng";
 import { renderCompareCanvas } from "./renderCompareCanvas";
 import {
+  addCompareStat,
   applySideStatValues,
   autoCompareStatsLabel,
   clearCompareSide,
+  COMPARE_STAT_COUNT,
+  COMPARE_STAT_MAX,
   COMPARE_STAT_PRESETS,
   defaultCompareDraft,
+  nextCompareStat,
   effectiveCompareSeason,
   fillCompareSide,
   hasCustomPhoto,
@@ -53,6 +57,7 @@ import {
   parseCompareStatKey,
   parseCompareStatsMode,
   patchCompareStat,
+  removeCompareStat,
   setComparePhoto,
   setCompareStatKey,
   statsFromLastGame,
@@ -289,6 +294,7 @@ export function CompareComposerApp() {
   });
   const seasons = everyTeamSeasons();
   const mode = parseCompareStatsMode(draft.statsMode);
+  const nextStat = nextCompareStat(draft.stats);
 
   return (
     <div className="sc-composer">
@@ -417,6 +423,39 @@ export function CompareComposerApp() {
             </select>
           </label>
         ))}
+        <button
+          type="button"
+          className="sc-chip"
+          disabled={draft.stats.length >= COMPARE_STAT_MAX}
+          onClick={() => {
+            const next = { ...draft, stats: addCompareStat(draft.stats) };
+            setDraft(next);
+            void fillStats(next);
+          }}
+        >
+          {nextStat ? `Add ${nextStat.label}` : "10 stats"}
+        </button>
+        {draft.stats.length > COMPARE_STAT_COUNT ? (
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => {
+              const next = {
+                ...draft,
+                stats: removeCompareStat(
+                  draft.stats,
+                  draft.stats.length - 1,
+                ),
+              };
+              setDraft(next);
+              void fillStats(next);
+            }}
+          >
+            {draft.stats.length === COMPARE_STAT_COUNT + 1
+              ? "5 stats"
+              : "Remove last"}
+          </button>
+        ) : null}
           </>
         }
         board={
