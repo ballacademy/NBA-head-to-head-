@@ -101,6 +101,7 @@ describe("composer mode", () => {
       "compare",
       "quote",
       "play-in",
+      "stat-card",
     ]);
   });
 
@@ -122,6 +123,8 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/quote")).toBe("quote");
     expect(readComposerMode("", "/play-in")).toBe("play-in");
     expect(composerHref("play-in")).toBe("/play-in");
+    expect(readComposerMode("", "/stat-card")).toBe("stat-card");
+    expect(composerHref("stat-card")).toBe("/stat-card");
   });
 
   it("opens ranked lineups from path or query", () => {

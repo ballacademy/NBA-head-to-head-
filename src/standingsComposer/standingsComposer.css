@@ -321,7 +321,10 @@ main.sc-stage {
 .pod-board.is-none,
 .plb-board.is-none,
 .pyr-board.is-none,
-.hl-board.is-none {
+.hl-board.is-none,
+.pi-board.is-none,
+.qt-board.is-none,
+.stc-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
 }
@@ -381,7 +384,7 @@ main.sc-stage {
 .is-purple .cmp-title-plate,
 .is-purple .cmp-sub-plate,
 .is-purple .pi-slot,
-.is-purple .qt-shot {
+.is-purple .qt-board .pod-photo {
   box-shadow:
     0 0 0 calc(2.5 * var(--u)) #b026ff,
     0 0 calc(18 * var(--u)) rgba(176, 38, 255, 0.5);

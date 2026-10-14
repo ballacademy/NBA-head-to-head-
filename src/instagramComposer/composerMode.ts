@@ -12,7 +12,8 @@ export type ComposerMode =
   | "headline"
   | "compare"
   | "quote"
-  | "play-in";
+  | "play-in"
+  | "stat-card";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -90,6 +91,8 @@ const QUOTE_PATHS = new Set(["/quote", "/pull-quote"]);
 const QUOTE_QUERY = new Set(["quote", "pull-quote"]);
 const PLAY_IN_PATHS = new Set(["/play-in", "/playin", "/mini-bracket"]);
 const PLAY_IN_QUERY = new Set(["play-in", "playin", "mini-bracket"]);
+const STAT_CARD_PATHS = new Set(["/stat-card", "/statcard", "/player-card"]);
+const STAT_CARD_QUERY = new Set(["stat-card", "statcard", "player-card"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -261,6 +264,12 @@ export const isPlayInPath = (pathname: string) =>
 export const isPlayInQuery = (search: string) =>
   PLAY_IN_QUERY.has(queryToken(search));
 
+export const isStatCardPath = (pathname: string) =>
+  STAT_CARD_PATHS.has(normalizePath(pathname));
+
+export const isStatCardQuery = (search: string) =>
+  STAT_CARD_QUERY.has(queryToken(search));
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
@@ -279,6 +288,9 @@ export const readComposerMode = (
   }
   if (isPlayInPath(pathname)) {
     return "play-in";
+  }
+  if (isStatCardPath(pathname)) {
+    return "stat-card";
   }
   if (isLineupPath(pathname)) {
     return "lineup";
@@ -318,6 +330,9 @@ export const readComposerMode = (
   }
   if (isPlayInQuery(search)) {
     return "play-in";
+  }
+  if (isStatCardQuery(search)) {
+    return "stat-card";
   }
   if (isLineupQuery(search)) {
     return "lineup";
@@ -385,6 +400,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "play-in") {
     return "/play-in";
+  }
+  if (mode === "stat-card") {
+    return "/stat-card";
   }
   return "/";
 };

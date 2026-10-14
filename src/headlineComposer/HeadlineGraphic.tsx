@@ -133,6 +133,11 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
               {splitTeamWordmark(team).city}
             </p>
           ) : null}
+          {team ? (
+            <p className="hl-wordmark-nick" aria-hidden="true">
+              {splitTeamWordmark(team).nick}
+            </p>
+          ) : null}
           <div className="hl-headline-plate">
             <input
               className="hl-headline"
@@ -145,11 +150,6 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
               }
             />
           </div>
-          {team ? (
-            <p className="hl-wordmark-nick" aria-hidden="true">
-              {splitTeamWordmark(team).nick}
-            </p>
-          ) : null}
           <textarea
             className="hl-body"
             value={body}

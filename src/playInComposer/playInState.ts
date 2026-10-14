@@ -1,4 +1,4 @@
-export const DEFAULT_PLAY_IN_TITLE = "NBA PLAY-IN";
+export const DEFAULT_PLAY_IN_TITLE = "PLAY-IN TOURNAMENT";
 export const PLAY_IN_SIZES = [8, 10] as const;
 export type PlayInSize = (typeof PLAY_IN_SIZES)[number];
 

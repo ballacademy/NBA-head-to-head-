@@ -2,6 +2,7 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -11,7 +12,28 @@ import {
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
-import { playInSeeds, type PlayInDraft } from "./playInState";
+import {
+  PI_ABBR_SIZE,
+  PI_BA_INSET,
+  PI_BA_SIZE,
+  PI_BYE_LABEL,
+  PI_CONF_SIZE,
+  PI_KICKER,
+  PI_KICKER_SIZE,
+  PI_KICKER_Y,
+  PI_LEGEND,
+  PI_LEGEND_SIZE,
+  PI_LEGEND_Y,
+  PI_LOGO_FIT,
+  PI_MATCH_LABEL_SIZE,
+  PI_SEED_SIZE,
+  PI_TITLE_SIZE,
+  PI_TITLE_Y,
+  playInBoardCols,
+  type PlayInBar,
+  type PlayInSlotRect,
+} from "./playInLayout";
+import { type PlayInDraft } from "./playInState";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
@@ -26,6 +48,101 @@ const loadImage = (src: string) =>
 export type PlayInRenderInput = PlayInDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+};
+
+const paintBar = (
+  context: CanvasRenderingContext2D,
+  bar: PlayInBar,
+  s: number,
+) => {
+  context.fillStyle = "rgba(255,255,255,0.9)";
+  context.fillRect(bar.x * s, bar.y * s, bar.w * s, bar.h * s);
+};
+
+const paintSlot = async (
+  context: CanvasRenderingContext2D,
+  slot: PlayInSlotRect,
+  teamId: string | null | undefined,
+  look: ComposerLook | undefined,
+  purpleFlair: boolean | undefined,
+  s: number,
+  bye = false,
+) => {
+  const x = slot.x * s;
+  const y = slot.y * s;
+  const w = slot.w * s;
+  const h = slot.h * s;
+  context.fillStyle = "rgba(8,8,10,0.55)";
+  context.fillRect(x, y, w, h);
+  paintCellFrame(context, x, y, w, h, look, s);
+  if (purpleFlair) {
+    paintPurplePlateEdge(context, x, y, w, h, s);
+  }
+  const team = getTeam(teamId);
+  if (team) {
+    const logo = await loadImage(team.logoSrc);
+    if (logo) {
+      drawCenteredLogo(context, logo, x, y, w, h, {
+        cacheKey: `${team.logoSrc}-playin`,
+        fitX: PI_LOGO_FIT,
+        fitY: PI_LOGO_FIT,
+      });
+    }
+    context.font = `900 ${PI_ABBR_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "bottom";
+    context.fillStyle = "#fff";
+    context.fillText(team.id, x + w / 2, y + h - 10 * s);
+  }
+  const bx = slot.badge.x * s;
+  const by = slot.badge.y * s;
+  const bw = slot.badge.w * s;
+  const bh = slot.badge.h * s;
+  const badgeFill = look === "black" ? "#0a0a0a" : "#fff";
+  const badgeInk = look === "black" ? "#fff" : "#111";
+  context.fillStyle = badgeFill;
+  context.fillRect(bx, by, bw, bh);
+  context.font = `900 ${PI_SEED_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = badgeInk;
+  context.fillText(String(slot.seed), bx + bw / 2, by + bh / 2 + 1 * s);
+  if (bye) {
+    context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+    context.textAlign = "right";
+    context.textBaseline = "top";
+    context.fillStyle = "rgba(255,255,255,0.78)";
+    context.fillText(PI_BYE_LABEL, x + w - 14 * s, y + 16 * s);
+  }
+};
+
+const paintPlate = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  label: string,
+  look: ComposerLook | undefined,
+  purpleFlair: boolean | undefined,
+  eight: boolean,
+  s: number,
+) => {
+  context.fillStyle = eight
+    ? purpleFlair
+      ? "rgba(176,38,255,0.16)"
+      : "rgba(255,255,255,0.1)"
+    : "rgba(10,10,12,0.78)";
+  context.fillRect(x, y, w, h);
+  paintCellFrame(context, x, y, w, h, look, s);
+  if (purpleFlair) {
+    paintPurplePlateEdge(context, x, y, w, h, s);
+  }
+  context.font = `900 ${(eight ? 15 : 18) * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "#fff";
+  context.fillText(label, x + w / 2, y + h / 2, w - 8 * s);
 };
 
 export const renderPlayInCanvas = async (
@@ -48,69 +165,104 @@ export const renderPlayInCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  context.font = `900 ${52 * s}px ${POSTER_FONT}`;
+  const title = input.title.trim().toUpperCase() || "PLAY-IN TOURNAMENT";
+  context.font = `900 ${PI_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.lineJoin = "round";
   context.strokeStyle = "#000";
-  context.lineWidth = 3 * s;
-  const title = input.title.trim().toUpperCase() || "NBA PLAY-IN";
-  context.strokeText(title, width / 2, 80 * s);
+  context.lineWidth = 3.4 * s;
+  context.strokeText(title, width / 2, PI_TITLE_Y * s);
   context.fillStyle = "#fff";
-  context.fillText(title, width / 2, 80 * s);
+  context.fillText(title, width / 2, PI_TITLE_Y * s);
 
-  const seeds = playInSeeds(input.size);
-  const colW = 520 * s;
-  const gap = 36 * s;
-  const originY = 160 * s;
-  const colH = height - originY - 48 * s;
-  const slotH = (colH - 40 * s - (seeds.length - 1) * 16 * s) / seeds.length;
+  context.font = `900 ${PI_KICKER_SIZE * s}px ${POSTER_FONT}`;
+  context.fillStyle = "rgba(255,255,255,0.82)";
+  context.fillText(PI_KICKER, width / 2, PI_KICKER_Y * s);
 
-  const paintCol = async (
-    x: number,
-    label: string,
-    ids: Array<string | null>,
-  ) => {
-    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
-    context.fillStyle = "#fff";
-    context.fillText(label, x + colW / 2, originY + 16 * s);
-    for (let index = 0; index < seeds.length; index += 1) {
-      const y = originY + 40 * s + index * (slotH + 16 * s);
-      context.fillStyle = "rgba(12,12,14,0.55)";
-      context.fillRect(x, y, colW, slotH);
-      paintCellFrame(context, x, y, colW, slotH, input.look, s);
-      context.font = `900 ${22 * s}px ${POSTER_FONT}`;
-      context.textAlign = "left";
-      context.fillStyle = "#fff";
-      context.fillText(String(seeds[index]), x + 14 * s, y + 28 * s);
-      context.textAlign = "center";
-      const team = getTeam(ids[index]);
-      if (team) {
-        const logo = await loadImage(team.logoSrc);
-        if (logo) {
-          const mark = Math.min(colW, slotH) * 0.62;
-          drawCenteredLogo(
-            context,
-            logo,
-            x + (colW - mark) / 2,
-            y + (slotH - mark) / 2,
-            mark,
-            mark,
-            { cacheKey: `${team.logoSrc}-playin`, shadow: 0 },
-          );
-        }
-      }
+  const cols = playInBoardCols(input.size);
+  for (const col of cols) {
+    const ids = col.conference === "east" ? input.east : input.west;
+    context.font = `900 ${PI_CONF_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = col.conference === "east" ? "#7eb6ff" : "#ff8a7a";
+    context.fillText(col.label, (col.x + col.w / 2) * s, (col.y + 16) * s);
+    if (col.bye) {
+      await paintSlot(
+        context,
+        col.bye,
+        ids[col.bye.index],
+        input.look,
+        input.purpleFlair,
+        s,
+        true,
+      );
     }
-  };
+    for (const match of col.matches) {
+      match.lines.forEach((bar) => paintBar(context, bar, s));
+      context.font = `900 ${PI_MATCH_LABEL_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.78)";
+      context.fillText(match.label.toUpperCase(), match.labelX * s, match.labelY * s);
+      await paintSlot(
+        context,
+        match.slots[0],
+        ids[match.slots[0].index],
+        input.look,
+        input.purpleFlair,
+        s,
+      );
+      await paintSlot(
+        context,
+        match.slots[1],
+        ids[match.slots[1].index],
+        input.look,
+        input.purpleFlair,
+        s,
+      );
+      paintPlate(
+        context,
+        match.winner.x * s,
+        match.winner.y * s,
+        match.winner.w * s,
+        match.winner.h * s,
+        match.winner.label,
+        input.look,
+        input.purpleFlair,
+        false,
+        s,
+      );
+    }
+    col.eightLines.forEach((bar) => paintBar(context, bar, s));
+    paintPlate(
+      context,
+      col.eightSeed.x * s,
+      col.eightSeed.y * s,
+      col.eightSeed.w * s,
+      col.eightSeed.h * s,
+      col.eightSeed.label,
+      input.look,
+      input.purpleFlair,
+      true,
+      s,
+    );
+  }
 
-  await paintCol((width - colW * 2 - gap) / 2, "EAST", input.east);
-  await paintCol((width - colW * 2 - gap) / 2 + colW + gap, "WEST", input.west);
+  context.font = `900 ${PI_LEGEND_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "rgba(255,255,255,0.72)";
+  context.fillText(PI_LEGEND, width / 2, PI_LEGEND_Y * s);
+
+  paintCellFrame(context, 0, 0, width, height, input.look, s);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
-      const size = 72 * s;
-      const inset = 36 * s;
+      const size = PI_BA_SIZE * s;
+      const inset = PI_BA_INSET * s;
       if (input.purpleFlair) {
         paintPurpleBaGlow(context, width - inset - size, inset, size);
       }

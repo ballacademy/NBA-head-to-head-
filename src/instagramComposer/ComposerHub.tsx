@@ -12,6 +12,7 @@ import { HeadlineComposerApp } from "../headlineComposer/HeadlineComposerApp";
 import { CompareComposerApp } from "../compareComposer/CompareComposerApp";
 import { QuoteComposerApp } from "../quoteComposer/QuoteComposerApp";
 import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
+import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -32,6 +33,7 @@ import "../headlineComposer/headlineComposer.css";
 import "../compareComposer/compareComposer.css";
 import "../quoteComposer/quoteComposer.css";
 import "../playInComposer/playInComposer.css";
+import "../statCardComposer/statCardComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -81,6 +83,8 @@ export function ComposerHub() {
         <QuoteComposerApp />
       ) : mode === "play-in" ? (
         <PlayInComposerApp />
+      ) : mode === "stat-card" ? (
+        <StatCardComposerApp />
       ) : mode === "pyramid" ? (
         <PyramidComposerApp />
       ) : mode === "headline" ? (

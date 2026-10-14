@@ -7,6 +7,8 @@ import {
   GRAPHIC_WIDTH,
   HL_HEADLINE_SIZE,
   HL_WATERMARK,
+  HL_WATERMARK_TOP,
+  headlineTypeStack,
 } from "./headlineLayout";
 import {
   clipHeadlineBody,
@@ -55,6 +57,11 @@ describe("headline composer", () => {
       city: "SAN ANTONIO",
       nick: "SPURS",
     });
+    const stack = headlineTypeStack(3, true);
+    expect(stack.cityBottom).toBeLessThanOrEqual(stack.nickTop);
+    expect(stack.nickBottom).toBeLessThanOrEqual(stack.plateTop);
+    expect(stack.watermarkBottom).toBeLessThan(stack.cityTop);
+    expect(HL_WATERMARK_TOP).toBeLessThan(stack.plateTop);
     expect(
       formatHeadlineBody(
         spurs,
