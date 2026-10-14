@@ -288,7 +288,13 @@ describe("every-team order and slots", () => {
 
   it("uses 2025-26 stats on the current season until that year has a real table", () => {
     expect(statsSeasonFor("2026-27")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "regular")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "preseason")).toBe("2026-27");
     expect(statsSeasonFor("2012-13")).toBe("2012-13");
+    const sgaPreseason = listRosterPlayers("OKC", "2026-27", "preseason").find(
+      (player) => player.id === "4278073",
+    );
+    expect(sgaPreseason?.gp).not.toBe(68);
     const sga = listRosterPlayers("OKC", "2026-27").find(
       (player) => player.id === "4278073",
     );

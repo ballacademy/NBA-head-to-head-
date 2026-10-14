@@ -5,6 +5,7 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
@@ -61,7 +62,7 @@ export const COMPARE_STAT_PRESETS: CompareStatPreset[] = [
   { key: "blk", label: "BLK", metric: "blocks", game: "blk" },
   { key: "tov", label: "TOV", metric: "turnovers", game: "tov" },
   { key: "ftPct", label: "FT%", metric: "ftPct" },
-  { key: "min", label: "MIN", metric: "minutes" },
+  { key: "min", label: "MIN", metric: "minutes", game: "min" },
   { key: "gp", label: "GP", metric: "games" },
 ];
 
@@ -324,11 +325,12 @@ export const statsFromSeason = (
   teamId: string | null,
   season: string,
   stats: CompareStat[] = defaultCompareStats(),
+  sample: ComposerStatsSample = "regular",
 ): string[] => {
   if (!playerId) {
     return stats.map(() => "");
   }
-  const row = playerRowForSeason(playerId, season, teamId);
+  const row = playerRowForSeason(playerId, season, teamId, sample);
   return stats.map((stat) => {
     const preset = compareStatPreset(stat.key);
     return formatCompareSeasonValue(

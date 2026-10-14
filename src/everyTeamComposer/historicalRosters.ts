@@ -1,4 +1,5 @@
 import playerAveragesFile from "../../data/nba-player-stat-averages.json";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   getConferenceForTeam,
   getDivisionForTeam,
@@ -197,10 +198,14 @@ const highScorerCount = (season: string) => {
 
 /**
  * Upcoming/current year often has ESPN preseason scraps, not a BBR table.
- * Until this year’s scoring looks like a real table, borrow last season by id.
+ * Regular-season sample borrows last year until this year’s table exists.
+ * Preseason sample keeps the current year so those scraps are usable now.
  */
-export const statsSeasonFor = (season: string) => {
-  if (season !== currentSeason) {
+export const statsSeasonFor = (
+  season: string,
+  sample: ComposerStatsSample = "regular",
+) => {
+  if (sample === "preseason" || season !== currentSeason) {
     return season;
   }
   const prev = previousSeason(season);
@@ -274,11 +279,12 @@ export const playerRowForSeason = (
   playerId: string,
   season: string,
   teamId?: string | null,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   if (!playerId) {
     return null;
   }
-  const statsSeason = statsSeasonFor(season);
+  const statsSeason = statsSeasonFor(season, sample);
   const row = teamId
     ? priorPlayerStats(playerId, teamId, statsSeason)
     : (priorStatsById(statsSeason).get(playerId) ?? null);
@@ -290,8 +296,9 @@ const overlayLastSeasonStats = (
   player: EveryTeamRosterPlayer,
   teamId: string,
   season: string,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer => {
-  const statsSeason = statsSeasonFor(season);
+  const statsSeason = statsSeasonFor(season, sample);
   if (statsSeason === season) {
     return mergeSeasonAverages(player, statsSeason);
   }
@@ -333,9 +340,10 @@ const overlayLastSeasonStats = (
 export const listRosterPlayers = (
   teamId: string,
   season: string,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer[] =>
   rawRosterPlayers(teamId, season).map((player) =>
-    overlayLastSeasonStats(player, teamId, season),
+    overlayLastSeasonStats(player, teamId, season, sample),
   );
 
 export const teamLogoSrc = (
@@ -358,11 +366,16 @@ export const getRosterPlayer = (
   teamId: string,
   season: string,
   playerId: string | null | undefined,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   if (!playerId) {
     return null;
   }
-  return listRosterPlayers(teamId, season).find((player) => player.id === playerId) ?? null;
+  return (
+    listRosterPlayers(teamId, season, sample).find(
+      (player) => player.id === playerId,
+    ) ?? null
+  );
 };
 
 export const rosterHasPlayer = (
@@ -520,15 +533,18 @@ export const playerStatValue = (
   season: string,
   metric: EveryTeamStatMetric,
   teamId?: string | null,
-) => rosterStatValue(playerRowForSeason(playerId, season, teamId), metric);
+  sample: ComposerStatsSample = "regular",
+) =>
+  rosterStatValue(playerRowForSeason(playerId, season, teamId, sample), metric);
 
 /** Minutes-weighted roster average — team scoring/rates for tier grouping. */
 export const teamStatValue = (
   teamId: string,
   season: string,
   metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
 ): number | null => {
-  const rows = listRosterPlayers(teamId, season)
+  const rows = listRosterPlayers(teamId, season, sample)
     .map((player) => ({
       value: rosterStatValue(player, metric),
       minutes: player.min ?? 0,
@@ -578,10 +594,11 @@ export const pickSeasonLeader = (
   teamId: string,
   season: string,
   metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   let best: EveryTeamRosterPlayer | null = null;
   let bestValue = Number.NEGATIVE_INFINITY;
-  listRosterPlayers(teamId, season).forEach((player) => {
+  listRosterPlayers(teamId, season, sample).forEach((player) => {
     const value = rosterStatValue(player, metric);
     if (value == null || value < bestValue) {
       return;

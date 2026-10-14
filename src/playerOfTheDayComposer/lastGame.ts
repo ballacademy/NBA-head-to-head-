@@ -1,3 +1,4 @@
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { NBA_TEAMS, NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
 
 export const ESPN_GAMELOG_URL = (athleteId: string) =>
@@ -36,6 +37,7 @@ export interface LastGameStats {
   fg: string;
   three: string;
   tov: string;
+  min: string;
 }
 
 export interface LastGame {
@@ -61,6 +63,7 @@ export const emptyStats = (): LastGameStats => ({
   fg: "0-0",
   three: "0-0",
   tov: "0",
+  min: "0",
 });
 
 export const formatDateLabel = (iso: string) => {
@@ -96,6 +99,7 @@ export const resolveTeamId = (
 };
 
 const STAT_KEYS = {
+  MIN: "min",
   FG: "fg",
   "3PT": "three",
   REB: "reb",
@@ -148,21 +152,30 @@ export interface EspnGamelogPayload {
 
 const isPreseason = (label: string) => /preseason/i.test(label);
 
-const walkEvents = (payload: EspnGamelogPayload, allowPreseason: boolean) => {
-  const ordered: string[] = [];
-  for (const season of payload.seasonTypes ?? []) {
-    if (!allowPreseason && isPreseason(season.displayName ?? "")) {
-      continue;
-    }
-    for (const category of season.categories ?? []) {
-      for (const item of category.events ?? []) {
-        if (item.eventId) {
-          ordered.push(item.eventId);
-        }
+const eventIdsForSeason = (season: EspnSeasonType) => {
+  const ids: string[] = [];
+  for (const category of season.categories ?? []) {
+    for (const item of category.events ?? []) {
+      if (item.eventId) {
+        ids.push(item.eventId);
       }
     }
   }
-  return ordered;
+  return ids;
+};
+
+const walkEventsSplit = (payload: EspnGamelogPayload) => {
+  const preseason: string[] = [];
+  const regular: string[] = [];
+  for (const season of payload.seasonTypes ?? []) {
+    const ids = eventIdsForSeason(season);
+    if (isPreseason(season.displayName ?? "")) {
+      preseason.push(...ids);
+    } else {
+      regular.push(...ids);
+    }
+  }
+  return { preseason, regular };
 };
 
 export const formatResultLine = (
@@ -240,12 +253,15 @@ export const gameFromEvent = (
 
 export const parseGamelogGames = (
   payload: EspnGamelogPayload | null | undefined,
+  sample: ComposerStatsSample = "preseason",
 ): LastGame[] => {
   if (!payload || typeof payload !== "object") {
     return [];
   }
-  const ids = walkEvents(payload, false);
-  const ordered = ids.length ? ids : walkEvents(payload, true);
+  const split = walkEventsSplit(payload);
+  const preferred = sample === "preseason" ? split.preseason : split.regular;
+  const fallback = sample === "preseason" ? split.regular : split.preseason;
+  const ordered = preferred.length ? preferred : fallback;
   const games: LastGame[] = [];
   const seen = new Set<string>();
   for (const eventId of ordered) {
@@ -263,19 +279,25 @@ export const parseGamelogGames = (
 
 export const parseLastGamePayload = (
   payload: EspnGamelogPayload | null | undefined,
-): LastGame | null => parseGamelogGames(payload)[0] ?? null;
+  sample: ComposerStatsSample = "preseason",
+): LastGame | null => parseGamelogGames(payload, sample)[0] ?? null;
 
 const cache = new Map<string, LastGame[]>();
 
+const cacheKey = (athleteId: string, sample: ComposerStatsSample) =>
+  `${athleteId}::${sample}`;
+
 export const fetchRecentGames = async (
   athleteId: string,
+  sample: ComposerStatsSample = "preseason",
 ): Promise<LastGame[]> => {
   const id = athleteId.trim();
   if (!id) {
     return [];
   }
-  if (cache.has(id)) {
-    return cache.get(id) ?? [];
+  const key = cacheKey(id, sample);
+  if (cache.has(key)) {
+    return cache.get(key) ?? [];
   }
   try {
     const response = await fetch(ESPN_GAMELOG_URL(id), {
@@ -286,8 +308,8 @@ export const fetchRecentGames = async (
       return [];
     }
     const payload = (await response.json()) as EspnGamelogPayload;
-    const games = parseGamelogGames(payload);
-    cache.set(id, games);
+    const games = parseGamelogGames(payload, sample);
+    cache.set(key, games);
     return games;
   } catch {
     return [];
@@ -296,4 +318,6 @@ export const fetchRecentGames = async (
 
 export const fetchLastGame = async (
   athleteId: string,
-): Promise<LastGame | null> => (await fetchRecentGames(athleteId))[0] ?? null;
+  sample: ComposerStatsSample = "preseason",
+): Promise<LastGame | null> =>
+  (await fetchRecentGames(athleteId, sample))[0] ?? null;

@@ -1,3 +1,4 @@
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
@@ -310,12 +311,14 @@ export const rankedMetricValues = (
   boardSeason: string,
   cellSeasons: Record<string, string> = {},
   metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
 ): Array<number | null> =>
   normalizeRankedOrder(rankedOrder).map((teamId) => {
     const player = getRosterPlayer(
       teamId,
       seasonForTeam(teamId, boardSeason, cellSeasons),
       slots[slotIndexForTeam(teamId)] ?? null,
+      sample,
     );
     return rosterStatValue(player, metric);
   });
@@ -350,6 +353,7 @@ export const autoFillEveryTeamSlots = (
   boardSeason: string,
   cellSeasons: Record<string, string> = {},
   metric: EveryTeamStatMetric = "points",
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamSlots =>
   EVERY_TEAM_ORDER.map(
     (team) =>
@@ -357,6 +361,7 @@ export const autoFillEveryTeamSlots = (
         team.id,
         seasonForTeam(team.id, boardSeason, cellSeasons),
         metric,
+        sample,
       )?.id ?? null,
   );
 

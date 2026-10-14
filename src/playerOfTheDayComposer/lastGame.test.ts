@@ -128,8 +128,17 @@ describe("last NBA game parsing", () => {
     expect(resolveTeamId("PHI", "Philadelphia 76ers")).toBe("PHI");
   });
 
-  it("takes the most recent non-preseason game and formats the result line", () => {
+  it("prefers the most recent preseason game by default", () => {
     const game = parseLastGamePayload(payload());
+    expect(game?.eventId).toBe("401812725");
+    expect(game?.resultLine).toBe("90-100 W VS LAC");
+    expect(game?.dateLabel).toBe("10/8");
+    expect(game?.stats.min).toBe("23");
+    expect(game?.stats.pts).toBe("8");
+  });
+
+  it("uses regular or postseason games when the sample is regular", () => {
+    const game = parseLastGamePayload(payload(), "regular");
     expect(game?.eventId).toBe("401873344");
     expect(game?.teamId).toBe("CLE");
     expect(game?.opponentId).toBe("NYK");
@@ -150,19 +159,22 @@ describe("last NBA game parsing", () => {
   });
 
   it("lists recent box scores so a game can be picked, not only the latest", () => {
-    const games = parseGamelogGames(payload());
+    const games = parseGamelogGames(payload(), "regular");
     expect(games.map((game) => game.eventId)).toEqual(["401873344"]);
     expect(games[0]?.dateLabel).toBe("5/26");
-    const withPre = parseGamelogGames({
-      ...payload(),
-      seasonTypes: [
-        payload().seasonTypes![0]!,
-        {
-          displayName: "2025-26 Regular Season",
-          categories: payload().seasonTypes![1]!.categories,
-        },
-      ],
-    });
+    const withPre = parseGamelogGames(
+      {
+        ...payload(),
+        seasonTypes: [
+          payload().seasonTypes![0]!,
+          {
+            displayName: "2025-26 Regular Season",
+            categories: payload().seasonTypes![1]!.categories,
+          },
+        ],
+      },
+      "regular",
+    );
     expect(withPre.map((game) => game.eventId)).toEqual([
       "401873344",
       "401812725",
@@ -170,7 +182,7 @@ describe("last NBA game parsing", () => {
     expect(withPre[1]?.dateLabel).toBe("10/8");
   });
 
-  it("falls back to preseason only when that is the whole log", () => {
+  it("falls back to preseason when regular-season sample has no games", () => {
     const onlyPre: EspnGamelogPayload = {
       labels: payload().labels,
       events: { "401812725": payload().events!["401812725"]! },

@@ -80,6 +80,7 @@ describe("compare composer recs", () => {
           fg: "12-22",
           three: "3-8",
           tov: "2",
+          min: "36",
         },
       },
       defaultCompareStats(),

@@ -48,6 +48,7 @@ const lastNight = {
     fg: "0-0",
     three: "0-0",
     tov: "0",
+    min: "0",
   },
 };
 
