@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
@@ -57,7 +58,7 @@ interface PlayerPickerProps {
 
 export function PlayerPicker({
   heading,
-  hint = "Search a player, then click to add them to this tier.",
+  hint = "Search a player, then pick them for this slot.",
   currentId = null,
   usedLabels,
   clearLabel = "Clear slot",
@@ -77,6 +78,7 @@ export function PlayerPicker({
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
     if (storedRaw == null) {
@@ -100,6 +102,7 @@ export function PlayerPicker({
     open: true,
     onClose,
     containerRef: dialogRef,
+    initialFocusRef: dialogRef,
     lockScroll: true,
   });
 
@@ -133,18 +136,21 @@ export function PlayerPicker({
   return (
     <div
       className="sc-picker-scrim"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={(event) => closeComposerScrim(event, onClose)}
     >
       <div
         ref={dialogRef}
-        className="sc-picker sc-picker--players"
+        className={[
+          "sc-picker",
+          "sc-picker--players",
+          filtersOpen ? "is-filters-open" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         role="dialog"
         aria-modal="true"
         aria-labelledby="sc-picker-title"
+        tabIndex={-1}
       >
         <div className="sc-picker__top">
           <div>
@@ -164,7 +170,7 @@ export function PlayerPicker({
               placeholder={
                 lockedTeam ? "Search this roster…" : "Name or team (LAL, Curry…)"
               }
-              autoFocus
+              enterKeyHint="search"
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
@@ -205,9 +211,31 @@ export function PlayerPicker({
             >
               {scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`}
             </span>
+            {hideBoardFilters ? null : (
+              <button
+                type="button"
+                className={
+                  filtersOpen
+                    ? "sc-chip is-on sc-picker__filters-toggle"
+                    : "sc-chip sc-picker__filters-toggle"
+                }
+                aria-pressed={filtersOpen}
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                Filters
+              </button>
+            )}
           </div>
           {toolbarExtra}
         </div>
+        <div
+          className={
+            hideBoardFilters
+              ? "sc-picker__filters-slot is-hint"
+              : "sc-picker__filters-slot"
+          }
+        >
         {hideBoardFilters ? (
           <p className="sc-picker__filter-hint">
             {simple
@@ -303,6 +331,7 @@ export function PlayerPicker({
             </div>
           </div>
         )}
+        </div>
         <div className="sc-picker__grid">
           {players.map((player) => (
             <PlayerButton

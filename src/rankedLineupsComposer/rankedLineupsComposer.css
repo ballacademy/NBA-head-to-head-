@@ -264,6 +264,14 @@
   padding: 0 calc(4 * var(--u));
 }
 
+@media (hover: none), (pointer: coarse) {
+  .rl-strip .pod-photo__tool {
+    height: max(32px, calc(22 * var(--u)));
+    min-height: 32px;
+    font-size: max(11px, calc(9 * var(--u)));
+  }
+}
+
 .rl-strip .pod-photo__zoom {
   gap: calc(4 * var(--u));
 }

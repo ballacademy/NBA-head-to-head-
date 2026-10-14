@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 
 interface KeepQuoteDialogProps {
   playerName: string;
@@ -21,6 +22,7 @@ export function KeepQuoteDialog({
     open: true,
     onClose,
     containerRef: dialogRef,
+    initialFocusRef: dialogRef,
     lockScroll: true,
   });
   const preview = quote.replace(/\s+/g, " ").trim() || "this quote";
@@ -28,18 +30,15 @@ export function KeepQuoteDialog({
   return (
     <div
       className="sc-picker-scrim"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={(event) => closeComposerScrim(event, onClose)}
     >
       <div
         ref={dialogRef}
-        className="sc-picker"
+        className="sc-picker sc-picker--compact"
         role="dialog"
         aria-modal="true"
         aria-labelledby="keep-quote-title"
+        tabIndex={-1}
       >
         <div className="sc-picker__top">
           <div>

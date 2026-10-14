@@ -341,6 +341,14 @@
   opacity: 1;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .sc-root.is-photo-edit .et-cell__clear {
+    opacity: 1;
+    width: max(28px, calc(22 * var(--u)));
+    height: max(28px, calc(22 * var(--u)));
+  }
+}
+
 .et-board.is-exporting .et-cell:hover,
 .et-board.is-exporting .et-cell:focus-visible,
 .et-board.is-exporting .et-cell.is-active,

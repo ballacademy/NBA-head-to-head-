@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import type { LastGame } from "./lastGame";
 
 interface GamePickerProps {
@@ -20,17 +21,14 @@ export function GamePicker({
     open: true,
     onClose,
     containerRef: dialogRef,
+    initialFocusRef: dialogRef,
     lockScroll: true,
   });
 
   return (
     <div
       className="sc-picker-scrim"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={(event) => closeComposerScrim(event, onClose)}
     >
       <div
         ref={dialogRef}
@@ -38,6 +36,7 @@ export function GamePicker({
         role="dialog"
         aria-modal="true"
         aria-labelledby="sc-game-picker-title"
+        tabIndex={-1}
       >
         <div className="sc-picker__top">
           <div>

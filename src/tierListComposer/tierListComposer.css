@@ -468,6 +468,14 @@
   opacity: 1;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .sc-root.is-photo-edit .tl-cell__remove {
+    opacity: 1;
+    width: max(28px, calc(22 * var(--u)));
+    height: max(28px, calc(22 * var(--u)));
+  }
+}
+
 .tl-board.is-exporting .tl-cell:hover,
 .tl-board.is-exporting .tl-cell:focus-visible,
 .tl-board.is-exporting .tl-cell.is-active,

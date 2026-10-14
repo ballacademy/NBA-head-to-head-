@@ -290,6 +290,14 @@
   font-size: calc(9 * var(--u));
 }
 
+@media (hover: none), (pointer: coarse) {
+  .pyr-cell .pod-photo__tool {
+    height: max(28px, calc(22 * var(--u)));
+    min-height: 28px;
+    font-size: max(11px, calc(9 * var(--u)));
+  }
+}
+
 .pyr-board:not(.is-purple) .pyr-cell .pod-photo.is-pop .pod-photo__pop-rim {
   display: none;
 }

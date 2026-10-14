@@ -279,6 +279,13 @@
   pointer-events: auto;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 .pod-board.is-exporting .pod-photo__tools {
   display: none;
 }
@@ -295,6 +302,7 @@
   align-items: center;
   justify-content: center;
   height: calc(28 * var(--u));
+  min-height: calc(28 * var(--u));
   border: 0;
   border-radius: calc(4 * var(--u));
   background: rgba(0, 0, 0, 0.72);
@@ -304,6 +312,15 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tool {
+    height: max(44px, calc(28 * var(--u)));
+    min-height: 44px;
+    font-size: max(13px, calc(11 * var(--u)));
+    padding: 0 10px;
+  }
 }
 
 .pod-photo__file {

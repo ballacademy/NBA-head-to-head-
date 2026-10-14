@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { NBA_TEAMS, type Conference, type NbaTeam } from "./teams";
 
@@ -18,7 +19,7 @@ interface TeamPickerProps {
 
 export function TeamPicker({
   heading,
-  hint = "Click a club to fill this slot. Used teams move here.",
+  hint = "Pick a club to fill this slot. Used teams stay marked.",
   currentId = null,
   usedLabels,
   clearLabel = "Clear slot",
@@ -34,6 +35,7 @@ export function TeamPicker({
     open: true,
     onClose,
     containerRef: dialogRef,
+    initialFocusRef: dialogRef,
     lockScroll: true,
   });
 
@@ -48,11 +50,7 @@ export function TeamPicker({
   return (
     <div
       className="sc-picker-scrim"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={(event) => closeComposerScrim(event, onClose)}
     >
       <div
         ref={dialogRef}
@@ -60,6 +58,7 @@ export function TeamPicker({
         role="dialog"
         aria-modal="true"
         aria-labelledby="sc-picker-title"
+        tabIndex={-1}
       >
         <div className="sc-picker__top">
           <div>
