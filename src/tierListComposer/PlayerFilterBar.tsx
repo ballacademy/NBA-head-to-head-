@@ -115,6 +115,7 @@ interface PlayerFilterBarProps {
   matchCount: number;
   onChange: (filters: PlayerSearchFilters) => void;
   onReset: () => void;
+  variant?: "players" | "teams";
 }
 
 export function PlayerFilterBar({
@@ -122,6 +123,7 @@ export function PlayerFilterBar({
   matchCount,
   onChange,
   onReset,
+  variant = "players",
 }: PlayerFilterBarProps) {
   const setFilter =
     (key: keyof PlayerSearchFilters) =>
@@ -134,8 +136,14 @@ export function PlayerFilterBar({
       onChange({ ...filters, [key]: range });
     };
 
+  const teamsOnly = variant === "teams";
+  const noun = teamsOnly ? "teams" : "players";
+
   return (
-    <div className="sc-player-filters" aria-label="Player filters">
+    <div
+      className="sc-player-filters"
+      aria-label={teamsOnly ? "Team filters" : "Player filters"}
+    >
       <FilterSelect
         label="Team"
         value={filters.team ?? ALL_PLAYER_FILTER}
@@ -154,60 +162,66 @@ export function PlayerFilterBar({
         options={DIVISION_FILTERS}
         onChange={setFilter("division")}
       />
-      <FilterSelect
-        label="Position"
-        value={filters.position ?? ALL_PLAYER_FILTER}
-        options={POSITION_FILTERS}
-        onChange={setFilter("position")}
-      />
-      <FilterSelect
-        label="Draft class"
-        value={filters.draftClass ?? ALL_PLAYER_FILTER}
-        options={DRAFT_CLASS_FILTERS}
-        onChange={setFilter("draftClass")}
-      />
-      <FilterSelect
-        label="Draft status"
-        value={filters.draftStatus ?? ALL_PLAYER_FILTER}
-        options={DRAFT_STATUS_FILTERS}
-        onChange={setFilter("draftStatus")}
-      />
-      <FilterSelect
-        label="All-Star"
-        value={filters.allStar ?? ALL_PLAYER_FILTER}
-        options={ALL_STAR_FILTERS}
-        onChange={setFilter("allStar")}
-      />
-      <FilterSelect
-        label="Country"
-        value={filters.country ?? ALL_PLAYER_FILTER}
-        options={COUNTRY_FILTERS}
-        onChange={setFilter("country")}
-      />
-      <div className="sc-player-filters__ranges">
-        <FilterRange
-          label="Age"
-          span={AGE_SPAN}
-          value={filters.ageRange}
-          onChange={setRange("ageRange")}
-        />
-        <FilterRange
-          label="Height"
-          span={HEIGHT_SPAN}
-          value={filters.heightRange}
-          format={formatHeightInches}
-          onChange={setRange("heightRange")}
-        />
-        <FilterRange
-          label="Experience"
-          span={EXPERIENCE_SPAN}
-          value={filters.experienceRange}
-          format={(years) => `${years}y`}
-          onChange={setRange("experienceRange")}
-        />
-      </div>
+      {teamsOnly ? null : (
+        <>
+          <FilterSelect
+            label="Position"
+            value={filters.position ?? ALL_PLAYER_FILTER}
+            options={POSITION_FILTERS}
+            onChange={setFilter("position")}
+          />
+          <FilterSelect
+            label="Draft class"
+            value={filters.draftClass ?? ALL_PLAYER_FILTER}
+            options={DRAFT_CLASS_FILTERS}
+            onChange={setFilter("draftClass")}
+          />
+          <FilterSelect
+            label="Draft status"
+            value={filters.draftStatus ?? ALL_PLAYER_FILTER}
+            options={DRAFT_STATUS_FILTERS}
+            onChange={setFilter("draftStatus")}
+          />
+          <FilterSelect
+            label="All-Star"
+            value={filters.allStar ?? ALL_PLAYER_FILTER}
+            options={ALL_STAR_FILTERS}
+            onChange={setFilter("allStar")}
+          />
+          <FilterSelect
+            label="Country"
+            value={filters.country ?? ALL_PLAYER_FILTER}
+            options={COUNTRY_FILTERS}
+            onChange={setFilter("country")}
+          />
+          <div className="sc-player-filters__ranges">
+            <FilterRange
+              label="Age"
+              span={AGE_SPAN}
+              value={filters.ageRange}
+              onChange={setRange("ageRange")}
+            />
+            <FilterRange
+              label="Height"
+              span={HEIGHT_SPAN}
+              value={filters.heightRange}
+              format={formatHeightInches}
+              onChange={setRange("heightRange")}
+            />
+            <FilterRange
+              label="Experience"
+              span={EXPERIENCE_SPAN}
+              value={filters.experienceRange}
+              format={(years) => `${years}y`}
+              onChange={setRange("experienceRange")}
+            />
+          </div>
+        </>
+      )}
       <div className="sc-player-filters__aside">
-        <p className="sc-player-filters__count">{matchCount} players match</p>
+        <p className="sc-player-filters__count">
+          {matchCount} {noun} match
+        </p>
         <button
           type="button"
           className="sc-btn sc-btn--ghost sc-player-filters__reset"

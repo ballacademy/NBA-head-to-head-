@@ -22,6 +22,17 @@ import {
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
+import { autoSortMetricLabel } from "../everyTeamComposer/everyTeamState";
+import {
+  EVERY_TEAM_STAT_METRICS,
+  everyTeamCurrentSeason,
+  loadEveryTeamRosters,
+  matchingTeamIds,
+  parseEveryTeamStatMetric,
+  playerStatValue,
+  teamStatValue,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
 import { exportTierListPng } from "./exportTierPng";
 import { PlayerFilterBar } from "./PlayerFilterBar";
 import { PlayerPicker } from "./PlayerPicker";
@@ -32,6 +43,7 @@ import {
 import {
   EMPTY_PLAYER_FILTERS,
   PLAYER_FILTERS_KEY,
+  getPlayer,
   parsePlayerSearchFilters,
   searchPlayers,
   type PlayerSearchFilters,
@@ -41,6 +53,8 @@ import {
   addTier,
   createDefaultRows,
   DEFAULT_TIER_TITLE,
+  fillMatchingIds,
+  groupIdsByValues,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -51,6 +65,7 @@ import {
   setTierColor,
   setTierLabel,
   usedLabelsForPicker,
+  usedTeamIds,
   type TierRow,
   type TierSubject,
 } from "./tierState";
@@ -132,15 +147,20 @@ export function TierListComposerApp() {
   const [playerFilters, setPlayerFilters] =
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
+  const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
-  const filteredPlayerCount = useMemo(
-    () => searchPlayers("", playerFilters).length,
-    [playerFilters],
+  const matchingIds = useMemo(
+    () =>
+      subject === "players"
+        ? searchPlayers("", playerFilters).map((player) => player.id)
+        : matchingTeamIds(playerFilters),
+    [subject, playerFilters],
   );
+  const filteredPlayerCount = matchingIds.length;
 
   const resetPlayerFilters = () => {
     setPlayerFilters({ ...EMPTY_PLAYER_FILTERS });
@@ -162,6 +182,7 @@ export function TierListComposerApp() {
     setShowNames(draft.showNames === true);
     setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
+    void loadEveryTeamRosters();
   }, []);
 
   useEffect(() => {
@@ -234,6 +255,61 @@ export function TierListComposerApp() {
     setRows(createDefaultRows());
     setActive(null);
     setStatus("Board cleared.");
+  };
+
+  const handlePopulateMatching = () => {
+    const result = fillMatchingIds(rows, matchingIds);
+    if (result.added === 0) {
+      setStatus(
+        matchingIds.length
+          ? "All matching names are already on the board."
+          : "No names match the current filters.",
+      );
+      return;
+    }
+    push(rows);
+    setRows(result.rows);
+    setActive(null);
+    setStatus(
+      `Filled ${result.added} matching ${noun}${
+        result.added === 1 ? "" : "s"
+      }. Group by a stat to rank them into S–F.`,
+    );
+  };
+
+  const handleGroupByStat = (metric: EveryTeamStatMetric) => {
+    const season = everyTeamCurrentSeason();
+    const used = [...usedTeamIds(rows)];
+    if (!used.length) {
+      setStatus("Populate matching names first, then group by a stat.");
+      return;
+    }
+    const values = new Map<string, number | null>();
+    used.forEach((id) => {
+      if (subject === "teams") {
+        values.set(id, teamStatValue(id, season, metric));
+        return;
+      }
+      const player = getPlayer(id);
+      values.set(
+        id,
+        playerStatValue(id, season, metric, player?.team ?? null),
+      );
+    });
+    const scored = used.filter((id) => values.get(id) != null).length;
+    const label = autoSortMetricLabel(metric);
+    push(rows);
+    setRows(groupIdsByValues(rows, values));
+    setActive(null);
+    if (scored === 0) {
+      setStatus(
+        `No ${label} yet — last season’s table is used when this year has none.`,
+      );
+      return;
+    }
+    setStatus(
+      `Grouped ${scored} by ${label} into ${rows.length} tiers (highest in ${rows[0]?.label || "S"}).`,
+    );
   };
 
   const handleExportStory = async () => {
@@ -318,6 +394,39 @@ export function TierListComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
+        <div className="sc-look sc-look--sort" role="group" aria-label="Populate matching filters">
+          <span className="sc-look__label">Board</span>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={handlePopulateMatching}
+          >
+            Populate matching
+          </button>
+        </div>
+        <div className="sc-look sc-look--sort" role="group" aria-label="Group board by stat">
+          <span className="sc-look__label">Group by</span>
+          <select
+            value={groupMetric}
+            aria-label="Group-by stat"
+            onChange={(event) =>
+              setGroupMetric(parseEveryTeamStatMetric(event.target.value))
+            }
+          >
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <option key={metric.id} value={metric.id}>
+                {metric.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => handleGroupByStat(groupMetric)}
+          >
+            Sort into tiers
+          </button>
+        </div>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -395,14 +504,13 @@ export function TierListComposerApp() {
         </div>
       </header>
 
-      {subject === "players" ? (
-        <PlayerFilterBar
-          filters={playerFilters}
-          matchCount={filteredPlayerCount}
-          onChange={setPlayerFilters}
-          onReset={resetPlayerFilters}
-        />
-      ) : null}
+      <PlayerFilterBar
+        variant={subject}
+        filters={playerFilters}
+        matchCount={filteredPlayerCount}
+        onChange={setPlayerFilters}
+        onReset={resetPlayerFilters}
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
@@ -442,7 +550,8 @@ export function TierListComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Click a square to add a {noun}. Switch Teams / Players in the bar.
+            Click a square to add a {noun}, or Populate matching to fill from the
+            current filters. Group by a stat ranks the board into S–A–… .
             Tiers range from 3 to 10. Downloads a 4:5 Instagram PNG — nothing is
             posted.
           </p>
