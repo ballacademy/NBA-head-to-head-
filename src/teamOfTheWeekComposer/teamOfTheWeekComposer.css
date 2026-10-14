@@ -85,6 +85,15 @@
   --name-logo: 32;
 }
 
+.totw-board.is-hairline .totw-strip.has-hairline::after {
+  content: "";
+  position: absolute;
+  inset: var(--frame-w);
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--team-hairline);
+  z-index: 6;
+}
+
 .totw-strip .pod-photo {
   border-radius: 0;
   touch-action: none;

@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -47,6 +48,7 @@ interface TierListGraphicProps {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   active: TierPickerTarget | null;
@@ -88,6 +90,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       rows,
       subject = "teams",
       look = "white",
+      purpleFlair = false,
       showBa = true,
       showNames = false,
       active,
@@ -145,7 +148,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+        className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
           .filter(Boolean)
           .join(" ")}
         style={
@@ -370,11 +373,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                           </>
                         ) : team ? (
                           <div className="tl-cell__logo" aria-hidden="true">
-                            <TeamLogo
-                              src={team.logoSrc}
-                              label={team.id}
-                              nudgeLeft
-                            />
+                            <TeamLogo src={team.logoSrc} label={team.id} />
                           </div>
                         ) : null}
                         {showNames && caption ? (

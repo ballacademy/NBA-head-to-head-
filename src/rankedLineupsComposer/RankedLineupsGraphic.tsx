@@ -1,7 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
+  teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { NAME_FIRST_MAX, NAME_LAST_MAX } from "../instagramComposer/nameFit";
@@ -21,7 +23,10 @@ import {
   type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
+  DEFAULT_POSITION_LABELS,
   lineupPosition,
+  parsePositionLabels,
+  POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   rankHeadlinePrimary,
   rankHeadlineSecondary,
@@ -36,9 +41,12 @@ interface RankedLineupsGraphicProps {
   rank: string;
   strips: RankedLineupStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showFade?: boolean;
+  showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
+  positionLabels?: string[];
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -51,6 +59,7 @@ interface RankedLineupsGraphicProps {
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onPositionChange: (index: number, label: string) => void;
 }
 
 export const RankedLineupsGraphic = forwardRef<
@@ -63,9 +72,12 @@ export const RankedLineupsGraphic = forwardRef<
     rank,
     strips,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showFade = false,
+    showTeamHairline = true,
     rankDisplay = "pill",
+    positionLabels,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -75,12 +87,14 @@ export const RankedLineupsGraphic = forwardRef<
     onPan,
     onUpload,
     onNameChange,
+    onPositionChange,
   },
   ref,
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
   const titleLines = splitRankedLineupTitle(title);
+  const labels = parsePositionLabels(positionLabels);
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -118,8 +132,10 @@ export const RankedLineupsGraphic = forwardRef<
         "rl-board",
         exporting ? "is-exporting" : "",
         showFade ? "is-fade" : "",
+        showTeamHairline ? "is-hairline" : "",
         rankDisplay === "pill" ? "is-pill" : "is-headline",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}
@@ -189,10 +205,20 @@ export const RankedLineupsGraphic = forwardRef<
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
           const label = strip.lastName || position;
+          const hair = showTeamHairline
+            ? teamHairlineColor(strip.teamId, look)
+            : null;
           return (
             <section
               key={`rl-strip-${position}`}
-              className="rl-strip"
+              className={["rl-strip", hair ? "has-hairline" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                hair
+                  ? ({ ["--team-hairline" as string]: hair } as React.CSSProperties)
+                  : undefined
+              }
               aria-label={`${position} strip`}
               onPointerEnter={() => onHover?.(index)}
             >
@@ -233,9 +259,37 @@ export const RankedLineupsGraphic = forwardRef<
           const strip = strips[index]!;
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
+          const posLabel = labels[index] ?? "";
           return (
             <div key={`rl-meta-${position}`} className="rl-meta">
-              <span className="rl-pos">{position}</span>
+              <div className="rl-pos-slot">
+                <div className="rl-pos-wrap">
+                  <input
+                    className="rl-pos"
+                    value={posLabel}
+                    maxLength={POSITION_LABEL_MAX}
+                    placeholder={DEFAULT_POSITION_LABELS[index]}
+                    spellCheck={false}
+                    aria-label={`${position} position label`}
+                    onChange={(event) =>
+                      onPositionChange(
+                        index,
+                        event.target.value.slice(0, POSITION_LABEL_MAX),
+                      )
+                    }
+                  />
+                  {exporting || !posLabel ? null : (
+                    <button
+                      type="button"
+                      className="rl-pos__hide"
+                      aria-label={`Hide ${position} position`}
+                      onClick={() => onPositionChange(index, "")}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
               {showFade ? null : (
                 <>
                   <input

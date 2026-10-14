@@ -2,6 +2,12 @@ import {
   clipToInnerFrame,
   frameLinePx,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurplePathStroke,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
+  paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -112,11 +118,12 @@ const drawStripPhoto = async (
   scale: number,
   look?: ComposerLook | null,
   showNames = false,
+  showTeamHairline = true,
 ) => {
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
-  const inner = clipToInnerFrame(context, x, y, w, h, scale);
+  const inner = clipToInnerFrame(context, x, y, w, h, scale, look);
   if (strip.photoSrc) {
     const photo = strip.photoSrc.startsWith("data:")
       ? await loadImage(strip.photoSrc)
@@ -154,27 +161,29 @@ const drawStripPhoto = async (
   }
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
-  if (!showNames) {
-    return;
+  if (showNames) {
+    const line = frameLinePx(scale, look);
+    const barH = Math.max(line, TOTW_NAME_H * scale - line);
+    const team = getTeam(strip.teamId);
+    const logo = team ? await loadImage(team.logoSrc) : null;
+    drawPlayerNameFade(context, {
+      x: x + line,
+      y: y + h - line - barH,
+      w: w - line * 2,
+      h: barH,
+      given: strip.firstName,
+      family: strip.lastName,
+      logo,
+      logoSrc: team?.logoSrc,
+      logoSize: TOTW_NAME_LOGO * scale,
+      familySize: TOTW_NAME_SIZE * scale,
+      givenSize: TOTW_NAME_GIVEN_SIZE * scale,
+      scale,
+    });
   }
-  const line = frameLinePx(scale);
-  const barH = Math.max(line, TOTW_NAME_H * scale - line);
-  const team = getTeam(strip.teamId);
-  const logo = team ? await loadImage(team.logoSrc) : null;
-  drawPlayerNameFade(context, {
-    x: x + line,
-    y: y + h - line - barH,
-    w: w - line * 2,
-    h: barH,
-    given: strip.firstName,
-    family: strip.lastName,
-    logo,
-    logoSrc: team?.logoSrc,
-    logoSize: TOTW_NAME_LOGO * scale,
-    familySize: TOTW_NAME_SIZE * scale,
-    givenSize: TOTW_NAME_GIVEN_SIZE * scale,
-    scale,
-  });
+  if (showTeamHairline) {
+    paintTeamHairline(context, x, y, w, h, look, scale, strip.teamId);
+  }
 };
 
 export interface TeamOfTheWeekRenderInput {
@@ -183,8 +192,10 @@ export interface TeamOfTheWeekRenderInput {
   week: string;
   strips: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  showTeamHairline?: boolean;
 }
 
 export const renderTeamOfTheWeekCanvas = async (
@@ -211,17 +222,26 @@ export const renderTeamOfTheWeekCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
-  withShadow(context, s, () => {
-    context.font = `900 ${TOTW_BRAND_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.18 * TOTW_BRAND_SIZE * s);
-    context.fillStyle = "#fff";
-    context.fillText(input.brand.toUpperCase(), width / 2, 30 * s);
-    setLetterSpacing(context, 0);
-  });
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
+  const paintBrand = () => {
+    withShadow(context, s, () => {
+      context.font = `900 ${TOTW_BRAND_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.18 * TOTW_BRAND_SIZE * s);
+      context.fillStyle = "#fff";
+      context.fillText(input.brand.toUpperCase(), width / 2, 30 * s);
+      setLetterSpacing(context, 0);
+    });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, s, paintBrand);
+  } else {
+    paintBrand();
+  }
 
   const stripY = TOTW_STRIPS_TOP * s;
   const stripH = TOTW_STRIP_H * s;
@@ -246,7 +266,18 @@ export const renderTeamOfTheWeekCanvas = async (
       s,
       input.look,
       input.showNames === true,
+      input.showTeamHairline !== false,
     );
+    if (input.purpleFlair) {
+      paintPurplePlateEdge(
+        context,
+        totwStripX(index) * s,
+        stripY,
+        stripW,
+        stripH,
+        s,
+      );
+    }
   }
 
   const plate = {
@@ -260,6 +291,9 @@ export const renderTeamOfTheWeekCanvas = async (
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
   paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
+  }
 
   const titleLines = splitTotwTitle(input.title);
   const lineH = TOTW_TITLE_SIZE * 0.92 * s;
@@ -273,6 +307,7 @@ export const renderTeamOfTheWeekCanvas = async (
     plate.w,
     plate.h,
     s,
+    input.look,
   );
   const titlePad = TOTW_TITLE_PAD * s;
   context.beginPath();
@@ -318,6 +353,9 @@ export const renderTeamOfTheWeekCanvas = async (
   context.lineTo(weekX, weekY + weekH);
   context.closePath();
   context.fill();
+  if (input.purpleFlair) {
+    paintPurplePathStroke(context, s);
+  }
   context.fillStyle = "#111";
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -328,6 +366,9 @@ export const renderTeamOfTheWeekCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

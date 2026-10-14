@@ -24,6 +24,7 @@ interface PhotoFrameProps {
   empty: boolean;
   zoomStep?: number;
   vignette?: boolean;
+  pop?: boolean;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -93,6 +94,7 @@ export function PhotoFrame({
   empty: _empty,
   zoomStep = 0.25,
   vignette = false,
+  pop = false,
   onPan,
   onUpload,
   onPick,
@@ -234,6 +236,7 @@ export function PhotoFrame({
         filled ? "" : "is-empty",
         custom ? "is-custom" : "",
         vignette ? "is-vignette" : "",
+        pop ? "is-pop" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -295,22 +298,39 @@ export function PhotoFrame({
       }}
     >
       {src ? (
-        <div className={PHOTO_SURFACE_CLASS}>
-          <img
-            className="pod-photo__img"
-            src={src}
-            alt=""
-            draggable={false}
-            style={{
-              objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
-              transform: `rotate(${rotate}deg) scale(${zoom})`,
-              transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
-            }}
-          />
-          {vignette ? (
-            <div className="pod-photo__vignette" aria-hidden="true" />
+        <>
+          <div className={PHOTO_SURFACE_CLASS}>
+            <img
+              className="pod-photo__img"
+              src={src}
+              alt=""
+              draggable={false}
+              style={{
+                objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
+                transform: `rotate(${rotate}deg) scale(${zoom})`,
+                transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
+              }}
+            />
+            {vignette ? (
+              <div className="pod-photo__vignette" aria-hidden="true" />
+            ) : null}
+          </div>
+          {pop ? (
+            <div className="pod-photo__pop-rim" aria-hidden="true">
+              <img
+                className="pod-photo__img"
+                src={src}
+                alt=""
+                draggable={false}
+                style={{
+                  objectPosition: `${pan.x * 100}% ${pan.y * 100}%`,
+                  transform: `rotate(${rotate}deg) scale(${zoom})`,
+                  transformOrigin: `${pan.x * 100}% ${pan.y * 100}%`,
+                }}
+              />
+            </div>
           ) : null}
-        </div>
+        </>
       ) : (
         <button type="button" className="pod-photo__pick" onClick={onPick}>
           Pick player

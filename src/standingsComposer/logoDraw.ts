@@ -190,31 +190,9 @@ export const fittedLogoRect = (
 
 /** Longer, softer stamp than the old 12% hard stack. Andrew may revert. */
 export const LOGO_SHADOW_FRAC = 0.18;
-/** Team-tier only: shift the centered mark this fraction of cell width left. */
-export const TEAM_TIER_NUDGE_LEFT = 0.025;
 
 export const logoShadowPx = (cellW: number, cellH: number) =>
   Math.max(8, Math.round(Math.min(cellW, cellH) * LOGO_SHADOW_FRAC));
-
-/**
- * Extra 2–3% left on team-tier logos after trim + optical center. Magic
- * already sits left from optical mass — do not stack the full extra on it.
- */
-export const applyTeamTierNudgeX = (
-  dest: LogoRect,
-  cellX: number,
-  cellW: number,
-): LogoRect => {
-  const unshiftedX = cellX + (cellW - dest.w) / 2;
-  const opticalLeft = Math.max(0, unshiftedX - dest.x);
-  const extra = Math.max(0, cellW * TEAM_TIER_NUDGE_LEFT - opticalLeft);
-  const x = dest.x - extra;
-  const pad = cellW * 0.02;
-  return {
-    ...dest,
-    x: Math.max(cellX + pad, Math.min(x, cellX + cellW - dest.w - pad)),
-  };
-};
 
 /** Halo radius that stays inside leftover cell padding around the fitted mark. */
 export const logoGlowPx = (
@@ -287,8 +265,6 @@ export const drawCenteredLogo = (
     glow?: boolean;
     /** Counter the down-right 3D stamp so square cells do not look right-heavy. */
     balanceStamp?: boolean;
-    /** Team-tier cells only — 2–3% left after optical center, clamped in-box. */
-    nudgeLeft?: boolean;
   },
 ) => {
   const bounds = withCentroid(
@@ -296,7 +272,7 @@ export const drawCenteredLogo = (
       ? getCachedOpaqueBounds(options.cacheKey, image)
       : getOpaqueBounds(image),
   );
-  const placed = fittedLogoRect(
+  const dest = fittedLogoRect(
     bounds,
     cellX,
     cellY,
@@ -305,9 +281,6 @@ export const drawCenteredLogo = (
     options?.fitX,
     options?.fitY,
   );
-  const dest = options?.nudgeLeft
-    ? applyTeamTierNudgeX(placed, cellX, cellW)
-    : placed;
   const shadow =
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)

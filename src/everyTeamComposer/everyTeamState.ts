@@ -3,8 +3,10 @@ import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
   EVERY_TEAM_STAT_METRICS,
+  getRosterPlayer,
   pickSeasonLeader,
   rosterHasPlayer,
+  rosterStatValue,
   seasonForTeam,
   type EveryTeamStatMetric,
 } from "./historicalRosters";
@@ -300,6 +302,22 @@ export const pruneSlotsToSeasons = (
     )
       ? playerId
       : null;
+  });
+
+export const rankedMetricValues = (
+  rankedOrder: string[],
+  slots: EveryTeamSlots,
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+  metric: EveryTeamStatMetric,
+): Array<number | null> =>
+  normalizeRankedOrder(rankedOrder).map((teamId) => {
+    const player = getRosterPlayer(
+      teamId,
+      seasonForTeam(teamId, boardSeason, cellSeasons),
+      slots[slotIndexForTeam(teamId)] ?? null,
+    );
+    return rosterStatValue(player, metric);
   });
 
 export const autoSortRankedOrder = (

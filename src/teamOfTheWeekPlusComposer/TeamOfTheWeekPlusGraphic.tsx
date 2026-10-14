@@ -1,5 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -43,6 +44,7 @@ interface TeamOfTheWeekPlusGraphicProps {
   standoutCaption: string;
   slots: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
@@ -131,6 +133,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     standoutCaption,
     slots,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showNames = true,
     titlesBelow = false,
@@ -190,6 +193,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         showNames ? "" : "is-names-off",
         titlesBelow ? "is-titles-below" : "",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}

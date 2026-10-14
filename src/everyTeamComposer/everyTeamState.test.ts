@@ -8,6 +8,7 @@ import {
   assignPlayerToTeam,
   autoFillEveryTeamSlots,
   autoSortRankedOrder,
+  rankedMetricValues,
   clearEveryTeamSlot,
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
@@ -325,5 +326,43 @@ describe("every-team order and slots", () => {
     const unchanged = autoSortRankedOrder(createDefaultRankedOrder(), Array(30).fill(null));
     expect(unchanged.order).toEqual(createDefaultRankedOrder());
     expect(unchanged.ranked).toBe(0);
+  });
+
+  it("borrows last-season stats for 2026-27 team-switchers", () => {
+    const powell = listRosterPlayers("CHI", "2026-27").find(
+      (player) => player.name === "Norman Powell",
+    );
+    expect(powell?.pts).toBe(21.7);
+    const giannis = listRosterPlayers("MIA", "2026-27").find((player) =>
+      /Antetokounmpo/i.test(player.name),
+    );
+    expect(giannis?.pts).toBe(27.6);
+    expect(pickSeasonLeader("MIA", "2026-27", "points")?.name).toMatch(
+      /Antetokounmpo/i,
+    );
+    expect(pickSeasonLeader("CHI", "2026-27", "points")?.name).toBe(
+      "Norman Powell",
+    );
+  });
+
+  it("reorders 2026-27 auto-fill by PRA, points, and STL+BLK", () => {
+    const order = createDefaultRankedOrder();
+    const sortFilled = (metric: "pra" | "points" | "stocks") => {
+      const slots = autoFillEveryTeamSlots("2026-27", {}, metric);
+      return autoSortRankedOrder(
+        order,
+        rankedMetricValues(order, slots, "2026-27", {}, metric),
+      );
+    };
+    const pra = sortFilled("pra");
+    const points = sortFilled("points");
+    const stocks = sortFilled("stocks");
+    expect(pra.ranked).toBe(30);
+    expect(points.ranked).toBe(30);
+    expect(stocks.ranked).toBe(30);
+    expect(pra.order).not.toEqual(order);
+    expect(points.order).not.toEqual(pra.order);
+    expect(stocks.order).not.toEqual(points.order);
+    expect(stocks.order).not.toEqual(pra.order);
   });
 });

@@ -7,6 +7,8 @@ import { TeamOfTheWeekComposerApp } from "../teamOfTheWeekComposer/TeamOfTheWeek
 import { RankedLineupsComposerApp } from "../rankedLineupsComposer/RankedLineupsComposerApp";
 import { TeamOfTheWeekPlusComposerApp } from "../teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp";
 import { TierListComposerApp } from "../tierListComposer/TierListComposerApp";
+import { PyramidComposerApp } from "../pyramidComposer/PyramidComposerApp";
+import { HeadlineComposerApp } from "../headlineComposer/HeadlineComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -22,6 +24,8 @@ import "../potdLeaderboardComposer/potdLeaderboardComposer.css";
 import "../teamOfTheWeekComposer/teamOfTheWeekComposer.css";
 import "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css";
 import "../rankedLineupsComposer/rankedLineupsComposer.css";
+import "../pyramidComposer/pyramidComposer.css";
+import "../headlineComposer/headlineComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -63,6 +67,10 @@ export function ComposerHub() {
         <TeamOfTheWeekPlusComposerApp />
       ) : mode === "ranked-lineups" ? (
         <RankedLineupsComposerApp />
+      ) : mode === "pyramid" ? (
+        <PyramidComposerApp />
+      ) : mode === "headline" ? (
+        <HeadlineComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

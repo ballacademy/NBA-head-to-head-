@@ -6,11 +6,14 @@ import {
 import { EXPORT_HEIGHT, EXPORT_WIDTH, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   PLB_INK,
+  PLB_META_SIZE,
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_RANK_W,
   PLB_ROW_H,
+  PLB_ROW_SIZE,
   PLB_TITLE_H,
+  PLB_WINS_W,
   PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
   leaderboardBlankCount,
@@ -91,6 +94,11 @@ describe("POTD leaderboard ranks", () => {
       "13.",
     ]);
     expect(ranked[0]!.winsLabel).toBe("(12)");
+    expect(PLB_META_SIZE).toBeLessThan(PLB_ROW_SIZE);
+    expect(PLB_RANK_W).toBeGreaterThanOrEqual(110);
+    expect(PLB_WINS_W).toBeGreaterThanOrEqual(110);
+    expect(PLB_RANK_W).toBeGreaterThan(PLB_META_SIZE * 3.2);
+    expect(PLB_WINS_W).toBeGreaterThan(PLB_META_SIZE * 3.2);
     expect(ranked.map((row) => row.rank)).not.toContain(2);
     expect(ranked.every((row) => !row.name.toUpperCase().startsWith("T1"))).toBe(
       true,

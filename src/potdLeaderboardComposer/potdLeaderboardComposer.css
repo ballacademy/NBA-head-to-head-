@@ -100,7 +100,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: calc(18 * var(--u)) calc(22 * var(--u)) calc(14 * var(--u));
+  padding: calc(18 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u));
   border: calc(8 * var(--u)) solid var(--plb-yellow);
   overflow: hidden;
 }
@@ -109,17 +109,20 @@
   position: relative;
   display: grid;
   grid-template-columns:
-    calc(44 * var(--u)) calc(80 * var(--u)) 1fr calc(108 * var(--u));
+    calc(44 * var(--u)) calc(118 * var(--u)) minmax(0, 1fr) calc(118 * var(--u));
   align-items: center;
+  column-gap: calc(6 * var(--u));
   min-height: calc(52 * var(--u));
   flex: 0 0 auto;
+  padding-right: calc(4 * var(--u));
+  box-sizing: border-box;
   box-shadow: inset 0 -1px 0 rgba(245, 196, 0, 0.22);
 }
 
 .plb-board.is-pips-on .plb-row {
   grid-template-columns:
-    calc(40 * var(--u)) calc(44 * var(--u)) calc(80 * var(--u)) 1fr
-    calc(108 * var(--u));
+    calc(40 * var(--u)) calc(44 * var(--u)) calc(118 * var(--u)) minmax(0, 1fr)
+    calc(118 * var(--u));
 }
 
 .plb-row.is-alt {
@@ -197,7 +200,6 @@
 .plb-name,
 .plb-wins {
   font-family: var(--ig-poster);
-  font-size: calc(42 * var(--u));
   font-weight: 900;
   font-synthesis: none;
   letter-spacing: 0.02em;
@@ -210,12 +212,25 @@
   margin: 0;
   padding: 0;
   min-width: 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.plb-name,
+.plb-wins {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
 }
 
 .plb-rank {
+  font-size: calc(32 * var(--u));
   text-align: left;
   padding-left: calc(2 * var(--u));
+  padding-right: calc(4 * var(--u));
+  overflow: hidden;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .plb-rank.is-gold {
@@ -234,6 +249,7 @@
 }
 
 .plb-name {
+  font-size: calc(42 * var(--u));
   text-align: left;
   width: 100%;
   overflow: hidden;
@@ -246,8 +262,13 @@
 }
 
 .plb-wins {
+  font-size: calc(32 * var(--u));
   text-align: right;
-  padding-right: calc(8 * var(--u));
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: calc(4 * var(--u));
+  overflow: hidden;
+  white-space: nowrap;
   caret-color: var(--plb-yellow);
 }
 

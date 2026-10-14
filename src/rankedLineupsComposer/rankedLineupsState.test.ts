@@ -32,8 +32,10 @@ import {
   rankHeadlinePrimary,
   rankHeadlineSecondary,
   defaultRankedLineupsDraft,
+  DEFAULT_POSITION_LABELS,
   LINEUP_POSITIONS,
   lineupPosition,
+  parsePositionLabels,
   nextRankPill,
   parseRankDisplay,
   RANK_PILL_PRESETS,
@@ -82,6 +84,16 @@ describe("ranked lineups", () => {
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);
     expect(draft.showFade).toBe(false);
+    expect(draft.showTeamHairline).toBe(true);
+    expect(draft.positionLabels).toEqual([...DEFAULT_POSITION_LABELS]);
+    expect(parsePositionLabels(["pg", "", "SF", "PF", "C"])).toEqual([
+      "pg",
+      "",
+      "SF",
+      "PF",
+      "C",
+    ]);
+    expect(parsePositionLabels(undefined)[0]).toBe("PG");
     expect(draft.rankDisplay).toBe(DEFAULT_RANK_DISPLAY);
     expect(DEFAULT_RANK_DISPLAY).toBe("pill");
     expect(parseRankDisplay(undefined)).toBe("pill");

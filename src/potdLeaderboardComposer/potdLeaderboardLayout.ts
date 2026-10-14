@@ -12,6 +12,7 @@ export const PLB_TITLE_SIZE = 54;
 export const PLB_TITLE_PAD = 14;
 export const PLB_TITLE_TRACK = 0.04;
 export const PLB_ROW_SIZE = 42;
+export const PLB_META_SIZE = 32;
 export const PLB_ROW_TRACK = 0.02;
 export const PLB_ROW_SMALL = 0.82;
 export const PLB_PAD_X = 56;
@@ -28,8 +29,9 @@ export const PLB_HEAD_SIZE = 36;
 export const PLB_PIP_SIZE = 36;
 export const PLB_PIP_BAR_W = 6;
 export const PLB_PIP_BAR_H = 28;
-export const PLB_RANK_W = 88;
-export const PLB_WINS_W = 108;
+/** Wide enough for T11. / (12) inside the row at PLB_META_SIZE. */
+export const PLB_RANK_W = 118;
+export const PLB_WINS_W = 118;
 /** Wide enough for a last name like GILGEOUS-ALEXANDER on its own line. */
 export const PLB_NAME_ADVANCE = 12.2;
 export const PLB_HAIRLINE = "rgba(245, 196, 0, 0.22)";

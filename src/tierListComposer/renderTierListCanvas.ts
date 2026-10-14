@@ -1,6 +1,12 @@
 import {
   clipToInnerFrame,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
+  paintPurpleUnderline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -127,6 +133,7 @@ export interface TierListRenderInput {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
 }
@@ -155,6 +162,9 @@ export const renderTierListCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, GRAPHIC_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   const titleLines = splitTierTitle(input.title);
   const titleFont = `900 ${TIER_TITLE_SIZE * scale}px ${POSTER_FONT}`;
@@ -163,18 +173,40 @@ export const renderTierListCanvas = async (
   const titleBlockH = lineH * titleLines.length;
   const titleTop = (TIER_HEADER_H * scale - titleBlockH) / 2 + lineH / 2;
 
-  withDropShadow(context, scale, () => {
-    titleLines.forEach((line, index) => {
-      drawCenteredLine(
-        context,
-        line,
-        width / 2,
-        titleTop + index * lineH,
-        titleFont,
-        titleTracking,
-      );
+  const paintTitle = () => {
+    withDropShadow(context, scale, () => {
+      titleLines.forEach((line, index) => {
+        drawCenteredLine(
+          context,
+          line,
+          width / 2,
+          titleTop + index * lineH,
+          titleFont,
+          titleTracking,
+        );
+      });
     });
-  });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, scale, paintTitle);
+    paintPurpleUnderline(
+      context,
+      width / 2,
+      titleTop + (titleLines.length - 1) * lineH + lineH / 2 + 8 * scale,
+      width,
+      scale,
+    );
+    paintPurplePlateEdge(
+      context,
+      0,
+      TIER_HEADER_H * scale,
+      TIER_LABEL_W * scale,
+      (GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER) * scale,
+      scale,
+    );
+  } else {
+    paintTitle();
+  }
 
   const ba = input.showBa === false ? null : await loadImage(BA_LOGO_SRC);
   if (ba) {
@@ -186,6 +218,9 @@ export const renderTierListCanvas = async (
     const fit = badge / Math.max(1, bounds.w, bounds.h);
     const dw = bounds.w * fit;
     const dh = bounds.h * fit;
+    if (input.purpleFlair) {
+      paintPurpleBaGlow(context, badgeX, badgeY, badge);
+    }
     context.drawImage(
       ba,
       bounds.x,
@@ -295,7 +330,7 @@ export const renderTierListCanvas = async (
       }
       const art = cellArt[rowIndex]?.[index];
       context.save();
-      const inner = clipToInnerFrame(context, x, cellY, cellW, cellH, scale);
+      const inner = clipToInnerFrame(context, x, cellY, cellW, cellH, scale, input.look);
       if (player && art?.watermark) {
         context.globalAlpha = PLAYER_LOGO_WATERMARK_ALPHA;
         drawCenteredLogo(
@@ -321,11 +356,13 @@ export const renderTierListCanvas = async (
       } else if (art?.mark && team) {
         drawCenteredLogo(context, art.mark, inner.x, inner.y, inner.w, inner.h, {
           cacheKey: team.logoSrc,
-          nudgeLeft: true,
         });
       }
       context.restore();
       paintCellFrame(context, x, cellY, cellW, cellH, input.look, scale);
+      if (input.purpleFlair) {
+        paintPurpleInnerHairline(context, x, cellY, cellW, cellH, scale, input.look);
+      }
       if (input.showNames === true) {
         const names = player
           ? splitPlayerName(player.name)

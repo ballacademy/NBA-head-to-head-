@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  COMPOSER_LIBRARY_EVENT,
   deleteNamedGraphic,
+  downloadComposerLibrary,
+  importComposerLibrary,
   listNamedGraphics,
+  parseComposerLibraryFile,
   upsertNamedGraphic,
   type NamedGraphic,
 } from "./composerLibrary";
@@ -20,9 +24,24 @@ export function ComposerSaves<T>({
   const [saves, setSaves] = useState<NamedGraphic<T>[]>([]);
   const [name, setName] = useState("");
   const [selected, setSelected] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSaves(listNamedGraphics<T>(storageKey));
+    const refresh = () => setSaves(listNamedGraphics<T>(storageKey));
+    refresh();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === storageKey || event.key === null) {
+        refresh();
+      }
+    };
+    const onLibrary = () => refresh();
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(COMPOSER_LIBRARY_EVENT, onLibrary);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(COMPOSER_LIBRARY_EVENT, onLibrary);
+    };
   }, [storageKey]);
 
   return (
@@ -50,6 +69,7 @@ export function ComposerSaves<T>({
           setSaves(next);
           setSelected(saved.id);
           setName(saved.name);
+          setStatus("Saved on this device.");
         }}
       >
         Save
@@ -78,6 +98,7 @@ export function ComposerSaves<T>({
           if (save) {
             onLoad(save.board);
             setName(save.name);
+            setStatus("Loaded named graphic.");
           }
         }}
       >
@@ -91,10 +112,61 @@ export function ComposerSaves<T>({
           const next = deleteNamedGraphic<T>(storageKey, selected);
           setSaves(next);
           setSelected("");
+          setStatus("Deleted.");
         }}
       >
         Delete
       </button>
+      <button
+        type="button"
+        className="sc-btn sc-btn--ghost"
+        onClick={() => {
+          downloadComposerLibrary();
+          setStatus("Downloaded all named graphics.");
+        }}
+      >
+        Export all
+      </button>
+      <button
+        type="button"
+        className="sc-btn sc-btn--ghost"
+        onClick={() => fileRef.current?.click()}
+      >
+        Import
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        hidden
+        aria-label="Import named graphics"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (!file) {
+            return;
+          }
+          void file.text().then((text) => {
+            try {
+              const parsed = JSON.parse(text) as unknown;
+              if (!parseComposerLibraryFile(parsed)) {
+                setStatus("That file is not a composer save library.");
+                return;
+              }
+              const result = importComposerLibrary(parsed);
+              setSaves(listNamedGraphics<T>(storageKey));
+              setStatus(
+                result.saves
+                  ? `Imported ${result.saves} save${result.saves === 1 ? "" : "s"}.`
+                  : "No matching saves in that file.",
+              );
+            } catch {
+              setStatus("Could not read that save file.");
+            }
+          });
+        }}
+      />
+      {status ? <p className="sc-saves__status">{status}</p> : null}
     </div>
   );
 }

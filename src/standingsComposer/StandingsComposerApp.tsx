@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   STANDINGS_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   STANDINGS_TITLE_PRESETS,
@@ -84,6 +86,7 @@ export function StandingsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showArrows, setShowArrows] = useState(false);
   const [showRecord, setShowRecord] = useState(false);
@@ -152,6 +155,7 @@ export function StandingsComposerApp() {
           subtitle,
           slots,
           look,
+          purpleFlair,
           showBa,
           showArrows,
           showRecord,
@@ -219,6 +223,7 @@ export function StandingsComposerApp() {
           subtitle,
           slots,
           look,
+          purpleFlair,
           showBa,
           showArrows,
           showRecord,
@@ -284,6 +289,7 @@ export function StandingsComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Last-week arrows</span>
@@ -410,6 +416,7 @@ export function StandingsComposerApp() {
             showRecord={showRecord}
             records={records}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}

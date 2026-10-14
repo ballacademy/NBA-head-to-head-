@@ -117,6 +117,8 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/team-of-the-week")).toBe(true);
     expect(isStandingsComposerRoute("", "/team-of-the-week-plus")).toBe(true);
     expect(isStandingsComposerRoute("", "/ranked-lineups")).toBe(true);
+    expect(isStandingsComposerRoute("", "/pyramid")).toBe(true);
+    expect(isStandingsComposerRoute("", "/headline")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

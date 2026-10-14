@@ -3,6 +3,11 @@ import {
   frameLinePx,
   innerFrameRect,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
+  paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
@@ -52,7 +57,7 @@ import {
   type RankDisplay,
 } from "./rankedLineupsLayout";
 import {
-  lineupPosition,
+  parsePositionLabels,
   rankHeadlinePrimary,
   rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
@@ -157,11 +162,12 @@ const drawStripPhoto = async (
   scale: number,
   look?: ComposerLook | null,
   showFade = false,
+  showTeamHairline = true,
 ) => {
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
-  const inner = clipToInnerFrame(context, x, y, w, h, scale);
+  const inner = clipToInnerFrame(context, x, y, w, h, scale, look);
   if (strip.photoSrc) {
     const photo = strip.photoSrc.startsWith("data:")
       ? await loadImage(strip.photoSrc)
@@ -199,27 +205,29 @@ const drawStripPhoto = async (
   }
   context.restore();
   paintCellFrame(context, x, y, w, h, look, scale);
-  if (!showFade) {
-    return;
+  if (showFade) {
+    const line = frameLinePx(scale, look);
+    const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
+    const team = getTeam(strip.teamId);
+    const logo = team ? await loadImage(team.logoSrc) : null;
+    drawPlayerNameFade(context, {
+      x: x + line,
+      y: y + h - line - barH,
+      w: w - line * 2,
+      h: barH,
+      given: strip.firstName,
+      family: strip.lastName,
+      logo,
+      logoSrc: team?.logoSrc,
+      logoSize: RL_NAME_LOGO * scale,
+      familySize: RL_NAME_FAMILY_SIZE * scale,
+      givenSize: RL_NAME_GIVEN_SIZE * scale,
+      scale,
+    });
   }
-  const line = frameLinePx(scale);
-  const barH = Math.max(line, RL_FADE_NAME_H * scale - line);
-  const team = getTeam(strip.teamId);
-  const logo = team ? await loadImage(team.logoSrc) : null;
-  drawPlayerNameFade(context, {
-    x: x + line,
-    y: y + h - line - barH,
-    w: w - line * 2,
-    h: barH,
-    given: strip.firstName,
-    family: strip.lastName,
-    logo,
-    logoSrc: team?.logoSrc,
-    logoSize: RL_NAME_LOGO * scale,
-    familySize: RL_NAME_FAMILY_SIZE * scale,
-    givenSize: RL_NAME_GIVEN_SIZE * scale,
-    scale,
-  });
+  if (showTeamHairline) {
+    paintTeamHairline(context, x, y, w, h, look, scale, strip.teamId);
+  }
 };
 
 export interface RankedLineupsRenderInput {
@@ -228,9 +236,12 @@ export interface RankedLineupsRenderInput {
   rank: string;
   strips: RankedLineupStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showFade?: boolean;
+  showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
+  positionLabels?: string[];
 }
 
 export const renderRankedLineupsCanvas = async (
@@ -254,8 +265,10 @@ export const renderRankedLineupsCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   withShadow(context, s, () => {
     context.font = `900 ${RL_BRAND_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
@@ -277,10 +290,13 @@ export const renderRankedLineupsCanvas = async (
     context.rect(plate.x, plate.y, plate.w, plate.h);
   });
   paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
+  }
 
   const titleLines = splitRankedLineupTitle(input.title);
   const lineH = RL_TITLE_SIZE * RL_TITLE_LINE * s;
-  const titleInner = innerFrameRect(plate.x, plate.y, plate.w, plate.h, s);
+  const titleInner = innerFrameRect(plate.x, plate.y, plate.w, plate.h, s, input.look);
   const titlePadX = RL_TITLE_PAD_X * s;
   const titlePadY = RL_TITLE_PAD_Y * s;
   context.save();
@@ -383,29 +399,47 @@ export const renderRankedLineupsCanvas = async (
       s,
       input.look,
       input.showFade === true,
+      input.showTeamHairline !== false,
     );
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(
+        context,
+        rlStripX(index) * s,
+        stripY,
+        stripW,
+        stripH,
+        s,
+        input.look,
+      );
+    }
   }
 
   const footerY = (GRAPHIC_HEIGHT - rankedFooterH(input.showFade === true)) * s;
+  const positionLabels = parsePositionLabels(input.positionLabels);
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index];
     const x = rlStripX(index) * s;
     const cx = x + stripW / 2;
-    context.font = `900 ${RL_POS_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    const pos = lineupPosition(index);
-    withShadow(context, s, () => {
-      strokeFillText(
-        context,
-        pos,
-        cx,
-        footerY + (RL_POS_H * s) / 2,
-        titleGradient(context, pos, cx, footerY + (RL_POS_H * s) / 2),
-        "#050505",
-        2.4 * s,
+    const pos = (positionLabels[index] ?? "").trim().toUpperCase();
+    if (pos) {
+      context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.06 * 16 * s);
+      const pillH = 28 * s;
+      const pillW = Math.min(
+        stripW * 0.72,
+        Math.max(48 * s, context.measureText(pos).width + 20 * s),
       );
-    });
+      const pillX = cx - pillW / 2;
+      const pillY = footerY + (RL_POS_H * s - pillH) / 2;
+      roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
+      context.fillStyle = "#fff";
+      context.fill();
+      context.fillStyle = "#111";
+      context.fillText(pos, cx, pillY + pillH / 2);
+      setLetterSpacing(context, 0);
+    }
 
     if (input.showFade) {
       continue;
@@ -451,6 +485,9 @@ export const renderRankedLineupsCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

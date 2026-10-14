@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -39,6 +40,7 @@ interface StandingsGraphicProps {
   records?: Record<string, StandingRecord>;
   activeIndex: number | null;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   exporting?: boolean;
   showBa?: boolean;
   onBrandChange: (value: string) => void;
@@ -92,6 +94,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       records,
       activeIndex,
       look = "white",
+      purpleFlair = false,
       exporting = false,
       showBa = false,
       onBrandChange,
@@ -164,7 +167,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={["ig-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+        className={["ig-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
           .filter(Boolean)
           .join(" ")}
         style={

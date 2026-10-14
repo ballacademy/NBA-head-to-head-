@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -22,6 +23,7 @@ interface PotdLeaderboardGraphicProps {
   title: string;
   entries: LeaderboardEntry[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
@@ -40,6 +42,7 @@ export const PotdLeaderboardGraphic = forwardRef<
     title,
     entries,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showPips = true,
     potdKeys = [],
@@ -53,7 +56,6 @@ export const PotdLeaderboardGraphic = forwardRef<
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const ranked = rankLeaderboard(entries);
 
   const setRefs = (node: HTMLElement | null) => {
@@ -93,6 +95,7 @@ export const PotdLeaderboardGraphic = forwardRef<
         exporting ? "is-exporting" : "",
         showPips ? "is-pips-on" : "is-pips-off",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}
@@ -171,19 +174,13 @@ export const PotdLeaderboardGraphic = forwardRef<
                 <textarea
                   className="plb-name"
                   rows={wrap ? 2 : 1}
-                  value={
-                    editingId === entry.id
-                      ? entry.name
-                      : entry.displayLines.join("\n")
-                  }
+                  value={entry.name}
                   maxLength={40}
                   spellCheck={false}
                   aria-label="Player name"
                   style={{
                     fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
                   }}
-                  onFocus={() => setEditingId(entry.id)}
-                  onBlur={() => setEditingId(null)}
                   onChange={(event) =>
                     onNameChange(
                       entry.id,

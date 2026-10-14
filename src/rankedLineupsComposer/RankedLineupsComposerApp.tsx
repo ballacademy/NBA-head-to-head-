@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   RANKED_LINEUPS_LOOK_KEY,
+  parseShowTeamHairline,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   copyGraphicCaption,
@@ -39,7 +43,9 @@ import {
   nextRankPill,
   patchStrip,
   DEFAULT_RANK_DISPLAY,
+  parsePositionLabels,
   parseRankDisplay,
+  POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   RANK_PILL_PRESETS,
   setStripPhoto,
@@ -68,7 +74,9 @@ const loadDraft = (): RankedLineupsDraft => {
         ...stored,
         showBa: stored.showBa === true,
         showFade: stored.showFade === true,
+        showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
         rankDisplay: parseRankDisplay(stored.rankDisplay),
+        positionLabels: parsePositionLabels(stored.positionLabels),
       },
       slides,
       stored.activeSlide ?? 0,
@@ -80,7 +88,9 @@ const loadDraft = (): RankedLineupsDraft => {
     title: stored?.title?.trim() ? stored.title : empty.title,
     showBa: stored?.showBa === true,
     showFade: stored?.showFade === true,
+    showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
     rankDisplay: parseRankDisplay(stored?.rankDisplay),
+    positionLabels: parsePositionLabels(stored?.positionLabels),
   };
 };
 
@@ -99,9 +109,14 @@ export function RankedLineupsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(RANKED_LINEUPS_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
+  const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [rankDisplay, setRankDisplay] = useState(DEFAULT_RANK_DISPLAY);
+  const [positionLabels, setPositionLabels] = useState(
+    parsePositionLabels(empty.positionLabels),
+  );
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -136,7 +151,9 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(draft.activeSlide ?? 0);
     setShowBa(draft.showBa === true);
     setShowFade(draft.showFade === true);
+    setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setRankDisplay(parseRankDisplay(draft.rankDisplay));
+    setPositionLabels(parsePositionLabels(draft.positionLabels));
     setHydrated(true);
   }, []);
 
@@ -153,9 +170,11 @@ export function RankedLineupsComposerApp() {
       activeSlide,
       showBa,
       showFade,
+      showTeamHairline,
       rankDisplay,
+      positionLabels,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, rankDisplay, hydrated]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -173,7 +192,9 @@ export function RankedLineupsComposerApp() {
     setActiveSlide(next.activeSlide ?? 0);
     setShowBa(next.showBa === true);
     setShowFade(next.showFade === true);
+    setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
+    setPositionLabels(parsePositionLabels(next.positionLabels));
     setActiveIndex(null);
   };
 
@@ -208,7 +229,7 @@ export function RankedLineupsComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, showBa, showFade, rankDisplay },
+        { brand, title, rank, strips, look, purpleFlair, showBa, showFade, showTeamHairline, rankDisplay, positionLabels },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -244,9 +265,12 @@ export function RankedLineupsComposerApp() {
             rank: slide.rank,
             strips: slide.strips,
             look,
+            purpleFlair,
             showBa,
             showFade,
+            showTeamHairline,
             rankDisplay,
+            positionLabels,
           },
         );
         await new Promise((resolve) => window.setTimeout(resolve, 280));
@@ -362,7 +386,9 @@ export function RankedLineupsComposerApp() {
     activeSlide,
     showBa,
     showFade,
+    showTeamHairline,
     rankDisplay,
+    positionLabels,
   };
 
   return (
@@ -444,7 +470,9 @@ export function RankedLineupsComposerApp() {
           />
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names in photo</span>
           <button
@@ -552,9 +580,19 @@ export function RankedLineupsComposerApp() {
             rank={rank}
             strips={strips}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             showFade={showFade}
+            showTeamHairline={showTeamHairline}
             rankDisplay={rankDisplay}
+            positionLabels={positionLabels}
+            onPositionChange={(index, label) =>
+              setPositionLabels((current) => {
+                const next = parsePositionLabels(current);
+                next[index] = label.slice(0, POSITION_LABEL_MAX);
+                return next;
+              })
+            }
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}

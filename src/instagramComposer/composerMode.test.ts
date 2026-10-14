@@ -73,11 +73,12 @@ describe("composer mode", () => {
     );
   });
 
-  it("groups hub tabs as Rankings, Week, and POTD", () => {
+  it("groups hub tabs as Rankings, Week, POTD, and Posts", () => {
     expect(COMPOSER_TAB_GROUPS.map((group) => group.label)).toEqual([
       "Rankings",
       "Week",
       "POTD",
+      "Posts",
     ]);
     expect(COMPOSER_TAB_GROUPS[0]!.tabs.map((tab) => tab.mode)).toEqual([
       "standings",
@@ -93,6 +94,20 @@ describe("composer mode", () => {
       "Matchup",
       "Leaderboard",
     ]);
+    expect(COMPOSER_TAB_GROUPS[3]!.tabs.map((tab) => tab.mode)).toEqual([
+      "pyramid",
+      "headline",
+    ]);
+  });
+
+  it("opens pyramid and headline from path or query", () => {
+    expect(readComposerMode("", "/pyramid")).toBe("pyramid");
+    expect(readComposerMode("?composer=pyramid", "/")).toBe("pyramid");
+    expect(composerHref("pyramid")).toBe("/pyramid");
+    expect(readComposerMode("", "/headline")).toBe("headline");
+    expect(readComposerMode("", "/hot-take")).toBe("headline");
+    expect(readComposerMode("?composer=headline", "/")).toBe("headline");
+    expect(composerHref("headline")).toBe("/headline");
   });
 
   it("opens ranked lineups from path or query", () => {
