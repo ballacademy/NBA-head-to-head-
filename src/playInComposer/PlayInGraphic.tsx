@@ -10,8 +10,11 @@ import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
   PI_BYE_LABEL,
+  PI_KICKER,
+  PI_LEGEND,
   PI_LOGO_FIT,
   playInBoardCols,
+  type PlayInBar,
   type PlayInSlotRect,
 } from "./playInLayout";
 import type { PlayInDraft } from "./playInState";
@@ -62,6 +65,22 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
       return () => observer.disconnect();
     }, []);
 
+    const u = (value: number) => `calc(${value} * var(--u))`;
+
+    const paintBar = (bar: PlayInBar, key: string) => (
+      <span
+        key={key}
+        className="pi-bar"
+        aria-hidden="true"
+        style={{
+          left: u(bar.x),
+          top: u(bar.y),
+          width: u(bar.w),
+          height: u(bar.h),
+        }}
+      />
+    );
+
     const slotButton = (
       conference: "east" | "west",
       slot: PlayInSlotRect,
@@ -75,23 +94,36 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
           type="button"
           className={["pi-slot", bye ? "is-bye" : ""].filter(Boolean).join(" ")}
           style={{
-            left: `calc(${slot.x} * var(--u))`,
-            top: `calc(${slot.y} * var(--u))`,
-            width: `calc(${slot.w} * var(--u))`,
-            height: `calc(${slot.h} * var(--u))`,
+            left: u(slot.x),
+            top: u(slot.y),
+            width: u(slot.w),
+            height: u(slot.h),
           }}
           aria-label={`${conference} seed ${slot.seed}${bye ? ` ${PI_BYE_LABEL}` : ""}`}
           onClick={() => onPick(conference, slot.index)}
         >
-          <span className="pi-seed">{slot.seed}</span>
+          <span
+            className="pi-badge"
+            style={{
+              left: u(slot.badge.x - slot.x),
+              top: u(slot.badge.y - slot.y),
+              width: u(slot.badge.w),
+              height: u(slot.badge.h),
+            }}
+          >
+            {slot.seed}
+          </span>
           {bye ? <span className="pi-bye">{PI_BYE_LABEL}</span> : null}
           {team ? (
-            <TeamLogo
-              src={team.logoSrc}
-              label={team.name}
-              fitX={PI_LOGO_FIT}
-              fitY={PI_LOGO_FIT}
-            />
+            <>
+              <TeamLogo
+                src={team.logoSrc}
+                label={team.name}
+                fitX={PI_LOGO_FIT}
+                fitY={PI_LOGO_FIT}
+              />
+              <span className="pi-abbr">{team.id}</span>
+            </>
           ) : (
             <span className="pi-empty">PICK</span>
           )}
@@ -128,14 +160,15 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
           aria-label="Play-in title"
           onChange={(event) => onComposerTextChange(event, onTitleChange, 32)}
         />
+        <p className="pi-kicker">{PI_KICKER}</p>
         {cols.map((col) => (
           <div key={col.conference}>
             <p
-              className="pi-conf"
+              className={`pi-conf is-${col.conference}`}
               style={{
-                left: `calc(${col.x} * var(--u))`,
-                top: `calc(${col.y} * var(--u))`,
-                width: `calc(${col.w} * var(--u))`,
+                left: u(col.x),
+                top: u(col.y),
+                width: u(col.w),
               }}
             >
               {col.label}
@@ -143,32 +176,51 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
             {col.bye ? slotButton(col.conference, col.bye, true) : null}
             {col.matches.map((match) => (
               <div key={`${col.conference}-${match.label}`}>
+                {match.lines.map((bar, index) =>
+                  paintBar(bar, `${col.conference}-${match.label}-l${index}`),
+                )}
                 <p
                   className="pi-match-label"
                   style={{
-                    left: `calc(${col.x} * var(--u))`,
-                    top: `calc(${match.labelY - 11} * var(--u))`,
-                    width: `calc(${col.w} * var(--u))`,
+                    left: u(match.winner.x),
+                    top: u(match.labelY - 8),
+                    width: u(match.winner.w),
                   }}
                 >
                   {match.label}
                 </p>
                 {slotButton(col.conference, match.slots[0])}
                 {slotButton(col.conference, match.slots[1])}
-                <div
-                  className={`pi-bracket is-${match.line.side}`}
-                  aria-hidden="true"
+                <p
+                  className="pi-plate"
                   style={{
-                    left: `calc(${match.line.x} * var(--u))`,
-                    top: `calc(${match.line.y} * var(--u))`,
-                    width: `calc(${match.line.w} * var(--u))`,
-                    height: `calc(${match.line.h} * var(--u))`,
+                    left: u(match.winner.x),
+                    top: u(match.winner.y),
+                    width: u(match.winner.w),
+                    height: u(match.winner.h),
                   }}
-                />
+                >
+                  {match.winner.label}
+                </p>
               </div>
             ))}
+            {col.eightLines.map((bar, index) =>
+              paintBar(bar, `${col.conference}-eight-${index}`),
+            )}
+            <p
+              className="pi-plate is-eight"
+              style={{
+                left: u(col.eightSeed.x),
+                top: u(col.eightSeed.y),
+                width: u(col.eightSeed.w),
+                height: u(col.eightSeed.h),
+              }}
+            >
+              {col.eightSeed.label}
+            </p>
           </div>
         ))}
+        <p className="pi-legend">{PI_LEGEND}</p>
       </article>
     );
   },

@@ -4,9 +4,11 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { ATTRIB_MAX, QUOTE_MAX, type QuoteDraft } from "./quoteState";
+import { quoteGhostName } from "./quoteLayout";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 
 interface QuoteGraphicProps {
@@ -38,7 +40,10 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
-    const photoOn = draft.showHeadshot !== false;
+    const ghost = quoteGhostName(draft.attribution);
+    const teamColor = draft.teamId
+      ? getTeamColors(draft.teamId).primary
+      : null;
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -74,30 +79,46 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
         ref={setRefs}
         className={[
           "qt-board",
-          photoOn ? "has-photo" : "",
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--team-color" as string]: teamColor ?? "transparent",
+          } as React.CSSProperties
+        }
         aria-label="Instagram quote graphic"
       >
-        {photoOn ? (
-          <PhotoFrame
-            src={draft.photoSrc}
-            label={draft.attribution || "quote photo"}
-            pan={draft.pan}
-            custom={draft.customPhoto}
-            empty={!draft.photoSrc}
-            vignette
-            onPan={onPan}
-            onUpload={onUpload}
-            onPick={onPick}
-          />
+        <PhotoFrame
+          src={draft.showHeadshot === false ? null : draft.photoSrc}
+          label={draft.attribution || "quote photo"}
+          pan={draft.pan}
+          custom={draft.customPhoto}
+          empty={!draft.photoSrc || draft.showHeadshot === false}
+          vignette
+          onPan={onPan}
+          onUpload={onUpload}
+          onPick={onPick}
+        />
+        <div className="qt-fade" aria-hidden="true" />
+        {teamColor ? (
+          <>
+            <span className="qt-rail is-left" aria-hidden="true" />
+            <span className="qt-rail is-right" aria-hidden="true" />
+          </>
         ) : null}
-        {photoOn ? <div className="qt-fade" aria-hidden="true" /> : null}
+        {ghost ? (
+          <p className="qt-ghost" aria-hidden="true">
+            {ghost}
+          </p>
+        ) : null}
+        <p className="qt-mark" aria-hidden="true">
+          “
+        </p>
         {draft.showBa !== false ? (
           <img
             className="composer-ba"
@@ -116,16 +137,18 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
             onQuoteChange(event.target.value.slice(0, QUOTE_MAX))
           }
         />
-        <input
-          className="qt-attr"
-          value={draft.attribution}
-          maxLength={ATTRIB_MAX}
-          placeholder="NAME"
-          aria-label="Quote attribution"
-          onChange={(event) =>
-            onAttributionChange(event.target.value.slice(0, ATTRIB_MAX))
-          }
-        />
+        <div className="qt-attr-plate">
+          <input
+            className="qt-attr"
+            value={draft.attribution}
+            maxLength={ATTRIB_MAX}
+            placeholder="NAME"
+            aria-label="Quote attribution"
+            onChange={(event) =>
+              onAttributionChange(event.target.value.slice(0, ATTRIB_MAX))
+            }
+          />
+        </div>
       </article>
     );
   },

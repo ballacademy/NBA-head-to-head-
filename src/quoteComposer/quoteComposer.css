@@ -2,14 +2,12 @@
   --u: 1px;
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
+  --team-color: #b026ff;
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
   background-color: #0b0b0b;
-  background-image: url("/composer-background-texture.png");
-  background-size: cover;
-  background-position: center;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -17,10 +15,6 @@
 
 .qt-board.is-black {
   --frame-color: #0a0a0a;
-}
-
-.qt-board.has-photo {
-  background-image: none;
 }
 
 .qt-board .pod-photo {
@@ -39,30 +33,82 @@
   mix-blend-mode: screen;
 }
 
+.qt-rail {
+  position: absolute;
+  top: var(--frame-w);
+  bottom: var(--frame-w);
+  width: calc(10 * var(--u));
+  z-index: 3;
+  pointer-events: none;
+  background: var(--team-color);
+}
+
+.qt-rail.is-left {
+  left: var(--frame-w);
+}
+
+.qt-rail.is-right {
+  right: var(--frame-w);
+}
+
 .qt-fade {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 2;
-  height: calc(620 * var(--u));
+  height: calc(720 * var(--u));
   pointer-events: none;
   background: linear-gradient(
     to top,
-    rgba(6, 6, 8, 0.94) 0%,
-    rgba(6, 6, 8, 0.72) 38%,
-    rgba(6, 6, 8, 0.28) 68%,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.78) 32%,
+    rgba(6, 6, 8, 0.32) 64%,
     rgba(6, 6, 8, 0) 100%
   );
 }
 
+.qt-ghost {
+  position: absolute;
+  left: calc(40 * var(--u));
+  right: calc(40 * var(--u));
+  top: calc(1080 * var(--u));
+  z-index: 2;
+  margin: 0;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(180 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 0.8;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.qt-mark {
+  position: absolute;
+  left: calc(56 * var(--u));
+  bottom: calc(390 * var(--u));
+  z-index: 3;
+  margin: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(220 * var(--u));
+  font-weight: 900;
+  line-height: 0.6;
+  color: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
+
 .qt-quote {
   position: absolute;
-  left: calc(72 * var(--u));
-  right: calc(72 * var(--u));
-  bottom: calc(148 * var(--u));
-  height: calc(320 * var(--u));
-  z-index: 3;
+  left: calc(88 * var(--u));
+  right: calc(88 * var(--u));
+  bottom: calc(196 * var(--u));
+  height: calc(340 * var(--u));
+  z-index: 4;
   margin: 0;
   padding: 0;
   border: 0;
@@ -71,34 +117,58 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(52 * var(--u));
+  font-size: calc(72 * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 1.08;
-  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  line-height: 1.02;
+  -webkit-text-stroke: calc(3.6 * var(--u)) #000;
   paint-order: stroke fill;
-  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+  text-shadow: calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.8);
+}
+
+.qt-attr-plate {
+  position: absolute;
+  left: 50%;
+  bottom: calc(56 * var(--u));
+  z-index: 4;
+  width: calc(640 * var(--u));
+  height: calc(64 * var(--u));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: var(--frame-w) solid var(--frame-color);
+  background: #fff;
+}
+
+.qt-board.is-black .qt-attr-plate {
+  background: #0a0a0a;
+}
+
+.qt-board.is-none .qt-attr-plate {
+  border-color: #fff;
+  background: #fff;
 }
 
 .qt-attr {
-  position: absolute;
-  left: calc(72 * var(--u));
-  right: calc(72 * var(--u));
-  bottom: calc(64 * var(--u));
-  z-index: 3;
+  width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0 calc(16 * var(--u));
   border: 0;
   background: transparent;
-  color: #fff;
+  color: #111;
   text-align: center;
   font-family: var(--ig-poster);
   font-size: calc(26 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82);
+}
+
+.qt-board.is-black .qt-attr {
+  color: #fff;
 }
 
 .qt-board .composer-ba {

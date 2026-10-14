@@ -43,6 +43,7 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "compare", label: "Compare" },
       { mode: "quote", label: "Quote" },
       { mode: "play-in", label: "Play-in" },
+      { mode: "stat-card", label: "Stat card" },
     ],
   },
 ];

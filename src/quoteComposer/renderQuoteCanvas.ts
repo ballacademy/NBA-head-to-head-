@@ -2,8 +2,10 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -11,24 +13,29 @@ import {
   photoRotate,
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
-import {
-  FIELD_TEXTURE_SRC,
-  paintBoardField,
-} from "../standingsComposer/headerTexture";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   QT_ATTR_BOTTOM,
+  QT_ATTR_PLATE_H,
+  QT_ATTR_PLATE_W,
   QT_ATTR_SIZE,
   QT_ATTR_TRACK,
   QT_BA_INSET,
   QT_BA_SIZE,
   QT_FADE_H,
+  QT_GHOST_SIZE,
+  QT_GHOST_Y,
+  QT_MARK_BOTTOM,
+  QT_MARK_SIZE,
+  QT_MARK_X,
   QT_QUOTE_BOTTOM,
   QT_QUOTE_LINE,
   QT_QUOTE_MAX_LINES,
   QT_QUOTE_PAD_X,
   QT_QUOTE_SIZE,
   QT_QUOTE_TRACK,
+  QT_RAIL_W,
+  quoteGhostName,
 } from "./quoteLayout";
 import { type QuoteDraft } from "./quoteState";
 
@@ -102,9 +109,9 @@ export const renderQuoteCanvas = async (
   await document.fonts?.ready.catch(() => undefined);
   const s = scale;
   const photoOn = input.showHeadshot !== false;
+  context.fillStyle = "#0b0b0b";
+  context.fillRect(0, 0, width, height);
   if (photoOn && input.photoSrc) {
-    context.fillStyle = "#0b0b0b";
-    context.fillRect(0, 0, width, height);
     const photo = input.photoSrc.startsWith("data:")
       ? await loadImage(input.photoSrc)
       : await loadCorsImage(input.photoSrc);
@@ -138,27 +145,44 @@ export const renderQuoteCanvas = async (
       }
       paintPhotoVignette(context, 0, 0, width, height);
     }
-  } else {
-    paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
   }
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  if (photoOn) {
-    const fade = context.createLinearGradient(
-      0,
-      height - QT_FADE_H * s,
-      0,
-      height,
-    );
-    fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-    fade.addColorStop(0.32, "rgba(6, 6, 8, 0.28)");
-    fade.addColorStop(0.62, "rgba(6, 6, 8, 0.72)");
-    fade.addColorStop(1, "rgba(6, 6, 8, 0.94)");
-    context.fillStyle = fade;
-    context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
+  const fade = context.createLinearGradient(
+    0,
+    height - QT_FADE_H * s,
+    0,
+    height,
+  );
+  fade.addColorStop(0, "rgba(6, 6, 8, 0)");
+  fade.addColorStop(0.36, "rgba(6, 6, 8, 0.32)");
+  fade.addColorStop(0.68, "rgba(6, 6, 8, 0.78)");
+  fade.addColorStop(1, "rgba(6, 6, 8, 0.96)");
+  context.fillStyle = fade;
+  context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
+
+  if (input.teamId) {
+    context.fillStyle = getTeamColors(input.teamId).primary;
+    context.fillRect(0, 0, QT_RAIL_W * s, height);
+    context.fillRect(width - QT_RAIL_W * s, 0, QT_RAIL_W * s, height);
   }
+
+  const ghost = quoteGhostName(input.attribution);
+  if (ghost) {
+    context.font = `900 ${QT_GHOST_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "rgba(255,255,255,0.1)";
+    context.fillText(ghost, width / 2, QT_GHOST_Y * s, width - 80 * s);
+  }
+
+  context.font = `900 ${QT_MARK_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "left";
+  context.textBaseline = "bottom";
+  context.fillStyle = "rgba(255,255,255,0.28)";
+  context.fillText("“", QT_MARK_X * s, height - QT_MARK_BOTTOM * s);
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
@@ -180,23 +204,36 @@ export const renderQuoteCanvas = async (
     const y = quoteBottom - blockH + (index + 0.5) * lineH;
     context.lineJoin = "round";
     context.strokeStyle = "#000";
-    context.lineWidth = 3.2 * s;
+    context.lineWidth = 3.6 * s;
     context.strokeText(line, width / 2, y);
     context.fillStyle = "#fff";
     context.fillText(line, width / 2, y);
   });
   setLetterSpacing(context, 0);
 
+  const plateW = QT_ATTR_PLATE_W * s;
+  const plateH = QT_ATTR_PLATE_H * s;
+  const plateX = (width - plateW) / 2;
+  const plateY = height - QT_ATTR_BOTTOM * s - plateH;
+  context.fillStyle = input.look === "black" ? "#0a0a0a" : "#fff";
+  context.fillRect(plateX, plateY, plateW, plateH);
+  paintCellFrame(context, plateX, plateY, plateW, plateH, input.look ?? "white", s);
+  if (input.look === "none") {
+    paintCellFrame(context, plateX, plateY, plateW, plateH, "white", s);
+  }
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
+  }
   context.font = `900 ${QT_ATTR_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, QT_ATTR_TRACK * QT_ATTR_SIZE * s);
-  context.fillStyle = "#fff";
+  context.fillStyle = input.look === "black" ? "#fff" : "#111";
   context.fillText(
     input.attribution.trim().toUpperCase(),
     width / 2,
-    height - QT_ATTR_BOTTOM * s,
-    width - QT_QUOTE_PAD_X * 2 * s,
+    plateY + plateH / 2,
+    plateW - 32 * s,
   );
   setLetterSpacing(context, 0);
 

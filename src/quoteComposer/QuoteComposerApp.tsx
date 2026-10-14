@@ -289,8 +289,8 @@ export function QuoteComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Centered player photo with pan/zoom, then a readable pull-quote on
-            the fade. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Magazine cover: the player photo is the graphic. Type sits on the
+            portrait. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

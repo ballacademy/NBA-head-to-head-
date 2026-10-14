@@ -323,7 +323,8 @@ main.sc-stage {
 .pyr-board.is-none,
 .hl-board.is-none,
 .pi-board.is-none,
-.qt-board.is-none {
+.qt-board.is-none,
+.stc-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
 }
