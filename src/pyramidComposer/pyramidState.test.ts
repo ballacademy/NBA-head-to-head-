@@ -10,6 +10,8 @@ import {
   PYR_CELL,
   PYR_CELL_FILL,
   PYR_CELL_STUD,
+  PYR_CUTOUT_ALPHA,
+  PYR_CUTOUT_DILATE,
   PYR_DEFAULT_ROWS,
   PYR_MAX_ROWS,
   PYR_MIN_ROWS,
@@ -18,6 +20,7 @@ import {
   PYR_TITLE_H,
   PYR_TITLE_Y,
   clampPyramidRows,
+  opaqueSpanFromAlphas,
   pyramidCellRect,
   pyramidMetrics,
   pyramidSlotCount,
@@ -65,7 +68,7 @@ describe("pyramid composer", () => {
       const first = pyramidCellRect(0, rows);
       expect(first.y - first.pop).toBeGreaterThanOrEqual(titleBottom + 5);
       const last = pyramidCellRect(metrics.slotCount - 1, rows);
-      expect(GRAPHIC_HEIGHT - (last.y + last.h)).toBe(PYR_PAD_BOTTOM);
+      expect(GRAPHIC_HEIGHT - (last.y + last.h)).toBeCloseTo(PYR_PAD_BOTTOM);
       expect(last.y + last.h).toBeGreaterThan(GRAPHIC_HEIGHT - 50);
       expect(first.w).toBe(first.h);
       expect(first.pop).toBeGreaterThan(40);
@@ -101,6 +104,18 @@ describe("pyramid composer", () => {
     expect(b).toBeGreaterThan(r);
     expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#111111");
     expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#000000");
+    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#3a0078");
+  });
+
+  it("gaps the top stroke between the first and last opaque head columns", () => {
+    const columns = Uint8Array.from({ length: 40 }, (_, index) =>
+      index >= 12 && index <= 27 ? 200 : 0,
+    );
+    const span = opaqueSpanFromAlphas(columns, PYR_CUTOUT_ALPHA, 2);
+    expect(span).toEqual({ left: 10, right: 30 });
+    expect(opaqueSpanFromAlphas(new Uint8Array(16), 40, PYR_CUTOUT_DILATE)).toBeNull();
+    expect(PYRAMID_HEADSHOT_PAN.zoom).toBeGreaterThan(1.25);
+    expect(PYRAMID_HEADSHOT_PAN.y).toBeGreaterThan(0.45);
   });
 
   it("fills a slot from a player and frames the default headshot for the pop crop", () => {

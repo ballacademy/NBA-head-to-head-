@@ -1,9 +1,15 @@
 import {
+  IDENTITY_PURPLE,
+  IDENTITY_PURPLE_GLOW,
+  frameColor,
+  frameLinePx,
   paintCellFrameEdges,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurplePlateEdges,
   paintPurpleTitleGlow,
+  purplePlateLinePx,
+  purplePlateOutsetRect,
   type ComposerLook,
   type FrameEdge,
 } from "../instagramComposer/composerLook";
@@ -28,10 +34,14 @@ import {
   PYR_BA_SIZE,
   PYR_CELL_FILL,
   PYR_CELL_STUD,
+  PYR_CUTOUT_ALPHA,
+  PYR_CUTOUT_BAND,
+  PYR_CUTOUT_DILATE,
   PYR_DEFAULT_ROWS,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
   PYR_TITLE_Y,
+  opaqueSpanFromAlphas,
   pyramidCellRect,
   pyramidSlotCount,
 } from "./pyramidLayout";
@@ -60,22 +70,22 @@ const paintPyramidCellFill = (
   context.fillStyle = PYR_CELL_FILL;
   context.fillRect(x, y, w, h);
   if (texture) {
-    context.globalAlpha = 0.62;
+    context.globalAlpha = 0.78;
     context.globalCompositeOperation = "overlay";
     drawCoveredTexture(context, texture, x, y, w, h);
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
   }
   const wash = context.createLinearGradient(x, y, x + w, y + h);
-  wash.addColorStop(0, "rgba(176, 38, 255, 0.22)");
-  wash.addColorStop(1, "rgba(106, 0, 230, 0.38)");
+  wash.addColorStop(0, "rgba(176, 38, 255, 0.28)");
+  wash.addColorStop(1, "rgba(106, 0, 230, 0.46)");
   context.fillStyle = wash;
   context.fillRect(x, y, w, h);
   const step = BANNER_STUD_STEP * scale;
-  const size = BANNER_STUD_SIZE * scale;
+  const size = Math.max(BANNER_STUD_SIZE * scale, 3 * scale);
   const inset = (step - size) / 2;
   context.fillStyle = PYR_CELL_STUD;
-  context.globalAlpha = 0.5;
+  context.globalAlpha = 0.68;
   const x0 = Math.floor(x / step) * step;
   const y0 = Math.floor(y / step) * step;
   for (let py = y0; py < y + h + step; py += step) {
@@ -84,6 +94,125 @@ const paintPyramidCellFill = (
     }
   }
   context.restore();
+};
+
+const paintGappedTopStroke = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  line: number,
+  color: string,
+  gap: { left: number; right: number } | null,
+  glow = 0,
+) => {
+  if (line <= 0 || w <= 0) {
+    return;
+  }
+  const inset = line / 2;
+  const top = y + inset;
+  const segments = gap
+    ? [
+        [x + inset, x + gap.left],
+        [x + gap.right, x + w - inset],
+      ]
+    : [[x + inset, x + w - inset]];
+  context.save();
+  context.strokeStyle = color;
+  context.lineWidth = line;
+  context.lineCap = "butt";
+  context.lineJoin = "miter";
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  if (glow > 0) {
+    context.shadowColor = IDENTITY_PURPLE_GLOW;
+    context.shadowBlur = glow;
+  }
+  for (const [from, to] of segments) {
+    if (to - from < line) {
+      continue;
+    }
+    context.beginPath();
+    context.moveTo(from, top);
+    context.lineTo(to, top);
+    context.stroke();
+  }
+  context.restore();
+};
+
+const drawSlotPhoto = (
+  context: CanvasRenderingContext2D,
+  photo: HTMLImageElement,
+  x: number,
+  drawY: number,
+  w: number,
+  drawH: number,
+  pan: PyramidSlot["pan"],
+) => {
+  const dest = coverPanDraw(
+    photo.naturalWidth || photo.width,
+    photo.naturalHeight || photo.height,
+    x,
+    drawY,
+    w,
+    drawH,
+    pan.x,
+    pan.y,
+    photoZoom(pan),
+  );
+  const rotate = photoRotate(pan);
+  if (rotate) {
+    context.save();
+    context.translate(x + w / 2, drawY + drawH / 2);
+    context.rotate((rotate * Math.PI) / 180);
+    context.drawImage(
+      photo,
+      dest.dx - (x + w / 2),
+      dest.dy - (drawY + drawH / 2),
+      dest.dw,
+      dest.dh,
+    );
+    context.restore();
+    return;
+  }
+  context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+};
+
+const headGapAtCellTop = (
+  photo: HTMLImageElement,
+  w: number,
+  h: number,
+  pop: number,
+  pan: PyramidSlot["pan"],
+  scale: number,
+  bandPad: number,
+): { left: number; right: number } | null => {
+  const sprite = document.createElement("canvas");
+  sprite.width = Math.max(1, Math.round(w));
+  sprite.height = Math.max(1, Math.round(h + pop));
+  const spriteCtx = sprite.getContext("2d", { willReadFrequently: true });
+  if (!spriteCtx) {
+    return null;
+  }
+  drawSlotPhoto(spriteCtx, photo, 0, 0, sprite.width, sprite.height, pan);
+  const dilate = Math.round(PYR_CUTOUT_DILATE * scale);
+  const bandTop = Math.max(0, Math.floor(pop - bandPad));
+  const bandBottom = Math.min(
+    sprite.height,
+    Math.ceil(pop + PYR_CUTOUT_BAND * scale),
+  );
+  const bandH = Math.max(1, bandBottom - bandTop);
+  const pixels = spriteCtx.getImageData(0, bandTop, sprite.width, bandH).data;
+  const columns = new Uint8Array(sprite.width);
+  for (let row = 0; row < bandH; row += 1) {
+    for (let col = 0; col < sprite.width; col += 1) {
+      const alpha = pixels[(row * sprite.width + col) * 4 + 3]!;
+      if (alpha > columns[col]!) {
+        columns[col] = alpha;
+      }
+    }
+  }
+  return opaqueSpanFromAlphas(columns, PYR_CUTOUT_ALPHA, dilate);
 };
 
 const loadImage = (src: string) =>
@@ -212,55 +341,70 @@ export const renderPyramidCanvas = async (
     const drawH = h + pop;
     const filled = Boolean(slot?.photoSrc);
     paintPyramidCellFill(context, fieldTexture, x, y, w, h, s);
-    if (filled) {
-      paintCellFrameEdges(context, x, y, w, h, input.look, s, FRAME_TOP);
-      if (input.purpleFlair) {
-        paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
-      }
+    let photo: HTMLImageElement | null = null;
+    if (slot?.photoSrc) {
+      photo = slot.photoSrc.startsWith("data:")
+        ? await loadImage(slot.photoSrc)
+        : await loadCorsImage(slot.photoSrc);
     }
     context.save();
     context.beginPath();
     context.rect(x, drawY, w, drawH);
     context.clip();
-    if (slot?.photoSrc) {
-      const photo = slot.photoSrc.startsWith("data:")
-        ? await loadImage(slot.photoSrc)
-        : await loadCorsImage(slot.photoSrc);
-      if (photo) {
-        const dest = coverPanDraw(
-          photo.naturalWidth || photo.width,
-          photo.naturalHeight || photo.height,
-          x,
-          drawY,
-          w,
-          drawH,
-          slot.pan.x,
-          slot.pan.y,
-          photoZoom(slot.pan),
-        );
-        const rotate = photoRotate(slot.pan);
-        if (rotate) {
-          context.save();
-          context.translate(x + w / 2, drawY + drawH / 2);
-          context.rotate((rotate * Math.PI) / 180);
-          context.drawImage(
-            photo,
-            dest.dx - (x + w / 2),
-            dest.dy - (drawY + drawH / 2),
-            dest.dw,
-            dest.dh,
-          );
-          context.restore();
-        } else {
-          context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
-        }
-      }
+    if (photo) {
+      drawSlotPhoto(context, photo, x, drawY, w, drawH, slot.pan);
     }
     context.restore();
     const rest = filled ? FRAME_FRONT : FRAME_ALL;
     paintCellFrameEdges(context, x, y, w, h, input.look, s, rest);
     if (input.purpleFlair) {
       paintPurplePlateEdges(context, x, y, w, h, s, rest);
+    }
+    const line = frameLinePx(s, input.look);
+    const purpleLine = input.purpleFlair ? purplePlateLinePx(s) : 0;
+    const gap =
+      filled && photo
+        ? headGapAtCellTop(
+            photo,
+            w,
+            h,
+            pop,
+            slot.pan,
+            s,
+            Math.max(line, purpleLine) + s,
+          )
+        : null;
+    if (filled) {
+      paintGappedTopStroke(
+        context,
+        x,
+        y,
+        w,
+        line,
+        frameColor(input.look),
+        gap,
+      );
+      if (input.purpleFlair) {
+        const outer = purplePlateOutsetRect(x, y, w, h, s);
+        const purpleGap = gap
+          ? {
+              left: gap.left + (x - outer.x),
+              right: gap.right + (x - outer.x),
+            }
+          : null;
+        paintGappedTopStroke(
+          context,
+          outer.x,
+          outer.y,
+          outer.w,
+          outer.line,
+          IDENTITY_PURPLE,
+          purpleGap,
+          Math.round(8 * s),
+        );
+      }
+    } else if (input.purpleFlair) {
+      paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
     }
   }
 

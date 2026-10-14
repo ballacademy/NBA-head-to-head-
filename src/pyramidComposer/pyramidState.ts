@@ -34,8 +34,8 @@ export const DEFAULT_PYRAMID_TITLE = "NBA COY PYRAMID";
 export const PYRAMID_TITLE_TRACK = 0.04;
 export const PYRAMID_HEADSHOT_PAN: PhotoPan = {
   x: 0.5,
-  y: 0.28,
-  zoom: 1.08,
+  y: 0.58,
+  zoom: 1.36,
   rotate: 0,
 };
 

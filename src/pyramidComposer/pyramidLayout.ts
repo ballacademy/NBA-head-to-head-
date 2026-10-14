@@ -18,11 +18,42 @@ export const PYR_TITLE_SIZE = 54;
 export const PYR_TITLE_TRACK = 0.04;
 export const PYR_BA_SIZE = 72;
 export const PYR_BA_INSET = 36;
-export const PYR_POP_RATIO = 0.3;
+export const PYR_POP_RATIO = 0.34;
 export const PYR_POP_GUTTER = 14;
 /** Kyber cell fill — deep violet, not a flat flood. Studs use IDENTITY_PURPLE. */
-export const PYR_CELL_FILL = "#3a0078";
+export const PYR_CELL_FILL = "#41008c";
 export const PYR_CELL_STUD = "#b026ff";
+/** Alpha above this counts as the head when gapping the top stroke. */
+export const PYR_CUTOUT_ALPHA = 28;
+/** Expand the gap so wispy hair still breaks the line. Design px. */
+export const PYR_CUTOUT_DILATE = 7;
+/** How far into the cell to union opaque columns (face, not shoulders). */
+export const PYR_CUTOUT_BAND = 20;
+
+/** First/last opaque columns in a 1D alpha row. `right` is exclusive. */
+export const opaqueSpanFromAlphas = (
+  columns: ArrayLike<number>,
+  threshold = PYR_CUTOUT_ALPHA,
+  dilate = 0,
+): { left: number; right: number } | null => {
+  let first = -1;
+  let last = -1;
+  for (let index = 0; index < columns.length; index += 1) {
+    if (columns[index]! > threshold) {
+      if (first < 0) {
+        first = index;
+      }
+      last = index;
+    }
+  }
+  if (first < 0) {
+    return null;
+  }
+  return {
+    left: Math.max(0, first - dilate),
+    right: Math.min(columns.length, last + 1 + dilate),
+  };
+};
 
 /** @deprecated Use pyramidSlotCount(rowCount). 4-row default. */
 export const PYRAMID_ROWS = [1, 2, 3, 4] as const;
