@@ -171,6 +171,41 @@
   text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.85);
 }
 
+.pi-slot:has(.pi-wl) .pi-abbr {
+  bottom: calc(28 * var(--u));
+}
+
+.pi-wl {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(8 * var(--u));
+  z-index: 2;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
+.pi-score {
+  position: absolute;
+  right: calc(10 * var(--u));
+  top: calc(12 * var(--u));
+  z-index: 3;
+  min-width: calc(44 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  background: rgba(0, 0, 0, 0.72);
+  border: calc(2 * var(--u)) solid var(--frame-color);
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: calc(32 * var(--u));
+  text-align: center;
+}
+
 .pi-empty {
   font-size: calc(22 * var(--u));
   letter-spacing: 0.16em;
@@ -208,8 +243,28 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.pi-plate.is-eight.has-winner {
+  padding: calc(4 * var(--u));
+}
+
+.pi-plate.is-eight.has-winner canvas,
+.pi-plate.is-eight.has-winner img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+
 .pi-board .composer-ba {
   z-index: 5;
+}
+
+.sc-composer .sc-field__row {
+  display: flex;
+  gap: 6px;
+}
+
+.sc-composer .sc-field__row input {
+  width: 4.2rem;
 }
 
 .pi-title:focus {

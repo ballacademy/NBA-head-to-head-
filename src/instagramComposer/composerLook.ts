@@ -178,11 +178,12 @@ export const paintCellFrameEdges = (
   look: ComposerLook | null | undefined,
   scale: number,
   edges: FrameEdge[],
+  linePx?: number,
 ) => {
   if (look === "none" || edges.length === 0) {
     return;
   }
-  const line = frameLinePx(scale, look);
+  const line = linePx ?? frameLinePx(scale, look);
   context.save();
   context.shadowBlur = 0;
   context.shadowColor = "transparent";

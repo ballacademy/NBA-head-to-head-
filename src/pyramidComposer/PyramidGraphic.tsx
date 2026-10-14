@@ -10,7 +10,7 @@ import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { pyramidMetrics, PYR_DEFAULT_ROWS } from "./pyramidLayout";
-import type { PyramidSlot } from "./pyramidState";
+import { pyramidSlotPops, type PyramidSlot } from "./pyramidState";
 
 interface PyramidGraphicProps {
   title: string;
@@ -20,6 +20,7 @@ interface PyramidGraphicProps {
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
+  showNames?: boolean;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
   onPick: (index: number) => void;
@@ -38,6 +39,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       look = "white",
       purpleFlair = false,
       showBa = true,
+      showNames = false,
       exporting = false,
       onTitleChange,
       onPick,
@@ -148,9 +150,10 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                     return null;
                   }
                   const empty = !slot.photoSrc;
-                  const label =
-                    `${slot.firstName} ${slot.lastName}`.trim() ||
-                    `slot ${index + 1}`;
+                  const pops = pyramidSlotPops(slot);
+                  const name =
+                    `${slot.firstName} ${slot.lastName}`.trim();
+                  const label = name || `slot ${index + 1}`;
                   const team = getTeam(slot.teamId);
                   return (
                     <section
@@ -175,11 +178,14 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         pan={slot.pan}
                         custom={slot.customPhoto}
                         empty={empty}
-                        pop={!empty}
+                        pop={pops}
                         onPan={(pan) => onPan(index, pan)}
                         onUpload={(dataUrl) => onUpload(index, dataUrl)}
                         onPick={() => onPick(index)}
                       />
+                      {showNames && name ? (
+                        <p className="pyr-cell__name">{name}</p>
+                      ) : null}
                     </section>
                   );
                 })}

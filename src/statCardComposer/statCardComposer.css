@@ -49,10 +49,8 @@
   width: calc(340 * var(--u));
   bottom: 0;
   z-index: 2;
-  background-color: #121212;
-  background-image: url("/composer-background-texture.png");
-  background-size: cover;
-  background-position: center;
+  background-color: #ececec;
+  background-image: none;
   display: flex;
   flex-direction: column;
 }
@@ -85,7 +83,7 @@
   right: calc(36 * var(--u));
   top: 0;
   height: calc(2 * var(--u));
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(17, 17, 17, 0.22);
 }
 
 .stc-value,
@@ -95,7 +93,7 @@
   padding: 0 calc(12 * var(--u));
   border: 0;
   background: transparent;
-  color: #fff;
+  color: #111;
   text-align: center;
   font-family: var(--ig-poster);
   font-weight: 900;
@@ -112,7 +110,7 @@
   margin-top: calc(8 * var(--u));
   font-size: calc(26 * var(--u));
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(17, 17, 17, 0.62);
 }
 
 .stc-name-bar {
@@ -195,7 +193,11 @@
 }
 
 .stc-value:focus,
-.stc-label:focus,
+.stc-label:focus {
+  outline: 1px dashed rgba(17, 17, 17, 0.45);
+  outline-offset: 4px;
+}
+
 .stc-name:focus {
   outline: 1px dashed rgba(255, 255, 255, 0.45);
   outline-offset: 4px;

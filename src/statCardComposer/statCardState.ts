@@ -1,5 +1,12 @@
 import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
+  everyTeamCurrentSeason,
+  isPercentStatMetric,
+  playerRowForSeason,
+  rosterStatValue,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
+import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
   isPhotoPan,
@@ -18,10 +25,14 @@ export { clampPan, type PhotoPan };
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
 export const STC_NAME_MAX = 32;
-export const STC_STAT_COUNT = 4;
+export const STC_STAT_COUNT = 3;
+export const STC_STAT_MAX = 4;
+
+export type StatCardKey = "pts" | "reb" | "ast" | "three" | "stl" | "blk" | "fg";
+export type StatCardSource = "last-game" | "season";
 
 export interface StatCardLine {
-  key: "pts" | "reb" | "ast" | "three" | "stl" | "blk" | "fg";
+  key: StatCardKey;
   label: string;
   value: string;
 }
@@ -35,15 +46,35 @@ export interface StatCardDraft {
   customPhoto: boolean;
   pan: PhotoPan;
   stats: StatCardLine[];
+  source?: StatCardSource;
+  season?: string;
   showBa?: boolean;
 }
 
-export const DEFAULT_STAT_LINES: StatCardLine[] = [
+export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
   { key: "pts", label: "PTS", value: "" },
   { key: "reb", label: "REB", value: "" },
   { key: "ast", label: "AST", value: "" },
   { key: "three", label: "3PM", value: "" },
+  { key: "stl", label: "STL", value: "" },
+  { key: "blk", label: "BLK", value: "" },
+  { key: "fg", label: "FG", value: "" },
 ];
+
+export const DEFAULT_STAT_LINES: StatCardLine[] = STAT_CARD_LINE_OPTIONS.slice(
+  0,
+  STC_STAT_COUNT,
+).map((line) => ({ ...line }));
+
+const STC_METRIC: Record<StatCardKey, EveryTeamStatMetric> = {
+  pts: "points",
+  reb: "rebounds",
+  ast: "assists",
+  stl: "steals",
+  blk: "blocks",
+  fg: "fgPct",
+  three: "fg3Pct",
+};
 
 const isLine = (value: unknown): value is StatCardLine =>
   Boolean(
@@ -72,6 +103,14 @@ export const isStatCardDraft = (value: unknown): value is StatCardDraft =>
       (value as StatCardDraft).stats.every(isLine),
   );
 
+export const parseStatCardSource = (value: unknown): StatCardSource =>
+  value === "season" ? "season" : "last-game";
+
+export const parseStatCardKey = (value: unknown): StatCardKey =>
+  STAT_CARD_LINE_OPTIONS.some((line) => line.key === value)
+    ? (value as StatCardKey)
+    : "pts";
+
 export const defaultStatCardDraft = (): StatCardDraft => ({
   firstName: "",
   lastName: "",
@@ -81,7 +120,22 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   customPhoto: false,
   pan: { ...DEFAULT_CUSTOM_PAN },
   stats: DEFAULT_STAT_LINES.map((line) => ({ ...line })),
+  source: "last-game",
+  season: everyTeamCurrentSeason(),
   showBa: true,
+});
+
+export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => ({
+  ...draft,
+  source: parseStatCardSource(draft.source),
+  season:
+    typeof draft.season === "string" && draft.season.trim()
+      ? draft.season
+      : everyTeamCurrentSeason(),
+  stats: (draft.stats.length ? draft.stats : DEFAULT_STAT_LINES)
+    .slice(0, STC_STAT_MAX)
+    .map((line) => ({ ...line })),
+  showBa: draft.showBa !== false,
 });
 
 export const hasCustomPhoto = (draft: StatCardDraft) =>
@@ -147,6 +201,35 @@ const valueFromGame = (line: StatCardLine, stats: LastGameStats) => {
   return stats[line.key] ?? line.value;
 };
 
+const seasonLabelFor = (line: StatCardLine): string => {
+  if (line.key === "three") {
+    return "3P%";
+  }
+  if (line.key === "fg") {
+    return "FG%";
+  }
+  return line.label;
+};
+
+const gameLabelFor = (line: StatCardLine): string => {
+  const option = STAT_CARD_LINE_OPTIONS.find((item) => item.key === line.key);
+  return option?.label ?? line.label;
+};
+
+export const formatStatCardSeasonValue = (
+  key: StatCardKey,
+  value: number | null,
+) => {
+  if (value == null) {
+    return "";
+  }
+  const metric = STC_METRIC[key];
+  if (isPercentStatMetric(metric)) {
+    return (value * 100).toFixed(1);
+  }
+  return (Math.round(value * 10) / 10).toFixed(1);
+};
+
 export const fillStatCardFromGame = (
   draft: StatCardDraft,
   game: LastGame | null,
@@ -156,9 +239,72 @@ export const fillStatCardFromGame = (
   }
   return {
     ...draft,
+    source: "last-game",
     stats: draft.stats.map((line) => ({
       ...line,
+      label: gameLabelFor(line),
       value: clipStatValue(valueFromGame(line, game.stats)),
     })),
   };
 };
+
+export const fillStatCardFromSeason = (
+  draft: StatCardDraft,
+  season = draft.season || everyTeamCurrentSeason(),
+): StatCardDraft => {
+  if (!draft.playerId) {
+    return { ...draft, source: "season", season };
+  }
+  const row = playerRowForSeason(draft.playerId, season, draft.teamId);
+  return {
+    ...draft,
+    source: "season",
+    season,
+    stats: draft.stats.map((line) => ({
+      ...line,
+      label: seasonLabelFor(line),
+      value: clipStatValue(
+        formatStatCardSeasonValue(
+          line.key,
+          rosterStatValue(row, STC_METRIC[line.key]),
+        ),
+      ),
+    })),
+  };
+};
+
+export const setStatCardLineKey = (
+  stats: StatCardLine[],
+  index: number,
+  key: StatCardKey,
+  source: StatCardSource,
+): StatCardLine[] => {
+  const option = STAT_CARD_LINE_OPTIONS.find((item) => item.key === key);
+  if (!option) {
+    return stats;
+  }
+  const next = { ...option };
+  return stats.map((line, lineIndex) =>
+    lineIndex === index
+      ? {
+          ...next,
+          label: source === "season" ? seasonLabelFor(next) : next.label,
+          value: line.value,
+        }
+      : line,
+  );
+};
+
+export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
+  if (stats.length >= STC_STAT_MAX) {
+    return stats;
+  }
+  const used = new Set(stats.map((line) => line.key));
+  const next =
+    STAT_CARD_LINE_OPTIONS.find((line) => !used.has(line.key)) ??
+    STAT_CARD_LINE_OPTIONS[3]!;
+  return [...stats, { ...next }];
+};
+
+export const removeStatCardLine = (stats: StatCardLine[], index: number) =>
+  stats.length <= 3 ? stats : stats.filter((_, lineIndex) => lineIndex !== index);

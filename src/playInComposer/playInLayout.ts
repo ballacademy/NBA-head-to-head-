@@ -56,7 +56,7 @@ export const playInMatchups = (size: PlayInSize): PlayInMatchups => ({
   bye: size === 10 ? 6 : null,
   pairs: [
     { label: "7v8", seeds: [7, 8], winnerLabel: "7 SEED" },
-    { label: "9v10", seeds: [9, 10], winnerLabel: "9v10 WIN" },
+    { label: "9v10", seeds: [9, 10], winnerLabel: "9v10" },
   ],
   eightLabel: PI_EIGHT_LABEL,
 });

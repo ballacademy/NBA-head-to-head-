@@ -67,6 +67,7 @@ const loadDraft = (): PyramidDraft => {
       rows,
       slots: resizePyramidSlots(stored.slots, rows),
       showBa: stored.showBa !== false,
+      showNames: stored.showNames === true,
       rowLabels: parsePyramidRowLabels(stored.rowLabels, rows),
     };
   }
@@ -76,6 +77,7 @@ const loadDraft = (): PyramidDraft => {
     slots: empty.slots,
     rows: empty.rows,
     showBa: stored?.showBa !== false,
+    showNames: stored?.showNames === true,
     rowLabels: empty.rowLabels,
   };
 };
@@ -94,6 +96,7 @@ export function PyramidComposerApp() {
   const [look, setLook] = useComposerLook(PYRAMID_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(true);
+  const [showNames, setShowNames] = useState(false);
   const [rowLabels, setRowLabels] = useState(() =>
     parsePyramidRowLabels(undefined, empty.rows ?? 4),
   );
@@ -117,6 +120,7 @@ export function PyramidComposerApp() {
     setSlots(draft.slots);
     setRows(draft.rows ?? 4);
     setShowBa(draft.showBa !== false);
+    setShowNames(draft.showNames === true);
     setRowLabels(parsePyramidRowLabels(draft.rowLabels, draft.rows ?? 4));
     setHydrated(true);
   }, []);
@@ -125,8 +129,8 @@ export function PyramidComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { title, slots, rows, showBa, rowLabels });
-  }, [title, slots, rows, showBa, rowLabels, hydrated]);
+    writeJson(STORAGE_KEY, { title, slots, rows, showBa, showNames, rowLabels });
+  }, [title, slots, rows, showBa, showNames, rowLabels, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -144,7 +148,7 @@ export function PyramidComposerApp() {
       await exportPyramidPng(
         node,
         filename ?? exportFilenameFromTitle(title, "pyramid"),
-        { title, slots, rows, rowLabels, look, purpleFlair, showBa },
+        { title, slots, rows, rowLabels, look, purpleFlair, showBa, showNames },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -252,6 +256,18 @@ export function PyramidComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Names</span>
+          <button
+            type="button"
+            className={showNames ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showNames}
+            aria-label="Show player names on cells"
+            onClick={() => setShowNames((on) => !on)}
+          >
+            {showNames ? "On" : "Off"}
+          </button>
+        </label>
         {Array.from({ length: rows }, (_, index) => (
           <label key={`pyr-label-${index}`} className="sc-field">
             Row {index + 1}
@@ -302,13 +318,14 @@ export function PyramidComposerApp() {
         </div>
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ title, slots, rows, showBa, rowLabels }}
+          board={{ title, slots, rows, showBa, showNames, rowLabels }}
           onLoad={(next) => {
             const nextRows = parsePyramidRows(next.rows, next.slots.length);
             setTitle(next.title);
             setRows(nextRows);
             setSlots(resizePyramidSlots(next.slots, nextRows));
             setShowBa(next.showBa !== false);
+            setShowNames(next.showNames === true);
             setRowLabels(parsePyramidRowLabels(next.rowLabels, nextRows));
             setStatus("Loaded named graphic.");
           }}
@@ -381,6 +398,7 @@ export function PyramidComposerApp() {
                           look,
                           purpleFlair,
                           showBa,
+                          showNames,
                         },
                         2,
                       ),
@@ -422,6 +440,7 @@ export function PyramidComposerApp() {
             look={look}
             purpleFlair={purpleFlair}
             showBa={showBa}
+            showNames={showNames}
             exporting={exporting}
             onTitleChange={setTitle}
             onHover={setPhotoTarget}
@@ -444,9 +463,9 @@ export function PyramidComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Photo squares in a 1–2–3–4 (or 5 / 6) stack, sitting toward the
-            bottom. Default headshots pop out of the top of each box. Pick a
-            player or upload/paste a custom photo. Downloads a 4:5 Instagram PNG
-            — nothing is posted.
+            bottom. Stock headshots pop out of the top; custom photos stay in
+            the box. Names off by default. Downloads a 4:5 Instagram PNG —
+            nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

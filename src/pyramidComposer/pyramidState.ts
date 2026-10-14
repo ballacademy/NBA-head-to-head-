@@ -44,6 +44,7 @@ export interface PyramidDraft {
   slots: TotwStrip[];
   rows?: number;
   showBa?: boolean;
+  showNames?: boolean;
   rowLabels?: string[];
 }
 
@@ -122,8 +123,12 @@ export const defaultPyramidDraft = (): PyramidDraft => ({
   slots: createEmptyPyramidSlots(PYR_DEFAULT_ROWS),
   rows: PYR_DEFAULT_ROWS,
   showBa: true,
+  showNames: false,
   rowLabels: parsePyramidRowLabels(undefined, PYR_DEFAULT_ROWS),
 });
+
+export const pyramidSlotPops = (slot: TotwStrip) =>
+  Boolean(slot.photoSrc) && !hasCustomPhoto(slot);
 
 export const applyPyramidPick = (
   slots: TotwStrip[],

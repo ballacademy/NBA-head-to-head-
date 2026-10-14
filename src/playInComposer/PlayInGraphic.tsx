@@ -5,7 +5,7 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { formatStandingRecord, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -17,7 +17,11 @@ import {
   type PlayInBar,
   type PlayInSlotRect,
 } from "./playInLayout";
-import type { PlayInDraft } from "./playInState";
+import {
+  nineTenWinnerId,
+  slotScore,
+  type PlayInDraft,
+} from "./playInState";
 
 interface PlayInGraphicProps {
   draft: PlayInDraft;
@@ -87,7 +91,13 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
       bye = false,
     ) => {
       const ids = conference === "east" ? draft.east : draft.west;
+      const scores =
+        conference === "east" ? draft.eastScores : draft.westScores;
       const team = getTeam(ids[slot.index]);
+      const record = team && draft.showWl
+        ? formatStandingRecord(draft.records?.[team.id])
+        : null;
+      const score = slotScore(draft.size, slot.seed, scores);
       return (
         <button
           key={`${conference}-${slot.seed}`}
@@ -123,10 +133,12 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
                 fitY={PI_LOGO_FIT}
               />
               <span className="pi-abbr">{team.id}</span>
+              {record ? <span className="pi-wl">{record}</span> : null}
             </>
           ) : (
             <span className="pi-empty">PICK</span>
           )}
+          {score ? <span className="pi-score">{score}</span> : null}
         </button>
       );
     };
@@ -179,16 +191,6 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
                 {match.lines.map((bar, index) =>
                   paintBar(bar, `${col.conference}-${match.label}-l${index}`),
                 )}
-                <p
-                  className="pi-match-label"
-                  style={{
-                    left: u(match.winner.x),
-                    top: u(match.labelY - 8),
-                    width: u(match.winner.w),
-                  }}
-                >
-                  {match.label}
-                </p>
                 {slotButton(col.conference, match.slots[0])}
                 {slotButton(col.conference, match.slots[1])}
                 <p
@@ -207,17 +209,39 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
             {col.eightLines.map((bar, index) =>
               paintBar(bar, `${col.conference}-eight-${index}`),
             )}
-            <p
-              className="pi-plate is-eight"
-              style={{
-                left: u(col.eightSeed.x),
-                top: u(col.eightSeed.y),
-                width: u(col.eightSeed.w),
-                height: u(col.eightSeed.h),
-              }}
-            >
-              {col.eightSeed.label}
-            </p>
+            {(() => {
+              const ids = col.conference === "east" ? draft.east : draft.west;
+              const scores =
+                col.conference === "east" ? draft.eastScores : draft.westScores;
+              const winner = getTeam(
+                nineTenWinnerId(ids, draft.size, scores),
+              );
+              return (
+                <div
+                  className={["pi-plate", "is-eight", winner ? "has-winner" : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{
+                    left: u(col.eightSeed.x),
+                    top: u(col.eightSeed.y),
+                    width: u(col.eightSeed.w),
+                    height: u(col.eightSeed.h),
+                  }}
+                >
+                  {winner ? (
+                    <TeamLogo
+                      src={winner.logoSrc}
+                      label={winner.name}
+                      fitX={0.86}
+                      fitY={0.86}
+                      shadow={0}
+                    />
+                  ) : (
+                    col.eightSeed.label
+                  )}
+                </div>
+              );
+            })()}
           </div>
         ))}
         <p className="pi-legend">{PI_LEGEND}</p>
