@@ -10,10 +10,12 @@ import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 export const DEFAULT_QUOTE = "I’M HIM.";
 export const QUOTE_MAX = 180;
 export const ATTRIB_MAX = 48;
+export const SOURCE_MAX = 48;
 
 export interface QuoteDraft {
   quote: string;
   attribution: string;
+  source: string;
   playerId: string | null;
   teamId: string | null;
   photoSrc: string | null;
@@ -43,6 +45,7 @@ export const isQuoteDraft = (value: unknown): value is QuoteDraft =>
 export const defaultQuoteDraft = (): QuoteDraft => ({
   quote: DEFAULT_QUOTE,
   attribution: "",
+  source: "",
   playerId: null,
   teamId: null,
   photoSrc: null,
@@ -60,11 +63,11 @@ export const speakerNameFromPlayer = (player: TierPlayer) => {
   return `${names.firstName} ${names.lastName}`.replace(/\s+/g, " ").trim();
 };
 
-/** Always refreshes name, team, and photo (unless keep-custom). Pull-quote stays. */
 export const fillQuoteFromPlayer = (
   player: TierPlayer,
   previous: QuoteDraft,
   keepCustomPhoto = false,
+  keepQuote = true,
 ): QuoteDraft => {
   const keep = keepCustomPhoto && hasCustomPhoto(previous);
   return {
@@ -72,10 +75,12 @@ export const fillQuoteFromPlayer = (
     playerId: player.id,
     teamId: getTeam(player.team)?.id ?? player.team ?? null,
     attribution: speakerNameFromPlayer(player).slice(0, ATTRIB_MAX),
-    photoSrc: keep ? previous.photoSrc : player.headshotUrl,
+    quote: keepQuote ? previous.quote : "",
+    photoSrc: keep ? previous.photoSrc : null,
     customPhoto: Boolean(keep),
-    pan: keep ? { ...previous.pan } : { x: 0.5, y: 0.22, zoom: 1, rotate: 0 },
+    pan: keep ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
     showHeadshot: true,
+    source: previous.source ?? "",
   };
 };
 

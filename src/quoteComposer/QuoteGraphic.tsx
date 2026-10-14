@@ -7,8 +7,15 @@ import {
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import { ATTRIB_MAX, QUOTE_MAX, type QuoteDraft } from "./quoteState";
-import { quoteLastName, quoteLastNameSize } from "./quoteLayout";
+import { QUOTE_MAX, SOURCE_MAX, type QuoteDraft } from "./quoteState";
+import {
+  formatQuoteSource,
+  isLongQuote,
+  quoteBottom,
+  quoteLastName,
+  quoteLastNameSize,
+  quoteTypeSize,
+} from "./quoteLayout";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 
 interface QuoteGraphicProps {
@@ -17,7 +24,7 @@ interface QuoteGraphicProps {
   purpleFlair?: boolean;
   exporting?: boolean;
   onQuoteChange: (value: string) => void;
-  onAttributionChange: (value: string) => void;
+  onSourceChange: (value: string) => void;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -31,7 +38,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
       purpleFlair = false,
       exporting = false,
       onQuoteChange,
-      onAttributionChange,
+      onSourceChange,
       onPan,
       onUpload,
       onPick,
@@ -41,10 +48,15 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
     const last = quoteLastName(draft.attribution);
-    const lastSize = quoteLastNameSize(last);
+    const long = isLongQuote(draft.quote);
+    const lastSize = quoteLastNameSize(last, draft.quote);
+    const quoteSize = quoteTypeSize(draft.quote);
+    const source = formatQuoteSource(draft.source);
+    const hasSource = Boolean(draft.source.trim());
+    const bottom = quoteBottom(hasSource);
     const teamColor = draft.teamId
       ? getTeamColors(draft.teamId).primary
-      : "transparent";
+      : "#ffffff";
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -110,7 +122,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           <p
             className={[
               "qt-lastname",
-              lastSize <= 56 ? "is-xl" : lastSize <= 72 ? "is-long" : "",
+              long ? "is-long-quote" : lastSize <= 56 ? "is-xl" : lastSize <= 72 ? "is-long" : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -119,7 +131,11 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
             {last}
           </p>
         ) : null}
-        <p className="qt-mark" aria-hidden="true">
+        <p
+          className="qt-mark"
+          style={{ bottom: `calc(${bottom + quoteSize * 2.15} * var(--u))` }}
+          aria-hidden="true"
+        >
           “
         </p>
         {draft.showBa !== false ? (
@@ -131,28 +147,31 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           />
         ) : null}
         <textarea
-          className="qt-quote"
+          className={["qt-quote", long ? "is-long" : ""].filter(Boolean).join(" ")}
+          style={{
+            bottom: `calc(${bottom} * var(--u))`,
+            height: `calc(${quoteSize * 2.2} * var(--u))`,
+          }}
           value={draft.quote}
           maxLength={QUOTE_MAX}
           spellCheck={false}
           aria-label="Pull quote"
+          placeholder="THE QUOTE"
           onChange={(event) =>
             onQuoteChange(event.target.value.slice(0, QUOTE_MAX))
           }
         />
-        <div className="qt-attr-plate">
-          <span className="qt-attr-accent" aria-hidden="true" />
-          <input
-            className="qt-attr"
-            value={draft.attribution}
-            maxLength={ATTRIB_MAX}
-            placeholder="NAME"
-            aria-label="Quote attribution"
-            onChange={(event) =>
-              onAttributionChange(event.target.value.slice(0, ATTRIB_MAX))
-            }
-          />
-        </div>
+        <input
+          className="qt-source"
+          value={draft.source}
+          maxLength={SOURCE_MAX}
+          spellCheck={false}
+          aria-label="Quote source"
+          placeholder={source ? undefined : "SOURCE (OPTIONAL)"}
+          onChange={(event) =>
+            onSourceChange(event.target.value.slice(0, SOURCE_MAX))
+          }
+        />
       </article>
     );
   },
