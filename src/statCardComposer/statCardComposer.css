@@ -123,16 +123,17 @@
   bottom: 0;
   z-index: 3;
   background: var(--team-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .stc-name {
-  flex: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(20 * var(--u));
+  bottom: calc(124 * var(--u));
   width: 100%;
   margin: 0;
-  padding: calc(18 * var(--u)) 0 calc(8 * var(--u));
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--name-ink);
@@ -146,10 +147,12 @@
 }
 
 .stc-logo {
+  position: absolute;
+  left: 50%;
+  bottom: calc(16 * var(--u));
   width: calc(92 * var(--u));
   height: calc(92 * var(--u));
-  margin: 0 0 calc(16 * var(--u));
-  flex-shrink: 0;
+  transform: translateX(-50%);
 }
 
 .stc-logo canvas,
