@@ -4,6 +4,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   STANDINGS_LOOK_KEY,
@@ -255,11 +256,10 @@ export function StandingsComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Standings graphic</h1>
-        </div>
+      <ComposerToolbar
+        title="Standings graphic"
+        identity={
+          <>
         <label className="sc-field">
           Brand
           <input
@@ -289,6 +289,30 @@ export function StandingsComposerApp() {
             onChange={(event) => onComposerTextChange(event, setSubtitle, 28)}
           />
         </label>
+          </>
+        }
+        data={
+          <>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillConference("East")}
+            disabled={filling || exporting}
+          >
+            Fill East
+          </button>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillConference("West")}
+            disabled={filling || exporting}
+          >
+            Fill West
+          </button>
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -316,6 +340,9 @@ export function StandingsComposerApp() {
             {showRecord ? "On" : "Off"}
           </button>
         </label>
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{
@@ -340,23 +367,9 @@ export function StandingsComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => void fillConference("East")}
-            disabled={filling || exporting}
-          >
-            Fill East
-          </button>
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => void fillConference("West")}
-            disabled={filling || exporting}
-          >
-            Fill West
-          </button>
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -401,8 +414,9 @@ export function StandingsComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

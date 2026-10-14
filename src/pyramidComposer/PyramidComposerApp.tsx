@@ -3,6 +3,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -235,11 +236,10 @@ export function PyramidComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Pyramid</h1>
-        </div>
+      <ComposerToolbar
+        title="Pyramid"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -253,40 +253,10 @@ export function PyramidComposerApp() {
           presets={PYRAMID_TITLE_PRESETS}
           onChange={setTitle}
         />
-        <ComposerLookToggle look={look} onChange={setLook} />
-        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <BaMarkToggle on={showBa} onChange={setShowBa} />
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show player names on cells"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
-        {Array.from({ length: rows }, (_, index) => (
-          <label key={`pyr-label-${index}`} className="sc-field">
-            Row {index + 1}
-            <input
-              value={rowLabels[index] ?? ""}
-              maxLength={PYR_ROW_LABEL_MAX}
-              placeholder={`${index + 1} / COY`}
-              aria-label={`Row ${index + 1} label`}
-              onChange={(event) =>
-                setRowLabels((current) => {
-                  const next = parsePyramidRowLabels(current, rows);
-                  next[index] = event.target.value
-                    .slice(0, PYR_ROW_LABEL_MAX);
-                  return next;
-                })
-              }
-            />
-          </label>
-        ))}
+          </>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Pyramid rows">
           <span className="sc-look__label">Rows</span>
           {Array.from(
@@ -316,6 +286,47 @@ export function PyramidComposerApp() {
             </button>
           ))}
         </div>
+        {Array.from({ length: rows }, (_, index) => (
+          <label key={`pyr-label-${index}`} className="sc-field">
+            Row {index + 1}
+            <input
+              value={rowLabels[index] ?? ""}
+              maxLength={PYR_ROW_LABEL_MAX}
+              placeholder={`${index + 1} / COY`}
+              aria-label={`Row ${index + 1} label`}
+              onChange={(event) =>
+                setRowLabels((current) => {
+                  const next = parsePyramidRowLabels(current, rows);
+                  next[index] = event.target.value
+                    .slice(0, PYR_ROW_LABEL_MAX);
+                  return next;
+                })
+              }
+            />
+          </label>
+        ))}
+          </>
+        }
+        board={
+          <>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Names</span>
+          <button
+            type="button"
+            className={showNames ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showNames}
+            aria-label="Show player names on cells"
+            onClick={() => setShowNames((on) => !on)}
+          >
+            {showNames ? "On" : "Off"}
+          </button>
+        </label>
+        <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <BaMarkToggle on={showBa} onChange={setShowBa} />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{ title, slots, rows, showBa, showNames, rowLabels }}
@@ -330,7 +341,9 @@ export function PyramidComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -425,8 +438,9 @@ export function PyramidComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

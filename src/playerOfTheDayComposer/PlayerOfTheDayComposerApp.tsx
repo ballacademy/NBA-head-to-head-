@@ -4,6 +4,9 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -83,6 +86,7 @@ export function PlayerOfTheDayComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -172,7 +176,7 @@ export function PlayerOfTheDayComposerApp() {
       return;
     }
     setStatus("Loading recent games…");
-    const games = await fetchRecentGames(player.id);
+    const games = await fetchRecentGames(player.id, statsSample);
     pendingPick.current = {
       index: activeIndex,
       playerId: player.id,
@@ -263,11 +267,10 @@ export function PlayerOfTheDayComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Player of the Day</h1>
-        </div>
+      <ComposerToolbar
+        title="Player of the Day"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -281,9 +284,22 @@ export function PlayerOfTheDayComposerApp() {
           presets={POTD_TITLE_PRESETS}
           onChange={setTitle}
         />
+          </>
+        }
+        data={
+          <ComposerStatsSampleToggle
+            sample={statsSample}
+            onChange={setStatsSample}
+          />
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{ brand, title, date, cards, showBa }}
@@ -296,7 +312,9 @@ export function PlayerOfTheDayComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -353,8 +371,9 @@ export function PlayerOfTheDayComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

@@ -4,6 +4,7 @@ import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -449,13 +450,10 @@ export function RankedLineupsComposerApp({
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">
-            {unranked ? "Lineup" : "Ranked lineups"}
-          </h1>
-        </div>
+      <ComposerToolbar
+        title={unranked ? "Lineup" : "Ranked lineups"}
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -531,6 +529,10 @@ export function RankedLineupsComposerApp({
         </label>
         </>
         )}
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -547,6 +549,9 @@ export function RankedLineupsComposerApp({
             {showFade ? "On" : "Off"}
           </button>
         </label>
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={savesKey}
           board={board}
@@ -555,7 +560,9 @@ export function RankedLineupsComposerApp({
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -710,8 +717,9 @@ export function RankedLineupsComposerApp({
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

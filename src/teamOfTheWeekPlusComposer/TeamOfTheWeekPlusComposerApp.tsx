@@ -4,6 +4,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -249,11 +250,10 @@ export function TeamOfTheWeekPlusComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">TOTW Plus</h1>
-        </div>
+      <ComposerToolbar
+        title="TOTW Plus"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -292,6 +292,10 @@ export function TeamOfTheWeekPlusComposerApp() {
             onChange={(event) => setWeek(event.target.value.slice(0, 32))}
           />
         </label>
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -307,6 +311,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{
@@ -329,7 +336,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -391,8 +400,9 @@ export function TeamOfTheWeekPlusComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

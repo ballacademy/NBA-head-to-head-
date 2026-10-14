@@ -4,6 +4,9 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   TIER_LOOK_KEY,
   useComposerLook,
@@ -150,6 +153,7 @@ export function TierListComposerApp() {
   const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
@@ -287,13 +291,13 @@ export function TierListComposerApp() {
     const values = new Map<string, number | null>();
     used.forEach((id) => {
       if (subject === "teams") {
-        values.set(id, teamStatValue(id, season, metric));
+        values.set(id, teamStatValue(id, season, metric, statsSample));
         return;
       }
       const player = getPlayer(id);
       values.set(
         id,
-        playerStatValue(id, season, metric, player?.team ?? null),
+        playerStatValue(id, season, metric, player?.team ?? null, statsSample),
       );
     });
     const scored = used.filter((id) => values.get(id) != null).length;
@@ -340,13 +344,10 @@ export function TierListComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">
-            {subject === "players" ? "Player tier list" : "Team tier list"}
-          </h1>
-        </div>
+      <ComposerToolbar
+        title={subject === "players" ? "Player tier list" : "Team tier list"}
+        identity={
+          <>
         <div className="sc-subject" role="tablist" aria-label="Tier list subject">
           <button
             type="button"
@@ -382,18 +383,14 @@ export function TierListComposerApp() {
           presets={TIER_TITLE_PRESETS}
           onChange={setTitle}
         />
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show names on cells"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+          </>
+        }
+        data={
+          <>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={setStatsSample}
+        />
         <div className="sc-look sc-look--sort" role="group" aria-label="Populate matching filters">
           <span className="sc-look__label">Board</span>
           <button
@@ -427,9 +424,59 @@ export function TierListComposerApp() {
             Sort into tiers
           </button>
         </div>
-        <ComposerLookToggle look={look} onChange={setLook} />
-        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => {
+            push(rows);
+            setRows((current) => addTier(current));
+          }}
+          disabled={rows.length >= MAX_TIERS}
+        >
+          Add tier
+        </button>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => {
+            push(rows);
+            setRows((current) => removeLastTier(current));
+          }}
+          disabled={rows.length <= MIN_TIERS}
+        >
+          Remove tier
+        </button>
+          </>
+        }
+        filters={
+          <PlayerFilterBar
+            variant={subject}
+            filters={playerFilters}
+            matchCount={filteredPlayerCount}
+            onChange={setPlayerFilters}
+            onReset={resetPlayerFilters}
+          />
+        }
+        board={
+          <>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Names</span>
+              <button
+                type="button"
+                className={showNames ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={showNames}
+                aria-label="Show names on cells"
+                onClick={() => setShowNames((on) => !on)}
+              >
+                {showNames ? "On" : "Off"}
+              </button>
+            </label>
+            <ComposerLookToggle look={look} onChange={setLook} />
+            <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+            <BaMarkToggle on={showBa} onChange={setShowBa} />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={
             subject === "players"
@@ -445,29 +492,9 @@ export function TierListComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              push(rows);
-              setRows((current) => addTier(current));
-            }}
-            disabled={rows.length >= MAX_TIERS}
-          >
-            Add tier
-          </button>
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              push(rows);
-              setRows((current) => removeLastTier(current));
-            }}
-            disabled={rows.length <= MIN_TIERS}
-          >
-            Remove tier
-          </button>
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -501,15 +528,8 @@ export function TierListComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
-
-      <PlayerFilterBar
-        variant={subject}
-        filters={playerFilters}
-        matchCount={filteredPlayerCount}
-        onChange={setPlayerFilters}
-        onReset={resetPlayerFilters}
+          </>
+        }
       />
 
       <main className="sc-stage">

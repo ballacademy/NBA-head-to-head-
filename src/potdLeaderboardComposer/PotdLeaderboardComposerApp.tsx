@@ -4,6 +4,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
   POTD_LEADERBOARD_LOOK_KEY,
   useComposerLook,
@@ -111,11 +112,10 @@ export function PotdLeaderboardComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">POTD Leaderboard</h1>
-        </div>
+      <ComposerToolbar
+        title="POTD Leaderboard"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -129,20 +129,26 @@ export function PotdLeaderboardComposerApp() {
           presets={LEADERBOARD_TITLE_PRESETS}
           onChange={setTitle}
         />
+          </>
+        }
+        data={
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => {
+              push(entries);
+              setEntries((current) => addLeaderboardEntry(current));
+            }}
+            disabled={entries.length >= LEADERBOARD_MAX_ROWS}
+          >
+            Add player
+          </button>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
-        <ComposerSaves
-          storageKey="ddgm:potd-leaderboard-composer:saves"
-          board={{ title, entries, showBa, showPips }}
-          onLoad={(next) => {
-            setTitle(next.title);
-            setEntries(next.entries);
-            setShowBa(next.showBa === true);
-            setShowPips(next.showPips !== false);
-            setStatus("Loaded named graphic.");
-          }}
-        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Team pip</span>
           <button
@@ -155,18 +161,23 @@ export function PotdLeaderboardComposerApp() {
             {showPips ? "On" : "Off"}
           </button>
         </label>
-        <div className="sc-toolbar__actions">
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              push(entries);
-              setEntries((current) => addLeaderboardEntry(current));
-            }}
-            disabled={entries.length >= LEADERBOARD_MAX_ROWS}
-          >
-            Add player
-          </button>
+          </>
+        }
+        persist={
+        <ComposerSaves
+          storageKey="ddgm:potd-leaderboard-composer:saves"
+          board={{ title, entries, showBa, showPips }}
+          onLoad={(next) => {
+            setTitle(next.title);
+            setEntries(next.entries);
+            setShowBa(next.showBa === true);
+            setShowPips(next.showPips !== false);
+            setStatus("Loaded named graphic.");
+          }}
+        />
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -200,8 +211,9 @@ export function PotdLeaderboardComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

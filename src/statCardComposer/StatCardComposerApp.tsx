@@ -3,7 +3,10 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   STAT_CARD_LOOK_KEY,
   useComposerLook,
@@ -48,7 +51,9 @@ import {
   removeStatCardLine,
   setStatCardLineKey,
   setStatCardPhoto,
+  nextStatCardLine,
   STAT_CARD_LINE_OPTIONS,
+  STC_STAT_COUNT,
   STC_STAT_MAX,
   type StatCardDraft,
   type StatCardSource,
@@ -77,6 +82,7 @@ export function StatCardComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STAT_CARD_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [rostersReady, setRostersReady] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
@@ -105,7 +111,10 @@ export function StatCardComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
-  const fillStats = async (next: StatCardDraft) => {
+  const fillStats = async (
+    next: StatCardDraft,
+    sample = statsSample,
+  ) => {
     if (!next.playerId) {
       return;
     }
@@ -115,12 +124,12 @@ export function StatCardComposerApp() {
         await loadEveryTeamRosters();
         setDraft((current) =>
           current.playerId === next.playerId
-            ? fillStatCardFromSeason(current, next.season)
+            ? fillStatCardFromSeason(current, next.season, sample)
             : current,
         );
         return;
       }
-      const game = await fetchLastGame(next.playerId);
+      const game = await fetchLastGame(next.playerId, sample);
       setDraft((current) =>
         current.playerId === next.playerId
           ? fillStatCardFromGame(current, game)
@@ -211,24 +220,28 @@ export function StatCardComposerApp() {
   }, []);
 
   const stem = playerName(draft) || "stat-card";
+  const nextLine = nextStatCardLine(draft.stats);
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Stat card</h1>
-        </div>
-        <label className="sc-field sc-field--wide">
-          Name
-          <input
-            value={playerName(draft)}
-            maxLength={32}
-            onChange={(event) =>
-              setDraft((current) => applyPlayerName(current, event.target.value))
-            }
-          />
-        </label>
+      <ComposerToolbar
+        title="Stat card"
+        identity={
+          <label className="sc-field sc-field--wide">
+            Name
+            <input
+              value={playerName(draft)}
+              maxLength={32}
+              onChange={(event) =>
+                setDraft((current) =>
+                  applyPlayerName(current, event.target.value),
+                )
+              }
+            />
+          </label>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Stat source">
           <span className="sc-look__label">Stats</span>
           <button
@@ -256,6 +269,13 @@ export function StatCardComposerApp() {
             Season avg
           </button>
         </div>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={(nextSample) => {
+            setStatsSample(nextSample);
+            void fillStats(draft, nextSample);
+          }}
+        />
         <label className="sc-field">
           Season
           <select
@@ -317,39 +337,57 @@ export function StatCardComposerApp() {
             void fillStats(next);
           }}
         >
-          Add 4th
+          {nextLine ? `Add ${nextLine.label}` : "8 stats"}
         </button>
-        {draft.stats.length > 3 ? (
+        {draft.stats.length > STC_STAT_COUNT ? (
           <button
             type="button"
             className="sc-chip"
-            onClick={() =>
-              setDraft((current) => ({
-                ...current,
-                stats: removeStatCardLine(current.stats, current.stats.length - 1),
-              }))
-            }
+            onClick={() => {
+              const next = {
+                ...draft,
+                stats: removeStatCardLine(
+                  draft.stats,
+                  draft.stats.length - 1,
+                ),
+              };
+              setDraft(next);
+              void fillStats(next);
+            }}
           >
-            3 stats
+            {draft.stats.length === STC_STAT_COUNT + 1
+              ? "3 stats"
+              : "Remove last"}
           </button>
         ) : null}
-        <ComposerLookToggle look={look} onChange={setLook} />
-        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <BaMarkToggle
-          on={draft.showBa !== false}
-          onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
-        />
-        <ComposerSaves
-          storageKey={SAVES_KEY}
-          board={draft}
-          onLoad={(next) => {
-            const loaded = normalizeStatCardDraft(next);
-            setDraft(loaded);
-            setStatus("Loaded named graphic.");
-            void fillStats(loaded);
-          }}
-        />
-        <div className="sc-toolbar__actions">
+          </>
+        }
+        board={
+          <>
+            <ComposerLookToggle look={look} onChange={setLook} />
+            <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+            <BaMarkToggle
+              on={draft.showBa !== false}
+              onChange={(showBa) =>
+                setDraft((current) => ({ ...current, showBa }))
+              }
+            />
+          </>
+        }
+        persist={
+          <ComposerSaves
+            storageKey={SAVES_KEY}
+            board={draft}
+            onLoad={(next) => {
+              const loaded = normalizeStatCardDraft(next);
+              setDraft(loaded);
+              setStatus("Loaded named graphic.");
+              void fillStats(loaded);
+            }}
+          />
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -440,8 +478,9 @@ export function StatCardComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
@@ -484,7 +523,7 @@ export function StatCardComposerApp() {
           <p className="sc-hint">
             Empty photo first — pick a player for the team-color name bar and
             3 huge stats on a light panel, then upload the action shot. Toggle
-            last-game or season averages and add a 4th stat. Downloads a 4:5
+            last-game or season averages and add up to 8 stats. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

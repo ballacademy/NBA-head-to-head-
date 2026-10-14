@@ -3,6 +3,9 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -75,6 +78,7 @@ export function HeadlineComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(HEADLINE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
     playerName: string;
@@ -106,7 +110,9 @@ export function HeadlineComposerApp() {
     }
     try {
       const [game, records] = await Promise.all([
-        next.playerId ? fetchLastGame(next.playerId) : Promise.resolve(null),
+        next.playerId
+          ? fetchLastGame(next.playerId, statsSample)
+          : Promise.resolve(null),
         fetchAllStandingRecords(),
       ]);
       const body = formatHeadlineBody(team, game, records[team.id] ?? null);
@@ -207,11 +213,10 @@ export function HeadlineComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Headline</h1>
-        </div>
+      <ComposerToolbar
+        title="Headline"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Headline
           <input
@@ -244,7 +249,16 @@ export function HeadlineComposerApp() {
             }
           />
         </label>
-        <label className="sc-field">
+          </>
+        }
+        data={
+          <ComposerStatsSampleToggle
+            sample={statsSample}
+            onChange={setStatsSample}
+          />
+        }
+        filters={
+          <label className="sc-field">
           Team
           <select
             value={draft.teamId ?? ""}
@@ -263,6 +277,9 @@ export function HeadlineComposerApp() {
             ))}
           </select>
         </label>
+        }
+        board={
+          <>
         <label className="sc-field">
           Watermark
           <select
@@ -286,6 +303,9 @@ export function HeadlineComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -294,7 +314,9 @@ export function HeadlineComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -394,8 +416,9 @@ export function HeadlineComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

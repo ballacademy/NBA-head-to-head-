@@ -3,6 +3,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
   PLAY_IN_LOOK_KEY,
@@ -153,11 +154,10 @@ export function PlayInComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Play-in</h1>
-        </div>
+      <ComposerToolbar
+        title="Play-in"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -177,6 +177,10 @@ export function PlayInComposerApp() {
           presets={PLAY_IN_TITLE_PRESETS}
           onChange={(title) => setDraft((current) => ({ ...current, title }))}
         />
+          </>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Field size">
           <span className="sc-look__label">Teams</span>
           {PLAY_IN_SIZES.map((size) => (
@@ -277,12 +281,19 @@ export function PlayInComposerApp() {
             </label>
           );
         })}
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -291,7 +302,9 @@ export function PlayInComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -374,8 +387,9 @@ export function PlayInComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>

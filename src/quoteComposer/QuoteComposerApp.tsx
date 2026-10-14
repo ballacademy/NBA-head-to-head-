@@ -3,6 +3,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
   QUOTE_LOOK_KEY,
@@ -166,11 +167,10 @@ export function QuoteComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Quote</h1>
-        </div>
+      <ComposerToolbar
+        title="Quote"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Quote
           <input
@@ -211,6 +211,10 @@ export function QuoteComposerApp() {
             }
           />
         </label>
+          </>
+        }
+        board={
+          <>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Photo</span>
           <button
@@ -233,6 +237,9 @@ export function QuoteComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -241,7 +248,9 @@ export function QuoteComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -318,8 +327,9 @@ export function QuoteComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>

@@ -3,6 +3,9 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
   COMPARE_LOOK_KEY,
@@ -82,6 +85,7 @@ export function CompareComposerApp() {
   const [rostersReady, setRostersReady] = useState(false);
   const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     side: 0 | 1;
     playerId: string;
@@ -116,6 +120,7 @@ export function CompareComposerApp() {
     snapshot: CompareDraft,
     side?: 0 | 1,
     playerId?: string,
+    sample = statsSample,
   ) => {
     const mode = parseCompareStatsMode(snapshot.statsMode);
     const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
@@ -128,7 +133,7 @@ export function CompareComposerApp() {
         continue;
       }
       if (mode === "game") {
-        const game = await fetchLastGame(id);
+        const game = await fetchLastGame(id, sample);
         nextStats = applySideStatValues(
           nextStats,
           index,
@@ -139,7 +144,7 @@ export function CompareComposerApp() {
         nextStats = applySideStatValues(
           nextStats,
           index,
-          statsFromSeason(id, person.teamId, season, nextStats),
+          statsFromSeason(id, person.teamId, season, nextStats, sample),
         );
       }
     }
@@ -287,12 +292,11 @@ export function CompareComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Compare</h1>
-        </div>
-        <label className="sc-field sc-field--wide">
+      <ComposerToolbar
+        title="Compare"
+        identity={
+          <>
+          <label className="sc-field sc-field--wide">
           Title
           <input
             value={draft.title}
@@ -311,6 +315,10 @@ export function CompareComposerApp() {
           presets={COMPARE_TITLE_PRESETS}
           onChange={(title) => setDraft((current) => ({ ...current, title }))}
         />
+          </>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Stats source">
           <span className="sc-look__label">Stats</span>
           <button
@@ -330,6 +338,13 @@ export function CompareComposerApp() {
             Last game
           </button>
         </div>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={(nextSample) => {
+            setStatsSample(nextSample);
+            void fillStats(draft, undefined, undefined, nextSample);
+          }}
+        />
         <label className="sc-field">
           Season
           <select
@@ -402,12 +417,19 @@ export function CompareComposerApp() {
             </select>
           </label>
         ))}
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -418,7 +440,9 @@ export function CompareComposerApp() {
             void fillStats(loaded);
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -508,8 +532,9 @@ export function CompareComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>
