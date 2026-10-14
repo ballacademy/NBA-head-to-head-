@@ -58,7 +58,8 @@ describe("player of the day state", () => {
   it("auto-fills headshot, team, stats, and result from the latest game", () => {
     const luka = getPlayer("3945274");
     expect(luka).toBeTruthy();
-    const game = parseLastGamePayload({
+    const game = parseLastGamePayload(
+      {
       labels: ["FG", "3PT", "REB", "AST", "BLK", "STL", "TO", "PTS"],
       events: {
         e1: {
@@ -95,7 +96,9 @@ describe("player of the day state", () => {
           ],
         },
       ],
-    });
+    },
+      "regular",
+    );
     const card = fillCardFromPlayer(luka!, game);
     expect(card.playerId).toBe("3945274");
     expect(card.teamId).toBe("LAL");
