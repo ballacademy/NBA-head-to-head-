@@ -21,7 +21,6 @@ import {
   STC_BA_SIZE,
   STC_HAIRLINE,
   STC_INK,
-  STC_LABEL_SIZE,
   STC_LOGO,
   STC_LOGO_INSET,
   STC_MUTED,
@@ -34,8 +33,8 @@ import {
   STC_RULE,
   STC_STATS_W,
   STC_STATS_X,
-  STC_VALUE_SIZE,
   statCardRows,
+  statCardType,
 } from "./statCardLayout";
 import { playerName, type StatCardDraft } from "./statCardState";
 
@@ -128,6 +127,7 @@ export const renderStatCardCanvas = async (
   context.fillRect(statsX, 0, statsW, height);
 
   const rows = statCardRows(input.stats.length);
+  const type = statCardType(input.stats.length);
   input.stats.forEach((line, index) => {
     const row = rows[index]!;
     if (index > 0) {
@@ -139,7 +139,7 @@ export const renderStatCardCanvas = async (
         2 * s,
       );
     }
-    context.font = `900 ${STC_VALUE_SIZE * s}px ${POSTER_FONT}`;
+    context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = STC_INK;
@@ -149,7 +149,7 @@ export const renderStatCardCanvas = async (
       row.valueY * s,
       statsW - 24 * s,
     );
-    context.font = `900 ${STC_LABEL_SIZE * s}px ${POSTER_FONT}`;
+    context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     context.fillStyle = STC_MUTED;
     context.fillText(
       line.label.trim().toUpperCase() || "STAT",

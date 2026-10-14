@@ -21,6 +21,28 @@ export const STC_MUTED = "rgba(17, 17, 17, 0.62)";
 export const STC_RULE = "rgba(17, 17, 17, 0.22)";
 export const STC_VALUE_SIZE = 108;
 export const STC_LABEL_SIZE = 26;
+
+/** Extra rows keep the photo column and shrink type in the stats panel. */
+export const statCardType = (count = STC_STAT_COUNT) => {
+  const n = Math.min(8, Math.max(1, count));
+  if (n <= 3) {
+    return { value: STC_VALUE_SIZE, label: STC_LABEL_SIZE, gap: 8 };
+  }
+  if (n === 4) {
+    return { value: 90, label: 22, gap: 6 };
+  }
+  if (n === 5) {
+    return { value: 74, label: 20, gap: 4 };
+  }
+  if (n === 6) {
+    return { value: 62, label: 18, gap: 3 };
+  }
+  if (n === 7) {
+    return { value: 54, label: 16, gap: 2 };
+  }
+  return { value: 48, label: 15, gap: 2 };
+};
+
 export const STC_NAME_SIZE = 40;
 export const STC_NAME_TRACK = 0.14;
 export const STC_LOGO = 92;

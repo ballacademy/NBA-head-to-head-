@@ -9,7 +9,7 @@ import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { inkOnHex } from "./statCardLayout";
+import { inkOnHex, statCardType } from "./statCardLayout";
 import {
   clipStatLabel,
   clipStatValue,
@@ -55,6 +55,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
     const team = getTeam(draft.teamId);
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
+    const type = statCardType(draft.stats.length);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -101,6 +102,9 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             ["--u" as string]: `${unit}px`,
             ["--team-color" as string]: colors.primary,
             ["--name-ink" as string]: nameInk,
+            ["--stc-value" as string]: String(type.value),
+            ["--stc-label" as string]: String(type.label),
+            ["--stc-gap" as string]: String(type.gap),
           } as React.CSSProperties
         }
         aria-label="Instagram stat card"

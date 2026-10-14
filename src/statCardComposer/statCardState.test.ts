@@ -1,13 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "./statCardLayout";
+import {
+  GRAPHIC_ASPECT,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STC_PHOTO_W,
+  STC_VALUE_SIZE,
+  statCardType,
+} from "./statCardLayout";
 import {
   addStatCardLine,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
+  nextStatCardLine,
   playerName,
   STC_STAT_COUNT,
+  STC_STAT_MAX,
 } from "./statCardState";
 
 describe("stat card composer", () => {
@@ -52,11 +61,34 @@ describe("stat card composer", () => {
         fg: "11-20",
         three: "6-11",
         tov: "2",
+        min: "34",
       },
     });
     expect(filled.stats[0]?.value).toBe("29");
     expect(filled.stats[2]?.value).toBe("6");
     expect(filled.stats).toHaveLength(3);
-    expect(addStatCardLine(filled.stats)).toHaveLength(4);
+    expect(addStatCardLine(filled.stats).map((line) => line.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "MIN",
+    ]);
+  });
+
+  it("adds unused counting stats through 8 without changing the photo column", () => {
+    expect(STC_STAT_MAX).toBe(8);
+    expect(STC_PHOTO_W).toBe(748);
+    expect(statCardType(3).value).toBe(STC_VALUE_SIZE);
+    expect(statCardType(8).value).toBeLessThan(statCardType(3).value);
+    expect(statCardType(8).value).toBeGreaterThanOrEqual(44);
+    let stats = defaultStatCardDraft().stats;
+    const added: string[] = [];
+    while (nextStatCardLine(stats)) {
+      added.push(nextStatCardLine(stats)!.label);
+      stats = addStatCardLine(stats);
+    }
+    expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "3PM"]);
+    expect(stats).toHaveLength(8);
+    expect(addStatCardLine(stats)).toHaveLength(8);
   });
 });

@@ -1,3 +1,4 @@
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
@@ -26,9 +27,18 @@ export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
 export const STC_NAME_MAX = 32;
 export const STC_STAT_COUNT = 3;
-export const STC_STAT_MAX = 4;
+export const STC_STAT_MAX = 8;
 
-export type StatCardKey = "pts" | "reb" | "ast" | "three" | "stl" | "blk" | "fg";
+export type StatCardKey =
+  | "pts"
+  | "reb"
+  | "ast"
+  | "min"
+  | "blk"
+  | "stl"
+  | "tov"
+  | "three"
+  | "fg";
 export type StatCardSource = "last-game" | "season";
 
 export interface StatCardLine {
@@ -55,9 +65,11 @@ export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
   { key: "pts", label: "PTS", value: "" },
   { key: "reb", label: "REB", value: "" },
   { key: "ast", label: "AST", value: "" },
-  { key: "three", label: "3PM", value: "" },
-  { key: "stl", label: "STL", value: "" },
+  { key: "min", label: "MIN", value: "" },
   { key: "blk", label: "BLK", value: "" },
+  { key: "stl", label: "STL", value: "" },
+  { key: "tov", label: "TOV", value: "" },
+  { key: "three", label: "3PM", value: "" },
   { key: "fg", label: "FG", value: "" },
 ];
 
@@ -70,8 +82,10 @@ const STC_METRIC: Record<StatCardKey, EveryTeamStatMetric> = {
   pts: "points",
   reb: "rebounds",
   ast: "assists",
-  stl: "steals",
+  min: "minutes",
   blk: "blocks",
+  stl: "steals",
+  tov: "turnovers",
   fg: "fgPct",
   three: "fg3Pct",
 };
@@ -198,6 +212,12 @@ const valueFromGame = (line: StatCardLine, stats: LastGameStats) => {
   if (line.key === "fg") {
     return stats.fg;
   }
+  if (line.key === "min") {
+    return stats.min || line.value;
+  }
+  if (line.key === "tov") {
+    return stats.tov;
+  }
   return stats[line.key] ?? line.value;
 };
 
@@ -251,11 +271,12 @@ export const fillStatCardFromGame = (
 export const fillStatCardFromSeason = (
   draft: StatCardDraft,
   season = draft.season || everyTeamCurrentSeason(),
+  sample: ComposerStatsSample = "regular",
 ): StatCardDraft => {
   if (!draft.playerId) {
     return { ...draft, source: "season", season };
   }
-  const row = playerRowForSeason(draft.playerId, season, draft.teamId);
+  const row = playerRowForSeason(draft.playerId, season, draft.teamId, sample);
   return {
     ...draft,
     source: "season",
@@ -295,15 +316,18 @@ export const setStatCardLineKey = (
   );
 };
 
-export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
+export const nextStatCardLine = (stats: StatCardLine[]): StatCardLine | null => {
   if (stats.length >= STC_STAT_MAX) {
-    return stats;
+    return null;
   }
   const used = new Set(stats.map((line) => line.key));
-  const next =
-    STAT_CARD_LINE_OPTIONS.find((line) => !used.has(line.key)) ??
-    STAT_CARD_LINE_OPTIONS[3]!;
-  return [...stats, { ...next }];
+  const next = STAT_CARD_LINE_OPTIONS.find((line) => !used.has(line.key));
+  return next ? { ...next } : null;
+};
+
+export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
+  const next = nextStatCardLine(stats);
+  return next ? [...stats, next] : stats;
 };
 
 export const removeStatCardLine = (stats: StatCardLine[], index: number) =>

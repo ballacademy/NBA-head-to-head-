@@ -101,16 +101,18 @@
 }
 
 .stc-value {
-  font-size: calc(108 * var(--u));
+  font-size: calc(var(--stc-value, 108) * var(--u));
   letter-spacing: -0.04em;
   line-height: 0.9;
+  min-height: 0;
 }
 
 .stc-label {
-  margin-top: calc(8 * var(--u));
-  font-size: calc(26 * var(--u));
+  margin-top: calc(var(--stc-gap, 8) * var(--u));
+  font-size: calc(var(--stc-label, 26) * var(--u));
   letter-spacing: 0.18em;
   color: rgba(17, 17, 17, 0.62);
+  min-height: 0;
 }
 
 .stc-name-bar {
