@@ -17,6 +17,8 @@ import {
   PYR_MIN_ROWS,
   PYR_PAD_BOTTOM,
   PYR_POP_RATIO,
+  PYR_POP_RIM,
+  PYR_POP_RIM_GLOW,
   PYR_TITLE_H,
   PYR_TITLE_Y,
   clampPyramidRows,
@@ -97,14 +99,18 @@ describe("pyramid composer", () => {
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
   });
 
-  it("fills each square with a kyber studded violet, not a flat black flood", () => {
-    expect(PYR_CELL_STUD.toLowerCase()).toBe("#b026ff");
-    const r = Number.parseInt(PYR_CELL_FILL.slice(1, 3), 16);
-    const b = Number.parseInt(PYR_CELL_FILL.slice(5, 7), 16);
-    expect(b).toBeGreaterThan(r);
-    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#111111");
-    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#000000");
-    expect(PYR_CELL_FILL.toLowerCase()).not.toBe("#3a0078");
+  it("fills each square with a shinier kyber violet, not magenta studs", () => {
+    expect(PYR_CELL_FILL.toLowerCase()).toBe("#6a00e6");
+    const fillR = Number.parseInt(PYR_CELL_FILL.slice(1, 3), 16);
+    const fillB = Number.parseInt(PYR_CELL_FILL.slice(5, 7), 16);
+    expect(fillB).toBeGreaterThan(fillR);
+    const studR = Number.parseInt(PYR_CELL_STUD.slice(1, 3), 16);
+    const studB = Number.parseInt(PYR_CELL_STUD.slice(5, 7), 16);
+    expect(studR).toBeGreaterThan(180);
+    expect(studB).toBeGreaterThan(200);
+    expect(PYR_CELL_STUD.toLowerCase()).not.toBe("#b026ff");
+    expect(PYR_POP_RIM).toBeGreaterThan(1.5);
+    expect(PYR_POP_RIM_GLOW).toBeGreaterThan(PYR_POP_RIM);
   });
 
   it("gaps the top stroke between the first and last opaque head columns", () => {

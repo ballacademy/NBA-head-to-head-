@@ -20,7 +20,6 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
-  BANNER_STUD_SIZE,
   BANNER_STUD_STEP,
   FIELD_TEXTURE_SRC,
   drawCoveredTexture,
@@ -38,6 +37,8 @@ import {
   PYR_CUTOUT_BAND,
   PYR_CUTOUT_DILATE,
   PYR_DEFAULT_ROWS,
+  PYR_POP_RIM,
+  PYR_POP_RIM_GLOW,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
   PYR_TITLE_Y,
@@ -69,28 +70,39 @@ const paintPyramidCellFill = (
   context.clip();
   context.fillStyle = PYR_CELL_FILL;
   context.fillRect(x, y, w, h);
+  const blade = context.createLinearGradient(x, y, x + w, y + h);
+  blade.addColorStop(0, "rgba(255, 255, 255, 0.4)");
+  blade.addColorStop(0.16, "rgba(232, 200, 255, 0.32)");
+  blade.addColorStop(0.42, "rgba(176, 38, 255, 0.55)");
+  blade.addColorStop(0.7, "rgba(106, 0, 230, 0.88)");
+  blade.addColorStop(1, "rgba(36, 0, 96, 1)");
+  context.fillStyle = blade;
+  context.fillRect(x, y, w, h);
   if (texture) {
-    context.globalAlpha = 0.78;
+    context.globalAlpha = 0.42;
     context.globalCompositeOperation = "overlay";
     drawCoveredTexture(context, texture, x, y, w, h);
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
   }
-  const wash = context.createLinearGradient(x, y, x + w, y + h);
-  wash.addColorStop(0, "rgba(176, 38, 255, 0.28)");
-  wash.addColorStop(1, "rgba(106, 0, 230, 0.46)");
-  context.fillStyle = wash;
+  const sheen = context.createLinearGradient(x, y, x, y + h * 0.55);
+  sheen.addColorStop(0, "rgba(255, 255, 255, 0.28)");
+  sheen.addColorStop(0.45, "rgba(176, 38, 255, 0.06)");
+  sheen.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.fillStyle = sheen;
   context.fillRect(x, y, w, h);
   const step = BANNER_STUD_STEP * scale;
-  const size = Math.max(BANNER_STUD_SIZE * scale, 3 * scale);
+  const size = Math.max(1.6 * scale, 2);
   const inset = (step - size) / 2;
   context.fillStyle = PYR_CELL_STUD;
-  context.globalAlpha = 0.68;
+  context.globalAlpha = 0.32;
   const x0 = Math.floor(x / step) * step;
   const y0 = Math.floor(y / step) * step;
   for (let py = y0; py < y + h + step; py += step) {
     for (let px = x0; px < x + w + step; px += step) {
-      context.fillRect(px + inset, py + inset, size, size);
+      context.beginPath();
+      context.arc(px + inset + size / 2, py + inset + size / 2, size / 2, 0, Math.PI * 2);
+      context.fill();
     }
   }
   context.restore();
@@ -178,15 +190,13 @@ const drawSlotPhoto = (
   context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
 };
 
-const headGapAtCellTop = (
+const makeSlotSprite = (
   photo: HTMLImageElement,
   w: number,
   h: number,
   pop: number,
   pan: PyramidSlot["pan"],
-  scale: number,
-  bandPad: number,
-): { left: number; right: number } | null => {
+) => {
   const sprite = document.createElement("canvas");
   sprite.width = Math.max(1, Math.round(w));
   sprite.height = Math.max(1, Math.round(h + pop));
@@ -195,6 +205,19 @@ const headGapAtCellTop = (
     return null;
   }
   drawSlotPhoto(spriteCtx, photo, 0, 0, sprite.width, sprite.height, pan);
+  return sprite;
+};
+
+const headGapAtCellTop = (
+  sprite: HTMLCanvasElement,
+  pop: number,
+  scale: number,
+  bandPad: number,
+): { left: number; right: number } | null => {
+  const spriteCtx = sprite.getContext("2d", { willReadFrequently: true });
+  if (!spriteCtx) {
+    return null;
+  }
   const dilate = Math.round(PYR_CUTOUT_DILATE * scale);
   const bandTop = Math.max(0, Math.floor(pop - bandPad));
   const bandBottom = Math.min(
@@ -213,6 +236,81 @@ const headGapAtCellTop = (
     }
   }
   return opaqueSpanFromAlphas(columns, PYR_CUTOUT_ALPHA, dilate);
+};
+
+const paintPopHeadRim = (
+  context: CanvasRenderingContext2D,
+  sprite: HTMLCanvasElement,
+  x: number,
+  drawY: number,
+  pop: number,
+  scale: number,
+) => {
+  const spriteCtx = sprite.getContext("2d", { willReadFrequently: true });
+  if (!spriteCtx) {
+    return;
+  }
+  const width = sprite.width;
+  const popRow = Math.max(1, Math.round(pop));
+  const glow = Math.max(3, Math.round(PYR_POP_RIM_GLOW * scale));
+  const tight = Math.max(2, Math.round(PYR_POP_RIM * scale));
+  const readH = Math.min(sprite.height, popRow + glow + 2);
+  const src = spriteCtx.getImageData(0, 0, width, readH).data;
+  const out = spriteCtx.createImageData(width, readH);
+  const dst = out.data;
+  const opaque = (cx: number, cy: number) => {
+    if (cx < 0 || cy < 0 || cx >= width || cy >= readH) {
+      return false;
+    }
+    return src[(cy * width + cx) * 4 + 3]! > PYR_CUTOUT_ALPHA;
+  };
+  const stamp = (
+    radius: number,
+    red: number,
+    green: number,
+    blue: number,
+    alpha: number,
+  ) => {
+    const r2 = radius * radius;
+    for (let row = 0; row < popRow; row += 1) {
+      for (let col = 0; col < width; col += 1) {
+        if (opaque(col, row)) {
+          continue;
+        }
+        let hit = false;
+        for (let dy = -radius; dy <= radius && !hit; dy += 1) {
+          for (let dx = -radius; dx <= radius; dx += 1) {
+            if (dx * dx + dy * dy > r2) {
+              continue;
+            }
+            if (opaque(col + dx, row + dy)) {
+              hit = true;
+              break;
+            }
+          }
+        }
+        if (!hit) {
+          continue;
+        }
+        const index = (row * width + col) * 4;
+        dst[index] = red;
+        dst[index + 1] = green;
+        dst[index + 2] = blue;
+        dst[index + 3] = Math.max(dst[index + 3]!, alpha);
+      }
+    }
+  };
+  stamp(glow, 176, 38, 255, 96);
+  stamp(tight, 247, 237, 255, 235);
+  const rim = document.createElement("canvas");
+  rim.width = width;
+  rim.height = readH;
+  const rimCtx = rim.getContext("2d");
+  if (!rimCtx) {
+    return;
+  }
+  rimCtx.putImageData(out, 0, 0);
+  context.drawImage(rim, x, drawY);
 };
 
 const loadImage = (src: string) =>
@@ -347,14 +445,18 @@ export const renderPyramidCanvas = async (
         ? await loadImage(slot.photoSrc)
         : await loadCorsImage(slot.photoSrc);
     }
+    const sprite = photo ? makeSlotSprite(photo, w, h, pop, slot.pan) : null;
     context.save();
     context.beginPath();
     context.rect(x, drawY, w, drawH);
     context.clip();
-    if (photo) {
-      drawSlotPhoto(context, photo, x, drawY, w, drawH, slot.pan);
+    if (sprite) {
+      context.drawImage(sprite, x, drawY);
     }
     context.restore();
+    if (sprite) {
+      paintPopHeadRim(context, sprite, x, drawY, pop, s);
+    }
     const rest = filled ? FRAME_FRONT : FRAME_ALL;
     paintCellFrameEdges(context, x, y, w, h, input.look, s, rest);
     if (input.purpleFlair) {
@@ -362,18 +464,9 @@ export const renderPyramidCanvas = async (
     }
     const line = frameLinePx(s, input.look);
     const purpleLine = input.purpleFlair ? purplePlateLinePx(s) : 0;
-    const gap =
-      filled && photo
-        ? headGapAtCellTop(
-            photo,
-            w,
-            h,
-            pop,
-            slot.pan,
-            s,
-            Math.max(line, purpleLine) + s,
-          )
-        : null;
+    const gap = sprite
+      ? headGapAtCellTop(sprite, pop, s, Math.max(line, purpleLine) + s)
+      : null;
     if (filled) {
       paintGappedTopStroke(
         context,

@@ -112,15 +112,24 @@
   isolation: isolate;
   touch-action: none;
   cursor: grab;
-  background-color: #41008c;
+  background-color: #6a00e6;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='3.5' y='3.5' width='3' height='3' fill='%23b026ff' fill-opacity='0.72'/%3E%3C/svg%3E"),
+    linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(232, 200, 255, 0.28) 16%,
+      rgba(176, 38, 255, 0.55) 42%,
+      rgba(106, 0, 230, 0.92) 70%,
+      rgba(36, 0, 96, 1) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='0.9' fill='%23f0d6ff' fill-opacity='0.35'/%3E%3C/svg%3E"),
     url("/composer-background-texture.png");
   background-size:
+    auto,
     calc(10 * var(--u)) calc(10 * var(--u)),
     cover;
   background-position: center;
-  background-blend-mode: normal, overlay;
+  background-blend-mode: normal, overlay, overlay;
 }
 
 /* Top stroke sits behind the head; leftover top shows in transparent pixels. */
@@ -162,6 +171,31 @@
 .pyr-cell .pod-photo.is-pop .pod-photo__img {
   position: relative;
   z-index: 2;
+}
+
+/* Kyber rim on the popped-out head only — clipped at the cell lip. */
+.pyr-cell .pod-photo.is-pop .pod-photo__pop-rim {
+  position: absolute;
+  left: calc(-12 * var(--u));
+  width: calc(100% + 24 * var(--u));
+  top: calc((var(--pyr-pop) + 16) * var(--u) * -1);
+  height: calc((var(--pyr-pop) + 16) * var(--u));
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.pyr-cell .pod-photo.is-pop .pod-photo__pop-rim .pod-photo__img {
+  position: absolute;
+  left: calc(12 * var(--u));
+  width: calc(var(--pyr-cell) * var(--u));
+  top: calc(16 * var(--u));
+  height: calc((var(--pyr-cell) + var(--pyr-pop)) * var(--u));
+  filter:
+    drop-shadow(0 0 1px #f7edff)
+    drop-shadow(0 0 2.5px #e0b3ff)
+    drop-shadow(0 0 6px #b026ff)
+    drop-shadow(0 0 11px rgba(176, 38, 255, 0.7));
 }
 
 .pyr-cell .pod-photo__pick {

@@ -20,9 +20,14 @@ export const PYR_BA_SIZE = 72;
 export const PYR_BA_INSET = 36;
 export const PYR_POP_RATIO = 0.34;
 export const PYR_POP_GUTTER = 14;
-/** Kyber cell fill — deep violet, not a flat flood. Studs use IDENTITY_PURPLE. */
-export const PYR_CELL_FILL = "#41008c";
-export const PYR_CELL_STUD = "#b026ff";
+/** Kyber cell fill — electric violet blade, not magenta studs. */
+export const PYR_CELL_FILL = "#6a00e6";
+/** Specular glints on the kyber plate — pale electric, not flat magenta. */
+export const PYR_CELL_STUD = "#f0d6ff";
+/** Tight silhouette rim on the popped-out head, design px. */
+export const PYR_POP_RIM = 2.2;
+/** Soft kyber glow around that rim, design px. */
+export const PYR_POP_RIM_GLOW = 5.5;
 /** Alpha above this counts as the head when gapping the top stroke. */
 export const PYR_CUTOUT_ALPHA = 28;
 /** Expand the gap so wispy hair still breaks the line. Design px. */
