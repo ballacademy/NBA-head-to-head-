@@ -29,6 +29,13 @@ describe("composer toolbar chrome", () => {
       join(root, "instagramComposer/ComposerToolbar.tsx"),
       "utf8",
     );
+    expect(source).toContain("sc-toolbar__scroll");
+    expect(source).toContain("sc-toolbar__row--primary");
+    expect(source).toContain("sc-toolbar__row--data");
+    expect(source).toContain("sc-toolbar__row--filters");
+    expect(source).toContain("sc-toolbar__row--board");
+    expect(source).toContain("sc-toolbar__row--persist");
+    expect(source).toContain("sc-toolbar__row--actions");
     const identity = source.indexOf("sc-toolbar__identity");
     const data = source.indexOf("sc-toolbar__data");
     const filters = source.indexOf("sc-toolbar__filters");

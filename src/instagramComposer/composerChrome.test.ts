@@ -19,18 +19,23 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-picker__grid");
     expect(sheet).toMatch(/\.sc-picker__grid[\s\S]*?min-height:\s*0/);
     expect(sheet).toMatch(/\.sc-picker__grid[\s\S]*?flex:\s*1 1 0/);
+    expect(sheet).toMatch(/\.sc-picker[\s\S]*?height:\s*min\(78dvh/);
     expect(sheet).toContain("height: 100dvh");
     expect(sheet).toContain(".sc-picker__filters-toggle");
     expect(sheet).toContain("font-size: 16px");
     expect(sheet).toContain("min-height: 72px");
     expect(sheet).toContain("min-height: 44px");
-    expect(sheet).toContain("max-height: min(38vh, 320px)");
+    expect(sheet).toContain("max-height: min(42vh, 360px)");
+    expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
   });
 
   it("keeps filters in one full-width toolbar slot", () => {
+    expect(sheet).toContain(".sc-toolbar__row--primary");
+    expect(sheet).toContain(".sc-toolbar__row--data");
     expect(sheet).toContain(".sc-toolbar__filters");
-    expect(sheet).toMatch(/\.sc-toolbar__filters[\s\S]*?flex:\s*1 1 100%/);
+    expect(sheet).toMatch(/\.sc-toolbar__row--data[\s\S]*?flex:\s*0 0 auto/);
+    expect(sheet).toMatch(/\.sc-toolbar__filters[\s\S]*?flex:\s*0 0 auto/);
     expect(sheet).toContain(".sc-player-filters");
     expect(sheet).toMatch(/\.sc-player-filters[\s\S]*?border:\s*0/);
   });

@@ -87,13 +87,41 @@
 
 .sc-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px 18px;
+  flex-direction: column;
+  gap: 10px 18px;
   padding: 14px 18px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(12, 13, 16, 0.92);
   backdrop-filter: blur(12px);
+}
+
+.sc-toolbar__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px 18px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sc-toolbar__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 18px;
+  min-width: 0;
+}
+
+.sc-toolbar__row--primary {
+  align-items: flex-end;
+}
+
+.sc-toolbar__row--data,
+.sc-toolbar__row--filters {
+  width: 100%;
+}
+
+.sc-toolbar__row--board {
+  align-items: flex-end;
 }
 
 .sc-toolbar__slot {
@@ -127,30 +155,32 @@
   flex: 1 1 280px;
 }
 
-.sc-toolbar__data {
-  flex: 1 1 260px;
+.sc-toolbar__row--data,
+.sc-toolbar__row--filters,
+.sc-toolbar__row--board,
+.sc-toolbar__row--persist {
+  flex: 0 0 auto;
+}
+
+.sc-toolbar__data,
+.sc-toolbar__board,
+.sc-toolbar__persist {
+  flex: 0 1 auto;
 }
 
 .sc-toolbar__filters {
-  flex: 1 1 100%;
+  flex: 0 0 auto;
+  width: 100%;
   padding-top: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sc-toolbar__board {
-  flex: 1 1 240px;
-}
-
-.sc-toolbar__persist {
-  flex: 1 1 280px;
 }
 
 .sc-toolbar__brand {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 180px;
-  margin-right: auto;
+  min-width: 160px;
+  flex: 0 0 auto;
 }
 
 .sc-toolbar__eyebrow {
@@ -219,6 +249,7 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-left: auto;
+  align-items: flex-end;
 }
 
 .sc-saves {
@@ -847,6 +878,7 @@ main.sc-stage {
 
 .sc-picker {
   width: min(920px, 100%);
+  height: min(78dvh, 720px);
   max-height: min(78dvh, 720px);
   display: flex;
   flex-direction: column;
@@ -859,6 +891,7 @@ main.sc-stage {
 }
 
 .sc-picker--compact {
+  height: auto;
   max-height: min(70dvh, 420px);
 }
 
@@ -1403,29 +1436,37 @@ main.sc-stage {
   }
 
   .sc-toolbar {
-    max-height: min(38vh, 320px);
+    max-height: min(42vh, 360px);
+    overflow: hidden;
+  }
+
+  .sc-toolbar__scroll {
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    flex: 0 1 auto;
+    min-height: 0;
   }
 
   .sc-saves {
     flex: 1 1 auto;
   }
 
-  .sc-toolbar__actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 3;
-    flex: 1 1 100%;
+  .sc-toolbar__row--actions {
+    flex: 0 0 auto;
+    width: 100%;
     margin-left: 0;
-    padding: 8px 0 2px;
-    background: linear-gradient(
-      180deg,
-      rgba(12, 13, 16, 0) 0%,
-      rgba(12, 13, 16, 0.96) 28%
-    );
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .sc-toolbar__actions {
+    position: static;
+    flex: 0 0 auto;
+    margin-left: 0;
+    padding: 0;
+    background: transparent;
   }
 
   .sc-stage__frame {
@@ -1479,6 +1520,10 @@ main.sc-stage {
     padding: 10px 12px 8px;
     max-height: min(34vh, 280px);
     gap: 10px 12px;
+  }
+
+  .sc-toolbar__scroll {
+    flex: 1 1 auto;
   }
 
   .sc-toolbar__brand {
