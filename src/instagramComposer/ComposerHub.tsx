@@ -9,6 +9,9 @@ import { TeamOfTheWeekPlusComposerApp } from "../teamOfTheWeekPlusComposer/TeamO
 import { TierListComposerApp } from "../tierListComposer/TierListComposerApp";
 import { PyramidComposerApp } from "../pyramidComposer/PyramidComposerApp";
 import { HeadlineComposerApp } from "../headlineComposer/HeadlineComposerApp";
+import { CompareComposerApp } from "../compareComposer/CompareComposerApp";
+import { QuoteComposerApp } from "../quoteComposer/QuoteComposerApp";
+import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -26,6 +29,9 @@ import "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css";
 import "../rankedLineupsComposer/rankedLineupsComposer.css";
 import "../pyramidComposer/pyramidComposer.css";
 import "../headlineComposer/headlineComposer.css";
+import "../compareComposer/compareComposer.css";
+import "../quoteComposer/quoteComposer.css";
+import "../playInComposer/playInComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -67,6 +73,14 @@ export function ComposerHub() {
         <TeamOfTheWeekPlusComposerApp />
       ) : mode === "ranked-lineups" ? (
         <RankedLineupsComposerApp />
+      ) : mode === "lineup" ? (
+        <RankedLineupsComposerApp unranked />
+      ) : mode === "compare" ? (
+        <CompareComposerApp />
+      ) : mode === "quote" ? (
+        <QuoteComposerApp />
+      ) : mode === "play-in" ? (
+        <PlayInComposerApp />
       ) : mode === "pyramid" ? (
         <PyramidComposerApp />
       ) : mode === "headline" ? (

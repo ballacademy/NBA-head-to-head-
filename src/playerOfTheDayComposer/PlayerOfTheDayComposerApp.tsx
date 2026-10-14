@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -357,6 +358,7 @@ export function PlayerOfTheDayComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <PlayerOfTheDayGraphic
             ref={boardRef}
             brand={brand}
@@ -393,6 +395,7 @@ export function PlayerOfTheDayComposerApp() {
               setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Pick a player, then choose a recent box score — the date matches
             that game. Upload or paste a photo, then drag to pan and pinch or

@@ -1,0 +1,92 @@
+.qt-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.qt-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.qt-quote {
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  top: calc(220 * var(--u));
+  height: calc(860 * var(--u));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(72 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.qt-attr {
+  position: absolute;
+  left: calc(200 * var(--u));
+  right: calc(64 * var(--u));
+  bottom: calc(72 * var(--u));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.qt-shot {
+  position: absolute;
+  left: calc(64 * var(--u));
+  bottom: calc(56 * var(--u));
+  width: calc(120 * var(--u));
+  height: calc(120 * var(--u));
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 50%;
+  border: var(--frame-w) solid var(--frame-color);
+}
+
+.qt-shot .pod-photo {
+  border: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.qt-board .composer-ba {
+  z-index: 5;
+}
+
+.qt-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.qt-quote:focus,
+.qt-attr:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}

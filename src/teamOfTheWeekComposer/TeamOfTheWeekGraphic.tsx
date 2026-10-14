@@ -87,7 +87,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+      const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }

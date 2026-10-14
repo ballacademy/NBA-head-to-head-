@@ -13,9 +13,12 @@ import {
   DEFAULT_HEADLINE,
   defaultHeadlineDraft,
   fillHeadlineFromPlayer,
+  formatHeadlineBody,
   HEADLINE_BODY_MAX,
   headlineLabel,
+  splitTeamWordmark,
 } from "./headlineState";
+import { getTeam } from "../standingsComposer/teams";
 
 describe("headline composer", () => {
   it("keeps a 4:5 full-bleed photo board with a headline plate", () => {
@@ -37,12 +40,50 @@ describe("headline composer", () => {
     );
   });
 
-  it("picks a player for the photo and team watermark", () => {
+  it("picks a player for the team wordmark without a mugshot", () => {
     const luka = getPlayer("3945274")!;
     const next = fillHeadlineFromPlayer(luka, defaultHeadlineDraft());
     expect(next.playerId).toBe(luka.id);
     expect(next.teamId).toBeTruthy();
-    expect(next.photoSrc).toBe(luka.headshotUrl);
+    expect(next.photoSrc).toBeNull();
     expect(next.customPhoto).toBe(false);
+  });
+
+  it("splits city / nickname and writes a last-night body line", () => {
+    const spurs = getTeam("SAS")!;
+    expect(splitTeamWordmark(spurs)).toEqual({
+      city: "SAN ANTONIO",
+      nick: "SPURS",
+    });
+    expect(
+      formatHeadlineBody(
+        spurs,
+        {
+          eventId: "1",
+          gameDate: "2026-10-13",
+          teamId: "SAS",
+          opponentId: "OKC",
+          opponentAbbrev: "OKC",
+          result: "W",
+          playerScore: "111",
+          opponentScore: "109",
+          resultLine: "111-109 W VS OKC",
+          dateLabel: "10/13",
+          stats: {
+            pts: "0",
+            reb: "0",
+            ast: "0",
+            stl: "0",
+            blk: "0",
+            fg: "0-0",
+            three: "0-0",
+            tov: "0",
+          },
+        },
+        { wins: 18, losses: 7 },
+      ),
+    ).toBe(
+      "AFTER BEATING OKC 111-109 LAST NIGHT, THE SPURS HAVE A RECORD OF 18-7",
+    );
   });
 });

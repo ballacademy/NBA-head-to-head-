@@ -47,6 +47,16 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/ranked-lineups" ||
     path === "/ranked-lineup" ||
     path === "/lineups" ||
+    path === "/lineup" ||
+    path === "/starting-lineup" ||
+    path === "/compare" ||
+    path === "/comparison" ||
+    path === "/split" ||
+    path === "/quote" ||
+    path === "/pull-quote" ||
+    path === "/play-in" ||
+    path === "/playin" ||
+    path === "/mini-bracket" ||
     path === "/pyramid" ||
     path === "/coy-pyramid" ||
     path === "/headline" ||

@@ -1,5 +1,6 @@
 import scoring from "../../data/nba-active-tier-player-scoring.json";
 import catalog from "../../data/nba-active-tier-players.json";
+import { getCoach } from "../instagramComposer/nbaCoaches";
 import {
   CONFERENCES,
   DIVISIONS,
@@ -34,6 +35,8 @@ export interface TierPlayer {
   ppg: number;
   /** Depth-chart unit (1 = starter) when the roster is a season depth chart. */
   depth?: number;
+  /** Head coaches in the pyramid / player-tier pickers. */
+  role?: "coach";
 }
 
 type HeadshotFallback = {
@@ -99,7 +102,7 @@ export const NBA_ACTIVE_PLAYERS_BY_ID: Record<string, TierPlayer> =
   Object.fromEntries(NBA_ACTIVE_PLAYERS.map((player) => [player.id, player]));
 
 export const getPlayer = (id: string | null | undefined): TierPlayer | null =>
-  (id && NBA_ACTIVE_PLAYERS_BY_ID[id]) || null;
+  (id && NBA_ACTIVE_PLAYERS_BY_ID[id]) || getCoach(id);
 
 export const ALL_PLAYER_FILTER = "all";
 export const UNDRAFTED_FILTER = "undrafted";

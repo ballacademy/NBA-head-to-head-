@@ -175,3 +175,26 @@ export const fetchConferenceStandings = async (
   const bundle = await fetchConferenceStandingsBundle(conference);
   return bundle.slots;
 };
+
+let recordsCache: Record<string, StandingRecord> | null = null;
+
+export const fetchAllStandingRecords = async (): Promise<
+  Record<string, StandingRecord>
+> => {
+  if (recordsCache) {
+    return recordsCache;
+  }
+  const response = await fetch(ESPN_STANDINGS_URL, {
+    mode: "cors",
+    credentials: "omit",
+  });
+  if (!response.ok) {
+    return {};
+  }
+  const payload = (await response.json()) as EspnStandingsPayload;
+  recordsCache = {
+    ...recordsFromStandingRows(parseConferenceStandingRows(payload, "East")),
+    ...recordsFromStandingRows(parseConferenceStandingRows(payload, "West")),
+  };
+  return recordsCache;
+};

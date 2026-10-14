@@ -7,6 +7,7 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
+  LINEUP_LOOK_KEY,
   RANKED_LINEUPS_LOOK_KEY,
   parseShowTeamHairline,
   useComposerLook,
@@ -24,11 +25,15 @@ import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
+  LINEUP_TITLE_PRESETS,
   RANKED_LINEUP_TITLE_PRESETS,
   exportFilenameFromTitle,
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { downloadExportPack } from "../instagramComposer/exportPack";
 import { RankedLineupsGraphic } from "./RankedLineupsGraphic";
+import { renderRankedLineupsCanvas } from "./renderRankedLineupsCanvas";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { exportRankedLineupsPng } from "./exportRankedLineupsPng";
 import {
@@ -42,6 +47,7 @@ import {
   lineupPosition,
   nextRankPill,
   patchStrip,
+  DEFAULT_LINEUP_TITLE,
   DEFAULT_RANK_DISPLAY,
   parsePositionLabels,
   parseRankDisplay,
@@ -60,12 +66,21 @@ import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./rankedLineupsComposer.css";
 
-const STORAGE_KEY = "ddgm:ranked-lineups-composer";
-const SAVES_KEY = "ddgm:ranked-lineups-composer:saves";
+const RANKED_STORAGE_KEY = "ddgm:ranked-lineups-composer";
+const RANKED_SAVES_KEY = "ddgm:ranked-lineups-composer:saves";
+const LINEUP_STORAGE_KEY = "ddgm:lineup-composer";
+const LINEUP_SAVES_KEY = "ddgm:lineup-composer:saves";
 
-const loadDraft = (): RankedLineupsDraft => {
-  const stored = readJson<Partial<RankedLineupsDraft>>(STORAGE_KEY);
+const loadDraft = (unranked: boolean): RankedLineupsDraft => {
+  const stored = readJson<Partial<RankedLineupsDraft>>(
+    unranked ? LINEUP_STORAGE_KEY : RANKED_STORAGE_KEY,
+  );
   const empty = defaultRankedLineupsDraft();
+  if (unranked) {
+    empty.title = DEFAULT_LINEUP_TITLE;
+    empty.rankDisplay = "none";
+    empty.rank = "";
+  }
   if (isRankedLineupsDraft(stored)) {
     const slides = slidesFromDraft(stored);
     return withActiveSlide(
@@ -75,7 +90,10 @@ const loadDraft = (): RankedLineupsDraft => {
         showBa: stored.showBa === true,
         showFade: stored.showFade === true,
         showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
-        rankDisplay: parseRankDisplay(stored.rankDisplay),
+        rankDisplay: parseRankDisplay(
+          stored.rankDisplay,
+          unranked ? "none" : "pill",
+        ),
         positionLabels: parsePositionLabels(stored.positionLabels),
       },
       slides,
@@ -85,18 +103,36 @@ const loadDraft = (): RankedLineupsDraft => {
   return {
     ...empty,
     brand: stored?.brand?.trim() ? stored.brand : empty.brand,
-    title: stored?.title?.trim() ? stored.title : empty.title,
+    title: stored?.title?.trim()
+      ? stored.title
+      : unranked
+        ? DEFAULT_LINEUP_TITLE
+        : empty.title,
     showBa: stored?.showBa === true,
     showFade: stored?.showFade === true,
     showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
-    rankDisplay: parseRankDisplay(stored?.rankDisplay),
+    rankDisplay: parseRankDisplay(
+      stored?.rankDisplay,
+      unranked ? "none" : "pill",
+    ),
     positionLabels: parsePositionLabels(stored?.positionLabels),
   };
 };
 
-export function RankedLineupsComposerApp() {
+export function RankedLineupsComposerApp({
+  unranked = false,
+}: {
+  unranked?: boolean;
+}) {
   const boardRef = useRef<HTMLElement | null>(null);
+  const storageKey = unranked ? LINEUP_STORAGE_KEY : RANKED_STORAGE_KEY;
+  const savesKey = unranked ? LINEUP_SAVES_KEY : RANKED_SAVES_KEY;
   const empty = defaultRankedLineupsDraft();
+  if (unranked) {
+    empty.title = DEFAULT_LINEUP_TITLE;
+    empty.rankDisplay = "none";
+    empty.rank = "";
+  }
   const [brand, setBrand] = useState(empty.brand);
   const [title, setTitle] = useState(empty.title);
   const [rank, setRank] = useState(empty.rank);
@@ -108,12 +144,16 @@ export function RankedLineupsComposerApp() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [look, setLook] = useComposerLook(RANKED_LINEUPS_LOOK_KEY);
+  const [look, setLook] = useComposerLook(
+    unranked ? LINEUP_LOOK_KEY : RANKED_LINEUPS_LOOK_KEY,
+  );
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
-  const [rankDisplay, setRankDisplay] = useState(DEFAULT_RANK_DISPLAY);
+  const [rankDisplay, setRankDisplay] = useState(
+    unranked ? "none" : DEFAULT_RANK_DISPLAY,
+  );
   const [positionLabels, setPositionLabels] = useState(
     parsePositionLabels(empty.positionLabels),
   );
@@ -138,11 +178,11 @@ export function RankedLineupsComposerApp() {
   );
 
   useEffect(() => {
-    document.title = "Ranked lineups graphic";
-  }, []);
+    document.title = unranked ? "Lineup graphic" : "Ranked lineups graphic";
+  }, [unranked]);
 
   useEffect(() => {
-    const draft = loadDraft();
+    const draft = loadDraft(unranked);
     setBrand(draft.brand);
     setTitle(draft.title);
     setRank(draft.rank);
@@ -152,7 +192,7 @@ export function RankedLineupsComposerApp() {
     setShowBa(draft.showBa === true);
     setShowFade(draft.showFade === true);
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
-    setRankDisplay(parseRankDisplay(draft.rankDisplay));
+    setRankDisplay(parseRankDisplay(draft.rankDisplay, unranked ? "none" : "pill"));
     setPositionLabels(parsePositionLabels(draft.positionLabels));
     setHydrated(true);
   }, []);
@@ -161,7 +201,7 @@ export function RankedLineupsComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, {
+    writeJson(storageKey, {
       brand,
       title,
       rank,
@@ -174,7 +214,7 @@ export function RankedLineupsComposerApp() {
       rankDisplay,
       positionLabels,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, hydrated]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, hydrated, storageKey]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -228,8 +268,24 @@ export function RankedLineupsComposerApp() {
       await exportRankedLineupsPng(
         node,
         filename ??
-          exportFilenameFromTitle(title, "ranked-lineups", rank.toLowerCase()),
-        { brand, title, rank, strips, look, purpleFlair, showBa, showFade, showTeamHairline, rankDisplay, positionLabels },
+          exportFilenameFromTitle(
+            title,
+            unranked ? "lineup" : "ranked-lineups",
+            unranked ? "" : rank.toLowerCase(),
+          ),
+        {
+          brand,
+          title,
+          rank,
+          strips,
+          look,
+          purpleFlair,
+          showBa,
+          showFade,
+          showTeamHairline,
+          rankDisplay: unranked ? "none" : rankDisplay,
+          positionLabels,
+        },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -396,7 +452,9 @@ export function RankedLineupsComposerApp() {
       <header className="sc-toolbar">
         <div className="sc-toolbar__brand">
           <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Ranked lineups</h1>
+          <h1 className="sc-toolbar__title">
+            {unranked ? "Lineup" : "Ranked lineups"}
+          </h1>
         </div>
         <label className="sc-field sc-field--wide">
           Title
@@ -408,9 +466,11 @@ export function RankedLineupsComposerApp() {
         </label>
         <TitlePresetSelect
           value={title}
-          presets={RANKED_LINEUP_TITLE_PRESETS}
+          presets={unranked ? LINEUP_TITLE_PRESETS : RANKED_LINEUP_TITLE_PRESETS}
           onChange={setTitle}
         />
+        {unranked ? null : (
+        <>
         <label className="sc-field">
           Rank
           <select
@@ -469,6 +529,8 @@ export function RankedLineupsComposerApp() {
             }}
           />
         </label>
+        </>
+        )}
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -486,7 +548,7 @@ export function RankedLineupsComposerApp() {
           </button>
         </label>
         <ComposerSaves
-          storageKey={SAVES_KEY}
+          storageKey={savesKey}
           board={board}
           onLoad={(next) => {
             applyDraft(next);
@@ -512,6 +574,7 @@ export function RankedLineupsComposerApp() {
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
           </button>
+          {unranked ? null : (
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -520,6 +583,7 @@ export function RankedLineupsComposerApp() {
           >
             Next slide
           </button>
+          )}
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -552,6 +616,7 @@ export function RankedLineupsComposerApp() {
           >
             Export 9:16
           </button>
+          {unranked ? null : (
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -559,6 +624,83 @@ export function RankedLineupsComposerApp() {
             disabled={exporting || slides.length === 0}
           >
             Export all slides
+          </button>
+          )}
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering pack…");
+                try {
+                  const stem = unranked ? "lineup" : "ranked-lineups";
+                  const extras =
+                    unranked || slides.length < 2
+                      ? []
+                      : slides.slice(activeSlide + 1, activeSlide + 2).map(
+                          (slide) => ({
+                            filename: exportFilenameFromTitle(
+                              title,
+                              stem,
+                              slide.rank.toLowerCase(),
+                            ),
+                            render: () =>
+                              renderRankedLineupsCanvas(
+                                {
+                                  brand,
+                                  title,
+                                  rank: slide.rank,
+                                  strips: slide.strips,
+                                  look,
+                                  purpleFlair,
+                                  showBa,
+                                  showFade,
+                                  showTeamHairline,
+                                  rankDisplay,
+                                  positionLabels,
+                                },
+                                2,
+                              ),
+                          }),
+                        );
+                  await downloadExportPack(
+                    () =>
+                      renderRankedLineupsCanvas(
+                        {
+                          brand,
+                          title,
+                          rank,
+                          strips,
+                          look,
+                          purpleFlair,
+                          showBa,
+                          showFade,
+                          showTeamHairline,
+                          rankDisplay: unranked ? "none" : rankDisplay,
+                          positionLabels,
+                        },
+                        2,
+                      ),
+                    exportFilenameFromTitle(
+                      title,
+                      stem,
+                      unranked ? "" : rank.toLowerCase(),
+                    ),
+                    extras,
+                  );
+                  setStatus("Pack download started (4:5 + 9:16).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
           </button>
           <button
             type="button"
@@ -573,6 +715,7 @@ export function RankedLineupsComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <RankedLineupsGraphic
             ref={boardRef}
             brand={brand}
@@ -584,7 +727,7 @@ export function RankedLineupsComposerApp() {
             showBa={showBa}
             showFade={showFade}
             showTeamHairline={showTeamHairline}
-            rankDisplay={rankDisplay}
+            rankDisplay={unranked ? "none" : rankDisplay}
             positionLabels={positionLabels}
             onPositionChange={(index, label) =>
               setPositionLabels((current) => {
@@ -632,6 +775,8 @@ export function RankedLineupsComposerApp() {
               });
             }}
           />
+          </ComposerBoard>
+          {unranked ? null : (
           <div className="rl-series" role="tablist" aria-label="Carousel slides">
             {slides.map((slide, index) => (
               <button
@@ -662,10 +807,11 @@ export function RankedLineupsComposerApp() {
               </button>
             ))}
           </div>
+          )}
           <p className="sc-hint">
-            Five PG–C strips for one carousel part. Next slide keeps the title,
-            bumps BEST to 2ND, and clears players. Paste or drop a photo onto a
-            strip. Downloads a 4:5 Instagram PNG — nothing is posted.
+            {unranked
+              ? "Five PG–C strips with no rank pill. Positions are editable or removable. Custom photos, frames, purple, and named saves. Downloads a 4:5 Instagram PNG — nothing is posted."
+              : "Five PG–C strips for one carousel part. Next slide keeps the title, bumps BEST to 2ND, and clears players. Paste or drop a photo onto a strip. Downloads a 4:5 Instagram PNG — nothing is posted."}
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

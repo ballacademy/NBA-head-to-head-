@@ -31,9 +31,15 @@ import {
   HL_TYPE_BOTTOM,
   HL_WATERMARK,
   HL_WATERMARK_SIZE,
-  HL_WORDMARK_SIZE,
+  HL_CITY_SIZE,
+  HL_NICK_SIZE,
+  HL_WORDMARK_TRACK,
 } from "./headlineLayout";
-import { headlineLabel, type HeadlineDraft } from "./headlineState";
+import {
+  headlineLabel,
+  splitTeamWordmark,
+  type HeadlineDraft,
+} from "./headlineState";
 
 export { canvasToPngBlob };
 
@@ -229,15 +235,26 @@ export const renderHeadlineCanvas = async (
   const plateY =
     height - HL_TYPE_BOTTOM * s - bodyBlock - (bodyLines.length ? 18 * s : 0) - plateH;
 
-  if (team) {
-    context.font = `900 ${HL_WORDMARK_SIZE * s}px ${POSTER_FONT}`;
+  const marks = splitTeamWordmark(team);
+  const paintWordmark = (text: string, size: number, y: number) => {
+    if (!text) {
+      return;
+    }
+    context.font = `900 ${size * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    setLetterSpacing(context, 0.28 * HL_WORDMARK_SIZE * s);
+    setLetterSpacing(context, HL_WORDMARK_TRACK * size * s);
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.strokeStyle = "#0a0a0a";
+    context.lineWidth = 4 * s;
+    context.strokeText(text, width / 2, y);
     context.fillStyle = "#fff";
-    context.fillText(team.name.toUpperCase(), width / 2, plateY - 22 * s);
+    context.fillText(text, width / 2, y);
     setLetterSpacing(context, 0);
-  }
+  };
+  paintWordmark(marks.city, HL_CITY_SIZE, plateY + 10 * s);
+  paintWordmark(marks.nick, HL_NICK_SIZE, plateY + plateH - 8 * s);
 
   context.fillStyle = "#fff";
   context.fillRect(plateX, plateY, plateW, plateH);

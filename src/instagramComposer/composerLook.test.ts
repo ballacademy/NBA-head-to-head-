@@ -83,6 +83,10 @@ describe("composer look", () => {
   it("includes pyramid and headline named-save buckets", () => {
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:pyramid-composer:saves");
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:headline-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:lineup-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:compare-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:quote-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:play-in-composer:saves");
   });
 
   it("keeps kyber purple off by default and electric, not pastel", () => {

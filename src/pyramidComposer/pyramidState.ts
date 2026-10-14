@@ -44,7 +44,25 @@ export interface PyramidDraft {
   slots: TotwStrip[];
   rows?: number;
   showBa?: boolean;
+  rowLabels?: string[];
 }
+
+export const PYR_ROW_LABEL_MAX = 12;
+
+export const parsePyramidRowLabels = (
+  value: unknown,
+  rowCount: number,
+): string[] => {
+  const n = clampPyramidRows(rowCount);
+  const raw = Array.isArray(value) ? value : [];
+  return Array.from({ length: n }, (_, index) => {
+    const item = raw[index];
+    if (typeof item !== "string") {
+      return "";
+    }
+    return item.replace(/\s+/g, " ").trim().slice(0, PYR_ROW_LABEL_MAX);
+  });
+};
 
 export const parsePyramidRows = (
   value: unknown,
@@ -104,6 +122,7 @@ export const defaultPyramidDraft = (): PyramidDraft => ({
   slots: createEmptyPyramidSlots(PYR_DEFAULT_ROWS),
   rows: PYR_DEFAULT_ROWS,
   showBa: true,
+  rowLabels: parsePyramidRowLabels(undefined, PYR_DEFAULT_ROWS),
 });
 
 export const applyPyramidPick = (

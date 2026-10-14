@@ -46,6 +46,7 @@ import {
   replaceTeamInRow,
   DEFAULT_TIER_COLOR,
   DEFAULT_TIER_PALETTE,
+  fillForBlackInk,
   hexToRgba,
   inkOnTierColor,
   isDefaultTierColor,
@@ -359,7 +360,18 @@ describe("tier colors", () => {
     ]);
     expect(resolvedTierColor("S", undefined, 0)).toBe(DEFAULT_TIER_PALETTE.S);
     expect(inkOnTierColor(DEFAULT_TIER_PALETTE.S!)).toBe("#111111");
-    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.A!)).toBe("#ffffff");
+    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.A!)).toBe("#111111");
+    expect(inkOnTierColor("#111111")).toBe("#111111");
+    const dark = fillForBlackInk("#1a1020");
+    expect(inkOnTierColor(dark)).toBe("#111111");
+    const lum = (hex: string) => {
+      const n = Number.parseInt(hex.slice(1), 16);
+      const r = (n >> 16) & 255;
+      const g = (n >> 8) & 255;
+      const b = n & 255;
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    };
+    expect(lum(dark)).toBeGreaterThan(0.57);
     const custom = setTierColor(rows, 0, "#E2B007");
     expect(custom[0]!.color).toBe("#e2b007");
     expect(setTierColor(custom, 0, "#fff")[0]!.color).toBeUndefined();

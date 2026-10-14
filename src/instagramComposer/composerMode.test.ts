@@ -85,6 +85,7 @@ describe("composer mode", () => {
       "every-team",
       "tier",
       "ranked-lineups",
+      "lineup",
     ]);
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
       "team-of-the-week",
@@ -97,6 +98,9 @@ describe("composer mode", () => {
     expect(COMPOSER_TAB_GROUPS[3]!.tabs.map((tab) => tab.mode)).toEqual([
       "pyramid",
       "headline",
+      "compare",
+      "quote",
+      "play-in",
     ]);
   });
 
@@ -108,6 +112,16 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/hot-take")).toBe("headline");
     expect(readComposerMode("?composer=headline", "/")).toBe("headline");
     expect(composerHref("headline")).toBe("/headline");
+  });
+
+  it("opens lineup, compare, quote, and play-in from path", () => {
+    expect(readComposerMode("", "/lineup")).toBe("lineup");
+    expect(readComposerMode("", "/lineups")).toBe("ranked-lineups");
+    expect(composerHref("lineup")).toBe("/lineup");
+    expect(readComposerMode("", "/compare")).toBe("compare");
+    expect(readComposerMode("", "/quote")).toBe("quote");
+    expect(readComposerMode("", "/play-in")).toBe("play-in");
+    expect(composerHref("play-in")).toBe("/play-in");
   });
 
   it("opens ranked lineups from path or query", () => {

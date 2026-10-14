@@ -332,9 +332,15 @@ export const renderRankedLineupsCanvas = async (
   context.restore();
 
   const rankDisplay: RankDisplay =
-    input.rankDisplay === "headline" ? "headline" : "pill";
+    input.rankDisplay === "headline"
+      ? "headline"
+      : input.rankDisplay === "none"
+        ? "none"
+        : "pill";
   const rankText = input.rank.trim().toUpperCase() || "BEST";
-  if (rankDisplay === "pill") {
+  if (rankDisplay === "none") {
+    /* unranked 5-man — no BEST / #1 pill */
+  } else if (rankDisplay === "pill") {
     context.font = `900 ${RL_PILL_SIZE * s}px ${POSTER_FONT}`;
     setLetterSpacing(context, 0.12 * RL_PILL_SIZE * s);
     const pillW = Math.max(

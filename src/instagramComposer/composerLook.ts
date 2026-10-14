@@ -13,8 +13,12 @@ export const TEAM_OF_THE_WEEK_LOOK_KEY = "ddgm:team-of-the-week-composer-look";
 export const TEAM_OF_THE_WEEK_PLUS_LOOK_KEY =
   "ddgm:team-of-the-week-plus-composer-look";
 export const RANKED_LINEUPS_LOOK_KEY = "ddgm:ranked-lineups-composer-look";
+export const LINEUP_LOOK_KEY = "ddgm:lineup-composer-look";
 export const PYRAMID_LOOK_KEY = "ddgm:pyramid-composer-look";
 export const HEADLINE_LOOK_KEY = "ddgm:headline-composer-look";
+export const COMPARE_LOOK_KEY = "ddgm:compare-composer-look";
+export const QUOTE_LOOK_KEY = "ddgm:quote-composer-look";
+export const PLAY_IN_LOOK_KEY = "ddgm:play-in-composer-look";
 export const PURPLE_FLAIR_KEY = "ddgm:composer-purple-flair";
 
 export const FRAME_WHITE = "#ffffff";
