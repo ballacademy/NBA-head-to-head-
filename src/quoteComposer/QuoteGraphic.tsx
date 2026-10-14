@@ -8,7 +8,7 @@ import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { ATTRIB_MAX, QUOTE_MAX, type QuoteDraft } from "./quoteState";
-import { quoteGhostName } from "./quoteLayout";
+import { quoteLastName, quoteLastNameSize } from "./quoteLayout";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 
 interface QuoteGraphicProps {
@@ -40,10 +40,11 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
-    const ghost = quoteGhostName(draft.attribution);
+    const last = quoteLastName(draft.attribution);
+    const lastSize = quoteLastNameSize(last);
     const teamColor = draft.teamId
       ? getTeamColors(draft.teamId).primary
-      : null;
+      : "transparent";
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -88,7 +89,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
         style={
           {
             ["--u" as string]: `${unit}px`,
-            ["--team-color" as string]: teamColor ?? "transparent",
+            ["--team-color" as string]: teamColor,
           } as React.CSSProperties
         }
         aria-label="Instagram quote graphic"
@@ -105,15 +106,17 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           onPick={onPick}
         />
         <div className="qt-fade" aria-hidden="true" />
-        {teamColor ? (
-          <>
-            <span className="qt-rail is-left" aria-hidden="true" />
-            <span className="qt-rail is-right" aria-hidden="true" />
-          </>
-        ) : null}
-        {ghost ? (
-          <p className="qt-ghost" aria-hidden="true">
-            {ghost}
+        {last ? (
+          <p
+            className={[
+              "qt-lastname",
+              lastSize <= 56 ? "is-xl" : lastSize <= 72 ? "is-long" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-hidden="true"
+          >
+            {last}
           </p>
         ) : null}
         <p className="qt-mark" aria-hidden="true">
@@ -138,6 +141,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           }
         />
         <div className="qt-attr-plate">
+          <span className="qt-attr-accent" aria-hidden="true" />
           <input
             className="qt-attr"
             value={draft.attribution}

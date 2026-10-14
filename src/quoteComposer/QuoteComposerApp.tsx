@@ -27,6 +27,7 @@ import { renderQuoteCanvas } from "./renderQuoteCanvas";
 import {
   ATTRIB_MAX,
   defaultQuoteDraft,
+  clearQuoteSpeaker,
   fillQuoteFromPlayer,
   hasCustomPhoto,
   isQuoteDraft,
@@ -289,8 +290,9 @@ export function QuoteComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Magazine cover: the player photo is the graphic. Type sits on the
-            portrait. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Magazine cover: last name up top, pull-quote on the lower fade.
+            Changing the player refreshes name, team, and photo. Downloads a
+            4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -298,7 +300,7 @@ export function QuoteComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a speaker"
-          hint="Fills the centered photo and the name line. Upload or paste to replace the headshot."
+          hint="Updates the photo, last name, name plate, and team mark. The pull-quote stays until you edit it."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Quote" } : {}
@@ -318,12 +320,7 @@ export function QuoteComposerApp() {
           }}
           onClear={() => {
             push(draft);
-            setDraft((current) => ({
-              ...current,
-              playerId: null,
-              photoSrc: null,
-              customPhoto: false,
-            }));
+            setDraft((current) => clearQuoteSpeaker(current));
             setPickerOpen(false);
           }}
           onClose={closePicker}

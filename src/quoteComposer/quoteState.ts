@@ -55,23 +55,35 @@ export const defaultQuoteDraft = (): QuoteDraft => ({
 export const hasCustomPhoto = (draft: QuoteDraft) =>
   Boolean(draft.customPhoto && draft.photoSrc);
 
+export const speakerNameFromPlayer = (player: TierPlayer) => {
+  const names = splitPlayerName(player.name);
+  return `${names.firstName} ${names.lastName}`.replace(/\s+/g, " ").trim();
+};
+
+/** Always refreshes name, team, and photo (unless keep-custom). Pull-quote stays. */
 export const fillQuoteFromPlayer = (
   player: TierPlayer,
   previous: QuoteDraft,
   keepCustomPhoto = false,
 ): QuoteDraft => {
-  const names = splitPlayerName(player.name);
-  const keep = keepCustomPhoto && previous.customPhoto && previous.photoSrc;
+  const keep = keepCustomPhoto && hasCustomPhoto(previous);
   return {
     ...previous,
     playerId: player.id,
-    teamId: getTeam(player.team)?.id ?? player.team,
-    attribution: previous.attribution.trim()
-      ? previous.attribution
-      : `${names.firstName} ${names.lastName}`.trim(),
+    teamId: getTeam(player.team)?.id ?? player.team ?? null,
+    attribution: speakerNameFromPlayer(player).slice(0, ATTRIB_MAX),
     photoSrc: keep ? previous.photoSrc : player.headshotUrl,
     customPhoto: Boolean(keep),
     pan: keep ? { ...previous.pan } : { x: 0.5, y: 0.22, zoom: 1, rotate: 0 },
     showHeadshot: true,
   };
 };
+
+export const clearQuoteSpeaker = (draft: QuoteDraft): QuoteDraft => ({
+  ...draft,
+  playerId: null,
+  teamId: null,
+  attribution: "",
+  photoSrc: hasCustomPhoto(draft) ? draft.photoSrc : null,
+  customPhoto: hasCustomPhoto(draft),
+});

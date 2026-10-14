@@ -23,19 +23,19 @@ import {
   QT_BA_INSET,
   QT_BA_SIZE,
   QT_FADE_H,
-  QT_GHOST_SIZE,
-  QT_GHOST_Y,
+  QT_LAST_TOP,
+  QT_LAST_TRACK,
   QT_MARK_BOTTOM,
   QT_MARK_SIZE,
-  QT_MARK_X,
+  QT_PLATE_ACCENT,
   QT_QUOTE_BOTTOM,
   QT_QUOTE_LINE,
   QT_QUOTE_MAX_LINES,
   QT_QUOTE_PAD_X,
   QT_QUOTE_SIZE,
   QT_QUOTE_TRACK,
-  QT_RAIL_W,
-  quoteGhostName,
+  quoteLastName,
+  quoteLastNameSize,
 } from "./quoteLayout";
 import { type QuoteDraft } from "./quoteState";
 
@@ -157,32 +157,33 @@ export const renderQuoteCanvas = async (
     height,
   );
   fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-  fade.addColorStop(0.36, "rgba(6, 6, 8, 0.32)");
-  fade.addColorStop(0.68, "rgba(6, 6, 8, 0.78)");
+  fade.addColorStop(0.28, "rgba(6, 6, 8, 0.28)");
+  fade.addColorStop(0.62, "rgba(6, 6, 8, 0.82)");
   fade.addColorStop(1, "rgba(6, 6, 8, 0.96)");
   context.fillStyle = fade;
   context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
 
-  if (input.teamId) {
-    context.fillStyle = getTeamColors(input.teamId).primary;
-    context.fillRect(0, 0, QT_RAIL_W * s, height);
-    context.fillRect(width - QT_RAIL_W * s, 0, QT_RAIL_W * s, height);
-  }
-
-  const ghost = quoteGhostName(input.attribution);
-  if (ghost) {
-    context.font = `900 ${QT_GHOST_SIZE * s}px ${POSTER_FONT}`;
+  const last = quoteLastName(input.attribution);
+  if (last) {
+    const size = quoteLastNameSize(last);
+    context.font = `900 ${size * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillStyle = "rgba(255,255,255,0.1)";
-    context.fillText(ghost, width / 2, QT_GHOST_Y * s, width - 80 * s);
+    context.textBaseline = "top";
+    setLetterSpacing(context, QT_LAST_TRACK * size * s);
+    context.lineJoin = "round";
+    context.strokeStyle = "#0a0a0a";
+    context.lineWidth = 4 * s;
+    context.strokeText(last, width / 2, QT_LAST_TOP * s, width - 176 * s);
+    context.fillStyle = "#fff";
+    context.fillText(last, width / 2, QT_LAST_TOP * s, width - 176 * s);
+    setLetterSpacing(context, 0);
   }
 
   context.font = `900 ${QT_MARK_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "left";
+  context.textAlign = "center";
   context.textBaseline = "bottom";
-  context.fillStyle = "rgba(255,255,255,0.28)";
-  context.fillText("“", QT_MARK_X * s, height - QT_MARK_BOTTOM * s);
+  context.fillStyle = "rgba(255,255,255,0.55)";
+  context.fillText("“", width / 2, height - QT_MARK_BOTTOM * s);
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
@@ -204,7 +205,7 @@ export const renderQuoteCanvas = async (
     const y = quoteBottom - blockH + (index + 0.5) * lineH;
     context.lineJoin = "round";
     context.strokeStyle = "#000";
-    context.lineWidth = 3.6 * s;
+    context.lineWidth = 3 * s;
     context.strokeText(line, width / 2, y);
     context.fillStyle = "#fff";
     context.fillText(line, width / 2, y);
@@ -215,11 +216,13 @@ export const renderQuoteCanvas = async (
   const plateH = QT_ATTR_PLATE_H * s;
   const plateX = (width - plateW) / 2;
   const plateY = height - QT_ATTR_BOTTOM * s - plateH;
+  const plateLook = input.look === "none" ? "white" : input.look;
   context.fillStyle = input.look === "black" ? "#0a0a0a" : "#fff";
   context.fillRect(plateX, plateY, plateW, plateH);
-  paintCellFrame(context, plateX, plateY, plateW, plateH, input.look ?? "white", s);
-  if (input.look === "none") {
-    paintCellFrame(context, plateX, plateY, plateW, plateH, "white", s);
+  paintCellFrame(context, plateX, plateY, plateW, plateH, plateLook, s);
+  if (input.teamId) {
+    context.fillStyle = getTeamColors(input.teamId).primary;
+    context.fillRect(plateX, plateY, QT_PLATE_ACCENT * s, plateH);
   }
   if (input.purpleFlair) {
     paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
@@ -231,9 +234,9 @@ export const renderQuoteCanvas = async (
   context.fillStyle = input.look === "black" ? "#fff" : "#111";
   context.fillText(
     input.attribution.trim().toUpperCase(),
-    width / 2,
+    plateX + plateW / 2 + (input.teamId ? (QT_PLATE_ACCENT / 2) * s : 0),
     plateY + plateH / 2,
-    plateW - 32 * s,
+    plateW - 40 * s,
   );
   setLetterSpacing(context, 0);
 
