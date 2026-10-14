@@ -5,6 +5,7 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -20,26 +21,31 @@ import {
   GRAPHIC_WIDTH,
   HL_BA_INSET,
   HL_BA_SIZE,
+  HL_BODY_LINE,
   HL_BODY_SIZE,
   HL_BODY_TRACK,
+  HL_CITY_SIZE,
   HL_FADE_H,
   HL_HEADLINE_H,
   HL_HEADLINE_PAD_X,
   HL_HEADLINE_SIZE,
   HL_HEADLINE_TRACK,
-  HL_PAD_X,
-  HL_BODY_LINE,
-  HL_PLATE_BODY_GAP,
-  HL_WATERMARK,
-  HL_WATERMARK_SIZE,
-  HL_CITY_SIZE,
   HL_NICK_SIZE,
-  HL_WATERMARK_TOP,
+  HL_PAD_X,
+  HL_PLATE_ACCENT,
+  HL_PLATE_BODY_GAP,
+  HL_PLATE_FILL,
+  HL_PLATE_ROTATE,
+  HL_TORN_POINTS,
   HL_WORDMARK_LINE,
   HL_WORDMARK_TRACK,
   headlineTypeStack,
+  headlineWatermarkBox,
+  parseHeadlineWatermark,
+  type HeadlineWatermark,
 } from "./headlineLayout";
 import {
+  headlineBodyLines,
   headlineLabel,
   splitTeamWordmark,
   type HeadlineDraft,
@@ -99,6 +105,23 @@ const wrapLines = (
   return lines.slice(0, maxLines);
 };
 
+const bodyPaintLines = (
+  context: CanvasRenderingContext2D,
+  body: string,
+  maxWidth: number,
+) => {
+  const raw = headlineBodyLines(body);
+  if (raw.length === 0) {
+    return [];
+  }
+  const lines: string[] = [];
+  raw.forEach((line) => {
+    const wrapped = wrapLines(context, line, maxWidth, 2);
+    wrapped.forEach((part) => lines.push(part));
+  });
+  return lines.slice(0, 3);
+};
+
 const strokeFillText = (
   context: CanvasRenderingContext2D,
   text: string,
@@ -119,12 +142,33 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
+const tornPlatePath = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) => {
+  context.beginPath();
+  HL_TORN_POINTS.forEach(([px, py], index) => {
+    const X = x + px * w;
+    const Y = y + py * h;
+    if (index === 0) {
+      context.moveTo(X, Y);
+    } else {
+      context.lineTo(X, Y);
+    }
+  });
+  context.closePath();
+};
+
 export interface HeadlineRenderInput {
   headline: string;
   body: string;
   teamId: string | null;
   photoSrc: string | null;
   pan: HeadlineDraft["pan"];
+  watermark?: HeadlineWatermark;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -201,42 +245,48 @@ export const renderHeadlineCanvas = async (
     height,
   );
   fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-  fade.addColorStop(0.42, "rgba(6, 6, 8, 0.62)");
-  fade.addColorStop(1, "rgba(6, 6, 8, 0.92)");
+  fade.addColorStop(0.42, "rgba(6, 6, 8, 0.68)");
+  fade.addColorStop(1, "rgba(6, 6, 8, 0.94)");
   context.fillStyle = fade;
   context.fillRect(0, height - HL_FADE_H * s, width, HL_FADE_H * s);
-
-  const team = getTeam(input.teamId);
-  if (team) {
-    const logo = await loadImage(team.logoSrc);
-    if (logo) {
-      const size = HL_WATERMARK_SIZE * s;
-      const x = (width - size) / 2;
-      const y = HL_WATERMARK_TOP * s;
-      context.save();
-      context.globalAlpha = HL_WATERMARK;
-      drawCenteredLogo(context, logo, x, y, size, size, {
-        cacheKey: `${team.logoSrc}-headline-mark`,
-        fitX: 0.92,
-        fitY: 0.92,
-        shadow: 0,
-      });
-      context.restore();
-    }
-  }
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
   const plateW = width - HL_PAD_X * 2 * s;
   const plateH = HL_HEADLINE_H * s;
   const plateX = HL_PAD_X * s;
-  const body = input.body.replace(/\s+/g, " ").trim().toUpperCase();
   context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
-  const bodyLines = wrapLines(context, body, plateW, 3);
+  const bodyLines = bodyPaintLines(context, input.body, plateW);
   setLetterSpacing(context, 0);
+  const team = getTeam(input.teamId);
   const stack = headlineTypeStack(bodyLines.length, Boolean(team));
   const plateY = stack.plateTop * s;
+  const mode = parseHeadlineWatermark(input.watermark);
+
+  if (team && mode !== "off") {
+    const logo = await loadImage(team.logoSrc);
+    if (logo) {
+      const box = headlineWatermarkBox(mode, stack);
+      context.save();
+      context.globalAlpha = box.opacity;
+      drawCenteredLogo(
+        context,
+        logo,
+        box.x * s,
+        box.y * s,
+        box.size * s,
+        box.size * s,
+        {
+          cacheKey: `${team.logoSrc}-headline-mark-${mode}`,
+          fitX: 0.92,
+          fitY: 0.92,
+          shadow: 0,
+        },
+      );
+      context.restore();
+    }
+  }
 
   const marks = splitTeamWordmark(team);
   const paintWordmark = (text: string, size: number, top: number) => {
@@ -251,46 +301,66 @@ export const renderHeadlineCanvas = async (
     context.miterLimit = 2;
     context.strokeStyle = "#0a0a0a";
     context.lineWidth = 4 * s;
-    context.strokeText(text, width / 2, (top + size * HL_WORDMARK_LINE / 2) * s);
+    context.strokeText(
+      text,
+      width / 2,
+      (top + (size * HL_WORDMARK_LINE) / 2) * s,
+    );
     context.fillStyle = "#fff";
-    context.fillText(text, width / 2, (top + size * HL_WORDMARK_LINE / 2) * s);
+    context.fillText(
+      text,
+      width / 2,
+      (top + (size * HL_WORDMARK_LINE) / 2) * s,
+    );
     setLetterSpacing(context, 0);
   };
   paintWordmark(marks.city, HL_CITY_SIZE, stack.cityTop);
   paintWordmark(marks.nick, HL_NICK_SIZE, stack.nickTop);
 
-  context.fillStyle = "#fff";
-  context.fillRect(plateX, plateY, plateW, plateH);
-  paintCellFrame(context, plateX, plateY, plateW, plateH, input.look, s);
-  if (input.look === "white") {
+  const cx = plateX + plateW / 2;
+  const cy = plateY + plateH / 2;
+  context.save();
+  context.translate(cx, cy);
+  context.rotate((HL_PLATE_ROTATE * Math.PI) / 180);
+  context.translate(-cx, -cy);
+  tornPlatePath(context, plateX, plateY, plateW, plateH);
+  context.fillStyle = HL_PLATE_FILL;
+  context.fill();
+  if (team) {
     context.save();
-    context.strokeStyle = "#111";
-    context.lineWidth = Math.max(2, Math.round(2 * s));
-    context.strokeRect(
-      plateX + 6 * s,
-      plateY + 6 * s,
-      plateW - 12 * s,
-      plateH - 12 * s,
+    tornPlatePath(context, plateX, plateY, plateW, plateH);
+    context.clip();
+    context.fillStyle = getTeamColors(team.id).primary;
+    context.fillRect(
+      plateX,
+      plateY + plateH - HL_PLATE_ACCENT * s,
+      plateW,
+      HL_PLATE_ACCENT * s,
     );
     context.restore();
   }
+  tornPlatePath(context, plateX, plateY, plateW, plateH);
+  context.strokeStyle = "#fff";
+  context.lineWidth = 2.2 * s;
+  context.lineJoin = "round";
+  context.stroke();
   if (input.purpleFlair) {
     paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
   }
-
   const headline = headlineLabel(input.headline);
   context.font = `italic 900 ${HL_HEADLINE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, HL_HEADLINE_TRACK * HL_HEADLINE_SIZE * s);
-  context.fillStyle = "#111";
+  context.fillStyle = "#fff";
   context.fillText(
     headline,
-    width / 2,
-    plateY + plateH / 2,
+    cx,
+    cy - 2 * s,
     plateW - HL_HEADLINE_PAD_X * 2 * s,
   );
   setLetterSpacing(context, 0);
+  context.restore();
 
   context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
@@ -298,8 +368,7 @@ export const renderHeadlineCanvas = async (
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
   bodyLines.forEach((line, index) => {
     const y =
-      plateY +
-      plateH +
+      stack.nickBottom * s +
       HL_PLATE_BODY_GAP * s +
       (index + 0.5) * HL_BODY_SIZE * HL_BODY_LINE * s;
     strokeFillText(context, line, width / 2, y, "#fff", "#000", 2.4 * s);

@@ -174,6 +174,62 @@ export const usedTeamIds = (rows: TierRow[]): Set<string> => {
   return used;
 };
 
+/** Append unused matching ids onto the first tier (S) so Group can rank them. */
+export const fillMatchingIds = (
+  rows: TierRow[],
+  ids: readonly string[],
+): { rows: TierRow[]; added: number } => {
+  if (!rows.length) {
+    return { rows, added: 0 };
+  }
+  const used = usedTeamIds(rows);
+  const add = ids.filter((id) => id && !used.has(id));
+  if (!add.length) {
+    return { rows, added: 0 };
+  }
+  const next = rows.slice();
+  const first = next[0]!;
+  next[0] = { ...first, teams: [...first.teams, ...add] };
+  return { rows: next, added: add.length };
+};
+
+export const evenChunkSizes = (count: number, buckets: number): number[] => {
+  if (buckets <= 0) {
+    return [];
+  }
+  const base = Math.floor(count / buckets);
+  const extra = count % buckets;
+  return Array.from({ length: buckets }, (_, index) => base + (index < extra ? 1 : 0));
+};
+
+/** Rank board ids by a stat: highest in S, then A, …; missing stats stay in the last tier. */
+export const groupIdsByValues = (
+  rows: TierRow[],
+  values: Map<string, number | null>,
+): TierRow[] => {
+  if (!rows.length) {
+    return rows;
+  }
+  const ids = rows.flatMap((row) => row.teams);
+  const scored = ids.filter((id) => values.get(id) != null);
+  const held = ids.filter((id) => values.get(id) == null);
+  scored.sort(
+    (left, right) =>
+      (values.get(right) as number) - (values.get(left) as number) ||
+      left.localeCompare(right),
+  );
+  const sizes = evenChunkSizes(scored.length, rows.length);
+  let offset = 0;
+  return rows.map((row, index) => {
+    const size = sizes[index] ?? 0;
+    const chunk = scored.slice(offset, offset + size);
+    offset += size;
+    const teams =
+      index === rows.length - 1 ? [...chunk, ...held] : chunk;
+    return { ...row, teams };
+  });
+};
+
 export const rowIndexForTeam = (rows: TierRow[], teamId: string) =>
   rows.findIndex((row) => row.teams.includes(teamId));
 

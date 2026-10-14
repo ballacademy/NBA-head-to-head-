@@ -844,6 +844,10 @@ main.sc-stage {
   flex-wrap: wrap;
 }
 
+.sc-look select {
+  min-width: 7.5rem;
+}
+
 .sc-look__label {
   font-size: 10px;
   font-weight: 700;

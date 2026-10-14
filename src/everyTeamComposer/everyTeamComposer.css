@@ -272,6 +272,24 @@
   opacity: 0.34;
 }
 
+.et-cell[data-team="UTA"] .et-cell__backdrop {
+  opacity: 0.5;
+  filter: brightness(1.2) contrast(1.06);
+}
+
+.et-cell[data-team="UTA"] .et-cell__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 42%,
+    rgba(247, 251, 255, 0.22),
+    transparent 64%
+  );
+  mix-blend-mode: screen;
+}
+
 .et-cell .ig-slot__logo {
   position: absolute;
   inset: 0;
@@ -388,4 +406,8 @@
 
 .sc-look--sort {
   flex-wrap: wrap;
+}
+
+.sc-look--sort select {
+  min-width: 7.5rem;
 }

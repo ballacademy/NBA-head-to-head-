@@ -14,12 +14,17 @@ import {
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  parseHeadlineWatermark,
+  type HeadlineWatermark,
+} from "./headlineLayout";
 
-export { clampPan, type PhotoPan };
+export { clampPan, type PhotoPan, parseHeadlineWatermark, type HeadlineWatermark };
 
 export const DEFAULT_HEADLINE = "MASSIVE LEAP";
 export const DEFAULT_HEADLINE_BODY = "";
 export const HEADLINE_BODY_MAX = 180;
+export const DEFAULT_HEADLINE_WATERMARK: HeadlineWatermark = "behind";
 
 export interface HeadlineDraft {
   headline: string;
@@ -32,6 +37,7 @@ export interface HeadlineDraft {
   customPhoto: boolean;
   pan: PhotoPan;
   showBa?: boolean;
+  watermark?: HeadlineWatermark;
 }
 
 const isNullableString = (value: unknown) =>
@@ -63,6 +69,7 @@ export const defaultHeadlineDraft = (): HeadlineDraft => ({
   customPhoto: false,
   pan: { ...DEFAULT_CUSTOM_PAN },
   showBa: true,
+  watermark: DEFAULT_HEADLINE_WATERMARK,
 });
 
 export const hasCustomPhoto = (draft: HeadlineDraft) =>
@@ -90,6 +97,7 @@ export const fillHeadlineFromPlayer = (
     photoSrc: keep ? previous.photoSrc : null,
     customPhoto: keep,
     pan: keep ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
+    watermark: parseHeadlineWatermark(previous.watermark),
   };
 };
 
@@ -107,35 +115,44 @@ export const splitTeamWordmark = (team: NbaTeam | null) => {
   };
 };
 
+export const formatHeadlineBodyLines = (
+  team: NbaTeam | null,
+  game: LastGame | null,
+  record: StandingRecord | null,
+): string[] => {
+  if (!team) {
+    return [];
+  }
+  const nick = team.shortName.toUpperCase();
+  const rec = record ? `${record.wins}-${record.losses}` : "";
+  const lines: string[] = [];
+  if (game) {
+    const score = `${game.playerScore}-${game.opponentScore}`;
+    lines.push(
+      game.result === "W"
+        ? `BEATS ${game.opponentAbbrev} ${score}`
+        : `FALLS TO ${game.opponentAbbrev} ${score}`,
+    );
+  }
+  if (rec) {
+    lines.push(`${nick} NOW ${rec}`);
+  }
+  return lines;
+};
+
 export const formatHeadlineBody = (
   team: NbaTeam | null,
   game: LastGame | null,
   record: StandingRecord | null,
-) => {
-  if (!team) {
-    return "";
-  }
-  const nick = team.shortName.toUpperCase();
-  const rec = record ? `${record.wins}-${record.losses}` : "";
-  if (game && rec) {
-    const score = `${game.playerScore}-${game.opponentScore}`;
-    const lead =
-      game.result === "W"
-        ? `AFTER BEATING ${game.opponentAbbrev} ${score} LAST NIGHT`
-        : `AFTER LOSING TO ${game.opponentAbbrev} ${score} LAST NIGHT`;
-    return `${lead}, THE ${nick} HAVE A RECORD OF ${rec}`;
-  }
-  if (game) {
-    const score = `${game.playerScore}-${game.opponentScore}`;
-    return game.result === "W"
-      ? `AFTER BEATING ${game.opponentAbbrev} ${score} LAST NIGHT`
-      : `AFTER LOSING TO ${game.opponentAbbrev} ${score} LAST NIGHT`;
-  }
-  if (rec) {
-    return `THE ${nick} HAVE A RECORD OF ${rec}`;
-  }
-  return "";
-};
+) => formatHeadlineBodyLines(team, game, record).join("\n");
+
+export const headlineBodyLines = (body: string) =>
+  body
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .slice(0, 3);
 
 export const setHeadlinePhoto = (
   draft: HeadlineDraft,

@@ -56,8 +56,11 @@ export const PYRAMID_TITLE_PRESETS = [
 
 export const HEADLINE_TITLE_PRESETS = [
   "MASSIVE LEAP",
+  "STATEMENT WIN",
+  "HE’S HIM",
   "HOT TAKE",
   "BREAKING",
+  "UNLOCKED",
 ];
 
 export const RANKED_LINEUP_TITLE_PRESETS = [

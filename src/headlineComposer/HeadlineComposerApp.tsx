@@ -33,6 +33,7 @@ import { getTeam } from "../standingsComposer/teams";
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
 import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
+import { parseHeadlineWatermark } from "./headlineLayout";
 import {
   clearHeadlineSubject,
   clipHeadlineBody,
@@ -55,7 +56,11 @@ const SAVES_KEY = "ddgm:headline-composer:saves";
 const loadDraft = (): HeadlineDraft => {
   const stored = readJson<Partial<HeadlineDraft>>(STORAGE_KEY);
   if (isHeadlineDraft(stored)) {
-    return { ...stored, showBa: stored.showBa !== false };
+    return {
+      ...stored,
+      showBa: stored.showBa !== false,
+      watermark: parseHeadlineWatermark(stored.watermark),
+    };
   }
   return defaultHeadlineDraft();
 };
@@ -138,6 +143,7 @@ export function HeadlineComposerApp() {
           teamId: draft.teamId,
           photoSrc: draft.photoSrc,
           pan: draft.pan,
+          watermark: parseHeadlineWatermark(draft.watermark),
           look,
           purpleFlair,
           showBa: draft.showBa,
@@ -242,7 +248,7 @@ export function HeadlineComposerApp() {
           Team
           <select
             value={draft.teamId ?? ""}
-            aria-label="Team watermark"
+            aria-label="Team"
             onChange={(event) => {
               const teamId = event.target.value || null;
               setDraft((current) => ({ ...current, teamId }));
@@ -255,6 +261,23 @@ export function HeadlineComposerApp() {
                 {team.name}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="sc-field">
+          Watermark
+          <select
+            value={parseHeadlineWatermark(draft.watermark)}
+            aria-label="Team watermark"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                watermark: parseHeadlineWatermark(event.target.value),
+              }))
+            }
+          >
+            <option value="off">Off</option>
+            <option value="behind">Faint behind type</option>
+            <option value="small">Small logo</option>
           </select>
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
@@ -341,6 +364,7 @@ export function HeadlineComposerApp() {
                           teamId: draft.teamId,
                           photoSrc: draft.photoSrc,
                           pan: draft.pan,
+                          watermark: parseHeadlineWatermark(draft.watermark),
                           look,
                           purpleFlair,
                           showBa: draft.showBa,
@@ -384,6 +408,7 @@ export function HeadlineComposerApp() {
             photoSrc={draft.photoSrc}
             customPhoto={draft.customPhoto}
             pan={draft.pan}
+            watermark={parseHeadlineWatermark(draft.watermark)}
             look={look}
             purpleFlair={purpleFlair}
             showBa={draft.showBa !== false}
@@ -403,9 +428,9 @@ export function HeadlineComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — team wordmark and name sit above the headline
-            banner, then the take. Downloads a 4:5 Instagram PNG — nothing is
-            posted.
+            Empty photo first — upload or paste an action shot. Torn lockup in
+            the lower third, last-night lines under it. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -414,7 +439,7 @@ export function HeadlineComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a player"
-            hint="Sets the team wordmark above the banner and last-night body. No mugshot — upload or paste the photo."
+            hint="Sets the team wordmark through the plate and last-night lines. No mugshot — upload or paste the photo."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Headline" } : {}

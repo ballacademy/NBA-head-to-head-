@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -11,7 +12,15 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import {
+  HL_TORN_CLIP,
+  headlineTypeStack,
+  headlineWatermarkBox,
+  parseHeadlineWatermark,
+  type HeadlineWatermark,
+} from "./headlineLayout";
+import {
   HEADLINE_BODY_MAX,
+  headlineBodyLines,
   headlineLabel,
   splitTeamWordmark,
 } from "./headlineState";
@@ -23,6 +32,7 @@ interface HeadlineGraphicProps {
   photoSrc: string | null;
   customPhoto: boolean;
   pan: PhotoPan;
+  watermark?: HeadlineWatermark;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -43,6 +53,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       photoSrc,
       customPhoto,
       pan,
+      watermark = "behind",
       look = "white",
       purpleFlair = false,
       showBa = true,
@@ -58,6 +69,12 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const team = getTeam(teamId);
+    const marks = splitTeamWordmark(team);
+    const mode = parseHeadlineWatermark(watermark);
+    const lines = headlineBodyLines(body);
+    const stack = headlineTypeStack(lines.length, Boolean(team));
+    const markBox = headlineWatermarkBox(mode, stack);
+    const teamColor = teamId ? getTeamColors(teamId).primary : "transparent";
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -99,7 +116,13 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--team-color" as string]: teamColor,
+            ["--torn-clip" as string]: `polygon(${HL_TORN_CLIP})`,
+          } as React.CSSProperties
+        }
         aria-label="Instagram headline graphic"
       >
         <PhotoFrame
@@ -114,8 +137,16 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           onPick={onPick}
         />
         <div className="hl-fade" aria-hidden="true" />
-        {team ? (
-          <div className="hl-watermark" aria-hidden="true">
+        {team && mode !== "off" ? (
+          <div
+            className={mode === "small" ? "hl-mark is-small" : "hl-mark is-behind"}
+            style={
+              mode === "behind"
+                ? { top: `calc(${markBox.y} * var(--u))` }
+                : undefined
+            }
+            aria-hidden="true"
+          >
             <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
           </div>
         ) : null}
@@ -128,17 +159,13 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           />
         ) : null}
         <div className="hl-type">
-          {team ? (
+          {marks.city ? (
             <p className="hl-wordmark-city" aria-hidden="true">
-              {splitTeamWordmark(team).city}
-            </p>
-          ) : null}
-          {team ? (
-            <p className="hl-wordmark-nick" aria-hidden="true">
-              {splitTeamWordmark(team).nick}
+              {marks.city}
             </p>
           ) : null}
           <div className="hl-headline-plate">
+            {team ? <span className="hl-plate-accent" aria-hidden="true" /> : null}
             <input
               className="hl-headline"
               value={headline}
@@ -150,6 +177,11 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
               }
             />
           </div>
+          {marks.nick ? (
+            <p className="hl-wordmark-nick" aria-hidden="true">
+              {marks.nick}
+            </p>
+          ) : null}
           <textarea
             className="hl-body"
             value={body}
@@ -157,7 +189,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             maxLength={HEADLINE_BODY_MAX}
             spellCheck={false}
             aria-label="Headline body"
-            placeholder="ADD THE TAKE"
+            placeholder="BEATS OKC 111-109"
             onChange={(event) =>
               onBodyChange(event.target.value.slice(0, HEADLINE_BODY_MAX))
             }

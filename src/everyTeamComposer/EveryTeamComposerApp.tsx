@@ -63,6 +63,7 @@ import {
   missingSeasonReason,
   parseCellSeasons,
   parseEveryTeamSeason,
+  parseEveryTeamStatMetric,
   rosterAsTierPlayers,
   rosterHasPlayer,
   seasonForTeam,
@@ -135,6 +136,7 @@ export function EveryTeamComposerApp() {
   const [showNames, setShowNames] = useState(false);
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
+  const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
@@ -451,7 +453,7 @@ export function EveryTeamComposerApp() {
             value={fillMetric}
             aria-label="Auto-fill stat"
             onChange={(event) =>
-              setFillMetric(event.target.value as EveryTeamStatMetric)
+              setFillMetric(parseEveryTeamStatMetric(event.target.value))
             }
           >
             {EVERY_TEAM_STAT_METRICS.map((metric) => (
@@ -470,16 +472,26 @@ export function EveryTeamComposerApp() {
         </div>
         <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
           <span className="sc-look__label">Auto-sort</span>
-          {EVERY_TEAM_STAT_METRICS.map((metric) => (
-            <button
-              key={metric.id}
-              type="button"
-              className="sc-chip"
-              onClick={() => handleAutoSort(metric.id)}
-            >
-              {metric.label}
-            </button>
-          ))}
+          <select
+            value={sortMetric}
+            aria-label="Auto-sort stat"
+            onChange={(event) =>
+              setSortMetric(parseEveryTeamStatMetric(event.target.value))
+            }
+          >
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <option key={metric.id} value={metric.id}>
+                {metric.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => handleAutoSort(sortMetric)}
+          >
+            Sort 1–30
+          </button>
         </div>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>

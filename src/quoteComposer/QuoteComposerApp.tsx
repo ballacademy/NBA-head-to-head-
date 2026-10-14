@@ -21,6 +21,7 @@ import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialo
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { KeepQuoteDialog } from "./KeepQuoteDialog";
 import { QuoteGraphic } from "./QuoteGraphic";
 import { exportQuotePng } from "./exportQuotePng";
 import { renderQuoteCanvas } from "./renderQuoteCanvas";
@@ -32,6 +33,7 @@ import {
   hasCustomPhoto,
   isQuoteDraft,
   QUOTE_MAX,
+  SOURCE_MAX,
   type QuoteDraft,
 } from "./quoteState";
 import "@fontsource/montserrat/latin-900.css";
@@ -43,7 +45,11 @@ const SAVES_KEY = "ddgm:quote-composer:saves";
 const loadDraft = (): QuoteDraft => {
   const stored = readJson<Partial<QuoteDraft>>(STORAGE_KEY);
   if (isQuoteDraft(stored)) {
-    return { ...stored, showBa: stored.showBa !== false };
+    return {
+      ...stored,
+      showBa: stored.showBa !== false,
+      source: stored.source ?? "",
+    };
   }
   return defaultQuoteDraft();
 };
@@ -60,6 +66,11 @@ export function QuoteComposerApp() {
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
     playerName: string;
+  } | null>(null);
+  const [quotePrompt, setQuotePrompt] = useState<{
+    playerId: string;
+    playerName: string;
+    keepPhoto: boolean;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<QuoteDraft>();
 
@@ -100,6 +111,39 @@ export function QuoteComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
+  const commitPick = (
+    playerId: string,
+    keepCustomPhoto: boolean,
+    keepQuote?: boolean,
+  ) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    if (keepQuote === undefined && draft.quote.trim()) {
+      setQuotePrompt({
+        playerId,
+        playerName: player.name,
+        keepPhoto: keepCustomPhoto,
+      });
+      setKeepPrompt(null);
+      setPickerOpen(false);
+      return;
+    }
+    push(draft);
+    setDraft((current) =>
+      fillQuoteFromPlayer(player, current, keepCustomPhoto, keepQuote !== false),
+    );
+    setPickerOpen(false);
+    setKeepPrompt(null);
+    setQuotePrompt(null);
+    setStatus(
+      keepQuote === false
+        ? `Filled ${player.name} — quote cleared. Upload a photo.`
+        : `Filled ${player.name} — upload a photo.`,
+    );
+  };
+
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
       void dataUrlFromClipboard(event).then((dataUrl) => {
@@ -113,7 +157,7 @@ export function QuoteComposerApp() {
           customPhoto: true,
           showHeadshot: true,
         }));
-        setStatus("Pasted headshot.");
+        setStatus("Pasted photo into the frame.");
       });
     };
     window.addEventListener("paste", onPaste);
@@ -154,6 +198,20 @@ export function QuoteComposerApp() {
           />
         </label>
         <label className="sc-field">
+          Source
+          <input
+            value={draft.source}
+            maxLength={SOURCE_MAX}
+            placeholder="optional"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                source: event.target.value.slice(0, SOURCE_MAX),
+              }))
+            }
+          />
+        </label>
+        <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Photo</span>
           <button
             type="button"
@@ -179,7 +237,7 @@ export function QuoteComposerApp() {
           storageKey={SAVES_KEY}
           board={draft}
           onLoad={(next) => {
-            setDraft(next);
+            setDraft({ ...next, source: next.source ?? "" });
             setStatus("Loaded named graphic.");
           }}
         />
@@ -212,7 +270,7 @@ export function QuoteComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() =>
               void copyGraphicCaption(
-                graphicCaption(draft.quote, [], [draft.attribution]),
+                graphicCaption(draft.quote, [], [draft.attribution, draft.source]),
               )
             }
           >
@@ -274,8 +332,8 @@ export function QuoteComposerApp() {
               onQuoteChange={(quote) =>
                 setDraft((current) => ({ ...current, quote }))
               }
-              onAttributionChange={(attribution) =>
-                setDraft((current) => ({ ...current, attribution }))
+              onSourceChange={(source) =>
+                setDraft((current) => ({ ...current, source }))
               }
               onPan={(pan) => setDraft((current) => ({ ...current, pan }))}
               onUpload={(photoSrc) =>
@@ -290,9 +348,9 @@ export function QuoteComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Magazine cover: last name up top, pull-quote on the lower fade.
-            Changing the player refreshes name, team, and photo. Downloads a
-            4:5 Instagram PNG — nothing is posted.
+            Empty photo first — last-name masthead up top, pull-quote on the
+            lower fade. Changing the player asks whether to keep the quote.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -300,7 +358,7 @@ export function QuoteComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a speaker"
-          hint="Updates the photo, last name, name plate, and team mark. The pull-quote stays until you edit it."
+          hint="Sets the last-name masthead and team color. No mugshot — upload or paste the photo."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Quote" } : {}
@@ -312,11 +370,10 @@ export function QuoteComposerApp() {
             }
             if (hasCustomPhoto(draft)) {
               setKeepPrompt({ playerId, playerName: player.name });
+              setPickerOpen(false);
               return;
             }
-            push(draft);
-            setDraft((current) => fillQuoteFromPlayer(player, current));
-            setPickerOpen(false);
+            commitPick(playerId, false);
           }}
           onClear={() => {
             push(draft);
@@ -329,25 +386,22 @@ export function QuoteComposerApp() {
       {keepPrompt ? (
         <KeepCustomPhotoDialog
           playerName={keepPrompt.playerName}
-          onKeep={() => {
-            const player = getPlayer(keepPrompt.playerId);
-            if (player) {
-              push(draft);
-              setDraft((current) => fillQuoteFromPlayer(player, current, true));
-            }
-            setKeepPrompt(null);
-            setPickerOpen(false);
-          }}
-          onReplace={() => {
-            const player = getPlayer(keepPrompt.playerId);
-            if (player) {
-              push(draft);
-              setDraft((current) => fillQuoteFromPlayer(player, current, false));
-            }
-            setKeepPrompt(null);
-            setPickerOpen(false);
-          }}
+          onKeep={() => commitPick(keepPrompt.playerId, true)}
+          onReplace={() => commitPick(keepPrompt.playerId, false)}
           onClose={() => setKeepPrompt(null)}
+        />
+      ) : null}
+      {quotePrompt ? (
+        <KeepQuoteDialog
+          playerName={quotePrompt.playerName}
+          quote={draft.quote}
+          onKeep={() =>
+            commitPick(quotePrompt.playerId, quotePrompt.keepPhoto, true)
+          }
+          onClear={() =>
+            commitPick(quotePrompt.playerId, quotePrompt.keepPhoto, false)
+          }
+          onClose={() => setQuotePrompt(null)}
         />
       ) : null}
     </div>

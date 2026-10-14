@@ -28,15 +28,20 @@ import {
 } from "./everyTeamState";
 import catalog from "../../data/every-team-historical-rosters.json";
 import {
+  EVERY_TEAM_STAT_METRICS,
+  formatRosterStat,
   hydrateEveryTeamRosters,
   listRosterPlayers,
+  matchingTeamIds,
   pickSeasonLeader,
+  playerRowForSeason,
   rosterAsTierPlayers,
   rosterStatValue,
   seasonForTeam,
   setCellSeason,
   statsSeasonFor,
   teamLogoSrc,
+  teamStatValue,
 } from "./historicalRosters";
 import { sortPlayers } from "../tierListComposer/nbaActivePlayers";
 
@@ -48,10 +53,14 @@ import {
   HEADER_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
 import {
+  ET_JAZZ_LOGO_ALPHA,
+  ET_JAZZ_LOGO_BRIGHTNESS,
+  ET_LOGO_ALPHA,
   ET_RANK_BADGE_H,
   ET_RANK_SIZE,
   everyTeamCellRect,
   everyTeamGrid,
+  everyTeamLogoBackdrop,
 } from "./everyTeamLayout";
 
 const EXPECTED_CITIES = [
@@ -284,7 +293,16 @@ describe("every-team order and slots", () => {
       (player) => player.id === "4278073",
     );
     expect(sga?.pts).toBe(31.1);
+    expect(sga?.gp).toBe(68);
+    expect(sga?.min).toBe(33.2);
+    expect(sga?.tov).toBe(2.2);
+    expect(sga?.fgPct).toBe(0.557);
     expect(rosterStatValue(sga ?? null, "points")).toBe(31.1);
+    expect(rosterStatValue(sga ?? null, "games")).toBe(68);
+    expect(rosterStatValue(sga ?? null, "minutes")).toBe(33.2);
+    expect(rosterStatValue(sga ?? null, "turnovers")).toBe(2.2);
+    expect(rosterStatValue(sga ?? null, "fgPct")).toBe(0.557);
+    expect(formatRosterStat(sga ?? null, "fgPct")).toBe("55.7% FG%");
     expect(pickSeasonLeader("OKC", "2026-27", "points")?.id).toBe("4278073");
     expect(pickSeasonLeader("OKC", "2025-26", "points")?.name).toBe(
       "Shai Gilgeous-Alexander",
@@ -364,5 +382,75 @@ describe("every-team order and slots", () => {
     expect(points.order).not.toEqual(pra.order);
     expect(stocks.order).not.toEqual(points.order);
     expect(stocks.order).not.toEqual(pra.order);
+  });
+
+  it("lists every counting and percentage auto-sort metric", () => {
+    expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "STL",
+      "BLK",
+      "TOV",
+      "FG%",
+      "3P%",
+      "FT%",
+      "eFG%",
+      "TS%",
+      "MIN",
+      "GP",
+      "PRA",
+      "STL+BLK",
+    ]);
+    const durant = listRosterPlayers("OKC", "2012-13").find(
+      (player) => player.name === "Kevin Durant",
+    );
+    expect(rosterStatValue(durant ?? null, "fgPct")).toBeNull();
+    expect(playerRowForSeason("4278073", "2026-27", "OKC")?.fgPct).toBe(0.557);
+  });
+
+  it("auto-sorts 2026-27 leaders by FG% and minutes using last season extras", () => {
+    const order = createDefaultRankedOrder();
+    const sortFilled = (metric: "fgPct" | "minutes" | "games") => {
+      const slots = autoFillEveryTeamSlots("2026-27", {}, metric);
+      return autoSortRankedOrder(
+        order,
+        rankedMetricValues(order, slots, "2026-27", {}, metric),
+      );
+    };
+    const fg = sortFilled("fgPct");
+    const minutes = sortFilled("minutes");
+    const games = sortFilled("games");
+    expect(fg.ranked).toBeGreaterThan(20);
+    expect(minutes.ranked).toBeGreaterThan(20);
+    expect(games.ranked).toBeGreaterThan(20);
+    expect(fg.order).not.toEqual(minutes.order);
+  });
+
+  it("averages team stats and filters East / Atlantic for populate", () => {
+    expect(matchingTeamIds({ conference: "East" })).toHaveLength(15);
+    expect(matchingTeamIds({ division: "Atlantic" })).toEqual([
+      "BOS",
+      "BKN",
+      "NYK",
+      "PHI",
+      "TOR",
+    ]);
+    const okc = teamStatValue("OKC", "2026-27", "points");
+    const cha = teamStatValue("CHA", "2026-27", "points");
+    expect(okc).not.toBeNull();
+    expect(cha).not.toBeNull();
+    expect(okc!).toBeGreaterThan(cha!);
+  });
+
+  it("lifts the Jazz cell logo without changing the other 29", () => {
+    expect(everyTeamLogoBackdrop("OKC")).toEqual({
+      alpha: ET_LOGO_ALPHA,
+      brightness: 1,
+    });
+    expect(everyTeamLogoBackdrop("UTA").alpha).toBe(ET_JAZZ_LOGO_ALPHA);
+    expect(everyTeamLogoBackdrop("UTA").brightness).toBe(ET_JAZZ_LOGO_BRIGHTNESS);
+    expect(ET_JAZZ_LOGO_ALPHA).toBeGreaterThan(ET_LOGO_ALPHA);
+    expect(ET_JAZZ_LOGO_BRIGHTNESS).toBeGreaterThan(1);
   });
 });

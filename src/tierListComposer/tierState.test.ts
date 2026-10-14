@@ -35,8 +35,11 @@ import {
   createDefaultRows,
   createExampleRows,
   DEFAULT_TIER_TITLE,
+  evenChunkSizes,
   EXAMPLE_TIER_PLACEMENT,
   exportTierFilename,
+  fillMatchingIds,
+  groupIdsByValues,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -162,6 +165,46 @@ describe("tier rows", () => {
       firstName: "LA",
       lastName: "Clippers",
     });
+  });
+
+  it("populates matching ids onto empty S, then groups highest into S", () => {
+    const empty = createDefaultRows();
+    const filled = fillMatchingIds(empty, ["OKC", "CHA", "BOS", "NYK", "LAL", "MIA"]);
+    expect(filled.added).toBe(6);
+    expect(filled.rows[0]!.teams).toEqual([
+      "OKC",
+      "CHA",
+      "BOS",
+      "NYK",
+      "LAL",
+      "MIA",
+    ]);
+    expect(fillMatchingIds(filled.rows, ["OKC", "CHI"]).added).toBe(1);
+    expect(evenChunkSizes(15, 6)).toEqual([3, 3, 3, 2, 2, 2]);
+    expect(evenChunkSizes(3, 6)).toEqual([1, 1, 1, 0, 0, 0]);
+    const values = new Map<string, number | null>([
+      ["OKC", 120],
+      ["BOS", 110],
+      ["NYK", 100],
+      ["LAL", 90],
+      ["MIA", 80],
+      ["CHA", 70],
+    ]);
+    const grouped = groupIdsByValues(filled.rows, values);
+    expect(grouped[0]!.teams).toEqual(["OKC"]);
+    expect(grouped[1]!.teams).toEqual(["BOS"]);
+    expect(grouped[2]!.teams).toEqual(["NYK"]);
+    expect(grouped[5]!.teams).toEqual(["CHA"]);
+    const withGap = groupIdsByValues(filled.rows, new Map([
+      ["OKC", 120],
+      ["BOS", 110],
+      ["NYK", null],
+      ["LAL", 90],
+      ["MIA", 80],
+      ["CHA", 70],
+    ]));
+    expect(withGap[0]!.teams).toEqual(["OKC"]);
+    expect(withGap[5]!.teams).toContain("NYK");
   });
 });
 
