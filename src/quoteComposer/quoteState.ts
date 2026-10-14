@@ -52,6 +52,9 @@ export const defaultQuoteDraft = (): QuoteDraft => ({
   showBa: true,
 });
 
+export const hasCustomPhoto = (draft: QuoteDraft) =>
+  Boolean(draft.customPhoto && draft.photoSrc);
+
 export const fillQuoteFromPlayer = (
   player: TierPlayer,
   previous: QuoteDraft,

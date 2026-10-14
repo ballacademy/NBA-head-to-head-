@@ -403,9 +403,9 @@ export function HeadlineComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — pick a team or player for the wordmark and last-
-            night body, then upload or paste an action shot. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            Empty photo first — team wordmark and name sit above the headline
+            banner, then the take. Downloads a 4:5 Instagram PNG — nothing is
+            posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -414,7 +414,7 @@ export function HeadlineComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a player"
-          hint="Sets the team wordmark and last-night body. No mugshot — upload or paste the photo."
+            hint="Sets the team wordmark above the banner and last-night body. No mugshot — upload or paste the photo."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Headline" } : {}

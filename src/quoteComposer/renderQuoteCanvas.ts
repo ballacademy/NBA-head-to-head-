@@ -4,14 +4,32 @@ import {
   paintPurpleCornerBloom,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
-import { photoZoom } from "../playerOfTheDayComposer/playerOfTheDayState";
+import {
+  photoRotate,
+  photoZoom,
+} from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  QT_ATTR_BOTTOM,
+  QT_ATTR_SIZE,
+  QT_ATTR_TRACK,
+  QT_BA_INSET,
+  QT_BA_SIZE,
+  QT_FADE_H,
+  QT_QUOTE_BOTTOM,
+  QT_QUOTE_LINE,
+  QT_QUOTE_MAX_LINES,
+  QT_QUOTE_PAD_X,
+  QT_QUOTE_SIZE,
+  QT_QUOTE_TRACK,
+} from "./quoteLayout";
 import { type QuoteDraft } from "./quoteState";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
@@ -23,6 +41,16 @@ const loadImage = (src: string) =>
     image.onerror = () => resolve(null);
     image.src = src;
   });
+
+const setLetterSpacing = (
+  context: CanvasRenderingContext2D,
+  tracking: number,
+) => {
+  const spaced = context as CanvasRenderingContext2D & { letterSpacing: string };
+  if (typeof spaced.letterSpacing === "string") {
+    spaced.letterSpacing = `${tracking}px`;
+  }
+};
 
 const wrapQuote = (
   context: CanvasRenderingContext2D,
@@ -73,20 +101,83 @@ export const renderQuoteCanvas = async (
   }
   await document.fonts?.ready.catch(() => undefined);
   const s = scale;
-  paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
+  const photoOn = input.showHeadshot !== false;
+  if (photoOn && input.photoSrc) {
+    context.fillStyle = "#0b0b0b";
+    context.fillRect(0, 0, width, height);
+    const photo = input.photoSrc.startsWith("data:")
+      ? await loadImage(input.photoSrc)
+      : await loadCorsImage(input.photoSrc);
+    if (photo) {
+      const dest = coverPanDraw(
+        photo.naturalWidth || photo.width,
+        photo.naturalHeight || photo.height,
+        0,
+        0,
+        width,
+        height,
+        input.pan.x,
+        input.pan.y,
+        photoZoom(input.pan),
+      );
+      const rotate = photoRotate(input.pan);
+      if (rotate) {
+        context.save();
+        context.translate(width / 2, height / 2);
+        context.rotate((rotate * Math.PI) / 180);
+        context.drawImage(
+          photo,
+          dest.dx - width / 2,
+          dest.dy - height / 2,
+          dest.dw,
+          dest.dh,
+        );
+        context.restore();
+      } else {
+        context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+      }
+      paintPhotoVignette(context, 0, 0, width, height);
+    }
+  } else {
+    paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
+  }
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
 
+  if (photoOn) {
+    const fade = context.createLinearGradient(
+      0,
+      height - QT_FADE_H * s,
+      0,
+      height,
+    );
+    fade.addColorStop(0, "rgba(6, 6, 8, 0)");
+    fade.addColorStop(0.32, "rgba(6, 6, 8, 0.28)");
+    fade.addColorStop(0.62, "rgba(6, 6, 8, 0.72)");
+    fade.addColorStop(1, "rgba(6, 6, 8, 0.94)");
+    context.fillStyle = fade;
+    context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
+  }
+
+  paintCellFrame(context, 0, 0, width, height, input.look, s);
+
   const quote = input.quote.replace(/\s+/g, " ").trim().toUpperCase();
-  context.font = `900 ${72 * s}px ${POSTER_FONT}`;
+  context.font = `900 ${QT_QUOTE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  const lines = wrapQuote(context, quote, width - 128 * s, 6);
-  const lineH = 76 * s;
-  const startY = 220 * s + ((860 * s - lines.length * lineH) / 2);
+  setLetterSpacing(context, QT_QUOTE_TRACK * QT_QUOTE_SIZE * s);
+  const lines = wrapQuote(
+    context,
+    quote,
+    width - QT_QUOTE_PAD_X * 2 * s,
+    QT_QUOTE_MAX_LINES,
+  );
+  const lineH = QT_QUOTE_SIZE * QT_QUOTE_LINE * s;
+  const blockH = lines.length * lineH;
+  const quoteBottom = height - QT_QUOTE_BOTTOM * s;
   lines.forEach((line, index) => {
-    const y = startY + (index + 0.5) * lineH;
+    const y = quoteBottom - blockH + (index + 0.5) * lineH;
     context.lineJoin = "round";
     context.strokeStyle = "#000";
     context.lineWidth = 3.2 * s;
@@ -94,55 +185,26 @@ export const renderQuoteCanvas = async (
     context.fillStyle = "#fff";
     context.fillText(line, width / 2, y);
   });
+  setLetterSpacing(context, 0);
 
-  if (input.showHeadshot && input.photoSrc) {
-    const photo = input.photoSrc.startsWith("data:")
-      ? await loadImage(input.photoSrc)
-      : await loadCorsImage(input.photoSrc);
-    const size = 120 * s;
-    const x = 64 * s;
-    const y = height - 56 * s - size;
-    context.save();
-    context.beginPath();
-    context.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-    context.clip();
-    if (photo) {
-      const dest = coverPanDraw(
-        photo.naturalWidth || photo.width,
-        photo.naturalHeight || photo.height,
-        x,
-        y,
-        size,
-        size,
-        input.pan.x,
-        input.pan.y,
-        photoZoom(input.pan),
-      );
-      context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
-    } else {
-      context.fillStyle = "#222";
-      context.fillRect(x, y, size, size);
-    }
-    context.restore();
-    paintCellFrame(context, x, y, size, size, input.look, s);
-  }
-
-  context.font = `900 ${28 * s}px ${POSTER_FONT}`;
-  context.textAlign = "left";
+  context.font = `900 ${QT_ATTR_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
   context.textBaseline = "middle";
+  setLetterSpacing(context, QT_ATTR_TRACK * QT_ATTR_SIZE * s);
   context.fillStyle = "#fff";
   context.fillText(
     input.attribution.trim().toUpperCase(),
-    200 * s,
-    height - 72 * s,
-    width - 280 * s,
+    width / 2,
+    height - QT_ATTR_BOTTOM * s,
+    width - QT_QUOTE_PAD_X * 2 * s,
   );
+  setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
-      const size = 72 * s;
-      const inset = 36 * s;
+      const size = QT_BA_SIZE * s;
+      const inset = QT_BA_INSET * s;
       if (input.purpleFlair) {
         paintPurpleBaGlow(context, width - inset - size, inset, size);
       }

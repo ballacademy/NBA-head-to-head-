@@ -28,12 +28,16 @@ import {
   HL_HEADLINE_SIZE,
   HL_HEADLINE_TRACK,
   HL_PAD_X,
-  HL_TYPE_BOTTOM,
+  HL_BODY_LINE,
+  HL_PLATE_BODY_GAP,
   HL_WATERMARK,
   HL_WATERMARK_SIZE,
   HL_CITY_SIZE,
   HL_NICK_SIZE,
+  HL_WATERMARK_TOP,
+  HL_WORDMARK_LINE,
   HL_WORDMARK_TRACK,
+  headlineTypeStack,
 } from "./headlineLayout";
 import {
   headlineLabel,
@@ -208,7 +212,7 @@ export const renderHeadlineCanvas = async (
     if (logo) {
       const size = HL_WATERMARK_SIZE * s;
       const x = (width - size) / 2;
-      const y = height - (HL_TYPE_BOTTOM + 40) * s - size * 0.72;
+      const y = HL_WATERMARK_TOP * s;
       context.save();
       context.globalAlpha = HL_WATERMARK;
       drawCenteredLogo(context, logo, x, y, size, size, {
@@ -231,12 +235,11 @@ export const renderHeadlineCanvas = async (
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
   const bodyLines = wrapLines(context, body, plateW, 3);
   setLetterSpacing(context, 0);
-  const bodyBlock = bodyLines.length * HL_BODY_SIZE * 1.15 * s;
-  const plateY =
-    height - HL_TYPE_BOTTOM * s - bodyBlock - (bodyLines.length ? 18 * s : 0) - plateH;
+  const stack = headlineTypeStack(bodyLines.length, Boolean(team));
+  const plateY = stack.plateTop * s;
 
   const marks = splitTeamWordmark(team);
-  const paintWordmark = (text: string, size: number, y: number) => {
+  const paintWordmark = (text: string, size: number, top: number) => {
     if (!text) {
       return;
     }
@@ -248,13 +251,13 @@ export const renderHeadlineCanvas = async (
     context.miterLimit = 2;
     context.strokeStyle = "#0a0a0a";
     context.lineWidth = 4 * s;
-    context.strokeText(text, width / 2, y);
+    context.strokeText(text, width / 2, (top + size * HL_WORDMARK_LINE / 2) * s);
     context.fillStyle = "#fff";
-    context.fillText(text, width / 2, y);
+    context.fillText(text, width / 2, (top + size * HL_WORDMARK_LINE / 2) * s);
     setLetterSpacing(context, 0);
   };
-  paintWordmark(marks.city, HL_CITY_SIZE, plateY + 10 * s);
-  paintWordmark(marks.nick, HL_NICK_SIZE, plateY + plateH - 8 * s);
+  paintWordmark(marks.city, HL_CITY_SIZE, stack.cityTop);
+  paintWordmark(marks.nick, HL_NICK_SIZE, stack.nickTop);
 
   context.fillStyle = "#fff";
   context.fillRect(plateX, plateY, plateW, plateH);
@@ -294,7 +297,11 @@ export const renderHeadlineCanvas = async (
   context.textBaseline = "middle";
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
   bodyLines.forEach((line, index) => {
-    const y = plateY + plateH + 18 * s + (index + 0.5) * HL_BODY_SIZE * 1.15 * s;
+    const y =
+      plateY +
+      plateH +
+      HL_PLATE_BODY_GAP * s +
+      (index + 0.5) * HL_BODY_SIZE * HL_BODY_LINE * s;
     strokeFillText(context, line, width / 2, y, "#fff", "#000", 2.4 * s);
   });
   setLetterSpacing(context, 0);

@@ -8,7 +8,13 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { playInSeeds, type PlayInDraft } from "./playInState";
+import {
+  PI_BYE_LABEL,
+  PI_LOGO_FIT,
+  playInBoardCols,
+  type PlayInSlotRect,
+} from "./playInLayout";
+import type { PlayInDraft } from "./playInState";
 
 interface PlayInGraphicProps {
   draft: PlayInDraft;
@@ -25,7 +31,7 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
-    const seeds = playInSeeds(draft.size);
+    const cols = playInBoardCols(draft.size);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -56,31 +62,42 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
       return () => observer.disconnect();
     }, []);
 
-    const column = (conference: "east" | "west", label: string) => (
-      <div className="pi-col">
-        <p className="pi-conf">{label}</p>
-        {seeds.map((seed, index) => {
-          const id = (conference === "east" ? draft.east : draft.west)[index];
-          const team = getTeam(id);
-          return (
-            <button
-              key={`${conference}-${seed}`}
-              type="button"
-              className="pi-slot"
-              aria-label={`${label} seed ${seed}`}
-              onClick={() => onPick(conference, index)}
-            >
-              <span className="pi-seed">{seed}</span>
-              {team ? (
-                <TeamLogo src={team.logoSrc} label={team.name} />
-              ) : (
-                <span className="pi-empty">PICK</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    );
+    const slotButton = (
+      conference: "east" | "west",
+      slot: PlayInSlotRect,
+      bye = false,
+    ) => {
+      const ids = conference === "east" ? draft.east : draft.west;
+      const team = getTeam(ids[slot.index]);
+      return (
+        <button
+          key={`${conference}-${slot.seed}`}
+          type="button"
+          className={["pi-slot", bye ? "is-bye" : ""].filter(Boolean).join(" ")}
+          style={{
+            left: `calc(${slot.x} * var(--u))`,
+            top: `calc(${slot.y} * var(--u))`,
+            width: `calc(${slot.w} * var(--u))`,
+            height: `calc(${slot.h} * var(--u))`,
+          }}
+          aria-label={`${conference} seed ${slot.seed}${bye ? ` ${PI_BYE_LABEL}` : ""}`}
+          onClick={() => onPick(conference, slot.index)}
+        >
+          <span className="pi-seed">{slot.seed}</span>
+          {bye ? <span className="pi-bye">{PI_BYE_LABEL}</span> : null}
+          {team ? (
+            <TeamLogo
+              src={team.logoSrc}
+              label={team.name}
+              fitX={PI_LOGO_FIT}
+              fitY={PI_LOGO_FIT}
+            />
+          ) : (
+            <span className="pi-empty">PICK</span>
+          )}
+        </button>
+      );
+    };
 
     return (
       <article
@@ -111,10 +128,47 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
           aria-label="Play-in title"
           onChange={(event) => onComposerTextChange(event, onTitleChange, 32)}
         />
-        <div className="pi-cols">
-          {column("east", "EAST")}
-          {column("west", "WEST")}
-        </div>
+        {cols.map((col) => (
+          <div key={col.conference}>
+            <p
+              className="pi-conf"
+              style={{
+                left: `calc(${col.x} * var(--u))`,
+                top: `calc(${col.y} * var(--u))`,
+                width: `calc(${col.w} * var(--u))`,
+              }}
+            >
+              {col.label}
+            </p>
+            {col.bye ? slotButton(col.conference, col.bye, true) : null}
+            {col.matches.map((match) => (
+              <div key={`${col.conference}-${match.label}`}>
+                <p
+                  className="pi-match-label"
+                  style={{
+                    left: `calc(${col.x} * var(--u))`,
+                    top: `calc(${match.labelY - 11} * var(--u))`,
+                    width: `calc(${col.w} * var(--u))`,
+                  }}
+                >
+                  {match.label}
+                </p>
+                {slotButton(col.conference, match.slots[0])}
+                {slotButton(col.conference, match.slots[1])}
+                <div
+                  className={`pi-bracket is-${match.line.side}`}
+                  aria-hidden="true"
+                  style={{
+                    left: `calc(${match.line.x} * var(--u))`,
+                    top: `calc(${match.line.y} * var(--u))`,
+                    width: `calc(${match.line.w} * var(--u))`,
+                    height: `calc(${match.line.h} * var(--u))`,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
       </article>
     );
   },

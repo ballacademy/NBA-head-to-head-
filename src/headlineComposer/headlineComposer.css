@@ -65,11 +65,11 @@
 .hl-watermark {
   position: absolute;
   left: 50%;
-  bottom: calc(40 * var(--u));
-  width: calc(620 * var(--u));
-  height: calc(620 * var(--u));
+  top: calc(170 * var(--u));
+  width: calc(520 * var(--u));
+  height: calc(520 * var(--u));
   transform: translateX(-50%);
-  opacity: 0.16;
+  opacity: 0.12;
   pointer-events: none;
   z-index: 2;
 }
@@ -95,7 +95,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 0.78;
+  line-height: 0.82;
   pointer-events: none;
   white-space: nowrap;
   -webkit-text-stroke: calc(4 * var(--u)) #0a0a0a;
@@ -105,13 +105,14 @@
 }
 
 .hl-wordmark-city {
-  margin-bottom: calc(-28 * var(--u));
-  font-size: calc(92 * var(--u));
+  margin-bottom: calc(4 * var(--u));
+  font-size: calc(78 * var(--u));
 }
 
 .hl-wordmark-nick {
-  margin-top: calc(-32 * var(--u));
-  font-size: calc(108 * var(--u));
+  margin-top: 0;
+  margin-bottom: calc(22 * var(--u));
+  font-size: calc(92 * var(--u));
 }
 
 .hl-headline-plate {

@@ -294,8 +294,9 @@ export function PlayInComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            8 or 10 play-in teams on one 4:5. East and West columns, seed marks,
-            pick clubs. Downloads a 4:5 Instagram PNG — nothing is posted.
+            8 or 10 play-in teams on one 4:5. Seeds, 7v8 / 9v10 matchup labels,
+            connecting lines, and big logos. Downloads a 4:5 Instagram PNG —
+            nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

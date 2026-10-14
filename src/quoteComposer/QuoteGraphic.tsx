@@ -38,6 +38,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
+    const photoOn = draft.showHeadshot !== false;
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -73,6 +74,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
         ref={setRefs}
         className={[
           "qt-board",
+          photoOn ? "has-photo" : "",
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
@@ -82,6 +84,20 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
         style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
         aria-label="Instagram quote graphic"
       >
+        {photoOn ? (
+          <PhotoFrame
+            src={draft.photoSrc}
+            label={draft.attribution || "quote photo"}
+            pan={draft.pan}
+            custom={draft.customPhoto}
+            empty={!draft.photoSrc}
+            vignette
+            onPan={onPan}
+            onUpload={onUpload}
+            onPick={onPick}
+          />
+        ) : null}
+        {photoOn ? <div className="qt-fade" aria-hidden="true" /> : null}
         {draft.showBa !== false ? (
           <img
             className="composer-ba"
@@ -100,20 +116,6 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
             onQuoteChange(event.target.value.slice(0, QUOTE_MAX))
           }
         />
-        {draft.showHeadshot ? (
-          <div className="qt-shot">
-            <PhotoFrame
-              src={draft.photoSrc}
-              label={draft.attribution || "headshot"}
-              pan={draft.pan}
-              custom={draft.customPhoto}
-              empty={!draft.photoSrc}
-              onPan={onPan}
-              onUpload={onUpload}
-              onPick={onPick}
-            />
-          </div>
-        ) : null}
         <input
           className="qt-attr"
           value={draft.attribution}

@@ -17,6 +17,7 @@ import {
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -27,6 +28,7 @@ import {
   ATTRIB_MAX,
   defaultQuoteDraft,
   fillQuoteFromPlayer,
+  hasCustomPhoto,
   isQuoteDraft,
   QUOTE_MAX,
   type QuoteDraft,
@@ -54,6 +56,10 @@ export function QuoteComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(QUOTE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [keepPrompt, setKeepPrompt] = useState<{
+    playerId: string;
+    playerName: string;
+  } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<QuoteDraft>();
 
   useEffect(() => {
@@ -147,7 +153,7 @@ export function QuoteComposerApp() {
           />
         </label>
         <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Headshot</span>
+          <span className="sc-toolbar__eyebrow">Photo</span>
           <button
             type="button"
             className={draft.showHeadshot ? "sc-chip is-on" : "sc-chip"}
@@ -283,8 +289,8 @@ export function QuoteComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Big pull-quote on metal with optional round headshot and BA.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            Centered player photo with pan/zoom, then a readable pull-quote on
+            the fade. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -292,7 +298,7 @@ export function QuoteComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a speaker"
-          hint="Optional small headshot. Attribution fills from the name."
+          hint="Fills the centered photo and the name line. Upload or paste to replace the headshot."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Quote" } : {}
@@ -300,6 +306,10 @@ export function QuoteComposerApp() {
           onPick={(playerId) => {
             const player = getPlayer(playerId);
             if (!player) {
+              return;
+            }
+            if (hasCustomPhoto(draft)) {
+              setKeepPrompt({ playerId, playerName: player.name });
               return;
             }
             push(draft);
@@ -317,6 +327,30 @@ export function QuoteComposerApp() {
             setPickerOpen(false);
           }}
           onClose={closePicker}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() => {
+            const player = getPlayer(keepPrompt.playerId);
+            if (player) {
+              push(draft);
+              setDraft((current) => fillQuoteFromPlayer(player, current, true));
+            }
+            setKeepPrompt(null);
+            setPickerOpen(false);
+          }}
+          onReplace={() => {
+            const player = getPlayer(keepPrompt.playerId);
+            if (player) {
+              push(draft);
+              setDraft((current) => fillQuoteFromPlayer(player, current, false));
+            }
+            setKeepPrompt(null);
+            setPickerOpen(false);
+          }}
+          onClose={() => setKeepPrompt(null)}
         />
       ) : null}
     </div>
