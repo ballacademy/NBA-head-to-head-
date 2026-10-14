@@ -33,6 +33,7 @@ import {
   DEFAULT_PYRAMID_TITLE,
   defaultPyramidDraft,
   parsePyramidRows,
+  pyramidSlotPops,
   PYRAMID_HEADSHOT_PAN,
   resizePyramidSlots,
   usedPyramidPlayerIds,
@@ -97,6 +98,7 @@ describe("pyramid composer", () => {
     expect(draft.showBa).toBe(true);
     expect(draft.rows).toBe(4);
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
+    expect(draft.showNames).toBe(false);
   });
 
   it("fills each square with a shinier kyber violet, not magenta studs", () => {
@@ -131,5 +133,13 @@ describe("pyramid composer", () => {
     expect(next[6]?.playerId).toBe(luka.id);
     expect(next[6]?.pan).toEqual(PYRAMID_HEADSHOT_PAN);
     expect(usedPyramidPlayerIds(next)[luka.id]).toMatch(/^Slot /);
+    expect(pyramidSlotPops(next[6]!)).toBe(true);
+    expect(
+      pyramidSlotPops({
+        ...next[6]!,
+        customPhoto: true,
+        photoSrc: "data:image/png;base64,xx",
+      }),
+    ).toBe(false);
   });
 });

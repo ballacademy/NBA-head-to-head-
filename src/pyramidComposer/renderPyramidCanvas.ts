@@ -40,6 +40,7 @@ import {
   PYR_DEFAULT_ROWS,
   PYR_POP_RIM,
   PYR_POP_RIM_GLOW,
+  PYR_QUIET_FRAME,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
   PYR_TITLE_Y,
@@ -47,7 +48,7 @@ import {
   pyramidCellRect,
   pyramidSlotCount,
 } from "./pyramidLayout";
-import { pyramidTitle, type PyramidSlot } from "./pyramidState";
+import { pyramidSlotPops, pyramidTitle, type PyramidSlot } from "./pyramidState";
 
 export { canvasToPngBlob };
 
@@ -397,6 +398,7 @@ export interface PyramidRenderInput {
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
+  showNames?: boolean;
 }
 
 export const renderPyramidCanvas = async (
@@ -459,10 +461,16 @@ export const renderPyramidCanvas = async (
     const y = rect.y * s;
     const w = rect.w * s;
     const h = rect.h * s;
-    const pop = rect.pop * s;
+    const popping = slot ? pyramidSlotPops(slot) : false;
+    const pop = popping ? rect.pop * s : 0;
     const drawY = y - pop;
     const drawH = h + pop;
-    const filled = Boolean(slot?.photoSrc);
+    const quietLine =
+      input.look === "none"
+        ? 0
+        : input.purpleFlair
+          ? frameLinePx(s, input.look)
+          : Math.max(1, Math.round(PYR_QUIET_FRAME * s));
     const team = getTeam(slot?.teamId);
     paintPyramidCellFill(
       context,
@@ -491,20 +499,21 @@ export const renderPyramidCanvas = async (
       context.drawImage(sprite, x, drawY);
     }
     context.restore();
-    if (sprite && input.purpleFlair) {
+    if (sprite && popping && input.purpleFlair) {
       paintPopHeadRim(context, sprite, x, drawY, pop, s);
     }
-    const rest = filled ? FRAME_FRONT : FRAME_ALL;
-    paintCellFrameEdges(context, x, y, w, h, input.look, s, rest);
+    const rest = popping ? FRAME_FRONT : FRAME_ALL;
+    paintCellFrameEdges(context, x, y, w, h, input.look, s, rest, quietLine);
     if (input.purpleFlair) {
       paintPurplePlateEdges(context, x, y, w, h, s, rest);
     }
-    const line = frameLinePx(s, input.look);
+    const line = quietLine;
     const purpleLine = input.purpleFlair ? purplePlateLinePx(s) : 0;
-    const gap = sprite
-      ? headGapAtCellTop(sprite, pop, s, Math.max(line, purpleLine) + s)
-      : null;
-    if (filled) {
+    const gap =
+      sprite && popping
+        ? headGapAtCellTop(sprite, pop, s, Math.max(line, purpleLine) + s)
+        : null;
+    if (popping) {
       paintGappedTopStroke(
         context,
         x,
@@ -535,6 +544,37 @@ export const renderPyramidCanvas = async (
       }
     } else if (input.purpleFlair) {
       paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
+    }
+  }
+
+  if (input.showNames) {
+    for (let index = 0; index < slotCount; index += 1) {
+      const slot = input.slots[index]!;
+      const name = `${slot.firstName} ${slot.lastName}`.replace(/\s+/g, " ").trim();
+      if (!name) {
+        continue;
+      }
+      const rect = pyramidCellRect(index, rowCount);
+      const x = rect.x * s;
+      const y = rect.y * s;
+      const w = rect.w * s;
+      const h = rect.h * s;
+      const fadeH = h * 0.42;
+      const fade = context.createLinearGradient(0, y + h - fadeH, 0, y + h);
+      fade.addColorStop(0, "rgba(0,0,0,0)");
+      fade.addColorStop(0.45, "rgba(0,0,0,0.7)");
+      fade.addColorStop(1, "rgba(0,0,0,0.94)");
+      context.fillStyle = fade;
+      context.fillRect(x, y + h - fadeH, w, fadeH);
+      context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "bottom";
+      context.fillStyle = "#fff";
+      context.shadowColor = "rgba(0,0,0,0.88)";
+      context.shadowOffsetX = s;
+      context.shadowOffsetY = 1.1 * s;
+      context.fillText(name.toUpperCase(), x + w / 2, y + h - 8 * s, w - 12 * s);
+      context.shadowColor = "transparent";
     }
   }
 

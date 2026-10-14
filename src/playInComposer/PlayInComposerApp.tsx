@@ -22,6 +22,7 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { fetchConferenceStandingsBundle } from "../standingsComposer/nbaStandings";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { getTeam } from "../standingsComposer/teams";
 import { PlayInGraphic } from "./PlayInGraphic";
@@ -29,11 +30,13 @@ import { exportPlayInPng } from "./exportPlayInPng";
 import { renderPlayInCanvas } from "./renderPlayInCanvas";
 import {
   defaultPlayInDraft,
+  emptyPlayInScores,
   isPlayInDraft,
-  parsePlayInSize,
+  normalizePlayInDraft,
+  patchPlayInScore,
   PLAY_IN_SIZES,
   playInSeeds,
-  resizeSide,
+  playInSlotsFromStandings,
   type PlayInDraft,
   type PlayInSize,
 } from "./playInState";
@@ -46,14 +49,7 @@ const SAVES_KEY = "ddgm:play-in-composer:saves";
 const loadDraft = (): PlayInDraft => {
   const stored = readJson<Partial<PlayInDraft>>(STORAGE_KEY);
   if (isPlayInDraft(stored)) {
-    const size = parsePlayInSize(stored.size);
-    return {
-      ...stored,
-      size,
-      east: resizeSide(stored.east, size),
-      west: resizeSide(stored.west, size),
-      showBa: stored.showBa !== false,
-    };
+    return normalizePlayInDraft(stored);
   }
   return defaultPlayInDraft();
 };
@@ -89,12 +85,33 @@ export function PlayInComposerApp() {
       return;
     }
     push(draft);
-    setDraft((current) => ({
-      ...current,
-      size,
-      east: resizeSide(current.east, size),
-      west: resizeSide(current.west, size),
-    }));
+    setDraft((current) =>
+      normalizePlayInDraft({
+        ...current,
+        size,
+      }),
+    );
+  };
+
+  const autoFill = async () => {
+    setStatus("Loading standings…");
+    try {
+      const [east, west] = await Promise.all([
+        fetchConferenceStandingsBundle("East"),
+        fetchConferenceStandingsBundle("West"),
+      ]);
+      push(draft);
+      setDraft((current) => ({
+        ...current,
+        east: playInSlotsFromStandings(current.size, east.slots),
+        west: playInSlotsFromStandings(current.size, west.slots),
+        records: { ...east.records, ...west.records },
+      }));
+      setStatus("Filled 7–10 from current standings.");
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not load standings.");
+    }
   };
 
   const handleExport = async (filename?: string, story = false) => {
@@ -174,6 +191,92 @@ export function PlayInComposerApp() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => void autoFill()}
+        >
+          Auto-fill 7–10
+        </button>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">W–L</span>
+          <button
+            type="button"
+            className={draft.showWl ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={Boolean(draft.showWl)}
+            onClick={() =>
+              setDraft((current) => ({ ...current, showWl: !current.showWl }))
+            }
+          >
+            {draft.showWl ? "On" : "Off"}
+          </button>
+        </label>
+        {(
+          [
+            ["East 7v8", "east", "sevenEight"],
+            ["East 9v10", "east", "nineTen"],
+            ["West 7v8", "west", "sevenEight"],
+            ["West 9v10", "west", "nineTen"],
+          ] as const
+        ).map(([label, conference, game]) => {
+          const scores =
+            (conference === "east" ? draft.eastScores : draft.westScores) ??
+            emptyPlayInScores();
+          const pair = scores[game];
+          return (
+            <label key={label} className="sc-field">
+              {label}
+              <span className="sc-field__row">
+                <input
+                  value={pair[0]}
+                  maxLength={3}
+                  inputMode="numeric"
+                  aria-label={`${label} first score`}
+                  onChange={(event) =>
+                    setDraft((current) => {
+                      const currentScores =
+                        (conference === "east"
+                          ? current.eastScores
+                          : current.westScores) ?? emptyPlayInScores();
+                      const nextScores = patchPlayInScore(
+                        currentScores,
+                        game,
+                        0,
+                        event.target.value,
+                      );
+                      return conference === "east"
+                        ? { ...current, eastScores: nextScores }
+                        : { ...current, westScores: nextScores };
+                    })
+                  }
+                />
+                <input
+                  value={pair[1]}
+                  maxLength={3}
+                  inputMode="numeric"
+                  aria-label={`${label} second score`}
+                  onChange={(event) =>
+                    setDraft((current) => {
+                      const currentScores =
+                        (conference === "east"
+                          ? current.eastScores
+                          : current.westScores) ?? emptyPlayInScores();
+                      const nextScores = patchPlayInScore(
+                        currentScores,
+                        game,
+                        1,
+                        event.target.value,
+                      );
+                      return conference === "east"
+                        ? { ...current, eastScores: nextScores }
+                        : { ...current, westScores: nextScores };
+                    })
+                  }
+                />
+              </span>
+            </label>
+          );
+        })}
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
@@ -184,13 +287,7 @@ export function PlayInComposerApp() {
           storageKey={SAVES_KEY}
           board={draft}
           onLoad={(next) => {
-            const size = parsePlayInSize(next.size);
-            setDraft({
-              ...next,
-              size,
-              east: resizeSide(next.east, size),
-              west: resizeSide(next.west, size),
-            });
+            setDraft(normalizePlayInDraft(next));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -294,9 +391,10 @@ export function PlayInComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Real play-in poster: 7v8 for the 7 seed, 9v10, then the 8-seed
-            game. Huge logos, seed badges, labeled paths. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            Auto-fill seeds 7–10 from standings. Optional W–L, scores on 7v8
+            and 9v10, and the 9v10 winner drops onto the 8-seed plate. One
+            label per matchup. Downloads a 4:5 Instagram PNG — nothing is
+            posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

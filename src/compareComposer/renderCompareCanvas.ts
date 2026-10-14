@@ -31,8 +31,15 @@ import {
   CMP_SUB_SIZE,
   CMP_TITLE_H,
   CMP_TITLE_SIZE,
+  CMP_LABEL_SIZE,
+  CMP_NAME_SIZE,
+  CMP_LEAD,
 } from "./compareLayout";
-import { type CompareDraft } from "./compareState";
+import {
+  compareSideCaption,
+  leadingSide,
+  type CompareDraft,
+} from "./compareState";
 
 export { canvasToPngBlob };
 
@@ -176,6 +183,33 @@ export const renderCompareCanvas = async (
       }
     }
     paintCellFrame(context, x, photoY, CMP_PHOTO_W * s, photoH, input.look, s);
+    const caption = compareSideCaption(person);
+    if (caption) {
+      const fadeH = 96 * s;
+      const fade = context.createLinearGradient(
+        0,
+        photoY + photoH - fadeH,
+        0,
+        photoY + photoH,
+      );
+      fade.addColorStop(0, "rgba(0,0,0,0)");
+      fade.addColorStop(0.45, "rgba(0,0,0,0.72)");
+      fade.addColorStop(1, "rgba(0,0,0,0.92)");
+      context.fillStyle = fade;
+      context.fillRect(x, photoY + photoH - fadeH, CMP_PHOTO_W * s, fadeH);
+      context.font = `900 ${CMP_NAME_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "bottom";
+      setLetterSpacing(context, 0.08 * CMP_NAME_SIZE * s);
+      context.fillStyle = "#fff";
+      context.fillText(
+        caption.toUpperCase(),
+        x + (CMP_PHOTO_W * s) / 2,
+        photoY + photoH - 16 * s,
+        CMP_PHOTO_W * s - 20 * s,
+      );
+      setLetterSpacing(context, 0);
+    }
   }
 
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
@@ -191,36 +225,45 @@ export const renderCompareCanvas = async (
   );
   setLetterSpacing(context, 0);
 
+  const rowCount = Math.max(input.stats.length, 1);
+  const rowStart = photoY + 88 * s;
+  const rowSpan = Math.min(150 * s, (photoH - 120 * s) / rowCount);
   input.stats.forEach((stat, index) => {
-    const y = photoY + 110 * s + index * 150 * s;
+    const y = rowStart + index * rowSpan;
+    const lead = leadingSide(stat.left, stat.right);
+    const mid = statsX + statsW / 2;
+    context.fillStyle = "rgba(255,255,255,0.45)";
+    context.fillRect(mid - s, y - 26 * s, 2 * s, 52 * s);
     context.font = `900 ${CMP_STAT_SIZE * s}px ${POSTER_FONT}`;
+    context.textBaseline = "middle";
     context.textAlign = "right";
     strokeFill(
       context,
       stat.left,
-      statsX + statsW / 2 - 52 * s,
-      y,
-      "#fff",
+      mid - 16 * s,
+      y - 6 * s,
+      lead === 0 ? CMP_LEAD : "#fff",
       2.4 * s,
     );
     context.textAlign = "left";
     strokeFill(
       context,
       stat.right,
-      statsX + statsW / 2 + 52 * s,
-      y,
-      "#fff",
+      mid + 16 * s,
+      y - 6 * s,
+      lead === 1 ? CMP_LEAD : "#fff",
       2.4 * s,
     );
-    context.textAlign = "center";
-    context.font = `900 ${16 * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.08 * 16 * s);
-    context.fillStyle = "#fff";
-    context.fillText((stat.label || "").toUpperCase(), statsX + statsW / 2, y);
+    const unit = (stat.label || "").toUpperCase();
+    context.font = `900 ${CMP_LABEL_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.14 * CMP_LABEL_SIZE * s);
+    context.textAlign = "right";
+    context.fillStyle = lead === 0 ? CMP_LEAD : "rgba(255,255,255,0.78)";
+    context.fillText(unit, mid - 16 * s, y + 22 * s);
+    context.textAlign = "left";
+    context.fillStyle = lead === 1 ? CMP_LEAD : "rgba(255,255,255,0.78)";
+    context.fillText(unit, mid + 16 * s, y + 22 * s);
     setLetterSpacing(context, 0);
-    context.fillStyle = "rgba(255,255,255,0.45)";
-    context.fillRect(statsX + statsW / 2 - s, y - 48 * s, 2 * s, 18 * s);
-    context.fillRect(statsX + statsW / 2 - s, y + 22 * s, 2 * s, 18 * s);
   });
 
   const subY = height - 36 * s - CMP_SUB_H * s;
@@ -238,7 +281,7 @@ export const renderCompareCanvas = async (
   context.fillText(
     input.subtitle.trim().toUpperCase(),
     width / 2,
-    subY + CMP_SUB_H * s / 2,
+    subY + (CMP_SUB_H * s) / 2,
     titleW - 24 * s,
   );
   setLetterSpacing(context, 0);

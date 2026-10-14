@@ -2,27 +2,26 @@ import { describe, expect, it } from "vitest";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "./statCardLayout";
 import {
+  addStatCardLine,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
   playerName,
+  STC_STAT_COUNT,
 } from "./statCardState";
 
 describe("stat card composer", () => {
-  it("is a 4:5 split with empty photo-first and four huge stats", () => {
+  it("is a 4:5 split with empty photo-first and three huge stats", () => {
     expect(GRAPHIC_WIDTH).toBe(1200);
     expect(GRAPHIC_HEIGHT).toBe(1500);
     expect(GRAPHIC_ASPECT).toBeCloseTo(0.8);
     const draft = defaultStatCardDraft();
     expect(draft.photoSrc).toBeNull();
     expect(draft.customPhoto).toBe(false);
-    expect(draft.stats).toHaveLength(4);
-    expect(draft.stats.map((line) => line.label)).toEqual([
-      "PTS",
-      "REB",
-      "AST",
-      "3PM",
-    ]);
+    expect(STC_STAT_COUNT).toBe(3);
+    expect(draft.stats).toHaveLength(3);
+    expect(draft.stats.map((line) => line.label)).toEqual(["PTS", "REB", "AST"]);
+    expect(draft.source).toBe("last-game");
     expect(draft.showBa).toBe(true);
   });
 
@@ -57,6 +56,7 @@ describe("stat card composer", () => {
     });
     expect(filled.stats[0]?.value).toBe("29");
     expect(filled.stats[2]?.value).toBe("6");
-    expect(filled.stats[3]?.value).toBe("6-11");
+    expect(filled.stats).toHaveLength(3);
+    expect(addStatCardLine(filled.stats)).toHaveLength(4);
   });
 });

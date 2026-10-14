@@ -26,21 +26,36 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import {
+  everyTeamCurrentSeason,
+  everyTeamSeasons,
+  loadEveryTeamRosters,
+} from "../everyTeamComposer/historicalRosters";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { CompareGraphic } from "./CompareGraphic";
 import { exportComparePng } from "./exportComparePng";
 import { renderCompareCanvas } from "./renderCompareCanvas";
 import {
+  applySideStatValues,
+  autoCompareStatsLabel,
   clearCompareSide,
+  COMPARE_STAT_PRESETS,
   defaultCompareDraft,
+  effectiveCompareSeason,
   fillCompareSide,
   hasCustomPhoto,
   isCompareDraft,
+  normalizeCompareDraft,
+  parseCompareStatKey,
+  parseCompareStatsMode,
   patchCompareStat,
   setComparePhoto,
+  setCompareStatKey,
   statsFromLastGame,
+  statsFromSeason,
   type CompareDraft,
+  type CompareStatsMode,
 } from "./compareState";
 import "@fontsource/montserrat/latin-900.css";
 import "./compareComposer.css";
@@ -51,7 +66,7 @@ const SAVES_KEY = "ddgm:compare-composer:saves";
 const loadDraft = (): CompareDraft => {
   const stored = readJson<Partial<CompareDraft>>(STORAGE_KEY);
   if (isCompareDraft(stored)) {
-    return { ...stored, showBa: stored.showBa !== false };
+    return normalizeCompareDraft(stored);
   }
   return defaultCompareDraft();
 };
@@ -64,6 +79,7 @@ export function CompareComposerApp() {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [rostersReady, setRostersReady] = useState(false);
   const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -78,8 +94,15 @@ export function CompareComposerApp() {
   }, []);
 
   useEffect(() => {
-    setDraft(loadDraft());
-    setHydrated(true);
+    void loadEveryTeamRosters()
+      .then(() => setRostersReady(true))
+      .catch((error: unknown) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setDraft(loadDraft());
+        setHydrated(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -89,16 +112,38 @@ export function CompareComposerApp() {
     writeJson(STORAGE_KEY, draft);
   }, [draft, hydrated]);
 
-  const fillStats = async (side: 0 | 1, playerId: string) => {
-    const game = await fetchLastGame(playerId);
-    const values = statsFromLastGame(game);
-    setDraft((current) => ({
-      ...current,
-      stats: current.stats.map((stat, index) => ({
-        ...stat,
-        [side === 0 ? "left" : "right"]: values[index] ?? "",
-      })),
-    }));
+  const fillStats = async (
+    snapshot: CompareDraft,
+    side?: 0 | 1,
+    playerId?: string,
+  ) => {
+    const mode = parseCompareStatsMode(snapshot.statsMode);
+    const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
+    let nextStats = snapshot.stats;
+    for (const index of sides) {
+      const person = snapshot.sides[index]!;
+      const id = playerId && index === side ? playerId : person.playerId;
+      if (!id) {
+        nextStats = applySideStatValues(nextStats, index, nextStats.map(() => ""));
+        continue;
+      }
+      if (mode === "game") {
+        const game = await fetchLastGame(id);
+        nextStats = applySideStatValues(
+          nextStats,
+          index,
+          statsFromLastGame(game, nextStats),
+        );
+      } else {
+        const season = effectiveCompareSeason(snapshot, index);
+        nextStats = applySideStatValues(
+          nextStats,
+          index,
+          statsFromSeason(id, person.teamId, season, nextStats),
+        );
+      }
+    }
+    setDraft((current) => ({ ...current, stats: nextStats }));
   };
 
   const commitPick = (side: 0 | 1, playerId: string, keep: boolean) => {
@@ -107,15 +152,18 @@ export function CompareComposerApp() {
       return;
     }
     push(draft);
-    setDraft((current) => {
-      const sides = [...current.sides] as CompareDraft["sides"];
-      sides[side] = fillCompareSide(player, current.sides[side]!, keep);
-      return { ...current, sides };
-    });
+    const nextSides = [...draft.sides] as CompareDraft["sides"];
+    nextSides[side] = fillCompareSide(player, draft.sides[side]!, keep);
+    const next = { ...draft, sides: nextSides };
+    setDraft(next);
     setPicker(null);
     setKeepPrompt(null);
-    setStatus(`Filled ${player.name} on the ${side === 0 ? "left" : "right"}.`);
-    void fillStats(side, player.id);
+    setStatus(
+      keep
+        ? `Kept the photo for ${player.name}.`
+        : `Filled ${player.name} — upload an action photo.`,
+    );
+    void fillStats(next, side, player.id);
   };
 
   const handlePick = (playerId: string) => {
@@ -136,6 +184,52 @@ export function CompareComposerApp() {
       return;
     }
     commitPick(picker, player.id, false);
+  };
+
+  const setStatsMode = (statsMode: CompareStatsMode) => {
+    if (parseCompareStatsMode(draft.statsMode) === statsMode) {
+      return;
+    }
+    const season = draft.season || everyTeamCurrentSeason();
+    const previousAuto = autoCompareStatsLabel(
+      parseCompareStatsMode(draft.statsMode),
+      season,
+    );
+    const statsLabel =
+      !draft.statsLabel.trim() || draft.statsLabel === previousAuto
+        ? autoCompareStatsLabel(statsMode, season)
+        : draft.statsLabel;
+    const next = { ...draft, statsMode, statsLabel };
+    setDraft(next);
+    void fillStats(next);
+  };
+
+  const setSharedSeason = (season: string) => {
+    const mode = parseCompareStatsMode(draft.statsMode);
+    const previousAuto = autoCompareStatsLabel(mode, draft.season || season);
+    const statsLabel =
+      mode === "season" &&
+      (!draft.statsLabel.trim() || draft.statsLabel === previousAuto)
+        ? autoCompareStatsLabel(mode, season)
+        : draft.statsLabel;
+    const next = { ...draft, season, statsLabel };
+    setDraft(next);
+    if (mode === "season") {
+      void fillStats(next);
+    }
+  };
+
+  const setSideSeason = (side: 0 | 1, value: string) => {
+    const sideSeasons = [...(draft.sideSeasons ?? [null, null])] as [
+      string | null,
+      string | null,
+    ];
+    sideSeasons[side] = value || null;
+    const next = { ...draft, sideSeasons };
+    setDraft(next);
+    if (parseCompareStatsMode(draft.statsMode) === "season") {
+      void fillStats(next, side);
+    }
   };
 
   const handleExport = async (filename?: string, story = false) => {
@@ -188,6 +282,8 @@ export function CompareComposerApp() {
       used[side.playerId] = index === 0 ? "Left" : "Right";
     }
   });
+  const seasons = everyTeamSeasons();
+  const mode = parseCompareStatsMode(draft.statsMode);
 
   return (
     <div className="sc-composer">
@@ -215,6 +311,97 @@ export function CompareComposerApp() {
           presets={COMPARE_TITLE_PRESETS}
           onChange={(title) => setDraft((current) => ({ ...current, title }))}
         />
+        <div className="sc-look" role="group" aria-label="Stats source">
+          <span className="sc-look__label">Stats</span>
+          <button
+            type="button"
+            className={mode === "season" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "season"}
+            onClick={() => setStatsMode("season")}
+          >
+            Season avg
+          </button>
+          <button
+            type="button"
+            className={mode === "game" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "game"}
+            onClick={() => setStatsMode("game")}
+          >
+            Last game
+          </button>
+        </div>
+        <label className="sc-field">
+          Season
+          <select
+            value={draft.season || everyTeamCurrentSeason()}
+            aria-label="Shared compare season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSharedSeason(event.target.value)}
+          >
+            {seasons.map((option) => (
+              <option key={option} value={option}>
+                {option}
+                {option === everyTeamCurrentSeason() ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="sc-field">
+          Left season
+          <select
+            value={draft.sideSeasons?.[0] ?? ""}
+            aria-label="Left player season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSideSeason(0, event.target.value)}
+          >
+            <option value="">Same</option>
+            {seasons.map((option) => (
+              <option key={`left-${option}`} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="sc-field">
+          Right season
+          <select
+            value={draft.sideSeasons?.[1] ?? ""}
+            aria-label="Right player season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSideSeason(1, event.target.value)}
+          >
+            <option value="">Same</option>
+            {seasons.map((option) => (
+              <option key={`right-${option}`} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        {draft.stats.map((stat, index) => (
+          <label key={`cmp-key-${stat.key}-${index}`} className="sc-field">
+            Stat {index + 1}
+            <select
+              value={stat.key}
+              aria-label={`Compare stat ${index + 1}`}
+              onChange={(event) => {
+                const key = parseCompareStatKey(event.target.value);
+                const next = {
+                  ...draft,
+                  stats: setCompareStatKey(draft.stats, index, key),
+                };
+                setDraft(next);
+                void fillStats(next);
+              }}
+            >
+              {COMPARE_STAT_PRESETS.map((preset) => (
+                <option key={preset.key} value={preset.key}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
@@ -225,8 +412,10 @@ export function CompareComposerApp() {
           storageKey={SAVES_KEY}
           board={draft}
           onLoad={(next) => {
-            setDraft(next);
+            const loaded = normalizeCompareDraft(next);
+            setDraft(loaded);
             setStatus("Loaded named graphic.");
+            void fillStats(loaded);
           }}
         />
         <div className="sc-toolbar__actions">
@@ -363,9 +552,10 @@ export function CompareComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Two photos, two editable stat columns, title and subtitle. Pick the
-            same player twice or two different people. Last-game stats auto-fill
-            when cheap. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Empty photos first — pick two players for this-season averages,
+            then upload action shots. Number + label stack on each side; the
+            leader highlights. Toggle last-game or a per-side season. Downloads
+            a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -373,17 +563,24 @@ export function CompareComposerApp() {
       {picker != null ? (
         <PlayerPicker
           heading={picker === 0 ? "Pick left player" : "Pick right player"}
-          hint="Same or different people. Stats fill from last night when available."
+          hint="Same or different people. Stats fill from this season’s averages unless you switch to last game."
           currentId={draft.sides[picker]?.playerId}
           usedLabels={used}
           onPick={handlePick}
           onClear={() => {
             push(draft);
-            setDraft((current) => {
-              const sides = [...current.sides] as CompareDraft["sides"];
-              sides[picker] = clearCompareSide();
-              return { ...current, sides };
-            });
+            const nextSides = [...draft.sides] as CompareDraft["sides"];
+            nextSides[picker] = clearCompareSide();
+            const next = {
+              ...draft,
+              sides: nextSides,
+              stats: applySideStatValues(
+                draft.stats,
+                picker,
+                draft.stats.map(() => ""),
+              ),
+            };
+            setDraft(next);
             setPicker(null);
           }}
           onClose={closePicker}

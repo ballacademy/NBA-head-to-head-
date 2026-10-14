@@ -20,24 +20,38 @@ import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import {
+  everyTeamCurrentSeason,
+  everyTeamSeasons,
+  loadEveryTeamRosters,
+} from "../everyTeamComposer/historicalRosters";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { StatCardGraphic } from "./StatCardGraphic";
 import { exportStatCardPng } from "./exportStatCardPng";
 import { renderStatCardCanvas } from "./renderStatCardCanvas";
 import {
+  addStatCardLine,
   applyPlayerName,
   clipStatLabel,
-  clipStatValue,
   clearStatCardSubject,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
+  fillStatCardFromSeason,
   hasCustomPhoto,
   isStatCardDraft,
+  normalizeStatCardDraft,
+  parseStatCardKey,
+  parseStatCardSource,
   playerName,
+  removeStatCardLine,
+  setStatCardLineKey,
   setStatCardPhoto,
+  STAT_CARD_LINE_OPTIONS,
+  STC_STAT_MAX,
   type StatCardDraft,
+  type StatCardSource,
 } from "./statCardState";
 import "@fontsource/montserrat/latin-900.css";
 import "./statCardComposer.css";
@@ -48,7 +62,7 @@ const SAVES_KEY = "ddgm:stat-card-composer:saves";
 const loadDraft = (): StatCardDraft => {
   const stored = readJson<Partial<StatCardDraft>>(STORAGE_KEY);
   if (isStatCardDraft(stored)) {
-    return { ...stored, showBa: stored.showBa !== false };
+    return normalizeStatCardDraft(stored);
   }
   return defaultStatCardDraft();
 };
@@ -63,6 +77,7 @@ export function StatCardComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STAT_CARD_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [rostersReady, setRostersReady] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
     playerName: string;
@@ -71,8 +86,15 @@ export function StatCardComposerApp() {
 
   useEffect(() => {
     document.title = "Stat card graphic";
-    setDraft(loadDraft());
-    setHydrated(true);
+    void loadEveryTeamRosters()
+      .then(() => setRostersReady(true))
+      .catch((error: unknown) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setDraft(loadDraft());
+        setHydrated(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -83,11 +105,21 @@ export function StatCardComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
-  const fillGame = async (next: StatCardDraft) => {
+  const fillStats = async (next: StatCardDraft) => {
     if (!next.playerId) {
       return;
     }
+    const source = parseStatCardSource(next.source);
     try {
+      if (source === "season") {
+        await loadEveryTeamRosters();
+        setDraft((current) =>
+          current.playerId === next.playerId
+            ? fillStatCardFromSeason(current, next.season)
+            : current,
+        );
+        return;
+      }
       const game = await fetchLastGame(next.playerId);
       setDraft((current) =>
         current.playerId === next.playerId
@@ -97,6 +129,12 @@ export function StatCardComposerApp() {
     } catch {
       /* still editable */
     }
+  };
+
+  const setSource = (source: StatCardSource) => {
+    const next = { ...draft, source };
+    setDraft(next);
+    void fillStats(next);
   };
 
   const handleExport = async (filename?: string, story = false) => {
@@ -139,9 +177,9 @@ export function StatCardComposerApp() {
     setStatus(
       keepCustomPhoto
         ? `Kept the photo for ${player.name}.`
-        : `Filled ${player.name} — upload an action photo. Stats auto-fill from the last game.`,
+        : `Filled ${player.name} — upload an action photo.`,
     );
-    void fillGame(next);
+    void fillStats(next);
   };
 
   const handlePick = (playerId: string) => {
@@ -191,25 +229,110 @@ export function StatCardComposerApp() {
             }
           />
         </label>
+        <div className="sc-look" role="group" aria-label="Stat source">
+          <span className="sc-look__label">Stats</span>
+          <button
+            type="button"
+            className={
+              parseStatCardSource(draft.source) === "last-game"
+                ? "sc-chip is-on"
+                : "sc-chip"
+            }
+            aria-pressed={parseStatCardSource(draft.source) === "last-game"}
+            onClick={() => setSource("last-game")}
+          >
+            Last game
+          </button>
+          <button
+            type="button"
+            className={
+              parseStatCardSource(draft.source) === "season"
+                ? "sc-chip is-on"
+                : "sc-chip"
+            }
+            aria-pressed={parseStatCardSource(draft.source) === "season"}
+            onClick={() => setSource("season")}
+          >
+            Season avg
+          </button>
+        </div>
+        <label className="sc-field">
+          Season
+          <select
+            value={draft.season || everyTeamCurrentSeason()}
+            aria-label="Stat card season"
+            disabled={
+              !rostersReady || parseStatCardSource(draft.source) !== "season"
+            }
+            onChange={(event) => {
+              const next = { ...draft, season: event.target.value };
+              setDraft(next);
+              void fillStats(next);
+            }}
+          >
+            {everyTeamSeasons().map((option) => (
+              <option key={option} value={option}>
+                {option}
+                {option === everyTeamCurrentSeason() ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
         {draft.stats.map((line, index) => (
           <label key={`${line.key}-hud`} className="sc-field">
             {line.label || "Stat"}
-            <input
-              value={line.value}
-              maxLength={8}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...current,
-                  stats: current.stats.map((row, rowIndex) =>
-                    rowIndex === index
-                      ? { ...row, value: clipStatValue(event.target.value) }
-                      : row,
+            <select
+              value={line.key}
+              aria-label={`Stat ${index + 1} metric`}
+              onChange={(event) => {
+                const key = parseStatCardKey(event.target.value);
+                const next = {
+                  ...draft,
+                  stats: setStatCardLineKey(
+                    draft.stats,
+                    index,
+                    key,
+                    parseStatCardSource(draft.source),
                   ),
-                }))
-              }
-            />
+                };
+                setDraft(next);
+                void fillStats(next);
+              }}
+            >
+              {STAT_CARD_LINE_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
         ))}
+        <button
+          type="button"
+          className="sc-chip"
+          disabled={draft.stats.length >= STC_STAT_MAX}
+          onClick={() => {
+            const next = { ...draft, stats: addStatCardLine(draft.stats) };
+            setDraft(next);
+            void fillStats(next);
+          }}
+        >
+          Add 4th
+        </button>
+        {draft.stats.length > 3 ? (
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                stats: removeStatCardLine(current.stats, current.stats.length - 1),
+              }))
+            }
+          >
+            3 stats
+          </button>
+        ) : null}
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
@@ -220,8 +343,10 @@ export function StatCardComposerApp() {
           storageKey={SAVES_KEY}
           board={draft}
           onLoad={(next) => {
-            setDraft(next);
+            const loaded = normalizeStatCardDraft(next);
+            setDraft(loaded);
             setStatus("Loaded named graphic.");
+            void fillStats(loaded);
           }}
         />
         <div className="sc-toolbar__actions">
@@ -357,9 +482,10 @@ export function StatCardComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — pick a player for name, team, and last-game
-            stats, then upload the action shot. Downloads a 4:5 Instagram PNG —
-            nothing is posted.
+            Empty photo first — pick a player for the team-color name bar and
+            3 huge stats on a light panel, then upload the action shot. Toggle
+            last-game or season averages and add a 4th stat. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -368,7 +494,7 @@ export function StatCardComposerApp() {
       {pickerOpen ? (
         <PlayerPicker
           heading="Pick a player"
-          hint="Fills the name bar, team color, and last-game stats. No mugshot — upload or paste the action photo."
+          hint="Fills the name bar, team color, and stats. No mugshot — upload or paste the action photo."
           currentId={draft.playerId}
           usedLabels={draft.playerId ? { [draft.playerId]: "Stat card" } : {}}
           onPick={handlePick}

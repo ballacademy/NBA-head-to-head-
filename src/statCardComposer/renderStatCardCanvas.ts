@@ -12,10 +12,6 @@ import {
   photoRotate,
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
-import {
-  drawCoveredTexture,
-  FIELD_TEXTURE_SRC,
-} from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
@@ -24,14 +20,18 @@ import {
   STC_BA_INSET,
   STC_BA_SIZE,
   STC_HAIRLINE,
+  STC_INK,
   STC_LABEL_SIZE,
   STC_LOGO,
   STC_LOGO_INSET,
+  STC_MUTED,
   STC_NAME_SIZE,
   STC_NAME_TRACK,
   STC_NAME_W,
   STC_NAME_X,
+  STC_PANEL,
   STC_PHOTO_W,
+  STC_RULE,
   STC_STATS_W,
   STC_STATS_X,
   STC_VALUE_SIZE,
@@ -124,23 +124,14 @@ export const renderStatCardCanvas = async (
 
   const statsX = STC_STATS_X * s;
   const statsW = STC_STATS_W * s;
-  const metal = await loadImage(FIELD_TEXTURE_SRC);
-  context.save();
-  context.beginPath();
-  context.rect(statsX, 0, statsW, height);
-  context.clip();
-  context.fillStyle = "#121212";
+  context.fillStyle = STC_PANEL;
   context.fillRect(statsX, 0, statsW, height);
-  if (metal) {
-    drawCoveredTexture(context, metal, statsX, 0, statsW, height);
-  }
-  context.restore();
 
   const rows = statCardRows(input.stats.length);
   input.stats.forEach((line, index) => {
     const row = rows[index]!;
     if (index > 0) {
-      context.fillStyle = "rgba(255,255,255,0.28)";
+      context.fillStyle = STC_RULE;
       context.fillRect(
         statsX + 36 * s,
         row.y * s,
@@ -151,7 +142,7 @@ export const renderStatCardCanvas = async (
     context.font = `900 ${STC_VALUE_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillStyle = "#fff";
+    context.fillStyle = STC_INK;
     context.fillText(
       line.value.trim() || "—",
       statsX + statsW / 2,
@@ -159,7 +150,7 @@ export const renderStatCardCanvas = async (
       statsW - 24 * s,
     );
     context.font = `900 ${STC_LABEL_SIZE * s}px ${POSTER_FONT}`;
-    context.fillStyle = "rgba(255,255,255,0.82)";
+    context.fillStyle = STC_MUTED;
     context.fillText(
       line.label.trim().toUpperCase() || "STAT",
       statsX + statsW / 2,

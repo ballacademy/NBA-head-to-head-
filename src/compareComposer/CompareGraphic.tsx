@@ -8,6 +8,9 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
+  compareSideCaption,
+  compareSideName,
+  leadingSide,
   type CompareDraft,
   type CompareSide,
   type PhotoPan,
@@ -31,7 +34,7 @@ interface CompareGraphicProps {
 }
 
 const sideLabel = (side: CompareSide, fallback: string) =>
-  `${side.firstName} ${side.lastName}`.trim() || fallback;
+  compareSideName(side) || fallback;
 
 export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
   function CompareGraphic(
@@ -117,17 +120,19 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           />
         </div>
         <div className="cmp-photos">
-          {([0] as const).map((side) => {
+          {([0, 1] as const).map((side) => {
             const person = draft.sides[side]!;
+            const caption = compareSideCaption(person);
             return (
               <section
                 key={`cmp-side-${side}`}
-                className="cmp-photo"
-                aria-label="Left photo"
+                className={`cmp-photo is-${side === 0 ? "left" : "right"}`}
+                aria-label={side === 0 ? "Left photo" : "Right photo"}
+                style={{ gridColumn: side === 0 ? 1 : 3 }}
               >
                 <PhotoFrame
                   src={person.photoSrc}
-                  label={sideLabel(person, "left")}
+                  label={sideLabel(person, side === 0 ? "left" : "right")}
                   pan={person.pan}
                   custom={person.customPhoto}
                   empty={!person.photoSrc}
@@ -136,6 +141,9 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                   onUpload={(dataUrl) => onUpload(side, dataUrl)}
                   onPick={() => onPick(side)}
                 />
+                {caption ? (
+                  <p className="cmp-photo-name">{caption}</p>
+                ) : null}
               </section>
             );
           })}
@@ -149,61 +157,71 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                 onStatsLabelChange(event.target.value.slice(0, 24))
               }
             />
-            {draft.stats.map((stat, index) => (
-              <div key={`cmp-stat-${index}`} className="cmp-stat">
-                <input
-                  className="cmp-stat__val is-left"
-                  value={stat.left}
-                  maxLength={8}
-                  aria-label={`Left ${stat.label || "stat"}`}
-                  onChange={(event) =>
-                    onStatChange(index, {
-                      left: event.target.value.slice(0, 8),
-                    })
-                  }
-                />
-                <div className="cmp-stat__mid">
+            {draft.stats.map((stat, index) => {
+              const lead = leadingSide(stat.left, stat.right);
+              return (
+                <div key={`cmp-stat-${index}`} className="cmp-stat">
+                  <div
+                    className={[
+                      "cmp-stat__side",
+                      "is-left",
+                      lead === 0 ? "is-lead" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    <input
+                      className="cmp-stat__val"
+                      value={stat.left}
+                      maxLength={8}
+                      aria-label={`Left ${stat.label || "stat"}`}
+                      onChange={(event) =>
+                        onStatChange(index, {
+                          left: event.target.value.slice(0, 8),
+                        })
+                      }
+                    />
+                    <input
+                      className="cmp-stat__unit"
+                      value={stat.label}
+                      maxLength={8}
+                      aria-label={`Left ${stat.label || "stat"} label`}
+                      onChange={(event) =>
+                        onStatChange(index, {
+                          label: event.target.value.slice(0, 8),
+                        })
+                      }
+                    />
+                  </div>
                   <span className="cmp-rule" aria-hidden="true" />
-                  <input
-                    className="cmp-stat__name"
-                    value={stat.label}
-                    maxLength={8}
-                    aria-label={`Stat ${index + 1} label`}
-                    onChange={(event) =>
-                      onStatChange(index, {
-                        label: event.target.value.slice(0, 8),
-                      })
-                    }
-                  />
-                  <span className="cmp-rule" aria-hidden="true" />
+                  <div
+                    className={[
+                      "cmp-stat__side",
+                      "is-right",
+                      lead === 1 ? "is-lead" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    <input
+                      className="cmp-stat__val"
+                      value={stat.right}
+                      maxLength={8}
+                      aria-label={`Right ${stat.label || "stat"}`}
+                      onChange={(event) =>
+                        onStatChange(index, {
+                          right: event.target.value.slice(0, 8),
+                        })
+                      }
+                    />
+                    <span className="cmp-stat__unit" aria-hidden="true">
+                      {stat.label}
+                    </span>
+                  </div>
                 </div>
-                <input
-                  className="cmp-stat__val is-right"
-                  value={stat.right}
-                  maxLength={8}
-                  aria-label={`Right ${stat.label || "stat"}`}
-                  onChange={(event) =>
-                    onStatChange(index, {
-                      right: event.target.value.slice(0, 8),
-                    })
-                  }
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <section className="cmp-photo" aria-label="Right photo">
-            <PhotoFrame
-              src={draft.sides[1]!.photoSrc}
-              label={sideLabel(draft.sides[1]!, "right")}
-              pan={draft.sides[1]!.pan}
-              custom={draft.sides[1]!.customPhoto}
-              empty={!draft.sides[1]!.photoSrc}
-              vignette
-              onPan={(pan) => onPan(1, pan)}
-              onUpload={(dataUrl) => onUpload(1, dataUrl)}
-              onPick={() => onPick(1)}
-            />
-          </section>
         </div>
         <div className="cmp-sub-plate">
           <input

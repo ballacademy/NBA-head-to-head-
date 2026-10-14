@@ -12,6 +12,7 @@ export const PYR_DEFAULT_ROWS = 4;
 export const PYR_PAD_X = 28;
 export const PYR_COL_GAP = 12;
 export const PYR_PAD_BOTTOM = 36;
+export const PYR_QUIET_FRAME = 2;
 export const PYR_TITLE_Y = 22;
 export const PYR_TITLE_H = 96;
 export const PYR_TITLE_SIZE = 54;
