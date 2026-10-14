@@ -1,8 +1,9 @@
+import playerAveragesFile from "../../data/nba-player-stat-averages.json";
 import {
   getConferenceForTeam,
   getDivisionForTeam,
 } from "../lib/divisions";
-import { NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
+import { NBA_TEAMS, NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 
 export interface EveryTeamRosterPlayer {
@@ -16,7 +17,36 @@ export interface EveryTeamRosterPlayer {
   ast: number | null;
   stl: number | null;
   blk: number | null;
+  gp?: number | null;
+  min?: number | null;
+  tov?: number | null;
+  fgPct?: number | null;
+  fg3Pct?: number | null;
+  ftPct?: number | null;
+  efgPct?: number | null;
+  tsPct?: number | null;
 }
+
+type SeasonAverageExtras = Pick<
+  EveryTeamRosterPlayer,
+  "gp" | "min" | "tov" | "fgPct" | "fg3Pct" | "ftPct" | "efgPct" | "tsPct"
+>;
+
+const seasonAverages = playerAveragesFile as {
+  season: string;
+  byEspnId: Record<string, SeasonAverageExtras>;
+};
+
+const EXTRA_KEYS: Array<keyof SeasonAverageExtras> = [
+  "gp",
+  "min",
+  "tov",
+  "fgPct",
+  "fg3Pct",
+  "ftPct",
+  "efgPct",
+  "tsPct",
+];
 
 export interface EveryTeamSeasonCell {
   missing?: boolean;
@@ -211,6 +241,51 @@ const priorPlayerStats = (
   priorStatsById(statsSeason).get(playerId) ??
   null;
 
+const extrasForSeason = (
+  playerId: string,
+  statsSeason: string,
+): SeasonAverageExtras | null => {
+  if (statsSeason !== seasonAverages.season) {
+    return null;
+  }
+  return seasonAverages.byEspnId[playerId] ?? null;
+};
+
+const mergeSeasonAverages = (
+  player: EveryTeamRosterPlayer,
+  statsSeason: string,
+): EveryTeamRosterPlayer => {
+  const extras = extrasForSeason(player.id, statsSeason);
+  if (!extras) {
+    return player;
+  }
+  const next: EveryTeamRosterPlayer = { ...player };
+  EXTRA_KEYS.forEach((key) => {
+    const value = extras[key];
+    if (typeof value === "number") {
+      next[key] = value;
+    }
+  });
+  return next;
+};
+
+/** Season averages for a player, using last year’s table when this year is empty. */
+export const playerRowForSeason = (
+  playerId: string,
+  season: string,
+  teamId?: string | null,
+): EveryTeamRosterPlayer | null => {
+  if (!playerId) {
+    return null;
+  }
+  const statsSeason = statsSeasonFor(season);
+  const row = teamId
+    ? priorPlayerStats(playerId, teamId, statsSeason)
+    : (priorStatsById(statsSeason).get(playerId) ?? null);
+  const found = row ?? priorStatsById(statsSeason).get(playerId) ?? null;
+  return found ? mergeSeasonAverages(found, statsSeason) : null;
+};
+
 const overlayLastSeasonStats = (
   player: EveryTeamRosterPlayer,
   teamId: string,
@@ -218,27 +293,41 @@ const overlayLastSeasonStats = (
 ): EveryTeamRosterPlayer => {
   const statsSeason = statsSeasonFor(season);
   if (statsSeason === season) {
-    return player;
+    return mergeSeasonAverages(player, statsSeason);
   }
   const prior = priorPlayerStats(player.id, teamId, statsSeason);
   if (!prior) {
-    return {
-      ...player,
-      pts: null,
-      reb: null,
-      ast: null,
-      stl: null,
-      blk: null,
-    };
+    return mergeSeasonAverages(
+      {
+        ...player,
+        pts: null,
+        reb: null,
+        ast: null,
+        stl: null,
+        blk: null,
+      },
+      statsSeason,
+    );
   }
-  return {
-    ...player,
-    pts: prior.pts,
-    reb: prior.reb,
-    ast: prior.ast,
-    stl: prior.stl,
-    blk: prior.blk,
-  };
+  return mergeSeasonAverages(
+    {
+      ...player,
+      pts: prior.pts,
+      reb: prior.reb,
+      ast: prior.ast,
+      stl: prior.stl,
+      blk: prior.blk,
+      gp: prior.gp ?? player.gp ?? null,
+      min: prior.min ?? player.min ?? null,
+      tov: prior.tov ?? player.tov ?? null,
+      fgPct: prior.fgPct ?? player.fgPct ?? null,
+      fg3Pct: prior.fg3Pct ?? player.fg3Pct ?? null,
+      ftPct: prior.ftPct ?? player.ftPct ?? null,
+      efgPct: prior.efgPct ?? player.efgPct ?? null,
+      tsPct: prior.tsPct ?? player.tsPct ?? null,
+    },
+    statsSeason,
+  );
 };
 
 export const listRosterPlayers = (
@@ -340,21 +429,64 @@ export type EveryTeamStatMetric =
   | "assists"
   | "steals"
   | "blocks"
+  | "turnovers"
+  | "fgPct"
+  | "fg3Pct"
+  | "ftPct"
+  | "efgPct"
+  | "tsPct"
+  | "minutes"
+  | "games"
   | "pra"
   | "stocks";
 
 export const EVERY_TEAM_STAT_METRICS: Array<{
   id: EveryTeamStatMetric;
   label: string;
+  percent?: boolean;
 }> = [
   { id: "points", label: "PTS" },
   { id: "rebounds", label: "REB" },
   { id: "assists", label: "AST" },
   { id: "steals", label: "STL" },
   { id: "blocks", label: "BLK" },
+  { id: "turnovers", label: "TOV" },
+  { id: "fgPct", label: "FG%", percent: true },
+  { id: "fg3Pct", label: "3P%", percent: true },
+  { id: "ftPct", label: "FT%", percent: true },
+  { id: "efgPct", label: "eFG%", percent: true },
+  { id: "tsPct", label: "TS%", percent: true },
+  { id: "minutes", label: "MIN" },
+  { id: "games", label: "GP" },
   { id: "pra", label: "PRA" },
   { id: "stocks", label: "STL+BLK" },
 ];
+
+const METRIC_FIELDS: Partial<
+  Record<EveryTeamStatMetric, keyof EveryTeamRosterPlayer>
+> = {
+  points: "pts",
+  rebounds: "reb",
+  assists: "ast",
+  steals: "stl",
+  blocks: "blk",
+  turnovers: "tov",
+  fgPct: "fgPct",
+  fg3Pct: "fg3Pct",
+  ftPct: "ftPct",
+  efgPct: "efgPct",
+  tsPct: "tsPct",
+  minutes: "min",
+  games: "gp",
+};
+
+export const parseEveryTeamStatMetric = (value: unknown): EveryTeamStatMetric =>
+  EVERY_TEAM_STAT_METRICS.some((item) => item.id === value)
+    ? (value as EveryTeamStatMetric)
+    : "points";
+
+export const isPercentStatMetric = (metric: EveryTeamStatMetric) =>
+  Boolean(EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.percent);
 
 export const rosterStatValue = (
   player: EveryTeamRosterPlayer | null,
@@ -363,31 +495,83 @@ export const rosterStatValue = (
   if (!player) {
     return null;
   }
-  if (metric === "points") {
-    return player.pts;
-  }
-  if (metric === "rebounds") {
-    return player.reb;
-  }
-  if (metric === "assists") {
-    return player.ast;
-  }
-  if (metric === "steals") {
-    return player.stl;
-  }
-  if (metric === "blocks") {
-    return player.blk;
-  }
   if (metric === "pra") {
     if (player.pts == null || player.reb == null || player.ast == null) {
       return null;
     }
     return roundStat(player.pts + player.reb + player.ast);
   }
-  if (player.stl == null || player.blk == null) {
+  if (metric === "stocks") {
+    if (player.stl == null || player.blk == null) {
+      return null;
+    }
+    return roundStat(player.stl + player.blk);
+  }
+  const field = METRIC_FIELDS[metric];
+  if (!field) {
     return null;
   }
-  return roundStat(player.stl + player.blk);
+  const value = player[field];
+  return typeof value === "number" ? value : null;
+};
+
+export const playerStatValue = (
+  playerId: string,
+  season: string,
+  metric: EveryTeamStatMetric,
+  teamId?: string | null,
+) => rosterStatValue(playerRowForSeason(playerId, season, teamId), metric);
+
+/** Minutes-weighted roster average — team scoring/rates for tier grouping. */
+export const teamStatValue = (
+  teamId: string,
+  season: string,
+  metric: EveryTeamStatMetric,
+): number | null => {
+  const rows = listRosterPlayers(teamId, season)
+    .map((player) => ({
+      value: rosterStatValue(player, metric),
+      minutes: player.min ?? 0,
+    }))
+    .filter((row) => row.value != null) as Array<{ value: number; minutes: number }>;
+  if (!rows.length) {
+    return null;
+  }
+  const weight = rows.reduce((sum, row) => sum + Math.max(row.minutes, 1), 0);
+  const total = rows.reduce(
+    (sum, row) => sum + row.value * Math.max(row.minutes, 1),
+    0,
+  );
+  const averaged = total / weight;
+  return isPercentStatMetric(metric) ? Math.round(averaged * 1000) / 1000 : roundStat(averaged);
+};
+
+export const matchingTeamIds = (
+  filters: {
+    team?: string;
+    division?: string;
+    conference?: string;
+  } = {},
+): string[] => {
+  const team = filters.team && filters.team !== "all" ? filters.team : null;
+  const division =
+    filters.division && filters.division !== "all" ? filters.division : null;
+  const conference =
+    filters.conference && filters.conference !== "all"
+      ? filters.conference
+      : null;
+  return NBA_TEAMS.filter((item) => {
+    if (team && item.id !== team) {
+      return false;
+    }
+    if (division && getDivisionForTeam(item.id) !== division) {
+      return false;
+    }
+    if (conference && getConferenceForTeam(item.id) !== conference) {
+      return false;
+    }
+    return true;
+  }).map((item) => item.id);
 };
 
 export const pickSeasonLeader = (
@@ -420,5 +604,11 @@ export const formatRosterStat = (
   }
   const label =
     EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+  if (isPercentStatMetric(metric)) {
+    return `${(value * 100).toFixed(1)}% ${label}`;
+  }
+  if (metric === "games") {
+    return `${Math.round(value)} ${label}`;
+  }
   return `${value.toFixed(1)} ${label}`;
 };

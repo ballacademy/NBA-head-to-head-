@@ -45,6 +45,7 @@ import {
   everyTeamBannerRectPath,
   everyTeamCellRect,
   everyTeamGrid,
+  everyTeamLogoBackdrop,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
 } from "./everyTeamLayout";
@@ -292,8 +293,11 @@ export const renderEveryTeamCanvas = async (
     context.save();
     const inner = clipToInnerFrame(context, x, y, size, size, scale, input.look);
     if (cell.logo) {
+      const lift = everyTeamLogoBackdrop(cell.team.id);
       context.save();
-      context.globalAlpha = 0.34;
+      context.filter =
+        lift.brightness === 1 ? "none" : `brightness(${lift.brightness})`;
+      context.globalAlpha = lift.alpha;
       drawCoveredLogo(
         context,
         cell.logo,
@@ -303,6 +307,24 @@ export const renderEveryTeamCanvas = async (
         inner.h,
         { cacheKey: `${cell.logoSrc}-cover` },
       );
+      context.filter = "none";
+      if (lift.brightness > 1) {
+        const veil = context.createRadialGradient(
+          inner.x + inner.w * 0.5,
+          inner.y + inner.h * 0.42,
+          inner.w * 0.08,
+          inner.x + inner.w * 0.5,
+          inner.y + inner.h * 0.42,
+          inner.w * 0.64,
+        );
+        veil.addColorStop(0, "rgba(247, 251, 255, 0.22)");
+        veil.addColorStop(1, "rgba(247, 251, 255, 0)");
+        context.globalAlpha = 1;
+        context.globalCompositeOperation = "screen";
+        context.fillStyle = veil;
+        context.fillRect(inner.x, inner.y, inner.w, inner.h);
+        context.globalCompositeOperation = "source-over";
+      }
       context.restore();
     }
     if (cell.headshot) {
