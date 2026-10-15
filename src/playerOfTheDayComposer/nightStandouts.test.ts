@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { emptyStats } from "./lastGame";
 import {
+  isFreakNonScoringNight,
   isNotableNight,
   isSurpriseNight,
   nightFlagsFor,
@@ -232,5 +233,88 @@ describe("night standouts", () => {
     const ranked = rankNightStandouts([...stars, bouyeaRow!]);
     expect(ranked.length).toBeGreaterThan(12);
     expect(ranked.map((row) => row.athleteId)).toContain("4280245");
+  });
+
+  it("drops 5-or-fewer point nights unless the line is freakish", () => {
+    const quiet = nightFlagsFor({
+      ...emptyStats(),
+      pts: "4",
+      reb: "8",
+      ast: "2",
+      stl: "2",
+      blk: "2",
+      min: "22",
+    });
+    expect(isFreakNonScoringNight(quiet)).toBe(false);
+    expect(isNotableNight(quiet, usualLineFor("4280245"))).toBe(false);
+    expect(
+      nightStandoutFromBox(
+        "4280245",
+        "Jamaree Bouyea",
+        "PHX",
+        { id: "SAS", abbrev: "SAS", score: "110" },
+        { score: "100", winner: false },
+        "1",
+        "2026-10-14",
+        { ...emptyStats(), pts: "4", reb: "8", ast: "2", stl: "2", blk: "2", min: "22" },
+      ),
+    ).toBeNull();
+
+    const boards = nightFlagsFor({
+      ...emptyStats(),
+      pts: "5",
+      reb: "10",
+      ast: "2",
+      min: "28",
+    });
+    expect(isNotableNight(boards, usualLineFor("3112335"))).toBe(false);
+
+    const tenBlocks = nightFlagsFor({
+      ...emptyStats(),
+      pts: "3",
+      reb: "9",
+      ast: "1",
+      blk: "10",
+      min: "30",
+    });
+    expect(isFreakNonScoringNight(tenBlocks)).toBe(true);
+    expect(isNotableNight(tenBlocks, usualLineFor("3112335"))).toBe(true);
+
+    const hugeStocks = nightFlagsFor({
+      ...emptyStats(),
+      pts: "2",
+      reb: "6",
+      ast: "1",
+      stl: "5",
+      blk: "4",
+      min: "28",
+    });
+    expect(isFreakNonScoringNight(hugeStocks)).toBe(true);
+    expect(isNotableNight(hugeStocks, usualLineFor("3112335"))).toBe(true);
+
+    const ranked = rankNightStandouts([
+      gameRow("quiet", "Quiet", {
+        pts: "4",
+        reb: "8",
+        ast: "2",
+        stl: "2",
+        blk: "4",
+        min: "22",
+      }),
+      gameRow("gobert", "Gobert", {
+        pts: "4",
+        reb: "12",
+        ast: "1",
+        blk: "10",
+        min: "32",
+      }),
+      gameRow("bouyea", "Bouyea", {
+        pts: "15",
+        reb: "4",
+        ast: "8",
+        min: "28",
+      }),
+    ]);
+    expect(ranked.map((row) => row.athleteId)).toEqual(["gobert", "bouyea"]);
   });
 });

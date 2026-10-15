@@ -195,6 +195,20 @@ export const usualLineFor = (athleteId: string): UsualLine => {
   };
 };
 
+/** Skip 0–5 point cameos no matter the usual average. */
+export const STANDOUT_MIN_PTS = 6;
+
+/** ~10 blocks, huge stocks, or a freak counting line that isn’t about scoring. */
+export const isFreakNonScoringNight = (
+  extra: ReturnType<typeof nightFlagsFor>,
+) =>
+  extra.blk >= 8 ||
+  extra.stl >= 8 ||
+  extra.stocks >= 8 ||
+  extra.reb >= 16 ||
+  extra.ast >= 12 ||
+  extra.tens >= 3;
+
 /** Bench / two-way surprise vs their usual line — not star-vs-star ranking. */
 export const isSurpriseNight = (
   extra: ReturnType<typeof nightFlagsFor>,
@@ -218,6 +232,9 @@ export const isNotableNight = (
   extra: ReturnType<typeof nightFlagsFor>,
   usual: UsualLine,
 ) => {
+  if (extra.pts < STANDOUT_MIN_PTS && !isFreakNonScoringNight(extra)) {
+    return false;
+  }
   if (extra.flags.length > 0) {
     return true;
   }
@@ -269,7 +286,7 @@ export const rankNightStandouts = (rows: NightStandout[]) => {
     }
     const extra = nightFlagsFor(row.game.stats);
     const usual = usualLineFor(row.athleteId);
-    if (!isNotableNight(extra, usual) && row.flags.length === 0) {
+    if (!isNotableNight(extra, usual)) {
       continue;
     }
     seen.add(row.athleteId);
@@ -307,6 +324,9 @@ export const nightStandoutFromBox = (
     return null;
   }
   const extra = nightFlagsFor(stats);
+  if (extra.pts < STANDOUT_MIN_PTS && !isFreakNonScoringNight(extra)) {
+    return null;
+  }
   const usual = usualLineFor(athleteId);
   const surprise = isSurpriseNight(extra, usual);
   const flags =
