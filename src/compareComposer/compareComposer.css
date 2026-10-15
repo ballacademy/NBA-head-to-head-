@@ -69,6 +69,24 @@
   min-height: 0;
 }
 
+.cmp-mark {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  z-index: 1;
+  width: calc(220 * var(--u));
+  height: calc(220 * var(--u));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cmp-mark canvas,
+.cmp-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .cmp-photo .pod-photo {
   position: absolute;
   inset: 0;
@@ -107,14 +125,16 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
-  padding: calc(12 * var(--u)) 0;
+  min-height: 0;
+  padding: calc(20 * var(--u)) 0 calc(var(--cmp-gutter-bottom, 24) * var(--u));
 }
 
 .cmp-stats__label {
+  flex: 0 0 auto;
   width: 100%;
-  margin: 0 0 calc(18 * var(--u));
+  margin: 0 0 calc(8 * var(--u));
   padding: 0;
   border: 0;
   background: transparent;
@@ -128,11 +148,13 @@
 }
 
 .cmp-stat {
+  flex: 1 1 0;
   display: grid;
   grid-template-columns: 1fr calc(2 * var(--u)) 1fr;
   align-items: center;
   gap: calc(10 * var(--u));
-  margin-bottom: calc(18 * var(--u));
+  min-height: 0;
+  margin: 0;
 }
 
 .cmp-stat__side {
@@ -158,12 +180,12 @@
   background: transparent;
   color: #fff;
   font-family: var(--ig-poster);
-  font-size: calc(40 * var(--u));
+  font-size: calc(var(--cmp-value, 40) * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-align: center;
   line-height: 0.95;
-  -webkit-text-stroke: calc(2.4 * var(--u)) #000;
+  -webkit-text-stroke: calc(var(--cmp-stroke, 2.4) * var(--u)) #000;
   paint-order: stroke fill;
 }
 
@@ -184,7 +206,7 @@
   color: rgba(255, 255, 255, 0.78);
   text-align: inherit;
   font-family: var(--ig-poster);
-  font-size: calc(14 * var(--u));
+  font-size: calc(var(--cmp-label, 14) * var(--u));
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -209,7 +231,7 @@
 
 .cmp-rule {
   width: calc(2 * var(--u));
-  height: calc(52 * var(--u));
+  height: calc(var(--cmp-rule, 52) * var(--u));
   background: rgba(255, 255, 255, 0.45);
   justify-self: center;
 }
@@ -226,6 +248,14 @@
   justify-content: center;
   border: var(--frame-w) solid var(--frame-color);
   background-color: #1c1c1c;
+}
+
+.cmp-sub-plate.is-empty {
+  opacity: 0;
+}
+
+.cmp-sub-plate.is-empty:focus-within {
+  opacity: 1;
 }
 
 .cmp-sub {

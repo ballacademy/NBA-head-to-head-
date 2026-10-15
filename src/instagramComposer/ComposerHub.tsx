@@ -13,6 +13,7 @@ import { CompareComposerApp } from "../compareComposer/CompareComposerApp";
 import { QuoteComposerApp } from "../quoteComposer/QuoteComposerApp";
 import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
 import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
+import { StatCardCoverComposerApp } from "../statCardCoverComposer/StatCardCoverComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -34,6 +35,7 @@ import "../compareComposer/compareComposer.css";
 import "../quoteComposer/quoteComposer.css";
 import "../playInComposer/playInComposer.css";
 import "../statCardComposer/statCardComposer.css";
+import "../statCardCoverComposer/statCardCoverComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -85,6 +87,8 @@ export function ComposerHub() {
         <PlayInComposerApp />
       ) : mode === "stat-card" ? (
         <StatCardComposerApp />
+      ) : mode === "stat-card-cover" ? (
+        <StatCardCoverComposerApp />
       ) : mode === "pyramid" ? (
         <PyramidComposerApp />
       ) : mode === "headline" ? (

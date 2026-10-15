@@ -11,6 +11,10 @@ import {
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { loadCorsImage } from "../lib/playerHeadshots";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
   photoRotate,
@@ -139,6 +143,7 @@ const drawPortrait = async (
   look: ComposerLook | undefined,
   first: boolean,
   showNames: boolean,
+  photoGrade = false,
 ) => {
   const line = frameLinePx(scale, look);
   context.save();
@@ -162,8 +167,11 @@ const drawPortrait = async (
         photoZoom(slot.pan),
       );
       const rotate = photoRotate(slot.pan);
+      context.save();
+      if (photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       if (rotate) {
-        context.save();
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
@@ -173,10 +181,18 @@ const drawPortrait = async (
           dest.dw,
           dest.dh,
         );
-        context.restore();
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
+      context.restore();
+      applyPhotoGrade(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
     }
   }
   context.restore();
@@ -318,6 +334,7 @@ export interface TeamOfTheWeekPlusRenderInput {
   slots: TotwStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
@@ -412,6 +429,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       input.look,
       index === 0,
       input.showNames !== false,
+      input.photoGrade === true,
     );
   }
   const starterBar = plusBarRect("starters", titlesBelow);
@@ -456,6 +474,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       input.look,
       index === 0,
       input.showNames !== false,
+      input.photoGrade === true,
     );
   }
   const standoutBar = plusBarRect("standouts", titlesBelow);

@@ -4,9 +4,17 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { getTeam } from "../standingsComposer/teams";
+import { compareStatGutter, compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
   compareSideName,
@@ -20,6 +28,7 @@ interface CompareGraphicProps {
   draft: CompareDraft;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
@@ -42,6 +51,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       draft,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       exporting = false,
       onTitleChange,
       onSubtitleChange,
@@ -55,6 +65,9 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
+    const type = compareStatType(draft.stats.length);
+    const gutter = compareStatGutter(draft.stats.length);
+    const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -93,10 +106,20 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--cmp-value" as string]: String(type.value),
+            ["--cmp-label" as string]: String(type.label),
+            ["--cmp-rule" as string]: String(type.rule),
+            ["--cmp-stroke" as string]: String(type.stroke),
+            ["--cmp-gutter-bottom" as string]: String(gutter.bottom),
+          } as React.CSSProperties
+        }
         aria-label="Instagram comparison graphic"
       >
         {draft.showBa !== false ? (
@@ -123,6 +146,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           {([0, 1] as const).map((side) => {
             const person = draft.sides[side]!;
             const caption = compareSideCaption(person);
+            const team = getTeam(person.teamId);
             return (
               <section
                 key={`cmp-side-${side}`}
@@ -130,6 +154,15 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                 aria-label={side === 0 ? "Left photo" : "Right photo"}
                 style={{ gridColumn: side === 0 ? 1 : 3 }}
               >
+                {team && watermark !== "off" ? (
+                  <div
+                    className="cmp-mark"
+                    aria-hidden="true"
+                    style={{ opacity: composerWatermarkOpacity(watermark) }}
+                  >
+                    <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
+                  </div>
+                ) : null}
                 <PhotoFrame
                   src={person.photoSrc}
                   label={sideLabel(person, side === 0 ? "left" : "right")}
@@ -223,13 +256,21 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             })}
           </div>
         </div>
-        <div className="cmp-sub-plate">
+        <div
+          className={[
+            "cmp-sub-plate",
+            draft.subtitle.trim() ? "" : "is-empty",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <input
             className="cmp-sub"
             value={draft.subtitle}
             maxLength={48}
             spellCheck={false}
             aria-label="Comparison subtitle"
+            placeholder=""
             onChange={(event) =>
               onComposerTextChange(event, onSubtitleChange, 48)
             }

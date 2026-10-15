@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { stripComposerPhotos } from "./composerPhotos";
 import {
   COMPOSER_LIBRARY_EVENT,
   deleteNamedGraphic,
@@ -73,6 +74,24 @@ export function ComposerSaves<T>({
         }}
       >
         Save
+      </button>
+      <button
+        type="button"
+        className="sc-btn sc-btn--ghost"
+        onClick={() => {
+          const { saves: next, saved } = upsertNamedGraphic(
+            storageKey,
+            name || "Template",
+            stripComposerPhotos(board),
+            selected || undefined,
+          );
+          setSaves(next);
+          setSelected(saved.id);
+          setName(saved.name);
+          setStatus("Saved as template (no photos).");
+        }}
+      >
+        Save as template
       </button>
       <label className="sc-field">
         Load

@@ -3,6 +3,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
   PLAY_IN_LOOK_KEY,
@@ -22,7 +23,9 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { nbaTodayIso, shiftIsoDate } from "../playerOfTheDayComposer/lastGame";
 import { fetchConferenceStandingsBundle } from "../standingsComposer/nbaStandings";
+import { applyLivePlayInScores, fetchPlayInLiveGames } from "./playInLive";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { getTeam } from "../standingsComposer/teams";
 import { PlayInGraphic } from "./PlayInGraphic";
@@ -67,6 +70,36 @@ export function PlayInComposerApp() {
   const [look, setLook] = useComposerLook(PLAY_IN_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { push, pop, canUndo } = useComposerUndo<PlayInDraft>();
+  const [liveOn, setLiveOn] = useState(true);
+
+  const pollLive = useCallback(async () => {
+    const today = nbaTodayIso();
+    const games = [
+      ...(await fetchPlayInLiveGames(today)),
+      ...(await fetchPlayInLiveGames(shiftIsoDate(today, -1))),
+    ];
+    if (!games.length) {
+      return;
+    }
+    setDraft((current) => applyLivePlayInScores(current, games));
+    const live = games.some((game) => game.inProgress);
+    setStatus(
+      live
+        ? "Live scores updating — 9v10 winner drops onto the 8-seed plate."
+        : "Play-in scores loaded. 9v10 winner auto-advances to the 8-seed plate.",
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!liveOn) {
+      return;
+    }
+    void pollLive();
+    const id = window.setInterval(() => {
+      void pollLive();
+    }, 30000);
+    return () => window.clearInterval(id);
+  }, [liveOn, pollLive]);
 
   useEffect(() => {
     document.title = "Play-in graphic";
@@ -153,11 +186,10 @@ export function PlayInComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Play-in</h1>
-        </div>
+      <ComposerToolbar
+        title="Play-in"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -177,6 +209,10 @@ export function PlayInComposerApp() {
           presets={PLAY_IN_TITLE_PRESETS}
           onChange={(title) => setDraft((current) => ({ ...current, title }))}
         />
+          </>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Field size">
           <span className="sc-look__label">Teams</span>
           {PLAY_IN_SIZES.map((size) => (
@@ -197,6 +233,19 @@ export function PlayInComposerApp() {
           onClick={() => void autoFill()}
         >
           Auto-fill 7–10
+        </button>
+        <button
+          type="button"
+          className={liveOn ? "sc-chip is-on" : "sc-chip"}
+          aria-pressed={liveOn}
+          onClick={() => {
+            setLiveOn((on) => !on);
+            if (!liveOn) {
+              void pollLive();
+            }
+          }}
+        >
+          Live scores
         </button>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">W–L</span>
@@ -277,12 +326,19 @@ export function PlayInComposerApp() {
             </label>
           );
         })}
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -291,7 +347,9 @@ export function PlayInComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -374,8 +432,9 @@ export function PlayInComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>
@@ -391,10 +450,9 @@ export function PlayInComposerApp() {
             />
           </ComposerBoard>
           <p className="sc-hint">
-            Auto-fill seeds 7–10 from standings. Optional W–L, scores on 7v8
-            and 9v10, and the 9v10 winner drops onto the 8-seed plate. One
-            label per matchup. Downloads a 4:5 Instagram PNG — nothing is
-            posted.
+            Auto-fill seeds 7–10 from standings. Live scores poll ESPN; the
+            9v10 winner drops onto the 8-seed plate. Optional W–L and scores
+            on 7v8 and 9v10. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

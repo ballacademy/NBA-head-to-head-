@@ -2,8 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -92,6 +95,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -157,6 +161,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           slots,
           look,
           purpleFlair,
+          photoGrade,
           showBa,
           showNames,
         },
@@ -249,11 +254,10 @@ export function TeamOfTheWeekPlusComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">TOTW Plus</h1>
-        </div>
+      <ComposerToolbar
+        title="TOTW Plus"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -292,8 +296,13 @@ export function TeamOfTheWeekPlusComposerApp() {
             onChange={(event) => setWeek(event.target.value.slice(0, 32))}
           />
         </label>
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Name + logo</span>
@@ -307,6 +316,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{
@@ -329,7 +341,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -391,8 +405,9 @@ export function TeamOfTheWeekPlusComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
@@ -406,6 +421,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             slots={slots}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}

@@ -4,6 +4,9 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   TIER_LOOK_KEY,
   useComposerLook,
@@ -31,6 +34,7 @@ import {
   parseEveryTeamStatMetric,
   playerStatValue,
   teamStatValue,
+  withRosterDepth,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
 import { exportTierListPng } from "./exportTierPng";
@@ -42,6 +46,7 @@ import {
 } from "./TierListGraphic";
 import {
   EMPTY_PLAYER_FILTERS,
+  NBA_ACTIVE_PLAYERS,
   PLAYER_FILTERS_KEY,
   getPlayer,
   parsePlayerSearchFilters,
@@ -53,8 +58,8 @@ import {
   addTier,
   createDefaultRows,
   DEFAULT_TIER_TITLE,
-  fillMatchingIds,
   groupIdsByValues,
+  populateAndGroupIds,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -67,6 +72,7 @@ import {
   usedLabelsForPicker,
   usedTeamIds,
   type TierRow,
+  type TierSplit,
   type TierSubject,
 } from "./tierState";
 import "@fontsource/montserrat/latin-900.css";
@@ -147,18 +153,25 @@ export function TierListComposerApp() {
   const [playerFilters, setPlayerFilters] =
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
+  const [rostersReady, setRostersReady] = useState(false);
   const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
+  const [tierSplit, setTierSplit] = useState<TierSplit>("even");
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
   const matchingIds = useMemo(
     () =>
       subject === "players"
-        ? searchPlayers("", playerFilters).map((player) => player.id)
+        ? searchPlayers(
+            "",
+            playerFilters,
+            withRosterDepth(NBA_ACTIVE_PLAYERS),
+          ).map((player) => player.id)
         : matchingTeamIds(playerFilters),
-    [subject, playerFilters],
+    [subject, playerFilters, rostersReady],
   );
   const filteredPlayerCount = matchingIds.length;
 
@@ -182,7 +195,11 @@ export function TierListComposerApp() {
     setShowNames(draft.showNames === true);
     setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
-    void loadEveryTeamRosters();
+    void loadEveryTeamRosters()
+      .then(() => setRostersReady(true))
+      .catch(() => {
+        setRostersReady(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -257,9 +274,37 @@ export function TierListComposerApp() {
     setStatus("Board cleared.");
   };
 
+  const valuesForIds = (ids: string[], metric: EveryTeamStatMetric) => {
+    const season = everyTeamCurrentSeason();
+    const values = new Map<string, number | null>();
+    ids.forEach((id) => {
+      if (subject === "teams") {
+        values.set(id, teamStatValue(id, season, metric, statsSample));
+        return;
+      }
+      const player = getPlayer(id);
+      values.set(
+        id,
+        playerStatValue(id, season, metric, player?.team ?? null, statsSample),
+      );
+    });
+    return values;
+  };
+
   const handlePopulateMatching = () => {
-    const result = fillMatchingIds(rows, matchingIds);
-    if (result.added === 0) {
+    if (!matchingIds.length && usedTeamIds(rows).size === 0) {
+      setStatus("No names match the current filters.");
+      return;
+    }
+    const used = [...new Set([...usedTeamIds(rows), ...matchingIds])];
+    const values = valuesForIds(used, groupMetric);
+    const grouped = populateAndGroupIds(rows, matchingIds, values, tierSplit);
+    const scored = used.filter((id) => values.get(id) != null).length;
+    const label = autoSortMetricLabel(groupMetric);
+    push(rows);
+    setRows(grouped.rows);
+    setActive(null);
+    if (grouped.added === 0 && scored === 0) {
       setStatus(
         matchingIds.length
           ? "All matching names are already on the board."
@@ -267,39 +312,25 @@ export function TierListComposerApp() {
       );
       return;
     }
-    push(rows);
-    setRows(result.rows);
-    setActive(null);
     setStatus(
-      `Filled ${result.added} matching ${noun}${
-        result.added === 1 ? "" : "s"
-      }. Group by a stat to rank them into S–F.`,
+      `Filled ${grouped.added} matching ${noun}${
+        grouped.added === 1 ? "" : "s"
+      } and grouped ${scored} by ${label} into ${grouped.rows.length} tiers.`,
     );
   };
 
   const handleGroupByStat = (metric: EveryTeamStatMetric) => {
-    const season = everyTeamCurrentSeason();
     const used = [...usedTeamIds(rows)];
     if (!used.length) {
       setStatus("Populate matching names first, then group by a stat.");
       return;
     }
-    const values = new Map<string, number | null>();
-    used.forEach((id) => {
-      if (subject === "teams") {
-        values.set(id, teamStatValue(id, season, metric));
-        return;
-      }
-      const player = getPlayer(id);
-      values.set(
-        id,
-        playerStatValue(id, season, metric, player?.team ?? null),
-      );
-    });
+    const values = valuesForIds(used, metric);
     const scored = used.filter((id) => values.get(id) != null).length;
     const label = autoSortMetricLabel(metric);
+    const grouped = groupIdsByValues(rows, values, tierSplit);
     push(rows);
-    setRows(groupIdsByValues(rows, values));
+    setRows(grouped);
     setActive(null);
     if (scored === 0) {
       setStatus(
@@ -308,7 +339,7 @@ export function TierListComposerApp() {
       return;
     }
     setStatus(
-      `Grouped ${scored} by ${label} into ${rows.length} tiers (highest in ${rows[0]?.label || "S"}).`,
+      `Grouped ${scored} by ${label} into ${grouped.length} tiers (highest in ${grouped[0]?.label || "S"}).`,
     );
   };
 
@@ -340,13 +371,10 @@ export function TierListComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">
-            {subject === "players" ? "Player tier list" : "Team tier list"}
-          </h1>
-        </div>
+      <ComposerToolbar
+        title={subject === "players" ? "Player tier list" : "Team tier list"}
+        identity={
+          <>
         <div className="sc-subject" role="tablist" aria-label="Tier list subject">
           <button
             type="button"
@@ -382,18 +410,14 @@ export function TierListComposerApp() {
           presets={TIER_TITLE_PRESETS}
           onChange={setTitle}
         />
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show names on cells"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+          </>
+        }
+        data={
+          <>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={setStatsSample}
+        />
         <div className="sc-look sc-look--sort" role="group" aria-label="Populate matching filters">
           <span className="sc-look__label">Board</span>
           <button
@@ -421,15 +445,75 @@ export function TierListComposerApp() {
           </select>
           <button
             type="button"
+            className={tierSplit === "fat-s" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={tierSplit === "fat-s"}
+            onClick={() =>
+              setTierSplit((current) => (current === "fat-s" ? "even" : "fat-s"))
+            }
+          >
+            Fat S
+          </button>
+          <button
+            type="button"
             className="sc-chip"
             onClick={() => handleGroupByStat(groupMetric)}
           >
             Sort into tiers
           </button>
         </div>
-        <ComposerLookToggle look={look} onChange={setLook} />
-        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => {
+            push(rows);
+            setRows((current) => addTier(current));
+          }}
+          disabled={rows.length >= MAX_TIERS}
+        >
+          Add tier
+        </button>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => {
+            push(rows);
+            setRows((current) => removeLastTier(current));
+          }}
+          disabled={rows.length <= MIN_TIERS}
+        >
+          Remove tier
+        </button>
+          </>
+        }
+        filters={
+          <PlayerFilterBar
+            variant={subject}
+            filters={playerFilters}
+            matchCount={filteredPlayerCount}
+            onChange={setPlayerFilters}
+            onReset={resetPlayerFilters}
+          />
+        }
+        board={
+          <>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Names</span>
+              <button
+                type="button"
+                className={showNames ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={showNames}
+                aria-label="Show names on cells"
+                onClick={() => setShowNames((on) => !on)}
+              >
+                {showNames ? "On" : "Off"}
+              </button>
+            </label>
+            <ComposerLookToggle look={look} onChange={setLook} />
+            <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+            <BaMarkToggle on={showBa} onChange={setShowBa} />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={
             subject === "players"
@@ -445,29 +529,9 @@ export function TierListComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              push(rows);
-              setRows((current) => addTier(current));
-            }}
-            disabled={rows.length >= MAX_TIERS}
-          >
-            Add tier
-          </button>
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              push(rows);
-              setRows((current) => removeLastTier(current));
-            }}
-            disabled={rows.length <= MIN_TIERS}
-          >
-            Remove tier
-          </button>
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -501,15 +565,8 @@ export function TierListComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
-
-      <PlayerFilterBar
-        variant={subject}
-        filters={playerFilters}
-        matchCount={filteredPlayerCount}
-        onChange={setPlayerFilters}
-        onReset={resetPlayerFilters}
+          </>
+        }
       />
 
       <main className="sc-stage">

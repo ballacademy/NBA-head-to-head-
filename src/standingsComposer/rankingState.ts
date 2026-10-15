@@ -118,6 +118,8 @@ export const clearSlot = (slots: RankingSlots, index: number): RankingSlots => {
 export const GRAPHIC_WIDTH = 1200;
 export const GRAPHIC_HEIGHT = 1500;
 export const GRAPHIC_ASPECT = GRAPHIC_WIDTH / GRAPHIC_HEIGHT;
+/** 9:16 story board in the same 1200-wide design units as the 4:5 feed. */
+export const STORY_DESIGN_HEIGHT = Math.round((GRAPHIC_WIDTH * 16) / 9);
 
 export const EXPORT_PIXEL_RATIO = 2;
 export const EXPORT_WIDTH = GRAPHIC_WIDTH * EXPORT_PIXEL_RATIO;

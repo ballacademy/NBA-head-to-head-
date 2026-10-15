@@ -4,6 +4,11 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { useComposerNight } from "../instagramComposer/composerNight";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   EVERY_TEAM_LOOK_KEY,
   useComposerLook,
@@ -40,6 +45,7 @@ import {
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
   DEFAULT_EVERY_TEAM_TITLE,
+  fillEveryTeamFromNight,
   isEveryTeamDraft,
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
@@ -48,6 +54,7 @@ import {
   slotIndexForTeam,
   teamAtSlot,
   usedEveryTeamLabels,
+  type EveryTeamNightMetric,
   type EveryTeamSlots,
 } from "./everyTeamState";
 import {
@@ -132,11 +139,14 @@ export function EveryTeamComposerApp() {
   const [rostersReady, setRostersReady] = useState(isEveryTeamRostersReady);
   const [look, setLook] = useComposerLook(EVERY_TEAM_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
   const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
+  const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
+  const night = useComposerNight();
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
@@ -289,6 +299,7 @@ export function EveryTeamComposerApp() {
       season,
       cellSeasons,
       metric,
+      statsSample,
     );
     const result = autoSortRankedOrder(teams, values);
     const label = autoSortMetricLabel(metric);
@@ -309,7 +320,12 @@ export function EveryTeamComposerApp() {
   };
 
   const handleAutoFill = (metric: EveryTeamStatMetric) => {
-    const next = autoFillEveryTeamSlots(season, cellSeasons, metric);
+    const next = autoFillEveryTeamSlots(
+      season,
+      cellSeasons,
+      metric,
+      statsSample,
+    );
     const filled = next.filter(Boolean).length;
     const label = autoSortMetricLabel(metric);
     if (filled === 0) {
@@ -321,7 +337,7 @@ export function EveryTeamComposerApp() {
       : createDefaultRankedOrder();
     const result = autoSortRankedOrder(
       teams,
-      rankedMetricValues(teams, next, season, cellSeasons, metric),
+      rankedMetricValues(teams, next, season, cellSeasons, metric, statsSample),
     );
     push(snapshot());
     setSlots(next);
@@ -331,6 +347,21 @@ export function EveryTeamComposerApp() {
       result.held
         ? `Filled ${filled} ${label} leaders and sorted ${result.ranked}. ${result.held} without stats stayed at the bottom.`
         : `Filled ${filled} teams with the ${label} leader and sorted 1–${result.ranked}. Current year uses last season until this year’s table exists.`,
+    );
+  };
+
+  const handleNightFill = async (metric: EveryTeamNightMetric) => {
+    setStatus("Loading last night’s box scores…");
+    const rows = await night.ensureStandouts();
+    const result = fillEveryTeamFromNight(slots, rows, metric);
+    if (result.filled === 0) {
+      setStatus("No last-night lines for this date.");
+      return;
+    }
+    push(snapshot());
+    setSlots(result.slots);
+    setStatus(
+      `Filled ${result.filled} teams with last night’s ${metric === "pra" ? "PRA" : "PTS"} leader.`,
     );
   };
 
@@ -357,11 +388,10 @@ export function EveryTeamComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Every team</h1>
-        </div>
+      <ComposerToolbar
+        title="Every team"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -375,6 +405,10 @@ export function EveryTeamComposerApp() {
           presets={EVERY_TEAM_TITLE_PRESETS}
           onChange={setTitle}
         />
+          </>
+        }
+        data={
+          <>
         <label className="sc-field">
           Board year
           <select
@@ -391,43 +425,10 @@ export function EveryTeamComposerApp() {
             ))}
           </select>
         </label>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Same position</span>
-          <button
-            type="button"
-            className={samePosition ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={samePosition}
-            aria-label="Same position on every team"
-            onClick={() =>
-              setSamePosition((current) => {
-                if (!current && fillPosition === ALL_PLAYER_FILTER) {
-                  setFillPosition("PG");
-                }
-                return !current;
-              })
-            }
-          >
-            {samePosition ? "On" : "Off"}
-          </button>
-        </label>
-        {samePosition ? (
-          <label className="sc-field">
-            Position
-            <select
-              value={fillPosition}
-              aria-label="Fill position"
-              onChange={(event) => setFillPosition(event.target.value)}
-            >
-              {POSITION_FILTERS.filter((option) => option.id !== ALL_PLAYER_FILTER).map(
-                (option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
-        ) : null}
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={setStatsSample}
+        />
         <div className="sc-look" role="group" aria-label="Board order">
           <span className="sc-look__label">Order</span>
           <button
@@ -470,6 +471,34 @@ export function EveryTeamComposerApp() {
             Fill leaders
           </button>
         </div>
+        <ComposerNightDate
+          date={night.date}
+          todayIso={night.todayIso}
+          yesterdayIso={night.yesterdayIso}
+          onChange={night.setDate}
+        />
+        <div className="sc-look sc-look--sort" role="group" aria-label="Fill last night">
+          <span className="sc-look__label">Last night</span>
+          <select
+            value={nightMetric}
+            aria-label="Last-night fill stat"
+            onChange={(event) =>
+              setNightMetric(
+                event.target.value === "pra" ? "pra" : "pts",
+              )
+            }
+          >
+            <option value="pts">PTS</option>
+            <option value="pra">PRA</option>
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void handleNightFill(nightMetric)}
+          >
+            Fill last night
+          </button>
+        </div>
         <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
           <span className="sc-look__label">Auto-sort</span>
           <select
@@ -493,6 +522,51 @@ export function EveryTeamComposerApp() {
             Sort 1–30
           </button>
         </div>
+          </>
+        }
+        filters={
+          <>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Same position</span>
+              <button
+                type="button"
+                className={samePosition ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={samePosition}
+                aria-label="Same position on every team"
+                onClick={() =>
+                  setSamePosition((current) => {
+                    if (!current && fillPosition === ALL_PLAYER_FILTER) {
+                      setFillPosition("PG");
+                    }
+                    return !current;
+                  })
+                }
+              >
+                {samePosition ? "On" : "Off"}
+              </button>
+            </label>
+            {samePosition ? (
+              <label className="sc-field">
+                Position
+                <select
+                  value={fillPosition}
+                  aria-label="Fill position"
+                  onChange={(event) => setFillPosition(event.target.value)}
+                >
+                  {POSITION_FILTERS.filter(
+                    (option) => option.id !== ALL_PLAYER_FILTER,
+                  ).map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </>
+        }
+        board={
+          <>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>
           <button
@@ -520,6 +594,9 @@ export function EveryTeamComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey="ddgm:every-team-composer:saves"
           board={{
@@ -550,7 +627,9 @@ export function EveryTeamComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -587,8 +666,9 @@ export function EveryTeamComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">

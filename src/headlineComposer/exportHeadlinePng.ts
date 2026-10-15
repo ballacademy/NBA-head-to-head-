@@ -1,7 +1,4 @@
-import {
-  downloadCanvasPng,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadCanvasPng } from "../instagramComposer/exportDownload";
 import {
   renderHeadlineCanvas,
   type HeadlineRenderInput,
@@ -13,9 +10,6 @@ export const exportHeadlinePng = async (
   input: HeadlineRenderInput,
   story = false,
 ) => {
-  const canvas = await renderHeadlineCanvas(input, 2);
-  await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
-    filename,
-  );
+  const canvas = await renderHeadlineCanvas({ ...input, story }, 2);
+  await downloadCanvasPng(canvas, filename);
 };

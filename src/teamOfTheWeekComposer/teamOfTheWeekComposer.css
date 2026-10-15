@@ -130,6 +130,19 @@
   pointer-events: auto;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .totw-strip .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .totw-strip .pod-photo__tool {
+    height: max(32px, calc(22 * var(--u)));
+    min-height: 32px;
+    font-size: max(11px, calc(9 * var(--u)));
+  }
+}
+
 .totw-strip .pod-photo__zoom {
   gap: calc(4 * var(--u));
 }

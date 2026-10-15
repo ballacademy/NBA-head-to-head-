@@ -1,20 +1,36 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerGradeClass,
+  gradedWatermarkOpacity,
+} from "../instagramComposer/photoGrade";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { inkOnHex } from "./statCardLayout";
+import { inkOnHex, statCardStoryType, statCardType } from "./statCardLayout";
 import {
   clipStatLabel,
+  clipStatMatchup,
   clipStatValue,
   playerName,
   STC_LABEL_MAX,
+  STC_MATCHUP_MAX,
   STC_NAME_MAX,
   STC_VALUE_MAX,
   type StatCardDraft,
@@ -25,13 +41,18 @@ interface StatCardGraphicProps {
   draft: StatCardDraft;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onNameChange: (value: string) => void;
   onStatValue: (index: number, value: string) => void;
   onStatLabel: (index: number, value: string) => void;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
+  onRemoveStat?: (index: number) => void;
+  onMoveStat?: (fromIndex: number, toIndex: number) => void;
+  onMatchupChange?: (value: string) => void;
 }
 
 export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
@@ -40,21 +61,43 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       draft,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       exporting = false,
+      story = false,
       onNameChange,
       onStatValue,
       onStatLabel,
       onPan,
       onUpload,
       onPick,
+      onRemoveStat,
+      onMoveStat,
+      onMatchupChange,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const dragRef = useRef<{
+      from: number;
+      x: number;
+      y: number;
+      moved: boolean;
+    } | null>(null);
+    const onMoveStatRef = useRef(onMoveStat);
+    onMoveStatRef.current = onMoveStat;
+    const dragListenersRef = useRef<(() => void) | null>(null);
     const [unit, setUnit] = useState(1);
+    const [dropIndex, setDropIndex] = useState<number | null>(null);
+    const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
+    const dragEnabled =
+      !exporting && Boolean(onMoveStat) && draft.stats.length > 1;
     const team = getTeam(draft.teamId);
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
+    const type = story
+      ? statCardStoryType(draft.stats.length)
+      : statCardType(draft.stats.length);
+    const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -63,6 +106,88 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       } else if (ref) {
         ref.current = node;
       }
+    };
+
+    const rowIndexFromPoint = (x: number, y: number) => {
+      const node = document.elementFromPoint(x, y);
+      if (!(node instanceof Element)) {
+        return null;
+      }
+      const row = node.closest(".stc-row");
+      const raw = row?.getAttribute("data-index");
+      const index = Number.parseInt(raw ?? "", 10);
+      return Number.isInteger(index) ? index : null;
+    };
+
+    const stopDragListeners = () => {
+      dragListenersRef.current?.();
+      dragListenersRef.current = null;
+    };
+
+    const startStatDrag = (index: number, event: ReactPointerEvent) => {
+      if (!dragEnabled || event.button !== 0) {
+        return;
+      }
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".stc-row__remove")
+      ) {
+        return;
+      }
+      stopDragListeners();
+      dragRef.current = {
+        from: index,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+      };
+
+      const onMove = (moveEvent: PointerEvent) => {
+        const drag = dragRef.current;
+        if (!drag) {
+          return;
+        }
+        if (
+          !drag.moved &&
+          Math.hypot(moveEvent.clientX - drag.x, moveEvent.clientY - drag.y) > 8
+        ) {
+          drag.moved = true;
+          setDraggingFrom(drag.from);
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }
+        if (drag.moved) {
+          moveEvent.preventDefault();
+          const over = rowIndexFromPoint(moveEvent.clientX, moveEvent.clientY);
+          setDropIndex(over != null && over !== drag.from ? over : null);
+        }
+      };
+
+      const finish = (endEvent: PointerEvent) => {
+        stopDragListeners();
+        const drag = dragRef.current;
+        dragRef.current = null;
+        setDropIndex(null);
+        setDraggingFrom(null);
+        if (!drag?.moved) {
+          return;
+        }
+        const toIndex = rowIndexFromPoint(endEvent.clientX, endEvent.clientY);
+        const move = onMoveStatRef.current;
+        if (move && toIndex != null && toIndex !== drag.from) {
+          move(drag.from, toIndex);
+        }
+      };
+
+      window.addEventListener("pointermove", onMove, { passive: false });
+      window.addEventListener("pointerup", finish);
+      window.addEventListener("pointercancel", finish);
+      dragListenersRef.current = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", finish);
+        window.removeEventListener("pointercancel", finish);
+      };
     };
 
     useLayoutEffect(() => {
@@ -78,11 +203,14 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       };
       sync();
       if (typeof ResizeObserver === "undefined") {
-        return;
+        return () => stopDragListeners();
       }
       const observer = new ResizeObserver(sync);
       observer.observe(node);
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        stopDragListeners();
+      };
     }, []);
 
     return (
@@ -93,6 +221,8 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
+          story ? "is-story" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -101,6 +231,10 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             ["--u" as string]: `${unit}px`,
             ["--team-color" as string]: colors.primary,
             ["--name-ink" as string]: nameInk,
+            ["--stc-value" as string]: String(type.value),
+            ["--stc-label" as string]: String(type.label),
+            ["--stc-gap" as string]: String(type.gap),
+            ["--stc-count" as string]: String(Math.max(1, draft.stats.length)),
           } as React.CSSProperties
         }
         aria-label="Instagram stat card"
@@ -127,8 +261,47 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           />
         ) : null}
         <div className="stc-stats">
+          {team && watermark !== "off" ? (
+            <div
+              className="stc-mark"
+              aria-hidden="true"
+              style={{
+                opacity: gradedWatermarkOpacity(
+                  composerWatermarkOpacity(watermark),
+                  photoGrade,
+                ),
+              }}
+            >
+              <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
+            </div>
+          ) : null}
           {draft.stats.map((line, index) => (
-            <div key={`${line.key}-${index}`} className="stc-row">
+            <div
+              key={`${line.key}-${index}`}
+              data-index={index}
+              className={[
+                "stc-row",
+                dragEnabled ? "stc-row--movable" : "",
+                draggingFrom === index ? "stc-row--dragging" : "",
+                dropIndex === index ? "is-drop" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onPointerDown={(event) => startStatDrag(index, event)}
+            >
+              {dragEnabled ? (
+                <span className="stc-row__grip" aria-hidden="true" />
+              ) : null}
+              {onRemoveStat && draft.stats.length > 1 ? (
+                <button
+                  type="button"
+                  className="stc-row__remove"
+                  aria-label={`Remove ${line.label} slot`}
+                  onClick={() => onRemoveStat(index)}
+                >
+                  Remove
+                </button>
+              ) : null}
               <input
                 className="stc-value"
                 value={line.value}
@@ -150,6 +323,20 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
               />
             </div>
           ))}
+          {draft.showMatchup ? (
+            <div className="stc-matchup">
+              <input
+                className="stc-matchup__line"
+                value={draft.matchup ?? ""}
+                maxLength={STC_MATCHUP_MAX}
+                placeholder="W vs OKC 111–109"
+                aria-label="Game matchup"
+                onChange={(event) =>
+                  onMatchupChange?.(clipStatMatchup(event.target.value))
+                }
+              />
+            </div>
+          ) : null}
         </div>
         <div className="stc-name-bar">
           <input

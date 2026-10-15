@@ -1,4 +1,5 @@
 import playerAveragesFile from "../../data/nba-player-stat-averages.json";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   getConferenceForTeam,
   getDivisionForTeam,
@@ -72,6 +73,10 @@ let priorStatsCache: {
   season: string;
   byId: Map<string, EveryTeamRosterPlayer>;
 } | null = null;
+let depthIndexCache: {
+  season: string;
+  byId: Map<string, Array<{ teamId: string; depth: number }>>;
+} | null = null;
 
 export const EVERY_TEAM_SORT_KEY = "ddgm:every-team-player-sort";
 
@@ -87,6 +92,7 @@ export const hydrateEveryTeamRosters = (payload: HistoricalCatalog) => {
   rosters = payload.rosters;
   loaded = true;
   priorStatsCache = null;
+  depthIndexCache = null;
 };
 
 export const loadEveryTeamRosters = async () => {
@@ -197,10 +203,14 @@ const highScorerCount = (season: string) => {
 
 /**
  * Upcoming/current year often has ESPN preseason scraps, not a BBR table.
- * Until this year’s scoring looks like a real table, borrow last season by id.
+ * Regular-season sample borrows last year until this year’s table exists.
+ * Preseason sample keeps the current year so those scraps are usable now.
  */
-export const statsSeasonFor = (season: string) => {
-  if (season !== currentSeason) {
+export const statsSeasonFor = (
+  season: string,
+  sample: ComposerStatsSample = "regular",
+) => {
+  if (sample === "preseason" || season !== currentSeason) {
     return season;
   }
   const prev = previousSeason(season);
@@ -274,11 +284,12 @@ export const playerRowForSeason = (
   playerId: string,
   season: string,
   teamId?: string | null,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   if (!playerId) {
     return null;
   }
-  const statsSeason = statsSeasonFor(season);
+  const statsSeason = statsSeasonFor(season, sample);
   const row = teamId
     ? priorPlayerStats(playerId, teamId, statsSeason)
     : (priorStatsById(statsSeason).get(playerId) ?? null);
@@ -290,8 +301,9 @@ const overlayLastSeasonStats = (
   player: EveryTeamRosterPlayer,
   teamId: string,
   season: string,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer => {
-  const statsSeason = statsSeasonFor(season);
+  const statsSeason = statsSeasonFor(season, sample);
   if (statsSeason === season) {
     return mergeSeasonAverages(player, statsSeason);
   }
@@ -333,9 +345,10 @@ const overlayLastSeasonStats = (
 export const listRosterPlayers = (
   teamId: string,
   season: string,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer[] =>
   rawRosterPlayers(teamId, season).map((player) =>
-    overlayLastSeasonStats(player, teamId, season),
+    overlayLastSeasonStats(player, teamId, season, sample),
   );
 
 export const teamLogoSrc = (
@@ -358,11 +371,16 @@ export const getRosterPlayer = (
   teamId: string,
   season: string,
   playerId: string | null | undefined,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   if (!playerId) {
     return null;
   }
-  return listRosterPlayers(teamId, season).find((player) => player.id === playerId) ?? null;
+  return (
+    listRosterPlayers(teamId, season, sample).find(
+      (player) => player.id === playerId,
+    ) ?? null
+  );
 };
 
 export const rosterHasPlayer = (
@@ -392,6 +410,60 @@ const positionGroup = (position: string): TierPlayer["positionGroup"] => {
     return "G";
   }
   return "F";
+};
+
+const depthIndexFor = (season: string) => {
+  if (depthIndexCache?.season === season) {
+    return depthIndexCache.byId;
+  }
+  const byId = new Map<string, Array<{ teamId: string; depth: number }>>();
+  NBA_TEAMS.forEach((team) => {
+    rawRosterPlayers(team.id, season).forEach((player) => {
+      const rows = byId.get(player.id) ?? [];
+      rows.push({ teamId: team.id, depth: player.depth });
+      byId.set(player.id, rows);
+    });
+  });
+  depthIndexCache = { season, byId };
+  return byId;
+};
+
+/** ESPN depth-chart unit for a player: 1 = starter PG–C, 2+ backups, 99 extras. */
+export const rosterDepthForPlayer = (
+  playerId: string,
+  teamId?: string | null,
+  season = everyTeamCurrentSeason(),
+): number | null => {
+  if (!loaded || !playerId) {
+    return null;
+  }
+  const rows = depthIndexFor(season).get(playerId);
+  if (!rows?.length) {
+    return null;
+  }
+  if (teamId) {
+    const hit = rows.find((row) => row.teamId === teamId);
+    if (hit) {
+      return hit.depth;
+    }
+  }
+  return rows[0]?.depth ?? null;
+};
+
+export const withRosterDepth = (
+  players: TierPlayer[],
+  season = everyTeamCurrentSeason(),
+): TierPlayer[] => {
+  if (!loaded) {
+    return players;
+  }
+  return players.map((player) => {
+    if (player.role === "coach" || player.depth != null) {
+      return player;
+    }
+    const depth = rosterDepthForPlayer(player.id, player.team, season);
+    return depth == null ? player : { ...player, depth };
+  });
 };
 
 export const rosterAsTierPlayers = (
@@ -520,15 +592,18 @@ export const playerStatValue = (
   season: string,
   metric: EveryTeamStatMetric,
   teamId?: string | null,
-) => rosterStatValue(playerRowForSeason(playerId, season, teamId), metric);
+  sample: ComposerStatsSample = "regular",
+) =>
+  rosterStatValue(playerRowForSeason(playerId, season, teamId, sample), metric);
 
 /** Minutes-weighted roster average — team scoring/rates for tier grouping. */
 export const teamStatValue = (
   teamId: string,
   season: string,
   metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
 ): number | null => {
-  const rows = listRosterPlayers(teamId, season)
+  const rows = listRosterPlayers(teamId, season, sample)
     .map((player) => ({
       value: rosterStatValue(player, metric),
       minutes: player.min ?? 0,
@@ -578,10 +653,11 @@ export const pickSeasonLeader = (
   teamId: string,
   season: string,
   metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer | null => {
   let best: EveryTeamRosterPlayer | null = null;
   let bestValue = Number.NEGATIVE_INFINITY;
-  listRosterPlayers(teamId, season).forEach((player) => {
+  listRosterPlayers(teamId, season, sample).forEach((player) => {
     const value = rosterStatValue(player, metric);
     if (value == null || value < bestValue) {
       return;

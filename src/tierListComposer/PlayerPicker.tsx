@@ -1,8 +1,15 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
+import {
+  isEveryTeamRostersReady,
+  loadEveryTeamRosters,
+  withRosterDepth,
+} from "../everyTeamComposer/historicalRosters";
 import { FilterRange, FilterSelect } from "./PlayerFilterBar";
 import {
   AGE_SPAN,
@@ -17,6 +24,7 @@ import {
   PLAYER_SCORING_SOURCE,
   PLAYER_SORT_KEY,
   POSITION_FILTERS,
+  ROLE_FILTERS,
   depthChartLabel,
   formatHeightInches,
   formatPpg,
@@ -50,6 +58,9 @@ interface PlayerPickerProps {
   showDepthSort?: boolean;
   scoringLabel?: string;
   toolbarExtra?: ReactNode;
+  suggested?: Array<{ id: string; badge?: string; meta?: string }>;
+  suggestedHeading?: string;
+  suggestedLoading?: boolean;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -57,7 +68,7 @@ interface PlayerPickerProps {
 
 export function PlayerPicker({
   heading,
-  hint = "Search a player, then click to add them to this tier.",
+  hint = "Search a player, then pick them for this slot.",
   currentId = null,
   usedLabels,
   clearLabel = "Clear slot",
@@ -71,12 +82,17 @@ export function PlayerPicker({
   showDepthSort = false,
   scoringLabel,
   toolbarExtra,
+  suggested = [],
+  suggestedHeading,
+  suggestedLoading = false,
   onPick,
   onClear,
   onClose,
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
     if (storedRaw == null) {
@@ -92,6 +108,7 @@ export function PlayerPicker({
     ...EMPTY_PLAYER_FILTERS,
     team: lockedTeam ?? ALL_PLAYER_FILTER,
   });
+  const [depthReady, setDepthReady] = useState(isEveryTeamRostersReady);
   const boardFilters = lockedFilters ?? localFilters;
   const filled = Boolean(currentId);
   const hideBoardFilters = Boolean(lockedFilters);
@@ -100,6 +117,7 @@ export function PlayerPicker({
     open: true,
     onClose,
     containerRef: dialogRef,
+    initialFocusRef: dialogRef,
     lockScroll: true,
   });
 
@@ -107,10 +125,56 @@ export function PlayerPicker({
     writeJson(sortStorageKey, sort);
   }, [sort, sortStorageKey]);
 
+  useEffect(() => {
+    if (depthReady) {
+      return;
+    }
+    void loadEveryTeamRosters()
+      .then(() => setDepthReady(true))
+      .catch(() => {
+        /* catalog still searchable */
+      });
+  }, [depthReady]);
+
+  const suggestedRows = useMemo(
+    () =>
+      suggested
+        .map((row) => {
+          const player =
+            (rosterPlayers ?? NBA_ACTIVE_PLAYERS).find(
+              (item) => item.id === row.id,
+            ) ?? null;
+          return player ? { ...row, player } : null;
+        })
+        .filter(
+          (
+            row,
+          ): row is {
+            id: string;
+            badge?: string;
+            meta?: string;
+            player: TierPlayer;
+          } => Boolean(row),
+        ),
+    [suggested, rosterPlayers],
+  );
+  const standoutHeading = suggestedHeading ?? "Standouts";
+  const showSuggested = suggestedRows.length > 0 && !query.trim();
+  const showSuggestedSection =
+    !query.trim() &&
+    (suggestedLoading ||
+      suggestedRows.length > 0 ||
+      suggestedHeading != null);
+  const suggestedIds = useMemo(
+    () => new Set(suggestedRows.map((row) => row.id)),
+    [suggestedRows],
+  );
+
   const players = useMemo(() => {
     const catalog = includeCoaches
       ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
-      : rosterPlayers;
+      : (rosterPlayers ?? NBA_ACTIVE_PLAYERS);
+    const withDepth = withRosterDepth(catalog);
     return sortPlayers(
       searchPlayers(
         query,
@@ -118,11 +182,55 @@ export function PlayerPicker({
           ...boardFilters,
           team: lockedTeam ?? boardFilters.team,
         },
-        catalog,
+        withDepth,
       ),
       sort,
     );
-  }, [query, boardFilters, lockedTeam, sort, rosterPlayers, includeCoaches]);
+  }, [
+    query,
+    boardFilters,
+    lockedTeam,
+    sort,
+    rosterPlayers,
+    includeCoaches,
+    depthReady,
+  ]);
+
+  const restPlayers = showSuggested
+    ? players.filter((player) => !suggestedIds.has(player.id))
+    : players;
+  const visibleIds = useMemo(
+    () => [
+      ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
+      ...restPlayers.map((player) => player.id),
+    ],
+    [showSuggested, suggestedRows, restPlayers],
+  );
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query, visibleIds.join("|")]);
+
+  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        pickerHighlightIndex(
+          visibleIds.length,
+          current,
+          event.key === "ArrowDown" ? 1 : -1,
+        ),
+      );
+      return;
+    }
+    if (event.key === "Enter") {
+      const id = visibleIds[Math.max(0, activeIndex)];
+      if (id) {
+        event.preventDefault();
+        onPick(id);
+      }
+    }
+  };
 
   const setLocalRange =
     (key: "ageRange" | "heightRange" | "experienceRange") =>
@@ -133,18 +241,21 @@ export function PlayerPicker({
   return (
     <div
       className="sc-picker-scrim"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={(event) => closeComposerScrim(event, onClose)}
     >
       <div
         ref={dialogRef}
-        className="sc-picker sc-picker--players"
+        className={[
+          "sc-picker",
+          "sc-picker--players",
+          filtersOpen ? "is-filters-open" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         role="dialog"
         aria-modal="true"
         aria-labelledby="sc-picker-title"
+        tabIndex={-1}
       >
         <div className="sc-picker__top">
           <div>
@@ -164,8 +275,9 @@ export function PlayerPicker({
               placeholder={
                 lockedTeam ? "Search this roster…" : "Name or team (LAL, Curry…)"
               }
-              autoFocus
+              enterKeyHint="search"
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={onSearchKeyDown}
             />
           </label>
           <div className="sc-picker__sort" role="group" aria-label="Sort players">
@@ -205,9 +317,31 @@ export function PlayerPicker({
             >
               {scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`}
             </span>
+            {hideBoardFilters ? null : (
+              <button
+                type="button"
+                className={
+                  filtersOpen
+                    ? "sc-chip is-on sc-picker__filters-toggle"
+                    : "sc-chip sc-picker__filters-toggle"
+                }
+                aria-pressed={filtersOpen}
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                Filters
+              </button>
+            )}
           </div>
           {toolbarExtra}
         </div>
+        <div
+          className={
+            hideBoardFilters
+              ? "sc-picker__filters-slot is-hint"
+              : "sc-picker__filters-slot"
+          }
+        >
         {hideBoardFilters ? (
           <p className="sc-picker__filter-hint">
             {simple
@@ -231,6 +365,17 @@ export function PlayerPicker({
                   setLocalFilters((current) => ({
                     ...current,
                     position: event.target.value,
+                  }))
+                }
+              />
+              <FilterSelect
+                label="Role"
+                value={localFilters.role ?? ALL_PLAYER_FILTER}
+                options={ROLE_FILTERS}
+                onChange={(event) =>
+                  setLocalFilters((current) => ({
+                    ...current,
+                    role: event.target.value,
                   }))
                 }
               />
@@ -279,6 +424,17 @@ export function PlayerPicker({
                 }
               />
               <FilterSelect
+                label="Role"
+                value={localFilters.role ?? ALL_PLAYER_FILTER}
+                options={ROLE_FILTERS}
+                onChange={(event) =>
+                  setLocalFilters((current) => ({
+                    ...current,
+                    role: event.target.value,
+                  }))
+                }
+              />
+              <FilterSelect
                 label="Draft class"
                 value={localFilters.draftClass ?? ALL_PLAYER_FILTER}
                 options={DRAFT_CLASS_FILTERS}
@@ -303,8 +459,41 @@ export function PlayerPicker({
             </div>
           </div>
         )}
+        </div>
+        {showSuggestedSection ? (
+          <div className="sc-picker__suggested">
+            <p className="sc-picker__suggested-label">{standoutHeading}</p>
+            {suggestedLoading && suggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">Loading box scores…</p>
+            ) : suggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">
+                No standouts for this night yet.
+              </p>
+            ) : (
+              <div
+                className="sc-picker__grid sc-picker__grid--suggested"
+                aria-label={standoutHeading}
+              >
+                {suggestedRows.map((row, index) => (
+                  <PlayerButton
+                    key={`sug-${row.id}`}
+                    player={row.player}
+                    currentId={currentId}
+                    usedLabel={usedLabels[row.id]}
+                    showPpg={false}
+                    showDepth={false}
+                    badge={row.badge}
+                    metaOverride={row.meta}
+                    highlighted={activeIndex === index}
+                    onPick={onPick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
         <div className="sc-picker__grid">
-          {players.map((player) => (
+          {restPlayers.map((player, index) => (
             <PlayerButton
               key={player.id}
               player={player}
@@ -313,13 +502,18 @@ export function PlayerPicker({
               showPpg={sort === "points"}
               showDepth={sort === "depth"}
               ppgEmptyLabel={simple ? "No stats" : undefined}
+              highlighted={
+                activeIndex ===
+                (showSuggested ? suggestedRows.length : 0) + index
+              }
               onPick={onPick}
             />
           ))}
         </div>
         <div className="sc-picker__footer">
           <p className="sc-picker__count">
-            {players.length} {includeCoaches ? "people" : "players"}
+            {restPlayers.length + (showSuggested ? suggestedRows.length : 0)}{" "}
+            {includeCoaches ? "people" : "players"}
           </p>
           <button
             type="button"
@@ -342,6 +536,9 @@ function PlayerButton({
   showPpg,
   showDepth,
   ppgEmptyLabel,
+  badge,
+  metaOverride,
+  highlighted = false,
   onPick,
 }: {
   player: TierPlayer;
@@ -350,6 +547,9 @@ function PlayerButton({
   showPpg: boolean;
   showDepth: boolean;
   ppgEmptyLabel?: string;
+  badge?: string;
+  metaOverride?: string;
+  highlighted?: boolean;
   onPick: (playerId: string) => void;
 }) {
   const isCurrent = currentId === player.id;
@@ -361,7 +561,7 @@ function PlayerButton({
       : player.role === "coach"
         ? `${player.team} · HC`
         : `${player.team} · ${player.position}`;
-  const meta = isCurrent ? "This slot" : identity;
+  const meta = isCurrent ? "This slot" : (metaOverride || identity);
 
   return (
     <button
@@ -370,6 +570,7 @@ function PlayerButton({
         "sc-team",
         isUsed ? "is-used" : "",
         isCurrent ? "is-current" : "",
+        highlighted ? "is-active" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -396,6 +597,7 @@ function PlayerButton({
       <span>
         <span className="sc-team__name">{player.name}</span>
         <span className="sc-team__meta">{meta}</span>
+        {badge ? <span className="sc-team__badge">{badge}</span> : null}
         {isUsed && usedLabel ? (
           <span className="sc-team__used">{usedChipLabel(usedLabel)}</span>
         ) : null}

@@ -12,6 +12,10 @@ import {
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { wrapNameToWidth } from "../instagramComposer/nameFit";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -163,6 +167,7 @@ const drawStripPhoto = async (
   look?: ComposerLook | null,
   showFade = false,
   showTeamHairline = true,
+  photoGrade = false,
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -185,8 +190,11 @@ const drawStripPhoto = async (
         photoZoom(strip.pan),
       );
       const rotate = photoRotate(strip.pan);
+      context.save();
+      if (photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       if (rotate) {
-        context.save();
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
@@ -196,11 +204,26 @@ const drawStripPhoto = async (
           dest.dw,
           dest.dh,
         );
-        context.restore();
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
-      paintPhotoVignette(context, inner.x, inner.y, inner.w, inner.h);
+      context.restore();
+      applyPhotoGrade(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
+      paintPhotoVignette(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
     }
   }
   context.restore();
@@ -237,6 +260,7 @@ export interface RankedLineupsRenderInput {
   strips: RankedLineupStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showFade?: boolean;
   showTeamHairline?: boolean;
@@ -406,6 +430,7 @@ export const renderRankedLineupsCanvas = async (
       input.look,
       input.showFade === true,
       input.showTeamHairline !== false,
+      input.photoGrade === true,
     );
     if (input.purpleFlair) {
       paintPurpleInnerHairline(

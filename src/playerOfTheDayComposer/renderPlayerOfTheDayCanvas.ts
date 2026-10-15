@@ -7,6 +7,10 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
@@ -135,6 +139,7 @@ export interface PlayerOfTheDayRenderInput {
   cards: PotdCard[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
 }
 
@@ -278,6 +283,9 @@ export const renderPlayerOfTheDayCanvas = async (
     context.clip();
 
     context.save();
+    if (input.photoGrade) {
+      context.filter = PHOTO_GRADE_FILTER;
+    }
     context.beginPath();
     addRoundRectPath(context, x, photoY, w, photoH, [radius, radius, 0, 0]);
     context.clip();
@@ -330,6 +338,7 @@ export const renderPlayerOfTheDayCanvas = async (
       }
     }
     context.restore();
+    applyPhotoGrade(context, x, photoY, w, photoH, input.photoGrade);
     paintPotdPhotoBorder(context, x, photoY, w, photoH, s, input.look);
 
     context.font = `900 ${POTD_TOTAL_SIZE * s}px ${POSTER_FONT}`;

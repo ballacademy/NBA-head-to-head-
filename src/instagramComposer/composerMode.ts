@@ -13,7 +13,8 @@ export type ComposerMode =
   | "compare"
   | "quote"
   | "play-in"
-  | "stat-card";
+  | "stat-card"
+  | "stat-card-cover";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -93,6 +94,16 @@ const PLAY_IN_PATHS = new Set(["/play-in", "/playin", "/mini-bracket"]);
 const PLAY_IN_QUERY = new Set(["play-in", "playin", "mini-bracket"]);
 const STAT_CARD_PATHS = new Set(["/stat-card", "/statcard", "/player-card"]);
 const STAT_CARD_QUERY = new Set(["stat-card", "statcard", "player-card"]);
+const STAT_CARD_COVER_PATHS = new Set([
+  "/stat-card-cover",
+  "/stat-cover",
+  "/cover",
+]);
+const STAT_CARD_COVER_QUERY = new Set([
+  "stat-card-cover",
+  "stat-cover",
+  "cover",
+]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -270,6 +281,12 @@ export const isStatCardPath = (pathname: string) =>
 export const isStatCardQuery = (search: string) =>
   STAT_CARD_QUERY.has(queryToken(search));
 
+export const isStatCardCoverPath = (pathname: string) =>
+  STAT_CARD_COVER_PATHS.has(normalizePath(pathname));
+
+export const isStatCardCoverQuery = (search: string) =>
+  STAT_CARD_COVER_QUERY.has(queryToken(search));
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
@@ -288,6 +305,9 @@ export const readComposerMode = (
   }
   if (isPlayInPath(pathname)) {
     return "play-in";
+  }
+  if (isStatCardCoverPath(pathname)) {
+    return "stat-card-cover";
   }
   if (isStatCardPath(pathname)) {
     return "stat-card";
@@ -330,6 +350,9 @@ export const readComposerMode = (
   }
   if (isPlayInQuery(search)) {
     return "play-in";
+  }
+  if (isStatCardCoverQuery(search)) {
+    return "stat-card-cover";
   }
   if (isStatCardQuery(search)) {
     return "stat-card";
@@ -400,6 +423,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "play-in") {
     return "/play-in";
+  }
+  if (mode === "stat-card-cover") {
+    return "/stat-card-cover";
   }
   if (mode === "stat-card") {
     return "/stat-card";

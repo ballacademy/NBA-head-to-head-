@@ -1,3 +1,9 @@
+import { graphicCaption } from "../instagramComposer/graphicCaption";
+import {
+  DEFAULT_COMPOSER_WATERMARK,
+  parseComposerWatermark,
+  type ComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
@@ -5,6 +11,7 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
@@ -27,7 +34,15 @@ export { clampPan, type PhotoPan };
 export const DEFAULT_COMPARE_TITLE = "NOT A SIXTH MAN";
 export const DEFAULT_COMPARE_SUBTITLE = "CAREER START VS CAREER BENCH APPEARANCES";
 export const DEFAULT_STATS_LABEL = "CAREER STATS";
+
+const foldCompareLine = (value: string) =>
+  value.replace(/\s+/g, " ").trim().toUpperCase();
+
+/** Leftover default footer under a new title — hide it, don't keep it. */
+export const isAutoCompareSubtitle = (value: string) =>
+  foldCompareLine(value) === foldCompareLine(DEFAULT_COMPARE_SUBTITLE);
 export const COMPARE_STAT_COUNT = 5;
+export const COMPARE_STAT_MAX = 10;
 
 export type CompareStatsMode = "season" | "game";
 export type CompareStatKey =
@@ -57,11 +72,11 @@ export const COMPARE_STAT_PRESETS: CompareStatPreset[] = [
   { key: "fg3Pct", label: "3P%", metric: "fg3Pct", game: "three", pctFromMakes: true },
   { key: "reb", label: "REB", metric: "rebounds", game: "reb" },
   { key: "ast", label: "AST", metric: "assists", game: "ast" },
-  { key: "stl", label: "STL", metric: "steals", game: "stl" },
+  { key: "min", label: "MIN", metric: "minutes", game: "min" },
   { key: "blk", label: "BLK", metric: "blocks", game: "blk" },
+  { key: "stl", label: "STL", metric: "steals", game: "stl" },
   { key: "tov", label: "TOV", metric: "turnovers", game: "tov" },
   { key: "ftPct", label: "FT%", metric: "ftPct" },
-  { key: "min", label: "MIN", metric: "minutes" },
   { key: "gp", label: "GP", metric: "games" },
 ];
 
@@ -100,6 +115,7 @@ export interface CompareDraft {
   season?: string;
   sideSeasons?: [string | null, string | null];
   showBa?: boolean;
+  watermark?: ComposerWatermark;
 }
 
 const isNullableString = (value: unknown) =>
@@ -183,7 +199,7 @@ export const parseCompareStats = (value: unknown): CompareStat[] => {
       } satisfies CompareStat;
     })
     .filter((row): row is CompareStat => Boolean(row));
-  return rows.length ? rows.slice(0, 8) : defaultCompareStats();
+  return rows.length ? rows.slice(0, COMPARE_STAT_MAX) : defaultCompareStats();
 };
 
 export const isCompareSide = (value: unknown): value is CompareSide =>
@@ -226,7 +242,7 @@ export const defaultCompareDraft = (): CompareDraft => {
   const season = everyTeamCurrentSeason();
   return {
     title: DEFAULT_COMPARE_TITLE,
-    subtitle: DEFAULT_COMPARE_SUBTITLE,
+    subtitle: "",
     statsLabel: autoCompareStatsLabel("season", season),
     sides: [emptyCompareSide(), emptyCompareSide()],
     stats: defaultCompareStats(),
@@ -234,6 +250,7 @@ export const defaultCompareDraft = (): CompareDraft => {
     season,
     sideSeasons: [null, null],
     showBa: true,
+    watermark: DEFAULT_COMPOSER_WATERMARK,
   };
 };
 
@@ -245,11 +262,13 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
   const statsMode = parseCompareStatsMode(draft.statsMode);
   return {
     ...draft,
+    subtitle: isAutoCompareSubtitle(draft.subtitle) ? "" : draft.subtitle,
     stats: parseCompareStats(draft.stats),
     statsMode,
     season,
     sideSeasons: parseSideSeasons(draft.sideSeasons),
     showBa: draft.showBa !== false,
+    watermark: parseComposerWatermark(draft.watermark),
   };
 };
 
@@ -258,6 +277,13 @@ export const hasCustomPhoto = (side: CompareSide) =>
 
 export const compareSideName = (side: CompareSide) =>
   `${side.firstName} ${side.lastName}`.replace(/\s+/g, " ").trim();
+
+export const compareCaptionFor = (draft: CompareDraft) =>
+  graphicCaption(
+    draft.title,
+    draft.sides.map(compareSideName).filter(Boolean),
+    isAutoCompareSubtitle(draft.subtitle) ? [] : [draft.subtitle],
+  );
 
 export const compareSideCaption = (side: CompareSide) => {
   const name = compareSideName(side);
@@ -324,11 +350,12 @@ export const statsFromSeason = (
   teamId: string | null,
   season: string,
   stats: CompareStat[] = defaultCompareStats(),
+  sample: ComposerStatsSample = "regular",
 ): string[] => {
   if (!playerId) {
     return stats.map(() => "");
   }
-  const row = playerRowForSeason(playerId, season, teamId);
+  const row = playerRowForSeason(playerId, season, teamId, sample);
   return stats.map((stat) => {
     const preset = compareStatPreset(stat.key);
     return formatCompareSeasonValue(
@@ -416,3 +443,22 @@ export const setCompareStatKey = (
     label: preset.label,
   });
 };
+
+export const nextCompareStat = (stats: CompareStat[]): CompareStat | null => {
+  if (stats.length >= COMPARE_STAT_MAX) {
+    return null;
+  }
+  const used = new Set(stats.map((stat) => stat.key));
+  const next = COMPARE_STAT_PRESETS.find((preset) => !used.has(preset.key));
+  return next ? emptyCompareStat(next.key) : null;
+};
+
+export const addCompareStat = (stats: CompareStat[]): CompareStat[] => {
+  const next = nextCompareStat(stats);
+  return next ? [...stats, next] : stats;
+};
+
+export const removeCompareStat = (stats: CompareStat[], index: number) =>
+  stats.length <= COMPARE_STAT_COUNT
+    ? stats
+    : stats.filter((_, statIndex) => statIndex !== index);

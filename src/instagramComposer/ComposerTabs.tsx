@@ -44,6 +44,7 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "quote", label: "Quote" },
       { mode: "play-in", label: "Play-in" },
       { mode: "stat-card", label: "Stat card" },
+      { mode: "stat-card-cover", label: "Cover" },
     ],
   },
 ];

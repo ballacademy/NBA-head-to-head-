@@ -6,17 +6,27 @@ import {
 } from "../everyTeamComposer/historicalRosters";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
+  addCompareStat,
   applySideStatValues,
   autoCompareStatsLabel,
+  COMPARE_STAT_COUNT,
+  COMPARE_STAT_MAX,
+  compareCaptionFor,
   defaultCompareDraft,
   defaultCompareStats,
+  isAutoCompareSubtitle,
+  normalizeCompareDraft,
   fillCompareSide,
   leadingSide,
+  nextCompareStat,
   numericStat,
+  parseCompareStats,
   parseCompareStatsMode,
+  removeCompareStat,
   statsFromLastGame,
   statsFromSeason,
 } from "./compareState";
+import { CMP_PHOTO_H, CMP_PHOTO_W, compareStatType } from "./compareLayout";
 
 hydrateEveryTeamRosters(
   catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
@@ -40,6 +50,17 @@ describe("compare composer recs", () => {
       `${statsSeasonFor("2026-27")} AVG`,
     );
     expect(autoCompareStatsLabel("game", "2026-27")).toBe("LAST GAME");
+    expect(draft.subtitle).toBe("");
+    expect(isAutoCompareSubtitle("CAREER START VS CAREER BENCH APPEARANCES")).toBe(
+      true,
+    );
+    expect(
+      normalizeCompareDraft({
+        ...draft,
+        subtitle: "CAREER START VS CAREER BENCH APPEARANCES",
+      }).subtitle,
+    ).toBe("");
+    expect(compareCaptionFor(draft)).not.toContain("CAREER START");
   });
 
   it("fills a side without a mugshot and highlights the leader", () => {
@@ -80,6 +101,7 @@ describe("compare composer recs", () => {
           fg: "12-22",
           three: "3-8",
           tov: "2",
+          min: "36",
         },
       },
       defaultCompareStats(),
@@ -90,4 +112,50 @@ describe("compare composer recs", () => {
     expect(patched[0]?.left).toBe("33");
     expect(patched[0]?.right).toBe("");
   });
+
+  it("adds unused counting stats through 10 without shrinking the photo columns", () => {
+    expect(COMPARE_STAT_COUNT).toBe(5);
+    expect(COMPARE_STAT_MAX).toBe(10);
+    expect(CMP_PHOTO_W).toBe(390);
+    expect(CMP_PHOTO_H).toBe(980);
+    expect(compareStatType(5).value).toBe(40);
+    expect(compareStatType(10).value).toBeLessThan(compareStatType(5).value);
+    expect(compareStatType(10).value).toBeGreaterThanOrEqual(24);
+    let stats = defaultCompareStats();
+    const added: string[] = [];
+    while (nextCompareStat(stats)) {
+      added.push(nextCompareStat(stats)!.label);
+      stats = addCompareStat(stats);
+    }
+    expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "FT%"]);
+    expect(stats).toHaveLength(10);
+    expect(stats.map((stat) => stat.label)).toEqual([
+      "PTS",
+      "FG%",
+      "3P%",
+      "REB",
+      "AST",
+      "MIN",
+      "BLK",
+      "STL",
+      "TOV",
+      "FT%",
+    ]);
+    expect(addCompareStat(stats)).toHaveLength(10);
+    expect(removeCompareStat(stats, 9)).toHaveLength(9);
+    expect(removeCompareStat(defaultCompareStats(), 0)).toHaveLength(5);
+    expect(parseCompareStats([...stats, emptyRow(), emptyRow()])).toHaveLength(
+      10,
+    );
+    expect(leadingSide(stats[0]!.left, stats[0]!.right)).toBeNull();
+    expect(leadingSide("2.4", "0.8")).toBe(0);
+    expect(leadingSide("0.8", "2.4")).toBe(1);
+  });
+});
+
+const emptyRow = () => ({
+  key: "gp" as const,
+  label: "GP",
+  left: "1",
+  right: "2",
 });

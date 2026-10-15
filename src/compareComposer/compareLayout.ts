@@ -21,3 +21,38 @@ export const CMP_STAT_SIZE = 40;
 export const CMP_LABEL_SIZE = 14;
 export const CMP_NAME_SIZE = 18;
 export const CMP_LEAD = "#ffe566";
+export const CMP_STAT_COUNT = 5;
+export const CMP_STAT_MAX = 10;
+
+/** Keep extra stat rows above the photo name fades. Photos stay full-bleed. */
+export const compareStatGutter = (count = CMP_STAT_COUNT) => {
+  const n = Math.min(CMP_STAT_MAX, Math.max(1, count));
+  if (n <= 5) {
+    return { bottom: 24, nameReserve: 0 };
+  }
+  if (n <= 7) {
+    return { bottom: 88, nameReserve: 88 };
+  }
+  return { bottom: 110, nameReserve: 110 };
+};
+
+/** Extra rows keep the photo columns and shrink type in the stats gutter. */
+export const compareStatType = (count = CMP_STAT_COUNT) => {
+  const n = Math.min(CMP_STAT_MAX, Math.max(1, count));
+  if (n <= 5) {
+    return { value: CMP_STAT_SIZE, label: CMP_LABEL_SIZE, rule: 52, stroke: 2.4 };
+  }
+  if (n === 6) {
+    return { value: 36, label: 13, rule: 46, stroke: 2.2 };
+  }
+  if (n === 7) {
+    return { value: 34, label: 12, rule: 42, stroke: 2 };
+  }
+  if (n === 8) {
+    return { value: 32, label: 12, rule: 38, stroke: 1.8 };
+  }
+  if (n === 9) {
+    return { value: 30, label: 11, rule: 36, stroke: 1.7 };
+  }
+  return { value: 28, label: 11, rule: 34, stroke: 1.6 };
+};

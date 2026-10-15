@@ -14,6 +14,7 @@ import {
   createEmptyEveryTeamSlots,
   displayedTeams,
   exportEveryTeamFilename,
+  fillEveryTeamFromNight,
   isEveryTeamDraft,
   isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
@@ -288,7 +289,13 @@ describe("every-team order and slots", () => {
 
   it("uses 2025-26 stats on the current season until that year has a real table", () => {
     expect(statsSeasonFor("2026-27")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "regular")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "preseason")).toBe("2026-27");
     expect(statsSeasonFor("2012-13")).toBe("2012-13");
+    const sgaPreseason = listRosterPlayers("OKC", "2026-27", "preseason").find(
+      (player) => player.id === "4278073",
+    );
+    expect(sgaPreseason?.gp).not.toBe(68);
     const sga = listRosterPlayers("OKC", "2026-27").find(
       (player) => player.id === "4278073",
     );
@@ -310,6 +317,24 @@ describe("every-team order and slots", () => {
     const filled = autoFillEveryTeamSlots("2026-27", {}, "points");
     expect(filled[slotIndexForTeam("OKC")]).toBe("4278073");
     expect(filled.filter(Boolean).length).toBeGreaterThan(20);
+    const night = fillEveryTeamFromNight(
+      createEmptyEveryTeamSlots(),
+      [
+        {
+          athleteId: "a",
+          teamId: "SAS",
+          game: { stats: { pts: "19", reb: "4", ast: "2" } },
+        },
+        {
+          athleteId: "b",
+          teamId: "SAS",
+          game: { stats: { pts: "12", reb: "10", ast: "9" } },
+        },
+      ],
+      "pra",
+    );
+    expect(night.filled).toBe(1);
+    expect(night.slots[slotIndexForTeam("SAS")]).toBe("b");
     expect(teamLogoSrc("OKC", "2001-02", false)).toContain("OKC");
     expect(teamLogoSrc("OKC", "2001-02", true)).toContain("SEA");
     expect(teamLogoSrc("BKN", "2011-12", true)).toContain("NJN");

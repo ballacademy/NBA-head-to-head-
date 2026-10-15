@@ -1,4 +1,15 @@
-import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
+import {
+  DEFAULT_COMPOSER_WATERMARK,
+  parseComposerWatermark,
+  type ComposerWatermark,
+} from "../instagramComposer/composerWatermark";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import {
+  isoDateOnly,
+  nbaTodayIso,
+  type LastGame,
+  type LastGameStats,
+} from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
   isPercentStatMetric,
@@ -18,17 +29,31 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  getPlayer,
+  type PlayerPositionGroup,
+  type TierPlayer,
+} from "../tierListComposer/nbaActivePlayers";
 
 export { clampPan, type PhotoPan };
 
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
 export const STC_NAME_MAX = 32;
+export const STC_MATCHUP_MAX = 28;
 export const STC_STAT_COUNT = 3;
-export const STC_STAT_MAX = 4;
+export const STC_STAT_MAX = 8;
 
-export type StatCardKey = "pts" | "reb" | "ast" | "three" | "stl" | "blk" | "fg";
+export type StatCardKey =
+  | "pts"
+  | "reb"
+  | "ast"
+  | "min"
+  | "blk"
+  | "stl"
+  | "tov"
+  | "three"
+  | "fg";
 export type StatCardSource = "last-game" | "season";
 
 export interface StatCardLine {
@@ -48,16 +73,22 @@ export interface StatCardDraft {
   stats: StatCardLine[];
   source?: StatCardSource;
   season?: string;
+  gameDate?: string | null;
   showBa?: boolean;
+  showMatchup?: boolean;
+  matchup?: string;
+  watermark?: ComposerWatermark;
 }
 
 export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
   { key: "pts", label: "PTS", value: "" },
   { key: "reb", label: "REB", value: "" },
   { key: "ast", label: "AST", value: "" },
-  { key: "three", label: "3PM", value: "" },
-  { key: "stl", label: "STL", value: "" },
+  { key: "min", label: "MIN", value: "" },
   { key: "blk", label: "BLK", value: "" },
+  { key: "stl", label: "STL", value: "" },
+  { key: "tov", label: "TOV", value: "" },
+  { key: "three", label: "3PM", value: "" },
   { key: "fg", label: "FG", value: "" },
 ];
 
@@ -70,11 +101,27 @@ const STC_METRIC: Record<StatCardKey, EveryTeamStatMetric> = {
   pts: "points",
   reb: "rebounds",
   ast: "assists",
-  stl: "steals",
+  min: "minutes",
   blk: "blocks",
+  stl: "steals",
+  tov: "turnovers",
   fg: "fgPct",
   three: "fg3Pct",
 };
+
+const GAME_FIELD: Record<StatCardKey, keyof LastGameStats> = {
+  pts: "pts",
+  reb: "reb",
+  ast: "ast",
+  min: "min",
+  blk: "blk",
+  stl: "stl",
+  tov: "tov",
+  three: "three",
+  fg: "fg",
+};
+
+const isMakesAttempts = (value: string) => /^\d+\s*-\s*\d+$/.test(value.trim());
 
 const isLine = (value: unknown): value is StatCardLine =>
   Boolean(
@@ -122,7 +169,11 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   stats: DEFAULT_STAT_LINES.map((line) => ({ ...line })),
   source: "last-game",
   season: everyTeamCurrentSeason(),
+  gameDate: nbaTodayIso(),
   showBa: true,
+  showMatchup: false,
+  matchup: "",
+  watermark: DEFAULT_COMPOSER_WATERMARK,
 });
 
 export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => ({
@@ -135,7 +186,11 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   stats: (draft.stats.length ? draft.stats : DEFAULT_STAT_LINES)
     .slice(0, STC_STAT_MAX)
     .map((line) => ({ ...line })),
+  gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
   showBa: draft.showBa !== false,
+  showMatchup: draft.showMatchup === true,
+  matchup: clipStatMatchup(draft.matchup ?? ""),
+  watermark: parseComposerWatermark(draft.watermark),
 });
 
 export const hasCustomPhoto = (draft: StatCardDraft) =>
@@ -154,6 +209,53 @@ export const clipStatValue = (value: string) =>
 
 export const clipStatLabel = (value: string) =>
   value.replace(/\s+/g, " ").trim().toUpperCase().slice(0, STC_LABEL_MAX);
+
+export const clipStatMatchup = (value: string) =>
+  value.replace(/\s+/g, " ").trim().slice(0, STC_MATCHUP_MAX);
+
+const wlToken = (result: string) => {
+  const token = String(result ?? "").trim().toUpperCase();
+  if (token.startsWith("W")) {
+    return "W";
+  }
+  if (token.startsWith("L")) {
+    return "L";
+  }
+  return "";
+};
+
+const scoreToken = (value: string) => {
+  const match = String(value ?? "").match(/(\d+)/);
+  return match?.[1] ?? "";
+};
+
+/** Home: `W vs OKC 111–109`. Away: `L 103–129 @ IND`. */
+export const formatStatCardMatchup = (
+  game: Pick<
+    LastGame,
+    "result" | "playerScore" | "opponentScore" | "opponentAbbrev" | "home"
+  > | null,
+) => {
+  if (!game) {
+    return "";
+  }
+  const result = wlToken(game.result);
+  const ours = scoreToken(game.playerScore);
+  const theirs = scoreToken(game.opponentScore);
+  const opp = String(game.opponentAbbrev ?? "")
+    .trim()
+    .toUpperCase()
+    .slice(0, 3);
+  if (!result || !ours || !theirs || !opp) {
+    return "";
+  }
+  const score = `${ours}–${theirs}`;
+  return clipStatMatchup(
+    game.home === false
+      ? `${result} ${score} @ ${opp}`
+      : `${result} vs ${opp} ${score}`,
+  );
+};
 
 export const setStatCardPhoto = (draft: StatCardDraft, photoSrc: string) => ({
   ...draft,
@@ -191,15 +293,37 @@ export const clearStatCardSubject = (draft: StatCardDraft): StatCardDraft => ({
   customPhoto: hasCustomPhoto(draft),
 });
 
-const valueFromGame = (line: StatCardLine, stats: LastGameStats) => {
-  if (line.key === "three") {
-    return stats.three;
-  }
-  if (line.key === "fg") {
-    return stats.fg;
-  }
-  return stats[line.key] ?? line.value;
+export const statCount = (value: string) => {
+  const parsed = Number.parseFloat(String(value).split("-")[0] ?? "");
+  return Number.isFinite(parsed) ? parsed : 0;
 };
+
+export const statAttempts = (value: string) => {
+  const match = String(value).match(/-(\d+)/);
+  return match ? Number(match[1]) : 0;
+};
+
+/** Boxscore field for a slot — MIN is minutes, never FGM-FGA. */
+export const lastGameValueForKey = (
+  key: StatCardKey,
+  stats: LastGameStats,
+): string => {
+  const raw = String(stats[GAME_FIELD[key]] ?? "").trim();
+  if (key === "fg" || key === "three") {
+    return raw;
+  }
+  if (key === "min") {
+    const minutes = raw.match(/^(\d+)(?::\d{1,2})?(?:\.\d+)?$/);
+    return minutes ? minutes[1] : "";
+  }
+  if (isMakesAttempts(raw)) {
+    return "";
+  }
+  return raw;
+};
+
+const valueFromGame = (line: StatCardLine, stats: LastGameStats) =>
+  lastGameValueForKey(line.key, stats);
 
 const seasonLabelFor = (line: StatCardLine): string => {
   if (line.key === "three") {
@@ -230,6 +354,118 @@ export const formatStatCardSeasonValue = (
   return (Math.round(value * 10) / 10).toFixed(1);
 };
 
+const lineFromGame = (
+  key: StatCardKey,
+  stats: LastGameStats,
+  override?: { label?: string; value?: string },
+): StatCardLine => {
+  const option = STAT_CARD_LINE_OPTIONS.find((item) => item.key === key)!;
+  return {
+    ...option,
+    label: (override?.label ?? gameLabelFor(option)).slice(0, STC_LABEL_MAX),
+    value: clipStatValue(override?.value ?? valueFromGame(option, stats)),
+  };
+};
+
+type NotablePick = {
+  key: StatCardKey;
+  label?: string;
+  value?: string;
+};
+
+export type NotableStatPosition =
+  | Pick<TierPlayer, "positionGroup" | "position">
+  | PlayerPositionGroup
+  | string
+  | null
+  | undefined;
+
+/** Guard >45%, Forward >50%, Center >57%. Unknown defaults to Forward. */
+export const FG_PCT_FLOOR: Record<PlayerPositionGroup, number> = {
+  G: 0.45,
+  F: 0.5,
+  C: 0.57,
+};
+
+/** Skip 1-1 / 2-3 junk; 8-15 still qualifies. */
+export const FG_MIN_ATTEMPTS = 8;
+/** Volume 3s are make-driven — a 4-x night belongs on the card. */
+export const THREE_MIN_MAKES = 4;
+
+export const fgPositionGroup = (
+  playerOrGroup?: NotableStatPosition,
+): PlayerPositionGroup => {
+  if (!playerOrGroup) {
+    return "F";
+  }
+  const raw =
+    typeof playerOrGroup === "string"
+      ? playerOrGroup
+      : playerOrGroup.positionGroup || playerOrGroup.position || "";
+  const token = String(raw).toUpperCase();
+  if (token === "G" || token === "PG" || token === "SG") {
+    return "G";
+  }
+  if (token === "C") {
+    return "C";
+  }
+  return "F";
+};
+
+/** Last-game lines worth putting on the card — no padded REB/AST junk. */
+export const notableStatCardLines = (
+  stats: LastGameStats,
+  playerOrGroup?: NotableStatPosition,
+): StatCardLine[] => {
+  const pts = statCount(stats.pts);
+  const reb = statCount(stats.reb);
+  const ast = statCount(stats.ast);
+  const stl = statCount(stats.stl);
+  const blk = statCount(stats.blk);
+  const min = statCount(stats.min);
+  const tov = statCount(stats.tov);
+  const threeMakes = statCount(stats.three);
+  const fgMakes = statCount(stats.fg);
+  const fgAtt = statAttempts(stats.fg);
+  const fgPct = fgAtt > 0 ? fgMakes / fgAtt : 0;
+  const fgFloor = FG_PCT_FLOOR[fgPositionGroup(playerOrGroup)];
+  const picks: NotablePick[] = [];
+  if (pts > 0) {
+    picks.push({ key: "pts" });
+  }
+  if (reb >= 4) {
+    picks.push({ key: "reb" });
+  }
+  if (ast >= 4) {
+    picks.push({ key: "ast" });
+  }
+  if (stl >= 2) {
+    picks.push({ key: "stl" });
+  }
+  if (blk >= 2) {
+    picks.push({ key: "blk" });
+  }
+  if (threeMakes >= THREE_MIN_MAKES) {
+    picks.push({ key: "three", label: "3PM", value: stats.three });
+  }
+  const fgEfficient = fgAtt >= FG_MIN_ATTEMPTS && fgPct > fgFloor;
+  const fgVolume = fgMakes >= 10;
+  if (fgEfficient || fgVolume) {
+    picks.push({ key: "fg" });
+  }
+  if (tov >= 6 || (tov >= 5 && pts >= 30)) {
+    picks.push({ key: "tov" });
+  }
+  /** Short nights and heavy minutes read; a boring 30–35 can skip. Always last. */
+  const showMin = min > 0 && (min < 30 || min >= 36);
+  const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
+  const picked = picks.slice(0, room).map((item) => lineFromGame(item.key, stats, item));
+  if (showMin) {
+    picked.push(lineFromGame("min", stats));
+  }
+  return picked.length ? picked : [lineFromGame("pts", stats)];
+};
+
 export const fillStatCardFromGame = (
   draft: StatCardDraft,
   game: LastGame | null,
@@ -240,6 +476,7 @@ export const fillStatCardFromGame = (
   return {
     ...draft,
     source: "last-game",
+    matchup: formatStatCardMatchup(game),
     stats: draft.stats.map((line) => ({
       ...line,
       label: gameLabelFor(line),
@@ -248,14 +485,64 @@ export const fillStatCardFromGame = (
   };
 };
 
+export const fillStatCardFromStandout = (
+  draft: StatCardDraft,
+  game: LastGame | null,
+): StatCardDraft => {
+  if (!game) {
+    return draft;
+  }
+  return {
+    ...draft,
+    source: "last-game",
+    matchup: formatStatCardMatchup(game),
+    stats: notableStatCardLines(game.stats, getPlayer(draft.playerId)),
+  };
+};
+
+/** Cover pack cards stay empty-photo until paste/upload. */
+export const statCardFromCoverSlot = (
+  slot: {
+    playerId: string | null;
+    firstName: string;
+    lastName: string;
+    teamId: string | null;
+  },
+  game: LastGame | null,
+  gameDate?: string | null,
+): StatCardDraft | null => {
+  if (!slot.playerId) {
+    return null;
+  }
+  const player = getPlayer(slot.playerId);
+  if (!player) {
+    return null;
+  }
+  let draft = fillStatCardFromPlayer(player, defaultStatCardDraft());
+  draft = {
+    ...draft,
+    firstName: slot.firstName || draft.firstName,
+    lastName: slot.lastName || draft.lastName,
+    teamId: slot.teamId || draft.teamId,
+    gameDate: isoDateOnly(gameDate) || draft.gameDate,
+    photoSrc: null,
+    customPhoto: false,
+  };
+  if (game) {
+    draft = fillStatCardFromStandout(draft, game);
+  }
+  return { ...draft, photoSrc: null, customPhoto: false };
+};
+
 export const fillStatCardFromSeason = (
   draft: StatCardDraft,
   season = draft.season || everyTeamCurrentSeason(),
+  sample: ComposerStatsSample = "regular",
 ): StatCardDraft => {
   if (!draft.playerId) {
     return { ...draft, source: "season", season };
   }
-  const row = playerRowForSeason(draft.playerId, season, draft.teamId);
+  const row = playerRowForSeason(draft.playerId, season, draft.teamId, sample);
   return {
     ...draft,
     source: "season",
@@ -278,33 +565,76 @@ export const setStatCardLineKey = (
   index: number,
   key: StatCardKey,
   source: StatCardSource,
+  gameStats?: LastGameStats | null,
 ): StatCardLine[] => {
   const option = STAT_CARD_LINE_OPTIONS.find((item) => item.key === key);
   if (!option) {
     return stats;
   }
   const next = { ...option };
+  const value =
+    source === "last-game" && gameStats
+      ? clipStatValue(lastGameValueForKey(key, gameStats))
+      : "";
   return stats.map((line, lineIndex) =>
     lineIndex === index
       ? {
           ...next,
           label: source === "season" ? seasonLabelFor(next) : next.label,
-          value: line.value,
+          value,
         }
       : line,
   );
 };
 
-export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
+export const nextStatCardLine = (stats: StatCardLine[]): StatCardLine | null => {
   if (stats.length >= STC_STAT_MAX) {
-    return stats;
+    return null;
   }
   const used = new Set(stats.map((line) => line.key));
-  const next =
-    STAT_CARD_LINE_OPTIONS.find((line) => !used.has(line.key)) ??
-    STAT_CARD_LINE_OPTIONS[3]!;
-  return [...stats, { ...next }];
+  const next = STAT_CARD_LINE_OPTIONS.find((line) => !used.has(line.key));
+  return next ? { ...next } : null;
 };
 
-export const removeStatCardLine = (stats: StatCardLine[], index: number) =>
-  stats.length <= 3 ? stats : stats.filter((_, lineIndex) => lineIndex !== index);
+export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
+  const next = nextStatCardLine(stats);
+  return next ? [...stats, next] : stats;
+};
+
+/** MIN stays last when it is still on the card. */
+export const keepMinLast = (stats: StatCardLine[]): StatCardLine[] => {
+  const rest = stats.filter((line) => line.key !== "min");
+  const mins = stats.filter((line) => line.key === "min");
+  return mins.length ? [...rest, ...mins] : stats;
+};
+
+export const removeStatCardLine = (stats: StatCardLine[], index: number) => {
+  if (stats.length <= 1 || index < 0 || index >= stats.length) {
+    return stats;
+  }
+  return keepMinLast(stats.filter((_, lineIndex) => lineIndex !== index));
+};
+
+/** Graphic drag: keep the dropped order, including MIN off last. */
+export const moveStatCardLine = (
+  stats: StatCardLine[],
+  fromIndex: number,
+  toIndex: number,
+): StatCardLine[] => {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= stats.length ||
+    toIndex >= stats.length
+  ) {
+    return stats;
+  }
+  const next = [...stats];
+  const [moved] = next.splice(fromIndex, 1);
+  if (!moved) {
+    return stats;
+  }
+  next.splice(toIndex, 0, moved);
+  return next;
+};

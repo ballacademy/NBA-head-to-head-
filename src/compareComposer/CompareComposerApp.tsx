@@ -3,18 +3,26 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import {
   COMPARE_LOOK_KEY,
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { downloadExportPack } from "../instagramComposer/exportPack";
-import {
-  copyGraphicCaption,
-  graphicCaption,
-  stripCaptionName,
-} from "../instagramComposer/graphicCaption";
+import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -37,11 +45,16 @@ import { CompareGraphic } from "./CompareGraphic";
 import { exportComparePng } from "./exportComparePng";
 import { renderCompareCanvas } from "./renderCompareCanvas";
 import {
+  addCompareStat,
   applySideStatValues,
   autoCompareStatsLabel,
+  compareCaptionFor,
   clearCompareSide,
+  COMPARE_STAT_COUNT,
+  COMPARE_STAT_MAX,
   COMPARE_STAT_PRESETS,
   defaultCompareDraft,
+  nextCompareStat,
   effectiveCompareSeason,
   fillCompareSide,
   hasCustomPhoto,
@@ -50,6 +63,7 @@ import {
   parseCompareStatKey,
   parseCompareStatsMode,
   patchCompareStat,
+  removeCompareStat,
   setComparePhoto,
   setCompareStatKey,
   statsFromLastGame,
@@ -82,12 +96,16 @@ export function CompareComposerApp() {
   const [rostersReady, setRostersReady] = useState(false);
   const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     side: 0 | 1;
     playerId: string;
     playerName: string;
   } | null>(null);
+  const [storyCrop, setStoryCrop] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<CompareDraft>();
+  const night = useComposerNight();
 
   useEffect(() => {
     document.title = "Comparison graphic";
@@ -116,6 +134,8 @@ export function CompareComposerApp() {
     snapshot: CompareDraft,
     side?: 0 | 1,
     playerId?: string,
+    sample = statsSample,
+    onDate = night.date,
   ) => {
     const mode = parseCompareStatsMode(snapshot.statsMode);
     const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
@@ -128,7 +148,7 @@ export function CompareComposerApp() {
         continue;
       }
       if (mode === "game") {
-        const game = await fetchLastGame(id);
+        const game = await fetchLastGame(id, sample, onDate);
         nextStats = applySideStatValues(
           nextStats,
           index,
@@ -139,7 +159,7 @@ export function CompareComposerApp() {
         nextStats = applySideStatValues(
           nextStats,
           index,
-          statsFromSeason(id, person.teamId, season, nextStats),
+          statsFromSeason(id, person.teamId, season, nextStats, sample),
         );
       }
     }
@@ -165,6 +185,13 @@ export function CompareComposerApp() {
     );
     void fillStats(next, side, player.id);
   };
+
+  useEffect(() => {
+    if (picker == null) {
+      return;
+    }
+    void night.ensureStandouts(night.date);
+  }, [picker, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {
     if (picker == null) {
@@ -243,7 +270,7 @@ export function CompareComposerApp() {
       await exportComparePng(
         node,
         filename ?? exportFilenameFromTitle(draft.title, "compare"),
-        { ...draft, look, purpleFlair },
+        { ...draft, look, purpleFlair, photoGrade },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -284,15 +311,15 @@ export function CompareComposerApp() {
   });
   const seasons = everyTeamSeasons();
   const mode = parseCompareStatsMode(draft.statsMode);
+  const nextStat = nextCompareStat(draft.stats);
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Compare</h1>
-        </div>
-        <label className="sc-field sc-field--wide">
+      <ComposerToolbar
+        title="Compare"
+        identity={
+          <>
+          <label className="sc-field sc-field--wide">
           Title
           <input
             value={draft.title}
@@ -311,6 +338,10 @@ export function CompareComposerApp() {
           presets={COMPARE_TITLE_PRESETS}
           onChange={(title) => setDraft((current) => ({ ...current, title }))}
         />
+          </>
+        }
+        data={
+          <>
         <div className="sc-look" role="group" aria-label="Stats source">
           <span className="sc-look__label">Stats</span>
           <button
@@ -330,6 +361,24 @@ export function CompareComposerApp() {
             Last game
           </button>
         </div>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={(nextSample) => {
+            setStatsSample(nextSample);
+            void fillStats(draft, undefined, undefined, nextSample);
+          }}
+        />
+        {mode === "game" ? (
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              void fillStats(draft, undefined, undefined, statsSample, iso);
+            }}
+          />
+        ) : null}
         <label className="sc-field">
           Season
           <select
@@ -402,12 +451,71 @@ export function CompareComposerApp() {
             </select>
           </label>
         ))}
+        <button
+          type="button"
+          className="sc-chip"
+          disabled={draft.stats.length >= COMPARE_STAT_MAX}
+          onClick={() => {
+            const next = { ...draft, stats: addCompareStat(draft.stats) };
+            setDraft(next);
+            void fillStats(next);
+          }}
+        >
+          {nextStat ? `Add ${nextStat.label}` : "10 stats"}
+        </button>
+        {draft.stats.length > COMPARE_STAT_COUNT ? (
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => {
+              const next = {
+                ...draft,
+                stats: removeCompareStat(
+                  draft.stats,
+                  draft.stats.length - 1,
+                ),
+              };
+              setDraft(next);
+              void fillStats(next);
+            }}
+          >
+            {draft.stats.length === COMPARE_STAT_COUNT + 1
+              ? "5 stats"
+              : "Remove last"}
+          </button>
+        ) : null}
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+        <WatermarkToggle
+          value={draft.watermark}
+          onChange={(watermark) =>
+            setDraft((current) => ({ ...current, watermark }))
+          }
+        />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
+          </>
+        }
+        persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={draft}
@@ -418,7 +526,9 @@ export function CompareComposerApp() {
             void fillStats(loaded);
           }}
         />
-        <div className="sc-toolbar__actions">
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -448,13 +558,7 @@ export function CompareComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() =>
-              void copyGraphicCaption(
-                graphicCaption(
-                  draft.title,
-                  draft.sides.map(stripCaptionName).filter(Boolean),
-                  [draft.subtitle],
-                ),
-              ).then(
+              void copyGraphicCaption(compareCaptionFor(draft)).then(
                 () => setStatus("Caption copied."),
                 () => setStatus("Could not copy caption."),
               )
@@ -484,7 +588,10 @@ export function CompareComposerApp() {
                 try {
                   await downloadExportPack(
                     () =>
-                      renderCompareCanvas({ ...draft, look, purpleFlair }, 2),
+                      renderCompareCanvas(
+                        { ...draft, look, purpleFlair, photoGrade },
+                        2,
+                      ),
                     exportFilenameFromTitle(draft.title, "compare"),
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
@@ -508,8 +615,9 @@ export function CompareComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>
@@ -518,6 +626,7 @@ export function CompareComposerApp() {
               draft={draft}
               look={look}
               purpleFlair={purpleFlair}
+              photoGrade={photoGrade}
               exporting={exporting}
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
@@ -550,6 +659,7 @@ export function CompareComposerApp() {
                 })
               }
             />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photos first — pick two players for this-season averages,
@@ -566,6 +676,9 @@ export function CompareComposerApp() {
           hint="Same or different people. Stats fill from this season’s averages unless you switch to last game."
           currentId={draft.sides[picker]?.playerId}
           usedLabels={used}
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
           onPick={handlePick}
           onClear={() => {
             push(draft);

@@ -5,6 +5,14 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -25,21 +33,22 @@ import {
   CMP_PHOTO_H,
   CMP_PHOTO_TOP,
   CMP_PHOTO_W,
-  CMP_STAT_SIZE,
   CMP_STATS_W,
   CMP_SUB_H,
   CMP_SUB_SIZE,
   CMP_TITLE_H,
   CMP_TITLE_SIZE,
-  CMP_LABEL_SIZE,
   CMP_NAME_SIZE,
   CMP_LEAD,
+  compareStatGutter,
+  compareStatType,
 } from "./compareLayout";
 import {
   compareSideCaption,
   leadingSide,
   type CompareDraft,
 } from "./compareState";
+import { getTeam } from "../standingsComposer/teams";
 
 export { canvasToPngBlob };
 
@@ -84,6 +93,7 @@ const strokeFill = (
 export type CompareRenderInput = CompareDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
 };
 
 export const renderCompareCanvas = async (
@@ -144,6 +154,24 @@ export const renderCompareCanvas = async (
     const person = input.sides[side]!;
     context.fillStyle = "#111";
     context.fillRect(x, photoY, CMP_PHOTO_W * s, photoH);
+    const watermark = parseComposerWatermark(input.watermark);
+    const team = getTeam(person.teamId);
+    if (team && watermark !== "off") {
+      const mark = await loadImage(team.logoSrc);
+      if (mark) {
+        const size = 220 * s;
+        context.save();
+        context.globalAlpha = composerWatermarkOpacity(watermark);
+        context.drawImage(
+          mark,
+          x + (CMP_PHOTO_W * s - size) / 2,
+          photoY + photoH * 0.28,
+          size,
+          size,
+        );
+        context.restore();
+      }
+    }
     if (person.photoSrc) {
       const photo = person.photoSrc.startsWith("data:")
         ? await loadImage(person.photoSrc)
@@ -161,6 +189,9 @@ export const renderCompareCanvas = async (
           photoZoom(person.pan),
         );
         context.save();
+        if (input.photoGrade) {
+          context.filter = PHOTO_GRADE_FILTER;
+        }
         context.beginPath();
         context.rect(x, photoY, CMP_PHOTO_W * s, photoH);
         context.clip();
@@ -179,7 +210,22 @@ export const renderCompareCanvas = async (
           context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
         }
         context.restore();
-        paintPhotoVignette(context, x, photoY, CMP_PHOTO_W * s, photoH);
+        applyPhotoGrade(
+          context,
+          x,
+          photoY,
+          CMP_PHOTO_W * s,
+          photoH,
+          input.photoGrade,
+        );
+        paintPhotoVignette(
+          context,
+          x,
+          photoY,
+          CMP_PHOTO_W * s,
+          photoH,
+          input.photoGrade,
+        );
       }
     }
     paintCellFrame(context, x, photoY, CMP_PHOTO_W * s, photoH, input.look, s);
@@ -212,6 +258,8 @@ export const renderCompareCanvas = async (
     }
   }
 
+  const type = compareStatType(input.stats.length);
+  const gutter = compareStatGutter(input.stats.length);
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -220,71 +268,80 @@ export const renderCompareCanvas = async (
   context.fillText(
     (input.statsLabel || "STATS").toUpperCase(),
     statsX + statsW / 2,
-    photoY + 36 * s,
+    photoY + 29 * s,
     statsW,
   );
   setLetterSpacing(context, 0);
 
   const rowCount = Math.max(input.stats.length, 1);
-  const rowStart = photoY + 88 * s;
-  const rowSpan = Math.min(150 * s, (photoH - 120 * s) / rowCount);
+  const bodyTop = photoY + 46 * s;
+  const bodyH = photoH - 70 * s - gutter.nameReserve * s;
+  const rowSpan = bodyH / rowCount;
   input.stats.forEach((stat, index) => {
-    const y = rowStart + index * rowSpan;
+    const y = bodyTop + index * rowSpan + rowSpan / 2;
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
     context.fillStyle = "rgba(255,255,255,0.45)";
-    context.fillRect(mid - s, y - 26 * s, 2 * s, 52 * s);
-    context.font = `900 ${CMP_STAT_SIZE * s}px ${POSTER_FONT}`;
+    context.fillRect(
+      mid - s,
+      y - (type.rule * s) / 2,
+      2 * s,
+      type.rule * s,
+    );
+    context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textBaseline = "middle";
     context.textAlign = "right";
     strokeFill(
       context,
       stat.left,
       mid - 16 * s,
-      y - 6 * s,
+      y - type.label * 0.55 * s,
       lead === 0 ? CMP_LEAD : "#fff",
-      2.4 * s,
+      type.stroke * s,
     );
     context.textAlign = "left";
     strokeFill(
       context,
       stat.right,
       mid + 16 * s,
-      y - 6 * s,
+      y - type.label * 0.55 * s,
       lead === 1 ? CMP_LEAD : "#fff",
-      2.4 * s,
+      type.stroke * s,
     );
     const unit = (stat.label || "").toUpperCase();
-    context.font = `900 ${CMP_LABEL_SIZE * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.14 * CMP_LABEL_SIZE * s);
+    context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.14 * type.label * s);
     context.textAlign = "right";
     context.fillStyle = lead === 0 ? CMP_LEAD : "rgba(255,255,255,0.78)";
-    context.fillText(unit, mid - 16 * s, y + 22 * s);
+    context.fillText(unit, mid - 16 * s, y + type.value * 0.42 * s);
     context.textAlign = "left";
     context.fillStyle = lead === 1 ? CMP_LEAD : "rgba(255,255,255,0.78)";
-    context.fillText(unit, mid + 16 * s, y + 22 * s);
+    context.fillText(unit, mid + 16 * s, y + type.value * 0.42 * s);
     setLetterSpacing(context, 0);
   });
 
-  const subY = height - 36 * s - CMP_SUB_H * s;
-  context.fillStyle = "#1c1c1c";
-  context.fillRect(titleX, subY, titleW, CMP_SUB_H * s);
-  paintCellFrame(context, titleX, subY, titleW, CMP_SUB_H * s, input.look, s);
-  if (input.purpleFlair) {
-    paintPurplePlateEdge(context, titleX, subY, titleW, CMP_SUB_H * s, s);
+  const subtitle = input.subtitle.trim().toUpperCase();
+  if (subtitle) {
+    const subY = height - 36 * s - CMP_SUB_H * s;
+    context.fillStyle = "#1c1c1c";
+    context.fillRect(titleX, subY, titleW, CMP_SUB_H * s);
+    paintCellFrame(context, titleX, subY, titleW, CMP_SUB_H * s, input.look, s);
+    if (input.purpleFlair) {
+      paintPurplePlateEdge(context, titleX, subY, titleW, CMP_SUB_H * s, s);
+    }
+    context.font = `900 ${CMP_SUB_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.06 * CMP_SUB_SIZE * s);
+    context.fillStyle = "#fff";
+    context.fillText(
+      subtitle,
+      width / 2,
+      subY + (CMP_SUB_H * s) / 2,
+      titleW - 24 * s,
+    );
+    setLetterSpacing(context, 0);
   }
-  context.font = `900 ${CMP_SUB_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, 0.06 * CMP_SUB_SIZE * s);
-  context.fillStyle = "#fff";
-  context.fillText(
-    input.subtitle.trim().toUpperCase(),
-    width / 2,
-    subY + (CMP_SUB_H * s) / 2,
-    titleW - 24 * s,
-  );
-  setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

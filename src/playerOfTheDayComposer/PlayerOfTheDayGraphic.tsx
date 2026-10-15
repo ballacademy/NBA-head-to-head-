@@ -5,6 +5,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -25,6 +26,7 @@ interface PlayerOfTheDayGraphicProps {
   cards: PotdCard[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -60,6 +62,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     cards,
     look = "white",
     purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     exporting = false,
     onBrandChange,
@@ -110,7 +113,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
   return (
     <article
       ref={setRefs}
-      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
+      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair), composerGradeClass(photoGrade)]
         .filter(Boolean)
         .join(" ")}
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}

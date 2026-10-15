@@ -117,6 +117,8 @@ export interface NumberRange {
   max: number;
 }
 
+export type PlayerRoleFilter = "all" | "starter" | "bench";
+
 export interface PlayerSearchFilters {
   team?: string;
   ageRange?: NumberRange;
@@ -124,6 +126,7 @@ export interface PlayerSearchFilters {
   division?: string;
   conference?: string;
   position?: string;
+  role?: string;
   draftClass?: string;
   draftStatus?: string;
   allStar?: string;
@@ -144,11 +147,15 @@ export const EXPERIENCE_SPAN = spanOf(
   NBA_ACTIVE_PLAYERS.map((player) => player.experienceYears),
 );
 
+export const ROLE_STARTER_FILTER = "starter";
+export const ROLE_BENCH_FILTER = "bench";
+
 export const EMPTY_PLAYER_FILTERS: PlayerSearchFilters = {
   team: ALL_PLAYER_FILTER,
   division: ALL_PLAYER_FILTER,
   conference: ALL_PLAYER_FILTER,
   position: ALL_PLAYER_FILTER,
+  role: ALL_PLAYER_FILTER,
   draftClass: ALL_PLAYER_FILTER,
   draftStatus: ALL_PLAYER_FILTER,
   allStar: ALL_PLAYER_FILTER,
@@ -181,6 +188,7 @@ const SELECT_KEYS = [
   "division",
   "conference",
   "position",
+  "role",
   "draftClass",
   "draftStatus",
   "allStar",
@@ -238,6 +246,13 @@ export const POSITION_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
   { id: "C", label: "C" },
   { id: "G", label: "G" },
   { id: "F", label: "F" },
+];
+
+/** Depth-chart unit: starter PG–C (`depth === 1`) vs backups / extras. */
+export const ROLE_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: ALL_PLAYER_FILTER, label: "All roles" },
+  { id: ROLE_STARTER_FILTER, label: "Starters" },
+  { id: ROLE_BENCH_FILTER, label: "Bench" },
 ];
 
 export const TEAM_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
@@ -357,6 +372,27 @@ const matchesAllStar = (player: TierPlayer, allStar: string | undefined) => {
   return true;
 };
 
+export const isStarterDepth = (depth: number | null | undefined) => depth === 1;
+
+export const isBenchDepth = (depth: number | null | undefined) =>
+  depth != null && depth !== 1;
+
+const matchesRole = (player: TierPlayer, role: string | undefined) => {
+  if (!role || role === ALL_PLAYER_FILTER) {
+    return true;
+  }
+  if (player.role === "coach") {
+    return false;
+  }
+  if (role === ROLE_STARTER_FILTER) {
+    return isStarterDepth(player.depth);
+  }
+  if (role === ROLE_BENCH_FILTER) {
+    return isBenchDepth(player.depth);
+  }
+  return true;
+};
+
 const matchesCountry = (player: TierPlayer, country: string | undefined) => {
   if (!country || country === ALL_PLAYER_FILTER) {
     return true;
@@ -405,6 +441,9 @@ export const searchPlayers = (
       return false;
     }
     if (position && player.position !== position) {
+      return false;
+    }
+    if (!matchesRole(player, filters.role)) {
       return false;
     }
     if (!ageOpen && !inRange(player.age, age.min, age.max)) {

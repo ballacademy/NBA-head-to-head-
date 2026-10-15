@@ -230,6 +230,19 @@
   display: block;
 }
 
+.is-grade .pod-photo__img {
+  filter: contrast(1.42) saturate(1.12) brightness(0.97);
+}
+
+.is-grade .pod-photo.is-vignette .pod-photo__vignette {
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 40%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.16) 55%,
+    rgba(0, 0, 0, 0.58) 100%
+  );
+}
+
 .pod-photo__vignette {
   position: absolute;
   inset: 0;
@@ -279,6 +292,13 @@
   pointer-events: auto;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 .pod-board.is-exporting .pod-photo__tools {
   display: none;
 }
@@ -295,6 +315,7 @@
   align-items: center;
   justify-content: center;
   height: calc(28 * var(--u));
+  min-height: calc(28 * var(--u));
   border: 0;
   border-radius: calc(4 * var(--u));
   background: rgba(0, 0, 0, 0.72);
@@ -304,6 +325,15 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tool {
+    height: max(44px, calc(28 * var(--u)));
+    min-height: 44px;
+    font-size: max(13px, calc(11 * var(--u)));
+    padding: 0 10px;
+  }
 }
 
 .pod-photo__file {

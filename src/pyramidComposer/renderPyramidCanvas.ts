@@ -13,6 +13,10 @@ import {
   type ComposerLook,
   type FrameEdge,
 } from "../instagramComposer/composerLook";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
@@ -185,6 +189,7 @@ const drawSlotPhoto = (
   w: number,
   drawH: number,
   pan: PyramidSlot["pan"],
+  photoGrade = false,
 ) => {
   const dest = coverPanDraw(
     photo.naturalWidth || photo.width,
@@ -198,8 +203,11 @@ const drawSlotPhoto = (
     photoZoom(pan),
   );
   const rotate = photoRotate(pan);
+  context.save();
+  if (photoGrade) {
+    context.filter = PHOTO_GRADE_FILTER;
+  }
   if (rotate) {
-    context.save();
     context.translate(x + w / 2, drawY + drawH / 2);
     context.rotate((rotate * Math.PI) / 180);
     context.drawImage(
@@ -209,10 +217,11 @@ const drawSlotPhoto = (
       dest.dw,
       dest.dh,
     );
-    context.restore();
-    return;
+  } else {
+    context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
   }
-  context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+  context.restore();
+  applyPhotoGrade(context, x, drawY, w, drawH, photoGrade);
 };
 
 const makeSlotSprite = (
@@ -221,6 +230,7 @@ const makeSlotSprite = (
   h: number,
   pop: number,
   pan: PyramidSlot["pan"],
+  photoGrade = false,
 ) => {
   const sprite = document.createElement("canvas");
   sprite.width = Math.max(1, Math.round(w));
@@ -229,7 +239,16 @@ const makeSlotSprite = (
   if (!spriteCtx) {
     return null;
   }
-  drawSlotPhoto(spriteCtx, photo, 0, 0, sprite.width, sprite.height, pan);
+  drawSlotPhoto(
+    spriteCtx,
+    photo,
+    0,
+    0,
+    sprite.width,
+    sprite.height,
+    pan,
+    photoGrade,
+  );
   return sprite;
 };
 
@@ -397,6 +416,7 @@ export interface PyramidRenderInput {
   rowLabels?: string[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
 }
@@ -490,7 +510,9 @@ export const renderPyramidCanvas = async (
         ? await loadImage(slot.photoSrc)
         : await loadCorsImage(slot.photoSrc);
     }
-    const sprite = photo ? makeSlotSprite(photo, w, h, pop, slot.pan) : null;
+    const sprite = photo
+      ? makeSlotSprite(photo, w, h, pop, slot.pan, input.photoGrade === true)
+      : null;
     context.save();
     context.beginPath();
     context.rect(x, drawY, w, drawH);
