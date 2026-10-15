@@ -59,6 +59,11 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-player-filters[\s\S]*?border:\s*0/);
   });
 
+  it("applies the download grade to custom photos in preview", () => {
+    expect(photo).toContain(".is-grade .pod-photo__img");
+    expect(photo).toMatch(/contrast\(1\.28\)/);
+  });
+
   it("shows photo tools on coarse pointers without waiting for hover", () => {
     expect(photo).toContain("@media (hover: none), (pointer: coarse)");
     expect(photo).toContain("min-height: 44px");

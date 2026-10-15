@@ -8,6 +8,7 @@ import {
   FIELD_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { coveredLogoRect } from "../standingsComposer/logoDraw";
 import { isPhotoChromeClassName, photoFrameFilled } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
@@ -184,6 +185,7 @@ describe("player of the day state", () => {
 
   it("uses the studded near-black title fill; circled BA is an on/off toggle", () => {
     expect(typeof BaMarkToggle).toBe("function");
+    expect(typeof PhotoGradeToggle).toBe("function");
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");

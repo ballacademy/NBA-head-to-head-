@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import {
   composerWatermarkOpacity,
   parseComposerWatermark,
@@ -27,6 +28,7 @@ interface CompareGraphicProps {
   draft: CompareDraft;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
@@ -49,6 +51,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       draft,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       exporting = false,
       onTitleChange,
       onSubtitleChange,
@@ -103,6 +106,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
         ]
           .filter(Boolean)
           .join(" ")}

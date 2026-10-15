@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { getTeamColors } from "../lib/teamColors";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -62,6 +63,7 @@ interface HeadlineGraphicProps {
   gameDate?: string | null;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   exporting?: boolean;
   onHeadlineChange: (value: string) => void;
@@ -93,6 +95,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       gameDate = null,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       showBa = true,
       exporting = false,
       onHeadlineChange,
@@ -170,6 +173,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
           stack.fadeAt === "top" ? "is-lockup-top" : "is-lockup-bottom",
         ]
           .filter(Boolean)

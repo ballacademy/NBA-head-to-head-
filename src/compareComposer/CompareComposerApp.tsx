@@ -13,7 +13,9 @@ import {
   useComposerNight,
 } from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import {
   COMPARE_LOOK_KEY,
   useComposerLook,
@@ -97,6 +99,7 @@ export function CompareComposerApp() {
   const [rostersReady, setRostersReady] = useState(false);
   const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     side: 0 | 1;
@@ -270,7 +273,7 @@ export function CompareComposerApp() {
       await exportComparePng(
         node,
         filename ?? exportFilenameFromTitle(draft.title, "compare"),
-        { ...draft, look, purpleFlair },
+        { ...draft, look, purpleFlair, photoGrade },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -490,6 +493,7 @@ export function CompareComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
@@ -593,7 +597,10 @@ export function CompareComposerApp() {
                 try {
                   await downloadExportPack(
                     () =>
-                      renderCompareCanvas({ ...draft, look, purpleFlair }, 2),
+                      renderCompareCanvas(
+                        { ...draft, look, purpleFlair, photoGrade },
+                        2,
+                      ),
                     exportFilenameFromTitle(draft.title, "compare"),
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
@@ -628,6 +635,7 @@ export function CompareComposerApp() {
               draft={draft}
               look={look}
               purpleFlair={purpleFlair}
+              photoGrade={photoGrade}
               exporting={exporting}
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))

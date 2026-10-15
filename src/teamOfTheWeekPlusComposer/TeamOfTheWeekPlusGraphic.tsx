@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -45,6 +46,7 @@ interface TeamOfTheWeekPlusGraphicProps {
   slots: TotwStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
@@ -134,6 +136,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     slots,
     look = "white",
     purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     showNames = true,
     titlesBelow = false,
@@ -194,6 +197,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         titlesBelow ? "is-titles-below" : "",
         composerLookClass(look),
         composerFlairClass(purpleFlair),
+        composerGradeClass(photoGrade),
       ]
         .filter(Boolean)
         .join(" ")}

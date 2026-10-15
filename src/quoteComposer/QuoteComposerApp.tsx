@@ -5,7 +5,9 @@ import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import {
   QUOTE_LOOK_KEY,
   useComposerLook,
@@ -68,6 +70,7 @@ export function QuoteComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(QUOTE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [statsSample] = useComposerStatsSample();
   const [storyCrop, setStoryCrop] = useState(false);
   const [gamePresets, setGamePresets] = useState<string[]>([]);
@@ -105,7 +108,7 @@ export function QuoteComposerApp() {
       await exportQuotePng(
         node,
         filename ?? exportFilenameFromTitle(draft.quote, "quote"),
-        { ...draft, look, purpleFlair },
+        { ...draft, look, purpleFlair, photoGrade },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -265,6 +268,7 @@ export function QuoteComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
@@ -350,7 +354,11 @@ export function QuoteComposerApp() {
                 setExporting(true);
                 try {
                   await downloadExportPack(
-                    () => renderQuoteCanvas({ ...draft, look, purpleFlair }, 2),
+                    () =>
+                      renderQuoteCanvas(
+                        { ...draft, look, purpleFlair, photoGrade },
+                        2,
+                      ),
                     exportFilenameFromTitle(draft.quote, "quote"),
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
@@ -382,6 +390,7 @@ export function QuoteComposerApp() {
               draft={draft}
               look={look}
               purpleFlair={purpleFlair}
+              photoGrade={photoGrade}
               exporting={exporting}
               onQuoteChange={(quote) =>
                 setDraft((current) => ({ ...current, quote }))

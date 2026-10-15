@@ -12,6 +12,10 @@ import {
   photoRotate,
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   QT_BA_INSET,
@@ -87,6 +91,7 @@ const wrapQuote = (
 export type QuoteRenderInput = QuoteDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
 };
 
 export const renderQuoteCanvas = async (
@@ -124,8 +129,11 @@ export const renderQuoteCanvas = async (
         photoZoom(input.pan),
       );
       const rotate = photoRotate(input.pan);
+      context.save();
+      if (input.photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       if (rotate) {
-        context.save();
         context.translate(width / 2, height / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
@@ -135,11 +143,12 @@ export const renderQuoteCanvas = async (
           dest.dw,
           dest.dh,
         );
-        context.restore();
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
-      paintPhotoVignette(context, 0, 0, width, height);
+      context.restore();
+      applyPhotoGrade(context, 0, 0, width, height, input.photoGrade);
+      paintPhotoVignette(context, 0, 0, width, height, input.photoGrade);
     }
   }
   if (input.purpleFlair) {

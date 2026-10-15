@@ -6,6 +6,7 @@ import {
   teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { NAME_FIRST_MAX, NAME_LAST_MAX } from "../instagramComposer/nameFit";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
@@ -42,6 +43,7 @@ interface RankedLineupsGraphicProps {
   strips: RankedLineupStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showFade?: boolean;
   showTeamHairline?: boolean;
@@ -73,6 +75,7 @@ export const RankedLineupsGraphic = forwardRef<
     strips,
     look = "white",
     purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     showFade = false,
     showTeamHairline = true,
@@ -140,6 +143,7 @@ export const RankedLineupsGraphic = forwardRef<
             : "is-headline",
         composerLookClass(look),
         composerFlairClass(purpleFlair),
+        composerGradeClass(photoGrade),
       ]
         .filter(Boolean)
         .join(" ")}

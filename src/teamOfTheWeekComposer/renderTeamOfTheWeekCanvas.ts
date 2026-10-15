@@ -11,6 +11,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
@@ -119,6 +123,7 @@ const drawStripPhoto = async (
   look?: ComposerLook | null,
   showNames = false,
   showTeamHairline = true,
+  photoGrade = false,
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -141,8 +146,11 @@ const drawStripPhoto = async (
         photoZoom(strip.pan),
       );
       const rotate = photoRotate(strip.pan);
+      context.save();
+      if (photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       if (rotate) {
-        context.save();
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
@@ -152,11 +160,26 @@ const drawStripPhoto = async (
           dest.dw,
           dest.dh,
         );
-        context.restore();
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
-      paintPhotoVignette(context, inner.x, inner.y, inner.w, inner.h);
+      context.restore();
+      applyPhotoGrade(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
+      paintPhotoVignette(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
     }
   }
   context.restore();
@@ -193,6 +216,7 @@ export interface TeamOfTheWeekRenderInput {
   strips: TotwStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   showTeamHairline?: boolean;
@@ -267,6 +291,7 @@ export const renderTeamOfTheWeekCanvas = async (
       input.look,
       input.showNames === true,
       input.showTeamHairline !== false,
+      input.photoGrade === true,
     );
     if (input.purpleFlair) {
       paintPurplePlateEdge(

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
@@ -149,6 +151,7 @@ export function RankedLineupsComposerApp({
     unranked ? LINEUP_LOOK_KEY : RANKED_LINEUPS_LOOK_KEY,
   );
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -281,6 +284,7 @@ export function RankedLineupsComposerApp({
           strips,
           look,
           purpleFlair,
+          photoGrade,
           showBa,
           showFade,
           showTeamHairline,
@@ -323,6 +327,7 @@ export function RankedLineupsComposerApp({
             strips: slide.strips,
             look,
             purpleFlair,
+            photoGrade,
             showBa,
             showFade,
             showTeamHairline,
@@ -535,6 +540,7 @@ export function RankedLineupsComposerApp({
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
@@ -661,6 +667,7 @@ export function RankedLineupsComposerApp({
                                   strips: slide.strips,
                                   look,
                                   purpleFlair,
+                                  photoGrade,
                                   showBa,
                                   showFade,
                                   showTeamHairline,
@@ -681,6 +688,7 @@ export function RankedLineupsComposerApp({
                           strips,
                           look,
                           purpleFlair,
+                          photoGrade,
                           showBa,
                           showFade,
                           showTeamHairline,
@@ -732,6 +740,7 @@ export function RankedLineupsComposerApp({
             strips={strips}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showFade={showFade}
             showTeamHairline={showTeamHairline}

@@ -8,6 +8,12 @@ import {
   composerWatermarkOpacity,
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+  gradePanelFill,
+  gradedWatermarkOpacity,
+} from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -65,6 +71,7 @@ const setLetterSpacing = (
 export type StatCardRenderInput = StatCardDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
 };
 
 export const renderStatCardCanvas = async (
@@ -103,6 +110,9 @@ export const renderStatCardCanvas = async (
         photoZoom(input.pan),
       );
       context.save();
+      if (input.photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       context.beginPath();
       context.rect(0, 0, photoW, height);
       context.clip();
@@ -121,13 +131,14 @@ export const renderStatCardCanvas = async (
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
       context.restore();
-      paintPhotoVignette(context, 0, 0, photoW, height);
+      applyPhotoGrade(context, 0, 0, photoW, height, input.photoGrade);
+      paintPhotoVignette(context, 0, 0, photoW, height, input.photoGrade);
     }
   }
 
   const statsX = STC_STATS_X * s;
   const statsW = STC_STATS_W * s;
-  context.fillStyle = STC_PANEL;
+  context.fillStyle = gradePanelFill(STC_PANEL, input.photoGrade);
   context.fillRect(statsX, 0, statsW, height);
 
   const teamForMark = getTeam(input.teamId);
@@ -137,7 +148,10 @@ export const renderStatCardCanvas = async (
     if (mark) {
       const size = 220 * s;
       context.save();
-      context.globalAlpha = composerWatermarkOpacity(watermark);
+      context.globalAlpha = gradedWatermarkOpacity(
+        composerWatermarkOpacity(watermark),
+        input.photoGrade,
+      );
       drawCenteredLogo(
         context,
         mark,
@@ -173,19 +187,29 @@ export const renderStatCardCanvas = async (
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = STC_INK;
+    if (input.photoGrade) {
+      setLetterSpacing(context, type.value * s * -0.02);
+    }
     context.fillText(
       line.value.trim() || "—",
       statsX + statsW / 2,
       row.valueY * s,
       statsW - 24 * s,
     );
+    setLetterSpacing(context, 0);
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
-    context.fillStyle = STC_MUTED;
+    context.fillStyle = input.photoGrade
+      ? "rgba(17, 17, 17, 0.55)"
+      : STC_MUTED;
+    if (input.photoGrade) {
+      setLetterSpacing(context, type.label * s * 0.12);
+    }
     context.fillText(
       line.label.trim().toUpperCase() || "STAT",
       statsX + statsW / 2,
       row.labelY * s,
     );
+    setLetterSpacing(context, 0);
   });
 
   const team = getTeam(input.teamId);

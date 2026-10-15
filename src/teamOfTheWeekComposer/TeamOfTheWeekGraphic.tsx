@@ -6,6 +6,7 @@ import {
   teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -25,6 +26,7 @@ interface TeamOfTheWeekGraphicProps {
   strips: TotwStrip[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   showTeamHairline?: boolean;
@@ -53,6 +55,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     strips,
     look = "white",
     purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     showNames = false,
     showTeamHairline = true,
@@ -111,6 +114,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
         showTeamHairline ? "is-hairline" : "",
         composerLookClass(look),
         composerFlairClass(purpleFlair),
+        composerGradeClass(photoGrade),
       ]
         .filter(Boolean)
         .join(" ")}

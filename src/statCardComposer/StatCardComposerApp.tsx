@@ -5,7 +5,9 @@ import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   STAT_CARD_LOOK_KEY,
@@ -94,6 +96,7 @@ export function StatCardComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STAT_CARD_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [rostersReady, setRostersReady] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -216,7 +219,7 @@ export function StatCardComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(playerName(draft) || "stat-card", "stat-card"),
-        { ...draft, look, purpleFlair },
+        { ...draft, look, purpleFlair, photoGrade },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -456,6 +459,7 @@ export function StatCardComposerApp() {
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
             <BaMarkToggle
               on={draft.showBa !== false}
               onChange={(showBa) =>
@@ -556,7 +560,10 @@ export function StatCardComposerApp() {
                 try {
                   await downloadExportPack(
                     () =>
-                      renderStatCardCanvas({ ...draft, look, purpleFlair }, 2),
+                      renderStatCardCanvas(
+                        { ...draft, look, purpleFlair, photoGrade },
+                        2,
+                      ),
                     exportFilenameFromTitle(stem, "stat-card"),
                     [],
                     { safe: true },
@@ -595,6 +602,7 @@ export function StatCardComposerApp() {
               draft={draft}
               look={look}
               purpleFlair={purpleFlair}
+              photoGrade={photoGrade}
               exporting={exporting}
               onNameChange={(value) =>
                 setDraft((current) => applyPlayerName(current, value))

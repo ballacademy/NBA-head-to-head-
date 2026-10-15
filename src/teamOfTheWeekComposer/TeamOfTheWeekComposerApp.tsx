@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
@@ -88,6 +90,7 @@ export function TeamOfTheWeekComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -145,7 +148,7 @@ export function TeamOfTheWeekComposerApp() {
       await exportTeamOfTheWeekPng(
         node,
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, purpleFlair, showBa, showNames, showTeamHairline },
+        { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -265,6 +268,7 @@ export function TeamOfTheWeekComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
@@ -378,6 +382,7 @@ export function TeamOfTheWeekComposerApp() {
             strips={strips}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
             showTeamHairline={showTeamHairline}

@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -22,6 +23,7 @@ interface QuoteGraphicProps {
   draft: QuoteDraft;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   exporting?: boolean;
   onQuoteChange: (value: string) => void;
   onSourceChange: (value: string) => void;
@@ -36,6 +38,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
       draft,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       exporting = false,
       onQuoteChange,
       onSourceChange,
@@ -95,6 +98,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
         ]
           .filter(Boolean)
           .join(" ")}

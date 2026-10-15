@@ -55,6 +55,19 @@
   flex-direction: column;
 }
 
+.stc-board.is-grade .stc-stats {
+  background-color: #f3f3f3;
+}
+
+.stc-board.is-grade .stc-value {
+  letter-spacing: -0.06em;
+}
+
+.stc-board.is-grade .stc-label {
+  letter-spacing: 0.12em;
+  color: rgba(17, 17, 17, 0.55);
+}
+
 .stc-mark {
   position: absolute;
   left: 50%;

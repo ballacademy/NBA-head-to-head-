@@ -5,6 +5,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  composerGradeClass,
+  gradedWatermarkOpacity,
+} from "../instagramComposer/photoGrade";
+import {
   composerWatermarkOpacity,
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
@@ -29,6 +33,7 @@ interface StatCardGraphicProps {
   draft: StatCardDraft;
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   exporting?: boolean;
   onNameChange: (value: string) => void;
   onStatValue: (index: number, value: string) => void;
@@ -45,6 +50,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       draft,
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       exporting = false,
       onNameChange,
       onStatValue,
@@ -101,6 +107,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
         ]
           .filter(Boolean)
           .join(" ")}
@@ -142,7 +149,12 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             <div
               className="stc-mark"
               aria-hidden="true"
-              style={{ opacity: composerWatermarkOpacity(watermark) }}
+              style={{
+                opacity: gradedWatermarkOpacity(
+                  composerWatermarkOpacity(watermark),
+                  photoGrade,
+                ),
+              }}
             >
               <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
             </div>

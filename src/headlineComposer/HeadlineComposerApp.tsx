@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
@@ -85,6 +87,7 @@ const renderInput = (
   draft: HeadlineDraft,
   look: ReturnType<typeof useComposerLook>[0],
   purpleFlair: boolean,
+  photoGrade: boolean,
 ) => ({
   headline: draft.headline,
   body: draft.body,
@@ -104,6 +107,7 @@ const renderInput = (
   gameDate: draft.gameDate ?? null,
   look,
   purpleFlair,
+  photoGrade,
   showBa: draft.showBa !== false,
 });
 
@@ -117,6 +121,7 @@ export function HeadlineComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(HEADLINE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
@@ -188,7 +193,7 @@ export function HeadlineComposerApp() {
       await exportHeadlinePng(
         node,
         filename ?? exportFilenameFromTitle(draft.headline, "headline"),
-        renderInput(draft, look, purpleFlair),
+        renderInput(draft, look, purpleFlair, photoGrade),
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -487,6 +492,7 @@ export function HeadlineComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
@@ -580,7 +586,7 @@ export function HeadlineComposerApp() {
                   await downloadExportPack(
                     () =>
                       renderHeadlineCanvas(
-                        renderInput(draft, look, purpleFlair),
+                        renderInput(draft, look, purpleFlair, photoGrade),
                         2,
                       ),
                     exportFilenameFromTitle(draft.headline, "headline"),
@@ -634,6 +640,7 @@ export function HeadlineComposerApp() {
             gameDate={draft.gameDate ?? null}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={draft.showBa !== false}
             exporting={exporting}
             onHeadlineChange={(headline) =>

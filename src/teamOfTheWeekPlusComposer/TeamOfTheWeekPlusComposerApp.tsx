@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
@@ -93,6 +95,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -158,6 +161,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           slots,
           look,
           purpleFlair,
+          photoGrade,
           showBa,
           showNames,
         },
@@ -298,6 +302,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Name + logo</span>
@@ -416,6 +421,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             slots={slots}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}

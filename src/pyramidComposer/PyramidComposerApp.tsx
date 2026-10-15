@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
@@ -96,6 +98,7 @@ export function PyramidComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PYRAMID_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const [rowLabels, setRowLabels] = useState(() =>
@@ -149,7 +152,7 @@ export function PyramidComposerApp() {
       await exportPyramidPng(
         node,
         filename ?? exportFilenameFromTitle(title, "pyramid"),
-        { title, slots, rows, rowLabels, look, purpleFlair, showBa, showNames },
+        { title, slots, rows, rowLabels, look, purpleFlair, photoGrade, showBa, showNames },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -323,6 +326,7 @@ export function PyramidComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
           </>
         }
@@ -410,6 +414,7 @@ export function PyramidComposerApp() {
                           rowLabels,
                           look,
                           purpleFlair,
+                          photoGrade,
                           showBa,
                           showNames,
                         },
@@ -453,6 +458,7 @@ export function PyramidComposerApp() {
             rowLabels={rowLabels}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}

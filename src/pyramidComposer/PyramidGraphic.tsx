@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -19,6 +20,7 @@ interface PyramidGraphicProps {
   rowLabels?: string[];
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
   exporting?: boolean;
@@ -38,6 +40,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       rowLabels = [],
       look = "white",
       purpleFlair = false,
+      photoGrade = false,
       showBa = true,
       showNames = false,
       exporting = false,
@@ -92,6 +95,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
           exporting ? "is-exporting" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
         ]
           .filter(Boolean)
           .join(" ")}

@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
@@ -91,6 +93,7 @@ export function PlayerOfTheDayComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
@@ -150,7 +153,7 @@ export function PlayerOfTheDayComposerApp() {
       await exportPlayerOfTheDayPng(
         node,
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
-        { brand, title, date, cards, look, purpleFlair, showBa },
+        { brand, title, date, cards, look, purpleFlair, photoGrade, showBa },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -325,6 +328,7 @@ export function PlayerOfTheDayComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
           </>
         }
@@ -415,6 +419,7 @@ export function PlayerOfTheDayComposerApp() {
             cards={cards}
             look={look}
             purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             exporting={exporting}
             onBrandChange={setBrand}

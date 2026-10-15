@@ -9,6 +9,10 @@ import {
   composerWatermarkOpacity,
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -89,6 +93,7 @@ const strokeFill = (
 export type CompareRenderInput = CompareDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+  photoGrade?: boolean;
 };
 
 export const renderCompareCanvas = async (
@@ -184,6 +189,9 @@ export const renderCompareCanvas = async (
           photoZoom(person.pan),
         );
         context.save();
+        if (input.photoGrade) {
+          context.filter = PHOTO_GRADE_FILTER;
+        }
         context.beginPath();
         context.rect(x, photoY, CMP_PHOTO_W * s, photoH);
         context.clip();
@@ -202,7 +210,22 @@ export const renderCompareCanvas = async (
           context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
         }
         context.restore();
-        paintPhotoVignette(context, x, photoY, CMP_PHOTO_W * s, photoH);
+        applyPhotoGrade(
+          context,
+          x,
+          photoY,
+          CMP_PHOTO_W * s,
+          photoH,
+          input.photoGrade,
+        );
+        paintPhotoVignette(
+          context,
+          x,
+          photoY,
+          CMP_PHOTO_W * s,
+          photoH,
+          input.photoGrade,
+        );
       }
     }
     paintCellFrame(context, x, photoY, CMP_PHOTO_W * s, photoH, input.look, s);
