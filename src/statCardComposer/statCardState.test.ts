@@ -381,4 +381,66 @@ describe("stat card composer", () => {
       "12-22 FG",
     );
   });
+
+  it("auto-picks FG by position floor and 3s by makes", () => {
+    const wiggins = getPlayer("3059319")!;
+    expect(wiggins.positionGroup).toBe("F");
+    const wigNight = box({
+      pts: "19",
+      reb: "6",
+      ast: "1",
+      stl: "1",
+      blk: "1",
+      fg: "8-15",
+      three: "1-5",
+      min: "22",
+    });
+    expect(
+      notableStatCardLines(wigNight, wiggins).map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["19 PTS", "6 REB", "8-15 FG", "22 MIN"]);
+    const fromStandout = fillStatCardFromStandout(
+      { ...defaultStatCardDraft(), playerId: wiggins.id },
+      gameFrom(wigNight),
+    );
+    expect(
+      fromStandout.stats.map((line) => `${line.value} ${line.label}`),
+    ).toContain("8-15 FG");
+
+    expect(
+      notableStatCardLines(box({ pts: "16", fg: "8-17", min: "31" }), "G").map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toContain("8-17 FG");
+    expect(
+      notableStatCardLines(box({ pts: "16", fg: "7-16", min: "31" }), "G").map(
+        (line) => line.label,
+      ),
+    ).not.toContain("FG");
+    expect(
+      notableStatCardLines(box({ pts: "16", fg: "8-17", min: "31" }), "F").map(
+        (line) => line.label,
+      ),
+    ).not.toContain("FG");
+    expect(
+      notableStatCardLines(box({ pts: "18", fg: "8-13", min: "28" }), "C").map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toContain("8-13 FG");
+    expect(
+      notableStatCardLines(box({ pts: "19", fg: "8-15", min: "22" }), "C").map(
+        (line) => line.label,
+      ),
+    ).not.toContain("FG");
+
+    const volumeThrees = notableStatCardLines(
+      box({ pts: "18", three: "4-12", fg: "6-18", min: "34" }),
+      "G",
+    );
+    expect(volumeThrees.map((line) => `${line.value} ${line.label}`)).toContain(
+      "4-12 3PM",
+    );
+    expect(volumeThrees.map((line) => line.label)).not.toContain("FG");
+  });
 });

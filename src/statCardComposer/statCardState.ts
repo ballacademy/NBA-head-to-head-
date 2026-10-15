@@ -29,7 +29,11 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  getPlayer,
+  type PlayerPositionGroup,
+  type TierPlayer,
+} from "../tierListComposer/nbaActivePlayers";
 
 export { clampPan, type PhotoPan };
 
@@ -315,8 +319,50 @@ type NotablePick = {
   value?: string;
 };
 
+export type NotableStatPosition =
+  | Pick<TierPlayer, "positionGroup" | "position">
+  | PlayerPositionGroup
+  | string
+  | null
+  | undefined;
+
+/** Guard >45%, Forward >50%, Center >57%. Unknown defaults to Forward. */
+export const FG_PCT_FLOOR: Record<PlayerPositionGroup, number> = {
+  G: 0.45,
+  F: 0.5,
+  C: 0.57,
+};
+
+/** Skip 1-1 / 2-3 junk; 8-15 still qualifies. */
+export const FG_MIN_ATTEMPTS = 8;
+/** Volume 3s are make-driven — a 4-x night belongs on the card. */
+export const THREE_MIN_MAKES = 4;
+
+export const fgPositionGroup = (
+  playerOrGroup?: NotableStatPosition,
+): PlayerPositionGroup => {
+  if (!playerOrGroup) {
+    return "F";
+  }
+  const raw =
+    typeof playerOrGroup === "string"
+      ? playerOrGroup
+      : playerOrGroup.positionGroup || playerOrGroup.position || "";
+  const token = String(raw).toUpperCase();
+  if (token === "G" || token === "PG" || token === "SG") {
+    return "G";
+  }
+  if (token === "C") {
+    return "C";
+  }
+  return "F";
+};
+
 /** Last-game lines worth putting on the card — no padded REB/AST junk. */
-export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
+export const notableStatCardLines = (
+  stats: LastGameStats,
+  playerOrGroup?: NotableStatPosition,
+): StatCardLine[] => {
   const pts = statCount(stats.pts);
   const reb = statCount(stats.reb);
   const ast = statCount(stats.ast);
@@ -325,12 +371,10 @@ export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   const min = statCount(stats.min);
   const tov = statCount(stats.tov);
   const threeMakes = statCount(stats.three);
-  const threeAtt = statAttempts(stats.three);
-  const threePct = threeAtt > 0 ? threeMakes / threeAtt : 0;
   const fgMakes = statCount(stats.fg);
   const fgAtt = statAttempts(stats.fg);
   const fgPct = fgAtt > 0 ? fgMakes / fgAtt : 0;
-  const efgPct = fgAtt > 0 ? (fgMakes + 0.5 * threeMakes) / fgAtt : 0;
+  const fgFloor = FG_PCT_FLOOR[fgPositionGroup(playerOrGroup)];
   const picks: NotablePick[] = [];
   if (pts > 0) {
     picks.push({ key: "pts" });
@@ -347,21 +391,11 @@ export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  const threeVolume =
-    threeMakes >= 5 ||
-    (threeMakes >= 4 && threeAtt >= 8) ||
-    (threeMakes >= 3 && threeAtt >= 7);
-  const threeEfficient =
-    (threeAtt >= 5 && threePct >= 0.5) || (threeAtt >= 6 && threePct >= 0.45);
-  if (threeVolume || threeEfficient) {
+  if (threeMakes >= THREE_MIN_MAKES) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
   }
+  const fgEfficient = fgAtt >= FG_MIN_ATTEMPTS && fgPct > fgFloor;
   const fgVolume = fgMakes >= 10;
-  const threeOnCard = threeVolume || threeEfficient;
-  const fgEfficient =
-    (fgAtt >= 8 && fgPct >= 0.58) ||
-    (fgAtt >= 10 && fgPct >= 0.55) ||
-    (!threeOnCard && fgAtt >= 8 && efgPct >= 0.62);
   if (fgEfficient || fgVolume) {
     picks.push({ key: "fg" });
   }
@@ -406,7 +440,7 @@ export const fillStatCardFromStandout = (
   return {
     ...draft,
     source: "last-game",
-    stats: notableStatCardLines(game.stats),
+    stats: notableStatCardLines(game.stats, getPlayer(draft.playerId)),
   };
 };
 
