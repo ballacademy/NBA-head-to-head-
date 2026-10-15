@@ -288,16 +288,28 @@ export const formatStatCardSeasonValue = (
   return (Math.round(value * 10) / 10).toFixed(1);
 };
 
-const lineFromGame = (key: StatCardKey, stats: LastGameStats): StatCardLine => {
+const formatPct = (pct: number) => (pct * 100).toFixed(1);
+
+const lineFromGame = (
+  key: StatCardKey,
+  stats: LastGameStats,
+  override?: { label?: string; value?: string },
+): StatCardLine => {
   const option = STAT_CARD_LINE_OPTIONS.find((item) => item.key === key)!;
   return {
     ...option,
-    label: gameLabelFor(option),
-    value: clipStatValue(valueFromGame(option, stats)),
+    label: (override?.label ?? gameLabelFor(option)).slice(0, STC_LABEL_MAX),
+    value: clipStatValue(override?.value ?? valueFromGame(option, stats)),
   };
 };
 
-/** Last-game lines worth putting on the card — no padded REB/AST/MIN junk. */
+type NotablePick = {
+  key: StatCardKey;
+  label?: string;
+  value?: string;
+};
+
+/** Last-game lines worth putting on the card — no padded REB/AST junk. */
 export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   const pts = statCount(stats.pts);
   const reb = statCount(stats.reb);
@@ -308,41 +320,59 @@ export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   const tov = statCount(stats.tov);
   const threeMakes = statCount(stats.three);
   const threeAtt = statAttempts(stats.three);
+  const threePct = threeAtt > 0 ? threeMakes / threeAtt : 0;
   const fgMakes = statCount(stats.fg);
   const fgAtt = statAttempts(stats.fg);
   const fgPct = fgAtt > 0 ? fgMakes / fgAtt : 0;
-  const keys: StatCardKey[] = [];
+  const efgPct = fgAtt > 0 ? (fgMakes + 0.5 * threeMakes) / fgAtt : 0;
+  const picks: NotablePick[] = [];
   if (pts > 0) {
-    keys.push("pts");
+    picks.push({ key: "pts" });
   }
   if (reb >= 4) {
-    keys.push("reb");
+    picks.push({ key: "reb" });
   }
   if (ast >= 4) {
-    keys.push("ast");
+    picks.push({ key: "ast" });
   }
   if (stl >= 2) {
-    keys.push("stl");
+    picks.push({ key: "stl" });
   }
   if (blk >= 2) {
-    keys.push("blk");
+    picks.push({ key: "blk" });
   }
-  if (threeMakes >= 4 || (threeMakes >= 3 && threeAtt >= 7)) {
-    keys.push("three");
+  if (min >= 10) {
+    picks.push({ key: "min" });
   }
+  const threeVolume =
+    threeMakes >= 5 ||
+    (threeMakes >= 4 && threeAtt >= 8) ||
+    (threeMakes >= 3 && threeAtt >= 7);
+  const threeEfficient =
+    (threeAtt >= 5 && threePct >= 0.5) || (threeAtt >= 6 && threePct >= 0.45);
+  if (threeVolume) {
+    picks.push({ key: "three", label: "3PM", value: stats.three });
+  } else if (threeEfficient) {
+    picks.push({ key: "three", label: "3P%", value: formatPct(threePct) });
+  }
+  const fgVolume = fgMakes >= 10;
+  const threeOnCard = threeVolume || threeEfficient;
   if (
-    fgMakes >= 10 ||
-    (fgMakes >= 9 && fgAtt >= 12 && fgPct >= 0.6)
+    (fgAtt >= 8 && fgPct >= 0.58) ||
+    (fgAtt >= 10 && fgPct >= 0.55)
   ) {
-    keys.push("fg");
-  }
-  if (min >= 38) {
-    keys.push("min");
+    picks.push({ key: "fg", label: "FG%", value: formatPct(fgPct) });
+  } else if (!threeOnCard && fgAtt >= 8 && efgPct >= 0.62) {
+    picks.push({ key: "fg", label: "eFG%", value: formatPct(efgPct) });
+  } else if (fgVolume) {
+    picks.push({ key: "fg" });
   }
   if (tov >= 6 || (tov >= 5 && pts >= 30)) {
-    keys.push("tov");
+    picks.push({ key: "tov" });
   }
-  const picked = keys.slice(0, STC_STAT_MAX).map((key) => lineFromGame(key, stats));
+  const picked = picks
+    .slice(0, STC_STAT_MAX)
+    .map((item) => lineFromGame(item.key, stats, item));
   return picked.length ? picked : [lineFromGame("pts", stats)];
 };
 

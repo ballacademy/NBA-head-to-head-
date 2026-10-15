@@ -235,6 +235,7 @@ describe("stat card composer", () => {
       "20 PTS",
       "15 REB",
       "9 AST",
+      "34 MIN",
     ]);
     const loaded = notableStatCardLines(
       box({
@@ -255,21 +256,25 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
+      "MIN",
       "3PM",
       "FG",
-      "MIN",
     ]);
     expect(loaded).toHaveLength(8);
     const quiet = notableStatCardLines(
       box({ pts: "22", reb: "2", ast: "1", stl: "0", blk: "0", min: "28" }),
     );
-    expect(quiet.map((line) => line.label)).toEqual(["PTS"]);
+    expect(quiet.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "22 PTS",
+      "28 MIN",
+    ]);
     const standout = fillStatCardFromStandout(defaultStatCardDraft(), gameFrom({
       pts: "20",
       reb: "12",
       ast: "8",
       stl: "2",
       blk: "2",
+      min: "36",
     }));
     expect(standout.stats.map((line) => line.label)).toEqual([
       "PTS",
@@ -277,6 +282,51 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
+      "MIN",
     ]);
+  });
+
+  it("adds FG% / 3P% when efficiency is high, not 1-of-1", () => {
+    const hot = notableStatCardLines(
+      box({
+        pts: "24",
+        reb: "3",
+        ast: "2",
+        fg: "9-14",
+        three: "4-5",
+        min: "32",
+      }),
+    );
+    expect(hot.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "24 PTS",
+      "32 MIN",
+      "80.0 3P%",
+      "64.3 FG%",
+    ]);
+    const efg = notableStatCardLines(
+      box({
+        pts: "22",
+        reb: "2",
+        ast: "1",
+        fg: "8-15",
+        three: "3-3",
+        min: "30",
+      }),
+    );
+    expect(efg.map((line) => line.label)).toContain("eFG%");
+    expect(efg.find((line) => line.label === "eFG%")?.value).toBe("63.3");
+    const brick = notableStatCardLines(
+      box({ pts: "18", fg: "1-1", three: "1-1", min: "26" }),
+    );
+    expect(brick.map((line) => line.label)).toEqual(["PTS", "MIN"]);
+    const volume = notableStatCardLines(
+      box({ pts: "28", fg: "12-22", three: "6-11", min: "34" }),
+    );
+    expect(volume.map((line) => `${line.value} ${line.label}`)).toContain(
+      "6-11 3PM",
+    );
+    expect(volume.map((line) => `${line.value} ${line.label}`)).toContain(
+      "12-22 FG",
+    );
   });
 });
