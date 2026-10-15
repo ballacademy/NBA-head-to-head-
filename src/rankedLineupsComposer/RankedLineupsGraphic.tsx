@@ -33,6 +33,7 @@ import {
   rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
   splitRankedLineupTitle,
+  swipeRankCue,
   type RankedLineupStrip,
 } from "./rankedLineupsState";
 
@@ -341,6 +342,13 @@ export const RankedLineupsGraphic = forwardRef<
           );
         })}
       </footer>
+      {rankDisplay === "none" ? null : (
+        <div className="rl-swipe" aria-hidden="true">
+          <span className="rl-swipe__label">Swipe</span>
+          <span className="rl-swipe__chev" />
+          <span className="rl-swipe__next">{swipeRankCue(rank)}</span>
+        </div>
+      )}
     </article>
   );
 });

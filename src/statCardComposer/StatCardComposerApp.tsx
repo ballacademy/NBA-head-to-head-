@@ -15,6 +15,7 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import {
   nightStandoutPickerRows,
@@ -373,6 +374,13 @@ export function StatCardComposerApp() {
           </select>
         </label>
         )}
+          <ComposerPhotoHud
+            onPick={() => setPickerOpen(true)}
+            onUpload={(dataUrl) => {
+              setDraft((current) => setStatCardPhoto(current, dataUrl));
+              setStatus("Photo cropped inside the frame — pinch or drag.");
+            }}
+          />
           </>
         }
         filters={

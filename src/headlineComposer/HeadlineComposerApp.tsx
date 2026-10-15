@@ -8,6 +8,7 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import {
   nightStandoutPickerRows,
   useComposerNight,
@@ -344,6 +345,14 @@ export function HeadlineComposerApp() {
           >
             Fill last night
           </button>
+          <ComposerPhotoHud
+            pickLabel={subject === "team" ? "Pick team" : "Pick player"}
+            onPick={() => setPickerOpen(true)}
+            onUpload={(dataUrl) => {
+              setDraft((current) => setHeadlinePhoto(current, dataUrl));
+              setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
+            }}
+          />
           </>
         }
         filters={

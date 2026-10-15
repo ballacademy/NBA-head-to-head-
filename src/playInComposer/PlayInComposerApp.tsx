@@ -38,6 +38,7 @@ import {
   normalizePlayInDraft,
   patchPlayInScore,
   PLAY_IN_SIZES,
+  playInBoardEmpty,
   playInSeeds,
   playInSlotsFromStandings,
   type PlayInDraft,
@@ -103,8 +104,12 @@ export function PlayInComposerApp() {
 
   useEffect(() => {
     document.title = "Play-in graphic";
-    setDraft(loadDraft());
+    const next = loadDraft();
+    setDraft(next);
     setHydrated(true);
+    if (playInBoardEmpty(next)) {
+      void autoFill();
+    }
   }, []);
 
   useEffect(() => {

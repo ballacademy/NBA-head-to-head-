@@ -121,6 +121,9 @@ export const scoreWinnerIndex = (scores: [string, string]): 0 | 1 | null => {
   return a > b ? 0 : 1;
 };
 
+export const playInBoardEmpty = (draft: PlayInDraft) =>
+  draft.east.every((id) => !id) && draft.west.every((id) => !id);
+
 export const playInSlotsFromStandings = (
   size: PlayInSize,
   slots: RankingSlots,

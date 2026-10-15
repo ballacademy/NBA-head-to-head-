@@ -47,6 +47,8 @@ import {
   RL_POS_H,
   RL_POS_SIZE,
   RL_STRIP_W,
+  RL_SWIPE_INSET,
+  RL_SWIPE_SIZE,
   RL_TITLE_BOX_H,
   RL_TITLE_BOX_X,
   RL_TITLE_GRADIENT,
@@ -67,6 +69,7 @@ import {
   RANKED_LINEUP_STRIP_COUNT,
   RANKED_LINEUP_TITLE_TRACK,
   splitRankedLineupTitle,
+  swipeRankCue,
   type RankedLineupStrip,
 } from "./rankedLineupsState";
 
@@ -509,6 +512,50 @@ export const renderRankedLineupsCanvas = async (
       });
       setLetterSpacing(context, 0);
     }
+  }
+
+  if (rankDisplay !== "none") {
+    const size = RL_SWIPE_SIZE * s;
+    const cx = width - RL_SWIPE_INSET * s - size / 2;
+    const cy = GRAPHIC_HEIGHT * 0.58 * s;
+    context.save();
+    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "bottom";
+    setLetterSpacing(context, 0.28 * 11 * s);
+    context.fillStyle = "#fff";
+    withShadow(context, s, () => {
+      context.fillText("SWIPE", cx, cy - size / 2 - 6 * s);
+    });
+    setLetterSpacing(context, 0);
+    context.beginPath();
+    context.arc(cx, cy, size / 2, 0, Math.PI * 2);
+    context.fillStyle = "rgba(0, 0, 0, 0.42)";
+    context.fill();
+    context.lineWidth = 2 * s;
+    context.strokeStyle = "rgba(255, 255, 255, 0.88)";
+    context.stroke();
+    context.translate(cx + 2 * s, cy);
+    context.rotate(Math.PI / 4);
+    context.strokeStyle = "#fff";
+    context.lineWidth = 3.2 * s;
+    context.beginPath();
+    context.moveTo(-7 * s, 7 * s);
+    context.lineTo(7 * s, 7 * s);
+    context.lineTo(7 * s, -7 * s);
+    context.stroke();
+    context.restore();
+    context.save();
+    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillStyle = "#fff";
+    setLetterSpacing(context, 0.12 * 11 * s);
+    withShadow(context, s, () => {
+      context.fillText(swipeRankCue(input.rank), cx, cy + size / 2 + 8 * s);
+    });
+    setLetterSpacing(context, 0);
+    context.restore();
   }
 
   if (input.showBa) {

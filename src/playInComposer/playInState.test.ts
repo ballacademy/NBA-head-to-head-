@@ -6,8 +6,10 @@ import {
   playInMatchups,
 } from "./playInLayout";
 import {
+  defaultPlayInDraft,
   DEFAULT_PLAY_IN_TITLE,
   nineTenWinnerId,
+  playInBoardEmpty,
   playInSeeds,
   playInSlotsFromStandings,
 } from "./playInState";
@@ -53,6 +55,7 @@ describe("play-in matchups", () => {
 
   it("maps standings seeds 7–10 and puts the 9v10 winner on the 8-seed plate", () => {
     const slots = Array.from({ length: 15 }, (_, index) => `T${index + 1}`);
+    expect(playInBoardEmpty(defaultPlayInDraft())).toBe(true);
     expect(playInSlotsFromStandings(8, slots)).toEqual(["T7", "T8", "T9", "T10"]);
     expect(playInSlotsFromStandings(10, slots)[0]).toBe("T6");
     expect(

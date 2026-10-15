@@ -39,10 +39,10 @@ describe("quote composer", () => {
     expect(formatQuoteSource("espn")).toBe("— ESPN");
   });
 
-  it("fills name and team from the picker without a mugshot", () => {
+  it("fills name, team, and the official ESPN headshot from the picker", () => {
     const jokic = getPlayer("3112335")!;
     const next = fillQuoteFromPlayer(jokic, defaultQuoteDraft());
-    expect(next.photoSrc).toBeNull();
+    expect(next.photoSrc).toBe(jokic.headshotUrl);
     expect(next.attribution.toUpperCase()).toContain("JOKIC");
     expect(next.teamId).toBe(jokic.team);
     expect(next.showHeadshot).toBe(true);
@@ -62,7 +62,7 @@ describe("quote composer", () => {
     expect(kept.attribution.toUpperCase()).not.toContain("JOKIC");
     expect(quoteLastName(kept.attribution)).toBe("DONCIC");
     expect(kept.teamId).toBe(luka.team);
-    expect(kept.photoSrc).toBeNull();
+    expect(kept.photoSrc).toBe(luka.headshotUrl);
     expect(isStockQuote("I’M HIM.")).toBe(true);
     expect(isStockQuote("I'm him.")).toBe(true);
     expect(isStockQuote("20/15/9 IN 24 MIN")).toBe(false);

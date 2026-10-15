@@ -129,12 +129,12 @@ describe("headline composer", () => {
     expect(headlinePlateHeight(long)).toBeGreaterThan(headlinePlateHeight(short));
   });
 
-  it("picks a player for the team wordmark without a mugshot", () => {
+  it("picks a player for the team wordmark and fills the official headshot", () => {
     const luka = getPlayer("3945274")!;
     const next = fillHeadlineFromPlayer(luka, defaultHeadlineDraft());
     expect(next.playerId).toBe(luka.id);
     expect(next.teamId).toBeTruthy();
-    expect(next.photoSrc).toBeNull();
+    expect(next.photoSrc).toBe(luka.headshotUrl);
     expect(next.customPhoto).toBe(false);
     expect(next.subjectMode).toBe("player");
   });

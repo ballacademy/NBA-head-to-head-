@@ -21,7 +21,7 @@ export function ComposerToolbar({
 }: ComposerToolbarProps) {
   return (
     <header className="sc-toolbar">
-      <div className="sc-toolbar__scroll">
+      <div className="sc-toolbar__pinned">
         <div className="sc-toolbar__row sc-toolbar__row--primary">
           <div className="sc-toolbar__brand">
             <p className="sc-toolbar__eyebrow">Compose only</p>
@@ -48,6 +48,8 @@ export function ComposerToolbar({
             {data}
           </div>
         ) : null}
+      </div>
+      <div className="sc-toolbar__scroll">
         {filters ? (
           <div
             className="sc-toolbar__row sc-toolbar__row--filters sc-toolbar__slot sc-toolbar__filters"
@@ -78,14 +80,14 @@ export function ComposerToolbar({
             {persist}
           </div>
         ) : null}
-        <div
-          className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
-          data-slot="Export"
-          role="group"
-          aria-label="Export"
-        >
-          {actions}
-        </div>
+      </div>
+      <div
+        className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
+        data-slot="Export"
+        role="group"
+        aria-label="Export"
+      >
+        {actions}
       </div>
     </header>
   );

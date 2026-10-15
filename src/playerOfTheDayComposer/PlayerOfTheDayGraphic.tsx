@@ -186,16 +186,18 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   onUpload={(dataUrl) => onUpload(index, dataUrl)}
                   onPick={() => onPick(index)}
                 />
-                <input
-                  className="pod-total"
-                  value={`TOTAL: ${card.total}`}
-                  maxLength={18}
-                  aria-label={index === 0 ? "Left total" : "Right total"}
-                  onChange={(event) => {
-                    const raw = event.target.value.replace(/^total:\s*/i, "");
-                    onTotalChange(index, raw.slice(0, 8));
-                  }}
-                />
+                {card.playerId ? (
+                  <input
+                    className="pod-total"
+                    value={`TOTAL: ${card.total}`}
+                    maxLength={18}
+                    aria-label={index === 0 ? "Left total" : "Right total"}
+                    onChange={(event) => {
+                      const raw = event.target.value.replace(/^total:\s*/i, "");
+                      onTotalChange(index, raw.slice(0, 8));
+                    }}
+                  />
+                ) : null}
               </div>
               <div className="pod-stats">
                 {team ? (
@@ -248,7 +250,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                     <p className="pod-name__line">{card.lastName}</p>
                   </>
                 ) : (
-                  <span className="pod-name__empty">Pick player</span>
+                  <span className="pod-name__empty" />
                 )}
               </button>
             </section>

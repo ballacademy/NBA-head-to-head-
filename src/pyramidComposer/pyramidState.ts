@@ -14,7 +14,12 @@ import {
   usedPlayerIds,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { NBA_COACHES, getCoach } from "../instagramComposer/nbaCoaches";
+import type { StandingRecord } from "../standingsComposer/rankingState";
+import {
+  NBA_ACTIVE_PLAYERS,
+  type TierPlayer,
+} from "../tierListComposer/nbaActivePlayers";
 import {
   clampPyramidRows,
   pyramidSlotCount,
@@ -157,5 +162,97 @@ export const usedPyramidPlayerIds = (slots: TotwStrip[]) => {
 
 export const pyramidTitle = (title: string) =>
   normalizeComposerTitle(title, DEFAULT_PYRAMID_TITLE);
+
+export const PYRAMID_COY_SEED_IDS = [
+  "coach-BOS",
+  "coach-OKC",
+  "coach-HOU",
+  "coach-LAC",
+  "coach-PHI",
+  "coach-CLE",
+  "coach-DET",
+  "coach-ATL",
+  "coach-NYK",
+  "coach-MIN",
+] as const;
+
+export const pyramidBoardEmpty = (slots: TotwStrip[]) =>
+  slots.every((slot) => !slot.playerId);
+
+export const pyramidLadderKind = (title: string): "coach" | "player" => {
+  const token = title.toUpperCase();
+  if (/PLAYER|MVP|DPOY|ROY/.test(token) && !/COACH|COY/.test(token)) {
+    return "player";
+  }
+  return "coach";
+};
+
+export const coyCoachLadder = (count: number): TierPlayer[] => {
+  const seeded = PYRAMID_COY_SEED_IDS.map((id) => getCoach(id)).filter(
+    (coach): coach is TierPlayer => Boolean(coach),
+  );
+  const used = new Set(seeded.map((coach) => coach.id));
+  return [...seeded, ...NBA_COACHES.filter((coach) => !used.has(coach.id))].slice(
+    0,
+    count,
+  );
+};
+
+export const mvpPlayerLadder = (count: number): TierPlayer[] =>
+  [...NBA_ACTIVE_PLAYERS]
+    .filter((player) => player.ppg > 0)
+    .sort((left, right) => right.ppg - left.ppg)
+    .slice(0, count);
+
+export const coachesFromStandings = (
+  east: Array<string | null>,
+  west: Array<string | null>,
+  records: Record<string, StandingRecord>,
+  count: number,
+): TierPlayer[] => {
+  const ids = [...east, ...west].filter((id): id is string => Boolean(id));
+  ids.sort((left, right) => {
+    const leftWins = records[left]?.wins ?? -1;
+    const rightWins = records[right]?.wins ?? -1;
+    if (rightWins !== leftWins) {
+      return rightWins - leftWins;
+    }
+    const leftLosses = records[left]?.losses ?? 99;
+    const rightLosses = records[right]?.losses ?? 99;
+    return leftLosses - rightLosses;
+  });
+  const coaches: TierPlayer[] = [];
+  for (const id of ids) {
+    const coach = getCoach(`coach-${id}`);
+    if (coach) {
+      coaches.push(coach);
+    }
+    if (coaches.length >= count) {
+      break;
+    }
+  }
+  return coaches.length ? coaches : coyCoachLadder(count);
+};
+
+export const fillPyramidFromPlayers = (
+  rowCount: number,
+  players: TierPlayer[],
+  previous: TotwStrip[] = [],
+): TotwStrip[] => {
+  const previousById = new Map<string, TotwStrip>();
+  for (const slot of previous) {
+    if (slot.playerId) {
+      previousById.set(slot.playerId, slot);
+    }
+  }
+  let next = createEmptyPyramidSlots(rowCount);
+  players.slice(0, pyramidSlotCount(rowCount)).forEach((player, index) => {
+    const keep = Boolean(
+      previousById.get(player.id) && hasCustomPhoto(previousById.get(player.id)!),
+    );
+    next = applyPyramidPick(next, index, player, keep);
+  });
+  return next;
+};
 
 export { PYR_MIN_ROWS, PYR_MAX_ROWS, PYR_DEFAULT_ROWS, DEFAULT_HEADSHOT_PAN };

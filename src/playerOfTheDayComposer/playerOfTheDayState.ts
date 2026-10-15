@@ -78,6 +78,19 @@ export const splitPlayerName = (name: string) => {
   };
 };
 
+export const blankStats = (): LastGameStats => ({
+  pts: "—",
+  reb: "—",
+  ast: "—",
+  stl: "—",
+  blk: "—",
+  fg: "—",
+  three: "—",
+  tov: "—",
+  min: "—",
+  ft: "—",
+});
+
 export const createEmptyCard = (): PotdCard => ({
   playerId: null,
   teamId: null,
@@ -86,8 +99,8 @@ export const createEmptyCard = (): PotdCard => ({
   photoSrc: null,
   customPhoto: false,
   pan: { ...DEFAULT_HEADSHOT_PAN },
-  total: "0",
-  stats: emptyStats(),
+  total: "",
+  stats: blankStats(),
   result: "",
 });
 

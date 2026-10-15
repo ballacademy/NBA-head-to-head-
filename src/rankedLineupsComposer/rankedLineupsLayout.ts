@@ -48,6 +48,8 @@ export const RL_NAME_FAMILY_SIZE = 15;
 export const RL_FADE_NAME_H = 108;
 export const RL_NAME_LOGO = 28;
 export const RL_FOOTER_PAD = 6;
+export const RL_SWIPE_SIZE = 58;
+export const RL_SWIPE_INSET = 28;
 
 export type RankDisplay = "headline" | "pill" | "none";
 

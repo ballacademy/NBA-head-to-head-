@@ -5,6 +5,7 @@ import {
   isFreakNonScoringNight,
   isNotableNight,
   isSurpriseNight,
+  mergeWeekStandouts,
   nightFlagsFor,
   nightStandoutFromBox,
   parseSummaryStandouts,
@@ -45,6 +46,7 @@ describe("night standouts", () => {
     expect(stats.min).toBe("34");
     expect(stats.stl).toBe("2");
     expect(stats.blk).toBe("1");
+    expect(stats.ft).toBe("4-4");
   });
 
   it("flags triple-doubles, 30-point nights, and big stocks", () => {
@@ -316,5 +318,24 @@ describe("night standouts", () => {
       }),
     ]);
     expect(ranked.map((row) => row.athleteId)).toEqual(["gobert", "bouyea"]);
+  });
+
+  it("keeps each athlete's best night across a week", () => {
+    const quiet = gameRow(
+      "quiet",
+      "Quiet",
+      { pts: "4", reb: "8", ast: "2", min: "22" },
+      10,
+    );
+    const gobert = gameRow(
+      "gobert",
+      "Gobert",
+      { pts: "4", reb: "12", ast: "1", blk: "10", min: "32" },
+      40,
+    );
+    const louder = { ...quiet, score: 80 };
+    const merged = mergeWeekStandouts([[quiet, gobert], [louder]]);
+    expect(merged[0]?.athleteId).toBe("quiet");
+    expect(merged.map((row) => row.athleteId)).toEqual(["quiet", "gobert"]);
   });
 });

@@ -163,9 +163,10 @@
   letter-spacing: 0.08em;
 }
 
-.qt-quote:focus,
-.qt-source:placeholder-shown {
+.qt-source:placeholder-shown:not(:focus) {
   opacity: 0;
+  color: transparent;
+  pointer-events: none;
 }
 
 .qt-source:placeholder-shown:focus {

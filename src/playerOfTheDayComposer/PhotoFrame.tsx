@@ -67,7 +67,7 @@ const stopChromePointer = (event: ReactPointerEvent) => {
   event.stopPropagation();
 };
 
-const readFile = (file: File) =>
+export const dataUrlFromImageFile = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -99,7 +99,7 @@ export function PhotoFrame({
   zoomStep = 0.25,
   vignette = false,
   pop = false,
-  pickLabel = "Pick player",
+  pickLabel = "",
   changeLabel = "Change player",
   onPan,
   onUpload,
@@ -161,7 +161,7 @@ export function PhotoFrame({
     if (!file || !file.type.startsWith("image/")) {
       return;
     }
-    onUpload(await readFile(file));
+    onUpload(await dataUrlFromImageFile(file));
   };
 
   const bumpZoom = (delta: number) => {
@@ -310,7 +310,7 @@ export function PhotoFrame({
           item.type.startsWith("image/"),
         );
         if (file) {
-          void readFile(file).then(onUpload);
+          void dataUrlFromImageFile(file).then(onUpload);
         }
       }}
     >
@@ -453,7 +453,7 @@ export const dataUrlFromClipboard = async (event: ClipboardEvent) => {
   if (files?.length) {
     const file = [...files].find((item) => item.type.startsWith("image/"));
     if (file) {
-      return readFile(file);
+      return dataUrlFromImageFile(file);
     }
   }
   const items = event.clipboardData?.items;
@@ -466,7 +466,7 @@ export const dataUrlFromClipboard = async (event: ClipboardEvent) => {
       if (!file) {
         continue;
       }
-      return readFile(file);
+      return dataUrlFromImageFile(file);
     }
   }
   return null;
@@ -487,7 +487,7 @@ export const readPhotoFromClipboard = async () => {
         continue;
       }
       const blob = await item.getType(type);
-      return readFile(new File([blob], "paste.png", { type: blob.type || type }));
+      return dataUrlFromImageFile(new File([blob], "paste.png", { type: blob.type || type }));
     }
   } catch {
     return null;

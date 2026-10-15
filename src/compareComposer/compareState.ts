@@ -72,11 +72,11 @@ export const COMPARE_STAT_PRESETS: CompareStatPreset[] = [
   { key: "fg3Pct", label: "3P%", metric: "fg3Pct", game: "three", pctFromMakes: true },
   { key: "reb", label: "REB", metric: "rebounds", game: "reb" },
   { key: "ast", label: "AST", metric: "assists", game: "ast" },
+  { key: "ftPct", label: "FT%", metric: "ftPct", game: "ft", pctFromMakes: true },
+  { key: "tov", label: "TOV", metric: "turnovers", game: "tov" },
   { key: "min", label: "MIN", metric: "minutes", game: "min" },
   { key: "blk", label: "BLK", metric: "blocks", game: "blk" },
   { key: "stl", label: "STL", metric: "steals", game: "stl" },
-  { key: "tov", label: "TOV", metric: "turnovers", game: "tov" },
-  { key: "ftPct", label: "FT%", metric: "ftPct" },
   { key: "gp", label: "GP", metric: "games" },
 ];
 
@@ -312,6 +312,25 @@ const pctFromMakes = (value: string) => {
   return ((made / att) * 100).toFixed(1);
 };
 
+export const formatCompareMinutes = (raw: string) => {
+  const text = raw.trim();
+  if (!text) {
+    return "";
+  }
+  const clock = text.match(/^(\d{1,3}):(\d{2})/);
+  if (clock) {
+    return clock[1]!;
+  }
+  const n = Number.parseFloat(text);
+  if (!Number.isFinite(n)) {
+    return text;
+  }
+  if (n > 0 && n < 3) {
+    return String(Math.round(n * 60));
+  }
+  return String(Math.round(n));
+};
+
 export const formatCompareSeasonValue = (
   value: number | null,
   metric: EveryTeamStatMetric,
@@ -322,7 +341,7 @@ export const formatCompareSeasonValue = (
   if (isPercentStatMetric(metric)) {
     return (value * 100).toFixed(1);
   }
-  if (metric === "games") {
+  if (metric === "games" || metric === "minutes") {
     return String(Math.round(value));
   }
   return value.toFixed(1);
@@ -336,6 +355,9 @@ export const valueFromLastGame = (
     return "";
   }
   const raw = game.stats[preset.game] ?? "";
+  if (preset.game === "min") {
+    return formatCompareMinutes(raw);
+  }
   return preset.pctFromMakes ? pctFromMakes(raw) : raw;
 };
 

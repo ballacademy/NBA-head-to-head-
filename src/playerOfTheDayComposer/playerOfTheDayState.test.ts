@@ -20,6 +20,7 @@ import {
   DEFAULT_POTD_TITLE,
   MAX_PHOTO_ZOOM,
   applyPlayerPick,
+  blankStats,
   clampPan,
   clampZoom,
   createEmptyCards,
@@ -112,6 +113,14 @@ describe("player of the day state", () => {
     expect(card.result).toBe("128-110 W VS MIN");
     expect(statsFillForTeam("LAL")).toMatch(/^#/);
     expect(statsFillForTeam("LAL")).not.toBe(statsFillForTeam("MIL"));
+  });
+
+  it("leaves empty cards dashed instead of live-looking zeros", () => {
+    const [left, right] = createEmptyCards();
+    expect(left?.playerId).toBeNull();
+    expect(left?.total).toBe("");
+    expect(left?.stats).toEqual(blankStats());
+    expect(right?.stats.pts).toBe("—");
   });
 
   it("replaces a custom photo only after upload, and pans inside the frame", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { getPlayer, NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
 import { TIER_BADGE_SIZE } from "../tierListComposer/tierLayout";
 import { DEFAULT_CUSTOM_PAN } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
@@ -29,6 +29,8 @@ import {
 import {
   applyPlayerPick,
   createEmptyPlusSlots,
+  fillPlusFromStandouts,
+  plusBoardEmpty,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
   defaultTotwPlusDraft,
@@ -172,5 +174,51 @@ describe("team of the week plus", () => {
     expect(kept[0]!.customPhoto).toBe(true);
     expect(kept[0]!.pan.zoom).toBe(5);
     expect(kept[0]!.pan.rotate).toBe(180);
+  });
+
+  it("auto-fills five starters then five standouts from ranked nights", () => {
+    const ids = NBA_ACTIVE_PLAYERS.slice(0, 10).map((player) => player.id);
+    const rows = ids.map((athleteId, index) => ({
+      athleteId,
+      name: getPlayer(athleteId)?.name ?? athleteId,
+      teamId: getPlayer(athleteId)?.team ?? "OKC",
+      badge: "Standout",
+      flags: [],
+      line: "20 PTS",
+      score: 100 - index,
+      game: {
+        eventId: "1",
+        gameDate: "2026-10-14",
+        teamId: getPlayer(athleteId)?.team ?? "OKC",
+        opponentId: "SAS",
+        opponentAbbrev: "SAS",
+        result: "W" as const,
+        playerScore: "110",
+        opponentScore: "100",
+        resultLine: "W",
+        dateLabel: "10/14",
+        stats: {
+          pts: "20",
+          reb: "5",
+          ast: "5",
+          stl: "1",
+          blk: "1",
+          fg: "8-16",
+          three: "2-6",
+          tov: "2",
+          min: "30",
+        },
+      },
+    }));
+    expect(plusBoardEmpty(createEmptyPlusSlots())).toBe(true);
+    const filled = fillPlusFromStandouts(createEmptyPlusSlots(), rows);
+    expect(filled.filter((slot) => slot.playerId).length).toBe(10);
+    expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(
+      ids.slice(0, 5),
+    );
+    expect(standoutSlots(filled).map((slot) => slot.playerId)).toEqual(
+      ids.slice(5),
+    );
+    expect(filled[0]?.photoSrc).toBe(getPlayer(ids[0]!)?.headshotUrl);
   });
 });

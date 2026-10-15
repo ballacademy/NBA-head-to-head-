@@ -9,6 +9,7 @@ import {
   formatResultLine,
   isoDateOnly,
   resolveTeamId,
+  shiftIsoDate,
   toEspnDateParam,
   type LastGame,
   type LastGameStats,
@@ -95,6 +96,8 @@ const BOX_KEY: Record<string, keyof LastGameStats> = {
   FG: "fg",
   "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "three",
   "3PT": "three",
+  "freeThrowsMade-freeThrowsAttempted": "ft",
+  FT: "ft",
 };
 
 const n = (value: string) => {
@@ -474,4 +477,39 @@ export const fetchNightStandouts = async (
   } catch {
     return [];
   }
+};
+
+/** Keep each athlete's best night, then rank the week. */
+export const mergeWeekStandouts = (nights: NightStandout[][]) => {
+  const best = new Map<string, NightStandout>();
+  for (const rows of nights) {
+    for (const row of rows) {
+      const previous = best.get(row.athleteId);
+      if (!previous || row.score > previous.score) {
+        best.set(row.athleteId, row);
+      }
+    }
+  }
+  return [...best.values()].sort((a, b) => b.score - a.score);
+};
+
+export const fetchWeekStandouts = async (
+  endIso: string,
+  nights = 7,
+): Promise<NightStandout[]> => {
+  const end = isoDateOnly(endIso);
+  if (!end || nights < 1) {
+    return [];
+  }
+  const dates = Array.from({ length: nights }, (_, index) =>
+    shiftIsoDate(end, -index),
+  );
+  const batches: NightStandout[][] = [];
+  for (let index = 0; index < dates.length; index += 2) {
+    const slice = dates.slice(index, index + 2);
+    batches.push(
+      ...(await Promise.all(slice.map((date) => fetchNightStandouts(date)))),
+    );
+  }
+  return mergeWeekStandouts(batches);
 };

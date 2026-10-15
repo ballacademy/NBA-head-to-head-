@@ -23,6 +23,7 @@ import {
   parseCompareStats,
   parseCompareStatsMode,
   removeCompareStat,
+  formatCompareMinutes,
   statsFromLastGame,
   statsFromSeason,
 } from "./compareState";
@@ -108,6 +109,43 @@ describe("compare composer recs", () => {
     );
     expect(game[0]).toBe("33");
     expect(game[1]).toBe("54.5");
+    expect(formatCompareMinutes("36:42")).toBe("36");
+    expect(formatCompareMinutes("0.7")).toBe("42");
+    expect(formatCompareMinutes("33.2")).toBe("33");
+    const ten = addCompareStat(
+      addCompareStat(
+        addCompareStat(defaultCompareStats()),
+      ),
+    );
+    const gameTen = statsFromLastGame(
+      {
+        eventId: "1",
+        gameDate: "2026-10-13",
+        teamId: "OKC",
+        opponentId: "MIN",
+        opponentAbbrev: "MIN",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "W",
+        dateLabel: "10/13",
+        stats: {
+          pts: "33",
+          reb: "6",
+          ast: "8",
+          stl: "1",
+          blk: "1",
+          fg: "12-22",
+          three: "3-8",
+          tov: "2",
+          min: "36",
+          ft: "8-9",
+        },
+      },
+      ten,
+    );
+    expect(ten.map((stat) => stat.label).slice(5)).toEqual(["FT%", "TOV", "MIN"]);
+    expect(gameTen.slice(5)).toEqual(["88.9", "2", "36"]);
     const patched = applySideStatValues(defaultCompareStats(), 0, game);
     expect(patched[0]?.left).toBe("33");
     expect(patched[0]?.right).toBe("");
@@ -127,7 +165,7 @@ describe("compare composer recs", () => {
       added.push(nextCompareStat(stats)!.label);
       stats = addCompareStat(stats);
     }
-    expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "FT%"]);
+    expect(added).toEqual(["FT%", "TOV", "MIN", "BLK", "STL"]);
     expect(stats).toHaveLength(10);
     expect(stats.map((stat) => stat.label)).toEqual([
       "PTS",
@@ -135,11 +173,11 @@ describe("compare composer recs", () => {
       "3P%",
       "REB",
       "AST",
+      "FT%",
+      "TOV",
       "MIN",
       "BLK",
       "STL",
-      "TOV",
-      "FT%",
     ]);
     expect(addCompareStat(stats)).toHaveLength(10);
     expect(removeCompareStat(stats, 9)).toHaveLength(9);

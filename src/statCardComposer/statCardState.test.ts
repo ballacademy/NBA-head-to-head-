@@ -174,12 +174,12 @@ describe("stat card composer", () => {
     expect(restored.gameDate).toBe("2026-10-14");
   });
 
-  it("fills name and team from the picker without a smiling mugshot", () => {
+  it("fills name, team, and the official ESPN headshot from the picker", () => {
     const jokic = getPlayer("3112335")!;
     const next = fillStatCardFromPlayer(jokic, defaultStatCardDraft());
     expect(next.playerId).toBe(jokic.id);
     expect(next.teamId).toBeTruthy();
-    expect(next.photoSrc).toBeNull();
+    expect(next.photoSrc).toBe(jokic.headshotUrl);
     expect(playerName(next).length).toBeGreaterThan(3);
     const filled = fillStatCardFromGame(next, {
       eventId: "1",

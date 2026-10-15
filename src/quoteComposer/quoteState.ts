@@ -1,6 +1,7 @@
 import type { LastGame } from "../playerOfTheDayComposer/lastGame";
 import {
   DEFAULT_CUSTOM_PAN,
+  DEFAULT_HEADSHOT_PAN,
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -91,9 +92,9 @@ export const fillQuoteFromPlayer = (
     teamId: getTeam(player.team)?.id ?? player.team ?? null,
     attribution: speakerNameFromPlayer(player).slice(0, ATTRIB_MAX),
     quote: keepQuote ? previous.quote : "",
-    photoSrc: keep ? previous.photoSrc : null,
+    photoSrc: keep ? previous.photoSrc : player.headshotUrl || null,
     customPhoto: Boolean(keep),
-    pan: keep ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
+    pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
     showHeadshot: true,
     source: previous.source ?? "",
   };
@@ -136,6 +137,14 @@ export const lastGameQuotePresets = (game: LastGame | null | undefined) => {
   }
   return presets;
 };
+
+export const setQuotePhoto = (draft: QuoteDraft, dataUrl: string): QuoteDraft => ({
+  ...draft,
+  photoSrc: dataUrl,
+  customPhoto: true,
+  pan: { ...DEFAULT_CUSTOM_PAN },
+  showHeadshot: true,
+});
 
 export const clearQuoteSpeaker = (draft: QuoteDraft): QuoteDraft => ({
   ...draft,

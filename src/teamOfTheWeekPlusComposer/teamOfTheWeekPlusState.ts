@@ -1,4 +1,6 @@
+import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   applyPlayerPick,
   clearStrip,
@@ -92,3 +94,49 @@ export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
   slots: createEmptyPlusSlots(),
   showNames: true,
 });
+
+export const plusBoardEmpty = (slots: TotwStrip[]) =>
+  slots.every((slot) => !slot.playerId);
+
+export const fillPlusFromStandouts = (
+  slots: TotwStrip[],
+  rows: NightStandout[],
+  starters: TotwStrip[] = [],
+): TotwStrip[] => {
+  const previousById = new Map<string, TotwStrip>();
+  for (const slot of [...slots, ...starters]) {
+    if (slot.playerId) {
+      previousById.set(slot.playerId, slot);
+    }
+  }
+  let next = createEmptyPlusSlots();
+  let index = 0;
+  const used = new Set<string>();
+  const take = (playerId: string) => {
+    if (index >= PLUS_SLOT_COUNT || used.has(playerId)) {
+      return;
+    }
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    const previous = previousById.get(player.id);
+    next = applyPlayerPick(
+      next,
+      index,
+      player,
+      Boolean(previous && hasCustomPhoto(previous)),
+    );
+    used.add(player.id);
+    index += 1;
+  };
+  for (const strip of starters) {
+    if (strip.playerId) {
+      take(strip.playerId);
+    }
+  }
+  for (const row of rows) {
+    take(row.athleteId);
+  }
+  return next;
+};

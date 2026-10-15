@@ -322,6 +322,29 @@ export function PlayerOfTheDayComposerApp() {
               setDate(formatDateLabel(iso));
             }}
           />
+          <div className="sc-look" role="group" aria-label="Players">
+            <span className="sc-look__label">Players</span>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => {
+                setPhotoTarget(0);
+                setActiveIndex(0);
+              }}
+            >
+              Left
+            </button>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => {
+                setPhotoTarget(1);
+                setActiveIndex(1);
+              }}
+            >
+              Right
+            </button>
+          </div>
           </>
         }
         board={

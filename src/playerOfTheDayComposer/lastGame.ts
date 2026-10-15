@@ -48,6 +48,7 @@ export interface LastGameStats {
   three: string;
   tov: string;
   min: string;
+  ft?: string;
 }
 
 export interface LastGame {
@@ -76,6 +77,7 @@ export const emptyStats = (): LastGameStats => ({
   three: "0-0",
   tov: "0",
   min: "0",
+  ft: "0-0",
 });
 
 export const isoDateOnly = (value: string | null | undefined) => {
@@ -159,6 +161,7 @@ const STAT_KEYS = {
   MIN: "min",
   FG: "fg",
   "3PT": "three",
+  FT: "ft",
   REB: "reb",
   AST: "ast",
   BLK: "blk",

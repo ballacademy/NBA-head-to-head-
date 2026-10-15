@@ -3,6 +3,7 @@ import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
+  DEFAULT_HEADSHOT_PAN,
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -165,9 +166,9 @@ export const fillHeadlineFromPlayer = (
     teamId: getTeam(player.team)?.id ?? player.team,
     firstName: names.firstName,
     lastName: names.lastName,
-    photoSrc: keep ? previous.photoSrc : null,
+    photoSrc: keep ? previous.photoSrc : player.headshotUrl || null,
     customPhoto: keep,
-    pan: keep ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
+    pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
     subjectMode: "player",
     watermark: parseHeadlineWatermark(previous.watermark),
   };

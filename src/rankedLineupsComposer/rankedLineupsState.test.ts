@@ -37,6 +37,7 @@ import {
   lineupPosition,
   parsePositionLabels,
   nextRankPill,
+  swipeRankCue,
   parseRankDisplay,
   RANK_PILL_PRESETS,
   RANKED_LINEUP_STRIP_COUNT,
@@ -80,6 +81,7 @@ describe("ranked lineups", () => {
     expect(RL_STRIP_GAP).toBe(4);
     expect(TOTW_STRIP_GAP).toBeGreaterThan(RL_STRIP_GAP);
     expect(nextRankPill("BEST")).toBe("2ND");
+    expect(swipeRankCue("BEST")).toBe("BEST → 2ND");
     expect(nextRankPill("2ND")).toBe("3RD");
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);

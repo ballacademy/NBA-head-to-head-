@@ -172,7 +172,7 @@ describe("POTD leaderboard ranks", () => {
     const cards = applyPlayerPick(createEmptyCards(), 0, luka!, null, "12");
     expect(cards[0]!.total).toBe("12");
     expect(cards[0]!.lastName).toBe("Doncic");
-    expect(cards[1]!.total).toBe("0");
+    expect(cards[1]!.total).toBe("");
   });
 
   it("saves a leaderboard draft including the BA mark", () => {

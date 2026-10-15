@@ -213,6 +213,11 @@ export const nextRankPill = (rank: string) => {
   return "2ND";
 };
 
+export const swipeRankCue = (rank: string) => {
+  const current = rank.trim().toUpperCase() || DEFAULT_RANK_PILL;
+  return `${current} → ${nextRankPill(current)}`;
+};
+
 export const emptyLineupSlide = (rank = DEFAULT_RANK_PILL): RankedLineupSlide => ({
   rank,
   strips: createEmptyStrips(),

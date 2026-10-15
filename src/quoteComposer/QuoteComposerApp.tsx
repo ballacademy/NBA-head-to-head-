@@ -3,6 +3,7 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
@@ -41,6 +42,7 @@ import {
   isStockQuote,
   lastGameQuotePresets,
   QUOTE_MAX,
+  setQuotePhoto,
   SOURCE_MAX,
   type QuoteDraft,
 } from "./quoteState";
@@ -245,7 +247,8 @@ export function QuoteComposerApp() {
           </>
         }
         data={
-          gamePresets.length ? (
+          <>
+          {gamePresets.length ? (
             <div className="sc-look" role="group" aria-label="Last-game quote presets">
               <span className="sc-look__label">Last game</span>
               {gamePresets.map((line) => (
@@ -264,7 +267,15 @@ export function QuoteComposerApp() {
                 </button>
               ))}
             </div>
-          ) : null
+          ) : null}
+          <ComposerPhotoHud
+            onPick={() => setPickerOpen(true)}
+            onUpload={(dataUrl) => {
+              setDraft((current) => setQuotePhoto(current, dataUrl));
+              setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
+            }}
+          />
+          </>
         }
         board={
           <>

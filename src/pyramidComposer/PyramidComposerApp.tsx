@@ -23,6 +23,7 @@ import {
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { fetchConferenceStandingsBundle } from "../standingsComposer/nbaStandings";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
@@ -40,8 +41,14 @@ import { pyramidSlotCount } from "./pyramidLayout";
 import {
   applyPyramidPick,
   clearPyramidSlot,
+  coachesFromStandings,
+  coyCoachLadder,
   defaultPyramidDraft,
+  fillPyramidFromPlayers,
   hasCustomPhoto,
+  mvpPlayerLadder,
+  pyramidBoardEmpty,
+  pyramidLadderKind,
   isPyramidDraft,
   parsePyramidRowLabels,
   parsePyramidRows,
@@ -135,6 +142,52 @@ export function PyramidComposerApp() {
     }
     writeJson(STORAGE_KEY, { title, slots, rows, showBa, showNames, rowLabels });
   }, [title, slots, rows, showBa, showNames, rowLabels, hydrated]);
+
+  const fillRanking = useCallback(
+    async (force = false, nextTitle = title, nextRows = rows) => {
+      const count = pyramidSlotCount(nextRows);
+      const kind = pyramidLadderKind(nextTitle);
+      let players =
+        kind === "player" ? mvpPlayerLadder(count) : coyCoachLadder(count);
+      if (kind === "coach") {
+        try {
+          const [east, west] = await Promise.all([
+            fetchConferenceStandingsBundle("East"),
+            fetchConferenceStandingsBundle("West"),
+          ]);
+          players = coachesFromStandings(
+            east.slots,
+            west.slots,
+            { ...east.records, ...west.records },
+            count,
+          );
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      setSlots((current) => {
+        if (!force && !pyramidBoardEmpty(current)) {
+          return current;
+        }
+        const next = fillPyramidFromPlayers(nextRows, players, current);
+        const filled = next.filter((slot) => slot.playerId).length;
+        setStatus(
+          filled
+            ? `Filled ${filled} squares from the ${kind === "player" ? "MVP" : "COY"} ladder.`
+            : "Could not fill the pyramid — pick players for the empty squares.",
+        );
+        return next;
+      });
+    },
+    [rows, title],
+  );
+
+  useEffect(() => {
+    const draft = loadDraft();
+    if (pyramidBoardEmpty(draft.slots)) {
+      void fillRanking(false, draft.title, draft.rows ?? 4);
+    }
+  }, [fillRanking]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -260,6 +313,13 @@ export function PyramidComposerApp() {
         }
         data={
           <>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => void fillRanking(true)}
+        >
+          Fill ranking
+        </button>
         <div className="sc-look" role="group" aria-label="Pyramid rows">
           <span className="sc-look__label">Rows</span>
           {Array.from(

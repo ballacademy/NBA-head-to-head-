@@ -28,6 +28,12 @@ import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import {
+  nbaTodayIso,
+  shiftIsoDate,
+} from "../playerOfTheDayComposer/lastGame";
+import { fetchWeekStandouts } from "../playerOfTheDayComposer/nightStandouts";
+import { isTotwDraft } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
@@ -37,9 +43,11 @@ import {
   clearStrip,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   defaultTotwPlusDraft,
+  fillPlusFromStandouts,
   hasCustomPhoto,
   isTotwPlusDraft,
   patchStrip,
+  plusBoardEmpty,
   setStripPhoto,
   slotLabel,
   usedPlusPlayerIds,
@@ -51,6 +59,7 @@ import "./teamOfTheWeekPlusComposer.css";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-plus-composer";
 const SAVES_KEY = "ddgm:team-of-the-week-plus-composer:saves";
+const TOTW_STORAGE_KEY = "ddgm:team-of-the-week-composer";
 
 const loadDraft = (): TotwPlusDraft => {
   const stored = readJson<Partial<TotwPlusDraft>>(STORAGE_KEY);
@@ -109,6 +118,36 @@ export function TeamOfTheWeekPlusComposerApp() {
     document.title = "Team of the Week Plus graphic";
   }, []);
 
+  const totwStarterStrips = () => {
+    const stored = readJson<unknown>(TOTW_STORAGE_KEY);
+    return isTotwDraft(stored)
+      ? stored.strips.filter((strip) => Boolean(strip.playerId))
+      : [];
+  };
+
+  const fillLastWeek = useCallback(async (force = false) => {
+    setStatus("Loading last week’s standouts…");
+    try {
+      const rows = await fetchWeekStandouts(shiftIsoDate(nbaTodayIso(), -1), 7);
+      setSlots((current) => {
+        if (!force && !plusBoardEmpty(current)) {
+          return current;
+        }
+        const next = fillPlusFromStandouts(current, rows, totwStarterStrips());
+        const filled = next.filter((slot) => slot.playerId).length;
+        setStatus(
+          filled
+            ? `Filled ${Math.min(5, filled)} starters and ${Math.max(0, filled - 5)} standouts.`
+            : "No standouts for last week yet — pick players for the empty slots.",
+        );
+        return next;
+      });
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not load last week’s standouts.");
+    }
+  }, []);
+
   useEffect(() => {
     const draft = loadDraft();
     setBrand(draft.brand);
@@ -119,7 +158,10 @@ export function TeamOfTheWeekPlusComposerApp() {
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames !== false);
     setHydrated(true);
-  }, []);
+    if (plusBoardEmpty(draft.slots)) {
+      void fillLastWeek(false);
+    }
+  }, [fillLastWeek]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -297,6 +339,15 @@ export function TeamOfTheWeekPlusComposerApp() {
           />
         </label>
           </>
+        }
+        data={
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillLastWeek(true)}
+          >
+            Fill last week
+          </button>
         }
         board={
           <>

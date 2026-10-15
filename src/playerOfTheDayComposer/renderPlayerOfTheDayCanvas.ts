@@ -341,20 +341,22 @@ export const renderPlayerOfTheDayCanvas = async (
     applyPhotoGrade(context, x, photoY, w, photoH, input.photoGrade);
     paintPotdPhotoBorder(context, x, photoY, w, photoH, s, input.look);
 
-    context.font = `900 ${POTD_TOTAL_SIZE * s}px ${POSTER_FONT}`;
-    context.fillStyle = "#fff";
-    context.textBaseline = "top";
-    const total = `TOTAL: ${card.total}`.toUpperCase();
-    if (index === 0) {
-      context.textAlign = "left";
-      withShadow(context, s, () => {
-        context.fillText(total, x + 10 * s, photoY + 10 * s);
-      });
-    } else {
-      context.textAlign = "right";
-      withShadow(context, s, () => {
-        context.fillText(total, x + w - 10 * s, photoY + 10 * s);
-      });
+    if (card.playerId) {
+      context.font = `900 ${POTD_TOTAL_SIZE * s}px ${POSTER_FONT}`;
+      context.fillStyle = "#fff";
+      context.textBaseline = "top";
+      const total = `TOTAL: ${card.total}`.toUpperCase();
+      if (index === 0) {
+        context.textAlign = "left";
+        withShadow(context, s, () => {
+          context.fillText(total, x + 10 * s, photoY + 10 * s);
+        });
+      } else {
+        context.textAlign = "right";
+        withShadow(context, s, () => {
+          context.fillText(total, x + w - 10 * s, photoY + 10 * s);
+        });
+      }
     }
 
     context.fillStyle = fill;

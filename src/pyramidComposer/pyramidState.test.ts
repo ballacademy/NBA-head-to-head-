@@ -29,8 +29,13 @@ import {
 } from "./pyramidLayout";
 import {
   applyPyramidPick,
+  coyCoachLadder,
   createEmptyPyramidSlots,
   DEFAULT_PYRAMID_TITLE,
+  fillPyramidFromPlayers,
+  mvpPlayerLadder,
+  pyramidBoardEmpty,
+  pyramidLadderKind,
   defaultPyramidDraft,
   parsePyramidRows,
   pyramidSlotPops,
@@ -141,5 +146,21 @@ describe("pyramid composer", () => {
         photoSrc: "data:image/png;base64,xx",
       }),
     ).toBe(false);
+  });
+
+  it("fills ten squares from a COY coach ladder or an MVP scoring ladder", () => {
+    expect(pyramidBoardEmpty(createEmptyPyramidSlots())).toBe(true);
+    expect(pyramidLadderKind("NBA COY PYRAMID")).toBe("coach");
+    expect(pyramidLadderKind("NBA PLAYER PYRAMID")).toBe("player");
+    const coaches = coyCoachLadder(10);
+    expect(coaches).toHaveLength(10);
+    expect(coaches[0]?.id).toBe("coach-BOS");
+    const filled = fillPyramidFromPlayers(4, coaches);
+    expect(filled.filter((slot) => slot.playerId).length).toBe(10);
+    expect(filled[0]?.playerId).toBe("coach-BOS");
+    expect(filled[0]?.photoSrc).toBeTruthy();
+    const mvp = mvpPlayerLadder(10);
+    expect(mvp).toHaveLength(10);
+    expect(mvp[0]!.ppg).toBeGreaterThanOrEqual(mvp[9]!.ppg);
   });
 });
