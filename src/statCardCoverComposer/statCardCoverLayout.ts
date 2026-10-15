@@ -11,9 +11,11 @@ export const SCC_SLOT_COUNT = 3;
 export const SCC_COL_W = GRAPHIC_WIDTH / SCC_SLOT_COUNT;
 export const SCC_FADE_H = 460;
 export const SCC_SEAM_W = 20;
-export const SCC_TITLE_SIZE = 76;
-export const SCC_TITLE_TRACK = 0.046;
-export const SCC_TITLE_MAX_EM = 13.4;
+export const SCC_TITLE_SIZE = 72;
+export const SCC_TITLE_TRACK = 0.02;
+/** Extra tracking on the lead line so STARS AND matches STANDOUTS width. */
+export const SCC_TITLE_LEAD_TRACK = 0.072;
+export const SCC_TITLE_MAX_EM = 14.2;
 export const SCC_PILL_H = 44;
 export const SCC_PILL_PAD_X = 28;
 export const SCC_DATE_SIZE = 16;

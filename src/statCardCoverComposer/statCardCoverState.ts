@@ -122,10 +122,16 @@ export const coverTitleForNight = (
   _yesterdayIso?: string,
 ) => DEFAULT_COVER_TITLE;
 
-/** One strong poster line when it fits; otherwise two even-weight lines. */
+/**
+ * Poster lockup: STARS AND / STANDOUTS as two even-weight lines.
+ * Custom titles stay one line when they fit, otherwise two balanced lines.
+ */
 export const splitCoverTitle = (title: string) => {
   const text =
     title.replace(/\s+/g, " ").trim().toUpperCase() || DEFAULT_COVER_TITLE;
+  if (text === DEFAULT_COVER_TITLE) {
+    return ["STARS AND", "STANDOUTS"];
+  }
   if (measureTitleAdvance(text, SCC_TITLE_TRACK) <= SCC_TITLE_MAX_EM) {
     return [text];
   }

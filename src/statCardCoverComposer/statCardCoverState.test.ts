@@ -90,13 +90,13 @@ describe("stat card cover", () => {
     expect(coverSeamXs()).toEqual([400, 800]);
   });
 
-  it("defaults to one-line STARS AND STANDOUTS with a date pill", () => {
+  it("defaults to a two-line STARS AND / STANDOUTS lockup with a date pill", () => {
     const draft = defaultStatCardCoverDraft(new Date("2026-10-15T18:00:00"));
     expect(draft.slots).toHaveLength(3);
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
     expect(draft.slots.every((slot) => !("stats" in slot))).toBe(true);
     expect(draft.title).toBe(DEFAULT_COVER_TITLE);
-    expect(splitCoverTitle(draft.title)).toEqual(["STARS AND STANDOUTS"]);
+    expect(splitCoverTitle(draft.title)).toEqual(["STARS AND", "STANDOUTS"]);
     expect(draft.dateLine).toBe("OCT 15");
     expect(coverTitleForNight("2026-10-14", "2026-10-15", "2026-10-14")).toBe(
       DEFAULT_COVER_TITLE,

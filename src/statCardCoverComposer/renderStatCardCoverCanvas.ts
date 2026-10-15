@@ -38,6 +38,7 @@ import {
   SCC_SLOT_COUNT,
   SCC_SWIPE_INSET,
   SCC_SWIPE_SIZE,
+  SCC_TITLE_LEAD_TRACK,
   SCC_TITLE_SIZE,
   SCC_TITLE_TRACK,
   coverCellRect,
@@ -93,14 +94,21 @@ const strokeFillText = (
   fill: string,
   stroke: string,
   strokeWidth: number,
+  maxWidth?: number,
 ) => {
   context.lineJoin = "round";
   context.miterLimit = 2;
   context.strokeStyle = stroke;
   context.lineWidth = strokeWidth;
-  context.strokeText(text, x, y);
-  context.fillStyle = fill;
-  context.fillText(text, x, y);
+  if (maxWidth) {
+    context.strokeText(text, x, y, maxWidth);
+    context.fillStyle = fill;
+    context.fillText(text, x, y, maxWidth);
+  } else {
+    context.strokeText(text, x, y);
+    context.fillStyle = fill;
+    context.fillText(text, x, y);
+  }
 };
 
 const paintTopFade = (
@@ -355,19 +363,42 @@ export const renderStatCardCoverCanvas = async (
   context.textAlign = "center";
   context.textBaseline = "top";
   context.font = `900 ${SCC_TITLE_SIZE * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, SCC_TITLE_TRACK * SCC_TITLE_SIZE * s);
-  for (const line of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex]!;
+    const tracking =
+      lines.length > 1 && lineIndex === 0
+        ? SCC_TITLE_LEAD_TRACK
+        : SCC_TITLE_TRACK;
+    setLetterSpacing(context, tracking * SCC_TITLE_SIZE * s);
     context.save();
     context.shadowColor = "rgba(0, 0, 0, 0.45)";
     context.shadowOffsetX = 0;
     context.shadowOffsetY = 8 * s;
     context.shadowBlur = 18 * s;
-    strokeFillText(context, line, cx, cursor, "#fff", "#000", 3.2 * s);
+    strokeFillText(
+      context,
+      line,
+      cx,
+      cursor,
+      "#fff",
+      "#000",
+      3.4 * s,
+      width - 200 * s,
+    );
     context.restore();
     withShadow(context, s, () => {
-      strokeFillText(context, line, cx, cursor, "#fff", "#000", 3.2 * s);
+      strokeFillText(
+        context,
+        line,
+        cx,
+        cursor,
+        "#fff",
+        "#000",
+        3.4 * s,
+        width - 200 * s,
+      );
     });
-    cursor += SCC_TITLE_SIZE * 0.9 * s + 4 * s;
+    cursor += SCC_TITLE_SIZE * 0.84 * s + 2 * s;
   }
   setLetterSpacing(context, 0);
   cursor += 14 * s;

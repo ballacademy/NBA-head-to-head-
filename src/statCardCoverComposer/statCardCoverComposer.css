@@ -4,7 +4,7 @@
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --fade-h: 460;
-  --title-size: 76;
+  --title-size: 72;
   --date-size: 16;
   --pill-h: 44;
   --name-h: 168;
@@ -145,7 +145,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 calc(56 * var(--u));
+  padding: 0 calc(72 * var(--u));
   box-sizing: border-box;
 }
 
@@ -165,18 +165,22 @@
   font-family: var(--ig-poster);
   font-size: calc(var(--title-size) * var(--u));
   font-weight: 900;
-  letter-spacing: 0.046em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 0.9;
-  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  line-height: 0.84;
+  -webkit-text-stroke: calc(3.4 * var(--u)) #000;
   paint-order: stroke fill;
   text-shadow:
     calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
     0 calc(8 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
 }
 
+.scc-title-line:first-child:not(:only-child) {
+  letter-spacing: 0.072em;
+}
+
 .scc-title-line + .scc-title-line {
-  margin-top: calc(4 * var(--u));
+  margin-top: calc(2 * var(--u));
 }
 
 .scc-title-input {
@@ -195,9 +199,9 @@
   font-family: var(--ig-poster);
   font-size: calc(var(--title-size) * var(--u));
   font-weight: 900;
-  letter-spacing: 0.046em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 0.9;
+  line-height: 0.84;
 }
 
 .scc-pill {
