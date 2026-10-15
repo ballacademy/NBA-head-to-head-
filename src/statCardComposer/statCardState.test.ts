@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import catalog from "../../data/every-team-historical-rosters.json";
+import {
+  hydrateEveryTeamRosters,
+} from "../everyTeamComposer/historicalRosters";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   GRAPHIC_ASPECT,
@@ -8,12 +12,21 @@ import {
   STC_VALUE_SIZE,
   statCardType,
 } from "./statCardLayout";
-import { nbaTodayIso } from "../playerOfTheDayComposer/lastGame";
+import {
+  emptyStats,
+  nbaTodayIso,
+  type LastGame,
+  type LastGameStats,
+} from "../playerOfTheDayComposer/lastGame";
 import {
   addStatCardLine,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
+  fillStatCardFromSeason,
+  fillStatCardFromStandout,
+  lastGameValueForKey,
+  notableStatCardLines,
   nextStatCardLine,
   normalizeStatCardDraft,
   playerName,
@@ -22,6 +35,29 @@ import {
   STC_STAT_COUNT,
   STC_STAT_MAX,
 } from "./statCardState";
+
+hydrateEveryTeamRosters(
+  catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+);
+
+const box = (stats: Partial<LastGameStats>): LastGameStats => ({
+  ...emptyStats(),
+  ...stats,
+});
+
+const gameFrom = (stats: Partial<LastGameStats>): LastGame => ({
+  eventId: "1",
+  gameDate: "2026-10-14",
+  teamId: "MIL",
+  opponentId: "NYK",
+  opponentAbbrev: "NYK",
+  result: "W",
+  playerScore: "120",
+  opponentScore: "110",
+  resultLine: "W",
+  dateLabel: "10/14",
+  stats: box(stats),
+});
 
 describe("stat card composer", () => {
   it("is a 4:5 split with empty photo-first and three huge stats", () => {
@@ -46,7 +82,8 @@ describe("stat card composer", () => {
     expect(four).toHaveLength(4);
     expect(four.map((line) => line.label)).toEqual(["PTS", "REB", "AST", "MIN"]);
     expect(removeStatCardLine(four, 3)).toHaveLength(3);
-    expect(removeStatCardLine(draft.stats, 0)).toHaveLength(3);
+    expect(removeStatCardLine(draft.stats, 0)).toHaveLength(2);
+    expect(removeStatCardLine([{ key: "pts", label: "PTS", value: "22" }], 0)).toHaveLength(1);
     const swapped = setStatCardLineKey(draft.stats, 1, "blk", "last-game");
     expect(swapped.map((line) => line.label)).toEqual(["PTS", "BLK", "AST"]);
     const restored = normalizeStatCardDraft({
@@ -114,5 +151,132 @@ describe("stat card composer", () => {
     expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "3PM"]);
     expect(stats).toHaveLength(8);
     expect(addStatCardLine(stats)).toHaveLength(8);
+  });
+
+  it("maps MIN to minutes, never FGM-FGA, last-game and season", () => {
+    const stats = box({
+      pts: "18",
+      reb: "4",
+      ast: "2",
+      stl: "1",
+      blk: "0",
+      fg: "4-12",
+      three: "1-6",
+      tov: "3",
+      min: "32",
+    });
+    expect(lastGameValueForKey("min", stats)).toBe("32");
+    expect(lastGameValueForKey("fg", stats)).toBe("4-12");
+    expect(lastGameValueForKey("three", stats)).toBe("1-6");
+    expect(lastGameValueForKey("blk", stats)).toBe("0");
+    expect(lastGameValueForKey("min", box({ min: "18:42", fg: "4-12" }))).toBe(
+      "18",
+    );
+    expect(lastGameValueForKey("min", box({ min: "4-12", fg: "4-12" }))).toBe("");
+    const filled = fillStatCardFromGame(
+      {
+        ...defaultStatCardDraft(),
+        stats: addStatCardLine(defaultStatCardDraft().stats),
+      },
+      gameFrom(stats),
+    );
+    expect(filled.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "18 PTS",
+      "4 REB",
+      "2 AST",
+      "32 MIN",
+    ]);
+    const fromFg = setStatCardLineKey(
+      [
+        { key: "fg", label: "FG", value: "4-12" },
+        { key: "reb", label: "REB", value: "4" },
+        { key: "ast", label: "AST", value: "2" },
+      ],
+      0,
+      "min",
+      "last-game",
+      stats,
+    );
+    expect(fromFg[0]).toMatchObject({ key: "min", label: "MIN", value: "32" });
+    expect(fromFg[0]?.value).not.toContain("-");
+    const shai = getPlayer("4278073")!;
+    const season = fillStatCardFromSeason(
+      {
+        ...fillStatCardFromPlayer(shai, defaultStatCardDraft()),
+        stats: addStatCardLine(defaultStatCardDraft().stats),
+        source: "season",
+      },
+      "2025-26",
+      "regular",
+    );
+    const minLine = season.stats.find((line) => line.key === "min");
+    expect(minLine?.label).toBe("MIN");
+    expect(minLine?.value).toMatch(/^\d+(\.\d)?$/);
+    expect(minLine?.value).not.toMatch(/-/);
+    expect(Number(minLine?.value)).toBeGreaterThan(20);
+    const fgSeason = fillStatCardFromSeason(
+      {
+        ...season,
+        stats: setStatCardLineKey(season.stats, 3, "fg", "season"),
+      },
+      "2025-26",
+      "regular",
+    );
+    const fgLine = fgSeason.stats.find((line) => line.key === "fg");
+    expect(fgLine?.label).toBe("FG%");
+    expect(Number(fgLine?.value)).toBeGreaterThan(40);
+  });
+
+  it("auto-picks notable last-game lines without padding junk", () => {
+    const threeStat = notableStatCardLines(
+      box({ pts: "20", reb: "15", ast: "9", stl: "1", blk: "0", min: "34" }),
+    );
+    expect(threeStat.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "20 PTS",
+      "15 REB",
+      "9 AST",
+    ]);
+    const loaded = notableStatCardLines(
+      box({
+        pts: "32",
+        reb: "12",
+        ast: "8",
+        stl: "3",
+        blk: "2",
+        three: "5-9",
+        fg: "12-22",
+        min: "39",
+        tov: "7",
+      }),
+    );
+    expect(loaded.map((line) => line.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "STL",
+      "BLK",
+      "3PM",
+      "FG",
+      "MIN",
+    ]);
+    expect(loaded).toHaveLength(8);
+    const quiet = notableStatCardLines(
+      box({ pts: "22", reb: "2", ast: "1", stl: "0", blk: "0", min: "28" }),
+    );
+    expect(quiet.map((line) => line.label)).toEqual(["PTS"]);
+    const standout = fillStatCardFromStandout(defaultStatCardDraft(), gameFrom({
+      pts: "20",
+      reb: "12",
+      ast: "8",
+      stl: "2",
+      blk: "2",
+    }));
+    expect(standout.stats.map((line) => line.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "STL",
+      "BLK",
+    ]);
   });
 });

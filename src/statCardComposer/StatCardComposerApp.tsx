@@ -27,6 +27,7 @@ import {
   isoDateOnly,
   nbaTodayIso,
   shiftIsoDate,
+  type LastGame,
 } from "../playerOfTheDayComposer/lastGame";
 import {
   fetchNightStandouts,
@@ -51,6 +52,7 @@ import {
   fillStatCardFromGame,
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
+  fillStatCardFromStandout,
   hasCustomPhoto,
   isStatCardDraft,
   normalizeStatCardDraft,
@@ -99,6 +101,7 @@ export function StatCardComposerApp() {
   } | null>(null);
   const [standouts, setStandouts] = useState<NightStandout[]>([]);
   const [standoutsLoading, setStandoutsLoading] = useState(false);
+  const lastGameRef = useRef<LastGame | null>(null);
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
   const source = parseStatCardSource(draft.source);
   const todayIso = nbaTodayIso();
@@ -154,6 +157,7 @@ export function StatCardComposerApp() {
       if (!game) {
         return;
       }
+      lastGameRef.current = game;
       setDraft((current) =>
         current.playerId === next.playerId
           ? fillStatCardFromGame(current, game)
@@ -230,7 +234,8 @@ export function StatCardComposerApp() {
     let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
     const night = standouts.find((row) => row.athleteId === playerId);
     if (night && parseStatCardSource(next.source) === "last-game") {
-      next = fillStatCardFromGame(next, night.game);
+      lastGameRef.current = night.game;
+      next = fillStatCardFromStandout(next, night.game);
     }
     setDraft(next);
     setPickerOpen(false);
@@ -397,15 +402,25 @@ export function StatCardComposerApp() {
               aria-label={`Stat ${index + 1} on card`}
               onChange={(event) => {
                 const key = parseStatCardKey(event.target.value);
-                const next = {
+                let next = {
                   ...draft,
                   stats: setStatCardLineKey(
                     draft.stats,
                     index,
                     key,
                     source,
+                    lastGameRef.current?.stats,
                   ),
                 };
+                if (source === "season") {
+                  next = fillStatCardFromSeason(
+                    next,
+                    next.season,
+                    statsSample,
+                  );
+                } else if (lastGameRef.current) {
+                  next = fillStatCardFromGame(next, lastGameRef.current);
+                }
                 setDraft(next);
                 void fillStats(next);
               }}
@@ -423,14 +438,19 @@ export function StatCardComposerApp() {
           className="sc-chip"
           disabled={draft.stats.length >= STC_STAT_MAX}
           onClick={() => {
-            const next = { ...draft, stats: addStatCardLine(draft.stats) };
+            let next = { ...draft, stats: addStatCardLine(draft.stats) };
+            if (source === "season") {
+              next = fillStatCardFromSeason(next, next.season, statsSample);
+            } else if (lastGameRef.current) {
+              next = fillStatCardFromGame(next, lastGameRef.current);
+            }
             setDraft(next);
             void fillStats(next);
           }}
         >
           {nextLine ? `Add ${nextLine.label}` : "8 stats"}
         </button>
-        {draft.stats.length > STC_STAT_COUNT ? (
+        {draft.stats.length > 1 ? (
           <button
             type="button"
             className="sc-chip"
@@ -446,9 +466,7 @@ export function StatCardComposerApp() {
               void fillStats(next);
             }}
           >
-            {draft.stats.length === STC_STAT_COUNT + 1
-              ? "3 stats"
-              : "Remove last"}
+            Remove last
           </button>
         ) : null}
           </>
