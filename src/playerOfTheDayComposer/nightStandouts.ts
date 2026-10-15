@@ -11,10 +11,10 @@ import {
 } from "./lastGame";
 
 export const ESPN_SCOREBOARD_URL = (iso: string) =>
-  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}`;
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}`;
 
 export const ESPN_SUMMARY_URL = (eventId: string) =>
-  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
 
 export interface NightStandout {
   athleteId: string;
@@ -351,6 +351,7 @@ export const fetchNightStandouts = async (
     const boardRes = await fetch(ESPN_SCOREBOARD_URL(date), {
       mode: "cors",
       credentials: "omit",
+      signal: AbortSignal.timeout(12000),
     });
     if (!boardRes.ok) {
       return [];
@@ -366,6 +367,7 @@ export const fetchNightStandouts = async (
         const response = await fetch(ESPN_SUMMARY_URL(eventId), {
           mode: "cors",
           credentials: "omit",
+          signal: AbortSignal.timeout(12000),
         });
         if (!response.ok) {
           return [] as NightStandout[];
