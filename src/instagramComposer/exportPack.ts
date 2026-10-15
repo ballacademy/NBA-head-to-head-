@@ -14,15 +14,17 @@ export const downloadExportPack = async (
     filename: string;
     render: () => Promise<HTMLCanvasElement>;
   }> = [],
-  story: { safe?: boolean } = {},
+  story: { safe?: boolean; letterbox?: boolean } = {},
 ) => {
   const board = await render();
   await downloadCanvasPng(board, filename);
-  await wait(220);
-  await downloadCanvasPng(
-    await toStoryCanvas(board, story),
-    storyFilename(filename),
-  );
+  if (story.letterbox !== false) {
+    await wait(220);
+    await downloadCanvasPng(
+      await toStoryCanvas(board, story),
+      storyFilename(filename),
+    );
+  }
   for (const extra of extras) {
     await wait(220);
     await downloadCanvasPng(await extra.render(), extra.filename);

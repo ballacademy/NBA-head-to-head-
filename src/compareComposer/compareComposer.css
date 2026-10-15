@@ -250,6 +250,14 @@
   background-color: #1c1c1c;
 }
 
+.cmp-sub-plate.is-empty {
+  opacity: 0;
+}
+
+.cmp-sub-plate.is-empty:focus-within {
+  opacity: 1;
+}
+
 .cmp-sub {
   width: 100%;
   margin: 0;

@@ -359,6 +359,11 @@ main.sc-stage {
 .sc-stage__frame {
   width: min(100%, calc((100dvh - 180px) * 0.8));
   max-width: 520px;
+}
+
+.sc-stage__frame.is-story {
+  width: min(100%, calc((100dvh - 180px) * 9 / 16));
+  max-width: 360px;
   /* box-shadow keeps type vector-sharp; filter: drop-shadow rasterizes the board. */
   box-shadow: 0 28px 48px rgba(0, 0, 0, 0.55);
 }

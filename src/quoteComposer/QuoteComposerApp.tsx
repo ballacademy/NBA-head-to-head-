@@ -38,6 +38,7 @@ import {
   fillQuoteFromPlayer,
   hasCustomPhoto,
   isQuoteDraft,
+  isStockQuote,
   lastGameQuotePresets,
   QUOTE_MAX,
   SOURCE_MAX,
@@ -131,7 +132,11 @@ export function QuoteComposerApp() {
     if (!player) {
       return;
     }
-    if (keepQuote === undefined && draft.quote.trim()) {
+    if (
+      keepQuote === undefined &&
+      draft.quote.trim() &&
+      !isStockQuote(draft.quote)
+    ) {
       setQuotePrompt({
         playerId,
         playerName: player.name,
@@ -141,20 +146,33 @@ export function QuoteComposerApp() {
       setPickerOpen(false);
       return;
     }
+    const keepLine =
+      keepQuote === undefined ? !isStockQuote(draft.quote) : keepQuote !== false;
     push(draft);
     setDraft((current) =>
-      fillQuoteFromPlayer(player, current, keepCustomPhoto, keepQuote !== false),
+      fillQuoteFromPlayer(player, current, keepCustomPhoto, keepLine),
     );
     setPickerOpen(false);
     setKeepPrompt(null);
     setQuotePrompt(null);
+    setGamePresets([]);
     setStatus(
-      keepQuote === false
-        ? `Filled ${player.name} — quote cleared. Upload a photo.`
-        : `Filled ${player.name} — upload a photo.`,
+      keepLine
+        ? `Filled ${player.name} — upload a photo.`
+        : `Filled ${player.name} — quote cleared. Upload a photo.`,
     );
     void fetchLastGame(player.id, statsSample).then((game) => {
-      setGamePresets(lastGameQuotePresets(game));
+      const presets = lastGameQuotePresets(game);
+      setGamePresets(presets);
+      const chip = presets[0];
+      if (!chip) {
+        return;
+      }
+      setDraft((current) =>
+        isStockQuote(current.quote) || !current.quote.trim()
+          ? { ...current, quote: chip.slice(0, QUOTE_MAX) }
+          : current,
+      );
     });
   };
 
@@ -215,7 +233,7 @@ export function QuoteComposerApp() {
           <input
             value={draft.source}
             maxLength={SOURCE_MAX}
-            placeholder="optional"
+            placeholder=""
             onChange={(event) =>
               setDraft((current) => ({
                 ...current,

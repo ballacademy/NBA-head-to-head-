@@ -22,11 +22,7 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { downloadExportPack } from "../instagramComposer/exportPack";
-import {
-  copyGraphicCaption,
-  graphicCaption,
-  stripCaptionName,
-} from "../instagramComposer/graphicCaption";
+import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -52,6 +48,7 @@ import {
   addCompareStat,
   applySideStatValues,
   autoCompareStatsLabel,
+  compareCaptionFor,
   clearCompareSide,
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
@@ -561,13 +558,7 @@ export function CompareComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() =>
-              void copyGraphicCaption(
-                graphicCaption(
-                  draft.title,
-                  draft.sides.map(stripCaptionName).filter(Boolean),
-                  [draft.subtitle],
-                ),
-              ).then(
+              void copyGraphicCaption(compareCaptionFor(draft)).then(
                 () => setStatus("Caption copied."),
                 () => setStatus("Could not copy caption."),
               )

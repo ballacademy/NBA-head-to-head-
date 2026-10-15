@@ -4,8 +4,16 @@ import {
   GRAPHIC_WIDTH,
 } from "../standingsComposer/rankingState";
 
-/** Design-px 4:5 board, scaled as a unit so type/overlays match the PNG. */
-export function ComposerBoard({ children }: { children: ReactNode }) {
+/** Design-px board, scaled as a unit so type/overlays match the PNG. */
+export function ComposerBoard({
+  children,
+  width = GRAPHIC_WIDTH,
+  height = GRAPHIC_HEIGHT,
+}: {
+  children: ReactNode;
+  width?: number;
+  height?: number;
+}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -15,9 +23,9 @@ export function ComposerBoard({ children }: { children: ReactNode }) {
       return;
     }
     const sync = () => {
-      const width = node.clientWidth;
-      if (width > 0) {
-        setScale(width / GRAPHIC_WIDTH);
+      const next = node.clientWidth;
+      if (next > 0) {
+        setScale(next / width);
       }
     };
     sync();
@@ -27,15 +35,19 @@ export function ComposerBoard({ children }: { children: ReactNode }) {
     const observer = new ResizeObserver(sync);
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [width]);
 
   return (
-    <div ref={wrapRef} className="sc-stage__board">
+    <div
+      ref={wrapRef}
+      className="sc-stage__board"
+      style={{ aspectRatio: `${width} / ${height}` }}
+    >
       <div
         className="sc-stage__board-inner"
         style={{
-          width: GRAPHIC_WIDTH,
-          height: GRAPHIC_HEIGHT,
+          width,
+          height,
           transform: `scale(${scale})`,
           transformOrigin: "top left",
         }}

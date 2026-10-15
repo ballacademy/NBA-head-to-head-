@@ -256,13 +256,21 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             })}
           </div>
         </div>
-        <div className="cmp-sub-plate">
+        <div
+          className={[
+            "cmp-sub-plate",
+            draft.subtitle.trim() ? "" : "is-empty",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <input
             className="cmp-sub"
             value={draft.subtitle}
             maxLength={48}
             spellCheck={false}
             aria-label="Comparison subtitle"
+            placeholder=""
             onChange={(event) =>
               onComposerTextChange(event, onSubtitleChange, 48)
             }

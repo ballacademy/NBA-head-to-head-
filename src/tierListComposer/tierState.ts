@@ -257,6 +257,20 @@ export const groupIdsByValues = (
   });
 };
 
+/** Fill matching names, then rank them into S–F in one step. */
+export const populateAndGroupIds = (
+  rows: TierRow[],
+  ids: readonly string[],
+  values: Map<string, number | null>,
+  split: TierSplit = "even",
+) => {
+  const filled = fillMatchingIds(rows, ids);
+  return {
+    added: filled.added,
+    rows: groupIdsByValues(filled.rows, values, split),
+  };
+};
+
 export const rowIndexForTeam = (rows: TierRow[], teamId: string) =>
   rows.findIndex((row) => row.teams.includes(teamId));
 

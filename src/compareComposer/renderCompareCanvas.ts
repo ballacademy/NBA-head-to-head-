@@ -320,25 +320,28 @@ export const renderCompareCanvas = async (
     setLetterSpacing(context, 0);
   });
 
-  const subY = height - 36 * s - CMP_SUB_H * s;
-  context.fillStyle = "#1c1c1c";
-  context.fillRect(titleX, subY, titleW, CMP_SUB_H * s);
-  paintCellFrame(context, titleX, subY, titleW, CMP_SUB_H * s, input.look, s);
-  if (input.purpleFlair) {
-    paintPurplePlateEdge(context, titleX, subY, titleW, CMP_SUB_H * s, s);
+  const subtitle = input.subtitle.trim().toUpperCase();
+  if (subtitle) {
+    const subY = height - 36 * s - CMP_SUB_H * s;
+    context.fillStyle = "#1c1c1c";
+    context.fillRect(titleX, subY, titleW, CMP_SUB_H * s);
+    paintCellFrame(context, titleX, subY, titleW, CMP_SUB_H * s, input.look, s);
+    if (input.purpleFlair) {
+      paintPurplePlateEdge(context, titleX, subY, titleW, CMP_SUB_H * s, s);
+    }
+    context.font = `900 ${CMP_SUB_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.06 * CMP_SUB_SIZE * s);
+    context.fillStyle = "#fff";
+    context.fillText(
+      subtitle,
+      width / 2,
+      subY + (CMP_SUB_H * s) / 2,
+      titleW - 24 * s,
+    );
+    setLetterSpacing(context, 0);
   }
-  context.font = `900 ${CMP_SUB_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, 0.06 * CMP_SUB_SIZE * s);
-  context.fillStyle = "#fff";
-  context.fillText(
-    input.subtitle.trim().toUpperCase(),
-    width / 2,
-    subY + (CMP_SUB_H * s) / 2,
-    titleW - 24 * s,
-  );
-  setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

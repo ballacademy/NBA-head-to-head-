@@ -19,6 +19,7 @@ import {
   defaultQuoteDraft,
   fillQuoteFromPlayer,
   hasCustomPhoto,
+  isStockQuote,
   lastGameQuoteLine,
   lastGameQuotePresets,
 } from "./quoteState";
@@ -62,6 +63,9 @@ describe("quote composer", () => {
     expect(quoteLastName(kept.attribution)).toBe("DONCIC");
     expect(kept.teamId).toBe(luka.team);
     expect(kept.photoSrc).toBeNull();
+    expect(isStockQuote("I’M HIM.")).toBe(true);
+    expect(isStockQuote("I'm him.")).toBe(true);
+    expect(isStockQuote("20/15/9 IN 24 MIN")).toBe(false);
     expect(kept.quote).toBe("I’M HIM.");
     expect(
       lastGameQuoteLine({

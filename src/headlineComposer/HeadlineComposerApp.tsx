@@ -8,7 +8,6 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
-import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import {
   nightStandoutPickerRows,
   useComposerNight,
@@ -39,7 +38,8 @@ import {
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
 import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
@@ -63,6 +63,7 @@ import {
   HEADLINE_BODY_MAX,
   HEADLINE_MAX,
   headlineCaptionFor,
+  headlinePlayerName,
   isHeadlineDraft,
   normalizeHeadlineDraft,
   setHeadlinePhoto,
@@ -553,7 +554,11 @@ export function HeadlineComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               void copyGraphicCaption(
-                headlineCaptionFor(draft.headline, draft.body),
+                headlineCaptionFor(
+                  draft.headline,
+                  draft.body,
+                  headlinePlayerName(draft),
+                ),
               ).then(
                 () => setStatus("Caption copied."),
                 () => setStatus("Could not copy caption."),
@@ -583,13 +588,28 @@ export function HeadlineComposerApp() {
                 setExporting(true);
                 setStatus("Rendering pack…");
                 try {
+                  const feed = exportFilenameFromTitle(draft.headline, "headline");
                   await downloadExportPack(
                     () =>
                       renderHeadlineCanvas(
                         renderInput(draft, look, purpleFlair, photoGrade),
                         2,
                       ),
-                    exportFilenameFromTitle(draft.headline, "headline"),
+                    feed,
+                    [
+                      {
+                        filename: storyFilename(feed),
+                        render: () =>
+                          renderHeadlineCanvas(
+                            {
+                              ...renderInput(draft, look, purpleFlair, photoGrade),
+                              story: true,
+                            },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {
@@ -617,8 +637,10 @@ export function HeadlineComposerApp() {
       />
 
       <main className="sc-stage">
-        <div className="sc-stage__frame">
-          <ComposerBoard>
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
           <HeadlineGraphic
             ref={boardRef}
             headline={draft.headline}
@@ -643,6 +665,7 @@ export function HeadlineComposerApp() {
             photoGrade={photoGrade}
             showBa={draft.showBa !== false}
             exporting={exporting}
+            story={storyCrop}
             onHeadlineChange={(headline) =>
               setDraft((current) => ({ ...current, headline }))
             }
@@ -656,13 +679,12 @@ export function HeadlineComposerApp() {
             }}
             onPick={() => setPickerOpen(true)}
           />
-            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — upload or paste an action shot. City, plate,
             nickname, and last-night lines stack in the lower third with no
-            overlap. Picking a player sets that player’s team. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            overlap. 9:16 is a real story board, not a letterboxed 4:5.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
