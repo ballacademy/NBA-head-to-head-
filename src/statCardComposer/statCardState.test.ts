@@ -255,9 +255,9 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
-      "MIN",
       "3PM",
       "FG",
+      "MIN",
     ]);
     expect(loaded).toHaveLength(8);
     const quiet = notableStatCardLines(
@@ -285,7 +285,7 @@ describe("stat card composer", () => {
     ]);
   });
 
-  it("adds FG% / 3P% when efficiency is high, not 1-of-1", () => {
+  it("shows FG / 3PM as makes-attempts, with MIN last", () => {
     const hot = notableStatCardLines(
       box({
         pts: "24",
@@ -298,16 +298,16 @@ describe("stat card composer", () => {
     );
     expect(hot.map((line) => `${line.value} ${line.label}`)).toEqual([
       "24 PTS",
-      "80.0 3P%",
-      "64.3 FG%",
+      "4-5 3PM",
+      "9-14 FG",
     ]);
     const burst = notableStatCardLines(
       box({ pts: "18", reb: "2", ast: "1", min: "12", fg: "7-9" }),
     );
     expect(burst.map((line) => `${line.value} ${line.label}`)).toEqual([
       "18 PTS",
+      "7-9 FG",
       "12 MIN",
-      "77.8 FG%",
     ]);
     const starterMinutes = notableStatCardLines(
       box({ pts: "16", reb: "5", ast: "4", min: "33" }),
@@ -323,8 +323,27 @@ describe("stat card composer", () => {
         min: "30",
       }),
     );
-    expect(efg.map((line) => line.label)).toContain("eFG%");
-    expect(efg.find((line) => line.label === "eFG%")?.value).toBe("63.3");
+    expect(efg.map((line) => `${line.value} ${line.label}`)).toContain("8-15 FG");
+    expect(efg.map((line) => line.label).join(" ")).not.toMatch(/%/);
+    const wemby = notableStatCardLines(
+      box({
+        pts: "19",
+        reb: "4",
+        ast: "3",
+        stl: "2",
+        blk: "4",
+        fg: "9-14",
+        min: "23",
+      }),
+    );
+    expect(wemby.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "19 PTS",
+      "4 REB",
+      "2 STL",
+      "4 BLK",
+      "9-14 FG",
+      "23 MIN",
+    ]);
     const brick = notableStatCardLines(
       box({ pts: "18", fg: "1-1", three: "1-1", min: "26" }),
     );

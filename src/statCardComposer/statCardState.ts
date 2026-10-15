@@ -288,8 +288,6 @@ export const formatStatCardSeasonValue = (
   return (Math.round(value * 10) / 10).toFixed(1);
 };
 
-const formatPct = (pct: number) => (pct * 100).toFixed(1);
-
 const lineFromGame = (
   key: StatCardKey,
   stats: LastGameStats,
@@ -341,39 +339,34 @@ export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  /** Short nights and heavy minutes read; a boring 30–35 can skip. */
-  if (min > 0 && (min < 30 || min >= 36)) {
-    picks.push({ key: "min" });
-  }
   const threeVolume =
     threeMakes >= 5 ||
     (threeMakes >= 4 && threeAtt >= 8) ||
     (threeMakes >= 3 && threeAtt >= 7);
   const threeEfficient =
     (threeAtt >= 5 && threePct >= 0.5) || (threeAtt >= 6 && threePct >= 0.45);
-  if (threeVolume) {
+  if (threeVolume || threeEfficient) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
-  } else if (threeEfficient) {
-    picks.push({ key: "three", label: "3P%", value: formatPct(threePct) });
   }
   const fgVolume = fgMakes >= 10;
   const threeOnCard = threeVolume || threeEfficient;
-  if (
+  const fgEfficient =
     (fgAtt >= 8 && fgPct >= 0.58) ||
-    (fgAtt >= 10 && fgPct >= 0.55)
-  ) {
-    picks.push({ key: "fg", label: "FG%", value: formatPct(fgPct) });
-  } else if (!threeOnCard && fgAtt >= 8 && efgPct >= 0.62) {
-    picks.push({ key: "fg", label: "eFG%", value: formatPct(efgPct) });
-  } else if (fgVolume) {
+    (fgAtt >= 10 && fgPct >= 0.55) ||
+    (!threeOnCard && fgAtt >= 8 && efgPct >= 0.62);
+  if (fgEfficient || fgVolume) {
     picks.push({ key: "fg" });
   }
   if (tov >= 6 || (tov >= 5 && pts >= 30)) {
     picks.push({ key: "tov" });
   }
-  const picked = picks
-    .slice(0, STC_STAT_MAX)
-    .map((item) => lineFromGame(item.key, stats, item));
+  /** Short nights and heavy minutes read; a boring 30–35 can skip. Always last. */
+  const showMin = min > 0 && (min < 30 || min >= 36);
+  const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
+  const picked = picks.slice(0, room).map((item) => lineFromGame(item.key, stats, item));
+  if (showMin) {
+    picked.push(lineFromGame("min", stats));
+  }
   return picked.length ? picked : [lineFromGame("pts", stats)];
 };
 
