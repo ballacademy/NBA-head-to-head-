@@ -8,7 +8,10 @@ import {
   formatResultLine,
   parseGamelogGames,
   parseLastGamePayload,
+  parseTeamScheduleLastNight,
   resolveTeamId,
+  ESPN_TEAM_IDS,
+  ESPN_TEAM_SCHEDULE_URL,
   type EspnGamelogPayload,
 } from "./lastGame";
 
@@ -437,5 +440,56 @@ describe("last NBA game parsing", () => {
     expect(emptyStats().fg).toBe("0-0");
     expect(parseLastGamePayload(null)).toBeNull();
     expect(parseLastGamePayload({ events: {}, seasonTypes: [] })).toBeNull();
+  });
+
+  it("reads the last completed team schedule game and running W-L", () => {
+    expect(ESPN_TEAM_IDS.SAS).toBe(24);
+    expect(ESPN_TEAM_SCHEDULE_URL(24, 2027, 1)).toContain("seasontype=1");
+    const night = parseTeamScheduleLastNight(
+      {
+        events: [
+          {
+            id: "1",
+            date: "2026-10-08T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: true } },
+                competitors: [
+                  {
+                    score: "111",
+                    winner: true,
+                    team: { abbreviation: "SA", displayName: "San Antonio Spurs" },
+                  },
+                  {
+                    score: "109",
+                    winner: false,
+                    team: { abbreviation: "OKC", displayName: "Oklahoma City Thunder" },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "2",
+            date: "2026-10-14T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: false } },
+                competitors: [
+                  { team: { abbreviation: "SA" } },
+                  { team: { abbreviation: "HOU" } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      "SAS",
+    );
+    expect(night.game?.opponentId).toBe("OKC");
+    expect(night.game?.playerScore).toBe("111");
+    expect(night.game?.opponentScore).toBe("109");
+    expect(night.game?.result).toBe("W");
+    expect(night.record).toEqual({ wins: 1, losses: 0 });
   });
 });

@@ -1,11 +1,23 @@
-/* Instagram headline / hot take — 4:5 full-bleed photo + torn lockup. */
+/* Instagram headline / hot take — 4:5 full-bleed photo + clean banner. */
 
 .hl-board {
   --u: 1px;
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --team-color: transparent;
-  --torn-clip: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  --plate-fill: #ffffff;
+  --plate-ink: #111111;
+  --plate-clip: 2.05% 0%, 97.95% 0%, 100% 100%, 0% 100%;
+  --hl-size: 56;
+  --plate-top: 1040;
+  --plate-h: 118;
+  --city-top: 980;
+  --nick-top: 1120;
+  --kicker-top: 940;
+  --name-top: 1200;
+  --body-top: 1224;
+  --mark-top: 900;
+  --mark-opacity: 0.12;
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   aspect-ratio: 4 / 5;
@@ -40,28 +52,29 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
   z-index: 2;
-  height: calc(640 * var(--u));
+  height: calc(500 * var(--u));
   pointer-events: none;
+}
+
+.hl-board.is-lockup-bottom .hl-fade {
+  bottom: 0;
   background: linear-gradient(
     to top,
-    rgba(6, 6, 8, 0.94) 0%,
-    rgba(6, 6, 8, 0.68) 42%,
+    rgba(6, 6, 8, 0.78) 0%,
+    rgba(6, 6, 8, 0.42) 48%,
     rgba(6, 6, 8, 0) 100%
   );
 }
 
-.hl-type {
-  position: absolute;
-  left: calc(64 * var(--u));
-  right: calc(64 * var(--u));
-  bottom: calc(48 * var(--u));
-  z-index: 4;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none;
+.hl-board.is-lockup-top .hl-fade {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 8, 0.78) 0%,
+    rgba(6, 6, 8, 0.42) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
 }
 
 .hl-mark {
@@ -72,20 +85,11 @@
 
 .hl-mark.is-behind {
   left: 50%;
-  width: calc(560 * var(--u));
-  height: calc(560 * var(--u));
+  top: calc(var(--mark-top) * var(--u));
+  width: calc(520 * var(--u));
+  height: calc(520 * var(--u));
   transform: translateX(-50%);
-  opacity: 0.14;
-}
-
-.hl-mark.is-small {
-  right: calc(48 * var(--u));
-  bottom: calc(48 * var(--u));
-  left: auto;
-  width: calc(128 * var(--u));
-  height: calc(128 * var(--u));
-  opacity: 0.92;
-  z-index: 3;
+  opacity: var(--mark-opacity);
 }
 
 .hl-mark canvas,
@@ -95,14 +99,35 @@
   object-fit: contain;
 }
 
+.hl-kicker,
+.hl-wordmark-city,
+.hl-wordmark-nick,
+.hl-name.is-under,
+.hl-body-wrap {
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  z-index: 4;
+  margin: 0;
+  pointer-events: none;
+}
+
+.hl-kicker {
+  top: calc(var(--kicker-top) * var(--u));
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  -webkit-text-stroke: calc(2 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
 .hl-wordmark-city,
 .hl-wordmark-nick {
-  position: relative;
-  z-index: 3;
-  width: 112%;
-  margin: 0;
-  padding: 0;
-  border: 0;
+  z-index: 6;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
@@ -110,81 +135,121 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 0.82;
-  pointer-events: none;
   white-space: nowrap;
   -webkit-text-stroke: calc(4 * var(--u)) #0a0a0a;
   paint-order: stroke fill;
-  text-shadow:
-    calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.7);
 }
 
 .hl-wordmark-city {
-  margin-bottom: calc(-34 * var(--u));
+  top: calc(var(--city-top) * var(--u));
   font-size: calc(70 * var(--u));
 }
 
 .hl-wordmark-nick {
-  margin-top: calc(-40 * var(--u));
-  margin-bottom: 0;
+  top: calc(var(--nick-top) * var(--u));
   font-size: calc(94 * var(--u));
 }
 
 .hl-headline-plate {
-  position: relative;
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  top: calc(var(--plate-top) * var(--u));
   z-index: 5;
   box-sizing: border-box;
-  width: 100%;
-  min-height: calc(108 * var(--u));
+  height: calc(var(--plate-h) * var(--u));
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(12 * var(--u)) calc(28 * var(--u)) calc(18 * var(--u));
+  padding: calc(10 * var(--u)) calc(36 * var(--u));
   border: 0;
-  background: #0c0c0c;
-  clip-path: var(--torn-clip);
-  transform: rotate(-2.1deg);
+  background: var(--plate-fill);
+  clip-path: polygon(var(--plate-clip));
+  transform: rotate(-2.4deg);
   transform-origin: center;
   filter:
-    drop-shadow(0 0 calc(1.2 * var(--u)) #fff)
-    drop-shadow(calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.55));
+    drop-shadow(0 0 0 calc(3 * var(--u)) #fff)
+    drop-shadow(0 0 0 calc(7 * var(--u)) #111);
   pointer-events: auto;
-}
-
-.hl-plate-accent {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(10 * var(--u));
-  background: var(--team-color);
-  pointer-events: none;
 }
 
 .hl-headline {
   position: relative;
   z-index: 1;
   width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
   border: 0;
   appearance: none;
   background: transparent;
-  color: #fff;
+  color: var(--plate-ink);
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(56 * var(--u));
+  font-size: calc(var(--hl-size, 56) * var(--u));
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  line-height: 0.95;
+  line-height: 0.92;
+  resize: none;
+  overflow: hidden;
+}
+
+.hl-name {
+  margin: 0;
+  color: var(--plate-ink);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hl-name.is-plate {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(2 * var(--u));
+  opacity: 0.78;
+}
+
+.hl-name.is-under {
+  top: calc(var(--name-top) * var(--u));
+  color: #fff;
+  -webkit-text-stroke: calc(2 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.hl-body-wrap {
+  top: calc(var(--body-top) * var(--u));
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  pointer-events: none;
+}
+
+.hl-opp {
+  flex: 0 0 calc(36 * var(--u));
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  margin-top: calc(4 * var(--u));
+}
+
+.hl-opp canvas,
+.hl-opp img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .hl-body {
-  position: relative;
-  z-index: 5;
-  width: 100%;
-  margin: calc(22 * var(--u)) 0 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
   padding: 0;
   border: 0;
   appearance: none;

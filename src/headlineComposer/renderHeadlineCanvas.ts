@@ -26,27 +26,40 @@ import {
   HL_BODY_TRACK,
   HL_CITY_SIZE,
   HL_FADE_H,
-  HL_HEADLINE_H,
   HL_HEADLINE_PAD_X,
-  HL_HEADLINE_SIZE,
   HL_HEADLINE_TRACK,
+  HL_KICKER_SIZE,
+  HL_NAME_SIZE,
   HL_NICK_SIZE,
+  HL_OPP_MARK,
   HL_PAD_X,
-  HL_PLATE_ACCENT,
-  HL_PLATE_BODY_GAP,
-  HL_PLATE_FILL,
   HL_PLATE_ROTATE,
-  HL_TORN_POINTS,
+  HL_PLATE_SKEW,
   HL_WORDMARK_LINE,
   HL_WORDMARK_TRACK,
+  fitHeadlineType,
+  headlineDateKicker,
+  headlinePlateHeight,
   headlineTypeStack,
   headlineWatermarkBox,
+  parseHeadlineKickerMode,
+  parseHeadlineLockup,
+  parseHeadlineNamePlacement,
+  parseHeadlinePlateColor,
   parseHeadlineWatermark,
+  plateFillHex,
+  plateInkHex,
+  type HeadlineKickerMode,
+  type HeadlineLockup,
+  type HeadlineNamePlacement,
+  type HeadlinePlateColor,
+  type HeadlineSubjectMode,
   type HeadlineWatermark,
 } from "./headlineLayout";
 import {
   headlineBodyLines,
   headlineLabel,
+  headlinePlayerName,
   splitTeamWordmark,
   type HeadlineDraft,
 } from "./headlineState";
@@ -75,53 +88,6 @@ const setLetterSpacing = (
   return false;
 };
 
-const wrapLines = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  maxWidth: number,
-  maxLines: number,
-) => {
-  const words = text.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  if (words.length === 0) {
-    return [];
-  }
-  const lines: string[] = [];
-  let current = words[0]!;
-  for (let index = 1; index < words.length; index += 1) {
-    const next = `${current} ${words[index]!}`;
-    if (context.measureText(next).width <= maxWidth) {
-      current = next;
-    } else {
-      lines.push(current);
-      current = words[index]!;
-      if (lines.length === maxLines - 1) {
-        const rest = [current, ...words.slice(index + 1)].join(" ");
-        lines.push(rest);
-        return lines;
-      }
-    }
-  }
-  lines.push(current);
-  return lines.slice(0, maxLines);
-};
-
-const bodyPaintLines = (
-  context: CanvasRenderingContext2D,
-  body: string,
-  maxWidth: number,
-) => {
-  const raw = headlineBodyLines(body);
-  if (raw.length === 0) {
-    return [];
-  }
-  const lines: string[] = [];
-  raw.forEach((line) => {
-    const wrapped = wrapLines(context, line, maxWidth, 2);
-    wrapped.forEach((part) => lines.push(part));
-  });
-  return lines.slice(0, 3);
-};
-
 const strokeFillText = (
   context: CanvasRenderingContext2D,
   text: string,
@@ -142,23 +108,19 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
-const tornPlatePath = (
+const parallelogramPath = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
+  skew: number,
 ) => {
   context.beginPath();
-  HL_TORN_POINTS.forEach(([px, py], index) => {
-    const X = x + px * w;
-    const Y = y + py * h;
-    if (index === 0) {
-      context.moveTo(X, Y);
-    } else {
-      context.lineTo(X, Y);
-    }
-  });
+  context.moveTo(x + skew, y);
+  context.lineTo(x + w - skew, y);
+  context.lineTo(x + w, y + h);
+  context.lineTo(x, y + h);
   context.closePath();
 };
 
@@ -166,9 +128,19 @@ export interface HeadlineRenderInput {
   headline: string;
   body: string;
   teamId: string | null;
+  firstName?: string;
+  lastName?: string;
   photoSrc: string | null;
   pan: HeadlineDraft["pan"];
   watermark?: HeadlineWatermark;
+  plateColor?: HeadlinePlateColor;
+  lockup?: HeadlineLockup;
+  namePlacement?: HeadlineNamePlacement;
+  showOpponentMark?: boolean;
+  kickerMode?: HeadlineKickerMode;
+  subjectMode?: HeadlineSubjectMode;
+  opponentId?: string | null;
+  gameDate?: string | null;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -188,9 +160,27 @@ export const renderHeadlineCanvas = async (
     throw new Error("Could not open canvas");
   }
 
+  const headline = headlineLabel(input.headline);
+  const fit = fitHeadlineType(headline);
+  const names = parseHeadlineNamePlacement(input.namePlacement);
+  const place = parseHeadlineLockup(input.lockup);
+  const kicker = parseHeadlineKickerMode(input.kickerMode);
+  const plate = parseHeadlinePlateColor(input.plateColor);
+  const mode = parseHeadlineWatermark(input.watermark);
+  const playerName = headlinePlayerName({
+    firstName: input.firstName ?? "",
+    lastName: input.lastName ?? "",
+  });
+  const kickerText = headlineDateKicker(input.gameDate, kicker);
+  const plateHFit = headlinePlateHeight(
+    fit,
+    names === "plate" && Boolean(playerName),
+  );
+  const bodyLines = headlineBodyLines(input.body);
+
   await document.fonts?.ready.catch(() => undefined);
   await Promise.all([
-    document.fonts?.load(`italic 900 ${HL_HEADLINE_SIZE * scale}px ${POSTER_FONT}`),
+    document.fonts?.load(`italic 900 ${fit.size * scale}px ${POSTER_FONT}`),
     document.fonts?.load(`900 ${HL_BODY_SIZE * scale}px ${POSTER_FONT}`),
   ]).catch(() => undefined);
 
@@ -238,31 +228,42 @@ export const renderHeadlineCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  const fade = context.createLinearGradient(
-    0,
-    height - HL_FADE_H * s,
-    0,
-    height,
-  );
-  fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-  fade.addColorStop(0.42, "rgba(6, 6, 8, 0.68)");
-  fade.addColorStop(1, "rgba(6, 6, 8, 0.94)");
-  context.fillStyle = fade;
-  context.fillRect(0, height - HL_FADE_H * s, width, HL_FADE_H * s);
+  const stack = headlineTypeStack({
+    bodyLines: Math.max(bodyLines.length, 1),
+    plateH: plateHFit,
+    lockup: place,
+    kicker: Boolean(kickerText),
+    nameUnder: names === "under" && Boolean(playerName),
+  });
+
+  if (stack.fadeAt === "top") {
+    const fade = context.createLinearGradient(0, 0, 0, HL_FADE_H * s);
+    fade.addColorStop(0, "rgba(6, 6, 8, 0.78)");
+    fade.addColorStop(0.48, "rgba(6, 6, 8, 0.42)");
+    fade.addColorStop(1, "rgba(6, 6, 8, 0)");
+    context.fillStyle = fade;
+    context.fillRect(0, 0, width, HL_FADE_H * s);
+  } else {
+    const fade = context.createLinearGradient(
+      0,
+      height - HL_FADE_H * s,
+      0,
+      height,
+    );
+    fade.addColorStop(0, "rgba(6, 6, 8, 0)");
+    fade.addColorStop(0.52, "rgba(6, 6, 8, 0.42)");
+    fade.addColorStop(1, "rgba(6, 6, 8, 0.78)");
+    context.fillStyle = fade;
+    context.fillRect(0, height - HL_FADE_H * s, width, HL_FADE_H * s);
+  }
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
-  const plateW = width - HL_PAD_X * 2 * s;
-  const plateH = HL_HEADLINE_H * s;
-  const plateX = HL_PAD_X * s;
-  context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
-  const bodyLines = bodyPaintLines(context, input.body, plateW);
-  setLetterSpacing(context, 0);
   const team = getTeam(input.teamId);
-  const stack = headlineTypeStack(bodyLines.length, Boolean(team));
-  const plateY = stack.plateTop * s;
-  const mode = parseHeadlineWatermark(input.watermark);
+  const opponent = getTeam(input.opponentId);
+  const teamColor = input.teamId ? getTeamColors(input.teamId).primary : "#ffffff";
+  const fill = plateFillHex(plate, teamColor);
+  const ink = plateInkHex(fill);
 
   if (team && mode !== "off") {
     const logo = await loadImage(team.logoSrc);
@@ -287,6 +288,57 @@ export const renderHeadlineCanvas = async (
       context.restore();
     }
   }
+
+  const plateW = width - HL_PAD_X * 2 * s;
+  const plateH = plateHFit * s;
+  const plateX = HL_PAD_X * s;
+  const plateY = stack.plateTop * s;
+  const cx = plateX + plateW / 2;
+  const cy = plateY + plateH / 2;
+  context.save();
+  context.translate(cx, cy);
+  context.rotate((HL_PLATE_ROTATE * Math.PI) / 180);
+  context.translate(-cx, -cy);
+  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
+  context.lineJoin = "miter";
+  context.strokeStyle = "#111";
+  context.lineWidth = 14 * s;
+  context.stroke();
+  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
+  context.strokeStyle = "#fff";
+  context.lineWidth = 6 * s;
+  context.stroke();
+  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
+  context.fillStyle = fill;
+  context.fill();
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
+  }
+  const lineH = fit.size * 1.05 * s;
+  const nameGap = names === "plate" && playerName ? (HL_NAME_SIZE + 8) * s : 0;
+  const typeBlock = fit.lines.length * lineH + nameGap;
+  let ty = cy - typeBlock / 2 + lineH / 2;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = `italic 900 ${fit.size * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, HL_HEADLINE_TRACK * fit.size * s);
+  context.fillStyle = ink;
+  const maxType = plateW - HL_HEADLINE_PAD_X * 2 * s;
+  fit.lines.forEach((line) => {
+    context.fillText(line, cx, ty, maxType);
+    ty += lineH;
+  });
+  setLetterSpacing(context, 0);
+  if (names === "plate" && playerName) {
+    context.font = `900 ${HL_NAME_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.14 * HL_NAME_SIZE * s);
+    context.globalAlpha = 0.78;
+    context.fillStyle = ink;
+    context.fillText(playerName.toUpperCase(), cx, ty - lineH / 2 + 12 * s);
+    context.globalAlpha = 1;
+    setLetterSpacing(context, 0);
+  }
+  context.restore();
 
   const marks = splitTeamWordmark(team);
   const paintWordmark = (text: string, size: number, top: number) => {
@@ -317,60 +369,68 @@ export const renderHeadlineCanvas = async (
   paintWordmark(marks.city, HL_CITY_SIZE, stack.cityTop);
   paintWordmark(marks.nick, HL_NICK_SIZE, stack.nickTop);
 
-  const cx = plateX + plateW / 2;
-  const cy = plateY + plateH / 2;
-  context.save();
-  context.translate(cx, cy);
-  context.rotate((HL_PLATE_ROTATE * Math.PI) / 180);
-  context.translate(-cx, -cy);
-  tornPlatePath(context, plateX, plateY, plateW, plateH);
-  context.fillStyle = HL_PLATE_FILL;
-  context.fill();
-  if (team) {
-    context.save();
-    tornPlatePath(context, plateX, plateY, plateW, plateH);
-    context.clip();
-    context.fillStyle = getTeamColors(team.id).primary;
-    context.fillRect(
-      plateX,
-      plateY + plateH - HL_PLATE_ACCENT * s,
-      plateW,
-      HL_PLATE_ACCENT * s,
+  if (kickerText) {
+    context.font = `900 ${HL_KICKER_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    setLetterSpacing(context, 0.18 * HL_KICKER_SIZE * s);
+    strokeFillText(
+      context,
+      kickerText,
+      width / 2,
+      stack.kickerTop * s,
+      "#fff",
+      "#000",
+      2 * s,
     );
-    context.restore();
+    setLetterSpacing(context, 0);
   }
-  tornPlatePath(context, plateX, plateY, plateW, plateH);
-  context.strokeStyle = "#fff";
-  context.lineWidth = 2.2 * s;
-  context.lineJoin = "round";
-  context.stroke();
-  if (input.purpleFlair) {
-    paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
+
+  if (names === "under" && playerName) {
+    context.font = `900 ${HL_NAME_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    setLetterSpacing(context, 0.14 * HL_NAME_SIZE * s);
+    strokeFillText(
+      context,
+      playerName.toUpperCase(),
+      width / 2,
+      stack.nameTop * s,
+      "#fff",
+      "#000",
+      2 * s,
+    );
+    setLetterSpacing(context, 0);
   }
-  const headline = headlineLabel(input.headline);
-  context.font = `italic 900 ${HL_HEADLINE_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, HL_HEADLINE_TRACK * HL_HEADLINE_SIZE * s);
-  context.fillStyle = "#fff";
-  context.fillText(
-    headline,
-    cx,
-    cy - 2 * s,
-    plateW - HL_HEADLINE_PAD_X * 2 * s,
-  );
-  setLetterSpacing(context, 0);
-  context.restore();
 
   context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
+  if (input.showOpponentMark && opponent && bodyLines[0]) {
+    const logo = await loadImage(opponent.logoSrc);
+    if (logo) {
+      const mark = HL_OPP_MARK * s;
+      const firstWidth = context.measureText(bodyLines[0]).width;
+      drawCenteredLogo(
+        context,
+        logo,
+        width / 2 - firstWidth / 2 - mark - 10 * s,
+        stack.bodyTop * s,
+        mark,
+        mark,
+        {
+          cacheKey: `${opponent.logoSrc}-headline-opp`,
+          fitX: 0.92,
+          fitY: 0.92,
+          shadow: 0,
+        },
+      );
+    }
+  }
   bodyLines.forEach((line, index) => {
     const y =
-      stack.nickBottom * s +
-      HL_PLATE_BODY_GAP * s +
-      (index + 0.5) * HL_BODY_SIZE * HL_BODY_LINE * s;
+      stack.bodyTop * s + (index + 0.5) * HL_BODY_SIZE * HL_BODY_LINE * s;
     strokeFillText(context, line, width / 2, y, "#fff", "#000", 2.4 * s);
   });
   setLetterSpacing(context, 0);

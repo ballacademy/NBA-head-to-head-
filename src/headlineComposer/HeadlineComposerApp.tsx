@@ -6,10 +6,7 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
-import {
-  copyGraphicCaption,
-  graphicCaption,
-} from "../instagramComposer/graphicCaption";
+import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
@@ -27,25 +24,38 @@ import {
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
-import { NBA_TEAMS } from "../standingsComposer/teams";
+import {
+  fetchLastGame,
+  fetchTeamLastNight,
+} from "../playerOfTheDayComposer/lastGame";
+import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
+import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { downloadExportPack } from "../instagramComposer/exportPack";
-import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
-import { fetchAllStandingRecords } from "../standingsComposer/nbaStandings";
-import { getTeam } from "../standingsComposer/teams";
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
 import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
-import { parseHeadlineWatermark } from "./headlineLayout";
+import {
+  parseHeadlineKickerMode,
+  parseHeadlineLockup,
+  parseHeadlineNamePlacement,
+  parseHeadlinePlateColor,
+  parseHeadlineSubjectMode,
+  parseHeadlineWatermark,
+} from "./headlineLayout";
 import {
   clearHeadlineSubject,
   clipHeadlineBody,
   defaultHeadlineDraft,
   fillHeadlineFromPlayer,
+  fillHeadlineFromTeam,
   formatHeadlineBody,
   hasCustomPhoto,
   HEADLINE_BODY_MAX,
+  HEADLINE_MAX,
+  headlineCaptionFor,
   isHeadlineDraft,
+  normalizeHeadlineDraft,
   setHeadlinePhoto,
   type HeadlineDraft,
 } from "./headlineState";
@@ -59,14 +69,36 @@ const SAVES_KEY = "ddgm:headline-composer:saves";
 const loadDraft = (): HeadlineDraft => {
   const stored = readJson<Partial<HeadlineDraft>>(STORAGE_KEY);
   if (isHeadlineDraft(stored)) {
-    return {
-      ...stored,
-      showBa: stored.showBa !== false,
-      watermark: parseHeadlineWatermark(stored.watermark),
-    };
+    return normalizeHeadlineDraft(stored);
   }
   return defaultHeadlineDraft();
 };
+
+const renderInput = (
+  draft: HeadlineDraft,
+  look: ReturnType<typeof useComposerLook>[0],
+  purpleFlair: boolean,
+) => ({
+  headline: draft.headline,
+  body: draft.body,
+  teamId: draft.teamId,
+  firstName: draft.firstName,
+  lastName: draft.lastName,
+  photoSrc: draft.photoSrc,
+  pan: draft.pan,
+  watermark: parseHeadlineWatermark(draft.watermark),
+  plateColor: parseHeadlinePlateColor(draft.plateColor),
+  lockup: parseHeadlineLockup(draft.lockup),
+  namePlacement: parseHeadlineNamePlacement(draft.namePlacement),
+  showOpponentMark: draft.showOpponentMark === true,
+  kickerMode: parseHeadlineKickerMode(draft.kickerMode),
+  subjectMode: parseHeadlineSubjectMode(draft.subjectMode),
+  opponentId: draft.opponentId ?? null,
+  gameDate: draft.gameDate ?? null,
+  look,
+  purpleFlair,
+  showBa: draft.showBa !== false,
+});
 
 export function HeadlineComposerApp() {
   const boardRef = useRef<HTMLElement | null>(null);
@@ -84,6 +116,7 @@ export function HeadlineComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<HeadlineDraft>();
+  const subject = parseHeadlineSubjectMode(draft.subjectMode);
 
   useEffect(() => {
     document.title = "Headline graphic";
@@ -109,19 +142,22 @@ export function HeadlineComposerApp() {
       return;
     }
     try {
-      const [game, records] = await Promise.all([
+      const [playerGame, night] = await Promise.all([
         next.playerId
           ? fetchLastGame(next.playerId, statsSample)
           : Promise.resolve(null),
-        fetchAllStandingRecords(),
+        fetchTeamLastNight(team.id, statsSample),
       ]);
-      const body = formatHeadlineBody(team, game, records[team.id] ?? null);
-      if (!body) {
-        return;
-      }
+      const game = playerGame ?? night.game;
+      const body = formatHeadlineBody(team, game, night.record);
       setDraft((current) =>
         current.playerId === next.playerId && current.teamId === next.teamId
-          ? { ...current, body: clipHeadlineBody(body) }
+          ? {
+              ...current,
+              body: body ? clipHeadlineBody(body) : current.body,
+              opponentId: game?.opponentId || current.opponentId || null,
+              gameDate: game?.gameDate || current.gameDate || null,
+            }
           : current,
       );
     } catch {
@@ -143,17 +179,7 @@ export function HeadlineComposerApp() {
       await exportHeadlinePng(
         node,
         filename ?? exportFilenameFromTitle(draft.headline, "headline"),
-        {
-          headline: draft.headline,
-          body: draft.body,
-          teamId: draft.teamId,
-          photoSrc: draft.photoSrc,
-          pan: draft.pan,
-          watermark: parseHeadlineWatermark(draft.watermark),
-          look,
-          purpleFlair,
-          showBa: draft.showBa,
-        },
+        renderInput(draft, look, purpleFlair),
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -178,7 +204,7 @@ export function HeadlineComposerApp() {
     setStatus(
       keepCustomPhoto
         ? `Kept the photo for ${player.name}.`
-        : `Filled ${player.name} — upload a photo. Last-night line is editable.`,
+        : `Filled ${player.name} — upload or paste a photo. Last-night line is editable.`,
     );
     void fillAutoBody(next);
   };
@@ -194,6 +220,15 @@ export function HeadlineComposerApp() {
       return;
     }
     commitPick(player.id, false);
+  };
+
+  const handleTeamPick = (teamId: string) => {
+    push(draft);
+    const next = fillHeadlineFromTeam(teamId, draft);
+    setDraft(next);
+    setPickerOpen(false);
+    setStatus(`Team lockup set to ${getTeam(teamId)?.name ?? teamId}.`);
+    void fillAutoBody(next);
   };
 
   useEffect(() => {
@@ -221,12 +256,12 @@ export function HeadlineComposerApp() {
           Headline
           <input
             value={draft.headline}
-            maxLength={32}
+            maxLength={HEADLINE_MAX}
             onChange={(event) =>
               onComposerTextChange(
                 event,
                 (headline) => setDraft((current) => ({ ...current, headline })),
-                32,
+                HEADLINE_MAX,
               )
             }
           />
@@ -252,21 +287,51 @@ export function HeadlineComposerApp() {
           </>
         }
         data={
+          <>
           <ComposerStatsSampleToggle
             sample={statsSample}
             onChange={setStatsSample}
           />
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillAutoBody(draft)}
+            disabled={!draft.teamId}
+          >
+            Fill last night
+          </button>
+          </>
         }
         filters={
-          <label className="sc-field">
+          <>
+        <label className="sc-field">
+          Subject
+          <select
+            value={subject}
+            aria-label="Headline subject"
+            onChange={(event) => {
+              const nextMode = parseHeadlineSubjectMode(event.target.value);
+              setDraft((current) =>
+                nextMode === "team" && current.teamId
+                  ? fillHeadlineFromTeam(current.teamId, { ...current, subjectMode: nextMode })
+                  : { ...current, subjectMode: nextMode },
+              );
+            }}
+          >
+            <option value="player">Player</option>
+            <option value="team">Team only</option>
+          </select>
+        </label>
+        <label className="sc-field">
           Team
           <select
             value={draft.teamId ?? ""}
             aria-label="Team"
             onChange={(event) => {
               const teamId = event.target.value || null;
-              setDraft((current) => ({ ...current, teamId }));
-              void fillAutoBody({ ...draft, teamId });
+              const next = { ...draft, teamId };
+              setDraft(next);
+              void fillAutoBody(next);
             }}
           >
             <option value="">None</option>
@@ -277,9 +342,94 @@ export function HeadlineComposerApp() {
             ))}
           </select>
         </label>
+          </>
         }
         board={
           <>
+        <label className="sc-field">
+          Plate
+          <select
+            value={parseHeadlinePlateColor(draft.plateColor)}
+            aria-label="Headline plate color"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                plateColor: parseHeadlinePlateColor(event.target.value),
+              }))
+            }
+          >
+            <option value="white">White</option>
+            <option value="team">Team color</option>
+            <option value="black">Black</option>
+          </select>
+        </label>
+        <label className="sc-field">
+          Lockup
+          <select
+            value={parseHeadlineLockup(draft.lockup)}
+            aria-label="Headline lockup"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                lockup: parseHeadlineLockup(event.target.value),
+              }))
+            }
+          >
+            <option value="bottom">Bottom</option>
+            <option value="top">Top</option>
+          </select>
+        </label>
+        <label className="sc-field">
+          Player name
+          <select
+            value={parseHeadlineNamePlacement(draft.namePlacement)}
+            aria-label="Player name on plate"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                namePlacement: parseHeadlineNamePlacement(event.target.value),
+              }))
+            }
+          >
+            <option value="off">Off</option>
+            <option value="plate">On plate</option>
+            <option value="under">Under plate</option>
+          </select>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Opponent mark</span>
+          <button
+            type="button"
+            className={draft.showOpponentMark ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={draft.showOpponentMark === true}
+            aria-label="Opponent mark"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                showOpponentMark: !current.showOpponentMark,
+              }))
+            }
+          >
+            {draft.showOpponentMark ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
+          Date kicker
+          <select
+            value={parseHeadlineKickerMode(draft.kickerMode)}
+            aria-label="Date kicker"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                kickerMode: parseHeadlineKickerMode(event.target.value),
+              }))
+            }
+          >
+            <option value="off">Off</option>
+            <option value="date">Date</option>
+            <option value="last-night">Last night</option>
+          </select>
+        </label>
         <label className="sc-field">
           Watermark
           <select
@@ -292,9 +442,9 @@ export function HeadlineComposerApp() {
               }))
             }
           >
+            <option value="faint">Faint</option>
+            <option value="medium">Medium</option>
             <option value="off">Off</option>
-            <option value="behind">Faint behind type</option>
-            <option value="small">Small logo</option>
           </select>
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
@@ -310,7 +460,7 @@ export function HeadlineComposerApp() {
           storageKey={SAVES_KEY}
           board={draft}
           onLoad={(next) => {
-            setDraft(next);
+            setDraft(normalizeHeadlineDraft(next));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -323,7 +473,7 @@ export function HeadlineComposerApp() {
             onClick={() => {
               const previous = pop();
               if (previous) {
-                setDraft(previous);
+                setDraft(normalizeHeadlineDraft(previous));
                 setStatus("Undid last change.");
               }
             }}
@@ -347,7 +497,7 @@ export function HeadlineComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               void copyGraphicCaption(
-                graphicCaption(draft.headline, [], [draft.body]),
+                headlineCaptionFor(draft.headline, draft.body),
               ).then(
                 () => setStatus("Caption copied."),
                 () => setStatus("Could not copy caption."),
@@ -380,17 +530,7 @@ export function HeadlineComposerApp() {
                   await downloadExportPack(
                     () =>
                       renderHeadlineCanvas(
-                        {
-                          headline: draft.headline,
-                          body: draft.body,
-                          teamId: draft.teamId,
-                          photoSrc: draft.photoSrc,
-                          pan: draft.pan,
-                          watermark: parseHeadlineWatermark(draft.watermark),
-                          look,
-                          purpleFlair,
-                          showBa: draft.showBa,
-                        },
+                        renderInput(draft, look, purpleFlair),
                         2,
                       ),
                     exportFilenameFromTitle(draft.headline, "headline"),
@@ -428,10 +568,20 @@ export function HeadlineComposerApp() {
             headline={draft.headline}
             body={draft.body}
             teamId={draft.teamId}
+            firstName={draft.firstName}
+            lastName={draft.lastName}
             photoSrc={draft.photoSrc}
             customPhoto={draft.customPhoto}
             pan={draft.pan}
             watermark={parseHeadlineWatermark(draft.watermark)}
+            plateColor={parseHeadlinePlateColor(draft.plateColor)}
+            lockup={parseHeadlineLockup(draft.lockup)}
+            namePlacement={parseHeadlineNamePlacement(draft.namePlacement)}
+            showOpponentMark={draft.showOpponentMark === true}
+            kickerMode={parseHeadlineKickerMode(draft.kickerMode)}
+            subjectMode={subject}
+            opponentId={draft.opponentId ?? null}
+            gameDate={draft.gameDate ?? null}
             look={look}
             purpleFlair={purpleFlair}
             showBa={draft.showBa !== false}
@@ -451,7 +601,7 @@ export function HeadlineComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — upload or paste an action shot. Torn lockup in
+            Empty photo first — upload or paste an action shot. Clean plate in
             the lower third, last-night lines under it. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
@@ -459,7 +609,26 @@ export function HeadlineComposerApp() {
         </div>
       </main>
 
-      {pickerOpen ? (
+      {pickerOpen && subject === "team" ? (
+        <TeamPicker
+          heading="Pick a team"
+          hint="Sets the wordmark through the plate. Skip the player — upload or paste the photo."
+          currentId={draft.teamId}
+          usedLabels={draft.teamId ? { [draft.teamId]: "Headline" } : {}}
+          onPick={handleTeamPick}
+          onClear={() => {
+            push(draft);
+            setDraft((current) => ({
+              ...clearHeadlineSubject(current),
+              teamId: null,
+              subjectMode: "team",
+            }));
+            setPickerOpen(false);
+          }}
+          onClose={closePicker}
+        />
+      ) : null}
+      {pickerOpen && subject !== "team" ? (
         <PlayerPicker
           heading="Pick a player"
             hint="Sets the team wordmark through the plate and last-night lines. No mugshot — upload or paste the photo."

@@ -354,3 +354,176 @@ export const fetchLastGame = async (
   sample: ComposerStatsSample = "preseason",
 ): Promise<LastGame | null> =>
   (await fetchRecentGames(athleteId, sample))[0] ?? null;
+
+/** ESPN numeric club ids for schedule fetches. */
+export const ESPN_TEAM_IDS: Record<string, number> = {
+  ATL: 1,
+  BOS: 2,
+  NOP: 3,
+  CHI: 4,
+  CLE: 5,
+  DAL: 6,
+  DEN: 7,
+  DET: 8,
+  GSW: 9,
+  HOU: 10,
+  IND: 11,
+  LAC: 12,
+  LAL: 13,
+  MIA: 14,
+  MIL: 15,
+  MIN: 16,
+  BKN: 17,
+  NYK: 18,
+  ORL: 19,
+  PHI: 20,
+  PHX: 21,
+  POR: 22,
+  SAC: 23,
+  SAS: 24,
+  OKC: 25,
+  UTA: 26,
+  WAS: 27,
+  TOR: 28,
+  MEM: 29,
+  CHA: 30,
+};
+
+export const ESPN_TEAM_SCHEDULE_URL = (
+  espnTeamId: number,
+  seasonYear = espnGamelogSeasonYear(),
+  seasonType = 1,
+) =>
+  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/schedule?season=${seasonYear}&seasontype=${seasonType}`;
+
+export interface TeamLastNight {
+  game: LastGame | null;
+  record: { wins: number; losses: number } | null;
+}
+
+interface EspnScheduleCompetitor {
+  homeAway?: string;
+  score?: { displayValue?: string; value?: number } | string;
+  winner?: boolean;
+  team?: { abbreviation?: string; displayName?: string; id?: string };
+}
+
+interface EspnScheduleEvent {
+  id?: string;
+  date?: string;
+  competitions?: Array<{
+    competitors?: EspnScheduleCompetitor[];
+    status?: { type?: { completed?: boolean } };
+  }>;
+}
+
+export interface EspnTeamSchedulePayload {
+  events?: EspnScheduleEvent[];
+}
+
+const competitorScore = (item: EspnScheduleCompetitor) => {
+  if (typeof item.score === "string") {
+    return item.score;
+  }
+  return String(item.score?.displayValue ?? item.score?.value ?? "");
+};
+
+export const parseTeamScheduleLastNight = (
+  payload: EspnTeamSchedulePayload | null | undefined,
+  teamId: string,
+): TeamLastNight => {
+  const events = [...(payload?.events ?? [])].sort((left, right) =>
+    String(right.date ?? "").localeCompare(String(left.date ?? "")),
+  );
+  let wins = 0;
+  let losses = 0;
+  const completed: LastGame[] = [];
+  for (const event of events.slice().reverse()) {
+    const competition = event.competitions?.[0];
+    if (!competition?.status?.type?.completed) {
+      continue;
+    }
+    const ours = competition.competitors?.find((item) => {
+      const id = resolveTeamId(item.team?.abbreviation, item.team?.displayName);
+      return id === teamId;
+    });
+    const opp = competition.competitors?.find((item) => item !== ours);
+    if (!ours || !opp) {
+      continue;
+    }
+    if (ours.winner) {
+      wins += 1;
+    } else {
+      losses += 1;
+    }
+    const opponentId =
+      resolveTeamId(opp.team?.abbreviation, opp.team?.displayName) ?? "";
+    const playerScore = competitorScore(ours);
+    const opponentScore = competitorScore(opp);
+    const result = ours.winner ? "W" : "L";
+    const gameDate = event.date ?? "";
+    completed.push({
+      eventId: String(event.id ?? ""),
+      gameDate,
+      teamId,
+      opponentId,
+      opponentAbbrev: opponentId || (opp.team?.abbreviation ?? "OPP").toUpperCase(),
+      result,
+      playerScore,
+      opponentScore,
+      resultLine: formatResultLine(
+        playerScore,
+        opponentScore,
+        result,
+        opponentId || (opp.team?.abbreviation ?? "OPP").toUpperCase(),
+      ),
+      dateLabel: formatDateLabel(gameDate),
+      stats: emptyStats(),
+    });
+  }
+  const game = completed[completed.length - 1] ?? null;
+  return {
+    game,
+    record: completed.length ? { wins, losses } : null,
+  };
+};
+
+const teamCache = new Map<string, TeamLastNight>();
+
+export const fetchTeamLastNight = async (
+  teamId: string,
+  sample: ComposerStatsSample = "preseason",
+): Promise<TeamLastNight> => {
+  const id = teamId.trim().toUpperCase();
+  const espnId = ESPN_TEAM_IDS[id];
+  if (!espnId) {
+    return { game: null, record: null };
+  }
+  const seasonYear = espnGamelogSeasonYear();
+  const seasonType = sample === "regular" ? 2 : 1;
+  const key = `${id}::${sample}::${seasonYear}`;
+  if (teamCache.has(key)) {
+    return teamCache.get(key)!;
+  }
+  const load = async (type: number) => {
+    const response = await fetch(ESPN_TEAM_SCHEDULE_URL(espnId, seasonYear, type), {
+      mode: "cors",
+      credentials: "omit",
+    });
+    if (!response.ok) {
+      return { game: null, record: null } satisfies TeamLastNight;
+    }
+    const payload = (await response.json()) as EspnTeamSchedulePayload;
+    return parseTeamScheduleLastNight(payload, id);
+  };
+  try {
+    let night = await load(seasonType);
+    if (sample === "preseason" && !night.game) {
+      night = await load(2);
+    }
+    teamCache.set(key, night);
+    return night;
+  } catch {
+    return { game: null, record: null };
+  }
+};
