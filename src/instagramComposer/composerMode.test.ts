@@ -102,6 +102,7 @@ describe("composer mode", () => {
       "quote",
       "play-in",
       "stat-card",
+      "stat-card-cover",
     ]);
   });
 
@@ -125,6 +126,13 @@ describe("composer mode", () => {
     expect(composerHref("play-in")).toBe("/play-in");
     expect(readComposerMode("", "/stat-card")).toBe("stat-card");
     expect(composerHref("stat-card")).toBe("/stat-card");
+    expect(readComposerMode("", "/stat-card-cover")).toBe("stat-card-cover");
+    expect(readComposerMode("", "/stat-cover")).toBe("stat-card-cover");
+    expect(readComposerMode("", "/cover")).toBe("stat-card-cover");
+    expect(readComposerMode("?composer=stat-card-cover", "/")).toBe(
+      "stat-card-cover",
+    );
+    expect(composerHref("stat-card-cover")).toBe("/stat-card-cover");
   });
 
   it("opens ranked lineups from path or query", () => {

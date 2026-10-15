@@ -60,6 +60,9 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/stat-card" ||
     path === "/statcard" ||
     path === "/player-card" ||
+    path === "/stat-card-cover" ||
+    path === "/stat-cover" ||
+    path === "/cover" ||
     path === "/pyramid" ||
     path === "/coy-pyramid" ||
     path === "/headline" ||

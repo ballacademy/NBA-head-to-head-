@@ -21,6 +21,7 @@ const APPS = [
   "quoteComposer/QuoteComposerApp.tsx",
   "playInComposer/PlayInComposerApp.tsx",
   "statCardComposer/StatCardComposerApp.tsx",
+  "statCardCoverComposer/StatCardCoverComposerApp.tsx",
 ];
 
 describe("composer toolbar chrome", () => {

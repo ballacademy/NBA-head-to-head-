@@ -441,7 +441,8 @@ main.sc-stage {
 .hl-board.is-none,
 .pi-board.is-none,
 .qt-board.is-none,
-.stc-board.is-none {
+.stc-board.is-none,
+.scc-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
 }

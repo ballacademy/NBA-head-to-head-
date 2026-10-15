@@ -29,6 +29,7 @@ export const COMPOSER_LIBRARY_KEYS = [
   "ddgm:quote-composer:saves",
   "ddgm:play-in-composer:saves",
   "ddgm:stat-card-composer:saves",
+  "ddgm:stat-card-cover-composer:saves",
 ] as const;
 
 export interface ComposerLibraryFile {

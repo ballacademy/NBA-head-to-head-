@@ -120,6 +120,7 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/pyramid")).toBe(true);
     expect(isStandingsComposerRoute("", "/headline")).toBe(true);
     expect(isStandingsComposerRoute("", "/stat-card")).toBe(true);
+    expect(isStandingsComposerRoute("", "/stat-card-cover")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

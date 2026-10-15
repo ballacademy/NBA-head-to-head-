@@ -20,6 +20,7 @@ export const COMPARE_LOOK_KEY = "ddgm:compare-composer-look";
 export const QUOTE_LOOK_KEY = "ddgm:quote-composer-look";
 export const PLAY_IN_LOOK_KEY = "ddgm:play-in-composer-look";
 export const STAT_CARD_LOOK_KEY = "ddgm:stat-card-composer-look";
+export const STAT_CARD_COVER_LOOK_KEY = "ddgm:stat-card-cover-composer-look";
 export const PURPLE_FLAIR_KEY = "ddgm:composer-purple-flair";
 
 export const FRAME_WHITE = "#ffffff";
