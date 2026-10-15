@@ -1,0 +1,99 @@
+/* First + last name on a dark fade into the photo. Shared by TOTW and TOTW Plus. */
+
+.ig-name-fade {
+  --name-fade: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.98) 0%,
+    rgba(0, 0, 0, 0.95) 22%,
+    rgba(0, 0, 0, 0.88) 42%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.28) 84%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  position: absolute;
+  z-index: 3;
+  left: var(--frame-w, 0px);
+  right: var(--frame-w, 0px);
+  bottom: var(--frame-w, 0px);
+  display: flex;
+  align-items: flex-end;
+  gap: calc(2 * var(--u));
+  height: calc(var(--name-h, 108) * var(--u) - var(--frame-w, 0px));
+  padding: 0 calc(4 * var(--u)) calc(6 * var(--u));
+  background: var(--name-fade);
+  pointer-events: auto;
+}
+
+.ig-name-fade.is-flush-left {
+  left: 0;
+}
+
+.ig-name-fade__logo {
+  flex: 0 0 calc(var(--name-logo, 30) * var(--u));
+  height: calc(var(--name-logo, 30) * var(--u));
+  min-width: 0;
+  margin-bottom: calc(2 * var(--u));
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ig-name-fade__logo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform: none;
+  filter: none;
+}
+
+.ig-name-fade__stack {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.ig-name-fade__given,
+.ig-name-fade__family {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+}
+
+.ig-name-fade__given {
+  height: calc(14 * var(--u));
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.1em;
+  opacity: 0.92;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-name-fade__family {
+  min-height: calc(18 * var(--u));
+  max-height: calc(34 * var(--u));
+  font-size: calc(13 * var(--u));
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  field-sizing: content;
+}
+
+.ig-name-fade__given:focus,
+.ig-name-fade__family:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
+}

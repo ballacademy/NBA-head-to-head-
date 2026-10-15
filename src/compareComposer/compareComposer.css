@@ -1,0 +1,295 @@
+.cmp-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --lead: #ffe566;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.cmp-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.cmp-title-plate {
+  position: absolute;
+  top: calc(36 * var(--u));
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  height: calc(92 * var(--u));
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+}
+
+.cmp-title {
+  width: 100%;
+  margin: 0;
+  padding: 0 calc(16 * var(--u));
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(42 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cmp-photos {
+  position: absolute;
+  left: calc(36 * var(--u));
+  right: calc(36 * var(--u));
+  top: calc(210 * var(--u));
+  height: calc(980 * var(--u));
+  display: grid;
+  grid-template-columns: 1fr calc(324 * var(--u)) 1fr;
+  gap: calc(8 * var(--u));
+  z-index: 2;
+}
+
+.cmp-photo {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cmp-mark {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  z-index: 1;
+  width: calc(220 * var(--u));
+  height: calc(220 * var(--u));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cmp-mark canvas,
+.cmp-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cmp-photo .pod-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.cmp-photo-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  margin: 0;
+  padding: calc(48 * var(--u)) calc(10 * var(--u)) calc(16 * var(--u));
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.72) 48%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.cmp-stats {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(20 * var(--u)) 0 calc(var(--cmp-gutter-bottom, 24) * var(--u));
+}
+
+.cmp-stats__label {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0 0 calc(8 * var(--u));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cmp-stat {
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns: 1fr calc(2 * var(--u)) 1fr;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  min-height: 0;
+  margin: 0;
+}
+
+.cmp-stat__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.cmp-stat__side.is-left {
+  align-items: flex-end;
+}
+
+.cmp-stat__side.is-right {
+  align-items: flex-start;
+}
+
+.cmp-stat__val {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--cmp-value, 40) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 0.95;
+  -webkit-text-stroke: calc(var(--cmp-stroke, 2.4) * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.cmp-stat__side.is-left .cmp-stat__val {
+  text-align: right;
+}
+
+.cmp-stat__side.is-right .cmp-stat__val {
+  text-align: left;
+}
+
+.cmp-stat__unit {
+  width: 100%;
+  margin: calc(2 * var(--u)) 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: inherit;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--cmp-label, 14) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.cmp-stat__side.is-left .cmp-stat__unit {
+  text-align: right;
+}
+
+.cmp-stat__side.is-right .cmp-stat__unit {
+  text-align: left;
+}
+
+.cmp-stat__side.is-lead .cmp-stat__val {
+  color: var(--lead);
+}
+
+.cmp-stat__side.is-lead .cmp-stat__unit {
+  color: var(--lead);
+}
+
+.cmp-rule {
+  width: calc(2 * var(--u));
+  height: calc(var(--cmp-rule, 52) * var(--u));
+  background: rgba(255, 255, 255, 0.45);
+  justify-self: center;
+}
+
+.cmp-sub-plate {
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  bottom: calc(36 * var(--u));
+  height: calc(88 * var(--u));
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+}
+
+.cmp-sub-plate.is-empty {
+  opacity: 0;
+}
+
+.cmp-sub-plate.is-empty:focus-within {
+  opacity: 1;
+}
+
+.cmp-sub {
+  width: 100%;
+  margin: 0;
+  padding: 0 calc(12 * var(--u));
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cmp-board .composer-ba {
+  left: 50%;
+  right: auto;
+  top: calc(140 * var(--u));
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.cmp-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.cmp-title:focus,
+.cmp-sub:focus,
+.cmp-stat__val:focus,
+.cmp-stat__unit:focus,
+.cmp-stats__label:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
+}

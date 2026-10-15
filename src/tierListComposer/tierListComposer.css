@@ -1,0 +1,491 @@
+/* Instagram NBA tier-list composer — 4:5 board. */
+
+.tl-board {
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --u: 1px;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --tier-count: 6;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-rows: calc(var(--header-h, 140) * var(--u)) 1fr;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.tl-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.tl-header,
+.tl-rows {
+  position: relative;
+  z-index: 1;
+}
+
+.tl-header {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: visible;
+}
+
+.tl-title-block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 66%;
+  pointer-events: none;
+}
+
+.tl-title-line {
+  font-family: var(--ig-poster);
+  font-size: calc(var(--title-size, 46) * var(--u));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.12;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  text-shadow:
+    calc(1.2 * var(--u)) calc(1.5 * var(--u)) 0 rgba(0, 0, 0, 0.78),
+    calc(2.4 * var(--u)) calc(2.8 * var(--u)) 0 rgba(0, 0, 0, 0.28);
+}
+
+.tl-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--title-size, 46) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.12;
+  white-space: pre;
+  text-transform: uppercase;
+  pointer-events: auto;
+}
+
+.tl-title-input:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.tl-badge {
+  position: absolute;
+  pointer-events: none;
+  object-fit: contain;
+  display: block;
+  background: none;
+  border: 0;
+}
+
+.tl-rows {
+  display: grid;
+  grid-template-rows: var(--tier-rows, repeat(var(--tier-count), 1fr));
+  align-content: stretch;
+  min-height: 0;
+  padding-bottom: calc(var(--footer-h, 2) * var(--u));
+  box-sizing: border-box;
+}
+
+.tl-row {
+  --tier-color: #ffffff;
+  position: relative;
+  display: grid;
+  grid-template-columns: calc(var(--label-w, 140) * var(--u)) 1fr;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* Hairline is painted on the row, not extra height — same as canvas. */
+  box-shadow: inset 0 calc(1.5 * var(--u)) 0 rgba(255, 255, 255, 0.22);
+}
+
+.tl-row:last-child {
+  box-shadow:
+    inset 0 calc(1.5 * var(--u)) 0 rgba(255, 255, 255, 0.22),
+    inset 0 calc(-1.5 * var(--u)) 0 rgba(255, 255, 255, 0.22);
+}
+
+.tl-label-stack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0 calc(8 * var(--u));
+  background: var(--tier-color, #f5c400);
+}
+
+.tl-label-stack .composer-title-stack {
+  width: 100%;
+  height: 100%;
+}
+
+.tl-label-line {
+  width: 100%;
+  color: var(--tier-ink, #111);
+  font-family: var(--ig-poster);
+  font-size: var(--label-size, calc(72 * var(--u)));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-align: center;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  text-shadow:
+    calc(1.2 * var(--u)) calc(1.5 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+}
+
+.tl-label {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 calc(8 * var(--u));
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--tier-ink, #111);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: var(--label-size, calc(72 * var(--u)));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  pointer-events: auto;
+}
+
+.tl-label:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: -6px;
+}
+
+.tl-color {
+  position: absolute;
+  left: calc(6 * var(--u));
+  bottom: calc(6 * var(--u));
+  z-index: 4;
+  box-sizing: border-box;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  padding: 0;
+  border: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.55);
+  border-radius: calc(4 * var(--u));
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.tl-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.tl-color::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(2 * var(--u));
+}
+
+.tl-color::-moz-color-swatch {
+  border: 0;
+  border-radius: calc(2 * var(--u));
+}
+
+.tl-cells {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cell-cols, 8), var(--cell-w, var(--cell, 120px)));
+  grid-auto-rows: var(--cell-h, var(--cell, 120px));
+  align-content: center;
+  justify-content: start;
+  gap: calc(var(--cell-gap, 2) * var(--u));
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: calc(var(--row-pad, 0) * var(--u))
+    calc(var(--pad-right, 4) * var(--u)) calc(var(--row-pad, 0) * var(--u))
+    calc(var(--cells-inset, 4) * var(--u));
+  overflow: hidden;
+}
+
+.tl-cell {
+  position: relative;
+  width: var(--cell-w, var(--cell, 120px));
+  height: var(--cell-h, var(--cell, 120px));
+  box-sizing: border-box;
+  /* Stroke lives in the outer band — artwork is the padding box, not under the border. */
+  border: var(--frame-w) solid var(--frame-color);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.tl-cell--filled {
+  overflow: hidden;
+  z-index: 1;
+  background: linear-gradient(135deg, var(--cell-from) 0%, var(--cell-to) 100%);
+}
+
+.tl-cell--team {
+  overflow: hidden;
+}
+
+.tl-cell__logo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tl-headshot {
+  /* Alpha outline sized from the cell — not a square box-shadow. */
+  --hs: calc(0.055 * var(--cell, 120px));
+  filter:
+    drop-shadow(var(--hs) calc(var(--hs) * 1.25) 0 rgba(0, 0, 0, 0.78))
+    drop-shadow(
+      calc(var(--hs) * 1.65) calc(var(--hs) * 2) calc(var(--hs) * 0.7)
+        rgba(0, 0, 0, 0.34)
+    );
+}
+
+.tl-cell--add {
+  z-index: 5;
+  background: #1a1a1a;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--ig-poster);
+  font-size: calc(42 * var(--u));
+  font-weight: 900;
+  line-height: 1;
+}
+
+.tl-cell--add.is-slot {
+  position: relative;
+}
+
+.tl-row > .tl-cell--add.is-compact {
+  position: absolute;
+  grid-column: 2;
+  grid-row: 1;
+  width: calc(var(--add-compact, 48) * var(--u));
+  height: calc(var(--add-compact, 48) * var(--u));
+  font-size: calc(28 * var(--u));
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tl-row > .tl-cell--add.is-empty-chip {
+  left: calc(var(--cells-inset, 4) * var(--u));
+  right: auto;
+}
+
+.tl-row > .tl-cell--add.is-end-chip {
+  left: auto;
+  right: calc(var(--pad-right, 4) * var(--u));
+}
+
+.tl-row.is-empty .tl-cells {
+  grid-template-columns: none;
+  grid-auto-rows: auto;
+}
+
+.tl-cell__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tl-cell:hover,
+.tl-cell:focus-visible,
+.tl-cell__hit:focus-visible {
+  outline: calc(3 * var(--u)) solid #fff;
+  outline-offset: calc(-3 * var(--u));
+  z-index: 2;
+}
+
+.tl-cell.is-active,
+.tl-cell.is-drop {
+  outline: calc(4 * var(--u)) solid #fff;
+  outline-offset: calc(-4 * var(--u));
+  z-index: 3;
+}
+
+.tl-cell .ig-slot__logo,
+.tl-headshot,
+.tl-cell__watermark {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.tl-cell .ig-slot__logo {
+  display: block;
+  /* Artwork is centered in canvas pixels; no CSS translate / filter. */
+  transform: none;
+  filter: none;
+}
+
+.tl-cell__watermark {
+  overflow: hidden;
+  z-index: 0;
+  opacity: 0.22;
+}
+
+.tl-cell__watermark .ig-slot__logo {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tl-headshot {
+  z-index: 1;
+  object-fit: cover;
+  object-position: center 18%;
+  /* Never squash into portrait packed cells. */
+}
+
+.tl-cell__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 28% 8% 6%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.97) 0%,
+    rgba(0, 0, 0, 0.9) 34%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.22) 84%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  text-align: center;
+  line-height: 0.95;
+}
+
+.tl-cell__given,
+.tl-cell__family {
+  display: block;
+  width: 100%;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
+}
+
+.tl-cell__given {
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.08em;
+  opacity: 0.92;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.tl-cell__family {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.04em;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.tl-cell__remove {
+  position: absolute;
+  top: 4%;
+  right: 4%;
+  z-index: 4;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0;
+}
+
+.tl-cell:hover .tl-cell__remove,
+.tl-cell:focus-within .tl-cell__remove {
+  opacity: 1;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .sc-root.is-photo-edit .tl-cell__remove {
+    opacity: 1;
+    width: max(28px, calc(22 * var(--u)));
+    height: max(28px, calc(22 * var(--u)));
+  }
+}
+
+.tl-board.is-exporting .tl-cell:hover,
+.tl-board.is-exporting .tl-cell:focus-visible,
+.tl-board.is-exporting .tl-cell.is-active,
+.tl-board.is-exporting .tl-title-input:focus,
+.tl-board.is-exporting .tl-label:focus {
+  outline: none;
+}
+
+.tl-board.is-exporting .tl-color,
+.tl-board.is-exporting .tl-cell--add,
+.tl-board.is-exporting .tl-cell__remove {
+  display: none;
+}

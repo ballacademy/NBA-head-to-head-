@@ -1,0 +1,295 @@
+.scc-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --fade-h: 460;
+  --title-size: 72;
+  --date-size: 16;
+  --pill-h: 44;
+  --name-h: 168;
+  --name-logo: 40;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #050505;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.scc-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.scc-cell {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.scc-cell .pod-photo {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.scc-cell .pod-photo__surface {
+  z-index: 1;
+}
+
+.scc-cell .pod-photo__pick {
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.08em;
+  padding: 0 calc(12 * var(--u)) calc(var(--name-h) * var(--u));
+}
+
+.scc-cell .pod-photo__tools {
+  left: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  top: auto;
+  bottom: calc(var(--name-h) * var(--u) + 10 * var(--u));
+  gap: calc(4 * var(--u));
+}
+
+.scc-mark {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.scc-mark canvas,
+.scc-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.scc-cell .ig-name-fade {
+  z-index: 3;
+}
+
+.scc-cell .ig-name-fade__given {
+  height: calc(17 * var(--u));
+  font-size: calc(13 * var(--u));
+}
+
+.scc-cell .ig-name-fade__family {
+  min-height: calc(30 * var(--u));
+  max-height: calc(62 * var(--u));
+  font-size: calc(28 * var(--u));
+}
+
+.scc-top-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 4;
+  height: calc(var(--fade-h) * var(--u));
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 24%,
+    rgba(0, 0, 0, 0.4) 54%,
+    rgba(0, 0, 0, 0.12) 80%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.scc-lockup-scrim {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 0;
+  z-index: 4;
+  height: calc(300 * var(--u));
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 78% 78% at 50% 22%,
+    rgba(0, 0, 0, 0.58) 0%,
+    rgba(0, 0, 0, 0.2) 56%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.scc-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: calc(20 * var(--u));
+  margin-left: calc(-10 * var(--u));
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.42) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.scc-lockup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(56 * var(--u));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 calc(72 * var(--u));
+  box-sizing: border-box;
+}
+
+.scc-lockup .composer-title-stack {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scc-title-line {
+  display: block;
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--title-size) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.84;
+  -webkit-text-stroke: calc(3.4 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow:
+    calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
+    0 calc(8 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+
+.scc-title-line:first-child:not(:only-child) {
+  letter-spacing: 0.072em;
+}
+
+.scc-title-line + .scc-title-line {
+  margin-top: calc(2 * var(--u));
+}
+
+.scc-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  pointer-events: auto;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--title-size) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.84;
+}
+
+.scc-pill {
+  margin-top: calc(18 * var(--u));
+  width: auto;
+  min-width: calc(148 * var(--u));
+  height: calc(var(--pill-h) * var(--u));
+  padding: 0 calc(28 * var(--u));
+  border: 0;
+  border-radius: calc(999 * var(--u));
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--date-size) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  line-height: calc(var(--pill-h) * var(--u));
+  box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.35);
+}
+
+.scc-title-input:focus,
+.scc-pill:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.scc-swipe {
+  position: absolute;
+  right: calc(28 * var(--u));
+  top: 56%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  pointer-events: none;
+}
+
+.scc-swipe__label {
+  font-family: var(--ig-poster);
+  font-size: calc(11 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.8);
+}
+
+.scc-swipe__chev {
+  width: calc(58 * var(--u));
+  height: calc(58 * var(--u));
+  border-radius: 50%;
+  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.88);
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+}
+
+.scc-swipe__chev::after {
+  content: "";
+  display: block;
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  margin: calc(20 * var(--u)) 0 0 calc(24 * var(--u));
+  border-right: calc(3.2 * var(--u)) solid #fff;
+  border-top: calc(3.2 * var(--u)) solid #fff;
+  transform: rotate(45deg);
+}
+
+.scc-board .composer-ba {
+  z-index: 6;
+}
+
+.scc-board.is-purple::before,
+.scc-board.is-purple::after {
+  z-index: 4;
+  mix-blend-mode: screen;
+}
+
+.scc-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  border: var(--frame-w) solid var(--frame-color);
+  box-sizing: border-box;
+}
+
+.scc-board.is-exporting .pod-photo__tools {
+  display: none;
+}

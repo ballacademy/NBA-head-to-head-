@@ -1,0 +1,330 @@
+/* Instagram headline / hot take — 4:5 full-bleed photo + clean banner. */
+
+.hl-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --team-color: transparent;
+  --plate-fill: #ffffff;
+  --plate-ink: #111111;
+  --plate-clip: 2.05% 0%, 97.95% 0%, 100% 100%, 0% 100%;
+  --hl-size: 56;
+  --plate-top: 1040;
+  --plate-h: 124;
+  --city-top: 980;
+  --city-h: 36;
+  --city-size: 64;
+  --nick-top: 1164;
+  --nick-h: 48;
+  --nick-size: 84;
+  --kicker-top: 940;
+  --kicker-h: 28;
+  --name-top: 1224;
+  --body-top: 1240;
+  --body-h: 96;
+  --mark-top: 900;
+  --mark-size: 440;
+  --mark-opacity: 0.1;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.hl-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.hl-board .pod-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0;
+  border: var(--frame-w) solid var(--frame-color);
+  touch-action: none;
+  cursor: grab;
+}
+
+.hl-board.is-purple::before,
+.hl-board.is-purple::after {
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+.hl-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: calc(560 * var(--u));
+  pointer-events: none;
+}
+
+.hl-board.is-lockup-bottom .hl-fade {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.78) 0%,
+    rgba(6, 6, 8, 0.42) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.hl-board.is-lockup-top .hl-fade {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 8, 0.78) 0%,
+    rgba(6, 6, 8, 0.42) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.hl-mark {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hl-mark.is-behind {
+  left: 50%;
+  top: calc(var(--mark-top) * var(--u));
+  width: calc(var(--mark-size) * var(--u));
+  height: calc(var(--mark-size) * var(--u));
+  transform: translateX(-50%);
+  opacity: var(--mark-opacity);
+}
+
+.hl-mark canvas,
+.hl-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hl-kicker,
+.hl-wordmark-city,
+.hl-wordmark-nick,
+.hl-name.is-under,
+.hl-body-wrap {
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  z-index: 4;
+  margin: 0;
+  pointer-events: none;
+}
+
+.hl-kicker {
+  top: calc(var(--kicker-top) * var(--u));
+  height: calc(var(--kicker-h) * var(--u));
+  z-index: 5;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-text-stroke: calc(2 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.hl-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.hl-wordmark-city,
+.hl-wordmark-nick {
+  z-index: 7;
+  overflow: visible;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.86;
+  white-space: nowrap;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #0a0a0a;
+  paint-order: stroke fill;
+  text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.hl-wordmark-city {
+  top: calc(var(--city-top) * var(--u));
+  height: calc(var(--city-h) * var(--u));
+  font-size: calc(var(--city-size) * var(--u));
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.hl-wordmark-nick {
+  top: calc(var(--nick-top) * var(--u));
+  height: calc(var(--nick-h) * var(--u));
+  font-size: calc(var(--nick-size) * var(--u));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.hl-headline-plate {
+  position: absolute;
+  left: calc(64 * var(--u));
+  right: calc(64 * var(--u));
+  top: calc(var(--plate-top) * var(--u));
+  z-index: 6;
+  box-sizing: border-box;
+  height: calc(var(--plate-h) * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(12 * var(--u)) calc(40 * var(--u));
+  border: 0;
+  background: var(--plate-fill);
+  clip-path: polygon(var(--plate-clip));
+  transform: none;
+  filter:
+    drop-shadow(0 0 0 calc(2.5 * var(--u)) #fff)
+    drop-shadow(0 0 0 calc(9 * var(--u)) #0a0a0a);
+  pointer-events: auto;
+}
+
+.hl-headline {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: var(--plate-ink);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--hl-size, 56) * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  font-synthesis: none;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 0.92;
+  resize: none;
+  overflow: hidden;
+}
+
+.hl-name {
+  margin: 0;
+  color: var(--plate-ink);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hl-name.is-plate {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(2 * var(--u));
+  opacity: 0.78;
+}
+
+.hl-name.is-under {
+  top: calc(var(--name-top) * var(--u));
+  z-index: 5;
+  color: #fff;
+  -webkit-text-stroke: calc(2 * var(--u)) #000;
+  paint-order: stroke fill;
+}
+
+.hl-body-wrap {
+  top: calc(var(--body-top) * var(--u));
+  height: calc(var(--body-h) * var(--u));
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  pointer-events: none;
+}
+
+.hl-opp {
+  flex: 0 0 calc(36 * var(--u));
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  margin-top: calc(4 * var(--u));
+}
+
+.hl-opp canvas,
+.hl-opp img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hl-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.12;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-line;
+  pointer-events: auto;
+  -webkit-text-stroke: calc(2.4 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82);
+}
+
+.hl-headline:focus,
+.hl-body:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.hl-board .composer-ba {
+  left: calc(36 * var(--u));
+  right: auto;
+  top: calc(36 * var(--u));
+  z-index: 6;
+}
+
+.hl-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.hl-board .pod-photo__tools {
+  left: calc(16 * var(--u));
+  right: calc(16 * var(--u));
+  bottom: auto;
+  top: calc(120 * var(--u));
+}
+
+.hl-board .pod-photo__pick {
+  font-size: calc(18 * var(--u));
+  letter-spacing: 0.08em;
+}
