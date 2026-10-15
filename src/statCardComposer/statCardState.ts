@@ -4,12 +4,14 @@ import {
   type ComposerWatermark,
 } from "../instagramComposer/composerWatermark";
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import { readJson, writeJson } from "../lib/browserStorage";
 import {
   isoDateOnly,
   nbaTodayIso,
   type LastGame,
   type LastGameStats,
 } from "../playerOfTheDayComposer/lastGame";
+import { parseStatsLeft } from "./statCardLayout";
 import {
   everyTeamCurrentSeason,
   isPercentStatMetric,
@@ -36,7 +38,9 @@ import {
   type TierPlayer,
 } from "../tierListComposer/nbaActivePlayers";
 
-export { clampPan, type PhotoPan };
+export { clampPan, parseStatsLeft, type PhotoPan };
+
+export const STAT_CARD_STORAGE_KEY = "ddgm:stat-card-composer";
 
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
@@ -79,6 +83,8 @@ export interface StatCardDraft {
   showMatchup?: boolean;
   matchup?: string;
   watermark?: ComposerWatermark;
+  /** Stats column on the left, photo on the right. Default is stats on the right. */
+  statsLeft?: boolean;
 }
 
 export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
@@ -175,6 +181,7 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   showMatchup: false,
   matchup: "",
   watermark: DEFAULT_COMPOSER_WATERMARK,
+  statsLeft: false,
 });
 
 export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => ({
@@ -192,7 +199,22 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   showMatchup: draft.showMatchup === true,
   matchup: clipStatMatchup(draft.matchup ?? ""),
   watermark: parseComposerWatermark(draft.watermark),
+  statsLeft: parseStatsLeft(draft.statsLeft),
 });
+
+export const peekStatCardStatsLeft = () => {
+  const stored = readJson<Partial<StatCardDraft>>(STAT_CARD_STORAGE_KEY);
+  return parseStatsLeft(stored?.statsLeft);
+};
+
+export const persistStatCardStatsLeft = (statsLeft: boolean) => {
+  const stored = readJson<Partial<StatCardDraft>>(STAT_CARD_STORAGE_KEY);
+  if (stored && typeof stored === "object") {
+    writeJson(STAT_CARD_STORAGE_KEY, { ...stored, statsLeft });
+    return;
+  }
+  writeJson(STAT_CARD_STORAGE_KEY, { ...defaultStatCardDraft(), statsLeft });
+};
 
 export const hasCustomPhoto = (draft: StatCardDraft) =>
   stripHasCustomPhoto(draft as unknown as TotwStrip);

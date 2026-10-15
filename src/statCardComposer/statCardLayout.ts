@@ -18,6 +18,38 @@ export const STC_STATS_W = 340;
 export const STC_NAME_W = 112;
 export const STC_NAME_X = 1088;
 export const STC_HAIRLINE = 6;
+
+export const parseStatsLeft = (value: unknown) => value === true;
+
+/** Flip after `count` exported cards. A pack of 3 starting right ends on left. */
+export const nextStatsLeft = (statsLeft: boolean, count = 1) =>
+  count % 2 === 0 ? statsLeft : !statsLeft;
+
+export const statsLeftAt = (startLeft: boolean, index: number) =>
+  nextStatsLeft(startLeft, index);
+
+/**
+ * 4:5 feed columns. Default is photo | stats | name. Flip is the mirror
+ * (name | stats | photo) — not a CSS scale(-1).
+ */
+export const statCardFeedRects = (statsLeft = false) => {
+  if (statsLeft) {
+    return {
+      name: { x: 0, w: STC_NAME_W },
+      stats: { x: STC_NAME_W, w: STC_STATS_W },
+      photo: { x: STC_NAME_W + STC_STATS_W, w: STC_PHOTO_W },
+      hairlineX: STC_NAME_W + STC_STATS_W - STC_HAIRLINE / 2,
+      baRight: true,
+    };
+  }
+  return {
+    photo: { x: 0, w: STC_PHOTO_W },
+    stats: { x: STC_STATS_X, w: STC_STATS_W },
+    name: { x: STC_NAME_X, w: STC_NAME_W },
+    hairlineX: STC_PHOTO_W - STC_HAIRLINE / 2,
+    baRight: false,
+  };
+};
 export const STC_BA_SIZE = 72;
 export const STC_BA_INSET = 28;
 export const STC_STAT_COUNT = 3;

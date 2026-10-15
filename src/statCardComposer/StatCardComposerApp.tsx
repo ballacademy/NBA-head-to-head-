@@ -6,6 +6,7 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import { StatCardFlipToggle } from "./StatCardFlipToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
@@ -23,6 +24,7 @@ import {
 } from "../instagramComposer/composerNight";
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
+import { nextStatsLeft } from "./statCardLayout";
 import {
   copyGraphicCaption,
   statCardLineCaption,
@@ -61,6 +63,7 @@ import {
   formatStatCardMatchup,
   hasCustomPhoto,
   isStatCardDraft,
+  STAT_CARD_STORAGE_KEY,
   normalizeStatCardDraft,
   parseStatCardKey,
   parseStatCardSource,
@@ -79,7 +82,7 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "./statCardComposer.css";
 
-const STORAGE_KEY = "ddgm:stat-card-composer";
+const STORAGE_KEY = STAT_CARD_STORAGE_KEY;
 const SAVES_KEY = "ddgm:stat-card-composer:saves";
 
 const loadDraft = (): StatCardDraft => {
@@ -226,6 +229,10 @@ export function StatCardComposerApp() {
         { ...draft, look, purpleFlair, photoGrade },
         story,
       );
+      setDraft((current) => ({
+        ...current,
+        statsLeft: nextStatsLeft(Boolean(current.statsLeft)),
+      }));
       setStatus(story ? "Story PNG download started." : "Download started.");
     } catch (error) {
       console.error(error);
@@ -472,6 +479,12 @@ export function StatCardComposerApp() {
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
             <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+            <StatCardFlipToggle
+              statsLeft={Boolean(draft.statsLeft)}
+              onChange={(statsLeft) =>
+                setDraft((current) => ({ ...current, statsLeft }))
+              }
+            />
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">Matchup</span>
               <button
@@ -617,6 +630,10 @@ export function StatCardComposerApp() {
                     ],
                     { letterbox: false },
                   );
+                  setDraft((current) => ({
+                    ...current,
+                    statsLeft: nextStatsLeft(Boolean(current.statsLeft)),
+                  }));
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {
                   console.error(error);

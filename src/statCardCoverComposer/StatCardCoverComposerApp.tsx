@@ -22,7 +22,10 @@ import {
 import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { renderStatCardCanvas } from "../statCardComposer/renderStatCardCanvas";
+import { nextStatsLeft, statsLeftAt } from "../statCardComposer/statCardLayout";
 import {
+  peekStatCardStatsLeft,
+  persistStatCardStatsLeft,
   playerName,
   statCardFromCoverSlot,
 } from "../statCardComposer/statCardState";
@@ -481,6 +484,7 @@ export function StatCardCoverComposerApp() {
                       bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
                     });
                     let index = 0;
+                    const startLeft = peekStatCardStatsLeft();
                     for (const slot of draft.slots) {
                       const card = statCardFromCoverSlot(
                         slot,
@@ -490,9 +494,16 @@ export function StatCardCoverComposerApp() {
                       if (!card) {
                         continue;
                       }
+                      const statsLeft = statsLeftAt(startLeft, index);
                       index += 1;
                       const cardCanvas = await renderStatCardCanvas(
-                        { ...card, look, purpleFlair, photoGrade },
+                        {
+                          ...card,
+                          statsLeft,
+                          look,
+                          purpleFlair,
+                          photoGrade,
+                        },
                         2,
                       );
                       files.push({
@@ -521,6 +532,7 @@ export function StatCardCoverComposerApp() {
                       ),
                       files,
                     );
+                    persistStatCardStatsLeft(nextStatsLeft(startLeft, index));
                     setStatus(
                       `Pack download started (cover + ${index} empty-photo stat card${
                         index === 1 ? "" : "s"

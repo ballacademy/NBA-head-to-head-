@@ -43,12 +43,11 @@ import {
   STC_NAME_SIZE,
   STC_NAME_TRACK,
   STC_NAME_W,
-  STC_NAME_X,
   STC_PANEL,
-  STC_PHOTO_W,
   STC_RULE,
   STC_STATS_W,
-  STC_STATS_X,
+  parseStatsLeft,
+  statCardFeedRects,
   statCardRows,
   statCardStoryColumns,
   statCardStoryRects,
@@ -105,6 +104,7 @@ export const renderStatCardCanvas = async (
   context.fillRect(0, 0, width, height);
 
   const storyRects = statCardStoryRects(boardH);
+  const feed = statCardFeedRects(parseStatsLeft(input.statsLeft));
   const photoBox = story
     ? {
         x: storyRects.photo.x * s,
@@ -112,7 +112,7 @@ export const renderStatCardCanvas = async (
         w: storyRects.photo.w * s,
         h: storyRects.photo.h * s,
       }
-    : { x: 0, y: 0, w: STC_PHOTO_W * s, h: height };
+    : { x: feed.photo.x * s, y: 0, w: feed.photo.w * s, h: height };
   if (input.photoSrc) {
     const photo = input.photoSrc.startsWith("data:")
       ? await loadImage(input.photoSrc)
@@ -170,7 +170,7 @@ export const renderStatCardCanvas = async (
     }
   }
 
-  const statsX = story ? storyRects.stats.x * s : STC_STATS_X * s;
+  const statsX = story ? storyRects.stats.x * s : feed.stats.x * s;
   const statsY = story ? storyRects.stats.y * s : 0;
   const statsW = story ? storyRects.stats.w * s : STC_STATS_W * s;
   const statsPanelH = story ? storyRects.stats.h * s : height;
@@ -361,7 +361,7 @@ export const renderStatCardCanvas = async (
       STC_HAIRLINE * s,
     );
   } else {
-    const nameX = STC_NAME_X * s;
+    const nameX = feed.name.x * s;
     const nameW = STC_NAME_W * s;
     context.fillStyle = colors.primary;
     context.fillRect(nameX, 0, nameW, height);
@@ -369,7 +369,7 @@ export const renderStatCardCanvas = async (
     const logoSpace = team ? (STC_LOGO + STC_LOGO_INSET * 2) * s : 24 * s;
     context.save();
     context.translate(nameX + nameW / 2, (height - logoSpace) / 2);
-    context.rotate(Math.PI / 2);
+    context.rotate(feed.baRight ? -Math.PI / 2 : Math.PI / 2);
     context.font = `900 ${STC_NAME_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -395,12 +395,7 @@ export const renderStatCardCanvas = async (
     }
 
     context.fillStyle = colors.primary;
-    context.fillRect(
-      (STC_PHOTO_W - STC_HAIRLINE / 2) * s,
-      0,
-      STC_HAIRLINE * s,
-      height,
-    );
+    context.fillRect(feed.hairlineX * s, 0, STC_HAIRLINE * s, height);
   }
 
   if (input.purpleFlair) {
@@ -413,10 +408,12 @@ export const renderStatCardCanvas = async (
     if (ba) {
       const size = STC_BA_SIZE * s;
       const inset = STC_BA_INSET * s;
+      const baX =
+        !story && feed.baRight ? width - inset - size : inset;
       if (input.purpleFlair) {
-        paintPurpleBaGlow(context, inset, inset, size);
+        paintPurpleBaGlow(context, baX, inset, size);
       }
-      context.drawImage(ba, inset, inset, size, size);
+      context.drawImage(ba, baX, inset, size, size);
     }
   }
 

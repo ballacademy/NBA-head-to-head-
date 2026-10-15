@@ -294,6 +294,33 @@
   z-index: 5;
 }
 
+.stc-board.is-stats-left .stc-photo {
+  left: auto;
+  right: 0;
+}
+
+.stc-board.is-stats-left .stc-stats {
+  left: calc(112 * var(--u));
+}
+
+.stc-board.is-stats-left .stc-name-bar {
+  left: 0;
+  right: auto;
+}
+
+.stc-board.is-stats-left .stc-name {
+  writing-mode: vertical-lr;
+}
+
+.stc-board.is-stats-left .stc-hairline {
+  left: calc(449 * var(--u));
+}
+
+.stc-board.is-stats-left .composer-ba {
+  left: auto;
+  right: calc(28 * var(--u));
+}
+
 .stc-frame {
   position: absolute;
   inset: 0;
@@ -335,6 +362,11 @@
 
 .stc-board.is-story {
   aspect-ratio: 9 / 16;
+}
+
+.stc-board.is-story .composer-ba {
+  left: calc(28 * var(--u));
+  right: auto;
 }
 
 .stc-board.is-story .stc-photo {

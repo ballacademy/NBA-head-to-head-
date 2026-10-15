@@ -37,6 +37,14 @@ const coverCss = readFileSync(
   join(root, "statCardCoverComposer/statCardCoverComposer.css"),
   "utf8",
 );
+const statCardApp = readFileSync(
+  join(root, "statCardComposer/StatCardComposerApp.tsx"),
+  "utf8",
+);
+const coverApp = readFileSync(
+  join(root, "statCardCoverComposer/StatCardCoverComposerApp.tsx"),
+  "utf8",
+);
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -108,6 +116,17 @@ describe("composer chrome", () => {
     expect(titleField).toContain("composer-title-stack__paint");
     expect(sheet).toContain(".composer-title-stack__paint");
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
+  });
+
+  it("flips the Stat card columns without a CSS scale(-1)", () => {
+    expect(statCardCss).toContain(".stc-board.is-stats-left");
+    expect(statCardCss).not.toMatch(/scale\(\s*-1\s*\)/);
+    expect(statCardCanvas).toContain("statCardFeedRects");
+    expect(statCardCanvas).not.toMatch(/scale\(\s*-1\s*\)/);
+    expect(statCardApp).toContain("StatCardFlipToggle");
+    expect(statCardApp).toContain("nextStatsLeft");
+    expect(coverApp).toContain("statsLeftAt");
+    expect(coverApp).toContain("persistStatCardStatsLeft");
   });
 
   it("puts gold on the cover lockup, seams, date pill, and swipe cue", () => {

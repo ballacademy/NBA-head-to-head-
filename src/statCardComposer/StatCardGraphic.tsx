@@ -223,6 +223,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
           story ? "is-story" : "",
+          !story && draft.statsLeft ? "is-stats-left" : "",
         ]
           .filter(Boolean)
           .join(" ")}

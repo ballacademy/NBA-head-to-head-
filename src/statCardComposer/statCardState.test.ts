@@ -9,13 +9,18 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   STC_MATCHUP_H,
+  STC_NAME_W,
   STC_PHOTO_W,
   STORY_DESIGN_HEIGHT,
   statCardStoryRects,
+  STC_STATS_W,
   STC_STATS_X,
   STC_VALUE_SIZE,
+  nextStatsLeft,
+  statCardFeedRects,
   statCardRows,
   statCardType,
+  statsLeftAt,
 } from "./statCardLayout";
 import {
   emptyStats,
@@ -89,6 +94,7 @@ describe("stat card composer", () => {
     expect(draft.showBa).toBe(true);
     expect(draft.showMatchup).toBe(false);
     expect(draft.matchup).toBe("");
+    expect(draft.statsLeft).toBe(false);
     const story = statCardStoryRects();
     expect(STORY_DESIGN_HEIGHT).toBe(2133);
     expect(story.photo.w).toBe(GRAPHIC_WIDTH);
@@ -109,6 +115,32 @@ describe("stat card composer", () => {
     expect(packed?.photoSrc).toBeNull();
     expect(packed?.customPhoto).toBe(false);
     expect(packed?.lastName.toUpperCase()).toContain("DONCIC");
+  });
+
+  it("mirrors the 4:5 columns instead of scaling the board", () => {
+    const right = statCardFeedRects(false);
+    const left = statCardFeedRects(true);
+    expect(right.photo.x + right.photo.w).toBe(right.stats.x);
+    expect(right.stats.x + right.stats.w).toBe(right.name.x);
+    expect(right.name.x + right.name.w).toBe(GRAPHIC_WIDTH);
+    expect(left.name.x).toBe(0);
+    expect(left.name.w).toBe(STC_NAME_W);
+    expect(left.stats.x).toBe(STC_NAME_W);
+    expect(left.stats.w).toBe(STC_STATS_W);
+    expect(left.photo.x).toBe(STC_NAME_W + STC_STATS_W);
+    expect(left.photo.w).toBe(STC_PHOTO_W);
+    expect(left.photo.x + left.photo.w).toBe(GRAPHIC_WIDTH);
+    expect(left.baRight).toBe(true);
+    expect(right.baRight).toBe(false);
+    expect(nextStatsLeft(false)).toBe(true);
+    expect(nextStatsLeft(true)).toBe(false);
+    expect(statsLeftAt(false, 0)).toBe(false);
+    expect(statsLeftAt(false, 1)).toBe(true);
+    expect(statsLeftAt(false, 2)).toBe(false);
+    expect(nextStatsLeft(false, 3)).toBe(true);
+    expect(normalizeStatCardDraft({ ...defaultStatCardDraft(), statsLeft: true }).statsLeft).toBe(
+      true,
+    );
   });
 
   it("keeps the editor list identical to the stats on the card", () => {
