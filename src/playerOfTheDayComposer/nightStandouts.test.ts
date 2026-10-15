@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { emptyStats } from "./lastGame";
 import {
+  isNotableNight,
+  isSurpriseNight,
   nightFlagsFor,
+  nightStandoutFromBox,
   parseSummaryStandouts,
   rankNightStandouts,
   statsFromBoxRow,
+  usualLineFor,
   type NightStandout,
 } from "./nightStandouts";
 
@@ -155,5 +160,77 @@ describe("night standouts", () => {
     const ranked = rankNightStandouts(rows as NightStandout[]);
     expect(ranked[0]?.athleteId).toBe("3112335");
     expect(ranked.map((row) => row.athleteId)).toContain("1966");
+  });
+
+  const gameRow = (
+    id: string,
+    name: string,
+    stats: Partial<ReturnType<typeof emptyStats>>,
+    score = 0,
+    flags: string[] = [],
+  ): NightStandout => {
+    const line = { ...emptyStats(), ...stats };
+    const extra = nightFlagsFor(line);
+    return {
+      athleteId: id,
+      name,
+      teamId: "PHX",
+      badge: flags[0] ?? extra.flags[0] ?? "Standout",
+      flags: flags.length ? flags : extra.flags,
+      line: `${line.pts} PTS`,
+      score: score || extra.score,
+      game: {
+        eventId: "1",
+        gameDate: "2026-10-14",
+        teamId: "PHX",
+        opponentId: "SAS",
+        opponentAbbrev: "SAS",
+        result: "L",
+        playerScore: "100",
+        opponentScore: "110",
+        resultLine: "L 100-110 SAS",
+        dateLabel: "10/14",
+        stats: line,
+      },
+    };
+  };
+
+  it("keeps a low-average surprise night like Bouyea 15/4/8 on the slate", () => {
+    const bouyea = getPlayer("4280245");
+    expect(bouyea?.name).toMatch(/Bouyea/);
+    expect(bouyea?.ppg ?? 0).toBeLessThan(10);
+    const usual = usualLineFor("4280245");
+    const extra = nightFlagsFor({
+      ...emptyStats(),
+      pts: "15",
+      reb: "4",
+      ast: "8",
+      min: "28",
+    });
+    expect(isSurpriseNight(extra, usual)).toBe(true);
+    expect(isNotableNight(extra, usual)).toBe(true);
+    const stars = Array.from({ length: 16 }, (_, index) =>
+      gameRow(
+        `star-${index}`,
+        `Star ${index}`,
+        { pts: String(28 + index), reb: "8", ast: "6", min: "32" },
+        80 + index,
+        ["30+ PTS"],
+      ),
+    );
+    const bouyeaRow = nightStandoutFromBox(
+      "4280245",
+      "Jamaree Bouyea",
+      "PHX",
+      { id: "SAS", abbrev: "SAS", score: "110" },
+      { score: "100", winner: false },
+      "1",
+      "2026-10-14",
+      { ...emptyStats(), pts: "15", reb: "4", ast: "8", min: "28" },
+    );
+    expect(bouyeaRow?.flags).toContain("Hot night");
+    const ranked = rankNightStandouts([...stars, bouyeaRow!]);
+    expect(ranked.length).toBeGreaterThan(12);
+    expect(ranked.map((row) => row.athleteId)).toContain("4280245");
   });
 });

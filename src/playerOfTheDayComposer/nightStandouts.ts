@@ -1,3 +1,7 @@
+import {
+  everyTeamCurrentSeason,
+  playerRowForSeason,
+} from "../everyTeamComposer/historicalRosters";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   emptyStats,
@@ -167,6 +171,79 @@ export const nightFlagsFor = (stats: LastGameStats) => {
   };
 };
 
+export interface UsualLine {
+  pts: number;
+  reb: number;
+  ast: number;
+  stl: number;
+  blk: number;
+}
+
+export const usualLineFor = (athleteId: string): UsualLine => {
+  const player = getPlayer(athleteId);
+  const row = playerRowForSeason(
+    athleteId,
+    everyTeamCurrentSeason(),
+    player?.team ?? null,
+  );
+  return {
+    pts: row?.pts ?? player?.ppg ?? 0,
+    reb: row?.reb ?? 0,
+    ast: row?.ast ?? 0,
+    stl: row?.stl ?? 0,
+    blk: row?.blk ?? 0,
+  };
+};
+
+/** Bench / two-way surprise vs their usual line — not star-vs-star ranking. */
+export const isSurpriseNight = (
+  extra: ReturnType<typeof nightFlagsFor>,
+  usual: UsualLine,
+) => {
+  const usualPra = usual.pts + usual.reb + usual.ast;
+  const usualStocks = usual.stl + usual.blk;
+  const ptsJump =
+    usual.pts > 0 &&
+    extra.pts >= Math.max(10, usual.pts * 1.75) &&
+    extra.pts >= usual.pts + 6;
+  const praJump =
+    usualPra > 0 &&
+    extra.pra >= Math.max(14, usualPra * 1.75) &&
+    extra.pra >= usualPra + 8;
+  const stocksJump = extra.stocks >= 3 && extra.stocks >= usualStocks + 2;
+  return ptsJump || praJump || stocksJump;
+};
+
+export const isNotableNight = (
+  extra: ReturnType<typeof nightFlagsFor>,
+  usual: UsualLine,
+) => {
+  if (extra.flags.length > 0) {
+    return true;
+  }
+  if (extra.pts >= 14 || extra.pra >= 20) {
+    return true;
+  }
+  if (extra.stl >= 2 || extra.blk >= 2 || extra.stocks >= 3) {
+    return true;
+  }
+  return isSurpriseNight(extra, usual);
+};
+
+export const surpriseBonus = (
+  extra: ReturnType<typeof nightFlagsFor>,
+  usual: UsualLine,
+) => {
+  if (!isSurpriseNight(extra, usual)) {
+    return 0;
+  }
+  const usualPra = usual.pts + usual.reb + usual.ast;
+  return (
+    Math.max(0, extra.pts - usual.pts) * 1.25 +
+    Math.max(0, extra.pra - usualPra) * 0.3
+  );
+};
+
 const standoutLine = (
   stats: LastGameStats,
   extra: ReturnType<typeof nightFlagsFor>,
@@ -182,49 +259,23 @@ const standoutLine = (
   return bits.join(" · ");
 };
 
+/** Whole notable slate — no per-game or global star cap. Picker scrolls. */
 export const rankNightStandouts = (rows: NightStandout[]) => {
-  const played = rows.filter((row) => n(row.game.stats.min) > 0);
-  const pick = (
-    value: (row: NightStandout) => number,
-    count: number,
-    floor: number,
-  ) =>
-    [...played]
-      .sort((left, right) => value(right) - value(left))
-      .filter((row) => value(row) >= floor)
-      .slice(0, count);
-  const byPts = pick((row) => n(row.game.stats.pts), 5, 18);
-  const byPra = pick(
-    (row) =>
-      n(row.game.stats.pts) + n(row.game.stats.reb) + n(row.game.stats.ast),
-    5,
-    25,
-  );
-  const byBlk = pick((row) => n(row.game.stats.blk), 4, 2);
-  const byStl = pick((row) => n(row.game.stats.stl), 4, 2);
-  const byStocks = pick(
-    (row) => n(row.game.stats.stl) + n(row.game.stats.blk),
-    4,
-    3,
-  );
-  const flagged = played.filter((row) => row.flags.length > 0);
   const seen = new Set<string>();
-  const merged: NightStandout[] = [];
-  for (const row of [
-    ...flagged,
-    ...byPts,
-    ...byPra,
-    ...byBlk,
-    ...byStl,
-    ...byStocks,
-  ]) {
-    if (seen.has(row.athleteId)) {
+  const notable: NightStandout[] = [];
+  for (const row of rows) {
+    if (n(row.game.stats.min) <= 0 || seen.has(row.athleteId)) {
+      continue;
+    }
+    const extra = nightFlagsFor(row.game.stats);
+    const usual = usualLineFor(row.athleteId);
+    if (!isNotableNight(extra, usual) && row.flags.length === 0) {
       continue;
     }
     seen.add(row.athleteId);
-    merged.push(row);
+    notable.push(row);
   }
-  return merged.sort((a, b) => b.score - a.score).slice(0, 12);
+  return notable.sort((a, b) => b.score - a.score);
 };
 
 const eventIsPlayed = (event: EspnScoreboardEvent) => {
@@ -256,15 +307,25 @@ export const nightStandoutFromBox = (
     return null;
   }
   const extra = nightFlagsFor(stats);
+  const usual = usualLineFor(athleteId);
+  const surprise = isSurpriseNight(extra, usual);
+  const flags =
+    surprise &&
+    !extra.flags.includes("30+ PTS") &&
+    !extra.flags.includes("40+ PTS")
+      ? [...extra.flags, "Hot night"]
+      : extra.flags;
   const result = ours.winner ? "W" : "L";
   return {
     athleteId,
     name,
     teamId,
-    badge: extra.flags[0] ?? (extra.pts >= 20 ? "Points" : "Standout"),
-    flags: extra.flags,
+    badge:
+      extra.flags[0] ??
+      (extra.pts >= 20 ? "Points" : surprise ? "Hot night" : "Standout"),
+    flags,
     line: standoutLine(stats, extra),
-    score: extra.score,
+    score: extra.score + surpriseBonus(extra, usual),
     game: {
       eventId,
       gameDate,
