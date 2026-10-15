@@ -53,10 +53,10 @@ export const parseHeadlineSubjectMode = (value: unknown): HeadlineSubjectMode =>
 export const HL_SPLIT_X = 652;
 export const HL_BA_SIZE = 56;
 export const HL_BA_INSET = 28;
-export const HL_CHEVRON_H = 112;
+export const HL_CHEVRON_H = 120;
 export const HL_CHEVRON_NOTCH = 96;
-export const HL_CHEVRON_RISE = 78;
-export const HL_CHEVRON_TOP = 708;
+export const HL_CHEVRON_RISE = 82;
+export const HL_CHEVRON_TOP = 700;
 export const HL_HEADLINE_SIZE = 54;
 export const HL_HEADLINE_MIN = 26;
 export const HL_HEADLINE_TRACK = 0.04;
@@ -65,11 +65,11 @@ export const HL_FAMILY_SIZE = 72;
 export const HL_NAME_TRACK = 0.1;
 export const HL_FAMILY_TRACK = 0.06;
 export const HL_BODY_SIZE = 28;
-export const HL_BODY_TRACK = 0.08;
-export const HL_BODY_LINE = 1.12;
-export const HL_TYPE_PAD = 42;
-export const HL_TYPE_RIGHT = 36;
-export const HL_LOGO_SIZE = 640;
+export const HL_BODY_TRACK = 0.05;
+export const HL_BODY_LINE = 1.14;
+export const HL_TYPE_PAD = 38;
+export const HL_TYPE_RIGHT = 28;
+export const HL_LOGO_SIZE = 680;
 export const HL_PANEL_FALLBACK = "#101820";
 export const HL_CHEVRON_INK = "#111111";
 export const HL_PLATE_INK = "#111111";
@@ -298,13 +298,21 @@ export const headlineSplitLayout = ({
   const nameTop = chevronTop + chevronH + 34;
   const givenTop = nameTop;
   const familyTop = givenH ? givenTop + givenH + 4 : givenTop;
-  const bodyLines = wrapHeadlineBody(body, HL_BODY_SIZE, boardH > GRAPHIC_HEIGHT ? 5 : 4, typeW);
+  const bodyLines = wrapHeadlineBody(
+    body,
+    HL_BODY_SIZE,
+    boardH > GRAPHIC_HEIGHT ? 6 : 5,
+    typeW - 12,
+  );
   const bodyTop =
-    (familyH ? familyTop + familyH : givenTop + givenH) + (bodyLines.length ? 22 : 0);
-  const bodyH = headlineBodyBlock(bodyLines.length);
-  const logoSize = Math.max(HL_LOGO_SIZE, panelW * 1.16);
-  const logoX = splitX + 4;
-  const logoY = -Math.round(logoSize * 0.08);
+    (familyH ? familyTop + familyH : givenTop + givenH) + (bodyLines.length ? 26 : 0);
+  const bodyH = Math.max(
+    headlineBodyBlock(Math.max(bodyLines.length, 4)),
+    HL_BODY_SIZE * HL_BODY_LINE * 4,
+  );
+  const logoSize = Math.max(HL_LOGO_SIZE, Math.round(panelW * 1.28));
+  const logoX = splitX + Math.round(panelW * 0.04);
+  const logoY = -Math.round(logoSize * 0.1);
 
   return {
     boardW: GRAPHIC_WIDTH,

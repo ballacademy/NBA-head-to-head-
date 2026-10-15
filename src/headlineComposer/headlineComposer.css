@@ -202,8 +202,8 @@
   appearance: none;
   background: transparent;
   font-size: calc(28 * var(--u));
-  letter-spacing: 0.08em;
-  line-height: 1.12;
+  letter-spacing: 0.05em;
+  line-height: 1.14;
   resize: none;
   overflow: hidden;
   white-space: pre-line;
