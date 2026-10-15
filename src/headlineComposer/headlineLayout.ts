@@ -310,9 +310,9 @@ export const headlineSplitLayout = ({
     headlineBodyBlock(Math.max(bodyLines.length, 4)),
     HL_BODY_SIZE * HL_BODY_LINE * 4,
   );
-  const logoSize = Math.max(HL_LOGO_SIZE, Math.round(panelW * 1.28));
-  const logoX = splitX + Math.round(panelW * 0.04);
-  const logoY = -Math.round(logoSize * 0.1);
+  const logoSize = Math.max(HL_LOGO_SIZE, Math.round(panelW * 1.16));
+  const logoX = splitX + (panelW - logoSize) / 2;
+  const logoY = Math.round((HL_CHEVRON_TOP - logoSize) / 2);
 
   return {
     boardW: GRAPHIC_WIDTH,

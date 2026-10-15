@@ -131,7 +131,7 @@ describe("headline composer", () => {
     expect(next.subjectMode).toBe("player");
   });
 
-  it("locks Gobert to Minnesota, never a leftover Trail Blazers panel", () => {
+  it("locks Gobert to Minnesota on pick, then keeps him when Team is overridden", () => {
     const gobert = getPlayer("3032976")!;
     expect(gobert.team).toBe("MIN");
     const fromBlazers = fillHeadlineFromPlayer(gobert, {
@@ -139,14 +139,30 @@ describe("headline composer", () => {
       teamId: "POR",
     });
     expect(fromBlazers.teamId).toBe("MIN");
+    expect(fromBlazers.playerId).toBe(gobert.id);
     expect(splitTeamWordmark(getTeam(fromBlazers.teamId))).toEqual({
       city: "MINNESOTA",
       nick: "TIMBERWOLVES",
     });
     const switched = setHeadlineTeamId(fromBlazers, "POR");
-    expect(switched.playerId).toBeNull();
+    expect(switched.playerId).toBe(gobert.id);
+    expect(switched.firstName).toBe(fromBlazers.firstName);
+    expect(switched.lastName).toBe(fromBlazers.lastName);
+    expect(switched.photoSrc).toBe(fromBlazers.photoSrc);
     expect(switched.teamId).toBe("POR");
-    expect(switched.firstName).toBe("");
+  });
+
+  it("lets LeBron stay LeBron when Team is set to Miami", () => {
+    const lebron = getPlayer("1966")!;
+    const picked = fillHeadlineFromPlayer(lebron, defaultHeadlineDraft());
+    expect(picked.teamId).toBe(getTeam(lebron.team)?.id ?? lebron.team);
+    expect(picked.firstName).toBe("LeBron");
+    const heat = setHeadlineTeamId(picked, "MIA");
+    expect(heat.playerId).toBe(lebron.id);
+    expect(heat.teamId).toBe("MIA");
+    expect(heat.firstName).toBe("LeBron");
+    expect(heat.lastName).toBe(picked.lastName);
+    expect(heat.photoSrc).toBe(picked.photoSrc);
   });
 
   it("can skip the player and lock up a team only", () => {
@@ -173,7 +189,10 @@ describe("headline composer", () => {
     expect(layout.chevron.x).toBeLessThan(layout.splitX);
     expect(layout.chevron.x + layout.chevron.w).toBe(GRAPHIC_WIDTH);
     expect(layout.logo.size).toBeGreaterThan(500);
-    expect(layout.logo.x).toBeGreaterThanOrEqual(layout.splitX - 8);
+    expect(layout.logo.x + layout.logo.size / 2).toBeCloseTo(
+      layout.panel.x + layout.panel.w / 2,
+      0,
+    );
     expect(layout.given.text).toBe("VICTOR");
     expect(layout.family.text).toBe("WEMBANYAMA");
     expect(layout.given.y).toBeGreaterThan(layout.chevron.y + layout.chevron.h);

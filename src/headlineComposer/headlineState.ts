@@ -15,7 +15,7 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   parseHeadlineKickerMode,
   parseHeadlineLockup,
@@ -197,7 +197,7 @@ export const fillHeadlineFromTeam = (
   };
 };
 
-/** Team dropdown never labels a picked player as another club. */
+/** Overlay a team on a picked player (rumor/trade). Pick still defaults the roster club. */
 export const setHeadlineTeamId = (
   draft: HeadlineDraft,
   teamId: string | null,
@@ -205,15 +205,7 @@ export const setHeadlineTeamId = (
   if (!teamId) {
     return { ...draft, teamId: null };
   }
-  const nextId = getTeam(teamId)?.id ?? teamId;
-  if (draft.playerId) {
-    const player = getPlayer(draft.playerId);
-    const playerTeam = getTeam(player?.team)?.id ?? player?.team ?? null;
-    if (playerTeam && playerTeam !== nextId) {
-      return fillHeadlineFromTeam(nextId, draft);
-    }
-  }
-  return { ...draft, teamId: nextId };
+  return { ...draft, teamId: getTeam(teamId)?.id ?? teamId };
 };
 
 export const splitTeamWordmark = (team: NbaTeam | null) => {

@@ -157,6 +157,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             ["--logo-y" as string]: String(layout.logo.y),
             ["--logo-size" as string]: String(layout.logo.size),
             ["--kicker-size" as string]: String(layout.kicker.size),
+            ["--kicker-rows" as string]: String(kickerRows),
             ["--type-x" as string]: String(layout.given.x),
             ["--type-w" as string]: String(layout.given.w),
             ["--given-y" as string]: String(layout.given.y),
@@ -193,8 +194,8 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
                 src={team.logoSrc}
                 label={team.name}
                 shadow={22}
-                fitX={0.98}
-                fitY={0.98}
+                fitX={0.94}
+                fitY={0.9}
               />
             </div>
           ) : null}

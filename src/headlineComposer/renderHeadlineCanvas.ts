@@ -214,8 +214,8 @@ export const renderHeadlineCanvas = async (
         layout.logo.size * s,
         {
           cacheKey: `${team.logoSrc}-headline-hero`,
-          fitX: 0.98,
-          fitY: 0.98,
+          fitX: 0.94,
+          fitY: 0.9,
           shadow: 22 * s,
         },
       );
@@ -250,10 +250,9 @@ export const renderHeadlineCanvas = async (
   setLetterSpacing(context, HL_HEADLINE_TRACK * layout.kicker.size * s);
   context.fillStyle = "#111111";
   const kickerCx = (layout.kicker.x + layout.kicker.w / 2) * s;
-  const kickerLine = layout.kicker.size * 0.92 * s;
+  const kickerLine = layout.kicker.size * s;
   const kickerBlock = layout.kicker.lines.length * kickerLine;
-  let kickerTy =
-    chevY + chevH / 2 - kickerBlock / 2 + kickerLine / 2;
+  let kickerTy = chevY + chevH / 2 - kickerBlock / 2 + kickerLine / 2;
   layout.kicker.lines.forEach((line) => {
     if (line) {
       context.fillText(line, kickerCx, kickerTy, layout.kicker.w * s);
