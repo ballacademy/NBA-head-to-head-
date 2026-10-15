@@ -229,6 +229,7 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__zoom-in")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__rotate")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__paste")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__tools")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);

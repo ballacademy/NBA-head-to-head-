@@ -25,6 +25,8 @@ interface PhotoFrameProps {
   zoomStep?: number;
   vignette?: boolean;
   pop?: boolean;
+  pickLabel?: string;
+  changeLabel?: string;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -33,6 +35,7 @@ interface PhotoFrameProps {
 const PHOTO_CHROME_CLASSES = [
   "pod-photo__tool",
   "pod-photo__file",
+  "pod-photo__paste",
   "pod-photo__pick",
   "pod-photo__zoom-in",
   "pod-photo__rotate",
@@ -95,6 +98,8 @@ export function PhotoFrame({
   zoomStep = 0.25,
   vignette = false,
   pop = false,
+  pickLabel = "Pick player",
+  changeLabel = "Change player",
   onPan,
   onUpload,
   onPick,
@@ -240,6 +245,17 @@ export function PhotoFrame({
       ]
         .filter(Boolean)
         .join(" ")}
+      tabIndex={0}
+      onPaste={(event) => {
+        void dataUrlFromClipboard(event.nativeEvent).then((dataUrl) => {
+          if (!dataUrl) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          onUpload(dataUrl);
+        });
+      }}
       onPointerDown={(event) => {
         if (
           !filled ||
@@ -333,7 +349,7 @@ export function PhotoFrame({
         </>
       ) : (
         <button type="button" className="pod-photo__pick" onClick={onPick}>
-          Pick player
+          {pickLabel}
         </button>
       )}
       <div className="pod-photo__tools">
@@ -352,6 +368,22 @@ export function PhotoFrame({
             }}
           />
         </label>
+        <button
+          type="button"
+          className="pod-photo__tool pod-photo__paste"
+          aria-label={`Paste photo for ${label}`}
+          onPointerDown={stopChromePointer}
+          onClick={(event) => {
+            event.stopPropagation();
+            void readPhotoFromClipboard().then((dataUrl) => {
+              if (dataUrl) {
+                onUpload(dataUrl);
+              }
+            });
+          }}
+        >
+          Paste photo
+        </button>
         {filled ? (
           <button
             type="button"
@@ -362,7 +394,7 @@ export function PhotoFrame({
               onPick();
             }}
           >
-            Change player
+            {changeLabel}
           </button>
         ) : null}
         {filled ? (
@@ -416,6 +448,13 @@ export function PhotoFrame({
 }
 
 export const dataUrlFromClipboard = async (event: ClipboardEvent) => {
+  const files = event.clipboardData?.files;
+  if (files?.length) {
+    const file = [...files].find((item) => item.type.startsWith("image/"));
+    if (file) {
+      return readFile(file);
+    }
+  }
   const items = event.clipboardData?.items;
   if (!items) {
     return null;
@@ -428,6 +467,29 @@ export const dataUrlFromClipboard = async (event: ClipboardEvent) => {
       }
       return readFile(file);
     }
+  }
+  return null;
+};
+
+export const readPhotoFromClipboard = async () => {
+  const clipboard = navigator.clipboard as Clipboard & {
+    read?: () => Promise<ClipboardItem[]>;
+  };
+  if (typeof clipboard?.read !== "function") {
+    return null;
+  }
+  try {
+    const items = await clipboard.read();
+    for (const item of items) {
+      const type = item.types.find((token) => token.startsWith("image/"));
+      if (!type) {
+        continue;
+      }
+      const blob = await item.getType(type);
+      return readFile(new File([blob], "paste.png", { type: blob.type || type }));
+    }
+  } catch {
+    return null;
   }
   return null;
 };
