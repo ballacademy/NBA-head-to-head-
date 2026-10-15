@@ -136,6 +136,25 @@
   );
 }
 
+.scc-seam::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 12%;
+  left: 50%;
+  width: calc(2 * var(--u));
+  margin-left: calc(-1 * var(--u));
+  background: linear-gradient(
+    to bottom,
+    rgba(250, 204, 21, 0) 0%,
+    rgba(212, 175, 55, 0.82) 18%,
+    rgba(250, 204, 21, 0.95) 50%,
+    rgba(212, 175, 55, 0.82) 82%,
+    rgba(250, 204, 21, 0) 100%
+  );
+  box-shadow: 0 0 calc(8 * var(--u)) rgba(250, 204, 21, 0.28);
+}
+
 .scc-lockup {
   position: absolute;
   left: 0;
@@ -160,7 +179,7 @@
 .scc-title-line {
   display: block;
   width: 100%;
-  color: #fff;
+  color: #facc15;
   text-align: center;
   font-family: var(--ig-poster);
   font-size: calc(var(--title-size) * var(--u));
@@ -171,16 +190,13 @@
   -webkit-text-stroke: calc(3.4 * var(--u)) #000;
   paint-order: stroke fill;
   text-shadow:
+    0 0 calc(10 * var(--u)) rgba(250, 204, 21, 0.28),
     calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
     0 calc(8 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
 }
 
 .scc-title-line:first-child:not(:only-child) {
   letter-spacing: 0.072em;
-}
-
-.scc-title-line + .scc-title-line {
-  margin-top: calc(2 * var(--u));
 }
 
 .scc-title-input {
@@ -210,7 +226,8 @@
   min-width: calc(148 * var(--u));
   height: calc(var(--pill-h) * var(--u));
   padding: 0 calc(28 * var(--u));
-  border: 0;
+  box-sizing: border-box;
+  border: calc(2 * var(--u)) solid #d4af37;
   border-radius: calc(999 * var(--u));
   background: #fff;
   color: #111;
@@ -220,7 +237,7 @@
   font-weight: 900;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  line-height: calc(var(--pill-h) * var(--u));
+  line-height: calc((var(--pill-h) - 4) * var(--u));
   box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.35);
 }
 
@@ -248,6 +265,7 @@
   font-weight: 900;
   letter-spacing: 0.28em;
   text-transform: uppercase;
+  color: #facc15;
   text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.8);
 }
 
@@ -255,9 +273,11 @@
   width: calc(58 * var(--u));
   height: calc(58 * var(--u));
   border-radius: 50%;
-  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.88);
+  border: calc(2 * var(--u)) solid #d4af37;
   background: rgba(0, 0, 0, 0.42);
-  box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 calc(10 * var(--u)) rgba(250, 204, 21, 0.28),
+    calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
 }
 
 .scc-swipe__chev::after {
@@ -266,8 +286,8 @@
   width: calc(14 * var(--u));
   height: calc(14 * var(--u));
   margin: calc(20 * var(--u)) 0 0 calc(24 * var(--u));
-  border-right: calc(3.2 * var(--u)) solid #fff;
-  border-top: calc(3.2 * var(--u)) solid #fff;
+  border-right: calc(3.2 * var(--u)) solid #facc15;
+  border-top: calc(3.2 * var(--u)) solid #facc15;
   transform: rotate(45deg);
 }
 

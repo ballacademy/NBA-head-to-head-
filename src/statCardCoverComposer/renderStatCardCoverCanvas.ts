@@ -30,6 +30,9 @@ import {
   SCC_DATE_SIZE,
   SCC_DATE_TRACK,
   SCC_FADE_H,
+  SCC_GOLD,
+  SCC_GOLD_DEEP,
+  SCC_GOLD_HAIR,
   SCC_LOCKUP_TOP,
   SCC_MARK,
   SCC_PILL_H,
@@ -131,6 +134,7 @@ const paintSeam = (
   x: number,
   height: number,
   width: number,
+  scale: number,
 ) => {
   const fade = context.createLinearGradient(x, 0, x + width, 0);
   fade.addColorStop(0, "rgba(0, 0, 0, 0)");
@@ -138,6 +142,16 @@ const paintSeam = (
   fade.addColorStop(1, "rgba(0, 0, 0, 0)");
   context.fillStyle = fade;
   context.fillRect(x, 0, width, height);
+  const goldW = SCC_GOLD_HAIR * scale;
+  const gx = x + width / 2 - goldW / 2;
+  const gold = context.createLinearGradient(0, 0, 0, height);
+  gold.addColorStop(0, "rgba(250, 204, 21, 0)");
+  gold.addColorStop(0.18, "rgba(212, 175, 55, 0.82)");
+  gold.addColorStop(0.5, "rgba(250, 204, 21, 0.95)");
+  gold.addColorStop(0.82, "rgba(212, 175, 55, 0.82)");
+  gold.addColorStop(1, "rgba(250, 204, 21, 0)");
+  context.fillStyle = gold;
+  context.fillRect(gx, height * 0.08, goldW, height * 0.8);
 };
 
 const drawCellPhoto = async (
@@ -259,7 +273,7 @@ const drawSwipeCue = (
   context.textAlign = "center";
   context.textBaseline = "bottom";
   setLetterSpacing(context, 0.28 * 11 * s);
-  context.fillStyle = "#fff";
+  context.fillStyle = SCC_GOLD;
   withShadow(context, s, () => {
     context.fillText("SWIPE", cx, cy - size / 2 - 6 * s);
   });
@@ -269,11 +283,11 @@ const drawSwipeCue = (
   context.fillStyle = "rgba(0, 0, 0, 0.42)";
   context.fill();
   context.lineWidth = 2 * s;
-  context.strokeStyle = "rgba(255, 255, 255, 0.88)";
+  context.strokeStyle = SCC_GOLD_DEEP;
   context.stroke();
   context.translate(cx + 2 * s, cy);
   context.rotate(Math.PI / 4);
-  context.strokeStyle = "#fff";
+  context.strokeStyle = SCC_GOLD;
   context.lineWidth = 3.2 * s;
   context.beginPath();
   context.moveTo(-7 * s, 7 * s);
@@ -340,7 +354,13 @@ export const renderStatCardCoverCanvas = async (
   }
 
   for (const seamX of coverSeamXs()) {
-    paintSeam(context, (seamX - SCC_SEAM_W / 2) * s, height, SCC_SEAM_W * s);
+    paintSeam(
+      context,
+      (seamX - SCC_SEAM_W / 2) * s,
+      height,
+      SCC_SEAM_W * s,
+      s,
+    );
   }
   paintTopFade(context, width, SCC_FADE_H * s);
   const scrim = context.createRadialGradient(
@@ -380,7 +400,7 @@ export const renderStatCardCoverCanvas = async (
       line,
       cx,
       cursor,
-      "#fff",
+      SCC_GOLD,
       "#000",
       3.4 * s,
       width - 200 * s,
@@ -392,13 +412,13 @@ export const renderStatCardCoverCanvas = async (
         line,
         cx,
         cursor,
-        "#fff",
+        SCC_GOLD,
         "#000",
         3.4 * s,
         width - 200 * s,
       );
     });
-    cursor += SCC_TITLE_SIZE * 0.84 * s + 2 * s;
+    cursor += SCC_TITLE_SIZE * 0.84 * s;
   }
   setLetterSpacing(context, 0);
   cursor += 14 * s;
@@ -423,6 +443,9 @@ export const renderStatCardCoverCanvas = async (
     context.arcTo(pillX, cursor, pillX + pillW, cursor, r);
     context.closePath();
     context.fill();
+    context.lineWidth = 2 * s;
+    context.strokeStyle = SCC_GOLD_DEEP;
+    context.stroke();
     context.fillStyle = "#111";
     context.textBaseline = "middle";
     context.fillText(date, cx, cursor + pillH / 2);

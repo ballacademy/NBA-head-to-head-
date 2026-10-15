@@ -31,6 +31,7 @@ describe("composer photo grade", () => {
     expect(gradeChannel(252)).toBeGreaterThanOrEqual(248);
     expect(PHOTO_GRADE_FILTER).toMatch(/contrast\(/);
     expect(PHOTO_GRADE_FILTER).toMatch(/saturate\(/);
+    expect(PHOTO_GRADE_FILTER).not.toMatch(/font/);
   });
 
   it("grades pixel buffers in place and skips empty pixels", () => {

@@ -27,25 +27,27 @@ export function ComposerTitleField({
   const lined = linedComposerTitle(value, lines);
   return (
     <div className="composer-title-stack">
-      {lines.map((line, index) => (
-        <span key={`title-line-${index}`} className={lineClassName}>
-          {line}
-        </span>
-      ))}
-      <textarea
-        className={inputClassName}
-        value={lined}
-        rows={Math.max(1, lines.length)}
-        maxLength={composerInputMaxLength(maxLength, lines.length)}
-        spellCheck={false}
-        aria-label={ariaLabel}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-          }
-        }}
-        onChange={(event) => onComposerTextChange(event, onChange, maxLength)}
-      />
+      <div className="composer-title-stack__paint">
+        {lines.map((line, index) => (
+          <span key={`title-line-${index}`} className={lineClassName}>
+            {line}
+          </span>
+        ))}
+        <textarea
+          className={inputClassName}
+          value={lined}
+          rows={Math.max(1, lines.length)}
+          maxLength={composerInputMaxLength(maxLength, lines.length)}
+          spellCheck={false}
+          aria-label={ariaLabel}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+            }
+          }}
+          onChange={(event) => onComposerTextChange(event, onChange, maxLength)}
+        />
+      </div>
     </div>
   );
 }

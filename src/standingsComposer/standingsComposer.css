@@ -396,6 +396,7 @@ main.sc-stage {
 .sc-stage__board-inner {
   position: absolute;
   inset: 0 auto auto 0;
+  transform: none;
 }
 
 .sc-stage__board-inner > article {
@@ -700,6 +701,24 @@ main.sc-stage {
   justify-content: center;
   width: 100%;
   pointer-events: none;
+}
+
+/* Shrink-wrap the painted glyphs so a 100%-tall stack still keeps the
+   transparent textarea on the same line boxes as the overlay. */
+.composer-title-stack__paint {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.composer-title-stack textarea {
+  display: block;
+  box-sizing: border-box;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 .ig-banner__sub-slot {

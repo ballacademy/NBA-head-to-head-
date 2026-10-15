@@ -9,6 +9,8 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SCC_COL_W,
+  SCC_GOLD,
+  SCC_GOLD_DEEP,
   SCC_SLOT_COUNT,
   coverCellRect,
   coverSeamXs,
@@ -88,6 +90,8 @@ describe("stat card cover", () => {
     });
     expect(coverCellRect(2).x + coverCellRect(2).w).toBe(GRAPHIC_WIDTH);
     expect(coverSeamXs()).toEqual([400, 800]);
+    expect(SCC_GOLD.toLowerCase()).toBe("#facc15");
+    expect(SCC_GOLD_DEEP.toLowerCase()).toBe("#d4af37");
   });
 
   it("defaults to a two-line STARS AND / STANDOUTS lockup with a date pill", () => {

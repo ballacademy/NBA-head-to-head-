@@ -4,7 +4,12 @@ import {
   GRAPHIC_WIDTH,
 } from "../standingsComposer/rankingState";
 
-/** Design-px board, scaled as a unit so type/overlays match the PNG. */
+/**
+ * Design-px board, scaled as a unit so type/overlays match the PNG.
+ * Use CSS `zoom` rather than `transform: scale()` — Chromium paints the
+ * caret in untransformed coordinates, so a scaled parent leaves the
+ * insertion point floating above the glyphs.
+ */
 export function ComposerBoard({
   children,
   width = GRAPHIC_WIDTH,
@@ -48,8 +53,7 @@ export function ComposerBoard({
         style={{
           width,
           height,
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
+          zoom: scale,
         }}
       >
         {children}

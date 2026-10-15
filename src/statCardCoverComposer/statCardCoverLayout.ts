@@ -30,6 +30,11 @@ export const SCC_MARK = 140;
 export const SCC_SWIPE_SIZE = 58;
 export const SCC_SWIPE_INSET = 28;
 export const SCC_LOCKUP_TOP = 56;
+/** Tasteful gold accents — lockup, seams, date pill, swipe. Not a flood. */
+export const SCC_GOLD_PALE = "#fde68a";
+export const SCC_GOLD = "#facc15";
+export const SCC_GOLD_DEEP = "#d4af37";
+export const SCC_GOLD_HAIR = 2;
 
 export const coverCellRect = (index: number) => {
   const col = Math.max(0, Math.min(index, SCC_SLOT_COUNT - 1));

@@ -222,20 +222,10 @@ export const renderStatCardCanvas = async (
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = STC_INK;
-    if (input.photoGrade) {
-      setLetterSpacing(context, type.value * s * -0.02);
-    }
     context.fillText(line.value.trim() || "—", cx, valueY, maxW);
-    setLetterSpacing(context, 0);
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
-    context.fillStyle = input.photoGrade
-      ? "rgba(17, 17, 17, 0.55)"
-      : STC_MUTED;
-    if (input.photoGrade) {
-      setLetterSpacing(context, type.label * s * 0.12);
-    }
+    context.fillStyle = STC_MUTED;
     context.fillText(line.label.trim().toUpperCase() || "STAT", cx, labelY);
-    setLetterSpacing(context, 0);
   };
 
   if (story) {
@@ -269,13 +259,8 @@ export const renderStatCardCanvas = async (
         context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillStyle = input.photoGrade
-          ? "rgba(17, 17, 17, 0.55)"
-          : STC_MUTED;
-        setLetterSpacing(
-          context,
-          STC_MATCHUP_SIZE * s * (input.photoGrade ? 0.08 : 0.06),
-        );
+        context.fillStyle = STC_MUTED;
+        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.06);
         context.fillText(
           matchup,
           statsX + statsW / 2,
@@ -312,13 +297,8 @@ export const renderStatCardCanvas = async (
         context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillStyle = input.photoGrade
-          ? "rgba(17, 17, 17, 0.55)"
-          : STC_MUTED;
-        setLetterSpacing(
-          context,
-          STC_MATCHUP_SIZE * s * (input.photoGrade ? 0.08 : 0.06),
-        );
+        context.fillStyle = STC_MUTED;
+        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.06);
         context.fillText(
           matchup,
           statsX + statsW / 2,
