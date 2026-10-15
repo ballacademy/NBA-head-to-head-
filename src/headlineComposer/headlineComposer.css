@@ -191,8 +191,8 @@
   clip-path: polygon(var(--plate-clip));
   transform: none;
   filter:
-    drop-shadow(0 0 0 calc(3 * var(--u)) #fff)
-    drop-shadow(0 0 0 calc(8 * var(--u)) #111);
+    drop-shadow(0 0 0 calc(2.5 * var(--u)) #fff)
+    drop-shadow(0 0 0 calc(9 * var(--u)) #0a0a0a);
   pointer-events: auto;
 }
 
@@ -212,7 +212,8 @@
   font-size: calc(var(--hl-size, 56) * var(--u));
   font-weight: 900;
   font-style: italic;
-  letter-spacing: 0.06em;
+  font-synthesis: none;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   line-height: 0.92;
   resize: none;
