@@ -240,7 +240,7 @@ export function HeadlineComposerApp() {
     if (!pickerOpen || subject === "team") {
       return;
     }
-    void night.ensureStandouts();
+    void night.ensureStandouts(night.date);
   }, [pickerOpen, subject, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {

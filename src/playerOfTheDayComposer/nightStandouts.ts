@@ -462,7 +462,9 @@ export const fetchNightStandouts = async (
       }),
     );
     const ranked = rankNightStandouts(batches.flat());
-    cache.set(date, ranked);
+    if (ranked.length > 0) {
+      cache.set(date, ranked);
+    }
     return ranked;
   } catch {
     return [];

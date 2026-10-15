@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 import {
   isoDateOnly,
@@ -13,14 +13,38 @@ import {
 export const COMPOSER_NIGHT_KEY = "ddgm:composer-night-date";
 export const COMPOSER_NIGHT_EVENT = "ddgm:composer-night-date";
 
-export const readComposerNightDate = (now = new Date()) => {
-  const stored = readJson<unknown>(COMPOSER_NIGHT_KEY);
-  return isoDateOnly(typeof stored === "string" ? stored : "") || nbaTodayIso(now);
+/** Keep Tonight / Last night (or a same-day custom date). Drop stale slates. */
+export const parseComposerNightDate = (
+  stored: unknown,
+  now = new Date(),
+) => {
+  const today = nbaTodayIso(now);
+  const yesterday = shiftIsoDate(today, -1);
+  let date = "";
+  let asOf = "";
+  if (typeof stored === "string") {
+    date = isoDateOnly(stored);
+  } else if (stored && typeof stored === "object") {
+    const rec = stored as { date?: unknown; asOf?: unknown };
+    date = isoDateOnly(String(rec.date ?? ""));
+    asOf = isoDateOnly(String(rec.asOf ?? ""));
+  }
+  if (date && asOf === today) {
+    return date;
+  }
+  if (date === today || date === yesterday) {
+    return date;
+  }
+  return today;
 };
 
+export const readComposerNightDate = (now = new Date()) =>
+  parseComposerNightDate(readJson<unknown>(COMPOSER_NIGHT_KEY), now);
+
 export const writeComposerNightDate = (iso: string, now = new Date()) => {
-  const next = isoDateOnly(iso) || nbaTodayIso(now);
-  writeJson(COMPOSER_NIGHT_KEY, next);
+  const today = nbaTodayIso(now);
+  const next = isoDateOnly(iso) || today;
+  writeJson(COMPOSER_NIGHT_KEY, { date: next, asOf: today });
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(COMPOSER_NIGHT_EVENT));
   }
@@ -54,13 +78,28 @@ export function useComposerNight() {
   const [date, setDateState] = useState(readComposerNightDate);
   const [standouts, setStandouts] = useState<NightStandout[]>([]);
   const [loading, setLoading] = useState(false);
+  const requestRef = useRef(0);
+  const dateRef = useRef(date);
+  dateRef.current = date;
 
   const setDate = useCallback((iso: string) => {
-    setDateState(writeComposerNightDate(iso));
+    const next = writeComposerNightDate(iso);
+    if (next !== dateRef.current) {
+      requestRef.current += 1;
+      setStandouts([]);
+    }
+    setDateState(next);
   }, []);
 
   useEffect(() => {
-    const sync = () => setDateState(readComposerNightDate());
+    const sync = () => {
+      const next = readComposerNightDate();
+      if (next !== dateRef.current) {
+        requestRef.current += 1;
+        setStandouts([]);
+      }
+      setDateState(next);
+    };
     const onStorage = (event: StorageEvent) => {
       if (event.key === COMPOSER_NIGHT_KEY || event.key === null) {
         sync();
@@ -74,16 +113,24 @@ export function useComposerNight() {
     };
   }, []);
 
-  const ensureStandouts = useCallback(async (iso = date) => {
+  const ensureStandouts = useCallback(async (iso?: string) => {
+    const target = isoDateOnly(iso ?? dateRef.current) || dateRef.current;
+    const id = requestRef.current + 1;
+    requestRef.current = id;
     setLoading(true);
     try {
-      const rows = await fetchNightStandouts(iso);
+      const rows = await fetchNightStandouts(target);
+      if (id !== requestRef.current) {
+        return rows;
+      }
       setStandouts(rows);
       return rows;
     } finally {
-      setLoading(false);
+      if (id === requestRef.current) {
+        setLoading(false);
+      }
     }
-  }, [date]);
+  }, []);
 
   return {
     date,

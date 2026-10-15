@@ -193,7 +193,7 @@ export function CompareComposerApp() {
     if (picker == null) {
       return;
     }
-    void night.ensureStandouts();
+    void night.ensureStandouts(night.date);
   }, [picker, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {

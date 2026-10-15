@@ -83,7 +83,7 @@ export function PlayerPicker({
   scoringLabel,
   toolbarExtra,
   suggested = [],
-  suggestedHeading = "Standouts",
+  suggestedHeading,
   suggestedLoading = false,
   onPick,
   onClear,
@@ -158,7 +158,13 @@ export function PlayerPicker({
         ),
     [suggested, rosterPlayers],
   );
+  const standoutHeading = suggestedHeading ?? "Standouts";
   const showSuggested = suggestedRows.length > 0 && !query.trim();
+  const showSuggestedSection =
+    !query.trim() &&
+    (suggestedLoading ||
+      suggestedRows.length > 0 ||
+      suggestedHeading != null);
   const suggestedIds = useMemo(
     () => new Set(suggestedRows.map((row) => row.id)),
     [suggestedRows],
@@ -454,31 +460,36 @@ export function PlayerPicker({
           </div>
         )}
         </div>
-        {suggestedLoading && !query.trim() ? (
-          <p className="sc-picker__suggested-status">Loading box scores…</p>
-        ) : null}
-        {showSuggested ? (
+        {showSuggestedSection ? (
           <div className="sc-picker__suggested">
-            <p className="sc-picker__suggested-label">{suggestedHeading}</p>
-            <div
-              className="sc-picker__grid sc-picker__grid--suggested"
-              aria-label={suggestedHeading}
-            >
-              {suggestedRows.map((row, index) => (
-                <PlayerButton
-                  key={`sug-${row.id}`}
-                  player={row.player}
-                  currentId={currentId}
-                  usedLabel={usedLabels[row.id]}
-                  showPpg={false}
-                  showDepth={false}
-                  badge={row.badge}
-                  metaOverride={row.meta}
-                  highlighted={activeIndex === index}
-                  onPick={onPick}
-                />
-              ))}
-            </div>
+            <p className="sc-picker__suggested-label">{standoutHeading}</p>
+            {suggestedLoading && suggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">Loading box scores…</p>
+            ) : suggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">
+                No standouts for this night yet.
+              </p>
+            ) : (
+              <div
+                className="sc-picker__grid sc-picker__grid--suggested"
+                aria-label={standoutHeading}
+              >
+                {suggestedRows.map((row, index) => (
+                  <PlayerButton
+                    key={`sug-${row.id}`}
+                    player={row.player}
+                    currentId={currentId}
+                    usedLabel={usedLabels[row.id]}
+                    showPpg={false}
+                    showDepth={false}
+                    badge={row.badge}
+                    metaOverride={row.meta}
+                    highlighted={activeIndex === index}
+                    onPick={onPick}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : null}
         <div className="sc-picker__grid">

@@ -180,7 +180,7 @@ export function PlayerOfTheDayComposerApp() {
     if (activeIndex == null) {
       return;
     }
-    void night.ensureStandouts();
+    void night.ensureStandouts(night.date);
   }, [activeIndex, night.date, night.ensureStandouts]);
 
   const handlePick = async (playerId: string) => {
