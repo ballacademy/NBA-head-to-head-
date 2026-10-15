@@ -113,10 +113,10 @@ const paintTopFade = (
   height: number,
 ) => {
   const fade = context.createLinearGradient(0, 0, 0, height);
-  fade.addColorStop(0, "rgba(0, 0, 0, 0.82)");
-  fade.addColorStop(0.28, "rgba(0, 0, 0, 0.62)");
-  fade.addColorStop(0.58, "rgba(0, 0, 0, 0.32)");
-  fade.addColorStop(0.84, "rgba(0, 0, 0, 0.08)");
+  fade.addColorStop(0, "rgba(0, 0, 0, 0.9)");
+  fade.addColorStop(0.22, "rgba(0, 0, 0, 0.72)");
+  fade.addColorStop(0.52, "rgba(0, 0, 0, 0.42)");
+  fade.addColorStop(0.78, "rgba(0, 0, 0, 0.12)");
   fade.addColorStop(1, "rgba(0, 0, 0, 0)");
   context.fillStyle = fade;
   context.fillRect(0, 0, width, height);
@@ -339,6 +339,19 @@ export const renderStatCardCoverCanvas = async (
 
   paintSeam(context, SCC_HERO_W * s, height, SCC_SEAM_W * s);
   paintTopFade(context, width, SCC_FADE_H * s);
+  const scrim = context.createRadialGradient(
+    width / 2,
+    140 * s,
+    20 * s,
+    width / 2,
+    140 * s,
+    520 * s,
+  );
+  scrim.addColorStop(0, "rgba(0, 0, 0, 0.55)");
+  scrim.addColorStop(0.58, "rgba(0, 0, 0, 0.18)");
+  scrim.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.fillStyle = scrim;
+  context.fillRect(0, 0, width, 360 * s);
 
   const cx = width / 2;
   let cursor = SCC_LOCKUP_TOP * s;

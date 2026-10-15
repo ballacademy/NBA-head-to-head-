@@ -148,7 +148,7 @@ export const defaultStatCardCoverDraft = (
     gameDate: today,
     slots: emptyCoverSlots(),
     showBa: true,
-    watermark: DEFAULT_COMPOSER_WATERMARK,
+    watermark: "off",
   };
 };
 

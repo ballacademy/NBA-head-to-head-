@@ -214,6 +214,7 @@ export const StatCardCoverGraphic = forwardRef<
         );
       })}
       <div className="scc-top-fade" aria-hidden="true" />
+      <div className="scc-lockup-scrim" aria-hidden="true" />
       <div className="scc-seam" aria-hidden="true" />
       <header className="scc-lockup">
         <input
