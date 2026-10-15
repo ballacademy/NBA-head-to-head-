@@ -231,15 +231,15 @@
 }
 
 .is-grade .pod-photo__img {
-  filter: contrast(1.28) saturate(1.08) brightness(1.03);
+  filter: contrast(1.42) saturate(1.12) brightness(0.97);
 }
 
 .is-grade .pod-photo.is-vignette .pod-photo__vignette {
   background: radial-gradient(
     ellipse 78% 72% at 50% 40%,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.12) 55%,
-    rgba(0, 0, 0, 0.52) 100%
+    rgba(0, 0, 0, 0.16) 55%,
+    rgba(0, 0, 0, 0.58) 100%
   );
 }
 

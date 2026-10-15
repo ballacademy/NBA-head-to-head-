@@ -164,6 +164,14 @@
 }
 
 .qt-quote:focus,
+.qt-source:placeholder-shown {
+  opacity: 0;
+}
+
+.qt-source:placeholder-shown:focus {
+  opacity: 1;
+}
+
 .qt-source:focus {
   outline: 1px dashed rgba(255, 255, 255, 0.45);
   outline-offset: 4px;

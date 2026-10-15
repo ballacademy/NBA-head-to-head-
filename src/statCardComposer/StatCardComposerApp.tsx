@@ -15,13 +15,13 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
-import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import {
   nightStandoutPickerRows,
   useComposerNight,
 } from "../instagramComposer/composerNight";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import {
   copyGraphicCaption,
   statCardLineCaption,
@@ -583,15 +583,31 @@ export function StatCardComposerApp() {
                 setExporting(true);
                 setStatus("Rendering pack…");
                 try {
+                  const feed = exportFilenameFromTitle(stem, "stat-card");
                   await downloadExportPack(
                     () =>
                       renderStatCardCanvas(
                         { ...draft, look, purpleFlair, photoGrade },
                         2,
                       ),
-                    exportFilenameFromTitle(stem, "stat-card"),
-                    [],
-                    { safe: true },
+                    feed,
+                    [
+                      {
+                        filename: storyFilename(feed),
+                        render: () =>
+                          renderStatCardCanvas(
+                            {
+                              ...draft,
+                              look,
+                              purpleFlair,
+                              photoGrade,
+                              story: true,
+                            },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {
@@ -619,9 +635,10 @@ export function StatCardComposerApp() {
       />
 
       <main className="sc-stage">
-        <div className="sc-stage__frame">
-          <div className="sc-board-wrap">
-          <ComposerBoard>
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
             <StatCardGraphic
               ref={boardRef}
               draft={draft}
@@ -629,6 +646,7 @@ export function StatCardComposerApp() {
               purpleFlair={purpleFlair}
               photoGrade={photoGrade}
               exporting={exporting}
+              story={storyCrop}
               onNameChange={(value) =>
                 setDraft((current) => applyPlayerName(current, value))
               }
@@ -675,15 +693,12 @@ export function StatCardComposerApp() {
               }
             />
           </ComposerBoard>
-          <StoryCropGuide on={storyCrop} />
-          </div>
           <p className="sc-hint">
             Empty photo first — pick a player for the team-color name bar and
-            3 huge stats on a light panel, then upload the action shot. Last-game
-            date can be tonight or last night. Drag a stat row on the graphic to
-            reorder Stat 1–8 in the HUD; Remove on any slot closes the rest up.
-            Matchup adds that night’s W/L and score under the stats. Downloads a
-            4:5 Instagram PNG — nothing is posted.
+            3 huge stats on a light panel, then upload the action shot. 9:16 is a
+            real story board (photo on top, stats in a row), not a letterboxed
+            4:5. Drag a stat row on the graphic to reorder Stat 1–8 in the HUD.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

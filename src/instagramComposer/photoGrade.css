@@ -1,0 +1,24 @@
+/* Match the export punch: crushed shadows, lifted mids, slight saturation. */
+.is-grade .pod-photo__img {
+  filter: contrast(1.42) saturate(1.12) brightness(0.97);
+}
+
+.is-grade .pod-photo.is-vignette .pod-photo__vignette {
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 40%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.16) 55%,
+    rgba(0, 0, 0, 0.58) 100%
+  );
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pod-photo__tool {
+    min-height: 44px;
+  }
+}

@@ -19,7 +19,13 @@ import {
   nightStandoutPickerRows,
   useComposerNight,
 } from "../instagramComposer/composerNight";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
+import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { renderStatCardCanvas } from "../statCardComposer/renderStatCardCanvas";
+import {
+  playerName,
+  statCardFromCoverSlot,
+} from "../statCardComposer/statCardState";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -459,19 +465,67 @@ export function StatCardCoverComposerApp() {
               onClick={() => {
                 void (async () => {
                   setExporting(true);
-                  setStatus("Rendering pack…");
+                  setStatus("Rendering cover pack…");
                   try {
-                    await downloadExportPack(
-                      () =>
-                        renderStatCardCoverCanvas(
-                          { ...draft, look, purpleFlair, photoGrade },
-                          2,
-                        ),
-                      exportFilenameFromTitle(stem, "stat-card-cover"),
-                      [],
-                      { safe: true },
+                    await night.ensureStandouts(night.date);
+                    const standoutsById = new Map(
+                      night.standouts.map((row) => [row.athleteId, row]),
                     );
-                    setStatus("Pack download started (4:5 + 9:16).");
+                    const files: Array<{ name: string; bytes: Uint8Array }> = [];
+                    const coverCanvas = await renderStatCardCoverCanvas(
+                      { ...draft, look, purpleFlair, photoGrade },
+                      2,
+                    );
+                    files.push({
+                      name: exportFilenameFromTitle(stem, "stat-card-cover"),
+                      bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
+                    });
+                    let index = 0;
+                    for (const slot of draft.slots) {
+                      const card = statCardFromCoverSlot(
+                        slot,
+                        standoutsById.get(slot.playerId ?? "")?.game ?? null,
+                        draft.gameDate,
+                      );
+                      if (!card) {
+                        continue;
+                      }
+                      index += 1;
+                      const cardCanvas = await renderStatCardCanvas(
+                        { ...card, look, purpleFlair, photoGrade },
+                        2,
+                      );
+                      files.push({
+                        name: exportFilenameFromTitle(
+                          playerName(card) || `stat-card-${index}`,
+                          "stat-card",
+                        ),
+                        bytes: await bytesFromBlob(
+                          await canvasToPngBlob(cardCanvas),
+                        ),
+                      });
+                    }
+                    const caption = graphicCaption(
+                      draft.title,
+                      coverSlotNames(draft),
+                      [draft.dateLine],
+                    );
+                    files.push({
+                      name: "caption.txt",
+                      bytes: new TextEncoder().encode(caption),
+                    });
+                    await downloadZip(
+                      exportFilenameFromTitle(stem, "stat-card-cover").replace(
+                        /\.png$/i,
+                        "-pack.zip",
+                      ),
+                      files,
+                    );
+                    setStatus(
+                      `Pack download started (cover + ${index} empty-photo stat card${
+                        index === 1 ? "" : "s"
+                      }).`,
+                    );
                   } catch (error) {
                     console.error(error);
                     setStatus("Could not export pack.");
@@ -545,11 +599,9 @@ export function StatCardCoverComposerApp() {
           </div>
           <p className="sc-hint">
             Stars and standouts cover for that night’s stat cards — three
-            full-bleed faces in one row, no individual stats. Tonight / Last
-            night fills the three most impressive standouts; empty slots stay
-            pickable.
-            Upload or paste to replace a photo. Downloads a 4:5 Instagram PNG —
-            nothing is posted.
+            full-bleed faces in one row, no individual stats. Export pack zips
+            the cover plus a Stat card for each standout (empty photo until you
+            paste). Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

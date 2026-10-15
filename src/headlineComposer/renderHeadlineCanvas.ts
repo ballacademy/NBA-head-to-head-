@@ -23,6 +23,7 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
   HL_BA_INSET,
   HL_BA_SIZE,
   HL_BODY_LINE,
@@ -145,14 +146,16 @@ export interface HeadlineRenderInput {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   showBa?: boolean;
+  story?: boolean;
 }
 
 export const renderHeadlineCanvas = async (
   input: HeadlineRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -242,6 +245,7 @@ export const renderHeadlineCanvas = async (
     nameUnder: names === "under" && Boolean(playerName),
     city: marks.city,
     nick: marks.nick,
+    boardH,
   });
 
   if (stack.fadeAt === "top") {

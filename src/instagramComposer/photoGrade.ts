@@ -8,7 +8,7 @@ export const PHOTO_GRADE_KEY = "ddgm:composer-photo-grade";
  * Canvas export uses the same string, then a pixel S-curve + unsharp.
  */
 export const PHOTO_GRADE_FILTER =
-  "contrast(1.28) saturate(1.08) brightness(1.03)";
+  "contrast(1.42) saturate(1.12) brightness(0.97)";
 
 /** Brighter Stat-card panel when the grade is on (after look ~#f3f3f3). */
 export const PHOTO_GRADE_PANEL = "#f3f3f3";

@@ -9,7 +9,11 @@ import { getTeamColors } from "../lib/teamColors";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import {
@@ -66,6 +70,7 @@ interface HeadlineGraphicProps {
   photoGrade?: boolean;
   showBa?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onHeadlineChange: (value: string) => void;
   onBodyChange: (value: string) => void;
   onPan: (pan: PhotoPan) => void;
@@ -98,6 +103,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       photoGrade = false,
       showBa = true,
       exporting = false,
+      story = false,
       onHeadlineChange,
       onBodyChange,
       onPan,
@@ -122,6 +128,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
     const kickerText = headlineDateKicker(gameDate, kicker);
     const playerName = headlinePlayerName({ firstName, lastName });
     const plateH = headlinePlateHeight(fit, names === "plate" && Boolean(playerName));
+    const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
     const stack = headlineTypeStack({
       bodyLines: Math.max(bodyLines.length, 1),
       plateH,
@@ -130,6 +137,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       nameUnder: names === "under" && Boolean(playerName),
       city: marks.city,
       nick: marks.nick,
+      boardH,
     });
     const markBox = headlineWatermarkBox(mode, stack);
     const teamColor = teamId ? getTeamColors(teamId).primary : "#ffffff";
@@ -175,6 +183,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
           stack.fadeAt === "top" ? "is-lockup-top" : "is-lockup-bottom",
+          story ? "is-story" : "",
         ]
           .filter(Boolean)
           .join(" ")}
