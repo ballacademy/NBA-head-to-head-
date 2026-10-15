@@ -524,3 +524,27 @@ export const removeStatCardLine = (stats: StatCardLine[], index: number) => {
   }
   return keepMinLast(stats.filter((_, lineIndex) => lineIndex !== index));
 };
+
+/** Graphic drag: keep the dropped order, including MIN off last. */
+export const moveStatCardLine = (
+  stats: StatCardLine[],
+  fromIndex: number,
+  toIndex: number,
+): StatCardLine[] => {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= stats.length ||
+    toIndex >= stats.length
+  ) {
+    return stats;
+  }
+  const next = [...stats];
+  const [moved] = next.splice(fromIndex, 1);
+  if (!moved) {
+    return stats;
+  }
+  next.splice(toIndex, 0, moved);
+  return next;
+};

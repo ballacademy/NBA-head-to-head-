@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   composerFlairClass,
   composerLookClass,
@@ -42,6 +48,7 @@ interface StatCardGraphicProps {
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
   onRemoveStat?: (index: number) => void;
+  onMoveStat?: (fromIndex: number, toIndex: number) => void;
 }
 
 export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
@@ -59,11 +66,25 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       onUpload,
       onPick,
       onRemoveStat,
+      onMoveStat,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const dragRef = useRef<{
+      from: number;
+      x: number;
+      y: number;
+      moved: boolean;
+    } | null>(null);
+    const onMoveStatRef = useRef(onMoveStat);
+    onMoveStatRef.current = onMoveStat;
+    const dragListenersRef = useRef<(() => void) | null>(null);
     const [unit, setUnit] = useState(1);
+    const [dropIndex, setDropIndex] = useState<number | null>(null);
+    const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
+    const dragEnabled =
+      !exporting && Boolean(onMoveStat) && draft.stats.length > 1;
     const team = getTeam(draft.teamId);
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
@@ -79,6 +100,88 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       }
     };
 
+    const rowIndexFromPoint = (x: number, y: number) => {
+      const node = document.elementFromPoint(x, y);
+      if (!(node instanceof Element)) {
+        return null;
+      }
+      const row = node.closest(".stc-row");
+      const raw = row?.getAttribute("data-index");
+      const index = Number.parseInt(raw ?? "", 10);
+      return Number.isInteger(index) ? index : null;
+    };
+
+    const stopDragListeners = () => {
+      dragListenersRef.current?.();
+      dragListenersRef.current = null;
+    };
+
+    const startStatDrag = (index: number, event: ReactPointerEvent) => {
+      if (!dragEnabled || event.button !== 0) {
+        return;
+      }
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".stc-row__remove")
+      ) {
+        return;
+      }
+      stopDragListeners();
+      dragRef.current = {
+        from: index,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+      };
+
+      const onMove = (moveEvent: PointerEvent) => {
+        const drag = dragRef.current;
+        if (!drag) {
+          return;
+        }
+        if (
+          !drag.moved &&
+          Math.hypot(moveEvent.clientX - drag.x, moveEvent.clientY - drag.y) > 8
+        ) {
+          drag.moved = true;
+          setDraggingFrom(drag.from);
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }
+        if (drag.moved) {
+          moveEvent.preventDefault();
+          const over = rowIndexFromPoint(moveEvent.clientX, moveEvent.clientY);
+          setDropIndex(over != null && over !== drag.from ? over : null);
+        }
+      };
+
+      const finish = (endEvent: PointerEvent) => {
+        stopDragListeners();
+        const drag = dragRef.current;
+        dragRef.current = null;
+        setDropIndex(null);
+        setDraggingFrom(null);
+        if (!drag?.moved) {
+          return;
+        }
+        const toIndex = rowIndexFromPoint(endEvent.clientX, endEvent.clientY);
+        const move = onMoveStatRef.current;
+        if (move && toIndex != null && toIndex !== drag.from) {
+          move(drag.from, toIndex);
+        }
+      };
+
+      window.addEventListener("pointermove", onMove, { passive: false });
+      window.addEventListener("pointerup", finish);
+      window.addEventListener("pointercancel", finish);
+      dragListenersRef.current = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", finish);
+        window.removeEventListener("pointercancel", finish);
+      };
+    };
+
     useLayoutEffect(() => {
       const node = localRef.current;
       if (!node) {
@@ -92,11 +195,14 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       };
       sync();
       if (typeof ResizeObserver === "undefined") {
-        return;
+        return () => stopDragListeners();
       }
       const observer = new ResizeObserver(sync);
       observer.observe(node);
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        stopDragListeners();
+      };
     }, []);
 
     return (
@@ -160,7 +266,22 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             </div>
           ) : null}
           {draft.stats.map((line, index) => (
-            <div key={`${line.key}-${index}`} className="stc-row">
+            <div
+              key={`${line.key}-${index}`}
+              data-index={index}
+              className={[
+                "stc-row",
+                dragEnabled ? "stc-row--movable" : "",
+                draggingFrom === index ? "stc-row--dragging" : "",
+                dropIndex === index ? "is-drop" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onPointerDown={(event) => startStatDrag(index, event)}
+            >
+              {dragEnabled ? (
+                <span className="stc-row__grip" aria-hidden="true" />
+              ) : null}
               {onRemoveStat && draft.stats.length > 1 ? (
                 <button
                   type="button"

@@ -86,10 +86,6 @@
   object-fit: contain;
 }
 
-.stc-row {
-  z-index: 1;
-}
-
 .stc-hairline {
   position: absolute;
   left: calc(745 * var(--u));
@@ -103,12 +99,61 @@
 
 .stc-row {
   position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 0;
+}
+
+.stc-row--movable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.stc-row--movable .stc-value,
+.stc-row--movable .stc-label {
+  cursor: grab;
+}
+
+.stc-row--dragging {
+  z-index: 2;
+  cursor: grabbing;
+  opacity: 0.62;
+}
+
+.stc-row--dragging .stc-value,
+.stc-row--dragging .stc-label {
+  cursor: grabbing;
+}
+
+.stc-row.is-drop::after {
+  content: "";
+  position: absolute;
+  inset: calc(8 * var(--u));
+  z-index: 3;
+  pointer-events: none;
+  border: calc(3 * var(--u)) solid rgba(17, 17, 17, 0.72);
+}
+
+.stc-row__grip {
+  position: absolute;
+  left: calc(12 * var(--u));
+  top: 50%;
+  z-index: 3;
+  width: calc(14 * var(--u));
+  height: calc(36 * var(--u));
+  transform: translateY(-50%);
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(17, 17, 17, 0.38) 0 1.2px,
+    transparent 1.35px
+  );
+  background-size: calc(7 * var(--u)) calc(7 * var(--u));
+  background-repeat: repeat;
 }
 
 .stc-row__remove {
@@ -233,7 +278,8 @@
 }
 
 .stc-board.is-exporting .pod-photo__tools,
-.stc-board.is-exporting .stc-row__remove {
+.stc-board.is-exporting .stc-row__remove,
+.stc-board.is-exporting .stc-row__grip {
   display: none;
 }
 

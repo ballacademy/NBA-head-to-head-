@@ -62,6 +62,7 @@ import {
   parseStatCardKey,
   parseStatCardSource,
   playerName,
+  moveStatCardLine,
   removeStatCardLine,
   setStatCardLineKey,
   setStatCardPhoto,
@@ -201,7 +202,7 @@ export function StatCardComposerApp() {
     if (!pickerOpen || source !== "last-game") {
       return;
     }
-    void night.ensureStandouts();
+    void night.ensureStandouts(night.date);
   }, [pickerOpen, source, night.date, night.ensureStandouts]);
 
   const handleExport = async (filename?: string, story = false) => {
@@ -375,6 +376,7 @@ export function StatCardComposerApp() {
         filters={
           <>
         <span className="sc-toolbar__eyebrow">On-card stats</span>
+        <p className="sc-hint">Drag a row on the graphic to reorder these slots.</p>
         {draft.stats.map((line, index) => (
           <div
             key={`${line.key}-${index}`}
@@ -639,6 +641,12 @@ export function StatCardComposerApp() {
                 setDraft(next);
                 void fillStats(next);
               }}
+              onMoveStat={(fromIndex, toIndex) => {
+                setDraft((current) => ({
+                  ...current,
+                  stats: moveStatCardLine(current.stats, fromIndex, toIndex),
+                }));
+              }}
             />
           </ComposerBoard>
           <StoryCropGuide on={storyCrop} />
@@ -646,9 +654,9 @@ export function StatCardComposerApp() {
           <p className="sc-hint">
             Empty photo first — pick a player for the team-color name bar and
             3 huge stats on a light panel, then upload the action shot. Last-game
-            date can be tonight or last night. Stat 1–8 in the HUD match the
-            card; Remove on any slot closes the rest up. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            date can be tonight or last night. Drag a stat row on the graphic to
+            reorder Stat 1–8 in the HUD; Remove on any slot closes the rest up.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

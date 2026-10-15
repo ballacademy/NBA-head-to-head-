@@ -27,6 +27,7 @@ import {
   fillStatCardFromStandout,
   keepMinLast,
   lastGameValueForKey,
+  moveStatCardLine,
   notableStatCardLines,
   nextStatCardLine,
   normalizeStatCardDraft,
@@ -109,6 +110,27 @@ describe("stat card composer", () => {
     ).toEqual(["pts", "blk", "min"]);
     const swapped = setStatCardLineKey(draft.stats, 1, "blk", "last-game");
     expect(swapped.map((line) => line.label)).toEqual(["PTS", "BLK", "AST"]);
+    const stacked: typeof draft.stats = [
+      { key: "pts", label: "PTS", value: "22" },
+      { key: "reb", label: "REB", value: "8" },
+      { key: "ast", label: "AST", value: "6" },
+      { key: "min", label: "MIN", value: "23" },
+    ];
+    expect(moveStatCardLine(stacked, 3, 1).map((line) => line.key)).toEqual([
+      "pts",
+      "min",
+      "reb",
+      "ast",
+    ]);
+    expect(moveStatCardLine(stacked, 0, 2).map((line) => line.key)).toEqual([
+      "reb",
+      "ast",
+      "pts",
+      "min",
+    ]);
+    expect(moveStatCardLine(stacked, 1, 1)).toBe(stacked);
+    expect(moveStatCardLine(stacked, -1, 0)).toBe(stacked);
+    expect(moveStatCardLine(stacked, 0, 9)).toBe(stacked);
     const restored = normalizeStatCardDraft({
       ...draft,
       stats: four,
