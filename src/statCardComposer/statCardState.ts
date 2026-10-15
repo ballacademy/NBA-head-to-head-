@@ -40,6 +40,7 @@ export { clampPan, type PhotoPan };
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
 export const STC_NAME_MAX = 32;
+export const STC_MATCHUP_MAX = 28;
 export const STC_STAT_COUNT = 3;
 export const STC_STAT_MAX = 8;
 
@@ -74,6 +75,8 @@ export interface StatCardDraft {
   season?: string;
   gameDate?: string | null;
   showBa?: boolean;
+  showMatchup?: boolean;
+  matchup?: string;
   watermark?: ComposerWatermark;
 }
 
@@ -168,6 +171,8 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   season: everyTeamCurrentSeason(),
   gameDate: nbaTodayIso(),
   showBa: true,
+  showMatchup: false,
+  matchup: "",
   watermark: DEFAULT_COMPOSER_WATERMARK,
 });
 
@@ -183,6 +188,8 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
     .map((line) => ({ ...line })),
   gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
   showBa: draft.showBa !== false,
+  showMatchup: draft.showMatchup === true,
+  matchup: clipStatMatchup(draft.matchup ?? ""),
   watermark: parseComposerWatermark(draft.watermark),
 });
 
@@ -202,6 +209,53 @@ export const clipStatValue = (value: string) =>
 
 export const clipStatLabel = (value: string) =>
   value.replace(/\s+/g, " ").trim().toUpperCase().slice(0, STC_LABEL_MAX);
+
+export const clipStatMatchup = (value: string) =>
+  value.replace(/\s+/g, " ").trim().slice(0, STC_MATCHUP_MAX);
+
+const wlToken = (result: string) => {
+  const token = String(result ?? "").trim().toUpperCase();
+  if (token.startsWith("W")) {
+    return "W";
+  }
+  if (token.startsWith("L")) {
+    return "L";
+  }
+  return "";
+};
+
+const scoreToken = (value: string) => {
+  const match = String(value ?? "").match(/(\d+)/);
+  return match?.[1] ?? "";
+};
+
+/** Home: `W vs OKC 111–109`. Away: `L 103–129 @ IND`. */
+export const formatStatCardMatchup = (
+  game: Pick<
+    LastGame,
+    "result" | "playerScore" | "opponentScore" | "opponentAbbrev" | "home"
+  > | null,
+) => {
+  if (!game) {
+    return "";
+  }
+  const result = wlToken(game.result);
+  const ours = scoreToken(game.playerScore);
+  const theirs = scoreToken(game.opponentScore);
+  const opp = String(game.opponentAbbrev ?? "")
+    .trim()
+    .toUpperCase()
+    .slice(0, 3);
+  if (!result || !ours || !theirs || !opp) {
+    return "";
+  }
+  const score = `${ours}–${theirs}`;
+  return clipStatMatchup(
+    game.home === false
+      ? `${result} ${score} @ ${opp}`
+      : `${result} vs ${opp} ${score}`,
+  );
+};
 
 export const setStatCardPhoto = (draft: StatCardDraft, photoSrc: string) => ({
   ...draft,
@@ -422,6 +476,7 @@ export const fillStatCardFromGame = (
   return {
     ...draft,
     source: "last-game",
+    matchup: formatStatCardMatchup(game),
     stats: draft.stats.map((line) => ({
       ...line,
       label: gameLabelFor(line),
@@ -440,6 +495,7 @@ export const fillStatCardFromStandout = (
   return {
     ...draft,
     source: "last-game",
+    matchup: formatStatCardMatchup(game),
     stats: notableStatCardLines(game.stats, getPlayer(draft.playerId)),
   };
 };

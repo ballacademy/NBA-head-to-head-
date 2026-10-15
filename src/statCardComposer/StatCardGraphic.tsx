@@ -26,9 +26,11 @@ import { getTeam } from "../standingsComposer/teams";
 import { inkOnHex, statCardType } from "./statCardLayout";
 import {
   clipStatLabel,
+  clipStatMatchup,
   clipStatValue,
   playerName,
   STC_LABEL_MAX,
+  STC_MATCHUP_MAX,
   STC_NAME_MAX,
   STC_VALUE_MAX,
   type StatCardDraft,
@@ -49,6 +51,7 @@ interface StatCardGraphicProps {
   onPick: () => void;
   onRemoveStat?: (index: number) => void;
   onMoveStat?: (fromIndex: number, toIndex: number) => void;
+  onMatchupChange?: (value: string) => void;
 }
 
 export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
@@ -67,6 +70,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       onPick,
       onRemoveStat,
       onMoveStat,
+      onMatchupChange,
     },
     ref,
   ) {
@@ -313,6 +317,20 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
               />
             </div>
           ))}
+          {draft.showMatchup ? (
+            <div className="stc-matchup">
+              <input
+                className="stc-matchup__line"
+                value={draft.matchup ?? ""}
+                maxLength={STC_MATCHUP_MAX}
+                placeholder="W vs OKC 111–109"
+                aria-label="Game matchup"
+                onChange={(event) =>
+                  onMatchupChange?.(clipStatMatchup(event.target.value))
+                }
+              />
+            </div>
+          ) : null}
         </div>
         <div className="stc-name-bar">
           <input

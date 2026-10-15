@@ -8,8 +8,11 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STC_MATCHUP_H,
   STC_PHOTO_W,
+  STC_STATS_X,
   STC_VALUE_SIZE,
+  statCardRows,
   statCardType,
 } from "./statCardLayout";
 import {
@@ -25,6 +28,7 @@ import {
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
   fillStatCardFromStandout,
+  formatStatCardMatchup,
   keepMinLast,
   lastGameValueForKey,
   moveStatCardLine,
@@ -47,7 +51,10 @@ const box = (stats: Partial<LastGameStats>): LastGameStats => ({
   ...stats,
 });
 
-const gameFrom = (stats: Partial<LastGameStats>): LastGame => ({
+const gameFrom = (
+  stats: Partial<LastGameStats>,
+  extra: Partial<LastGame> = {},
+): LastGame => ({
   eventId: "1",
   gameDate: "2026-10-14",
   teamId: "MIL",
@@ -56,8 +63,10 @@ const gameFrom = (stats: Partial<LastGameStats>): LastGame => ({
   result: "W",
   playerScore: "120",
   opponentScore: "110",
+  home: true,
   resultLine: "W",
   dateLabel: "10/14",
+  ...extra,
   stats: box(stats),
 });
 
@@ -75,6 +84,8 @@ describe("stat card composer", () => {
     expect(draft.source).toBe("last-game");
     expect(draft.gameDate).toBe(nbaTodayIso());
     expect(draft.showBa).toBe(true);
+    expect(draft.showMatchup).toBe(false);
+    expect(draft.matchup).toBe("");
   });
 
   it("keeps the editor list identical to the stats on the card", () => {
@@ -464,5 +475,69 @@ describe("stat card composer", () => {
       "4-12 3PM",
     );
     expect(volumeThrees.map((line) => line.label)).not.toContain("FG");
+  });
+
+  it("formats that night's W/L and score in the stats column, off by default", () => {
+    expect(
+      formatStatCardMatchup({
+        result: "W",
+        playerScore: "111",
+        opponentScore: "109",
+        opponentAbbrev: "OKC",
+        home: true,
+      }),
+    ).toBe("W vs OKC 111–109");
+    expect(
+      formatStatCardMatchup({
+        result: "L",
+        playerScore: "103",
+        opponentScore: "129",
+        opponentAbbrev: "IND",
+        home: false,
+      }),
+    ).toBe("L 103–129 @ IND");
+    const filled = fillStatCardFromGame(
+      defaultStatCardDraft(),
+      gameFrom(
+        { pts: "19" },
+        {
+          opponentAbbrev: "MIA",
+          playerScore: "120",
+          opponentScore: "110",
+          result: "W",
+          home: true,
+        },
+      ),
+    );
+    expect(filled.showMatchup).toBe(false);
+    expect(filled.matchup).toBe("W vs MIA 120–110");
+    const away = fillStatCardFromStandout(
+      { ...defaultStatCardDraft(), showMatchup: true },
+      gameFrom(
+        { pts: "22" },
+        {
+          opponentAbbrev: "IND",
+          playerScore: "103",
+          opponentScore: "129",
+          result: "L",
+          home: false,
+        },
+      ),
+    );
+    expect(away.matchup).toBe("L 103–129 @ IND");
+    const restored = normalizeStatCardDraft({
+      ...defaultStatCardDraft(),
+      showMatchup: true,
+      matchup: "W vs OKC 111–109",
+    });
+    expect(restored.showMatchup).toBe(true);
+    expect(normalizeStatCardDraft(defaultStatCardDraft()).showMatchup).toBe(
+      false,
+    );
+    expect(STC_MATCHUP_H).toBe(86);
+    expect(STC_STATS_X).toBe(748);
+    const fitted = statCardRows(3, GRAPHIC_HEIGHT - STC_MATCHUP_H);
+    expect(fitted[2]!.y + fitted[2]!.h).toBe(GRAPHIC_HEIGHT - STC_MATCHUP_H);
+    expect(statCardRows(3)[2]!.h).toBeGreaterThan(fitted[2]!.h);
   });
 });

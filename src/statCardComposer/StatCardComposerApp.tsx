@@ -50,12 +50,14 @@ import {
   addStatCardLine,
   applyPlayerName,
   clipStatLabel,
+  clipStatMatchup,
   clearStatCardSubject,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
   fillStatCardFromStandout,
+  formatStatCardMatchup,
   hasCustomPhoto,
   isStatCardDraft,
   normalizeStatCardDraft,
@@ -462,6 +464,27 @@ export function StatCardComposerApp() {
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
             <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Matchup</span>
+              <button
+                type="button"
+                className={draft.showMatchup ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={Boolean(draft.showMatchup)}
+                aria-label="Show game matchup"
+                onClick={() => {
+                  setDraft((current) => {
+                    const showMatchup = !current.showMatchup;
+                    const matchup =
+                      showMatchup && !clipStatMatchup(current.matchup ?? "")
+                        ? formatStatCardMatchup(lastGameRef.current)
+                        : current.matchup;
+                    return { ...current, showMatchup, matchup };
+                  });
+                }}
+              >
+                {draft.showMatchup ? "On" : "Off"}
+              </button>
+            </label>
             <BaMarkToggle
               on={draft.showBa !== false}
               onChange={(showBa) =>
@@ -647,6 +670,9 @@ export function StatCardComposerApp() {
                   stats: moveStatCardLine(current.stats, fromIndex, toIndex),
                 }));
               }}
+              onMatchupChange={(matchup) =>
+                setDraft((current) => ({ ...current, matchup }))
+              }
             />
           </ComposerBoard>
           <StoryCropGuide on={storyCrop} />
@@ -656,7 +682,8 @@ export function StatCardComposerApp() {
             3 huge stats on a light panel, then upload the action shot. Last-game
             date can be tonight or last night. Drag a stat row on the graphic to
             reorder Stat 1–8 in the HUD; Remove on any slot closes the rest up.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            Matchup adds that night’s W/L and score under the stats. Downloads a
+            4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

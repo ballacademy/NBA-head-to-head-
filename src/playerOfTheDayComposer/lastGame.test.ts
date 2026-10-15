@@ -329,6 +329,7 @@ describe("last NBA game parsing", () => {
     const game = parseLastGamePayload(payload(), "preseason", PRIOR_SEASON);
     expect(game?.eventId).toBe("401812725");
     expect(game?.resultLine).toBe("90-100 W VS LAC");
+    expect(game?.home).toBe(false);
     expect(game?.dateLabel).toBe("10/8");
     expect(game?.stats.min).toBe("23");
     expect(game?.stats.pts).toBe("8");

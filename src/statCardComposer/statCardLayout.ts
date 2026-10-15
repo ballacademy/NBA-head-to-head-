@@ -48,6 +48,9 @@ export const STC_NAME_TRACK = 0.14;
 export const STC_LOGO = 92;
 export const STC_LOGO_INSET = 16;
 export const STC_DIVIDER = 2;
+/** Footer in the stats column only — never over the photo or name bar. */
+export const STC_MATCHUP_H = 86;
+export const STC_MATCHUP_SIZE = 20;
 
 export const inkOnHex = (hex: string) => {
   const raw = hex.replace("#", "");
@@ -58,8 +61,11 @@ export const inkOnHex = (hex: string) => {
   return l > 0.58 ? "#111111" : "#ffffff";
 };
 
-export const statCardRows = (count = STC_STAT_COUNT) => {
-  const h = GRAPHIC_HEIGHT / count;
+export const statCardRows = (
+  count = STC_STAT_COUNT,
+  height = GRAPHIC_HEIGHT,
+) => {
+  const h = height / count;
   return Array.from({ length: count }, (_, index) => ({
     y: index * h,
     h,

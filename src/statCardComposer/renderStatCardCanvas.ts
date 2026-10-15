@@ -33,6 +33,8 @@ import {
   STC_INK,
   STC_LOGO,
   STC_LOGO_INSET,
+  STC_MATCHUP_H,
+  STC_MATCHUP_SIZE,
   STC_MUTED,
   STC_NAME_SIZE,
   STC_NAME_TRACK,
@@ -170,7 +172,12 @@ export const renderStatCardCanvas = async (
     }
   }
 
-  const rows = statCardRows(input.stats.length);
+  const showMatchup = input.showMatchup === true;
+  const matchup = showMatchup ? (input.matchup ?? "").trim() : "";
+  const statsHeight = showMatchup
+    ? GRAPHIC_HEIGHT - STC_MATCHUP_H
+    : GRAPHIC_HEIGHT;
+  const rows = statCardRows(input.stats.length, statsHeight);
   const type = statCardType(input.stats.length);
   input.stats.forEach((line, index) => {
     const row = rows[index]!;
@@ -211,6 +218,32 @@ export const renderStatCardCanvas = async (
     );
     setLetterSpacing(context, 0);
   });
+
+  if (showMatchup) {
+    const bandY = statsHeight * s;
+    context.fillStyle = STC_RULE;
+    context.fillRect(statsX + 36 * s, bandY, statsW - 72 * s, 2 * s);
+    if (matchup) {
+      context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = input.photoGrade
+        ? "rgba(17, 17, 17, 0.55)"
+        : STC_MUTED;
+      if (input.photoGrade) {
+        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.08);
+      } else {
+        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.06);
+      }
+      context.fillText(
+        matchup,
+        statsX + statsW / 2,
+        bandY + (STC_MATCHUP_H * s) / 2,
+        statsW - 28 * s,
+      );
+      setLetterSpacing(context, 0);
+    }
+  }
 
   const team = getTeam(input.teamId);
   const colors = getTeamColors(input.teamId ?? "");

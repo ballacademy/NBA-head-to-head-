@@ -59,6 +59,8 @@ export interface LastGame {
   result: "W" | "L" | string;
   playerScore: string;
   opponentScore: string;
+  /** True when the player's team is at home. */
+  home?: boolean;
   resultLine: string;
   dateLabel: string;
   stats: LastGameStats;
@@ -306,6 +308,7 @@ export const gameFromEvent = (
     result,
     playerScore,
     opponentScore,
+    home: playerIsHome,
     resultLine: formatResultLine(
       playerScore,
       opponentScore,
@@ -522,6 +525,7 @@ export const parseTeamScheduleLastNight = (
       result,
       playerScore,
       opponentScore,
+      home: ours.homeAway !== "away",
       resultLine: formatResultLine(
         playerScore,
         opponentScore,
