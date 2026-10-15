@@ -61,6 +61,14 @@ const headlineApp = readFileSync(
   join(root, "headlineComposer/HeadlineComposerApp.tsx"),
   "utf8",
 );
+const headlineCss = readFileSync(
+  join(root, "headlineComposer/headlineComposer.css"),
+  "utf8",
+);
+const headlineGraphic = readFileSync(
+  join(root, "headlineComposer/HeadlineGraphic.tsx"),
+  "utf8",
+);
 const lastGame = readFileSync(
   join(root, "playerOfTheDayComposer/lastGame.ts"),
   "utf8",
@@ -179,6 +187,17 @@ describe("composer chrome", () => {
     expect(lastGame).not.toMatch(
       /sample === "preseason" && !night\.game/,
     );
+  });
+
+  it("restyles Headline as a photo | team-panel split with a chevron kicker", () => {
+    expect(headlineCss).toContain(".hl-panel");
+    expect(headlineCss).toContain(".hl-chevron");
+    expect(headlineCss).toContain(".hl-logo");
+    expect(headlineGraphic).toContain("headlineSplitLayout");
+    expect(headlineGraphic).toContain("hl-chevron");
+    expect(headlineApp).toContain("Kicker");
+    expect(headlineApp).not.toContain("aria-label=\"Headline plate color\"");
+    expect(headlineApp).not.toContain("aria-label=\"Team watermark\"");
   });
 
   it("fills TOTW Plus as a 2/2/1 week plus surprise non-stars", () => {

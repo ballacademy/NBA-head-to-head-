@@ -2,10 +2,8 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import { getTeamColors } from "../lib/teamColors";
 import {
   PHOTO_GRADE_FILTER,
   applyPhotoGrade,
@@ -24,43 +22,18 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   STORY_DESIGN_HEIGHT,
-  HL_BA_INSET,
-  HL_BA_SIZE,
   HL_BODY_LINE,
   HL_BODY_SIZE,
   HL_BODY_TRACK,
-  HL_FADE_H,
-  HL_HEADLINE_PAD_X,
+  HL_FAMILY_TRACK,
   HL_HEADLINE_TRACK,
-  HL_KICKER_SIZE,
-  HL_NAME_SIZE,
-  HL_OPP_MARK,
-  HL_PAD_X,
-  HL_PLATE_SKEW,
-  HL_WORDMARK_TRACK,
-  fitHeadlineType,
-  headlineDateKicker,
-  headlinePlateHeight,
-  headlineTypeStack,
-  headlineWatermarkBox,
-  parseHeadlineKickerMode,
-  parseHeadlineLockup,
-  parseHeadlineNamePlacement,
-  parseHeadlinePlateColor,
-  parseHeadlineWatermark,
-  plateFillHex,
-  plateInkHex,
-  type HeadlineKickerMode,
-  type HeadlineLockup,
-  type HeadlineNamePlacement,
-  type HeadlinePlateColor,
+  HL_NAME_TRACK,
+  headlinePanelHex,
+  headlineSplitLayout,
   type HeadlineSubjectMode,
-  type HeadlineWatermark,
 } from "./headlineLayout";
 import {
-  headlineBodyLines,
   headlineLabel,
-  headlinePlayerName,
   splitTeamWordmark,
   type HeadlineDraft,
 } from "./headlineState";
@@ -89,39 +62,20 @@ const setLetterSpacing = (
   return false;
 };
 
-const strokeFillText = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  fill: string,
-  stroke: string,
-  strokeWidth: number,
-) => {
-  context.lineJoin = "round";
-  context.miterLimit = 2;
-  if (strokeWidth > 0) {
-    context.strokeStyle = stroke;
-    context.lineWidth = strokeWidth;
-    context.strokeText(text, x, y);
-  }
-  context.fillStyle = fill;
-  context.fillText(text, x, y);
-};
-
-const parallelogramPath = (
+const chevronPath = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
-  skew: number,
+  rise: number,
 ) => {
   context.beginPath();
-  context.moveTo(x + skew, y);
-  context.lineTo(x + w - skew, y);
+  context.moveTo(x, y + h / 2);
+  context.lineTo(x + rise, y);
+  context.lineTo(x + w, y);
   context.lineTo(x + w, y + h);
-  context.lineTo(x, y + h);
+  context.lineTo(x + rise, y + h);
   context.closePath();
 };
 
@@ -133,15 +87,7 @@ export interface HeadlineRenderInput {
   lastName?: string;
   photoSrc: string | null;
   pan: HeadlineDraft["pan"];
-  watermark?: HeadlineWatermark;
-  plateColor?: HeadlinePlateColor;
-  lockup?: HeadlineLockup;
-  namePlacement?: HeadlineNamePlacement;
-  showOpponentMark?: boolean;
-  kickerMode?: HeadlineKickerMode;
   subjectMode?: HeadlineSubjectMode;
-  opponentId?: string | null;
-  gameDate?: string | null;
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
@@ -165,33 +111,36 @@ export const renderHeadlineCanvas = async (
   }
 
   const headline = headlineLabel(input.headline);
-  const fit = fitHeadlineType(headline);
-  const names = parseHeadlineNamePlacement(input.namePlacement);
-  const place = parseHeadlineLockup(input.lockup);
-  const kicker = parseHeadlineKickerMode(input.kickerMode);
-  const plate = parseHeadlinePlateColor(input.plateColor);
-  const mode = parseHeadlineWatermark(input.watermark);
-  const playerName = headlinePlayerName({
+  const team = getTeam(input.teamId);
+  const marks = splitTeamWordmark(team);
+  const layout = headlineSplitLayout({
+    headline,
+    body: input.body,
     firstName: input.firstName ?? "",
     lastName: input.lastName ?? "",
+    city: marks.city,
+    nick: marks.nick,
+    boardH,
+    showBa: input.showBa !== false,
   });
-  const kickerText = headlineDateKicker(input.gameDate, kicker);
-  const plateHFit = headlinePlateHeight(
-    fit,
-    names === "plate" && Boolean(playerName),
-  );
-  const bodyLines = headlineBodyLines(input.body);
 
   await document.fonts?.ready.catch(() => undefined);
   await Promise.all([
-    document.fonts?.load(`italic 900 ${fit.size * scale}px ${POSTER_FONT}`),
+    document.fonts?.load(
+      `italic 900 ${layout.kicker.size * scale}px ${POSTER_FONT}`,
+    ),
     document.fonts?.load(`900 ${HL_BODY_SIZE * scale}px ${POSTER_FONT}`),
+    document.fonts?.load(
+      `900 ${Math.max(layout.family.size, 1) * scale}px ${POSTER_FONT}`,
+    ),
   ]).catch(() => undefined);
 
   const s = scale;
   context.fillStyle = "#0b0b0b";
   context.fillRect(0, 0, width, height);
 
+  const photoW = layout.photo.w * s;
+  const photoH = layout.photo.h * s;
   if (input.photoSrc) {
     const photo = input.photoSrc.startsWith("data:")
       ? await loadImage(input.photoSrc)
@@ -202,24 +151,27 @@ export const renderHeadlineCanvas = async (
         photo.naturalHeight || photo.height,
         0,
         0,
-        width,
-        height,
+        photoW,
+        photoH,
         input.pan.x,
         input.pan.y,
         photoZoom(input.pan),
       );
       const rotate = photoRotate(input.pan);
       context.save();
+      context.beginPath();
+      context.rect(0, 0, photoW, photoH);
+      context.clip();
       if (input.photoGrade) {
         context.filter = PHOTO_GRADE_FILTER;
       }
       if (rotate) {
-        context.translate(width / 2, height / 2);
+        context.translate(photoW / 2, photoH / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
           photo,
-          dest.dx - width / 2,
-          dest.dy - height / 2,
+          dest.dx - photoW / 2,
+          dest.dy - photoH / 2,
           dest.dw,
           dest.dh,
         );
@@ -227,8 +179,8 @@ export const renderHeadlineCanvas = async (
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
       context.restore();
-      applyPhotoGrade(context, 0, 0, width, height, input.photoGrade);
-      paintPhotoVignette(context, 0, 0, width, height, input.photoGrade);
+      applyPhotoGrade(context, 0, 0, photoW, photoH, input.photoGrade);
+      paintPhotoVignette(context, 0, 0, photoW, photoH, input.photoGrade);
     }
   }
 
@@ -236,219 +188,152 @@ export const renderHeadlineCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  const marks = splitTeamWordmark(getTeam(input.teamId));
-  const stack = headlineTypeStack({
-    bodyLines: Math.max(bodyLines.length, 1),
-    plateH: plateHFit,
-    lockup: place,
-    kicker: Boolean(kickerText),
-    nameUnder: names === "under" && Boolean(playerName),
-    city: marks.city,
-    nick: marks.nick,
-    boardH,
-  });
+  const panelFill = headlinePanelHex(input.teamId);
+  context.fillStyle = panelFill;
+  context.fillRect(layout.panel.x * s, 0, layout.panel.w * s, height);
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.42)";
+  context.shadowBlur = 28 * s;
+  context.shadowOffsetX = -14 * s;
+  context.fillRect(layout.panel.x * s, 0, 2 * s, height);
+  context.restore();
 
-  if (stack.fadeAt === "top") {
-    const fade = context.createLinearGradient(0, 0, 0, HL_FADE_H * s);
-    fade.addColorStop(0, "rgba(6, 6, 8, 0.78)");
-    fade.addColorStop(0.48, "rgba(6, 6, 8, 0.42)");
-    fade.addColorStop(1, "rgba(6, 6, 8, 0)");
-    context.fillStyle = fade;
-    context.fillRect(0, 0, width, HL_FADE_H * s);
-  } else {
-    const fade = context.createLinearGradient(
-      0,
-      height - HL_FADE_H * s,
-      0,
-      height,
-    );
-    fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-    fade.addColorStop(0.52, "rgba(6, 6, 8, 0.42)");
-    fade.addColorStop(1, "rgba(6, 6, 8, 0.78)");
-    context.fillStyle = fade;
-    context.fillRect(0, height - HL_FADE_H * s, width, HL_FADE_H * s);
-  }
-
-  paintCellFrame(context, 0, 0, width, height, input.look, s);
-
-  const team = getTeam(input.teamId);
-  const opponent = getTeam(input.opponentId);
-  const teamColor = input.teamId ? getTeamColors(input.teamId).primary : "#ffffff";
-  const fill = plateFillHex(plate, teamColor);
-  const ink = plateInkHex(fill);
-
-  if (team && mode !== "off") {
+  if (team) {
     const logo = await loadImage(team.logoSrc);
     if (logo) {
-      const box = headlineWatermarkBox(mode, stack);
       context.save();
-      context.globalAlpha = box.opacity;
+      context.beginPath();
+      context.rect(layout.panel.x * s, 0, layout.panel.w * s, height);
+      context.clip();
       drawCenteredLogo(
         context,
         logo,
-        box.x * s,
-        box.y * s,
-        box.size * s,
-        box.size * s,
+        layout.logo.x * s,
+        layout.logo.y * s,
+        layout.logo.size * s,
+        layout.logo.size * s,
         {
-          cacheKey: `${team.logoSrc}-headline-mark-${mode}`,
-          fitX: 0.92,
-          fitY: 0.92,
-          shadow: 0,
+          cacheKey: `${team.logoSrc}-headline-hero`,
+          fitX: 0.98,
+          fitY: 0.98,
+          shadow: 22 * s,
         },
       );
       context.restore();
     }
   }
 
-  const paintWordmark = (
+  const chevX = layout.chevron.x * s;
+  const chevY = layout.chevron.y * s;
+  const chevW = layout.chevron.w * s;
+  const chevH = layout.chevron.h * s;
+  const rise = layout.chevron.rise * s;
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.45)";
+  context.shadowBlur = 10 * s;
+  context.shadowOffsetY = 5 * s;
+  chevronPath(context, chevX, chevY, chevW, chevH, rise);
+  const silver = context.createLinearGradient(0, chevY, 0, chevY + chevH);
+  silver.addColorStop(0, "#6d757c");
+  silver.addColorStop(0.16, "#c2c9d0");
+  silver.addColorStop(0.4, "#eef2f5");
+  silver.addColorStop(0.52, "#f8fafc");
+  silver.addColorStop(0.8, "#c5ccd3");
+  silver.addColorStop(1, "#7a828a");
+  context.fillStyle = silver;
+  context.fill();
+  context.restore();
+
+  context.font = `italic 900 ${layout.kicker.size * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  setLetterSpacing(context, HL_HEADLINE_TRACK * layout.kicker.size * s);
+  context.fillStyle = "#111111";
+  const kickerCx = (layout.kicker.x + layout.kicker.w / 2) * s;
+  const kickerLine = layout.kicker.size * 0.92 * s;
+  const kickerBlock = layout.kicker.lines.length * kickerLine;
+  let kickerTy =
+    chevY + chevH / 2 - kickerBlock / 2 + kickerLine / 2;
+  layout.kicker.lines.forEach((line) => {
+    if (line) {
+      context.fillText(line, kickerCx, kickerTy, layout.kicker.w * s);
+    }
+    kickerTy += kickerLine;
+  });
+  setLetterSpacing(context, 0);
+
+  const paintStack = (
     text: string,
     size: number,
-    baseline: "top" | "bottom",
+    tracking: number,
+    x: number,
     y: number,
+    baseline: CanvasTextBaseline,
   ) => {
     if (!text || size <= 0) {
       return;
     }
     context.font = `900 ${size * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
+    context.textAlign = "left";
     context.textBaseline = baseline;
-    setLetterSpacing(context, HL_WORDMARK_TRACK * size * s);
-    context.lineJoin = "round";
-    context.miterLimit = 2;
-    context.strokeStyle = "#0a0a0a";
-    context.lineWidth = 3.2 * s;
-    context.strokeText(text, width / 2, y * s);
-    context.fillStyle = "#fff";
-    context.fillText(text, width / 2, y * s);
+    setLetterSpacing(context, tracking * size * s);
+    context.shadowColor = "rgba(0, 0, 0, 0.4)";
+    context.shadowBlur = 8 * s;
+    context.shadowOffsetY = 2 * s;
+    context.fillStyle = "#ffffff";
+    context.fillText(text, x * s, y * s, layout.given.w * s);
+    context.shadowBlur = 0;
+    context.shadowOffsetY = 0;
     setLetterSpacing(context, 0);
   };
-  paintWordmark(marks.city, stack.citySize, "top", stack.cityTop);
-  paintWordmark(marks.nick, stack.nickSize, "bottom", stack.nickBottom);
 
-  const plateW = width - HL_PAD_X * 2 * s;
-  const plateH = plateHFit * s;
-  const plateX = HL_PAD_X * s;
-  const plateY = stack.plateTop * s;
-  const cx = plateX + plateW / 2;
-  const cy = plateY + plateH / 2;
-  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
-  context.lineJoin = "miter";
-  context.strokeStyle = "#111";
-  context.lineWidth = 16 * s;
-  context.stroke();
-  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
-  context.strokeStyle = "#fff";
-  context.lineWidth = 6 * s;
-  context.stroke();
-  parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
-  context.fillStyle = fill;
-  context.fill();
-  if (input.purpleFlair) {
-    paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
-  }
-  const lineH = fit.size * 1.05 * s;
-  const nameGap = names === "plate" && playerName ? (HL_NAME_SIZE + 8) * s : 0;
-  const typeBlock = fit.lines.length * lineH + nameGap;
-  let ty = cy - typeBlock / 2 + lineH / 2;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.font = `italic 900 ${fit.size * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, HL_HEADLINE_TRACK * fit.size * s);
-  context.fillStyle = ink;
-  const maxType = plateW - HL_HEADLINE_PAD_X * 2 * s;
-  fit.lines.forEach((line) => {
-    context.fillText(line, cx, ty, maxType);
-    ty += lineH;
-  });
-  setLetterSpacing(context, 0);
-  if (names === "plate" && playerName) {
-    context.font = `900 ${HL_NAME_SIZE * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.14 * HL_NAME_SIZE * s);
-    context.globalAlpha = 0.78;
-    context.fillStyle = ink;
-    context.fillText(playerName.toUpperCase(), cx, ty - lineH / 2 + 12 * s);
-    context.globalAlpha = 1;
-    setLetterSpacing(context, 0);
-  }
-
-  if (kickerText) {
-    context.font = `900 ${HL_KICKER_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    setLetterSpacing(context, 0.18 * HL_KICKER_SIZE * s);
-    strokeFillText(
-      context,
-      kickerText,
-      width / 2,
-      stack.kickerTop * s,
-      "#fff",
-      "#000",
-      2 * s,
-    );
-    setLetterSpacing(context, 0);
-  }
-
-  if (names === "under" && playerName) {
-    context.font = `900 ${HL_NAME_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    setLetterSpacing(context, 0.14 * HL_NAME_SIZE * s);
-    strokeFillText(
-      context,
-      playerName.toUpperCase(),
-      width / 2,
-      stack.nameTop * s,
-      "#fff",
-      "#000",
-      2 * s,
-    );
-    setLetterSpacing(context, 0);
-  }
+  paintStack(
+    layout.given.text,
+    layout.given.size,
+    HL_NAME_TRACK,
+    layout.given.x,
+    layout.given.y,
+    "top",
+  );
+  paintStack(
+    layout.family.text,
+    layout.family.size,
+    HL_FAMILY_TRACK,
+    layout.family.x,
+    layout.family.y,
+    "top",
+  );
 
   context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.textBaseline = "top";
   setLetterSpacing(context, HL_BODY_TRACK * HL_BODY_SIZE * s);
-  if (input.showOpponentMark && opponent && bodyLines[0]) {
-    const logo = await loadImage(opponent.logoSrc);
-    if (logo) {
-      const mark = HL_OPP_MARK * s;
-      const firstWidth = context.measureText(bodyLines[0]).width;
-      drawCenteredLogo(
-        context,
-        logo,
-        width / 2 - firstWidth / 2 - mark - 10 * s,
-        stack.bodyTop * s,
-        mark,
-        mark,
-        {
-          cacheKey: `${opponent.logoSrc}-headline-opp`,
-          fitX: 0.92,
-          fitY: 0.92,
-          shadow: 0,
-        },
-      );
-    }
-  }
-  bodyLines.forEach((line, index) => {
-    const y =
-      stack.bodyTop * s + (index + 0.5) * HL_BODY_SIZE * HL_BODY_LINE * s;
-    strokeFillText(context, line, width / 2, y, "#fff", "#000", 2.4 * s);
+  context.fillStyle = "#ffffff";
+  context.shadowColor = "rgba(0, 0, 0, 0.4)";
+  context.shadowBlur = 8 * s;
+  context.shadowOffsetY = 2 * s;
+  layout.body.lines.forEach((line, index) => {
+    const y = layout.body.y * s + index * HL_BODY_SIZE * HL_BODY_LINE * s;
+    context.fillText(line, layout.body.x * s, y, layout.body.w * s);
   });
+  context.shadowBlur = 0;
+  context.shadowOffsetY = 0;
   setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
-      const size = HL_BA_SIZE * s;
-      const inset = HL_BA_INSET * s;
+      const size = layout.ba.w * s;
+      const insetX = layout.ba.x * s;
+      const insetY = layout.ba.y * s;
       if (input.purpleFlair) {
-        paintPurpleBaGlow(context, inset, inset, size);
+        paintPurpleBaGlow(context, insetX, insetY, size);
       }
-      context.drawImage(ba, inset, inset, size, size);
+      context.drawImage(ba, insetX, insetY, size, size);
     }
   }
+
+  paintCellFrame(context, 0, 0, width, height, input.look, s);
 
   return canvas;
 };

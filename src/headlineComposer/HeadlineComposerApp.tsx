@@ -46,14 +46,7 @@ import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankin
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
 import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
-import {
-  parseHeadlineKickerMode,
-  parseHeadlineLockup,
-  parseHeadlineNamePlacement,
-  parseHeadlinePlateColor,
-  parseHeadlineSubjectMode,
-  parseHeadlineWatermark,
-} from "./headlineLayout";
+import { parseHeadlineSubjectMode } from "./headlineLayout";
 import {
   clearHeadlineSubject,
   clipHeadlineBody,
@@ -100,15 +93,7 @@ const renderInput = (
   lastName: draft.lastName,
   photoSrc: draft.photoSrc,
   pan: draft.pan,
-  watermark: parseHeadlineWatermark(draft.watermark),
-  plateColor: parseHeadlinePlateColor(draft.plateColor),
-  lockup: parseHeadlineLockup(draft.lockup),
-  namePlacement: parseHeadlineNamePlacement(draft.namePlacement),
-  showOpponentMark: draft.showOpponentMark === true,
-  kickerMode: parseHeadlineKickerMode(draft.kickerMode),
   subjectMode: parseHeadlineSubjectMode(draft.subjectMode),
-  opponentId: draft.opponentId ?? null,
-  gameDate: draft.gameDate ?? null,
   look,
   purpleFlair,
   photoGrade,
@@ -313,7 +298,7 @@ export function HeadlineComposerApp() {
         identity={
           <>
         <label className="sc-field sc-field--wide">
-          Headline
+          Kicker
           <input
             value={draft.headline}
             maxLength={HEADLINE_MAX}
@@ -443,107 +428,6 @@ export function HeadlineComposerApp() {
         }
         board={
           <>
-        <label className="sc-field">
-          Plate
-          <select
-            value={parseHeadlinePlateColor(draft.plateColor)}
-            aria-label="Headline plate color"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                plateColor: parseHeadlinePlateColor(event.target.value),
-              }))
-            }
-          >
-            <option value="white">White</option>
-            <option value="team">Team color</option>
-            <option value="black">Black</option>
-          </select>
-        </label>
-        <label className="sc-field">
-          Lockup
-          <select
-            value={parseHeadlineLockup(draft.lockup)}
-            aria-label="Headline lockup"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                lockup: parseHeadlineLockup(event.target.value),
-              }))
-            }
-          >
-            <option value="bottom">Bottom</option>
-            <option value="top">Top</option>
-          </select>
-        </label>
-        <label className="sc-field">
-          Player name
-          <select
-            value={parseHeadlineNamePlacement(draft.namePlacement)}
-            aria-label="Player name on plate"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                namePlacement: parseHeadlineNamePlacement(event.target.value),
-              }))
-            }
-          >
-            <option value="off">Off</option>
-            <option value="plate">On plate</option>
-            <option value="under">Under plate</option>
-          </select>
-        </label>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Opponent mark</span>
-          <button
-            type="button"
-            className={draft.showOpponentMark ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={draft.showOpponentMark === true}
-            aria-label="Opponent mark"
-            onClick={() =>
-              setDraft((current) => ({
-                ...current,
-                showOpponentMark: !current.showOpponentMark,
-              }))
-            }
-          >
-            {draft.showOpponentMark ? "On" : "Off"}
-          </button>
-        </label>
-        <label className="sc-field">
-          Date kicker
-          <select
-            value={parseHeadlineKickerMode(draft.kickerMode)}
-            aria-label="Date kicker"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                kickerMode: parseHeadlineKickerMode(event.target.value),
-              }))
-            }
-          >
-            <option value="off">Off</option>
-            <option value="date">Date</option>
-            <option value="last-night">Last night</option>
-          </select>
-        </label>
-        <label className="sc-field">
-          Watermark
-          <select
-            value={parseHeadlineWatermark(draft.watermark)}
-            aria-label="Team watermark"
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                watermark: parseHeadlineWatermark(event.target.value),
-              }))
-            }
-          >
-            <option value="faint">Faint</option>
-            <option value="medium">Medium</option>
-            <option value="off">Off</option>
-          </select>
-        </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
@@ -704,15 +588,7 @@ export function HeadlineComposerApp() {
             photoSrc={draft.photoSrc}
             customPhoto={draft.customPhoto}
             pan={draft.pan}
-            watermark={parseHeadlineWatermark(draft.watermark)}
-            plateColor={parseHeadlinePlateColor(draft.plateColor)}
-            lockup={parseHeadlineLockup(draft.lockup)}
-            namePlacement={parseHeadlineNamePlacement(draft.namePlacement)}
-            showOpponentMark={draft.showOpponentMark === true}
-            kickerMode={parseHeadlineKickerMode(draft.kickerMode)}
             subjectMode={subject}
-            opponentId={draft.opponentId ?? null}
-            gameDate={draft.gameDate ?? null}
             look={look}
             purpleFlair={purpleFlair}
             photoGrade={photoGrade}
@@ -734,12 +610,11 @@ export function HeadlineComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — upload or paste an action shot. City, plate,
-            nickname, and last-night lines stack in the lower third with no
-            overlap. Fill last night writes the body from that player’s last
-            game once they’re picked. Tonight / Last night matches the Stat
-            card’s 2026-27 preseason slate. 9:16 is a real story board, not a
-            letterboxed 4:5. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Empty photo first — paste or upload an action shot (ESPN headshot
+            is a stand-in after pick). Team-color panel, huge logo, chevron
+            kicker, stacked name, last-night body. Fill last night writes the
+            line from that player’s last game. 9:16 is this split, taller.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -748,7 +623,7 @@ export function HeadlineComposerApp() {
       {pickerOpen && subject === "team" ? (
         <TeamPicker
           heading="Pick a team"
-          hint="Sets the wordmark through the plate. Skip the player — upload or paste the photo."
+          hint="Sets the team-color panel and huge logo. Skip the player — upload or paste the photo."
           currentId={draft.teamId}
           usedLabels={draft.teamId ? { [draft.teamId]: "Headline" } : {}}
           onPick={handleTeamPick}
@@ -767,7 +642,7 @@ export function HeadlineComposerApp() {
       {pickerOpen && subject !== "team" ? (
         <PlayerPicker
           heading="Pick a player"
-            hint="Sets the team wordmark through the plate and last-night lines. No mugshot — upload or paste the photo."
+            hint="Sets the team panel from the player (Gobert = Wolves) and last-night body. ESPN headshot is a stand-in — paste an action shot."
           currentId={draft.playerId}
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Headline" } : {}

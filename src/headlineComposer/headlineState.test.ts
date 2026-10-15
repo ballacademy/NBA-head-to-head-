@@ -11,22 +11,18 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  HL_FADE_H,
-  HL_FACE_SAFE,
+  HL_BA_SIZE,
   HL_HEADLINE_MIN,
   HL_HEADLINE_SIZE,
-  HL_PLATE_FILL,
-  HL_PLATE_ROTATE,
+  HL_LOGO_SIZE,
+  HL_SPLIT_X,
+  chevronClipPolygon,
   collidingHeadlineBoxes,
   fitHeadlineType,
-  headlineDateKicker,
-  headlinePlateHeight,
-  headlineTypeStack,
+  headlinePanelHex,
+  headlineSplitLayout,
   headlineVisibleTypeBoxes,
-  headlineWatermarkBox,
   parseHeadlineWatermark,
-  plateClipPolygon,
-  plateFillHex,
   plateInkHex,
 } from "./headlineLayout";
 import {
@@ -71,65 +67,61 @@ const lastNight = {
 };
 
 describe("headline composer", () => {
-  it("keeps a 4:5 full-bleed photo board with a clean white plate", () => {
+  it("keeps a 4:5 photo | team-panel split with a BREAKING kicker", () => {
     expect(GRAPHIC_WIDTH).toBe(1200);
     expect(GRAPHIC_HEIGHT).toBe(1500);
     expect(GRAPHIC_ASPECT).toBeCloseTo(0.8);
     expect(EXPORT_WIDTH).toBe(2400);
     expect(EXPORT_HEIGHT).toBe(3000);
-    expect(HL_HEADLINE_SIZE).toBeGreaterThan(48);
-    expect(HL_PLATE_FILL).toBe("#ffffff");
-    expect(HL_PLATE_ROTATE).toBe(0);
-    expect(HL_FADE_H).toBeGreaterThan(480);
-    expect(plateClipPolygon()).toMatch(/^\d/);
-    expect(plateClipPolygon()).not.toContain("polygon");
-    expect(plateFillHex("white")).toBe("#ffffff");
+    expect(HL_SPLIT_X).toBeGreaterThan(GRAPHIC_WIDTH * 0.48);
+    expect(HL_SPLIT_X).toBeLessThan(GRAPHIC_WIDTH * 0.62);
+    expect(HL_LOGO_SIZE).toBeGreaterThan(500);
+    expect(HL_HEADLINE_SIZE).toBeGreaterThan(40);
+    expect(HL_BA_SIZE).toBeLessThan(80);
+    expect(chevronClipPolygon()).toMatch(/^0% 50%/);
     expect(plateInkHex("#ffffff")).toBe("#111111");
-    expect(plateInkHex("#0c0c0c")).toBe("#ffffff");
+    expect(plateInkHex("#0c2340")).toBe("#ffffff");
+    expect(headlinePanelHex("MIN")).toBe("#0C2340");
+    expect(headlinePanelHex(null)).toMatch(/^#/);
     const draft = defaultHeadlineDraft();
+    expect(draft.headline).toBe("BREAKING");
     expect(draft.headline).toBe(DEFAULT_HEADLINE);
     expect(draft.body).toBe("");
     expect(draft.photoSrc).toBeNull();
     expect(draft.showBa).toBe(true);
-    expect(draft.watermark).toBe("faint");
-    expect(draft.plateColor).toBe("white");
-    expect(draft.lockup).toBe("bottom");
-    expect(draft.namePlacement).toBe("off");
-    expect(draft.showOpponentMark).toBe(false);
-    expect(draft.kickerMode).toBe("off");
     expect(draft.subjectMode).toBe("player");
-    expect(headlineLabel("  massive leap ")).toBe("MASSIVE LEAP");
+    expect(headlineLabel("  breaking ")).toBe("BREAKING");
     expect(clipHeadlineBody("x".repeat(HEADLINE_BODY_MAX + 12))).toHaveLength(
       HEADLINE_BODY_MAX,
     );
   });
 
-  it("includes punchy headline presets plus caption lines", () => {
-    expect(HEADLINE_TITLE_PRESETS).toContain("MASSIVE LEAP");
+  it("includes story presets on the chevron, not a rotated city/nick clash", () => {
+    expect(HEADLINE_TITLE_PRESETS[0]).toBe("BREAKING");
+    expect(HEADLINE_TITLE_PRESETS).toContain("BLOWN OUT");
+    expect(HEADLINE_TITLE_PRESETS).toContain("CAREER NIGHT");
+    expect(HEADLINE_TITLE_PRESETS).toContain("DEFENSIVE CLINIC");
+    expect(HEADLINE_TITLE_PRESETS).toContain("OUT");
+    expect(HEADLINE_TITLE_PRESETS).toContain("QUESTIONABLE");
     expect(HEADLINE_TITLE_PRESETS).toContain("STATEMENT WIN");
-    expect(HEADLINE_TITLE_PRESETS).toContain("HE’S HIM");
     expect(parseHeadlineWatermark(undefined)).toBe("faint");
-    expect(parseHeadlineWatermark("off")).toBe("off");
-    expect(parseHeadlineWatermark("behind")).toBe("faint");
-    expect(parseHeadlineWatermark("small")).toBe("medium");
-    expect(headlineCaptionFor("MASSIVE LEAP", "")).toContain("The leap is real.");
-    expect(headlineCaptionFor("HOT TAKE", "BEATS OKC")).toContain("Hot take.");
+    expect(headlineCaptionFor("BREAKING", "")).toContain("Breaking.");
+    expect(headlineCaptionFor("CAREER NIGHT", "42 PTS")).toContain("Career night.");
     expect(
-      headlineCaptionFor("MASSIVE LEAP", "AFTER BEATING OKC", "Joel Embiid"),
-    ).toContain("Joel Embiid");
+      headlineCaptionFor("BREAKING", "AFTER BEATING OKC", "Rudy Gobert"),
+    ).toContain("Rudy Gobert");
   });
 
-  it("wraps a long take onto two lines and shrinks before overflow", () => {
-    const short = fitHeadlineType("MASSIVE LEAP");
-    expect(short.lines).toEqual(["MASSIVE LEAP"]);
+  it("fits a short kicker on one line and wraps a long take", () => {
+    const short = fitHeadlineType("BREAKING");
+    expect(short.lines).toEqual(["BREAKING"]);
     expect(short.size).toBe(HL_HEADLINE_SIZE);
     const long = fitHeadlineType("THIS HEADLINE IS A SERIOUSLY LONG TAKE");
     expect(long.lines.length).toBe(2);
     expect(long.size).toBeGreaterThanOrEqual(HL_HEADLINE_MIN);
-    expect(headlinePlateHeight(long)).toBeGreaterThan(headlinePlateHeight(short));
   });
 
-  it("picks a player for the team wordmark and fills the official headshot", () => {
+  it("picks a player for the team panel and fills the official headshot", () => {
     const luka = getPlayer("3945274")!;
     const next = fillHeadlineFromPlayer(luka, defaultHeadlineDraft());
     expect(next.playerId).toBe(luka.id);
@@ -139,7 +131,7 @@ describe("headline composer", () => {
     expect(next.subjectMode).toBe("player");
   });
 
-  it("locks Gobert to Minnesota, never a leftover Trail Blazers wordmark", () => {
+  it("locks Gobert to Minnesota, never a leftover Trail Blazers panel", () => {
     const gobert = getPlayer("3032976")!;
     expect(gobert.team).toBe("MIN");
     const fromBlazers = fillHeadlineFromPlayer(gobert, {
@@ -165,125 +157,77 @@ describe("headline composer", () => {
     expect(next.subjectMode).toBe("team");
   });
 
-  it("runs the wordmark through the plate without colliding type boxes", () => {
-    const spurs = getTeam("SAS")!;
-    expect(splitTeamWordmark(spurs)).toEqual({
+  it("splits photo left of a huge-logo panel with no overlapping type", () => {
+    const layout = headlineSplitLayout({
+      headline: "BREAKING",
+      body: "AFTER BEATING OKC 111–109\nLAST NIGHT, THE SPURS\nHAVE A RECORD OF 1–0",
+      firstName: "Victor",
+      lastName: "Wembanyama",
       city: "SAN ANTONIO",
       nick: "SPURS",
     });
-    const stack = headlineTypeStack({
-      bodyLines: 3,
-      plateH: 124,
-      city: "SAN ANTONIO",
-      nick: "SPURS",
-    });
-    expect(stack.cityBottom).toBeLessThanOrEqual(stack.plateTop + 0.01);
-    expect(stack.nickTop).toBeGreaterThanOrEqual(stack.plateBottom - 0.01);
-    expect(stack.cityTop).toBeLessThan(stack.plateTop);
-    expect(stack.nickBottom).toBeGreaterThan(stack.plateBottom);
-    expect(stack.cityTop + stack.citySize * 0.5).toBeLessThanOrEqual(
-      stack.plateTop,
-    );
-    expect(stack.nickBottom - stack.nickSize * 0.5).toBeGreaterThanOrEqual(
-      stack.plateBottom,
-    );
+    expect(layout.photo.x).toBe(0);
+    expect(layout.photo.w).toBe(layout.splitX);
+    expect(layout.panel.x).toBe(layout.splitX);
+    expect(layout.photo.w + layout.panel.w).toBe(GRAPHIC_WIDTH);
+    expect(layout.chevron.x).toBeLessThan(layout.splitX);
+    expect(layout.chevron.x + layout.chevron.w).toBe(GRAPHIC_WIDTH);
+    expect(layout.logo.size).toBeGreaterThan(500);
+    expect(layout.logo.x).toBeGreaterThanOrEqual(layout.splitX - 8);
+    expect(layout.given.text).toBe("VICTOR");
+    expect(layout.family.text).toBe("WEMBANYAMA");
+    expect(layout.given.y).toBeGreaterThan(layout.chevron.y + layout.chevron.h);
+    expect(layout.family.y).toBeGreaterThanOrEqual(layout.given.y + layout.given.h);
+    expect(layout.body.y).toBeGreaterThanOrEqual(layout.family.y + layout.family.h);
+    expect(layout.ba.x + layout.ba.w).toBeLessThan(layout.splitX);
+    expect(
+      collidingHeadlineBoxes(headlineVisibleTypeBoxes(layout)),
+    ).toEqual([]);
+
     const sixers = splitTeamWordmark(getTeam("PHI")!);
     expect(sixers).toEqual({ city: "PHILADELPHIA", nick: "76ERS" });
-    const phi = headlineTypeStack({
-      bodyLines: 3,
-      plateH: 128,
+    const phi = headlineSplitLayout({
+      headline: "BLOWN OUT",
+      body: "WILL NOT PLAY TONIGHT",
+      firstName: "Joel",
+      lastName: "Embiid",
       city: sixers.city,
       nick: sixers.nick,
     });
-    expect(phi.cityBottom).toBeLessThanOrEqual(phi.plateTop + 0.01);
-    expect(phi.nickTop).toBeGreaterThanOrEqual(phi.plateBottom - 0.01);
-    expect(phi.cityTop + phi.citySize * 0.5).toBeLessThanOrEqual(phi.plateTop);
-    const story = headlineTypeStack({
-      bodyLines: 3,
-      plateH: 124,
+    expect(phi.splitX).toBe(layout.splitX);
+    expect(phi.given.text).toBe("JOEL");
+    expect(phi.family.text).toBe("EMBIID");
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(phi))).toEqual([]);
+
+    const story = headlineSplitLayout({
+      headline: "BREAKING",
+      body: "AFTER BEATING OKC 111–109",
+      firstName: "Joel",
+      lastName: "Embiid",
       city: "PHILADELPHIA",
       nick: "76ERS",
       boardH: STORY_DESIGN_HEIGHT,
     });
     expect(STORY_DESIGN_HEIGHT).toBe(2133);
-    expect(story.bodyBottom).toBe(STORY_DESIGN_HEIGHT - 52);
-    expect(story.cityTop).toBeGreaterThan(stack.cityTop);
-    expect(stack.fadeAt).toBe("bottom");
-    expect(stack.bodyTop).toBeGreaterThanOrEqual(stack.nickBottom);
-    expect(
-      collidingHeadlineBoxes(
-        headlineVisibleTypeBoxes(stack, {
-          showBa: true,
-          hasKicker: false,
-          hasBody: true,
-        }),
-      ),
-    ).toEqual([]);
-    const portland = headlineTypeStack({
-      bodyLines: 3,
-      plateH: 124,
-      kicker: true,
-      city: "PORTLAND",
-      nick: "TRAIL BLAZERS",
-    });
-    expect(
-      collidingHeadlineBoxes(
-        headlineVisibleTypeBoxes(portland, {
-          showBa: true,
-          hasKicker: true,
-          hasBody: true,
-        }),
-      ),
-    ).toEqual([]);
-    expect(portland.kickerBottom).toBeLessThanOrEqual(portland.cityTop);
-    const wolves = headlineTypeStack({
-      bodyLines: 3,
-      plateH: 124,
-      kicker: true,
-      nameUnder: true,
+    expect(story.splitX).toBe(layout.splitX);
+    expect(story.photo.h).toBe(STORY_DESIGN_HEIGHT);
+    expect(story.panel.h).toBe(STORY_DESIGN_HEIGHT);
+    expect(story.boardH).toBeGreaterThan(layout.boardH);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(story))).toEqual([]);
+
+    const teamOnly = headlineSplitLayout({
+      headline: "CAREER NIGHT",
       city: "MINNESOTA",
       nick: "TIMBERWOLVES",
     });
+    expect(teamOnly.given.text).toBe("MINNESOTA");
+    expect(teamOnly.family.text).toBe("TIMBERWOLVES");
     expect(
-      collidingHeadlineBoxes(
-        headlineVisibleTypeBoxes(wolves, {
-          showBa: true,
-          hasKicker: true,
-          hasName: true,
-          hasBody: true,
-        }),
-      ),
+      collidingHeadlineBoxes(headlineVisibleTypeBoxes(teamOnly)),
     ).toEqual([]);
-    const faint = headlineWatermarkBox("faint", stack);
-    expect(faint.opacity).toBeLessThan(0.2);
-    expect(faint.y).toBeGreaterThan(HL_FACE_SAFE - 80);
-    const medium = headlineWatermarkBox("medium", stack);
-    expect(medium.opacity).toBeGreaterThan(faint.opacity);
-    expect(medium.y).toBeGreaterThan(HL_FACE_SAFE - 80);
-    const top = headlineTypeStack({
-      bodyLines: 3,
-      lockup: "top",
-      kicker: true,
-      city: "SAN ANTONIO",
-      nick: "SPURS",
-    });
-    expect(top.fadeAt).toBe("top");
-    expect(top.plateTop).toBeLessThan(stack.plateTop);
-    expect(top.kickerTop).toBeGreaterThan(36 + 72);
-    expect(
-      collidingHeadlineBoxes(
-        headlineVisibleTypeBoxes(top, {
-          showBa: true,
-          hasKicker: true,
-          hasBody: true,
-        }),
-      ),
-    ).toEqual([]);
-    expect(headlineDateKicker("2026-10-13", "date")).toBe("OCT 13");
-    expect(headlineDateKicker(null, "last-night")).toBe("LAST NIGHT");
   });
 
-  it("auto-fills last night as two short lines with an en dash", () => {
+  it("auto-fills last night as stacked body lines with an en dash", () => {
     const spurs = getTeam("SAS")!;
     expect(formatHeadlineBodyLines(spurs, lastNight, { wins: 1, losses: 0 })).toEqual([
       "AFTER BEATING OKC 111–109",

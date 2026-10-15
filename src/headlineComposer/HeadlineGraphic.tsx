@@ -5,7 +5,6 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
-import { getTeamColors } from "../lib/teamColors";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -17,33 +16,16 @@ import {
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import {
-  fitHeadlineType,
-  headlineDateKicker,
-  headlinePlateHeight,
-  headlineTypeStack,
-  headlineWatermarkBox,
-  parseHeadlineKickerMode,
-  parseHeadlineLockup,
-  parseHeadlineNamePlacement,
-  parseHeadlinePlateColor,
+  chevronClipPolygon,
+  headlinePanelHex,
+  headlineSplitLayout,
   parseHeadlineSubjectMode,
-  parseHeadlineWatermark,
-  plateClipPolygon,
-  plateFillHex,
-  plateInkHex,
-  type HeadlineKickerMode,
-  type HeadlineLockup,
-  type HeadlineNamePlacement,
-  type HeadlinePlateColor,
   type HeadlineSubjectMode,
-  type HeadlineWatermark,
 } from "./headlineLayout";
 import {
   HEADLINE_BODY_MAX,
   HEADLINE_MAX,
-  headlineBodyLines,
   headlineLabel,
-  headlinePlayerName,
   splitTeamWordmark,
 } from "./headlineState";
 
@@ -56,15 +38,7 @@ interface HeadlineGraphicProps {
   photoSrc: string | null;
   customPhoto: boolean;
   pan: PhotoPan;
-  watermark?: HeadlineWatermark;
-  plateColor?: HeadlinePlateColor;
-  lockup?: HeadlineLockup;
-  namePlacement?: HeadlineNamePlacement;
-  showOpponentMark?: boolean;
-  kickerMode?: HeadlineKickerMode;
   subjectMode?: HeadlineSubjectMode;
-  opponentId?: string | null;
-  gameDate?: string | null;
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
@@ -89,15 +63,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       photoSrc,
       customPhoto,
       pan,
-      watermark = "faint",
-      plateColor = "white",
-      lockup = "bottom",
-      namePlacement = "off",
-      showOpponentMark = false,
-      kickerMode = "off",
       subjectMode = "player",
-      opponentId = null,
-      gameDate = null,
       look = "white",
       purpleFlair = false,
       photoGrade = false,
@@ -115,34 +81,22 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const team = getTeam(teamId);
-    const opponent = getTeam(opponentId);
     const marks = splitTeamWordmark(team);
-    const mode = parseHeadlineWatermark(watermark);
-    const plate = parseHeadlinePlateColor(plateColor);
-    const place = parseHeadlineLockup(lockup);
-    const names = parseHeadlineNamePlacement(namePlacement);
-    const kicker = parseHeadlineKickerMode(kickerMode);
     const subject = parseHeadlineSubjectMode(subjectMode);
-    const bodyLines = headlineBodyLines(body);
-    const fit = fitHeadlineType(headline);
-    const kickerText = headlineDateKicker(gameDate, kicker);
-    const playerName = headlinePlayerName({ firstName, lastName });
-    const plateH = headlinePlateHeight(fit, names === "plate" && Boolean(playerName));
     const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
-    const stack = headlineTypeStack({
-      bodyLines: Math.max(bodyLines.length, 1),
-      plateH,
-      lockup: place,
-      kicker: Boolean(kickerText),
-      nameUnder: names === "under" && Boolean(playerName),
+    const layout = headlineSplitLayout({
+      headline,
+      body,
+      firstName,
+      lastName,
       city: marks.city,
       nick: marks.nick,
       boardH,
+      showBa,
     });
-    const markBox = headlineWatermarkBox(mode, stack);
-    const teamColor = teamId ? getTeamColors(teamId).primary : "#ffffff";
-    const fill = plateFillHex(plate, teamColor);
-    const ink = plateInkHex(fill);
+    const panelFill = headlinePanelHex(teamId);
+    const kickerRows = Math.max(1, layout.kicker.lines.length);
+    const bodyRows = Math.max(2, layout.body.lines.length);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -182,7 +136,6 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           composerLookClass(look),
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
-          stack.fadeAt === "top" ? "is-lockup-top" : "is-lockup-bottom",
           story ? "is-story" : "",
         ]
           .filter(Boolean)
@@ -190,52 +143,62 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
         style={
           {
             ["--u" as string]: `${unit}px`,
-            ["--team-color" as string]: teamColor,
-            ["--plate-fill" as string]: fill,
-            ["--plate-ink" as string]: ink,
-            ["--plate-clip" as string]: plateClipPolygon(),
-            ["--hl-size" as string]: String(fit.size),
-            ["--plate-top" as string]: String(stack.plateTop),
-            ["--plate-h" as string]: String(plateH),
-            ["--city-top" as string]: String(stack.cityTop),
-            ["--city-h" as string]: String(Math.max(0, stack.cityBottom - stack.cityTop)),
-            ["--city-size" as string]: String(stack.citySize),
-            ["--nick-top" as string]: String(stack.nickTop),
-            ["--nick-h" as string]: String(Math.max(0, stack.nickBottom - stack.nickTop)),
-            ["--nick-size" as string]: String(stack.nickSize),
-            ["--kicker-top" as string]: String(stack.kickerTop),
-            ["--kicker-h" as string]: String(
-              Math.max(0, stack.kickerBottom - stack.kickerTop),
+            ["--panel-fill" as string]: panelFill,
+            ["--split-x" as string]: String(layout.splitX),
+            ["--chev-x" as string]: String(layout.chevron.x),
+            ["--chev-y" as string]: String(layout.chevron.y),
+            ["--chev-w" as string]: String(layout.chevron.w),
+            ["--chev-h" as string]: String(layout.chevron.h),
+            ["--chev-clip" as string]: chevronClipPolygon(
+              layout.chevron.rise,
+              layout.chevron.w,
             ),
-            ["--name-top" as string]: String(stack.nameTop),
-            ["--body-top" as string]: String(stack.bodyTop),
-            ["--body-h" as string]: String(Math.max(0, stack.bodyBottom - stack.bodyTop)),
-            ["--mark-top" as string]: String(markBox.y),
-            ["--mark-size" as string]: String(markBox.size),
-            ["--mark-opacity" as string]: String(markBox.opacity),
+            ["--logo-x" as string]: String(layout.logo.x),
+            ["--logo-y" as string]: String(layout.logo.y),
+            ["--logo-size" as string]: String(layout.logo.size),
+            ["--kicker-size" as string]: String(layout.kicker.size),
+            ["--type-x" as string]: String(layout.given.x),
+            ["--type-w" as string]: String(layout.given.w),
+            ["--given-y" as string]: String(layout.given.y),
+            ["--given-h" as string]: String(layout.given.h),
+            ["--given-size" as string]: String(layout.given.size),
+            ["--family-y" as string]: String(layout.family.y),
+            ["--family-h" as string]: String(layout.family.h),
+            ["--family-size" as string]: String(layout.family.size),
+            ["--body-y" as string]: String(layout.body.y),
+            ["--body-h" as string]: String(layout.body.h),
           } as React.CSSProperties
         }
         aria-label="Instagram headline graphic"
       >
-        <PhotoFrame
-          src={photoSrc}
-          label={headlineLabel(headline) || "headline photo"}
-          pan={pan}
-          custom={customPhoto}
-          empty={!photoSrc}
-          vignette
-          pickLabel=""
-          changeLabel={subject === "team" ? "Change team" : "Change player"}
-          onPan={onPan}
-          onUpload={onUpload}
-          onPick={onPick}
-        />
-        <div className="hl-fade" aria-hidden="true" />
-        {team && mode !== "off" ? (
-          <div className="hl-mark is-behind" aria-hidden="true">
-            <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
-          </div>
-        ) : null}
+        <div className="hl-photo" data-hl-box="photo">
+          <PhotoFrame
+            src={photoSrc}
+            label={headlineLabel(headline) || "headline photo"}
+            pan={pan}
+            custom={customPhoto}
+            empty={!photoSrc}
+            vignette
+            pickLabel=""
+            changeLabel={subject === "team" ? "Change team" : "Change player"}
+            onPan={onPan}
+            onUpload={onUpload}
+            onPick={onPick}
+          />
+        </div>
+        <div className="hl-panel" data-hl-box="panel" aria-hidden={!team}>
+          {team ? (
+            <div className="hl-logo" data-hl-box="logo">
+              <TeamLogo
+                src={team.logoSrc}
+                label={team.name}
+                shadow={22}
+                fitX={0.98}
+                fitY={0.98}
+              />
+            </div>
+          ) : null}
+        </div>
         {showBa ? (
           <img
             className="composer-ba"
@@ -245,61 +208,45 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             data-hl-box="ba"
           />
         ) : null}
-        {kickerText ? (
-          <p className="hl-kicker" data-hl-box="kicker">
-            {kickerText}
-          </p>
-        ) : null}
-        {marks.city ? (
-          <p className="hl-wordmark-city" aria-hidden="true" data-hl-box="city">
-            {marks.city}
-          </p>
-        ) : null}
-        <div className="hl-headline-plate" data-hl-box="plate">
-          <textarea
-            className="hl-headline"
-            value={headline}
-            rows={fit.lines.length}
-            maxLength={HEADLINE_MAX}
-            spellCheck={false}
-            aria-label="Headline"
-            onChange={(event) =>
-              onComposerTextChange(event, onHeadlineChange, HEADLINE_MAX)
-            }
-          />
-          {names === "plate" && playerName ? (
-            <p className="hl-name is-plate">{playerName}</p>
-          ) : null}
+        <div className="hl-chevron" data-hl-box="kicker">
+          <div className="hl-chevron__plate">
+            <textarea
+              className="hl-kicker"
+              value={headline}
+              rows={kickerRows}
+              maxLength={HEADLINE_MAX}
+              spellCheck={false}
+              aria-label="Headline kicker"
+              onChange={(event) =>
+                onComposerTextChange(event, onHeadlineChange, HEADLINE_MAX)
+              }
+            />
+          </div>
         </div>
-        {marks.nick ? (
-          <p className="hl-wordmark-nick" aria-hidden="true" data-hl-box="nick">
-            {marks.nick}
+        {layout.given.text ? (
+          <p className="hl-given" data-hl-box="given">
+            {layout.given.text}
           </p>
         ) : null}
-        {names === "under" && playerName ? (
-          <p className="hl-name is-under" data-hl-box="name">
-            {playerName}
+        {layout.family.text ? (
+          <p className="hl-family" data-hl-box="family">
+            {layout.family.text}
           </p>
         ) : null}
-        <div className="hl-body-wrap" data-hl-box="body">
-          {showOpponentMark && opponent ? (
-            <div className="hl-opp" aria-hidden="true">
-              <TeamLogo src={opponent.logoSrc} label={opponent.name} shadow={0} />
-            </div>
-          ) : null}
-          <textarea
-            className="hl-body"
-            value={body}
-            rows={3}
-            maxLength={HEADLINE_BODY_MAX}
-            spellCheck={false}
-            aria-label="Headline body"
-            placeholder="AFTER BEATING OKC 111–109"
-            onChange={(event) =>
-              onBodyChange(event.target.value.slice(0, HEADLINE_BODY_MAX))
-            }
-          />
-        </div>
+        <textarea
+          className="hl-body"
+          value={body}
+          rows={bodyRows}
+          maxLength={HEADLINE_BODY_MAX}
+          spellCheck={false}
+          aria-label="Headline body"
+          placeholder="WILL NOT PLAY TONIGHT"
+          data-hl-box="body"
+          onChange={(event) =>
+            onBodyChange(event.target.value.slice(0, HEADLINE_BODY_MAX))
+          }
+        />
+        <div className="hl-frame" aria-hidden="true" />
       </article>
     );
   },

@@ -49,19 +49,24 @@ export {
   type HeadlineSubjectMode,
 };
 
-export const DEFAULT_HEADLINE = "MASSIVE LEAP";
+export const DEFAULT_HEADLINE = "BREAKING";
 export const DEFAULT_HEADLINE_BODY = "";
 export const HEADLINE_BODY_MAX = 180;
 export const HEADLINE_MAX = 48;
 export const DEFAULT_HEADLINE_WATERMARK: HeadlineWatermark = "faint";
 
 export const HEADLINE_CAPTION_PRESETS: Record<string, string> = {
+  BREAKING: "Breaking.",
+  "BLOWN OUT": "Blown out.",
+  "CAREER NIGHT": "Career night.",
+  "DEFENSIVE CLINIC": "Defensive clinic.",
+  OUT: "Out.",
+  QUESTIONABLE: "Questionable.",
   "MASSIVE LEAP": "The leap is real.",
   "STATEMENT WIN": "Statement made.",
   "HE’S HIM": "He’s him.",
   "HE'S HIM": "He’s him.",
   "HOT TAKE": "Hot take.",
-  BREAKING: "Breaking.",
   UNLOCKED: "Unlocked.",
 };
 
