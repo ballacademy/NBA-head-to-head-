@@ -341,7 +341,8 @@ export const notableStatCardLines = (stats: LastGameStats): StatCardLine[] => {
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  if (min >= 10) {
+  /** Short nights and heavy minutes read; a boring 30–35 can skip. */
+  if (min > 0 && (min < 30 || min >= 36)) {
     picks.push({ key: "min" });
   }
   const threeVolume =

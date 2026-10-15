@@ -235,7 +235,6 @@ describe("stat card composer", () => {
       "20 PTS",
       "15 REB",
       "9 AST",
-      "34 MIN",
     ]);
     const loaded = notableStatCardLines(
       box({
@@ -299,10 +298,21 @@ describe("stat card composer", () => {
     );
     expect(hot.map((line) => `${line.value} ${line.label}`)).toEqual([
       "24 PTS",
-      "32 MIN",
       "80.0 3P%",
       "64.3 FG%",
     ]);
+    const burst = notableStatCardLines(
+      box({ pts: "18", reb: "2", ast: "1", min: "12", fg: "7-9" }),
+    );
+    expect(burst.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "18 PTS",
+      "12 MIN",
+      "77.8 FG%",
+    ]);
+    const starterMinutes = notableStatCardLines(
+      box({ pts: "16", reb: "5", ast: "4", min: "33" }),
+    );
+    expect(starterMinutes.map((line) => line.label)).toEqual(["PTS", "REB", "AST"]);
     const efg = notableStatCardLines(
       box({
         pts: "22",
