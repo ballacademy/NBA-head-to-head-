@@ -26,11 +26,15 @@ import {
   plusBoardMetrics,
   plusCellRect,
 } from "./teamOfTheWeekPlusLayout";
+import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
+import { emptyStats } from "../playerOfTheDayComposer/lastGame";
 import {
   applyPlayerPick,
   createEmptyPlusSlots,
   fillPlusFromStandouts,
+  isPlusStar,
   plusBoardEmpty,
+  plusLineupGroup,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
   defaultTotwPlusDraft,
@@ -38,6 +42,8 @@ import {
   PLUS_STANDOUT_COUNT,
   PLUS_STARTER_COUNT,
   patchStrip,
+  selectPlusStandouts,
+  selectPlusStarters,
   setStripPhoto,
   standoutSlots,
   starterSlots,
@@ -176,49 +182,125 @@ describe("team of the week plus", () => {
     expect(kept[0]!.pan.rotate).toBe(180);
   });
 
-  it("auto-fills five starters then five standouts from ranked nights", () => {
-    const ids = NBA_ACTIVE_PLAYERS.slice(0, 10).map((player) => player.id);
-    const rows = ids.map((athleteId, index) => ({
-      athleteId,
-      name: getPlayer(athleteId)?.name ?? athleteId,
-      teamId: getPlayer(athleteId)?.team ?? "OKC",
-      badge: "Standout",
-      flags: [],
-      line: "20 PTS",
-      score: 100 - index,
-      game: {
-        eventId: "1",
-        gameDate: "2026-10-14",
-        teamId: getPlayer(athleteId)?.team ?? "OKC",
-        opponentId: "SAS",
-        opponentAbbrev: "SAS",
-        result: "W" as const,
-        playerScore: "110",
-        opponentScore: "100",
-        resultLine: "W",
-        dateLabel: "10/14",
-        stats: {
-          pts: "20",
-          reb: "5",
-          ast: "5",
-          stl: "1",
-          blk: "1",
-          fg: "8-16",
-          three: "2-6",
-          tov: "2",
-          min: "30",
+  it("auto-fills a 2/2/1 week and surprise non-stars who aren’t already on TOTW", () => {
+    const game = (
+      athleteId: string,
+      score: number,
+      stats: Partial<NightStandout["game"]["stats"]> = {},
+    ): NightStandout => {
+      const player = getPlayer(athleteId)!;
+      return {
+        athleteId,
+        name: player.name,
+        teamId: player.team,
+        badge: "Standout",
+        flags: [],
+        line: `${stats.pts ?? "20"} PTS`,
+        score,
+        game: {
+          eventId: "1",
+          gameDate: "2026-10-14",
+          teamId: player.team,
+          opponentId: "SAS",
+          opponentAbbrev: "SAS",
+          result: "W",
+          playerScore: "110",
+          opponentScore: "100",
+          resultLine: "W",
+          dateLabel: "10/14",
+          stats: {
+            ...emptyStats(),
+            pts: "20",
+            reb: "5",
+            ast: "5",
+            stl: "1",
+            blk: "1",
+            fg: "8-16",
+            three: "2-6",
+            tov: "2",
+            min: "30",
+            ...stats,
+          },
         },
-      },
-    }));
+      };
+    };
+    const luka = "3945274";
+    const sga = "4278073";
+    const lebron = "1966";
+    const tatum = "4065648";
+    const jokic = "3112335";
+    const extraStar = "3032977";
+    const bouyea = "4280245";
+    const keon = "4702177";
+    const podz = "4709138";
+    const tari = "4433192";
+    const camara = "4431736";
+    expect(plusLineupGroup(getPlayer(luka))).toBe("G");
+    expect(plusLineupGroup(getPlayer(sga))).toBe("G");
+    expect(plusLineupGroup(getPlayer(lebron))).toBe("F");
+    expect(plusLineupGroup(getPlayer(tatum))).toBe("F");
+    expect(plusLineupGroup(getPlayer(jokic))).toBe("C");
+    expect(plusLineupGroup(getPlayer("5104157"))).toBe("C");
+    expect(isPlusStar(luka)).toBe(true);
+    expect(isPlusStar(jokic)).toBe(true);
+    expect(isPlusStar(bouyea)).toBe(false);
+    expect(isPlusStar(keon)).toBe(false);
+
+    const rows = [
+      game(extraStar, 200, { pts: "40", reb: "12", ast: "8" }),
+      game(luka, 120, { pts: "38", reb: "8", ast: "11" }),
+      game(sga, 110, { pts: "36", reb: "5", ast: "7" }),
+      game(lebron, 100, { pts: "31", reb: "8", ast: "9" }),
+      game(tatum, 90, { pts: "33", reb: "9", ast: "6" }),
+      game(jokic, 80, { pts: "28", reb: "14", ast: "12" }),
+      game(bouyea, 25, { pts: "15", reb: "4", ast: "8", min: "28" }),
+      game(keon, 22, { pts: "18", reb: "3", ast: "4", stl: "4" }),
+      game(podz, 21, { pts: "22", reb: "6", ast: "5" }),
+      game(tari, 20, { pts: "19", reb: "10", ast: "3" }),
+      game(camara, 19, { pts: "17", reb: "11", ast: "4" }),
+    ];
     expect(plusBoardEmpty(createEmptyPlusSlots())).toBe(true);
+    const starters = selectPlusStarters(rows);
+    const starterIds = starters.map((row) => row.athleteId);
+    const starterGroups = starterIds.map(
+      (id) => plusLineupGroup(getPlayer(id)),
+    );
+    expect(starterGroups.filter((group) => group === "G")).toHaveLength(2);
+    expect(starterGroups.filter((group) => group === "F")).toHaveLength(2);
+    expect(starterGroups.filter((group) => group === "C")).toHaveLength(1);
+    expect(starterIds).toContain(luka);
+    expect(starterIds).toContain(sga);
+    expect(starterIds).toContain(jokic);
+    expect(starterIds).not.toContain(bouyea);
+    expect(starterGroups.slice(0, 2)).toEqual(["G", "G"]);
+    expect(starterGroups[4]).toBe("C");
+
+    const standouts = selectPlusStandouts(rows, new Set(starterIds));
+    const standoutIds = standouts.map((row) => row.athleteId);
+    expect(standoutIds).toHaveLength(5);
+    expect(standoutIds).toContain(bouyea);
+    expect(standoutIds.every((id) => !starterIds.includes(id))).toBe(true);
+    expect(standoutIds.every((id) => !isPlusStar(id))).toBe(true);
+    expect(standoutIds).not.toContain(extraStar);
+    expect(standoutIds).not.toContain(tatum);
+
     const filled = fillPlusFromStandouts(createEmptyPlusSlots(), rows);
-    expect(filled.filter((slot) => slot.playerId).length).toBe(10);
-    expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(
-      ids.slice(0, 5),
-    );
+    expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(starterIds);
     expect(standoutSlots(filled).map((slot) => slot.playerId)).toEqual(
-      ids.slice(5),
+      standoutIds,
     );
-    expect(filled[0]?.photoSrc).toBe(getPlayer(ids[0]!)?.headshotUrl);
+    expect(new Set(filled.map((slot) => slot.playerId)).size).toBe(10);
+    expect(filled[0]?.photoSrc).toBe(getPlayer(starterIds[0]!)?.headshotUrl);
+
+    const onlyGuards = NBA_ACTIVE_PLAYERS.filter(
+      (player) => plusLineupGroup(player) === "G" && !player.allStar,
+    )
+      .slice(0, 6)
+      .map((player, index) => game(player.id, 50 - index, { pts: "18" }));
+    const loose = selectPlusStarters(onlyGuards);
+    expect(loose).toHaveLength(5);
+    expect(
+      loose.every((row) => plusLineupGroup(getPlayer(row.athleteId)) === "G"),
+    ).toBe(true);
   });
 });

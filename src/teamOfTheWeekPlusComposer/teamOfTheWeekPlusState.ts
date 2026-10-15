@@ -1,6 +1,15 @@
-import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
+import {
+  nightFlagsFor,
+  surpriseBonus,
+  usualLineFor,
+  type NightStandout,
+} from "../playerOfTheDayComposer/nightStandouts";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  getPlayer,
+  type PlayerPositionGroup,
+  type TierPlayer,
+} from "../tierListComposer/nbaActivePlayers";
 import {
   applyPlayerPick,
   clearStrip,
@@ -98,17 +107,130 @@ export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
 export const plusBoardEmpty = (slots: TotwStrip[]) =>
   slots.every((slot) => !slot.playerId);
 
+const PLUS_STARTER_QUOTA: Record<PlayerPositionGroup, number> = {
+  G: 2,
+  F: 2,
+  C: 1,
+};
+
+const PLUS_POSITION_RANK: Record<string, number> = {
+  PG: 0,
+  G: 1,
+  SG: 2,
+  SF: 3,
+  F: 4,
+  PF: 5,
+  C: 6,
+};
+
+/** Wemby-style C/F listings still count as the center slot. */
+export const plusLineupGroup = (
+  player: TierPlayer | null | undefined,
+): PlayerPositionGroup | null => {
+  if (!player || player.role === "coach") {
+    return null;
+  }
+  if (player.position === "C" || player.positionGroup === "C") {
+    return "C";
+  }
+  if (
+    player.position === "PG" ||
+    player.position === "SG" ||
+    player.position === "G" ||
+    player.positionGroup === "G"
+  ) {
+    return "G";
+  }
+  return "F";
+};
+
+export const isPlusStar = (athleteId: string) => {
+  const player = getPlayer(athleteId);
+  if (!player) {
+    return true;
+  }
+  const usual = usualLineFor(athleteId);
+  return player.allStar || player.ppg >= 20 || usual.pts >= 20;
+};
+
+export const plusOverExpectation = (row: NightStandout) => {
+  const extra = nightFlagsFor(row.game.stats);
+  const usual = usualLineFor(row.athleteId);
+  return surpriseBonus(extra, usual) + extra.score * 0.15;
+};
+
+export const orderPlusStarters = (rows: NightStandout[]) =>
+  [...rows].sort((left, right) => {
+    const a = getPlayer(left.athleteId);
+    const b = getPlayer(right.athleteId);
+    const rank =
+      (PLUS_POSITION_RANK[a?.position ?? ""] ?? 9) -
+      (PLUS_POSITION_RANK[b?.position ?? ""] ?? 9);
+    if (rank) {
+      return rank;
+    }
+    return right.score - left.score;
+  });
+
+/** Best week, ideally 2 guards / 2 forwards / 1 center. Soft-fill if the slate isn’t clean. */
+export const selectPlusStarters = (rows: NightStandout[]) => {
+  const ranked = [...rows].sort((left, right) => right.score - left.score);
+  const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
+  const picked: NightStandout[] = [];
+  const used = new Set<string>();
+  const take = (row: NightStandout, honorQuota: boolean) => {
+    if (picked.length >= PLUS_STARTER_COUNT || used.has(row.athleteId)) {
+      return;
+    }
+    const group = plusLineupGroup(getPlayer(row.athleteId));
+    if (!group) {
+      return;
+    }
+    if (honorQuota && counts[group] >= PLUS_STARTER_QUOTA[group]) {
+      return;
+    }
+    picked.push(row);
+    used.add(row.athleteId);
+    counts[group] += 1;
+  };
+  for (const row of ranked) {
+    take(row, true);
+  }
+  for (const row of ranked) {
+    take(row, false);
+  }
+  return orderPlusStarters(picked);
+};
+
+/** Non-stars / non-All-Stars with the best week or the biggest over-expectation. */
+export const selectPlusStandouts = (
+  rows: NightStandout[],
+  starterIds: ReadonlySet<string>,
+) =>
+  [...rows]
+    .filter(
+      (row) => !starterIds.has(row.athleteId) && !isPlusStar(row.athleteId),
+    )
+    .sort(
+      (left, right) =>
+        plusOverExpectation(right) - plusOverExpectation(left) ||
+        right.score - left.score,
+    )
+    .slice(0, PLUS_STANDOUT_COUNT);
+
 export const fillPlusFromStandouts = (
   slots: TotwStrip[],
   rows: NightStandout[],
-  starters: TotwStrip[] = [],
 ): TotwStrip[] => {
   const previousById = new Map<string, TotwStrip>();
-  for (const slot of [...slots, ...starters]) {
+  for (const slot of slots) {
     if (slot.playerId) {
       previousById.set(slot.playerId, slot);
     }
   }
+  const starters = selectPlusStarters(rows);
+  const starterIds = new Set(starters.map((row) => row.athleteId));
+  const standouts = selectPlusStandouts(rows, starterIds);
   let next = createEmptyPlusSlots();
   let index = 0;
   const used = new Set<string>();
@@ -130,12 +252,10 @@ export const fillPlusFromStandouts = (
     used.add(player.id);
     index += 1;
   };
-  for (const strip of starters) {
-    if (strip.playerId) {
-      take(strip.playerId);
-    }
+  for (const row of starters) {
+    take(row.athleteId);
   }
-  for (const row of rows) {
+  for (const row of standouts) {
     take(row.athleteId);
   }
   return next;

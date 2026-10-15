@@ -65,6 +65,14 @@ const lastGame = readFileSync(
   join(root, "playerOfTheDayComposer/lastGame.ts"),
   "utf8",
 );
+const totwPlusApp = readFileSync(
+  join(root, "teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp.tsx"),
+  "utf8",
+);
+const totwPlusState = readFileSync(
+  join(root, "teamOfTheWeekPlusComposer/teamOfTheWeekPlusState.ts"),
+  "utf8",
+);
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -171,6 +179,18 @@ describe("composer chrome", () => {
     expect(lastGame).not.toMatch(
       /sample === "preseason" && !night\.game/,
     );
+  });
+
+  it("fills TOTW Plus as a 2/2/1 week plus surprise non-stars", () => {
+    expect(totwPlusState).toContain("selectPlusStarters");
+    expect(totwPlusState).toContain("selectPlusStandouts");
+    expect(totwPlusState).toContain("plusLineupGroup");
+    expect(totwPlusState).toMatch(/G:\s*2/);
+    expect(totwPlusState).toContain("isPlusStar");
+    expect(totwPlusApp).toContain("ComposerNightDate");
+    expect(totwPlusApp).toContain("fetchWeekStandouts");
+    expect(totwPlusApp).not.toContain("totwStarterStrips");
+    expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
   });
 
   it("puts gold on the cover lockup, seams, date pill, and swipe cue", () => {

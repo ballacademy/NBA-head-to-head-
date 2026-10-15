@@ -26,14 +26,11 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
-import {
-  nbaTodayIso,
-  shiftIsoDate,
-} from "../playerOfTheDayComposer/lastGame";
 import { fetchWeekStandouts } from "../playerOfTheDayComposer/nightStandouts";
-import { isTotwDraft } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
@@ -48,8 +45,11 @@ import {
   isTotwPlusDraft,
   patchStrip,
   plusBoardEmpty,
+  plusLineupGroup,
   setStripPhoto,
   slotLabel,
+  standoutSlots,
+  starterSlots,
   usedPlusPlayerIds,
   type TotwPlusDraft,
   type TotwStrip,
@@ -59,7 +59,6 @@ import "./teamOfTheWeekPlusComposer.css";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-plus-composer";
 const SAVES_KEY = "ddgm:team-of-the-week-plus-composer:saves";
-const TOTW_STORAGE_KEY = "ddgm:team-of-the-week-composer";
 
 const loadDraft = (): TotwPlusDraft => {
   const stored = readJson<Partial<TotwPlusDraft>>(STORAGE_KEY);
@@ -113,40 +112,45 @@ export function TeamOfTheWeekPlusComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
+  const night = useComposerNight();
 
   useEffect(() => {
     document.title = "Team of the Week Plus graphic";
   }, []);
 
-  const totwStarterStrips = () => {
-    const stored = readJson<unknown>(TOTW_STORAGE_KEY);
-    return isTotwDraft(stored)
-      ? stored.strips.filter((strip) => Boolean(strip.playerId))
-      : [];
-  };
-
-  const fillLastWeek = useCallback(async (force = false) => {
-    setStatus("Loading last week’s standouts…");
+  const fillLastWeek = useCallback(async (force = false, endIso = night.date) => {
+    setStatus("Loading this week’s box scores…");
     try {
-      const rows = await fetchWeekStandouts(shiftIsoDate(nbaTodayIso(), -1), 7);
+      const rows = await fetchWeekStandouts(endIso, 7);
       setSlots((current) => {
         if (!force && !plusBoardEmpty(current)) {
           return current;
         }
-        const next = fillPlusFromStandouts(current, rows, totwStarterStrips());
-        const filled = next.filter((slot) => slot.playerId).length;
+        const next = fillPlusFromStandouts(current, rows);
+        const starters = starterSlots(next).filter((slot) => slot.playerId);
+        const standouts = standoutSlots(next).filter((slot) => slot.playerId);
+        const groups = starters.reduce(
+          (counts, slot) => {
+            const group = plusLineupGroup(getPlayer(slot.playerId));
+            if (group) {
+              counts[group] += 1;
+            }
+            return counts;
+          },
+          { G: 0, F: 0, C: 0 },
+        );
         setStatus(
-          filled
-            ? `Filled ${Math.min(5, filled)} starters and ${Math.max(0, filled - 5)} standouts.`
-            : "No standouts for last week yet — pick players for the empty slots.",
+          starters.length
+            ? `Filled ${groups.G}G / ${groups.F}F / ${groups.C}C and ${standouts.length} surprise standouts.`
+            : "No box scores for this week yet — pick players for the empty slots.",
         );
         return next;
       });
     } catch (error) {
       console.error(error);
-      setStatus("Could not load last week’s standouts.");
+      setStatus("Could not load this week’s standouts.");
     }
-  }, []);
+  }, [night.date]);
 
   useEffect(() => {
     const draft = loadDraft();
@@ -341,6 +345,16 @@ export function TeamOfTheWeekPlusComposerApp() {
           </>
         }
         data={
+          <>
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              void fillLastWeek(false, iso);
+            }}
+          />
           <button
             type="button"
             className="sc-chip"
@@ -348,6 +362,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           >
             Fill last week
           </button>
+          </>
         }
         board={
           <>
@@ -503,11 +518,11 @@ export function TeamOfTheWeekPlusComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Five starters on the hero row, five standouts on the shorter bench.
-            Pick a player for a headshot, or upload/paste a custom photo. Drag to
-            pan, pinch or scroll to zoom — same as Player of the Day. +/− still
-            work. Name + logo can be toggled off.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            Top row is the week’s best 2 guards / 2 forwards / 1 center — close
+            enough if the slate isn’t clean. Standouts are surprise non-stars
+            who aren’t already on TOTW. Empty photo until you paste. Tonight /
+            Last night uses the same week window as the Stat card. Downloads a
+            4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
