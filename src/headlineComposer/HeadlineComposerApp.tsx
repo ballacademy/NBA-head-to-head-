@@ -33,9 +33,11 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import {
-  fetchLastGame,
+  fetchRecentGames,
   fetchTeamLastNight,
+  gameOnOrBeforeDate,
 } from "../playerOfTheDayComposer/lastGame";
+import { everyTeamCurrentSeason } from "../everyTeamComposer/historicalRosters";
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
@@ -154,30 +156,52 @@ export function HeadlineComposerApp() {
 
   const fillAutoBody = async (next: HeadlineDraft, onDate = night.date) => {
     const team = getTeam(next.teamId);
+    const playerMode = parseHeadlineSubjectMode(next.subjectMode) !== "team";
+    if (playerMode && !next.playerId) {
+      setStatus(
+        "Pick a player first — Fill last night writes that player’s last game.",
+      );
+      return;
+    }
     if (!team) {
+      setStatus(
+        playerMode
+          ? "Pick a player first — Fill last night writes that player’s last game."
+          : "Pick a team first — Fill last night writes last night’s score.",
+      );
       return;
     }
     try {
-      const [playerGame, night] = await Promise.all([
+      const [playerGame, teamNight] = await Promise.all([
         next.playerId
-          ? fetchLastGame(next.playerId, statsSample, onDate)
+          ? fetchRecentGames(next.playerId, statsSample).then((games) =>
+              gameOnOrBeforeDate(games, onDate),
+            )
           : Promise.resolve(null),
-        fetchTeamLastNight(team.id, statsSample),
+        fetchTeamLastNight(team.id, statsSample, onDate),
       ]);
-      const game = playerGame ?? night.game;
-      const body = formatHeadlineBody(team, game, night.record);
+      const game = playerGame ?? teamNight.game;
+      const body = formatHeadlineBody(team, game, teamNight.record);
+      if (!body) {
+        const season = everyTeamCurrentSeason();
+        const sampleLabel =
+          statsSample === "preseason" ? `${season} preseason` : `${season} regular season`;
+        setStatus(`No ${sampleLabel} game on the board yet.`);
+        return;
+      }
       setDraft((current) =>
         current.playerId === next.playerId && current.teamId === next.teamId
           ? {
               ...current,
-              body: body ? clipHeadlineBody(body) : current.body,
+              body: clipHeadlineBody(body),
               opponentId: game?.opponentId || current.opponentId || null,
               gameDate: game?.gameDate || current.gameDate || null,
             }
           : current,
       );
+      setStatus("Filled the body from last night’s score.");
     } catch {
-      /* still editable */
+      setStatus("Could not fill last night — type the line or try again.");
     }
   };
 
@@ -341,7 +365,27 @@ export function HeadlineComposerApp() {
             type="button"
             className="sc-chip"
             onClick={() => void fillAutoBody(draft)}
-            disabled={!draft.teamId}
+            disabled={
+              subject === "team" ? !draft.teamId : !draft.playerId
+            }
+            title={
+              subject === "team"
+                ? draft.teamId
+                  ? "Fill the body from this team’s last game"
+                  : "Pick a team first"
+                : draft.playerId
+                  ? "Fill the body from this player’s last game"
+                  : "Pick a player first"
+            }
+            aria-label={
+              subject === "team"
+                ? draft.teamId
+                  ? "Fill last night"
+                  : "Fill last night (pick a team first)"
+                : draft.playerId
+                  ? "Fill last night"
+                  : "Fill last night (pick a player first)"
+            }
           >
             Fill last night
           </button>
@@ -692,8 +736,10 @@ export function HeadlineComposerApp() {
           <p className="sc-hint">
             Empty photo first — upload or paste an action shot. City, plate,
             nickname, and last-night lines stack in the lower third with no
-            overlap. 9:16 is a real story board, not a letterboxed 4:5.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            overlap. Fill last night writes the body from that player’s last
+            game once they’re picked. Tonight / Last night matches the Stat
+            card’s 2026-27 preseason slate. 9:16 is a real story board, not a
+            letterboxed 4:5. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

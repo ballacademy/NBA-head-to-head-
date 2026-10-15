@@ -10,7 +10,6 @@ import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { QUOTE_MAX, SOURCE_MAX, type QuoteDraft } from "./quoteState";
 import {
-  formatQuoteSource,
   isLongQuote,
   quoteBottom,
   quoteLastName,
@@ -54,7 +53,6 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
     const long = isLongQuote(draft.quote);
     const lastSize = quoteLastNameSize(last, draft.quote);
     const quoteSize = quoteTypeSize(draft.quote);
-    const source = formatQuoteSource(draft.source);
     const hasSource = Boolean(draft.source.trim());
     const bottom = quoteBottom(hasSource);
     const teamColor = draft.teamId
@@ -166,12 +164,15 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           }
         />
         <input
-          className="qt-source"
+          className={["qt-source", hasSource ? "" : "is-empty"]
+            .filter(Boolean)
+            .join(" ")}
           value={draft.source}
           maxLength={SOURCE_MAX}
           spellCheck={false}
           aria-label="Quote source"
-          placeholder={source ? undefined : "SOURCE (OPTIONAL)"}
+          aria-hidden={!hasSource}
+          placeholder=""
           onChange={(event) =>
             onSourceChange(event.target.value.slice(0, SOURCE_MAX))
           }

@@ -136,6 +136,25 @@ export const gameOnDate = (games: LastGame[], iso: string) => {
   );
 };
 
+/** Exact slate first, then the most recent completed game on or before that date. */
+export const gameOnOrBeforeDate = (
+  games: LastGame[],
+  iso?: string | null,
+) => {
+  const want = isoDateOnly(iso ?? "");
+  if (!want) {
+    return games[0] ?? null;
+  }
+  return (
+    games.find((game) => isoDateOnly(game.gameDate) === want) ??
+    games.find((game) => {
+      const date = isoDateOnly(game.gameDate);
+      return Boolean(date && date <= want);
+    }) ??
+    null
+  );
+};
+
 export const resolveTeamId = (
   abbreviation?: string | null,
   displayName?: string | null,
@@ -488,12 +507,11 @@ const competitorScore = (item: EspnScheduleCompetitor) => {
 export const parseTeamScheduleLastNight = (
   payload: EspnTeamSchedulePayload | null | undefined,
   teamId: string,
+  onDate?: string | null,
 ): TeamLastNight => {
   const events = [...(payload?.events ?? [])].sort((left, right) =>
     String(right.date ?? "").localeCompare(String(left.date ?? "")),
   );
-  let wins = 0;
-  let losses = 0;
   const completed: LastGame[] = [];
   for (const event of events.slice().reverse()) {
     const competition = event.competitions?.[0];
@@ -507,11 +525,6 @@ export const parseTeamScheduleLastNight = (
     const opp = competition.competitors?.find((item) => item !== ours);
     if (!ours || !opp) {
       continue;
-    }
-    if (ours.winner) {
-      wins += 1;
-    } else {
-      losses += 1;
     }
     const opponentId =
       resolveTeamId(opp.team?.abbreviation, opp.team?.displayName) ?? "";
@@ -539,10 +552,22 @@ export const parseTeamScheduleLastNight = (
       stats: emptyStats(),
     });
   }
-  const game = completed[completed.length - 1] ?? null;
+  const want = isoDateOnly(onDate ?? "");
+  const eligible = want
+    ? completed.filter((item) => {
+        const date = isoDateOnly(item.gameDate);
+        return Boolean(date && date <= want);
+      })
+    : completed;
+  const newestFirst = [...eligible].reverse();
+  const game = want
+    ? gameOnOrBeforeDate(newestFirst, want)
+    : (newestFirst[0] ?? null);
+  const wins = eligible.filter((item) => item.result === "W").length;
+  const losses = eligible.filter((item) => item.result === "L").length;
   return {
     game,
-    record: completed.length ? { wins, losses } : null,
+    record: eligible.length ? { wins, losses } : null,
   };
 };
 
@@ -551,6 +576,7 @@ const teamCache = new Map<string, TeamLastNight>();
 export const fetchTeamLastNight = async (
   teamId: string,
   sample: ComposerStatsSample = "preseason",
+  onDate?: string | null,
 ): Promise<TeamLastNight> => {
   const id = teamId.trim().toUpperCase();
   const espnId = ESPN_TEAM_IDS[id];
@@ -559,26 +585,24 @@ export const fetchTeamLastNight = async (
   }
   const seasonYear = espnGamelogSeasonYear();
   const seasonType = sample === "regular" ? 2 : 1;
-  const key = `${id}::${sample}::${seasonYear}`;
+  const slate = isoDateOnly(onDate ?? "");
+  const key = `${id}::${sample}::${seasonYear}::${slate}`;
   if (teamCache.has(key)) {
     return teamCache.get(key)!;
   }
-  const load = async (type: number) => {
-    const response = await fetch(ESPN_TEAM_SCHEDULE_URL(espnId, seasonYear, type), {
-      mode: "cors",
-      credentials: "omit",
-    });
+  try {
+    const response = await fetch(
+      ESPN_TEAM_SCHEDULE_URL(espnId, seasonYear, seasonType),
+      {
+        mode: "cors",
+        credentials: "omit",
+      },
+    );
     if (!response.ok) {
-      return { game: null, record: null } satisfies TeamLastNight;
+      return { game: null, record: null };
     }
     const payload = (await response.json()) as EspnTeamSchedulePayload;
-    return parseTeamScheduleLastNight(payload, id);
-  };
-  try {
-    let night = await load(seasonType);
-    if (sample === "preseason" && !night.game) {
-      night = await load(2);
-    }
+    const night = parseTeamScheduleLastNight(payload, id, slate || null);
     teamCache.set(key, night);
     return night;
   } catch {

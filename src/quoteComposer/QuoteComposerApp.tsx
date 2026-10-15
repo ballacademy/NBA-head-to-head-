@@ -148,8 +148,7 @@ export function QuoteComposerApp() {
       setPickerOpen(false);
       return;
     }
-    const keepLine =
-      keepQuote === undefined ? !isStockQuote(draft.quote) : keepQuote !== false;
+    const keepLine = keepQuote !== false;
     push(draft);
     setDraft((current) =>
       fillQuoteFromPlayer(player, current, keepCustomPhoto, keepLine),
@@ -160,21 +159,11 @@ export function QuoteComposerApp() {
     setGamePresets([]);
     setStatus(
       keepLine
-        ? `Filled ${player.name} — upload a photo.`
+        ? `Filled ${player.name} — last-game chips stay in the HUD.`
         : `Filled ${player.name} — quote cleared. Upload a photo.`,
     );
     void fetchLastGame(player.id, statsSample).then((game) => {
-      const presets = lastGameQuotePresets(game);
-      setGamePresets(presets);
-      const chip = presets[0];
-      if (!chip) {
-        return;
-      }
-      setDraft((current) =>
-        isStockQuote(current.quote) || !current.quote.trim()
-          ? { ...current, quote: chip.slice(0, QUOTE_MAX) }
-          : current,
-      );
+      setGamePresets(lastGameQuotePresets(game));
     });
   };
 
@@ -250,7 +239,7 @@ export function QuoteComposerApp() {
           <>
           {gamePresets.length ? (
             <div className="sc-look" role="group" aria-label="Last-game quote presets">
-              <span className="sc-look__label">Last game</span>
+              <span className="sc-look__label">Last game · tap to insert</span>
               {gamePresets.map((line) => (
                 <button
                   key={line}
@@ -442,8 +431,9 @@ export function QuoteComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — last-name masthead up top, pull-quote on the
-            lower fade. Changing the player asks whether to keep the quote.
-            Downloads a 4:5 Instagram PNG — nothing is posted.
+            lower fade. Picking a player updates name, team, and photo — never
+            the quote. Last-game chips stay in the HUD. SOURCE stays hidden
+            until you type one. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

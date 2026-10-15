@@ -45,6 +45,26 @@ const coverApp = readFileSync(
   join(root, "statCardCoverComposer/StatCardCoverComposerApp.tsx"),
   "utf8",
 );
+const quoteApp = readFileSync(
+  join(root, "quoteComposer/QuoteComposerApp.tsx"),
+  "utf8",
+);
+const quoteGraphic = readFileSync(
+  join(root, "quoteComposer/QuoteGraphic.tsx"),
+  "utf8",
+);
+const quoteCss = readFileSync(
+  join(root, "quoteComposer/quoteComposer.css"),
+  "utf8",
+);
+const headlineApp = readFileSync(
+  join(root, "headlineComposer/HeadlineComposerApp.tsx"),
+  "utf8",
+);
+const lastGame = readFileSync(
+  join(root, "playerOfTheDayComposer/lastGame.ts"),
+  "utf8",
+);
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -127,6 +147,30 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("nextStatsLeft");
     expect(coverApp).toContain("statsLeftAt");
     expect(coverApp).toContain("persistStatCardStatsLeft");
+  });
+
+  it("keeps the pull-quote as a quote when picking a player", () => {
+    expect(quoteApp).toContain("setGamePresets(lastGameQuotePresets(game))");
+    expect(quoteApp).not.toMatch(/quote:\s*chip/);
+    expect(quoteApp).not.toMatch(/isStockQuote\(current\.quote\)/);
+    expect(quoteApp).toMatch(/keepQuote !== false/);
+    expect(quoteApp).toContain("Last game · tap to insert");
+    expect(quoteGraphic).toContain("is-empty");
+    expect(quoteGraphic).not.toContain("SOURCE (OPTIONAL)");
+    expect(quoteCss).toContain(".qt-source.is-empty:not(:focus)");
+  });
+
+  it("wires Headline Fill last night to the player’s last 2026-27 game", () => {
+    expect(headlineApp).toContain("gameOnOrBeforeDate");
+    expect(headlineApp).toContain("fetchRecentGames");
+    expect(headlineApp).toContain("Pick a player first");
+    expect(headlineApp).toContain("Fill last night (pick a player first)");
+    expect(headlineApp).not.toMatch(/disabled=\{!draft\.teamId\}/);
+    expect(headlineApp).not.toMatch(/fetchLastGame\(next\.playerId/);
+    expect(lastGame).toContain("gameOnOrBeforeDate");
+    expect(lastGame).not.toMatch(
+      /sample === "preseason" && !night\.game/,
+    );
   });
 
   it("puts gold on the cover lockup, seams, date pill, and swipe cue", () => {

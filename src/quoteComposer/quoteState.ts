@@ -19,7 +19,7 @@ export const QUOTE_PRESETS = [
 const foldQuote = (value: string) =>
   value.replace(/\s+/g, " ").trim().toUpperCase().replace(/[’']/g, "'");
 
-/** Stock chips like I'M HIM shouldn't stick when the speaker changes. */
+/** Stock chips like I'M HIM skip the keep-quote dialog and stay on the graphic. */
 export const isStockQuote = (value: string) => {
   const folded = foldQuote(value);
   return !folded || QUOTE_PRESETS.some((preset) => foldQuote(preset) === folded);

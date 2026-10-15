@@ -163,6 +163,7 @@
   letter-spacing: 0.08em;
 }
 
+.qt-source.is-empty:not(:focus),
 .qt-source:placeholder-shown:not(:focus) {
   opacity: 0;
   color: transparent;

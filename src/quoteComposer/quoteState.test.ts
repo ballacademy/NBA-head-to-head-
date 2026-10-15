@@ -16,6 +16,7 @@ import {
   quoteTypeSize,
 } from "./quoteLayout";
 import {
+  DEFAULT_QUOTE,
   defaultQuoteDraft,
   fillQuoteFromPlayer,
   hasCustomPhoto,
@@ -47,6 +48,8 @@ describe("quote composer", () => {
     expect(next.teamId).toBe(jokic.team);
     expect(next.showHeadshot).toBe(true);
     expect(hasCustomPhoto(next)).toBe(false);
+    expect(next.quote).toBe(DEFAULT_QUOTE);
+    expect(next.source).toBe("");
   });
 
   it("can keep or clear the quote when switching speakers", () => {

@@ -13,6 +13,7 @@ import {
   ESPN_TEAM_IDS,
   ESPN_TEAM_SCHEDULE_URL,
   gameOnDate,
+  gameOnOrBeforeDate,
   isoDateOnly,
   nbaTodayIso,
   shiftIsoDate,
@@ -453,6 +454,12 @@ describe("last NBA game parsing", () => {
     const games = parseGamelogGames(payload(), "regular", PRIOR_SEASON);
     expect(gameOnDate(games, "2026-05-26")?.eventId).toBe("401873344");
     expect(gameOnDate(games, "2026-10-14")).toBeNull();
+    const pre = parseGamelogGames(haliPayload(), "preseason", CURRENT_SEASON);
+    expect(gameOnDate(pre, "2026-10-15")).toBeNull();
+    expect(gameOnOrBeforeDate(pre, "2026-10-15")?.eventId).toBe("401908621");
+    expect(gameOnOrBeforeDate(pre, "2026-10-14")?.eventId).toBe("401908621");
+    expect(gameOnOrBeforeDate(pre, "2026-10-01")).toBeNull();
+    expect(gameOnOrBeforeDate(pre, "")?.eventId).toBe("401908621");
   });
 
   it("reads the last completed team schedule game and running W-L", () => {
@@ -504,5 +511,110 @@ describe("last NBA game parsing", () => {
     expect(night.game?.opponentScore).toBe("109");
     expect(night.game?.result).toBe("W");
     expect(night.record).toEqual({ wins: 1, losses: 0 });
+    const twoNights = parseTeamScheduleLastNight(
+      {
+        events: [
+          {
+            id: "1",
+            date: "2026-10-08T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: true } },
+                competitors: [
+                  {
+                    score: "111",
+                    winner: true,
+                    team: { abbreviation: "SA", displayName: "San Antonio Spurs" },
+                  },
+                  {
+                    score: "109",
+                    winner: false,
+                    team: { abbreviation: "OKC", displayName: "Oklahoma City Thunder" },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "3",
+            date: "2026-10-13T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: true } },
+                competitors: [
+                  {
+                    score: "123",
+                    winner: true,
+                    team: { abbreviation: "SA", displayName: "San Antonio Spurs" },
+                  },
+                  {
+                    score: "103",
+                    winner: false,
+                    team: { abbreviation: "PHX", displayName: "Phoenix Suns" },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      "SAS",
+      "2026-10-10",
+    );
+    expect(twoNights.game?.opponentId).toBe("OKC");
+    expect(twoNights.record).toEqual({ wins: 1, losses: 0 });
+    const later = parseTeamScheduleLastNight(
+      {
+        events: [
+          {
+            id: "1",
+            date: "2026-10-08T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: true } },
+                competitors: [
+                  {
+                    score: "111",
+                    winner: true,
+                    team: { abbreviation: "SA" },
+                  },
+                  {
+                    score: "109",
+                    winner: false,
+                    team: { abbreviation: "OKC" },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "3",
+            date: "2026-10-13T00:00:00Z",
+            competitions: [
+              {
+                status: { type: { completed: true } },
+                competitors: [
+                  {
+                    score: "123",
+                    winner: true,
+                    team: { abbreviation: "SA" },
+                  },
+                  {
+                    score: "103",
+                    winner: false,
+                    team: { abbreviation: "PHX" },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      "SAS",
+      "2026-10-15",
+    );
+    expect(later.game?.opponentId).toBe("PHX");
+    expect(later.game?.playerScore).toBe("123");
+    expect(later.record).toEqual({ wins: 2, losses: 0 });
   });
 });
