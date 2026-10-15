@@ -23,7 +23,7 @@ import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { inkOnHex, statCardType } from "./statCardLayout";
+import { inkOnHex, statCardStoryType, statCardType } from "./statCardLayout";
 import {
   clipStatLabel,
   clipStatMatchup,
@@ -43,6 +43,7 @@ interface StatCardGraphicProps {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onNameChange: (value: string) => void;
   onStatValue: (index: number, value: string) => void;
   onStatLabel: (index: number, value: string) => void;
@@ -62,6 +63,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       purpleFlair = false,
       photoGrade = false,
       exporting = false,
+      story = false,
       onNameChange,
       onStatValue,
       onStatLabel,
@@ -92,7 +94,9 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
     const team = getTeam(draft.teamId);
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
-    const type = statCardType(draft.stats.length);
+    const type = story
+      ? statCardStoryType(draft.stats.length)
+      : statCardType(draft.stats.length);
     const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
@@ -218,6 +222,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           composerLookClass(look),
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
+          story ? "is-story" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -229,6 +234,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             ["--stc-value" as string]: String(type.value),
             ["--stc-label" as string]: String(type.label),
             ["--stc-gap" as string]: String(type.gap),
+            ["--stc-count" as string]: String(Math.max(1, draft.stats.length)),
           } as React.CSSProperties
         }
         aria-label="Instagram stat card"

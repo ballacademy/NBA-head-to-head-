@@ -11,8 +11,11 @@ import {
   autoCompareStatsLabel,
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
+  compareCaptionFor,
   defaultCompareDraft,
   defaultCompareStats,
+  isAutoCompareSubtitle,
+  normalizeCompareDraft,
   fillCompareSide,
   leadingSide,
   nextCompareStat,
@@ -47,6 +50,17 @@ describe("compare composer recs", () => {
       `${statsSeasonFor("2026-27")} AVG`,
     );
     expect(autoCompareStatsLabel("game", "2026-27")).toBe("LAST GAME");
+    expect(draft.subtitle).toBe("");
+    expect(isAutoCompareSubtitle("CAREER START VS CAREER BENCH APPEARANCES")).toBe(
+      true,
+    );
+    expect(
+      normalizeCompareDraft({
+        ...draft,
+        subtitle: "CAREER START VS CAREER BENCH APPEARANCES",
+      }).subtitle,
+    ).toBe("");
+    expect(compareCaptionFor(draft)).not.toContain("CAREER START");
   });
 
   it("fills a side without a mugshot and highlights the leader", () => {

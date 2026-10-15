@@ -6,9 +6,10 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 
-export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
+export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH, STORY_DESIGN_HEIGHT };
 
 export type HeadlineWatermark = "off" | "faint" | "medium";
 export type HeadlinePlateColor = "white" | "team" | "black";
@@ -67,10 +68,10 @@ export const HL_BODY_LINE = 1.14;
 export const HL_PLATE_BODY_GAP = 18;
 export const HL_CITY_SIZE = 72;
 export const HL_NICK_SIZE = 96;
-/** Visible wordmark box vs font-size: leftover cap-height tucks under the plate. */
-export const HL_WORDMARK_CAP = 0.4;
+/** Visible wordmark box vs font-size — city/nick sit outside the plate, not under it. */
+export const HL_WORDMARK_CAP = 0.86;
 export const HL_WORDMARK_LINE = HL_WORDMARK_CAP;
-export const HL_TUCK = 18;
+export const HL_TUCK = 0;
 export const HL_CITY_OVERLAP = HL_TUCK;
 export const HL_NICK_OVERLAP = HL_TUCK;
 export const HL_STACK_GAP = 16;
@@ -224,6 +225,7 @@ export interface HeadlineStackOpts {
   nameUnder?: boolean;
   city?: string;
   nick?: string;
+  boardH?: number;
 }
 
 export interface HeadlineTypeStack {
@@ -265,6 +267,7 @@ export const headlineTypeStack = ({
   nameUnder = false,
   city = "",
   nick = "",
+  boardH = GRAPHIC_HEIGHT,
 }: HeadlineStackOpts): HeadlineTypeStack => {
   const cityLabel = city.replace(/\s+/g, " ").trim().toUpperCase();
   const nickLabel = nick.replace(/\s+/g, " ").trim().toUpperCase();
@@ -319,7 +322,7 @@ export const headlineTypeStack = ({
     };
   }
 
-  let y = GRAPHIC_HEIGHT - HL_TYPE_BOTTOM;
+  let y = boardH - HL_TYPE_BOTTOM;
   const bodyBottom = y;
   const bodyTop = bodyH ? y - bodyH : y;
   y = bodyTop;

@@ -2,9 +2,15 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 
-export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
+export {
+  GRAPHIC_ASPECT,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+};
 
 export const STC_PHOTO_W = 748;
 export const STC_STATS_X = 748;
@@ -73,4 +79,49 @@ export const statCardRows = (
     labelY: index * h + h * 0.72,
     ruleY: index * h + h,
   }));
+};
+
+/** Full-bleed photo on top, name bar, then a wide stats row. */
+export const STC_STORY_PHOTO_RATIO = 0.58;
+export const STC_STORY_NAME_H = 112;
+
+export const statCardStoryRects = (boardH = STORY_DESIGN_HEIGHT) => {
+  const photoH = Math.round(boardH * STC_STORY_PHOTO_RATIO);
+  const nameH = STC_STORY_NAME_H;
+  const statsY = photoH + nameH;
+  return {
+    photo: { x: 0, y: 0, w: GRAPHIC_WIDTH, h: photoH },
+    name: { x: 0, y: photoH, w: GRAPHIC_WIDTH, h: nameH },
+    stats: { x: 0, y: statsY, w: GRAPHIC_WIDTH, h: boardH - statsY },
+    hairline: { x: 0, y: photoH, w: GRAPHIC_WIDTH, h: STC_HAIRLINE },
+  };
+};
+
+export const statCardStoryColumns = (
+  count = STC_STAT_COUNT,
+  width = GRAPHIC_WIDTH,
+  height = 400,
+) => {
+  const n = Math.max(1, count);
+  const w = width / n;
+  return Array.from({ length: n }, (_, index) => ({
+    x: index * w,
+    w,
+    valueY: height * 0.42,
+    labelY: height * 0.68,
+  }));
+};
+
+export const statCardStoryType = (count = STC_STAT_COUNT) => {
+  const n = Math.min(8, Math.max(1, count));
+  if (n <= 3) {
+    return { value: 88, label: 22, gap: 8 };
+  }
+  if (n === 4) {
+    return { value: 70, label: 18, gap: 6 };
+  }
+  if (n === 5) {
+    return { value: 56, label: 16, gap: 4 };
+  }
+  return { value: 44, label: 14, gap: 3 };
 };

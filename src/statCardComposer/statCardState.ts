@@ -500,6 +500,40 @@ export const fillStatCardFromStandout = (
   };
 };
 
+/** Cover pack cards stay empty-photo until paste/upload. */
+export const statCardFromCoverSlot = (
+  slot: {
+    playerId: string | null;
+    firstName: string;
+    lastName: string;
+    teamId: string | null;
+  },
+  game: LastGame | null,
+  gameDate?: string | null,
+): StatCardDraft | null => {
+  if (!slot.playerId) {
+    return null;
+  }
+  const player = getPlayer(slot.playerId);
+  if (!player) {
+    return null;
+  }
+  let draft = fillStatCardFromPlayer(player, defaultStatCardDraft());
+  draft = {
+    ...draft,
+    firstName: slot.firstName || draft.firstName,
+    lastName: slot.lastName || draft.lastName,
+    teamId: slot.teamId || draft.teamId,
+    gameDate: isoDateOnly(gameDate) || draft.gameDate,
+    photoSrc: null,
+    customPhoto: false,
+  };
+  if (game) {
+    draft = fillStatCardFromStandout(draft, game);
+  }
+  return { ...draft, photoSrc: null, customPhoto: false };
+};
+
 export const fillStatCardFromSeason = (
   draft: StatCardDraft,
   season = draft.season || everyTeamCurrentSeason(),

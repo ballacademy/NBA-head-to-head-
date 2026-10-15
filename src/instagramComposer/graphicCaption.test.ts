@@ -33,12 +33,13 @@ describe("graphic captions", () => {
     );
   });
 
-  it("builds a Stat card caption from PTS/REB/AST and minutes", () => {
+  it("builds a Stat card caption from name, PTS/REB/AST, and W/L", () => {
     expect(
       statCardLineCaption({
         firstName: "Giannis",
         lastName: "Antetokounmpo",
         gameDate: "2026-10-14",
+        matchup: "W vs NYK 120–110",
         stats: [
           { key: "pts", value: "20" },
           { key: "reb", value: "15" },
@@ -47,7 +48,12 @@ describe("graphic captions", () => {
         ],
       }),
     ).toBe(
-      ["Giannis 20/15/9 in 24 min", "2026-10-14", COMPOSER_HASHTAGS].join("\n"),
+      [
+        "Giannis Antetokounmpo",
+        "20/15/9 in 24 min",
+        "W vs NYK 120–110",
+        COMPOSER_HASHTAGS,
+      ].join("\n"),
     );
   });
 });

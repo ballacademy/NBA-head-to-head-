@@ -23,7 +23,11 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
-import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
   inkOnHex,
@@ -46,6 +50,9 @@ import {
   STC_STATS_W,
   STC_STATS_X,
   statCardRows,
+  statCardStoryColumns,
+  statCardStoryRects,
+  statCardStoryType,
   statCardType,
 } from "./statCardLayout";
 import { playerName, type StatCardDraft } from "./statCardState";
@@ -74,14 +81,17 @@ export type StatCardRenderInput = StatCardDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
+  story?: boolean;
 };
 
 export const renderStatCardCanvas = async (
   input: StatCardRenderInput,
   scale = 2,
 ) => {
+  const story = input.story === true;
+  const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -94,7 +104,15 @@ export const renderStatCardCanvas = async (
   context.fillStyle = "#0b0b0b";
   context.fillRect(0, 0, width, height);
 
-  const photoW = STC_PHOTO_W * s;
+  const storyRects = statCardStoryRects(boardH);
+  const photoBox = story
+    ? {
+        x: storyRects.photo.x * s,
+        y: storyRects.photo.y * s,
+        w: storyRects.photo.w * s,
+        h: storyRects.photo.h * s,
+      }
+    : { x: 0, y: 0, w: STC_PHOTO_W * s, h: height };
   if (input.photoSrc) {
     const photo = input.photoSrc.startsWith("data:")
       ? await loadImage(input.photoSrc)
@@ -103,10 +121,10 @@ export const renderStatCardCanvas = async (
       const dest = coverPanDraw(
         photo.naturalWidth || photo.width,
         photo.naturalHeight || photo.height,
-        0,
-        0,
-        photoW,
-        height,
+        photoBox.x,
+        photoBox.y,
+        photoBox.w,
+        photoBox.h,
         input.pan.x,
         input.pan.y,
         photoZoom(input.pan),
@@ -116,16 +134,16 @@ export const renderStatCardCanvas = async (
         context.filter = PHOTO_GRADE_FILTER;
       }
       context.beginPath();
-      context.rect(0, 0, photoW, height);
+      context.rect(photoBox.x, photoBox.y, photoBox.w, photoBox.h);
       context.clip();
       const rotate = photoRotate(input.pan);
       if (rotate) {
-        context.translate(photoW / 2, height / 2);
+        context.translate(photoBox.x + photoBox.w / 2, photoBox.y + photoBox.h / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
           photo,
-          dest.dx - photoW / 2,
-          dest.dy - height / 2,
+          dest.dx - (photoBox.x + photoBox.w / 2),
+          dest.dy - (photoBox.y + photoBox.h / 2),
           dest.dw,
           dest.dh,
         );
@@ -133,15 +151,31 @@ export const renderStatCardCanvas = async (
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
       context.restore();
-      applyPhotoGrade(context, 0, 0, photoW, height, input.photoGrade);
-      paintPhotoVignette(context, 0, 0, photoW, height, input.photoGrade);
+      applyPhotoGrade(
+        context,
+        photoBox.x,
+        photoBox.y,
+        photoBox.w,
+        photoBox.h,
+        input.photoGrade,
+      );
+      paintPhotoVignette(
+        context,
+        photoBox.x,
+        photoBox.y,
+        photoBox.w,
+        photoBox.h,
+        input.photoGrade,
+      );
     }
   }
 
-  const statsX = STC_STATS_X * s;
-  const statsW = STC_STATS_W * s;
+  const statsX = story ? storyRects.stats.x * s : STC_STATS_X * s;
+  const statsY = story ? storyRects.stats.y * s : 0;
+  const statsW = story ? storyRects.stats.w * s : STC_STATS_W * s;
+  const statsPanelH = story ? storyRects.stats.h * s : height;
   context.fillStyle = gradePanelFill(STC_PANEL, input.photoGrade);
-  context.fillRect(statsX, 0, statsW, height);
+  context.fillRect(statsX, statsY, statsW, statsPanelH);
 
   const teamForMark = getTeam(input.teamId);
   const watermark = parseComposerWatermark(input.watermark);
@@ -158,7 +192,7 @@ export const renderStatCardCanvas = async (
         context,
         mark,
         statsX + (statsW - size) / 2,
-        (height - size) / 2,
+        statsY + (statsPanelH - size) / 2,
         size,
         size,
         {
@@ -174,22 +208,16 @@ export const renderStatCardCanvas = async (
 
   const showMatchup = input.showMatchup === true;
   const matchup = showMatchup ? (input.matchup ?? "").trim() : "";
-  const statsHeight = showMatchup
-    ? GRAPHIC_HEIGHT - STC_MATCHUP_H
-    : GRAPHIC_HEIGHT;
-  const rows = statCardRows(input.stats.length, statsHeight);
-  const type = statCardType(input.stats.length);
-  input.stats.forEach((line, index) => {
-    const row = rows[index]!;
-    if (index > 0) {
-      context.fillStyle = STC_RULE;
-      context.fillRect(
-        statsX + 36 * s,
-        row.y * s,
-        statsW - 72 * s,
-        2 * s,
-      );
-    }
+  const type = story
+    ? statCardStoryType(input.stats.length)
+    : statCardType(input.stats.length);
+  const paintStat = (
+    line: StatCardDraft["stats"][number],
+    cx: number,
+    valueY: number,
+    labelY: number,
+    maxW: number,
+  ) => {
     context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -197,12 +225,7 @@ export const renderStatCardCanvas = async (
     if (input.photoGrade) {
       setLetterSpacing(context, type.value * s * -0.02);
     }
-    context.fillText(
-      line.value.trim() || "—",
-      statsX + statsW / 2,
-      row.valueY * s,
-      statsW - 24 * s,
-    );
+    context.fillText(line.value.trim() || "—", cx, valueY, maxW);
     setLetterSpacing(context, 0);
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     context.fillStyle = input.photoGrade
@@ -211,83 +234,194 @@ export const renderStatCardCanvas = async (
     if (input.photoGrade) {
       setLetterSpacing(context, type.label * s * 0.12);
     }
-    context.fillText(
-      line.label.trim().toUpperCase() || "STAT",
-      statsX + statsW / 2,
-      row.labelY * s,
-    );
+    context.fillText(line.label.trim().toUpperCase() || "STAT", cx, labelY);
     setLetterSpacing(context, 0);
-  });
+  };
 
-  if (showMatchup) {
-    const bandY = statsHeight * s;
-    context.fillStyle = STC_RULE;
-    context.fillRect(statsX + 36 * s, bandY, statsW - 72 * s, 2 * s);
-    if (matchup) {
-      context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillStyle = input.photoGrade
-        ? "rgba(17, 17, 17, 0.55)"
-        : STC_MUTED;
-      if (input.photoGrade) {
-        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.08);
-      } else {
-        setLetterSpacing(context, STC_MATCHUP_SIZE * s * 0.06);
+  if (story) {
+    const matchupH = showMatchup ? STC_MATCHUP_H * s : 0;
+    const rowH = statsPanelH - matchupH;
+    const cols = statCardStoryColumns(
+      input.stats.length,
+      storyRects.stats.w,
+      rowH / s,
+    );
+    input.stats.forEach((line, index) => {
+      const col = cols[index]!;
+      const cx = statsX + col.x * s + (col.w * s) / 2;
+      if (index > 0) {
+        context.fillStyle = STC_RULE;
+        context.fillRect(statsX + col.x * s, statsY + 36 * s, 2 * s, rowH - 72 * s);
       }
-      context.fillText(
-        matchup,
-        statsX + statsW / 2,
-        bandY + (STC_MATCHUP_H * s) / 2,
-        statsW - 28 * s,
+      paintStat(
+        line,
+        cx,
+        statsY + col.valueY * s,
+        statsY + col.labelY * s,
+        col.w * s - 24 * s,
       );
-      setLetterSpacing(context, 0);
+    });
+    if (showMatchup) {
+      const bandY = statsY + rowH;
+      context.fillStyle = STC_RULE;
+      context.fillRect(statsX + 36 * s, bandY, statsW - 72 * s, 2 * s);
+      if (matchup) {
+        context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillStyle = input.photoGrade
+          ? "rgba(17, 17, 17, 0.55)"
+          : STC_MUTED;
+        setLetterSpacing(
+          context,
+          STC_MATCHUP_SIZE * s * (input.photoGrade ? 0.08 : 0.06),
+        );
+        context.fillText(
+          matchup,
+          statsX + statsW / 2,
+          bandY + matchupH / 2,
+          statsW - 28 * s,
+        );
+        setLetterSpacing(context, 0);
+      }
+    }
+  } else {
+    const statsHeight = showMatchup
+      ? GRAPHIC_HEIGHT - STC_MATCHUP_H
+      : GRAPHIC_HEIGHT;
+    const rows = statCardRows(input.stats.length, statsHeight);
+    input.stats.forEach((line, index) => {
+      const row = rows[index]!;
+      if (index > 0) {
+        context.fillStyle = STC_RULE;
+        context.fillRect(statsX + 36 * s, row.y * s, statsW - 72 * s, 2 * s);
+      }
+      paintStat(
+        line,
+        statsX + statsW / 2,
+        row.valueY * s,
+        row.labelY * s,
+        statsW - 24 * s,
+      );
+    });
+    if (showMatchup) {
+      const bandY = statsHeight * s;
+      context.fillStyle = STC_RULE;
+      context.fillRect(statsX + 36 * s, bandY, statsW - 72 * s, 2 * s);
+      if (matchup) {
+        context.font = `900 ${STC_MATCHUP_SIZE * s}px ${POSTER_FONT}`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillStyle = input.photoGrade
+          ? "rgba(17, 17, 17, 0.55)"
+          : STC_MUTED;
+        setLetterSpacing(
+          context,
+          STC_MATCHUP_SIZE * s * (input.photoGrade ? 0.08 : 0.06),
+        );
+        context.fillText(
+          matchup,
+          statsX + statsW / 2,
+          bandY + (STC_MATCHUP_H * s) / 2,
+          statsW - 28 * s,
+        );
+        setLetterSpacing(context, 0);
+      }
     }
   }
 
   const team = getTeam(input.teamId);
   const colors = getTeamColors(input.teamId ?? "");
-  const nameX = STC_NAME_X * s;
-  const nameW = STC_NAME_W * s;
-  context.fillStyle = colors.primary;
-  context.fillRect(nameX, 0, nameW, height);
-
   const name = playerName(input).toUpperCase() || "PLAYER";
-  const logoSpace = team ? (STC_LOGO + STC_LOGO_INSET * 2) * s : 24 * s;
-  context.save();
-  context.translate(nameX + nameW / 2, (height - logoSpace) / 2);
-  context.rotate(Math.PI / 2);
-  context.font = `900 ${STC_NAME_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, STC_NAME_TRACK * STC_NAME_SIZE * s);
-  context.fillStyle = inkOnHex(colors.primary);
-  context.fillText(name, 0, 0, height - logoSpace - 24 * s);
-  setLetterSpacing(context, 0);
-  context.restore();
-
-  if (team) {
-    const logo = await loadImage(team.logoSrc);
-    if (logo) {
-      const size = STC_LOGO * s;
-      const lx = nameX + (nameW - size) / 2;
-      const ly = height - size - STC_LOGO_INSET * s;
-      drawCenteredLogo(context, logo, lx, ly, size, size, {
-        cacheKey: `${team.logoSrc}-statcard`,
-        fitX: 0.92,
-        fitY: 0.92,
-        shadow: 0,
-      });
+  if (story) {
+    const nameX = storyRects.name.x * s;
+    const nameY = storyRects.name.y * s;
+    const nameW = storyRects.name.w * s;
+    const nameH = storyRects.name.h * s;
+    context.fillStyle = colors.primary;
+    context.fillRect(nameX, nameY, nameW, nameH);
+    const logoSize = team ? STC_LOGO * s : 0;
+    context.font = `900 ${48 * s}px ${POSTER_FONT}`;
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.08 * 48 * s);
+    context.fillStyle = inkOnHex(colors.primary);
+    context.fillText(
+      name,
+      nameX + 28 * s,
+      nameY + nameH / 2,
+      nameW - logoSize - 56 * s,
+    );
+    setLetterSpacing(context, 0);
+    if (team) {
+      const logo = await loadImage(team.logoSrc);
+      if (logo) {
+        const size = STC_LOGO * s;
+        drawCenteredLogo(
+          context,
+          logo,
+          nameX + nameW - size - 16 * s,
+          nameY + (nameH - size) / 2,
+          size,
+          size,
+          {
+            cacheKey: `${team.logoSrc}-statcard-story`,
+            fitX: 0.92,
+            fitY: 0.92,
+            shadow: 0,
+          },
+        );
+      }
     }
-  }
+    context.fillStyle = colors.primary;
+    context.fillRect(
+      storyRects.hairline.x * s,
+      storyRects.hairline.y * s,
+      storyRects.hairline.w * s,
+      STC_HAIRLINE * s,
+    );
+  } else {
+    const nameX = STC_NAME_X * s;
+    const nameW = STC_NAME_W * s;
+    context.fillStyle = colors.primary;
+    context.fillRect(nameX, 0, nameW, height);
 
-  context.fillStyle = colors.primary;
-  context.fillRect(
-    (STC_PHOTO_W - STC_HAIRLINE / 2) * s,
-    0,
-    STC_HAIRLINE * s,
-    height,
-  );
+    const logoSpace = team ? (STC_LOGO + STC_LOGO_INSET * 2) * s : 24 * s;
+    context.save();
+    context.translate(nameX + nameW / 2, (height - logoSpace) / 2);
+    context.rotate(Math.PI / 2);
+    context.font = `900 ${STC_NAME_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, STC_NAME_TRACK * STC_NAME_SIZE * s);
+    context.fillStyle = inkOnHex(colors.primary);
+    context.fillText(name, 0, 0, height - logoSpace - 24 * s);
+    setLetterSpacing(context, 0);
+    context.restore();
+
+    if (team) {
+      const logo = await loadImage(team.logoSrc);
+      if (logo) {
+        const size = STC_LOGO * s;
+        const lx = nameX + (nameW - size) / 2;
+        const ly = height - size - STC_LOGO_INSET * s;
+        drawCenteredLogo(context, logo, lx, ly, size, size, {
+          cacheKey: `${team.logoSrc}-statcard`,
+          fitX: 0.92,
+          fitY: 0.92,
+          shadow: 0,
+        });
+      }
+    }
+
+    context.fillStyle = colors.primary;
+    context.fillRect(
+      (STC_PHOTO_W - STC_HAIRLINE / 2) * s,
+      0,
+      STC_HAIRLINE * s,
+      height,
+    );
+  }
 
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);

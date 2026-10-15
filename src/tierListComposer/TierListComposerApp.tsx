@@ -58,8 +58,8 @@ import {
   addTier,
   createDefaultRows,
   DEFAULT_TIER_TITLE,
-  fillMatchingIds,
   groupIdsByValues,
+  populateAndGroupIds,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -274,35 +274,10 @@ export function TierListComposerApp() {
     setStatus("Board cleared.");
   };
 
-  const handlePopulateMatching = () => {
-    const result = fillMatchingIds(rows, matchingIds);
-    if (result.added === 0) {
-      setStatus(
-        matchingIds.length
-          ? "All matching names are already on the board."
-          : "No names match the current filters.",
-      );
-      return;
-    }
-    push(rows);
-    setRows(result.rows);
-    setActive(null);
-    setStatus(
-      `Filled ${result.added} matching ${noun}${
-        result.added === 1 ? "" : "s"
-      }. Group by a stat to rank them into S–F.`,
-    );
-  };
-
-  const handleGroupByStat = (metric: EveryTeamStatMetric) => {
+  const valuesForIds = (ids: string[], metric: EveryTeamStatMetric) => {
     const season = everyTeamCurrentSeason();
-    const used = [...usedTeamIds(rows)];
-    if (!used.length) {
-      setStatus("Populate matching names first, then group by a stat.");
-      return;
-    }
     const values = new Map<string, number | null>();
-    used.forEach((id) => {
+    ids.forEach((id) => {
       if (subject === "teams") {
         values.set(id, teamStatValue(id, season, metric, statsSample));
         return;
@@ -313,10 +288,49 @@ export function TierListComposerApp() {
         playerStatValue(id, season, metric, player?.team ?? null, statsSample),
       );
     });
+    return values;
+  };
+
+  const handlePopulateMatching = () => {
+    if (!matchingIds.length && usedTeamIds(rows).size === 0) {
+      setStatus("No names match the current filters.");
+      return;
+    }
+    const used = [...new Set([...usedTeamIds(rows), ...matchingIds])];
+    const values = valuesForIds(used, groupMetric);
+    const grouped = populateAndGroupIds(rows, matchingIds, values, tierSplit);
+    const scored = used.filter((id) => values.get(id) != null).length;
+    const label = autoSortMetricLabel(groupMetric);
+    push(rows);
+    setRows(grouped.rows);
+    setActive(null);
+    if (grouped.added === 0 && scored === 0) {
+      setStatus(
+        matchingIds.length
+          ? "All matching names are already on the board."
+          : "No names match the current filters.",
+      );
+      return;
+    }
+    setStatus(
+      `Filled ${grouped.added} matching ${noun}${
+        grouped.added === 1 ? "" : "s"
+      } and grouped ${scored} by ${label} into ${grouped.rows.length} tiers.`,
+    );
+  };
+
+  const handleGroupByStat = (metric: EveryTeamStatMetric) => {
+    const used = [...usedTeamIds(rows)];
+    if (!used.length) {
+      setStatus("Populate matching names first, then group by a stat.");
+      return;
+    }
+    const values = valuesForIds(used, metric);
     const scored = used.filter((id) => values.get(id) != null).length;
     const label = autoSortMetricLabel(metric);
+    const grouped = groupIdsByValues(rows, values, tierSplit);
     push(rows);
-    setRows(groupIdsByValues(rows, values, tierSplit));
+    setRows(grouped);
     setActive(null);
     if (scored === 0) {
       setStatus(
@@ -325,7 +339,7 @@ export function TierListComposerApp() {
       return;
     }
     setStatus(
-      `Grouped ${scored} by ${label} into ${rows.length} tiers (highest in ${rows[0]?.label || "S"}).`,
+      `Grouped ${scored} by ${label} into ${grouped.length} tiers (highest in ${grouped[0]?.label || "S"}).`,
     );
   };
 
