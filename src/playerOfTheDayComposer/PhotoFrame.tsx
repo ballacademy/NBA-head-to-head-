@@ -1,4 +1,5 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
+import "../instagramComposer/photoGrade.css";
 import {
   panFromPinch,
   panFromPointerDrag,

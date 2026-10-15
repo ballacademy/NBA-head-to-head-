@@ -10,7 +10,7 @@ const sheet = readFileSync(
   "utf8",
 );
 const photo = readFileSync(
-  join(root, "playerOfTheDayComposer/playerOfTheDayComposer.css"),
+  join(root, "instagramComposer/photoGrade.css"),
   "utf8",
 );
 const toolbar = readFileSync(
@@ -59,9 +59,9 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-player-filters[\s\S]*?border:\s*0/);
   });
 
-  it("applies the download grade to custom photos in preview", () => {
+  it("applies the photo grade to custom photos in preview", () => {
     expect(photo).toContain(".is-grade .pod-photo__img");
-    expect(photo).toMatch(/contrast\(1\.28\)/);
+    expect(photo).toMatch(/contrast\(1\.42\)/);
   });
 
   it("shows photo tools on coarse pointers without waiting for hover", () => {

@@ -10,6 +10,8 @@ import {
   GRAPHIC_WIDTH,
   STC_MATCHUP_H,
   STC_PHOTO_W,
+  STORY_DESIGN_HEIGHT,
+  statCardStoryRects,
   STC_STATS_X,
   STC_VALUE_SIZE,
   statCardRows,
@@ -28,6 +30,7 @@ import {
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
   fillStatCardFromStandout,
+  statCardFromCoverSlot,
   formatStatCardMatchup,
   keepMinLast,
   lastGameValueForKey,
@@ -86,6 +89,26 @@ describe("stat card composer", () => {
     expect(draft.showBa).toBe(true);
     expect(draft.showMatchup).toBe(false);
     expect(draft.matchup).toBe("");
+    const story = statCardStoryRects();
+    expect(STORY_DESIGN_HEIGHT).toBe(2133);
+    expect(story.photo.w).toBe(GRAPHIC_WIDTH);
+    expect(story.photo.h).toBeGreaterThan(GRAPHIC_HEIGHT * 0.7);
+    expect(story.stats.w).toBe(GRAPHIC_WIDTH);
+    expect(story.stats.y).toBeGreaterThan(story.photo.h);
+    const luka = getPlayer("3945274")!;
+    const packed = statCardFromCoverSlot(
+      {
+        playerId: luka.id,
+        firstName: "Luka",
+        lastName: "Doncic",
+        teamId: luka.team,
+      },
+      gameFrom({ pts: "20", reb: "15", ast: "9", min: "24" }),
+      "2026-10-14",
+    );
+    expect(packed?.photoSrc).toBeNull();
+    expect(packed?.customPhoto).toBe(false);
+    expect(packed?.lastName.toUpperCase()).toContain("DONCIC");
   });
 
   it("keeps the editor list identical to the stats on the card", () => {

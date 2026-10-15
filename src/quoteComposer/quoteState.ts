@@ -14,6 +14,15 @@ export const QUOTE_PRESETS = [
   "THEY NOT LIKE US.",
   "THAT’S GAME.",
 ] as const;
+
+const foldQuote = (value: string) =>
+  value.replace(/\s+/g, " ").trim().toUpperCase().replace(/[’']/g, "'");
+
+/** Stock chips like I'M HIM shouldn't stick when the speaker changes. */
+export const isStockQuote = (value: string) => {
+  const folded = foldQuote(value);
+  return !folded || QUOTE_PRESETS.some((preset) => foldQuote(preset) === folded);
+};
 export const QUOTE_MAX = 180;
 export const ATTRIB_MAX = 48;
 export const SOURCE_MAX = 48;

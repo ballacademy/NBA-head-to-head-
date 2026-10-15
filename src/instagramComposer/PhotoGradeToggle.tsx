@@ -11,7 +11,7 @@ export function PhotoGradeToggle({ on, onChange }: PhotoGradeToggleProps) {
         type="button"
         className={on ? "sc-chip is-on" : "sc-chip"}
         aria-pressed={on}
-        aria-label="Download photo grade"
+        aria-label="Photo grade"
         onClick={() => onChange(!on)}
       >
         {on ? "On" : "Off"}

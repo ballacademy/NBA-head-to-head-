@@ -270,10 +270,18 @@ export const formatHeadlineBody = (
 
 export const headlineBodyLines = (body: string) => wrapHeadlineBody(body);
 
-export const headlineCaptionFor = (headline: string, body: string) => {
+export const headlineCaptionFor = (
+  headline: string,
+  body: string,
+  playerName = "",
+) => {
   const title = headlineLabel(headline);
   const punch = HEADLINE_CAPTION_PRESETS[title] ?? "";
-  return graphicCaption(title, [], [punch, body.replace(/\n/g, " ")]);
+  return graphicCaption(
+    title,
+    playerName ? [playerName] : [],
+    [punch, body.replace(/\n/g, " ")],
+  );
 };
 
 export const setHeadlinePhoto = (

@@ -39,6 +39,7 @@ import {
   EXAMPLE_TIER_PLACEMENT,
   exportTierFilename,
   fillMatchingIds,
+  populateAndGroupIds,
   fatSChunkSizes,
   groupIdsByValues,
   isTierDraft,
@@ -209,6 +210,11 @@ describe("tier rows", () => {
     ]));
     expect(withGap[0]!.teams).toEqual(["OKC"]);
     expect(withGap[5]!.teams).toContain("NYK");
+    const oneStep = populateAndGroupIds(empty, filled.rows[0]!.teams, values);
+    expect(oneStep.added).toBe(6);
+    expect(oneStep.rows[0]!.teams).toEqual(["OKC"]);
+    expect(oneStep.rows.map((row) => row.teams).flat()).toHaveLength(6);
+    expect(oneStep.rows[0]!.teams).not.toEqual(filled.rows[0]!.teams);
   });
 });
 

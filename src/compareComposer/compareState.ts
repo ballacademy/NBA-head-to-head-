@@ -1,3 +1,4 @@
+import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   DEFAULT_COMPOSER_WATERMARK,
   parseComposerWatermark,
@@ -33,6 +34,13 @@ export { clampPan, type PhotoPan };
 export const DEFAULT_COMPARE_TITLE = "NOT A SIXTH MAN";
 export const DEFAULT_COMPARE_SUBTITLE = "CAREER START VS CAREER BENCH APPEARANCES";
 export const DEFAULT_STATS_LABEL = "CAREER STATS";
+
+const foldCompareLine = (value: string) =>
+  value.replace(/\s+/g, " ").trim().toUpperCase();
+
+/** Leftover default footer under a new title — hide it, don't keep it. */
+export const isAutoCompareSubtitle = (value: string) =>
+  foldCompareLine(value) === foldCompareLine(DEFAULT_COMPARE_SUBTITLE);
 export const COMPARE_STAT_COUNT = 5;
 export const COMPARE_STAT_MAX = 10;
 
@@ -234,7 +242,7 @@ export const defaultCompareDraft = (): CompareDraft => {
   const season = everyTeamCurrentSeason();
   return {
     title: DEFAULT_COMPARE_TITLE,
-    subtitle: DEFAULT_COMPARE_SUBTITLE,
+    subtitle: "",
     statsLabel: autoCompareStatsLabel("season", season),
     sides: [emptyCompareSide(), emptyCompareSide()],
     stats: defaultCompareStats(),
@@ -254,6 +262,7 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
   const statsMode = parseCompareStatsMode(draft.statsMode);
   return {
     ...draft,
+    subtitle: isAutoCompareSubtitle(draft.subtitle) ? "" : draft.subtitle,
     stats: parseCompareStats(draft.stats),
     statsMode,
     season,
@@ -268,6 +277,13 @@ export const hasCustomPhoto = (side: CompareSide) =>
 
 export const compareSideName = (side: CompareSide) =>
   `${side.firstName} ${side.lastName}`.replace(/\s+/g, " ").trim();
+
+export const compareCaptionFor = (draft: CompareDraft) =>
+  graphicCaption(
+    draft.title,
+    draft.sides.map(compareSideName).filter(Boolean),
+    isAutoCompareSubtitle(draft.subtitle) ? [] : [draft.subtitle],
+  );
 
 export const compareSideCaption = (side: CompareSide) => {
   const name = compareSideName(side);

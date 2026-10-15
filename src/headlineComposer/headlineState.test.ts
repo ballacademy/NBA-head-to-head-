@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { HEADLINE_TITLE_PRESETS } from "../instagramComposer/composerPresets";
-import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
+import {
+  EXPORT_HEIGHT,
+  EXPORT_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -110,6 +114,9 @@ describe("headline composer", () => {
     expect(parseHeadlineWatermark("small")).toBe("medium");
     expect(headlineCaptionFor("MASSIVE LEAP", "")).toContain("The leap is real.");
     expect(headlineCaptionFor("HOT TAKE", "BEATS OKC")).toContain("Hot take.");
+    expect(
+      headlineCaptionFor("MASSIVE LEAP", "AFTER BEATING OKC", "Joel Embiid"),
+    ).toContain("Joel Embiid");
   });
 
   it("wraps a long take onto two lines and shrinks before overflow", () => {
@@ -174,8 +181,33 @@ describe("headline composer", () => {
     expect(stack.nickTop).toBeGreaterThanOrEqual(stack.plateBottom - 0.01);
     expect(stack.cityTop).toBeLessThan(stack.plateTop);
     expect(stack.nickBottom).toBeGreaterThan(stack.plateBottom);
-    expect(stack.cityTop + stack.citySize * 0.7).toBeGreaterThan(stack.plateTop);
-    expect(stack.nickBottom - stack.nickSize * 0.7).toBeLessThan(stack.plateBottom);
+    expect(stack.cityTop + stack.citySize * 0.5).toBeLessThanOrEqual(
+      stack.plateTop,
+    );
+    expect(stack.nickBottom - stack.nickSize * 0.5).toBeGreaterThanOrEqual(
+      stack.plateBottom,
+    );
+    const sixers = splitTeamWordmark(getTeam("PHI")!);
+    expect(sixers).toEqual({ city: "PHILADELPHIA", nick: "76ERS" });
+    const phi = headlineTypeStack({
+      bodyLines: 3,
+      plateH: 128,
+      city: sixers.city,
+      nick: sixers.nick,
+    });
+    expect(phi.cityBottom).toBeLessThanOrEqual(phi.plateTop + 0.01);
+    expect(phi.nickTop).toBeGreaterThanOrEqual(phi.plateBottom - 0.01);
+    expect(phi.cityTop + phi.citySize * 0.5).toBeLessThanOrEqual(phi.plateTop);
+    const story = headlineTypeStack({
+      bodyLines: 3,
+      plateH: 124,
+      city: "PHILADELPHIA",
+      nick: "76ERS",
+      boardH: STORY_DESIGN_HEIGHT,
+    });
+    expect(STORY_DESIGN_HEIGHT).toBe(2133);
+    expect(story.bodyBottom).toBe(STORY_DESIGN_HEIGHT - 52);
+    expect(story.cityTop).toBeGreaterThan(stack.cityTop);
     expect(stack.fadeAt).toBe("bottom");
     expect(stack.bodyTop).toBeGreaterThanOrEqual(stack.nickBottom);
     expect(
