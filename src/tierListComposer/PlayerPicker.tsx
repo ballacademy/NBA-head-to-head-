@@ -4,6 +4,11 @@ import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
 import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
+import {
+  isEveryTeamRostersReady,
+  loadEveryTeamRosters,
+  withRosterDepth,
+} from "../everyTeamComposer/historicalRosters";
 import { FilterRange, FilterSelect } from "./PlayerFilterBar";
 import {
   AGE_SPAN,
@@ -18,6 +23,7 @@ import {
   PLAYER_SCORING_SOURCE,
   PLAYER_SORT_KEY,
   POSITION_FILTERS,
+  ROLE_FILTERS,
   depthChartLabel,
   formatHeightInches,
   formatPpg,
@@ -100,6 +106,7 @@ export function PlayerPicker({
     ...EMPTY_PLAYER_FILTERS,
     team: lockedTeam ?? ALL_PLAYER_FILTER,
   });
+  const [depthReady, setDepthReady] = useState(isEveryTeamRostersReady);
   const boardFilters = lockedFilters ?? localFilters;
   const filled = Boolean(currentId);
   const hideBoardFilters = Boolean(lockedFilters);
@@ -115,6 +122,17 @@ export function PlayerPicker({
   useEffect(() => {
     writeJson(sortStorageKey, sort);
   }, [sort, sortStorageKey]);
+
+  useEffect(() => {
+    if (depthReady) {
+      return;
+    }
+    void loadEveryTeamRosters()
+      .then(() => setDepthReady(true))
+      .catch(() => {
+        /* catalog still searchable */
+      });
+  }, [depthReady]);
 
   const suggestedRows = useMemo(
     () =>
@@ -147,7 +165,8 @@ export function PlayerPicker({
   const players = useMemo(() => {
     const catalog = includeCoaches
       ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
-      : rosterPlayers;
+      : (rosterPlayers ?? NBA_ACTIVE_PLAYERS);
+    const withDepth = withRosterDepth(catalog);
     return sortPlayers(
       searchPlayers(
         query,
@@ -155,11 +174,19 @@ export function PlayerPicker({
           ...boardFilters,
           team: lockedTeam ?? boardFilters.team,
         },
-        catalog,
+        withDepth,
       ),
       sort,
     );
-  }, [query, boardFilters, lockedTeam, sort, rosterPlayers, includeCoaches]);
+  }, [
+    query,
+    boardFilters,
+    lockedTeam,
+    sort,
+    rosterPlayers,
+    includeCoaches,
+    depthReady,
+  ]);
 
   const restPlayers = showSuggested
     ? players.filter((player) => !suggestedIds.has(player.id))
@@ -300,6 +327,17 @@ export function PlayerPicker({
                   }))
                 }
               />
+              <FilterSelect
+                label="Role"
+                value={localFilters.role ?? ALL_PLAYER_FILTER}
+                options={ROLE_FILTERS}
+                onChange={(event) =>
+                  setLocalFilters((current) => ({
+                    ...current,
+                    role: event.target.value,
+                  }))
+                }
+              />
             </div>
           </div>
         ) : (
@@ -341,6 +379,17 @@ export function PlayerPicker({
                   setLocalFilters((current) => ({
                     ...current,
                     position: event.target.value,
+                  }))
+                }
+              />
+              <FilterSelect
+                label="Role"
+                value={localFilters.role ?? ALL_PLAYER_FILTER}
+                options={ROLE_FILTERS}
+                onChange={(event) =>
+                  setLocalFilters((current) => ({
+                    ...current,
+                    role: event.target.value,
                   }))
                 }
               />

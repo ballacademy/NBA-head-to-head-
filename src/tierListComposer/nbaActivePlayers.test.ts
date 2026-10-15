@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
+import catalog from "../../data/every-team-historical-rosters.json";
+import {
+  hydrateEveryTeamRosters,
+  rosterAsTierPlayers,
+  withRosterDepth,
+} from "../everyTeamComposer/historicalRosters";
 import { DIVISIONS } from "../lib/divisions";
 import { NBA_TEAMS } from "../standingsComposer/teams";
 import {
   AGE_SPAN,
   ALL_STAR_FILTER,
   EMPTY_PLAYER_FILTERS,
+  ROLE_BENCH_FILTER,
+  ROLE_STARTER_FILTER,
   EXPERIENCE_SPAN,
   HEIGHT_SPAN,
   INTERNATIONAL_FILTER,
@@ -266,5 +274,54 @@ describe("active NBA player catalog", () => {
     expect(stored.experienceRange).toEqual({ min: 1, max: 4 });
     expect(isEmptyPlayerFilters(stored)).toBe(false);
     expect(isEmptyPlayerFilters(parsePlayerSearchFilters({}))).toBe(true);
+  });
+
+  it("filters starters vs bench from the Every Team depth chart", () => {
+    hydrateEveryTeamRosters(
+      catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+    );
+    const okc = rosterAsTierPlayers("OKC", "2012-13");
+    const starters = searchPlayers("", { role: ROLE_STARTER_FILTER }, okc);
+    expect(starters).toHaveLength(5);
+    expect(starters.every((player) => player.depth === 1)).toBe(true);
+    expect(starters.map((player) => player.position)).toEqual([
+      "PG",
+      "SG",
+      "SF",
+      "PF",
+      "C",
+    ]);
+    const bench = searchPlayers("", { role: ROLE_BENCH_FILTER }, okc);
+    expect(bench.every((player) => player.depth !== 1)).toBe(true);
+    expect(bench.length).toBe(okc.length - 5);
+    const startingC = searchPlayers(
+      "",
+      { role: ROLE_STARTER_FILTER, position: "C" },
+      okc,
+    );
+    expect(startingC.map((player) => player.name)).toEqual(["Kendrick Perkins"]);
+
+    const current = withRosterDepth(NBA_ACTIVE_PLAYERS);
+    const nowStarters = searchPlayers("", { role: ROLE_STARTER_FILTER }, current);
+    expect(nowStarters.length).toBeGreaterThan(100);
+    expect(nowStarters.every((player) => player.depth === 1)).toBe(true);
+    const nowCenters = searchPlayers(
+      "",
+      { role: ROLE_STARTER_FILTER, position: "C" },
+      current,
+    );
+    expect(nowCenters.length).toBeGreaterThan(20);
+    expect(nowCenters.length).toBeLessThanOrEqual(30);
+    expect(
+      nowCenters.every(
+        (player) => player.position === "C" && player.depth === 1,
+      ),
+    ).toBe(true);
+    expect(
+      parsePlayerSearchFilters({ role: ROLE_STARTER_FILTER }).role,
+    ).toBe(ROLE_STARTER_FILTER);
+    expect(isEmptyPlayerFilters({ ...EMPTY_PLAYER_FILTERS, role: ROLE_STARTER_FILTER })).toBe(
+      false,
+    );
   });
 });

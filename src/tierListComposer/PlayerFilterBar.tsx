@@ -11,6 +11,7 @@ import {
   EXPERIENCE_SPAN,
   HEIGHT_SPAN,
   POSITION_FILTERS,
+  ROLE_FILTERS,
   TEAM_FILTERS,
   clampRange,
   formatHeightInches,
@@ -169,6 +170,12 @@ export function PlayerFilterBar({
             value={filters.position ?? ALL_PLAYER_FILTER}
             options={POSITION_FILTERS}
             onChange={setFilter("position")}
+          />
+          <FilterSelect
+            label="Role"
+            value={filters.role ?? ALL_PLAYER_FILTER}
+            options={ROLE_FILTERS}
+            onChange={setFilter("role")}
           />
           <FilterSelect
             label="Draft class"

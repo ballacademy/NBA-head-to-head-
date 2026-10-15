@@ -34,6 +34,7 @@ import {
   parseEveryTeamStatMetric,
   playerStatValue,
   teamStatValue,
+  withRosterDepth,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
 import { exportTierListPng } from "./exportTierPng";
@@ -45,6 +46,7 @@ import {
 } from "./TierListGraphic";
 import {
   EMPTY_PLAYER_FILTERS,
+  NBA_ACTIVE_PLAYERS,
   PLAYER_FILTERS_KEY,
   getPlayer,
   parsePlayerSearchFilters,
@@ -150,6 +152,7 @@ export function TierListComposerApp() {
   const [playerFilters, setPlayerFilters] =
     useState<PlayerSearchFilters>(EMPTY_PLAYER_FILTERS);
   const [filterEpoch, setFilterEpoch] = useState(0);
+  const [rostersReady, setRostersReady] = useState(false);
   const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
@@ -160,9 +163,13 @@ export function TierListComposerApp() {
   const matchingIds = useMemo(
     () =>
       subject === "players"
-        ? searchPlayers("", playerFilters).map((player) => player.id)
+        ? searchPlayers(
+            "",
+            playerFilters,
+            withRosterDepth(NBA_ACTIVE_PLAYERS),
+          ).map((player) => player.id)
         : matchingTeamIds(playerFilters),
-    [subject, playerFilters],
+    [subject, playerFilters, rostersReady],
   );
   const filteredPlayerCount = matchingIds.length;
 
@@ -186,7 +193,11 @@ export function TierListComposerApp() {
     setShowNames(draft.showNames === true);
     setPlayerFilters(parsePlayerSearchFilters(readJson(PLAYER_FILTERS_KEY)));
     setHydrated(true);
-    void loadEveryTeamRosters();
+    void loadEveryTeamRosters()
+      .then(() => setRostersReady(true))
+      .catch(() => {
+        setRostersReady(false);
+      });
   }, []);
 
   useEffect(() => {

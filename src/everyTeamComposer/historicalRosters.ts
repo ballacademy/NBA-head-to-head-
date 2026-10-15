@@ -73,6 +73,10 @@ let priorStatsCache: {
   season: string;
   byId: Map<string, EveryTeamRosterPlayer>;
 } | null = null;
+let depthIndexCache: {
+  season: string;
+  byId: Map<string, Array<{ teamId: string; depth: number }>>;
+} | null = null;
 
 export const EVERY_TEAM_SORT_KEY = "ddgm:every-team-player-sort";
 
@@ -88,6 +92,7 @@ export const hydrateEveryTeamRosters = (payload: HistoricalCatalog) => {
   rosters = payload.rosters;
   loaded = true;
   priorStatsCache = null;
+  depthIndexCache = null;
 };
 
 export const loadEveryTeamRosters = async () => {
@@ -405,6 +410,60 @@ const positionGroup = (position: string): TierPlayer["positionGroup"] => {
     return "G";
   }
   return "F";
+};
+
+const depthIndexFor = (season: string) => {
+  if (depthIndexCache?.season === season) {
+    return depthIndexCache.byId;
+  }
+  const byId = new Map<string, Array<{ teamId: string; depth: number }>>();
+  NBA_TEAMS.forEach((team) => {
+    rawRosterPlayers(team.id, season).forEach((player) => {
+      const rows = byId.get(player.id) ?? [];
+      rows.push({ teamId: team.id, depth: player.depth });
+      byId.set(player.id, rows);
+    });
+  });
+  depthIndexCache = { season, byId };
+  return byId;
+};
+
+/** ESPN depth-chart unit for a player: 1 = starter PG–C, 2+ backups, 99 extras. */
+export const rosterDepthForPlayer = (
+  playerId: string,
+  teamId?: string | null,
+  season = everyTeamCurrentSeason(),
+): number | null => {
+  if (!loaded || !playerId) {
+    return null;
+  }
+  const rows = depthIndexFor(season).get(playerId);
+  if (!rows?.length) {
+    return null;
+  }
+  if (teamId) {
+    const hit = rows.find((row) => row.teamId === teamId);
+    if (hit) {
+      return hit.depth;
+    }
+  }
+  return rows[0]?.depth ?? null;
+};
+
+export const withRosterDepth = (
+  players: TierPlayer[],
+  season = everyTeamCurrentSeason(),
+): TierPlayer[] => {
+  if (!loaded) {
+    return players;
+  }
+  return players.map((player) => {
+    if (player.role === "coach" || player.depth != null) {
+      return player;
+    }
+    const depth = rosterDepthForPlayer(player.id, player.team, season);
+    return depth == null ? player : { ...player, depth };
+  });
 };
 
 export const rosterAsTierPlayers = (
