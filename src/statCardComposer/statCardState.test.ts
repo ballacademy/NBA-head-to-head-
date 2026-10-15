@@ -8,13 +8,17 @@ import {
   STC_VALUE_SIZE,
   statCardType,
 } from "./statCardLayout";
+import { nbaTodayIso } from "../playerOfTheDayComposer/lastGame";
 import {
   addStatCardLine,
   defaultStatCardDraft,
   fillStatCardFromGame,
   fillStatCardFromPlayer,
   nextStatCardLine,
+  normalizeStatCardDraft,
   playerName,
+  removeStatCardLine,
+  setStatCardLineKey,
   STC_STAT_COUNT,
   STC_STAT_MAX,
 } from "./statCardState";
@@ -31,7 +35,27 @@ describe("stat card composer", () => {
     expect(draft.stats).toHaveLength(3);
     expect(draft.stats.map((line) => line.label)).toEqual(["PTS", "REB", "AST"]);
     expect(draft.source).toBe("last-game");
+    expect(draft.gameDate).toBe(nbaTodayIso());
     expect(draft.showBa).toBe(true);
+  });
+
+  it("keeps the editor list identical to the stats on the card", () => {
+    const draft = defaultStatCardDraft();
+    expect(draft.stats.map((line) => line.label)).toEqual(["PTS", "REB", "AST"]);
+    const four = addStatCardLine(draft.stats);
+    expect(four).toHaveLength(4);
+    expect(four.map((line) => line.label)).toEqual(["PTS", "REB", "AST", "MIN"]);
+    expect(removeStatCardLine(four, 3)).toHaveLength(3);
+    expect(removeStatCardLine(draft.stats, 0)).toHaveLength(3);
+    const swapped = setStatCardLineKey(draft.stats, 1, "blk", "last-game");
+    expect(swapped.map((line) => line.label)).toEqual(["PTS", "BLK", "AST"]);
+    const restored = normalizeStatCardDraft({
+      ...draft,
+      stats: four,
+      gameDate: "2026-10-14",
+    });
+    expect(restored.stats).toHaveLength(4);
+    expect(restored.gameDate).toBe("2026-10-14");
   });
 
   it("fills name and team from the picker without a smiling mugshot", () => {

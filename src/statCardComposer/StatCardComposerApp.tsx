@@ -22,7 +22,16 @@ import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
-import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import {
+  fetchLastGame,
+  isoDateOnly,
+  nbaTodayIso,
+  shiftIsoDate,
+} from "../playerOfTheDayComposer/lastGame";
+import {
+  fetchNightStandouts,
+  type NightStandout,
+} from "../playerOfTheDayComposer/nightStandouts";
 import {
   everyTeamCurrentSeason,
   everyTeamSeasons,
@@ -88,7 +97,13 @@ export function StatCardComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
+  const [standouts, setStandouts] = useState<NightStandout[]>([]);
+  const [standoutsLoading, setStandoutsLoading] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
+  const source = parseStatCardSource(draft.source);
+  const todayIso = nbaTodayIso();
+  const yesterdayIso = shiftIsoDate(todayIso, -1);
+  const gameDate = isoDateOnly(draft.gameDate) || todayIso;
 
   useEffect(() => {
     document.title = "Stat card graphic";
@@ -129,7 +144,16 @@ export function StatCardComposerApp() {
         );
         return;
       }
-      const game = await fetchLastGame(next.playerId, sample);
+      const game = await fetchLastGame(
+        next.playerId,
+        sample,
+        parseStatCardSource(next.source) === "last-game"
+          ? next.gameDate
+          : null,
+      );
+      if (!game) {
+        return;
+      }
       setDraft((current) =>
         current.playerId === next.playerId
           ? fillStatCardFromGame(current, game)
@@ -140,11 +164,35 @@ export function StatCardComposerApp() {
     }
   };
 
-  const setSource = (source: StatCardSource) => {
-    const next = { ...draft, source };
+  const setSource = (nextSource: StatCardSource) => {
+    const next = { ...draft, source: nextSource };
     setDraft(next);
     void fillStats(next);
   };
+
+  const setGameDate = (iso: string) => {
+    const next = { ...draft, gameDate: isoDateOnly(iso) || todayIso };
+    setDraft(next);
+    void fillStats(next);
+  };
+
+  useEffect(() => {
+    if (!pickerOpen || source !== "last-game") {
+      return;
+    }
+    let cancelled = false;
+    setStandoutsLoading(true);
+    void fetchNightStandouts(gameDate).then((rows) => {
+      if (cancelled) {
+        return;
+      }
+      setStandouts(rows);
+      setStandoutsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pickerOpen, source, gameDate]);
 
   const handleExport = async (filename?: string, story = false) => {
     const node = boardRef.current;
@@ -179,7 +227,11 @@ export function StatCardComposerApp() {
       return;
     }
     push(draft);
-    const next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
+    let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
+    const night = standouts.find((row) => row.athleteId === playerId);
+    if (night && parseStatCardSource(next.source) === "last-game") {
+      next = fillStatCardFromGame(next, night.game);
+    }
     setDraft(next);
     setPickerOpen(false);
     setKeepPrompt(null);
@@ -188,7 +240,9 @@ export function StatCardComposerApp() {
         ? `Kept the photo for ${player.name}.`
         : `Filled ${player.name} — upload an action photo.`,
     );
-    void fillStats(next);
+    if (!night) {
+      void fillStats(next);
+    }
   };
 
   const handlePick = (playerId: string) => {
@@ -276,14 +330,42 @@ export function StatCardComposerApp() {
             void fillStats(draft, nextSample);
           }}
         />
+        {source === "last-game" ? (
+        <div className="sc-look" role="group" aria-label="Game date">
+          <span className="sc-look__label">Game</span>
+          <button
+            type="button"
+            className={gameDate === todayIso ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={gameDate === todayIso}
+            onClick={() => setGameDate(todayIso)}
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            className={gameDate === yesterdayIso ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={gameDate === yesterdayIso}
+            onClick={() => setGameDate(yesterdayIso)}
+          >
+            Yesterday
+          </button>
+          <label className="sc-field">
+            Date
+            <input
+              type="date"
+              value={gameDate}
+              aria-label="Specific game date"
+              onChange={(event) => setGameDate(event.target.value)}
+            />
+          </label>
+        </div>
+        ) : (
         <label className="sc-field">
           Season
           <select
             value={draft.season || everyTeamCurrentSeason()}
             aria-label="Stat card season"
-            disabled={
-              !rostersReady || parseStatCardSource(draft.source) !== "season"
-            }
+            disabled={!rostersReady}
             onChange={(event) => {
               const next = { ...draft, season: event.target.value };
               setDraft(next);
@@ -298,12 +380,21 @@ export function StatCardComposerApp() {
             ))}
           </select>
         </label>
+        )}
+          </>
+        }
+        filters={
+          <>
+        <span className="sc-toolbar__eyebrow">On-card stats</span>
         {draft.stats.map((line, index) => (
-          <label key={`${line.key}-hud`} className="sc-field">
-            {line.label || "Stat"}
+          <label
+            key={`${line.key}-${index}`}
+            className="sc-field"
+          >
+            {`Stat ${index + 1}`}
             <select
               value={line.key}
-              aria-label={`Stat ${index + 1} metric`}
+              aria-label={`Stat ${index + 1} on card`}
               onChange={(event) => {
                 const key = parseStatCardKey(event.target.value);
                 const next = {
@@ -312,7 +403,7 @@ export function StatCardComposerApp() {
                     draft.stats,
                     index,
                     key,
-                    parseStatCardSource(draft.source),
+                    source,
                   ),
                 };
                 setDraft(next);
@@ -522,9 +613,9 @@ export function StatCardComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — pick a player for the team-color name bar and
-            3 huge stats on a light panel, then upload the action shot. Toggle
-            last-game or season averages and add up to 8 stats. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            3 huge stats on a light panel, then upload the action shot. Last-game
+            date can be tonight or last night. Stat 1–8 in the HUD match the
+            card. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -536,6 +627,23 @@ export function StatCardComposerApp() {
           hint="Fills the name bar, team color, and stats. No mugshot — upload or paste the action photo."
           currentId={draft.playerId}
           usedLabels={draft.playerId ? { [draft.playerId]: "Stat card" } : {}}
+          suggested={
+            source === "last-game"
+              ? standouts.map((row) => ({
+                  id: row.athleteId,
+                  badge: row.badge,
+                  meta: row.line,
+                }))
+              : []
+          }
+          suggestedHeading={
+            gameDate === todayIso
+              ? "Tonight’s standouts"
+              : gameDate === yesterdayIso
+                ? "Last night’s standouts"
+                : `Standouts · ${gameDate}`
+          }
+          suggestedLoading={standoutsLoading}
           onPick={handlePick}
           onClear={() => {
             push(draft);

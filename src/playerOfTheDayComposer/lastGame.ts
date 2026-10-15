@@ -76,16 +76,61 @@ export const emptyStats = (): LastGameStats => ({
   min: "0",
 });
 
+export const isoDateOnly = (value: string | null | undefined) => {
+  const raw = String(value ?? "").trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[1]}-${match[2]}-${match[3]}`;
+  }
+  const compact = raw.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (compact) {
+    return `${compact[1]}-${compact[2]}-${compact[3]}`;
+  }
+  return "";
+};
+
+export const toEspnDateParam = (iso: string) =>
+  isoDateOnly(iso).replace(/-/g, "");
+
+/** NBA slate dates follow the US East calendar, not the browser's UTC day. */
+export const nbaTodayIso = (now = new Date()) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+export const shiftIsoDate = (iso: string, days: number) => {
+  const token = isoDateOnly(iso) || nbaTodayIso();
+  const [year, month, day] = token.split("-").map(Number);
+  const next = new Date(Date.UTC(year, (month ?? 1) - 1, (day ?? 1) + days));
+  return next.toISOString().slice(0, 10);
+};
+
 export const formatDateLabel = (iso: string) => {
-  const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = isoDateOnly(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) {
     return iso;
   }
   return `${Number(match[2])}/${Number(match[3])}`;
 };
 
-export const todayDateLabel = (now = new Date()) =>
-  `${now.getMonth() + 1}/${now.getDate()}`;
+export const todayDateLabel = (now = new Date()) => {
+  const token = nbaTodayIso(now);
+  const [, month, day] = token.split("-");
+  return `${Number(month)}/${Number(day)}`;
+};
+
+export const gameOnDate = (games: LastGame[], iso: string) => {
+  const want = isoDateOnly(iso);
+  if (!want) {
+    return games[0] ?? null;
+  }
+  return (
+    games.find((game) => isoDateOnly(game.gameDate) === want) ?? null
+  );
+};
 
 export const resolveTeamId = (
   abbreviation?: string | null,
@@ -352,8 +397,14 @@ export const fetchRecentGames = async (
 export const fetchLastGame = async (
   athleteId: string,
   sample: ComposerStatsSample = "preseason",
-): Promise<LastGame | null> =>
-  (await fetchRecentGames(athleteId, sample))[0] ?? null;
+  onDate?: string | null,
+): Promise<LastGame | null> => {
+  const games = await fetchRecentGames(athleteId, sample);
+  if (onDate) {
+    return gameOnDate(games, onDate);
+  }
+  return games[0] ?? null;
+};
 
 /** ESPN numeric club ids for schedule fetches. */
 export const ESPN_TEAM_IDS: Record<string, number> = {

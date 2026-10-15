@@ -12,6 +12,11 @@ import {
   resolveTeamId,
   ESPN_TEAM_IDS,
   ESPN_TEAM_SCHEDULE_URL,
+  gameOnDate,
+  isoDateOnly,
+  nbaTodayIso,
+  shiftIsoDate,
+  toEspnDateParam,
   type EspnGamelogPayload,
 } from "./lastGame";
 
@@ -435,11 +440,18 @@ describe("last NBA game parsing", () => {
   });
 
   it("formats date and result helpers", () => {
+    expect(isoDateOnly("2026-10-14T23:00:00Z")).toBe("2026-10-14");
+    expect(toEspnDateParam("2026-10-14")).toBe("20261014");
+    expect(shiftIsoDate("2026-10-15", -1)).toBe("2026-10-14");
+    expect(nbaTodayIso(new Date("2026-10-15T18:00:00-04:00"))).toBe("2026-10-15");
     expect(formatDateLabel("2026-10-20T00:00:00Z")).toBe("10/20");
     expect(formatResultLine("88", "90", "L", "MIL")).toBe("88-90 L VS MIL");
     expect(emptyStats().fg).toBe("0-0");
     expect(parseLastGamePayload(null)).toBeNull();
     expect(parseLastGamePayload({ events: {}, seasonTypes: [] })).toBeNull();
+    const games = parseGamelogGames(payload(), "regular", PRIOR_SEASON);
+    expect(gameOnDate(games, "2026-05-26")?.eventId).toBe("401873344");
+    expect(gameOnDate(games, "2026-10-14")).toBeNull();
   });
 
   it("reads the last completed team schedule game and running W-L", () => {

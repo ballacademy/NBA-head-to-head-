@@ -1,5 +1,10 @@
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
-import type { LastGame, LastGameStats } from "../playerOfTheDayComposer/lastGame";
+import {
+  isoDateOnly,
+  nbaTodayIso,
+  type LastGame,
+  type LastGameStats,
+} from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
   isPercentStatMetric,
@@ -58,6 +63,7 @@ export interface StatCardDraft {
   stats: StatCardLine[];
   source?: StatCardSource;
   season?: string;
+  gameDate?: string | null;
   showBa?: boolean;
 }
 
@@ -136,6 +142,7 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   stats: DEFAULT_STAT_LINES.map((line) => ({ ...line })),
   source: "last-game",
   season: everyTeamCurrentSeason(),
+  gameDate: nbaTodayIso(),
   showBa: true,
 });
 
@@ -149,6 +156,7 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   stats: (draft.stats.length ? draft.stats : DEFAULT_STAT_LINES)
     .slice(0, STC_STAT_MAX)
     .map((line) => ({ ...line })),
+  gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
   showBa: draft.showBa !== false,
 });
 

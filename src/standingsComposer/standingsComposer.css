@@ -1271,6 +1271,27 @@ main.sc-stage {
   border-color: #f4f4f5;
 }
 
+.sc-picker__suggested {
+  flex: 0 0 auto;
+  padding: 4px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sc-picker__suggested-label,
+.sc-picker__suggested-status {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #d6c4ff;
+}
+
+.sc-picker__suggested-status {
+  padding: 8px 16px 0;
+  color: #a1a1aa;
+}
+
 .sc-picker__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
@@ -1282,6 +1303,13 @@ main.sc-stage {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+
+.sc-picker__grid--suggested {
+  flex: none;
+  overflow: visible;
+  padding: 0;
+  max-height: none;
 }
 
 .sc-team {
@@ -1391,6 +1419,24 @@ main.sc-stage {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.sc-team__badge {
+  display: inline-flex;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #c4b5fd;
+  color: #1a1028;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sc-field input[type="date"] {
+  text-transform: none;
+  color-scheme: dark;
 }
 
 .sc-picker__footer {

@@ -26,6 +26,9 @@ describe("composer chrome", () => {
     expect(sheet).toContain("min-height: 72px");
     expect(sheet).toContain("min-height: 44px");
     expect(sheet).toContain("max-height: min(42vh, 360px)");
+    expect(sheet).toContain(".sc-picker__suggested");
+    expect(sheet).toContain(".sc-picker__grid--suggested");
+    expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
   });

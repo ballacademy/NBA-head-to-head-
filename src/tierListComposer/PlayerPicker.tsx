@@ -51,6 +51,9 @@ interface PlayerPickerProps {
   showDepthSort?: boolean;
   scoringLabel?: string;
   toolbarExtra?: ReactNode;
+  suggested?: Array<{ id: string; badge?: string; meta?: string }>;
+  suggestedHeading?: string;
+  suggestedLoading?: boolean;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -72,6 +75,9 @@ export function PlayerPicker({
   showDepthSort = false,
   scoringLabel,
   toolbarExtra,
+  suggested = [],
+  suggestedHeading = "Standouts",
+  suggestedLoading = false,
   onPick,
   onClear,
   onClose,
@@ -110,6 +116,34 @@ export function PlayerPicker({
     writeJson(sortStorageKey, sort);
   }, [sort, sortStorageKey]);
 
+  const suggestedRows = useMemo(
+    () =>
+      suggested
+        .map((row) => {
+          const player =
+            (rosterPlayers ?? NBA_ACTIVE_PLAYERS).find(
+              (item) => item.id === row.id,
+            ) ?? null;
+          return player ? { ...row, player } : null;
+        })
+        .filter(
+          (
+            row,
+          ): row is {
+            id: string;
+            badge?: string;
+            meta?: string;
+            player: TierPlayer;
+          } => Boolean(row),
+        ),
+    [suggested, rosterPlayers],
+  );
+  const showSuggested = suggestedRows.length > 0 && !query.trim();
+  const suggestedIds = useMemo(
+    () => new Set(suggestedRows.map((row) => row.id)),
+    [suggestedRows],
+  );
+
   const players = useMemo(() => {
     const catalog = includeCoaches
       ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
@@ -126,6 +160,10 @@ export function PlayerPicker({
       sort,
     );
   }, [query, boardFilters, lockedTeam, sort, rosterPlayers, includeCoaches]);
+
+  const restPlayers = showSuggested
+    ? players.filter((player) => !suggestedIds.has(player.id))
+    : players;
 
   const setLocalRange =
     (key: "ageRange" | "heightRange" | "experienceRange") =>
@@ -332,8 +370,31 @@ export function PlayerPicker({
           </div>
         )}
         </div>
+        {suggestedLoading && !query.trim() ? (
+          <p className="sc-picker__suggested-status">Loading box scores…</p>
+        ) : null}
+        {showSuggested ? (
+          <div className="sc-picker__suggested">
+            <p className="sc-picker__suggested-label">{suggestedHeading}</p>
+            <div className="sc-picker__grid sc-picker__grid--suggested">
+              {suggestedRows.map((row) => (
+                <PlayerButton
+                  key={`sug-${row.id}`}
+                  player={row.player}
+                  currentId={currentId}
+                  usedLabel={usedLabels[row.id]}
+                  showPpg={false}
+                  showDepth={false}
+                  badge={row.badge}
+                  metaOverride={row.meta}
+                  onPick={onPick}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="sc-picker__grid">
-          {players.map((player) => (
+          {restPlayers.map((player) => (
             <PlayerButton
               key={player.id}
               player={player}
@@ -348,7 +409,8 @@ export function PlayerPicker({
         </div>
         <div className="sc-picker__footer">
           <p className="sc-picker__count">
-            {players.length} {includeCoaches ? "people" : "players"}
+            {restPlayers.length + (showSuggested ? suggestedRows.length : 0)}{" "}
+            {includeCoaches ? "people" : "players"}
           </p>
           <button
             type="button"
@@ -371,6 +433,8 @@ function PlayerButton({
   showPpg,
   showDepth,
   ppgEmptyLabel,
+  badge,
+  metaOverride,
   onPick,
 }: {
   player: TierPlayer;
@@ -379,6 +443,8 @@ function PlayerButton({
   showPpg: boolean;
   showDepth: boolean;
   ppgEmptyLabel?: string;
+  badge?: string;
+  metaOverride?: string;
   onPick: (playerId: string) => void;
 }) {
   const isCurrent = currentId === player.id;
@@ -390,7 +456,7 @@ function PlayerButton({
       : player.role === "coach"
         ? `${player.team} · HC`
         : `${player.team} · ${player.position}`;
-  const meta = isCurrent ? "This slot" : identity;
+  const meta = isCurrent ? "This slot" : (metaOverride || identity);
 
   return (
     <button
@@ -425,6 +491,7 @@ function PlayerButton({
       <span>
         <span className="sc-team__name">{player.name}</span>
         <span className="sc-team__meta">{meta}</span>
+        {badge ? <span className="sc-team__badge">{badge}</span> : null}
         {isUsed && usedLabel ? (
           <span className="sc-team__used">{usedChipLabel(usedLabel)}</span>
         ) : null}
