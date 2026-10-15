@@ -20,6 +20,7 @@ export {
 
 /** Headline + week notch. Portraits stay the hero; BA is a corner mark. */
 export const PLUS_HEADER_H = 122;
+export const PLUS_BELOW_HEADER_H = 52;
 export const PLUS_TITLE_SIZE = 50;
 export const PLUS_TITLE_TRACK = 0.02;
 export const PLUS_WEEK_H = 36;
@@ -48,9 +49,6 @@ export const PLUS_BA_INSET = (PLUS_HEADER_H - PLUS_BA_SIZE) / 2;
 export const PLUS_HEADER_PAD_X = PLUS_BA_INSET + PLUS_BA_SIZE + 8;
 export const PLUS_ZOOM_STEP = 0.5;
 
-const photoStackH = () =>
-  GRAPHIC_HEIGHT - PLUS_HEADER_H - PLUS_SECTION_H - PLUS_FOOTER;
-
 export interface PlusBoardMetrics {
   headerH: number;
   sectionH: number;
@@ -66,17 +64,25 @@ export interface PlusBoardMetrics {
   weekY: number;
   weekH: number;
   sectionY: number;
+  starterCaptionY: number;
+  titlesBelow: boolean;
 }
 
-export const plusBoardMetrics = (): PlusBoardMetrics => {
-  const stack = photoStackH();
+export const plusBoardMetrics = (titlesBelow = false): PlusBoardMetrics => {
+  const headerH = titlesBelow ? PLUS_BELOW_HEADER_H : PLUS_HEADER_H;
+  const sectionCount = titlesBelow ? 2 : 1;
+  const stack =
+    GRAPHIC_HEIGHT - headerH - PLUS_SECTION_H * sectionCount - PLUS_FOOTER;
   const starterH = Math.round(stack * PLUS_STARTER_SHARE);
   const standoutH = stack - starterH;
-  const starterY = PLUS_HEADER_H;
-  const sectionY = starterY + starterH;
-  const standoutY = sectionY + PLUS_SECTION_H;
+  const starterY = headerH;
+  const starterCaptionY = titlesBelow
+    ? starterY + starterH + PLUS_SECTION_H / 2
+    : PLUS_TITLE_BAND_H / 2;
+  const standoutY = starterY + starterH + PLUS_SECTION_H;
+  const sectionY = titlesBelow ? standoutY + standoutH : starterY + starterH;
   return {
-    headerH: PLUS_HEADER_H,
+    headerH,
     sectionH: PLUS_SECTION_H,
     footer: PLUS_FOOTER,
     photoStackH: stack,
@@ -86,18 +92,21 @@ export const plusBoardMetrics = (): PlusBoardMetrics => {
     standoutY,
     starterW: (GRAPHIC_WIDTH - PLUS_STARTER_PAD_X * 2) / PLUS_STARTER_COUNT,
     standoutW: (GRAPHIC_WIDTH - PLUS_STANDOUT_PAD_X * 2) / PLUS_STANDOUT_COUNT,
-    titleY: PLUS_TITLE_BAND_H / 2,
-    weekY: PLUS_TITLE_BAND_H,
+    titleY: starterCaptionY,
+    weekY: titlesBelow ? (headerH - PLUS_WEEK_H) / 2 : PLUS_TITLE_BAND_H,
     weekH: PLUS_WEEK_H,
     sectionY,
+    starterCaptionY,
+    titlesBelow,
   };
 };
 
 export const plusCellRect = (
   row: "starters" | "standouts",
   index: number,
+  titlesBelow = false,
 ) => {
-  const metrics = plusBoardMetrics();
+  const metrics = plusBoardMetrics(titlesBelow);
   if (row === "starters") {
     return {
       x: PLUS_STARTER_PAD_X + index * metrics.starterW,
@@ -118,10 +127,13 @@ export const plusCellRect = (
   };
 };
 
-export const plusBarRect = (row: "starters" | "standouts") => {
+export const plusBarRect = (
+  row: "starters" | "standouts",
+  titlesBelow = false,
+) => {
   const count = row === "starters" ? PLUS_STARTER_COUNT : PLUS_STANDOUT_COUNT;
-  const first = plusCellRect(row, 0);
-  const last = plusCellRect(row, count - 1);
+  const first = plusCellRect(row, 0, titlesBelow);
+  const last = plusCellRect(row, count - 1, titlesBelow);
   return {
     x: first.x,
     y: first.y,

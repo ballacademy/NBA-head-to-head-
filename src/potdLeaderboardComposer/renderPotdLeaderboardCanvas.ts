@@ -1,6 +1,10 @@
 import {
   clipToInnerFrame,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
@@ -11,7 +15,9 @@ import {
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { loadCorsImage } from "../lib/playerHeadshots";
 import { getTeam } from "../standingsComposer/teams";
+import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -25,9 +31,12 @@ import {
   PLB_PAD_X,
   PLB_PIP_BAR_H,
   PLB_PIP_BAR_W,
+  PLB_HEAD_SIZE,
+  PLB_HEAD_W,
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_POTD_FILL,
+  PLB_META_SIZE,
   PLB_RANK_W,
   PLB_ROW_H,
   PLB_ROW_SIZE,
@@ -44,6 +53,8 @@ import {
 import {
   DEFAULT_POTD_LEADERBOARD_TITLE,
   isPotdPairName,
+  LEADERBOARD_MEDALS,
+  medalForRank,
   rankLeaderboard,
   type LeaderboardEntry,
 } from "./potdLeaderboardState";
@@ -110,6 +121,7 @@ export interface PotdLeaderboardRenderInput {
   title: string;
   entries: LeaderboardEntry[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
@@ -136,8 +148,10 @@ export const renderPotdLeaderboardCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
   const titleX = PLB_PAD_X * s;
   const titleY = PLB_PAD_TOP * s;
   const titleW = width - titleX * 2;
@@ -152,6 +166,9 @@ export const renderPotdLeaderboardCanvas = async (
 
   paintStuddedBox(context, titleX, titleY, titleW, titleH, s);
   paintCellFrame(context, titleX, titleY, titleW, titleH, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, titleX, titleY, titleW, titleH, s);
+  }
 
   const title = normalizeComposerTitle(
     input.title,
@@ -165,6 +182,7 @@ export const renderPotdLeaderboardCanvas = async (
     titleW,
     titleH,
     s,
+    input.look,
   );
   const titlePad = PLB_TITLE_PAD * s;
   context.beginPath();
@@ -192,14 +210,19 @@ export const renderPotdLeaderboardCanvas = async (
   context.restore();
 
   paintStuddedBox(context, listX, listY, listW, listH, s);
-  context.strokeStyle = PLB_YELLOW;
-  context.lineWidth = stroke;
-  context.strokeRect(
-    listX + stroke / 2,
-    listY + stroke / 2,
-    listW - stroke,
-    listH - stroke,
-  );
+  if (input.look !== "none") {
+    context.strokeStyle = PLB_YELLOW;
+    context.lineWidth = stroke;
+    context.strokeRect(
+      listX + stroke / 2,
+      listY + stroke / 2,
+      listW - stroke,
+      listH - stroke,
+    );
+  }
+  if (input.purpleFlair) {
+    paintPurpleInnerHairline(context, listX, listY, listW, listH, s, input.look);
+  }
 
   const ranked = rankLeaderboard(input.entries);
   const blanks = leaderboardBlankCount(ranked);
@@ -208,9 +231,11 @@ export const renderPotdLeaderboardCanvas = async (
   const innerW = listW - inset * 2;
   const innerY = listY + 18 * s;
   const pipW = showPips ? PLB_PIP_W * s : 0;
+  const headW = PLB_HEAD_W * s;
   const rankW = PLB_RANK_W * s;
-  const nameX = innerX + pipW + rankW;
+  const nameX = innerX + pipW + headW + rankW;
   const logos = new Map<string, HTMLImageElement>();
+  const heads = new Map<string, HTMLImageElement>();
   if (showPips) {
     const ids = [
       ...new Set(ranked.map((entry) => entry.teamId).filter(Boolean)),
@@ -228,6 +253,17 @@ export const renderPotdLeaderboardCanvas = async (
       }),
     );
   }
+  await Promise.all(
+    ranked.map(async (entry) => {
+      if (!entry.headshotUrl || heads.has(entry.headshotUrl)) {
+        return;
+      }
+      const image = await loadCorsImage(entry.headshotUrl);
+      if (image) {
+        heads.set(entry.headshotUrl, image);
+      }
+    }),
+  );
 
   const paintHairlineRow = (top: number, rowH: number, index: number) => {
     if (index % 2 === 1) {
@@ -287,13 +323,33 @@ export const renderPotdLeaderboardCanvas = async (
       }
     }
 
+    const headSize = Math.min(PLB_HEAD_SIZE * s, rowH - 10 * s);
+    const headX = innerX + pipW + (headW - headSize) / 2;
+    const headY = y - headSize / 2;
+    const head = entry.headshotUrl ? heads.get(entry.headshotUrl) : undefined;
+    if (head) {
+      context.save();
+      context.beginPath();
+      context.arc(headX + headSize / 2, y, headSize / 2, 0, Math.PI * 2);
+      context.clip();
+      drawCoverHeadshot(context, head, headX, headY, headSize, headSize, {
+        silhouette: false,
+      });
+      context.restore();
+    }
+
     const size = PLB_ROW_SIZE * entry.nameScale * s;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
+    const meta = PLB_META_SIZE * s;
     context.textBaseline = "middle";
-    setLetterSpacing(context, PLB_ROW_TRACK * size);
-    context.fillStyle = PLB_YELLOW;
+    const medal = medalForRank(entry.rank);
+    context.fillStyle = medal ? LEADERBOARD_MEDALS[medal] : PLB_YELLOW;
     context.textAlign = "left";
-    context.fillText(entry.rankLabel, innerX + pipW, y);
+    context.font = `900 ${meta}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * meta);
+    context.fillText(entry.rankLabel, innerX + pipW + headW, y);
+    context.fillStyle = PLB_YELLOW;
+    context.font = `900 ${size}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * size);
     const lines = entry.displayLines.filter(Boolean);
     if (lines.length > 1) {
       const step = size * 0.95;
@@ -307,8 +363,10 @@ export const renderPotdLeaderboardCanvas = async (
     } else {
       context.fillText(entry.displayName || entry.name.toUpperCase(), nameX, y);
     }
+    context.font = `900 ${meta}px ${POSTER_FONT}`;
+    setLetterSpacing(context, PLB_ROW_TRACK * meta);
     context.textAlign = "right";
-    context.fillText(entry.winsLabel, innerX + innerW, y);
+    context.fillText(entry.winsLabel, innerX + innerW - 4 * s, y);
     setLetterSpacing(context, 0);
   });
 
@@ -323,6 +381,9 @@ export const renderPotdLeaderboardCanvas = async (
     if (ba) {
       const size = 72 * s;
       const inset = 42 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

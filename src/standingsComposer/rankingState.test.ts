@@ -14,8 +14,11 @@ import {
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
+  formatStandingRecord,
   splitStandingsTitle,
   standingsSubtitleLabel,
+  lastWeekDelta,
+  lastWeekMark,
   usedTeamIds,
 } from "./rankingState";
 
@@ -40,6 +43,21 @@ describe("ranking slots", () => {
     slots = clearSlot(slots, 0);
     expect(slots[0]).toBeNull();
     expect(slots[1]).toBe("BOS");
+  });
+
+  it("hides last-week arrows when missing, unchanged, or new", () => {
+    const now = assignTeam(assignTeam(createEmptySlots(), 0, "BOS"), 1, "NYK");
+    const last = assignTeam(assignTeam(createEmptySlots(), 0, "NYK"), 2, "BOS");
+    expect(lastWeekDelta(now, last, 0)).toBe(2);
+    expect(lastWeekDelta(now, last, 1)).toBe(-1);
+    expect(lastWeekDelta(now, now, 0)).toBe(0);
+    expect(lastWeekDelta(now, null, 0)).toBeNull();
+    expect(lastWeekMark(2)?.text).toBe("▲2");
+    expect(lastWeekMark(-1)?.text).toBe("▼1");
+    expect(lastWeekMark(0)?.text).toBe("=");
+    expect(lastWeekMark(null)).toBeNull();
+    const missingLast = assignTeam(createEmptySlots(), 0, "BOS");
+    expect(lastWeekDelta(now, missingLast, 1)).toBeNull();
   });
 });
 
@@ -70,6 +88,11 @@ describe("graphic export constants", () => {
     expect(STANDINGS_TITLE_SIZE).toBe(50);
   });
 
+  it("formats W–L as a rank caption, not a logo caption", () => {
+    expect(formatStandingRecord({ wins: 64, losses: 18 })).toBe("64–18");
+    expect(formatStandingRecord(null)).toBeNull();
+  });
+
   it("uppercases the conference subtitle for PNG export", () => {
     expect(standingsSubtitleLabel("eastern conference")).toBe(
       "EASTERN CONFERENCE",
@@ -93,6 +116,10 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/player-of-the-day")).toBe(true);
     expect(isStandingsComposerRoute("", "/team-of-the-week")).toBe(true);
     expect(isStandingsComposerRoute("", "/team-of-the-week-plus")).toBe(true);
+    expect(isStandingsComposerRoute("", "/ranked-lineups")).toBe(true);
+    expect(isStandingsComposerRoute("", "/pyramid")).toBe(true);
+    expect(isStandingsComposerRoute("", "/headline")).toBe(true);
+    expect(isStandingsComposerRoute("", "/stat-card")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

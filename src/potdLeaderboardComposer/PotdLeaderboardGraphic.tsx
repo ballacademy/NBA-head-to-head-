@@ -1,16 +1,19 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { leaderboardBlankCount } from "./potdLeaderboardLayout";
 import {
   formatWinsLabel,
   isPotdPairName,
+  medalForRank,
   parseWinsInput,
   rankLeaderboard,
   type LeaderboardEntry,
@@ -20,6 +23,7 @@ interface PotdLeaderboardGraphicProps {
   title: string;
   entries: LeaderboardEntry[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
@@ -38,6 +42,7 @@ export const PotdLeaderboardGraphic = forwardRef<
     title,
     entries,
     look = "white",
+    purpleFlair = false,
     showBa = false,
     showPips = true,
     potdKeys = [],
@@ -51,7 +56,6 @@ export const PotdLeaderboardGraphic = forwardRef<
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const ranked = rankLeaderboard(entries);
 
   const setRefs = (node: HTMLElement | null) => {
@@ -69,7 +73,7 @@ export const PotdLeaderboardGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+      const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }
@@ -91,6 +95,7 @@ export const PotdLeaderboardGraphic = forwardRef<
         exporting ? "is-exporting" : "",
         showPips ? "is-pips-on" : "is-pips-off",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
       ]
         .filter(Boolean)
         .join(" ")}
@@ -122,6 +127,7 @@ export const PotdLeaderboardGraphic = forwardRef<
             const team = showPips ? getTeam(entry.teamId) : null;
             const highlighted = isPotdPairName(entry.name, potdKeys);
             const wrap = entry.displayLines.length > 1;
+            const medal = medalForRank(entry.rank);
             return (
               <div
                 key={entry.id}
@@ -149,23 +155,32 @@ export const PotdLeaderboardGraphic = forwardRef<
                     )}
                   </span>
                 ) : null}
-                <span className="plb-rank">{entry.rankLabel}</span>
+                <span className="plb-head" aria-hidden="true">
+                  {entry.headshotUrl ? (
+                    <PlayerHeadshot
+                      className="plb-head__img"
+                      src={entry.headshotUrl}
+                      label={entry.name}
+                    />
+                  ) : null}
+                </span>
+                <span
+                  className={["plb-rank", medal ? `is-${medal}` : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {entry.rankLabel}
+                </span>
                 <textarea
                   className="plb-name"
                   rows={wrap ? 2 : 1}
-                  value={
-                    editingId === entry.id
-                      ? entry.name
-                      : entry.displayLines.join("\n")
-                  }
+                  value={entry.name}
                   maxLength={40}
                   spellCheck={false}
                   aria-label="Player name"
                   style={{
                     fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
                   }}
-                  onFocus={() => setEditingId(entry.id)}
-                  onBlur={() => setEditingId(null)}
                   onChange={(event) =>
                     onNameChange(
                       entry.id,

@@ -11,8 +11,8 @@ export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
  * Title/BA strip stays compact. Grow only if a two-line title at
  * `TIER_TITLE_SIZE` would clip — do not return to a large header.
  */
-export const TIER_HEADER_H = 164;
-export const TIER_FOOTER = 8;
+export const TIER_HEADER_H = 140;
+export const TIER_FOOTER = 2;
 export const TIER_LABEL_W = 140;
 export const TIER_LABEL_PAD_X = 8;
 export const TIER_LABEL_INNER_W = TIER_LABEL_W - TIER_LABEL_PAD_X * 2;
@@ -23,14 +23,19 @@ export const TIER_LABEL_SIZE_ONE = 72;
 export const TIER_LABEL_SIZE_TWO = 48;
 export const TIER_LABEL_SIZE_LONG = 28;
 export const TIER_LABEL_SIZE_MIN = 16;
-export const TIER_CELLS_INSET = 8;
-export const TIER_PAD_RIGHT = 12;
-export const TIER_CELL_GAP = 6;
+export const TIER_CELLS_INSET = 4;
+export const TIER_PAD_RIGHT = 4;
+/**
+ * Hairline between cell outer edges. 4px White/Black strokes live in each
+ * cell’s outer band (outside the photo); a 0-gap flush would fuse those
+ * strokes, so keep a 2px gutter — still tighter than a full frame width.
+ */
+export const TIER_CELL_GAP = 2;
 /** Cap for sparse boards; packed 8-across is still limited by content width. */
 export const TIER_CELL_MAX = 440;
 /** Logos stay this wide; extra items wrap onto another lane in the same tier. */
 export const TIER_WRAP_COLS = 8;
-export const TIER_ROW_PAD_Y = 4;
+export const TIER_ROW_PAD_Y = 0;
 /** Circled BA lockup (white ring + letters). Letters-only mark is `/ba-logo.png`. */
 export const BA_LOGO_SRC = "/ba-logo-circled.png";
 export const TIER_BADGE_SIZE = 72;
@@ -58,16 +63,40 @@ export const rowMetrics = (rowCount: number) => {
 export const tierLaneCount = (itemCount: number) =>
   Math.max(1, Math.ceil(Math.max(0, itemCount) / TIER_WRAP_COLS));
 
+export interface TierCellMetrics {
+  width: number;
+  height: number;
+}
+
+/**
+ * Packed 8-across is width-capped, so height fills the lane (portrait) to
+ * kill empty space above/below the row. Sparse rows stay square.
+ */
+export const cellMetrics = (
+  laneH: number,
+  contentW: number,
+  slotCount = TIER_WRAP_COLS,
+): TierCellMetrics => {
+  const cols = Math.min(TIER_WRAP_COLS, Math.max(1, slotCount));
+  const innerH = Math.max(28, laneH - TIER_ROW_PAD_Y * 2);
+  const availableW = contentW - TIER_CELL_GAP * (cols - 1);
+  // Leave one hairline so wrapped lanes (cellH + gap + cellH) still fit.
+  const height = Math.max(
+    28,
+    Math.min(TIER_CELL_MAX, innerH - TIER_CELL_GAP),
+  );
+  const width = Math.max(
+    28,
+    Math.min(TIER_CELL_MAX, height, availableW / cols),
+  );
+  return { width, height };
+};
+
 export const cellSize = (
   laneH: number,
   contentW: number,
   slotCount = TIER_WRAP_COLS,
-) => {
-  const cols = Math.min(TIER_WRAP_COLS, Math.max(1, slotCount));
-  const innerH = Math.max(28, laneH - TIER_ROW_PAD_Y * 2);
-  const availableW = contentW - TIER_CELL_GAP * (cols - 1);
-  return Math.max(28, Math.min(TIER_CELL_MAX, innerH, availableW / cols));
-};
+) => cellMetrics(laneH, contentW, slotCount).width;
 
 export interface TierBoardLayout {
   lanes: number[];
@@ -75,6 +104,8 @@ export interface TierBoardLayout {
   bodyH: number;
   laneH: number;
   size: number;
+  cellW: number;
+  cellH: number;
   contentW: number;
   cols: number;
   gridTemplate: string;
@@ -84,13 +115,20 @@ export interface TierBoardLayout {
 export const laneSlotCount = (itemCount: number) =>
   Math.min(TIER_WRAP_COLS, Math.max(1, itemCount));
 
+/** Collapsed empty-tier weight so filled rows eat leftover board. */
+export const EMPTY_TIER_LANES = 0.32;
+
 export const tierBoardLayout = (
   itemCounts: number[],
   labelLineCounts: number[] = [],
 ): TierBoardLayout => {
-  const lanes = itemCounts.map((count, index) =>
-    Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1)),
-  );
+  const anyFilled = itemCounts.some((count) => count > 0);
+  const lanes = itemCounts.map((count, index) => {
+    if (anyFilled && count === 0) {
+      return EMPTY_TIER_LANES;
+    }
+    return Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1));
+  });
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
   const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
   const contentW = cellsContentWidth();
@@ -99,13 +137,15 @@ export const tierBoardLayout = (
   const cols = itemCounts.length
     ? Math.max(1, ...itemCounts.map((count) => laneSlotCount(count)))
     : 1;
-  const size = cellSize(laneH, contentW, cols);
+  const metrics = cellMetrics(laneH, contentW, cols);
   return {
     lanes,
     totalLanes,
     bodyH,
     laneH,
-    size,
+    size: metrics.width,
+    cellW: metrics.width,
+    cellH: metrics.height,
     contentW,
     cols,
     gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
@@ -116,6 +156,33 @@ export const cellGridPosition = (index: number) => ({
   col: index % TIER_WRAP_COLS,
   wrapRow: Math.floor(index / TIER_WRAP_COLS),
 });
+
+/** Compact add control when a full-size slot would wrap a new editor-only lane. */
+export const ADD_CHIP_COMPACT = 48;
+
+export type AddChipPlacement =
+  | { kind: "slot"; col: number; wrapRow: number }
+  | { kind: "compact"; empty: boolean; wrapRow: number };
+
+/**
+ * Editor + chip. Preview packing uses filled items only — same as the PNG —
+ * so this chip overlays and never creates an extra wrap row.
+ */
+export const addChipPlacement = (
+  itemCount: number,
+  cols: number,
+): AddChipPlacement => {
+  const filled = Math.max(0, itemCount);
+  if (filled === 0) {
+    return { kind: "compact", empty: true, wrapRow: 0 };
+  }
+  const next = cellGridPosition(filled);
+  const lastWrap = Math.floor((filled - 1) / TIER_WRAP_COLS);
+  if (next.wrapRow === lastWrap && next.col < Math.max(1, cols)) {
+    return { kind: "slot", col: next.col, wrapRow: next.wrapRow };
+  }
+  return { kind: "compact", empty: false, wrapRow: lastWrap };
+};
 
 export const baBadgeRect = () => ({
   x: GRAPHIC_WIDTH - TIER_BADGE_INSET - TIER_BADGE_SIZE,

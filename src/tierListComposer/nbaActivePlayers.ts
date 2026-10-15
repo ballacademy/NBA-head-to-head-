@@ -1,5 +1,6 @@
 import scoring from "../../data/nba-active-tier-player-scoring.json";
 import catalog from "../../data/nba-active-tier-players.json";
+import { getCoach } from "../instagramComposer/nbaCoaches";
 import {
   CONFERENCES,
   DIVISIONS,
@@ -32,6 +33,10 @@ export interface TierPlayer {
   allStar: boolean;
   /** 2025-26 regular-season points per game; 0 when Basketball-Reference has no row. */
   ppg: number;
+  /** Depth-chart unit (1 = starter) when the roster is a season depth chart. */
+  depth?: number;
+  /** Head coaches in the pyramid / player-tier pickers. */
+  role?: "coach";
 }
 
 type HeadshotFallback = {
@@ -84,10 +89,10 @@ export const PLAYER_SCORING_SOURCE = scoringData.source;
 export const PLAYER_SCORING_METRIC = "pointsPerGame";
 export const PLAYER_SORT_KEY = "ddgm:tier-list-player-sort";
 export const PLAYER_FILTERS_KEY = "ddgm:tier-list-player-filters";
-export type PlayerPickerSort = "name" | "points";
+export type PlayerPickerSort = "name" | "points" | "depth";
 
 export const parsePlayerPickerSort = (value: unknown): PlayerPickerSort =>
-  value === "points" ? "points" : "name";
+  value === "points" || value === "depth" ? value : "name";
 
 export const isComposerHeadshotUrl = (url: string) =>
   url.startsWith("https://a.espncdn.com/i/headshots/") ||
@@ -97,7 +102,7 @@ export const NBA_ACTIVE_PLAYERS_BY_ID: Record<string, TierPlayer> =
   Object.fromEntries(NBA_ACTIVE_PLAYERS.map((player) => [player.id, player]));
 
 export const getPlayer = (id: string | null | undefined): TierPlayer | null =>
-  (id && NBA_ACTIVE_PLAYERS_BY_ID[id]) || null;
+  (id && NBA_ACTIVE_PLAYERS_BY_ID[id]) || getCoach(id);
 
 export const ALL_PLAYER_FILTER = "all";
 export const UNDRAFTED_FILTER = "undrafted";
@@ -112,6 +117,8 @@ export interface NumberRange {
   max: number;
 }
 
+export type PlayerRoleFilter = "all" | "starter" | "bench";
+
 export interface PlayerSearchFilters {
   team?: string;
   ageRange?: NumberRange;
@@ -119,6 +126,7 @@ export interface PlayerSearchFilters {
   division?: string;
   conference?: string;
   position?: string;
+  role?: string;
   draftClass?: string;
   draftStatus?: string;
   allStar?: string;
@@ -139,11 +147,15 @@ export const EXPERIENCE_SPAN = spanOf(
   NBA_ACTIVE_PLAYERS.map((player) => player.experienceYears),
 );
 
+export const ROLE_STARTER_FILTER = "starter";
+export const ROLE_BENCH_FILTER = "bench";
+
 export const EMPTY_PLAYER_FILTERS: PlayerSearchFilters = {
   team: ALL_PLAYER_FILTER,
   division: ALL_PLAYER_FILTER,
   conference: ALL_PLAYER_FILTER,
   position: ALL_PLAYER_FILTER,
+  role: ALL_PLAYER_FILTER,
   draftClass: ALL_PLAYER_FILTER,
   draftStatus: ALL_PLAYER_FILTER,
   allStar: ALL_PLAYER_FILTER,
@@ -176,6 +188,7 @@ const SELECT_KEYS = [
   "division",
   "conference",
   "position",
+  "role",
   "draftClass",
   "draftStatus",
   "allStar",
@@ -233,6 +246,13 @@ export const POSITION_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
   { id: "C", label: "C" },
   { id: "G", label: "G" },
   { id: "F", label: "F" },
+];
+
+/** Depth-chart unit: starter PG–C (`depth === 1`) vs backups / extras. */
+export const ROLE_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: ALL_PLAYER_FILTER, label: "All roles" },
+  { id: ROLE_STARTER_FILTER, label: "Starters" },
+  { id: ROLE_BENCH_FILTER, label: "Bench" },
 ];
 
 export const TEAM_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
@@ -352,6 +372,27 @@ const matchesAllStar = (player: TierPlayer, allStar: string | undefined) => {
   return true;
 };
 
+export const isStarterDepth = (depth: number | null | undefined) => depth === 1;
+
+export const isBenchDepth = (depth: number | null | undefined) =>
+  depth != null && depth !== 1;
+
+const matchesRole = (player: TierPlayer, role: string | undefined) => {
+  if (!role || role === ALL_PLAYER_FILTER) {
+    return true;
+  }
+  if (player.role === "coach") {
+    return false;
+  }
+  if (role === ROLE_STARTER_FILTER) {
+    return isStarterDepth(player.depth);
+  }
+  if (role === ROLE_BENCH_FILTER) {
+    return isBenchDepth(player.depth);
+  }
+  return true;
+};
+
 const matchesCountry = (player: TierPlayer, country: string | undefined) => {
   if (!country || country === ALL_PLAYER_FILTER) {
     return true;
@@ -365,6 +406,7 @@ const matchesCountry = (player: TierPlayer, country: string | undefined) => {
 export const searchPlayers = (
   query: string,
   filters: PlayerSearchFilters = {},
+  catalog: readonly TierPlayer[] | undefined = NBA_ACTIVE_PLAYERS,
 ): TierPlayer[] => {
   const needle = query.trim().toLowerCase();
   const team =
@@ -388,7 +430,7 @@ export const searchPlayers = (
   const heightOpen = isFullRange(height, HEIGHT_SPAN);
   const experienceOpen = isFullRange(experience, EXPERIENCE_SPAN);
 
-  return NBA_ACTIVE_PLAYERS.filter((player) => {
+  return (catalog ?? NBA_ACTIVE_PLAYERS).filter((player) => {
     if (team && player.team !== team) {
       return false;
     }
@@ -399,6 +441,9 @@ export const searchPlayers = (
       return false;
     }
     if (position && player.position !== position) {
+      return false;
+    }
+    if (!matchesRole(player, filters.role)) {
       return false;
     }
     if (!ageOpen && !inRange(player.age, age.min, age.max)) {
@@ -439,6 +484,16 @@ export const searchPlayers = (
   });
 };
 
+const POSITION_DEPTH_RANK: Record<string, number> = {
+  PG: 0,
+  SG: 1,
+  SF: 2,
+  PF: 3,
+  C: 4,
+  G: 1,
+  F: 2,
+};
+
 export const sortPlayers = (
   players: TierPlayer[],
   sort: PlayerPickerSort,
@@ -451,6 +506,22 @@ export const sortPlayers = (
     );
     return next;
   }
+  if (sort === "depth") {
+    next.sort((left, right) => {
+      const depth = (left.depth ?? 99) - (right.depth ?? 99);
+      if (depth) {
+        return depth;
+      }
+      const position =
+        (POSITION_DEPTH_RANK[left.position] ?? 9) -
+        (POSITION_DEPTH_RANK[right.position] ?? 9);
+      if (position) {
+        return position;
+      }
+      return left.name.localeCompare(right.name) || left.id.localeCompare(right.id);
+    });
+    return next;
+  }
   next.sort(
     (left, right) =>
       left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
@@ -458,8 +529,18 @@ export const sortPlayers = (
   return next;
 };
 
-export const formatPpg = (ppg: number) =>
-  ppg > 0 ? `${ppg.toFixed(1)} PPG` : "No 25–26 PPG";
+export const depthChartLabel = (player: Pick<TierPlayer, "position" | "depth">) => {
+  const unit = player.depth;
+  if (unit == null || unit >= 99) {
+    return player.position;
+  }
+  const rank =
+    unit === 1 ? "Starter" : unit === 2 ? "2nd" : unit === 3 ? "3rd" : `${unit}th`;
+  return `${player.position} · ${rank}`;
+};
+
+export const formatPpg = (ppg: number, emptyLabel = "No 25–26 PPG") =>
+  ppg > 0 ? `${ppg.toFixed(1)} PPG` : emptyLabel;
 
 /** A few stars for screenshots / seed boards. */
 export const EXAMPLE_PLAYER_IDS = {

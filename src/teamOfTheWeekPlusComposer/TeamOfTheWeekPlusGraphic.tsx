@@ -1,8 +1,10 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -11,6 +13,7 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   PLUS_BA_INSET,
   PLUS_BA_SIZE,
+  PLUS_BELOW_HEADER_H,
   PLUS_FOOTER,
   PLUS_HEADER_H,
   PLUS_HEADER_PAD_X,
@@ -42,14 +45,18 @@ interface TeamOfTheWeekPlusGraphicProps {
   standoutCaption: string;
   slots: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  titlesBelow?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onWeekChange: (value: string) => void;
   onStarterCaptionChange: (value: string) => void;
   onStandoutCaptionChange: (value: string) => void;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (
@@ -63,6 +70,7 @@ const PortraitCell = ({
   index,
   showNames,
   onPick,
+  onHover,
   onPan,
   onUpload,
   onNameChange,
@@ -71,6 +79,7 @@ const PortraitCell = ({
   index: number;
   showNames: boolean;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (
@@ -81,7 +90,11 @@ const PortraitCell = ({
   const empty = !slot.photoSrc;
   const label = stripPlayerName(slot) || slotLabel(index);
   return (
-    <section className="twp-cell" aria-label={slotLabel(index)}>
+    <section
+      className="twp-cell"
+      aria-label={slotLabel(index)}
+      onPointerEnter={() => onHover?.(index)}
+    >
       <PhotoFrame
         src={slot.photoSrc}
         label={label}
@@ -122,11 +135,15 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     standoutCaption,
     slots,
     look = "white",
+    purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     showNames = true,
+    titlesBelow = false,
     exporting = false,
     onBrandChange,
     onWeekChange,
+    onHover,
     onStarterCaptionChange,
     onStandoutCaptionChange,
     onPick,
@@ -156,7 +173,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+      const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }
@@ -177,14 +194,19 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         "twp-board",
         exporting ? "is-exporting" : "",
         showNames ? "" : "is-names-off",
+        titlesBelow ? "is-titles-below" : "",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
+        composerGradeClass(photoGrade),
       ]
         .filter(Boolean)
         .join(" ")}
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--header-h" as string]: String(PLUS_HEADER_H),
+          ["--header-h" as string]: String(
+            titlesBelow ? PLUS_BELOW_HEADER_H : PLUS_HEADER_H,
+          ),
           ["--header-pad-x" as string]: String(PLUS_HEADER_PAD_X),
           ["--ba-size" as string]: String(PLUS_BA_SIZE),
           ["--ba-inset" as string]: String(PLUS_BA_INSET),
@@ -220,16 +242,18 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         />
       )}
       <header className="twp-header">
-        <input
-          className="twp-title"
-          value={starterCaption}
-          maxLength={48}
-          spellCheck={false}
-          aria-label="Team of the Week title"
-          onChange={(event) =>
-            onComposerTextChange(event, onStarterCaptionChange, 48)
-          }
-        />
+        {titlesBelow ? null : (
+          <input
+            className="twp-title"
+            value={starterCaption}
+            maxLength={48}
+            spellCheck={false}
+            aria-label="Team of the Week title"
+            onChange={(event) =>
+              onComposerTextChange(event, onStarterCaptionChange, 48)
+            }
+          />
+        )}
         <input
           className="twp-week"
           value={week}
@@ -248,24 +272,40 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             index={index}
             showNames={showNames}
             onPick={onPick}
+            onHover={onHover}
             onPan={onPan}
             onUpload={onUpload}
             onNameChange={onNameChange}
           />
         ))}
       </div>
-      <div className="twp-section">
-        <input
-          className="twp-section-title"
-          value={standoutCaption}
-          maxLength={48}
-          spellCheck={false}
-          aria-label="Standouts of the Week title"
-          onChange={(event) =>
-            onComposerTextChange(event, onStandoutCaptionChange, 48)
-          }
-        />
-      </div>
+      {titlesBelow ? (
+        <div className="twp-section twp-section--starters">
+          <input
+            className="twp-section-title twp-section-title--hero"
+            value={starterCaption}
+            maxLength={48}
+            spellCheck={false}
+            aria-label="Team of the Week title"
+            onChange={(event) =>
+              onComposerTextChange(event, onStarterCaptionChange, 48)
+            }
+          />
+        </div>
+      ) : (
+        <div className="twp-section twp-section--standouts">
+          <input
+            className="twp-section-title"
+            value={standoutCaption}
+            maxLength={48}
+            spellCheck={false}
+            aria-label="Standouts of the Week title"
+            onChange={(event) =>
+              onComposerTextChange(event, onStandoutCaptionChange, 48)
+            }
+          />
+        </div>
+      )}
       <div className="twp-bar twp-bar--standouts">
         {Array.from({ length: PLUS_STANDOUT_COUNT }, (_, index) => (
           <PortraitCell
@@ -274,12 +314,27 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             index={PLUS_STARTER_COUNT + index}
             showNames={showNames}
             onPick={onPick}
+            onHover={onHover}
             onPan={onPan}
             onUpload={onUpload}
             onNameChange={onNameChange}
           />
         ))}
       </div>
+      {titlesBelow ? (
+        <div className="twp-section twp-section--standouts">
+          <input
+            className="twp-section-title"
+            value={standoutCaption}
+            maxLength={48}
+            spellCheck={false}
+            aria-label="Standouts of the Week title"
+            onChange={(event) =>
+              onComposerTextChange(event, onStandoutCaptionChange, 48)
+            }
+          />
+        </div>
+      ) : null}
       <div className="twp-footer" />
     </article>
   );

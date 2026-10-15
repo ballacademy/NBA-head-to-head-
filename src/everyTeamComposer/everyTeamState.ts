@@ -1,6 +1,16 @@
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import {
+  EVERY_TEAM_STAT_METRICS,
+  getRosterPlayer,
+  pickSeasonLeader,
+  rosterHasPlayer,
+  rosterStatValue,
+  seasonForTeam,
+  type EveryTeamStatMetric,
+} from "./historicalRosters";
 
 export { DEFAULT_BRAND };
 
@@ -71,6 +81,9 @@ export interface EveryTeamDraft {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
 }
 
 export const createDefaultRankedOrder = (): string[] =>
@@ -268,6 +281,132 @@ export const usedEveryTeamLabels = (
       team?.id && team.id === activeTeamId ? "This slot" : team?.id ?? "Used";
   });
   return labels;
+};
+
+export const pruneSlotsToSeasons = (
+  slots: EveryTeamSlots,
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+): EveryTeamSlots =>
+  slots.map((playerId, index) => {
+    if (!playerId) {
+      return null;
+    }
+    const team = EVERY_TEAM_ORDER[index];
+    if (!team) {
+      return null;
+    }
+    return rosterHasPlayer(
+      team.id,
+      seasonForTeam(team.id, boardSeason, cellSeasons),
+      playerId,
+    )
+      ? playerId
+      : null;
+  });
+
+export const rankedMetricValues = (
+  rankedOrder: string[],
+  slots: EveryTeamSlots,
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+  metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
+): Array<number | null> =>
+  normalizeRankedOrder(rankedOrder).map((teamId) => {
+    const player = getRosterPlayer(
+      teamId,
+      seasonForTeam(teamId, boardSeason, cellSeasons),
+      slots[slotIndexForTeam(teamId)] ?? null,
+      sample,
+    );
+    return rosterStatValue(player, metric);
+  });
+
+export const autoSortRankedOrder = (
+  rankedOrder: string[],
+  metricValues: Array<number | null>,
+): { order: string[]; ranked: number; held: number } => {
+  const order = normalizeRankedOrder(rankedOrder);
+  const entries = order.map((teamId, index) => ({
+    teamId,
+    index,
+    value: metricValues[index] ?? null,
+  }));
+  const scored = entries.filter((entry) => entry.value != null);
+  const held = entries.filter((entry) => entry.value == null);
+  scored.sort(
+    (left, right) =>
+      (right.value as number) - (left.value as number) || left.index - right.index,
+  );
+  return {
+    order: [...scored, ...held].map((entry) => entry.teamId),
+    ranked: scored.length,
+    held: held.length,
+  };
+};
+
+export const autoSortMetricLabel = (metric: EveryTeamStatMetric) =>
+  EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+
+export const autoFillEveryTeamSlots = (
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+  metric: EveryTeamStatMetric = "points",
+  sample: ComposerStatsSample = "regular",
+): EveryTeamSlots =>
+  EVERY_TEAM_ORDER.map(
+    (team) =>
+      pickSeasonLeader(
+        team.id,
+        seasonForTeam(team.id, boardSeason, cellSeasons),
+        metric,
+        sample,
+      )?.id ?? null,
+  );
+
+export type EveryTeamNightMetric = "pts" | "pra";
+
+const nightScore = (
+  stats: { pts: string; reb: string; ast: string },
+  metric: EveryTeamNightMetric,
+) => {
+  const pts = Number.parseFloat(stats.pts) || 0;
+  if (metric === "pts") {
+    return pts;
+  }
+  return pts + (Number.parseFloat(stats.reb) || 0) + (Number.parseFloat(stats.ast) || 0);
+};
+
+/** One-click fill: that night’s high-PTS or PRA on each team that played. */
+export const fillEveryTeamFromNight = (
+  slots: EveryTeamSlots,
+  standouts: Array<{
+    athleteId: string;
+    teamId: string;
+    game: { stats: { pts: string; reb: string; ast: string } };
+  }>,
+  metric: EveryTeamNightMetric = "pts",
+): { slots: EveryTeamSlots; filled: number } => {
+  const best = new Map<string, { id: string; score: number }>();
+  for (const row of standouts) {
+    const score = nightScore(row.game.stats, metric);
+    const prev = best.get(row.teamId);
+    if (!prev || score > prev.score) {
+      best.set(row.teamId, { id: row.athleteId, score });
+    }
+  }
+  let filled = 0;
+  const next = slots.slice();
+  EVERY_TEAM_ORDER.forEach((team, index) => {
+    const pick = best.get(team.id);
+    if (!pick) {
+      return;
+    }
+    next[index] = pick.id;
+    filled += 1;
+  });
+  return { slots: next, filled };
 };
 
 export const splitEveryTeamTitle = (title: string): string[] =>

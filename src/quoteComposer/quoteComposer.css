@@ -1,0 +1,170 @@
+.qt-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --team-color: #fff;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.qt-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.qt-board .pod-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0;
+  border: var(--frame-w) solid var(--frame-color);
+  touch-action: none;
+  cursor: grab;
+}
+
+.qt-board.is-purple::before,
+.qt-board.is-purple::after {
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+.qt-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: calc(560 * var(--u));
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.82) 38%,
+    rgba(6, 6, 8, 0.28) 72%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.qt-lastname {
+  position: absolute;
+  left: calc(88 * var(--u));
+  right: calc(88 * var(--u));
+  top: calc(128 * var(--u));
+  z-index: 4;
+  margin: 0;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(96 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 0.82;
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-text-stroke: calc(4 * var(--u)) #0a0a0a;
+  paint-order: stroke fill;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+}
+
+.qt-lastname.is-long {
+  font-size: calc(72 * var(--u));
+}
+
+.qt-lastname.is-xl,
+.qt-lastname.is-long-quote {
+  font-size: calc(52 * var(--u));
+}
+
+.qt-mark {
+  position: absolute;
+  left: 50%;
+  z-index: 4;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: var(--ig-poster);
+  font-size: calc(72 * var(--u));
+  font-weight: 900;
+  line-height: 0.7;
+  color: var(--team-color);
+  pointer-events: none;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.55);
+}
+
+.qt-quote {
+  position: absolute;
+  left: calc(72 * var(--u));
+  right: calc(72 * var(--u));
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(70 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  -webkit-text-stroke: calc(3 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.82);
+}
+
+.qt-quote.is-long {
+  font-size: calc(56 * var(--u));
+}
+
+.qt-source {
+  position: absolute;
+  left: calc(88 * var(--u));
+  right: calc(88 * var(--u));
+  bottom: calc(44 * var(--u));
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.qt-board .composer-ba {
+  z-index: 5;
+}
+
+.qt-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.qt-board .pod-photo__tools {
+  left: calc(16 * var(--u));
+  right: calc(16 * var(--u));
+  bottom: auto;
+  top: calc(28 * var(--u));
+}
+
+.qt-board .pod-photo__pick {
+  font-size: calc(18 * var(--u));
+  letter-spacing: 0.08em;
+}
+
+.qt-quote:focus,
+.qt-source:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}

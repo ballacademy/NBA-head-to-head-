@@ -2,10 +2,19 @@ import {
   frameColor,
   frameLinePx,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurplePathStroke,
+  paintPurplePlateEdge,
+  paintPurpleTitleGlow,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { loadCorsImage } from "../lib/playerHeadshots";
+import {
+  PHOTO_GRADE_FILTER,
+  applyPhotoGrade,
+} from "../instagramComposer/photoGrade";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
   photoRotate,
@@ -103,9 +112,10 @@ const clipBarCell = (
   w: number,
   h: number,
   scale: number,
+  look: ComposerLook | undefined,
   first: boolean,
 ) => {
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
   const inner = {
     x: first ? x + line : x,
     y: y + line,
@@ -130,14 +140,16 @@ const drawPortrait = async (
   givenSize: number,
   logoSize: number,
   scale: number,
+  look: ComposerLook | undefined,
   first: boolean,
   showNames: boolean,
+  photoGrade = false,
 ) => {
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
-  const inner = clipBarCell(context, x, y, w, h, scale, first);
+  const inner = clipBarCell(context, x, y, w, h, scale, look, first);
   if (slot.photoSrc) {
     const photo = slot.photoSrc.startsWith("data:")
       ? await loadImage(slot.photoSrc)
@@ -155,8 +167,11 @@ const drawPortrait = async (
         photoZoom(slot.pan),
       );
       const rotate = photoRotate(slot.pan);
+      context.save();
+      if (photoGrade) {
+        context.filter = PHOTO_GRADE_FILTER;
+      }
       if (rotate) {
-        context.save();
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
@@ -166,10 +181,18 @@ const drawPortrait = async (
           dest.dw,
           dest.dh,
         );
-        context.restore();
       } else {
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
+      context.restore();
+      applyPhotoGrade(
+        context,
+        inner.x,
+        inner.y,
+        inner.w,
+        inner.h,
+        photoGrade,
+      );
     }
   }
   context.restore();
@@ -212,7 +235,10 @@ const paintBarChrome = (
   scale: number,
 ) => {
   paintCellFrame(context, x, y, w, h, look, scale);
-  const line = frameLinePx(scale);
+  const line = frameLinePx(scale, look);
+  if (line <= 0) {
+    return;
+  }
   context.fillStyle = frameColor(look);
   for (let index = 1; index < count; index += 1) {
     context.fillRect(x + index * cellW - line, y, line, h);
@@ -228,6 +254,7 @@ const drawHeadline = (
   stroke: number,
   scale: number,
   width: number,
+  purpleFlair = false,
 ) => {
   const label = text.trim().toUpperCase();
   if (!label) {
@@ -237,9 +264,24 @@ const drawHeadline = (
   context.textAlign = "center";
   context.textBaseline = "middle";
   setLetterSpacing(context, tracking * size * scale);
-  withShadow(context, scale, () => {
-    strokeFillText(context, label, width / 2, y, "#fff", "#000", stroke * scale);
-  });
+  const paint = () => {
+    withShadow(context, scale, () => {
+      strokeFillText(
+        context,
+        label,
+        width / 2,
+        y,
+        "#fff",
+        "#000",
+        stroke * scale,
+      );
+    });
+  };
+  if (purpleFlair) {
+    paintPurpleTitleGlow(context, scale, paint);
+  } else {
+    paint();
+  }
   setLetterSpacing(context, 0);
 };
 
@@ -250,6 +292,7 @@ const drawWeekNotch = (
   h: number,
   scale: number,
   width: number,
+  purpleFlair = false,
 ) => {
   const label = text.trim().toUpperCase();
   if (!label) {
@@ -275,6 +318,9 @@ const drawWeekNotch = (
   context.closePath();
   context.fillStyle = "#fff";
   context.fill();
+  if (purpleFlair) {
+    paintPurplePathStroke(context, scale);
+  }
   context.fillStyle = "#111";
   context.fillText(label, width / 2, y + h / 2 + 0.5 * scale);
   setLetterSpacing(context, 0);
@@ -287,8 +333,11 @@ export interface TeamOfTheWeekPlusRenderInput {
   standoutCaption: string;
   slots: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  titlesBelow?: boolean;
 }
 
 export const renderTeamOfTheWeekPlusCanvas = async (
@@ -312,15 +361,21 @@ export const renderTeamOfTheWeekPlusCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height);
-
   const s = scale;
-  const metrics = plusBoardMetrics();
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, s);
+  }
+  const titlesBelow = input.titlesBelow === true;
+  const metrics = plusBoardMetrics(titlesBelow);
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
       const size = PLUS_BA_SIZE * s;
       const inset = PLUS_BA_INSET * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   } else {
@@ -345,6 +400,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     3.4,
     s,
     width,
+    input.purpleFlair === true,
   );
   drawWeekNotch(
     context,
@@ -353,10 +409,11 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     metrics.weekH * s,
     s,
     width,
+    input.purpleFlair === true,
   );
 
   for (let index = 0; index < PLUS_STARTER_COUNT; index += 1) {
-    const rect = plusCellRect("starters", index);
+    const rect = plusCellRect("starters", index, titlesBelow);
     await drawPortrait(
       context,
       input.slots[index]!,
@@ -369,11 +426,13 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       PLUS_NAME_GIVEN_SIZE,
       rect.logoSize,
       s,
+      input.look,
       index === 0,
       input.showNames !== false,
+      input.photoGrade === true,
     );
   }
-  const starterBar = plusBarRect("starters");
+  const starterBar = plusBarRect("starters", titlesBelow);
   paintBarChrome(
     context,
     starterBar.x * s,
@@ -395,10 +454,11 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     2.4,
     s,
     width,
+    input.purpleFlair === true,
   );
 
   for (let index = 0; index < PLUS_STANDOUT_COUNT; index += 1) {
-    const rect = plusCellRect("standouts", index);
+    const rect = plusCellRect("standouts", index, titlesBelow);
     await drawPortrait(
       context,
       input.slots[PLUS_STARTER_COUNT + index]!,
@@ -411,11 +471,13 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       PLUS_STANDOUT_GIVEN_SIZE,
       rect.logoSize,
       s,
+      input.look,
       index === 0,
       input.showNames !== false,
+      input.photoGrade === true,
     );
   }
-  const standoutBar = plusBarRect("standouts");
+  const standoutBar = plusBarRect("standouts", titlesBelow);
   paintBarChrome(
     context,
     standoutBar.x * s,
@@ -427,6 +489,25 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     input.look,
     s,
   );
+
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(
+      context,
+      starterBar.x * s,
+      starterBar.y * s,
+      starterBar.w * s,
+      starterBar.h * s,
+      s,
+    );
+    paintPurplePlateEdge(
+      context,
+      standoutBar.x * s,
+      standoutBar.y * s,
+      standoutBar.w * s,
+      standoutBar.h * s,
+      s,
+    );
+  }
 
   return canvas;
 };

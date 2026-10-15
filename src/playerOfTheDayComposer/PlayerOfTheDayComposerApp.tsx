@@ -1,11 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+  stripCaptionName,
+} from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAYER_OF_THE_DAY_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -14,7 +33,7 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { fetchRecentGames, type LastGame } from "./lastGame";
+import { fetchRecentGames, formatDateLabel, type LastGame } from "./lastGame";
 import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
@@ -43,6 +62,7 @@ import "@fontsource/montserrat/latin-900-italic.css";
 import "./playerOfTheDayComposer.css";
 
 const STORAGE_KEY = "ddgm:player-of-the-day-composer";
+const SAVES_KEY = "ddgm:player-of-the-day-composer:saves";
 
 const loadDraft = (): PotdDraft => {
   const stored = readJson<Partial<PotdDraft>>(STORAGE_KEY);
@@ -72,6 +92,9 @@ export function PlayerOfTheDayComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -87,6 +110,7 @@ export function PlayerOfTheDayComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
+  const night = useComposerNight();
 
   useEffect(() => {
     document.title = "Player of the Day graphic";
@@ -129,7 +153,7 @@ export function PlayerOfTheDayComposerApp() {
       await exportPlayerOfTheDayPng(
         node,
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
-        { brand, title, date, cards, look, showBa },
+        { brand, title, date, cards, look, purpleFlair, photoGrade, showBa },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -152,6 +176,13 @@ export function PlayerOfTheDayComposerApp() {
     setStatus("Board cleared.");
   };
 
+  useEffect(() => {
+    if (activeIndex == null) {
+      return;
+    }
+    void night.ensureStandouts();
+  }, [activeIndex, night.date, night.ensureStandouts]);
+
   const handlePick = async (playerId: string) => {
     if (activeIndex == null) {
       return;
@@ -160,13 +191,18 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
-    setStatus("Loading recent games…");
-    const games = await fetchRecentGames(player.id);
+    const standout = night.standouts.find((row) => row.athleteId === playerId);
     pendingPick.current = {
       index: activeIndex,
       playerId: player.id,
       playerName: player.name,
     };
+    if (standout) {
+      applyPickedGame(standout.game);
+      return;
+    }
+    setStatus("Loading recent games…");
+    const games = await fetchRecentGames(player.id, statsSample);
     if (games.length > 1) {
       setGameChoices(games);
       setStatus(`Pick a game for ${player.name}.`);
@@ -252,11 +288,10 @@ export function PlayerOfTheDayComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Player of the Day</h1>
-        </div>
+      <ComposerToolbar
+        title="Player of the Day"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -270,9 +305,49 @@ export function PlayerOfTheDayComposerApp() {
           presets={POTD_TITLE_PRESETS}
           onChange={setTitle}
         />
+          </>
+        }
+        data={
+          <>
+          <ComposerStatsSampleToggle
+            sample={statsSample}
+            onChange={setStatsSample}
+          />
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              setDate(formatDateLabel(iso));
+            }}
+          />
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
-        <div className="sc-toolbar__actions">
+          </>
+        }
+        persist={
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{ brand, title, date, cards, showBa }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setDate(next.date);
+            setCards(next.cards);
+            setShowBa(next.showBa === true);
+            setStatus("Loaded named graphic.");
+          }}
+        />
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -289,6 +364,24 @@ export function PlayerOfTheDayComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  cards.map(stripCaptionName).filter(Boolean),
+                  [date],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"
@@ -311,11 +404,13 @@ export function PlayerOfTheDayComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <PlayerOfTheDayGraphic
             ref={boardRef}
             brand={brand}
@@ -323,6 +418,8 @@ export function PlayerOfTheDayComposerApp() {
             date={date}
             cards={cards}
             look={look}
+            purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             exporting={exporting}
             onBrandChange={setBrand}
@@ -351,6 +448,7 @@ export function PlayerOfTheDayComposerApp() {
               setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Pick a player, then choose a recent box score — the date matches
             that game. Upload or paste a photo, then drag to pan and pinch or
@@ -366,6 +464,9 @@ export function PlayerOfTheDayComposerApp() {
           hint="Search a name. We’ll fill the latest game, team color, and headshot."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
           onPick={(playerId) => {
             void handlePick(playerId);
           }}

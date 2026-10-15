@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -17,9 +18,13 @@ import {
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
+  formatStandingRecord,
+  lastWeekDelta,
+  lastWeekMark,
   SLOT_COUNT,
   splitStandingsTitle,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { TeamLogo } from "./TeamLogo";
 import { getTeam } from "./teams";
@@ -29,8 +34,13 @@ interface StandingsGraphicProps {
   title: string;
   subtitle: string;
   slots: RankingSlots;
+  lastWeekSlots?: RankingSlots | null;
+  showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
   activeIndex: number | null;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   exporting?: boolean;
   showBa?: boolean;
   onBrandChange: (value: string) => void;
@@ -78,8 +88,13 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       title,
       subtitle,
       slots,
+      lastWeekSlots = null,
+      showArrows = false,
+      showRecord = false,
+      records,
       activeIndex,
       look = "white",
+      purpleFlair = false,
       exporting = false,
       showBa = false,
       onBrandChange,
@@ -111,7 +126,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -152,7 +167,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={["ig-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+        className={["ig-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
           .filter(Boolean)
           .join(" ")}
         style={
@@ -247,6 +262,13 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
           {Array.from({ length: SLOT_COUNT }, (_, index) => {
             const team = getTeam(slots[index] ?? null);
             const rank = index + 1;
+            const delta = showArrows
+              ? lastWeekDelta(slots, lastWeekSlots, index)
+              : null;
+            const mark = lastWeekMark(delta);
+            const recordLabel = showRecord
+              ? formatStandingRecord(team ? records?.[team.id] : null)
+              : null;
             return (
               <button
                 key={rank}
@@ -273,7 +295,22 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                     : `Rank ${rank}, empty. Pick a team`
                 }
               >
-                <span className="ig-slot__rank">{rank}</span>
+                <span className="ig-slot__meta">
+                  <span className="ig-slot__rank">{rank}</span>
+                  {recordLabel ? (
+                    <span className="ig-slot__record" aria-label={`${team?.name} record ${recordLabel}`}>
+                      {recordLabel}
+                    </span>
+                  ) : null}
+                </span>
+                {mark ? (
+                  <span
+                    className={`ig-slot__delta is-${mark.kind}`}
+                    aria-label={mark.label}
+                  >
+                    {mark.text}
+                  </span>
+                ) : null}
                 {team ? (
                   <TeamLogo
                     src={team.logoSrc}

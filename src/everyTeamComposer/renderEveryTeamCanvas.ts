@@ -2,6 +2,10 @@ import {
   clipToInnerFrame,
   frameColor,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePathHalo,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -16,22 +20,32 @@ import {
   drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import { drawCoveredLogo } from "../standingsComposer/logoDraw";
 import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
-  ET_LOGO_FIT,
+  everyTeamCurrentSeason,
+  formatSeasonShort,
+  getRosterPlayer,
+  isMissingSeason,
+  seasonForTeam,
+  teamLogoSrc,
+} from "./historicalRosters";
+import {
+  ET_RANK_BADGE_H,
+  ET_RANK_BADGE_INSET,
+  ET_RANK_BADGE_PAD_X,
   ET_RANK_SIZE,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
   everyTeamBannerRectPath,
   everyTeamCellRect,
   everyTeamGrid,
+  everyTeamLogoBackdrop,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
 } from "./everyTeamLayout";
@@ -122,10 +136,14 @@ export interface EveryTeamRenderInput {
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -152,6 +170,9 @@ export const renderEveryTeamCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, GRAPHIC_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   withDropShadow(context, scale, () => {
     drawTrackedText(
@@ -177,11 +198,18 @@ export const renderEveryTeamCanvas = async (
     scale,
     buildBannerPath,
   );
-  buildBannerPath();
-  context.strokeStyle = frameColor(input.look);
-  context.lineWidth = (BANNER_STROKE_VB / 200) * board.h;
-  context.lineJoin = "miter";
-  context.stroke();
+  const bannerLine =
+    input.look === "none" ? 0 : (BANNER_STROKE_VB / 200) * board.h;
+  if (input.purpleFlair) {
+    paintPurplePathHalo(context, scale, buildBannerPath, bannerLine);
+  }
+  if (bannerLine > 0) {
+    buildBannerPath();
+    context.strokeStyle = frameColor(input.look);
+    context.lineWidth = bannerLine;
+    context.lineJoin = "miter";
+    context.stroke();
+  }
 
   const titleLines = splitEveryTeamTitle(input.title);
   const titleFont = `900 ${ET_TITLE_SIZE * scale}px ${POSTER_FONT}`;
@@ -218,13 +246,40 @@ export const renderEveryTeamCanvas = async (
   const teams = displayedTeams(ranked, input.rankedOrder);
   const art = await Promise.all(
     teams.map(async (team) => {
-      const player = getPlayer(input.slots[slotIndexForTeam(team.id)] ?? null);
-      const shown = player && player.team === team.id ? player : null;
+      const cellSeason = seasonForTeam(
+        team.id,
+        input.season ?? everyTeamCurrentSeason(),
+        input.cellSeasons,
+      );
+      const missing = isMissingSeason(team.id, cellSeason);
+      const shown = getRosterPlayer(
+        team.id,
+        cellSeason,
+        input.slots[slotIndexForTeam(team.id)] ?? null,
+      );
+      const overridden = Boolean(input.cellSeasons?.[team.id]);
+      const showYear =
+        overridden || cellSeason !== everyTeamCurrentSeason();
+      const logoSrc = teamLogoSrc(
+        team.id,
+        cellSeason,
+        input.showHistoricalLogos === true,
+      );
       const [logo, headshot] = await Promise.all([
-        loadImage(team.logoSrc),
+        loadImage(logoSrc),
         shown ? loadCorsImage(shown.headshotUrl) : Promise.resolve(null),
       ]);
-      return { team, logo, headshot, shown };
+      return {
+        team,
+        logo,
+        logoSrc,
+        headshot,
+        shown,
+        missing,
+        cellSeason,
+        showYear,
+        overridden,
+      };
     }),
   );
 
@@ -236,23 +291,52 @@ export const renderEveryTeamCanvas = async (
     context.fillStyle = gradient;
     context.fillRect(x, y, size, size);
     context.save();
-    const inner = clipToInnerFrame(context, x, y, size, size, scale);
+    const inner = clipToInnerFrame(context, x, y, size, size, scale, input.look);
     if (cell.logo) {
-      drawCenteredLogo(context, cell.logo, inner.x, inner.y, inner.w, inner.h, {
-        shadow: 0,
-        fitX: ET_LOGO_FIT,
-        fitY: ET_LOGO_FIT,
-        cacheKey: cell.team.logoSrc,
-      });
-    }
-    if (cell.headshot) {
-      drawCoverHeadshot(
+      const lift = everyTeamLogoBackdrop(cell.team.id);
+      context.save();
+      context.filter =
+        lift.brightness === 1 ? "none" : `brightness(${lift.brightness})`;
+      context.globalAlpha = lift.alpha;
+      drawCoveredLogo(
         context,
-        cell.headshot,
+        cell.logo,
         inner.x,
         inner.y,
         inner.w,
         inner.h,
+        { cacheKey: `${cell.logoSrc}-cover` },
+      );
+      context.filter = "none";
+      if (lift.brightness > 1) {
+        const veil = context.createRadialGradient(
+          inner.x + inner.w * 0.5,
+          inner.y + inner.h * 0.42,
+          inner.w * 0.08,
+          inner.x + inner.w * 0.5,
+          inner.y + inner.h * 0.42,
+          inner.w * 0.64,
+        );
+        veil.addColorStop(0, "rgba(247, 251, 255, 0.22)");
+        veil.addColorStop(1, "rgba(247, 251, 255, 0)");
+        context.globalAlpha = 1;
+        context.globalCompositeOperation = "screen";
+        context.fillStyle = veil;
+        context.fillRect(inner.x, inner.y, inner.w, inner.h);
+        context.globalCompositeOperation = "source-over";
+      }
+      context.restore();
+    }
+    if (cell.headshot) {
+      const hx = inner.x - inner.w * 0.04;
+      const hy = inner.y - inner.h * 0.08;
+      drawCoverHeadshot(
+        context,
+        cell.headshot,
+        hx,
+        hy,
+        inner.w * 1.08,
+        inner.h * 1.1,
         {
           silhouette: true,
         },
@@ -260,24 +344,61 @@ export const renderEveryTeamCanvas = async (
     }
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, y, size, size, scale, input.look);
+    }
     if (ranked) {
-      const rankX = x + size * 0.06;
-      const rankY = y + size * 0.045;
       const rankLabel = String(index + 1);
       context.save();
       context.font = `900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`;
-      context.textAlign = "left";
-      context.textBaseline = "top";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      const textW = context.measureText(rankLabel).width;
+      const badgeH = ET_RANK_BADGE_H * scale;
+      const badgeW = Math.max(badgeH, textW + ET_RANK_BADGE_PAD_X * 2 * scale);
+      const badgeX = x + ET_RANK_BADGE_INSET * scale;
+      const badgeY = y + ET_RANK_BADGE_INSET * scale;
+      const radius = badgeH / 2;
+      context.beginPath();
+      context.moveTo(badgeX + radius, badgeY);
+      context.arcTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + badgeH, radius);
+      context.arcTo(badgeX + badgeW, badgeY + badgeH, badgeX, badgeY + badgeH, radius);
+      context.arcTo(badgeX, badgeY + badgeH, badgeX, badgeY, radius);
+      context.arcTo(badgeX, badgeY, badgeX + badgeW, badgeY, radius);
+      context.closePath();
+      context.fillStyle = "rgba(0, 0, 0, 0.62)";
+      context.fill();
       context.fillStyle = "#fff";
+      context.shadowColor = "rgba(0, 0, 0, 0.7)";
+      context.shadowOffsetX = Math.round(0.8 * scale);
+      context.shadowOffsetY = Math.round(0.9 * scale);
       context.shadowBlur = 0;
-      context.shadowColor = "rgba(0, 0, 0, 0.5)";
-      context.shadowOffsetX = Math.round(1.9 * scale);
-      context.shadowOffsetY = Math.round(2.1 * scale);
-      context.fillText(rankLabel, rankX, rankY);
-      context.shadowColor = "rgba(0, 0, 0, 0.88)";
-      context.shadowOffsetX = Math.round(1 * scale);
-      context.shadowOffsetY = Math.round(1.1 * scale);
-      context.fillText(rankLabel, rankX, rankY);
+      context.fillText(rankLabel, badgeX + badgeW / 2, badgeY + badgeH / 2);
+      context.restore();
+    }
+    if (cell.missing) {
+      context.save();
+      context.font = `900 ${11 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.92)";
+      context.fillText(
+        `NO ${formatSeasonShort(cell.cellSeason)} ROSTER`,
+        x + size / 2,
+        y + size * 0.78,
+      );
+      context.restore();
+    } else if (cell.showYear) {
+      context.save();
+      context.font = `900 ${10 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.textBaseline = "top";
+      context.fillStyle = cell.overridden ? "#facc15" : "rgba(255,255,255,0.88)";
+      context.fillText(
+        formatSeasonShort(cell.cellSeason),
+        x + size * 0.94,
+        y + size * 0.06,
+      );
       context.restore();
     }
     if (input.showNames === true && cell.shown) {
@@ -288,12 +409,13 @@ export const renderEveryTeamCanvas = async (
         context,
         names.firstName,
         names.lastName || cell.shown.name,
-        x + size * 0.08,
+        x + size / 2,
         y + size - size * 0.06,
         size * 0.84,
         14 * scale,
         11 * scale,
         scale,
+        "center",
       );
     }
   });
@@ -303,6 +425,9 @@ export const renderEveryTeamCanvas = async (
     if (ba) {
       const size = 72 * scale;
       const inset = 42 * scale;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

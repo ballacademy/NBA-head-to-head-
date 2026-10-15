@@ -39,6 +39,7 @@ export interface TotwDraft {
   strips: TotwStrip[];
   showBa?: boolean;
   showNames?: boolean;
+  showTeamHairline?: boolean;
 }
 
 export const splitPlayerName = (name: string) => {
@@ -238,4 +239,5 @@ export const defaultTotwDraft = (): TotwDraft => ({
   week: defaultWeekLabel(),
   strips: createEmptyStrips(),
   showNames: false,
+  showTeamHairline: true,
 });

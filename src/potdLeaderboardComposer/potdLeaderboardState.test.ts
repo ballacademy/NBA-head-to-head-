@@ -6,11 +6,14 @@ import {
 import { EXPORT_HEIGHT, EXPORT_WIDTH, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   PLB_INK,
+  PLB_META_SIZE,
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_RANK_W,
   PLB_ROW_H,
+  PLB_ROW_SIZE,
   PLB_TITLE_H,
+  PLB_WINS_W,
   PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
   leaderboardBlankCount,
@@ -23,6 +26,7 @@ import {
   fitLeaderboardName,
   formatWinsLabel,
   isPotdPairName,
+  medalForRank,
   parseWinsInput,
   rankLeaderboard,
   readLeaderboardDraft,
@@ -90,10 +94,21 @@ describe("POTD leaderboard ranks", () => {
       "13.",
     ]);
     expect(ranked[0]!.winsLabel).toBe("(12)");
+    expect(PLB_META_SIZE).toBeLessThan(PLB_ROW_SIZE);
+    expect(PLB_RANK_W).toBeGreaterThanOrEqual(110);
+    expect(PLB_WINS_W).toBeGreaterThanOrEqual(110);
+    expect(PLB_RANK_W).toBeGreaterThan(PLB_META_SIZE * 3.2);
+    expect(PLB_WINS_W).toBeGreaterThan(PLB_META_SIZE * 3.2);
     expect(ranked.map((row) => row.rank)).not.toContain(2);
     expect(ranked.every((row) => !row.name.toUpperCase().startsWith("T1"))).toBe(
       true,
     );
+    expect(medalForRank(1)).toBe("gold");
+    expect(medalForRank(2)).toBe("silver");
+    expect(medalForRank(3)).toBe("bronze");
+    expect(medalForRank(4)).toBeNull();
+    expect(medalForRank(ranked[0]!.rank)).toBe("gold");
+    expect(medalForRank(ranked[2]!.rank)).toBe("bronze");
   });
 
   it("wraps long names onto two lines instead of GILGEOUS-AL.", () => {
@@ -111,12 +126,13 @@ describe("POTD leaderboard ranks", () => {
     const ranked = rankLeaderboard([entry("Shai Gilgeous-Alexander", 7)]);
     expect(ranked[0]!.displayLines[1]).toBe("GILGEOUS-ALEXANDER");
     expect(ranked[0]!.teamId).toBe("OKC");
+    expect(ranked[0]!.headshotUrl).toContain("4278073");
     expect(teamForLeaderboardName("Luka Doncic")).toBe("LAL");
     expect(isPotdPairName("Luka Doncic", ["LUKA DONCIC"])).toBe(true);
     expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);
   });
 
-  it("fills leftover list height with blank hairline rows instead of scaling type", () => {
+  it("keeps real names and at most two blank hairlines, never a dummy spreadsheet", () => {
     const five = rankLeaderboard([
       entry("Luka Doncic", 12),
       entry("Nikola Jokic", 11),
@@ -125,10 +141,12 @@ describe("POTD leaderboard ranks", () => {
       entry("LeBron James", 5),
     ]);
     const blanks = leaderboardBlankCount(five);
-    expect(blanks).toBeGreaterThan(8);
+    expect(blanks).toBeGreaterThanOrEqual(0);
+    expect(blanks).toBeLessThanOrEqual(2);
     expect(PLB_ROW_H).toBe(52);
-    expect(five.length + blanks).toBeGreaterThan(15);
-    expect(leaderboardBlankCount([])).toBeGreaterThan(blanks);
+    expect(five.length + blanks).toBeLessThanOrEqual(7);
+    expect(leaderboardBlankCount([])).toBe(2);
+    expect(leaderboardBlankCount([])).toBeLessThanOrEqual(2);
   });
 
   it("defaults team pips on and stores the toggle", () => {

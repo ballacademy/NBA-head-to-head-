@@ -7,6 +7,7 @@ import {
   BA_LOGO_SRC,
   baBadgeRect,
   cellGridPosition,
+  cellMetrics,
   cellSize,
   rowMetrics,
   TIER_BADGE_INSET,
@@ -21,6 +22,8 @@ import {
   TIER_TITLE_SIZE,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
+  ADD_CHIP_COMPACT,
+  addChipPlacement,
   labelFontSize,
   layoutTierLabel,
   tierBoardLayout,
@@ -32,8 +35,12 @@ import {
   createDefaultRows,
   createExampleRows,
   DEFAULT_TIER_TITLE,
+  evenChunkSizes,
   EXAMPLE_TIER_PLACEMENT,
   exportTierFilename,
+  fillMatchingIds,
+  fatSChunkSizes,
+  groupIdsByValues,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -42,11 +49,16 @@ import {
   removeTeamFromRow,
   replaceTeamInRow,
   DEFAULT_TIER_COLOR,
+  DEFAULT_TIER_PALETTE,
+  fillForBlackInk,
   hexToRgba,
+  inkOnTierColor,
   isDefaultTierColor,
   parseTierColor,
+  resolvedTierColor,
   setTierColor,
   setTierLabel,
+  splitTeamCellName,
   splitTierTitle,
   usedLabelsForPicker,
   usedTeamIds,
@@ -127,11 +139,76 @@ describe("tier rows", () => {
   it("accepts a stored draft and labels used teams for the picker", () => {
     const rows = createExampleRows();
     expect(isTierDraft({ title: DEFAULT_TIER_TITLE, rows })).toBe(true);
+    expect(
+      isTierDraft({ title: DEFAULT_TIER_TITLE, rows, showNames: true }),
+    ).toBe(true);
     expect(isTierDraft({ title: "x", rows: [] })).toBe(false);
     expect(usedTeamIds(rows).size).toBe(30);
     expect(EXAMPLE_TIER_PLACEMENT).toHaveLength(6);
     expect(usedLabelsForPicker(rows, 0, "LAL").LAL).toBe("This slot");
     expect(usedLabelsForPicker(rows, 0).CHI).toBe("On A");
+  });
+
+  it("splits team names into a centered city + nickname stack", () => {
+    expect(splitTeamCellName("Golden State Warriors", "Warriors")).toEqual({
+      firstName: "Golden State",
+      lastName: "Warriors",
+    });
+    expect(splitTeamCellName("Portland Trail Blazers", "Trail Blazers")).toEqual({
+      firstName: "Portland",
+      lastName: "Trail Blazers",
+    });
+    expect(splitTeamCellName("Minnesota Timberwolves", "Timberwolves")).toEqual({
+      firstName: "Minnesota",
+      lastName: "Timberwolves",
+    });
+    expect(splitTeamCellName("LA Clippers", "Clippers")).toEqual({
+      firstName: "LA",
+      lastName: "Clippers",
+    });
+  });
+
+  it("populates matching ids onto empty S, then groups highest into S", () => {
+    const empty = createDefaultRows();
+    const filled = fillMatchingIds(empty, ["OKC", "CHA", "BOS", "NYK", "LAL", "MIA"]);
+    expect(filled.added).toBe(6);
+    expect(filled.rows[0]!.teams).toEqual([
+      "OKC",
+      "CHA",
+      "BOS",
+      "NYK",
+      "LAL",
+      "MIA",
+    ]);
+    expect(fillMatchingIds(filled.rows, ["OKC", "CHI"]).added).toBe(1);
+    expect(evenChunkSizes(15, 6)).toEqual([3, 3, 3, 2, 2, 2]);
+    expect(evenChunkSizes(3, 6)).toEqual([1, 1, 1, 0, 0, 0]);
+    expect(fatSChunkSizes(12, 6)[0]!).toBeGreaterThan(fatSChunkSizes(12, 6).at(-1)!);
+    const values = new Map<string, number | null>([
+      ["OKC", 120],
+      ["BOS", 110],
+      ["NYK", 100],
+      ["LAL", 90],
+      ["MIA", 80],
+      ["CHA", 70],
+    ]);
+    const grouped = groupIdsByValues(filled.rows, values);
+    expect(grouped[0]!.teams).toEqual(["OKC"]);
+    expect(grouped[1]!.teams).toEqual(["BOS"]);
+    expect(grouped[2]!.teams).toEqual(["NYK"]);
+    expect(grouped[5]!.teams).toEqual(["CHA"]);
+    const fat = groupIdsByValues(filled.rows, values, "fat-s");
+    expect(fat[0]!.teams.length).toBeGreaterThanOrEqual(fat[5]!.teams.length);
+    const withGap = groupIdsByValues(filled.rows, new Map([
+      ["OKC", 120],
+      ["BOS", 110],
+      ["NYK", null],
+      ["LAL", 90],
+      ["MIA", 80],
+      ["CHA", 70],
+    ]));
+    expect(withGap[0]!.teams).toEqual(["OKC"]);
+    expect(withGap[5]!.teams).toContain("NYK");
   });
 });
 
@@ -155,12 +232,15 @@ describe("tier layout", () => {
     expect(TIER_BADGE_INSET).toBeGreaterThan(TIER_PAD_RIGHT);
   });
 
-  it("keeps cells square and capped", () => {
+  it("keeps sparse cells square and packed cells as tall as the lane", () => {
     const { rowH } = rowMetrics(6);
-    const empty = cellSize(rowH, 1000, 1);
-    const packed = cellSize(rowH, 1000, 8);
-    expect(empty).toBeLessThanOrEqual(TIER_CELL_MAX);
-    expect(packed).toBeLessThan(empty);
+    const empty = cellMetrics(rowH, 1000, 1);
+    const packed = cellMetrics(rowH, 1000, 8);
+    expect(empty.width).toBeLessThanOrEqual(TIER_CELL_MAX);
+    expect(empty.width).toBe(empty.height);
+    expect(packed.width).toBeLessThan(empty.width);
+    expect(packed.height).toBe(empty.height);
+    expect(packed.height).toBeGreaterThan(packed.width);
     expect(rowMetrics(10).rowH).toBeLessThan(rowMetrics(3).rowH);
   });
 
@@ -182,6 +262,8 @@ describe("tier layout", () => {
     expect(nine.gridTemplate).toBe("2fr 1fr 1fr 1fr 1fr 1fr");
     expect(nine.lanes[0]! * nine.laneH).toBeGreaterThan(eight.laneH);
     expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
+    expect(nine.cellW).toBe(nine.size);
+    expect(nine.cellH).toBeGreaterThan(nine.cellW);
     const squeezedOntoOneRow =
       (nine.contentW - TIER_CELL_GAP * 8) / 9;
     expect(nine.size).toBeGreaterThan(squeezedOntoOneRow);
@@ -233,8 +315,11 @@ describe("tier layout", () => {
     const packed = tierBoardLayout([8, 8, 8, 8, 8, 8]);
     expect(packed.cols).toBe(TIER_WRAP_COLS);
     expect(
-      packed.size * TIER_WRAP_COLS + TIER_CELL_GAP * (TIER_WRAP_COLS - 1),
+      packed.cellW * TIER_WRAP_COLS + TIER_CELL_GAP * (TIER_WRAP_COLS - 1),
     ).toBeLessThanOrEqual(packed.contentW + 0.01);
+    expect(packed.cellH).toBeGreaterThan(packed.cellW);
+    expect(TIER_CELL_GAP).toBeGreaterThan(0);
+    expect(TIER_CELL_GAP).toBeLessThan(4);
     expect(tierLaneCount(8)).toBe(1);
     expect(tierLaneCount(9)).toBe(2);
   });
@@ -254,20 +339,89 @@ describe("tier layout", () => {
     expect(six.laneH).toBeGreaterThan(ten.laneH);
     expect(three.gridTemplate).toBe("1fr 1fr 1fr");
   });
+
+  it("collapses empty tiers so filled rows eat leftover board", () => {
+    const even = tierBoardLayout([1, 1, 1, 1, 1, 1]);
+    const mixed = tierBoardLayout([8, 0, 0, 4, 0, 0]);
+    expect(even.lanes.every((lane) => lane === 1)).toBe(true);
+    expect(mixed.lanes[0]).toBe(1);
+    expect(mixed.lanes[1]).toBeLessThan(1);
+    expect(mixed.lanes[3]).toBe(1);
+    expect(mixed.lanes[0]! * mixed.laneH).toBeGreaterThan(
+      even.lanes[0]! * even.laneH,
+    );
+    const allEmpty = tierBoardLayout([0, 0, 0, 0, 0, 0]);
+    expect(allEmpty.lanes.every((lane) => lane === 1)).toBe(true);
+  });
+
+  it("packs preview from filled cells only so an editor + cannot wrap a new lane", () => {
+    const eight = tierBoardLayout([8, 2, 0, 0, 0, 0]);
+    expect(eight.lanes[0]).toBe(1);
+    expect(eight.cols).toBe(8);
+    expect(addChipPlacement(8, eight.cols).kind).toBe("compact");
+    expect(addChipPlacement(3, eight.cols)).toEqual({
+      kind: "slot",
+      col: 3,
+      wrapRow: 0,
+    });
+    expect(addChipPlacement(0, eight.cols)).toEqual({
+      kind: "compact",
+      empty: true,
+      wrapRow: 0,
+    });
+    const sparse = tierBoardLayout([3, 3, 3, 3, 3, 3]);
+    expect(sparse.cols).toBe(3);
+    expect(addChipPlacement(3, sparse.cols).kind).toBe("compact");
+    expect(addChipPlacement(2, sparse.cols)).toEqual({
+      kind: "slot",
+      col: 2,
+      wrapRow: 0,
+    });
+    expect(ADD_CHIP_COMPACT).toBe(48);
+  });
+
+  it("keeps empty plus chips off the packed board used by the PNG", () => {
+    const packed = tierBoardLayout([8, 2, 0, 0, 0, 0]);
+    expect(packed.lanes[0]).toBe(1);
+    expect(addChipPlacement(8, packed.cols).kind).toBe("compact");
+    expect(addChipPlacement(0, packed.cols).kind).toBe("compact");
+    expect(tierBoardLayout([8, 2, 0, 0, 0, 0]).cols).toBe(8);
+  });
 });
 
 describe("tier colors", () => {
-  it("defaults to white and stores a picked hex", () => {
+  it("fills the label column from a gold-to-blue palette, not an outline ring", () => {
     expect(parseTierColor(undefined)).toBe(DEFAULT_TIER_COLOR);
     expect(parseTierColor("#F90")).toBe("#ff9900");
     expect(parseTierColor("nope")).toBe(DEFAULT_TIER_COLOR);
     expect(isDefaultTierColor("#FFFFFF")).toBe(true);
     expect(hexToRgba("#ff0000", 0.5)).toBe("rgba(255, 0, 0, 0.5)");
-    const gold = setTierColor(createDefaultRows(), 0, "#E2B007");
-    expect(gold[0]!.color).toBe("#e2b007");
-    expect(setTierColor(gold, 0, "#fff")[0]!.color).toBeUndefined();
-    expect(createDefaultRows().every((row) => row.color === undefined)).toBe(
-      true,
-    );
+    const rows = createDefaultRows();
+    expect(rows.map((row) => row.color)).toEqual([
+      DEFAULT_TIER_PALETTE.S,
+      DEFAULT_TIER_PALETTE.A,
+      DEFAULT_TIER_PALETTE.B,
+      DEFAULT_TIER_PALETTE.C,
+      DEFAULT_TIER_PALETTE.D,
+      DEFAULT_TIER_PALETTE.F,
+    ]);
+    expect(resolvedTierColor("S", undefined, 0)).toBe(DEFAULT_TIER_PALETTE.S);
+    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.S!)).toBe("#111111");
+    expect(inkOnTierColor(DEFAULT_TIER_PALETTE.A!)).toBe("#111111");
+    expect(inkOnTierColor("#111111")).toBe("#111111");
+    const dark = fillForBlackInk("#1a1020");
+    expect(inkOnTierColor(dark)).toBe("#111111");
+    const lum = (hex: string) => {
+      const n = Number.parseInt(hex.slice(1), 16);
+      const r = (n >> 16) & 255;
+      const g = (n >> 8) & 255;
+      const b = n & 255;
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    };
+    expect(lum(dark)).toBeGreaterThan(0.57);
+    const custom = setTierColor(rows, 0, "#E2B007");
+    expect(custom[0]!.color).toBe("#e2b007");
+    expect(setTierColor(custom, 0, "#fff")[0]!.color).toBeUndefined();
+    expect(resolvedTierColor("S", undefined, 0)).toBe(DEFAULT_TIER_PALETTE.S);
   });
 });

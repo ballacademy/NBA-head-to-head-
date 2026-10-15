@@ -12,6 +12,7 @@ export const PLB_TITLE_SIZE = 54;
 export const PLB_TITLE_PAD = 14;
 export const PLB_TITLE_TRACK = 0.04;
 export const PLB_ROW_SIZE = 42;
+export const PLB_META_SIZE = 32;
 export const PLB_ROW_TRACK = 0.02;
 export const PLB_ROW_SMALL = 0.82;
 export const PLB_PAD_X = 56;
@@ -23,11 +24,14 @@ export const PLB_STROKE = 8;
 export const PLB_LIST_INSET = 28;
 /** Left-column mark only — never a row-width watermark. */
 export const PLB_PIP_W = 40;
+export const PLB_HEAD_W = 44;
+export const PLB_HEAD_SIZE = 36;
 export const PLB_PIP_SIZE = 36;
 export const PLB_PIP_BAR_W = 6;
 export const PLB_PIP_BAR_H = 28;
-export const PLB_RANK_W = 88;
-export const PLB_WINS_W = 108;
+/** Wide enough for T11. / (12) inside the row at PLB_META_SIZE. */
+export const PLB_RANK_W = 118;
+export const PLB_WINS_W = 118;
 /** Wide enough for a last name like GILGEOUS-ALEXANDER on its own line. */
 export const PLB_NAME_ADVANCE = 12.2;
 export const PLB_HAIRLINE = "rgba(245, 196, 0, 0.22)";
@@ -51,7 +55,11 @@ export const leaderboardListInnerH = () =>
 export const leaderboardRowH = (wrap: boolean) =>
   wrap ? PLB_WRAP_ROW_H : PLB_ROW_H;
 
-/** Blank hairline rows that fill leftover list height. Font size stays put. */
+/** At most two dummy hairlines — never a 15-row empty spreadsheet. */
+export const LEADERBOARD_MAX_BLANKS = 2;
+export const LEADERBOARD_EMPTY_BLANKS = 2;
+
+/** Blank hairline rows after real names. Cap at 1–2; empty board gets two. */
 export const leaderboardBlankCount = (
   rows: Array<{ displayLines: string[] }>,
 ) => {
@@ -59,5 +67,12 @@ export const leaderboardBlankCount = (
     (sum, row) => sum + leaderboardRowH(row.displayLines.length > 1),
     0,
   );
-  return Math.max(0, Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H));
+  const leftover = Math.max(
+    0,
+    Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H),
+  );
+  if (rows.length === 0) {
+    return Math.min(LEADERBOARD_MAX_BLANKS, Math.max(LEADERBOARD_EMPTY_BLANKS, leftover));
+  }
+  return Math.min(LEADERBOARD_MAX_BLANKS, leftover);
 };

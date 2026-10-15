@@ -1,9 +1,11 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -23,6 +25,8 @@ interface PlayerOfTheDayGraphicProps {
   date: string;
   cards: PotdCard[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -57,6 +61,8 @@ export const PlayerOfTheDayGraphic = forwardRef<
     date,
     cards,
     look = "white",
+    purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     exporting = false,
     onBrandChange,
@@ -90,7 +96,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+      const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }
@@ -107,7 +113,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
   return (
     <article
       ref={setRefs}
-      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair), composerGradeClass(photoGrade)]
         .filter(Boolean)
         .join(" ")}
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}

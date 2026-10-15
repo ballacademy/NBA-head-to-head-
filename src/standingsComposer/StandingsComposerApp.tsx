@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   STANDINGS_LOOK_KEY,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   STANDINGS_TITLE_PRESETS,
@@ -17,7 +22,7 @@ import {
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
-import { fetchConferenceStandings } from "./nbaStandings";
+import { fetchConferenceStandingsBundle } from "./nbaStandings";
 import {
   assignTeam,
   clearSlot,
@@ -26,7 +31,9 @@ import {
   DEFAULT_SUBTITLE,
   DEFAULT_TITLE,
   isRankingSlots,
+  LAST_WEEK_STORAGE_KEY,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { exportStandingsPng } from "./exportPng";
 import { StandingsGraphic } from "./StandingsGraphic";
@@ -35,6 +42,7 @@ import "@fontsource/montserrat/latin-900.css";
 import "./standingsComposer.css";
 
 const STORAGE_KEY = "ddgm:standings-composer";
+const SAVES_KEY = "ddgm:standings-composer:saves";
 
 interface ComposerDraft {
   brand: string;
@@ -42,6 +50,9 @@ interface ComposerDraft {
   subtitle: string;
   slots: RankingSlots;
   showBa?: boolean;
+  showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
 }
 
 const loadDraft = (): ComposerDraft => {
@@ -52,7 +63,18 @@ const loadDraft = (): ComposerDraft => {
     subtitle: stored?.subtitle?.trim() ? stored.subtitle : DEFAULT_SUBTITLE,
     slots: isRankingSlots(stored?.slots) ? stored.slots : createEmptySlots(),
     showBa: stored?.showBa === true,
+    showArrows: stored?.showArrows === true,
+    showRecord: stored?.showRecord === true,
+    records:
+      stored?.records && typeof stored.records === "object"
+        ? stored.records
+        : {},
   };
+};
+
+const loadLastWeek = (): RankingSlots | null => {
+  const stored = readJson<unknown>(LAST_WEEK_STORAGE_KEY);
+  return isRankingSlots(stored) ? stored : null;
 };
 
 export function StandingsComposerApp() {
@@ -66,7 +88,12 @@ export function StandingsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STANDINGS_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [showBa, setShowBa] = useState(false);
+  const [showArrows, setShowArrows] = useState(false);
+  const [showRecord, setShowRecord] = useState(false);
+  const [records, setRecords] = useState<Record<string, StandingRecord>>({});
+  const [lastWeekSlots, setLastWeekSlots] = useState<RankingSlots | null>(null);
   const [filling, setFilling] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
 
@@ -81,6 +108,10 @@ export function StandingsComposerApp() {
     setSubtitle(draft.subtitle);
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
+    setShowArrows(draft.showArrows === true);
+    setShowRecord(draft.showRecord === true);
+    setRecords(draft.records ?? {});
+    setLastWeekSlots(loadLastWeek());
     setHydrated(true);
   }, []);
 
@@ -88,8 +119,17 @@ export function StandingsComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, subtitle, slots, showBa });
-  }, [brand, title, subtitle, slots, showBa, hydrated]);
+    writeJson(STORAGE_KEY, {
+      brand,
+      title,
+      subtitle,
+      slots,
+      showBa,
+      showArrows,
+      showRecord,
+      records,
+    });
+  }, [brand, title, subtitle, slots, showBa, showArrows, showRecord, records, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -111,7 +151,19 @@ export function StandingsComposerApp() {
           "nba-standings",
           `${subtitle} ${exportDateStamp()}`,
         ),
-        { brand, title, subtitle, slots, look, showBa },
+        {
+          brand,
+          title,
+          subtitle,
+          slots,
+          look,
+          purpleFlair,
+          showBa,
+          showArrows,
+          showRecord,
+          records,
+          lastWeekSlots,
+        },
       );
       setStatus("Download started.");
     } catch (error) {
@@ -136,9 +188,10 @@ export function StandingsComposerApp() {
     setFilling(true);
     setStatus(`Loading ${conference} standings…`);
     try {
-      const next = await fetchConferenceStandings(conference);
+      const next = await fetchConferenceStandingsBundle(conference);
       push(slots);
-      setSlots(next);
+      setSlots(next.slots);
+      setRecords((current) => ({ ...current, ...next.records }));
       setSubtitle(
         conference === "East" ? "EASTERN CONFERENCE" : "WESTERN CONFERENCE",
       );
@@ -166,7 +219,19 @@ export function StandingsComposerApp() {
           `${subtitle} ${exportDateStamp()}`,
           true,
         ),
-        { brand, title, subtitle, slots, look, showBa },
+        {
+          brand,
+          title,
+          subtitle,
+          slots,
+          look,
+          purpleFlair,
+          showBa,
+          showArrows,
+          showRecord,
+          records,
+          lastWeekSlots,
+        },
         true,
       );
       setStatus("Story PNG download started.");
@@ -191,11 +256,10 @@ export function StandingsComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Standings graphic</h1>
-        </div>
+      <ComposerToolbar
+        title="Standings graphic"
+        identity={
+          <>
         <label className="sc-field">
           Brand
           <input
@@ -225,12 +289,13 @@ export function StandingsComposerApp() {
             onChange={(event) => onComposerTextChange(event, setSubtitle, 28)}
           />
         </label>
-        <ComposerLookToggle look={look} onChange={setLook} />
-        <BaMarkToggle on={showBa} onChange={setShowBa} />
-        <div className="sc-toolbar__actions">
+          </>
+        }
+        data={
+          <>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-chip"
             onClick={() => void fillConference("East")}
             disabled={filling || exporting}
           >
@@ -238,12 +303,73 @@ export function StandingsComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-chip"
             onClick={() => void fillConference("West")}
             disabled={filling || exporting}
           >
             Fill West
           </button>
+          </>
+        }
+        board={
+          <>
+        <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Last-week arrows</span>
+          <button
+            type="button"
+            className={showArrows ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showArrows}
+            aria-label="Last-week movement arrows"
+            onClick={() => setShowArrows((on) => !on)}
+          >
+            {showArrows ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">W–L</span>
+          <button
+            type="button"
+            className={showRecord ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showRecord}
+            aria-label="Show wins and losses in each square"
+            onClick={() => setShowRecord((on) => !on)}
+          >
+            {showRecord ? "On" : "Off"}
+          </button>
+        </label>
+          </>
+        }
+        persist={
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{
+            brand,
+            title,
+            subtitle,
+            slots,
+            showBa,
+            showArrows,
+            showRecord,
+            records,
+          }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setSubtitle(next.subtitle);
+            setSlots(next.slots);
+            setShowBa(next.showBa === true);
+            setShowArrows(next.showArrows === true);
+            setShowRecord(next.showRecord === true);
+            setRecords(next.records ?? {});
+            setStatus("Loaded named graphic.");
+          }}
+        />
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -264,6 +390,17 @@ export function StandingsComposerApp() {
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              writeJson(LAST_WEEK_STORAGE_KEY, slots);
+              setLastWeekSlots(slots.slice());
+              setStatus("Saved this ranking as last week.");
+            }}
+          >
+            Save as last week
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
             onClick={() => void exportStory()}
             disabled={exporting}
           >
@@ -277,18 +414,25 @@ export function StandingsComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <StandingsGraphic
             ref={boardRef}
             brand={brand}
             title={title}
             subtitle={subtitle}
             slots={slots}
+            lastWeekSlots={lastWeekSlots}
+            showArrows={showArrows}
+            showRecord={showRecord}
+            records={records}
             look={look}
+            purpleFlair={purpleFlair}
             showBa={showBa}
             activeIndex={exporting ? null : activeIndex}
             exporting={exporting}
@@ -297,6 +441,7 @@ export function StandingsComposerApp() {
             onSubtitleChange={setSubtitle}
             onSelectSlot={setActiveIndex}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Click a numbered slot to pick a team. Header text is editable on the
             graphic or in the bar above. Downloads a 4:5 Instagram PNG — nothing

@@ -4,8 +4,15 @@ import { PlayerOfTheDayComposerApp } from "../playerOfTheDayComposer/PlayerOfThe
 import { PotdLeaderboardComposerApp } from "../potdLeaderboardComposer/PotdLeaderboardComposerApp";
 import { StandingsComposerApp } from "../standingsComposer/StandingsComposerApp";
 import { TeamOfTheWeekComposerApp } from "../teamOfTheWeekComposer/TeamOfTheWeekComposerApp";
+import { RankedLineupsComposerApp } from "../rankedLineupsComposer/RankedLineupsComposerApp";
 import { TeamOfTheWeekPlusComposerApp } from "../teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp";
 import { TierListComposerApp } from "../tierListComposer/TierListComposerApp";
+import { PyramidComposerApp } from "../pyramidComposer/PyramidComposerApp";
+import { HeadlineComposerApp } from "../headlineComposer/HeadlineComposerApp";
+import { CompareComposerApp } from "../compareComposer/CompareComposerApp";
+import { QuoteComposerApp } from "../quoteComposer/QuoteComposerApp";
+import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
+import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -20,6 +27,13 @@ import "../playerOfTheDayComposer/playerOfTheDayComposer.css";
 import "../potdLeaderboardComposer/potdLeaderboardComposer.css";
 import "../teamOfTheWeekComposer/teamOfTheWeekComposer.css";
 import "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css";
+import "../rankedLineupsComposer/rankedLineupsComposer.css";
+import "../pyramidComposer/pyramidComposer.css";
+import "../headlineComposer/headlineComposer.css";
+import "../compareComposer/compareComposer.css";
+import "../quoteComposer/quoteComposer.css";
+import "../playInComposer/playInComposer.css";
+import "../statCardComposer/statCardComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -59,6 +73,22 @@ export function ComposerHub() {
         <TeamOfTheWeekComposerApp />
       ) : mode === "team-of-the-week-plus" ? (
         <TeamOfTheWeekPlusComposerApp />
+      ) : mode === "ranked-lineups" ? (
+        <RankedLineupsComposerApp />
+      ) : mode === "lineup" ? (
+        <RankedLineupsComposerApp unranked />
+      ) : mode === "compare" ? (
+        <CompareComposerApp />
+      ) : mode === "quote" ? (
+        <QuoteComposerApp />
+      ) : mode === "play-in" ? (
+        <PlayInComposerApp />
+      ) : mode === "stat-card" ? (
+        <StatCardComposerApp />
+      ) : mode === "pyramid" ? (
+        <PyramidComposerApp />
+      ) : mode === "headline" ? (
+        <HeadlineComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

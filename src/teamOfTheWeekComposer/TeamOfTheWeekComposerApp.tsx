@@ -1,11 +1,25 @@
 import { useCallback, useEffect, useState, useRef } from "react";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
+import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+  stripCaptionName,
+} from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
+  parseShowTeamHairline,
   useComposerLook,
+  usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -39,11 +53,16 @@ import "@fontsource/montserrat/latin-900-italic.css";
 import "./teamOfTheWeekComposer.css";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-composer";
+const SAVES_KEY = "ddgm:team-of-the-week-composer:saves";
 
 const loadDraft = (): TotwDraft => {
   const stored = readJson<Partial<TotwDraft>>(STORAGE_KEY);
   if (isTotwDraft(stored)) {
-    return { ...stored, showNames: stored.showNames === true };
+    return {
+      ...stored,
+      showNames: stored.showNames === true,
+      showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
+    };
   }
   const empty = defaultTotwDraft();
   return {
@@ -53,6 +72,7 @@ const loadDraft = (): TotwDraft => {
     strips: empty.strips,
     showBa: stored?.showBa === true,
     showNames: stored?.showNames === true,
+    showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
   };
 };
 
@@ -69,8 +89,11 @@ export function TeamOfTheWeekComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
+  const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -90,6 +113,7 @@ export function TeamOfTheWeekComposerApp() {
     setStrips(draft.strips);
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames === true);
+    setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setHydrated(true);
   }, []);
 
@@ -97,8 +121,16 @@ export function TeamOfTheWeekComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, week, strips, showBa, showNames });
-  }, [brand, title, week, strips, showBa, showNames, hydrated]);
+    writeJson(STORAGE_KEY, {
+      brand,
+      title,
+      week,
+      strips,
+      showBa,
+      showNames,
+      showTeamHairline,
+    });
+  }, [brand, title, week, strips, showBa, showNames, showTeamHairline, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -116,7 +148,7 @@ export function TeamOfTheWeekComposerApp() {
       await exportTeamOfTheWeekPng(
         node,
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, showBa, showNames },
+        { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
         story,
       );
       setStatus(story ? "Story PNG download started." : "Download started.");
@@ -136,6 +168,7 @@ export function TeamOfTheWeekComposerApp() {
     setWeek(next.week);
     setStrips(next.strips);
     setShowNames(next.showNames === true);
+    setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setActiveIndex(null);
     setStatus("Board cleared.");
   };
@@ -204,11 +237,10 @@ export function TeamOfTheWeekComposerApp() {
 
   return (
     <div className="sc-composer">
-      <header className="sc-toolbar">
-        <div className="sc-toolbar__brand">
-          <p className="sc-toolbar__eyebrow">Compose only</p>
-          <h1 className="sc-toolbar__title">Team of the Week</h1>
-        </div>
+      <ComposerToolbar
+        title="Team of the Week"
+        identity={
+          <>
         <label className="sc-field sc-field--wide">
           Title
           <input
@@ -230,8 +262,15 @@ export function TeamOfTheWeekComposerApp() {
             onChange={(event) => setWeek(event.target.value.slice(0, 32))}
           />
         </label>
+          </>
+        }
+        board={
+          <>
         <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names</span>
           <button
@@ -244,7 +283,34 @@ export function TeamOfTheWeekComposerApp() {
             {showNames ? "On" : "Off"}
           </button>
         </label>
-        <div className="sc-toolbar__actions">
+          </>
+        }
+        persist={
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={{
+            brand,
+            title,
+            week,
+            strips,
+            showBa,
+            showNames,
+            showTeamHairline,
+          }}
+          onLoad={(next) => {
+            setBrand(next.brand);
+            setTitle(next.title);
+            setWeek(next.week);
+            setStrips(next.strips);
+            setShowBa(next.showBa === true);
+            setShowNames(next.showNames === true);
+            setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
+            setStatus("Loaded named graphic.");
+          }}
+        />
+        }
+        actions={
+          <>
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
@@ -261,6 +327,24 @@ export function TeamOfTheWeekComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  strips.map(stripCaptionName).filter(Boolean),
+                  [week],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"
@@ -283,11 +367,13 @@ export function TeamOfTheWeekComposerApp() {
           >
             {exporting ? "Exporting…" : "Export PNG"}
           </button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          <ComposerBoard>
           <TeamOfTheWeekGraphic
             ref={boardRef}
             brand={brand}
@@ -295,12 +381,16 @@ export function TeamOfTheWeekComposerApp() {
             week={week}
             strips={strips}
             look={look}
+            purpleFlair={purpleFlair}
+            photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
+            showTeamHairline={showTeamHairline}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onWeekChange={setWeek}
+            onHover={setPhotoTarget}
             onPick={(index) => {
               setPhotoTarget(index);
               setActiveIndex(index);
@@ -320,6 +410,7 @@ export function TeamOfTheWeekComposerApp() {
               setStrips((current) => patchStrip(current, index, names));
             }}
           />
+          </ComposerBoard>
           <p className="sc-hint">
             Pick a player for each strip, then upload or paste a photo. Drag to
             pan, pinch or scroll to zoom — same as Player of the Day. +/− still

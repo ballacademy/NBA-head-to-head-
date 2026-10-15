@@ -20,6 +20,10 @@ import {
   clipToInnerFrame,
   frameColor,
   paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePathHalo,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { drawCenteredLogo } from "./logoDraw";
@@ -27,6 +31,9 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  formatStandingRecord,
+  lastWeekDelta,
+  lastWeekMark,
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
@@ -35,6 +42,7 @@ import {
   standingsBrandLabel,
   standingsSubtitleLabel,
   type RankingSlots,
+  type StandingRecord,
 } from "./rankingState";
 import { getTeam } from "./teams";
 
@@ -204,7 +212,12 @@ export interface StandingsRenderInput {
   subtitle: string;
   slots: RankingSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
+  showArrows?: boolean;
+  showRecord?: boolean;
+  records?: Record<string, StandingRecord>;
+  lastWeekSlots?: RankingSlots | null;
 }
 
 export const renderStandingsCanvas = async (
@@ -236,6 +249,9 @@ export const renderStandingsCanvas = async (
 
   const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, fieldTexture, width, height, STANDINGS_BOARD_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
 
   withHeaderDropShadow(context, scale, () => {
     drawTrackedText(
@@ -267,11 +283,17 @@ export const renderStandingsCanvas = async (
     scale,
     buildBannerPath,
   );
-  buildBannerPath();
-  context.strokeStyle = frameColor(input.look);
-  context.lineWidth = 6 * scale;
-  context.lineJoin = "miter";
-  context.stroke();
+  const bannerLine = input.look === "none" ? 0 : 6 * scale;
+  if (input.purpleFlair) {
+    paintPurplePathHalo(context, scale, buildBannerPath, bannerLine);
+  }
+  if (bannerLine > 0) {
+    buildBannerPath();
+    context.strokeStyle = frameColor(input.look);
+    context.lineWidth = bannerLine;
+    context.lineJoin = "miter";
+    context.stroke();
+  }
 
   const titleLines = splitStandingsTitle(input.title);
   const titleSize = STANDINGS_TITLE_SIZE * scale;
@@ -336,22 +358,55 @@ export const renderStandingsCanvas = async (
     const logo = logos[index];
     if (logo && team) {
       context.save();
-      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale);
+      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale, input.look);
       drawCenteredLogo(context, logo, inner.x, inner.y, inner.w, inner.h, {
         cacheKey: team.logoSrc,
       });
       context.restore();
     }
     paintCellFrame(context, x, y, cellW, cellH, input.look, scale);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, y, cellW, cellH, scale, input.look);
+    }
 
+    const rankX = x + cellW * 0.036;
+    const rankY = y + cellH * 0.024;
     drawLongShadowText(
       context,
       String(index + 1),
-      x + cellW * 0.036,
-      y + cellH * 0.024,
+      rankX,
+      rankY,
       `900 ${48 * scale}px ${POSTER_FONT}`,
       8 * scale,
     );
+    const delta =
+      input.showArrows === true
+        ? lastWeekDelta(input.slots, input.lastWeekSlots, index)
+        : null;
+    const mark = lastWeekMark(delta);
+    if (mark) {
+      context.font = `900 ${36 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.textBaseline = "top";
+      context.fillStyle =
+        mark.kind === "up"
+          ? "#22c55e"
+          : mark.kind === "down"
+            ? "#ef4444"
+            : "#9ca3af";
+      context.fillText(mark.text, x + cellW * 0.96, y + cellH * 0.026);
+    }
+    const recordLabel =
+      input.showRecord === true
+        ? formatStandingRecord(team ? input.records?.[team.id] : null)
+        : null;
+    if (recordLabel) {
+      context.font = `900 ${16 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "#fff";
+      context.fillText(recordLabel, rankX, rankY + 48 * scale + 4 * scale);
+    }
   }
 
   if (input.showBa) {
@@ -359,6 +414,9 @@ export const renderStandingsCanvas = async (
     if (ba) {
       const size = 72 * scale;
       const inset = 42 * scale;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
       context.drawImage(ba, width - inset - size, inset, size, size);
     }
   }

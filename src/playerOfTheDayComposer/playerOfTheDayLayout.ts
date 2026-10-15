@@ -137,6 +137,9 @@ export const paintPotdPlateBorder = (
   look?: ComposerLook | null,
   radii: number | readonly [number, number, number, number] = 0,
 ) => {
+  if (look === "none") {
+    return;
+  }
   const line = Math.max(2, POTD_PHOTO_BORDER * scale);
   const insetRadii: number | [number, number, number, number] =
     typeof radii === "number"

@@ -43,7 +43,28 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/team-of-week" ||
     path === "/team-of-the-week-plus" ||
     path === "/totw-plus" ||
-    path === "/team-of-week-plus"
+    path === "/team-of-week-plus" ||
+    path === "/ranked-lineups" ||
+    path === "/ranked-lineup" ||
+    path === "/lineups" ||
+    path === "/lineup" ||
+    path === "/starting-lineup" ||
+    path === "/compare" ||
+    path === "/comparison" ||
+    path === "/split" ||
+    path === "/quote" ||
+    path === "/pull-quote" ||
+    path === "/play-in" ||
+    path === "/playin" ||
+    path === "/mini-bracket" ||
+    path === "/stat-card" ||
+    path === "/statcard" ||
+    path === "/player-card" ||
+    path === "/pyramid" ||
+    path === "/coy-pyramid" ||
+    path === "/headline" ||
+    path === "/hot-take" ||
+    path === "/hottake"
   );
 };
 

@@ -41,10 +41,17 @@ export function TeamLogo({
       if (cancelled || !loaded || !canvas.parentElement) {
         return;
       }
-      const rect = canvas.parentElement.getBoundingClientRect();
+      // clientWidth is the content box (inside the cell frame). Bounding-rect
+      // includes the stroke, so the bitmap was larger than the visible hole and
+      // overflow:hidden clipped the mark toward the top-left.
+      const parent = canvas.parentElement;
+      const cssW = Math.max(1, parent.clientWidth);
+      const cssH = Math.max(1, parent.clientHeight);
+      canvas.style.width = `${cssW}px`;
+      canvas.style.height = `${cssH}px`;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const width = Math.max(1, Math.round(rect.width * dpr));
-      const height = Math.max(1, Math.round(rect.height * dpr));
+      const width = Math.max(1, Math.round(cssW * dpr));
+      const height = Math.max(1, Math.round(cssH * dpr));
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
@@ -99,6 +106,7 @@ export function TeamLogo({
       className={["ig-slot__logo", className].filter(Boolean).join(" ")}
       aria-hidden="true"
       data-team={label}
+      style={{ width: "100%", height: "100%", display: "block" }}
     />
   );
 }

@@ -1,9 +1,12 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
+  teamHairlineColor,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -22,13 +25,17 @@ interface TeamOfTheWeekGraphicProps {
   week: string;
   strips: TotwStrip[];
   look?: ComposerLook;
+  purpleFlair?: boolean;
+  photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  showTeamHairline?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onWeekChange: (value: string) => void;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
   onNameChange: (
@@ -47,13 +54,17 @@ export const TeamOfTheWeekGraphic = forwardRef<
     week,
     strips,
     look = "white",
+    purpleFlair = false,
+    photoGrade = false,
     showBa = false,
     showNames = false,
+    showTeamHairline = true,
     exporting = false,
     onBrandChange,
     onTitleChange,
     onWeekChange,
     onPick,
+    onHover,
     onPan,
     onUpload,
     onNameChange,
@@ -79,7 +90,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
       return;
     }
     const sync = () => {
-      const width = node.getBoundingClientRect().width;
+      const width = node.offsetWidth;
       if (width > 0) {
         setUnit(width / GRAPHIC_WIDTH);
       }
@@ -100,7 +111,10 @@ export const TeamOfTheWeekGraphic = forwardRef<
         "totw-board",
         exporting ? "is-exporting" : "",
         showNames ? "" : "is-names-off",
+        showTeamHairline ? "is-hairline" : "",
         composerLookClass(look),
+        composerFlairClass(purpleFlair),
+        composerGradeClass(photoGrade),
       ]
         .filter(Boolean)
         .join(" ")}
@@ -136,11 +150,22 @@ export const TeamOfTheWeekGraphic = forwardRef<
           const strip = strips[index]!;
           const empty = !strip.photoSrc;
           const label = strip.lastName || `player ${index + 1}`;
+          const hair = showTeamHairline
+            ? teamHairlineColor(strip.teamId, look)
+            : null;
           return (
             <section
               key={`totw-strip-${index}`}
-              className="totw-strip"
+              className={["totw-strip", hair ? "has-hairline" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                hair
+                  ? ({ ["--team-hairline" as string]: hair } as React.CSSProperties)
+                  : undefined
+              }
               aria-label={`Player strip ${index + 1}`}
+              onPointerEnter={() => onHover?.(index)}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -148,6 +173,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
                 pan={strip.pan}
                 custom={strip.customPhoto}
                 empty={empty}
+                vignette
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onPick={() => onPick(index)}

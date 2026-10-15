@@ -73,16 +73,19 @@ describe("composer mode", () => {
     );
   });
 
-  it("groups hub tabs as Rankings, Week, and POTD", () => {
+  it("groups hub tabs as Rankings, Week, POTD, and Posts", () => {
     expect(COMPOSER_TAB_GROUPS.map((group) => group.label)).toEqual([
       "Rankings",
       "Week",
       "POTD",
+      "Posts",
     ]);
     expect(COMPOSER_TAB_GROUPS[0]!.tabs.map((tab) => tab.mode)).toEqual([
       "standings",
       "every-team",
       "tier",
+      "ranked-lineups",
+      "lineup",
     ]);
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
       "team-of-the-week",
@@ -92,6 +95,45 @@ describe("composer mode", () => {
       "Matchup",
       "Leaderboard",
     ]);
+    expect(COMPOSER_TAB_GROUPS[3]!.tabs.map((tab) => tab.mode)).toEqual([
+      "pyramid",
+      "headline",
+      "compare",
+      "quote",
+      "play-in",
+      "stat-card",
+    ]);
+  });
+
+  it("opens pyramid and headline from path or query", () => {
+    expect(readComposerMode("", "/pyramid")).toBe("pyramid");
+    expect(readComposerMode("?composer=pyramid", "/")).toBe("pyramid");
+    expect(composerHref("pyramid")).toBe("/pyramid");
+    expect(readComposerMode("", "/headline")).toBe("headline");
+    expect(readComposerMode("", "/hot-take")).toBe("headline");
+    expect(readComposerMode("?composer=headline", "/")).toBe("headline");
+    expect(composerHref("headline")).toBe("/headline");
+  });
+
+  it("opens lineup, compare, quote, and play-in from path", () => {
+    expect(readComposerMode("", "/lineup")).toBe("lineup");
+    expect(readComposerMode("", "/lineups")).toBe("ranked-lineups");
+    expect(composerHref("lineup")).toBe("/lineup");
+    expect(readComposerMode("", "/compare")).toBe("compare");
+    expect(readComposerMode("", "/quote")).toBe("quote");
+    expect(readComposerMode("", "/play-in")).toBe("play-in");
+    expect(composerHref("play-in")).toBe("/play-in");
+    expect(readComposerMode("", "/stat-card")).toBe("stat-card");
+    expect(composerHref("stat-card")).toBe("/stat-card");
+  });
+
+  it("opens ranked lineups from path or query", () => {
+    expect(readComposerMode("", "/ranked-lineups")).toBe("ranked-lineups");
+    expect(readComposerMode("", "/lineups")).toBe("ranked-lineups");
+    expect(readComposerMode("?composer=ranked-lineups", "/")).toBe(
+      "ranked-lineups",
+    );
+    expect(composerHref("ranked-lineups")).toBe("/ranked-lineups");
   });
 
   it("lets the path win when query and path disagree", () => {

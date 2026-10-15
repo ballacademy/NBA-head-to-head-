@@ -8,6 +8,29 @@ import {
 } from "./potdLeaderboardLayout";
 
 export const POTD_LEADERBOARD_STORAGE_KEY = "ddgm:potd-leaderboard";
+
+export const LEADERBOARD_MEDALS = {
+  gold: "#ffd700",
+  silver: "#c0c7d0",
+  bronze: "#cd7f32",
+} as const;
+
+export type LeaderboardMedal = keyof typeof LEADERBOARD_MEDALS;
+
+export const medalForRank = (
+  rank: number | null,
+): LeaderboardMedal | null => {
+  if (rank === 1) {
+    return "gold";
+  }
+  if (rank === 2) {
+    return "silver";
+  }
+  if (rank === 3) {
+    return "bronze";
+  }
+  return null;
+};
 export const POTD_LEADERBOARD_EVENT = "ddgm:potd-leaderboard";
 export const DEFAULT_POTD_LEADERBOARD_TITLE = "POTD LEADERBOARD";
 export const LEADERBOARD_MAX_ROWS = 24;
@@ -34,6 +57,7 @@ export interface RankedLeaderboardEntry extends LeaderboardEntry {
   displayLines: string[];
   nameScale: number;
   teamId: string | null;
+  headshotUrl: string | null;
 }
 
 export const POTD_BOARD_STORAGE_KEY = "ddgm:player-of-the-day-composer";
@@ -158,7 +182,7 @@ export const fitLeaderboardName = (
   };
 };
 
-export const teamForLeaderboardName = (name: string): string | null => {
+export const playerForLeaderboardName = (name: string) => {
   const key = normalizePlayerNameKey(name);
   if (!key) {
     return null;
@@ -167,7 +191,7 @@ export const teamForLeaderboardName = (name: string): string | null => {
     (player) => normalizePlayerNameKey(player.name) === key,
   );
   if (exact) {
-    return exact.team;
+    return exact;
   }
   const last = key.split(" ").at(-1);
   if (!last) {
@@ -177,8 +201,14 @@ export const teamForLeaderboardName = (name: string): string | null => {
     const playerKey = normalizePlayerNameKey(player.name);
     return playerKey === last || playerKey.endsWith(` ${last}`);
   });
-  return lastHits.length === 1 ? lastHits[0]!.team : null;
+  return lastHits.length === 1 ? lastHits[0]! : null;
 };
+
+export const teamForLeaderboardName = (name: string): string | null =>
+  playerForLeaderboardName(name)?.team ?? null;
+
+export const headshotForLeaderboardName = (name: string): string | null =>
+  playerForLeaderboardName(name)?.headshotUrl ?? null;
 
 export const readPotdPairKeys = (): string[] => {
   const stored = readJson<{
@@ -235,6 +265,7 @@ export const rankLeaderboard = (
       displayLines: fitted.lines,
       nameScale: fitted.scale,
       teamId: teamForLeaderboardName(entry.name),
+      headshotUrl: headshotForLeaderboardName(entry.name),
     };
   });
   const blanks = unnamed.map((entry) => ({
@@ -246,6 +277,7 @@ export const rankLeaderboard = (
     displayLines: [""],
     nameScale: 1,
     teamId: null as string | null,
+    headshotUrl: null as string | null,
   }));
   return [...ranked, ...blanks];
 };

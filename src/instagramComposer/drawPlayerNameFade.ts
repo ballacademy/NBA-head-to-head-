@@ -1,14 +1,15 @@
-import { drawCenteredLogo } from "../standingsComposer/logoDraw";
-import { wrapNameToWidth } from "./nameFit";
+import { drawCoveredLogo } from "../standingsComposer/logoDraw";
+import { abbreviateOverflowName } from "./nameFit";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
 export const NAME_FADE_STOPS: Array<[number, string]> = [
   [0, "rgba(0, 0, 0, 0)"],
-  [0.22, "rgba(0, 0, 0, 0.42)"],
-  [0.48, "rgba(0, 0, 0, 0.78)"],
-  [0.74, "rgba(0, 0, 0, 0.92)"],
-  [1, "rgba(0, 0, 0, 0.97)"],
+  [0.16, "rgba(0, 0, 0, 0.28)"],
+  [0.36, "rgba(0, 0, 0, 0.62)"],
+  [0.58, "rgba(0, 0, 0, 0.88)"],
+  [0.78, "rgba(0, 0, 0, 0.95)"],
+  [1, "rgba(0, 0, 0, 0.98)"],
 ];
 
 export const paintNameFadeRect = (
@@ -46,8 +47,11 @@ export const drawNameStack = (
   familySize: number,
   givenSize: number,
   scale: number,
+  align: "left" | "center" = "left",
 ) => {
   const measure = (value: string) => context.measureText(value).width;
+  // Chrome's canvas `letterSpacing` does not honor `textAlign: "center"`.
+  // Measure each line and left-draw from the midpoint so export matches CSS.
   context.textAlign = "left";
   context.textBaseline = "bottom";
   context.fillStyle = "#fff";
@@ -56,32 +60,30 @@ export const drawNameStack = (
   context.shadowOffsetY = Math.round(1.1 * scale);
   context.shadowBlur = 0;
 
+  const paintLine = (line: string, cursor: number) => {
+    const width = measure(line);
+    const drawX = align === "center" ? x - width / 2 : x;
+    context.fillText(line, drawX, cursor);
+    return width;
+  };
+
   context.font = `900 ${familySize}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * familySize);
-  const familyLines = wrapNameToWidth(family, maxWidth, measure, 2);
+  const familyLine = abbreviateOverflowName(family, maxWidth, measure);
   let cursor = bottom;
-  [...familyLines].reverse().forEach((line) => {
-    let size = familySize;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
-    while (size > familySize * 0.72 && measure(line) > maxWidth) {
-      size -= 0.5 * scale;
-      context.font = `900 ${size}px ${POSTER_FONT}`;
-    }
-    context.fillText(line, x, cursor);
-    cursor -= size * 1.02;
-  });
+  if (familyLine) {
+    paintLine(familyLine, cursor);
+    cursor -= familySize * 1.02;
+  }
   setLetterSpacing(context, 0);
 
-  const givenLine = given.trim().toUpperCase();
-  if (givenLine) {
-    let size = givenSize;
-    context.font = `900 ${size}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.08 * size);
-    while (size > givenSize * 0.72 && measure(givenLine) > maxWidth) {
-      size -= 0.5 * scale;
-      context.font = `900 ${size}px ${POSTER_FONT}`;
+  if (given.trim()) {
+    context.font = `900 ${givenSize}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.08 * givenSize);
+    const givenLine = abbreviateOverflowName(given, maxWidth, measure);
+    if (givenLine) {
+      paintLine(givenLine, cursor);
     }
-    context.fillText(givenLine, x, cursor);
     setLetterSpacing(context, 0);
   }
 
@@ -110,18 +112,16 @@ export const drawPlayerNameFade = (
   paintNameFadeRect(context, input.x, input.y, input.w, input.h);
   let textX = input.x + 4 * input.scale;
   if (input.logo) {
-    drawCenteredLogo(
+    const logoX = input.x + 4 * input.scale;
+    const logoY = input.y + input.h - pad - input.logoSize;
+    drawCoveredLogo(
       context,
       input.logo,
-      input.x + 4 * input.scale,
-      input.y + input.h - pad - input.logoSize,
+      logoX,
+      logoY,
       input.logoSize,
       input.logoSize,
-      {
-        cacheKey: input.logoSrc,
-        fitX: 0.88,
-        fitY: 0.88,
-      },
+      { cacheKey: `${input.logoSrc ?? ""}-fade-cover` },
     );
     textX = input.x + input.logoSize + 8 * input.scale;
   }

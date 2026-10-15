@@ -1,6 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -13,6 +14,8 @@ import {
   baBadgeRect,
   GRAPHIC_WIDTH,
   layoutTierLabel,
+  ADD_CHIP_COMPACT,
+  addChipPlacement,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
@@ -24,9 +27,13 @@ import {
   TIER_TITLE_SIZE,
   tierBoardLayout,
 } from "./tierLayout";
+import { fittedCellNames } from "../instagramComposer/nameFit";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
-  isDefaultTierColor,
-  parseTierColor,
+  fillForBlackInk,
+  inkOnTierColor,
+  resolvedTierColor,
+  splitTeamCellName,
   splitTierTitle,
   type TierRow,
   type TierSubject,
@@ -42,7 +49,9 @@ interface TierListGraphicProps {
   rows: TierRow[];
   subject?: TierSubject;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
+  showNames?: boolean;
   active: TierPickerTarget | null;
   exporting?: boolean;
   onTitleChange: (value: string) => void;
@@ -82,7 +91,9 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       rows,
       subject = "teams",
       look = "white",
+      purpleFlair = false,
       showBa = true,
+      showNames = false,
       active,
       exporting = false,
       onTitleChange,
@@ -102,7 +113,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const badge = baBadgeRect();
     const labelLayouts = rows.map((row) => layoutTierLabel(row.label));
     const layout = tierBoardLayout(
-      rows.map((row) => (exporting ? row.teams.length : row.teams.length + 1)),
+      rows.map((row) => row.teams.length),
       labelLayouts.map((item) => item.lines.length),
     );
 
@@ -121,7 +132,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -138,7 +149,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     return (
       <article
         ref={setRefs}
-        className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look)]
+        className={["tl-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair)]
           .filter(Boolean)
           .join(" ")}
         style={
@@ -148,6 +159,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             ["--label-w" as string]: String(TIER_LABEL_W),
             ["--header-h" as string]: String(TIER_HEADER_H),
             ["--footer-h" as string]: String(TIER_FOOTER),
+            ["--add-compact" as string]: String(ADD_CHIP_COMPACT),
           } as React.CSSProperties
         }
         aria-label="Instagram NBA tier list graphic"
@@ -186,7 +198,9 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
             {
               ["--tier-count" as string]: String(rows.length),
               ["--tier-rows" as string]: layout.gridTemplate,
-              ["--cell" as string]: `calc(${layout.size} * var(--u))`,
+              ["--cell" as string]: `calc(${layout.cellW} * var(--u))`,
+              ["--cell-w" as string]: `calc(${layout.cellW} * var(--u))`,
+              ["--cell-h" as string]: `calc(${layout.cellH} * var(--u))`,
               ["--cell-cols" as string]: String(layout.cols),
               ["--cell-gap" as string]: String(TIER_CELL_GAP),
               ["--row-pad" as string]: String(TIER_ROW_PAD_Y),
@@ -197,18 +211,25 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
         >
           {rows.map((row, rowIndex) => {
             const labelLayout = labelLayouts[rowIndex]!;
-            const color = parseTierColor(row.color);
-            const tinted = !isDefaultTierColor(color);
+            const color = fillForBlackInk(
+              resolvedTierColor(row.label, row.color, rowIndex),
+            );
+            const ink = inkOnTierColor(color);
+            const addChip = addChipPlacement(row.teams.length, layout.cols);
             return (
               <div
                 key={row.id}
-                className={["tl-row", tinted ? "is-tinted" : ""]
+                className={[
+                  "tl-row",
+                  row.teams.length === 0 ? "is-empty" : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
                 style={
                   {
                     ["--label-size" as string]: `calc(${labelLayout.fontSize} * var(--u))`,
                     ["--tier-color" as string]: color,
+                    ["--tier-ink" as string]: ink,
                   } as React.CSSProperties
                 }
                 onDragOver={(event) => {
@@ -264,6 +285,20 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       active.replaceId === entityId;
                     const isDrop = dropKey === `${rowIndex}-${index}`;
                     const labelName = player?.name ?? team?.name ?? entityId;
+                    const names = player
+                      ? splitPlayerName(player.name)
+                      : team
+                        ? splitTeamCellName(team.name, team.shortName)
+                        : null;
+                    const caption = names
+                      ? fittedCellNames(
+                          names.firstName,
+                          names.lastName || labelName,
+                          layout.cellW * 0.84,
+                          14,
+                          11,
+                        )
+                      : null;
                     return (
                       <div
                         key={entityId}
@@ -340,11 +375,21 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                             />
                           </>
                         ) : team ? (
-                          <TeamLogo
-                            src={team.logoSrc}
-                            label={team.id}
-                            balanceStamp
-                          />
+                          <div className="tl-cell__logo" aria-hidden="true">
+                            <TeamLogo src={team.logoSrc} label={team.id} />
+                          </div>
+                        ) : null}
+                        {showNames && caption ? (
+                          <span className="tl-cell__name">
+                            {caption.firstName ? (
+                              <span className="tl-cell__given">
+                                {caption.firstName}
+                              </span>
+                            ) : null}
+                            <span className="tl-cell__family">
+                              {caption.lastName}
+                            </span>
+                          </span>
                         ) : null}
                         {exporting ? null : (
                           <button
@@ -362,12 +407,13 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       </div>
                     );
                   })}
-                  {exporting ? null : (
+                  {exporting || addChip.kind !== "slot" ? null : (
                     <button
                       type="button"
                       className={[
                         "tl-cell",
                         "tl-cell--add",
+                        "is-slot",
                         active?.rowIndex === rowIndex && !active.replaceId
                           ? "is-active"
                           : "",
@@ -382,6 +428,27 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                     </button>
                   )}
                 </div>
+                {exporting || addChip.kind === "slot" ? null : (
+                  <button
+                    type="button"
+                    className={[
+                      "tl-cell",
+                      "tl-cell--add",
+                      "is-compact",
+                      addChip.empty ? "is-empty-chip" : "is-end-chip",
+                      active?.rowIndex === rowIndex && !active.replaceId
+                        ? "is-active"
+                        : "",
+                      dropKey === `row-${rowIndex}` ? "is-drop" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => onSelectAdd(rowIndex)}
+                    aria-label={`Add ${subject === "players" ? "player" : "team"} to ${row.label} tier`}
+                  >
+                    +
+                  </button>
+                )}
               </div>
             );
           })}

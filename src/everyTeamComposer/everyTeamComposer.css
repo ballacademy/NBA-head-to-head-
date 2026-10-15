@@ -167,13 +167,15 @@
   z-index: 3;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: flex-end;
-  padding: 22% 5% 5%;
+  padding: 28% 8% 6%;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.92) 0%,
-    rgba(0, 0, 0, 0.72) 42%,
-    rgba(0, 0, 0, 0.28) 74%,
+    rgba(0, 0, 0, 0.97) 0%,
+    rgba(0, 0, 0, 0.9) 34%,
+    rgba(0, 0, 0, 0.62) 64%,
+    rgba(0, 0, 0, 0.22) 84%,
     rgba(0, 0, 0, 0) 100%
   );
   pointer-events: none;
@@ -184,11 +186,14 @@
 .et-cell__given,
 .et-cell__family {
   display: block;
+  width: 100%;
   color: #fff;
   font-family: var(--ig-poster);
   font-weight: 900;
   text-transform: uppercase;
+  text-align: center;
   overflow-wrap: anywhere;
+  word-break: break-word;
   text-shadow:
     calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
     calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
@@ -198,27 +203,40 @@
   font-size: calc(11 * var(--u));
   letter-spacing: 0.08em;
   opacity: 0.92;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .et-cell__family {
   font-size: calc(14 * var(--u));
   letter-spacing: 0.04em;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .et-cell__rank {
   position: absolute;
-  top: 3%;
-  left: 4.2%;
+  top: calc(6 * var(--u));
+  left: calc(6 * var(--u));
   z-index: 3;
+  box-sizing: border-box;
+  min-width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+  padding: 0 calc(7 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(13 * var(--u));
+  background: rgba(0, 0, 0, 0.62);
   font-family: var(--ig-poster);
-  font-size: calc(34 * var(--u));
+  font-size: calc(15 * var(--u));
   font-weight: 900;
   line-height: 1;
   color: #fff;
   pointer-events: none;
-  text-shadow:
-    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
-    calc(1.9 * var(--u)) calc(2.1 * var(--u)) 0 rgba(0, 0, 0, 0.5);
+  text-shadow: calc(0.8 * var(--u)) calc(0.9 * var(--u)) 0 rgba(0, 0, 0, 0.7);
 }
 
 .et-cell__hit {
@@ -251,6 +269,25 @@
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  opacity: 0.34;
+}
+
+.et-cell[data-team="UTA"] .et-cell__backdrop {
+  opacity: 0.5;
+  filter: brightness(1.2) contrast(1.06);
+}
+
+.et-cell[data-team="UTA"] .et-cell__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 42%,
+    rgba(247, 251, 255, 0.22),
+    transparent 64%
+  );
+  mix-blend-mode: screen;
 }
 
 .et-cell .ig-slot__logo {
@@ -264,11 +301,13 @@
 
 .et-headshot {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: -8% -4% -2%;
+  width: auto;
+  height: 108%;
+  left: -4%;
+  right: -4%;
   object-fit: cover;
-  object-position: center 18%;
+  object-position: center 14%;
   pointer-events: none;
   z-index: 1;
   --hs: calc(0.055 * var(--cell, 180px));
@@ -302,6 +341,14 @@
   opacity: 1;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .sc-root.is-photo-edit .et-cell__clear {
+    opacity: 1;
+    width: max(28px, calc(22 * var(--u)));
+    height: max(28px, calc(22 * var(--u)));
+  }
+}
+
 .et-board.is-exporting .et-cell:hover,
 .et-board.is-exporting .et-cell:focus-visible,
 .et-board.is-exporting .et-cell.is-active,
@@ -311,4 +358,64 @@
 
 .sc-picker__dropdowns--locked {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.et-cell__year,
+.et-cell__nostats,
+.et-cell__missing {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    calc(0.8 * var(--u)) calc(0.9 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.4);
+}
+
+.et-cell__year {
+  top: 5%;
+  right: 5%;
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.06em;
+  padding: calc(2 * var(--u)) calc(5 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.et-cell__year.is-override {
+  color: #facc15;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.et-cell__nostats {
+  left: 4%;
+  bottom: 5%;
+  font-size: calc(9 * var(--u));
+  letter-spacing: 0.08em;
+  padding: calc(2 * var(--u)) calc(5 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(127, 29, 29, 0.82);
+}
+
+.et-cell__missing {
+  inset: auto 6% 8%;
+  font-size: calc(12 * var(--u));
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.et-cell--missing .et-headshot {
+  display: none;
+}
+
+.sc-look--sort {
+  flex-wrap: wrap;
+}
+
+.sc-look--sort select {
+  min-width: 7.5rem;
 }

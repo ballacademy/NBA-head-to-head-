@@ -1,0 +1,261 @@
+.stc-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --team-color: #1d4ed8;
+  --name-ink: #fff;
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.stc-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.stc-photo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(748 * var(--u));
+  bottom: 0;
+  z-index: 1;
+}
+
+.stc-photo .pod-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  border: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.stc-board.is-purple::before,
+.stc-board.is-purple::after {
+  z-index: 3;
+  mix-blend-mode: screen;
+}
+
+.stc-stats {
+  position: absolute;
+  left: calc(748 * var(--u));
+  top: 0;
+  width: calc(340 * var(--u));
+  bottom: 0;
+  z-index: 2;
+  background-color: #ececec;
+  background-image: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.stc-board.is-grade .stc-stats {
+  background-color: #f3f3f3;
+}
+
+.stc-board.is-grade .stc-value {
+  letter-spacing: -0.06em;
+}
+
+.stc-board.is-grade .stc-label {
+  letter-spacing: 0.12em;
+  color: rgba(17, 17, 17, 0.55);
+}
+
+.stc-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: calc(220 * var(--u));
+  height: calc(220 * var(--u));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.stc-mark canvas,
+.stc-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.stc-row {
+  z-index: 1;
+}
+
+.stc-hairline {
+  position: absolute;
+  left: calc(745 * var(--u));
+  top: 0;
+  bottom: 0;
+  width: calc(6 * var(--u));
+  z-index: 4;
+  background: var(--team-color);
+  pointer-events: none;
+}
+
+.stc-row {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.stc-row__remove {
+  position: absolute;
+  top: calc(8 * var(--u));
+  right: calc(10 * var(--u));
+  z-index: 4;
+  height: calc(28 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: calc(1.5 * var(--u)) solid rgba(17, 17, 17, 0.28);
+  border-radius: calc(999 * var(--u));
+  background: rgba(255, 255, 255, 0.88);
+  color: #111;
+  font-family: var(--ig-poster);
+  font-size: calc(11 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.stc-row + .stc-row::before {
+  content: "";
+  position: absolute;
+  left: calc(36 * var(--u));
+  right: calc(36 * var(--u));
+  top: 0;
+  height: calc(2 * var(--u));
+  background: rgba(17, 17, 17, 0.22);
+}
+
+.stc-value,
+.stc-label {
+  width: 100%;
+  margin: 0;
+  padding: 0 calc(12 * var(--u));
+  border: 0;
+  background: transparent;
+  color: #111;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stc-value {
+  font-size: calc(var(--stc-value, 108) * var(--u));
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  min-height: 0;
+}
+
+.stc-label {
+  margin-top: calc(var(--stc-gap, 8) * var(--u));
+  font-size: calc(var(--stc-label, 26) * var(--u));
+  letter-spacing: 0.18em;
+  color: rgba(17, 17, 17, 0.62);
+  min-height: 0;
+}
+
+.stc-name-bar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: calc(112 * var(--u));
+  bottom: 0;
+  z-index: 3;
+  background: var(--team-color);
+}
+
+.stc-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(20 * var(--u));
+  bottom: calc(124 * var(--u));
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--name-ink);
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(40 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+.stc-logo {
+  position: absolute;
+  left: 50%;
+  bottom: calc(16 * var(--u));
+  width: calc(92 * var(--u));
+  height: calc(92 * var(--u));
+  transform: translateX(-50%);
+}
+
+.stc-logo canvas,
+.stc-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.stc-board .composer-ba {
+  left: calc(28 * var(--u));
+  right: auto;
+  top: calc(28 * var(--u));
+  z-index: 5;
+}
+
+.stc-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  border: var(--frame-w) solid var(--frame-color);
+  box-sizing: border-box;
+}
+
+.stc-board.is-exporting .pod-photo__tools,
+.stc-board.is-exporting .stc-row__remove {
+  display: none;
+}
+
+.stc-board .pod-photo__tools {
+  left: calc(12 * var(--u));
+  right: calc(12 * var(--u));
+  bottom: auto;
+  top: calc(112 * var(--u));
+}
+
+.stc-board .pod-photo__pick {
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.08em;
+}
+
+.stc-value:focus,
+.stc-label:focus {
+  outline: 1px dashed rgba(17, 17, 17, 0.45);
+  outline-offset: 4px;
+}
+
+.stc-name:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}

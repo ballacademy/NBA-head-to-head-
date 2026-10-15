@@ -7,6 +7,19 @@ export const DEFAULT_TIER_LABELS = ["S", "A", "B", "C", "D", "F"] as const;
 export const EXTRA_TIER_LABELS = ["G", "H", "I", "J"] as const;
 export const DEFAULT_TIER_TITLE = "GUESS THE NBA TIER LIST";
 export const DEFAULT_TIER_COLOR = "#ffffff";
+/** Filled label-column palette — S gold, A red, then orange / yellow / green / blue. */
+export const DEFAULT_TIER_PALETTE: Record<string, string> = {
+  S: "#f5c400",
+  A: "#e23b3b",
+  B: "#f08a24",
+  C: "#e8d44d",
+  D: "#3cb371",
+  F: "#5b8def",
+  G: "#8b5cf6",
+  H: "#ec4899",
+  I: "#14b8a6",
+  J: "#a8a29e",
+};
 export type TierSubject = "teams" | "players";
 
 export interface TierRow {
@@ -39,6 +52,59 @@ export const parseTierColor = (value: unknown): string => {
 export const isDefaultTierColor = (value: unknown) =>
   parseTierColor(value) === DEFAULT_TIER_COLOR;
 
+export const paletteColorForLabel = (label: string, index = 0) => {
+  const key = label.replace(/\s+/g, " ").trim().toUpperCase();
+  if (DEFAULT_TIER_PALETTE[key]) {
+    return DEFAULT_TIER_PALETTE[key]!;
+  }
+  const extras = Object.values(DEFAULT_TIER_PALETTE);
+  return extras[index % extras.length] ?? "#f5c400";
+};
+
+/** Fill color for the label column — custom hex, else the S/A/B palette. */
+export const resolvedTierColor = (
+  label: string,
+  color: unknown,
+  index = 0,
+) => {
+  if (typeof color === "string" && color.trim() && !isDefaultTierColor(color)) {
+    return parseTierColor(color);
+  }
+  return paletteColorForLabel(label, index);
+};
+
+/** One letter color on every filled label. */
+export const TIER_LABEL_INK = "#111111";
+
+const channelLum = (r: number, g: number, b: number) =>
+  (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+export const fillLuminance = (hex: string) => {
+  const color = parseTierColor(hex);
+  const n = Number.parseInt(color.slice(1), 16);
+  return channelLum((n >> 16) & 255, (n >> 8) & 255, n & 255);
+};
+
+/** Lighten a dark fill until black type stays readable — never switch letter color. */
+export const fillForBlackInk = (hex: string, minLum = 0.58) => {
+  let color = parseTierColor(hex);
+  for (let step = 0; step < 16; step += 1) {
+    if (fillLuminance(color) >= minLum) {
+      return color;
+    }
+    const n = Number.parseInt(color.slice(1), 16);
+    const mix = (channel: number) =>
+      Math.min(255, Math.round(channel + (255 - channel) * 0.22));
+    const r = mix((n >> 16) & 255);
+    const g = mix((n >> 8) & 255);
+    const b = mix(n & 255);
+    color = `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+  }
+  return color;
+};
+
+export const inkOnTierColor = (_hex?: string) => TIER_LABEL_INK;
+
 export const hexToRgba = (hex: string, alpha: number) => {
   const color = parseTierColor(hex);
   const n = Number.parseInt(color.slice(1), 16);
@@ -52,16 +118,36 @@ export interface TierDraft {
   title: string;
   rows: TierRow[];
   showBa?: boolean;
+  showNames?: boolean;
 }
+
+/** City on the given line, nickname on the family line — same stack as player names. */
+export const splitTeamCellName = (name: string, shortName: string) => {
+  const full = name.replace(/\s+/g, " ").trim();
+  const short = shortName.replace(/\s+/g, " ").trim();
+  if (!full) {
+    return { firstName: "", lastName: "" };
+  }
+  if (!short) {
+    return { firstName: "", lastName: full };
+  }
+  const escaped = short.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const city = full.replace(new RegExp(`\\s+${escaped}$`, "i"), "").trim();
+  if (city && city !== full) {
+    return { firstName: city, lastName: short };
+  }
+  return { firstName: "", lastName: full };
+};
 
 const nextId = () =>
   `tier-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
 export const createDefaultRows = (): TierRow[] =>
-  DEFAULT_TIER_LABELS.map((label) => ({
+  DEFAULT_TIER_LABELS.map((label, index) => ({
     id: `tier-${label.toLowerCase()}`,
     label,
     teams: [],
+    color: paletteColorForLabel(label, index),
   }));
 
 export const isTierRows = (value: unknown): value is TierRow[] =>
@@ -88,6 +174,89 @@ export const usedTeamIds = (rows: TierRow[]): Set<string> => {
   return used;
 };
 
+/** Append unused matching ids onto the first tier (S) so Group can rank them. */
+export const fillMatchingIds = (
+  rows: TierRow[],
+  ids: readonly string[],
+): { rows: TierRow[]; added: number } => {
+  if (!rows.length) {
+    return { rows, added: 0 };
+  }
+  const used = usedTeamIds(rows);
+  const add = ids.filter((id) => id && !used.has(id));
+  if (!add.length) {
+    return { rows, added: 0 };
+  }
+  const next = rows.slice();
+  const first = next[0]!;
+  next[0] = { ...first, teams: [...first.teams, ...add] };
+  return { rows: next, added: add.length };
+};
+
+export type TierSplit = "even" | "fat-s";
+
+export const evenChunkSizes = (count: number, buckets: number): number[] => {
+  if (buckets <= 0) {
+    return [];
+  }
+  const base = Math.floor(count / buckets);
+  const extra = count % buckets;
+  return Array.from({ length: buckets }, (_, index) => base + (index < extra ? 1 : 0));
+};
+
+/** More names in S/A than F — triangular weights, leftover to the top tiers. */
+export const fatSChunkSizes = (count: number, buckets: number): number[] => {
+  if (buckets <= 0) {
+    return [];
+  }
+  if (count <= 0) {
+    return Array.from({ length: buckets }, () => 0);
+  }
+  const weights = Array.from({ length: buckets }, (_, index) => buckets - index);
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const sizes = weights.map((weight) => Math.floor((count * weight) / total));
+  let leftover = count - sizes.reduce((sum, size) => sum + size, 0);
+  let index = 0;
+  while (leftover > 0) {
+    sizes[index % buckets] += 1;
+    leftover -= 1;
+    index += 1;
+  }
+  return sizes;
+};
+
+/** Rank board ids by a stat: highest in S, then A, …; missing stats stay in the last tier. */
+export const groupIdsByValues = (
+  rows: TierRow[],
+  values: Map<string, number | null>,
+  split: TierSplit = "even",
+): TierRow[] => {
+  if (!rows.length) {
+    return rows;
+  }
+  const ids = rows.flatMap((row) => row.teams);
+  const scored = ids.filter((id) => values.get(id) != null);
+  const held = ids.filter((id) => values.get(id) == null);
+  scored.sort(
+    (left, right) =>
+      (values.get(right) as number) - (values.get(left) as number) ||
+      left.localeCompare(right),
+  );
+  const sizes =
+    split === "fat-s"
+      ? fatSChunkSizes(scored.length, rows.length)
+      : evenChunkSizes(scored.length, rows.length);
+  let offset = 0;
+  return rows.map((row, index) => {
+    const size = sizes[index] ?? 0;
+    const chunk = scored.slice(offset, offset + size);
+    offset += size;
+    const teams =
+      index === rows.length - 1 ? [...chunk, ...held] : chunk;
+    return { ...row, teams };
+  });
+};
+
 export const rowIndexForTeam = (rows: TierRow[], teamId: string) =>
   rows.findIndex((row) => row.teams.includes(teamId));
 
@@ -99,7 +268,15 @@ export const addTier = (rows: TierRow[]): TierRow[] => {
     (label) => !rows.some((row) => row.label === label),
   );
   const label = extras[0] ?? `T${rows.length + 1}`;
-  return [...rows, { id: nextId(), label, teams: [] }];
+  return [
+    ...rows,
+    {
+      id: nextId(),
+      label,
+      teams: [],
+      color: paletteColorForLabel(label, rows.length),
+    },
+  ];
 };
 
 export const removeLastTier = (rows: TierRow[]): TierRow[] => {
@@ -283,10 +460,11 @@ export const EXAMPLE_TIER_PLACEMENT: { label: string; teams: string[] }[] = [
 ];
 
 export const createExampleRows = (): TierRow[] =>
-  EXAMPLE_TIER_PLACEMENT.map((row) => ({
+  EXAMPLE_TIER_PLACEMENT.map((row, index) => ({
     id: `tier-${row.label.toLowerCase()}`,
     label: row.label,
     teams: row.teams.slice(),
+    color: paletteColorForLabel(row.label, index),
   }));
 
 export const splitTierTitle = (title: string): string[] =>

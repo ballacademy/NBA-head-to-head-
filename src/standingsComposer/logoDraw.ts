@@ -188,8 +188,11 @@ export const fittedLogoRect = (
   };
 };
 
+/** Longer, softer stamp than the old 12% hard stack. Andrew may revert. */
+export const LOGO_SHADOW_FRAC = 0.18;
+
 export const logoShadowPx = (cellW: number, cellH: number) =>
-  Math.max(6, Math.round(Math.min(cellW, cellH) * 0.12));
+  Math.max(8, Math.round(Math.min(cellW, cellH) * LOGO_SHADOW_FRAC));
 
 /** Halo radius that stays inside leftover cell padding around the fitted mark. */
 export const logoGlowPx = (
@@ -282,9 +285,11 @@ export const drawCenteredLogo = (
     options?.shadow === undefined
       ? logoShadowPx(cellW, cellH)
       : Math.max(0, options.shadow);
-  const nudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
-  dest.x -= nudge;
-  dest.y -= nudge;
+  // Never shift the mark to “center” the logo+shadow bbox — that pulls
+  // artwork top-left. Opt-in balanceStamp is a standings-era counter only.
+  const stampNudge = options?.balanceStamp ? stampBalanceOffset(shadow) : 0;
+  dest.x -= stampNudge;
+  dest.y -= stampNudge;
   const glow = Boolean(options?.glow);
   const glowPx = glow
     ? logoGlowPx(cellW, cellH, options?.fitX, options?.fitY)
@@ -311,12 +316,23 @@ export const drawCenteredLogo = (
 
   if (shadow > 0) {
     const stamp = makeSilhouette(image, bounds, dest.w, dest.h);
-    const depth = glow ? Math.max(shadow, Math.round(shadow * 1.25)) : shadow;
+    const offsetX = Math.round(shadow * 0.42);
+    const offsetY = Math.round(shadow * 0.58);
     context.save();
-    context.globalAlpha = 0.92;
-    for (let i = 2; i <= depth; i += 2) {
-      context.drawImage(stamp, dest.x + i, dest.y + i);
-    }
+    context.globalAlpha = 0.42;
+    context.shadowColor = "rgba(0, 0, 0, 0.5)";
+    context.shadowBlur = Math.max(10, Math.round(shadow * 1.05));
+    context.shadowOffsetX = offsetX;
+    context.shadowOffsetY = offsetY;
+    context.drawImage(stamp, dest.x, dest.y);
+    context.restore();
+    context.save();
+    context.globalAlpha = 0.22;
+    context.shadowColor = "rgba(0, 0, 0, 0.38)";
+    context.shadowBlur = Math.max(14, Math.round(shadow * 1.35));
+    context.shadowOffsetX = Math.round(shadow * 0.7);
+    context.shadowOffsetY = Math.round(shadow * 0.92);
+    context.drawImage(stamp, dest.x, dest.y);
     context.restore();
   }
 

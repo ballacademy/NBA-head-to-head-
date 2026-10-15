@@ -17,6 +17,8 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "standings", label: "Standings" },
       { mode: "every-team", label: "Every team" },
       { mode: "tier", label: "Tier list" },
+      { mode: "ranked-lineups", label: "Ranked lineups" },
+      { mode: "lineup", label: "Lineup" },
     ],
   },
   {
@@ -31,6 +33,17 @@ export const COMPOSER_TAB_GROUPS: {
     tabs: [
       { mode: "player-of-the-day", label: "Matchup" },
       { mode: "potd-leaderboard", label: "Leaderboard" },
+    ],
+  },
+  {
+    label: "Posts",
+    tabs: [
+      { mode: "pyramid", label: "Pyramid" },
+      { mode: "headline", label: "Headline" },
+      { mode: "compare", label: "Compare" },
+      { mode: "quote", label: "Quote" },
+      { mode: "play-in", label: "Play-in" },
+      { mode: "stat-card", label: "Stat card" },
     ],
   },
 ];

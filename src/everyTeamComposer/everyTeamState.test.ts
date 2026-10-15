@@ -6,15 +6,20 @@ import {
   EVERY_TEAM_ORDER,
   assignPlayer,
   assignPlayerToTeam,
+  autoFillEveryTeamSlots,
+  autoSortRankedOrder,
+  rankedMetricValues,
   clearEveryTeamSlot,
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
   displayedTeams,
   exportEveryTeamFilename,
+  fillEveryTeamFromNight,
   isEveryTeamDraft,
   isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
+  pruneSlotsToSeasons,
   slotIndexForTeam,
   splitEveryTeamTitle,
   insertRankedOrder,
@@ -22,11 +27,42 @@ import {
   teamAtSlot,
   usedEveryTeamLabels,
 } from "./everyTeamState";
+import catalog from "../../data/every-team-historical-rosters.json";
+import {
+  EVERY_TEAM_STAT_METRICS,
+  formatRosterStat,
+  hydrateEveryTeamRosters,
+  listRosterPlayers,
+  matchingTeamIds,
+  pickSeasonLeader,
+  playerRowForSeason,
+  rosterAsTierPlayers,
+  rosterStatValue,
+  seasonForTeam,
+  setCellSeason,
+  statsSeasonFor,
+  teamLogoSrc,
+  teamStatValue,
+} from "./historicalRosters";
+import { sortPlayers } from "../tierListComposer/nbaActivePlayers";
+
+hydrateEveryTeamRosters(
+  catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+);
 import {
   FIELD_TEXTURE_SRC,
   HEADER_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
-import { everyTeamCellRect, everyTeamGrid } from "./everyTeamLayout";
+import {
+  ET_JAZZ_LOGO_ALPHA,
+  ET_JAZZ_LOGO_BRIGHTNESS,
+  ET_LOGO_ALPHA,
+  ET_RANK_BADGE_H,
+  ET_RANK_SIZE,
+  everyTeamCellRect,
+  everyTeamGrid,
+  everyTeamLogoBackdrop,
+} from "./everyTeamLayout";
 
 const EXPECTED_CITIES = [
   "Atlanta",
@@ -111,6 +147,8 @@ describe("every-team order and slots", () => {
     const grid = everyTeamGrid(1);
     expect(grid.cols * grid.rows).toBe(30);
     expect(grid.cell).toBeGreaterThan(160);
+    expect(ET_RANK_SIZE).toBeLessThan(22);
+    expect(ET_RANK_BADGE_H).toBeLessThan(grid.cell * 0.22);
     const first = everyTeamCellRect(0, grid);
     const second = everyTeamCellRect(1, grid);
     const sixth = everyTeamCellRect(5, grid);
@@ -161,5 +199,283 @@ describe("every-team order and slots", () => {
     expect(down[7]).toBe(order[2]);
     expect(down[2]).toBe(order[3]);
     expect(insertRankedOrder(order, 4, 4)).toEqual(order);
+  });
+
+  it("keeps 2012-13 OKC on ESPN starter PG–C then backups, with real season stats", () => {
+    const okc = listRosterPlayers("OKC", "2012-13");
+    expect(okc[0]).toMatchObject({
+      name: "Russell Westbrook",
+      position: "PG",
+      depth: 1,
+      pts: 23.2,
+    });
+    expect(okc.slice(0, 5).map((player) => `${player.depth}${player.position}`)).toEqual(
+      ["1PG", "1SG", "1SF", "1PF", "1C"],
+    );
+    expect(okc.slice(0, 5).map((player) => player.name)).toEqual([
+      "Russell Westbrook",
+      "Thabo Sefolosha",
+      "Kevin Durant",
+      "Serge Ibaka",
+      "Kendrick Perkins",
+    ]);
+    expect(okc[5]?.depth).toBe(2);
+    expect(okc[5]?.position).toBe("PG");
+    const durant = okc.find((player) => player.name === "Kevin Durant");
+    expect(rosterStatValue(durant ?? null, "pra")).toBe(40.6);
+    expect(
+      sortPlayers(rosterAsTierPlayers("OKC", "2012-13"), "depth")
+        .slice(0, 5)
+        .map((player) => player.name),
+    ).toEqual([
+      "Russell Westbrook",
+      "Thabo Sefolosha",
+      "Kevin Durant",
+      "Serge Ibaka",
+      "Kendrick Perkins",
+    ]);
+  });
+
+  it("uses SuperSonics for 2001-02 OKC and marks Charlotte 2002-03 missing", () => {
+    const sonics = listRosterPlayers("OKC", "2001-02");
+    expect(sonics.some((player) => player.name === "Gary Payton")).toBe(true);
+    expect(sonics[0]?.position).toBe("PG");
+    expect(listRosterPlayers("CHA", "2002-03")).toEqual([]);
+    expect(listRosterPlayers("NOP", "2001-02")).toEqual([]);
+    expect(listRosterPlayers("CHA", "2001-02").some((player) => player.name === "Baron Davis")).toBe(
+      true,
+    );
+  });
+
+  it("prunes players who are not on a cell’s season roster", () => {
+    const westbrook =
+      listRosterPlayers("OKC", "2012-13").find((player) => player.name === "Russell Westbrook")
+        ?.id ?? "";
+    const slots = assignPlayerToTeam(createEmptyEveryTeamSlots(), "OKC", westbrook);
+    expect(pruneSlotsToSeasons(slots, "2012-13")[slotIndexForTeam("OKC")]).toBe(westbrook);
+    expect(pruneSlotsToSeasons(slots, "2026-27")[slotIndexForTeam("OKC")]).toBeNull();
+    const override = setCellSeason({}, "OKC", "2012-13", "2026-27");
+    expect(seasonForTeam("OKC", "2026-27", override)).toBe("2012-13");
+    expect(
+      pruneSlotsToSeasons(slots, "2026-27", override)[slotIndexForTeam("OKC")],
+    ).toBe(westbrook);
+  });
+
+  it("lists 2026-27 Knicks and Magic extras after depth units, with live averages", () => {
+    const knicks = listRosterPlayers("NYK", "2026-27");
+    const brown = knicks.find((player) => player.id === "4065670");
+    expect(brown?.name).toBe("Bruce Brown");
+    expect(brown?.depth).toBeGreaterThanOrEqual(99);
+    const lastDepth = Math.max(
+      ...knicks.filter((player) => player.depth < 99).map((player) => player.depth),
+      0,
+    );
+    expect(brown?.depth).toBeGreaterThan(lastDepth);
+    const depthSorted = sortPlayers(rosterAsTierPlayers("NYK", "2026-27"), "depth");
+    const brownAt = depthSorted.findIndex((player) => player.id === "4065670");
+    const lastSlotted = depthSorted.reduce(
+      (index, player, at) => ((player.depth ?? 99) < 99 ? at : index),
+      -1,
+    );
+    expect(brownAt).toBeGreaterThan(lastSlotted);
+    const magic = listRosterPlayers("ORL", "2026-27");
+    const branham = magic.find((player) => player.id === "4565201");
+    expect(branham?.name).toBe("Malaki Branham");
+    expect(branham?.depth).toBeGreaterThanOrEqual(99);
+    const scored = knicks.filter((player) => player.pts != null).length;
+    expect(scored).toBeGreaterThan(8);
+    expect(rosterStatValue(knicks.find((player) => player.pts != null) ?? null, "pra")).not.toBeNull();
+  });
+
+  it("uses 2025-26 stats on the current season until that year has a real table", () => {
+    expect(statsSeasonFor("2026-27")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "regular")).toBe("2025-26");
+    expect(statsSeasonFor("2026-27", "preseason")).toBe("2026-27");
+    expect(statsSeasonFor("2012-13")).toBe("2012-13");
+    const sgaPreseason = listRosterPlayers("OKC", "2026-27", "preseason").find(
+      (player) => player.id === "4278073",
+    );
+    expect(sgaPreseason?.gp).not.toBe(68);
+    const sga = listRosterPlayers("OKC", "2026-27").find(
+      (player) => player.id === "4278073",
+    );
+    expect(sga?.pts).toBe(31.1);
+    expect(sga?.gp).toBe(68);
+    expect(sga?.min).toBe(33.2);
+    expect(sga?.tov).toBe(2.2);
+    expect(sga?.fgPct).toBe(0.557);
+    expect(rosterStatValue(sga ?? null, "points")).toBe(31.1);
+    expect(rosterStatValue(sga ?? null, "games")).toBe(68);
+    expect(rosterStatValue(sga ?? null, "minutes")).toBe(33.2);
+    expect(rosterStatValue(sga ?? null, "turnovers")).toBe(2.2);
+    expect(rosterStatValue(sga ?? null, "fgPct")).toBe(0.557);
+    expect(formatRosterStat(sga ?? null, "fgPct")).toBe("55.7% FG%");
+    expect(pickSeasonLeader("OKC", "2026-27", "points")?.id).toBe("4278073");
+    expect(pickSeasonLeader("OKC", "2025-26", "points")?.name).toBe(
+      "Shai Gilgeous-Alexander",
+    );
+    const filled = autoFillEveryTeamSlots("2026-27", {}, "points");
+    expect(filled[slotIndexForTeam("OKC")]).toBe("4278073");
+    expect(filled.filter(Boolean).length).toBeGreaterThan(20);
+    const night = fillEveryTeamFromNight(
+      createEmptyEveryTeamSlots(),
+      [
+        {
+          athleteId: "a",
+          teamId: "SAS",
+          game: { stats: { pts: "19", reb: "4", ast: "2" } },
+        },
+        {
+          athleteId: "b",
+          teamId: "SAS",
+          game: { stats: { pts: "12", reb: "10", ast: "9" } },
+        },
+      ],
+      "pra",
+    );
+    expect(night.filled).toBe(1);
+    expect(night.slots[slotIndexForTeam("SAS")]).toBe("b");
+    expect(teamLogoSrc("OKC", "2001-02", false)).toContain("OKC");
+    expect(teamLogoSrc("OKC", "2001-02", true)).toContain("SEA");
+    expect(teamLogoSrc("BKN", "2011-12", true)).toContain("NJN");
+    expect(teamLogoSrc("OKC", "2025-26", true)).toContain("OKC");
+  });
+
+  it("auto-sorts 2026-27 starter PGs by PRA using last season’s table", () => {
+    const order = createDefaultRankedOrder();
+    const values = order.map((teamId) => {
+      const pg = listRosterPlayers(teamId, "2026-27").find(
+        (player) => player.position === "PG" && player.depth === 1,
+      );
+      return rosterStatValue(pg ?? null, "pra");
+    });
+    const scored = values.filter((value) => value != null).length;
+    expect(scored).toBeGreaterThan(20);
+    const result = autoSortRankedOrder(order, values);
+    expect(result.ranked).toBe(scored);
+    expect(result.order).not.toEqual(order);
+    expect(result.order.slice(0, result.ranked)).not.toEqual(order.slice(0, result.ranked));
+  });
+
+  it("auto-sorts ranked order by PRA and keeps missing stats in original order at the bottom", () => {
+    const order = ["OKC", "LAL", "MIA", "BOS"];
+    const result = autoSortRankedOrder(order.concat(createDefaultRankedOrder()).slice(0, 30), [
+      40.6, null, 35.1, 22.0,
+    ]);
+    expect(result.order.slice(0, 3)).toEqual(["OKC", "MIA", "BOS"]);
+    expect(result.order[3]).toBe("LAL");
+    expect(result.ranked).toBe(3);
+    expect(result.held).toBe(27);
+    const unchanged = autoSortRankedOrder(createDefaultRankedOrder(), Array(30).fill(null));
+    expect(unchanged.order).toEqual(createDefaultRankedOrder());
+    expect(unchanged.ranked).toBe(0);
+  });
+
+  it("borrows last-season stats for 2026-27 team-switchers", () => {
+    const powell = listRosterPlayers("CHI", "2026-27").find(
+      (player) => player.name === "Norman Powell",
+    );
+    expect(powell?.pts).toBe(21.7);
+    const giannis = listRosterPlayers("MIA", "2026-27").find((player) =>
+      /Antetokounmpo/i.test(player.name),
+    );
+    expect(giannis?.pts).toBe(27.6);
+    expect(pickSeasonLeader("MIA", "2026-27", "points")?.name).toMatch(
+      /Antetokounmpo/i,
+    );
+    expect(pickSeasonLeader("CHI", "2026-27", "points")?.name).toBe(
+      "Norman Powell",
+    );
+  });
+
+  it("reorders 2026-27 auto-fill by PRA, points, and STL+BLK", () => {
+    const order = createDefaultRankedOrder();
+    const sortFilled = (metric: "pra" | "points" | "stocks") => {
+      const slots = autoFillEveryTeamSlots("2026-27", {}, metric);
+      return autoSortRankedOrder(
+        order,
+        rankedMetricValues(order, slots, "2026-27", {}, metric),
+      );
+    };
+    const pra = sortFilled("pra");
+    const points = sortFilled("points");
+    const stocks = sortFilled("stocks");
+    expect(pra.ranked).toBe(30);
+    expect(points.ranked).toBe(30);
+    expect(stocks.ranked).toBe(30);
+    expect(pra.order).not.toEqual(order);
+    expect(points.order).not.toEqual(pra.order);
+    expect(stocks.order).not.toEqual(points.order);
+    expect(stocks.order).not.toEqual(pra.order);
+  });
+
+  it("lists every counting and percentage auto-sort metric", () => {
+    expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "STL",
+      "BLK",
+      "TOV",
+      "FG%",
+      "3P%",
+      "FT%",
+      "eFG%",
+      "TS%",
+      "MIN",
+      "GP",
+      "PRA",
+      "STL+BLK",
+    ]);
+    const durant = listRosterPlayers("OKC", "2012-13").find(
+      (player) => player.name === "Kevin Durant",
+    );
+    expect(rosterStatValue(durant ?? null, "fgPct")).toBeNull();
+    expect(playerRowForSeason("4278073", "2026-27", "OKC")?.fgPct).toBe(0.557);
+  });
+
+  it("auto-sorts 2026-27 leaders by FG% and minutes using last season extras", () => {
+    const order = createDefaultRankedOrder();
+    const sortFilled = (metric: "fgPct" | "minutes" | "games") => {
+      const slots = autoFillEveryTeamSlots("2026-27", {}, metric);
+      return autoSortRankedOrder(
+        order,
+        rankedMetricValues(order, slots, "2026-27", {}, metric),
+      );
+    };
+    const fg = sortFilled("fgPct");
+    const minutes = sortFilled("minutes");
+    const games = sortFilled("games");
+    expect(fg.ranked).toBeGreaterThan(20);
+    expect(minutes.ranked).toBeGreaterThan(20);
+    expect(games.ranked).toBeGreaterThan(20);
+    expect(fg.order).not.toEqual(minutes.order);
+  });
+
+  it("averages team stats and filters East / Atlantic for populate", () => {
+    expect(matchingTeamIds({ conference: "East" })).toHaveLength(15);
+    expect(matchingTeamIds({ division: "Atlantic" })).toEqual([
+      "BOS",
+      "BKN",
+      "NYK",
+      "PHI",
+      "TOR",
+    ]);
+    const okc = teamStatValue("OKC", "2026-27", "points");
+    const cha = teamStatValue("CHA", "2026-27", "points");
+    expect(okc).not.toBeNull();
+    expect(cha).not.toBeNull();
+    expect(okc!).toBeGreaterThan(cha!);
+  });
+
+  it("lifts the Jazz cell logo without changing the other 29", () => {
+    expect(everyTeamLogoBackdrop("OKC")).toEqual({
+      alpha: ET_LOGO_ALPHA,
+      brightness: 1,
+    });
+    expect(everyTeamLogoBackdrop("UTA").alpha).toBe(ET_JAZZ_LOGO_ALPHA);
+    expect(everyTeamLogoBackdrop("UTA").brightness).toBe(ET_JAZZ_LOGO_BRIGHTNESS);
+    expect(ET_JAZZ_LOGO_ALPHA).toBeGreaterThan(ET_LOGO_ALPHA);
+    expect(ET_JAZZ_LOGO_BRIGHTNESS).toBeGreaterThan(1);
   });
 });

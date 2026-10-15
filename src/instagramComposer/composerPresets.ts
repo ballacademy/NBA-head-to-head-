@@ -48,6 +48,50 @@ export const TOTW_PLUS_STANDOUT_PRESETS = [
   "HONORABLE MENTIONS",
 ];
 
+export const PYRAMID_TITLE_PRESETS = [
+  "NBA COY PYRAMID",
+  "NBA PLAYER PYRAMID",
+  "NBA COACH PYRAMID",
+];
+
+export const HEADLINE_TITLE_PRESETS = [
+  "MASSIVE LEAP",
+  "STATEMENT WIN",
+  "HE’S HIM",
+  "HOT TAKE",
+  "BREAKING",
+  "UNLOCKED",
+];
+
+export const RANKED_LINEUP_TITLE_PRESETS = [
+  "TOP 10 NBA PLAYERS AT EACH POSITION",
+  "BEST NBA LINEUP AT EACH POSITION",
+  "NBA ALL-DEFENSE AT EACH POSITION",
+  "NBA ALL-ROOKIE AT EACH POSITION",
+];
+
+export const LINEUP_TITLE_PRESETS = [
+  "STARTING LINEUP",
+  "CLOSING LINEUP",
+  "ALL-DEFENSE FIVE",
+];
+
+export const COMPARE_TITLE_PRESETS = [
+  "NOT A SIXTH MAN",
+  "THEN VS NOW",
+  "STARTER VS BENCH",
+];
+
+export const QUOTE_TITLE_PRESETS = [
+  "THEY SAID IT",
+  "HOT TAKE",
+];
+
+export const PLAY_IN_TITLE_PRESETS = [
+  "NBA PLAY-IN",
+  "PLAY-IN TOURNAMENT",
+];
+
 export const slugifyExport = (value: string) =>
   value
     .trim()

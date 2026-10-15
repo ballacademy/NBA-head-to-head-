@@ -7,6 +7,8 @@ import {
   BANNER_STUD_FILL,
   FIELD_TEXTURE_SRC,
 } from "../standingsComposer/headerTexture";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { coveredLogoRect } from "../standingsComposer/logoDraw";
 import { isPhotoChromeClassName, photoFrameFilled } from "./PhotoFrame";
 import * as potdLayout from "./playerOfTheDayLayout";
@@ -57,7 +59,8 @@ describe("player of the day state", () => {
   it("auto-fills headshot, team, stats, and result from the latest game", () => {
     const luka = getPlayer("3945274");
     expect(luka).toBeTruthy();
-    const game = parseLastGamePayload({
+    const game = parseLastGamePayload(
+      {
       labels: ["FG", "3PT", "REB", "AST", "BLK", "STL", "TO", "PTS"],
       events: {
         e1: {
@@ -94,7 +97,9 @@ describe("player of the day state", () => {
           ],
         },
       ],
-    });
+    },
+      "regular",
+    );
     const card = fillCardFromPlayer(luka!, game);
     expect(card.playerId).toBe("3945274");
     expect(card.teamId).toBe("LAL");
@@ -178,7 +183,9 @@ describe("player of the day state", () => {
     expect(kept[0]!.pan).toEqual(panned);
   });
 
-  it("uses the studded near-black title fill and no circled BA mark", () => {
+  it("uses the studded near-black title fill; circled BA is an on/off toggle", () => {
+    expect(typeof BaMarkToggle).toBe("function");
+    expect(typeof PhotoGradeToggle).toBe("function");
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");
@@ -224,6 +231,7 @@ describe("player of the day state", () => {
     expect(isPhotoChromeClassName("pod-photo__pick extra")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__zoom-in")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__rotate")).toBe(true);
+    expect(isPhotoChromeClassName("pod-photo__paste")).toBe(true);
     expect(isPhotoChromeClassName("pod-photo__tools")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__zoom")).toBe(false);
     expect(isPhotoChromeClassName("pod-photo__img")).toBe(false);

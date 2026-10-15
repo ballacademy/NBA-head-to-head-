@@ -19,7 +19,20 @@ export const ET_BORDER = 4;
 export const ET_TITLE_SIZE = 54;
 export const ET_TITLE_TRACK = 0.02;
 export const ET_LOGO_FIT = 0.94;
-export const ET_RANK_SIZE = 34;
+/** Small corner badge so 1–30 do not fight the face. */
+export const ET_RANK_SIZE = 15;
+export const ET_RANK_BADGE_H = 26;
+export const ET_RANK_BADGE_PAD_X = 8;
+export const ET_RANK_BADGE_INSET = 8;
+/** Ghosted cell logos. Jazz mountain is navy-on-metal — a small lift only. */
+export const ET_LOGO_ALPHA = 0.34;
+export const ET_JAZZ_LOGO_ALPHA = 0.5;
+export const ET_JAZZ_LOGO_BRIGHTNESS = 1.2;
+
+export const everyTeamLogoBackdrop = (teamId: string) =>
+  teamId === "UTA"
+    ? { alpha: ET_JAZZ_LOGO_ALPHA, brightness: ET_JAZZ_LOGO_BRIGHTNESS }
+    : { alpha: ET_LOGO_ALPHA, brightness: 1 };
 
 export interface EveryTeamGridMetrics {
   headerH: number;

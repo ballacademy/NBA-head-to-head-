@@ -7,6 +7,7 @@ import {
 } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
+  composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -19,11 +20,10 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
+import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   ET_CELL_GAP,
-  ET_LOGO_FIT,
   everyTeamGrid,
 } from "./everyTeamLayout";
 import {
@@ -32,16 +32,28 @@ import {
   splitEveryTeamTitle,
   type EveryTeamSlots,
 } from "./everyTeamState";
+import {
+  everyTeamCurrentSeason,
+  formatSeasonShort,
+  getRosterPlayer,
+  isMissingSeason,
+  seasonForTeam,
+  teamLogoSrc,
+} from "./historicalRosters";
 
 interface EveryTeamGraphicProps {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
   look?: ComposerLook;
+  purpleFlair?: boolean;
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showHistoricalLogos?: boolean;
+  season?: string;
+  cellSeasons?: Record<string, string>;
   activeIndex: number | null;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
@@ -82,10 +94,14 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       title,
       slots,
       look = "white",
+      purpleFlair = false,
       showBa = false,
       ranked = false,
       rankedOrder,
       showNames = false,
+      showHistoricalLogos = false,
+      season,
+      cellSeasons,
       activeIndex,
       exporting = false,
       onBrandChange,
@@ -214,7 +230,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
         return;
       }
       const sync = () => {
-        const width = node.getBoundingClientRect().width;
+        const width = node.offsetWidth;
         if (width > 0) {
           setUnit(width / GRAPHIC_WIDTH);
         }
@@ -239,6 +255,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
           ranked ? "is-ranked" : "",
           exporting ? "is-exporting" : "",
           composerLookClass(look),
+          composerFlairClass(purpleFlair),
         ]
           .filter(Boolean)
           .join(" ")}
@@ -310,11 +327,28 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
         <div className="et-grid">
           {teams.map((team, index) => {
             const stored = slots[slotIndexForTeam(team.id)] ?? null;
-            const player = getPlayer(stored);
-            const shown =
-              player && player.team === team.id ? player : null;
+            const cellSeason = seasonForTeam(
+              team.id,
+              season ?? everyTeamCurrentSeason(),
+              cellSeasons,
+            );
+            const missing = isMissingSeason(team.id, cellSeason);
+            const shown = getRosterPlayer(team.id, cellSeason, stored);
             const names = shown ? splitPlayerName(shown.name) : null;
+            const caption = names
+              ? fittedCellNames(
+                  names.firstName,
+                  names.lastName || shown!.name,
+                  grid.cell * 0.84,
+                  14,
+                  11,
+                )
+              : null;
             const rank = index + 1;
+            const overridden = Boolean(cellSeasons?.[team.id]);
+            const showYear =
+              overridden || cellSeason !== everyTeamCurrentSeason();
+            const noStats = Boolean(shown && shown.pts == null);
             return (
               <div
                 key={team.id}
@@ -323,6 +357,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 className={[
                   "et-cell",
                   shown ? "et-cell--filled" : "",
+                  missing ? "et-cell--missing" : "",
                   ranked ? "et-cell--ranked" : "",
                   dragEnabled ? "et-cell--movable" : "",
                   draggingFrom === index ? "et-cell--dragging" : "",
@@ -349,22 +384,23 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                     onSelectSlot(index);
                   }}
                   aria-label={
-                    ranked
-                      ? shown
-                        ? `Rank ${rank}, ${team.name}, ${shown.name}. Change player`
-                        : `Rank ${rank}, ${team.name}, empty. Pick a player`
-                      : shown
-                        ? `${team.name}, ${shown.name}. Change player`
-                        : `${team.name}, empty. Pick a player`
+                    missing
+                      ? `${team.name}, ${cellSeason} roster unavailable`
+                      : ranked
+                        ? shown
+                          ? `Rank ${rank}, ${team.name}, ${shown.name}, ${cellSeason}. Change player`
+                          : `Rank ${rank}, ${team.name}, empty ${cellSeason}. Pick a player`
+                        : shown
+                          ? `${team.name}, ${shown.name}, ${cellSeason}. Change player`
+                          : `${team.name}, empty ${cellSeason}. Pick a player`
                   }
                 />
                 <div className="et-cell__backdrop" aria-hidden="true">
                   <TeamLogo
-                    src={team.logoSrc}
+                    src={teamLogoSrc(team.id, cellSeason, showHistoricalLogos)}
                     label={team.id}
                     shadow={0}
-                    fitX={ET_LOGO_FIT}
-                    fitY={ET_LOGO_FIT}
+                    cover
                   />
                 </div>
                 {shown ? (
@@ -382,14 +418,29 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 {dragEnabled ? (
                   <span className="et-cell__handle" aria-hidden="true" />
                 ) : null}
-                {showNames && shown && names ? (
+                {missing ? (
+                  <span className="et-cell__missing">
+                    No {formatSeasonShort(cellSeason)} roster
+                  </span>
+                ) : null}
+                {showYear && !missing ? (
+                  <span
+                    className={
+                      overridden ? "et-cell__year is-override" : "et-cell__year"
+                    }
+                  >
+                    {formatSeasonShort(cellSeason)}
+                  </span>
+                ) : null}
+                {exporting || !noStats ? null : (
+                  <span className="et-cell__nostats">No stats</span>
+                )}
+                {showNames && shown && caption ? (
                   <span className="et-cell__name">
-                    {names.firstName ? (
-                      <span className="et-cell__given">{names.firstName}</span>
+                    {caption.firstName ? (
+                      <span className="et-cell__given">{caption.firstName}</span>
                     ) : null}
-                    <span className="et-cell__family">
-                      {names.lastName || shown.name}
-                    </span>
+                    <span className="et-cell__family">{caption.lastName}</span>
                   </span>
                 ) : null}
                 {exporting || !shown ? null : (
