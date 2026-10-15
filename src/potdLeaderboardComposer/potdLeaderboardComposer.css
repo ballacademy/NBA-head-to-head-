@@ -89,6 +89,7 @@
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
+}
 
 .plb-title-input:focus {
   outline: calc(2 * var(--u)) dashed rgba(245, 196, 0, 0.55);
