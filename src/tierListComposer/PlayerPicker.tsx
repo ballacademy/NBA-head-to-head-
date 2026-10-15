@@ -425,7 +425,10 @@ export function PlayerPicker({
         {showSuggested ? (
           <div className="sc-picker__suggested">
             <p className="sc-picker__suggested-label">{suggestedHeading}</p>
-            <div className="sc-picker__grid sc-picker__grid--suggested">
+            <div
+              className="sc-picker__grid sc-picker__grid--suggested"
+              aria-label={suggestedHeading}
+            >
               {suggestedRows.map((row) => (
                 <PlayerButton
                   key={`sug-${row.id}`}

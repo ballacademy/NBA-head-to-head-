@@ -1272,9 +1272,14 @@ main.sc-stage {
 }
 
 .sc-picker__suggested {
-  flex: 0 0 auto;
+  flex: 1 1 48%;
+  min-height: 140px;
+  max-height: min(56vh, 480px);
+  display: flex;
+  flex-direction: column;
   padding: 4px 16px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
 .sc-picker__suggested-label,
@@ -1306,10 +1311,13 @@ main.sc-stage {
 }
 
 .sc-picker__grid--suggested {
-  flex: none;
-  overflow: visible;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding: 0;
-  max-height: none;
 }
 
 .sc-team {
@@ -1678,6 +1686,12 @@ main.sc-stage {
   .sc-picker__grid {
     grid-template-columns: 1fr;
     padding: 4px 12px 12px;
+  }
+
+  .sc-picker__grid--suggested {
+    overflow: auto;
+    min-height: 0;
+    padding: 0;
   }
 
   .sc-team {

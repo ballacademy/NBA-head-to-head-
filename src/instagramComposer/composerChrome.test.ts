@@ -28,6 +28,15 @@ describe("composer chrome", () => {
     expect(sheet).toContain("max-height: min(42vh, 360px)");
     expect(sheet).toContain(".sc-picker__suggested");
     expect(sheet).toContain(".sc-picker__grid--suggested");
+    expect(sheet).toMatch(
+      /\.sc-picker__grid--suggested[\s\S]*?overflow:\s*auto/,
+    );
+    expect(sheet).toMatch(
+      /\.sc-picker__grid--suggested[\s\S]*?min-height:\s*0/,
+    );
+    expect(sheet).toMatch(
+      /\.sc-picker__suggested[\s\S]*?overflow:\s*hidden/,
+    );
     expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
