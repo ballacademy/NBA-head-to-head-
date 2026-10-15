@@ -13,7 +13,6 @@ import {
   composerWatermarkOpacity,
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
-import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -22,16 +21,15 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   SCC_BA_INSET,
   SCC_BA_SIZE,
-  SCC_BRAND_SIZE,
   SCC_DATE_SIZE,
   SCC_FADE_H,
-  SCC_KICKER_SIZE,
   SCC_MARK,
   SCC_PILL_H,
   SCC_SLOT_COUNT,
   SCC_TITLE_SIZE,
   coverCellRect,
   coverNameMetrics,
+  coverSeamXs,
 } from "./statCardCoverLayout";
 import {
   SCC_DATE_MAX,
@@ -48,7 +46,6 @@ interface StatCardCoverGraphicProps {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   exporting?: boolean;
-  onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onDateLineChange: (value: string) => void;
   onPick: (index: number) => void;
@@ -71,7 +68,6 @@ export const StatCardCoverGraphic = forwardRef<
     purpleFlair = false,
     photoGrade = false,
     exporting = false,
-    onBrandChange,
     onTitleChange,
     onDateLineChange,
     onPick,
@@ -86,8 +82,7 @@ export const StatCardCoverGraphic = forwardRef<
   const [unit, setUnit] = useState(0.4);
   const watermark = parseComposerWatermark(draft.watermark);
   const titleLines = splitCoverTitle(draft.title);
-  const kicker = titleLines.length > 1 ? titleLines[0]! : "";
-  const headline = titleLines.length > 1 ? titleLines[1]! : titleLines[0]!;
+  const names = coverNameMetrics();
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -134,11 +129,11 @@ export const StatCardCoverGraphic = forwardRef<
         {
           ["--u" as string]: `${unit}px`,
           ["--fade-h" as string]: String(SCC_FADE_H),
-          ["--kicker-size" as string]: String(SCC_KICKER_SIZE),
           ["--title-size" as string]: String(SCC_TITLE_SIZE),
           ["--date-size" as string]: String(SCC_DATE_SIZE),
-          ["--brand-size" as string]: String(SCC_BRAND_SIZE),
           ["--pill-h" as string]: String(SCC_PILL_H),
+          ["--name-h" as string]: String(names.nameH),
+          ["--name-logo" as string]: String(names.logo),
         } as React.CSSProperties
       }
       aria-label="Instagram stat card cover"
@@ -146,7 +141,6 @@ export const StatCardCoverGraphic = forwardRef<
       {Array.from({ length: SCC_SLOT_COUNT }, (_, index) => {
         const slot = draft.slots[index]!;
         const cell = coverCellRect(index);
-        const names = coverNameMetrics(index);
         const empty = !slot.photoSrc;
         const named = Boolean(slot.playerId || coverSlotName(slot));
         const team = getTeam(slot.teamId);
@@ -154,16 +148,12 @@ export const StatCardCoverGraphic = forwardRef<
         return (
           <section
             key={`scc-cell-${index}`}
-            className={["scc-cell", index === 0 ? "is-hero" : "is-stack"].join(
-              " ",
-            )}
+            className="scc-cell"
             style={{
               left: `calc(${cell.x} * var(--u))`,
               top: `calc(${cell.y} * var(--u))`,
               width: `calc(${cell.w} * var(--u))`,
               height: `calc(${cell.h} * var(--u))`,
-              ["--name-h" as string]: String(names.nameH),
-              ["--name-logo" as string]: String(names.logo),
             }}
             aria-label={`Cover player ${index + 1}`}
             onPointerEnter={() => onHover?.(index)}
@@ -215,19 +205,18 @@ export const StatCardCoverGraphic = forwardRef<
       })}
       <div className="scc-top-fade" aria-hidden="true" />
       <div className="scc-lockup-scrim" aria-hidden="true" />
-      <div className="scc-seam" aria-hidden="true" />
-      <header className="scc-lockup">
-        <input
-          className="scc-brand"
-          value={draft.brand}
-          maxLength={24}
-          spellCheck={false}
-          aria-label="Brand label"
-          onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+      {coverSeamXs().map((x) => (
+        <div
+          key={`scc-seam-${x}`}
+          className="scc-seam"
+          aria-hidden="true"
+          style={{ left: `calc(${x} * var(--u))` }}
         />
+      ))}
+      <header className="scc-lockup">
         <ComposerTitleField
           value={draft.title}
-          lines={kicker ? [kicker, headline] : [headline]}
+          lines={titleLines}
           ariaLabel="Cover title"
           inputClassName="scc-title-input"
           lineClassName="scc-title-line"

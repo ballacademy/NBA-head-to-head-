@@ -12,12 +12,19 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
-import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import {
+  measureTitleAdvance,
+  splitBalancedTitle,
+} from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
-import { SCC_SLOT_COUNT } from "./statCardCoverLayout";
+import {
+  SCC_SLOT_COUNT,
+  SCC_TITLE_MAX_EM,
+  SCC_TITLE_TRACK,
+} from "./statCardCoverLayout";
 
 export { clampPan, type PhotoPan, SCC_SLOT_COUNT };
 
@@ -115,13 +122,14 @@ export const coverTitleForNight = (
   _yesterdayIso?: string,
 ) => DEFAULT_COVER_TITLE;
 
+/** One strong poster line when it fits; otherwise two even-weight lines. */
 export const splitCoverTitle = (title: string) => {
   const text =
     title.replace(/\s+/g, " ").trim().toUpperCase() || DEFAULT_COVER_TITLE;
-  if (text === DEFAULT_COVER_TITLE) {
-    return ["STARS AND", "STANDOUTS"];
+  if (measureTitleAdvance(text, SCC_TITLE_TRACK) <= SCC_TITLE_MAX_EM) {
+    return [text];
   }
-  return splitBalancedTitle(text, DEFAULT_COVER_TITLE);
+  return splitBalancedTitle(text, DEFAULT_COVER_TITLE, SCC_TITLE_TRACK);
 };
 
 export const coverDateLine = (iso: string) => {
@@ -280,7 +288,7 @@ export const applyCoverNight = (
   };
 };
 
-/** Ranked standouts already sorted — take the first four faces. */
+/** Ranked standouts already sorted — take the first three faces. */
 export const fillCoverFromStandouts = (
   draft: StatCardCoverDraft,
   rows: NightStandout[],

@@ -507,9 +507,6 @@ export function StatCardCoverComposerApp() {
                 purpleFlair={purpleFlair}
                 photoGrade={photoGrade}
                 exporting={exporting}
-                onBrandChange={(brand) =>
-                  setDraft((current) => ({ ...current, brand }))
-                }
                 onTitleChange={(title) =>
                   setDraft((current) => ({ ...current, title }))
                 }
@@ -547,9 +544,10 @@ export function StatCardCoverComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </div>
           <p className="sc-hint">
-            Stars and standouts cover for that night’s stat cards — four
-            full-bleed faces, no individual stats. Tonight / Last night fills
-            the four most impressive standouts; empty slots stay pickable.
+            Stars and standouts cover for that night’s stat cards — three
+            full-bleed faces in one row, no individual stats. Tonight / Last
+            night fills the three most impressive standouts; empty slots stay
+            pickable.
             Upload or paste to replace a photo. Downloads a 4:5 Instagram PNG —
             nothing is posted.
           </p>

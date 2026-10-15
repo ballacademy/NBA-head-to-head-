@@ -27,14 +27,9 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   SCC_BA_INSET,
   SCC_BA_SIZE,
-  SCC_BRAND_SIZE,
-  SCC_BRAND_TRACK,
   SCC_DATE_SIZE,
   SCC_DATE_TRACK,
   SCC_FADE_H,
-  SCC_HERO_W,
-  SCC_KICKER_SIZE,
-  SCC_KICKER_TRACK,
   SCC_LOCKUP_TOP,
   SCC_MARK,
   SCC_PILL_H,
@@ -47,6 +42,7 @@ import {
   SCC_TITLE_TRACK,
   coverCellRect,
   coverNameMetrics,
+  coverSeamXs,
 } from "./statCardCoverLayout";
 import {
   coverSlotName,
@@ -114,9 +110,9 @@ const paintTopFade = (
 ) => {
   const fade = context.createLinearGradient(0, 0, 0, height);
   fade.addColorStop(0, "rgba(0, 0, 0, 0.9)");
-  fade.addColorStop(0.22, "rgba(0, 0, 0, 0.72)");
-  fade.addColorStop(0.52, "rgba(0, 0, 0, 0.42)");
-  fade.addColorStop(0.78, "rgba(0, 0, 0, 0.12)");
+  fade.addColorStop(0.24, "rgba(0, 0, 0, 0.7)");
+  fade.addColorStop(0.54, "rgba(0, 0, 0, 0.4)");
+  fade.addColorStop(0.8, "rgba(0, 0, 0, 0.12)");
   fade.addColorStop(1, "rgba(0, 0, 0, 0)");
   context.fillStyle = fade;
   context.fillRect(0, 0, width, height);
@@ -130,8 +126,7 @@ const paintSeam = (
 ) => {
   const fade = context.createLinearGradient(x, 0, x + width, 0);
   fade.addColorStop(0, "rgba(0, 0, 0, 0)");
-  fade.addColorStop(0.45, "rgba(0, 0, 0, 0.38)");
-  fade.addColorStop(0.7, "rgba(0, 0, 0, 0.22)");
+  fade.addColorStop(0.5, "rgba(0, 0, 0, 0.42)");
   fade.addColorStop(1, "rgba(0, 0, 0, 0)");
   context.fillStyle = fade;
   context.fillRect(x, 0, width, height);
@@ -303,7 +298,6 @@ export const renderStatCardCoverCanvas = async (
   await document.fonts?.ready.catch(() => undefined);
   await Promise.all([
     document.fonts?.load(`900 ${SCC_TITLE_SIZE * scale}px ${POSTER_FONT}`),
-    document.fonts?.load(`900 ${SCC_KICKER_SIZE * scale}px ${POSTER_FONT}`),
     document.fonts?.load(`900 ${SCC_DATE_SIZE * scale}px ${POSTER_FONT}`),
   ]).catch(() => undefined);
 
@@ -337,77 +331,46 @@ export const renderStatCardCoverCanvas = async (
     );
   }
 
-  paintSeam(context, SCC_HERO_W * s, height, SCC_SEAM_W * s);
+  for (const seamX of coverSeamXs()) {
+    paintSeam(context, (seamX - SCC_SEAM_W / 2) * s, height, SCC_SEAM_W * s);
+  }
   paintTopFade(context, width, SCC_FADE_H * s);
   const scrim = context.createRadialGradient(
     width / 2,
-    140 * s,
-    20 * s,
+    90 * s,
+    16 * s,
     width / 2,
-    140 * s,
-    520 * s,
+    90 * s,
+    480 * s,
   );
-  scrim.addColorStop(0, "rgba(0, 0, 0, 0.55)");
-  scrim.addColorStop(0.58, "rgba(0, 0, 0, 0.18)");
+  scrim.addColorStop(0, "rgba(0, 0, 0, 0.58)");
+  scrim.addColorStop(0.56, "rgba(0, 0, 0, 0.2)");
   scrim.addColorStop(1, "rgba(0, 0, 0, 0)");
   context.fillStyle = scrim;
-  context.fillRect(0, 0, width, 360 * s);
+  context.fillRect(0, 0, width, 300 * s);
 
   const cx = width / 2;
   let cursor = SCC_LOCKUP_TOP * s;
-  withShadow(context, s, () => {
-    context.font = `900 ${SCC_BRAND_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    setLetterSpacing(context, SCC_BRAND_TRACK * SCC_BRAND_SIZE * s);
-    context.fillStyle = "rgba(255, 255, 255, 0.92)";
-    context.fillText(
-      (input.brand || "BALLACADEMY").toUpperCase(),
-      cx,
-      cursor,
-      width - 160 * s,
-    );
-    setLetterSpacing(context, 0);
-  });
-  cursor += 24 * s;
-
   const lines = splitCoverTitle(input.title);
-  const kicker = lines.length > 1 ? lines[0]! : "";
-  const headline = lines.length > 1 ? lines[1]! : lines[0]!;
   context.textAlign = "center";
   context.textBaseline = "top";
-  if (kicker) {
-    context.font = `900 ${SCC_KICKER_SIZE * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, SCC_KICKER_TRACK * SCC_KICKER_SIZE * s);
-    withShadow(context, s, () => {
-      strokeFillText(
-        context,
-        kicker,
-        cx,
-        cursor,
-        "#fff",
-        "#000",
-        2 * s,
-      );
-    });
-    setLetterSpacing(context, 0);
-    cursor += SCC_KICKER_SIZE * 0.96 * s + 6 * s;
-  }
   context.font = `900 ${SCC_TITLE_SIZE * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, SCC_TITLE_TRACK * SCC_TITLE_SIZE * s);
-  withShadow(context, s, () => {
-    strokeFillText(
-      context,
-      headline,
-      cx,
-      cursor,
-      "#fff",
-      "#000",
-      3.2 * s,
-    );
-  });
+  for (const line of lines) {
+    context.save();
+    context.shadowColor = "rgba(0, 0, 0, 0.45)";
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 8 * s;
+    context.shadowBlur = 18 * s;
+    strokeFillText(context, line, cx, cursor, "#fff", "#000", 3.2 * s);
+    context.restore();
+    withShadow(context, s, () => {
+      strokeFillText(context, line, cx, cursor, "#fff", "#000", 3.2 * s);
+    });
+    cursor += SCC_TITLE_SIZE * 0.9 * s + 4 * s;
+  }
   setLetterSpacing(context, 0);
-  cursor += SCC_TITLE_SIZE * 0.9 * s + 18 * s;
+  cursor += 14 * s;
 
   const date = (input.dateLine || "").toUpperCase();
   if (date) {
