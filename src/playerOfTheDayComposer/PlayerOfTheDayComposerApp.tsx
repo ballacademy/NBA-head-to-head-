@@ -6,6 +6,11 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   copyGraphicCaption,
@@ -26,7 +31,7 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { fetchRecentGames, type LastGame } from "./lastGame";
+import { fetchRecentGames, formatDateLabel, type LastGame } from "./lastGame";
 import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
@@ -102,6 +107,7 @@ export function PlayerOfTheDayComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
+  const night = useComposerNight();
 
   useEffect(() => {
     document.title = "Player of the Day graphic";
@@ -167,6 +173,13 @@ export function PlayerOfTheDayComposerApp() {
     setStatus("Board cleared.");
   };
 
+  useEffect(() => {
+    if (activeIndex == null) {
+      return;
+    }
+    void night.ensureStandouts();
+  }, [activeIndex, night.date, night.ensureStandouts]);
+
   const handlePick = async (playerId: string) => {
     if (activeIndex == null) {
       return;
@@ -175,13 +188,18 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
-    setStatus("Loading recent games…");
-    const games = await fetchRecentGames(player.id, statsSample);
+    const standout = night.standouts.find((row) => row.athleteId === playerId);
     pendingPick.current = {
       index: activeIndex,
       playerId: player.id,
       playerName: player.name,
     };
+    if (standout) {
+      applyPickedGame(standout.game);
+      return;
+    }
+    setStatus("Loading recent games…");
+    const games = await fetchRecentGames(player.id, statsSample);
     if (games.length > 1) {
       setGameChoices(games);
       setStatus(`Pick a game for ${player.name}.`);
@@ -287,10 +305,21 @@ export function PlayerOfTheDayComposerApp() {
           </>
         }
         data={
+          <>
           <ComposerStatsSampleToggle
             sample={statsSample}
             onChange={setStatsSample}
           />
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              setDate(formatDateLabel(iso));
+            }}
+          />
+          </>
         }
         board={
           <>
@@ -430,6 +459,9 @@ export function PlayerOfTheDayComposerApp() {
           hint="Search a name. We’ll fill the latest game, team color, and headshot."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
           onPick={(playerId) => {
             void handlePick(playerId);
           }}

@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
@@ -29,6 +30,8 @@ export function TeamPicker({
 }: TeamPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
   const filled = Boolean(currentId);
 
   useDialogA11y({
@@ -44,8 +47,37 @@ export function TeamPicker({
       filter === "all"
         ? NBA_TEAMS
         : NBA_TEAMS.filter((team) => team.conference === filter);
-    return [...list].sort((a, b) => a.name.localeCompare(b.name));
-  }, [filter]);
+    const token = query.trim().toLowerCase();
+    const matched = token
+      ? list.filter((team) => {
+          const hay =
+            `${team.name} ${team.id} ${team.shortName} ${team.conference}`.toLowerCase();
+          return hay.includes(token);
+        })
+      : list;
+    return [...matched].sort((a, b) => a.name.localeCompare(b.name));
+  }, [filter, query]);
+
+  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        pickerHighlightIndex(
+          teams.length,
+          current,
+          event.key === "ArrowDown" ? 1 : -1,
+        ),
+      );
+      return;
+    }
+    if (event.key === "Enter") {
+      const team = teams[Math.max(0, activeIndex)];
+      if (team) {
+        event.preventDefault();
+        onPick(team.id);
+      }
+    }
+  };
 
   return (
     <div
@@ -69,6 +101,23 @@ export function TeamPicker({
             Close
           </button>
         </div>
+        <div className="sc-picker__toolbar">
+          <label className="sc-picker__search">
+            Search
+            <input
+              type="search"
+              value={query}
+              placeholder="Name or abbrev (LAL, Celtics…)"
+              enterKeyHint="search"
+              aria-label="Search teams"
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setActiveIndex(0);
+              }}
+              onKeyDown={onSearchKeyDown}
+            />
+          </label>
+        </div>
         <div className="sc-picker__filters" role="tablist" aria-label="Conference">
           {(["all", "East", "West"] as const).map((value) => (
             <button
@@ -77,19 +126,23 @@ export function TeamPicker({
               role="tab"
               aria-selected={filter === value}
               className={filter === value ? "sc-chip is-on" : "sc-chip"}
-              onClick={() => setFilter(value)}
+              onClick={() => {
+                setFilter(value);
+                setActiveIndex(0);
+              }}
             >
               {value === "all" ? "All 30" : value}
             </button>
           ))}
         </div>
         <div className="sc-picker__grid">
-          {teams.map((team) => (
+          {teams.map((team, index) => (
             <TeamButton
               key={team.id}
               team={team}
               currentId={currentId ?? null}
               usedLabel={usedLabels[team.id]}
+              highlighted={activeIndex === index}
               onPick={onPick}
             />
           ))}
@@ -113,11 +166,13 @@ function TeamButton({
   team,
   currentId,
   usedLabel,
+  highlighted,
   onPick,
 }: {
   team: NbaTeam;
   currentId: string | null;
   usedLabel?: string;
+  highlighted?: boolean;
   onPick: (teamId: string) => void;
 }) {
   const isCurrent = currentId === team.id;
@@ -130,6 +185,7 @@ function TeamButton({
         "sc-team",
         isUsed ? "is-used" : "",
         isCurrent ? "is-current" : "",
+        highlighted ? "is-active" : "",
       ]
         .filter(Boolean)
         .join(" ")}

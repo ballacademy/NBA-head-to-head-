@@ -4,6 +4,7 @@ import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
   QUOTE_LOOK_KEY,
@@ -20,6 +21,8 @@ import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { KeepQuoteDialog } from "./KeepQuoteDialog";
@@ -33,6 +36,7 @@ import {
   fillQuoteFromPlayer,
   hasCustomPhoto,
   isQuoteDraft,
+  lastGameQuotePresets,
   QUOTE_MAX,
   SOURCE_MAX,
   type QuoteDraft,
@@ -64,6 +68,9 @@ export function QuoteComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(QUOTE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [statsSample] = useComposerStatsSample();
+  const [storyCrop, setStoryCrop] = useState(false);
+  const [gamePresets, setGamePresets] = useState<string[]>([]);
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
     playerName: string;
@@ -143,6 +150,9 @@ export function QuoteComposerApp() {
         ? `Filled ${player.name} — quote cleared. Upload a photo.`
         : `Filled ${player.name} — upload a photo.`,
     );
+    void fetchLastGame(player.id, statsSample).then((game) => {
+      setGamePresets(lastGameQuotePresets(game));
+    });
   };
 
   useEffect(() => {
@@ -213,6 +223,28 @@ export function QuoteComposerApp() {
         </label>
           </>
         }
+        data={
+          gamePresets.length ? (
+            <div className="sc-look" role="group" aria-label="Last-game quote presets">
+              <span className="sc-look__label">Last game</span>
+              {gamePresets.map((line) => (
+                <button
+                  key={line}
+                  type="button"
+                  className="sc-chip"
+                  onClick={() =>
+                    setDraft((current) => ({
+                      ...current,
+                      quote: line.slice(0, QUOTE_MAX),
+                    }))
+                  }
+                >
+                  {line}
+                </button>
+              ))}
+            </div>
+          ) : null
+        }
         board={
           <>
         <label className="sc-field">
@@ -237,6 +269,18 @@ export function QuoteComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -356,6 +400,7 @@ export function QuoteComposerApp() {
               }
               onPick={() => setPickerOpen(true)}
             />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — last-name masthead up top, pull-quote on the

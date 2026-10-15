@@ -5,6 +5,12 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
@@ -116,7 +122,9 @@ export function HeadlineComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
+  const [storyCrop, setStoryCrop] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<HeadlineDraft>();
+  const night = useComposerNight();
   const subject = parseHeadlineSubjectMode(draft.subjectMode);
 
   useEffect(() => {
@@ -137,7 +145,7 @@ export function HeadlineComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
-  const fillAutoBody = async (next: HeadlineDraft) => {
+  const fillAutoBody = async (next: HeadlineDraft, onDate = night.date) => {
     const team = getTeam(next.teamId);
     if (!team) {
       return;
@@ -145,7 +153,7 @@ export function HeadlineComposerApp() {
     try {
       const [playerGame, night] = await Promise.all([
         next.playerId
-          ? fetchLastGame(next.playerId, statsSample)
+          ? fetchLastGame(next.playerId, statsSample, onDate)
           : Promise.resolve(null),
         fetchTeamLastNight(team.id, statsSample),
       ]);
@@ -198,7 +206,20 @@ export function HeadlineComposerApp() {
       return;
     }
     push(draft);
-    const next = fillHeadlineFromPlayer(player, draft, keepCustomPhoto);
+    let next = fillHeadlineFromPlayer(player, draft, keepCustomPhoto);
+    const standout = night.standouts.find((row) => row.athleteId === playerId);
+    if (standout) {
+      const team = getTeam(next.teamId);
+      const body = formatHeadlineBody(team, standout.game, null);
+      if (body) {
+        next = {
+          ...next,
+          body: clipHeadlineBody(body),
+          opponentId: standout.game.opponentId,
+          gameDate: standout.game.gameDate,
+        };
+      }
+    }
     setDraft(next);
     setPickerOpen(false);
     setKeepPrompt(null);
@@ -209,6 +230,13 @@ export function HeadlineComposerApp() {
     );
     void fillAutoBody(next);
   };
+
+  useEffect(() => {
+    if (!pickerOpen || subject === "team") {
+      return;
+    }
+    void night.ensureStandouts();
+  }, [pickerOpen, subject, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {
     const player = getPlayer(playerId);
@@ -292,6 +320,15 @@ export function HeadlineComposerApp() {
           <ComposerStatsSampleToggle
             sample={statsSample}
             onChange={setStatsSample}
+          />
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              void fillAutoBody(draft, iso);
+            }}
           />
           <button
             type="button"
@@ -454,6 +491,18 @@ export function HeadlineComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -600,6 +649,7 @@ export function HeadlineComposerApp() {
             }}
             onPick={() => setPickerOpen(true)}
           />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — upload or paste an action shot. City, plate,
@@ -638,6 +688,9 @@ export function HeadlineComposerApp() {
           usedLabels={
             draft.playerId ? { [draft.playerId]: "Headline" } : {}
           }
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
           onPick={handlePick}
           onClear={() => {
             push(draft);

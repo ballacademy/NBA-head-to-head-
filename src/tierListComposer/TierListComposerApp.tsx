@@ -72,6 +72,7 @@ import {
   usedLabelsForPicker,
   usedTeamIds,
   type TierRow,
+  type TierSplit,
   type TierSubject,
 } from "./tierState";
 import "@fontsource/montserrat/latin-900.css";
@@ -154,6 +155,7 @@ export function TierListComposerApp() {
   const [filterEpoch, setFilterEpoch] = useState(0);
   const [rostersReady, setRostersReady] = useState(false);
   const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
+  const [tierSplit, setTierSplit] = useState<TierSplit>("even");
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [statsSample, setStatsSample] = useComposerStatsSample();
@@ -314,7 +316,7 @@ export function TierListComposerApp() {
     const scored = used.filter((id) => values.get(id) != null).length;
     const label = autoSortMetricLabel(metric);
     push(rows);
-    setRows(groupIdsByValues(rows, values));
+    setRows(groupIdsByValues(rows, values, tierSplit));
     setActive(null);
     if (scored === 0) {
       setStatus(
@@ -427,6 +429,16 @@ export function TierListComposerApp() {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className={tierSplit === "fat-s" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={tierSplit === "fat-s"}
+            onClick={() =>
+              setTierSplit((current) => (current === "fat-s" ? "even" : "fat-s"))
+            }
+          >
+            Fat S
+          </button>
           <button
             type="button"
             className="sc-chip"

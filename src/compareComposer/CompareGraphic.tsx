@@ -4,9 +4,15 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { getTeam } from "../standingsComposer/teams";
 import { compareStatGutter, compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
@@ -58,6 +64,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
     const [unit, setUnit] = useState(1);
     const type = compareStatType(draft.stats.length);
     const gutter = compareStatGutter(draft.stats.length);
+    const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -135,6 +142,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           {([0, 1] as const).map((side) => {
             const person = draft.sides[side]!;
             const caption = compareSideCaption(person);
+            const team = getTeam(person.teamId);
             return (
               <section
                 key={`cmp-side-${side}`}
@@ -142,6 +150,15 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                 aria-label={side === 0 ? "Left photo" : "Right photo"}
                 style={{ gridColumn: side === 0 ? 1 : 3 }}
               >
+                {team && watermark !== "off" ? (
+                  <div
+                    className="cmp-mark"
+                    aria-hidden="true"
+                    style={{ opacity: composerWatermarkOpacity(watermark) }}
+                  >
+                    <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
+                  </div>
+                ) : null}
                 <PhotoFrame
                   src={person.photoSrc}
                   label={sideLabel(person, side === 0 ? "left" : "right")}

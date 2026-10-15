@@ -5,6 +5,13 @@ import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import {
@@ -96,7 +103,9 @@ export function CompareComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
+  const [storyCrop, setStoryCrop] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<CompareDraft>();
+  const night = useComposerNight();
 
   useEffect(() => {
     document.title = "Comparison graphic";
@@ -126,6 +135,7 @@ export function CompareComposerApp() {
     side?: 0 | 1,
     playerId?: string,
     sample = statsSample,
+    onDate = night.date,
   ) => {
     const mode = parseCompareStatsMode(snapshot.statsMode);
     const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
@@ -138,7 +148,7 @@ export function CompareComposerApp() {
         continue;
       }
       if (mode === "game") {
-        const game = await fetchLastGame(id, sample);
+        const game = await fetchLastGame(id, sample, onDate);
         nextStats = applySideStatValues(
           nextStats,
           index,
@@ -175,6 +185,13 @@ export function CompareComposerApp() {
     );
     void fillStats(next, side, player.id);
   };
+
+  useEffect(() => {
+    if (picker == null) {
+      return;
+    }
+    void night.ensureStandouts();
+  }, [picker, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {
     if (picker == null) {
@@ -351,6 +368,17 @@ export function CompareComposerApp() {
             void fillStats(draft, undefined, undefined, nextSample);
           }}
         />
+        {mode === "game" ? (
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              void fillStats(draft, undefined, undefined, statsSample, iso);
+            }}
+          />
+        ) : null}
         <label className="sc-field">
           Season
           <select
@@ -466,6 +494,24 @@ export function CompareComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+        <WatermarkToggle
+          value={draft.watermark}
+          onChange={(watermark) =>
+            setDraft((current) => ({ ...current, watermark }))
+          }
+        />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -614,6 +660,7 @@ export function CompareComposerApp() {
                 })
               }
             />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photos first — pick two players for this-season averages,
@@ -630,6 +677,9 @@ export function CompareComposerApp() {
           hint="Same or different people. Stats fill from this season’s averages unless you switch to last game."
           currentId={draft.sides[picker]?.playerId}
           usedLabels={used}
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
           onPick={handlePick}
           onClear={() => {
             push(draft);

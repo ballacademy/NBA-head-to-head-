@@ -78,14 +78,14 @@ export function ComposerToolbar({
             {persist}
           </div>
         ) : null}
-      </div>
-      <div
-        className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
-        data-slot="Export"
-        role="group"
-        aria-label="Export"
-      >
-        {actions}
+        <div
+          className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
+          data-slot="Export"
+          role="group"
+          aria-label="Export"
+        >
+          {actions}
+        </div>
       </div>
     </header>
   );

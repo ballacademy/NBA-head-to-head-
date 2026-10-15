@@ -6,6 +6,8 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   EVERY_TEAM_LOOK_KEY,
@@ -43,6 +45,7 @@ import {
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
   DEFAULT_EVERY_TEAM_TITLE,
+  fillEveryTeamFromNight,
   isEveryTeamDraft,
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
@@ -51,6 +54,7 @@ import {
   slotIndexForTeam,
   teamAtSlot,
   usedEveryTeamLabels,
+  type EveryTeamNightMetric,
   type EveryTeamSlots,
 } from "./everyTeamState";
 import {
@@ -141,6 +145,8 @@ export function EveryTeamComposerApp() {
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
   const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
+  const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
+  const night = useComposerNight();
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
@@ -344,6 +350,21 @@ export function EveryTeamComposerApp() {
     );
   };
 
+  const handleNightFill = async (metric: EveryTeamNightMetric) => {
+    setStatus("Loading last night’s box scores…");
+    const rows = await night.ensureStandouts();
+    const result = fillEveryTeamFromNight(slots, rows, metric);
+    if (result.filled === 0) {
+      setStatus("No last-night lines for this date.");
+      return;
+    }
+    push(snapshot());
+    setSlots(result.slots);
+    setStatus(
+      `Filled ${result.filled} teams with last night’s ${metric === "pra" ? "PRA" : "PTS"} leader.`,
+    );
+  };
+
   const activeTeam =
     activeIndex != null ? teamAtSlot(activeIndex, ranked, rankedOrder) : null;
   const activeSeason = activeTeam
@@ -448,6 +469,34 @@ export function EveryTeamComposerApp() {
             onClick={() => handleAutoFill(fillMetric)}
           >
             Fill leaders
+          </button>
+        </div>
+        <ComposerNightDate
+          date={night.date}
+          todayIso={night.todayIso}
+          yesterdayIso={night.yesterdayIso}
+          onChange={night.setDate}
+        />
+        <div className="sc-look sc-look--sort" role="group" aria-label="Fill last night">
+          <span className="sc-look__label">Last night</span>
+          <select
+            value={nightMetric}
+            aria-label="Last-night fill stat"
+            onChange={(event) =>
+              setNightMetric(
+                event.target.value === "pra" ? "pra" : "pts",
+              )
+            }
+          >
+            <option value="pts">PTS</option>
+            <option value="pra">PRA</option>
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void handleNightFill(nightMetric)}
+          >
+            Fill last night
           </button>
         </div>
         <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">

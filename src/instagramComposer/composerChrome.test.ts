@@ -13,6 +13,10 @@ const photo = readFileSync(
   join(root, "playerOfTheDayComposer/playerOfTheDayComposer.css"),
   "utf8",
 );
+const toolbar = readFileSync(
+  join(root, "instagramComposer/ComposerToolbar.tsx"),
+  "utf8",
+);
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -25,7 +29,7 @@ describe("composer chrome", () => {
     expect(sheet).toContain("font-size: 16px");
     expect(sheet).toContain("min-height: 72px");
     expect(sheet).toContain("min-height: 44px");
-    expect(sheet).toContain("max-height: min(42vh, 360px)");
+    expect(sheet).toContain("max-height: min(56vh, 480px)");
     expect(sheet).toContain(".sc-picker__suggested");
     expect(sheet).toContain(".sc-picker__grid--suggested");
     expect(sheet).toMatch(
@@ -40,6 +44,9 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
+    expect(toolbar).toMatch(
+      /sc-toolbar__scroll[\s\S]*sc-toolbar__row--actions/,
+    );
   });
 
   it("keeps filters in one full-width toolbar slot", () => {

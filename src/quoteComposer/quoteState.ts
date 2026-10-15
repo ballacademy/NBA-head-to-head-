@@ -105,6 +105,29 @@ export const lastGameQuoteLine = (game: LastGame | null | undefined) => {
   return `${pts}/${reb}/${ast}${min ? ` IN ${min} MIN` : ""}`;
 };
 
+/** Chip presets from the last box — volume line first, then a punchy PTS line. */
+export const lastGameQuotePresets = (game: LastGame | null | undefined) => {
+  if (!game) {
+    return [];
+  }
+  const presets: string[] = [];
+  const line = lastGameQuoteLine(game);
+  if (line) {
+    presets.push(line);
+  }
+  const pts = game.stats.pts.trim();
+  if (pts) {
+    presets.push(`${pts} POINTS`);
+  }
+  const threeMakes = Number.parseFloat(
+    String(game.stats.three).split("-")[0] ?? "",
+  );
+  if (Number.isFinite(threeMakes) && threeMakes >= 4) {
+    presets.push(`${threeMakes} THREES`);
+  }
+  return presets;
+};
+
 export const clearQuoteSpeaker = (draft: QuoteDraft): QuoteDraft => ({
   ...draft,
   playerId: null,

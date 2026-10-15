@@ -5,6 +5,10 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -40,6 +44,7 @@ import {
   leadingSide,
   type CompareDraft,
 } from "./compareState";
+import { getTeam } from "../standingsComposer/teams";
 
 export { canvasToPngBlob };
 
@@ -144,6 +149,24 @@ export const renderCompareCanvas = async (
     const person = input.sides[side]!;
     context.fillStyle = "#111";
     context.fillRect(x, photoY, CMP_PHOTO_W * s, photoH);
+    const watermark = parseComposerWatermark(input.watermark);
+    const team = getTeam(person.teamId);
+    if (team && watermark !== "off") {
+      const mark = await loadImage(team.logoSrc);
+      if (mark) {
+        const size = 220 * s;
+        context.save();
+        context.globalAlpha = composerWatermarkOpacity(watermark);
+        context.drawImage(
+          mark,
+          x + (CMP_PHOTO_W * s - size) / 2,
+          photoY + photoH * 0.28,
+          size,
+          size,
+        );
+        context.restore();
+      }
+    }
     if (person.photoSrc) {
       const photo = person.photoSrc.startsWith("data:")
         ? await loadImage(person.photoSrc)
