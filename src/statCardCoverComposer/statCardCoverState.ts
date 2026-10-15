@@ -12,6 +12,7 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
@@ -22,7 +23,13 @@ export { clampPan, type PhotoPan, SCC_SLOT_COUNT };
 
 export const SCC_TITLE_MAX = 48;
 export const SCC_DATE_MAX = 24;
-export const AUTO_COVER_TITLES = new Set(["TONIGHT", "LAST NIGHT", "STANDOUTS"]);
+export const DEFAULT_COVER_TITLE = "STARS AND STANDOUTS";
+export const AUTO_COVER_TITLES = new Set([
+  "TONIGHT",
+  "LAST NIGHT",
+  "STANDOUTS",
+  DEFAULT_COVER_TITLE,
+]);
 
 const MONTHS = [
   "JAN",
@@ -103,17 +110,18 @@ export const emptyCoverSlots = (): CoverSlot[] =>
   Array.from({ length: SCC_SLOT_COUNT }, emptyCoverSlot);
 
 export const coverTitleForNight = (
-  date: string,
-  todayIso = nbaTodayIso(),
-  yesterdayIso = shiftIsoDate(todayIso, -1),
-) => {
-  if (date === todayIso) {
-    return "TONIGHT";
+  _date?: string,
+  _todayIso?: string,
+  _yesterdayIso?: string,
+) => DEFAULT_COVER_TITLE;
+
+export const splitCoverTitle = (title: string) => {
+  const text =
+    title.replace(/\s+/g, " ").trim().toUpperCase() || DEFAULT_COVER_TITLE;
+  if (text === DEFAULT_COVER_TITLE) {
+    return ["STARS AND", "STANDOUTS"];
   }
-  if (date === yesterdayIso) {
-    return "LAST NIGHT";
-  }
-  return "STANDOUTS";
+  return splitBalancedTitle(text, DEFAULT_COVER_TITLE);
 };
 
 export const coverDateLine = (iso: string) => {
@@ -135,7 +143,7 @@ export const defaultStatCardCoverDraft = (
   const today = nbaTodayIso(now);
   return {
     brand: DEFAULT_BRAND,
-    title: coverTitleForNight(today, today),
+    title: DEFAULT_COVER_TITLE,
     dateLine: coverDateLine(today),
     gameDate: today,
     slots: emptyCoverSlots(),
@@ -154,7 +162,10 @@ export const normalizeStatCardCoverDraft = (
   return {
     ...draft,
     brand: draft.brand.trim() || DEFAULT_BRAND,
-    title: draft.title.replace(/\s+/g, " ").trim().slice(0, SCC_TITLE_MAX),
+    title: (isAutoCoverTitle(draft.title)
+      ? DEFAULT_COVER_TITLE
+      : draft.title.replace(/\s+/g, " ").trim()
+    ).slice(0, SCC_TITLE_MAX),
     dateLine: draft.dateLine.replace(/\s+/g, " ").trim().slice(0, SCC_DATE_MAX),
     gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
     slots,
@@ -264,9 +275,7 @@ export const applyCoverNight = (
   return {
     ...draft,
     gameDate: nextDate,
-    title: autoTitle
-      ? coverTitleForNight(nextDate, todayIso, yesterdayIso)
-      : draft.title,
+    title: autoTitle ? DEFAULT_COVER_TITLE : draft.title,
     dateLine: autoDate ? coverDateLine(nextDate) : draft.dateLine,
   };
 };

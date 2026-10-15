@@ -8,12 +8,14 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
-  SCC_GUTTER,
-  SCC_MAST_H,
+  SCC_HERO_W,
   SCC_SLOT_COUNT,
+  SCC_STACK_H,
+  SCC_STACK_W,
   coverCellRect,
 } from "./statCardCoverLayout";
 import {
+  DEFAULT_COVER_TITLE,
   applyCoverNight,
   coverDateLine,
   coverTitleForNight,
@@ -24,6 +26,7 @@ import {
   isAutoCoverTitle,
   normalizeStatCardCoverDraft,
   setCoverSlotPhoto,
+  splitCoverTitle,
 } from "./statCardCoverState";
 
 hydrateEveryTeamRosters(
@@ -60,47 +63,74 @@ const standout = (athleteId: string, score: number): NightStandout => {
 };
 
 describe("stat card cover", () => {
-  it("is a 4:5 magazine grid with a masthead and four photo cells", () => {
+  it("is a 4:5 full-bleed hero plus three stacked faces", () => {
     expect(GRAPHIC_WIDTH).toBe(1200);
     expect(GRAPHIC_HEIGHT).toBe(1500);
     expect(GRAPHIC_ASPECT).toBeCloseTo(0.8);
     expect(SCC_SLOT_COUNT).toBe(4);
-    const first = coverCellRect(0);
-    const last = coverCellRect(3);
-    expect(first).toEqual({
+    expect(coverCellRect(0)).toEqual({
       x: 0,
-      y: SCC_MAST_H,
-      w: (GRAPHIC_WIDTH - SCC_GUTTER) / 2,
-      h: (GRAPHIC_HEIGHT - SCC_MAST_H - SCC_GUTTER) / 2,
+      y: 0,
+      w: SCC_HERO_W,
+      h: GRAPHIC_HEIGHT,
     });
-    expect(coverCellRect(1).x).toBe(first.w + SCC_GUTTER);
-    expect(last.y + last.h).toBe(GRAPHIC_HEIGHT);
-    expect(last.x + last.w).toBe(GRAPHIC_WIDTH);
+    expect(coverCellRect(1)).toEqual({
+      x: SCC_HERO_W,
+      y: 0,
+      w: SCC_STACK_W,
+      h: SCC_STACK_H,
+    });
+    expect(coverCellRect(3).y + coverCellRect(3).h).toBe(GRAPHIC_HEIGHT);
+    expect(coverCellRect(3).x + coverCellRect(3).w).toBe(GRAPHIC_WIDTH);
+    expect(coverCellRect(0).y).toBe(0);
   });
 
-  it("defaults to an empty cover with tonight’s auto title", () => {
+  it("defaults to STARS AND STANDOUTS with a date pill, not a night label", () => {
     const draft = defaultStatCardCoverDraft(new Date("2026-10-15T18:00:00"));
     expect(draft.slots).toHaveLength(4);
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
     expect(draft.slots.every((slot) => !("stats" in slot))).toBe(true);
-    expect(draft.title).toBe("TONIGHT");
+    expect(draft.title).toBe(DEFAULT_COVER_TITLE);
+    expect(splitCoverTitle(draft.title)).toEqual(["STARS AND", "STANDOUTS"]);
     expect(draft.dateLine).toBe("OCT 15");
+    expect(coverTitleForNight("2026-10-14", "2026-10-15", "2026-10-14")).toBe(
+      DEFAULT_COVER_TITLE,
+    );
     expect(draft.showBa).toBe(true);
   });
 
-  it("titles tonight, last night, and a custom date", () => {
-    expect(coverTitleForNight("2026-10-15", "2026-10-15", "2026-10-14")).toBe(
-      "TONIGHT",
-    );
-    expect(coverTitleForNight("2026-10-14", "2026-10-15", "2026-10-14")).toBe(
-      "LAST NIGHT",
-    );
-    expect(coverTitleForNight("2026-10-12", "2026-10-15", "2026-10-14")).toBe(
-      "STANDOUTS",
-    );
+  it("keeps STARS AND STANDOUTS when the night changes and only updates the pill", () => {
     expect(coverDateLine("2026-10-14")).toBe("OCT 14");
     expect(isAutoCoverTitle("last night")).toBe(true);
+    expect(isAutoCoverTitle(DEFAULT_COVER_TITLE)).toBe(true);
     expect(isAutoCoverTitle("My Cover")).toBe(false);
+    const auto = applyCoverNight(
+      {
+        ...defaultStatCardCoverDraft(),
+        title: "TONIGHT",
+        dateLine: "OCT 15",
+        gameDate: "2026-10-15",
+      },
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-14",
+    );
+    expect(auto.title).toBe(DEFAULT_COVER_TITLE);
+    expect(auto.dateLine).toBe("OCT 14");
+    const custom = applyCoverNight(
+      {
+        ...defaultStatCardCoverDraft(),
+        title: "HEAT CHECK",
+        dateLine: "LOCK-IN",
+        gameDate: "2026-10-15",
+      },
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-14",
+    );
+    expect(custom.title).toBe("HEAT CHECK");
+    expect(custom.dateLine).toBe("LOCK-IN");
+    expect(custom.gameDate).toBe("2026-10-14");
   });
 
   it("fills the first four ranked standouts and leaves leftover slots empty", () => {
@@ -120,6 +150,7 @@ describe("stat card cover", () => {
     expect(filled.slots[0]!.photoSrc).toBe(wemby.headshotUrl);
     expect(filled.slots[0]!.customPhoto).toBe(false);
     expect(filled.slots.every((slot) => !("stats" in slot))).toBe(true);
+    expect(filled.title).toBe(DEFAULT_COVER_TITLE);
   });
 
   it("keeps a custom photo when the same player stays in the top four", () => {
@@ -145,31 +176,13 @@ describe("stat card cover", () => {
     expect(next.slots[1]!.customPhoto).toBe(true);
   });
 
-  it("only auto-updates the title when it is still a stock night label", () => {
-    const auto = applyCoverNight(
-      { ...defaultStatCardCoverDraft(), title: "TONIGHT", dateLine: "OCT 15", gameDate: "2026-10-15" },
-      "2026-10-14",
-      "2026-10-15",
-      "2026-10-14",
-    );
-    expect(auto.title).toBe("LAST NIGHT");
-    expect(auto.dateLine).toBe("OCT 14");
-    const custom = applyCoverNight(
-      { ...defaultStatCardCoverDraft(), title: "HEAT CHECK", dateLine: "LOCK-IN", gameDate: "2026-10-15" },
-      "2026-10-14",
-      "2026-10-15",
-      "2026-10-14",
-    );
-    expect(custom.title).toBe("HEAT CHECK");
-    expect(custom.dateLine).toBe("LOCK-IN");
-    expect(custom.gameDate).toBe("2026-10-14");
-  });
-
-  it("pads to four slots and does not carry stats onto the cover", () => {
+  it("migrates stored LAST NIGHT titles to STARS AND STANDOUTS", () => {
     const draft = normalizeStatCardCoverDraft({
       ...defaultStatCardCoverDraft(),
+      title: "LAST NIGHT",
       slots: [fillCoverSlotFromPlayer(getPlayer("3112335")!)],
     });
+    expect(draft.title).toBe(DEFAULT_COVER_TITLE);
     expect(draft.slots).toHaveLength(4);
     expect(draft.slots[0]!.lastName.toUpperCase()).toContain("JOKIC");
     expect(JSON.stringify(draft.slots[0])).not.toMatch(/"pts"|"reb"|"ast"/);

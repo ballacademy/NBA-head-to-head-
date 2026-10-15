@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerGradeClass,
   gradedWatermarkOpacity,
@@ -23,18 +24,20 @@ import {
   SCC_BA_SIZE,
   SCC_BRAND_SIZE,
   SCC_DATE_SIZE,
-  SCC_MAST_H,
+  SCC_FADE_H,
+  SCC_KICKER_SIZE,
   SCC_MARK,
-  SCC_NAME_H,
-  SCC_NAME_LOGO,
+  SCC_PILL_H,
+  SCC_SLOT_COUNT,
   SCC_TITLE_SIZE,
   coverCellRect,
+  coverNameMetrics,
 } from "./statCardCoverLayout";
 import {
   SCC_DATE_MAX,
-  SCC_SLOT_COUNT,
   SCC_TITLE_MAX,
   coverSlotName,
+  splitCoverTitle,
   type PhotoPan,
   type StatCardCoverDraft,
 } from "./statCardCoverState";
@@ -82,6 +85,9 @@ export const StatCardCoverGraphic = forwardRef<
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
   const watermark = parseComposerWatermark(draft.watermark);
+  const titleLines = splitCoverTitle(draft.title);
+  const kicker = titleLines.length > 1 ? titleLines[0]! : "";
+  const headline = titleLines.length > 1 ? titleLines[1]! : titleLines[0]!;
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -127,65 +133,20 @@ export const StatCardCoverGraphic = forwardRef<
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--mast-h" as string]: String(SCC_MAST_H),
-          ["--name-h" as string]: String(SCC_NAME_H),
-          ["--name-logo" as string]: String(SCC_NAME_LOGO),
+          ["--fade-h" as string]: String(SCC_FADE_H),
+          ["--kicker-size" as string]: String(SCC_KICKER_SIZE),
           ["--title-size" as string]: String(SCC_TITLE_SIZE),
           ["--date-size" as string]: String(SCC_DATE_SIZE),
           ["--brand-size" as string]: String(SCC_BRAND_SIZE),
+          ["--pill-h" as string]: String(SCC_PILL_H),
         } as React.CSSProperties
       }
       aria-label="Instagram stat card cover"
     >
-      <header className="scc-mast">
-        <input
-          className="scc-brand"
-          value={draft.brand}
-          maxLength={24}
-          spellCheck={false}
-          aria-label="Brand label"
-          onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
-        />
-        <input
-          className="scc-title"
-          value={draft.title}
-          maxLength={SCC_TITLE_MAX}
-          spellCheck={false}
-          aria-label="Cover title"
-          placeholder="LAST NIGHT"
-          onChange={(event) =>
-            onTitleChange(event.target.value.slice(0, SCC_TITLE_MAX))
-          }
-        />
-        <input
-          className="scc-date"
-          value={draft.dateLine}
-          maxLength={SCC_DATE_MAX}
-          spellCheck={false}
-          aria-label="Cover date"
-          placeholder="OCT 14"
-          onChange={(event) =>
-            onDateLineChange(event.target.value.slice(0, SCC_DATE_MAX))
-          }
-        />
-      </header>
-      {draft.showBa !== false ? (
-        <img
-          className="composer-ba"
-          src="/ba-logo-circled.png"
-          alt=""
-          aria-hidden="true"
-          style={{
-            top: `calc(${SCC_BA_INSET} * var(--u))`,
-            right: `calc(${SCC_BA_INSET} * var(--u))`,
-            width: `calc(${SCC_BA_SIZE} * var(--u))`,
-            height: `calc(${SCC_BA_SIZE} * var(--u))`,
-          }}
-        />
-      ) : null}
       {Array.from({ length: SCC_SLOT_COUNT }, (_, index) => {
         const slot = draft.slots[index]!;
         const cell = coverCellRect(index);
+        const names = coverNameMetrics(index);
         const empty = !slot.photoSrc;
         const named = Boolean(slot.playerId || coverSlotName(slot));
         const team = getTeam(slot.teamId);
@@ -193,12 +154,16 @@ export const StatCardCoverGraphic = forwardRef<
         return (
           <section
             key={`scc-cell-${index}`}
-            className="scc-cell"
+            className={["scc-cell", index === 0 ? "is-hero" : "is-stack"].join(
+              " ",
+            )}
             style={{
               left: `calc(${cell.x} * var(--u))`,
               top: `calc(${cell.y} * var(--u))`,
               width: `calc(${cell.w} * var(--u))`,
               height: `calc(${cell.h} * var(--u))`,
+              ["--name-h" as string]: String(names.nameH),
+              ["--name-logo" as string]: String(names.logo),
             }}
             aria-label={`Cover player ${index + 1}`}
             onPointerEnter={() => onHover?.(index)}
@@ -248,6 +213,56 @@ export const StatCardCoverGraphic = forwardRef<
           </section>
         );
       })}
+      <div className="scc-top-fade" aria-hidden="true" />
+      <div className="scc-seam" aria-hidden="true" />
+      <header className="scc-lockup">
+        <input
+          className="scc-brand"
+          value={draft.brand}
+          maxLength={24}
+          spellCheck={false}
+          aria-label="Brand label"
+          onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+        />
+        <ComposerTitleField
+          value={draft.title}
+          lines={kicker ? [kicker, headline] : [headline]}
+          ariaLabel="Cover title"
+          inputClassName="scc-title-input"
+          lineClassName="scc-title-line"
+          onChange={onTitleChange}
+          maxLength={SCC_TITLE_MAX}
+        />
+        <input
+          className="scc-pill"
+          value={draft.dateLine}
+          maxLength={SCC_DATE_MAX}
+          spellCheck={false}
+          aria-label="Cover date"
+          placeholder="OCT 14"
+          onChange={(event) =>
+            onDateLineChange(event.target.value.slice(0, SCC_DATE_MAX))
+          }
+        />
+      </header>
+      <div className="scc-swipe" aria-hidden="true">
+        <span className="scc-swipe__label">Swipe</span>
+        <span className="scc-swipe__chev" />
+      </div>
+      {draft.showBa !== false ? (
+        <img
+          className="composer-ba"
+          src="/ba-logo-circled.png"
+          alt=""
+          aria-hidden="true"
+          style={{
+            top: `calc(${SCC_BA_INSET} * var(--u))`,
+            right: `calc(${SCC_BA_INSET} * var(--u))`,
+            width: `calc(${SCC_BA_SIZE} * var(--u))`,
+            height: `calc(${SCC_BA_SIZE} * var(--u))`,
+          }}
+        />
+      ) : null}
       <span className="scc-frame" aria-hidden="true" />
     </article>
   );

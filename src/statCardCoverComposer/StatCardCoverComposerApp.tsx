@@ -36,7 +36,7 @@ import { StatCardCoverGraphic } from "./StatCardCoverGraphic";
 import { exportStatCardCoverPng } from "./exportStatCardCoverPng";
 import { renderStatCardCoverCanvas } from "./renderStatCardCoverCanvas";
 import {
-  AUTO_COVER_TITLES,
+  DEFAULT_COVER_TITLE,
   SCC_DATE_MAX,
   SCC_TITLE_MAX,
   applyCoverNight,
@@ -263,26 +263,25 @@ export function StatCardCoverComposerApp() {
               />
             </label>
             <div className="sc-look" role="group" aria-label="Cover title presets">
-              {["TONIGHT", "LAST NIGHT", "STANDOUTS"].map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  className={
-                    AUTO_COVER_TITLES.has(draft.title.trim().toUpperCase()) &&
-                    draft.title.trim().toUpperCase() === preset
-                      ? "sc-chip is-on"
-                      : "sc-chip"
-                  }
-                  onClick={() =>
-                    setDraft((current) => ({ ...current, title: preset }))
-                  }
-                >
-                  {preset === "LAST NIGHT" ? "Last night" : preset === "TONIGHT" ? "Tonight" : "Standouts"}
-                </button>
-              ))}
+              <button
+                type="button"
+                className={
+                  draft.title.trim().toUpperCase() === DEFAULT_COVER_TITLE
+                    ? "sc-chip is-on"
+                    : "sc-chip"
+                }
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    title: DEFAULT_COVER_TITLE,
+                  }))
+                }
+              >
+                Stars and standouts
+              </button>
             </div>
             <label className="sc-field">
-              Date line
+              Date pill
               <input
                 value={draft.dateLine}
                 maxLength={SCC_DATE_MAX}
@@ -548,10 +547,11 @@ export function StatCardCoverComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </div>
           <p className="sc-hint">
-            Front title page for that night’s stat cards — four faces, no
-            individual stats. Tonight / Last night fills the four most impressive
-            standouts; empty slots stay pickable. Upload or paste to replace a
-            photo. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Stars and standouts cover for that night’s stat cards — four
+            full-bleed faces, no individual stats. Tonight / Last night fills
+            the four most impressive standouts; empty slots stay pickable.
+            Upload or paste to replace a photo. Downloads a 4:5 Instagram PNG —
+            nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
