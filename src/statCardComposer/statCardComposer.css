@@ -55,6 +55,28 @@
   flex-direction: column;
 }
 
+.stc-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: calc(220 * var(--u));
+  height: calc(220 * var(--u));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.stc-mark canvas,
+.stc-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.stc-row {
+  z-index: 1;
+}
+
 .stc-hairline {
   position: absolute;
   left: calc(745 * var(--u));
@@ -74,6 +96,25 @@
   align-items: center;
   justify-content: center;
   min-height: 0;
+}
+
+.stc-row__remove {
+  position: absolute;
+  top: calc(8 * var(--u));
+  right: calc(10 * var(--u));
+  z-index: 4;
+  height: calc(28 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: calc(1.5 * var(--u)) solid rgba(17, 17, 17, 0.28);
+  border-radius: calc(999 * var(--u));
+  background: rgba(255, 255, 255, 0.88);
+  color: #111;
+  font-family: var(--ig-poster);
+  font-size: calc(11 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .stc-row + .stc-row::before {
@@ -178,7 +219,8 @@
   box-sizing: border-box;
 }
 
-.stc-board.is-exporting .pod-photo__tools {
+.stc-board.is-exporting .pod-photo__tools,
+.stc-board.is-exporting .stc-row__remove {
   display: none;
 }
 

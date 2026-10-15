@@ -17,6 +17,32 @@ export const graphicCaption = (
     .filter(Boolean)
     .join("\n");
 
+const lineValue = (
+  stats: Array<{ key: string; value: string }>,
+  key: string,
+) => stats.find((line) => line.key === key)?.value.trim() ?? "";
+
+/** Caption from the on-card line: `Giannis 20/15/9 in 24 min`. */
+export const statCardLineCaption = (draft: {
+  firstName?: string;
+  lastName?: string;
+  gameDate?: string | null;
+  stats: Array<{ key: string; value: string }>;
+}) => {
+  const first = (draft.firstName ?? "").trim().split(/\s+/)[0] ?? "";
+  const name = first || (draft.lastName ?? "").trim() || "Stat card";
+  const pts = lineValue(draft.stats, "pts");
+  const reb = lineValue(draft.stats, "reb");
+  const ast = lineValue(draft.stats, "ast");
+  const min = lineValue(draft.stats, "min");
+  const line =
+    pts && reb && ast
+      ? `${name} ${pts}/${reb}/${ast}${min ? ` in ${min} min` : ""}`
+      : name;
+  const date = (draft.gameDate ?? "").trim();
+  return graphicCaption(line, [], date ? [date] : []);
+};
+
 export const rankedLineupCaption = (
   title: string,
   rank: string,

@@ -193,6 +193,8 @@ export const fillMatchingIds = (
   return { rows: next, added: add.length };
 };
 
+export type TierSplit = "even" | "fat-s";
+
 export const evenChunkSizes = (count: number, buckets: number): number[] => {
   if (buckets <= 0) {
     return [];
@@ -202,10 +204,32 @@ export const evenChunkSizes = (count: number, buckets: number): number[] => {
   return Array.from({ length: buckets }, (_, index) => base + (index < extra ? 1 : 0));
 };
 
+/** More names in S/A than F — triangular weights, leftover to the top tiers. */
+export const fatSChunkSizes = (count: number, buckets: number): number[] => {
+  if (buckets <= 0) {
+    return [];
+  }
+  if (count <= 0) {
+    return Array.from({ length: buckets }, () => 0);
+  }
+  const weights = Array.from({ length: buckets }, (_, index) => buckets - index);
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const sizes = weights.map((weight) => Math.floor((count * weight) / total));
+  let leftover = count - sizes.reduce((sum, size) => sum + size, 0);
+  let index = 0;
+  while (leftover > 0) {
+    sizes[index % buckets] += 1;
+    leftover -= 1;
+    index += 1;
+  }
+  return sizes;
+};
+
 /** Rank board ids by a stat: highest in S, then A, …; missing stats stay in the last tier. */
 export const groupIdsByValues = (
   rows: TierRow[],
   values: Map<string, number | null>,
+  split: TierSplit = "even",
 ): TierRow[] => {
   if (!rows.length) {
     return rows;
@@ -218,7 +242,10 @@ export const groupIdsByValues = (
       (values.get(right) as number) - (values.get(left) as number) ||
       left.localeCompare(right),
   );
-  const sizes = evenChunkSizes(scored.length, rows.length);
+  const sizes =
+    split === "fat-s"
+      ? fatSChunkSizes(scored.length, rows.length)
+      : evenChunkSizes(scored.length, rows.length);
   let offset = 0;
   return rows.map((row, index) => {
     const size = sizes[index] ?? 0;

@@ -4,6 +4,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -32,6 +36,7 @@ interface StatCardGraphicProps {
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
+  onRemoveStat?: (index: number) => void;
 }
 
 export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
@@ -47,6 +52,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
       onPan,
       onUpload,
       onPick,
+      onRemoveStat,
     },
     ref,
   ) {
@@ -56,6 +62,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
     const type = statCardType(draft.stats.length);
+    const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -131,8 +138,27 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
           />
         ) : null}
         <div className="stc-stats">
+          {team && watermark !== "off" ? (
+            <div
+              className="stc-mark"
+              aria-hidden="true"
+              style={{ opacity: composerWatermarkOpacity(watermark) }}
+            >
+              <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
+            </div>
+          ) : null}
           {draft.stats.map((line, index) => (
             <div key={`${line.key}-${index}`} className="stc-row">
+              {onRemoveStat && draft.stats.length > 1 ? (
+                <button
+                  type="button"
+                  className="stc-row__remove"
+                  aria-label={`Remove ${line.label} slot`}
+                  onClick={() => onRemoveStat(index)}
+                >
+                  Remove
+                </button>
+              ) : null}
               <input
                 className="stc-value"
                 value={line.value}

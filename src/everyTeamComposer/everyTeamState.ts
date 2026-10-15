@@ -365,6 +365,50 @@ export const autoFillEveryTeamSlots = (
       )?.id ?? null,
   );
 
+export type EveryTeamNightMetric = "pts" | "pra";
+
+const nightScore = (
+  stats: { pts: string; reb: string; ast: string },
+  metric: EveryTeamNightMetric,
+) => {
+  const pts = Number.parseFloat(stats.pts) || 0;
+  if (metric === "pts") {
+    return pts;
+  }
+  return pts + (Number.parseFloat(stats.reb) || 0) + (Number.parseFloat(stats.ast) || 0);
+};
+
+/** One-click fill: that night’s high-PTS or PRA on each team that played. */
+export const fillEveryTeamFromNight = (
+  slots: EveryTeamSlots,
+  standouts: Array<{
+    athleteId: string;
+    teamId: string;
+    game: { stats: { pts: string; reb: string; ast: string } };
+  }>,
+  metric: EveryTeamNightMetric = "pts",
+): { slots: EveryTeamSlots; filled: number } => {
+  const best = new Map<string, { id: string; score: number }>();
+  for (const row of standouts) {
+    const score = nightScore(row.game.stats, metric);
+    const prev = best.get(row.teamId);
+    if (!prev || score > prev.score) {
+      best.set(row.teamId, { id: row.athleteId, score });
+    }
+  }
+  let filled = 0;
+  const next = slots.slice();
+  EVERY_TEAM_ORDER.forEach((team, index) => {
+    const pick = best.get(team.id);
+    if (!pick) {
+      return;
+    }
+    next[index] = pick.id;
+    filled += 1;
+  });
+  return { slots: next, filled };
+};
+
 export const splitEveryTeamTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_EVERY_TEAM_TITLE);
 

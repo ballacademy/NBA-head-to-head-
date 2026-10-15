@@ -31,8 +31,31 @@ export const downloadCanvasPng = async (
   }
 };
 
+export const STORY_SAFE_INSET = 56;
+
+export const storyBoardRect = (safe = false) => {
+  const inset = safe ? STORY_SAFE_INSET : 0;
+  const maxW = STORY_WIDTH - inset * 2;
+  const maxH = STORY_HEIGHT - inset * 2;
+  let width = maxW;
+  let height = Math.round((width * 5) / 4);
+  if (height > maxH) {
+    height = maxH;
+    width = Math.round((height * 4) / 5);
+  }
+  return {
+    x: Math.round((STORY_WIDTH - width) / 2),
+    y: Math.round((STORY_HEIGHT - height) / 2),
+    width,
+    height,
+  };
+};
+
 /** Place a 4:5 board onto a 9:16 story canvas with the same metal field. */
-export const toStoryCanvas = async (board: HTMLCanvasElement) => {
+export const toStoryCanvas = async (
+  board: HTMLCanvasElement,
+  options: { safe?: boolean } = {},
+) => {
   const canvas = document.createElement("canvas");
   canvas.width = STORY_WIDTH;
   canvas.height = STORY_HEIGHT;
@@ -42,9 +65,7 @@ export const toStoryCanvas = async (board: HTMLCanvasElement) => {
   }
   const field = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, field, STORY_WIDTH, STORY_HEIGHT);
-  const width = STORY_WIDTH;
-  const height = Math.round((width * 5) / 4);
-  const y = Math.round((STORY_HEIGHT - height) / 2);
-  context.drawImage(board, 0, y, width, height);
+  const rect = storyBoardRect(options.safe === true);
+  context.drawImage(board, rect.x, rect.y, rect.width, rect.height);
   return canvas;
 };

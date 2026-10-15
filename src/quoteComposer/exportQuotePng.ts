@@ -12,7 +12,7 @@ export const exportQuotePng = async (
 ) => {
   const canvas = await renderQuoteCanvas(input, 2);
   await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
+    story ? await toStoryCanvas(canvas, { safe: true }) : canvas,
     filename,
   );
 };

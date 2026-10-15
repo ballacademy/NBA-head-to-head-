@@ -7,7 +7,7 @@ import {
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import { compareStatType } from "./compareLayout";
+import { compareStatGutter, compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
   compareSideName,
@@ -57,6 +57,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
     const type = compareStatType(draft.stats.length);
+    const gutter = compareStatGutter(draft.stats.length);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -105,6 +106,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             ["--cmp-label" as string]: String(type.label),
             ["--cmp-rule" as string]: String(type.rule),
             ["--cmp-stroke" as string]: String(type.stroke),
+            ["--cmp-gutter-bottom" as string]: String(gutter.bottom),
           } as React.CSSProperties
         }
         aria-label="Instagram comparison graphic"

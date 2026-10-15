@@ -32,6 +32,7 @@ import {
   CMP_TITLE_SIZE,
   CMP_NAME_SIZE,
   CMP_LEAD,
+  compareStatGutter,
   compareStatType,
 } from "./compareLayout";
 import {
@@ -212,6 +213,7 @@ export const renderCompareCanvas = async (
   }
 
   const type = compareStatType(input.stats.length);
+  const gutter = compareStatGutter(input.stats.length);
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -227,7 +229,7 @@ export const renderCompareCanvas = async (
 
   const rowCount = Math.max(input.stats.length, 1);
   const bodyTop = photoY + 46 * s;
-  const bodyH = photoH - 70 * s;
+  const bodyH = photoH - 70 * s - gutter.nameReserve * s;
   const rowSpan = bodyH / rowCount;
   input.stats.forEach((stat, index) => {
     const y = bodyTop + index * rowSpan + rowSpan / 2;

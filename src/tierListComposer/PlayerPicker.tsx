@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
@@ -90,6 +91,7 @@ export function PlayerPicker({
 }: PlayerPickerProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
@@ -191,6 +193,38 @@ export function PlayerPicker({
   const restPlayers = showSuggested
     ? players.filter((player) => !suggestedIds.has(player.id))
     : players;
+  const visibleIds = useMemo(
+    () => [
+      ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
+      ...restPlayers.map((player) => player.id),
+    ],
+    [showSuggested, suggestedRows, restPlayers],
+  );
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query, visibleIds.join("|")]);
+
+  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        pickerHighlightIndex(
+          visibleIds.length,
+          current,
+          event.key === "ArrowDown" ? 1 : -1,
+        ),
+      );
+      return;
+    }
+    if (event.key === "Enter") {
+      const id = visibleIds[Math.max(0, activeIndex)];
+      if (id) {
+        event.preventDefault();
+        onPick(id);
+      }
+    }
+  };
 
   const setLocalRange =
     (key: "ageRange" | "heightRange" | "experienceRange") =>
@@ -237,6 +271,7 @@ export function PlayerPicker({
               }
               enterKeyHint="search"
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={onSearchKeyDown}
             />
           </label>
           <div className="sc-picker__sort" role="group" aria-label="Sort players">
@@ -429,7 +464,7 @@ export function PlayerPicker({
               className="sc-picker__grid sc-picker__grid--suggested"
               aria-label={suggestedHeading}
             >
-              {suggestedRows.map((row) => (
+              {suggestedRows.map((row, index) => (
                 <PlayerButton
                   key={`sug-${row.id}`}
                   player={row.player}
@@ -439,6 +474,7 @@ export function PlayerPicker({
                   showDepth={false}
                   badge={row.badge}
                   metaOverride={row.meta}
+                  highlighted={activeIndex === index}
                   onPick={onPick}
                 />
               ))}
@@ -446,7 +482,7 @@ export function PlayerPicker({
           </div>
         ) : null}
         <div className="sc-picker__grid">
-          {restPlayers.map((player) => (
+          {restPlayers.map((player, index) => (
             <PlayerButton
               key={player.id}
               player={player}
@@ -455,6 +491,10 @@ export function PlayerPicker({
               showPpg={sort === "points"}
               showDepth={sort === "depth"}
               ppgEmptyLabel={simple ? "No stats" : undefined}
+              highlighted={
+                activeIndex ===
+                (showSuggested ? suggestedRows.length : 0) + index
+              }
               onPick={onPick}
             />
           ))}
@@ -487,6 +527,7 @@ function PlayerButton({
   ppgEmptyLabel,
   badge,
   metaOverride,
+  highlighted = false,
   onPick,
 }: {
   player: TierPlayer;
@@ -497,6 +538,7 @@ function PlayerButton({
   ppgEmptyLabel?: string;
   badge?: string;
   metaOverride?: string;
+  highlighted?: boolean;
   onPick: (playerId: string) => void;
 }) {
   const isCurrent = currentId === player.id;
@@ -517,6 +559,7 @@ function PlayerButton({
         "sc-team",
         isUsed ? "is-used" : "",
         isCurrent ? "is-current" : "",
+        highlighted ? "is-active" : "",
       ]
         .filter(Boolean)
         .join(" ")}

@@ -25,6 +25,7 @@ import {
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
   fillStatCardFromStandout,
+  keepMinLast,
   lastGameValueForKey,
   notableStatCardLines,
   nextStatCardLine,
@@ -84,6 +85,28 @@ describe("stat card composer", () => {
     expect(removeStatCardLine(four, 3)).toHaveLength(3);
     expect(removeStatCardLine(draft.stats, 0)).toHaveLength(2);
     expect(removeStatCardLine([{ key: "pts", label: "PTS", value: "22" }], 0)).toHaveLength(1);
+    const six: typeof draft.stats = [
+      { key: "pts", label: "PTS", value: "20" },
+      { key: "reb", label: "REB", value: "8" },
+      { key: "ast", label: "AST", value: "6" },
+      { key: "stl", label: "STL", value: "3" },
+      { key: "blk", label: "BLK", value: "2" },
+      { key: "min", label: "MIN", value: "23" },
+    ];
+    expect(removeStatCardLine(six, 2).map((line) => line.key)).toEqual([
+      "pts",
+      "reb",
+      "stl",
+      "blk",
+      "min",
+    ]);
+    expect(
+      keepMinLast([
+        { key: "pts", label: "PTS", value: "19" },
+        { key: "min", label: "MIN", value: "23" },
+        { key: "blk", label: "BLK", value: "4" },
+      ]).map((line) => line.key),
+    ).toEqual(["pts", "blk", "min"]);
     const swapped = setStatCardLineKey(draft.stats, 1, "blk", "last-game");
     expect(swapped.map((line) => line.label)).toEqual(["PTS", "BLK", "AST"]);
     const restored = normalizeStatCardDraft({

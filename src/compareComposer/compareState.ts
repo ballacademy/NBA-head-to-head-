@@ -1,4 +1,9 @@
 import {
+  DEFAULT_COMPOSER_WATERMARK,
+  parseComposerWatermark,
+  type ComposerWatermark,
+} from "../instagramComposer/composerWatermark";
+import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
   DEFAULT_HEADSHOT_PAN,
@@ -102,6 +107,7 @@ export interface CompareDraft {
   season?: string;
   sideSeasons?: [string | null, string | null];
   showBa?: boolean;
+  watermark?: ComposerWatermark;
 }
 
 const isNullableString = (value: unknown) =>
@@ -236,6 +242,7 @@ export const defaultCompareDraft = (): CompareDraft => {
     season,
     sideSeasons: [null, null],
     showBa: true,
+    watermark: DEFAULT_COMPOSER_WATERMARK,
   };
 };
 
@@ -252,6 +259,7 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
     season,
     sideSeasons: parseSideSeasons(draft.sideSeasons),
     showBa: draft.showBa !== false,
+    watermark: parseComposerWatermark(draft.watermark),
   };
 };
 

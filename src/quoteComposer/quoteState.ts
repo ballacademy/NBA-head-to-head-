@@ -1,3 +1,4 @@
+import type { LastGame } from "../playerOfTheDayComposer/lastGame";
 import {
   DEFAULT_CUSTOM_PAN,
   isPhotoPan,
@@ -8,6 +9,11 @@ import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 
 export const DEFAULT_QUOTE = "I’M HIM.";
+export const QUOTE_PRESETS = [
+  "I’M HIM.",
+  "THEY NOT LIKE US.",
+  "THAT’S GAME.",
+] as const;
 export const QUOTE_MAX = 180;
 export const ATTRIB_MAX = 48;
 export const SOURCE_MAX = 48;
@@ -82,6 +88,21 @@ export const fillQuoteFromPlayer = (
     showHeadshot: true,
     source: previous.source ?? "",
   };
+};
+
+export const lastGameQuoteLine = (game: LastGame | null | undefined) => {
+  if (!game) {
+    return "";
+  }
+  const pts = game.stats.pts.trim();
+  const reb = game.stats.reb.trim();
+  const ast = game.stats.ast.trim();
+  const minMatch = String(game.stats.min).match(/^(\d+)/);
+  const min = minMatch?.[1] ?? "";
+  if (!pts || !reb || !ast) {
+    return "";
+  }
+  return `${pts}/${reb}/${ast}${min ? ` IN ${min} MIN` : ""}`;
 };
 
 export const clearQuoteSpeaker = (draft: QuoteDraft): QuoteDraft => ({

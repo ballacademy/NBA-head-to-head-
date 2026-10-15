@@ -4,6 +4,10 @@ import {
   paintPurpleCornerBloom,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerWatermarkOpacity,
+  parseComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -125,6 +129,32 @@ export const renderStatCardCanvas = async (
   const statsW = STC_STATS_W * s;
   context.fillStyle = STC_PANEL;
   context.fillRect(statsX, 0, statsW, height);
+
+  const teamForMark = getTeam(input.teamId);
+  const watermark = parseComposerWatermark(input.watermark);
+  if (teamForMark && watermark !== "off") {
+    const mark = await loadImage(teamForMark.logoSrc);
+    if (mark) {
+      const size = 220 * s;
+      context.save();
+      context.globalAlpha = composerWatermarkOpacity(watermark);
+      drawCenteredLogo(
+        context,
+        mark,
+        statsX + (statsW - size) / 2,
+        (height - size) / 2,
+        size,
+        size,
+        {
+          cacheKey: `${teamForMark.logoSrc}-statcard-mark`,
+          fitX: 0.9,
+          fitY: 0.9,
+          shadow: 0,
+        },
+      );
+      context.restore();
+    }
+  }
 
   const rows = statCardRows(input.stats.length);
   const type = statCardType(input.stats.length);

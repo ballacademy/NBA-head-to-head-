@@ -24,6 +24,18 @@ export const CMP_LEAD = "#ffe566";
 export const CMP_STAT_COUNT = 5;
 export const CMP_STAT_MAX = 10;
 
+/** Keep extra stat rows above the photo name fades. Photos stay full-bleed. */
+export const compareStatGutter = (count = CMP_STAT_COUNT) => {
+  const n = Math.min(CMP_STAT_MAX, Math.max(1, count));
+  if (n <= 5) {
+    return { bottom: 24, nameReserve: 0 };
+  }
+  if (n <= 7) {
+    return { bottom: 88, nameReserve: 88 };
+  }
+  return { bottom: 110, nameReserve: 110 };
+};
+
 /** Extra rows keep the photo columns and shrink type in the stats gutter. */
 export const compareStatType = (count = CMP_STAT_COUNT) => {
   const n = Math.min(CMP_STAT_MAX, Math.max(1, count));

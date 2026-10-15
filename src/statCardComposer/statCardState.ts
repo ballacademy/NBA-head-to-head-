@@ -1,3 +1,8 @@
+import {
+  DEFAULT_COMPOSER_WATERMARK,
+  parseComposerWatermark,
+  type ComposerWatermark,
+} from "../instagramComposer/composerWatermark";
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   isoDateOnly,
@@ -65,6 +70,7 @@ export interface StatCardDraft {
   season?: string;
   gameDate?: string | null;
   showBa?: boolean;
+  watermark?: ComposerWatermark;
 }
 
 export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
@@ -158,6 +164,7 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   season: everyTeamCurrentSeason(),
   gameDate: nbaTodayIso(),
   showBa: true,
+  watermark: DEFAULT_COMPOSER_WATERMARK,
 });
 
 export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => ({
@@ -172,6 +179,7 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
     .map((line) => ({ ...line })),
   gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
   showBa: draft.showBa !== false,
+  watermark: parseComposerWatermark(draft.watermark),
 });
 
 export const hasCustomPhoto = (draft: StatCardDraft) =>
@@ -469,5 +477,16 @@ export const addStatCardLine = (stats: StatCardLine[]): StatCardLine[] => {
   return next ? [...stats, next] : stats;
 };
 
-export const removeStatCardLine = (stats: StatCardLine[], index: number) =>
-  stats.length <= 1 ? stats : stats.filter((_, lineIndex) => lineIndex !== index);
+/** MIN stays last when it is still on the card. */
+export const keepMinLast = (stats: StatCardLine[]): StatCardLine[] => {
+  const rest = stats.filter((line) => line.key !== "min");
+  const mins = stats.filter((line) => line.key === "min");
+  return mins.length ? [...rest, ...mins] : stats;
+};
+
+export const removeStatCardLine = (stats: StatCardLine[], index: number) => {
+  if (stats.length <= 1 || index < 0 || index >= stats.length) {
+    return stats;
+  }
+  return keepMinLast(stats.filter((_, lineIndex) => lineIndex !== index));
+};

@@ -39,6 +39,7 @@ import {
   EXAMPLE_TIER_PLACEMENT,
   exportTierFilename,
   fillMatchingIds,
+  fatSChunkSizes,
   groupIdsByValues,
   isTierDraft,
   MAX_TIERS,
@@ -182,6 +183,7 @@ describe("tier rows", () => {
     expect(fillMatchingIds(filled.rows, ["OKC", "CHI"]).added).toBe(1);
     expect(evenChunkSizes(15, 6)).toEqual([3, 3, 3, 2, 2, 2]);
     expect(evenChunkSizes(3, 6)).toEqual([1, 1, 1, 0, 0, 0]);
+    expect(fatSChunkSizes(12, 6)[0]!).toBeGreaterThan(fatSChunkSizes(12, 6).at(-1)!);
     const values = new Map<string, number | null>([
       ["OKC", 120],
       ["BOS", 110],
@@ -195,6 +197,8 @@ describe("tier rows", () => {
     expect(grouped[1]!.teams).toEqual(["BOS"]);
     expect(grouped[2]!.teams).toEqual(["NYK"]);
     expect(grouped[5]!.teams).toEqual(["CHA"]);
+    const fat = groupIdsByValues(filled.rows, values, "fat-s");
+    expect(fat[0]!.teams.length).toBeGreaterThanOrEqual(fat[5]!.teams.length);
     const withGap = groupIdsByValues(filled.rows, new Map([
       ["OKC", 120],
       ["BOS", 110],

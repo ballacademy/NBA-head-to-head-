@@ -14,6 +14,7 @@ import {
   createEmptyEveryTeamSlots,
   displayedTeams,
   exportEveryTeamFilename,
+  fillEveryTeamFromNight,
   isEveryTeamDraft,
   isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
@@ -316,6 +317,24 @@ describe("every-team order and slots", () => {
     const filled = autoFillEveryTeamSlots("2026-27", {}, "points");
     expect(filled[slotIndexForTeam("OKC")]).toBe("4278073");
     expect(filled.filter(Boolean).length).toBeGreaterThan(20);
+    const night = fillEveryTeamFromNight(
+      createEmptyEveryTeamSlots(),
+      [
+        {
+          athleteId: "a",
+          teamId: "SAS",
+          game: { stats: { pts: "19", reb: "4", ast: "2" } },
+        },
+        {
+          athleteId: "b",
+          teamId: "SAS",
+          game: { stats: { pts: "12", reb: "10", ast: "9" } },
+        },
+      ],
+      "pra",
+    );
+    expect(night.filled).toBe(1);
+    expect(night.slots[slotIndexForTeam("SAS")]).toBe("b");
     expect(teamLogoSrc("OKC", "2001-02", false)).toContain("OKC");
     expect(teamLogoSrc("OKC", "2001-02", true)).toContain("SEA");
     expect(teamLogoSrc("BKN", "2011-12", true)).toContain("NJN");

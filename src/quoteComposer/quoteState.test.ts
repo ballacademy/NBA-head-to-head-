@@ -19,6 +19,7 @@ import {
   defaultQuoteDraft,
   fillQuoteFromPlayer,
   hasCustomPhoto,
+  lastGameQuoteLine,
 } from "./quoteState";
 
 describe("quote composer", () => {
@@ -61,6 +62,31 @@ describe("quote composer", () => {
     expect(kept.teamId).toBe(luka.team);
     expect(kept.photoSrc).toBeNull();
     expect(kept.quote).toBe("I’M HIM.");
+    expect(
+      lastGameQuoteLine({
+        eventId: "1",
+        gameDate: "2026-10-14",
+        teamId: "MIL",
+        opponentId: "BOS",
+        opponentAbbrev: "BOS",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "W 120-110 BOS",
+        dateLabel: "10/14",
+        stats: {
+          pts: "20",
+          reb: "15",
+          ast: "9",
+          stl: "1",
+          blk: "1",
+          fg: "8-14",
+          three: "0-1",
+          tov: "3",
+          min: "24",
+        },
+      }),
+    ).toBe("20/15/9 IN 24 MIN");
     const cleared = fillQuoteFromPlayer(luka, first, false, false);
     expect(cleared.quote).toBe("");
     expect(quoteLastName(cleared.attribution)).toBe("DONCIC");
