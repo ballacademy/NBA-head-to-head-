@@ -51,6 +51,7 @@ import {
   fillHeadlineFromTeam,
   formatHeadlineBody,
   hasCustomPhoto,
+  setHeadlineTeamId,
   HEADLINE_BODY_MAX,
   HEADLINE_MAX,
   headlineCaptionFor,
@@ -329,7 +330,7 @@ export function HeadlineComposerApp() {
             aria-label="Team"
             onChange={(event) => {
               const teamId = event.target.value || null;
-              const next = { ...draft, teamId };
+              const next = setHeadlineTeamId(draft, teamId);
               setDraft(next);
               void fillAutoBody(next);
             }}
@@ -601,8 +602,9 @@ export function HeadlineComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Empty photo first — upload or paste an action shot. Clean plate in
-            the lower third, last-night lines under it. Downloads a 4:5
+            Empty photo first — upload or paste an action shot. City, plate,
+            nickname, and last-night lines stack in the lower third with no
+            overlap. Picking a player sets that player’s team. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

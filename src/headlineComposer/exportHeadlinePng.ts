@@ -15,7 +15,7 @@ export const exportHeadlinePng = async (
 ) => {
   const canvas = await renderHeadlineCanvas(input, 2);
   await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
+    story ? await toStoryCanvas(canvas, { safe: true }) : canvas,
     filename,
   );
 };

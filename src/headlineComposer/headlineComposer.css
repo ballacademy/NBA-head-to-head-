@@ -10,14 +10,21 @@
   --plate-clip: 2.05% 0%, 97.95% 0%, 100% 100%, 0% 100%;
   --hl-size: 56;
   --plate-top: 1040;
-  --plate-h: 118;
+  --plate-h: 124;
   --city-top: 980;
-  --nick-top: 1120;
+  --city-h: 36;
+  --city-size: 64;
+  --nick-top: 1164;
+  --nick-h: 48;
+  --nick-size: 84;
   --kicker-top: 940;
-  --name-top: 1200;
-  --body-top: 1224;
+  --kicker-h: 28;
+  --name-top: 1224;
+  --body-top: 1240;
+  --body-h: 96;
   --mark-top: 900;
-  --mark-opacity: 0.12;
+  --mark-size: 440;
+  --mark-opacity: 0.1;
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   aspect-ratio: 4 / 5;
@@ -53,7 +60,7 @@
   left: 0;
   right: 0;
   z-index: 2;
-  height: calc(500 * var(--u));
+  height: calc(560 * var(--u));
   pointer-events: none;
 }
 
@@ -86,8 +93,8 @@
 .hl-mark.is-behind {
   left: 50%;
   top: calc(var(--mark-top) * var(--u));
-  width: calc(520 * var(--u));
-  height: calc(520 * var(--u));
+  width: calc(var(--mark-size) * var(--u));
+  height: calc(var(--mark-size) * var(--u));
   transform: translateX(-50%);
   opacity: var(--mark-opacity);
 }
@@ -114,41 +121,56 @@
 
 .hl-kicker {
   top: calc(var(--kicker-top) * var(--u));
+  height: calc(var(--kicker-h) * var(--u));
+  z-index: 5;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(22 * var(--u));
+  font-size: calc(20 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   -webkit-text-stroke: calc(2 * var(--u)) #000;
   paint-order: stroke fill;
 }
 
 .hl-wordmark-city,
 .hl-wordmark-nick {
-  z-index: 6;
+  z-index: 4;
+  overflow: visible;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 0.82;
+  line-height: 0.72;
   white-space: nowrap;
-  -webkit-text-stroke: calc(4 * var(--u)) #0a0a0a;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #0a0a0a;
   paint-order: stroke fill;
-  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+  text-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.72);
 }
 
 .hl-wordmark-city {
   top: calc(var(--city-top) * var(--u));
-  font-size: calc(70 * var(--u));
+  height: calc(var(--city-h) * var(--u));
+  font-size: calc(var(--city-size) * var(--u));
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .hl-wordmark-nick {
   top: calc(var(--nick-top) * var(--u));
-  font-size: calc(94 * var(--u));
+  height: calc(var(--nick-h) * var(--u));
+  font-size: calc(var(--nick-size) * var(--u));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .hl-headline-plate {
@@ -156,22 +178,21 @@
   left: calc(64 * var(--u));
   right: calc(64 * var(--u));
   top: calc(var(--plate-top) * var(--u));
-  z-index: 5;
+  z-index: 6;
   box-sizing: border-box;
   height: calc(var(--plate-h) * var(--u));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(10 * var(--u)) calc(36 * var(--u));
+  padding: calc(12 * var(--u)) calc(40 * var(--u));
   border: 0;
   background: var(--plate-fill);
   clip-path: polygon(var(--plate-clip));
-  transform: rotate(-2.4deg);
-  transform-origin: center;
+  transform: none;
   filter:
     drop-shadow(0 0 0 calc(3 * var(--u)) #fff)
-    drop-shadow(0 0 0 calc(7 * var(--u)) #111);
+    drop-shadow(0 0 0 calc(8 * var(--u)) #111);
   pointer-events: auto;
 }
 
@@ -218,6 +239,7 @@
 
 .hl-name.is-under {
   top: calc(var(--name-top) * var(--u));
+  z-index: 5;
   color: #fff;
   -webkit-text-stroke: calc(2 * var(--u)) #000;
   paint-order: stroke fill;
@@ -225,6 +247,8 @@
 
 .hl-body-wrap {
   top: calc(var(--body-top) * var(--u));
+  height: calc(var(--body-h) * var(--u));
+  z-index: 5;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -257,12 +281,13 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(32 * var(--u));
+  font-size: calc(28 * var(--u));
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1.12;
   resize: none;
+  overflow: hidden;
   white-space: pre-line;
   pointer-events: auto;
   -webkit-text-stroke: calc(2.4 * var(--u)) #000;

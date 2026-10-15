@@ -24,18 +24,14 @@ import {
   HL_BODY_LINE,
   HL_BODY_SIZE,
   HL_BODY_TRACK,
-  HL_CITY_SIZE,
   HL_FADE_H,
   HL_HEADLINE_PAD_X,
   HL_HEADLINE_TRACK,
   HL_KICKER_SIZE,
   HL_NAME_SIZE,
-  HL_NICK_SIZE,
   HL_OPP_MARK,
   HL_PAD_X,
-  HL_PLATE_ROTATE,
   HL_PLATE_SKEW,
-  HL_WORDMARK_LINE,
   HL_WORDMARK_TRACK,
   fitHeadlineType,
   headlineDateKicker,
@@ -228,12 +224,15 @@ export const renderHeadlineCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
+  const marks = splitTeamWordmark(getTeam(input.teamId));
   const stack = headlineTypeStack({
     bodyLines: Math.max(bodyLines.length, 1),
     plateH: plateHFit,
     lockup: place,
     kicker: Boolean(kickerText),
     nameUnder: names === "under" && Boolean(playerName),
+    city: marks.city,
+    nick: marks.nick,
   });
 
   if (stack.fadeAt === "top") {
@@ -289,20 +288,41 @@ export const renderHeadlineCanvas = async (
     }
   }
 
+  const paintWordmark = (
+    text: string,
+    size: number,
+    baseline: "top" | "bottom",
+    y: number,
+  ) => {
+    if (!text || size <= 0) {
+      return;
+    }
+    context.font = `900 ${size * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = baseline;
+    setLetterSpacing(context, HL_WORDMARK_TRACK * size * s);
+    context.lineJoin = "round";
+    context.miterLimit = 2;
+    context.strokeStyle = "#0a0a0a";
+    context.lineWidth = 3.2 * s;
+    context.strokeText(text, width / 2, y * s);
+    context.fillStyle = "#fff";
+    context.fillText(text, width / 2, y * s);
+    setLetterSpacing(context, 0);
+  };
+  paintWordmark(marks.city, stack.citySize, "top", stack.cityTop);
+  paintWordmark(marks.nick, stack.nickSize, "bottom", stack.nickBottom);
+
   const plateW = width - HL_PAD_X * 2 * s;
   const plateH = plateHFit * s;
   const plateX = HL_PAD_X * s;
   const plateY = stack.plateTop * s;
   const cx = plateX + plateW / 2;
   const cy = plateY + plateH / 2;
-  context.save();
-  context.translate(cx, cy);
-  context.rotate((HL_PLATE_ROTATE * Math.PI) / 180);
-  context.translate(-cx, -cy);
   parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
   context.lineJoin = "miter";
   context.strokeStyle = "#111";
-  context.lineWidth = 14 * s;
+  context.lineWidth = 16 * s;
   context.stroke();
   parallelogramPath(context, plateX, plateY, plateW, plateH, HL_PLATE_SKEW * s);
   context.strokeStyle = "#fff";
@@ -338,36 +358,6 @@ export const renderHeadlineCanvas = async (
     context.globalAlpha = 1;
     setLetterSpacing(context, 0);
   }
-  context.restore();
-
-  const marks = splitTeamWordmark(team);
-  const paintWordmark = (text: string, size: number, top: number) => {
-    if (!text) {
-      return;
-    }
-    context.font = `900 ${size * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, HL_WORDMARK_TRACK * size * s);
-    context.lineJoin = "round";
-    context.miterLimit = 2;
-    context.strokeStyle = "#0a0a0a";
-    context.lineWidth = 4 * s;
-    context.strokeText(
-      text,
-      width / 2,
-      (top + (size * HL_WORDMARK_LINE) / 2) * s,
-    );
-    context.fillStyle = "#fff";
-    context.fillText(
-      text,
-      width / 2,
-      (top + (size * HL_WORDMARK_LINE) / 2) * s,
-    );
-    setLetterSpacing(context, 0);
-  };
-  paintWordmark(marks.city, HL_CITY_SIZE, stack.cityTop);
-  paintWordmark(marks.nick, HL_NICK_SIZE, stack.nickTop);
 
   if (kickerText) {
     context.font = `900 ${HL_KICKER_SIZE * s}px ${POSTER_FONT}`;

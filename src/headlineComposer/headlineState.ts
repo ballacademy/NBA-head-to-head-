@@ -14,7 +14,7 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   parseHeadlineKickerMode,
   parseHeadlineLockup,
@@ -22,6 +22,7 @@ import {
   parseHeadlinePlateColor,
   parseHeadlineSubjectMode,
   parseHeadlineWatermark,
+  wrapHeadlineBody,
   type HeadlineKickerMode,
   type HeadlineLockup,
   type HeadlineNamePlacement,
@@ -190,6 +191,25 @@ export const fillHeadlineFromTeam = (
   };
 };
 
+/** Team dropdown never labels a picked player as another club. */
+export const setHeadlineTeamId = (
+  draft: HeadlineDraft,
+  teamId: string | null,
+): HeadlineDraft => {
+  if (!teamId) {
+    return { ...draft, teamId: null };
+  }
+  const nextId = getTeam(teamId)?.id ?? teamId;
+  if (draft.playerId) {
+    const player = getPlayer(draft.playerId);
+    const playerTeam = getTeam(player?.team)?.id ?? player?.team ?? null;
+    if (playerTeam && playerTeam !== nextId) {
+      return fillHeadlineFromTeam(nextId, draft);
+    }
+  }
+  return { ...draft, teamId: nextId };
+};
+
 export const splitTeamWordmark = (team: NbaTeam | null) => {
   if (!team) {
     return { city: "", nick: "" };
@@ -227,14 +247,19 @@ export const formatHeadlineBodyLines = (
     const score = formatHeadlineScore(game.playerScore, game.opponentScore);
     lines.push(
       game.result === "W"
-        ? `BEATS ${game.opponentAbbrev} ${score}`
-        : `FALLS TO ${game.opponentAbbrev} ${score}`,
+        ? `AFTER BEATING ${game.opponentAbbrev} ${score}`
+        : `AFTER LOSING TO ${game.opponentAbbrev} ${score}`,
     );
+    if (rec) {
+      lines.push(`LAST NIGHT, THE ${nick}`);
+      lines.push(`HAVE A RECORD OF ${rec}`);
+    } else {
+      lines.push("LAST NIGHT");
+    }
+  } else if (rec) {
+    lines.push(`THE ${nick} ARE ${rec}`);
   }
-  if (rec) {
-    lines.push(`${nick} NOW ${rec}`);
-  }
-  return lines;
+  return wrapHeadlineBody(lines.join("\n"));
 };
 
 export const formatHeadlineBody = (
@@ -243,13 +268,7 @@ export const formatHeadlineBody = (
   record: StandingRecord | null,
 ) => formatHeadlineBodyLines(team, game, record).join("\n");
 
-export const headlineBodyLines = (body: string) =>
-  body
-    .replace(/\r/g, "")
-    .split("\n")
-    .map((line) => line.replace(/\s+/g, " ").trim())
-    .filter(Boolean)
-    .slice(0, 3);
+export const headlineBodyLines = (body: string) => wrapHeadlineBody(body);
 
 export const headlineCaptionFor = (headline: string, body: string) => {
   const title = headlineLabel(headline);

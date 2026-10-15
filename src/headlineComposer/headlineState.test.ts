@@ -12,10 +12,13 @@ import {
   HL_HEADLINE_MIN,
   HL_HEADLINE_SIZE,
   HL_PLATE_FILL,
+  HL_PLATE_ROTATE,
+  collidingHeadlineBoxes,
   fitHeadlineType,
   headlineDateKicker,
   headlinePlateHeight,
   headlineTypeStack,
+  headlineVisibleTypeBoxes,
   headlineWatermarkBox,
   parseHeadlineWatermark,
   plateClipPolygon,
@@ -35,6 +38,7 @@ import {
   headlineCaptionFor,
   headlineLabel,
   normalizeHeadlineDraft,
+  setHeadlineTeamId,
   splitTeamWordmark,
 } from "./headlineState";
 
@@ -71,7 +75,8 @@ describe("headline composer", () => {
     expect(EXPORT_HEIGHT).toBe(3000);
     expect(HL_HEADLINE_SIZE).toBeGreaterThan(48);
     expect(HL_PLATE_FILL).toBe("#ffffff");
-    expect(HL_FADE_H).toBe(500);
+    expect(HL_PLATE_ROTATE).toBe(0);
+    expect(HL_FADE_H).toBeGreaterThan(480);
     expect(plateClipPolygon()).toMatch(/^\d/);
     expect(plateClipPolygon()).not.toContain("polygon");
     expect(plateFillHex("white")).toBe("#ffffff");
@@ -127,6 +132,24 @@ describe("headline composer", () => {
     expect(next.subjectMode).toBe("player");
   });
 
+  it("locks Gobert to Minnesota, never a leftover Trail Blazers wordmark", () => {
+    const gobert = getPlayer("3032976")!;
+    expect(gobert.team).toBe("MIN");
+    const fromBlazers = fillHeadlineFromPlayer(gobert, {
+      ...defaultHeadlineDraft(),
+      teamId: "POR",
+    });
+    expect(fromBlazers.teamId).toBe("MIN");
+    expect(splitTeamWordmark(getTeam(fromBlazers.teamId))).toEqual({
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+    });
+    const switched = setHeadlineTeamId(fromBlazers, "POR");
+    expect(switched.playerId).toBeNull();
+    expect(switched.teamId).toBe("POR");
+    expect(switched.firstName).toBe("");
+  });
+
   it("can skip the player and lock up a team only", () => {
     const next = fillHeadlineFromTeam("SAS", defaultHeadlineDraft());
     expect(next.teamId).toBe("SAS");
@@ -135,19 +158,70 @@ describe("headline composer", () => {
     expect(next.subjectMode).toBe("team");
   });
 
-  it("runs the wordmark through the plate and parks the logo off the face", () => {
+  it("runs the wordmark through the plate without colliding type boxes", () => {
     const spurs = getTeam("SAS")!;
     expect(splitTeamWordmark(spurs)).toEqual({
       city: "SAN ANTONIO",
       nick: "SPURS",
     });
-    const stack = headlineTypeStack({ bodyLines: 2, plateH: 118 });
-    expect(stack.cityBottom).toBeGreaterThan(stack.plateTop);
-    expect(stack.nickTop).toBeLessThan(stack.plateBottom);
+    const stack = headlineTypeStack({
+      bodyLines: 3,
+      plateH: 124,
+      city: "SAN ANTONIO",
+      nick: "SPURS",
+    });
+    expect(stack.cityBottom).toBeLessThanOrEqual(stack.plateTop + 0.01);
+    expect(stack.nickTop).toBeGreaterThanOrEqual(stack.plateBottom - 0.01);
     expect(stack.cityTop).toBeLessThan(stack.plateTop);
     expect(stack.nickBottom).toBeGreaterThan(stack.plateBottom);
+    expect(stack.cityTop + stack.citySize * 0.7).toBeGreaterThan(stack.plateTop);
+    expect(stack.nickBottom - stack.nickSize * 0.7).toBeLessThan(stack.plateBottom);
     expect(stack.fadeAt).toBe("bottom");
-    expect(stack.bodyTop).toBeGreaterThan(stack.nickBottom);
+    expect(stack.bodyTop).toBeGreaterThanOrEqual(stack.nickBottom);
+    expect(
+      collidingHeadlineBoxes(
+        headlineVisibleTypeBoxes(stack, {
+          showBa: true,
+          hasKicker: false,
+          hasBody: true,
+        }),
+      ),
+    ).toEqual([]);
+    const portland = headlineTypeStack({
+      bodyLines: 3,
+      plateH: 124,
+      kicker: true,
+      city: "PORTLAND",
+      nick: "TRAIL BLAZERS",
+    });
+    expect(
+      collidingHeadlineBoxes(
+        headlineVisibleTypeBoxes(portland, {
+          showBa: true,
+          hasKicker: true,
+          hasBody: true,
+        }),
+      ),
+    ).toEqual([]);
+    expect(portland.kickerBottom).toBeLessThanOrEqual(portland.cityTop);
+    const wolves = headlineTypeStack({
+      bodyLines: 3,
+      plateH: 124,
+      kicker: true,
+      nameUnder: true,
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+    });
+    expect(
+      collidingHeadlineBoxes(
+        headlineVisibleTypeBoxes(wolves, {
+          showBa: true,
+          hasKicker: true,
+          hasName: true,
+          hasBody: true,
+        }),
+      ),
+    ).toEqual([]);
     const faint = headlineWatermarkBox("faint", stack);
     expect(faint.opacity).toBeLessThan(0.2);
     expect(faint.y).toBeGreaterThan(HL_FACE_SAFE - 80);
@@ -155,12 +229,24 @@ describe("headline composer", () => {
     expect(medium.opacity).toBeGreaterThan(faint.opacity);
     expect(medium.y).toBeGreaterThan(HL_FACE_SAFE - 80);
     const top = headlineTypeStack({
-      bodyLines: 2,
+      bodyLines: 3,
       lockup: "top",
       kicker: true,
+      city: "SAN ANTONIO",
+      nick: "SPURS",
     });
     expect(top.fadeAt).toBe("top");
     expect(top.plateTop).toBeLessThan(stack.plateTop);
+    expect(top.kickerTop).toBeGreaterThan(36 + 72);
+    expect(
+      collidingHeadlineBoxes(
+        headlineVisibleTypeBoxes(top, {
+          showBa: true,
+          hasKicker: true,
+          hasBody: true,
+        }),
+      ),
+    ).toEqual([]);
     expect(headlineDateKicker("2026-10-13", "date")).toBe("OCT 13");
     expect(headlineDateKicker(null, "last-night")).toBe("LAST NIGHT");
   });
@@ -168,12 +254,18 @@ describe("headline composer", () => {
   it("auto-fills last night as two short lines with an en dash", () => {
     const spurs = getTeam("SAS")!;
     expect(formatHeadlineBodyLines(spurs, lastNight, { wins: 1, losses: 0 })).toEqual([
-      "BEATS OKC 111–109",
-      "SPURS NOW 1–0",
+      "AFTER BEATING OKC 111–109",
+      "LAST NIGHT, THE SPURS",
+      "HAVE A RECORD OF 1–0",
     ]);
     expect(formatHeadlineBody(spurs, lastNight, { wins: 1, losses: 0 })).toBe(
-      "BEATS OKC 111–109\nSPURS NOW 1–0",
+      "AFTER BEATING OKC 111–109\nLAST NIGHT, THE SPURS\nHAVE A RECORD OF 1–0",
     );
+    expect(
+      headlineBodyLines(
+        "AFTER LOSING TO IND 103-129 LAST NIGHT, THE TRAIL BLAZERS HAVE A RECORD OF 2-1",
+      ).length,
+    ).toBeGreaterThan(1);
     expect(headlineBodyLines("BEATS OKC 111–109\nSPURS NOW 1–0")).toEqual([
       "BEATS OKC 111–109",
       "SPURS NOW 1–0",

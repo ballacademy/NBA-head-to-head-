@@ -125,6 +125,8 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       lockup: place,
       kicker: Boolean(kickerText),
       nameUnder: names === "under" && Boolean(playerName),
+      city: marks.city,
+      nick: marks.nick,
     });
     const markBox = headlineWatermarkBox(mode, stack);
     const teamColor = teamId ? getTeamColors(teamId).primary : "#ffffff";
@@ -183,11 +185,20 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             ["--plate-top" as string]: String(stack.plateTop),
             ["--plate-h" as string]: String(plateH),
             ["--city-top" as string]: String(stack.cityTop),
+            ["--city-h" as string]: String(Math.max(0, stack.cityBottom - stack.cityTop)),
+            ["--city-size" as string]: String(stack.citySize),
             ["--nick-top" as string]: String(stack.nickTop),
+            ["--nick-h" as string]: String(Math.max(0, stack.nickBottom - stack.nickTop)),
+            ["--nick-size" as string]: String(stack.nickSize),
             ["--kicker-top" as string]: String(stack.kickerTop),
+            ["--kicker-h" as string]: String(
+              Math.max(0, stack.kickerBottom - stack.kickerTop),
+            ),
             ["--name-top" as string]: String(stack.nameTop),
             ["--body-top" as string]: String(stack.bodyTop),
+            ["--body-h" as string]: String(Math.max(0, stack.bodyBottom - stack.bodyTop)),
             ["--mark-top" as string]: String(markBox.y),
+            ["--mark-size" as string]: String(markBox.size),
             ["--mark-opacity" as string]: String(markBox.opacity),
           } as React.CSSProperties
         }
@@ -218,15 +229,20 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             src="/ba-logo-circled.png"
             alt=""
             aria-hidden="true"
+            data-hl-box="ba"
           />
         ) : null}
-        {kickerText ? <p className="hl-kicker">{kickerText}</p> : null}
+        {kickerText ? (
+          <p className="hl-kicker" data-hl-box="kicker">
+            {kickerText}
+          </p>
+        ) : null}
         {marks.city ? (
-          <p className="hl-wordmark-city" aria-hidden="true">
+          <p className="hl-wordmark-city" aria-hidden="true" data-hl-box="city">
             {marks.city}
           </p>
         ) : null}
-        <div className="hl-headline-plate">
+        <div className="hl-headline-plate" data-hl-box="plate">
           <textarea
             className="hl-headline"
             value={headline}
@@ -243,14 +259,16 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
           ) : null}
         </div>
         {marks.nick ? (
-          <p className="hl-wordmark-nick" aria-hidden="true">
+          <p className="hl-wordmark-nick" aria-hidden="true" data-hl-box="nick">
             {marks.nick}
           </p>
         ) : null}
         {names === "under" && playerName ? (
-          <p className="hl-name is-under">{playerName}</p>
+          <p className="hl-name is-under" data-hl-box="name">
+            {playerName}
+          </p>
         ) : null}
-        <div className="hl-body-wrap">
+        <div className="hl-body-wrap" data-hl-box="body">
           {showOpponentMark && opponent ? (
             <div className="hl-opp" aria-hidden="true">
               <TeamLogo src={opponent.logoSrc} label={opponent.name} shadow={0} />
@@ -263,7 +281,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             maxLength={HEADLINE_BODY_MAX}
             spellCheck={false}
             aria-label="Headline body"
-            placeholder="BEATS OKC 111–109"
+            placeholder="AFTER BEATING OKC 111–109"
             onChange={(event) =>
               onBodyChange(event.target.value.slice(0, HEADLINE_BODY_MAX))
             }
