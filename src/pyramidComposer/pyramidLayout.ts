@@ -12,8 +12,8 @@ export const PYR_DEFAULT_ROWS = 4;
 export const PYR_PAD_X = 28;
 export const PYR_COL_GAP = 12;
 export const PYR_PAD_BOTTOM = 36;
-/** Tight metal between the title and the top cell — hair may overlap the title. */
-export const PYR_STACK_TOP = 12;
+/** Extra metal between the title and the popped hair. Cell lip sits `pop` below that. */
+export const PYR_STACK_TOP = 16;
 export const PYR_QUIET_FRAME = 2;
 export const PYR_TITLE_Y = 22;
 export const PYR_TITLE_H = 96;
@@ -101,25 +101,26 @@ export const pyramidMetrics = (
   const n = rows.length;
   const colGap = PYR_COL_GAP;
   const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
-  const originY = titleBottom + PYR_STACK_TOP;
-  const stackH = Math.max(n * 72, boardH - PYR_PAD_BOTTOM - originY);
   let cell = (GRAPHIC_WIDTH - PYR_PAD_X * 2 - colGap * (n - 1)) / n;
+  const pop = cell * PYR_POP_RATIO;
+  const padTop = pop + PYR_STACK_TOP;
+  const originY = titleBottom + padTop;
+  const stackH = Math.max(n * 72, boardH - PYR_PAD_BOTTOM - originY);
   let rowGap = n > 1 ? (stackH - n * cell) / (n - 1) : 0;
   if (n > 1 && rowGap < colGap) {
     cell = (stackH - (n - 1) * colGap) / n;
     rowGap = colGap;
   }
-  const pop = cell * PYR_POP_RATIO;
   return {
     rows,
     rowCount: n,
     slotCount: pyramidSlotCount(n),
     cell,
-    pop,
+    pop: cell * PYR_POP_RATIO,
     rowGap,
     colGap,
     originY,
-    padTop: PYR_STACK_TOP,
+    padTop,
   };
 };
 

@@ -647,9 +647,10 @@ export function PyramidComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
-            Photo squares in a 1–2–3–4 (or 5 / 6) stack from the title to the
-            bottom. Stock headshots pop out of the top; custom photos stay in
-            the box. Names off by default. Downloads a 4:5 Instagram PNG —
+            Photo squares in a 1–2–3–4 (or 5 / 6) stack. A small gap under the
+            title keeps popped heads clear of the letters; the bottom row keeps
+            its inset. Stock headshots pop out of the top; custom photos stay
+            in the box. Names off by default. Downloads a 4:5 Instagram PNG —
             nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

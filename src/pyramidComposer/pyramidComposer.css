@@ -10,7 +10,7 @@
   --pyr-row-gap: 46;
   --pyr-pop: 74;
   --pyr-pad-x: 28;
-  --pyr-pad-top: 12;
+  --pyr-pad-top: 16;
   --pyr-pad-bottom: 36;
   position: relative;
   aspect-ratio: 4 / 5;

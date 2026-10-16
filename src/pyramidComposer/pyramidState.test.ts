@@ -72,22 +72,26 @@ describe("pyramid composer", () => {
     expect(createEmptyPyramidSlots(6)).toHaveLength(21);
   });
 
-  it("fills from the title to the bottom and lets popped hair overlap the row above", () => {
+  it("drops the stack under the title so popped hair never clips it, and keeps the bottom inset", () => {
     const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
+    expect(PYR_PAD_BOTTOM).toBe(36);
+    expect(PYR_TITLE_Y).toBe(22);
+    expect(PYR_TITLE_H).toBe(96);
     for (const rows of [4, 5, 6] as const) {
       const metrics = pyramidMetrics(rows);
       expect(metrics.pop).toBeCloseTo(metrics.cell * PYR_POP_RATIO);
       expect(metrics.rowGap).toBeGreaterThan(PYR_COL_GAP);
       expect(metrics.rowGap).toBeLessThan(metrics.pop);
-      expect(metrics.originY).toBeCloseTo(titleBottom + PYR_STACK_TOP);
+      expect(metrics.padTop).toBeCloseTo(metrics.pop + PYR_STACK_TOP);
+      expect(metrics.originY).toBeCloseTo(titleBottom + metrics.padTop);
       expect(
         metrics.originY +
           metrics.rowCount * metrics.cell +
           (metrics.rowCount - 1) * metrics.rowGap,
       ).toBeCloseTo(GRAPHIC_HEIGHT - PYR_PAD_BOTTOM);
       const first = pyramidCellRect(0, rows);
-      expect(first.y - titleBottom).toBeLessThanOrEqual(PYR_STACK_TOP + 1);
-      expect(first.y).toBeGreaterThan(titleBottom);
+      expect(first.y - titleBottom).toBeCloseTo(metrics.padTop);
+      expect(first.y - first.pop).toBeGreaterThanOrEqual(titleBottom);
       const last = pyramidCellRect(metrics.slotCount - 1, rows);
       expect(GRAPHIC_HEIGHT - (last.y + last.h)).toBeCloseTo(PYR_PAD_BOTTOM);
       expect(last.y + last.h).toBeGreaterThan(GRAPHIC_HEIGHT - 50);
@@ -95,7 +99,8 @@ describe("pyramid composer", () => {
       expect(first.pop).toBeGreaterThan(40);
     }
     const story = pyramidMetrics(4, STORY_DESIGN_HEIGHT);
-    expect(story.originY).toBeCloseTo(titleBottom + PYR_STACK_TOP);
+    expect(story.originY).toBeCloseTo(titleBottom + story.padTop);
+    expect(story.padTop).toBeCloseTo(story.pop + PYR_STACK_TOP);
     expect(
       story.originY + 4 * story.cell + 3 * story.rowGap,
     ).toBeCloseTo(STORY_DESIGN_HEIGHT - PYR_PAD_BOTTOM);
