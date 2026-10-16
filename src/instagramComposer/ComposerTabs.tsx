@@ -84,35 +84,55 @@ export function ComposerTabs({
 
   return (
     <nav className="sc-tabs" aria-label="Composer type">
-      <label className="sc-tabs__search">
-        <span className="sc-tabs__label">Search</span>
-        <input
-          type="search"
-          value={query}
-          placeholder="Find a graphic"
-          aria-label="Search composers"
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </label>
-      {recents.length ? (
-        <div className="sc-tabs__group" role="group" aria-label="Recents">
-          <span className="sc-tabs__label">Recents</span>
-          <div className="sc-tabs__pills">
-            {recents.map((recent) => (
-              <button
-                key={`${recent.mode}-${recent.at}`}
-                type="button"
-                className={mode === recent.mode ? "is-on" : ""}
-                aria-current={mode === recent.mode ? "page" : undefined}
-                title={recent.title}
-                onClick={() => onSelect(recent.mode)}
-              >
-                {COMPOSER_MODE_LABEL[recent.mode] ?? recent.mode}
-              </button>
-            ))}
+      <div className="sc-tabs__bar">
+        <label className="sc-tabs__search">
+          <span className="sc-tabs__label">Search</span>
+          <input
+            type="search"
+            value={query}
+            placeholder="Find a graphic"
+            aria-label="Search composers"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        {recents.length ? (
+          <div
+            className="sc-tabs__group sc-tabs__group--recents"
+            role="group"
+            aria-label="Recents"
+          >
+            <span className="sc-tabs__label">Recents</span>
+            <div className="sc-tabs__pills">
+              {recents.map((recent) => (
+                <button
+                  key={`${recent.mode}-${recent.at}`}
+                  type="button"
+                  className={mode === recent.mode ? "is-on" : ""}
+                  aria-current={mode === recent.mode ? "page" : undefined}
+                  title={recent.title}
+                  onClick={() => onSelect(recent.mode)}
+                >
+                  {COMPOSER_MODE_LABEL[recent.mode] ?? recent.mode}
+                </button>
+              ))}
+            </div>
           </div>
+        ) : null}
+        <div className="sc-tabs__edit">
+          <span className="sc-tabs__label">HUD</span>
+          <button
+            type="button"
+            className={photoEdit ? "is-on" : ""}
+            aria-pressed={photoEdit}
+            aria-label="Show upload, change player, and zoom controls"
+            onClick={() => onPhotoEditChange(!photoEdit)}
+          >
+            Edit
+          </button>
+          <ComposerNameStyleToggle />
+          <ComposerStampToggle />
         </div>
-      ) : null}
+      </div>
       {COMPOSER_TAB_GROUPS.map((group) => {
         const tabs = group.tabs.filter((tab) => match(tab.label));
         if (!tabs.length) {
@@ -142,20 +162,6 @@ export function ComposerTabs({
           </div>
         );
       })}
-      <div className="sc-tabs__edit">
-        <span className="sc-tabs__label">HUD</span>
-        <button
-          type="button"
-          className={photoEdit ? "is-on" : ""}
-          aria-pressed={photoEdit}
-          aria-label="Show upload, change player, and zoom controls"
-          onClick={() => onPhotoEditChange(!photoEdit)}
-        >
-          Edit
-        </button>
-        <ComposerNameStyleToggle />
-        <ComposerStampToggle />
-      </div>
       <span className="sc-tabs__href" hidden>
         {composerHref(mode)}
       </span>

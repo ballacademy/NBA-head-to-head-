@@ -19,13 +19,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: min(100%, 220px);
+  min-width: 0;
+  max-width: 420px;
+  flex: 1 1 280px;
+  overflow: clip;
 }
 
 .sc-grade__mix {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px 8px;
+  min-width: 0;
+}
+
+.sc-grade .sc-field--range {
+  max-width: none;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .sc-grade__mix {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (hover: none), (pointer: coarse) {

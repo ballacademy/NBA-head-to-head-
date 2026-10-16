@@ -24,6 +24,7 @@ import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
 import { hydrateJsonStorage } from "../lib/browserStorage";
+import { chainHudWheel } from "./chainHudWheel";
 import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
 import "../everyTeamComposer/everyTeamComposer.css";
@@ -59,6 +60,17 @@ export function ComposerHub() {
   useEffect(() => {
     setComposerExportContext(mode);
   }, [mode]);
+
+  useEffect(() => {
+    if (!persistReady) {
+      return;
+    }
+    const root = document.querySelector(".sc-root");
+    if (!(root instanceof HTMLElement)) {
+      return;
+    }
+    return chainHudWheel(root);
+  }, [persistReady, mode]);
 
   const select = useCallback((next: ComposerMode) => {
     const href = composerHref(next);
