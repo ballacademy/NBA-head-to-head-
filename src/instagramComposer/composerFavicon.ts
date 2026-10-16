@@ -9,9 +9,12 @@ const upsertLink = (
   const selector = extras.sizes
     ? `link[rel="${rel}"][sizes="${extras.sizes}"]`
     : `link[rel="${rel}"]`;
-  let link = document.head.querySelector(selector);
-  if (!(link instanceof HTMLLinkElement)) {
-    link = document.createElement("link");
+  const existing = document.head.querySelector(selector);
+  const link =
+    existing instanceof HTMLLinkElement
+      ? existing
+      : document.createElement("link");
+  if (!(existing instanceof HTMLLinkElement)) {
     link.rel = rel;
     document.head.appendChild(link);
   }
@@ -26,9 +29,12 @@ const setMeta = (attribute: "name" | "property", key: string, content: string) =
     attribute === "name"
       ? `meta[name="${key}"]`
       : `meta[property="${key}"]`;
-  let meta = document.head.querySelector(selector);
-  if (!(meta instanceof HTMLMetaElement)) {
-    meta = document.createElement("meta");
+  const existing = document.head.querySelector(selector);
+  const meta =
+    existing instanceof HTMLMetaElement
+      ? existing
+      : document.createElement("meta");
+  if (!(existing instanceof HTMLMetaElement)) {
     meta.setAttribute(attribute, key);
     document.head.appendChild(meta);
   }

@@ -36,9 +36,10 @@ export const pullAndMergeComposerLibrary = async (
 };
 
 export const pushComposerLibraryIfLinked = async (
-  playerId = getOrCreatePlayerIdentity().playerId,
-  options: { force?: boolean } = {},
+  options: { playerId?: string; force?: boolean } = {},
 ): Promise<boolean> => {
+  const playerId =
+    options.playerId ?? getOrCreatePlayerIdentity().playerId;
   if (!(await isPlayerAccountLinked(playerId))) {
     return false;
   }
