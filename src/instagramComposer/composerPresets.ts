@@ -114,6 +114,13 @@ export const PLAY_IN_TITLE_PRESETS = [
   "PLAY-IN TOURNAMENT",
 ];
 
+export const MOCK_TRADE_TITLE_PRESETS = [
+  "MOCK TRADE",
+  "3-TEAM TRADE",
+  "TRADE RUMOR",
+  "BLOCKBUSTER",
+];
+
 export const slugifyExport = (value: string) =>
   value
     .trim()

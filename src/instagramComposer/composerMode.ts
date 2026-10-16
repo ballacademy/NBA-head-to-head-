@@ -14,7 +14,8 @@ export type ComposerMode =
   | "quote"
   | "play-in"
   | "stat-card"
-  | "stat-card-cover";
+  | "stat-card-cover"
+  | "mock-trade";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -103,6 +104,16 @@ const STAT_CARD_COVER_QUERY = new Set([
   "stat-card-cover",
   "stat-cover",
   "cover",
+]);
+const MOCK_TRADE_PATHS = new Set([
+  "/mock-trade",
+  "/mocktrade",
+  "/trade-machine",
+]);
+const MOCK_TRADE_QUERY = new Set([
+  "mock-trade",
+  "mocktrade",
+  "trade-machine",
 ]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
@@ -287,10 +298,19 @@ export const isStatCardCoverPath = (pathname: string) =>
 export const isStatCardCoverQuery = (search: string) =>
   STAT_CARD_COVER_QUERY.has(queryToken(search));
 
+export const isMockTradePath = (pathname: string) =>
+  MOCK_TRADE_PATHS.has(normalizePath(pathname));
+
+export const isMockTradeQuery = (search: string) =>
+  MOCK_TRADE_QUERY.has(queryToken(search));
+
 export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isMockTradePath(pathname)) {
+    return "mock-trade";
+  }
   if (isHeadlinePath(pathname)) {
     return "headline";
   }
@@ -335,6 +355,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isMockTradeQuery(search)) {
+    return "mock-trade";
   }
   if (isHeadlineQuery(search)) {
     return "headline";
@@ -411,6 +434,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "pyramid") {
     return "/pyramid";
+  }
+  if (mode === "mock-trade") {
+    return "/mock-trade";
   }
   if (mode === "headline") {
     return "/headline";

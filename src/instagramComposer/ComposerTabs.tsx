@@ -15,36 +15,32 @@ export const COMPOSER_TAB_GROUPS: {
     label: "Rankings",
     tabs: [
       { mode: "standings", label: "Standings" },
-      { mode: "every-team", label: "Every team" },
       { mode: "tier", label: "Tier list" },
+      { mode: "every-team", label: "Every team" },
+      { mode: "pyramid", label: "Pyramid" },
       { mode: "ranked-lineups", label: "Ranked lineups" },
       { mode: "lineup", label: "Lineup" },
     ],
   },
   {
-    label: "Week",
+    label: "Night / week / stats",
     tabs: [
-      { mode: "team-of-the-week", label: "Team of the Week" },
+      { mode: "stat-card", label: "Stat card" },
+      { mode: "stat-card-cover", label: "Cover" },
+      { mode: "compare", label: "Compare" },
+      { mode: "player-of-the-day", label: "POTD" },
+      { mode: "potd-leaderboard", label: "Leaderboard" },
+      { mode: "team-of-the-week", label: "TOTW" },
       { mode: "team-of-the-week-plus", label: "TOTW Plus" },
     ],
   },
   {
-    label: "POTD",
+    label: "News",
     tabs: [
-      { mode: "player-of-the-day", label: "Matchup" },
-      { mode: "potd-leaderboard", label: "Leaderboard" },
-    ],
-  },
-  {
-    label: "Posts",
-    tabs: [
-      { mode: "pyramid", label: "Pyramid" },
       { mode: "headline", label: "Headline" },
-      { mode: "compare", label: "Compare" },
       { mode: "quote", label: "Quote" },
+      { mode: "mock-trade", label: "Mock trade" },
       { mode: "play-in", label: "Play-in" },
-      { mode: "stat-card", label: "Stat card" },
-      { mode: "stat-card-cover", label: "Cover" },
     ],
   },
 ];

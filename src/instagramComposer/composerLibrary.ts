@@ -30,6 +30,7 @@ export const COMPOSER_LIBRARY_KEYS = [
   "ddgm:play-in-composer:saves",
   "ddgm:stat-card-composer:saves",
   "ddgm:stat-card-cover-composer:saves",
+  "ddgm:mock-trade-composer:saves",
 ] as const;
 
 export interface ComposerLibraryFile {

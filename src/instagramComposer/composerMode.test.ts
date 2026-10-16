@@ -73,37 +73,40 @@ describe("composer mode", () => {
     );
   });
 
-  it("groups hub tabs as Rankings, Week, POTD, and Posts", () => {
+  it("groups hub tabs as Rankings, Night / week / stats, and News", () => {
     expect(COMPOSER_TAB_GROUPS.map((group) => group.label)).toEqual([
       "Rankings",
-      "Week",
-      "POTD",
-      "Posts",
+      "Night / week / stats",
+      "News",
     ]);
     expect(COMPOSER_TAB_GROUPS[0]!.tabs.map((tab) => tab.mode)).toEqual([
       "standings",
-      "every-team",
       "tier",
+      "every-team",
+      "pyramid",
       "ranked-lineups",
       "lineup",
     ]);
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
+      "stat-card",
+      "stat-card-cover",
+      "compare",
+      "player-of-the-day",
+      "potd-leaderboard",
       "team-of-the-week",
       "team-of-the-week-plus",
     ]);
-    expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.label)).toEqual([
-      "Matchup",
-      "Leaderboard",
-    ]);
-    expect(COMPOSER_TAB_GROUPS[3]!.tabs.map((tab) => tab.mode)).toEqual([
-      "pyramid",
+    expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.mode)).toEqual([
       "headline",
-      "compare",
       "quote",
+      "mock-trade",
       "play-in",
-      "stat-card",
-      "stat-card-cover",
     ]);
+    const modes = COMPOSER_TAB_GROUPS.flatMap((group) =>
+      group.tabs.map((tab) => tab.mode),
+    );
+    expect(new Set(modes).size).toBe(modes.length);
+    expect(modes).toHaveLength(17);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -133,6 +136,10 @@ describe("composer mode", () => {
       "stat-card-cover",
     );
     expect(composerHref("stat-card-cover")).toBe("/stat-card-cover");
+    expect(readComposerMode("", "/mock-trade")).toBe("mock-trade");
+    expect(readComposerMode("", "/trade-machine")).toBe("mock-trade");
+    expect(readComposerMode("?composer=mock-trade", "/")).toBe("mock-trade");
+    expect(composerHref("mock-trade")).toBe("/mock-trade");
   });
 
   it("opens ranked lineups from path or query", () => {

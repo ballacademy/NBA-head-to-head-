@@ -6,6 +6,7 @@ import {
 } from "./durableJson";
 import { upsertNamedGraphic, listNamedGraphics } from "../instagramComposer/composerLibrary";
 import { defaultHeadlineDraft } from "../headlineComposer/headlineState";
+import { defaultMockTradeDraft } from "../mockTradeComposer/mockTradeState";
 import { defaultStatCardCoverDraft } from "../statCardCoverComposer/statCardCoverState";
 
 const mockStorage = (quota = false) => {
@@ -78,6 +79,35 @@ describe("composer photo persist", () => {
     expect(restoredCover?.slots[2]?.photoSrc).toBeNull();
     expect(restoredHeadline?.photoSrc).toBe("data:image/png;base64,headline");
     expect(restoredHeadline?.pan.zoom).toBe(1.2);
+    const tradeKey = "ddgm:mock-trade-composer";
+    const trade = {
+      ...defaultMockTradeDraft(),
+      sides: defaultMockTradeDraft().sides.map((side, index) =>
+        index === 0
+          ? {
+              ...side,
+              teamId: "BOS",
+              players: [
+                {
+                  ...side.players[0]!,
+                  photoSrc: "data:image/png;base64,trade",
+                  customPhoto: true,
+                  pan: { x: 0.4, y: 0.3, zoom: 1.15, rotate: 0 },
+                },
+              ],
+            }
+          : side,
+      ),
+    };
+    writeJson(tradeKey, trade);
+    unloadDurableCacheForTests();
+    await hydrateJsonStorage();
+    const restoredTrade = readJson<typeof trade>(tradeKey);
+    expect(restoredTrade?.sides[0]?.players[0]?.photoSrc).toBe(
+      "data:image/png;base64,trade",
+    );
+    expect(restoredTrade?.sides[0]?.players[0]?.pan.zoom).toBe(1.15);
+    expect(restoredTrade?.sides[1]?.players[0]?.photoSrc).toBeNull();
     expect(defaultHeadlineDraft().photoSrc).toBeNull();
     expect(defaultStatCardCoverDraft().slots.every((slot) => !slot.photoSrc)).toBe(
       true,

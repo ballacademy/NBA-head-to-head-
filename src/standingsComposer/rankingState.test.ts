@@ -121,6 +121,7 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/headline")).toBe(true);
     expect(isStandingsComposerRoute("", "/stat-card")).toBe(true);
     expect(isStandingsComposerRoute("", "/stat-card-cover")).toBe(true);
+    expect(isStandingsComposerRoute("", "/mock-trade")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

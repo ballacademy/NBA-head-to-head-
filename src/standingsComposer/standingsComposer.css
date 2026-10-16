@@ -23,9 +23,9 @@
 .sc-tabs {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px 18px;
-  padding: 10px 18px 0;
+  align-items: stretch;
+  gap: 10px 12px;
+  padding: 12px 18px 10px;
   background: rgba(12, 13, 16, 0.92);
   scrollbar-width: thin;
 }
@@ -34,39 +34,50 @@
 .sc-tabs__edit {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+}
+
+.sc-tabs__group {
+  flex: 1 1 280px;
+  min-width: min(100%, 280px);
+  padding: 8px 10px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sc-tabs__group + .sc-tabs__group {
-  padding-left: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 10px;
 }
 
 .sc-tabs__label {
-  padding: 0 14px;
+  padding: 0 6px;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #a1a1aa;
 }
 
 .sc-tabs__pills {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
 .sc-tabs__edit {
   margin-left: auto;
+  flex: 0 0 auto;
   align-items: flex-end;
-  padding-bottom: 2px;
+  justify-content: flex-end;
+  padding: 8px 4px 2px;
 }
 
 .sc-tabs button {
-  height: 36px;
-  padding: 0 14px;
-  border: 0;
-  border-bottom: 2px solid transparent;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: transparent;
   color: #a1a1aa;
   font: inherit;
@@ -78,11 +89,13 @@
 
 .sc-tabs button:hover {
   color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sc-tabs button.is-on {
   color: #fafafa;
-  border-bottom-color: #fafafa;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .sc-toolbar {
@@ -479,7 +492,8 @@ main.sc-stage {
 .pi-board.is-none,
 .qt-board.is-none,
 .stc-board.is-none,
-.scc-board.is-none {
+.scc-board.is-none,
+.mt-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
 }
@@ -537,6 +551,7 @@ main.sc-stage {
 .is-purple .plb-title-plate,
 .is-purple .hl-headline-plate,
 .is-purple .cmp-title-plate,
+.is-purple .mt-title-plate,
 .is-purple .cmp-sub-plate,
 .is-purple .pi-slot,
 .is-purple .qt-board .pod-photo {
@@ -1601,18 +1616,18 @@ label.sc-chip {
 
 @media (max-width: 1400px) {
   .sc-tabs {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
   }
 
   .sc-tabs__group {
-    flex: 0 0 auto;
+    flex: 1 1 240px;
   }
 
   .sc-tabs__pills {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .sc-tabs button {
@@ -1682,7 +1697,7 @@ label.sc-chip {
 
 @media (max-width: 900px) {
   .sc-tabs {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     overflow-x: auto;
     overflow-y: hidden;
     gap: 8px 12px;
@@ -1691,15 +1706,15 @@ label.sc-chip {
   }
 
   .sc-tabs__group {
-    flex: 0 0 auto;
+    flex: 1 1 220px;
   }
 
   .sc-tabs__group + .sc-tabs__group {
-    padding-left: 12px;
+    padding-left: 10px;
   }
 
   .sc-tabs__pills {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .sc-tabs button {

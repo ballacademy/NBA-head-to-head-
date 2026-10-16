@@ -14,6 +14,7 @@ import { QuoteComposerApp } from "../quoteComposer/QuoteComposerApp";
 import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
 import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
 import { StatCardCoverComposerApp } from "../statCardCoverComposer/StatCardCoverComposerApp";
+import { MockTradeComposerApp } from "../mockTradeComposer/MockTradeComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -37,6 +38,7 @@ import "../quoteComposer/quoteComposer.css";
 import "../playInComposer/playInComposer.css";
 import "../statCardComposer/statCardComposer.css";
 import "../statCardCoverComposer/statCardCoverComposer.css";
+import "../mockTradeComposer/mockTradeComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -107,6 +109,8 @@ export function ComposerHub() {
         <PyramidComposerApp />
       ) : mode === "headline" ? (
         <HeadlineComposerApp />
+      ) : mode === "mock-trade" ? (
+        <MockTradeComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

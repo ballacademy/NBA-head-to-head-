@@ -413,6 +413,25 @@ describe("composer chrome", () => {
     expect(totwCss).toMatch(
       /\.twp-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,
     );
+    const mockTradeApp = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    const mockTradeCss = readFileSync(
+      join(root, "mockTradeComposer/mockTradeComposer.css"),
+      "utf8",
+    );
+    const mockTradeExport = readFileSync(
+      join(root, "mockTradeComposer/exportMockTradePng.ts"),
+      "utf8",
+    );
+    expect(mockTradeApp).toContain("story={storyCrop}");
+    expect(mockTradeApp).toContain("Add 3rd team");
+    expect(mockTradeApp).toContain("Add pick");
+    expect(mockTradeExport).not.toContain("toStoryCanvas");
+    expect(mockTradeCss).toMatch(
+      /\.mt-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,
+    );
   });
 
   it("pastes Cover photos into the last-clicked slot and drops faces below the fade", () => {
@@ -490,7 +509,7 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(photoFrame).toMatch(/pickLabel = "Pick player"/);
-    expect(headlineGraphic).toContain('pickLabel={subject === "team" ? "Pick team" : "Pick player"}');
+    expect(headlineGraphic).toContain('pickLabel="Pick player"');
     expect(photoCss).toMatch(
       /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*1;/,
     );

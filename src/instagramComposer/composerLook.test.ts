@@ -91,6 +91,7 @@ describe("composer look", () => {
     expect(COMPOSER_LIBRARY_KEYS).toContain(
       "ddgm:stat-card-cover-composer:saves",
     );
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:mock-trade-composer:saves");
   });
 
   it("keeps kyber purple off by default and electric, not pastel", () => {
