@@ -96,9 +96,25 @@ export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
   { key: "blk", label: "BLK", value: "" },
   { key: "stl", label: "STL", value: "" },
   { key: "tov", label: "TOV", value: "" },
-  { key: "three", label: "3PM", value: "" },
   { key: "fg", label: "FG", value: "" },
+  { key: "three", label: "3PM", value: "" },
 ];
+
+/** When both FGM and 3PM are on the card, FGM stays first. User reorder still wins after. */
+export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
+  const fg = stats.findIndex((line) => line.key === "fg");
+  const three = stats.findIndex((line) => line.key === "three");
+  if (fg < 0 || three < 0 || fg < three) {
+    return stats;
+  }
+  const next = stats.slice();
+  const [fgLine] = next.splice(fg, 1);
+  if (!fgLine) {
+    return stats;
+  }
+  next.splice(three, 0, fgLine);
+  return next;
+};
 
 export const DEFAULT_STAT_LINES: StatCardLine[] = STAT_CARD_LINE_OPTIONS.slice(
   0,
@@ -499,13 +515,13 @@ export const notableStatCardLines = (
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  if (threeMakes >= THREE_MIN_MAKES) {
-    picks.push({ key: "three", label: "3PM", value: stats.three });
-  }
   const fgEfficient = fgAtt >= FG_MIN_ATTEMPTS && fgPct > fgFloor;
   const fgVolume = fgMakes >= 10;
   if (fgEfficient || fgVolume) {
     picks.push({ key: "fg" });
+  }
+  if (threeMakes >= THREE_MIN_MAKES) {
+    picks.push({ key: "three", label: "3PM", value: stats.three });
   }
   if (tov >= 6 || (tov >= 5 && pts >= 30)) {
     picks.push({ key: "tov" });
@@ -517,7 +533,8 @@ export const notableStatCardLines = (
   if (showMin) {
     picked.push(lineFromGame("min", stats));
   }
-  return picked.length ? picked : [lineFromGame("pts", stats)];
+  const lines = picked.length ? picked : [lineFromGame("pts", stats)];
+  return ensureFgBeforeThree(lines);
 };
 
 export const fillStatCardFromGame = (

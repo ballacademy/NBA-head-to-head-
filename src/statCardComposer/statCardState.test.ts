@@ -48,6 +48,7 @@ import {
   playerName,
   removeStatCardLine,
   setStatCardLineKey,
+  STAT_CARD_LINE_OPTIONS,
   STC_STAT_COUNT,
   STC_STAT_MAX,
 } from "./statCardState";
@@ -284,7 +285,10 @@ describe("stat card composer", () => {
       added.push(nextStatCardLine(stats)!.label);
       stats = addStatCardLine(stats);
     }
-    expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "3PM"]);
+    expect(STAT_CARD_LINE_OPTIONS.map((line) => line.key).indexOf("fg")).toBeLessThan(
+      STAT_CARD_LINE_OPTIONS.map((line) => line.key).indexOf("three"),
+    );
+    expect(added).toEqual(["MIN", "BLK", "STL", "TOV", "FG"]);
     expect(stats).toHaveLength(8);
     expect(addStatCardLine(stats)).toHaveLength(8);
   });
@@ -391,10 +395,16 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
-      "3PM",
       "FG",
+      "3PM",
       "MIN",
     ]);
+    const fgIndex = loaded.findIndex((line) => line.key === "fg");
+    const threeIndex = loaded.findIndex((line) => line.key === "three");
+    expect(fgIndex).toBeGreaterThanOrEqual(0);
+    expect(threeIndex).toBeGreaterThan(fgIndex);
+    expect(loaded[fgIndex]?.label).toBe("FG");
+    expect(loaded[fgIndex]?.value).toMatch(/-/);
     expect(loaded).toHaveLength(8);
     const quiet = notableStatCardLines(
       box({ pts: "22", reb: "2", ast: "1", stl: "0", blk: "0", min: "28" }),
@@ -434,8 +444,8 @@ describe("stat card composer", () => {
     );
     expect(hot.map((line) => `${line.value} ${line.label}`)).toEqual([
       "24 PTS",
-      "4-5 3PM",
       "9-14 FG",
+      "4-5 3PM",
     ]);
     const burst = notableStatCardLines(
       box({ pts: "18", reb: "2", ast: "1", min: "12", fg: "7-9" }),
