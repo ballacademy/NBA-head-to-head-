@@ -17,6 +17,7 @@ export const TEAM_OF_THE_WEEK_PLUS_LOOK_KEY =
 export const RANKED_LINEUPS_LOOK_KEY = "ddgm:ranked-lineups-composer-look";
 export const LINEUP_LOOK_KEY = "ddgm:lineup-composer-look";
 export const PYRAMID_LOOK_KEY = "ddgm:pyramid-composer-look";
+export const PLOT_LOOK_KEY = "ddgm:plot-composer-look";
 export const HEADLINE_LOOK_KEY = "ddgm:headline-composer-look";
 export const COMPARE_LOOK_KEY = "ddgm:compare-composer-look";
 export const QUOTE_LOOK_KEY = "ddgm:quote-composer-look";

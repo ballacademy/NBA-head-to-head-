@@ -15,7 +15,8 @@ export type ComposerMode =
   | "play-in"
   | "stat-card"
   | "stat-card-cover"
-  | "mock-trade";
+  | "mock-trade"
+  | "plot";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -115,6 +116,8 @@ const MOCK_TRADE_QUERY = new Set([
   "mocktrade",
   "trade-machine",
 ]);
+const PLOT_PATHS = new Set(["/plot", "/scatter", "/xy"]);
+const PLOT_QUERY = new Set(["plot", "scatter", "xy"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -301,6 +304,12 @@ export const isStatCardCoverQuery = (search: string) =>
 export const isMockTradePath = (pathname: string) =>
   MOCK_TRADE_PATHS.has(normalizePath(pathname));
 
+export const isPlotPath = (pathname: string) =>
+  PLOT_PATHS.has(normalizePath(pathname));
+
+export const isPlotQuery = (search: string) =>
+  PLOT_QUERY.has(queryToken(search));
+
 export const isMockTradeQuery = (search: string) =>
   MOCK_TRADE_QUERY.has(queryToken(search));
 
@@ -308,6 +317,9 @@ export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isPlotPath(pathname)) {
+    return "plot";
+  }
   if (isMockTradePath(pathname)) {
     return "mock-trade";
   }
@@ -355,6 +367,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isPlotQuery(search)) {
+    return "plot";
   }
   if (isMockTradeQuery(search)) {
     return "mock-trade";
@@ -434,6 +449,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "pyramid") {
     return "/pyramid";
+  }
+  if (mode === "plot") {
+    return "/plot";
   }
   if (mode === "mock-trade") {
     return "/mock-trade";

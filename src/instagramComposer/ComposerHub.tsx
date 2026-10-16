@@ -15,6 +15,7 @@ import { PlayInComposerApp } from "../playInComposer/PlayInComposerApp";
 import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
 import { StatCardCoverComposerApp } from "../statCardCoverComposer/StatCardCoverComposerApp";
 import { MockTradeComposerApp } from "../mockTradeComposer/MockTradeComposerApp";
+import { PlotComposerApp } from "../plotComposer/PlotComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -41,6 +42,7 @@ import "../playInComposer/playInComposer.css";
 import "../statCardComposer/statCardComposer.css";
 import "../statCardCoverComposer/statCardCoverComposer.css";
 import "../mockTradeComposer/mockTradeComposer.css";
+import "../plotComposer/plotComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -131,6 +133,8 @@ export function ComposerHub() {
         <HeadlineComposerApp />
       ) : mode === "mock-trade" ? (
         <MockTradeComposerApp />
+      ) : mode === "plot" ? (
+        <PlotComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

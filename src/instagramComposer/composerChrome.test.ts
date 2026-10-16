@@ -395,6 +395,16 @@ describe("composer chrome", () => {
     expect(pyramidApp).toContain("story={storyCrop}");
     expect(pyramidApp).toContain("STORY_DESIGN_HEIGHT");
     expect(pyramidApp).toContain('sc-stage__frame is-story');
+    const plotApp = readFileSync(
+      join(root, "plotComposer/PlotComposerApp.tsx"),
+      "utf8",
+    );
+    expect(plotApp).toContain("populatePlotPoints");
+    expect(plotApp).toContain('aria-label="X axis stat"');
+    expect(plotApp).toContain('aria-label="Y axis stat"');
+    expect(plotApp).toContain('aria-label="Swap X and Y"');
+    expect(plotApp).toContain("Populate");
+    expect(plotApp).toContain("PlayerFilterBar");
     const compareApp = readFileSync(
       join(root, "compareComposer/CompareComposerApp.tsx"),
       "utf8",

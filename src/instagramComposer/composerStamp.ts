@@ -14,6 +14,7 @@ export const COMPOSER_STAMP_MODES = new Set<ComposerMode>([
   "quote",
   "mock-trade",
   "play-in",
+  "plot",
 ]);
 
 export interface ComposerStamp {

@@ -23,6 +23,7 @@ const APPS = [
   "statCardComposer/StatCardComposerApp.tsx",
   "statCardCoverComposer/StatCardCoverComposerApp.tsx",
   "mockTradeComposer/MockTradeComposerApp.tsx",
+  "plotComposer/PlotComposerApp.tsx",
 ];
 
 describe("composer toolbar chrome", () => {

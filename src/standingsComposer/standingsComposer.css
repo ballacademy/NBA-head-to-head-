@@ -621,7 +621,8 @@ main.sc-stage {
 .qt-board.is-none,
 .stc-board.is-none,
 .scc-board.is-none,
-.mt-board.is-none {
+.mt-board.is-none,
+.plt-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
 }

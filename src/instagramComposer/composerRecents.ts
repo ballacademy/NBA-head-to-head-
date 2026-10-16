@@ -38,6 +38,7 @@ const isMode = (value: unknown): value is ComposerMode =>
     "stat-card",
     "stat-card-cover",
     "mock-trade",
+    "plot",
   ].includes(value);
 
 export const parseComposerRecents = (value: unknown): ComposerRecent[] => {

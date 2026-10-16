@@ -84,6 +84,7 @@ describe("composer mode", () => {
       "tier",
       "every-team",
       "pyramid",
+      "plot",
       "ranked-lineups",
       "lineup",
     ]);
@@ -106,7 +107,7 @@ describe("composer mode", () => {
       group.tabs.map((tab) => tab.mode),
     );
     expect(new Set(modes).size).toBe(modes.length);
-    expect(modes).toHaveLength(17);
+    expect(modes).toHaveLength(18);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -140,6 +141,10 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/trade-machine")).toBe("mock-trade");
     expect(readComposerMode("?composer=mock-trade", "/")).toBe("mock-trade");
     expect(composerHref("mock-trade")).toBe("/mock-trade");
+    expect(readComposerMode("", "/plot")).toBe("plot");
+    expect(readComposerMode("", "/scatter")).toBe("plot");
+    expect(readComposerMode("?composer=plot", "/")).toBe("plot");
+    expect(composerHref("plot")).toBe("/plot");
   });
 
   it("opens ranked lineups from path or query", () => {
