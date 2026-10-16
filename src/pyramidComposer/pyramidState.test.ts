@@ -10,6 +10,7 @@ import {
   PYR_CELL,
   PYR_CELL_FILL,
   PYR_CELL_STUD,
+  PYR_COL_GAP,
   PYR_CUTOUT_ALPHA,
   PYR_CUTOUT_DILATE,
   PYR_DEFAULT_ROWS,
@@ -66,12 +67,13 @@ describe("pyramid composer", () => {
     expect(createEmptyPyramidSlots(6)).toHaveLength(21);
   });
 
-  it("pins the stack to the bottom and pops heads into a gap that clears the row above", () => {
+  it("pins the stack to the bottom and lets popped hair overlap the row above", () => {
     const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
     for (const rows of [4, 5, 6] as const) {
       const metrics = pyramidMetrics(rows);
       expect(metrics.pop).toBeCloseTo(metrics.cell * PYR_POP_RATIO);
-      expect(metrics.rowGap).toBeGreaterThan(metrics.pop);
+      expect(metrics.rowGap).toBeLessThan(metrics.pop);
+      expect(metrics.rowGap).toBe(PYR_COL_GAP);
       expect(metrics.originY + metrics.rowCount * metrics.cell + (metrics.rowCount - 1) * metrics.rowGap).toBe(
         GRAPHIC_HEIGHT - PYR_PAD_BOTTOM,
       );

@@ -14,8 +14,8 @@ import {
   type FrameEdge,
 } from "../instagramComposer/composerLook";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -205,9 +205,7 @@ const drawSlotPhoto = (
   );
   const rotate = photoRotate(pan);
   context.save();
-  if (photoGrade) {
-    context.filter = PHOTO_GRADE_FILTER;
-  }
+  context.filter = canvasGradeFilter(photoGrade);
   if (rotate) {
     context.translate(x + w / 2, drawY + drawH / 2);
     context.rotate((rotate * Math.PI) / 180);
@@ -477,7 +475,7 @@ export const renderPyramidCanvas = async (
 
   const rowCount = input.rows ?? PYR_DEFAULT_ROWS;
   const slotCount = Math.min(input.slots.length, pyramidSlotCount(rowCount));
-  for (let index = slotCount - 1; index >= 0; index -= 1) {
+  for (let index = 0; index < slotCount; index += 1) {
     const slot = input.slots[index]!;
     const rect = pyramidCellRect(index, rowCount, boardH);
     const x = rect.x * s;

@@ -92,7 +92,7 @@ export interface PyramidMetrics {
 
 const stackFits = (rowCount: number, cell: number, boardH = GRAPHIC_HEIGHT) => {
   const pop = cell * PYR_POP_RATIO;
-  const rowGap = pop + PYR_POP_GUTTER;
+  const rowGap = PYR_COL_GAP;
   const stackH = rowCount * cell + (rowCount - 1) * rowGap;
   const originY = boardH - PYR_PAD_BOTTOM - stackH;
   const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
@@ -122,7 +122,7 @@ export const pyramidMetrics = (
     cell = lo;
   }
   const pop = cell * PYR_POP_RATIO;
-  const rowGap = pop + PYR_POP_GUTTER;
+  const rowGap = PYR_COL_GAP;
   const stackH = n * cell + (n - 1) * rowGap;
   const originY = boardH - PYR_PAD_BOTTOM - stackH;
   return {

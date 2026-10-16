@@ -150,7 +150,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                 style={
                   {
                     ["--cols" as string]: count,
-                    ["--z" as string]: String(20 - row),
+                    ["--z" as string]: String(row + 1),
                   } as React.CSSProperties
                 }
               >
