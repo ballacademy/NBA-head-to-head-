@@ -68,8 +68,8 @@ describe("plot composer", () => {
     expect(new Set(points.map((point) => point.id)).size).toBe(30);
     expect(points.every((point) => point.kind === "team")).toBe(true);
     const okc = points.find((point) => point.id === "OKC");
-    expect(okc?.x).toBeGreaterThan(15);
-    expect(okc?.y).toBeGreaterThan(3);
+    expect(okc?.x).toBeGreaterThan(90);
+    expect(okc?.y).toBeGreaterThan(18);
     const current = populatePlotTeams(
       "2026-27",
       "points",
@@ -77,7 +77,8 @@ describe("plot composer", () => {
       EMPTY_PLAYER_FILTERS,
     );
     const okcNow = current.find((point) => point.id === "OKC");
-    expect(okcNow?.x).toBeGreaterThan(20);
+    expect(okcNow?.x).toBeGreaterThan(100);
+    expect(okcNow?.y).toBeGreaterThan(20);
     const xAxis = axisFromValues(
       points.map((point) => point.x),
       "points",

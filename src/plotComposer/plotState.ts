@@ -8,7 +8,6 @@ import {
   listRosterPlayers,
   matchingTeamIds,
   parseEveryTeamStatMetric,
-  pickSeasonLeader,
   playerStatValue,
   rosterStatValue,
   teamLogoSrc,
@@ -24,6 +23,7 @@ import {
   type PlayerSearchFilters,
   type TierPlayer,
 } from "../tierListComposer/nbaActivePlayers";
+import { officialTeamStatValue } from "../everyTeamComposer/teamSeasonStats";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { PLOT_TITLE_TRACK } from "./plotLayout";
 
@@ -181,9 +181,8 @@ export const populatePlotTeams = (
   });
   const next: PlotPoint[] = [];
   ids.forEach((teamId) => {
-    const leader = pickSeasonLeader(teamId, season, xMetric, sample);
-    const x = rosterStatValue(leader, xMetric);
-    const y = rosterStatValue(leader, yMetric);
+    const x = officialTeamStatValue(teamId, season, xMetric, sample);
+    const y = officialTeamStatValue(teamId, season, yMetric, sample);
     const team = getTeam(teamId) ?? NBA_TEAMS.find((row) => row.id === teamId);
     if (x == null || y == null || !team) {
       return;
