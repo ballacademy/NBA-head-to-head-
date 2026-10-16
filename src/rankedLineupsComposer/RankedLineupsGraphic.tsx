@@ -33,7 +33,6 @@ import {
   rankHeadlineSecondary,
   RANKED_LINEUP_STRIP_COUNT,
   splitRankedLineupTitle,
-  swipeRankCue,
   type RankedLineupStrip,
 } from "./rankedLineupsState";
 
@@ -51,6 +50,7 @@ interface RankedLineupsGraphicProps {
   rankDisplay?: RankDisplay;
   positionLabels?: string[];
   exporting?: boolean;
+  story?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onRankChange: (value: string) => void;
@@ -83,6 +83,7 @@ export const RankedLineupsGraphic = forwardRef<
     rankDisplay = "pill",
     positionLabels,
     exporting = false,
+    story = false,
     onBrandChange,
     onTitleChange,
     onRankChange,
@@ -145,6 +146,7 @@ export const RankedLineupsGraphic = forwardRef<
         composerLookClass(look),
         composerFlairClass(purpleFlair),
         composerGradeClass(photoGrade),
+        story ? "is-story" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -170,6 +172,7 @@ export const RankedLineupsGraphic = forwardRef<
         />
       ) : null}
       <header className="rl-header">
+        {showBa ? null : (
         <input
           className="rl-brand"
           value={brand}
@@ -178,6 +181,7 @@ export const RankedLineupsGraphic = forwardRef<
           aria-label="Brand label"
           onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
         />
+        )}
         <div className="rl-title-plate">
           <div className="rl-title-block">
             <ComposerTitleField
@@ -240,6 +244,9 @@ export const RankedLineupsGraphic = forwardRef<
                 vignette
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
+                onUploadMany={(urls) =>
+                  urls.forEach((url, offset) => onUpload(index + offset, url))
+                }
                 onPick={() => onPick(index)}
               />
               {showFade ? (
@@ -342,13 +349,6 @@ export const RankedLineupsGraphic = forwardRef<
           );
         })}
       </footer>
-      {rankDisplay === "none" ? null : (
-        <div className="rl-swipe" aria-hidden="true">
-          <span className="rl-swipe__label">Swipe</span>
-          <span className="rl-swipe__chev" />
-          <span className="rl-swipe__next">{swipeRankCue(rank)}</span>
-        </div>
-      )}
     </article>
   );
 });

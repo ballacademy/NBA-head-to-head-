@@ -1,4 +1,6 @@
 export const COMPOSER_HASHTAGS = "#NBA #BallAcademy";
+export const COMPOSER_FIRST_COMMENT_PROMPT =
+  "Who you got? Drop it in the first comment.";
 
 export const stripCaptionName = (strip: {
   firstName?: string;
@@ -13,9 +15,31 @@ export const graphicCaption = (
   names: string[],
   extra: string[] = [],
 ) =>
-  [title.trim(), ...extra.map((line) => line.trim()).filter(Boolean), ...names, COMPOSER_HASHTAGS]
+  [
+    title.trim(),
+    ...extra.map((line) => line.trim()).filter(Boolean),
+    ...names,
+    COMPOSER_HASHTAGS,
+    COMPOSER_FIRST_COMMENT_PROMPT,
+  ]
     .filter(Boolean)
     .join("\n");
+
+export const everyTeamCaption = (title: string, names: string[]) =>
+  graphicCaption(title, names);
+
+export const tierListCaption = (
+  title: string,
+  rows: Array<{ label: string; names: string[] }>,
+) =>
+  graphicCaption(
+    title,
+    [],
+    rows.map((row) => {
+      const names = row.names.filter(Boolean);
+      return names.length ? `${row.label}: ${names.join(", ")}` : "";
+    }),
+  );
 
 const lineValue = (
   stats: Array<{ key: string; value: string }>,

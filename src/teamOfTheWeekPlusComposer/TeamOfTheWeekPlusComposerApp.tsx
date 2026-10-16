@@ -103,7 +103,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_PLUS_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -368,7 +368,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Name + logo</span>

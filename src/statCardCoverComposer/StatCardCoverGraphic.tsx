@@ -122,6 +122,7 @@ export const StatCardCoverGraphic = forwardRef<
         composerLookClass(look),
         composerFlairClass(purpleFlair),
         composerGradeClass(photoGrade),
+        draft.showGold !== false ? "is-gold" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -167,6 +168,9 @@ export const StatCardCoverGraphic = forwardRef<
               vignette
               onPan={(pan) => onPan(index, pan)}
               onUpload={(dataUrl) => onUpload(index, dataUrl)}
+              onUploadMany={(urls) =>
+                urls.forEach((url, offset) => onUpload(index + offset, url))
+              }
               onPick={() => onPick(index)}
             />
             {team && watermark !== "off" ? (

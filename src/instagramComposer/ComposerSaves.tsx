@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  pullAndMergeComposerLibrary,
+  pushComposerLibraryIfLinked,
+} from "../lib/composerLibraryRemote";
 import { stripComposerPhotos } from "./composerPhotos";
 import {
   COMPOSER_LIBRARY_EVENT,
@@ -31,6 +35,12 @@ export function ComposerSaves<T>({
   useEffect(() => {
     const refresh = () => setSaves(listNamedGraphics<T>(storageKey));
     refresh();
+    void pullAndMergeComposerLibrary().then((merged) => {
+      if (merged) {
+        refresh();
+        setStatus("Loaded named graphics from your account.");
+      }
+    });
     const onStorage = (event: StorageEvent) => {
       if (event.key === storageKey || event.key === null) {
         refresh();
@@ -70,7 +80,13 @@ export function ComposerSaves<T>({
           setSaves(next);
           setSelected(saved.id);
           setName(saved.name);
-          setStatus("Saved on this device.");
+          void pushComposerLibraryIfLinked({ force: true }).then((synced) => {
+            setStatus(
+              synced
+                ? "Saved to your account — restores on phone."
+                : "Saved on this device — Export all to move to phone.",
+            );
+          });
         }}
       >
         Save

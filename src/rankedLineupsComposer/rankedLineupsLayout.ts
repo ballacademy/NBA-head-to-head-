@@ -77,7 +77,8 @@ export const RL_STRIP_W =
 export const rankedStripH = (
   display: RankDisplay = "pill",
   showFade = false,
-) => GRAPHIC_HEIGHT - rankedHeaderH(display) - rankedFooterH(showFade);
+  boardH = GRAPHIC_HEIGHT,
+) => boardH - rankedHeaderH(display) - rankedFooterH(showFade);
 
 export const RL_STRIP_H = rankedStripH("pill", false);
 

@@ -51,6 +51,7 @@ interface TeamOfTheWeekPlusGraphicProps {
   showNames?: boolean;
   titlesBelow?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onBrandChange: (value: string) => void;
   onWeekChange: (value: string) => void;
   onStarterCaptionChange: (value: string) => void;
@@ -104,6 +105,9 @@ const PortraitCell = ({
         zoomStep={PLUS_ZOOM_STEP}
         onPan={(pan) => onPan(index, pan)}
         onUpload={(dataUrl) => onUpload(index, dataUrl)}
+        onUploadMany={(urls) =>
+          urls.forEach((url, offset) => onUpload(index + offset, url))
+        }
         onPick={() => onPick(index)}
       />
       {showNames ? (
@@ -141,6 +145,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     showNames = true,
     titlesBelow = false,
     exporting = false,
+    story = false,
     onBrandChange,
     onWeekChange,
     onHover,
@@ -198,6 +203,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
         composerLookClass(look),
         composerFlairClass(purpleFlair),
         composerGradeClass(photoGrade),
+        story ? "is-story" : "",
       ]
         .filter(Boolean)
         .join(" ")}

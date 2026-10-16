@@ -10,7 +10,7 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -139,13 +139,27 @@ export function PlayInComposerApp() {
         fetchConferenceStandingsBundle("West"),
       ]);
       push(draft);
-      setDraft((current) => ({
-        ...current,
-        east: playInSlotsFromStandings(current.size, east.slots),
-        west: playInSlotsFromStandings(current.size, west.slots),
-        records: { ...east.records, ...west.records },
-      }));
-      setStatus("Filled 7–10 from current standings.");
+      const today = nbaTodayIso();
+      const games = [
+        ...(await fetchPlayInLiveGames(today)),
+        ...(await fetchPlayInLiveGames(shiftIsoDate(today, -1))),
+      ];
+      setDraft((current) => {
+        const filled = {
+          ...current,
+          east: playInSlotsFromStandings(current.size, east.slots),
+          west: playInSlotsFromStandings(current.size, west.slots),
+          records: { ...east.records, ...west.records },
+        };
+        return games.length
+          ? applyLivePlayInScores(filled, games)
+          : filled;
+      });
+      setStatus(
+        games.length
+          ? "Filled 7–10 from current standings with live scores."
+          : "Filled 7–10 from current standings.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not load standings.");
@@ -414,10 +428,22 @@ export function PlayInComposerApp() {
               void (async () => {
                 setExporting(true);
                 try {
+                  const feedName = exportFilenameFromTitle(draft.title, "play-in");
                   await downloadExportPack(
                     () =>
                       renderPlayInCanvas({ ...draft, look, purpleFlair }, 2),
-                    exportFilenameFromTitle(draft.title, "play-in"),
+                    feedName,
+                    [
+                      {
+                        filename: storyFilename(feedName),
+                        render: () =>
+                          renderPlayInCanvas(
+                            { ...draft, look, purpleFlair, story: true },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } finally {

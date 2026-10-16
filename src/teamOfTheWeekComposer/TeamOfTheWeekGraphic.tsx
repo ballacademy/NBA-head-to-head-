@@ -136,6 +136,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
         />
       ) : null}
       <header className="totw-header">
+        {showBa ? null : (
         <input
           className="totw-brand"
           value={brand}
@@ -144,6 +145,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
           aria-label="Brand label"
           onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
         />
+        )}
       </header>
       <div className="totw-strips">
         {Array.from({ length: TOTW_STRIP_COUNT }, (_, index) => {
@@ -176,6 +178,9 @@ export const TeamOfTheWeekGraphic = forwardRef<
                 vignette
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
+                onUploadMany={(urls) =>
+                  urls.forEach((url, offset) => onUpload(index + offset, url))
+                }
                 onPick={() => onPick(index)}
               />
               {showNames ? (

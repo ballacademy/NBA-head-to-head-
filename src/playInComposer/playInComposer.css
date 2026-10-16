@@ -5,6 +5,10 @@
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   aspect-ratio: 4 / 5;
+}
+
+.pi-board.is-story {
+  aspect-ratio: 9 / 16;
   width: 100%;
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");

@@ -25,6 +25,7 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
@@ -338,14 +339,16 @@ export interface TeamOfTheWeekPlusRenderInput {
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
+  story?: boolean;
 }
 
 export const renderTeamOfTheWeekPlusCanvas = async (
   input: TeamOfTheWeekPlusRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -366,7 +369,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
   const titlesBelow = input.titlesBelow === true;
-  const metrics = plusBoardMetrics(titlesBelow);
+  const metrics = plusBoardMetrics(titlesBelow, boardH);
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");
@@ -413,7 +416,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   );
 
   for (let index = 0; index < PLUS_STARTER_COUNT; index += 1) {
-    const rect = plusCellRect("starters", index, titlesBelow);
+    const rect = plusCellRect("starters", index, titlesBelow, boardH);
     await drawPortrait(
       context,
       input.slots[index]!,
@@ -458,7 +461,7 @@ export const renderTeamOfTheWeekPlusCanvas = async (
   );
 
   for (let index = 0; index < PLUS_STANDOUT_COUNT; index += 1) {
-    const rect = plusCellRect("standouts", index, titlesBelow);
+    const rect = plusCellRect("standouts", index, titlesBelow, boardH);
     await drawPortrait(
       context,
       input.slots[PLUS_STARTER_COUNT + index]!,

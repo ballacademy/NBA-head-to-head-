@@ -2,13 +2,29 @@ import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 
 export const PHOTO_GRADE_KEY = "ddgm:composer-photo-grade";
+export const PHOTO_GRADE_INTENSITY_KEY = "ddgm:composer-photo-grade-intensity";
 
 /**
  * Preview CSS filter — contrast, cleaner whites, slight saturation.
  * Canvas export uses the same string, then a pixel S-curve + unsharp.
  */
-export const PHOTO_GRADE_FILTER =
-  "contrast(1.42) saturate(1.12) brightness(0.97)";
+export const clampPhotoGradeIntensity = (value: unknown) => {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.round(n)));
+};
+
+export const photoGradeFilter = (intensity = 100) => {
+  const t = clampPhotoGradeIntensity(intensity) / 100;
+  const contrast = 1 + 0.42 * t;
+  const saturate = 1 + 0.12 * t;
+  const brightness = 1 - 0.03 * t;
+  return `contrast(${contrast}) saturate(${saturate}) brightness(${brightness})`;
+};
+
+export const PHOTO_GRADE_FILTER = photoGradeFilter(100);
 
 /** Brighter Stat-card panel when the grade is on (after look ~#f3f3f3). */
 export const PHOTO_GRADE_PANEL = "#f3f3f3";
@@ -20,11 +36,30 @@ export const parsePhotoGrade = (value: unknown) => value === true;
 
 export const composerGradeClass = (on: boolean) => (on ? "is-grade" : "");
 
-export const readPhotoGrade = () =>
-  parsePhotoGrade(readJson<unknown>(PHOTO_GRADE_KEY));
+export const readPhotoGradeIntensity = () => {
+  const stored = readJson<unknown>(PHOTO_GRADE_INTENSITY_KEY);
+  if (typeof stored === "number" || typeof stored === "string") {
+    return clampPhotoGradeIntensity(stored);
+  }
+  return parsePhotoGrade(readJson<unknown>(PHOTO_GRADE_KEY)) ? 100 : 0;
+};
+
+export const writePhotoGradeIntensity = (intensity: number) => {
+  const next = clampPhotoGradeIntensity(intensity);
+  writeJson(PHOTO_GRADE_INTENSITY_KEY, next);
+  writeJson(PHOTO_GRADE_KEY, next > 0);
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty(
+      "--photo-grade-filter",
+      photoGradeFilter(next),
+    );
+  }
+};
+
+export const readPhotoGrade = () => readPhotoGradeIntensity() > 0;
 
 export const writePhotoGrade = (on: boolean) => {
-  writeJson(PHOTO_GRADE_KEY, on);
+  writePhotoGradeIntensity(on ? Math.max(readPhotoGradeIntensity(), 100) : 0);
 };
 
 export const gradedWatermarkOpacity = (opacity: number, grade?: boolean) =>
@@ -34,10 +69,11 @@ export const gradePanelFill = (base: string, grade?: boolean) =>
   grade ? PHOTO_GRADE_PANEL : base;
 
 /** Crush shadows, lift a little contrast around midtones, keep whites clean. */
-export const gradeChannel = (value: number) => {
+export const gradeChannel = (value: number, intensity = 100) => {
+  const t = clampPhotoGradeIntensity(intensity) / 100;
   const x = value / 255;
   const mid = 0.46;
-  const contrast = 1.34;
+  const contrast = 1 + 0.34 * t;
   let y = (x - mid) * contrast + mid;
   if (y < 0.4) {
     y *= 0.76 + y * 0.48;
@@ -76,15 +112,19 @@ const unsharp = (
   }
 };
 
-export const gradeImageData = (image: ImageData, clarity = 0.32) => {
+export const gradeImageData = (
+  image: ImageData,
+  clarity = 0.32,
+  intensity = 100,
+) => {
   const { data, width, height } = image;
   for (let i = 0; i < data.length; i += 4) {
     if (data[i + 3] === 0) {
       continue;
     }
-    data[i] = gradeChannel(data[i]!);
-    data[i + 1] = gradeChannel(data[i + 1]!);
-    data[i + 2] = gradeChannel(data[i + 2]!);
+    data[i] = gradeChannel(data[i]!, intensity);
+    data[i + 1] = gradeChannel(data[i + 1]!, intensity);
+    data[i + 2] = gradeChannel(data[i + 2]!, intensity);
   }
   if (clarity > 0 && width > 2 && height > 2) {
     unsharp(data, width, height, clarity);
@@ -101,7 +141,8 @@ export const applyPhotoGrade = (
   h: number,
   on?: boolean,
 ) => {
-  if (!on || w < 2 || h < 2) {
+  const intensity = readPhotoGradeIntensity();
+  if (!on || intensity <= 0 || w < 2 || h < 2) {
     return;
   }
   const sx = Math.max(0, Math.round(x));
@@ -110,7 +151,7 @@ export const applyPhotoGrade = (
   const sh = Math.max(1, Math.round(h));
   try {
     const image = context.getImageData(sx, sy, sw, sh);
-    gradeImageData(image);
+    gradeImageData(image, 0.32 * (intensity / 100), intensity);
     context.putImageData(image, sx, sy);
   } catch {
     // CORS-tainted headshots skip the pixel pass; CSS/canvas filter still applies.
@@ -118,20 +159,37 @@ export const applyPhotoGrade = (
 };
 
 export const usePhotoGrade = () => {
-  const [on, setOn] = useState(false);
+  const [intensity, setIntensity] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+  const on = intensity > 0;
 
   useEffect(() => {
-    setOn(readPhotoGrade());
+    const next = readPhotoGradeIntensity();
+    setIntensity(next);
     setHydrated(true);
+    if (typeof document !== "undefined") {
+      document.documentElement.style.setProperty(
+        "--photo-grade-filter",
+        photoGradeFilter(next),
+      );
+    }
   }, []);
 
   useEffect(() => {
     if (!hydrated) {
       return;
     }
-    writePhotoGrade(on);
-  }, [hydrated, on]);
+    writePhotoGradeIntensity(intensity);
+  }, [hydrated, intensity]);
 
-  return [on, setOn] as const;
+  const setOn = (next: boolean) => {
+    setIntensity((current) => {
+      if (!next) {
+        return 0;
+      }
+      return current > 0 ? current : 100;
+    });
+  };
+
+  return [on, setOn, intensity, setIntensity] as const;
 };

@@ -174,17 +174,19 @@ export const renderEveryTeamCanvas = async (
     paintPurpleCornerBloom(context, width, height, scale);
   }
 
-  withDropShadow(context, scale, () => {
-    drawTrackedText(
-      context,
-      input.brand.trim() || " ",
-      width / 2,
-      brandBaselineY(scale),
-      `900 ${BRAND_FONT * scale}px ${POSTER_FONT}`,
-      BRAND_TRACKING_EM * BRAND_FONT * scale,
-      "#fff",
-    );
-  });
+  if (!input.showBa) {
+    withDropShadow(context, scale, () => {
+      drawTrackedText(
+        context,
+        input.brand.trim() || " ",
+        width / 2,
+        brandBaselineY(scale),
+        `900 ${BRAND_FONT * scale}px ${POSTER_FONT}`,
+        BRAND_TRACKING_EM * BRAND_FONT * scale,
+        "#fff",
+      );
+    });
+  }
 
   const board = bannerBoardRect(scale);
   const buildBannerPath = () =>

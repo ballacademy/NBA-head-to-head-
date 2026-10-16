@@ -181,10 +181,106 @@ export const pyramidBoardEmpty = (slots: TotwStrip[]) =>
 
 export const pyramidLadderKind = (title: string): "coach" | "player" => {
   const token = title.toUpperCase();
-  if (/PLAYER|MVP|DPOY|ROY/.test(token) && !/COACH|COY/.test(token)) {
+  if (/COACH|COY/.test(token)) {
+    return "coach";
+  }
+  if (
+    /PLAYER|MVP|DPOY|MIP|6MOY|SIXTH|ALL-NBA|ALL NBA|ALL-DEFENSE|ALL DEFENSE|ROOKIE|ROY/.test(
+      token,
+    )
+  ) {
     return "player";
   }
   return "coach";
+};
+
+export const PYRAMID_AWARD_GROUPS = [
+  { id: "mvp", label: "MVP", title: "NBA MVP PYRAMID", kind: "player" as const },
+  { id: "dpoy", label: "DPOY", title: "NBA DPOY PYRAMID", kind: "player" as const },
+  { id: "mip", label: "MIP", title: "NBA MIP PYRAMID", kind: "player" as const },
+  { id: "6moy", label: "6MOY", title: "NBA 6MOY PYRAMID", kind: "player" as const },
+  { id: "coy", label: "COY", title: "NBA COY PYRAMID", kind: "coach" as const },
+  {
+    id: "all-nba",
+    label: "All-NBA",
+    title: "NBA ALL-NBA PYRAMID",
+    kind: "player" as const,
+  },
+  {
+    id: "all-defense",
+    label: "All-Defense",
+    title: "NBA ALL-DEFENSE PYRAMID",
+    kind: "player" as const,
+  },
+  {
+    id: "roy",
+    label: "Rookie",
+    title: "NBA ROOKIE PYRAMID",
+    kind: "player" as const,
+  },
+] as const;
+
+export type PyramidAwardId = (typeof PYRAMID_AWARD_GROUPS)[number]["id"];
+
+export const pyramidAwardFromTitle = (title: string): PyramidAwardId => {
+  const token = title.toUpperCase();
+  if (/DPOY|ALL-DEFENSE|ALL DEFENSE/.test(token)) {
+    return /ALL/.test(token) ? "all-defense" : "dpoy";
+  }
+  if (/MIP/.test(token)) {
+    return "mip";
+  }
+  if (/6MOY|SIXTH/.test(token)) {
+    return "6moy";
+  }
+  if (/ROOKIE|ROY/.test(token)) {
+    return "roy";
+  }
+  if (/ALL-NBA|ALL NBA/.test(token)) {
+    return "all-nba";
+  }
+  if (/MVP/.test(token)) {
+    return "mvp";
+  }
+  if (/COACH|COY/.test(token)) {
+    return "coy";
+  }
+  return pyramidLadderKind(title) === "player" ? "mvp" : "coy";
+};
+
+const byPpg = (left: TierPlayer, right: TierPlayer) => right.ppg - left.ppg;
+
+export const pyramidAwardLadder = (
+  award: PyramidAwardId,
+  count: number,
+): TierPlayer[] => {
+  if (award === "coy") {
+    return coyCoachLadder(count);
+  }
+  const pool = NBA_ACTIVE_PLAYERS.filter((player) => player.ppg > 0);
+  if (award === "roy") {
+    return [...pool]
+      .filter((player) => player.experienceYears <= 1)
+      .sort(byPpg)
+      .slice(0, count);
+  }
+  if (award === "6moy") {
+    const bench = pool.filter((player) => (player.depth ?? 1) > 1);
+    return [...(bench.length ? bench : pool)].sort(byPpg).slice(0, count);
+  }
+  if (award === "mip") {
+    return [...pool]
+      .filter((player) => !player.allStar)
+      .sort(byPpg)
+      .slice(0, count);
+  }
+  if (award === "dpoy" || award === "all-defense") {
+    return [...pool]
+      .filter((player) => player.positionGroup === "C" || player.positionGroup === "F")
+      .sort(byPpg)
+      .slice(0, count);
+  }
+  return mvpPlayerLadder(count);
 };
 
 export const coyCoachLadder = (count: number): TierPlayer[] => {

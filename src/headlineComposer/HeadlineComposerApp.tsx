@@ -110,7 +110,7 @@ export function HeadlineComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(HEADLINE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
@@ -430,7 +430,7 @@ export function HeadlineComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}

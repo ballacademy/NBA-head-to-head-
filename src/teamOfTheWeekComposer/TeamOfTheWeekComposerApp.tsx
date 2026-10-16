@@ -90,7 +90,7 @@ export function TeamOfTheWeekComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(TEAM_OF_THE_WEEK_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -268,7 +268,7 @@ export function TeamOfTheWeekComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">

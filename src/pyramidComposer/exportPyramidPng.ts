@@ -1,7 +1,4 @@
-import {
-  downloadCanvasPng,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadCanvasPng } from "../instagramComposer/exportDownload";
 import {
   renderPyramidCanvas,
   type PyramidRenderInput,
@@ -13,9 +10,6 @@ export const exportPyramidPng = async (
   input: PyramidRenderInput,
   story = false,
 ) => {
-  const canvas = await renderPyramidCanvas(input, 2);
-  await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
-    filename,
-  );
+  const canvas = await renderPyramidCanvas({ ...input, story }, 2);
+  await downloadCanvasPng(canvas, filename);
 };

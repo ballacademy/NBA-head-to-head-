@@ -33,6 +33,7 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
   RL_BRAND_H,
   RL_BRAND_SIZE,
   RL_FADE_NAME_H,
@@ -47,8 +48,6 @@ import {
   RL_POS_H,
   RL_POS_SIZE,
   RL_STRIP_W,
-  RL_SWIPE_INSET,
-  RL_SWIPE_SIZE,
   RL_TITLE_BOX_H,
   RL_TITLE_BOX_X,
   RL_TITLE_GRADIENT,
@@ -69,7 +68,6 @@ import {
   RANKED_LINEUP_STRIP_COUNT,
   RANKED_LINEUP_TITLE_TRACK,
   splitRankedLineupTitle,
-  swipeRankCue,
   type RankedLineupStrip,
 } from "./rankedLineupsState";
 
@@ -269,14 +267,16 @@ export interface RankedLineupsRenderInput {
   showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
   positionLabels?: string[];
+  story?: boolean;
 }
 
 export const renderRankedLineupsCanvas = async (
   input: RankedLineupsRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -296,15 +296,17 @@ export const renderRankedLineupsCanvas = async (
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
-  withShadow(context, s, () => {
-    context.font = `900 ${RL_BRAND_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.18 * RL_BRAND_SIZE * s);
-    context.fillStyle = "#fff";
-    context.fillText(input.brand.toUpperCase(), width / 2, 26 * s);
-    setLetterSpacing(context, 0);
-  });
+  if (!input.showBa) {
+    withShadow(context, s, () => {
+      context.font = `900 ${RL_BRAND_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.18 * RL_BRAND_SIZE * s);
+      context.fillStyle = "#fff";
+      context.fillText(input.brand.toUpperCase(), width / 2, 26 * s);
+      setLetterSpacing(context, 0);
+    });
+  }
 
   const plate = {
     x: RL_TITLE_BOX_X * s,
@@ -410,7 +412,7 @@ export const renderRankedLineupsCanvas = async (
   }
 
   const stripY = rankedHeaderH(rankDisplay) * s;
-  const stripH = rankedStripH(rankDisplay, input.showFade === true) * s;
+  const stripH = rankedStripH(rankDisplay, input.showFade === true, boardH) * s;
   const stripW = RL_STRIP_W * s;
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index] ?? {
@@ -448,7 +450,7 @@ export const renderRankedLineupsCanvas = async (
     }
   }
 
-  const footerY = (GRAPHIC_HEIGHT - rankedFooterH(input.showFade === true)) * s;
+  const footerY = (boardH - rankedFooterH(input.showFade === true)) * s;
   const positionLabels = parsePositionLabels(input.positionLabels);
   for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
     const strip = input.strips[index];
@@ -512,50 +514,6 @@ export const renderRankedLineupsCanvas = async (
       });
       setLetterSpacing(context, 0);
     }
-  }
-
-  if (rankDisplay !== "none") {
-    const size = RL_SWIPE_SIZE * s;
-    const cx = width - RL_SWIPE_INSET * s - size / 2;
-    const cy = GRAPHIC_HEIGHT * 0.58 * s;
-    context.save();
-    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "bottom";
-    setLetterSpacing(context, 0.28 * 11 * s);
-    context.fillStyle = "#fff";
-    withShadow(context, s, () => {
-      context.fillText("SWIPE", cx, cy - size / 2 - 6 * s);
-    });
-    setLetterSpacing(context, 0);
-    context.beginPath();
-    context.arc(cx, cy, size / 2, 0, Math.PI * 2);
-    context.fillStyle = "rgba(0, 0, 0, 0.42)";
-    context.fill();
-    context.lineWidth = 2 * s;
-    context.strokeStyle = "rgba(255, 255, 255, 0.88)";
-    context.stroke();
-    context.translate(cx + 2 * s, cy);
-    context.rotate(Math.PI / 4);
-    context.strokeStyle = "#fff";
-    context.lineWidth = 3.2 * s;
-    context.beginPath();
-    context.moveTo(-7 * s, 7 * s);
-    context.lineTo(7 * s, 7 * s);
-    context.lineTo(7 * s, -7 * s);
-    context.stroke();
-    context.restore();
-    context.save();
-    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    context.fillStyle = "#fff";
-    setLetterSpacing(context, 0.12 * 11 * s);
-    withShadow(context, s, () => {
-      context.fillText(swipeRankCue(input.rank), cx, cy + size / 2 + 8 * s);
-    });
-    setLetterSpacing(context, 0);
-    context.restore();
   }
 
   if (input.showBa) {

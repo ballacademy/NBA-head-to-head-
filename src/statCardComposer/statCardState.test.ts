@@ -43,6 +43,8 @@ import {
   notableStatCardLines,
   nextStatCardLine,
   normalizeStatCardDraft,
+  persistStatCardStatsLeft,
+  peekStatCardStatsLeft,
   playerName,
   removeStatCardLine,
   setStatCardLineKey,
@@ -112,9 +114,32 @@ describe("stat card composer", () => {
       gameFrom({ pts: "20", reb: "15", ast: "9", min: "24" }),
       "2026-10-14",
     );
-    expect(packed?.photoSrc).toBeNull();
+    expect(packed?.photoSrc).toBe(luka.headshotUrl);
     expect(packed?.customPhoto).toBe(false);
     expect(packed?.lastName.toUpperCase()).toContain("DONCIC");
+    const cropped = statCardFromCoverSlot(
+      {
+        playerId: luka.id,
+        firstName: "Luka",
+        lastName: "Doncic",
+        teamId: luka.team,
+        photoSrc: "data:image/png;base64,crop",
+        customPhoto: true,
+        pan: { x: 0.4, y: 0.3, zoom: 1.2, rotate: 0 },
+      },
+      gameFrom({ pts: "20", reb: "15", ast: "9", min: "24" }),
+      "2026-10-14",
+    );
+    expect(cropped?.photoSrc).toBe("data:image/png;base64,crop");
+    expect(cropped?.customPhoto).toBe(true);
+    expect(cropped?.pan.x).toBe(0.4);
+  });
+
+  it("remembers Stat card Flip per night", () => {
+    persistStatCardStatsLeft(true, "2026-10-14");
+    persistStatCardStatsLeft(false, "2026-10-15");
+    expect(peekStatCardStatsLeft("2026-10-14")).toBe(true);
+    expect(peekStatCardStatsLeft("2026-10-15")).toBe(false);
   });
 
   it("mirrors the 4:5 columns instead of scaling the board", () => {

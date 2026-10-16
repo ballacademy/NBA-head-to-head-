@@ -4,6 +4,7 @@ import App from "./App";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { RuntimeErrorToaster } from "./components/RuntimeErrorToaster";
 import { lazyWithChunkReload } from "./lib/lazyChunk";
+import { applyComposerFavicon } from "./instagramComposer/composerFavicon";
 import { isStandingsComposerRoute } from "./standingsComposer/isStandingsComposerRoute";
 import "@fontsource/archivo/latin-600.css";
 import "@fontsource/archivo/latin-700.css";
@@ -29,6 +30,9 @@ if (!root) {
 
 // This branch defaults to the standings composer (including `/`).
 const composer = isStandingsComposerRoute();
+if (composer) {
+  applyComposerFavicon();
+}
 
 createRoot(root).render(
   <StrictMode>

@@ -33,7 +33,7 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { PyramidGraphic } from "./PyramidGraphic";
 import { exportPyramidPng } from "./exportPyramidPng";
 import { renderPyramidCanvas } from "./renderPyramidCanvas";
@@ -42,13 +42,13 @@ import {
   applyPyramidPick,
   clearPyramidSlot,
   coachesFromStandings,
-  coyCoachLadder,
   defaultPyramidDraft,
   fillPyramidFromPlayers,
   hasCustomPhoto,
-  mvpPlayerLadder,
   pyramidBoardEmpty,
-  pyramidLadderKind,
+  pyramidAwardFromTitle,
+  pyramidAwardLadder,
+  PYRAMID_AWARD_GROUPS,
   isPyramidDraft,
   parsePyramidRowLabels,
   parsePyramidRows,
@@ -105,7 +105,7 @@ export function PyramidComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PYRAMID_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const [rowLabels, setRowLabels] = useState(() =>
@@ -146,10 +146,12 @@ export function PyramidComposerApp() {
   const fillRanking = useCallback(
     async (force = false, nextTitle = title, nextRows = rows) => {
       const count = pyramidSlotCount(nextRows);
-      const kind = pyramidLadderKind(nextTitle);
-      let players =
-        kind === "player" ? mvpPlayerLadder(count) : coyCoachLadder(count);
-      if (kind === "coach") {
+      const award = pyramidAwardFromTitle(nextTitle);
+      const group =
+        PYRAMID_AWARD_GROUPS.find((item) => item.id === award) ??
+        PYRAMID_AWARD_GROUPS[4];
+      let players = pyramidAwardLadder(award, count);
+      if (award === "coy") {
         try {
           const [east, west] = await Promise.all([
             fetchConferenceStandingsBundle("East"),
@@ -173,7 +175,7 @@ export function PyramidComposerApp() {
         const filled = next.filter((slot) => slot.playerId).length;
         setStatus(
           filled
-            ? `Filled ${filled} squares from the ${kind === "player" ? "MVP" : "COY"} ladder.`
+            ? `Filled ${filled} squares from the ${group.label} group.`
             : "Could not fill the pyramid — pick players for the empty squares.",
         );
         return next;
@@ -313,13 +315,49 @@ export function PyramidComposerApp() {
         }
         data={
           <>
-        <button
-          type="button"
-          className="sc-chip"
-          onClick={() => void fillRanking(true)}
-        >
-          Fill ranking
-        </button>
+        <div className="sc-look sc-look--sort" role="group" aria-label="Award group">
+          <span className="sc-look__label">Award</span>
+          <select
+            value={pyramidAwardFromTitle(title)}
+            aria-label="Pyramid award group"
+            onChange={(event) => {
+              const group = PYRAMID_AWARD_GROUPS.find(
+                (item) => item.id === event.target.value,
+              );
+              if (!group) {
+                return;
+              }
+              setTitle(group.title);
+              void fillRanking(true, group.title, rows);
+            }}
+          >
+            <optgroup label="Awards">
+              {PYRAMID_AWARD_GROUPS.filter((item) =>
+                ["mvp", "dpoy", "mip", "6moy", "coy", "roy"].includes(item.id),
+              ).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Teams">
+              {PYRAMID_AWARD_GROUPS.filter((item) =>
+                ["all-nba", "all-defense"].includes(item.id),
+              ).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillRanking(true)}
+          >
+            Fill ranking
+          </button>
+        </div>
         <div className="sc-look" role="group" aria-label="Pyramid rows">
           <span className="sc-look__label">Rows</span>
           {Array.from(
@@ -386,7 +424,7 @@ export function PyramidComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
           </>
         }
@@ -464,23 +502,32 @@ export function PyramidComposerApp() {
                 setExporting(true);
                 setStatus("Rendering pack…");
                 try {
+                  const feedName = exportFilenameFromTitle(title, "pyramid");
+                  const pyramidInput = {
+                    title,
+                    slots,
+                    rows,
+                    rowLabels,
+                    look,
+                    purpleFlair,
+                    photoGrade,
+                    showBa,
+                    showNames,
+                  };
                   await downloadExportPack(
-                    () =>
-                      renderPyramidCanvas(
-                        {
-                          title,
-                          slots,
-                          rows,
-                          rowLabels,
-                          look,
-                          purpleFlair,
-                          photoGrade,
-                          showBa,
-                          showNames,
-                        },
-                        2,
-                      ),
-                    exportFilenameFromTitle(title, "pyramid"),
+                    () => renderPyramidCanvas(pyramidInput, 2),
+                    feedName,
+                    [
+                      {
+                        filename: storyFilename(feedName),
+                        render: () =>
+                          renderPyramidCanvas(
+                            { ...pyramidInput, story: true },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {

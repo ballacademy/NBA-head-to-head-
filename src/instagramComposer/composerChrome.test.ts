@@ -218,6 +218,94 @@ describe("composer chrome", () => {
     expect(coverCss).toMatch(/\.scc-pill[\s\S]*?#d4af37/);
     expect(coverCss).toMatch(/\.scc-swipe__label[\s\S]*?#facc15/);
     expect(coverCss).toMatch(/\.scc-swipe__chev[\s\S]*?#d4af37/);
+    expect(coverCss).toContain(".scc-board.is-gold");
+    expect(coverApp).toContain("Gold");
+    expect(coverApp).toContain("showGold");
+  });
+
+  it("keeps swipe on the cover only and drops Ranked SWIPE", () => {
+    const rankedGraphic = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsGraphic.tsx"),
+      "utf8",
+    );
+    const rankedCanvas = readFileSync(
+      join(root, "rankedLineupsComposer/renderRankedLineupsCanvas.ts"),
+      "utf8",
+    );
+    expect(rankedGraphic).not.toContain("rl-swipe");
+    expect(rankedCanvas).not.toContain("SWIPE");
+    expect(coverCss).toContain(".scc-swipe");
+    expect(coverApp).toContain("peekStatCardStatsLeft(draft.gameDate)");
+  });
+
+  it("copies postable captions on Every Team and Tier", () => {
+    const etApp = readFileSync(
+      join(root, "everyTeamComposer/EveryTeamComposerApp.tsx"),
+      "utf8",
+    );
+    const tierApp = readFileSync(
+      join(root, "tierListComposer/TierListComposerApp.tsx"),
+      "utf8",
+    );
+    expect(etApp).toContain("Copy caption");
+    expect(etApp).toContain("everyTeamCaption");
+    expect(tierApp).toContain("Copy caption");
+    expect(tierApp).toContain("tierListCaption");
+  });
+
+  it("drops the BALLACADEMY wordmark when BA is on and shrinks TOTW Plus logos", () => {
+    const etGraphic = readFileSync(
+      join(root, "everyTeamComposer/EveryTeamGraphic.tsx"),
+      "utf8",
+    );
+    const totwPlusLayout = readFileSync(
+      join(root, "teamOfTheWeekPlusComposer/teamOfTheWeekPlusLayout.ts"),
+      "utf8",
+    );
+    const nameFade = readFileSync(
+      join(root, "instagramComposer/PlayerNameFade.tsx"),
+      "utf8",
+    );
+    expect(etGraphic).toContain("showBa ? null");
+    expect(totwPlusLayout).toContain("PLUS_STARTER_LOGO = 22");
+    expect(nameFade).not.toMatch(/TeamLogo[\s\S]*cover/);
+  });
+
+  it("fills play-in scores on Auto-fill and ships real 9:16 plus POTD pack", () => {
+    const playInApp = readFileSync(
+      join(root, "playInComposer/PlayInComposerApp.tsx"),
+      "utf8",
+    );
+    const rankedExport = readFileSync(
+      join(root, "rankedLineupsComposer/exportRankedLineupsPng.ts"),
+      "utf8",
+    );
+    const potdApp = readFileSync(
+      join(root, "playerOfTheDayComposer/PlayerOfTheDayComposerApp.tsx"),
+      "utf8",
+    );
+    const pyramidApp = readFileSync(
+      join(root, "pyramidComposer/PyramidComposerApp.tsx"),
+      "utf8",
+    );
+    const appMain = readFileSync(join(root, "main.tsx"), "utf8");
+    expect(playInApp).toContain("applyLivePlayInScores");
+    expect(rankedExport).not.toContain("toStoryCanvas");
+    expect(potdApp).toContain("Export pack");
+    expect(potdApp).toContain("renderPotdLeaderboardCanvas");
+    expect(pyramidApp).toContain("PYRAMID_AWARD_GROUPS");
+    expect(appMain).toContain("applyComposerFavicon");
+  });
+
+  it("opens Quote blank with a real-quote bank", () => {
+    const quoteState = readFileSync(
+      join(root, "quoteComposer/quoteState.ts"),
+      "utf8",
+    );
+    expect(quoteState).toMatch(/DEFAULT_QUOTE = ""/);
+    expect(quoteState).not.toContain("I’M HIM.");
+    expect(quoteApp).toContain("Quote bank");
+    expect(quoteApp).toContain("QUOTE_PRESETS");
   });
 
   it("shows photo tools on coarse pointers without waiting for hover", () => {

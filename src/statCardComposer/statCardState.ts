@@ -41,6 +41,7 @@ import {
 export { clampPan, parseStatsLeft, type PhotoPan };
 
 export const STAT_CARD_STORAGE_KEY = "ddgm:stat-card-composer";
+export const STAT_CARD_FLIP_NIGHT_KEY = "ddgm:stat-card-flip-by-night";
 
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
@@ -202,12 +203,42 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   statsLeft: parseStatsLeft(draft.statsLeft),
 });
 
-export const peekStatCardStatsLeft = () => {
+let memoryFlipByNight: Record<string, boolean> = {};
+
+const readFlipByNight = (): Record<string, boolean> => {
+  const raw = readJson<unknown>(STAT_CARD_FLIP_NIGHT_KEY);
+  if (!raw || typeof raw !== "object") {
+    return { ...memoryFlipByNight };
+  }
+  const next: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof value === "boolean") {
+      next[key] = value;
+    }
+  }
+  return next;
+};
+
+export const peekStatCardStatsLeft = (date?: string | null) => {
+  const night = isoDateOnly(date) || nbaTodayIso();
+  const byNight = readFlipByNight();
+  if (Object.prototype.hasOwnProperty.call(byNight, night)) {
+    return byNight[night]!;
+  }
   const stored = readJson<Partial<StatCardDraft>>(STAT_CARD_STORAGE_KEY);
   return parseStatsLeft(stored?.statsLeft);
 };
 
-export const persistStatCardStatsLeft = (statsLeft: boolean) => {
+export const persistStatCardStatsLeft = (
+  statsLeft: boolean,
+  date?: string | null,
+) => {
+  const night = isoDateOnly(date) || nbaTodayIso();
+  memoryFlipByNight = {
+    ...readFlipByNight(),
+    [night]: statsLeft,
+  };
+  writeJson(STAT_CARD_FLIP_NIGHT_KEY, memoryFlipByNight);
   const stored = readJson<Partial<StatCardDraft>>(STAT_CARD_STORAGE_KEY);
   if (stored && typeof stored === "object") {
     writeJson(STAT_CARD_STORAGE_KEY, { ...stored, statsLeft });
@@ -523,13 +554,16 @@ export const fillStatCardFromStandout = (
   };
 };
 
-/** Cover pack cards stay empty-photo until paste/upload. */
+/** Cover pack cards keep that night’s pasted crop; ESPN headshot if none. */
 export const statCardFromCoverSlot = (
   slot: {
     playerId: string | null;
     firstName: string;
     lastName: string;
     teamId: string | null;
+    photoSrc?: string | null;
+    customPhoto?: boolean;
+    pan?: PhotoPan;
   },
   game: LastGame | null,
   gameDate?: string | null,
@@ -541,6 +575,7 @@ export const statCardFromCoverSlot = (
   if (!player) {
     return null;
   }
+  const custom = Boolean(slot.customPhoto && slot.photoSrc);
   let draft = fillStatCardFromPlayer(player, defaultStatCardDraft());
   draft = {
     ...draft,
@@ -548,13 +583,19 @@ export const statCardFromCoverSlot = (
     lastName: slot.lastName || draft.lastName,
     teamId: slot.teamId || draft.teamId,
     gameDate: isoDateOnly(gameDate) || draft.gameDate,
-    photoSrc: null,
-    customPhoto: false,
+    photoSrc: custom ? slot.photoSrc! : draft.photoSrc,
+    customPhoto: custom,
+    pan: slot.pan ? { ...slot.pan } : draft.pan,
   };
   if (game) {
     draft = fillStatCardFromStandout(draft, game);
   }
-  return { ...draft, photoSrc: null, customPhoto: false };
+  return {
+    ...draft,
+    photoSrc: custom ? slot.photoSrc! : draft.photoSrc,
+    customPhoto: custom,
+    pan: slot.pan ? { ...slot.pan } : draft.pan,
+  };
 };
 
 export const fillStatCardFromSeason = (

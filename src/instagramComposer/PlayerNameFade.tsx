@@ -37,7 +37,7 @@ export function PlayerNameFade({
     >
       {team ? (
         <div className="ig-name-fade__logo">
-          <TeamLogo src={team.logoSrc} label="" cover />
+          <TeamLogo src={team.logoSrc} label="" />
         </div>
       ) : null}
       <div className="ig-name-fade__stack">

@@ -409,6 +409,24 @@ export const fillEveryTeamFromNight = (
   return { slots: next, filled };
 };
 
+export const everyTeamCaptionNames = (
+  slots: EveryTeamSlots,
+  season: string,
+  cellSeasons: Record<string, string> | undefined,
+  ranked: boolean,
+  rankedOrder: string[],
+) =>
+  displayedTeams(ranked, rankedOrder)
+    .map((team) => {
+      const shown = getRosterPlayer(
+        team.id,
+        seasonForTeam(team.id, season, cellSeasons),
+        slots[slotIndexForTeam(team.id)] ?? null,
+      );
+      return shown?.name ?? "";
+    })
+    .filter(Boolean);
+
 export const splitEveryTeamTitle = (title: string): string[] =>
   splitBalancedTitle(title, DEFAULT_EVERY_TEAM_TITLE);
 

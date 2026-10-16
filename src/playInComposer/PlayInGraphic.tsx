@@ -5,7 +5,12 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { formatStandingRecord, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  formatStandingRecord,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -29,16 +34,27 @@ interface PlayInGraphicProps {
   purpleFlair?: boolean;
   onTitleChange: (value: string) => void;
   onPick: (conference: "east" | "west", index: number) => void;
+  story?: boolean;
 }
 
 export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
   function PlayInGraphic(
-    { draft, look = "white", purpleFlair = false, onTitleChange, onPick },
+    {
+      draft,
+      look = "white",
+      purpleFlair = false,
+      onTitleChange,
+      onPick,
+      story = false,
+    },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
-    const cols = playInBoardCols(draft.size);
+    const cols = playInBoardCols(
+      draft.size,
+      story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
+    );
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -150,6 +166,7 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
           "pi-board",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
+          story ? "is-story" : "",
         ]
           .filter(Boolean)
           .join(" ")}

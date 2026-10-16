@@ -9,6 +9,10 @@ import {
   type PhotoPoint,
 } from "./photoGestures";
 import {
+  imageFilesFromDataTransfer,
+  imageFilesFromList,
+} from "../instagramComposer/composerPhotoDrop";
+import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
   DEFAULT_HEADSHOT_PAN,
@@ -30,6 +34,7 @@ interface PhotoFrameProps {
   changeLabel?: string;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
+  onUploadMany?: (dataUrls: string[]) => void;
   onPick: () => void;
 }
 
@@ -103,6 +108,7 @@ export function PhotoFrame({
   changeLabel = "Change player",
   onPan,
   onUpload,
+  onUploadMany,
   onPick,
 }: PhotoFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -156,12 +162,23 @@ export function PhotoFrame({
     };
   }, [filled]);
 
-  const handleFiles = async (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file || !file.type.startsWith("image/")) {
+  const applyImageFiles = async (files: File[]) => {
+    if (!files.length) {
       return;
     }
-    onUpload(await dataUrlFromImageFile(file));
+    if (onUploadMany && files.length > 1) {
+      const urls: string[] = [];
+      for (const file of files) {
+        urls.push(await dataUrlFromImageFile(file));
+      }
+      onUploadMany(urls);
+      return;
+    }
+    onUpload(await dataUrlFromImageFile(files[0]!));
+  };
+
+  const handleFiles = async (files: FileList | null) => {
+    await applyImageFiles(imageFilesFromList(files));
   };
 
   const bumpZoom = (delta: number) => {
@@ -306,12 +323,9 @@ export function PhotoFrame({
       }}
       onDrop={(event) => {
         event.preventDefault();
-        const file = [...event.dataTransfer.files].find((item) =>
-          item.type.startsWith("image/"),
+        void imageFilesFromDataTransfer(event.dataTransfer).then((files) =>
+          applyImageFiles(files),
         );
-        if (file) {
-          void dataUrlFromImageFile(file).then(onUpload);
-        }
       }}
     >
       {src ? (
@@ -360,6 +374,7 @@ export function PhotoFrame({
             className="pod-photo__file"
             type="file"
             accept="image/*"
+            multiple
             aria-label={`Upload photo for ${label}`}
             onClick={(event) => event.stopPropagation()}
             onChange={(event) => {
@@ -369,6 +384,26 @@ export function PhotoFrame({
             }}
           />
         </label>
+        {onUploadMany ? (
+          <label className="pod-photo__tool">
+            Folder
+            <input
+              className="pod-photo__file"
+              type="file"
+              accept="image/*"
+              multiple
+              // @ts-expect-error webkitdirectory is the folder-drop affordance
+              webkitdirectory=""
+              aria-label={`Upload photo folder for ${label}`}
+              onClick={(event) => event.stopPropagation()}
+              onChange={(event) => {
+                void handleFiles(event.target.files);
+                event.currentTarget.value = "";
+                event.currentTarget.blur();
+              }}
+            />
+          </label>
+        ) : null}
         <button
           type="button"
           className="pod-photo__tool pod-photo__paste"

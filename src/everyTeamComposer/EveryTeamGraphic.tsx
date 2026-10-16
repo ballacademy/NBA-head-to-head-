@@ -279,6 +279,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
         ) : null}
         <header className="ig-header">
           <div className="ig-brand-slot" aria-hidden="true" />
+          {showBa ? null : (
           <input
             className="ig-brand"
             value={brand}
@@ -287,6 +288,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             aria-label="Brand label"
             onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
           />
+          )}
           <div className="ig-banner et-banner">
             <div
               className="ig-banner__fill"

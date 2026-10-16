@@ -1,6 +1,9 @@
 /* Match the export punch: crushed shadows, lifted mids, slight saturation. */
 .is-grade .pod-photo__img {
-  filter: contrast(1.42) saturate(1.12) brightness(0.97);
+  filter: var(
+    --photo-grade-filter,
+    contrast(1.42) saturate(1.12) brightness(0.97)
+  );
 }
 
 .is-grade .pod-photo.is-vignette .pod-photo__vignette {

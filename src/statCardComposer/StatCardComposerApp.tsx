@@ -65,6 +65,8 @@ import {
   isStatCardDraft,
   STAT_CARD_STORAGE_KEY,
   normalizeStatCardDraft,
+  persistStatCardStatsLeft,
+  peekStatCardStatsLeft,
   parseStatCardKey,
   parseStatCardSource,
   playerName,
@@ -103,7 +105,7 @@ export function StatCardComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STAT_CARD_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [rostersReady, setRostersReady] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -198,7 +200,11 @@ export function StatCardComposerApp() {
       return;
     }
     if (draft.gameDate !== night.date) {
-      const next = { ...draft, gameDate: night.date };
+      const next = {
+        ...draft,
+        gameDate: night.date,
+        statsLeft: peekStatCardStatsLeft(night.date),
+      };
       setDraft(next);
       void fillStats(next);
     }
@@ -229,10 +235,11 @@ export function StatCardComposerApp() {
         { ...draft, look, purpleFlair, photoGrade },
         story,
       );
-      setDraft((current) => ({
-        ...current,
-        statsLeft: nextStatsLeft(Boolean(current.statsLeft)),
-      }));
+      setDraft((current) => {
+        const statsLeft = nextStatsLeft(Boolean(current.statsLeft));
+        persistStatCardStatsLeft(statsLeft, current.gameDate);
+        return { ...current, statsLeft };
+      });
       setStatus(story ? "Story PNG download started." : "Download started.");
     } catch (error) {
       console.error(error);
@@ -478,12 +485,13 @@ export function StatCardComposerApp() {
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
             <StatCardFlipToggle
               statsLeft={Boolean(draft.statsLeft)}
-              onChange={(statsLeft) =>
-                setDraft((current) => ({ ...current, statsLeft }))
-              }
+              onChange={(statsLeft) => {
+                persistStatCardStatsLeft(statsLeft, draft.gameDate);
+                setDraft((current) => ({ ...current, statsLeft }));
+              }}
             />
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">Matchup</span>
@@ -630,10 +638,11 @@ export function StatCardComposerApp() {
                     ],
                     { letterbox: false },
                   );
-                  setDraft((current) => ({
-                    ...current,
-                    statsLeft: nextStatsLeft(Boolean(current.statsLeft)),
-                  }));
+                  setDraft((current) => {
+                    const statsLeft = nextStatsLeft(Boolean(current.statsLeft));
+                    persistStatCardStatsLeft(statsLeft, current.gameDate);
+                    return { ...current, statsLeft };
+                  });
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {
                   console.error(error);

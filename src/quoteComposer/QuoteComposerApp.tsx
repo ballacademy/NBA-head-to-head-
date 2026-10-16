@@ -42,6 +42,7 @@ import {
   isStockQuote,
   lastGameQuotePresets,
   QUOTE_MAX,
+  QUOTE_PRESETS,
   setQuotePhoto,
   SOURCE_MAX,
   type QuoteDraft,
@@ -73,7 +74,7 @@ export function QuoteComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(QUOTE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample] = useComposerStatsSample();
   const [storyCrop, setStoryCrop] = useState(false);
   const [gamePresets, setGamePresets] = useState<string[]>([]);
@@ -206,6 +207,24 @@ export function QuoteComposerApp() {
             }
           />
         </label>
+        <div className="sc-look" role="group" aria-label="Quote bank">
+          <span className="sc-look__label">Quote bank</span>
+          {QUOTE_PRESETS.map((line) => (
+            <button
+              key={line}
+              type="button"
+              className="sc-chip"
+              onClick={() =>
+                setDraft((current) => ({
+                  ...current,
+                  quote: line.slice(0, QUOTE_MAX),
+                }))
+              }
+            >
+              {line}
+            </button>
+          ))}
+        </div>
         <label className="sc-field">
           Name
           <input
@@ -286,7 +305,7 @@ export function QuoteComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}

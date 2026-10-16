@@ -34,6 +34,8 @@ import {
   DEFAULT_PYRAMID_TITLE,
   fillPyramidFromPlayers,
   mvpPlayerLadder,
+  pyramidAwardFromTitle,
+  pyramidAwardLadder,
   pyramidBoardEmpty,
   pyramidLadderKind,
   defaultPyramidDraft,
@@ -152,6 +154,11 @@ describe("pyramid composer", () => {
     expect(pyramidBoardEmpty(createEmptyPyramidSlots())).toBe(true);
     expect(pyramidLadderKind("NBA COY PYRAMID")).toBe("coach");
     expect(pyramidLadderKind("NBA PLAYER PYRAMID")).toBe("player");
+    expect(pyramidAwardFromTitle("NBA MVP PYRAMID")).toBe("mvp");
+    expect(pyramidAwardFromTitle("NBA DPOY PYRAMID")).toBe("dpoy");
+    expect(pyramidAwardLadder("roy", 4).every((player) => player.experienceYears <= 1)).toBe(
+      true,
+    );
     const coaches = coyCoachLadder(10);
     expect(coaches).toHaveLength(10);
     expect(coaches[0]?.id).toBe("coach-BOS");

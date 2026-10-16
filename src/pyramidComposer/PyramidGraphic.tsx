@@ -8,7 +8,11 @@ import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { pyramidMetrics, PYR_DEFAULT_ROWS } from "./pyramidLayout";
 import { pyramidSlotPops, type PyramidSlot } from "./pyramidState";
@@ -24,6 +28,7 @@ interface PyramidGraphicProps {
   showBa?: boolean;
   showNames?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onTitleChange: (value: string) => void;
   onPick: (index: number) => void;
   onHover?: (index: number) => void;
@@ -44,6 +49,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       showBa = true,
       showNames = false,
       exporting = false,
+      story = false,
       onTitleChange,
       onPick,
       onHover,
@@ -54,7 +60,10 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
-    const metrics = pyramidMetrics(rows);
+    const metrics = pyramidMetrics(
+      rows,
+      story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
+    );
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -96,6 +105,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
           composerLookClass(look),
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
+          story ? "is-story" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -185,6 +195,11 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         pop={pops}
                         onPan={(pan) => onPan(index, pan)}
                         onUpload={(dataUrl) => onUpload(index, dataUrl)}
+                        onUploadMany={(urls) =>
+                          urls.forEach((url, offset) =>
+                            onUpload(index + offset, url),
+                          )
+                        }
                         onPick={() => onPick(index)}
                       />
                       {showNames && name ? (

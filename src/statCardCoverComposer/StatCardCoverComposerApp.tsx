@@ -88,7 +88,7 @@ export function StatCardCoverComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(STAT_CARD_COVER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [storyCrop, setStoryCrop] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
@@ -117,20 +117,34 @@ export function StatCardCoverComposerApp() {
       return;
     }
     autoFill.current = true;
-    void night.ensureStandouts(night.date).then((rows) => {
+    const fillDate = night.date;
+    void night.ensureStandouts(fillDate).then(async (rows) => {
       if (!autoFill.current) {
         return;
       }
-      const key = `${night.date}:${rows.map((row) => row.athleteId).join(",")}`;
+      let date = fillDate;
+      let standouts = rows;
+      if (
+        standouts.length === 0 &&
+        fillDate === night.todayIso
+      ) {
+        standouts = await night.ensureStandouts(night.yesterdayIso);
+        date = night.yesterdayIso;
+        night.setDate(date);
+      }
+      if (!autoFill.current) {
+        return;
+      }
+      const key = `${date}:${standouts.map((row) => row.athleteId).join(",")}`;
       if (filledKey.current === key) {
         return;
       }
       filledKey.current = key;
       setDraft((current) =>
-        fillCoverFromStandouts(applyCoverNight(current, night.date), rows),
+        fillCoverFromStandouts(applyCoverNight(current, date), standouts),
       );
     });
-  }, [hydrated, night.date, night.ensureStandouts]);
+  }, [hydrated, night.date, night.ensureStandouts, night.todayIso, night.yesterdayIso, night.setDate]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -363,13 +377,30 @@ export function StatCardCoverComposerApp() {
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
             <BaMarkToggle
               on={draft.showBa !== false}
               onChange={(showBa) =>
                 setDraft((current) => ({ ...current, showBa }))
               }
             />
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Gold</span>
+              <button
+                type="button"
+                className={draft.showGold !== false ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showGold !== false}
+                aria-label="Gold accents"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showGold: current.showGold === false,
+                  }))
+                }
+              >
+                {draft.showGold !== false ? "On" : "Off"}
+              </button>
+            </label>
             <WatermarkToggle
               value={draft.watermark}
               onChange={(watermark) =>
@@ -484,7 +515,7 @@ export function StatCardCoverComposerApp() {
                       bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
                     });
                     let index = 0;
-                    const startLeft = peekStatCardStatsLeft();
+                    const startLeft = peekStatCardStatsLeft(draft.gameDate);
                     for (const slot of draft.slots) {
                       const card = statCardFromCoverSlot(
                         slot,
@@ -532,9 +563,12 @@ export function StatCardCoverComposerApp() {
                       ),
                       files,
                     );
-                    persistStatCardStatsLeft(nextStatsLeft(startLeft, index));
+                    persistStatCardStatsLeft(
+                      nextStatsLeft(startLeft, index),
+                      draft.gameDate,
+                    );
                     setStatus(
-                      `Pack download started (cover + ${index} empty-photo stat card${
+                      `Pack download started (cover + ${index} stat card${
                         index === 1 ? "" : "s"
                       }).`,
                     );

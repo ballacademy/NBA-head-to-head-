@@ -96,7 +96,7 @@ export function CompareComposerApp() {
   const [rostersReady, setRostersReady] = useState(false);
   const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     side: 0 | 1;
@@ -490,7 +490,7 @@ export function CompareComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}

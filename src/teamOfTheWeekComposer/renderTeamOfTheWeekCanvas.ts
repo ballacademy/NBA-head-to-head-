@@ -261,10 +261,12 @@ export const renderTeamOfTheWeekCanvas = async (
       setLetterSpacing(context, 0);
     });
   };
-  if (input.purpleFlair) {
-    paintPurpleTitleGlow(context, s, paintBrand);
-  } else {
-    paintBrand();
+  if (!input.showBa) {
+    if (input.purpleFlair) {
+      paintPurpleTitleGlow(context, s, paintBrand);
+    } else {
+      paintBrand();
+    }
   }
 
   const stripY = TOTW_STRIPS_TOP * s;

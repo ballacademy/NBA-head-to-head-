@@ -30,6 +30,7 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
@@ -419,14 +420,16 @@ export interface PyramidRenderInput {
   photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  story?: boolean;
 }
 
 export const renderPyramidCanvas = async (
   input: PyramidRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -476,7 +479,7 @@ export const renderPyramidCanvas = async (
   const slotCount = Math.min(input.slots.length, pyramidSlotCount(rowCount));
   for (let index = slotCount - 1; index >= 0; index -= 1) {
     const slot = input.slots[index]!;
-    const rect = pyramidCellRect(index, rowCount);
+    const rect = pyramidCellRect(index, rowCount, boardH);
     const x = rect.x * s;
     const y = rect.y * s;
     const w = rect.w * s;
@@ -576,7 +579,7 @@ export const renderPyramidCanvas = async (
       if (!name) {
         continue;
       }
-      const rect = pyramidCellRect(index, rowCount);
+      const rect = pyramidCellRect(index, rowCount, boardH);
       const x = rect.x * s;
       const y = rect.y * s;
       const w = rect.w * s;
@@ -606,7 +609,7 @@ export const renderPyramidCanvas = async (
     if (!text) {
       return;
     }
-    const first = pyramidCellRect((row * (row + 1)) / 2, rowCount);
+    const first = pyramidCellRect((row * (row + 1)) / 2, rowCount, boardH);
     context.font = `900 ${18 * s}px ${POSTER_FONT}`;
     context.textAlign = "right";
     context.textBaseline = "middle";

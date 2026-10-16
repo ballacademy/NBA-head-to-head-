@@ -70,6 +70,7 @@ export interface StatCardCoverDraft {
   gameDate: string;
   slots: CoverSlot[];
   showBa?: boolean;
+  showGold?: boolean;
   watermark?: ComposerWatermark;
 }
 
@@ -162,6 +163,7 @@ export const defaultStatCardCoverDraft = (
     gameDate: today,
     slots: emptyCoverSlots(),
     showBa: true,
+    showGold: true,
     watermark: "off",
   };
 };
@@ -184,6 +186,7 @@ export const normalizeStatCardCoverDraft = (
     gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
     slots,
     showBa: draft.showBa !== false,
+    showGold: draft.showGold !== false,
     watermark: parseComposerWatermark(draft.watermark),
   };
 };

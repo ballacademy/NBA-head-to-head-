@@ -169,15 +169,17 @@ export const renderPlayerOfTheDayCanvas = async (
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
-  withShadow(context, s, () => {
-    context.font = `900 ${POTD_BRAND_SIZE * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    setLetterSpacing(context, 0.18 * POTD_BRAND_SIZE * s);
-    context.fillStyle = "#fff";
-    context.fillText(input.brand.toUpperCase(), width / 2, 28 * s);
-    setLetterSpacing(context, 0);
-  });
+  if (!input.showBa) {
+    withShadow(context, s, () => {
+      context.font = `900 ${POTD_BRAND_SIZE * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      setLetterSpacing(context, 0.18 * POTD_BRAND_SIZE * s);
+      context.fillStyle = "#fff";
+      context.fillText(input.brand.toUpperCase(), width / 2, 28 * s);
+      setLetterSpacing(context, 0);
+    });
+  }
 
   const plate = {
     x: POTD_PLATE_X * s,

@@ -36,8 +36,8 @@ export const PLUS_STANDOUT_PAD_X = 56;
 export const PLUS_STARTER_SHARE = 0.55;
 export const PLUS_STARTER_NAME_H = 108;
 export const PLUS_STANDOUT_NAME_H = 90;
-export const PLUS_STARTER_LOGO = 30;
-export const PLUS_STANDOUT_LOGO = 26;
+export const PLUS_STARTER_LOGO = 22;
+export const PLUS_STANDOUT_LOGO = 18;
 export const PLUS_NAME_SIZE = 14;
 export const PLUS_NAME_GIVEN_SIZE = 11;
 export const PLUS_STANDOUT_NAME_SIZE = 12;
@@ -68,11 +68,14 @@ export interface PlusBoardMetrics {
   titlesBelow: boolean;
 }
 
-export const plusBoardMetrics = (titlesBelow = false): PlusBoardMetrics => {
+export const plusBoardMetrics = (
+  titlesBelow = false,
+  boardH = GRAPHIC_HEIGHT,
+): PlusBoardMetrics => {
   const headerH = titlesBelow ? PLUS_BELOW_HEADER_H : PLUS_HEADER_H;
   const sectionCount = titlesBelow ? 2 : 1;
   const stack =
-    GRAPHIC_HEIGHT - headerH - PLUS_SECTION_H * sectionCount - PLUS_FOOTER;
+    boardH - headerH - PLUS_SECTION_H * sectionCount - PLUS_FOOTER;
   const starterH = Math.round(stack * PLUS_STARTER_SHARE);
   const standoutH = stack - starterH;
   const starterY = headerH;
@@ -105,8 +108,9 @@ export const plusCellRect = (
   row: "starters" | "standouts",
   index: number,
   titlesBelow = false,
+  boardH = GRAPHIC_HEIGHT,
 ) => {
-  const metrics = plusBoardMetrics(titlesBelow);
+  const metrics = plusBoardMetrics(titlesBelow, boardH);
   if (row === "starters") {
     return {
       x: PLUS_STARTER_PAD_X + index * metrics.starterW,

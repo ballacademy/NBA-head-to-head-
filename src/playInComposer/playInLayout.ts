@@ -145,11 +145,14 @@ const makeSlot = (
   },
 });
 
-export const playInBoardCols = (size: PlayInSize): PlayInColRect[] => {
+export const playInBoardCols = (
+  size: PlayInSize,
+  canvasH = GRAPHIC_HEIGHT,
+): PlayInColRect[] => {
   const matchups = playInMatchups(size);
   const colW = playInColWidth();
   const boardY = PI_BOARD_TOP;
-  const boardH = GRAPHIC_HEIGHT - PI_BOARD_TOP - PI_BOARD_BOTTOM;
+  const boardH = canvasH - PI_BOARD_TOP - PI_BOARD_BOTTOM;
   const byeBlock = matchups.bye == null ? 0 : PI_BYE_H + PI_BYE_GAP;
   const slotH =
     (boardH -

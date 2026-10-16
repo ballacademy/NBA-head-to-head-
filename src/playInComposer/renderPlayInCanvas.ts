@@ -14,6 +14,7 @@ import {
   formatStandingRecord,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -55,6 +56,7 @@ const loadImage = (src: string) =>
 export type PlayInRenderInput = PlayInDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
+  story?: boolean;
 };
 
 const paintBar = (
@@ -176,8 +178,9 @@ export const renderPlayInCanvas = async (
   input: PlayInRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -207,7 +210,7 @@ export const renderPlayInCanvas = async (
   context.fillStyle = "rgba(255,255,255,0.82)";
   context.fillText(PI_KICKER, width / 2, PI_KICKER_Y * s);
 
-  const cols = playInBoardCols(input.size);
+  const cols = playInBoardCols(input.size, boardH);
   for (const col of cols) {
     const ids = col.conference === "east" ? input.east : input.west;
     context.font = `900 ${PI_CONF_SIZE * s}px ${POSTER_FONT}`;
@@ -314,7 +317,7 @@ export const renderPlayInCanvas = async (
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillStyle = "rgba(255,255,255,0.72)";
-  context.fillText(PI_LEGEND, width / 2, PI_LEGEND_Y * s);
+  context.fillText(PI_LEGEND, width / 2, (boardH - (GRAPHIC_HEIGHT - PI_LEGEND_Y)) * s);
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 

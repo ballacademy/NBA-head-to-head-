@@ -12,8 +12,8 @@
   --standout-pad: 56;
   --starter-name-h: 108;
   --standout-name-h: 90;
-  --starter-logo: 30;
-  --standout-logo: 26;
+  --starter-logo: 22;
+  --standout-logo: 18;
   --week-h: 36;
   --week-bottom: 4;
   --header-pad-x: 105;
@@ -21,6 +21,10 @@
   --ba-inset: 25;
   position: relative;
   aspect-ratio: 4 / 5;
+}
+
+.twp-board.is-story {
+  aspect-ratio: 9 / 16;
   width: 100%;
   display: grid;
   grid-template-rows:

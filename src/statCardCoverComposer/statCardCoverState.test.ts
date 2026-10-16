@@ -106,6 +106,7 @@ describe("stat card cover", () => {
       DEFAULT_COVER_TITLE,
     );
     expect(draft.showBa).toBe(true);
+    expect(draft.showGold).toBe(true);
   });
 
   it("keeps STARS AND STANDOUTS when the night changes and only updates the pill", () => {

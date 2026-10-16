@@ -9,11 +9,12 @@ import { getTeam } from "../standingsComposer/teams";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 
-export const DEFAULT_QUOTE = "I’M HIM.";
+export const DEFAULT_QUOTE = "";
 export const QUOTE_PRESETS = [
-  "I’M HIM.",
-  "THEY NOT LIKE US.",
+  "THEY CAN’T GUARD ME.",
   "THAT’S GAME.",
+  "NIGHT NIGHT.",
+  "FROM DOWNTOWN.",
 ] as const;
 
 const foldQuote = (value: string) =>

@@ -20,6 +20,10 @@ import {
   exportFilenameFromTitle,
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import {
+  copyGraphicCaption,
+  everyTeamCaption,
+} from "../instagramComposer/graphicCaption";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -45,6 +49,7 @@ import {
   createDefaultRankedOrder,
   createEmptyEveryTeamSlots,
   DEFAULT_EVERY_TEAM_TITLE,
+  everyTeamCaptionNames,
   fillEveryTeamFromNight,
   isEveryTeamDraft,
   nextEmptyEveryTeamSlot,
@@ -365,6 +370,19 @@ export function EveryTeamComposerApp() {
     );
   };
 
+  const nightAuto = useRef(false);
+  useEffect(() => {
+    if (!hydrated || !rostersReady || nightAuto.current) {
+      return;
+    }
+    if (slots.some(Boolean)) {
+      nightAuto.current = true;
+      return;
+    }
+    nightAuto.current = true;
+    void handleNightFill(nightMetric);
+  }, [hydrated, rostersReady]);
+
   const activeTeam =
     activeIndex != null ? teamAtSlot(activeIndex, ranked, rankedOrder) : null;
   const activeSeason = activeTeam
@@ -649,6 +667,29 @@ export function EveryTeamComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                everyTeamCaption(
+                  title,
+                  everyTeamCaptionNames(
+                    slots,
+                    season,
+                    cellSeasons,
+                    ranked,
+                    rankedOrder,
+                  ),
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  COMPOSER_FIRST_COMMENT_PROMPT,
   COMPOSER_HASHTAGS,
+  everyTeamCaption,
   graphicCaption,
   rankedLineupCaption,
   statCardLineCaption,
+  tierListCaption,
 } from "./graphicCaption";
 
 describe("graphic captions", () => {
@@ -20,6 +23,7 @@ describe("graphic captions", () => {
         "Shai Gilgeous-Alexander",
         "Anthony Edwards",
         COMPOSER_HASHTAGS,
+        COMPOSER_FIRST_COMMENT_PROMPT,
       ].join("\n"),
     );
   });
@@ -53,6 +57,34 @@ describe("graphic captions", () => {
         "20/15/9 in 24 min",
         "W vs NYK 120–110",
         COMPOSER_HASHTAGS,
+        COMPOSER_FIRST_COMMENT_PROMPT,
+      ].join("\n"),
+    );
+  });
+
+  it("builds Every Team and Tier captions with a first-comment prompt", () => {
+    expect(everyTeamCaption("Every NBA team", ["Luka Doncic", "Shai"])).toBe(
+      [
+        "Every NBA team",
+        "Luka Doncic",
+        "Shai",
+        COMPOSER_HASHTAGS,
+        COMPOSER_FIRST_COMMENT_PROMPT,
+      ].join("\n"),
+    );
+    expect(
+      tierListCaption("Guess the tier", [
+        { label: "S", names: ["Jokic", "Shai"] },
+        { label: "A", names: ["Tatum"] },
+        { label: "B", names: [] },
+      ]),
+    ).toBe(
+      [
+        "Guess the tier",
+        "S: Jokic, Shai",
+        "A: Tatum",
+        COMPOSER_HASHTAGS,
+        COMPOSER_FIRST_COMMENT_PROMPT,
       ].join("\n"),
     );
   });

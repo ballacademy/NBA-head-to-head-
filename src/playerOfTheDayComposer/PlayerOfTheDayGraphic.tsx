@@ -128,6 +128,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
         />
       ) : null}
       <header className="pod-header">
+        {showBa ? null : (
         <input
           className="pod-brand"
           value={brand}
@@ -136,6 +137,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
           aria-label="Brand label"
           onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
         />
+        )}
         <div className="pod-title-plate">
           <div className="pod-title-block">
             <ComposerTitleField
@@ -184,6 +186,9 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   empty={empty}
                   onPan={(pan) => onPan(index, pan)}
                   onUpload={(dataUrl) => onUpload(index, dataUrl)}
+                  onUploadMany={(urls) =>
+                    urls.forEach((url, offset) => onUpload(index + offset, url))
+                  }
                   onPick={() => onPick(index)}
                 />
                 {card.playerId ? (

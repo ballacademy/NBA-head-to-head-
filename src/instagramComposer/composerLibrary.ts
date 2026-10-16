@@ -178,6 +178,33 @@ export const importComposerLibrary = (
   return { keys, saves };
 };
 
+export const mergeComposerLibraryFiles = (
+  left: ComposerLibraryFile,
+  right: ComposerLibraryFile,
+): ComposerLibraryFile => {
+  const libraries: Record<string, NamedGraphic<unknown>[]> = {};
+  const keys = new Set([
+    ...Object.keys(left.libraries),
+    ...Object.keys(right.libraries),
+  ]);
+  keys.forEach((key) => {
+    libraries[key] = mergeSaves(
+      left.libraries[key] ?? [],
+      right.libraries[key] ?? [],
+    );
+  });
+  return {
+    version: COMPOSER_LIBRARY_VERSION,
+    kind: COMPOSER_LIBRARY_KIND,
+    savedAt: Math.max(left.savedAt, right.savedAt, Date.now()),
+    libraries,
+  };
+};
+
+export const applyComposerLibraryFile = (file: ComposerLibraryFile) => {
+  importComposerLibrary(file);
+};
+
 export const downloadComposerLibrary = () => {
   const payload = JSON.stringify(exportComposerLibrary(), null, 2);
   const blob = new Blob([payload], { type: "application/json" });

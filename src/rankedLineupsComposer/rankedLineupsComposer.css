@@ -18,6 +18,10 @@
   --name-logo: 28;
   position: relative;
   aspect-ratio: 4 / 5;
+}
+
+.rl-board.is-story {
+  aspect-ratio: 9 / 16;
   width: 100%;
   display: grid;
   grid-template-rows:

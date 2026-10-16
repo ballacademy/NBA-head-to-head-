@@ -137,6 +137,10 @@
 }
 
 .scc-seam::after {
+  content: none;
+}
+
+.scc-board.is-gold .scc-seam::after {
   content: "";
   position: absolute;
   top: 8%;
@@ -179,7 +183,7 @@
 .scc-title-line {
   display: block;
   width: 100%;
-  color: #facc15;
+  color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
   font-size: calc(var(--title-size) * var(--u));
@@ -189,6 +193,13 @@
   line-height: 0.84;
   -webkit-text-stroke: calc(3.4 * var(--u)) #000;
   paint-order: stroke fill;
+  text-shadow:
+    calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
+    0 calc(8 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+
+.scc-board.is-gold .scc-title-line {
+  color: #facc15;
   text-shadow:
     0 0 calc(10 * var(--u)) rgba(250, 204, 21, 0.28),
     calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
@@ -227,7 +238,7 @@
   height: calc(var(--pill-h) * var(--u));
   padding: 0 calc(28 * var(--u));
   box-sizing: border-box;
-  border: calc(2 * var(--u)) solid #d4af37;
+  border: calc(2 * var(--u)) solid #fff;
   border-radius: calc(999 * var(--u));
   background: #fff;
   color: #111;
@@ -239,6 +250,10 @@
   text-transform: uppercase;
   line-height: calc((var(--pill-h) - 4) * var(--u));
   box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.35);
+}
+
+.scc-board.is-gold .scc-pill {
+  border-color: #d4af37;
 }
 
 .scc-title-input:focus,
@@ -265,7 +280,7 @@
   font-weight: 900;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: #facc15;
+  color: #fff;
   text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.8);
 }
 
@@ -273,11 +288,9 @@
   width: calc(58 * var(--u));
   height: calc(58 * var(--u));
   border-radius: 50%;
-  border: calc(2 * var(--u)) solid #d4af37;
+  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.88);
   background: rgba(0, 0, 0, 0.42);
-  box-shadow:
-    0 0 calc(10 * var(--u)) rgba(250, 204, 21, 0.28),
-    calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
 }
 
 .scc-swipe__chev::after {
@@ -286,9 +299,25 @@
   width: calc(14 * var(--u));
   height: calc(14 * var(--u));
   margin: calc(20 * var(--u)) 0 0 calc(24 * var(--u));
-  border-right: calc(3.2 * var(--u)) solid #facc15;
-  border-top: calc(3.2 * var(--u)) solid #facc15;
+  border-right: calc(3.2 * var(--u)) solid #fff;
+  border-top: calc(3.2 * var(--u)) solid #fff;
   transform: rotate(45deg);
+}
+
+.scc-board.is-gold .scc-swipe__label {
+  color: #facc15;
+}
+
+.scc-board.is-gold .scc-swipe__chev {
+  border-color: #d4af37;
+  box-shadow:
+    0 0 calc(10 * var(--u)) rgba(250, 204, 21, 0.28),
+    calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+}
+
+.scc-board.is-gold .scc-swipe__chev::after {
+  border-right-color: #facc15;
+  border-top-color: #facc15;
 }
 
 .scc-board .composer-ba {

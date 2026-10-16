@@ -37,7 +37,11 @@ import { fetchRecentGames, formatDateLabel, type LastGame } from "./lastGame";
 import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { downloadExportPack } from "../instagramComposer/exportPack";
+import { readLeaderboardDraft } from "../potdLeaderboardComposer/potdLeaderboardState";
+import { renderPotdLeaderboardCanvas } from "../potdLeaderboardComposer/renderPotdLeaderboardCanvas";
 import { PlayerOfTheDayGraphic } from "./PlayerOfTheDayGraphic";
+import { renderPlayerOfTheDayCanvas } from "./renderPlayerOfTheDayCanvas";
 import { dataUrlFromClipboard } from "./PhotoFrame";
 import {
   exportPlayerOfTheDayPng,
@@ -93,7 +97,7 @@ export function PlayerOfTheDayComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAYER_OF_THE_DAY_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
@@ -351,7 +355,7 @@ export function PlayerOfTheDayComposerApp() {
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
           </>
         }
@@ -418,6 +422,65 @@ export function PlayerOfTheDayComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering POTD pack…");
+                try {
+                  const matchup = exportFilenameFromTitle(
+                    title,
+                    "player-of-the-day",
+                    date,
+                  );
+                  const board = readLeaderboardDraft();
+                  await downloadExportPack(
+                    () =>
+                      renderPlayerOfTheDayCanvas(
+                        {
+                          brand,
+                          title,
+                          date,
+                          cards,
+                          look,
+                          purpleFlair,
+                          photoGrade,
+                          showBa,
+                        },
+                        2,
+                      ),
+                    matchup,
+                    [
+                      {
+                        filename: exportFilenameFromTitle(
+                          board.title,
+                          "potd-leaderboard",
+                          date,
+                        ),
+                        render: () =>
+                          renderPotdLeaderboardCanvas(
+                            { ...board, look, purpleFlair },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
+                  );
+                  setStatus("Pack download started (matchup + leaderboard).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export POTD pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
           </button>
           <button
             type="button"

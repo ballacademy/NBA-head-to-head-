@@ -90,27 +90,30 @@ export interface PyramidMetrics {
   originY: number;
 }
 
-const stackFits = (rowCount: number, cell: number) => {
+const stackFits = (rowCount: number, cell: number, boardH = GRAPHIC_HEIGHT) => {
   const pop = cell * PYR_POP_RATIO;
   const rowGap = pop + PYR_POP_GUTTER;
   const stackH = rowCount * cell + (rowCount - 1) * rowGap;
-  const originY = GRAPHIC_HEIGHT - PYR_PAD_BOTTOM - stackH;
+  const originY = boardH - PYR_PAD_BOTTOM - stackH;
   const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
   return originY - pop >= titleBottom + 6 && originY > 0;
 };
 
-export const pyramidMetrics = (rowCount = PYR_DEFAULT_ROWS): PyramidMetrics => {
+export const pyramidMetrics = (
+  rowCount = PYR_DEFAULT_ROWS,
+  boardH = GRAPHIC_HEIGHT,
+): PyramidMetrics => {
   const rows = pyramidRowsFor(rowCount);
   const n = rows.length;
   const widthCell =
     (GRAPHIC_WIDTH - PYR_PAD_X * 2 - PYR_COL_GAP * (n - 1)) / n;
   let cell = widthCell;
-  if (!stackFits(n, cell)) {
+  if (!stackFits(n, cell, boardH)) {
     let lo = 72;
     let hi = cell;
     for (let step = 0; step < 24; step += 1) {
       const mid = (lo + hi) / 2;
-      if (stackFits(n, mid)) {
+      if (stackFits(n, mid, boardH)) {
         lo = mid;
       } else {
         hi = mid;
@@ -121,7 +124,7 @@ export const pyramidMetrics = (rowCount = PYR_DEFAULT_ROWS): PyramidMetrics => {
   const pop = cell * PYR_POP_RATIO;
   const rowGap = pop + PYR_POP_GUTTER;
   const stackH = n * cell + (n - 1) * rowGap;
-  const originY = GRAPHIC_HEIGHT - PYR_PAD_BOTTOM - stackH;
+  const originY = boardH - PYR_PAD_BOTTOM - stackH;
   return {
     rows,
     rowCount: n,
@@ -151,8 +154,9 @@ export const pyramidRowOf = (index: number, rowCount = PYR_DEFAULT_ROWS) => {
 export const pyramidCellRect = (
   index: number,
   rowCount = PYR_DEFAULT_ROWS,
+  boardH = GRAPHIC_HEIGHT,
 ) => {
-  const metrics = pyramidMetrics(rowCount);
+  const metrics = pyramidMetrics(rowCount, boardH);
   const { row, col, count } = pyramidRowOf(index, rowCount);
   const totalW = count * metrics.cell + (count - 1) * metrics.colGap;
   const x = (GRAPHIC_WIDTH - totalW) / 2 + col * (metrics.cell + metrics.colGap);

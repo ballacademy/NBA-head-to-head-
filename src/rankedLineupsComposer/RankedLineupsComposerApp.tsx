@@ -34,7 +34,7 @@ import {
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { RankedLineupsGraphic } from "./RankedLineupsGraphic";
 import { renderRankedLineupsCanvas } from "./renderRankedLineupsCanvas";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
@@ -151,7 +151,7 @@ export function RankedLineupsComposerApp({
     unranked ? LINEUP_LOOK_KEY : RANKED_LINEUPS_LOOK_KEY,
   );
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const [photoGrade, setPhotoGrade] = usePhotoGrade();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
@@ -540,7 +540,7 @@ export function RankedLineupsComposerApp({
           <>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
@@ -678,31 +678,40 @@ export function RankedLineupsComposerApp({
                               ),
                           }),
                         );
+                  const feedName = exportFilenameFromTitle(
+                    title,
+                    stem,
+                    unranked ? "" : rank.toLowerCase(),
+                  );
+                  const rankedInput = {
+                    brand,
+                    title,
+                    rank,
+                    strips,
+                    look,
+                    purpleFlair,
+                    photoGrade,
+                    showBa,
+                    showFade,
+                    showTeamHairline,
+                    rankDisplay: unranked ? "none" as const : rankDisplay,
+                    positionLabels,
+                  };
                   await downloadExportPack(
-                    () =>
-                      renderRankedLineupsCanvas(
-                        {
-                          brand,
-                          title,
-                          rank,
-                          strips,
-                          look,
-                          purpleFlair,
-                          photoGrade,
-                          showBa,
-                          showFade,
-                          showTeamHairline,
-                          rankDisplay: unranked ? "none" : rankDisplay,
-                          positionLabels,
-                        },
-                        2,
-                      ),
-                    exportFilenameFromTitle(
-                      title,
-                      stem,
-                      unranked ? "" : rank.toLowerCase(),
-                    ),
-                    extras,
+                    () => renderRankedLineupsCanvas(rankedInput, 2),
+                    feedName,
+                    [
+                      ...extras,
+                      {
+                        filename: storyFilename(feedName),
+                        render: () =>
+                          renderRankedLineupsCanvas(
+                            { ...rankedInput, story: true },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {

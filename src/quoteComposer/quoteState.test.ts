@@ -48,7 +48,8 @@ describe("quote composer", () => {
     expect(next.teamId).toBe(jokic.team);
     expect(next.showHeadshot).toBe(true);
     expect(hasCustomPhoto(next)).toBe(false);
-    expect(next.quote).toBe(DEFAULT_QUOTE);
+    expect(next.quote).toBe("");
+    expect(DEFAULT_QUOTE).toBe("");
     expect(next.source).toBe("");
   });
 
@@ -57,7 +58,7 @@ describe("quote composer", () => {
     const luka = getPlayer("3945274")!;
     const first = fillQuoteFromPlayer(jokic, {
       ...defaultQuoteDraft(),
-      quote: "I’M HIM.",
+      quote: "THEY CAN’T GUARD ME.",
     });
     const kept = fillQuoteFromPlayer(luka, first, false, true);
     expect(kept.playerId).toBe(luka.id);
@@ -66,10 +67,11 @@ describe("quote composer", () => {
     expect(quoteLastName(kept.attribution)).toBe("DONCIC");
     expect(kept.teamId).toBe(luka.team);
     expect(kept.photoSrc).toBe(luka.headshotUrl);
-    expect(isStockQuote("I’M HIM.")).toBe(true);
-    expect(isStockQuote("I'm him.")).toBe(true);
+    expect(isStockQuote("")).toBe(true);
+    expect(isStockQuote("THEY CAN’T GUARD ME.")).toBe(true);
+    expect(isStockQuote("they can't guard me.")).toBe(true);
     expect(isStockQuote("20/15/9 IN 24 MIN")).toBe(false);
-    expect(kept.quote).toBe("I’M HIM.");
+    expect(kept.quote).toBe("THEY CAN’T GUARD ME.");
     expect(
       lastGameQuoteLine({
         eventId: "1",
@@ -126,7 +128,7 @@ describe("quote composer", () => {
   });
 
   it("wraps long quotes to two lines and shrinks the last name", () => {
-    const short = "I’M HIM.";
+    const short = "THAT’S GAME.";
     const long =
       "I DIDN’T COME THIS FAR TO ONLY COME THIS FAR TONIGHT";
     expect(isLongQuote(short)).toBe(false);

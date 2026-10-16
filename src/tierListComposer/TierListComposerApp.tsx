@@ -18,6 +18,11 @@ import {
   exportFilenameFromTitle,
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import {
+  copyGraphicCaption,
+  tierListCaption,
+} from "../instagramComposer/graphicCaption";
+import { getTeam } from "../standingsComposer/teams";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
@@ -548,6 +553,32 @@ export function TierListComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void copyGraphicCaption(
+                tierListCaption(
+                  title,
+                  rows.map((row) => ({
+                    label: row.label,
+                    names: row.teams
+                      .map((id) =>
+                        subject === "players"
+                          ? (getPlayer(id)?.name ?? "")
+                          : (getTeam(id)?.name ?? ""),
+                      )
+                      .filter(Boolean),
+                  })),
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              );
+            }}
+          >
+            Copy caption
           </button>
           <button
             type="button"
