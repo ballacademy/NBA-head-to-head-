@@ -37,6 +37,11 @@
   min-width: 0;
 }
 
+.sc-grade__mix .sc-toolbar__eyebrow {
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+}
+
 @media (max-width: 720px) {
   .sc-grade__mix {
     grid-template-columns: 1fr 1fr;

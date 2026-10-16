@@ -22,6 +22,7 @@ describe("chainHudWheel", () => {
       "utf8",
     );
     expect(hub).toContain("chainHudWheel(root)");
+    expect(hub).toContain('data-scroller="page"');
   });
 
   it("does not trap wheel on overflow:hidden HUD chrome", () => {
@@ -52,6 +53,7 @@ describe("chainHudWheel", () => {
     expect(tabs).toContain("sc-tabs__group--recents");
     expect(grade).toContain("sc-grade__mix");
     expect(grade).toMatch(/overflow:\s*clip/);
+    expect(grade).toMatch(/\.sc-grade__mix \.sc-toolbar__eyebrow \{[^}]*white-space:\s*nowrap/);
     const toggle = readFileSync(
       join(root, "instagramComposer/PhotoGradeToggle.tsx"),
       "utf8",

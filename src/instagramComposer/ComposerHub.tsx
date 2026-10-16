@@ -89,7 +89,10 @@ export function ComposerHub() {
   }
 
   return (
-    <div className={["sc-root", photoEdit ? "is-photo-edit" : ""].filter(Boolean).join(" ")}>
+    <div
+      className={["sc-root", photoEdit ? "is-photo-edit" : ""].filter(Boolean).join(" ")}
+      data-scroller="page"
+    >
       <ComposerTabs
         mode={mode}
         photoEdit={photoEdit}
