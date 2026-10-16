@@ -388,6 +388,8 @@ describe("composer chrome", () => {
     expect(totwPlusApp).toContain("story={storyCrop}");
     expect(playInApp).toContain("story={storyCrop}");
     expect(pyramidApp).toContain("story={storyCrop}");
+    expect(pyramidApp).toContain("STORY_DESIGN_HEIGHT");
+    expect(pyramidApp).toContain('sc-stage__frame is-story');
     const compareApp = readFileSync(
       join(root, "compareComposer/CompareComposerApp.tsx"),
       "utf8",

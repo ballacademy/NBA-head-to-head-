@@ -27,6 +27,10 @@ import {
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { fetchConferenceStandingsBundle } from "../standingsComposer/nbaStandings";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
@@ -605,8 +609,10 @@ export function PyramidComposerApp() {
       />
 
       <main className="sc-stage">
-        <div className="sc-stage__frame">
-          <ComposerBoard>
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
           <PyramidGraphic
             ref={boardRef}
             title={title}
