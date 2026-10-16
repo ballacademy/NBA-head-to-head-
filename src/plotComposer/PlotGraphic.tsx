@@ -155,14 +155,16 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
             aria-hidden="true"
           />
         ) : null}
-        <input
-          className="plt-brand"
-          value={brand}
-          maxLength={24}
-          spellCheck={false}
-          aria-label="Brand label"
-          onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
-        />
+        {showBa ? null : (
+          <input
+            className="plt-brand"
+            value={brand}
+            maxLength={24}
+            spellCheck={false}
+            aria-label="Brand label"
+            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+          />
+        )}
         <div className="plt-title-block">
           <ComposerTitleField
             value={title}

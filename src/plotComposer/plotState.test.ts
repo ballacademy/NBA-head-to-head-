@@ -54,7 +54,7 @@ describe("plot composer", () => {
     expect(splitPlotTitle(DEFAULT_PLOT_TITLE)).toEqual(["PTS VS", "AST"]);
     expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toContain("TS%");
     expect(plotMetricLabel("tsPct")).toBe("TS%");
-    expect(autoPlotTitle("points", "assists", "teams")).toBe("PTS VS AST · TEAMS");
+    expect(autoPlotTitle("points", "assists", "teams")).toBe("PTS VS AST");
   });
 
   it("plots all 30 teams on 2012-13 PTS vs AST with padded axes", () => {
@@ -77,7 +77,7 @@ describe("plot composer", () => {
       EMPTY_PLAYER_FILTERS,
     );
     const okcNow = current.find((point) => point.id === "OKC");
-    expect(okcNow?.x).toBeGreaterThan(80);
+    expect(okcNow?.x).toBeGreaterThan(20);
     const xAxis = axisFromValues(
       points.map((point) => point.x),
       "points",
@@ -85,6 +85,9 @@ describe("plot composer", () => {
     expect(xAxis.min).toBeLessThan(Math.min(...points.map((point) => point.x)));
     expect(xAxis.max).toBeGreaterThan(Math.max(...points.map((point) => point.x)));
     expect(xAxis.ticks.length).toBeGreaterThan(2);
+    expect(xAxis.min).toBeGreaterThanOrEqual(0);
+    const tight = axisFromValues([1.2, 3.4, 6], "assists");
+    expect(tight.min).toBe(0);
   });
 
   it("filters West teams and pins unique players without repeats", () => {

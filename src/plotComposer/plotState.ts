@@ -11,9 +11,7 @@ import {
   pickSeasonLeader,
   playerStatValue,
   rosterStatValue,
-  roundStat,
   teamLogoSrc,
-  teamStatValue,
   type EveryTeamRosterPlayer,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
@@ -69,11 +67,8 @@ export const parsePlotSubject = (value: unknown): PlotSubject =>
 export const autoPlotTitle = (
   xMetric: EveryTeamStatMetric,
   yMetric: EveryTeamStatMetric,
-  subject: PlotSubject,
-) =>
-  `${plotMetricLabel(xMetric)} VS ${plotMetricLabel(yMetric)}${
-    subject === "teams" ? " · TEAMS" : ""
-  }`;
+  _subject?: PlotSubject,
+) => `${plotMetricLabel(xMetric)} VS ${plotMetricLabel(yMetric)}`;
 
 export const splitPlotTitle = (title: string) =>
   splitBalancedTitle(title, DEFAULT_PLOT_TITLE, PLOT_TITLE_TRACK);
@@ -172,34 +167,6 @@ const qualifiesForMetric = (
   return true;
 };
 
-/** Team production when GP exists; otherwise that club’s leader on the X stat. */
-export const plotTeamStatValue = (
-  teamId: string,
-  season: string,
-  metric: EveryTeamStatMetric,
-  sample: ComposerStatsSample = "regular",
-): number | null => {
-  if (isPercentStatMetric(metric) || metric === "minutes" || metric === "games") {
-    return teamStatValue(teamId, season, metric, sample);
-  }
-  const rows = listRosterPlayers(teamId, season, sample)
-    .filter((player) => player.position !== "HC")
-    .map((player) => ({
-      value: rosterStatValue(player, metric),
-      gp: player.gp ?? 0,
-    }))
-    .filter((row): row is { value: number; gp: number } => row.value != null);
-  if (!rows.length) {
-    return null;
-  }
-  const teamGames = Math.max(...rows.map((row) => row.gp), 0);
-  if (teamGames > 0) {
-    const total = rows.reduce((sum, row) => sum + row.value * row.gp, 0);
-    return roundStat(total / teamGames);
-  }
-  return null;
-};
-
 export const populatePlotTeams = (
   season: string,
   xMetric: EveryTeamStatMetric,
@@ -214,13 +181,9 @@ export const populatePlotTeams = (
   });
   const next: PlotPoint[] = [];
   ids.forEach((teamId) => {
-    let x = plotTeamStatValue(teamId, season, xMetric, sample);
-    let y = plotTeamStatValue(teamId, season, yMetric, sample);
-    if (x == null || y == null) {
-      const leader = pickSeasonLeader(teamId, season, xMetric, sample);
-      x = rosterStatValue(leader, xMetric);
-      y = rosterStatValue(leader, yMetric);
-    }
+    const leader = pickSeasonLeader(teamId, season, xMetric, sample);
+    const x = rosterStatValue(leader, xMetric);
+    const y = rosterStatValue(leader, yMetric);
     const team = getTeam(teamId) ?? NBA_TEAMS.find((row) => row.id === teamId);
     if (x == null || y == null || !team) {
       return;

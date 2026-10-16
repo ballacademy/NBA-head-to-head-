@@ -72,14 +72,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
-.plt-title-input,
+.plt-title-block .composer-title-stack {
+  height: 100%;
+}
+
 .plt-title-line {
+  display: block;
   margin: 0;
   width: 100%;
-  border: 0;
-  background: transparent;
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
@@ -93,9 +96,34 @@
   text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.72);
 }
 
+.plt-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(40 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  white-space: pre;
+  pointer-events: auto;
+}
+
 .plt-kicker {
   position: absolute;
-  top: calc(126 * var(--u));
+  top: calc(128 * var(--u));
   left: calc(80 * var(--u));
   right: calc(80 * var(--u));
   z-index: 4;
@@ -182,6 +210,7 @@
   transform: translate(-50%, -50%);
 }
 
+.plt-face,
 .plt-face img,
 .plt-dot {
   display: block;

@@ -19,13 +19,13 @@ export const PLOT_BA_SIZE = 68;
 export const PLOT_BA_INSET = 22;
 export const PLOT_LEFT = 92;
 export const PLOT_RIGHT = 52;
-export const PLOT_TOP = 148;
+export const PLOT_TOP = 152;
 export const PLOT_BOTTOM = 96;
 export const PLOT_AXIS_SIZE = 13;
 export const PLOT_AXIS_TITLE = 16;
-export const PLOT_MARK_TEAM = 34;
-export const PLOT_MARK_PLAYER = 22;
-export const PLOT_MARK_DOT = 8;
+export const PLOT_MARK_TEAM = 48;
+export const PLOT_MARK_PLAYER = 36;
+export const PLOT_MARK_DOT = 10;
 export const PLOT_HEADSHOT_MAX = 36;
 export const PLOT_LABEL_MAX = 32;
 export const PLOT_LABEL_SIZE = 12;
@@ -99,8 +99,8 @@ export const axisFromValues = (
   if (percent) {
     min = Math.max(0, min);
     max = Math.min(1, Math.max(max, min + 0.02));
-  } else {
-    min = Math.min(min, 0) < 0 ? min : Math.max(0, min);
+  } else if (lo >= 0) {
+    min = Math.max(0, min);
   }
   if (max <= min) {
     max = min + (percent ? 0.1 : 1);

@@ -130,12 +130,14 @@ export const renderPlotCanvas = async (
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.letterSpacing = `${Math.round(PLOT_BRAND_SIZE * 0.18 * s)}px`;
-  context.fillStyle = "#fff";
-  context.fillText(
-    (input.brand || "BALLACADEMY").toUpperCase(),
-    width / 2,
-    (PLOT_BRAND_Y + 12) * s,
-  );
+  if (input.showBa === false) {
+    context.fillStyle = "#fff";
+    context.fillText(
+      (input.brand || "BALLACADEMY").toUpperCase(),
+      width / 2,
+      (PLOT_BRAND_Y + 12) * s,
+    );
+  }
   context.letterSpacing = "0px";
 
   const lines = splitPlotTitle(input.title);
