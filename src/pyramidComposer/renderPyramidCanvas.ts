@@ -449,30 +449,6 @@ export const renderPyramidCanvas = async (
   }
 
   const title = pyramidTitle(input.title);
-  context.font = `900 ${PYR_TITLE_SIZE * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, PYR_TITLE_TRACK * PYR_TITLE_SIZE * s);
-  const paintTitle = () => {
-    withShadow(context, s, () => {
-      strokeFillText(
-        context,
-        title,
-        width / 2,
-        (PYR_TITLE_Y + 46) * s,
-        "#fff",
-        "#000",
-        3.2 * s,
-      );
-    });
-  };
-  if (input.purpleFlair) {
-    paintPurpleTitleGlow(context, s, paintTitle);
-  } else {
-    paintTitle();
-  }
-  setLetterSpacing(context, 0);
-
   const rowCount = input.rows ?? PYR_DEFAULT_ROWS;
   const slotCount = Math.min(input.slots.length, pyramidSlotCount(rowCount));
   for (let index = 0; index < slotCount; index += 1) {
@@ -620,6 +596,30 @@ export const renderPyramidCanvas = async (
     context.shadowColor = "transparent";
     setLetterSpacing(context, 0);
   });
+
+  context.font = `900 ${PYR_TITLE_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  setLetterSpacing(context, PYR_TITLE_TRACK * PYR_TITLE_SIZE * s);
+  const paintTitle = () => {
+    withShadow(context, s, () => {
+      strokeFillText(
+        context,
+        title,
+        width / 2,
+        (PYR_TITLE_Y + 46) * s,
+        "#fff",
+        "#000",
+        3.2 * s,
+      );
+    });
+  };
+  if (input.purpleFlair) {
+    paintPurpleTitleGlow(context, s, paintTitle);
+  } else {
+    paintTitle();
+  }
+  setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

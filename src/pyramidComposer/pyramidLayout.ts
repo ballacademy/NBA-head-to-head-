@@ -12,6 +12,8 @@ export const PYR_DEFAULT_ROWS = 4;
 export const PYR_PAD_X = 28;
 export const PYR_COL_GAP = 12;
 export const PYR_PAD_BOTTOM = 36;
+/** Tight metal between the title and the top cell — hair may overlap the title. */
+export const PYR_STACK_TOP = 12;
 export const PYR_QUIET_FRAME = 2;
 export const PYR_TITLE_Y = 22;
 export const PYR_TITLE_H = 96;
@@ -88,16 +90,8 @@ export interface PyramidMetrics {
   rowGap: number;
   colGap: number;
   originY: number;
+  padTop: number;
 }
-
-const stackFits = (rowCount: number, cell: number, boardH = GRAPHIC_HEIGHT) => {
-  const pop = cell * PYR_POP_RATIO;
-  const rowGap = PYR_COL_GAP;
-  const stackH = rowCount * cell + (rowCount - 1) * rowGap;
-  const originY = boardH - PYR_PAD_BOTTOM - stackH;
-  const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
-  return originY - pop >= titleBottom + 6 && originY > 0;
-};
 
 export const pyramidMetrics = (
   rowCount = PYR_DEFAULT_ROWS,
@@ -105,26 +99,17 @@ export const pyramidMetrics = (
 ): PyramidMetrics => {
   const rows = pyramidRowsFor(rowCount);
   const n = rows.length;
-  const widthCell =
-    (GRAPHIC_WIDTH - PYR_PAD_X * 2 - PYR_COL_GAP * (n - 1)) / n;
-  let cell = widthCell;
-  if (!stackFits(n, cell, boardH)) {
-    let lo = 72;
-    let hi = cell;
-    for (let step = 0; step < 24; step += 1) {
-      const mid = (lo + hi) / 2;
-      if (stackFits(n, mid, boardH)) {
-        lo = mid;
-      } else {
-        hi = mid;
-      }
-    }
-    cell = lo;
+  const colGap = PYR_COL_GAP;
+  const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
+  const originY = titleBottom + PYR_STACK_TOP;
+  const stackH = Math.max(n * 72, boardH - PYR_PAD_BOTTOM - originY);
+  let cell = (GRAPHIC_WIDTH - PYR_PAD_X * 2 - colGap * (n - 1)) / n;
+  let rowGap = n > 1 ? (stackH - n * cell) / (n - 1) : 0;
+  if (n > 1 && rowGap < colGap) {
+    cell = (stackH - (n - 1) * colGap) / n;
+    rowGap = colGap;
   }
   const pop = cell * PYR_POP_RATIO;
-  const rowGap = PYR_COL_GAP;
-  const stackH = n * cell + (n - 1) * rowGap;
-  const originY = boardH - PYR_PAD_BOTTOM - stackH;
   return {
     rows,
     rowCount: n,
@@ -132,8 +117,9 @@ export const pyramidMetrics = (
     cell,
     pop,
     rowGap,
-    colGap: PYR_COL_GAP,
+    colGap,
     originY,
+    padTop: PYR_STACK_TOP,
   };
 };
 

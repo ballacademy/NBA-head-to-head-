@@ -116,6 +116,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
             ["--pyr-col-gap" as string]: String(metrics.colGap),
             ["--pyr-row-gap" as string]: String(metrics.rowGap),
             ["--pyr-pop" as string]: String(metrics.pop),
+            ["--pyr-pad-top" as string]: String(metrics.padTop),
           } as React.CSSProperties
         }
         aria-label="Instagram pyramid graphic"

@@ -7,9 +7,10 @@
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --pyr-cell: 248;
   --pyr-col-gap: 12;
-  --pyr-row-gap: 88;
+  --pyr-row-gap: 46;
   --pyr-pop: 74;
   --pyr-pad-x: 28;
+  --pyr-pad-top: 12;
   --pyr-pad-bottom: 36;
   position: relative;
   aspect-ratio: 4 / 5;
@@ -83,9 +84,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: calc(var(--pyr-row-gap) * var(--u));
-  padding: 0 calc(var(--pyr-pad-x) * var(--u))
+  padding: calc(var(--pyr-pad-top) * var(--u)) calc(var(--pyr-pad-x) * var(--u))
     calc(var(--pyr-pad-bottom) * var(--u));
   min-height: 0;
   overflow: visible;

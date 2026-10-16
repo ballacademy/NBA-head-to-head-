@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
+import {
+  EXPORT_HEIGHT,
+  EXPORT_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   GRAPHIC_ASPECT,
@@ -20,6 +24,7 @@ import {
   PYR_POP_RATIO,
   PYR_POP_RIM,
   PYR_POP_RIM_GLOW,
+  PYR_STACK_TOP,
   PYR_TITLE_H,
   PYR_TITLE_Y,
   clampPyramidRows,
@@ -67,24 +72,34 @@ describe("pyramid composer", () => {
     expect(createEmptyPyramidSlots(6)).toHaveLength(21);
   });
 
-  it("pins the stack to the bottom and lets popped hair overlap the row above", () => {
+  it("fills from the title to the bottom and lets popped hair overlap the row above", () => {
     const titleBottom = PYR_TITLE_Y + PYR_TITLE_H;
     for (const rows of [4, 5, 6] as const) {
       const metrics = pyramidMetrics(rows);
       expect(metrics.pop).toBeCloseTo(metrics.cell * PYR_POP_RATIO);
+      expect(metrics.rowGap).toBeGreaterThan(PYR_COL_GAP);
       expect(metrics.rowGap).toBeLessThan(metrics.pop);
-      expect(metrics.rowGap).toBe(PYR_COL_GAP);
-      expect(metrics.originY + metrics.rowCount * metrics.cell + (metrics.rowCount - 1) * metrics.rowGap).toBe(
-        GRAPHIC_HEIGHT - PYR_PAD_BOTTOM,
-      );
+      expect(metrics.originY).toBeCloseTo(titleBottom + PYR_STACK_TOP);
+      expect(
+        metrics.originY +
+          metrics.rowCount * metrics.cell +
+          (metrics.rowCount - 1) * metrics.rowGap,
+      ).toBeCloseTo(GRAPHIC_HEIGHT - PYR_PAD_BOTTOM);
       const first = pyramidCellRect(0, rows);
-      expect(first.y - first.pop).toBeGreaterThanOrEqual(titleBottom + 5);
+      expect(first.y - titleBottom).toBeLessThanOrEqual(PYR_STACK_TOP + 1);
+      expect(first.y).toBeGreaterThan(titleBottom);
       const last = pyramidCellRect(metrics.slotCount - 1, rows);
       expect(GRAPHIC_HEIGHT - (last.y + last.h)).toBeCloseTo(PYR_PAD_BOTTOM);
       expect(last.y + last.h).toBeGreaterThan(GRAPHIC_HEIGHT - 50);
       expect(first.w).toBe(first.h);
       expect(first.pop).toBeGreaterThan(40);
     }
+    const story = pyramidMetrics(4, STORY_DESIGN_HEIGHT);
+    expect(story.originY).toBeCloseTo(titleBottom + PYR_STACK_TOP);
+    expect(
+      story.originY + 4 * story.cell + 3 * story.rowGap,
+    ).toBeCloseTo(STORY_DESIGN_HEIGHT - PYR_PAD_BOTTOM);
+    expect(story.rowGap).toBeGreaterThan(pyramidMetrics(4).rowGap);
     expect(pyramidMetrics(6).cell).toBeLessThan(pyramidMetrics(4).cell);
     expect(PYR_CELL).toBe(pyramidMetrics(PYR_DEFAULT_ROWS).cell);
     expect(PYR_CELL).toBeGreaterThan(200);
