@@ -167,7 +167,8 @@ describe("composer chrome", () => {
 
   it("applies the photo grade to custom photos in preview", () => {
     expect(photo).toContain(".is-grade .pod-photo__img");
-    expect(photo).toMatch(/contrast\(1\.42\)/);
+    expect(photo).toMatch(/contrast\(/);
+    expect(photo).toContain("sc-grade__mix");
     expect(photo).not.toMatch(/\.is-grade\s*\{[^}]*filter:/);
   });
 
@@ -393,6 +394,25 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(compareApp).toContain("story={storyCrop}");
+    expect(compareApp).toContain("Swap sides");
+    expect(compareApp).toContain("Reset keep photos");
+    expect(compareApp).toContain("Blank post");
+    expect(compareApp).toContain("Export 1:1");
+    expect(compareCss).toContain(".cmp-brand");
+    const compareGraphic = readFileSync(
+      join(root, "compareComposer/CompareGraphic.tsx"),
+      "utf8",
+    );
+    expect(compareGraphic).toContain("CMP_BRAND");
+    expect(compareGraphic).not.toContain("ba-logo-circled.png");
+    expect(composerSaves).toContain("Duplicate this post");
+    const tabs = readFileSync(
+      join(root, "instagramComposer/ComposerTabs.tsx"),
+      "utf8",
+    );
+    expect(tabs).toContain("Recents");
+    expect(tabs).toContain("Search composers");
+    expect(tabs).toContain("ComposerNameStyleToggle");
     expect(compareExport).not.toContain("toStoryCanvas");
     expect(compareCss).toMatch(
       /\.cmp-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,

@@ -557,6 +557,20 @@ export function HeadlineComposerApp() {
                 </option>
               ))}
             </select>
+            <button
+              type="button"
+              className="sc-chip"
+              aria-label="Swap sides"
+              onClick={() =>
+                setDraft((current) => ({
+                  ...current,
+                  teamId: current.secondTeamId ?? null,
+                  secondTeamId: current.teamId,
+                }))
+              }
+            >
+              Swap sides
+            </button>
           </label>
         ) : null}
         <label className="sc-field">

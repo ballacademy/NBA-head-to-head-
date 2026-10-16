@@ -4,6 +4,8 @@ import { getTeamColors } from "../lib/teamColors";
 
 export type ComposerLook = "white" | "black" | "none";
 
+export const LAST_LOOK_KEY = "ddgm:composer-last-look";
+
 export const STANDINGS_LOOK_KEY = "ddgm:standings-composer-look";
 export const TIER_LOOK_KEY = "ddgm:tier-list-composer-look";
 export const EVERY_TEAM_LOOK_KEY = "ddgm:every-team-composer-look";
@@ -62,11 +64,24 @@ export const composerLookClass = (look: ComposerLook) => {
 
 export const composerFlairClass = (on: boolean) => (on ? "is-purple" : "");
 
-export const readComposerLook = (key: string): ComposerLook =>
-  parseComposerLook(readJson<unknown>(key));
+export const readLastComposerLook = (): ComposerLook =>
+  parseComposerLook(readJson<unknown>(LAST_LOOK_KEY) ?? "white");
+
+export const writeLastComposerLook = (look: ComposerLook) => {
+  writeJson(LAST_LOOK_KEY, look);
+};
+
+export const readComposerLook = (key: string): ComposerLook => {
+  const stored = readJson<unknown>(key);
+  if (stored == null) {
+    return readLastComposerLook();
+  }
+  return parseComposerLook(stored);
+};
 
 export const writeComposerLook = (key: string, look: ComposerLook) => {
   writeJson(key, look);
+  writeLastComposerLook(look);
 };
 
 export const parsePurpleFlair = (value: unknown) => value === true;

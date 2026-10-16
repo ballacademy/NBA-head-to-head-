@@ -15,6 +15,7 @@ import { mockTradeLayout } from "./mockTradeLayout";
 import {
   MOCK_TRADE_NAME_MAX,
   MOCK_TRADE_TITLE_MAX,
+  compactMockTradeDraft,
   mockTradePickLabel,
   mockTradePlayerLockup,
   mockTradeTeamCount,
@@ -69,11 +70,12 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
-    const teamCount = mockTradeTeamCount(draft);
+    const board = exporting ? compactMockTradeDraft(draft) : draft;
+    const teamCount = mockTradeTeamCount(board);
     const layout = mockTradeLayout(
       teamCount,
-      draft.sides.map((side) => side.players.length),
-      draft.sides.map((side) => side.picks.length),
+      board.sides.map((side) => side.players.length),
+      board.sides.map((side) => side.picks.length),
       story,
     );
 
@@ -123,7 +125,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
         aria-label="Instagram mock trade graphic"
       >
         {layout.columns.map((column, sideIndex) => {
-          const side = draft.sides[sideIndex]!;
+          const side = board.sides[sideIndex]!;
           const team = getTeam(side.teamId);
           const local = (rect: { x: number; y: number; w: number; h: number }) => ({
             x: rect.x - column.x,
@@ -211,6 +213,9 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                     className={[
                       "mt-chip",
                       pick.swap ? "is-swap" : "",
+                      pick.top4 ? "is-top4" : "",
+                      pick.twoWay ? "is-twoway" : "",
+                      pick.cash ? "is-cash" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}

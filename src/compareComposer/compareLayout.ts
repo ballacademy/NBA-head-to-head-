@@ -14,8 +14,13 @@ export {
 
 export const CMP_PAD = 48;
 export const CMP_INSET = 36;
-export const CMP_TITLE_TOP = 36;
-export const CMP_TITLE_H = 92;
+export const CMP_BRAND = "BALLACADEMY";
+export const CMP_BRAND_TOP = 6;
+export const CMP_BRAND_H = 32;
+export const CMP_BRAND_SIZE = 26;
+export const CMP_TITLE_TOP = 40;
+export const CMP_TITLE_TOP_OFF = 20;
+export const CMP_TITLE_H = 88;
 export const CMP_TITLE_SIZE = 42;
 export const CMP_STACK_GAP = 12;
 export const CMP_BA = 64;
@@ -30,11 +35,16 @@ export const CMP_NAME_SIZE = 18;
 export const CMP_LEAD = "#ffe566";
 export const CMP_STAT_COUNT = 5;
 export const CMP_STAT_MAX = 10;
+export const CMP_STAT_MIN = 1;
 
 export const compareBoardHeight = (story = false) =>
   story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
 
-export const compareStackTop = () => CMP_TITLE_TOP + CMP_TITLE_H + CMP_STACK_GAP;
+export const compareTitleTop = (showBa = true) =>
+  showBa ? CMP_TITLE_TOP : CMP_TITLE_TOP_OFF;
+
+export const compareStackTop = (showBa = true) =>
+  compareTitleTop(showBa) + CMP_TITLE_H + CMP_STACK_GAP;
 
 export const compareStackBottom = (story = false, hasSub = false) => {
   const reserve = hasSub
@@ -44,8 +54,12 @@ export const compareStackBottom = (story = false, hasSub = false) => {
 };
 
 /** Photo columns + center stats fill leftover height under the title. */
-export const comparePhotoFrame = (story = false, hasSub = false) => {
-  const y = compareStackTop();
+export const comparePhotoFrame = (
+  story = false,
+  hasSub = false,
+  showBa = true,
+) => {
+  const y = compareStackTop(showBa);
   const bottom = compareStackBottom(story, hasSub);
   const inner = GRAPHIC_WIDTH - CMP_INSET * 2;
   const photoW = (inner - CMP_STATS_W - CMP_COL_GAP * 2) / 2;
@@ -67,7 +81,7 @@ export const CMP_STATS_X = comparePhotoFrame(false, false).statsX;
 
 /** Extra rows keep the photo columns; type shrinks in the stats gutter. */
 export const compareStatType = (count = CMP_STAT_COUNT) => {
-  const n = Math.min(CMP_STAT_MAX, Math.max(1, count));
+  const n = Math.min(CMP_STAT_MAX, Math.max(CMP_STAT_MIN, count));
   if (n <= 5) {
     return { value: CMP_STAT_SIZE, label: CMP_LABEL_SIZE, rule: 0.56, stroke: 2.4 };
   }

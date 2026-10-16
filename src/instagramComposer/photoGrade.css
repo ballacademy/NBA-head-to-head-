@@ -1,8 +1,8 @@
-/* Match the export punch: crushed shadows, lifted mids, slight saturation. */
+/* Match the export punch: structure/sharpness, protected shadows. Photo only. */
 .is-grade .pod-photo__img {
   filter: var(
     --photo-grade-filter,
-    contrast(1.42) saturate(1.12) brightness(0.97)
+    contrast(1.78) saturate(1.16) brightness(1.04)
   );
 }
 
@@ -10,9 +10,22 @@
   background: radial-gradient(
     ellipse 78% 72% at 50% 40%,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, var(--photo-grade-vignette-mid, 0.16)) 55%,
-    rgba(0, 0, 0, var(--photo-grade-vignette-edge, 0.58)) 100%
+    rgba(0, 0, 0, var(--photo-grade-vignette-mid, 0.1)) 55%,
+    rgba(0, 0, 0, var(--photo-grade-vignette-edge, 0.34)) 100%
   );
+}
+
+.sc-grade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: min(100%, 220px);
+}
+
+.sc-grade__mix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
 }
 
 @media (hover: none), (pointer: coarse) {

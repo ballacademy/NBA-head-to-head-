@@ -30,6 +30,7 @@ import {
   mockTradeLayout,
 } from "./mockTradeLayout";
 import {
+  compactMockTradeDraft,
   mockTradePickLabel,
   mockTradePlayerLockup,
   mockTradeTeamCount,
@@ -102,16 +103,17 @@ export const renderMockTradeCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  const teamCount = mockTradeTeamCount(input);
+  const board = compactMockTradeDraft(input);
+  const teamCount = mockTradeTeamCount(board);
   const layout = mockTradeLayout(
     teamCount,
-    input.sides.map((side) => side.players.length),
-    input.sides.map((side) => side.picks.length),
+    board.sides.map((side) => side.players.length),
+    board.sides.map((side) => side.picks.length),
     Boolean(input.story),
   );
 
   for (const [sideIndex, column] of layout.columns.entries()) {
-    const side = input.sides[sideIndex]!;
+    const side = board.sides[sideIndex]!;
     const x = column.x * s;
     const y = column.y * s;
     const w = column.w * s;
@@ -245,14 +247,18 @@ export const renderMockTradeCanvas = async (
       context.fillStyle = "rgba(6,8,12,0.72)";
       roundRect(context, cx, cy, cw, ch, 8 * s);
       context.fill();
-      context.strokeStyle = pick.swap ? "#ffe566" : "rgba(255,255,255,0.22)";
+      context.strokeStyle =
+        pick.cash || pick.twoWay || pick.top4 || pick.swap
+          ? "#ffe566"
+          : "rgba(255,255,255,0.22)";
       context.lineWidth = 1.5 * s;
       roundRect(context, cx, cy, cw, ch, 8 * s);
       context.stroke();
       context.font = `800 ${13 * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillStyle = pick.swap ? "#ffe566" : "#fff";
+      context.fillStyle =
+        pick.cash || pick.twoWay || pick.top4 || pick.swap ? "#ffe566" : "#fff";
       setLetterSpacing(context, 0.06 * 13 * s);
       context.fillText(
         mockTradePickLabel(pick),

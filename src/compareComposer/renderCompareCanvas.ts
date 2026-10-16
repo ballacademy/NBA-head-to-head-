@@ -1,6 +1,5 @@
 import {
   paintCellFrame,
-  paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurplePlateEdge,
   type ComposerLook,
@@ -27,7 +26,10 @@ import {
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
   GRAPHIC_WIDTH,
-  CMP_BA,
+  CMP_BRAND,
+  CMP_BRAND_H,
+  CMP_BRAND_SIZE,
+  CMP_BRAND_TOP,
   CMP_PAD,
   CMP_SUB_H,
   CMP_SUB_SIZE,
@@ -38,10 +40,13 @@ import {
   compareBoardHeight,
   comparePhotoFrame,
   compareStatType,
+  compareTitleTop,
 } from "./compareLayout";
 import {
   compareSideCaption,
+  compareWinner,
   leadingSide,
+  visibleCompareStats,
   type CompareDraft,
 } from "./compareState";
 import { getTeam } from "../standingsComposer/teams";
@@ -114,10 +119,31 @@ export const renderCompareCanvas = async (
     paintPurpleCornerBloom(context, width, height, s);
   }
 
+  const showBa = input.showBa !== false;
   const titleX = CMP_PAD * s;
   const titleW = width - CMP_PAD * 2 * s;
-  const titleY = 36 * s;
+  const titleY = compareTitleTop(showBa) * s;
   const titleH = CMP_TITLE_H * s;
+  if (showBa) {
+    context.font = `900 ${CMP_BRAND_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.18 * CMP_BRAND_SIZE * s);
+    context.fillStyle = "#fff";
+    context.shadowColor = "rgba(0,0,0,0.82)";
+    context.shadowBlur = 0;
+    context.shadowOffsetX = 1 * s;
+    context.shadowOffsetY = 1.2 * s;
+    context.fillText(
+      CMP_BRAND,
+      width / 2,
+      (CMP_BRAND_TOP + CMP_BRAND_H / 2) * s,
+      width * 0.8,
+    );
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    setLetterSpacing(context, 0);
+  }
   context.fillStyle = "#1c1c1c";
   context.fillRect(titleX, titleY, titleW, titleH);
   paintCellFrame(context, titleX, titleY, titleW, titleH, input.look, s);
@@ -140,7 +166,10 @@ export const renderCompareCanvas = async (
   const frame = comparePhotoFrame(
     Boolean(input.story),
     Boolean(input.subtitle.trim()),
+    showBa,
   );
+  const winner =
+    input.showWinner === true ? compareWinner(input.stats) : null;
   const photoY = frame.y * s;
   const photoH = frame.h * s;
   const photoW = frame.w * s;
@@ -229,6 +258,23 @@ export const renderCompareCanvas = async (
       }
     }
     paintCellFrame(context, x, photoY, photoW, photoH, input.look, s);
+    if (winner === side) {
+      context.save();
+      context.strokeStyle = "rgba(255, 229, 102, 0.55)";
+      context.lineWidth = 10 * s;
+      context.strokeRect(x + 6 * s, photoY + 6 * s, photoW - 12 * s, photoH - 12 * s);
+      const badge = 36 * s;
+      context.fillStyle = "rgba(255, 229, 102, 0.92)";
+      context.beginPath();
+      context.arc(x + photoW - 30 * s, photoY + 30 * s, badge / 2, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = "#111";
+      context.font = `900 ${18 * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText("W", x + photoW - 30 * s, photoY + 30 * s);
+      context.restore();
+    }
     const caption = compareSideCaption(person);
     if (caption) {
       const fadeH = 96 * s;
@@ -258,7 +304,8 @@ export const renderCompareCanvas = async (
     }
   }
 
-  const type = compareStatType(input.stats.length);
+  const stats = visibleCompareStats(input.stats, true);
+  const type = compareStatType(stats.length || input.stats.length);
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -272,11 +319,11 @@ export const renderCompareCanvas = async (
   );
   setLetterSpacing(context, 0);
 
-  const rowCount = Math.max(input.stats.length, 1);
+  const rowCount = Math.max(stats.length, 1);
   const bodyTop = photoY + 36 * s;
   const bodyH = photoH - 52 * s;
   const rowSpan = bodyH / rowCount;
-  input.stats.forEach((stat, index) => {
+  stats.forEach((stat, index) => {
     const y = bodyTop + index * rowSpan + rowSpan / 2;
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
@@ -341,19 +388,6 @@ export const renderCompareCanvas = async (
       titleW - 24 * s,
     );
     setLetterSpacing(context, 0);
-  }
-
-  if (input.showBa !== false) {
-    const ba = await loadImage("/ba-logo-circled.png");
-    if (ba) {
-      const size = CMP_BA * s;
-      const x = (width - size) / 2;
-      const y = 100 * s;
-      if (input.purpleFlair) {
-        paintPurpleBaGlow(context, x, y, size);
-      }
-      context.drawImage(ba, x, y, size, size);
-    }
   }
 
   return canvas;

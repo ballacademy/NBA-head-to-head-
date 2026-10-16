@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { writeLastShowBa } from "../instagramComposer/composerBoardDefaults";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
@@ -54,7 +55,6 @@ import {
   autoCompareStatsLabel,
   compareCaptionFor,
   clearCompareSide,
-  COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
   COMPARE_STAT_PRESETS,
   defaultCompareDraft,
@@ -63,15 +63,18 @@ import {
   fillCompareSide,
   hasCustomPhoto,
   isCompareDraft,
+  moveCompareStat,
   normalizeCompareDraft,
   parseCompareStatKey,
   parseCompareStatsMode,
   patchCompareStat,
   removeCompareStat,
+  resetCompareKeepPhotos,
   setComparePhoto,
   setCompareStatKey,
   statsFromLastGame,
   statsFromSeason,
+  swapCompareSides,
   type CompareDraft,
   type CompareStatsMode,
 } from "./compareState";
@@ -263,7 +266,11 @@ export function CompareComposerApp() {
     }
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -276,8 +283,15 @@ export function CompareComposerApp() {
         filename ?? exportFilenameFromTitle(draft.title, "compare"),
         { ...draft, look, purpleFlair, photoGrade },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -431,29 +445,56 @@ export function CompareComposerApp() {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          className="sc-chip"
+          aria-label="Swap sides"
+          onClick={() => setDraft((current) => swapCompareSides(current))}
+        >
+          Swap sides
+        </button>
         {draft.stats.map((stat, index) => (
-          <label key={`cmp-key-${stat.key}-${index}`} className="sc-field">
-            Stat {index + 1}
-            <select
-              value={stat.key}
-              aria-label={`Compare stat ${index + 1}`}
-              onChange={(event) => {
-                const key = parseCompareStatKey(event.target.value);
-                const next = {
-                  ...draft,
-                  stats: setCompareStatKey(draft.stats, index, key),
-                };
-                setDraft(next);
-                void fillStats(next);
-              }}
-            >
-              {COMPARE_STAT_PRESETS.map((preset) => (
-                <option key={preset.key} value={preset.key}>
-                  {preset.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div key={`cmp-key-${stat.key}-${index}`} className="sc-field">
+            <span>Stat {index + 1}</span>
+            <div className="sc-stat-slot">
+              <select
+                value={stat.key}
+                aria-label={`Compare stat ${index + 1}`}
+                onChange={(event) => {
+                  const key = parseCompareStatKey(event.target.value);
+                  const next = {
+                    ...draft,
+                    stats: setCompareStatKey(draft.stats, index, key),
+                  };
+                  setDraft(next);
+                  void fillStats(next);
+                }}
+              >
+                {COMPARE_STAT_PRESETS.map((preset) => (
+                  <option key={preset.key} value={preset.key}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              {draft.stats.length > 1 ? (
+                <button
+                  type="button"
+                  className="sc-chip sc-stat-slot__remove"
+                  aria-label={`Remove compare stat ${index + 1} ${stat.label}`}
+                  onClick={() => {
+                    const next = {
+                      ...draft,
+                      stats: removeCompareStat(draft.stats, index),
+                    };
+                    setDraft(next);
+                    void fillStats(next);
+                  }}
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          </div>
         ))}
         <button
           type="button"
@@ -467,27 +508,6 @@ export function CompareComposerApp() {
         >
           {nextStat ? `Add ${nextStat.label}` : "10 stats"}
         </button>
-        {draft.stats.length > COMPARE_STAT_COUNT ? (
-          <button
-            type="button"
-            className="sc-chip"
-            onClick={() => {
-              const next = {
-                ...draft,
-                stats: removeCompareStat(
-                  draft.stats,
-                  draft.stats.length - 1,
-                ),
-              };
-              setDraft(next);
-              void fillStats(next);
-            }}
-          >
-            {draft.stats.length === COMPARE_STAT_COUNT + 1
-              ? "5 stats"
-              : "Remove last"}
-          </button>
-        ) : null}
           </>
         }
         board={
@@ -495,9 +515,29 @@ export function CompareComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Winner mark</span>
+          <button
+            type="button"
+            className={draft.showWinner ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={draft.showWinner === true}
+            aria-label="Winner mark"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                showWinner: !current.showWinner,
+              }))
+            }
+          >
+            {draft.showWinner ? "On" : "Off"}
+          </button>
+        </label>
         <BaMarkToggle
           on={draft.showBa !== false}
-          onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
+          onChange={(showBa) => {
+            writeLastShowBa(showBa);
+            setDraft((current) => ({ ...current, showBa }));
+          }}
         />
         <WatermarkToggle
           value={draft.watermark}
@@ -552,11 +592,22 @@ export function CompareComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(defaultCompareDraft());
-              setStatus("Board cleared.");
+              setDraft(resetCompareKeepPhotos(draft));
+              setStatus("Reset — photos kept.");
             }}
           >
-            Reset
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(defaultCompareDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
           </button>
           <button
             type="button"
@@ -582,6 +633,15 @@ export function CompareComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -656,6 +716,20 @@ export function CompareComposerApp() {
                   stats: patchCompareStat(current.stats, index, patch),
                 }))
               }
+              onRemoveStat={(index) => {
+                const next = {
+                  ...draft,
+                  stats: removeCompareStat(draft.stats, index),
+                };
+                setDraft(next);
+                void fillStats(next);
+              }}
+              onMoveStat={(fromIndex, toIndex) => {
+                setDraft((current) => ({
+                  ...current,
+                  stats: moveCompareStat(current.stats, fromIndex, toIndex),
+                }));
+              }}
               onPick={setPicker}
               onPan={(side, pan) =>
                 setDraft((current) => {

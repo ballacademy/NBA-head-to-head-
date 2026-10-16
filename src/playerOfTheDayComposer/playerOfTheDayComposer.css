@@ -231,7 +231,10 @@
 }
 
 .is-grade .pod-photo__img {
-  filter: contrast(1.42) saturate(1.12) brightness(0.97);
+  filter: var(
+    --photo-grade-filter,
+    contrast(1.78) saturate(1.16) brightness(1.04)
+  );
 }
 
 .is-grade .pod-photo.is-vignette .pod-photo__vignette {

@@ -22,7 +22,11 @@ import {
   numericStat,
   parseCompareStats,
   parseCompareStatsMode,
+  moveCompareStat,
   removeCompareStat,
+  resetCompareKeepPhotos,
+  swapCompareSides,
+  compareWinner,
   formatCompareMinutes,
   statsFromLastGame,
   statsFromSeason,
@@ -203,7 +207,36 @@ describe("compare composer recs", () => {
     ]);
     expect(addCompareStat(stats)).toHaveLength(10);
     expect(removeCompareStat(stats, 9)).toHaveLength(9);
-    expect(removeCompareStat(defaultCompareStats(), 0)).toHaveLength(5);
+    expect(removeCompareStat(defaultCompareStats(), 0)).toHaveLength(4);
+    expect(removeCompareStat([{ ...emptyRow(), key: "pts" }], 0)).toHaveLength(1);
+    expect(
+      moveCompareStat(defaultCompareStats(), 0, 2).map((stat) => stat.key),
+    ).toEqual(["fgPct", "fg3Pct", "pts", "reb", "ast"]);
+    const filled = applySideStatValues(
+      applySideStatValues(defaultCompareStats(), 0, ["30", "50", "40", "8", "7"]),
+      1,
+      ["20", "40", "30", "5", "4"],
+    );
+    expect(compareWinner(filled)).toBe(0);
+    const swapped = swapCompareSides({
+      ...defaultCompareDraft(),
+      stats: filled,
+    });
+    expect(swapped.stats[0]?.right).toBe("30");
+    expect(compareWinner(swapped.stats)).toBe(1);
+    const keep = resetCompareKeepPhotos({
+      ...defaultCompareDraft(),
+      sides: [
+        {
+          ...defaultCompareDraft().sides[0]!,
+          customPhoto: true,
+          photoSrc: "data:image/png;base64,aaa",
+        },
+        defaultCompareDraft().sides[1]!,
+      ],
+    });
+    expect(keep.sides[0]?.photoSrc).toContain("data:image");
+    expect(keep.title).toBe(defaultCompareDraft().title);
     expect(parseCompareStats([...stats, emptyRow(), emptyRow()])).toHaveLength(
       10,
     );

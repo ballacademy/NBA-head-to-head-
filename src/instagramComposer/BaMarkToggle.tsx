@@ -1,3 +1,5 @@
+import { writeLastShowBa } from "./composerBoardDefaults";
+
 interface BaMarkToggleProps {
   on: boolean;
   onChange: (on: boolean) => void;
@@ -12,7 +14,11 @@ export function BaMarkToggle({ on, onChange }: BaMarkToggleProps) {
         className={on ? "sc-chip is-on" : "sc-chip"}
         aria-pressed={on}
         aria-label="BA mark"
-        onClick={() => onChange(!on)}
+        onClick={() => {
+          const next = !on;
+          writeLastShowBa(next);
+          onChange(next);
+        }}
       >
         {on ? "On" : "Off"}
       </button>

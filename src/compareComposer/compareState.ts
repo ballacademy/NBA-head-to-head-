@@ -1,3 +1,8 @@
+import {
+  readLastShowBa,
+  storedOrLastShowBa,
+} from "../instagramComposer/composerBoardDefaults";
+import { formatComposerName } from "../instagramComposer/composerNameStyle";
 import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   DEFAULT_COMPOSER_WATERMARK,
@@ -115,6 +120,7 @@ export interface CompareDraft {
   season?: string;
   sideSeasons?: [string | null, string | null];
   showBa?: boolean;
+  showWinner?: boolean;
   watermark?: ComposerWatermark;
 }
 
@@ -249,7 +255,8 @@ export const defaultCompareDraft = (): CompareDraft => {
     statsMode: "season",
     season,
     sideSeasons: [null, null],
-    showBa: true,
+    showBa: readLastShowBa(),
+    showWinner: false,
     watermark: DEFAULT_COMPOSER_WATERMARK,
   };
 };
@@ -267,7 +274,8 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
     statsMode,
     season,
     sideSeasons: parseSideSeasons(draft.sideSeasons),
-    showBa: draft.showBa !== false,
+    showBa: storedOrLastShowBa(draft.showBa),
+    showWinner: draft.showWinner === true,
     watermark: parseComposerWatermark(draft.watermark),
   };
 };
@@ -275,18 +283,23 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
 export const hasCustomPhoto = (side: CompareSide) =>
   stripHasCustomPhoto(side as unknown as TotwStrip);
 
-export const compareSideName = (side: CompareSide) =>
-  `${side.firstName} ${side.lastName}`.replace(/\s+/g, " ").trim();
+export const compareSideName = (
+  side: CompareSide,
+  style?: Parameters<typeof formatComposerName>[2],
+) => formatComposerName(side.firstName, side.lastName, style);
 
 export const compareCaptionFor = (draft: CompareDraft) =>
   graphicCaption(
     draft.title,
-    draft.sides.map(compareSideName).filter(Boolean),
+    draft.sides.map((side) => compareSideName(side)).filter(Boolean),
     isAutoCompareSubtitle(draft.subtitle) ? [] : [draft.subtitle],
   );
 
-export const compareSideCaption = (side: CompareSide) => {
-  const name = compareSideName(side);
+export const compareSideCaption = (
+  side: CompareSide,
+  style?: Parameters<typeof formatComposerName>[2],
+) => {
+  const name = compareSideName(side, style);
   const team = getTeam(side.teamId)?.id;
   if (!name) {
     return "";
@@ -480,7 +493,90 @@ export const addCompareStat = (stats: CompareStat[]): CompareStat[] => {
   return next ? [...stats, next] : stats;
 };
 
-export const removeCompareStat = (stats: CompareStat[], index: number) =>
-  stats.length <= COMPARE_STAT_COUNT
-    ? stats
-    : stats.filter((_, statIndex) => statIndex !== index);
+export const removeCompareStat = (stats: CompareStat[], index: number) => {
+  if (stats.length <= 1 || index < 0 || index >= stats.length) {
+    return stats;
+  }
+  return stats.filter((_, statIndex) => statIndex !== index);
+};
+
+export const moveCompareStat = (
+  stats: CompareStat[],
+  fromIndex: number,
+  toIndex: number,
+): CompareStat[] => {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= stats.length ||
+    toIndex >= stats.length
+  ) {
+    return stats;
+  }
+  const next = [...stats];
+  const [moved] = next.splice(fromIndex, 1);
+  if (!moved) {
+    return stats;
+  }
+  next.splice(toIndex, 0, moved);
+  return next;
+};
+
+export const visibleCompareStats = (
+  stats: CompareStat[],
+  exporting = false,
+) =>
+  exporting
+    ? stats.filter((stat) => stat.left.trim() || stat.right.trim())
+    : stats;
+
+export const compareWinner = (stats: CompareStat[]): 0 | 1 | null => {
+  let left = 0;
+  let right = 0;
+  for (const stat of stats) {
+    const lead = leadingSide(stat.left, stat.right);
+    if (lead === 0) {
+      left += 1;
+    } else if (lead === 1) {
+      right += 1;
+    }
+  }
+  if (left === right || (!left && !right)) {
+    return null;
+  }
+  return left > right ? 0 : 1;
+};
+
+export const swapCompareSides = (draft: CompareDraft): CompareDraft => ({
+  ...draft,
+  sides: [draft.sides[1]!, draft.sides[0]!],
+  stats: draft.stats.map((stat) => ({
+    ...stat,
+    left: stat.right,
+    right: stat.left,
+  })),
+  sideSeasons: draft.sideSeasons
+    ? [draft.sideSeasons[1] ?? null, draft.sideSeasons[0] ?? null]
+    : draft.sideSeasons,
+});
+
+export const resetCompareKeepPhotos = (draft: CompareDraft): CompareDraft => {
+  const blank = defaultCompareDraft();
+  return {
+    ...blank,
+    showBa: draft.showBa,
+    showWinner: false,
+    watermark: draft.watermark,
+    sides: draft.sides.map((side) =>
+      side.customPhoto && side.photoSrc
+        ? {
+            ...emptyCompareSide(),
+            photoSrc: side.photoSrc,
+            customPhoto: true,
+            pan: { ...side.pan },
+          }
+        : emptyCompareSide(),
+    ) as CompareDraft["sides"],
+  };
+};

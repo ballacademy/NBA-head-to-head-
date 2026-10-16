@@ -162,7 +162,10 @@
   overflow: hidden;
 }
 
-.mt-chip.is-swap {
+.mt-chip.is-swap,
+.mt-chip.is-top4,
+.mt-chip.is-twoway,
+.mt-chip.is-cash {
   box-shadow: inset 0 0 0 calc(1.5 * var(--u)) #ffe566;
   color: #ffe566;
 }

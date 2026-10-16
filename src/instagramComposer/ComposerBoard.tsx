@@ -3,6 +3,9 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
 } from "../standingsComposer/rankingState";
+import { ComposerStampMark } from "./ComposerStampToggle";
+import { composerShowsStamp } from "./composerStamp";
+import { readComposerMode } from "./composerMode";
 
 /**
  * Design-px board, scaled as a unit so type/overlays match the PNG.
@@ -57,6 +60,7 @@ export function ComposerBoard({
         }}
       >
         {children}
+        <ComposerStampMark modeOn={composerShowsStamp(readComposerMode())} />
       </div>
     </div>
   );

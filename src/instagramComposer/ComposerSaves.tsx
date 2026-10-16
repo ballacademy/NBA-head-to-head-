@@ -95,6 +95,24 @@ export function ComposerSaves<T>({
         type="button"
         className="sc-btn sc-btn--ghost"
         onClick={() => {
+          const copyName = `${(name.trim() || "Graphic").slice(0, 32)} copy`;
+          const { saves: next, saved } = upsertNamedGraphic(
+            storageKey,
+            copyName,
+            board,
+          );
+          setSaves(next);
+          setSelected(saved.id);
+          setName(saved.name);
+          setStatus("Duplicated — photos stay on that copy.");
+        }}
+      >
+        Duplicate this post
+      </button>
+      <button
+        type="button"
+        className="sc-btn sc-btn--ghost"
+        onClick={() => {
           const { saves: next, saved } = upsertNamedGraphic(
             storageKey,
             name || "Template",

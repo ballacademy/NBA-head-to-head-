@@ -8,6 +8,7 @@ import {
   type Conference,
 } from "../lib/divisions";
 import type { Division } from "../lib/types";
+import { playerNicknameHaystack } from "../instagramComposer/playerNicknames";
 import { NBA_TEAMS, NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
 
 export type PlayerPosition = "PG" | "SG" | "SF" | "PF" | "C" | "G" | "F" | "HC";
@@ -487,10 +488,7 @@ export const searchPlayers = (
     if (NBA_TEAMS_BY_ID[teamCode]) {
       return player.team === teamCode;
     }
-    return (
-      player.name.toLowerCase().includes(needle) ||
-      player.team.toLowerCase().includes(needle)
-    );
+    return playerNicknameHaystack(player).includes(needle);
   });
 };
 

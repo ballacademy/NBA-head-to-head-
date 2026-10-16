@@ -41,6 +41,9 @@ export interface MockTradePick {
   round: MockTradeRound;
   fromTeamId: string | null;
   swap: boolean;
+  top4?: boolean;
+  twoWay?: boolean;
+  cash?: boolean;
 }
 
 export interface MockTradeSide {
@@ -95,6 +98,9 @@ export const emptyMockTradePick = (): MockTradePick => ({
   round: "1st",
   fromTeamId: null,
   swap: false,
+  top4: false,
+  twoWay: false,
+  cash: false,
 });
 
 export const emptyMockTradeSide = (): MockTradeSide => ({
@@ -126,6 +132,9 @@ export const isMockTradePick = (value: unknown): value is MockTradePick =>
       isNullableString((value as MockTradePick).fromTeamId) &&
       typeof (value as MockTradePick).swap === "boolean",
   );
+
+export const isFilledMockTradePlayer = (player: MockTradePlayer) =>
+  Boolean(player.photoSrc || mockTradePlayerName(player));
 
 const parsePlayer = (value: unknown): MockTradePlayer | null => {
   if (!value || typeof value !== "object") {
@@ -168,6 +177,9 @@ const parsePick = (value: unknown): MockTradePick | null => {
       ? raw.fromTeamId
       : null,
     swap: raw.swap === true,
+    top4: raw.top4 === true,
+    twoWay: raw.twoWay === true,
+    cash: raw.cash === true,
   };
 };
 
@@ -344,18 +356,46 @@ export const mockTradePlayerLockup = (player: MockTradePlayer) =>
   (player.lastName || player.firstName).replace(/\s+/g, " ").trim();
 
 export const mockTradePickLabel = (pick: MockTradePick) => {
+  const from = getTeam(pick.fromTeamId)?.id;
+  if (pick.cash) {
+    return from ? `CASH · ${from}` : "CASH";
+  }
+  if (pick.twoWay) {
+    return from ? `TWO-WAY · ${from}` : "TWO-WAY";
+  }
   const year = pick.year || DEFAULT_MOCK_TRADE_YEAR;
   const round = pick.round === "2nd" ? "2ND" : "1ST";
   const bits = [`${year} ${round}`];
+  if (pick.top4) {
+    bits.push("TOP-4");
+  }
   if (pick.swap) {
     bits.push("SWAP");
   }
-  const from = getTeam(pick.fromTeamId)?.id;
   if (from) {
     bits.push(from);
   }
   return bits.join(" · ");
 };
+
+export const swapMockTradeSides = (draft: MockTradeDraft): MockTradeDraft => {
+  if (draft.sides.length < 2) {
+    return draft;
+  }
+  const sides = [...draft.sides];
+  const first = sides[0]!;
+  sides[0] = sides[1]!;
+  sides[1] = first;
+  return { ...draft, sides };
+};
+
+export const compactMockTradeDraft = (draft: MockTradeDraft): MockTradeDraft => ({
+  ...draft,
+  sides: draft.sides.map((side) => ({
+    ...side,
+    players: side.players.filter(isFilledMockTradePlayer),
+  })),
+});
 
 export const mockTradeCaptionFor = (draft: MockTradeDraft) => {
   const sides = draft.sides.map((side) => {

@@ -348,6 +348,20 @@ export function PlayerOfTheDayComposerApp() {
             >
               Right
             </button>
+            <button
+              type="button"
+              className="sc-chip"
+              aria-label="Swap sides"
+              onClick={() =>
+                setCards((current) =>
+                  current.length < 2
+                    ? current
+                    : [current[1]!, current[0]!, ...current.slice(2)],
+                )
+              }
+            >
+              Swap sides
+            </button>
           </div>
           </>
         }

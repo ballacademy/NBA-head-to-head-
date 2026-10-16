@@ -56,6 +56,7 @@ import {
   removeMockTradeTeam,
   setMockTradePhoto,
   setMockTradeSideTeam,
+  swapMockTradeSides,
   type MockTradeDraft,
 } from "./mockTradeState";
 import "@fontsource/montserrat/latin-900.css";
@@ -159,7 +160,11 @@ export function MockTradeComposerApp() {
     commitPick(picker.side, picker.player, person.id, false);
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -172,8 +177,15 @@ export function MockTradeComposerApp() {
         filename ?? exportFilenameFromTitle(draft.title, "mock-trade"),
         { ...draft, look, purpleFlair, photoGrade },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -273,6 +285,14 @@ export function MockTradeComposerApp() {
         data={
           <>
             {draft.sides.map((_, index) => teamSelect(index))}
+            <button
+              type="button"
+              className="sc-chip"
+              aria-label="Swap sides"
+              onClick={() => setDraft((current) => swapMockTradeSides(current))}
+            >
+              Swap sides
+            </button>
             {teamCount < 3 ? (
               <button
                 type="button"
@@ -463,6 +483,66 @@ export function MockTradeComposerApp() {
                     >
                       {pick.swap ? "Swap on" : "Swap"}
                     </button>
+                    <button
+                      type="button"
+                      className={pick.top4 ? "sc-chip is-on" : "sc-chip"}
+                      aria-pressed={pick.top4 === true}
+                      aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} top-4`}
+                      onClick={() =>
+                        setDraft((current) =>
+                          patchMockTradeSide(current, sideIndex, {
+                            ...current.sides[sideIndex]!,
+                            picks: current.sides[sideIndex]!.picks.map((row, index) =>
+                              index === pickIndex
+                                ? { ...row, top4: !row.top4, cash: false, twoWay: false }
+                                : row,
+                            ),
+                          }),
+                        )
+                      }
+                    >
+                      Top-4
+                    </button>
+                    <button
+                      type="button"
+                      className={pick.twoWay ? "sc-chip is-on" : "sc-chip"}
+                      aria-pressed={pick.twoWay === true}
+                      aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} two-way`}
+                      onClick={() =>
+                        setDraft((current) =>
+                          patchMockTradeSide(current, sideIndex, {
+                            ...current.sides[sideIndex]!,
+                            picks: current.sides[sideIndex]!.picks.map((row, index) =>
+                              index === pickIndex
+                                ? { ...row, twoWay: !row.twoWay, cash: false }
+                                : row,
+                            ),
+                          }),
+                        )
+                      }
+                    >
+                      Two-way
+                    </button>
+                    <button
+                      type="button"
+                      className={pick.cash ? "sc-chip is-on" : "sc-chip"}
+                      aria-pressed={pick.cash === true}
+                      aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} cash`}
+                      onClick={() =>
+                        setDraft((current) =>
+                          patchMockTradeSide(current, sideIndex, {
+                            ...current.sides[sideIndex]!,
+                            picks: current.sides[sideIndex]!.picks.map((row, index) =>
+                              index === pickIndex
+                                ? { ...row, cash: !row.cash, twoWay: false, top4: false }
+                                : row,
+                            ),
+                          }),
+                        )
+                      }
+                    >
+                      Cash
+                    </button>
                     <span className="sc-toolbar__eyebrow">
                       {mockTradePickLabel(pick)}
                     </span>
@@ -531,11 +611,48 @@ export function MockTradeComposerApp() {
               className="sc-btn sc-btn--ghost"
               onClick={() => {
                 push(draft);
-                setDraft(defaultMockTradeDraft());
-                setStatus("Board cleared.");
+                setDraft({
+                  ...defaultMockTradeDraft(),
+                  showBa: draft.showBa,
+                  sides: draft.sides.map((side) => ({
+                    ...side,
+                    teamId: null,
+                    players: side.players.map((player) =>
+                      player.customPhoto && player.photoSrc
+                        ? {
+                            ...player,
+                            playerId: null,
+                            teamId: null,
+                            firstName: "",
+                            lastName: "",
+                          }
+                        : {
+                            ...player,
+                            playerId: null,
+                            teamId: null,
+                            firstName: "",
+                            lastName: "",
+                            photoSrc: null,
+                            customPhoto: false,
+                          },
+                    ),
+                  })),
+                });
+                setStatus("Reset — photos kept.");
               }}
             >
-              Reset
+              Reset keep photos
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                push(draft);
+                setDraft(defaultMockTradeDraft());
+                setStatus("Blank post.");
+              }}
+            >
+              Blank post
             </button>
             <button
               type="button"
@@ -561,6 +678,15 @@ export function MockTradeComposerApp() {
               disabled={exporting}
             >
               Export 9:16
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost sc-btn--aside"
+              aria-label="Export 1:1"
+              onClick={() => void handleExport(undefined, false, true)}
+              disabled={exporting}
+            >
+              Export 1:1
             </button>
             <button
               type="button"

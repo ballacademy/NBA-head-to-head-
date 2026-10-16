@@ -17,6 +17,13 @@ import {
   exportFilenameFromTitle,
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { copyGraphicCaption, graphicCaption } from "../instagramComposer/graphicCaption";
+import {
+  downloadCanvasPng,
+  toSquareCanvas,
+} from "../instagramComposer/exportDownload";
+import { squareFilename } from "../instagramComposer/exportPack";
+import { renderStandingsCanvas } from "./renderStandingsCanvas";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
@@ -38,6 +45,7 @@ import {
 import { exportStandingsPng } from "./exportPng";
 import { StandingsGraphic } from "./StandingsGraphic";
 import { TeamPicker } from "./TeamPicker";
+import { getTeam } from "./teams";
 import "@fontsource/montserrat/latin-900.css";
 import "./standingsComposer.css";
 
@@ -401,10 +409,76 @@ export function StandingsComposerApp() {
           <button
             type="button"
             className="sc-btn sc-btn--ghost"
+            onClick={() =>
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  slots
+                    .map((id) => (id ? getTeam(id)?.name ?? id : ""))
+                    .filter(Boolean),
+                  [subtitle],
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              )
+            }
+          >
+            Copy caption
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
             onClick={() => void exportStory()}
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            aria-label="Export 1:1"
+            disabled={exporting}
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                try {
+                  const feed = exportFilenameFromTitle(
+                    title,
+                    "nba-standings",
+                    `${subtitle} ${exportDateStamp()}`,
+                  );
+                  const canvas = await renderStandingsCanvas(
+                    {
+                      brand,
+                      title,
+                      subtitle,
+                      slots,
+                      look,
+                      purpleFlair,
+                      showBa,
+                      showArrows,
+                      showRecord,
+                      records,
+                      lastWeekSlots,
+                    },
+                    2,
+                  );
+                  await downloadCanvasPng(
+                    await toSquareCanvas(canvas),
+                    squareFilename(feed),
+                  );
+                  setStatus("1:1 PNG download started.");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export 1:1 PNG.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+          >
+            Export 1:1
           </button>
           <button
             type="button"

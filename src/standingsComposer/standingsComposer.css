@@ -71,6 +71,26 @@
   align-items: flex-end;
   justify-content: flex-end;
   padding: 8px 4px 2px;
+  gap: 8px;
+}
+
+.sc-tabs__search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 1 180px;
+  min-width: 140px;
+}
+
+.sc-tabs__search input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #1a1c21;
+  color: #fafafa;
+  font: inherit;
+  font-size: 13px;
 }
 
 .sc-tabs button {
@@ -327,6 +347,11 @@
 
 .sc-toolbar__actions .sc-btn--primary {
   margin-left: auto;
+}
+
+.sc-toolbar__actions .sc-btn--aside {
+  opacity: 0.82;
+  order: 8;
 }
 
 .sc-saves {
@@ -1517,6 +1542,86 @@ label.sc-chip {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.sc-story-crop__safe {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 9;
+  pointer-events: auto;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sc-story-safe {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sc-story-safe__top,
+.sc-story-safe__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.sc-story-safe__top {
+  top: 0;
+  height: 7%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+}
+
+.sc-story-safe__bottom {
+  bottom: 0;
+  height: 9%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent);
+}
+
+.sc-story-safe__reply {
+  flex: 1 1 auto;
+  margin-right: 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  opacity: 0.85;
+}
+
+.composer-stamp {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 18px;
+  z-index: 7;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  text-align: center;
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.82);
+  pointer-events: none;
 }
 
 .sc-team__shot {

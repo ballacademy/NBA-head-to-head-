@@ -64,6 +64,15 @@ describe("mock trade draft", () => {
     expect(mockTradePickLabel({ ...pick, swap: false, fromTeamId: null })).toBe(
       "2027 1ST",
     );
+    expect(
+      mockTradePickLabel({ ...pick, swap: false, top4: true, fromTeamId: null }),
+    ).toBe("2027 1ST · TOP-4");
+    expect(
+      mockTradePickLabel({ ...pick, cash: true, swap: false, fromTeamId: "DAL" }),
+    ).toBe("CASH · DAL");
+    expect(
+      mockTradePickLabel({ ...pick, twoWay: true, swap: false, fromTeamId: null }),
+    ).toBe("TWO-WAY");
   });
 
   it("adds and removes player and pick slots up to the caps", () => {

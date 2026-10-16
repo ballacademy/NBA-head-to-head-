@@ -10,6 +10,7 @@ import { NBA_TEAMS } from "../standingsComposer/teams";
 import {
   AGE_SPAN,
   ALL_STAR_FILTER,
+  EXAMPLE_PLAYER_IDS,
   EMPTY_PLAYER_FILTERS,
   ROLE_BENCH_FILTER,
   ROLE_STARTER_FILTER,
@@ -103,6 +104,9 @@ describe("active NBA player catalog", () => {
     expect(lebron?.name).toMatch(/LeBron/i);
     const curry = searchPlayers("curry");
     expect(curry.some((player) => player.name.includes("Curry"))).toBe(true);
+    expect(
+      searchPlayers("wemby").some((player) => player.id === EXAMPLE_PLAYER_IDS.wemby),
+    ).toBe(true);
     const lakers = searchPlayers("LAL");
     expect(lakers.length).toBeGreaterThan(5);
     expect(lakers.every((player) => player.team === "LAL")).toBe(true);

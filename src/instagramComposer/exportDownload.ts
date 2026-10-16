@@ -3,6 +3,15 @@ import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
+import {
+  composerShowsStamp,
+  paintComposerStamp,
+  readComposerStamp,
+} from "./composerStamp";
+import {
+  getComposerExportContext,
+  recordComposerRecentFromExport,
+} from "./composerRecents";
 
 export const STORY_WIDTH = 1080;
 export const STORY_HEIGHT = 1920;
@@ -15,11 +24,27 @@ const loadImage = (src: string) =>
     image.src = src;
   });
 
+export const SQUARE_SIZE = 1080;
+
 export const downloadCanvasPng = async (
   canvas: HTMLCanvasElement,
   filename: string,
 ) => {
-  const blob = await canvasToPngBlob(canvas);
+  const mode = getComposerExportContext();
+  const stamp = readComposerStamp();
+  let output = canvas;
+  if (mode && composerShowsStamp(mode) && stamp.on) {
+    const copy = document.createElement("canvas");
+    copy.width = canvas.width;
+    copy.height = canvas.height;
+    const context = copy.getContext("2d");
+    if (context) {
+      context.drawImage(canvas, 0, 0);
+      paintComposerStamp(context, copy.width, copy.height, stamp);
+      output = copy;
+    }
+  }
+  const blob = await canvasToPngBlob(output);
   const objectUrl = URL.createObjectURL(blob);
   try {
     const link = document.createElement("a");
@@ -29,6 +54,7 @@ export const downloadCanvasPng = async (
   } finally {
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
   }
+  recordComposerRecentFromExport(filename);
 };
 
 export const STORY_SAFE_INSET = 56;
@@ -67,5 +93,29 @@ export const toStoryCanvas = async (
   paintBoardField(context, field, STORY_WIDTH, STORY_HEIGHT);
   const rect = storyBoardRect(options.safe === true);
   context.drawImage(board, rect.x, rect.y, rect.width, rect.height);
+  return canvas;
+};
+
+/** Letterbox a 4:5 (or 9:16) board onto a 1:1 metal square. */
+export const toSquareCanvas = async (board: HTMLCanvasElement) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = SQUARE_SIZE;
+  canvas.height = SQUARE_SIZE;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Could not open square canvas");
+  }
+  const field = await loadImage(FIELD_TEXTURE_SRC);
+  paintBoardField(context, field, SQUARE_SIZE, SQUARE_SIZE);
+  const fit = Math.min(SQUARE_SIZE / board.width, SQUARE_SIZE / board.height);
+  const width = board.width * fit;
+  const height = board.height * fit;
+  context.drawImage(
+    board,
+    (SQUARE_SIZE - width) / 2,
+    (SQUARE_SIZE - height) / 2,
+    width,
+    height,
+  );
   return canvas;
 };

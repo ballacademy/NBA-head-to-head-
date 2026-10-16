@@ -20,6 +20,7 @@ import {
   readComposerMode,
   type ComposerMode,
 } from "./composerMode";
+import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
 import { hydrateJsonStorage } from "../lib/browserStorage";
@@ -54,6 +55,10 @@ export function ComposerHub() {
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
+
+  useEffect(() => {
+    setComposerExportContext(mode);
+  }, [mode]);
 
   const select = useCallback((next: ComposerMode) => {
     const href = composerHref(next);

@@ -17,6 +17,7 @@ import {
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
+import { copyGraphicCaption, graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
@@ -194,6 +195,23 @@ export function PotdLeaderboardComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Reset
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() =>
+              void copyGraphicCaption(
+                graphicCaption(
+                  title,
+                  entries.map((entry) => entry.name).filter(Boolean),
+                ),
+              ).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              )
+            }
+          >
+            Copy caption
           </button>
           <button
             type="button"
