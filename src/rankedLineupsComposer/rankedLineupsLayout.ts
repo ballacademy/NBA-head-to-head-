@@ -3,6 +3,7 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import { RANKED_LINEUP_STRIP_COUNT } from "./rankedLineupsState";
 
@@ -10,6 +11,7 @@ export {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
   RANKED_LINEUP_STRIP_COUNT,
 };
 

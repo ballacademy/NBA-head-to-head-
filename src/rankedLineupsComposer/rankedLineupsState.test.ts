@@ -6,6 +6,7 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
   rankedFooterH,
   rankedHeaderH,
   rankedStripH,
@@ -116,6 +117,10 @@ describe("ranked lineups", () => {
         rankedStripH("headline", true) +
         rankedFooterH(true),
     ).toBe(GRAPHIC_HEIGHT);
+    expect(STORY_DESIGN_HEIGHT).toBe(2133);
+    expect(rankedStripH("pill", false, STORY_DESIGN_HEIGHT)).toBe(
+      STORY_DESIGN_HEIGHT - rankedHeaderH("pill") - rankedFooterH(false),
+    );
   });
 
   it("fills a position from the picker and tags used players by slot", () => {
