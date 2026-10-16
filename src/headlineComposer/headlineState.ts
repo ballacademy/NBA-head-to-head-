@@ -15,18 +15,31 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { type TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
+  HL_FAMILY_SIZE,
+  HL_FAMILY_TRACK,
+  HL_NICK_AUTO_MIN,
+  fitStackedName,
+  headlinePanelTypeWidth,
+  parseHeadlineBoardMode,
   parseHeadlineKickerMode,
   parseHeadlineLockup,
   parseHeadlineNamePlacement,
+  parseHeadlineNameScope,
+  parseHeadlineNameStack,
+  parseHeadlinePanelLeft,
   parseHeadlinePlateColor,
   parseHeadlineSubjectMode,
   parseHeadlineWatermark,
+  headlineDateKicker,
   wrapHeadlineBody,
+  type HeadlineBoardMode,
   type HeadlineKickerMode,
   type HeadlineLockup,
   type HeadlineNamePlacement,
+  type HeadlineNameScope,
+  type HeadlineNameStack,
   type HeadlinePlateColor,
   type HeadlineSubjectMode,
   type HeadlineWatermark,
@@ -47,13 +60,44 @@ export {
   type HeadlineKickerMode,
   parseHeadlineSubjectMode,
   type HeadlineSubjectMode,
+  parseHeadlineBoardMode,
+  type HeadlineBoardMode,
+  parseHeadlineNameScope,
+  type HeadlineNameScope,
+  parseHeadlineNameStack,
+  type HeadlineNameStack,
+  parseHeadlinePanelLeft,
 };
 
 export const DEFAULT_HEADLINE = "BREAKING";
 export const DEFAULT_HEADLINE_BODY = "";
 export const HEADLINE_BODY_MAX = 180;
 export const HEADLINE_MAX = 48;
+export const HEADLINE_NAME_MAX = 36;
+export const HEADLINE_STORY_MAX = 72;
+export const HEADLINE_META_MAX = 48;
+export const HEADLINE_SOURCE_MAX = 28;
 export const DEFAULT_HEADLINE_WATERMARK: HeadlineWatermark = "faint";
+
+export const HEADLINE_SOURCE_PRESETS = [
+  "ESPN",
+  "Woj",
+  "Shams",
+  "Shams / ESPN",
+  "Woj / ESPN",
+  "The Athletic",
+] as const;
+
+/** Shorter lockups when the nickname is too long for the panel. */
+export const TEAM_SHORT_LOCKUP: Record<string, string> = {
+  MIN: "Wolves",
+  POR: "Blazers",
+  PHI: "Sixers",
+  GSW: "Dubs",
+  NOP: "Pels",
+  LAC: "Clips",
+  MEM: "Grizz",
+};
 
 export const HEADLINE_CAPTION_PRESETS: Record<string, string> = {
   BREAKING: "Breaking.",
@@ -68,7 +112,10 @@ export const HEADLINE_CAPTION_PRESETS: Record<string, string> = {
   "CAREER NIGHT": "Career night.",
   "DEFENSIVE CLINIC": "Defensive clinic.",
   OUT: "Out.",
+  DOUBTFUL: "Doubtful.",
   QUESTIONABLE: "Questionable.",
+  REST: "Rest.",
+  GTD: "Game-time decision.",
   "MASSIVE LEAP": "The leap is real.",
   "STATEMENT WIN": "Statement made.",
   "HE’S HIM": "He’s him.",
@@ -95,6 +142,16 @@ export interface HeadlineDraft {
   showOpponentMark?: boolean;
   kickerMode?: HeadlineKickerMode;
   subjectMode?: HeadlineSubjectMode;
+  nameScope?: HeadlineNameScope;
+  nameStack?: HeadlineNameStack;
+  boardMode?: HeadlineBoardMode;
+  panelLeft?: boolean;
+  secondTeamId?: string | null;
+  storyLine?: string;
+  showMeta?: boolean;
+  metaLine?: string;
+  sourceCredit?: string;
+  photoBw?: boolean;
   opponentId?: string | null;
   gameDate?: string | null;
 }
@@ -135,6 +192,16 @@ export const defaultHeadlineDraft = (): HeadlineDraft => ({
   showOpponentMark: false,
   kickerMode: "off",
   subjectMode: "player",
+  nameScope: "player",
+  nameStack: "hurts",
+  boardMode: "split",
+  panelLeft: false,
+  secondTeamId: null,
+  storyLine: "",
+  showMeta: false,
+  metaLine: "",
+  sourceCredit: "",
+  photoBw: false,
   opponentId: null,
   gameDate: null,
 });
@@ -149,6 +216,18 @@ export const normalizeHeadlineDraft = (draft: HeadlineDraft): HeadlineDraft => (
   showOpponentMark: draft.showOpponentMark === true,
   kickerMode: parseHeadlineKickerMode(draft.kickerMode),
   subjectMode: parseHeadlineSubjectMode(draft.subjectMode),
+  nameScope: parseHeadlineNameScope(
+    draft.nameScope ?? (draft.subjectMode === "team" ? "auto" : "player"),
+  ),
+  nameStack: parseHeadlineNameStack(draft.nameStack),
+  boardMode: parseHeadlineBoardMode(draft.boardMode),
+  panelLeft: parseHeadlinePanelLeft(draft.panelLeft),
+  secondTeamId: draft.secondTeamId ?? null,
+  storyLine: typeof draft.storyLine === "string" ? draft.storyLine : "",
+  showMeta: draft.showMeta === true,
+  metaLine: typeof draft.metaLine === "string" ? draft.metaLine : "",
+  sourceCredit: typeof draft.sourceCredit === "string" ? draft.sourceCredit : "",
+  photoBw: draft.photoBw === true,
   opponentId: draft.opponentId ?? null,
   gameDate: draft.gameDate ?? null,
 });
@@ -161,6 +240,106 @@ export const headlineLabel = (headline: string) =>
 
 export const clipHeadlineBody = (value: string) =>
   value.slice(0, HEADLINE_BODY_MAX);
+
+export const clipHeadlineName = (value: string) =>
+  value.replace(/[\r\n]+/g, " ").slice(0, HEADLINE_NAME_MAX);
+
+export const clipHeadlineStory = (value: string) =>
+  value.replace(/[\r\n]+/g, " ").slice(0, HEADLINE_STORY_MAX);
+
+export const clipHeadlineMeta = (value: string) =>
+  value.replace(/[\r\n]+/g, " ").slice(0, HEADLINE_META_MAX);
+
+export const clipHeadlineSource = (value: string) =>
+  value.replace(/[\r\n]+/g, " ").slice(0, HEADLINE_SOURCE_MAX);
+
+const titleCaseOverlay = (value: string) =>
+  value
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => {
+      if (/^\d/.test(word)) {
+        return word.toUpperCase() === "76ERS" ? "76ers" : word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+
+export const teamShortLockup = (team: NbaTeam | null) => {
+  if (!team) {
+    return "";
+  }
+  return TEAM_SHORT_LOCKUP[team.id] ?? team.shortName;
+};
+
+export const pickHeadlineTeamOverlay = (
+  team: NbaTeam | null,
+  scope: HeadlineNameScope = "auto",
+) => {
+  if (!team) {
+    return { firstName: "", lastName: "" };
+  }
+  const marks = splitTeamWordmark(team);
+  const city = titleCaseOverlay(marks.city);
+  const nick = titleCaseOverlay(marks.nick);
+  const short = titleCaseOverlay(teamShortLockup(team));
+  if (scope === "city") {
+    return { firstName: city, lastName: "" };
+  }
+  if (scope === "nick") {
+    return { firstName: city, lastName: nick };
+  }
+  if (scope === "short") {
+    return { firstName: city, lastName: short };
+  }
+  const typeW = headlinePanelTypeWidth();
+  const nickSize = fitStackedName(nick, HL_FAMILY_SIZE, HL_FAMILY_TRACK, typeW);
+  if (nickSize >= HL_NICK_AUTO_MIN) {
+    return { firstName: city, lastName: nick };
+  }
+  return { firstName: city, lastName: short };
+};
+
+export const headlineOverlayFromTeam = (team: NbaTeam | null) =>
+  pickHeadlineTeamOverlay(team, "auto");
+
+const overlayIsEmpty = (draft: Pick<HeadlineDraft, "firstName" | "lastName">) =>
+  !draft.firstName.trim() && !draft.lastName.trim();
+
+/** Switch stacked type only — photo, logo, and Team stay. */
+export const applyHeadlineNameScope = (
+  draft: HeadlineDraft,
+  scope: HeadlineNameScope,
+): HeadlineDraft => {
+  if (scope === "player") {
+    const player = getPlayer(draft.playerId);
+    if (!player) {
+      return { ...draft, nameScope: "player", subjectMode: "player" };
+    }
+    const names = splitPlayerName(player.name);
+    return {
+      ...draft,
+      nameScope: "player",
+      subjectMode: "player",
+      firstName: names.firstName,
+      lastName: names.lastName,
+    };
+  }
+  return {
+    ...draft,
+    nameScope: scope,
+    subjectMode: "team",
+    ...pickHeadlineTeamOverlay(getTeam(draft.teamId), scope),
+  };
+};
+
+export const applyHeadlineSubject = (
+  draft: HeadlineDraft,
+  mode: HeadlineSubjectMode,
+): HeadlineDraft =>
+  applyHeadlineNameScope(draft, mode === "team" ? "auto" : "player");
 
 export const headlinePlayerName = (draft: Pick<HeadlineDraft, "firstName" | "lastName">) =>
   `${draft.firstName} ${draft.lastName}`.replace(/\s+/g, " ").trim();
@@ -182,6 +361,7 @@ export const fillHeadlineFromPlayer = (
     customPhoto: keep,
     pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
     subjectMode: "player",
+    nameScope: "player",
     watermark: parseHeadlineWatermark(previous.watermark),
   };
 };
@@ -194,17 +374,18 @@ export const fillHeadlineFromTeam = (
   return {
     ...previous,
     teamId: team?.id ?? teamId,
-    playerId: null,
-    firstName: "",
-    lastName: "",
-    photoSrc: previous.customPhoto ? previous.photoSrc : null,
-    customPhoto: previous.customPhoto,
-    pan: previous.customPhoto ? { ...previous.pan } : { ...DEFAULT_CUSTOM_PAN },
     subjectMode: "team",
+    nameScope: previous.nameScope === "player" ? "auto" : previous.nameScope,
+    boardMode:
+      previous.boardMode === "team-only" ? "team-only" : previous.boardMode,
+    ...pickHeadlineTeamOverlay(
+      team,
+      previous.nameScope === "player" ? "auto" : previous.nameScope,
+    ),
   };
 };
 
-/** Overlay a team on a picked player (rumor/trade). Pick still defaults the roster club. */
+/** Logo and panel color follow Team. Overlay type stays unless it is still blank. */
 export const setHeadlineTeamId = (
   draft: HeadlineDraft,
   teamId: string | null,
@@ -212,7 +393,15 @@ export const setHeadlineTeamId = (
   if (!teamId) {
     return { ...draft, teamId: null };
   }
-  return { ...draft, teamId: getTeam(teamId)?.id ?? teamId };
+  const nextId = getTeam(teamId)?.id ?? teamId;
+  if (overlayIsEmpty(draft)) {
+    return {
+      ...draft,
+      teamId: nextId,
+      ...headlineOverlayFromTeam(getTeam(nextId)),
+    };
+  }
+  return { ...draft, teamId: nextId };
 };
 
 export const splitTeamWordmark = (team: NbaTeam | null) => {
@@ -236,6 +425,27 @@ export const formatHeadlineScore = (playerScore: string, opponentScore: string) 
 
 export const formatHeadlineRecord = (record: StandingRecord) =>
   `${record.wins}${SCORE_DASH}${record.losses}`;
+
+export const formatHeadlineMeta = (
+  record: StandingRecord | null,
+  gameDate?: string | null,
+  game?: LastGame | null,
+) => {
+  const bits: string[] = [];
+  if (record) {
+    bits.push(formatHeadlineRecord(record));
+  }
+  if (game?.result) {
+    bits.push(
+      `${game.result} ${formatHeadlineScore(game.playerScore, game.opponentScore)}`,
+    );
+  }
+  const date = headlineDateKicker(gameDate ?? game?.gameDate, "date");
+  if (date) {
+    bits.push(date);
+  }
+  return bits.join(" · ");
+};
 
 export const formatHeadlineBodyLines = (
   team: NbaTeam | null,

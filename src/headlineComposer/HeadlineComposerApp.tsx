@@ -39,25 +39,38 @@ import {
 } from "../playerOfTheDayComposer/lastGame";
 import { everyTeamCurrentSeason } from "../everyTeamComposer/historicalRosters";
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
-import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { HeadlineGraphic } from "./HeadlineGraphic";
 import { exportHeadlinePng } from "./exportHeadlinePng";
 import { renderHeadlineCanvas } from "./renderHeadlineCanvas";
-import { parseHeadlineSubjectMode } from "./headlineLayout";
 import {
+  parseHeadlineBoardMode,
+  parseHeadlineNameScope,
+  parseHeadlineNameStack,
+} from "./headlineLayout";
+import {
+  applyHeadlineNameScope,
   clearHeadlineSubject,
   clipHeadlineBody,
+  clipHeadlineMeta,
+  clipHeadlineName,
+  clipHeadlineSource,
+  clipHeadlineStory,
   defaultHeadlineDraft,
   fillHeadlineFromPlayer,
-  fillHeadlineFromTeam,
   formatHeadlineBody,
+  formatHeadlineMeta,
   hasCustomPhoto,
   setHeadlineTeamId,
   HEADLINE_BODY_MAX,
   HEADLINE_MAX,
+  HEADLINE_META_MAX,
+  HEADLINE_NAME_MAX,
+  HEADLINE_SOURCE_PRESETS,
+  HEADLINE_SOURCE_MAX,
+  HEADLINE_STORY_MAX,
   headlineCaptionFor,
   headlinePlayerName,
   isHeadlineDraft,
@@ -93,7 +106,14 @@ const renderInput = (
   lastName: draft.lastName,
   photoSrc: draft.photoSrc,
   pan: draft.pan,
-  subjectMode: parseHeadlineSubjectMode(draft.subjectMode),
+  secondTeamId: draft.secondTeamId ?? null,
+  boardMode: parseHeadlineBoardMode(draft.boardMode),
+  panelLeft: Boolean(draft.panelLeft),
+  nameStack: parseHeadlineNameStack(draft.nameStack),
+  storyLine: draft.storyLine ?? "",
+  metaLine: draft.showMeta ? (draft.metaLine ?? "") : "",
+  sourceCredit: draft.sourceCredit ?? "",
+  photoBw: draft.photoBw === true,
   look,
   purpleFlair,
   photoGrade,
@@ -119,7 +139,10 @@ export function HeadlineComposerApp() {
   const [storyCrop, setStoryCrop] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<HeadlineDraft>();
   const night = useComposerNight();
-  const subject = parseHeadlineSubjectMode(draft.subjectMode);
+  const nameScope = parseHeadlineNameScope(
+    draft.nameScope ?? (draft.subjectMode === "team" ? "auto" : "player"),
+  );
+  const boardMode = parseHeadlineBoardMode(draft.boardMode);
 
   useEffect(() => {
     document.title = "Headline graphic";
@@ -141,18 +164,11 @@ export function HeadlineComposerApp() {
 
   const fillAutoBody = async (next: HeadlineDraft, onDate = night.date) => {
     const team = getTeam(next.teamId);
-    const playerMode = parseHeadlineSubjectMode(next.subjectMode) !== "team";
-    if (playerMode && !next.playerId) {
-      setStatus(
-        "Pick a player first — Fill last night writes that player’s last game.",
-      );
-      return;
-    }
     if (!team) {
       setStatus(
-        playerMode
+        next.playerId
           ? "Pick a player first — Fill last night writes that player’s last game."
-          : "Pick a team first — Fill last night writes last night’s score.",
+          : "Pick a player or team first — Fill last night writes last night’s score.",
       );
       return;
     }
@@ -181,6 +197,15 @@ export function HeadlineComposerApp() {
               body: clipHeadlineBody(body),
               opponentId: game?.opponentId || current.opponentId || null,
               gameDate: game?.gameDate || current.gameDate || null,
+              metaLine: current.showMeta
+                ? clipHeadlineMeta(
+                    formatHeadlineMeta(
+                      teamNight.record,
+                      game?.gameDate || current.gameDate,
+                      game,
+                    ),
+                  )
+                : current.metaLine,
             }
           : current,
       );
@@ -248,11 +273,11 @@ export function HeadlineComposerApp() {
   };
 
   useEffect(() => {
-    if (!pickerOpen || subject === "team") {
+    if (!pickerOpen) {
       return;
     }
     void night.ensureStandouts(night.date);
-  }, [pickerOpen, subject, night.date, night.ensureStandouts]);
+  }, [pickerOpen, night.date, night.ensureStandouts]);
 
   const handlePick = (playerId: string) => {
     const player = getPlayer(playerId);
@@ -265,15 +290,6 @@ export function HeadlineComposerApp() {
       return;
     }
     commitPick(player.id, false);
-  };
-
-  const handleTeamPick = (teamId: string) => {
-    push(draft);
-    const next = fillHeadlineFromTeam(teamId, draft);
-    setDraft(next);
-    setPickerOpen(false);
-    setStatus(`Team lockup set to ${getTeam(teamId)?.name ?? teamId}.`);
-    void fillAutoBody(next);
   };
 
   useEffect(() => {
@@ -338,6 +354,51 @@ export function HeadlineComposerApp() {
             }
           />
         </label>
+        <label className="sc-field">
+          Line 1
+          <input
+            value={draft.firstName}
+            maxLength={HEADLINE_NAME_MAX}
+            aria-label="Stacked name line 1"
+            placeholder="First / city"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                firstName: clipHeadlineName(event.target.value),
+              }))
+            }
+          />
+        </label>
+        <label className="sc-field">
+          Line 2
+          <input
+            value={draft.lastName}
+            maxLength={HEADLINE_NAME_MAX}
+            aria-label="Stacked name line 2"
+            placeholder="Last / nickname"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                lastName: clipHeadlineName(event.target.value),
+              }))
+            }
+          />
+        </label>
+        <label className="sc-field sc-field--wide">
+          Story line
+          <input
+            value={draft.storyLine ?? ""}
+            maxLength={HEADLINE_STORY_MAX}
+            aria-label="Headline story line"
+            placeholder="One-line why"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                storyLine: clipHeadlineStory(event.target.value),
+              }))
+            }
+          />
+        </label>
           </>
         }
         data={
@@ -359,32 +420,24 @@ export function HeadlineComposerApp() {
             type="button"
             className="sc-chip"
             onClick={() => void fillAutoBody(draft)}
-            disabled={
-              subject === "team" ? !draft.teamId : !draft.playerId
-            }
+            disabled={!draft.playerId && !draft.teamId}
             title={
-              subject === "team"
-                ? draft.teamId
+              draft.playerId
+                ? "Fill the body from this player’s last game"
+                : draft.teamId
                   ? "Fill the body from this team’s last game"
-                  : "Pick a team first"
-                : draft.playerId
-                  ? "Fill the body from this player’s last game"
                   : "Pick a player first"
             }
             aria-label={
-              subject === "team"
-                ? draft.teamId
-                  ? "Fill last night"
-                  : "Fill last night (pick a team first)"
-                : draft.playerId
-                  ? "Fill last night"
-                  : "Fill last night (pick a player first)"
+              draft.playerId || draft.teamId
+                ? "Fill last night"
+                : "Fill last night (pick a player first)"
             }
           >
             Fill last night
           </button>
           <ComposerPhotoHud
-            pickLabel={subject === "team" ? "Pick team" : "Pick player"}
+            pickLabel="Pick player"
             onPick={() => setPickerOpen(true)}
             onUpload={(dataUrl) => {
               setDraft((current) => setHeadlinePhoto(current, dataUrl));
@@ -396,21 +449,21 @@ export function HeadlineComposerApp() {
         filters={
           <>
         <label className="sc-field">
-          Subject
+          <span className="sc-toolbar__eyebrow">Stacked name</span>
           <select
-            value={subject}
-            aria-label="Headline subject"
+            value={nameScope}
+            aria-label="Stacked name"
+            title="Stacked type only. Photo and logo stay. Auto picks city/nickname/short so long names fit."
             onChange={(event) => {
-              const nextMode = parseHeadlineSubjectMode(event.target.value);
-              setDraft((current) =>
-                nextMode === "team" && current.teamId
-                  ? fillHeadlineFromTeam(current.teamId, { ...current, subjectMode: nextMode })
-                  : { ...current, subjectMode: nextMode },
-              );
+              const next = parseHeadlineNameScope(event.target.value);
+              setDraft((current) => applyHeadlineNameScope(current, next));
             }}
           >
-            <option value="player">Player</option>
-            <option value="team">Team only</option>
+            <option value="player">Player name</option>
+            <option value="auto">Team auto</option>
+            <option value="city">City</option>
+            <option value="nick">Nickname</option>
+            <option value="short">Short name</option>
           </select>
         </label>
         <label className="sc-field">
@@ -432,6 +485,160 @@ export function HeadlineComposerApp() {
               </option>
             ))}
           </select>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Flip</span>
+          <button
+            type="button"
+            className={draft.panelLeft ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={Boolean(draft.panelLeft)}
+            aria-label="Panel on the left"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                panelLeft: !current.panelLeft,
+              }))
+            }
+          >
+            {draft.panelLeft ? "Panel left" : "Panel right"}
+          </button>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Team only</span>
+          <button
+            type="button"
+            className={boardMode === "team-only" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={boardMode === "team-only"}
+            aria-label="Team-only franchise layout"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                boardMode: current.boardMode === "team-only" ? "split" : "team-only",
+              }))
+            }
+          >
+            {boardMode === "team-only" ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Trade plate</span>
+          <button
+            type="button"
+            className={boardMode === "trade" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={boardMode === "trade"}
+            aria-label="Two-team trade plate"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                boardMode: current.boardMode === "trade" ? "split" : "trade",
+              }))
+            }
+          >
+            {boardMode === "trade" ? "On" : "Off"}
+          </button>
+        </label>
+        {boardMode === "trade" ? (
+          <label className="sc-field">
+            Destination
+            <select
+              value={draft.secondTeamId ?? ""}
+              aria-label="Destination team"
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  secondTeamId: event.target.value || null,
+                }))
+              }
+            >
+              <option value="">None</option>
+              {NBA_TEAMS.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Name stack</span>
+          <button
+            type="button"
+            className={
+              parseHeadlineNameStack(draft.nameStack) === "hurts"
+                ? "sc-chip is-on"
+                : "sc-chip"
+            }
+            aria-pressed={parseHeadlineNameStack(draft.nameStack) === "hurts"}
+            aria-label="Last name huge"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                nameStack:
+                  parseHeadlineNameStack(current.nameStack) === "hurts"
+                    ? "even"
+                    : "hurts",
+              }))
+            }
+          >
+            {parseHeadlineNameStack(draft.nameStack) === "hurts"
+              ? "Last name huge"
+              : "Full name"}
+          </button>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Record line</span>
+          <button
+            type="button"
+            className={draft.showMeta ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={Boolean(draft.showMeta)}
+            aria-label="Record line under the name"
+            onClick={() => {
+              const nextOn = !draft.showMeta;
+              setDraft((current) => ({ ...current, showMeta: nextOn }));
+              if (nextOn) {
+                void fillAutoBody({ ...draft, showMeta: true });
+              }
+            }}
+          >
+            {draft.showMeta ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
+          Source
+          <select
+            value={draft.sourceCredit ?? ""}
+            aria-label="Headline source credit"
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                sourceCredit: clipHeadlineSource(event.target.value),
+              }))
+            }
+          >
+            <option value="">Off</option>
+            {HEADLINE_SOURCE_PRESETS.map((credit) => (
+              <option key={credit} value={credit}>
+                {credit}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">B&W photo</span>
+          <button
+            type="button"
+            className={draft.photoBw ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={Boolean(draft.photoBw)}
+            aria-label="Black and white photo"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                photoBw: !current.photoBw,
+              }))
+            }
+          >
+            {draft.photoBw ? "On" : "Off"}
+          </button>
         </label>
           </>
         }
@@ -592,12 +799,20 @@ export function HeadlineComposerApp() {
             headline={draft.headline}
             body={draft.body}
             teamId={draft.teamId}
+            secondTeamId={draft.secondTeamId ?? null}
             firstName={draft.firstName}
             lastName={draft.lastName}
             photoSrc={draft.photoSrc}
             customPhoto={draft.customPhoto}
             pan={draft.pan}
-            subjectMode={subject}
+            boardMode={boardMode}
+            panelLeft={Boolean(draft.panelLeft)}
+            nameStack={parseHeadlineNameStack(draft.nameStack)}
+            storyLine={draft.storyLine ?? ""}
+            showMeta={Boolean(draft.showMeta)}
+            metaLine={draft.showMeta ? (draft.metaLine ?? "") : ""}
+            sourceCredit={draft.sourceCredit ?? ""}
+            photoBw={draft.photoBw === true}
             look={look}
             purpleFlair={purpleFlair}
             photoGrade={photoGrade}
@@ -608,6 +823,36 @@ export function HeadlineComposerApp() {
               setDraft((current) => ({ ...current, headline }))
             }
             onBodyChange={(body) => setDraft((current) => ({ ...current, body }))}
+            onFirstNameChange={(firstName) =>
+              setDraft((current) => ({
+                ...current,
+                firstName: clipHeadlineName(firstName),
+              }))
+            }
+            onLastNameChange={(lastName) =>
+              setDraft((current) => ({
+                ...current,
+                lastName: clipHeadlineName(lastName),
+              }))
+            }
+            onStoryChange={(storyLine) =>
+              setDraft((current) => ({
+                ...current,
+                storyLine: clipHeadlineStory(storyLine),
+              }))
+            }
+            onMetaChange={(metaLine) =>
+              setDraft((current) => ({
+                ...current,
+                metaLine: clipHeadlineMeta(metaLine),
+              }))
+            }
+            onSourceChange={(sourceCredit) =>
+              setDraft((current) => ({
+                ...current,
+                sourceCredit: clipHeadlineSource(sourceCredit),
+              }))
+            }
             onPan={(pan) => setDraft((current) => ({ ...current, pan }))}
             onUpload={(dataUrl) => {
               setDraft((current) => setHeadlinePhoto(current, dataUrl));
@@ -629,26 +874,7 @@ export function HeadlineComposerApp() {
         </div>
       </main>
 
-      {pickerOpen && subject === "team" ? (
-        <TeamPicker
-          heading="Pick a team"
-          hint="Sets the team-color panel and huge logo. Skip the player — upload or paste the photo."
-          currentId={draft.teamId}
-          usedLabels={draft.teamId ? { [draft.teamId]: "Headline" } : {}}
-          onPick={handleTeamPick}
-          onClear={() => {
-            push(draft);
-            setDraft((current) => ({
-              ...clearHeadlineSubject(current),
-              teamId: null,
-              subjectMode: "team",
-            }));
-            setPickerOpen(false);
-          }}
-          onClose={closePicker}
-        />
-      ) : null}
-      {pickerOpen && subject !== "team" ? (
+      {pickerOpen ? (
         <PlayerPicker
           heading="Pick a player"
             hint="Sets the team panel from the player (Gobert = Wolves) and last-night body. ESPN headshot is a stand-in — paste an action shot."

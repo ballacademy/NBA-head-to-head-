@@ -26,6 +26,8 @@ import {
   plateInkHex,
 } from "./headlineLayout";
 import {
+  applyHeadlineNameScope,
+  applyHeadlineSubject,
   clipHeadlineBody,
   DEFAULT_HEADLINE,
   defaultHeadlineDraft,
@@ -33,13 +35,16 @@ import {
   fillHeadlineFromTeam,
   formatHeadlineBody,
   formatHeadlineBodyLines,
+  formatHeadlineMeta,
   HEADLINE_BODY_MAX,
   headlineBodyLines,
   headlineCaptionFor,
   headlineLabel,
   normalizeHeadlineDraft,
+  pickHeadlineTeamOverlay,
   setHeadlineTeamId,
   splitTeamWordmark,
+  TEAM_SHORT_LOCKUP,
 } from "./headlineState";
 
 const lastNight = {
@@ -102,7 +107,10 @@ describe("headline composer", () => {
     expect(HEADLINE_TITLE_PRESETS).toContain("CAREER NIGHT");
     expect(HEADLINE_TITLE_PRESETS).toContain("DEFENSIVE CLINIC");
     expect(HEADLINE_TITLE_PRESETS).toContain("OUT");
+    expect(HEADLINE_TITLE_PRESETS).toContain("DOUBTFUL");
     expect(HEADLINE_TITLE_PRESETS).toContain("QUESTIONABLE");
+    expect(HEADLINE_TITLE_PRESETS).toContain("REST");
+    expect(HEADLINE_TITLE_PRESETS).toContain("GTD");
     expect(HEADLINE_TITLE_PRESETS).toContain("STATEMENT WIN");
     expect(parseHeadlineWatermark(undefined)).toBe("faint");
     expect(headlineCaptionFor("BREAKING", "")).toContain("Breaking.");
@@ -196,8 +204,10 @@ describe("headline composer", () => {
     const next = fillHeadlineFromTeam("SAS", defaultHeadlineDraft());
     expect(next.teamId).toBe("SAS");
     expect(next.playerId).toBeNull();
-    expect(next.firstName).toBe("");
+    expect(next.firstName).toBe("San Antonio");
+    expect(next.lastName).toBe("Spurs");
     expect(next.subjectMode).toBe("team");
+    expect(next.nameScope).toBe("auto");
   });
 
   it("splits photo left of a huge-logo panel with no overlapping type", () => {
@@ -295,5 +305,174 @@ describe("headline composer", () => {
     expect(normalizeHeadlineDraft(defaultHeadlineDraft()).showOpponentMark).toBe(
       false,
     );
+  });
+
+  it("auto-picks Wolves so Timberwolves stays inside the panel", () => {
+    const wolves = getTeam("MIN")!;
+    expect(splitTeamWordmark(wolves)).toEqual({
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+    });
+    expect(TEAM_SHORT_LOCKUP.MIN).toBe("Wolves");
+    expect(pickHeadlineTeamOverlay(wolves, "city")).toEqual({
+      firstName: "Minnesota",
+      lastName: "",
+    });
+    expect(pickHeadlineTeamOverlay(wolves, "nick")).toEqual({
+      firstName: "Minnesota",
+      lastName: "Timberwolves",
+    });
+    expect(pickHeadlineTeamOverlay(wolves, "short")).toEqual({
+      firstName: "Minnesota",
+      lastName: "Wolves",
+    });
+    expect(pickHeadlineTeamOverlay(wolves, "auto")).toEqual({
+      firstName: "Minnesota",
+      lastName: "Wolves",
+    });
+    const auto = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Minnesota",
+      lastName: "Wolves",
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+      shortName: "Wolves",
+    });
+    expect(auto.family.text).toBe("WOLVES");
+    expect(auto.family.x + auto.family.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(auto.given.x + auto.given.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(auto.family.size).toBeGreaterThanOrEqual(58);
+    const nick = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Minnesota",
+      lastName: "Timberwolves",
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+      shortName: "Wolves",
+    });
+    expect(nick.family.lines.every((line) => line.length > 0)).toBe(true);
+    expect(nick.family.x + nick.family.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(nick.family.size).toBeGreaterThanOrEqual(14);
+    const story = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Minnesota",
+      lastName: "Wolves",
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+      shortName: "Wolves",
+      boardH: STORY_DESIGN_HEIGHT,
+    });
+    expect(story.family.text).toBe("WOLVES");
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(story))).toEqual([]);
+  });
+
+  it("keeps stacked type editable when Team only changes the logo", () => {
+    const gobert = getPlayer("3032976")!;
+    const picked = fillHeadlineFromPlayer(gobert, defaultHeadlineDraft());
+    const heat = setHeadlineTeamId(picked, "MIA");
+    expect(heat.teamId).toBe("MIA");
+    expect(heat.firstName).toBe("Rudy");
+    expect(heat.lastName).toBe(picked.lastName);
+    expect(heat.photoSrc).toBe(picked.photoSrc);
+    const typed = { ...heat, firstName: "Minnesota", lastName: "Wolves" };
+    const stillHeat = setHeadlineTeamId(typed, "MIA");
+    expect(stillHeat.firstName).toBe("Minnesota");
+    expect(stillHeat.lastName).toBe("Wolves");
+    const scoped = applyHeadlineNameScope(stillHeat, "short");
+    expect(scoped.teamId).toBe("MIA");
+    expect(scoped.playerId).toBe(picked.playerId);
+    expect(scoped.firstName).toBe("Miami");
+    expect(scoped.lastName).toBe("Heat");
+    const subject = applyHeadlineSubject(picked, "team");
+    expect(subject.nameScope).toBe("auto");
+    expect(subject.subjectMode).toBe("team");
+    expect(subject.playerId).toBe(picked.playerId);
+    expect(subject.photoSrc).toBe(picked.photoSrc);
+  });
+
+  it("mirrors, trades, and drops the photo for franchise news", () => {
+    const split = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Jalen",
+      lastName: "Hurts",
+    });
+    const mirror = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Jalen",
+      lastName: "Hurts",
+      panelLeft: true,
+    });
+    expect(mirror.panelLeft).toBe(true);
+    expect(mirror.panel.x).toBe(0);
+    expect(mirror.photo.x).toBe(mirror.panel.w);
+    expect(mirror.photo.w + mirror.panel.w).toBe(GRAPHIC_WIDTH);
+    expect(mirror.chevron.mirror).toBe(true);
+    expect(split.panelLeft).toBe(false);
+    expect(split.given.size).toBeLessThan(split.family.size);
+
+    const even = headlineSplitLayout({
+      headline: "BREAKING",
+      firstName: "Jalen",
+      lastName: "Hurts",
+      nameStack: "even",
+    });
+    expect(even.given.size).toBe(even.family.size);
+
+    const trade = headlineSplitLayout({
+      headline: "TRADE",
+      firstName: "Rudy",
+      lastName: "Gobert",
+      boardMode: "trade",
+    });
+    expect(trade.boardMode).toBe("trade");
+    expect(trade.photo.w).toBeGreaterThan(0);
+    expect(trade.panel.w).toBe(trade.panelB.w);
+    expect(trade.panel.w + trade.panelB.w).toBe(trade.photo.w > 0 ? GRAPHIC_WIDTH - trade.photo.w : GRAPHIC_WIDTH);
+    expect(trade.logoB.size).toBeGreaterThan(0);
+
+    const franchise = headlineSplitLayout({
+      headline: "HIRED",
+      firstName: "Minnesota",
+      lastName: "Wolves",
+      boardMode: "team-only",
+    });
+    expect(franchise.photo.w).toBe(0);
+    expect(franchise.panel.x).toBe(0);
+    expect(franchise.panel.w).toBe(GRAPHIC_WIDTH);
+    expect(franchise.given.x).toBeGreaterThan(HL_SPLIT_X);
+    expect(franchise.logo.size).toBeGreaterThan(400);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(franchise))).toEqual(
+      [],
+    );
+  });
+
+  it("keeps a second story line, record, and source off the name", () => {
+    const layout = headlineSplitLayout({
+      headline: "OUT",
+      firstName: "Anthony",
+      lastName: "Edwards",
+      storyLine: "KNEE",
+      metaLine: "2–1 · OCT 14",
+      sourceCredit: "Shams",
+      body: "WILL NOT PLAY TONIGHT",
+    });
+    expect(layout.story.text).toBe("KNEE");
+    expect(layout.story.y).toBeGreaterThan(layout.chevron.y + layout.chevron.h);
+    expect(layout.given.y).toBeGreaterThanOrEqual(layout.story.y + layout.story.h);
+    expect(layout.family.y).toBeGreaterThanOrEqual(layout.given.y + layout.given.h);
+    expect(layout.meta.y).toBeGreaterThanOrEqual(layout.family.y + layout.family.h);
+    expect(layout.body.y).toBeGreaterThanOrEqual(layout.meta.y + layout.meta.h);
+    expect(layout.source.text).toBe("SHAMS");
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(layout))).toEqual([]);
+    expect(formatHeadlineMeta({ wins: 2, losses: 1 }, "2026-10-14", lastNight)).toMatch(
+      /2–1/,
+    );
+    const draft = defaultHeadlineDraft();
+    expect(draft.sourceCredit).toBe("");
+    expect(draft.showMeta).toBe(false);
+    expect(draft.photoBw).toBe(false);
+    expect(draft.panelLeft).toBe(false);
+    expect(draft.boardMode).toBe("split");
+    expect(draft.nameStack).toBe("hurts");
   });
 });

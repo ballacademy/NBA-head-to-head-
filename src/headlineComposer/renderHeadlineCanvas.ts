@@ -5,8 +5,8 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -28,13 +28,19 @@ import {
   HL_FAMILY_TRACK,
   HL_HEADLINE_TRACK,
   HL_NAME_TRACK,
+  HL_SOURCE_SIZE,
   headlinePanelHex,
   headlineSplitLayout,
-  type HeadlineSubjectMode,
+  parseHeadlineBoardMode,
+  parseHeadlineNameStack,
+  parseHeadlinePanelLeft,
+  type HeadlineBoardMode,
+  type HeadlineNameStack,
 } from "./headlineLayout";
 import {
   headlineLabel,
   splitTeamWordmark,
+  teamShortLockup,
   type HeadlineDraft,
 } from "./headlineState";
 
@@ -69,25 +75,95 @@ const chevronPath = (
   w: number,
   h: number,
   rise: number,
+  mirror = false,
 ) => {
   context.beginPath();
-  context.moveTo(x, y + h / 2);
-  context.lineTo(x + rise, y);
-  context.lineTo(x + w, y);
-  context.lineTo(x + w, y + h);
-  context.lineTo(x + rise, y + h);
+  if (mirror) {
+    context.moveTo(x, y);
+    context.lineTo(x + w - rise, y);
+    context.lineTo(x + w, y + h / 2);
+    context.lineTo(x + w - rise, y + h);
+    context.lineTo(x, y + h);
+  } else {
+    context.moveTo(x, y + h / 2);
+    context.lineTo(x + rise, y);
+    context.lineTo(x + w, y);
+    context.lineTo(x + w, y + h);
+    context.lineTo(x + rise, y + h);
+  }
   context.closePath();
+};
+
+const noiseTile = (() => {
+  let canvas: HTMLCanvasElement | null = null;
+  return () => {
+    if (canvas) {
+      return canvas;
+    }
+    canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return canvas;
+    }
+    const image = ctx.createImageData(64, 64);
+    for (let i = 0; i < image.data.length; i += 4) {
+      const v = 110 + ((i * 13) % 70);
+      image.data[i] = v;
+      image.data[i + 1] = v;
+      image.data[i + 2] = v;
+      image.data[i + 3] = 40;
+    }
+    ctx.putImageData(image, 0, 0);
+    return canvas;
+  };
+})();
+
+const paintPanelTexture = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  fill: string,
+) => {
+  context.fillStyle = fill;
+  context.fillRect(x, y, w, h);
+  const wash = context.createLinearGradient(x, y, x + w, y + h);
+  wash.addColorStop(0, "rgba(255,255,255,0.14)");
+  wash.addColorStop(0.42, "rgba(255,255,255,0.02)");
+  wash.addColorStop(1, "rgba(0,0,0,0.22)");
+  context.fillStyle = wash;
+  context.fillRect(x, y, w, h);
+  const tile = noiseTile();
+  context.save();
+  context.globalAlpha = 0.22;
+  context.globalCompositeOperation = "overlay";
+  const pattern = context.createPattern(tile, "repeat");
+  if (pattern) {
+    context.fillStyle = pattern;
+    context.fillRect(x, y, w, h);
+  }
+  context.restore();
 };
 
 export interface HeadlineRenderInput {
   headline: string;
   body: string;
   teamId: string | null;
+  secondTeamId?: string | null;
   firstName?: string;
   lastName?: string;
   photoSrc: string | null;
   pan: HeadlineDraft["pan"];
-  subjectMode?: HeadlineSubjectMode;
+  boardMode?: HeadlineBoardMode;
+  panelLeft?: boolean;
+  nameStack?: HeadlineNameStack;
+  storyLine?: string;
+  metaLine?: string;
+  sourceCredit?: string;
+  photoBw?: boolean;
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
@@ -112,6 +188,7 @@ export const renderHeadlineCanvas = async (
 
   const headline = headlineLabel(input.headline);
   const team = getTeam(input.teamId);
+  const teamB = getTeam(input.secondTeamId ?? null);
   const marks = splitTeamWordmark(team);
   const layout = headlineSplitLayout({
     headline,
@@ -120,8 +197,15 @@ export const renderHeadlineCanvas = async (
     lastName: input.lastName ?? "",
     city: marks.city,
     nick: marks.nick,
+    shortName: teamShortLockup(team),
     boardH,
     showBa: input.showBa !== false,
+    panelLeft: parseHeadlinePanelLeft(input.panelLeft),
+    boardMode: parseHeadlineBoardMode(input.boardMode),
+    nameStack: parseHeadlineNameStack(input.nameStack),
+    storyLine: input.storyLine ?? "",
+    metaLine: input.metaLine ?? "",
+    sourceCredit: input.sourceCredit ?? "",
   });
 
   await document.fonts?.ready.catch(() => undefined);
@@ -139,9 +223,11 @@ export const renderHeadlineCanvas = async (
   context.fillStyle = "#0b0b0b";
   context.fillRect(0, 0, width, height);
 
+  const photoX = layout.photo.x * s;
+  const photoY = layout.photo.y * s;
   const photoW = layout.photo.w * s;
   const photoH = layout.photo.h * s;
-  if (input.photoSrc) {
+  if (input.photoSrc && photoW > 0) {
     const photo = input.photoSrc.startsWith("data:")
       ? await loadImage(input.photoSrc)
       : await loadCorsImage(input.photoSrc);
@@ -149,8 +235,8 @@ export const renderHeadlineCanvas = async (
       const dest = coverPanDraw(
         photo.naturalWidth || photo.width,
         photo.naturalHeight || photo.height,
-        0,
-        0,
+        photoX,
+        photoY,
         photoW,
         photoH,
         input.pan.x,
@@ -160,18 +246,19 @@ export const renderHeadlineCanvas = async (
       const rotate = photoRotate(input.pan);
       context.save();
       context.beginPath();
-      context.rect(0, 0, photoW, photoH);
+      context.rect(photoX, photoY, photoW, photoH);
       context.clip();
-      if (input.photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      const grade = canvasGradeFilter(input.photoGrade);
+      context.filter = input.photoBw
+        ? `grayscale(1) ${grade === "none" ? "" : grade}`.trim()
+        : grade;
       if (rotate) {
-        context.translate(photoW / 2, photoH / 2);
+        context.translate(photoX + photoW / 2, photoY + photoH / 2);
         context.rotate((rotate * Math.PI) / 180);
         context.drawImage(
           photo,
-          dest.dx - photoW / 2,
-          dest.dy - photoH / 2,
+          dest.dx - (photoX + photoW / 2),
+          dest.dy - (photoY + photoH / 2),
           dest.dw,
           dest.dh,
         );
@@ -179,8 +266,15 @@ export const renderHeadlineCanvas = async (
         context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
       }
       context.restore();
-      applyPhotoGrade(context, 0, 0, photoW, photoH, input.photoGrade);
-      paintPhotoVignette(context, 0, 0, photoW, photoH, input.photoGrade);
+      applyPhotoGrade(context, photoX, photoY, photoW, photoH, input.photoGrade);
+      paintPhotoVignette(
+        context,
+        photoX,
+        photoY,
+        photoW,
+        photoH,
+        input.photoGrade,
+      );
     }
   }
 
@@ -189,38 +283,85 @@ export const renderHeadlineCanvas = async (
   }
 
   const panelFill = headlinePanelHex(input.teamId);
-  context.fillStyle = panelFill;
-  context.fillRect(layout.panel.x * s, 0, layout.panel.w * s, height);
-  context.save();
-  context.shadowColor = "rgba(0, 0, 0, 0.42)";
-  context.shadowBlur = 28 * s;
-  context.shadowOffsetX = -14 * s;
-  context.fillRect(layout.panel.x * s, 0, 2 * s, height);
-  context.restore();
+  paintPanelTexture(
+    context,
+    layout.panel.x * s,
+    0,
+    (layout.boardMode === "team-only" ? layout.boardW : layout.panel.w) * s,
+    height,
+    panelFill,
+  );
+  if (layout.panelB.w > 0) {
+    paintPanelTexture(
+      context,
+      layout.panelB.x * s,
+      0,
+      layout.panelB.w * s,
+      height,
+      headlinePanelHex(input.secondTeamId ?? null),
+    );
+  }
+  if (layout.boardMode !== "team-only") {
+    context.save();
+    context.shadowColor = "rgba(0, 0, 0, 0.42)";
+    context.shadowBlur = 28 * s;
+    context.shadowOffsetX = layout.panelLeft ? 14 * s : -14 * s;
+    context.fillStyle = panelFill;
+    context.fillRect(layout.panel.x * s, 0, 2 * s, height);
+    context.restore();
+  }
 
-  if (team) {
-    const logo = await loadImage(team.logoSrc);
-    if (logo) {
-      context.save();
-      context.beginPath();
-      context.rect(layout.panel.x * s, 0, layout.panel.w * s, height);
-      context.clip();
-      drawCenteredLogo(
-        context,
-        logo,
-        layout.logo.x * s,
-        layout.logo.y * s,
-        layout.logo.size * s,
-        layout.logo.size * s,
-        {
-          cacheKey: `${team.logoSrc}-headline-hero`,
-          fitX: 0.94,
-          fitY: 0.9,
-          shadow: 22 * s,
-        },
-      );
-      context.restore();
+  const paintLogo = async (
+    src: string,
+    box: { x: number; y: number; size: number },
+    clipX: number,
+    clipW: number,
+    key: string,
+  ) => {
+    if (box.size <= 0 || clipW <= 0) {
+      return;
     }
+    const logo = await loadImage(src);
+    if (!logo) {
+      return;
+    }
+    context.save();
+    context.beginPath();
+    context.rect(clipX * s, 0, clipW * s, height);
+    context.clip();
+    drawCenteredLogo(
+      context,
+      logo,
+      box.x * s,
+      box.y * s,
+      box.size * s,
+      box.size * s,
+      {
+        cacheKey: `${src}-${key}`,
+        fitX: 0.94,
+        fitY: 0.9,
+        shadow: 22 * s,
+      },
+    );
+    context.restore();
+  };
+  if (team) {
+    await paintLogo(
+      team.logoSrc,
+      layout.logo,
+      layout.boardMode === "team-only" ? 0 : layout.panel.x,
+      layout.boardMode === "team-only" ? layout.boardW : layout.panel.w,
+      "headline-hero",
+    );
+  }
+  if (teamB && layout.logoB.size > 0) {
+    await paintLogo(
+      teamB.logoSrc,
+      layout.logoB,
+      layout.panelB.x,
+      layout.panelB.w,
+      "headline-hero-b",
+    );
   }
 
   const chevX = layout.chevron.x * s;
@@ -232,7 +373,7 @@ export const renderHeadlineCanvas = async (
   context.shadowColor = "rgba(0, 0, 0, 0.45)";
   context.shadowBlur = 10 * s;
   context.shadowOffsetY = 5 * s;
-  chevronPath(context, chevX, chevY, chevW, chevH, rise);
+  chevronPath(context, chevX, chevY, chevW, chevH, rise, layout.chevron.mirror);
   const silver = context.createLinearGradient(0, chevY, 0, chevY + chevH);
   silver.addColorStop(0, "#6d757c");
   silver.addColorStop(0.16, "#c2c9d0");
@@ -262,46 +403,76 @@ export const renderHeadlineCanvas = async (
   setLetterSpacing(context, 0);
 
   const paintStack = (
-    text: string,
+    lines: string[],
     size: number,
     tracking: number,
     x: number,
     y: number,
-    baseline: CanvasTextBaseline,
+    lineHeight: number,
   ) => {
-    if (!text || size <= 0) {
+    if (!lines.length || size <= 0) {
       return;
     }
     context.font = `900 ${size * s}px ${POSTER_FONT}`;
     context.textAlign = "left";
-    context.textBaseline = baseline;
+    context.textBaseline = "top";
     setLetterSpacing(context, tracking * size * s);
     context.shadowColor = "rgba(0, 0, 0, 0.4)";
     context.shadowBlur = 8 * s;
     context.shadowOffsetY = 2 * s;
     context.fillStyle = "#ffffff";
-    context.fillText(text, x * s, y * s, layout.given.w * s);
+    lines.forEach((line, index) => {
+      if (line) {
+        context.fillText(
+          line,
+          x * s,
+          (y + index * size * lineHeight) * s,
+          layout.given.w * s,
+        );
+      }
+    });
     context.shadowBlur = 0;
     context.shadowOffsetY = 0;
     setLetterSpacing(context, 0);
   };
 
+  if (layout.story.text) {
+    paintStack(
+      [layout.story.text],
+      layout.story.size,
+      HL_BODY_TRACK,
+      layout.story.x,
+      layout.story.y,
+      1.1,
+    );
+  }
   paintStack(
-    layout.given.text,
+    layout.given.lines,
     layout.given.size,
     HL_NAME_TRACK,
     layout.given.x,
     layout.given.y,
-    "top",
+    1.08,
   );
   paintStack(
-    layout.family.text,
+    layout.family.lines,
     layout.family.size,
     HL_FAMILY_TRACK,
     layout.family.x,
     layout.family.y,
-    "top",
+    0.98,
   );
+
+  if (layout.meta.text) {
+    paintStack(
+      [layout.meta.text],
+      layout.meta.size,
+      HL_BODY_TRACK,
+      layout.meta.x,
+      layout.meta.y,
+      1.1,
+    );
+  }
 
   context.font = `900 ${HL_BODY_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "left";
@@ -318,6 +489,23 @@ export const renderHeadlineCanvas = async (
   context.shadowBlur = 0;
   context.shadowOffsetY = 0;
   setLetterSpacing(context, 0);
+
+  if (layout.source.text) {
+    context.font = `900 ${HL_SOURCE_SIZE * s}px ${POSTER_FONT}`;
+    context.textAlign = "left";
+    context.textBaseline = "top";
+    setLetterSpacing(context, 0.14 * HL_SOURCE_SIZE * s);
+    context.globalAlpha = 0.55;
+    context.fillStyle = "#ffffff";
+    context.fillText(
+      layout.source.text,
+      layout.source.x * s,
+      layout.source.y * s,
+      layout.source.w * s,
+    );
+    context.globalAlpha = 1;
+    setLetterSpacing(context, 0);
+  }
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

@@ -18,6 +18,9 @@ export type HeadlineLockup = "bottom" | "top";
 export type HeadlineNamePlacement = "off" | "plate" | "under";
 export type HeadlineKickerMode = "off" | "date" | "last-night";
 export type HeadlineSubjectMode = "player" | "team";
+export type HeadlineBoardMode = "split" | "team-only" | "trade";
+export type HeadlineNameScope = "auto" | "city" | "nick" | "short" | "player";
+export type HeadlineNameStack = "hurts" | "even";
 
 export const HL_WATERMARK_MODES = ["faint", "medium", "off"] as const;
 export const HL_PLATE_COLORS = ["white", "team", "black"] as const;
@@ -49,6 +52,22 @@ export const parseHeadlineKickerMode = (value: unknown): HeadlineKickerMode =>
 export const parseHeadlineSubjectMode = (value: unknown): HeadlineSubjectMode =>
   value === "team" ? "team" : "player";
 
+export const parseHeadlineBoardMode = (value: unknown): HeadlineBoardMode =>
+  value === "team-only" || value === "trade" ? value : "split";
+
+export const parseHeadlineNameScope = (value: unknown): HeadlineNameScope =>
+  value === "city" ||
+  value === "nick" ||
+  value === "short" ||
+  value === "auto"
+    ? value
+    : "player";
+
+export const parseHeadlineNameStack = (value: unknown): HeadlineNameStack =>
+  value === "even" ? "even" : "hurts";
+
+export const parseHeadlinePanelLeft = (value: unknown) => value === true;
+
 /** Photo | panel split — Hurts/Eagles BREAKING crop, NBA. */
 export const HL_SPLIT_X = 652;
 export const HL_BA_SIZE = 56;
@@ -64,9 +83,17 @@ export const HL_GIVEN_SIZE = 40;
 export const HL_FAMILY_SIZE = 72;
 export const HL_NAME_TRACK = 0.1;
 export const HL_FAMILY_TRACK = 0.06;
+/** Floor so long lockups (TIMBERWOLVES) still sit on the panel. */
+export const HL_STACK_MIN = 14;
+/** Real Montserrat Black runs a bit wider than the advance table. */
+export const HL_STACK_FIT = 0.88;
 export const HL_BODY_SIZE = 28;
 export const HL_BODY_TRACK = 0.05;
 export const HL_BODY_LINE = 1.14;
+export const HL_STORY_SIZE = 30;
+export const HL_META_SIZE = 20;
+export const HL_SOURCE_SIZE = 16;
+export const HL_NICK_AUTO_MIN = 58;
 export const HL_TYPE_PAD = 38;
 export const HL_TYPE_RIGHT = 28;
 export const HL_LOGO_SIZE = 680;
@@ -110,26 +137,53 @@ export const fitHeadlineType = (
   return { lines, size };
 };
 
+export interface StackedFit {
+  lines: string[];
+  size: number;
+}
+
+/** Shrink, then two-line wrap, so stacked names never clip off the panel. */
+export const fitStackedLockup = (
+  text: string,
+  maxSize: number,
+  tracking: number,
+  maxWidth: number,
+  minSize = HL_STACK_MIN,
+): StackedFit => {
+  const raw = text.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!raw) {
+    return { lines: [], size: 0 };
+  }
+  const limit = maxWidth * HL_STACK_FIT;
+  const widthAt = (size: number, line: string) =>
+    measureTitleAdvance(line, tracking) * size;
+  const fits = (size: number, lines: string[]) =>
+    lines.length > 0 && lines.every((line) => widthAt(size, line) <= limit);
+
+  let lines = [raw];
+  let size = maxSize;
+  const words = raw.split(" ").filter(Boolean);
+  if (!fits(size, lines) && words.length > 1) {
+    lines = splitBalancedTitle(raw, "", tracking);
+  }
+  while (size > minSize && !fits(size, lines)) {
+    size -= 1;
+  }
+  if (!fits(size, lines) && size > 10) {
+    while (size > 10 && !fits(size, lines)) {
+      size -= 1;
+    }
+  }
+  return { lines, size };
+};
+
 export const fitStackedName = (
   text: string,
   maxSize: number,
   tracking: number,
   maxWidth: number,
-  minSize = 22,
-) => {
-  const raw = text.replace(/\s+/g, " ").trim().toUpperCase();
-  if (!raw) {
-    return 0;
-  }
-  let size = maxSize;
-  while (
-    size > minSize &&
-    measureTitleAdvance(raw, tracking) * size > maxWidth
-  ) {
-    size -= 1;
-  }
-  return size;
-};
+  minSize = HL_STACK_MIN,
+) => fitStackedLockup(text, maxSize, tracking, maxWidth, minSize).size;
 
 export const wrapHeadlineBody = (
   body: string,
@@ -213,8 +267,13 @@ export const headlinePanelHex = (teamId: string | null) => {
 export const chevronClipPolygon = (
   rise = HL_CHEVRON_RISE,
   width = GRAPHIC_WIDTH - (HL_SPLIT_X - HL_CHEVRON_NOTCH),
+  mirror = false,
 ) => {
   const t = ((rise / Math.max(1, width)) * 100).toFixed(2);
+  if (mirror) {
+    const edge = (100 - Number(t)).toFixed(2);
+    return `0% 0%, ${edge}% 0%, 100% 50%, ${edge}% 100%, 0% 100%`;
+  }
   return `0% 50%, ${t}% 0%, 100% 0%, 100% 100%, ${t}% 100%`;
 };
 
@@ -233,22 +292,36 @@ export interface HeadlineSplitOpts {
   lastName?: string;
   city?: string;
   nick?: string;
+  shortName?: string;
   boardH?: number;
   showBa?: boolean;
+  panelLeft?: boolean;
+  boardMode?: HeadlineBoardMode;
+  nameStack?: HeadlineNameStack;
+  storyLine?: string;
+  metaLine?: string;
+  sourceCredit?: string;
 }
 
 export interface HeadlineSplitLayout {
   boardW: number;
   boardH: number;
   splitX: number;
+  panelLeft: boolean;
+  boardMode: HeadlineBoardMode;
   photo: HeadlineBox;
   panel: HeadlineBox;
-  chevron: HeadlineBox & { notch: number; rise: number };
+  panelB: HeadlineBox;
+  chevron: HeadlineBox & { notch: number; rise: number; mirror: boolean };
   logo: { x: number; y: number; size: number };
+  logoB: { x: number; y: number; size: number };
   kicker: HeadlineBox & { size: number; lines: string[] };
-  given: HeadlineBox & { size: number; text: string };
-  family: HeadlineBox & { size: number; text: string };
+  story: HeadlineBox & { size: number; text: string };
+  given: HeadlineBox & { size: number; text: string; lines: string[] };
+  family: HeadlineBox & { size: number; text: string; lines: string[] };
+  meta: HeadlineBox & { size: number; text: string };
   body: HeadlineBox & { lines: string[] };
+  source: HeadlineBox & { size: number; text: string };
   ba: HeadlineBox;
 }
 
@@ -262,42 +335,90 @@ export const headlineSplitLayout = ({
   lastName = "",
   city = "",
   nick = "",
+  shortName = "",
   boardH = GRAPHIC_HEIGHT,
   showBa = true,
+  panelLeft = false,
+  boardMode = "split",
+  nameStack = "hurts",
+  storyLine = "",
+  metaLine = "",
+  sourceCredit = "",
 }: HeadlineSplitOpts = {}): HeadlineSplitLayout => {
-  const splitX = HL_SPLIT_X;
-  const panelW = GRAPHIC_WIDTH - splitX;
-  const typeX = splitX + HL_TYPE_PAD;
-  const typeW = headlinePanelTypeWidth(splitX);
+  const mode = parseHeadlineBoardMode(boardMode);
+  const teamOnly = mode === "team-only";
+  const trade = mode === "trade";
+  const photoW = teamOnly ? 0 : HL_SPLIT_X;
+  const panelW = GRAPHIC_WIDTH - photoW;
+  const photoX = panelLeft && !teamOnly ? panelW : 0;
+  const panelX = panelLeft && !teamOnly ? 0 : photoW;
+  const typeW = Math.max(
+    200,
+    (teamOnly ? GRAPHIC_WIDTH - HL_SPLIT_X : panelW) - HL_TYPE_PAD - HL_TYPE_RIGHT,
+  );
+  const typeX = teamOnly
+    ? HL_SPLIT_X + HL_TYPE_PAD
+    : panelX + HL_TYPE_PAD;
   const kickerFit = fitHeadlineType(headline, typeW - 4);
   const chevronH =
     kickerFit.lines.length > 1 ? HL_CHEVRON_H + 28 : HL_CHEVRON_H;
   const chevronTop = HL_CHEVRON_TOP;
-  const notchX = splitX - HL_CHEVRON_NOTCH;
-  const chevronW = GRAPHIC_WIDTH - notchX;
+  const notch = HL_CHEVRON_NOTCH;
+  const chevronX = teamOnly
+    ? Math.max(0, HL_SPLIT_X - notch)
+    : panelLeft
+      ? 0
+      : Math.max(0, panelX - notch);
+  const chevronW = teamOnly
+    ? GRAPHIC_WIDTH - chevronX
+    : panelLeft
+      ? panelW + notch
+      : GRAPHIC_WIDTH - chevronX;
+  const givenMax = nameStack === "even" ? 52 : HL_GIVEN_SIZE;
+  const familyMax = nameStack === "even" ? 52 : HL_FAMILY_SIZE;
   const givenText = firstName.replace(/\s+/g, " ").trim().toUpperCase();
   const familyText = lastName.replace(/\s+/g, " ").trim().toUpperCase();
   const cityText = city.replace(/\s+/g, " ").trim().toUpperCase();
   const nickText = nick.replace(/\s+/g, " ").trim().toUpperCase();
+  const shortText = shortName.replace(/\s+/g, " ").trim().toUpperCase();
   const stackedGiven = givenText || (!familyText ? cityText : "");
-  const stackedFamily = familyText || nickText;
-  const givenSize = fitStackedName(
+  const stackedFamily = familyText || nickText || shortText;
+  const givenFit = fitStackedLockup(
     stackedGiven,
-    HL_GIVEN_SIZE,
+    givenMax,
     HL_NAME_TRACK,
     typeW,
   );
-  const familySize = fitStackedName(
+  const familyFit = fitStackedLockup(
     stackedFamily,
-    HL_FAMILY_SIZE,
+    familyMax,
     HL_FAMILY_TRACK,
     typeW,
   );
-  const givenH = givenSize ? givenSize * 1.08 : 0;
-  const familyH = familySize ? familySize * 0.98 : 0;
-  const nameTop = chevronTop + chevronH + 34;
-  const givenTop = nameTop;
+  const givenSize = givenFit.size;
+  const familySize = familyFit.size;
+  const givenH = givenSize
+    ? givenSize * 1.08 * Math.max(1, givenFit.lines.length)
+    : 0;
+  const familyH = familySize
+    ? familySize * 0.98 * Math.max(1, familyFit.lines.length)
+    : 0;
+  const storyText = storyLine.replace(/\s+/g, " ").trim().toUpperCase();
+  const storySize = storyText
+    ? fitStackedName(storyText, HL_STORY_SIZE, HL_BODY_TRACK, typeW, 16)
+    : 0;
+  const storyH = storySize ? storySize * 1.12 : 0;
+  const metaText = metaLine.replace(/\s+/g, " ").trim().toUpperCase();
+  const metaSize = metaText
+    ? fitStackedName(metaText, HL_META_SIZE, HL_BODY_TRACK, typeW, 14)
+    : 0;
+  const metaH = metaSize ? metaSize * 1.15 : 0;
+  const sourceText = sourceCredit.replace(/\s+/g, " ").trim().toUpperCase();
+  const nameTop = chevronTop + chevronH + (storyH ? 18 : 34);
+  const storyTop = chevronTop + chevronH + 14;
+  const givenTop = storyH ? storyTop + storyH + 10 : nameTop;
   const familyTop = givenH ? givenTop + givenH + 4 : givenTop;
+  const metaTop = (familyH ? familyTop + familyH : givenTop + givenH) + (metaH ? 10 : 0);
   const bodyLines = wrapHeadlineBody(
     body,
     HL_BODY_SIZE,
@@ -305,31 +426,58 @@ export const headlineSplitLayout = ({
     typeW - 12,
   );
   const bodyTop =
-    (familyH ? familyTop + familyH : givenTop + givenH) + (bodyLines.length ? 26 : 0);
+    (metaH ? metaTop + metaH : familyH ? familyTop + familyH : givenTop + givenH) +
+    (bodyLines.length ? 22 : 0);
   const bodyH = Math.max(
-    headlineBodyBlock(Math.max(bodyLines.length, 4)),
-    HL_BODY_SIZE * HL_BODY_LINE * 4,
+    headlineBodyBlock(Math.max(bodyLines.length, 3)),
+    HL_BODY_SIZE * HL_BODY_LINE * 3,
   );
-  const logoSize = Math.max(HL_LOGO_SIZE, Math.round(panelW * 1.16));
-  const logoX = splitX + (panelW - logoSize) / 2;
+  const logoSize = teamOnly
+    ? Math.round(Math.min(boardH * 0.72, GRAPHIC_WIDTH * 0.78))
+    : trade
+      ? Math.max(280, Math.round(panelW * 0.52))
+      : Math.max(HL_LOGO_SIZE, Math.round(panelW * 1.16));
+  const logoX = teamOnly
+    ? Math.round((HL_SPLIT_X - logoSize) / 2)
+    : panelX + (trade ? panelW * 0.25 : panelW / 2) - logoSize / 2;
   const logoY = Math.round((HL_CHEVRON_TOP - logoSize) / 2);
+  const logoBX = trade ? panelX + panelW * 0.75 - logoSize / 2 : logoX;
+  const halfW = panelW / 2;
+  const baX = photoW > 0 ? photoX + HL_BA_INSET : HL_BA_INSET;
 
   return {
     boardW: GRAPHIC_WIDTH,
     boardH,
-    splitX,
-    photo: { id: "photo", x: 0, y: 0, w: splitX, h: boardH },
-    panel: { id: "panel", x: splitX, y: 0, w: panelW, h: boardH },
+    splitX: photoW,
+    panelLeft: panelLeft && !teamOnly,
+    boardMode: mode,
+    photo: { id: "photo", x: photoX, y: 0, w: photoW, h: boardH },
+    panel: {
+      id: "panel",
+      x: panelX,
+      y: 0,
+      w: trade ? halfW : panelW,
+      h: boardH,
+    },
+    panelB: {
+      id: "panel-b",
+      x: trade ? panelX + halfW : panelX,
+      y: 0,
+      w: trade ? halfW : 0,
+      h: boardH,
+    },
     chevron: {
       id: "kicker",
-      x: notchX,
+      x: chevronX,
       y: chevronTop,
       w: chevronW,
       h: chevronH,
-      notch: HL_CHEVRON_NOTCH,
+      notch,
       rise: HL_CHEVRON_RISE,
+      mirror: panelLeft && !teamOnly,
     },
     logo: { x: logoX, y: logoY, size: logoSize },
+    logoB: { x: logoBX, y: logoY, size: trade ? logoSize : 0 },
     kicker: {
       id: "kicker-type",
       x: typeX,
@@ -339,6 +487,15 @@ export const headlineSplitLayout = ({
       size: kickerFit.size,
       lines: kickerFit.lines,
     },
+    story: {
+      id: "story",
+      x: typeX,
+      y: storyTop,
+      w: typeW,
+      h: storyH,
+      size: storySize,
+      text: storyText,
+    },
     given: {
       id: "given",
       x: typeX,
@@ -347,6 +504,7 @@ export const headlineSplitLayout = ({
       h: givenH,
       size: givenSize,
       text: stackedGiven,
+      lines: givenFit.lines,
     },
     family: {
       id: "family",
@@ -356,6 +514,16 @@ export const headlineSplitLayout = ({
       h: familyH,
       size: familySize,
       text: stackedFamily,
+      lines: familyFit.lines,
+    },
+    meta: {
+      id: "meta",
+      x: typeX,
+      y: metaTop,
+      w: typeW,
+      h: metaH,
+      size: metaSize,
+      text: metaText,
     },
     body: {
       id: "body",
@@ -365,9 +533,18 @@ export const headlineSplitLayout = ({
       h: Math.max(bodyH, HL_BODY_SIZE * HL_BODY_LINE * 2),
       lines: bodyLines,
     },
+    source: {
+      id: "source",
+      x: typeX,
+      y: boardH - 36 - HL_SOURCE_SIZE,
+      w: typeW,
+      h: sourceText ? HL_SOURCE_SIZE * 1.2 : 0,
+      size: HL_SOURCE_SIZE,
+      text: sourceText,
+    },
     ba: {
       id: "ba",
-      x: HL_BA_INSET,
+      x: baX,
       y: HL_BA_INSET,
       w: showBa ? HL_BA_SIZE : 0,
       h: showBa ? HL_BA_SIZE : 0,
@@ -413,11 +590,17 @@ export const headlineVisibleTypeBoxes = (
     w: layout.chevron.w,
     h: layout.chevron.h,
   });
+  if (layout.story.h > 0) {
+    boxes.push(layout.story);
+  }
   if (layout.given.h > 0) {
     boxes.push(layout.given);
   }
   if (layout.family.h > 0) {
     boxes.push(layout.family);
+  }
+  if (layout.meta.h > 0) {
+    boxes.push(layout.meta);
   }
   if (layout.body.lines.length > 0) {
     boxes.push({
