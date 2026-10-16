@@ -354,4 +354,23 @@ describe("composer chrome", () => {
       /@media \(hover: none\), \(pointer: coarse\)[\s\S]*?\.pod-photo__tools[\s\S]*?opacity:\s*1/,
     );
   });
+
+  it("keeps compose-preview pick and zoom tools visible without HUD Edit", () => {
+    const photoFrame = readFileSync(
+      join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
+      "utf8",
+    );
+    const photoCss = readFileSync(
+      join(root, "playerOfTheDayComposer/playerOfTheDayComposer.css"),
+      "utf8",
+    );
+    expect(photoFrame).toMatch(/pickLabel = "Pick player"/);
+    expect(headlineGraphic).toContain('pickLabel={subject === "team" ? "Pick team" : "Pick player"}');
+    expect(photoCss).toMatch(
+      /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*1;/,
+    );
+    expect(photoCss).not.toMatch(
+      /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*0;/,
+    );
+  });
 });

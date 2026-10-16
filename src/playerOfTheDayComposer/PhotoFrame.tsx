@@ -104,7 +104,7 @@ export function PhotoFrame({
   zoomStep = 0.25,
   vignette = false,
   pop = false,
-  pickLabel = "",
+  pickLabel = "Pick player",
   changeLabel = "Change player",
   onPan,
   onUpload,

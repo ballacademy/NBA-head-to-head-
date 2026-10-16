@@ -180,7 +180,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             custom={customPhoto}
             empty={!photoSrc}
             vignette
-            pickLabel=""
+            pickLabel={subject === "team" ? "Pick team" : "Pick player"}
             changeLabel={subject === "team" ? "Change team" : "Change player"}
             onPan={onPan}
             onUpload={onUpload}

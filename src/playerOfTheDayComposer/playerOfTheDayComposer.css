@@ -280,9 +280,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: calc(6 * var(--u));
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.12s ease;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .pod-photo:hover .pod-photo__tools,
