@@ -10,8 +10,8 @@ import {
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -191,9 +191,7 @@ export const renderCompareCanvas = async (
           photoZoom(person.pan),
         );
         context.save();
-        if (input.photoGrade) {
-          context.filter = PHOTO_GRADE_FILTER;
-        }
+        context.filter = canvasGradeFilter(input.photoGrade);
         context.beginPath();
         context.rect(x, photoY, photoW, photoH);
         context.clip();

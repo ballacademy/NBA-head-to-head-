@@ -10,6 +10,7 @@ import {
   gradePanelFill,
   gradedWatermarkOpacity,
   parsePhotoGrade,
+  photoGradeFilter,
 } from "./photoGrade";
 import { composerWatermarkOpacity } from "./composerWatermark";
 
@@ -32,6 +33,11 @@ describe("composer photo grade", () => {
     expect(PHOTO_GRADE_FILTER).toMatch(/contrast\(/);
     expect(PHOTO_GRADE_FILTER).toMatch(/saturate\(/);
     expect(PHOTO_GRADE_FILTER).not.toMatch(/font/);
+    expect(photoGradeFilter(50)).not.toBe(photoGradeFilter(100));
+    expect(gradeChannel(48, 50)).not.toBe(gradeChannel(48, 100));
+    expect(Math.abs(gradeChannel(128, 50) - 128)).toBeLessThan(
+      Math.abs(gradeChannel(128, 100) - 128),
+    );
   });
 
   it("grades pixel buffers in place and skips empty pixels", () => {

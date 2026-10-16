@@ -10,8 +10,8 @@ import {
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
   gradedWatermarkOpacity,
 } from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
@@ -200,9 +200,7 @@ const drawCellPhoto = async (
       const dy = dest.dy + shiftY;
       const rotate = photoRotate(slot.pan);
       context.save();
-      if (photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      context.filter = canvasGradeFilter(photoGrade);
       if (rotate) {
         context.translate(x + w / 2, y + h / 2);
         context.rotate((rotate * Math.PI) / 180);

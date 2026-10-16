@@ -13,8 +13,8 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
@@ -130,9 +130,7 @@ export const renderQuoteCanvas = async (
       );
       const rotate = photoRotate(input.pan);
       context.save();
-      if (input.photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      context.filter = canvasGradeFilter(input.photoGrade);
       if (rotate) {
         context.translate(width / 2, height / 2);
         context.rotate((rotate * Math.PI) / 180);

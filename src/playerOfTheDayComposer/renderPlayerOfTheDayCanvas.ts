@@ -8,8 +8,8 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { getTeamColors } from "../lib/teamColors";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -285,9 +285,7 @@ export const renderPlayerOfTheDayCanvas = async (
     context.clip();
 
     context.save();
-    if (input.photoGrade) {
-      context.filter = PHOTO_GRADE_FILTER;
-    }
+    context.filter = canvasGradeFilter(input.photoGrade);
     context.beginPath();
     addRoundRectPath(context, x, photoY, w, photoH, [radius, radius, 0, 0]);
     context.clip();

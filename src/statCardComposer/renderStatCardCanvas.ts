@@ -9,8 +9,8 @@ import {
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
   gradePanelFill,
   gradedWatermarkOpacity,
 } from "../instagramComposer/photoGrade";
@@ -130,9 +130,7 @@ export const renderStatCardCanvas = async (
         photoZoom(input.pan),
       );
       context.save();
-      if (input.photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      context.filter = canvasGradeFilter(input.photoGrade);
       context.beginPath();
       context.rect(photoBox.x, photoBox.y, photoBox.w, photoBox.h);
       context.clip();

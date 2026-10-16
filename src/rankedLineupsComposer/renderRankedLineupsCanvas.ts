@@ -13,8 +13,8 @@ import {
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { wrapNameToWidth } from "../instagramComposer/nameFit";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -192,9 +192,7 @@ const drawStripPhoto = async (
       );
       const rotate = photoRotate(strip.pan);
       context.save();
-      if (photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      context.filter = canvasGradeFilter(photoGrade);
       if (rotate) {
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);

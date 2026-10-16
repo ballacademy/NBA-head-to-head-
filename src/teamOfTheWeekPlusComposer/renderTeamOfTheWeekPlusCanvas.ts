@@ -12,8 +12,8 @@ import {
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import {
-  PHOTO_GRADE_FILTER,
   applyPhotoGrade,
+  canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
 import {
@@ -169,9 +169,7 @@ const drawPortrait = async (
       );
       const rotate = photoRotate(slot.pan);
       context.save();
-      if (photoGrade) {
-        context.filter = PHOTO_GRADE_FILTER;
-      }
+      context.filter = canvasGradeFilter(photoGrade);
       if (rotate) {
         context.translate(inner.x + inner.w / 2, inner.y + inner.h / 2);
         context.rotate((rotate * Math.PI) / 180);

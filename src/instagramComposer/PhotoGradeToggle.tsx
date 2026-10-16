@@ -29,7 +29,10 @@ export function PhotoGradeToggle({
         aria-valuenow={value}
         onChange={(event) => {
           const next = clampPhotoGradeIntensity(Number(event.target.value));
-          onIntensityChange?.(next);
+          if (onIntensityChange) {
+            onIntensityChange(next);
+            return;
+          }
           onChange(next > 0);
         }}
       />

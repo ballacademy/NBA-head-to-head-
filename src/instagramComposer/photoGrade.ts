@@ -26,6 +26,34 @@ export const photoGradeFilter = (intensity = 100) => {
 
 export const PHOTO_GRADE_FILTER = photoGradeFilter(100);
 
+const applyPhotoGradeCssVars = (intensity: number) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+  const t = clampPhotoGradeIntensity(intensity) / 100;
+  document.documentElement.style.setProperty(
+    "--photo-grade-filter",
+    photoGradeFilter(intensity),
+  );
+  document.documentElement.style.setProperty(
+    "--photo-grade-vignette-mid",
+    String(0.16 * t),
+  );
+  document.documentElement.style.setProperty(
+    "--photo-grade-vignette-edge",
+    String(0.58 * t),
+  );
+};
+
+/** Canvas drawImage filter — scales with the HUD slider, not a 100% crush. */
+export const canvasGradeFilter = (on?: boolean) => {
+  if (!on) {
+    return "none";
+  }
+  const intensity = readPhotoGradeIntensity();
+  return intensity > 0 ? photoGradeFilter(intensity) : "none";
+};
+
 /** Brighter Stat-card panel when the grade is on (after look ~#f3f3f3). */
 export const PHOTO_GRADE_PANEL = "#f3f3f3";
 
@@ -48,18 +76,13 @@ export const writePhotoGradeIntensity = (intensity: number) => {
   const next = clampPhotoGradeIntensity(intensity);
   writeJson(PHOTO_GRADE_INTENSITY_KEY, next);
   writeJson(PHOTO_GRADE_KEY, next > 0);
-  if (typeof document !== "undefined") {
-    document.documentElement.style.setProperty(
-      "--photo-grade-filter",
-      photoGradeFilter(next),
-    );
-  }
+  applyPhotoGradeCssVars(next);
 };
 
 export const readPhotoGrade = () => readPhotoGradeIntensity() > 0;
 
 export const writePhotoGrade = (on: boolean) => {
-  writePhotoGradeIntensity(on ? Math.max(readPhotoGradeIntensity(), 100) : 0);
+  writePhotoGradeIntensity(on ? readPhotoGradeIntensity() || 100 : 0);
 };
 
 export const gradedWatermarkOpacity = (opacity: number, grade?: boolean) =>
@@ -71,15 +94,20 @@ export const gradePanelFill = (base: string, grade?: boolean) =>
 /** Crush shadows, lift a little contrast around midtones, keep whites clean. */
 export const gradeChannel = (value: number, intensity = 100) => {
   const t = clampPhotoGradeIntensity(intensity) / 100;
+  if (t <= 0) {
+    return value;
+  }
   const x = value / 255;
   const mid = 0.46;
   const contrast = 1 + 0.34 * t;
   let y = (x - mid) * contrast + mid;
   if (y < 0.4) {
-    y *= 0.76 + y * 0.48;
+    const crushed = y * (0.76 + y * 0.48);
+    y += (crushed - y) * t;
   }
   if (y > 0.74) {
-    y = 0.74 + (y - 0.74) * 1.18;
+    const lifted = 0.74 + (y - 0.74) * 1.18;
+    y += (lifted - y) * t;
   }
   return Math.max(0, Math.min(255, Math.round(y * 255)));
 };
@@ -167,12 +195,7 @@ export const usePhotoGrade = () => {
     const next = readPhotoGradeIntensity();
     setIntensity(next);
     setHydrated(true);
-    if (typeof document !== "undefined") {
-      document.documentElement.style.setProperty(
-        "--photo-grade-filter",
-        photoGradeFilter(next),
-      );
-    }
+    applyPhotoGradeCssVars(next);
   }, []);
 
   useEffect(() => {
