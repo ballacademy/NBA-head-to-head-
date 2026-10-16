@@ -304,6 +304,19 @@ describe("composer chrome", () => {
     expect(totwPlusApp).toContain("story={storyCrop}");
     expect(playInApp).toContain("story={storyCrop}");
     expect(pyramidApp).toContain("story={storyCrop}");
+    const totwCss = readFileSync(
+      join(root, "teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css"),
+      "utf8",
+    );
+    const rankedCss = readFileSync(
+      join(root, "rankedLineupsComposer/rankedLineupsComposer.css"),
+      "utf8",
+    );
+    expect(totwCss).toMatch(/\.twp-board \{[\s\S]*?display:\s*grid/);
+    expect(rankedCss).toMatch(/\.rl-board \{[\s\S]*?display:\s*grid/);
+    expect(totwCss).toMatch(
+      /\.twp-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,
+    );
   });
 
   it("opens Quote blank with a real-quote bank", () => {

@@ -21,10 +21,6 @@
   --ba-inset: 25;
   position: relative;
   aspect-ratio: 4 / 5;
-}
-
-.twp-board.is-story {
-  aspect-ratio: 9 / 16;
   width: 100%;
   display: grid;
   grid-template-rows:
@@ -40,6 +36,10 @@
   color: #fff;
   overflow: hidden;
   user-select: none;
+}
+
+.twp-board.is-story {
+  aspect-ratio: 9 / 16;
 }
 
 .twp-board.is-black {

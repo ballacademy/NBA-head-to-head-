@@ -13,10 +13,6 @@
   --pyr-pad-bottom: 36;
   position: relative;
   aspect-ratio: 4 / 5;
-}
-
-.pyr-board.is-story {
-  aspect-ratio: 9 / 16;
   width: 100%;
   display: grid;
   grid-template-rows: calc(118 * var(--u)) minmax(0, 1fr);
@@ -27,6 +23,10 @@
   color: #fff;
   overflow: hidden;
   user-select: none;
+}
+
+.pyr-board.is-story {
+  aspect-ratio: 9 / 16;
 }
 
 .pyr-board.is-black {

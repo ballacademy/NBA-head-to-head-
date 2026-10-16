@@ -1,3 +1,5 @@
+import { clampPhotoGradeIntensity } from "./photoGrade";
+
 interface PhotoGradeToggleProps {
   on: boolean;
   onChange: (on: boolean) => void;
@@ -11,7 +13,7 @@ export function PhotoGradeToggle({
   intensity,
   onIntensityChange,
 }: PhotoGradeToggleProps) {
-  const value = on ? Math.max(intensity ?? 100, 1) : 0;
+  const value = clampPhotoGradeIntensity(intensity ?? (on ? 100 : 0));
   return (
     <label className="sc-field">
       <span className="sc-toolbar__eyebrow">Grade {value}</span>
@@ -26,11 +28,8 @@ export function PhotoGradeToggle({
         aria-valuemax={100}
         aria-valuenow={value}
         onChange={(event) => {
-          const next = Number(event.target.value);
-          if (onIntensityChange) {
-            onIntensityChange(next);
-            return;
-          }
+          const next = clampPhotoGradeIntensity(Number(event.target.value));
+          onIntensityChange?.(next);
           onChange(next > 0);
         }}
       />
