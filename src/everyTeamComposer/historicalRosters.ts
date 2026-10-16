@@ -4,6 +4,7 @@ import {
   getConferenceForTeam,
   getDivisionForTeam,
 } from "../lib/divisions";
+import { getCoach, isCoachId } from "../instagramComposer/nbaCoaches";
 import { NBA_TEAMS, NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 
@@ -376,11 +377,31 @@ export const getRosterPlayer = (
   if (!playerId) {
     return null;
   }
-  return (
-    listRosterPlayers(teamId, season, sample).find(
-      (player) => player.id === playerId,
-    ) ?? null
+  const fromRoster = listRosterPlayers(teamId, season, sample).find(
+    (player) => player.id === playerId,
   );
+  if (fromRoster) {
+    return fromRoster;
+  }
+  if (!isCoachId(playerId)) {
+    return null;
+  }
+  const coach = getCoach(playerId);
+  if (!coach || coach.team !== teamId) {
+    return null;
+  }
+  return {
+    id: coach.id,
+    name: coach.name,
+    position: "HC",
+    depth: 0,
+    headshotUrl: coach.headshotUrl,
+    pts: null,
+    reb: null,
+    ast: null,
+    stl: null,
+    blk: null,
+  };
 };
 
 export const rosterHasPlayer = (

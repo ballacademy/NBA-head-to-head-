@@ -10,7 +10,7 @@ import {
 import type { Division } from "../lib/types";
 import { NBA_TEAMS, NBA_TEAMS_BY_ID } from "../standingsComposer/teams";
 
-export type PlayerPosition = "PG" | "SG" | "SF" | "PF" | "C" | "G" | "F";
+export type PlayerPosition = "PG" | "SG" | "SF" | "PF" | "C" | "G" | "F" | "HC";
 export type PlayerPositionGroup = "G" | "F" | "C";
 
 export interface TierPlayer {
@@ -246,6 +246,7 @@ export const POSITION_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
   { id: "C", label: "C" },
   { id: "G", label: "G" },
   { id: "F", label: "F" },
+  { id: "Coach", label: "Coach" },
 ];
 
 /** Depth-chart unit: starter PG–C (`depth === 1`) vs backups / extras. */
@@ -440,8 +441,17 @@ export const searchPlayers = (
     if (conference && player.conference !== conference) {
       return false;
     }
-    if (position && player.position !== position) {
-      return false;
+    if (position === "Coach") {
+      if (player.role !== "coach" && player.position !== "HC") {
+        return false;
+      }
+    } else if (position) {
+      if (player.role === "coach" || player.position === "HC") {
+        return false;
+      }
+      if (player.position !== position) {
+        return false;
+      }
     }
     if (!matchesRole(player, filters.role)) {
       return false;

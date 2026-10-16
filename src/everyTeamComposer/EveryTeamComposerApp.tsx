@@ -787,6 +787,7 @@ export function EveryTeamComposerApp() {
           lockedTeam={activeTeam.id}
           lockedFilters={lockedFilters}
           rosterPlayers={rosterPlayers}
+          includeCoaches
           simple
           showDepthSort
           defaultSort="depth"
