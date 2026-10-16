@@ -150,6 +150,12 @@ describe("mock trade layout", () => {
     expect(three.columns[0]!.players).toHaveLength(2);
     expect(three.columns[0]!.picks).toHaveLength(3);
     expect(two.title.w).toBeGreaterThan(1000);
+    const stacked = mockTradeLayout(2, [1, 1], [5, 2]);
+    const pickXs = new Set(
+      stacked.columns[0]!.picks.map((chip) => Math.round(chip.x)),
+    );
+    expect(pickXs.size).toBeLessThanOrEqual(2);
+    expect(stacked.columns[0]!.picks[0]!.w).toBeGreaterThan(180);
   });
 
   it("exports 4:5 at 1200×1500 and stretches 9:16", () => {

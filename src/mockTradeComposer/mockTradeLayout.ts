@@ -107,13 +107,18 @@ const packPicks = (
   y: number,
   w: number,
   count: number,
+  three: boolean,
 ): MockTradeRect[] => {
   if (count <= 0 || w <= 0) {
     return [];
   }
   const gap = MT_CHIP_GAP;
-  const minChip = 112;
-  const cols = Math.max(1, Math.min(count, Math.floor((w + gap) / (minChip + gap))));
+  const minChip = three ? 150 : 200;
+  const maxCols = three ? 1 : 2;
+  const cols = Math.max(
+    1,
+    Math.min(count, maxCols, Math.floor((w + gap) / (minChip + gap))),
+  );
   const chipW = (w - gap * (cols - 1)) / cols;
   return Array.from({ length: count }, (_, index) => {
     const col = index % cols;
@@ -160,9 +165,15 @@ export const mockTradeLayout = (
     const innerW = w - inset * 2;
     const pickCount = Math.max(0, pickCounts[index] ?? 0);
     const playerCount = Math.max(0, playerCounts[index] ?? 0);
+    const pickMin = n === 3 ? 150 : 200;
+    const pickMaxCols = n === 3 ? 1 : 2;
     const pickCols = Math.max(
       1,
-      Math.min(pickCount || 1, Math.floor((innerW + MT_CHIP_GAP) / (112 + MT_CHIP_GAP))),
+      Math.min(
+        pickCount || 1,
+        pickMaxCols,
+        Math.floor((innerW + MT_CHIP_GAP) / (pickMin + MT_CHIP_GAP)),
+      ),
     );
     const pickRows = pickCount ? Math.ceil(pickCount / pickCols) : 0;
     const picksH = pickRows
@@ -193,7 +204,7 @@ export const mockTradeLayout = (
       logo,
       gets,
       players: packPlayers(innerX, playersY, innerW, playersH, playerCount, n === 3),
-      picks: packPicks(innerX, picksY, innerW, pickCount),
+      picks: packPicks(innerX, picksY, innerW, pickCount, n === 3),
     };
   });
   return { title, ba, columns };
