@@ -21,6 +21,7 @@ import {
 } from "./composerMode";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
+import { hydrateJsonStorage } from "../lib/browserStorage";
 import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
 import "../everyTeamComposer/everyTeamComposer.css";
@@ -40,6 +41,11 @@ import "../statCardCoverComposer/statCardCoverComposer.css";
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
   const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
+  const [persistReady, setPersistReady] = useState(false);
+
+  useEffect(() => {
+    void hydrateJsonStorage().finally(() => setPersistReady(true));
+  }, []);
 
   useEffect(() => {
     const sync = () => setMode(readComposerMode());
@@ -54,6 +60,14 @@ export function ComposerHub() {
     }
     setMode(next);
   }, []);
+
+  if (!persistReady) {
+    return (
+      <div className="feature-page-fallback hub-empty" role="status">
+        <p>Loading composer…</p>
+      </div>
+    );
+  }
 
   return (
     <div className={["sc-root", photoEdit ? "is-photo-edit" : ""].filter(Boolean).join(" ")}>

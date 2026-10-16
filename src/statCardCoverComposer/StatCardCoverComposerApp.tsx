@@ -37,7 +37,7 @@ import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialo
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { readJson, writeJson } from "../lib/browserStorage";
+import { hydrateJsonStorage, readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -50,6 +50,7 @@ import {
   SCC_TITLE_MAX,
   applyCoverNight,
   clearCoverSlot,
+  coverDraftOccupied,
   coverPasteSlotIndex,
   coverSlotName,
   coverSlotNames,
@@ -103,8 +104,17 @@ export function StatCardCoverComposerApp() {
 
   useEffect(() => {
     document.title = "Stat card cover";
-    setDraft(loadDraft());
-    setHydrated(true);
+    void hydrateJsonStorage().then(() => {
+      const loaded = loadDraft();
+      if (coverDraftOccupied(loaded)) {
+        autoFill.current = false;
+        filledKey.current = `${loaded.gameDate}:${loaded.slots
+          .map((slot) => slot.playerId ?? "")
+          .join(",")}`;
+      }
+      setDraft(loaded);
+      setHydrated(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -114,10 +124,9 @@ export function StatCardCoverComposerApp() {
   }, [draft, hydrated]);
 
   useEffect(() => {
-    if (!hydrated) {
+    if (!hydrated || !autoFill.current) {
       return;
     }
-    autoFill.current = true;
     const fillDate = night.date;
     void night.ensureStandouts(fillDate).then(async (rows) => {
       if (!autoFill.current) {
@@ -468,6 +477,7 @@ export function StatCardCoverComposerApp() {
               className="sc-btn sc-btn--ghost"
               onClick={() => {
                 push(draft);
+                autoFill.current = false;
                 filledKey.current = "";
                 setDraft(defaultStatCardCoverDraft());
                 setStatus("Board cleared.");

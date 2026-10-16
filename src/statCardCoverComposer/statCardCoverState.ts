@@ -194,6 +194,12 @@ export const normalizeStatCardCoverDraft = (
 export const hasCustomPhoto = (slot: CoverSlot) =>
   Boolean(slot.customPhoto && slot.photoSrc);
 
+/** Restored draft with faces or uploads — do not auto-fill over it. */
+export const coverDraftOccupied = (draft: StatCardCoverDraft) =>
+  draft.slots.some(
+    (slot) => Boolean(slot.playerId) || Boolean(slot.customPhoto) || Boolean(slot.photoSrc),
+  );
+
 export const coverSlotName = (slot: CoverSlot) =>
   `${slot.firstName} ${slot.lastName}`.replace(/\s+/g, " ").trim();
 

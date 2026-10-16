@@ -14,12 +14,16 @@ import {
   SCC_GOLD_DEEP,
   SCC_PHOTO_SHIFT,
   SCC_SLOT_COUNT,
+  SCC_SWIPE_CHEV,
+  SCC_SWIPE_LABEL,
+  SCC_SWIPE_SIZE,
   coverCellRect,
   coverSeamXs,
 } from "./statCardCoverLayout";
 import {
   DEFAULT_COVER_TITLE,
   applyCoverNight,
+  coverDraftOccupied,
   coverPasteSlotIndex,
   coverDateLine,
   coverTitleForNight,
@@ -244,5 +248,30 @@ describe("stat card cover", () => {
       standout(wemby.id, 70),
     ]);
     expect(filled.slots.every((slot) => slot.customPhoto === false)).toBe(true);
+  });
+
+  it("treats a restored board with photos as occupied and leaves a blank cover empty", () => {
+    expect(coverDraftOccupied(defaultStatCardCoverDraft())).toBe(false);
+    const jokic = getPlayer("3112335")!;
+    const withPlayer = {
+      ...defaultStatCardCoverDraft(),
+      slots: [
+        fillCoverSlotFromPlayer(jokic),
+        ...defaultStatCardCoverDraft().slots.slice(1),
+      ],
+    };
+    expect(coverDraftOccupied(withPlayer)).toBe(true);
+    const withUpload = {
+      ...defaultStatCardCoverDraft(),
+      slots: [
+        setCoverSlotPhoto(defaultStatCardCoverDraft().slots[0]!, "data:image/png;base64,slot1"),
+        ...defaultStatCardCoverDraft().slots.slice(1),
+      ],
+    };
+    expect(coverDraftOccupied(withUpload)).toBe(true);
+    expect(withUpload.slots[0]!.customPhoto).toBe(true);
+    expect(SCC_SWIPE_SIZE).toBeGreaterThanOrEqual(80);
+    expect(SCC_SWIPE_LABEL).toBeGreaterThanOrEqual(16);
+    expect(SCC_SWIPE_CHEV).toBeGreaterThanOrEqual(20);
   });
 });

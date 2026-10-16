@@ -4,6 +4,7 @@ import App from "./App";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { RuntimeErrorToaster } from "./components/RuntimeErrorToaster";
 import { lazyWithChunkReload } from "./lib/lazyChunk";
+import { hydrateJsonStorage } from "./lib/browserStorage";
 import { applyComposerFavicon } from "./instagramComposer/composerFavicon";
 import { isStandingsComposerRoute } from "./standingsComposer/isStandingsComposerRoute";
 import "@fontsource/archivo/latin-600.css";
@@ -34,25 +35,33 @@ if (composer) {
   applyComposerFavicon();
 }
 
-createRoot(root).render(
-  <StrictMode>
-    <AppErrorBoundary>
-      {composer ? (
-        <Suspense
-          fallback={
-            <div className="feature-page-fallback hub-empty" role="status">
-              <p>Loading composer…</p>
-            </div>
-          }
-        >
-          <ComposerHub />
-        </Suspense>
-      ) : (
-        <>
-          <App />
-          <RuntimeErrorToaster />
-        </>
-      )}
-    </AppErrorBoundary>
-  </StrictMode>,
-);
+const renderApp = () => {
+  createRoot(root).render(
+    <StrictMode>
+      <AppErrorBoundary>
+        {composer ? (
+          <Suspense
+            fallback={
+              <div className="feature-page-fallback hub-empty" role="status">
+                <p>Loading composer…</p>
+              </div>
+            }
+          >
+            <ComposerHub />
+          </Suspense>
+        ) : (
+          <>
+            <App />
+            <RuntimeErrorToaster />
+          </>
+        )}
+      </AppErrorBoundary>
+    </StrictMode>,
+  );
+};
+
+if (composer) {
+  void hydrateJsonStorage().finally(renderApp);
+} else {
+  renderApp();
+}

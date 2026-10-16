@@ -81,6 +81,30 @@ const totwPlusState = readFileSync(
   join(root, "teamOfTheWeekPlusComposer/teamOfTheWeekPlusState.ts"),
   "utf8",
 );
+const coverCanvas = readFileSync(
+  join(root, "statCardCoverComposer/renderStatCardCoverCanvas.ts"),
+  "utf8",
+);
+const coverState = readFileSync(
+  join(root, "statCardCoverComposer/statCardCoverState.ts"),
+  "utf8",
+);
+const coverLayout = readFileSync(
+  join(root, "statCardCoverComposer/statCardCoverLayout.ts"),
+  "utf8",
+);
+const browserStorage = readFileSync(
+  join(root, "lib/browserStorage.ts"),
+  "utf8",
+);
+const composerLibrary = readFileSync(
+  join(root, "instagramComposer/composerLibrary.ts"),
+  "utf8",
+);
+const composerSaves = readFileSync(
+  join(root, "instagramComposer/ComposerSaves.tsx"),
+  "utf8",
+);
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -254,6 +278,40 @@ describe("composer chrome", () => {
     expect(rankedCanvas).not.toContain("SWIPE");
     expect(coverCss).toContain(".scc-swipe");
     expect(coverApp).toContain("peekStatCardStatsLeft(draft.gameDate)");
+  });
+
+  it("exports a right-pointing Cover swipe chevron that matches the preview", () => {
+    expect(coverLayout).toMatch(/SCC_SWIPE_SIZE = 88/);
+    expect(coverLayout).toMatch(/SCC_SWIPE_LABEL = 18/);
+    expect(coverLayout).toMatch(/SCC_SWIPE_CHEV = 22/);
+    expect(coverCss).toMatch(/\.scc-swipe__label[\s\S]*?font-size:\s*calc\(18 \* var\(--u\)\)/);
+    expect(coverCss).toMatch(/\.scc-swipe__chev \{[\s\S]*?width:\s*calc\(88 \* var\(--u\)\)/);
+    expect(coverCss).toMatch(
+      /\.scc-swipe__chev::after[\s\S]*?border-right:[\s\S]*?border-top:[\s\S]*?rotate\(45deg\)/,
+    );
+    expect(coverCanvas).toContain("moveTo(-arm, -arm)");
+    expect(coverCanvas).toContain("lineTo(arm, -arm)");
+    expect(coverCanvas).toContain("lineTo(arm, arm)");
+    expect(coverCanvas).not.toContain("moveTo(-7 * s, 7 * s)");
+    expect(coverCanvas).toContain("fillText(\"SWIPE\"");
+  });
+
+  it("keeps custom photos on the same graphic save and skips Cover auto-fill over them", () => {
+    expect(browserStorage).toContain("writeDurableJson");
+    expect(browserStorage).toContain("readDurableJson");
+    expect(coverState).toContain("coverDraftOccupied");
+    expect(coverApp).toContain("coverDraftOccupied(loaded)");
+    expect(coverApp).toContain("autoFill.current = false");
+    expect(coverApp).toMatch(/if \(!hydrated \|\| !autoFill\.current\)/);
+    expect(composerSaves).toContain("stripComposerPhotos");
+    expect(composerSaves).toContain("Saved as template (no photos).");
+    expect(composerLibrary).toContain("writeNamedGraphics");
+    const hub = readFileSync(
+      join(root, "instagramComposer/ComposerHub.tsx"),
+      "utf8",
+    );
+    expect(hub).toContain("hydrateJsonStorage");
+    expect(hub).toContain("persistReady");
   });
 
   it("copies postable captions on Every Team and Tier", () => {
