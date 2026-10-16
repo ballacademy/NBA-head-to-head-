@@ -9,8 +9,10 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   SCC_COL_W,
+  SCC_FADE_H,
   SCC_GOLD,
   SCC_GOLD_DEEP,
+  SCC_PHOTO_SHIFT,
   SCC_SLOT_COUNT,
   coverCellRect,
   coverSeamXs,
@@ -18,6 +20,7 @@ import {
 import {
   DEFAULT_COVER_TITLE,
   applyCoverNight,
+  coverPasteSlotIndex,
   coverDateLine,
   coverTitleForNight,
   defaultStatCardCoverDraft,
@@ -27,6 +30,7 @@ import {
   isAutoCoverTitle,
   normalizeStatCardCoverDraft,
   setCoverSlotPhoto,
+  setCoverSlotPhotoAt,
   splitCoverTitle,
 } from "./statCardCoverState";
 
@@ -210,5 +214,35 @@ describe("stat card cover", () => {
     expect(draft.slots).toHaveLength(3);
     expect(draft.slots[0]!.lastName.toUpperCase()).toContain("JOKIC");
     expect(JSON.stringify(draft.slots[0])).not.toMatch(/"pts"|"reb"|"ast"/);
+  });
+
+  it("drops default portraits below the title fade and pastes into one slot", () => {
+    expect(SCC_PHOTO_SHIFT).toBeGreaterThanOrEqual(0.24);
+    expect(SCC_PHOTO_SHIFT).toBeLessThan(0.4);
+    expect(SCC_PHOTO_SHIFT * GRAPHIC_HEIGHT).toBeGreaterThan(SCC_FADE_H * 0.7);
+    expect(coverPasteSlotIndex(1, null)).toBe(1);
+    expect(coverPasteSlotIndex(0, 2)).toBe(2);
+    expect(coverPasteSlotIndex(9)).toBe(2);
+    const jokic = getPlayer("3112335")!;
+    const shai = getPlayer("4278073")!;
+    const wemby = getPlayer("4684737")!;
+    const slots = [
+      fillCoverSlotFromPlayer(jokic),
+      fillCoverSlotFromPlayer(shai),
+      fillCoverSlotFromPlayer(wemby),
+    ];
+    const pasted = setCoverSlotPhotoAt(slots, 1, "data:image/png;base64,slot2");
+    expect(pasted[0]!.photoSrc).toBe(slots[0]!.photoSrc);
+    expect(pasted[0]!.customPhoto).toBe(false);
+    expect(pasted[1]!.photoSrc).toBe("data:image/png;base64,slot2");
+    expect(pasted[1]!.customPhoto).toBe(true);
+    expect(pasted[2]!.photoSrc).toBe(slots[2]!.photoSrc);
+    expect(pasted[2]!.customPhoto).toBe(false);
+    const filled = fillCoverFromStandouts(defaultStatCardCoverDraft(), [
+      standout(jokic.id, 90),
+      standout(shai.id, 80),
+      standout(wemby.id, 70),
+    ]);
+    expect(filled.slots.every((slot) => slot.customPhoto === false)).toBe(true);
   });
 });

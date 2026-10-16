@@ -265,12 +265,12 @@ export function PhotoFrame({
         .join(" ")}
       tabIndex={0}
       onPaste={(event) => {
+        event.stopPropagation();
         void dataUrlFromClipboard(event.nativeEvent).then((dataUrl) => {
           if (!dataUrl) {
             return;
           }
           event.preventDefault();
-          event.stopPropagation();
           onUpload(dataUrl);
         });
       }}

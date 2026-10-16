@@ -241,11 +241,24 @@ export const patchCoverSlot = (
   );
 };
 
+export const coverPasteSlotIndex = (
+  lastClicked: number,
+  pickerIndex: number | null = null,
+) => {
+  const index = pickerIndex ?? lastClicked;
+  return Math.min(SCC_SLOT_COUNT - 1, Math.max(0, index));
+};
+
 export const setCoverSlotPhotoAt = (
   slots: CoverSlot[],
   index: number,
   dataUrl: string,
-) => patchCoverSlot(slots, index, setCoverSlotPhoto(slots[index] ?? emptyCoverSlot(), dataUrl));
+) =>
+  patchCoverSlot(
+    slots,
+    coverPasteSlotIndex(index),
+    setCoverSlotPhoto(slots[coverPasteSlotIndex(index)] ?? emptyCoverSlot(), dataUrl),
+  );
 
 export const setCoverSlotPlayer = (
   slots: CoverSlot[],

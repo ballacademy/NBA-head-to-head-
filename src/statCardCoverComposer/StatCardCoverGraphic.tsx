@@ -24,6 +24,7 @@ import {
   SCC_DATE_SIZE,
   SCC_FADE_H,
   SCC_MARK,
+  SCC_PHOTO_SHIFT,
   SCC_PILL_H,
   SCC_SLOT_COUNT,
   SCC_TITLE_SIZE,
@@ -130,6 +131,7 @@ export const StatCardCoverGraphic = forwardRef<
         {
           ["--u" as string]: `${unit}px`,
           ["--fade-h" as string]: String(SCC_FADE_H),
+          ["--photo-shift" as string]: String(SCC_PHOTO_SHIFT),
           ["--title-size" as string]: String(SCC_TITLE_SIZE),
           ["--date-size" as string]: String(SCC_DATE_SIZE),
           ["--pill-h" as string]: String(SCC_PILL_H),
@@ -157,7 +159,7 @@ export const StatCardCoverGraphic = forwardRef<
               height: `calc(${cell.h} * var(--u))`,
             }}
             aria-label={`Cover player ${index + 1}`}
-            onPointerEnter={() => onHover?.(index)}
+            onPointerDown={() => onHover?.(index)}
           >
             <PhotoFrame
               src={slot.photoSrc}

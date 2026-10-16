@@ -357,6 +357,33 @@ describe("composer chrome", () => {
     );
   });
 
+  it("pastes Cover photos into the last-clicked slot and drops faces below the fade", () => {
+    const coverState = readFileSync(
+      join(root, "statCardCoverComposer/statCardCoverState.ts"),
+      "utf8",
+    );
+    const coverGraphic = readFileSync(
+      join(root, "statCardCoverComposer/StatCardCoverGraphic.tsx"),
+      "utf8",
+    );
+    const photoFrame = readFileSync(
+      join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
+      "utf8",
+    );
+    expect(coverCss).toContain("--photo-shift:");
+    expect(coverCss).toMatch(
+      /\.scc-cell \.pod-photo__img \{[\s\S]*?top:\s*calc\(var\(--photo-shift/,
+    );
+    expect(coverApp).toContain("coverPasteSlotIndex(photoTarget, activeIndex)");
+    expect(coverApp).toContain('target.closest(".pod-photo")');
+    expect(coverGraphic).toContain("onPointerDown={() => onHover?.(index)}");
+    expect(coverGraphic).not.toContain("onPointerEnter={() => onHover?.(index)}");
+    expect(coverState).toContain("coverPasteSlotIndex");
+    expect(photoFrame).toMatch(
+      /onPaste=\{\(event\) => \{\n\s*event\.stopPropagation\(\);/,
+    );
+  });
+
   it("keeps Headline transaction kickers on the chevron presets", () => {
     const presets = readFileSync(
       join(root, "instagramComposer/composerPresets.ts"),

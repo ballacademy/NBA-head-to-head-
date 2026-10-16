@@ -50,6 +50,7 @@ import {
   SCC_TITLE_MAX,
   applyCoverNight,
   clearCoverSlot,
+  coverPasteSlotIndex,
   coverSlotName,
   coverSlotNames,
   defaultStatCardCoverDraft,
@@ -242,12 +243,22 @@ export function StatCardCoverComposerApp() {
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (target instanceof Element && target.closest(".pod-photo")) {
+        return;
+      }
       void dataUrlFromClipboard(event).then((dataUrl) => {
         if (!dataUrl) {
           return;
         }
         event.preventDefault();
-        const index = activeIndex ?? photoTarget;
+        const index = coverPasteSlotIndex(photoTarget, activeIndex);
         setDraft((current) => ({
           ...current,
           slots: setCoverSlotPhotoAt(current.slots, index, dataUrl),

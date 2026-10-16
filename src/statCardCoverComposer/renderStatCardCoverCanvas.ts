@@ -30,6 +30,7 @@ import {
   SCC_DATE_SIZE,
   SCC_DATE_TRACK,
   SCC_FADE_H,
+  SCC_PHOTO_SHIFT,
   SCC_GOLD,
   SCC_GOLD_DEEP,
   SCC_GOLD_HAIR,
@@ -192,6 +193,8 @@ const drawCellPhoto = async (
         slot.pan.y,
         photoZoom(slot.pan),
       );
+      const shiftY = h * SCC_PHOTO_SHIFT;
+      const dy = dest.dy + shiftY;
       const rotate = photoRotate(slot.pan);
       context.save();
       if (photoGrade) {
@@ -203,12 +206,12 @@ const drawCellPhoto = async (
         context.drawImage(
           photo,
           dest.dx - (x + w / 2),
-          dest.dy - (y + h / 2),
+          dy - (y + h / 2),
           dest.dw,
           dest.dh,
         );
       } else {
-        context.drawImage(photo, dest.dx, dest.dy, dest.dw, dest.dh);
+        context.drawImage(photo, dest.dx, dy, dest.dw, dest.dh);
       }
       context.restore();
       applyPhotoGrade(context, x, y, w, h, photoGrade);

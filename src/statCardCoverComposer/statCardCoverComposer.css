@@ -4,6 +4,7 @@
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --fade-h: 460;
+  --photo-shift: 0.28;
   --title-size: 72;
   --date-size: 16;
   --pill-h: 44;
@@ -39,6 +40,11 @@
 
 .scc-cell .pod-photo__surface {
   z-index: 1;
+}
+
+.scc-cell .pod-photo__img {
+  position: relative;
+  top: calc(var(--photo-shift, 0.28) * 100%);
 }
 
 .scc-cell .pod-photo__pick {
