@@ -155,6 +155,7 @@ export function RankedLineupsComposerApp({
   const [showBa, setShowBa] = useState(false);
   const [showFade, setShowFade] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
+  const [storyCrop, setStoryCrop] = useState(false);
   const [rankDisplay, setRankDisplay] = useState(
     unranked ? "none" : DEFAULT_RANK_DISPLAY,
   );
@@ -544,6 +545,18 @@ export function RankedLineupsComposerApp({
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
         <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Names in photo</span>
           <button
             type="button"
@@ -763,6 +776,7 @@ export function RankedLineupsComposerApp({
               })
             }
             exporting={exporting}
+            story={storyCrop}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onRankChange={(value) => {

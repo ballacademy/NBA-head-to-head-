@@ -106,6 +106,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
+  const [storyCrop, setStoryCrop] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -371,6 +372,18 @@ export function TeamOfTheWeekPlusComposerApp() {
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Name + logo</span>
           <button
             type="button"
@@ -491,6 +504,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}
+            story={storyCrop}
             onBrandChange={setBrand}
             onWeekChange={setWeek}
             onStarterCaptionChange={setStarterCaption}

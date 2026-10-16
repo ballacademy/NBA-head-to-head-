@@ -72,6 +72,7 @@ export function PlayInComposerApp() {
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { push, pop, canUndo } = useComposerUndo<PlayInDraft>();
   const [liveOn, setLiveOn] = useState(true);
+  const [storyCrop, setStoryCrop] = useState(false);
 
   const pollLive = useCallback(async () => {
     const today = nbaTodayIso();
@@ -355,6 +356,18 @@ export function PlayInComposerApp() {
           on={draft.showBa !== false}
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -474,6 +487,7 @@ export function PlayInComposerApp() {
               draft={draft}
               look={look}
               purpleFlair={purpleFlair}
+              story={storyCrop}
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
               }

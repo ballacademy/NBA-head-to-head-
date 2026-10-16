@@ -295,6 +295,15 @@ describe("composer chrome", () => {
     expect(potdApp).toContain("renderPotdLeaderboardCanvas");
     expect(pyramidApp).toContain("PYRAMID_AWARD_GROUPS");
     expect(appMain).toContain("applyComposerFavicon");
+    const rankedApp = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsComposerApp.tsx"),
+      "utf8",
+    );
+    expect(rankedApp).toContain('aria-label="9:16 crop check"');
+    expect(rankedApp).toContain("story={storyCrop}");
+    expect(totwPlusApp).toContain("story={storyCrop}");
+    expect(playInApp).toContain("story={storyCrop}");
+    expect(pyramidApp).toContain("story={storyCrop}");
   });
 
   it("opens Quote blank with a real-quote bank", () => {

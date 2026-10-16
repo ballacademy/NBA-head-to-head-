@@ -108,6 +108,7 @@ export function PyramidComposerApp() {
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
+  const [storyCrop, setStoryCrop] = useState(false);
   const [rowLabels, setRowLabels] = useState(() =>
     parsePyramidRowLabels(undefined, empty.rows ?? 4),
   );
@@ -426,6 +427,18 @@ export function PyramidComposerApp() {
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -569,6 +582,7 @@ export function PyramidComposerApp() {
             showBa={showBa}
             showNames={showNames}
             exporting={exporting}
+            story={storyCrop}
             onTitleChange={setTitle}
             onHover={setPhotoTarget}
             onPick={(index) => {
