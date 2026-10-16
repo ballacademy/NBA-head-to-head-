@@ -9,6 +9,9 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   LINEUP_LOOK_KEY,
@@ -260,7 +263,11 @@ export function RankedLineupsComposerApp({
     setActiveIndex(null);
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -294,8 +301,15 @@ export function RankedLineupsComposerApp({
           positionLabels,
         },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -348,11 +362,31 @@ export function RankedLineupsComposerApp({
     }
   };
 
+  const handleResetKeepPhotos = () => {
+    const blank = defaultRankedLineupsDraft();
+    push(strips);
+    applyDraft(
+      keepComposerPhotos(blank, {
+        ...blank,
+        brand,
+        title,
+        rank,
+        strips,
+        showBa,
+        showFade,
+        showTeamHairline,
+        rankDisplay,
+        positionLabels,
+      }),
+    );
+    setStatus("Reset — photos kept.");
+  };
+
   const handleReset = () => {
     const next = defaultRankedLineupsDraft();
     push(strips);
     applyDraft(next);
-    setStatus("Board cleared.");
+    setStatus("Blank post.");
   };
 
   const handleNextSlide = () => {
@@ -587,18 +621,12 @@ export function RankedLineupsComposerApp({
             {storyCrop ? "On" : "Off"}
           </button>
         </label>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names in photo</span>
-          <button
-            type="button"
-            className={showFade ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showFade}
-            aria-label="First and last name with team logo on the photo"
-            onClick={() => setShowFade((on) => !on)}
-          >
-            {showFade ? "On" : "Off"}
-          </button>
-        </label>
+        <ComposerNamesToggle
+          on={showFade}
+          onChange={setShowFade}
+          label="Names in photo"
+          ariaLabel="First and last name with team logo on the photo"
+        />
           </>
         }
         persist={
@@ -628,8 +656,11 @@ export function RankedLineupsComposerApp({
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           {unranked ? null : (
           <button
@@ -672,6 +703,15 @@ export function RankedLineupsComposerApp({
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           {unranked ? null : (
           <button
@@ -846,6 +886,7 @@ export function RankedLineupsComposerApp({
               });
             }}
           />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           {unranked ? null : (
           <div className="rl-series" role="tablist" aria-label="Carousel slides">

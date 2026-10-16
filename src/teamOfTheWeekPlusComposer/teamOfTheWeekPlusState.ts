@@ -1,3 +1,4 @@
+import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
 import {
   nightFlagsFor,
   surpriseBonus,
@@ -101,7 +102,7 @@ export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
   starterCaption: DEFAULT_PLUS_STARTER_CAPTION,
   standoutCaption: DEFAULT_PLUS_STANDOUT_CAPTION,
   slots: createEmptyPlusSlots(),
-  showNames: true,
+  showNames: storedOrLastShowNames(undefined, true),
 });
 
 export const plusBoardEmpty = (slots: TotwStrip[]) =>

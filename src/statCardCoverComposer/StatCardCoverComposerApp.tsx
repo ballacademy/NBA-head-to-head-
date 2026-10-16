@@ -34,6 +34,7 @@ import {
   graphicCaption,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
@@ -179,7 +180,11 @@ export function StatCardCoverComposerApp() {
     });
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -196,8 +201,15 @@ export function StatCardCoverComposerApp() {
           exportFilenameFromTitle(draft.title || "stat-card-cover", "stat-card-cover"),
         { ...draft, look, purpleFlair, photoGrade },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -479,11 +491,24 @@ export function StatCardCoverComposerApp() {
                 push(draft);
                 autoFill.current = false;
                 filledKey.current = "";
-                setDraft(defaultStatCardCoverDraft());
-                setStatus("Board cleared.");
+                setDraft(keepComposerPhotos(defaultStatCardCoverDraft(), draft));
+                setStatus("Reset — photos kept.");
               }}
             >
-              Reset
+              Reset keep photos
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                push(draft);
+                autoFill.current = false;
+                filledKey.current = "";
+                setDraft(defaultStatCardCoverDraft());
+                setStatus("Blank post.");
+              }}
+            >
+              Blank post
             </button>
             <button
               type="button"
@@ -513,6 +538,15 @@ export function StatCardCoverComposerApp() {
               disabled={exporting}
             >
               Export 9:16
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost sc-btn--aside"
+              onClick={() => void handleExport(undefined, false, true)}
+              disabled={exporting}
+              aria-label="Export 1:1"
+            >
+              Export 1:1
             </button>
             <button
               type="button"

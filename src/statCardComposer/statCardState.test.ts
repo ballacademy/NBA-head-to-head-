@@ -51,6 +51,7 @@ import {
   STAT_CARD_LINE_OPTIONS,
   STC_STAT_COUNT,
   STC_STAT_MAX,
+  visibleStatCardLines,
 } from "./statCardState";
 
 hydrateEveryTeamRosters(
@@ -167,6 +168,18 @@ describe("stat card composer", () => {
     expect(normalizeStatCardDraft({ ...defaultStatCardDraft(), statsLeft: true }).statsLeft).toBe(
       true,
     );
+  });
+
+  it("hides empty stat dashes on export", () => {
+    expect(
+      visibleStatCardLines(
+        [
+          { key: "pts", label: "PTS", value: "32" },
+          { key: "reb", label: "REB", value: "" },
+        ],
+        true,
+      ),
+    ).toEqual([{ key: "pts", label: "PTS", value: "32" }]);
   });
 
   it("keeps the editor list identical to the stats on the card", () => {

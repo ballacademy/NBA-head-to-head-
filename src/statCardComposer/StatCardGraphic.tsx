@@ -33,6 +33,7 @@ import {
   STC_MATCHUP_MAX,
   STC_NAME_MAX,
   STC_VALUE_MAX,
+  visibleStatCardLines,
   type StatCardDraft,
 } from "./statCardState";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -89,14 +90,15 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
     const [unit, setUnit] = useState(1);
     const [dropIndex, setDropIndex] = useState<number | null>(null);
     const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
+    const stats = visibleStatCardLines(draft.stats, exporting);
     const dragEnabled =
       !exporting && Boolean(onMoveStat) && draft.stats.length > 1;
     const team = getTeam(draft.teamId);
     const colors = getTeamColors(draft.teamId ?? "");
     const nameInk = inkOnHex(colors.primary);
     const type = story
-      ? statCardStoryType(draft.stats.length)
-      : statCardType(draft.stats.length);
+      ? statCardStoryType(stats.length)
+      : statCardType(stats.length);
     const watermark = parseComposerWatermark(draft.watermark);
 
     const setRefs = (node: HTMLElement | null) => {
@@ -235,7 +237,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
             ["--stc-value" as string]: String(type.value),
             ["--stc-label" as string]: String(type.label),
             ["--stc-gap" as string]: String(type.gap),
-            ["--stc-count" as string]: String(Math.max(1, draft.stats.length)),
+            ["--stc-count" as string]: String(Math.max(1, stats.length)),
           } as React.CSSProperties
         }
         aria-label="Instagram stat card"
@@ -276,7 +278,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
               <TeamLogo src={team.logoSrc} label={team.name} shadow={0} />
             </div>
           ) : null}
-          {draft.stats.map((line, index) => (
+          {stats.map((line, index) => (
             <div
               key={`${line.key}-${index}`}
               data-index={index}

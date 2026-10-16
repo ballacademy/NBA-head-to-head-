@@ -26,6 +26,24 @@ const loadImage = (src: string) =>
 
 export const SQUARE_SIZE = 1080;
 
+export const squareFilename = (filename: string) =>
+  filename.replace(/\.png$/i, "") + "-square.png";
+
+export const downloadPngMaybeSquare = async (
+  canvas: HTMLCanvasElement,
+  filename: string,
+  square = false,
+) => {
+  if (square) {
+    await downloadCanvasPng(
+      await toSquareCanvas(canvas),
+      squareFilename(filename),
+    );
+    return;
+  }
+  await downloadCanvasPng(canvas, filename);
+};
+
 export const downloadCanvasPng = async (
   canvas: HTMLCanvasElement,
   filename: string,

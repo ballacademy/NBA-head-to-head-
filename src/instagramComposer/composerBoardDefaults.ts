@@ -18,5 +18,13 @@ export const writeLastShowNames = (on: boolean) => {
 export const storedOrLastShowBa = (value: unknown) =>
   typeof value === "boolean" ? value : readLastShowBa();
 
-export const storedOrLastShowNames = (value: unknown) =>
-  typeof value === "boolean" ? value : readLastShowNames();
+export const storedOrLastShowNames = (value: unknown, fallback = false) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  const stored = readJson<unknown>(LAST_NAMES_KEY);
+  if (stored == null) {
+    return fallback;
+  }
+  return stored === true;
+};

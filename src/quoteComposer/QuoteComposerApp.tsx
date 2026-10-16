@@ -23,6 +23,7 @@ import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
@@ -101,7 +102,11 @@ export function QuoteComposerApp() {
     }
   }, [draft, hydrated]);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -114,8 +119,15 @@ export function QuoteComposerApp() {
         filename ?? exportFilenameFromTitle(draft.quote, "quote"),
         { ...draft, look, purpleFlair, photoGrade },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -354,10 +366,22 @@ export function QuoteComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(defaultQuoteDraft());
+              setDraft(keepComposerPhotos(defaultQuoteDraft(), draft));
+              setStatus("Reset — photos kept.");
             }}
           >
-            Reset
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(defaultQuoteDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
           </button>
           <button
             type="button"
@@ -382,6 +406,15 @@ export function QuoteComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"

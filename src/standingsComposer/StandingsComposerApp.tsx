@@ -182,6 +182,14 @@ export function StandingsComposerApp() {
     }
   };
 
+  const handleResetKeepPhotos = () => {
+    setBrand(DEFAULT_BRAND);
+    setTitle(DEFAULT_TITLE);
+    setSubtitle(DEFAULT_SUBTITLE);
+    setActiveIndex(null);
+    setStatus("Reset — ranking kept.");
+  };
+
   const handleReset = () => {
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_TITLE);
@@ -189,7 +197,7 @@ export function StandingsComposerApp() {
     push(slots);
     setSlots(createEmptySlots());
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus("Blank post.");
   };
 
   const fillConference = async (conference: "East" | "West") => {
@@ -392,8 +400,11 @@ export function StandingsComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"

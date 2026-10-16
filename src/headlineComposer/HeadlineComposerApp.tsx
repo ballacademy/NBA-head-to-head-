@@ -16,6 +16,8 @@ import {
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   HEADLINE_LOOK_KEY,
@@ -215,7 +217,11 @@ export function HeadlineComposerApp() {
     }
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -231,8 +237,15 @@ export function HeadlineComposerApp() {
         filename ?? exportFilenameFromTitle(draft.headline, "headline"),
         renderInput(draft, look, purpleFlair, photoGrade),
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -710,11 +723,22 @@ export function HeadlineComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(defaultHeadlineDraft());
-              setStatus("Board cleared.");
+              setDraft(keepComposerPhotos(defaultHeadlineDraft(), draft));
+              setStatus("Reset — photos kept.");
             }}
           >
-            Reset
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(defaultHeadlineDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
           </button>
           <button
             type="button"
@@ -746,6 +770,15 @@ export function HeadlineComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -876,6 +909,7 @@ export function HeadlineComposerApp() {
             }}
             onPick={() => setPickerOpen(true)}
           />
+          <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — paste or upload an action shot (ESPN headshot

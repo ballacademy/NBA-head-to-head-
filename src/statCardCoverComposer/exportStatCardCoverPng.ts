@@ -1,5 +1,5 @@
 import {
-  downloadCanvasPng,
+  downloadPngMaybeSquare,
   toStoryCanvas,
 } from "../instagramComposer/exportDownload";
 import {
@@ -12,10 +12,9 @@ export const exportStatCardCoverPng = async (
   filename: string,
   input: StatCardCoverRenderInput,
   story = false,
+  square = false,
 ) => {
   const canvas = await renderStatCardCoverCanvas(input, 2);
-  await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas, { safe: true }) : canvas,
-    filename,
-  );
+  const board = story ? await toStoryCanvas(canvas, { safe: true }) : canvas;
+  await downloadPngMaybeSquare(board, filename, square);
 };

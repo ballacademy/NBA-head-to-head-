@@ -1,8 +1,4 @@
-import {
-  downloadCanvasPng,
-  toSquareCanvas,
-} from "../instagramComposer/exportDownload";
-import { squareFilename } from "../instagramComposer/exportPack";
+import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
 import {
   renderMockTradeCanvas,
   type MockTradeRenderInput,
@@ -16,9 +12,5 @@ export const exportMockTradePng = async (
   square = false,
 ) => {
   const canvas = await renderMockTradeCanvas({ ...input, story }, 2);
-  if (square) {
-    await downloadCanvasPng(await toSquareCanvas(canvas), squareFilename(filename));
-    return;
-  }
-  await downloadCanvasPng(canvas, filename);
+  await downloadPngMaybeSquare(canvas, filename, square);
 };

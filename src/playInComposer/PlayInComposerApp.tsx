@@ -15,6 +15,7 @@ import {
   copyGraphicCaption,
   graphicCaption,
 } from "../instagramComposer/graphicCaption";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAY_IN_TITLE_PRESETS,
@@ -167,7 +168,11 @@ export function PlayInComposerApp() {
     }
   };
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -180,8 +185,15 @@ export function PlayInComposerApp() {
         filename ?? exportFilenameFromTitle(draft.title, "play-in"),
         { ...draft, look, purpleFlair },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -400,10 +412,31 @@ export function PlayInComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(defaultPlayInDraft());
+              const blank = defaultPlayInDraft();
+              setDraft({
+                ...blank,
+                east: draft.east,
+                west: draft.west,
+                size: draft.size,
+                eastScores: draft.eastScores,
+                westScores: draft.westScores,
+                records: draft.records,
+              });
+              setStatus("Reset — teams kept.");
             }}
           >
-            Reset
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(defaultPlayInDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
           </button>
           <button
             type="button"
@@ -433,6 +466,15 @@ export function PlayInComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -493,6 +535,7 @@ export function PlayInComposerApp() {
               }
               onPick={(conference, index) => setPicker({ conference, index })}
             />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Auto-fill seeds 7–10 from standings. Live scores poll ESPN; the

@@ -1,13 +1,12 @@
 import { downloadCanvasPng, toStoryCanvas } from "./exportDownload";
 
+export { squareFilename } from "./exportDownload";
+
 const wait = (ms: number) =>
   new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export const storyFilename = (filename: string) =>
   filename.replace(/\.png$/i, "") + "-story.png";
-
-export const squareFilename = (filename: string) =>
-  filename.replace(/\.png$/i, "") + "-square.png";
 
 /** One click: 4:5 feed PNG, then 9:16 story, then any extra slides. */
 export const downloadExportPack = async (

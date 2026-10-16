@@ -13,6 +13,9 @@ import {
   stripCaptionName,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import {
   TEAM_OF_THE_WEEK_PLUS_LOOK_KEY,
   useComposerLook,
@@ -185,7 +188,11 @@ export function TeamOfTheWeekPlusComposerApp() {
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -213,8 +220,15 @@ export function TeamOfTheWeekPlusComposerApp() {
           showNames,
         },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -223,8 +237,10 @@ export function TeamOfTheWeekPlusComposerApp() {
     }
   };
 
-  const handleReset = () => {
-    const next = defaultTotwPlusDraft();
+  const applyPlusDraft = (
+    next: ReturnType<typeof defaultTotwPlusDraft>,
+    status: string,
+  ) => {
     push(slots);
     setBrand(next.brand);
     setWeek(next.week);
@@ -233,7 +249,28 @@ export function TeamOfTheWeekPlusComposerApp() {
     setSlots(next.slots);
     setShowNames(next.showNames !== false);
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus(status);
+  };
+
+  const handleResetKeepPhotos = () => {
+    const blank = defaultTotwPlusDraft();
+    applyPlusDraft(
+      keepComposerPhotos(blank, {
+        ...blank,
+        brand,
+        week,
+        starterCaption,
+        standoutCaption,
+        slots,
+        showBa,
+        showNames,
+      }),
+      "Reset — photos kept.",
+    );
+  };
+
+  const handleReset = () => {
+    applyPlusDraft(defaultTotwPlusDraft(), "Blank post.");
   };
 
   const commitPick = (
@@ -383,18 +420,12 @@ export function TeamOfTheWeekPlusComposerApp() {
             {storyCrop ? "On" : "Off"}
           </button>
         </label>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Name + logo</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Name and team logo"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+        <ComposerNamesToggle
+          on={showNames}
+          onChange={setShowNames}
+          label="Name + logo"
+          ariaLabel="Name and team logo"
+        />
           </>
         }
         persist={
@@ -437,8 +468,11 @@ export function TeamOfTheWeekPlusComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -475,6 +509,15 @@ export function TeamOfTheWeekPlusComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -530,6 +573,7 @@ export function TeamOfTheWeekPlusComposerApp() {
               setSlots((current) => patchStrip(current, index, names))
             }
           />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Top row is the week’s best 2 guards / 2 forwards / 1 center — close

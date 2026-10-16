@@ -6,6 +6,7 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   TIER_LOOK_KEY,
@@ -271,12 +272,52 @@ export function TierListComposerApp() {
     }
   };
 
+  const handleResetKeepPhotos = () => {
+    push(rows);
+    setTitle(DEFAULT_TIER_TITLE);
+    setActive(null);
+    setStatus("Reset — ranking kept.");
+  };
+
   const handleReset = () => {
     push(rows);
     setTitle(DEFAULT_TIER_TITLE);
     setRows(createDefaultRows());
     setActive(null);
-    setStatus("Board cleared.");
+    setStatus("Blank post.");
+  };
+
+  const handleExportSquare = async () => {
+    const node = boardRef.current;
+    if (!node) {
+      setStatus("Graphic is not ready to export.");
+      return;
+    }
+    setExporting(true);
+    setActive(null);
+    try {
+      await exportTierListPng(
+        node,
+        exportFilenameFromTitle(title, "nba-tier-list", exportDateStamp()),
+        {
+          title,
+          rows,
+          subject,
+          look,
+          purpleFlair,
+          showBa,
+          showNames,
+        },
+        false,
+        true,
+      );
+      setStatus("1:1 PNG download started.");
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not export 1:1 PNG.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const valuesForIds = (ids: string[], metric: EveryTeamStatMetric) => {
@@ -501,18 +542,11 @@ export function TierListComposerApp() {
         }
         board={
           <>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Names</span>
-              <button
-                type="button"
-                className={showNames ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={showNames}
-                aria-label="Show names on cells"
-                onClick={() => setShowNames((on) => !on)}
-              >
-                {showNames ? "On" : "Off"}
-              </button>
-            </label>
+            <ComposerNamesToggle
+              on={showNames}
+              onChange={setShowNames}
+              ariaLabel="Show names on cells"
+            />
             <ComposerLookToggle look={look} onChange={setLook} />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
             <BaMarkToggle on={showBa} onChange={setShowBa} />
@@ -551,8 +585,11 @@ export function TierListComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -587,6 +624,15 @@ export function TierListComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExportSquare()}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"

@@ -30,6 +30,8 @@ import {
   statCardLineCaption,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
@@ -217,7 +219,11 @@ export function StatCardComposerApp() {
     void night.ensureStandouts(night.date);
   }, [pickerOpen, source, night.date, night.ensureStandouts]);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -234,13 +240,20 @@ export function StatCardComposerApp() {
           exportFilenameFromTitle(playerName(draft) || "stat-card", "stat-card"),
         { ...draft, look, purpleFlair, photoGrade },
         story,
+        square,
       );
       setDraft((current) => {
         const statsLeft = nextStatsLeft(Boolean(current.statsLeft));
         persistStatCardStatsLeft(statsLeft, current.gameDate);
         return { ...current, statsLeft };
       });
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -573,11 +586,22 @@ export function StatCardComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(defaultStatCardDraft());
-              setStatus("Board cleared.");
+              setDraft(keepComposerPhotos(defaultStatCardDraft(), draft));
+              setStatus("Reset — photos kept.");
             }}
           >
-            Reset
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(defaultStatCardDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
           </button>
           <button
             type="button"
@@ -603,6 +627,15 @@ export function StatCardComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -726,6 +759,7 @@ export function StatCardComposerApp() {
                 setDraft((current) => ({ ...current, matchup }))
               }
             />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photo first — pick a player for the team-color name bar and

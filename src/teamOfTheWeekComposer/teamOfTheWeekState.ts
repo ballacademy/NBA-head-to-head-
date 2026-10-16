@@ -1,3 +1,4 @@
+import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
@@ -238,6 +239,6 @@ export const defaultTotwDraft = (): TotwDraft => ({
   title: DEFAULT_TOTW_TITLE,
   week: defaultWeekLabel(),
   strips: createEmptyStrips(),
-  showNames: false,
+  showNames: storedOrLastShowNames(undefined, false),
   showTeamHairline: true,
 });

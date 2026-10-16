@@ -6,6 +6,7 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
@@ -226,7 +227,7 @@ export function EveryTeamComposerApp() {
   const filenameFor = (story = false) =>
     exportFilenameFromTitle(title, "every-nba-team", exportDateStamp(), story);
 
-  const handleExport = async (story = false) => {
+  const handleExport = async (story = false, square = false) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -255,14 +256,29 @@ export function EveryTeamComposerApp() {
           cellSeasons,
         },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleResetKeepPhotos = () => {
+    push(snapshot());
+    setBrand(DEFAULT_BRAND);
+    setTitle(DEFAULT_EVERY_TEAM_TITLE);
+    setActiveIndex(null);
+    setStatus("Reset — ranking kept.");
   };
 
   const handleReset = () => {
@@ -274,7 +290,7 @@ export function EveryTeamComposerApp() {
     setSeason(everyTeamCurrentSeason());
     setCellSeasons({});
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus("Blank post.");
   };
 
   const changeBoardSeason = (nextSeason: string) => {
@@ -585,18 +601,11 @@ export function EveryTeamComposerApp() {
         }
         board={
           <>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show player names on cells"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+        <ComposerNamesToggle
+          on={showNames}
+          onChange={setShowNames}
+          ariaLabel="Show player names on cells"
+        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Historical logos</span>
           <button
@@ -665,8 +674,11 @@ export function EveryTeamComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -698,6 +710,15 @@ export function EveryTeamComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"

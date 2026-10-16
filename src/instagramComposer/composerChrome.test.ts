@@ -398,6 +398,19 @@ describe("composer chrome", () => {
     expect(compareApp).toContain("Reset keep photos");
     expect(compareApp).toContain("Blank post");
     expect(compareApp).toContain("Export 1:1");
+    const statCardAppUx = readFileSync(
+      join(root, "statCardComposer/StatCardComposerApp.tsx"),
+      "utf8",
+    );
+    const headlineAppUx = readFileSync(
+      join(root, "headlineComposer/HeadlineComposerApp.tsx"),
+      "utf8",
+    );
+    expect(statCardAppUx).toContain("Reset keep photos");
+    expect(statCardAppUx).toContain("Blank post");
+    expect(statCardAppUx).toContain("Export 1:1");
+    expect(headlineAppUx).toContain("Export 1:1");
+    expect(headlineAppUx).toContain("Reset keep photos");
     expect(compareCss).toContain(".cmp-brand");
     const compareGraphic = readFileSync(
       join(root, "compareComposer/CompareGraphic.tsx"),

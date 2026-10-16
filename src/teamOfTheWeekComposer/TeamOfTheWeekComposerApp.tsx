@@ -15,6 +15,8 @@ import {
   stripCaptionName,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
@@ -135,7 +137,11 @@ export function TeamOfTheWeekComposerApp() {
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -151,8 +157,15 @@ export function TeamOfTheWeekComposerApp() {
         filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
         { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -161,8 +174,10 @@ export function TeamOfTheWeekComposerApp() {
     }
   };
 
-  const handleReset = () => {
-    const next = defaultTotwDraft();
+  const applyTotwDraft = (
+    next: ReturnType<typeof defaultTotwDraft>,
+    status: string,
+  ) => {
     push(strips);
     setBrand(next.brand);
     setTitle(next.title);
@@ -171,7 +186,28 @@ export function TeamOfTheWeekComposerApp() {
     setShowNames(next.showNames === true);
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus(status);
+  };
+
+  const handleResetKeepPhotos = () => {
+    const blank = defaultTotwDraft();
+    applyTotwDraft(
+      keepComposerPhotos(blank, {
+        ...blank,
+        brand,
+        title,
+        week,
+        strips,
+        showBa,
+        showNames,
+        showTeamHairline,
+      }),
+      "Reset — photos kept.",
+    );
+  };
+
+  const handleReset = () => {
+    applyTotwDraft(defaultTotwDraft(), "Blank post.");
   };
 
   const commitPick = (
@@ -296,18 +332,11 @@ export function TeamOfTheWeekComposerApp() {
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <TeamHairlineToggle on={showTeamHairline} onChange={setShowTeamHairline} />
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show first and last names"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+        <ComposerNamesToggle
+          on={showNames}
+          onChange={setShowNames}
+          ariaLabel="Show first and last names"
+        />
           </>
         }
         persist={
@@ -350,8 +379,11 @@ export function TeamOfTheWeekComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -383,6 +415,15 @@ export function TeamOfTheWeekComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"

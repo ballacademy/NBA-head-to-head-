@@ -54,7 +54,7 @@ import {
   statCardStoryType,
   statCardType,
 } from "./statCardLayout";
-import { playerName, type StatCardDraft } from "./statCardState";
+import { playerName, visibleStatCardLines, type StatCardDraft } from "./statCardState";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
@@ -100,6 +100,7 @@ export const renderStatCardCanvas = async (
   }
   await document.fonts?.ready.catch(() => undefined);
   const s = scale;
+  const stats = visibleStatCardLines(input.stats, true);
   context.fillStyle = "#0b0b0b";
   context.fillRect(0, 0, width, height);
 
@@ -207,8 +208,8 @@ export const renderStatCardCanvas = async (
   const showMatchup = input.showMatchup === true;
   const matchup = showMatchup ? (input.matchup ?? "").trim() : "";
   const type = story
-    ? statCardStoryType(input.stats.length)
-    : statCardType(input.stats.length);
+    ? statCardStoryType(stats.length)
+    : statCardType(stats.length);
   const paintStat = (
     line: StatCardDraft["stats"][number],
     cx: number,
@@ -230,11 +231,11 @@ export const renderStatCardCanvas = async (
     const matchupH = showMatchup ? STC_MATCHUP_H * s : 0;
     const rowH = statsPanelH - matchupH;
     const cols = statCardStoryColumns(
-      input.stats.length,
+      stats.length,
       storyRects.stats.w,
       rowH / s,
     );
-    input.stats.forEach((line, index) => {
+    stats.forEach((line, index) => {
       const col = cols[index]!;
       const cx = statsX + col.x * s + (col.w * s) / 2;
       if (index > 0) {
@@ -272,8 +273,8 @@ export const renderStatCardCanvas = async (
     const statsHeight = showMatchup
       ? GRAPHIC_HEIGHT - STC_MATCHUP_H
       : GRAPHIC_HEIGHT;
-    const rows = statCardRows(input.stats.length, statsHeight);
-    input.stats.forEach((line, index) => {
+    const rows = statCardRows(stats.length, statsHeight);
+    stats.forEach((line, index) => {
       const row = rows[index]!;
       if (index > 0) {
         context.fillStyle = STC_RULE;

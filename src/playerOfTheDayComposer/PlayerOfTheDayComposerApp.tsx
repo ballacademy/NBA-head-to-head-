@@ -20,6 +20,7 @@ import {
   stripCaptionName,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PLAYER_OF_THE_DAY_LOOK_KEY,
@@ -143,7 +144,11 @@ export function PlayerOfTheDayComposerApp() {
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -159,14 +164,33 @@ export function PlayerOfTheDayComposerApp() {
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
         { brand, title, date, cards, look, purpleFlair, photoGrade, showBa },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleResetKeepPhotos = () => {
+    const blank = defaultPotdDraft();
+    const kept = keepComposerPhotos(blank, { ...blank, brand, title, date, cards });
+    push(cards);
+    setBrand(kept.brand);
+    setTitle(kept.title);
+    setDate(kept.date);
+    setCards(kept.cards);
+    setActiveIndex(null);
+    setStatus("Reset — photos kept.");
   };
 
   const handleReset = () => {
@@ -177,7 +201,7 @@ export function PlayerOfTheDayComposerApp() {
     setDate(next.date);
     setCards(next.cards);
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus("Blank post.");
   };
 
   useEffect(() => {
@@ -403,8 +427,11 @@ export function PlayerOfTheDayComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -436,6 +463,15 @@ export function PlayerOfTheDayComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"

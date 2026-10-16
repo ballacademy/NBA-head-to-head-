@@ -117,6 +117,12 @@ export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
   return next;
 };
 
+export const visibleStatCardLines = (
+  stats: StatCardLine[],
+  exporting = false,
+): StatCardLine[] =>
+  exporting ? stats.filter((line) => line.value.trim()) : stats;
+
 export const DEFAULT_STAT_LINES: StatCardLine[] = STAT_CARD_LINE_OPTIONS.slice(
   0,
   STC_STAT_COUNT,

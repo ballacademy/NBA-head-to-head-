@@ -1,3 +1,7 @@
+import {
+  storedOrLastShowBa,
+  storedOrLastShowNames,
+} from "../instagramComposer/composerBoardDefaults";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   DEFAULT_HEADSHOT_PAN,
@@ -127,8 +131,8 @@ export const defaultPyramidDraft = (): PyramidDraft => ({
   title: DEFAULT_PYRAMID_TITLE,
   slots: createEmptyPyramidSlots(PYR_DEFAULT_ROWS),
   rows: PYR_DEFAULT_ROWS,
-  showBa: true,
-  showNames: false,
+  showBa: storedOrLastShowBa(undefined),
+  showNames: storedOrLastShowNames(undefined, false),
   rowLabels: parsePyramidRowLabels(undefined, PYR_DEFAULT_ROWS),
 });
 

@@ -1,5 +1,5 @@
 import {
-  downloadCanvasPng,
+  downloadPngMaybeSquare,
   toStoryCanvas,
 } from "../instagramComposer/exportDownload";
 import {
@@ -12,10 +12,9 @@ export const exportTeamOfTheWeekPng = async (
   filename: string,
   input: TeamOfTheWeekRenderInput,
   story = false,
+  square = false,
 ) => {
   const canvas = await renderTeamOfTheWeekCanvas(input, 2);
-  await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
-    filename,
-  );
+  const board = story ? await toStoryCanvas(canvas) : canvas;
+  await downloadPngMaybeSquare(board, filename, square);
 };

@@ -12,6 +12,9 @@ import {
   stripCaptionName,
 } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   PYRAMID_LOOK_KEY,
@@ -42,6 +45,7 @@ import {
   applyPyramidPick,
   clearPyramidSlot,
   coachesFromStandings,
+  createEmptyPyramidSlots,
   defaultPyramidDraft,
   fillPyramidFromPlayers,
   hasCustomPhoto,
@@ -194,7 +198,11 @@ export function PyramidComposerApp() {
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
-  const handleExport = async (filename?: string, story = false) => {
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
     const node = boardRef.current;
     if (!node) {
       setStatus("Graphic is not ready to export.");
@@ -210,8 +218,15 @@ export function PyramidComposerApp() {
         filename ?? exportFilenameFromTitle(title, "pyramid"),
         { title, slots, rows, rowLabels, look, purpleFlair, photoGrade, showBa, showNames },
         story,
+        square,
       );
-      setStatus(story ? "Story PNG download started." : "Download started.");
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not export PNG.");
@@ -220,15 +235,32 @@ export function PyramidComposerApp() {
     }
   };
 
-  const handleReset = () => {
-    const next = defaultPyramidDraft();
+  const applyPyramidDraft = (
+    next: ReturnType<typeof defaultPyramidDraft>,
+    status: string,
+  ) => {
     push({ slots, rows });
     setTitle(next.title);
     setSlots(next.slots);
     setRows(next.rows ?? 4);
     setRowLabels(parsePyramidRowLabels(next.rowLabels, next.rows ?? 4));
     setActiveIndex(null);
-    setStatus("Board cleared.");
+    setStatus(status);
+  };
+
+  const handleResetKeepPhotos = () => {
+    const blank = defaultPyramidDraft();
+    applyPyramidDraft(
+      keepComposerPhotos(
+        { ...blank, rows, rowLabels, slots: createEmptyPyramidSlots(rows) },
+        { ...blank, title, rows, rowLabels, slots },
+      ),
+      "Reset — photos kept.",
+    );
+  };
+
+  const handleReset = () => {
+    applyPyramidDraft(defaultPyramidDraft(), "Blank post.");
   };
 
   const commitPick = (
@@ -411,18 +443,11 @@ export function PyramidComposerApp() {
         }
         board={
           <>
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Names</span>
-          <button
-            type="button"
-            className={showNames ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={showNames}
-            aria-label="Show player names on cells"
-            onClick={() => setShowNames((on) => !on)}
-          >
-            {showNames ? "On" : "Off"}
-          </button>
-        </label>
+        <ComposerNamesToggle
+          on={showNames}
+          onChange={setShowNames}
+          ariaLabel="Show player names on cells"
+        />
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
@@ -474,8 +499,11 @@ export function PyramidComposerApp() {
           >
             Undo
           </button>
+          <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
+            Reset keep photos
+          </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
-            Reset
+            Blank post
           </button>
           <button
             type="button"
@@ -506,6 +534,15 @@ export function PyramidComposerApp() {
             disabled={exporting}
           >
             Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
           </button>
           <button
             type="button"
@@ -600,7 +637,8 @@ export function PyramidComposerApp() {
                 "Photo cropped in the square — heads pop out the top. Pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
-          />
+            />
+            <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Photo squares in a 1–2–3–4 (or 5 / 6) stack, sitting toward the

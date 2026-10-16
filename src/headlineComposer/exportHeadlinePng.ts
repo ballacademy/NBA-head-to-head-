@@ -1,4 +1,4 @@
-import { downloadCanvasPng } from "../instagramComposer/exportDownload";
+import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
 import {
   renderHeadlineCanvas,
   type HeadlineRenderInput,
@@ -9,7 +9,8 @@ export const exportHeadlinePng = async (
   filename: string,
   input: HeadlineRenderInput,
   story = false,
+  square = false,
 ) => {
   const canvas = await renderHeadlineCanvas({ ...input, story }, 2);
-  await downloadCanvasPng(canvas, filename);
+  await downloadPngMaybeSquare(canvas, filename, square);
 };

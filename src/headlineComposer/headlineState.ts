@@ -1,3 +1,4 @@
+import { storedOrLastShowBa } from "../instagramComposer/composerBoardDefaults";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
@@ -184,7 +185,7 @@ export const defaultHeadlineDraft = (): HeadlineDraft => ({
   photoSrc: null,
   customPhoto: false,
   pan: { ...DEFAULT_CUSTOM_PAN },
-  showBa: true,
+  showBa: storedOrLastShowBa(undefined),
   watermark: DEFAULT_HEADLINE_WATERMARK,
   plateColor: "white",
   lockup: "bottom",
