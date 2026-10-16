@@ -116,6 +116,7 @@ describe("composer chrome", () => {
 
   it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
     expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[\s\S]*?grid-template-rows:\s*minmax\(0,\s*1fr\) auto/);
     expect(sheet).toContain(".sc-toolbar__body");
     expect(sheet).not.toContain(".sc-stage__board .pod-photo__tools");
     expect(sheet).not.toContain(".sc-stage__board .pod-photo__pick");
