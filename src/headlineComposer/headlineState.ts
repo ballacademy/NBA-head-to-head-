@@ -57,6 +57,13 @@ export const DEFAULT_HEADLINE_WATERMARK: HeadlineWatermark = "faint";
 
 export const HEADLINE_CAPTION_PRESETS: Record<string, string> = {
   BREAKING: "Breaking.",
+  "TRADE RUMOR": "Trade rumor.",
+  TRADE: "Traded.",
+  SIGNING: "Signed.",
+  WAIVED: "Waived.",
+  "BOUGHT OUT": "Bought out.",
+  EXTENSION: "Extension.",
+  "RE-SIGNED": "Re-signed.",
   "BLOWN OUT": "Blown out.",
   "CAREER NIGHT": "Career night.",
   "DEFENSIVE CLINIC": "Defensive clinic.",

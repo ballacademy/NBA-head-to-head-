@@ -112,6 +112,33 @@ describe("headline composer", () => {
     ).toContain("Rudy Gobert");
   });
 
+  it("ships transaction kickers that fit the chevron and keep the player", () => {
+    const plates = [
+      "TRADE RUMOR",
+      "TRADE",
+      "SIGNING",
+      "WAIVED",
+      "BOUGHT OUT",
+      "EXTENSION",
+      "RE-SIGNED",
+    ];
+    for (const plate of plates) {
+      expect(HEADLINE_TITLE_PRESETS).toContain(plate);
+      const fit = fitHeadlineType(plate);
+      expect(fit.lines).toEqual([plate]);
+      expect(fit.size).toBeGreaterThanOrEqual(HL_HEADLINE_MIN);
+    }
+    expect(headlineCaptionFor("TRADE RUMOR", "")).toContain("Trade rumor.");
+    const gobert = getPlayer("3032976")!;
+    const picked = fillHeadlineFromPlayer(gobert, defaultHeadlineDraft());
+    const miami = setHeadlineTeamId(picked, "MIA");
+    const rumored = { ...miami, headline: "TRADE RUMOR" };
+    expect(rumored.playerId).toBe(picked.playerId);
+    expect(rumored.photoSrc).toBe(picked.photoSrc);
+    expect(rumored.teamId).toBe("MIA");
+    expect(rumored.firstName).toBe(picked.firstName);
+  });
+
   it("fits a short kicker on one line and wraps a long take", () => {
     const short = fitHeadlineType("BREAKING");
     expect(short.lines).toEqual(["BREAKING"]);

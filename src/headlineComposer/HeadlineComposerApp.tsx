@@ -302,6 +302,8 @@ export function HeadlineComposerApp() {
           <input
             value={draft.headline}
             maxLength={HEADLINE_MAX}
+            list="headline-kicker-presets"
+            aria-label="Headline kicker"
             onChange={(event) =>
               onComposerTextChange(
                 event,
@@ -310,11 +312,18 @@ export function HeadlineComposerApp() {
               )
             }
           />
+          <datalist id="headline-kicker-presets">
+            {HEADLINE_TITLE_PRESETS.map((preset) => (
+              <option key={preset} value={preset} />
+            ))}
+          </datalist>
         </label>
         <TitlePresetSelect
           value={draft.headline}
           presets={HEADLINE_TITLE_PRESETS}
-          onChange={(headline) => setDraft((current) => ({ ...current, headline }))}
+          onChange={(headline) =>
+            setDraft((current) => ({ ...current, headline }))
+          }
         />
         <label className="sc-field sc-field--wide">
           Body
