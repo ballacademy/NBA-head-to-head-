@@ -29,8 +29,12 @@ export const SCC_NAME_LOGO = 44;
 export const SCC_FAMILY_SIZE = 28;
 export const SCC_GIVEN_SIZE = 13;
 export const SCC_MARK = 140;
-export const SCC_SWIPE_SIZE = 58;
-export const SCC_SWIPE_INSET = 28;
+/** Large enough to read at 2400×3000 — still pinned to the right edge. */
+export const SCC_SWIPE_SIZE = 88;
+export const SCC_SWIPE_INSET = 20;
+export const SCC_SWIPE_LABEL = 18;
+export const SCC_SWIPE_CHEV = 22;
+export const SCC_SWIPE_STROKE = 4.4;
 export const SCC_LOCKUP_TOP = 56;
 /** Tasteful gold accents — lockup, seams, date pill, swipe. Not a flood. */
 export const SCC_GOLD_PALE = "#fde68a";

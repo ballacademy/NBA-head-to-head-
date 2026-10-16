@@ -40,8 +40,11 @@ import {
   SCC_PILL_PAD_X,
   SCC_SEAM_W,
   SCC_SLOT_COUNT,
+  SCC_SWIPE_CHEV,
   SCC_SWIPE_INSET,
+  SCC_SWIPE_LABEL,
   SCC_SWIPE_SIZE,
+  SCC_SWIPE_STROKE,
   SCC_TITLE_LEAD_TRACK,
   SCC_TITLE_SIZE,
   SCC_TITLE_TRACK,
@@ -278,31 +281,34 @@ const drawSwipeCue = (
   const cy = GRAPHIC_HEIGHT * 0.56 * s;
   const ink = goldOn ? SCC_GOLD : "#fff";
   const ring = goldOn ? SCC_GOLD_DEEP : "rgba(255, 255, 255, 0.88)";
+  const label = SCC_SWIPE_LABEL * s;
+  const arm = (SCC_SWIPE_CHEV / 2) * s;
   context.save();
-  context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+  context.font = `900 ${label}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "bottom";
-  setLetterSpacing(context, 0.28 * 11 * s);
+  setLetterSpacing(context, 0.22 * label);
   context.fillStyle = ink;
   withShadow(context, s, () => {
-    context.fillText("SWIPE", cx, cy - size / 2 - 6 * s);
+    context.fillText("SWIPE", cx, cy - size / 2 - 8 * s);
   });
   setLetterSpacing(context, 0);
   context.beginPath();
   context.arc(cx, cy, size / 2, 0, Math.PI * 2);
   context.fillStyle = "rgba(0, 0, 0, 0.42)";
   context.fill();
-  context.lineWidth = 2 * s;
+  context.lineWidth = 2.6 * s;
   context.strokeStyle = ring;
   context.stroke();
   context.translate(cx + 2 * s, cy);
   context.rotate(Math.PI / 4);
   context.strokeStyle = ink;
-  context.lineWidth = 3.2 * s;
+  context.lineWidth = SCC_SWIPE_STROKE * s;
   context.beginPath();
-  context.moveTo(-7 * s, 7 * s);
-  context.lineTo(7 * s, 7 * s);
-  context.lineTo(7 * s, -7 * s);
+  // Top + right edges of a square, rotated 45° → chevron points right (carousel next).
+  context.moveTo(-arm, -arm);
+  context.lineTo(arm, -arm);
+  context.lineTo(arm, arm);
   context.stroke();
   context.restore();
 };

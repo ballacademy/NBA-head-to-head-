@@ -270,31 +270,31 @@
 
 .scc-swipe {
   position: absolute;
-  right: calc(28 * var(--u));
+  right: calc(20 * var(--u));
   top: 56%;
   z-index: 6;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(6 * var(--u));
+  gap: calc(8 * var(--u));
   pointer-events: none;
 }
 
 .scc-swipe__label {
   font-family: var(--ig-poster);
-  font-size: calc(11 * var(--u));
+  font-size: calc(18 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #fff;
   text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.8);
 }
 
 .scc-swipe__chev {
-  width: calc(58 * var(--u));
-  height: calc(58 * var(--u));
+  width: calc(88 * var(--u));
+  height: calc(88 * var(--u));
   border-radius: 50%;
-  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.88);
+  border: calc(2.6 * var(--u)) solid rgba(255, 255, 255, 0.88);
   background: rgba(0, 0, 0, 0.42);
   box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
 }
@@ -302,11 +302,11 @@
 .scc-swipe__chev::after {
   content: "";
   display: block;
-  width: calc(14 * var(--u));
-  height: calc(14 * var(--u));
-  margin: calc(20 * var(--u)) 0 0 calc(24 * var(--u));
-  border-right: calc(3.2 * var(--u)) solid #fff;
-  border-top: calc(3.2 * var(--u)) solid #fff;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  margin: calc(31 * var(--u)) 0 0 calc(35 * var(--u));
+  border-right: calc(4.4 * var(--u)) solid #fff;
+  border-top: calc(4.4 * var(--u)) solid #fff;
   transform: rotate(45deg);
 }
 
