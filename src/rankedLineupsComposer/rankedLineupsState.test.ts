@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
+import catalog from "../../data/every-team-historical-rosters.json";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { FIELD_TEXTURE_SRC } from "../standingsComposer/headerTexture";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  EVERY_TEAM_STAT_METRICS,
+  hydrateEveryTeamRosters,
+} from "../everyTeamComposer/historicalRosters";
 import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
@@ -30,6 +35,7 @@ import {
   DEFAULT_RANK_DISPLAY,
   DEFAULT_RANK_PILL,
   DEFAULT_RANKED_LINEUP_TITLE,
+  fillLineupByStatLeaders,
   rankHeadlinePrimary,
   rankHeadlineSecondary,
   defaultRankedLineupsDraft,
@@ -40,12 +46,18 @@ import {
   nextRankPill,
   swipeRankCue,
   parseRankDisplay,
+  pickLineupStatLeaders,
   RANK_PILL_PRESETS,
   RANKED_LINEUP_STRIP_COUNT,
+  setStripPhoto,
   slidesFromDraft,
   splitRankedLineupTitle,
   usedLineupPlayerIds,
 } from "./rankedLineupsState";
+
+hydrateEveryTeamRosters(
+  catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+);
 
 describe("ranked lineups", () => {
   it("keeps the Instagram 4:5 PNG size", () => {
@@ -128,6 +140,101 @@ describe("ranked lineups", () => {
     const filled = applyPlayerPick(createEmptyStrips(), 0, luka);
     expect(filled[0]?.playerId).toBe("3945274");
     expect(usedLineupPlayerIds(filled)["3945274"]).toBe("PG");
+  });
+
+  it("lists every counting and percentage lineup auto-fill metric", () => {
+    expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "STL",
+      "BLK",
+      "TOV",
+      "FG%",
+      "3P%",
+      "FT%",
+      "eFG%",
+      "TS%",
+      "MIN",
+      "GP",
+      "PRA",
+      "STL+BLK",
+    ]);
+  });
+
+  it("auto-fills 2012-13 PTS leaders at PG–C with no repeats", () => {
+    const empty = createEmptyStrips();
+    const result = fillLineupByStatLeaders(empty, "2012-13", "points");
+    expect(result.filled).toBe(5);
+    expect(result.strips.map((strip) => strip.lastName)).toEqual([
+      "Westbrook",
+      "Bryant",
+      "Anthony",
+      "Aldridge",
+      "Lopez",
+    ]);
+    expect(result.strips.map((strip) => strip.teamId)).toEqual([
+      "OKC",
+      "LAL",
+      "NYK",
+      "POR",
+      "BKN",
+    ]);
+    const ids = result.strips.map((strip) => strip.playerId);
+    expect(new Set(ids).size).toBe(5);
+    expect(empty.every((strip) => !strip.playerId)).toBe(true);
+  });
+
+  it("auto-fills the 2nd 2012-13 PTS lineup without repeating the BEST five", () => {
+    const best = fillLineupByStatLeaders(createEmptyStrips(), "2012-13", "points", "regular", 1);
+    const second = fillLineupByStatLeaders(
+      createEmptyStrips(),
+      "2012-13",
+      "points",
+      "regular",
+      2,
+    );
+    expect(second.strips.map((strip) => strip.lastName)).toEqual([
+      "Curry",
+      "Harden",
+      "Durant",
+      "Lee",
+      "Jefferson",
+    ]);
+    const bestIds = new Set(best.strips.map((strip) => strip.playerId));
+    second.strips.forEach((strip) => {
+      expect(bestIds.has(strip.playerId)).toBe(false);
+    });
+  });
+
+  it("auto-fills 2026-27 regular-season PTS leaders using last year’s table", () => {
+    const result = fillLineupByStatLeaders(
+      createEmptyStrips(),
+      "2026-27",
+      "points",
+      "regular",
+    );
+    expect(result.filled).toBe(5);
+    expect(result.strips[0]?.lastName).toBe("Doncic");
+    expect(result.strips[1]?.lastName).toBe("Edwards");
+    expect(result.strips[2]?.lastName).toBe("Brown");
+    expect(result.strips[3]?.lastName).toMatch(/Antetokounmpo/i);
+    expect(result.strips[4]?.lastName).toBe("Jokic");
+    const assists = pickLineupStatLeaders("2026-27", "assists", "regular");
+    expect(assists.map((row) => row?.player.id).filter(Boolean)).toHaveLength(5);
+    expect(new Set(assists.map((row) => row?.player.id)).size).toBe(5);
+    expect(assists.map((row) => row?.player.id)).not.toEqual(
+      result.strips.map((strip) => strip.playerId),
+    );
+  });
+
+  it("keeps a custom photo when populating that strip’s leader", () => {
+    const custom = setStripPhoto(createEmptyStrips(), 0, "data:image/png;base64,abc");
+    const result = fillLineupByStatLeaders(custom, "2012-13", "points");
+    expect(result.strips[0]?.lastName).toBe("Westbrook");
+    expect(result.strips[0]?.customPhoto).toBe(true);
+    expect(result.strips[0]?.photoSrc).toBe("data:image/png;base64,abc");
+    expect(result.strips[1]?.customPhoto).toBe(false);
   });
 
   it("paints a light vignette over five-strip photos", () => {

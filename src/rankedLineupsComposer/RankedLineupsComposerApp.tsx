@@ -7,7 +7,9 @@ import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
@@ -43,12 +45,24 @@ import { RankedLineupsGraphic } from "./RankedLineupsGraphic";
 import { renderRankedLineupsCanvas } from "./renderRankedLineupsCanvas";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { exportRankedLineupsPng } from "./exportRankedLineupsPng";
+import { autoSortMetricLabel } from "../everyTeamComposer/everyTeamState";
+import {
+  EVERY_TEAM_STAT_METRICS,
+  everyTeamCurrentSeason,
+  everyTeamSeasons,
+  isEveryTeamRostersReady,
+  loadEveryTeamRosters,
+  parseEveryTeamSeason,
+  parseEveryTeamStatMetric,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
 import {
   applyPlayerPick,
   clampActiveSlide,
   clearStrip,
   defaultRankedLineupsDraft,
   emptyLineupSlide,
+  fillLineupByStatLeaders,
   hasCustomPhoto,
   isRankedLineupsDraft,
   lineupPosition,
@@ -61,6 +75,7 @@ import {
   POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   RANK_PILL_PRESETS,
+  rankOrdinalNumber,
   setStripPhoto,
   slidesFromDraft,
   usedLineupPlayerIds,
@@ -102,6 +117,10 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
           unranked ? "none" : "pill",
         ),
         positionLabels: parsePositionLabels(stored.positionLabels),
+        season:
+          typeof stored.season === "string" && stored.season
+            ? stored.season
+            : everyTeamCurrentSeason(),
       },
       slides,
       stored.activeSlide ?? 0,
@@ -123,6 +142,10 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
       unranked ? "none" : "pill",
     ),
     positionLabels: parsePositionLabels(stored?.positionLabels),
+    season:
+      typeof stored?.season === "string" && stored.season
+        ? stored.season
+        : everyTeamCurrentSeason(),
   };
 };
 
@@ -166,6 +189,10 @@ export function RankedLineupsComposerApp({
   const [positionLabels, setPositionLabels] = useState(
     parsePositionLabels(empty.positionLabels),
   );
+  const [season, setSeason] = useState(everyTeamCurrentSeason);
+  const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
+  const [statsSample, setStatsSample] = useComposerStatsSample();
+  const [rostersReady, setRostersReady] = useState(isEveryTeamRostersReady);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -201,10 +228,21 @@ export function RankedLineupsComposerApp({
     setShowBa(draft.showBa === true);
     setShowFade(draft.showFade === true);
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
-    setRankDisplay(parseRankDisplay(draft.rankDisplay, unranked ? "none" : "pill"));
+    setRankDisplay(
+      parseRankDisplay(draft.rankDisplay, unranked ? "none" : "pill"),
+    );
     setPositionLabels(parsePositionLabels(draft.positionLabels));
+    setSeason(draft.season || everyTeamCurrentSeason());
     setHydrated(true);
-  }, []);
+    void loadEveryTeamRosters()
+      .then(() => {
+        setRostersReady(true);
+        setSeason((current) => parseEveryTeamSeason(current));
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+      });
+  }, [unranked]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -222,8 +260,9 @@ export function RankedLineupsComposerApp({
       showTeamHairline,
       rankDisplay,
       positionLabels,
+      season,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, hydrated, storageKey]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, season, hydrated, storageKey]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -244,6 +283,7 @@ export function RankedLineupsComposerApp({
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
     setPositionLabels(parsePositionLabels(next.positionLabels));
+    setSeason(parseEveryTeamSeason(next.season));
     setActiveIndex(null);
   };
 
@@ -377,6 +417,7 @@ export function RankedLineupsComposerApp({
         showTeamHairline,
         rankDisplay,
         positionLabels,
+        season,
       }),
     );
     setStatus("Reset — photos kept.");
@@ -404,6 +445,35 @@ export function RankedLineupsComposerApp({
     setStrips(next.strips);
     setActiveIndex(null);
     setStatus(`Started ${next.rank} with the same title.`);
+  };
+
+  const handlePopulateLeaders = () => {
+    const rankIndex = unranked ? 1 : rankOrdinalNumber(rank);
+    const result = fillLineupByStatLeaders(
+      strips,
+      season,
+      fillMetric,
+      statsSample,
+      rankIndex,
+    );
+    const label = autoSortMetricLabel(fillMetric);
+    if (result.filled === 0) {
+      setStatus(
+        `No ${label} leaders for ${season} — last season’s table is used when this year has none.`,
+      );
+      return;
+    }
+    push(strips);
+    setStrips(result.strips);
+    persistSlide(result.strips);
+    const rankCue = unranked
+      ? "PG–C"
+      : `${rank.trim().toUpperCase() || "BEST"} PG–C`;
+    setStatus(
+      result.filled < 5
+        ? `Filled ${result.filled} of 5 ${rankCue} ${label} leaders.`
+        : `Filled ${rankCue} with ${season} ${label} leaders.`,
+    );
   };
 
   const commitPick = (
@@ -487,6 +557,7 @@ export function RankedLineupsComposerApp({
     showTeamHairline,
     rankDisplay,
     positionLabels,
+    season,
   };
 
   return (
@@ -573,6 +644,53 @@ export function RankedLineupsComposerApp({
           </>
         }
         data={
+          <>
+        <label className="sc-field">
+          Season
+          <select
+            value={season}
+            aria-label="Lineup season"
+            disabled={!rostersReady}
+            onChange={(event) =>
+              setSeason(parseEveryTeamSeason(event.target.value))
+            }
+          >
+            {everyTeamSeasons().map((option) => (
+              <option key={option} value={option}>
+                {option}
+                {option === everyTeamCurrentSeason() ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={setStatsSample}
+        />
+        <div className="sc-look sc-look--sort" role="group" aria-label="Populate position leaders">
+          <span className="sc-look__label">Auto-fill</span>
+          <select
+            value={fillMetric}
+            aria-label="Auto-fill stat"
+            onChange={(event) =>
+              setFillMetric(parseEveryTeamStatMetric(event.target.value))
+            }
+          >
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <option key={metric.id} value={metric.id}>
+                {metric.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={handlePopulateLeaders}
+            disabled={!rostersReady}
+          >
+            Populate
+          </button>
+        </div>
           <ComposerPhotoHud
             onPick={() => {
               const index = activeIndex ?? photoTarget;
@@ -601,6 +719,7 @@ export function RankedLineupsComposerApp({
               });
             }}
           />
+          </>
         }
         board={
           <>
@@ -922,8 +1041,8 @@ export function RankedLineupsComposerApp({
           )}
           <p className="sc-hint">
             {unranked
-              ? "Five PG–C strips with no rank pill. Positions are editable or removable. Custom photos, frames, purple, and named saves. Downloads a 4:5 Instagram PNG — nothing is posted."
-              : "Five PG–C strips for one carousel part. Next slide keeps the title, bumps BEST to 2ND, and clears players. Paste or drop a photo onto a strip. Downloads a 4:5 Instagram PNG — nothing is posted."}
+              ? "Five PG–C strips with no rank pill. Populate fills the season-stat leader at each position. Positions are editable or removable. Custom photos, frames, purple, and named saves. Downloads a 4:5 Instagram PNG — nothing is posted."
+              : "Five PG–C strips for one carousel part. Populate fills that rank’s season-stat leader at each position. Next slide keeps the title, bumps BEST to 2ND, and clears players. Paste or drop a photo onto a strip. Downloads a 4:5 Instagram PNG — nothing is posted."}
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

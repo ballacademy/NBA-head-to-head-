@@ -385,6 +385,11 @@ describe("composer chrome", () => {
     );
     expect(rankedApp).toContain('aria-label="9:16 crop check"');
     expect(rankedApp).toContain("story={storyCrop}");
+    expect(rankedApp).toContain("EVERY_TEAM_STAT_METRICS");
+    expect(rankedApp).toContain("fillLineupByStatLeaders");
+    expect(rankedApp).toContain('aria-label="Auto-fill stat"');
+    expect(rankedApp).toContain('aria-label="Lineup season"');
+    expect(rankedApp).toContain("Populate");
     expect(totwPlusApp).toContain("story={storyCrop}");
     expect(playInApp).toContain("story={storyCrop}");
     expect(pyramidApp).toContain("story={storyCrop}");

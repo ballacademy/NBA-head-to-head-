@@ -142,8 +142,13 @@ export const splitTotwTitle = (title: string): string[] =>
 export const hasCustomPhoto = (strip: TotwStrip) =>
   Boolean(strip.customPhoto && strip.photoSrc);
 
+export type StripPlayerPick = Pick<
+  TierPlayer,
+  "id" | "name" | "team" | "headshotUrl"
+>;
+
 export const fillStripFromPlayer = (
-  player: TierPlayer,
+  player: StripPlayerPick,
   previous?: TotwStrip,
   keepCustomPhoto = false,
 ): TotwStrip => {
@@ -163,7 +168,7 @@ export const fillStripFromPlayer = (
 export const applyPlayerPick = (
   strips: TotwStrip[],
   index: number,
-  player: TierPlayer,
+  player: StripPlayerPick,
   keepCustomPhoto = false,
 ): TotwStrip[] => {
   if (index < 0 || index >= strips.length) {

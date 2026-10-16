@@ -1,5 +1,13 @@
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import { NBA_TEAMS } from "../standingsComposer/teams";
+import {
+  listRosterPlayers,
+  rosterStatValue,
+  type EveryTeamRosterPlayer,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
 import type { RankDisplay } from "./rankedLineupsLayout";
 import {
   applyPlayerPick,
@@ -73,6 +81,7 @@ export interface RankedLineupsDraft {
   showTeamHairline?: boolean;
   rankDisplay?: RankDisplay;
   positionLabels?: string[];
+  season?: string;
 }
 
 export const lineupPosition = (index: number): LineupPosition =>
@@ -108,6 +117,133 @@ export const usedLineupPlayerIds = (strips: TotwStrip[]) => {
     }
   });
   return used;
+};
+
+export interface LineupStatLeaderPick {
+  player: EveryTeamRosterPlayer;
+  teamId: string;
+  value: number;
+}
+
+export const lineupPositionMatches = (
+  playerPosition: string,
+  slot: LineupPosition,
+  loose = false,
+): boolean => {
+  const pos = playerPosition.trim().toUpperCase();
+  if (pos === slot) {
+    return true;
+  }
+  if (!loose) {
+    return false;
+  }
+  if (slot === "PG" || slot === "SG") {
+    return pos === "G";
+  }
+  if (slot === "SF" || slot === "PF") {
+    return pos === "F";
+  }
+  return false;
+};
+
+export const listLineupStatPool = (
+  season: string,
+  metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
+): LineupStatLeaderPick[] => {
+  const byId = new Map<string, LineupStatLeaderPick>();
+  NBA_TEAMS.forEach((team) => {
+    listRosterPlayers(team.id, season, sample).forEach((player) => {
+      const value = rosterStatValue(player, metric);
+      if (value == null) {
+        return;
+      }
+      const previous = byId.get(player.id);
+      if (
+        !previous ||
+        value > previous.value ||
+        (value === previous.value && player.depth < previous.player.depth)
+      ) {
+        byId.set(player.id, { player, teamId: team.id, value });
+      }
+    });
+  });
+  return [...byId.values()];
+};
+
+const compareLineupLeaders = (
+  left: LineupStatLeaderPick,
+  right: LineupStatLeaderPick,
+) =>
+  right.value - left.value ||
+  left.player.depth - right.player.depth ||
+  left.player.name.localeCompare(right.player.name);
+
+export const pickLineupStatLeaders = (
+  season: string,
+  metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
+  rank = 1,
+): Array<LineupStatLeaderPick | null> => {
+  const pool = listLineupStatPool(season, metric, sample);
+  const used = new Set<string>();
+  const skipCount = Math.max(0, rank - 1);
+  return LINEUP_POSITIONS.map((slot) => {
+    const take = (loose: boolean) => {
+      const ranked = pool
+        .filter((row) =>
+          lineupPositionMatches(row.player.position, slot, loose),
+        )
+        .sort(compareLineupLeaders);
+      let skipped = 0;
+      for (const row of ranked) {
+        if (used.has(row.player.id)) {
+          continue;
+        }
+        if (skipped < skipCount) {
+          skipped += 1;
+          continue;
+        }
+        return row;
+      }
+      return null;
+    };
+    const pick = take(false) ?? take(true);
+    if (pick) {
+      used.add(pick.player.id);
+    }
+    return pick;
+  });
+};
+
+export const fillLineupByStatLeaders = (
+  strips: TotwStrip[],
+  season: string,
+  metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
+  rank = 1,
+): { strips: TotwStrip[]; filled: number } => {
+  const leaders = pickLineupStatLeaders(season, metric, sample, rank);
+  let next = strips.slice();
+  let filled = 0;
+  leaders.forEach((leader, index) => {
+    if (!leader) {
+      return;
+    }
+    next = applyPlayerPick(
+      next,
+      index,
+      {
+        id: leader.player.id,
+        name: leader.player.name,
+        team: leader.teamId,
+        headshotUrl: leader.player.headshotUrl,
+      },
+      hasCustomPhoto(next[index]!),
+    );
+    filled += 1;
+  });
+  return { strips: next, filled };
 };
 
 export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
