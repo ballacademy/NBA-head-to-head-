@@ -6,6 +6,7 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
@@ -536,6 +537,36 @@ export function RankedLineupsComposerApp({
         </>
         )}
           </>
+        }
+        data={
+          <ComposerPhotoHud
+            onPick={() => {
+              const index = activeIndex ?? photoTarget;
+              setPhotoTarget(index);
+              setActiveIndex(index);
+            }}
+            onUpload={(dataUrl) => {
+              const index = activeIndex ?? photoTarget;
+              setPhotoTarget(index);
+              setStrips((current) => {
+                const next = setStripPhoto(current, index, dataUrl);
+                persistSlide(next);
+                return next;
+              });
+              setStatus("Photo cropped in the strip.");
+            }}
+            onUploadMany={(urls) => {
+              const start = activeIndex ?? photoTarget;
+              setStrips((current) => {
+                let next = current;
+                urls.forEach((url, offset) => {
+                  next = setStripPhoto(next, start + offset, url);
+                });
+                persistSlide(next);
+                return next;
+              });
+            }}
+          />
         }
         board={
           <>

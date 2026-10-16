@@ -21,10 +21,6 @@
     pointer-events: auto;
   }
 
-  .sc-stage__board .pod-photo__tools {
-    display: none !important;
-  }
-
   .pod-photo__tool {
     min-height: 44px;
   }

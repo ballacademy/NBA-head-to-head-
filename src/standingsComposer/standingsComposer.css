@@ -95,6 +95,7 @@
   backdrop-filter: blur(12px);
 }
 
+.sc-toolbar__body,
 .sc-toolbar__pinned,
 .sc-toolbar__scroll {
   display: flex;
@@ -104,21 +105,15 @@
   min-height: 0;
 }
 
+.sc-toolbar__body {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .sc-toolbar__pinned {
   flex: 0 0 auto;
-}
-
-.sc-stage__board .pod-photo__pick {
-  font-size: 0;
-  color: transparent;
-  background: transparent;
-  letter-spacing: 0;
-}
-
-.sc-stage__board .pod-photo__tools,
-.sc-stage__board .stc-row__remove,
-.sc-stage__board .stc-row__grip {
-  display: none !important;
 }
 
 .sc-toolbar__row {
@@ -162,7 +157,7 @@
   color: #a1a1aa;
 }
 
-@media (max-width: 1599px) {
+@media (max-width: 720px) {
   .sc-toolbar__slot[data-slot]::before,
   .sc-toolbar__actions[data-slot]::before {
     display: none;
@@ -295,12 +290,25 @@
   outline-offset: 1px;
 }
 
+.sc-toolbar__row--actions {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-left: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 13, 16, 0.96);
+}
+
 .sc-toolbar__actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-left: auto;
+  margin-left: 0;
   align-items: flex-end;
+}
+
+.sc-toolbar__actions .sc-btn--primary {
+  margin-left: auto;
 }
 
 .sc-saves {
@@ -1620,12 +1628,13 @@ label.sc-chip {
   }
 
   .sc-toolbar {
-    max-height: min(32vh, 280px);
+    max-height: min(52vh, 560px);
     overflow: hidden;
-    gap: 6px 14px;
-    padding: 8px 16px 8px;
+    gap: 8px 14px;
+    padding: 10px 16px 10px;
   }
 
+  .sc-toolbar__body,
   .sc-toolbar__pinned,
   .sc-toolbar__scroll {
     gap: 6px 14px;
@@ -1657,7 +1666,6 @@ label.sc-chip {
     flex: 0 0 auto;
     margin-left: 0;
     padding: 0;
-    background: transparent;
   }
 
   .sc-stage__frame {
@@ -1710,8 +1718,18 @@ label.sc-chip {
 
   .sc-toolbar {
     padding: 8px 12px 8px;
-    max-height: min(34vh, 300px);
+    max-height: min(56vh, 580px);
+    overflow: hidden;
     gap: 8px 12px;
+  }
+
+  .sc-toolbar__body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .sc-toolbar__row--actions {
+    flex: 0 0 auto;
   }
 
   .sc-toolbar__row--primary {

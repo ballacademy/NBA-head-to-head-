@@ -7,6 +7,7 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import {
   copyGraphicCaption,
@@ -263,6 +264,30 @@ export function TeamOfTheWeekComposerApp() {
           />
         </label>
           </>
+        }
+        data={
+          <ComposerPhotoHud
+            onPick={() => {
+              const index = activeIndex ?? photoTarget;
+              setPhotoTarget(index);
+              setActiveIndex(index);
+            }}
+            onUpload={(dataUrl) => {
+              const index = activeIndex ?? photoTarget;
+              setStrips((current) => setStripPhoto(current, index, dataUrl));
+              setStatus("Photo cropped in the strip.");
+            }}
+            onUploadMany={(urls) => {
+              const start = activeIndex ?? photoTarget;
+              setStrips((current) => {
+                let next = current;
+                urls.forEach((url, offset) => {
+                  next = setStripPhoto(next, start + offset, url);
+                });
+                return next;
+              });
+            }}
+          />
         }
         board={
           <>

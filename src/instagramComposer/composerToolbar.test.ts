@@ -30,6 +30,7 @@ describe("composer toolbar chrome", () => {
       join(root, "instagramComposer/ComposerToolbar.tsx"),
       "utf8",
     );
+    expect(source).toContain("sc-toolbar__body");
     expect(source).toContain("sc-toolbar__scroll");
     expect(source).toContain("sc-toolbar__row--primary");
     expect(source).toContain("sc-toolbar__row--data");
@@ -59,6 +60,7 @@ describe("composer toolbar chrome", () => {
       expect(source, file).toContain("board=");
       expect(source, file).toContain("persist=");
       expect(source, file).toContain("actions=");
+      expect(source, file).toContain("Export PNG");
       expect(source, file).not.toContain("</header>");
     }
   });

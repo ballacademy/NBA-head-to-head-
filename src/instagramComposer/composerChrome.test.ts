@@ -108,9 +108,26 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
+    expect(toolbar).toContain("sc-toolbar__body");
     expect(toolbar).toMatch(
-      /sc-toolbar__scroll[\s\S]*sc-toolbar__row--actions/,
+      /sc-toolbar__pinned[\s\S]*filters[\s\S]*sc-toolbar__scroll[\s\S]*sc-toolbar__row--actions/,
     );
+  });
+
+  it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
+    expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
+    expect(sheet).toContain(".sc-toolbar__body");
+    expect(sheet).not.toContain(".sc-stage__board .pod-photo__tools");
+    expect(sheet).not.toContain(".sc-stage__board .pod-photo__pick");
+    expect(photo).not.toContain(".sc-stage__board .pod-photo__tools");
+    expect(headlineCss).toMatch(
+      /\.hl-board\.is-exporting \.pod-photo__tools[\s\S]*?display:\s*none/,
+    );
+    expect(headlineApp).toContain("Export PNG");
+    expect(headlineApp).toContain("Export 9:16");
+    expect(headlineApp).toContain("Export pack");
+    expect(headlineApp).toContain("Fill last night");
+    expect(headlineApp).toMatch(/aria-label="Team"/);
   });
 
   it("keeps filters in one full-width toolbar slot", () => {

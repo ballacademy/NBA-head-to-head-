@@ -1,5 +1,8 @@
 import { imageFilesFromList } from "./composerPhotoDrop";
-import { dataUrlFromImageFile } from "../playerOfTheDayComposer/PhotoFrame";
+import {
+  dataUrlFromImageFile,
+  readPhotoFromClipboard,
+} from "../playerOfTheDayComposer/PhotoFrame";
 
 interface ComposerPhotoHudProps {
   onPick: () => void;
@@ -19,6 +22,20 @@ export function ComposerPhotoHud({
       <span className="sc-look__label">Photo</span>
       <button type="button" className="sc-chip" onClick={onPick}>
         {pickLabel}
+      </button>
+      <button
+        type="button"
+        className="sc-chip"
+        aria-label="Paste photo"
+        onClick={() => {
+          void readPhotoFromClipboard().then((dataUrl) => {
+            if (dataUrl) {
+              onUpload(dataUrl);
+            }
+          });
+        }}
+      >
+        Paste
       </button>
       <label className="sc-chip">
         Upload
