@@ -27,7 +27,16 @@ import {
   statsFromLastGame,
   statsFromSeason,
 } from "./compareState";
-import { CMP_PHOTO_H, CMP_PHOTO_W, compareStatType } from "./compareLayout";
+import {
+  CMP_INSET,
+  CMP_PHOTO_W,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+  comparePhotoFrame,
+  compareStackTop,
+  compareStatType,
+} from "./compareLayout";
 
 hydrateEveryTeamRosters(
   catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
@@ -155,7 +164,20 @@ describe("compare composer recs", () => {
     expect(COMPARE_STAT_COUNT).toBe(5);
     expect(COMPARE_STAT_MAX).toBe(10);
     expect(CMP_PHOTO_W).toBe(390);
-    expect(CMP_PHOTO_H).toBe(980);
+    expect(GRAPHIC_WIDTH * 2).toBe(2400);
+    expect(GRAPHIC_HEIGHT * 2).toBe(3000);
+    const feed = comparePhotoFrame(false, false);
+    const story = comparePhotoFrame(true, false);
+    const withSub = comparePhotoFrame(false, true);
+    expect(feed.y).toBe(compareStackTop());
+    expect(feed.h).toBe(GRAPHIC_HEIGHT - compareStackTop() - CMP_INSET);
+    expect(feed.h).toBeGreaterThan(GRAPHIC_HEIGHT * 0.8);
+    expect(feed.y + feed.h).toBe(GRAPHIC_HEIGHT - CMP_INSET);
+    expect(story.h).toBe(STORY_DESIGN_HEIGHT - compareStackTop() - CMP_INSET);
+    expect(story.h).toBeGreaterThan(feed.h);
+    expect(story.h).toBeGreaterThan(STORY_DESIGN_HEIGHT * 0.85);
+    expect(withSub.h).toBeLessThan(feed.h);
+    expect(comparePhotoFrame(false, false).h).toBe(feed.h);
     expect(compareStatType(5).value).toBe(40);
     expect(compareStatType(10).value).toBeLessThan(compareStatType(5).value);
     expect(compareStatType(10).value).toBeGreaterThanOrEqual(24);

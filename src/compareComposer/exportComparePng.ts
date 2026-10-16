@@ -1,7 +1,4 @@
-import {
-  downloadCanvasPng,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadCanvasPng } from "../instagramComposer/exportDownload";
 import {
   renderCompareCanvas,
   type CompareRenderInput,
@@ -13,9 +10,6 @@ export const exportComparePng = async (
   input: CompareRenderInput,
   story = false,
 ) => {
-  const canvas = await renderCompareCanvas(input, 2);
-  await downloadCanvasPng(
-    story ? await toStoryCanvas(canvas) : canvas,
-    filename,
-  );
+  const canvas = await renderCompareCanvas({ ...input, story }, 2);
+  await downloadCanvasPng(canvas, filename);
 };

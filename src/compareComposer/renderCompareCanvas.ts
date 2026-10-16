@@ -26,21 +26,17 @@ import {
 } from "../standingsComposer/headerTexture";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
-  GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   CMP_BA,
   CMP_PAD,
-  CMP_PHOTO_H,
-  CMP_PHOTO_TOP,
-  CMP_PHOTO_W,
-  CMP_STATS_W,
   CMP_SUB_H,
   CMP_SUB_SIZE,
   CMP_TITLE_H,
   CMP_TITLE_SIZE,
   CMP_NAME_SIZE,
   CMP_LEAD,
-  compareStatGutter,
+  compareBoardHeight,
+  comparePhotoFrame,
   compareStatType,
 } from "./compareLayout";
 import {
@@ -94,6 +90,7 @@ export type CompareRenderInput = CompareDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
+  story?: boolean;
 };
 
 export const renderCompareCanvas = async (
@@ -101,7 +98,7 @@ export const renderCompareCanvas = async (
   scale = 2,
 ) => {
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = compareBoardHeight(input.story) * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -140,12 +137,17 @@ export const renderCompareCanvas = async (
   );
   setLetterSpacing(context, 0);
 
-  const photoY = CMP_PHOTO_TOP * s;
-  const photoH = CMP_PHOTO_H * s;
-  const leftX = 36 * s;
-  const rightX = width - 36 * s - CMP_PHOTO_W * s;
-  const statsX = leftX + CMP_PHOTO_W * s + 8 * s;
-  const statsW = CMP_STATS_W * s;
+  const frame = comparePhotoFrame(
+    Boolean(input.story),
+    Boolean(input.subtitle.trim()),
+  );
+  const photoY = frame.y * s;
+  const photoH = frame.h * s;
+  const photoW = frame.w * s;
+  const leftX = frame.leftX * s;
+  const rightX = frame.rightX * s;
+  const statsX = frame.statsX * s;
+  const statsW = frame.statsW * s;
 
   for (const [side, x] of [
     [0, leftX],
@@ -153,7 +155,7 @@ export const renderCompareCanvas = async (
   ] as const) {
     const person = input.sides[side]!;
     context.fillStyle = "#111";
-    context.fillRect(x, photoY, CMP_PHOTO_W * s, photoH);
+    context.fillRect(x, photoY, photoW, photoH);
     const watermark = parseComposerWatermark(input.watermark);
     const team = getTeam(person.teamId);
     if (team && watermark !== "off") {
@@ -164,7 +166,7 @@ export const renderCompareCanvas = async (
         context.globalAlpha = composerWatermarkOpacity(watermark);
         context.drawImage(
           mark,
-          x + (CMP_PHOTO_W * s - size) / 2,
+          x + (photoW - size) / 2,
           photoY + photoH * 0.28,
           size,
           size,
@@ -182,7 +184,7 @@ export const renderCompareCanvas = async (
           photo.naturalHeight || photo.height,
           x,
           photoY,
-          CMP_PHOTO_W * s,
+          photoW,
           photoH,
           person.pan.x,
           person.pan.y,
@@ -193,15 +195,15 @@ export const renderCompareCanvas = async (
           context.filter = PHOTO_GRADE_FILTER;
         }
         context.beginPath();
-        context.rect(x, photoY, CMP_PHOTO_W * s, photoH);
+        context.rect(x, photoY, photoW, photoH);
         context.clip();
         const rotate = photoRotate(person.pan);
         if (rotate) {
-          context.translate(x + (CMP_PHOTO_W * s) / 2, photoY + photoH / 2);
+          context.translate(x + photoW / 2, photoY + photoH / 2);
           context.rotate((rotate * Math.PI) / 180);
           context.drawImage(
             photo,
-            dest.dx - x - (CMP_PHOTO_W * s) / 2,
+            dest.dx - x - photoW / 2,
             dest.dy - photoY - photoH / 2,
             dest.dw,
             dest.dh,
@@ -214,7 +216,7 @@ export const renderCompareCanvas = async (
           context,
           x,
           photoY,
-          CMP_PHOTO_W * s,
+          photoW,
           photoH,
           input.photoGrade,
         );
@@ -222,13 +224,13 @@ export const renderCompareCanvas = async (
           context,
           x,
           photoY,
-          CMP_PHOTO_W * s,
+          photoW,
           photoH,
           input.photoGrade,
         );
       }
     }
-    paintCellFrame(context, x, photoY, CMP_PHOTO_W * s, photoH, input.look, s);
+    paintCellFrame(context, x, photoY, photoW, photoH, input.look, s);
     const caption = compareSideCaption(person);
     if (caption) {
       const fadeH = 96 * s;
@@ -242,7 +244,7 @@ export const renderCompareCanvas = async (
       fade.addColorStop(0.45, "rgba(0,0,0,0.72)");
       fade.addColorStop(1, "rgba(0,0,0,0.92)");
       context.fillStyle = fade;
-      context.fillRect(x, photoY + photoH - fadeH, CMP_PHOTO_W * s, fadeH);
+      context.fillRect(x, photoY + photoH - fadeH, photoW, fadeH);
       context.font = `900 ${CMP_NAME_SIZE * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
       context.textBaseline = "bottom";
@@ -250,16 +252,15 @@ export const renderCompareCanvas = async (
       context.fillStyle = "#fff";
       context.fillText(
         caption.toUpperCase(),
-        x + (CMP_PHOTO_W * s) / 2,
+        x + photoW / 2,
         photoY + photoH - 16 * s,
-        CMP_PHOTO_W * s - 20 * s,
+        photoW - 20 * s,
       );
       setLetterSpacing(context, 0);
     }
   }
 
   const type = compareStatType(input.stats.length);
-  const gutter = compareStatGutter(input.stats.length);
   context.font = `900 ${18 * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -274,19 +275,20 @@ export const renderCompareCanvas = async (
   setLetterSpacing(context, 0);
 
   const rowCount = Math.max(input.stats.length, 1);
-  const bodyTop = photoY + 46 * s;
-  const bodyH = photoH - 70 * s - gutter.nameReserve * s;
+  const bodyTop = photoY + 36 * s;
+  const bodyH = photoH - 52 * s;
   const rowSpan = bodyH / rowCount;
   input.stats.forEach((stat, index) => {
     const y = bodyTop + index * rowSpan + rowSpan / 2;
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
     context.fillStyle = "rgba(255,255,255,0.45)";
+    const ruleH = Math.max(20 * s, rowSpan * type.rule);
     context.fillRect(
       mid - s,
-      y - (type.rule * s) / 2,
+      y - ruleH / 2,
       2 * s,
-      type.rule * s,
+      ruleH,
     );
     context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textBaseline = "middle";
@@ -348,7 +350,7 @@ export const renderCompareCanvas = async (
     if (ba) {
       const size = CMP_BA * s;
       const x = (width - size) / 2;
-      const y = 140 * s;
+      const y = 100 * s;
       if (input.purpleFlair) {
         paintPurpleBaGlow(context, x, y, size);
       }

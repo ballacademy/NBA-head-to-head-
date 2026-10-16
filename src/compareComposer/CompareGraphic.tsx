@@ -14,7 +14,7 @@ import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { compareStatGutter, compareStatType } from "./compareLayout";
+import { compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
   compareSideName,
@@ -30,6 +30,7 @@ interface CompareGraphicProps {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onStatsLabelChange: (value: string) => void;
@@ -53,6 +54,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       purpleFlair = false,
       photoGrade = false,
       exporting = false,
+      story = false,
       onTitleChange,
       onSubtitleChange,
       onStatsLabelChange,
@@ -66,8 +68,8 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
     const type = compareStatType(draft.stats.length);
-    const gutter = compareStatGutter(draft.stats.length);
     const watermark = parseComposerWatermark(draft.watermark);
+    const hasSub = Boolean(draft.subtitle.trim());
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -104,6 +106,8 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
         className={[
           "cmp-board",
           exporting ? "is-exporting" : "",
+          hasSub ? "has-sub" : "",
+          story ? "is-story" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
           composerGradeClass(photoGrade),
@@ -117,7 +121,6 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             ["--cmp-label" as string]: String(type.label),
             ["--cmp-rule" as string]: String(type.rule),
             ["--cmp-stroke" as string]: String(type.stroke),
-            ["--cmp-gutter-bottom" as string]: String(gutter.bottom),
           } as React.CSSProperties
         }
         aria-label="Instagram comparison graphic"

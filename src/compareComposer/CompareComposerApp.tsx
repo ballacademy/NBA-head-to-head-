@@ -21,7 +21,7 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
@@ -42,6 +42,10 @@ import {
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { CompareGraphic } from "./CompareGraphic";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "./compareLayout";
 import { exportComparePng } from "./exportComparePng";
 import { renderCompareCanvas } from "./renderCompareCanvas";
 import {
@@ -586,13 +590,19 @@ export function CompareComposerApp() {
               void (async () => {
                 setExporting(true);
                 try {
+                  const feed = exportFilenameFromTitle(draft.title, "compare");
+                  const input = { ...draft, look, purpleFlair, photoGrade };
                   await downloadExportPack(
-                    () =>
-                      renderCompareCanvas(
-                        { ...draft, look, purpleFlair, photoGrade },
-                        2,
-                      ),
-                    exportFilenameFromTitle(draft.title, "compare"),
+                    () => renderCompareCanvas(input, 2),
+                    feed,
+                    [
+                      {
+                        filename: storyFilename(feed),
+                        render: () =>
+                          renderCompareCanvas({ ...input, story: true }, 2),
+                      },
+                    ],
+                    { letterbox: false },
                   );
                   setStatus("Pack download started (4:5 + 9:16).");
                 } catch (error) {
@@ -619,8 +629,10 @@ export function CompareComposerApp() {
         }
       />
       <main className="sc-stage">
-        <div className="sc-stage__frame">
-          <ComposerBoard>
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
             <CompareGraphic
               ref={boardRef}
               draft={draft}
@@ -628,6 +640,7 @@ export function CompareComposerApp() {
               purpleFlair={purpleFlair}
               photoGrade={photoGrade}
               exporting={exporting}
+              story={storyCrop}
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
               }

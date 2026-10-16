@@ -322,6 +322,26 @@ describe("composer chrome", () => {
     expect(totwPlusApp).toContain("story={storyCrop}");
     expect(playInApp).toContain("story={storyCrop}");
     expect(pyramidApp).toContain("story={storyCrop}");
+    const compareApp = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    const compareCss = readFileSync(
+      join(root, "compareComposer/compareComposer.css"),
+      "utf8",
+    );
+    const compareExport = readFileSync(
+      join(root, "compareComposer/exportComparePng.ts"),
+      "utf8",
+    );
+    expect(compareApp).toContain("story={storyCrop}");
+    expect(compareExport).not.toContain("toStoryCanvas");
+    expect(compareCss).toMatch(
+      /\.cmp-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,
+    );
+    expect(compareCss).toMatch(
+      /\.cmp-photos \{[\s\S]*?bottom:\s*calc\(36 \* var\(--u\)\)/,
+    );
     const totwCss = readFileSync(
       join(root, "teamOfTheWeekPlusComposer/teamOfTheWeekPlusComposer.css"),
       "utf8",
@@ -335,6 +355,25 @@ describe("composer chrome", () => {
     expect(totwCss).toMatch(
       /\.twp-board\.is-story \{[\s\S]*?aspect-ratio:\s*9\s*\/\s*16/,
     );
+  });
+
+  it("keeps Headline transaction kickers on the chevron presets", () => {
+    const presets = readFileSync(
+      join(root, "instagramComposer/composerPresets.ts"),
+      "utf8",
+    );
+    for (const plate of [
+      "TRADE RUMOR",
+      "TRADE",
+      "SIGNING",
+      "WAIVED",
+      "BOUGHT OUT",
+      "EXTENSION",
+      "RE-SIGNED",
+    ]) {
+      expect(presets).toContain(plate);
+    }
+    expect(headlineApp).toContain("headline-kicker-presets");
   });
 
   it("opens Quote blank with a real-quote bank", () => {
