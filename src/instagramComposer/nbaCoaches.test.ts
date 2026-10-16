@@ -19,7 +19,17 @@ describe("nba coaches catalog", () => {
     expect(getCoach(kerr?.id)?.name).toBe(kerr?.name);
     expect(getPlayer(kerr!.id)?.role).toBe("coach");
     const finch = NBA_COACHES.find((coach) => coach.team === "MIN");
-    expect(finch?.headshotUrl).toBe("/composer-headshots/coach-MIN.jpg");
+    expect(finch?.headshotUrl).toMatch(/nba-logos\/MIN/);
+    const snyder = NBA_COACHES.find((coach) => coach.team === "ATL");
+    expect(snyder?.headshotUrl).toMatch(/coaches\/65\/52081/);
+    const mazzulla = NBA_COACHES.find((coach) => coach.team === "BOS");
+    expect(mazzulla?.headshotUrl).toMatch(/coaches\/65\/2232684/);
+    const brown = NBA_COACHES.find((coach) => coach.team === "NYK");
+    expect(brown?.headshotUrl).toMatch(/coaches\/65\/3612/);
+    expect(brown?.headshotUrl).not.toMatch(/1977/);
+    expect(
+      NBA_COACHES.every((coach) => !coach.headshotUrl.includes("/composer-headshots/")),
+    ).toBe(true);
     expect(NBA_COACHES.every((coach) => !coach.headshotUrl.includes("/coaches/full/"))).toBe(
       true,
     );

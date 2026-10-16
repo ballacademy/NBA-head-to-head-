@@ -11,62 +11,56 @@ const playerShot = (espnId: string) =>
 const coach65Shot = (espnId: string) =>
   `https://a.espncdn.com/i/headshots/nba/coaches/65/${espnId}.jpg`;
 
-const localShot = (team: string) => `/composer-headshots/coach-${team}.jpg`;
-
 interface CoachSeed {
   name: string;
   team: string;
-  /** ESPN players/full PNG — former players with working headshots. */
+  /** ESPN players/full PNG — former players with working frontal portraits. */
   playerId?: string;
-  /** ESPN coaches/65 JPG — full PNG 404s for most HCs. */
+  /** ESPN coaches/65 JPG — frontal studio stamps when full PNGs 404. */
   coach65Id?: string;
-  /** Vendored wiki portrait in public/composer-headshots. */
-  local?: boolean;
 }
 
 /** 2026-27 head coaches — picker rows for pyramid, tier list, and Every Team. */
 const COACH_SEEDS: CoachSeed[] = [
-  { name: "Quin Snyder", team: "ATL", local: true },
+  { name: "Quin Snyder", team: "ATL", coach65Id: "52081" },
   { name: "Joe Mazzulla", team: "BOS", coach65Id: "2232684" },
   { name: "Jordi Fernandez", team: "BKN" },
   { name: "Charles Lee", team: "CHA" },
   { name: "Tiago Splitter", team: "CHI", playerId: "3233" },
   { name: "Kenny Atkinson", team: "CLE", coach65Id: "6809" },
-  { name: "Dusty May", team: "DAL", local: true },
-  { name: "David Adelman", team: "DEN", local: true },
+  { name: "Dusty May", team: "DAL" },
+  { name: "David Adelman", team: "DEN" },
   { name: "J.B. Bickerstaff", team: "DET", coach65Id: "2613478" },
   { name: "Steve Kerr", team: "GSW", playerId: "996" },
   { name: "Ime Udoka", team: "HOU", playerId: "2171" },
-  { name: "Rick Carlisle", team: "IND", local: true, playerId: "43" },
+  { name: "Rick Carlisle", team: "IND", coach65Id: "4661" },
   { name: "Tyronn Lue", team: "LAC", playerId: "165" },
   { name: "JJ Redick", team: "LAL", playerId: "3989" },
-  { name: "Tuomas Iisalo", team: "MEM", local: true },
+  { name: "Tuomas Iisalo", team: "MEM" },
   { name: "Erik Spoelstra", team: "MIA", playerId: "6749" },
   { name: "Taylor Jenkins", team: "MIL" },
-  { name: "Chris Finch", team: "MIN", local: true },
+  { name: "Chris Finch", team: "MIN" },
   { name: "Jamahl Mosley", team: "NOP" },
-  { name: "Mike Brown", team: "NYK", playerId: "1977" },
-  { name: "Mark Daigneault", team: "OKC", local: true },
+  { name: "Mike Brown", team: "NYK", coach65Id: "3612" },
+  { name: "Mark Daigneault", team: "OKC" },
   { name: "Sean Sweeney", team: "ORL", playerId: "2142798" },
-  { name: "Nick Nurse", team: "PHI", local: true },
+  { name: "Nick Nurse", team: "PHI", coach65Id: "52085" },
   { name: "Jordan Ott", team: "PHX" },
   { name: "Micah Nori", team: "POR", playerId: "2487822" },
-  { name: "Doug Christie", team: "SAC", local: true, playerId: "16" },
+  { name: "Doug Christie", team: "SAC", playerId: "16" },
   { name: "Mitch Johnson", team: "SAS" },
-  { name: "Darko Rajakovic", team: "TOR", local: true },
-  { name: "Will Hardy", team: "UTA", local: true },
-  { name: "Brian Keefe", team: "WAS", local: true },
+  { name: "Darko Rajakovic", team: "TOR" },
+  { name: "Will Hardy", team: "UTA" },
+  { name: "Brian Keefe", team: "WAS" },
 ];
 
 const toCoach = (seed: CoachSeed): TierPlayer => {
   const team = NBA_TEAMS_BY_ID[seed.team];
-  const headshotUrl = seed.local
-    ? localShot(seed.team)
-    : seed.playerId
-      ? playerShot(seed.playerId)
-      : seed.coach65Id
-        ? coach65Shot(seed.coach65Id)
-        : team?.logoSrc ?? "";
+  const headshotUrl = seed.playerId
+    ? playerShot(seed.playerId)
+    : seed.coach65Id
+      ? coach65Shot(seed.coach65Id)
+      : team?.logoSrc ?? "";
   return {
     id: `coach-${seed.team}`,
     name: seed.name,
