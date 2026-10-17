@@ -27,11 +27,38 @@ export interface EveryTeamRosterPlayer {
   ftPct?: number | null;
   efgPct?: number | null;
   tsPct?: number | null;
+  per?: number | null;
+  usgPct?: number | null;
+  bpm?: number | null;
+  vorp?: number | null;
+  ws?: number | null;
+  ows?: number | null;
+  dws?: number | null;
+  wsPer48?: number | null;
+  obpm?: number | null;
+  dbpm?: number | null;
+  pace?: number | null;
+  offRtg?: number | null;
+  defRtg?: number | null;
+  netRtg?: number | null;
+  tovPct?: number | null;
+  orbPct?: number | null;
+  chargesDrawn?: number | null;
+  deflections?: number | null;
+  looseBallsRecovered?: number | null;
+  screenAssists?: number | null;
+  contestedShots?: number | null;
+  contestedShots2pt?: number | null;
+  contestedShots3pt?: number | null;
+  boxOuts?: number | null;
+  offBoxOuts?: number | null;
+  defBoxOuts?: number | null;
+  screenAstPts?: number | null;
 }
 
-type SeasonAverageExtras = Pick<
+type SeasonAverageExtras = Omit<
   EveryTeamRosterPlayer,
-  "gp" | "min" | "tov" | "fgPct" | "fg3Pct" | "ftPct" | "efgPct" | "tsPct"
+  "id" | "name" | "position" | "depth" | "headshotUrl" | "pts" | "reb" | "ast" | "stl" | "blk"
 >;
 
 const seasonAverages = playerAveragesFile as {
@@ -48,6 +75,33 @@ const EXTRA_KEYS: Array<keyof SeasonAverageExtras> = [
   "ftPct",
   "efgPct",
   "tsPct",
+  "per",
+  "usgPct",
+  "bpm",
+  "vorp",
+  "ws",
+  "ows",
+  "dws",
+  "wsPer48",
+  "obpm",
+  "dbpm",
+  "pace",
+  "offRtg",
+  "defRtg",
+  "netRtg",
+  "tovPct",
+  "orbPct",
+  "chargesDrawn",
+  "deflections",
+  "looseBallsRecovered",
+  "screenAssists",
+  "contestedShots",
+  "contestedShots2pt",
+  "contestedShots3pt",
+  "boxOuts",
+  "offBoxOuts",
+  "defBoxOuts",
+  "screenAstPts",
 ];
 
 export interface EveryTeamSeasonCell {
@@ -322,25 +376,21 @@ const overlayLastSeasonStats = (
       statsSeason,
     );
   }
-  return mergeSeasonAverages(
-    {
-      ...player,
-      pts: prior.pts,
-      reb: prior.reb,
-      ast: prior.ast,
-      stl: prior.stl,
-      blk: prior.blk,
-      gp: prior.gp ?? player.gp ?? null,
-      min: prior.min ?? player.min ?? null,
-      tov: prior.tov ?? player.tov ?? null,
-      fgPct: prior.fgPct ?? player.fgPct ?? null,
-      fg3Pct: prior.fg3Pct ?? player.fg3Pct ?? null,
-      ftPct: prior.ftPct ?? player.ftPct ?? null,
-      efgPct: prior.efgPct ?? player.efgPct ?? null,
-      tsPct: prior.tsPct ?? player.tsPct ?? null,
-    },
-    statsSeason,
-  );
+  const overlay: EveryTeamRosterPlayer = {
+    ...player,
+    pts: prior.pts,
+    reb: prior.reb,
+    ast: prior.ast,
+    stl: prior.stl,
+    blk: prior.blk,
+  };
+  EXTRA_KEYS.forEach((key) => {
+    const value = prior[key];
+    if (typeof value === "number") {
+      overlay[key] = value;
+    }
+  });
+  return mergeSeasonAverages(overlay, statsSeason);
 };
 
 export const listRosterPlayers = (
@@ -531,7 +581,34 @@ export type EveryTeamStatMetric =
   | "minutes"
   | "games"
   | "pra"
-  | "stocks";
+  | "stocks"
+  | "per"
+  | "usgPct"
+  | "bpm"
+  | "vorp"
+  | "ws"
+  | "ows"
+  | "dws"
+  | "wsPer48"
+  | "obpm"
+  | "dbpm"
+  | "pace"
+  | "offRtg"
+  | "defRtg"
+  | "netRtg"
+  | "tovPct"
+  | "orbPct"
+  | "chargesDrawn"
+  | "deflections"
+  | "looseBallsRecovered"
+  | "screenAssists"
+  | "contestedShots"
+  | "contestedShots2pt"
+  | "contestedShots3pt"
+  | "boxOuts"
+  | "offBoxOuts"
+  | "defBoxOuts"
+  | "screenAstPts";
 
 export const EVERY_TEAM_STAT_METRICS: Array<{
   id: EveryTeamStatMetric;
@@ -553,6 +630,33 @@ export const EVERY_TEAM_STAT_METRICS: Array<{
   { id: "games", label: "GP" },
   { id: "pra", label: "PRA" },
   { id: "stocks", label: "STL+BLK" },
+  { id: "per", label: "PER" },
+  { id: "usgPct", label: "USG%", percent: true },
+  { id: "bpm", label: "BPM" },
+  { id: "vorp", label: "VORP" },
+  { id: "ws", label: "WS" },
+  { id: "ows", label: "OWS" },
+  { id: "dws", label: "DWS" },
+  { id: "wsPer48", label: "WS/48" },
+  { id: "obpm", label: "OBPM" },
+  { id: "dbpm", label: "DBPM" },
+  { id: "pace", label: "PACE" },
+  { id: "offRtg", label: "ORtg" },
+  { id: "defRtg", label: "DRtg" },
+  { id: "netRtg", label: "NRtg" },
+  { id: "tovPct", label: "TOV%", percent: true },
+  { id: "orbPct", label: "ORB%", percent: true },
+  { id: "chargesDrawn", label: "Charges" },
+  { id: "deflections", label: "Deflections" },
+  { id: "looseBallsRecovered", label: "Loose balls" },
+  { id: "screenAssists", label: "Screen AST" },
+  { id: "contestedShots", label: "Contested" },
+  { id: "contestedShots2pt", label: "C/S 2PT" },
+  { id: "contestedShots3pt", label: "C/S 3PT" },
+  { id: "boxOuts", label: "Box outs" },
+  { id: "offBoxOuts", label: "Off box" },
+  { id: "defBoxOuts", label: "Def box" },
+  { id: "screenAstPts", label: "SA PTS" },
 ];
 
 const METRIC_FIELDS: Partial<
@@ -571,6 +675,33 @@ const METRIC_FIELDS: Partial<
   tsPct: "tsPct",
   minutes: "min",
   games: "gp",
+  per: "per",
+  usgPct: "usgPct",
+  bpm: "bpm",
+  vorp: "vorp",
+  ws: "ws",
+  ows: "ows",
+  dws: "dws",
+  wsPer48: "wsPer48",
+  obpm: "obpm",
+  dbpm: "dbpm",
+  pace: "pace",
+  offRtg: "offRtg",
+  defRtg: "defRtg",
+  netRtg: "netRtg",
+  tovPct: "tovPct",
+  orbPct: "orbPct",
+  chargesDrawn: "chargesDrawn",
+  deflections: "deflections",
+  looseBallsRecovered: "looseBallsRecovered",
+  screenAssists: "screenAssists",
+  contestedShots: "contestedShots",
+  contestedShots2pt: "contestedShots2pt",
+  contestedShots3pt: "contestedShots3pt",
+  boxOuts: "boxOuts",
+  offBoxOuts: "offBoxOuts",
+  defBoxOuts: "defBoxOuts",
+  screenAstPts: "screenAstPts",
 };
 
 export const parseEveryTeamStatMetric = (value: unknown): EveryTeamStatMetric =>

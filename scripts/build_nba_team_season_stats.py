@@ -132,6 +132,12 @@ def round_stat(value: float | None, digits: int) -> float | None:
     return round(value, digits)
 
 
+def pct_rate(value: float | None) -> float | None:
+    if value is None:
+        return None
+    return round(value / 100.0, 3) if value > 1 else round(value, 3)
+
+
 def season_payload(html: str) -> dict[str, dict[str, float]]:
     per_game = {row["bbrTeam"]: row for row in parse_table(html, "per_game-team")}
     advanced = {row["bbrTeam"]: row for row in parse_table(html, "advanced-team")}
@@ -158,6 +164,12 @@ def season_payload(html: str) -> dict[str, dict[str, float]]:
             "ftPct": round_stat(to_float(row.get("ft_pct")), 3),
             "efgPct": round_stat(to_float(adv.get("efg_pct")), 3),
             "tsPct": round_stat(to_float(adv.get("ts_pct")), 3),
+            "pace": round_stat(to_float(adv.get("pace")), 1),
+            "offRtg": round_stat(to_float(adv.get("off_rtg")), 1),
+            "defRtg": round_stat(to_float(adv.get("def_rtg")), 1),
+            "netRtg": round_stat(to_float(adv.get("net_rtg")), 1),
+            "tovPct": pct_rate(to_float(adv.get("tov_pct"))),
+            "orbPct": pct_rate(to_float(adv.get("orb_pct"))),
             "minutes": round_stat(to_float(row.get("mp")), 1),
             "games": round_stat(to_float(row.get("g")), 0),
         }

@@ -11,6 +11,7 @@ import {
   playerStatValue,
   rosterStatValue,
   teamLogoSrc,
+  teamStatValue,
   type EveryTeamRosterPlayer,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
@@ -181,8 +182,12 @@ export const populatePlotTeams = (
   });
   const next: PlotPoint[] = [];
   ids.forEach((teamId) => {
-    const x = officialTeamStatValue(teamId, season, xMetric, sample);
-    const y = officialTeamStatValue(teamId, season, yMetric, sample);
+    const x =
+      officialTeamStatValue(teamId, season, xMetric, sample) ??
+      teamStatValue(teamId, season, xMetric, sample);
+    const y =
+      officialTeamStatValue(teamId, season, yMetric, sample) ??
+      teamStatValue(teamId, season, yMetric, sample);
     const team = getTeam(teamId) ?? NBA_TEAMS.find((row) => row.id === teamId);
     if (x == null || y == null || !team) {
       return;

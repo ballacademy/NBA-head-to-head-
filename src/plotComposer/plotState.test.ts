@@ -52,8 +52,25 @@ describe("plot composer", () => {
     expect(draft.subject).toBe("teams");
     expect(draft.title).toBe(DEFAULT_PLOT_TITLE);
     expect(splitPlotTitle(DEFAULT_PLOT_TITLE)).toEqual(["PTS VS", "AST"]);
-    expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toContain("TS%");
+    expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toEqual(
+      expect.arrayContaining([
+        "TS%",
+        "PER",
+        "USG%",
+        "BPM",
+        "VORP",
+        "WS",
+        "Charges",
+        "Deflections",
+        "Loose balls",
+        "Screen AST",
+        "Contested",
+        "Box outs",
+      ]),
+    );
     expect(plotMetricLabel("tsPct")).toBe("TS%");
+    expect(plotMetricLabel("per")).toBe("PER");
+    expect(plotMetricLabel("chargesDrawn")).toBe("Charges");
     expect(autoPlotTitle("points", "assists", "teams")).toBe("PTS VS AST");
   });
 
@@ -146,5 +163,81 @@ describe("plot composer", () => {
     expect(placed[1]?.ly).not.toBe(placed[0]?.ly);
     const nudged = nudgePlotLabels(placed, plotRectFor());
     expect(nudged).toHaveLength(2);
+  });
+
+  it("plots advanced team and player stats with real axes", () => {
+    const teams = populatePlotTeams(
+      "2026-27",
+      "usgPct",
+      "per",
+      EMPTY_PLAYER_FILTERS,
+    );
+    expect(teams.length).toBe(30);
+    expect(teams.every((point) => point.x > 0 && point.y > 0)).toBe(true);
+    const okc = teams.find((point) => point.id === "OKC");
+    expect(okc?.x).toBeGreaterThan(0.15);
+    expect(okc?.x).toBeLessThan(0.4);
+    expect(okc?.y).toBeGreaterThan(10);
+    const ts = populatePlotTeams(
+      "2026-27",
+      "tsPct",
+      "pace",
+      EMPTY_PLAYER_FILTERS,
+    );
+    expect(ts).toHaveLength(30);
+    expect(Math.max(...ts.map((point) => point.x))).toBeGreaterThan(0.5);
+    expect(Math.max(...ts.map((point) => point.y))).toBeGreaterThan(90);
+    const pins = ["3945274", "4278073"];
+    const players = populatePlotPlayers(
+      "2026-27",
+      "usgPct",
+      "per",
+      EMPTY_PLAYER_FILTERS,
+      pins,
+    );
+    expect(players.map((point) => point.id).sort()).toEqual(pins.sort());
+    expect(players.every((point) => point.x > 0.15 && point.y > 10)).toBe(true);
+    const league = populatePlotPlayers(
+      "2026-27",
+      "bpm",
+      "vorp",
+      EMPTY_PLAYER_FILTERS,
+      [],
+    );
+    expect(league.length).toBeGreaterThan(50);
+    expect(league.some((point) => point.y > 2)).toBe(true);
+  });
+
+  it("plots hustle stats for teams and players", () => {
+    const teams = populatePlotTeams(
+      "2026-27",
+      "chargesDrawn",
+      "pace",
+      EMPTY_PLAYER_FILTERS,
+    );
+    expect(teams.length).toBe(30);
+    expect(Math.max(...teams.map((point) => point.x))).toBeGreaterThan(0.1);
+    expect(Math.max(...teams.map((point) => point.y))).toBeGreaterThan(90);
+    const labels = EVERY_TEAM_STAT_METRICS.map((item) => item.id);
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        "chargesDrawn",
+        "deflections",
+        "looseBallsRecovered",
+        "screenAssists",
+        "contestedShots",
+        "boxOuts",
+      ]),
+    );
+    const league = populatePlotPlayers(
+      "2026-27",
+      "chargesDrawn",
+      "per",
+      EMPTY_PLAYER_FILTERS,
+      [],
+    );
+    expect(league.length).toBeGreaterThan(40);
+    expect(Math.max(...league.map((point) => point.x))).toBeGreaterThan(0.05);
+    expect(Math.max(...league.map((point) => point.y))).toBeGreaterThan(15);
   });
 });
