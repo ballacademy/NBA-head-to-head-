@@ -10,6 +10,7 @@ import {
   GRAPHIC_WIDTH,
   SCC_COL_W,
   SCC_FADE_H,
+  SCC_LOCKUP_SCRIM_H,
   SCC_GOLD,
   SCC_GOLD_DEEP,
   SCC_PHOTO_SHIFT,
@@ -221,9 +222,10 @@ describe("stat card cover", () => {
   });
 
   it("drops default portraits below the title fade and pastes into one slot", () => {
-    expect(SCC_PHOTO_SHIFT).toBeGreaterThanOrEqual(0.24);
-    expect(SCC_PHOTO_SHIFT).toBeLessThan(0.4);
-    expect(SCC_PHOTO_SHIFT * GRAPHIC_HEIGHT).toBeGreaterThan(SCC_FADE_H * 0.7);
+    expect(SCC_PHOTO_SHIFT).toBe(0.28);
+    expect(SCC_FADE_H).toBeGreaterThanOrEqual(600);
+    expect(SCC_LOCKUP_SCRIM_H).toBeGreaterThan(300);
+    expect(SCC_FADE_H).toBeGreaterThan(SCC_LOCKUP_SCRIM_H);
     expect(coverPasteSlotIndex(1, null)).toBe(1);
     expect(coverPasteSlotIndex(0, 2)).toBe(2);
     expect(coverPasteSlotIndex(9)).toBe(2);

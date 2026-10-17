@@ -9,7 +9,9 @@ export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 /** Three even full-bleed columns — one row, no hero stack. */
 export const SCC_SLOT_COUNT = 3;
 export const SCC_COL_W = GRAPHIC_WIDTH / SCC_SLOT_COUNT;
-export const SCC_FADE_H = 460;
+export const SCC_FADE_H = 620;
+/** Extra dark pooled under the title lockup — not a recrop. */
+export const SCC_LOCKUP_SCRIM_H = 400;
 /** Drop default portraits so faces sit under the title fade, not inside it. */
 export const SCC_PHOTO_SHIFT = 0.28;
 export const SCC_SEAM_W = 20;

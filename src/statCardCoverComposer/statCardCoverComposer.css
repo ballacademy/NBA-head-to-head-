@@ -3,7 +3,8 @@
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
-  --fade-h: 460;
+  --fade-h: 620;
+  --lockup-scrim-h: 400;
   --photo-shift: 0.28;
   --title-size: 72;
   --date-size: 16;
@@ -102,10 +103,10 @@
   pointer-events: none;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.7) 24%,
-    rgba(0, 0, 0, 0.4) 54%,
-    rgba(0, 0, 0, 0.12) 80%,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.78) 32%,
+    rgba(0, 0, 0, 0.46) 58%,
+    rgba(0, 0, 0, 0.14) 82%,
     rgba(0, 0, 0, 0) 100%
   );
 }
@@ -116,12 +117,12 @@
   right: 4%;
   top: 0;
   z-index: 4;
-  height: calc(300 * var(--u));
+  height: calc(var(--lockup-scrim-h, 400) * var(--u));
   pointer-events: none;
   background: radial-gradient(
     ellipse 78% 78% at 50% 22%,
-    rgba(0, 0, 0, 0.58) 0%,
-    rgba(0, 0, 0, 0.2) 56%,
+    rgba(0, 0, 0, 0.64) 0%,
+    rgba(0, 0, 0, 0.22) 56%,
     rgba(0, 0, 0, 0) 100%
   );
 }
