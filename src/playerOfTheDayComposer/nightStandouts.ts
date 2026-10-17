@@ -130,6 +130,9 @@ export const statsFromBoxRow = (
   return stats;
 };
 
+/** Skip 0–5 point cameos no matter the usual average. */
+export const STANDOUT_MIN_PTS = 6;
+
 export const nightFlagsFor = (stats: LastGameStats) => {
   const pts = n(stats.pts);
   const reb = n(stats.reb);
@@ -159,6 +162,12 @@ export const nightFlagsFor = (stats: LastGameStats) => {
   }
   if (pra >= 35 && tens < 3) {
     flags.push("High PRA");
+  }
+  if (ast >= 8 && pts < STANDOUT_MIN_PTS) {
+    flags.push("Dimes");
+  }
+  if (reb >= 10 && pts < STANDOUT_MIN_PTS) {
+    flags.push("Boards");
   }
   return {
     pts,
@@ -198,19 +207,17 @@ export const usualLineFor = (athleteId: string): UsualLine => {
   };
 };
 
-/** Skip 0–5 point cameos no matter the usual average. */
-export const STANDOUT_MIN_PTS = 6;
-
-/** ~10 blocks, huge stocks, or a freak counting line that isn’t about scoring. */
+/** High AST/REB/stocks still flag when PTS is tiny — not only ~10-block nights. */
 export const isFreakNonScoringNight = (
   extra: ReturnType<typeof nightFlagsFor>,
 ) =>
-  extra.blk >= 8 ||
-  extra.stl >= 8 ||
-  extra.stocks >= 8 ||
-  extra.reb >= 16 ||
-  extra.ast >= 12 ||
-  extra.tens >= 3;
+  extra.blk >= 5 ||
+  extra.stl >= 5 ||
+  extra.stocks >= 7 ||
+  extra.reb >= 10 ||
+  extra.ast >= 8 ||
+  (extra.reb >= 8 && extra.ast >= 6) ||
+  extra.tens >= 2;
 
 /** Bench / two-way surprise vs their usual line — not star-vs-star ranking. */
 export const isSurpriseNight = (
@@ -465,7 +472,7 @@ export const fetchNightStandouts = async (
         return parseSummaryStandouts(
           summary,
           eventId,
-          isoDateOnly(event.date) || date,
+          date,
         );
       }),
     );

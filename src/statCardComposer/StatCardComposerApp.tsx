@@ -169,15 +169,20 @@ export function StatCardComposerApp() {
           ? next.gameDate
           : null,
       );
-      if (!game) {
-        return;
-      }
       lastGameRef.current = game;
-      setDraft((current) =>
-        current.playerId === next.playerId
-          ? fillStatCardFromGame(current, game)
-          : current,
-      );
+      setDraft((current) => {
+        if (current.playerId !== next.playerId) {
+          return current;
+        }
+        if (!game) {
+          return {
+            ...current,
+            matchup: "",
+            stats: current.stats.map((line) => ({ ...line, value: "" })),
+          };
+        }
+        return fillStatCardFromStandout(current, game);
+      });
     } catch {
       /* still editable */
     }

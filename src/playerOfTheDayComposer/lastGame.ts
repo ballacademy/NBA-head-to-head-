@@ -105,6 +105,43 @@ export const nbaTodayIso = (now = new Date()) =>
     day: "2-digit",
   }).format(now);
 
+/**
+ * Tip-off timestamps map onto the ET calendar (8pm ET Friday is Saturday 00:00Z).
+ * Bare YYYY-MM-DD / YYYYMMDD tokens are already slate dates — don't shift those.
+ */
+export const nbaSlateDate = (value: string | null | undefined) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) {
+    return "";
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw) || /^\d{8}$/.test(raw)) {
+    return isoDateOnly(raw);
+  }
+  const parsed = Date.parse(raw);
+  if (Number.isFinite(parsed)) {
+    return nbaTodayIso(new Date(parsed));
+  }
+  return isoDateOnly(raw);
+};
+
+/** NBA season year runs July 1 → June 30. Drops leftover ESPN gamelogs. */
+export const seasonDateWindow = (season: string) => {
+  const start = Number.parseInt(season.slice(0, 4), 10);
+  if (!Number.isFinite(start)) {
+    return { from: "2000-07-01", to: "2100-06-30" };
+  }
+  return { from: `${start}-07-01`, to: `${start + 1}-06-30` };
+};
+
+export const gameInSeasonWindow = (gameDate: string, season: string) => {
+  const day = nbaSlateDate(gameDate);
+  if (!day) {
+    return false;
+  }
+  const { from, to } = seasonDateWindow(season);
+  return day >= from && day <= to;
+};
+
 export const shiftIsoDate = (iso: string, days: number) => {
   const token = isoDateOnly(iso) || nbaTodayIso();
   const [year, month, day] = token.split("-").map(Number);
@@ -113,7 +150,7 @@ export const shiftIsoDate = (iso: string, days: number) => {
 };
 
 export const formatDateLabel = (iso: string) => {
-  const match = isoDateOnly(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = nbaSlateDate(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) {
     return iso;
   }
@@ -127,12 +164,12 @@ export const todayDateLabel = (now = new Date()) => {
 };
 
 export const gameOnDate = (games: LastGame[], iso: string) => {
-  const want = isoDateOnly(iso);
+  const want = nbaSlateDate(iso) || isoDateOnly(iso);
   if (!want) {
     return games[0] ?? null;
   }
   return (
-    games.find((game) => isoDateOnly(game.gameDate) === want) ?? null
+    games.find((game) => nbaSlateDate(game.gameDate) === want) ?? null
   );
 };
 
@@ -141,14 +178,14 @@ export const gameOnOrBeforeDate = (
   games: LastGame[],
   iso?: string | null,
 ) => {
-  const want = isoDateOnly(iso ?? "");
+  const want = nbaSlateDate(iso ?? "") || isoDateOnly(iso ?? "");
   if (!want) {
     return games[0] ?? null;
   }
   return (
-    games.find((game) => isoDateOnly(game.gameDate) === want) ??
+    games.find((game) => nbaSlateDate(game.gameDate) === want) ??
     games.find((game) => {
-      const date = isoDateOnly(game.gameDate);
+      const date = nbaSlateDate(game.gameDate);
       return Boolean(date && date <= want);
     }) ??
     null
@@ -366,11 +403,14 @@ export const parseGamelogGames = (
     }
     seen.add(eventId);
     const game = gameFromEvent(payload, eventId);
-    if (game) {
+    if (game && gameInSeasonWindow(game.gameDate, season)) {
       games.push(game);
     }
   }
-  games.sort((left, right) => right.gameDate.localeCompare(left.gameDate));
+  games.sort((left, right) =>
+    nbaSlateDate(right.gameDate).localeCompare(nbaSlateDate(left.gameDate)) ||
+    right.gameDate.localeCompare(left.gameDate),
+  );
   return games;
 };
 
@@ -425,10 +465,7 @@ export const fetchLastGame = async (
   onDate?: string | null,
 ): Promise<LastGame | null> => {
   const games = await fetchRecentGames(athleteId, sample);
-  if (onDate) {
-    return gameOnDate(games, onDate);
-  }
-  return games[0] ?? null;
+  return gameOnOrBeforeDate(games, onDate);
 };
 
 /** ESPN numeric club ids for schedule fetches. */
@@ -552,10 +589,10 @@ export const parseTeamScheduleLastNight = (
       stats: emptyStats(),
     });
   }
-  const want = isoDateOnly(onDate ?? "");
+  const want = nbaSlateDate(onDate ?? "") || isoDateOnly(onDate ?? "");
   const eligible = want
     ? completed.filter((item) => {
-        const date = isoDateOnly(item.gameDate);
+        const date = nbaSlateDate(item.gameDate);
         return Boolean(date && date <= want);
       })
     : completed;

@@ -269,7 +269,8 @@ describe("night standouts", () => {
       ast: "2",
       min: "28",
     });
-    expect(isNotableNight(boards, usualLineFor("3112335"))).toBe(false);
+    expect(isFreakNonScoringNight(boards)).toBe(true);
+    expect(isNotableNight(boards, usualLineFor("3112335"))).toBe(true);
 
     const tenBlocks = nightFlagsFor({
       ...emptyStats(),
@@ -318,6 +319,43 @@ describe("night standouts", () => {
       }),
     ]);
     expect(ranked.map((row) => row.athleteId)).toEqual(["gobert", "bouyea"]);
+  });
+
+  it("flags Simmons-type dime/board nights with little scoring", () => {
+    const simmons = nightFlagsFor({
+      ...emptyStats(),
+      pts: "4",
+      reb: "11",
+      ast: "10",
+      stl: "1",
+      blk: "0",
+      min: "32",
+      fg: "2-4",
+    });
+    expect(isFreakNonScoringNight(simmons)).toBe(true);
+    expect(isNotableNight(simmons, usualLineFor("3907387"))).toBe(true);
+    const row = nightStandoutFromBox(
+      "3907387",
+      "Ben Simmons",
+      "SAC",
+      { id: "SAS", abbrev: "SAS", score: "114" },
+      { score: "109", winner: false },
+      "401898843",
+      "2026-10-16",
+      {
+        ...emptyStats(),
+        pts: "4",
+        reb: "11",
+        ast: "10",
+        min: "32",
+        fg: "2-4",
+      },
+    );
+    expect(row).not.toBeNull();
+    expect(row?.athleteId).toBe("3907387");
+    expect(row?.flags.join(" ")).toMatch(/Dimes|Boards|Double-double/);
+    const ranked = rankNightStandouts([row!]);
+    expect(ranked.map((item) => item.athleteId)).toEqual(["3907387"]);
   });
 
   it("keeps each athlete's best night across a week", () => {

@@ -12,9 +12,11 @@ import {
   resolveTeamId,
   ESPN_TEAM_IDS,
   ESPN_TEAM_SCHEDULE_URL,
+  gameInSeasonWindow,
   gameOnDate,
   gameOnOrBeforeDate,
   isoDateOnly,
+  nbaSlateDate,
   nbaTodayIso,
   shiftIsoDate,
   toEspnDateParam,
@@ -190,7 +192,7 @@ const haliPayload = (): EspnGamelogPayload => ({
     },
     leftoverRs: {
       id: "leftoverRs",
-      gameDate: "2026-04-10T00:00:00.000+00:00",
+      gameDate: "2026-11-12T00:00:00.000+00:00",
       homeTeamId: "11",
       awayTeamId: "5",
       homeTeamScore: "100",
@@ -331,7 +333,7 @@ describe("last NBA game parsing", () => {
     expect(game?.eventId).toBe("401812725");
     expect(game?.resultLine).toBe("90-100 W VS LAC");
     expect(game?.home).toBe(false);
-    expect(game?.dateLabel).toBe("10/8");
+    expect(game?.dateLabel).toBe("10/7");
     expect(game?.stats.min).toBe("23");
     expect(game?.stats.pts).toBe("8");
   });
@@ -349,7 +351,7 @@ describe("last NBA game parsing", () => {
     expect(game?.stats.three).toBe("4-6");
     expect(game?.stats.tov).toBe("4");
     expect(game?.resultLine).toBe("112-114 L VS OKC");
-    expect(game?.dateLabel).toBe("10/14");
+    expect(game?.dateLabel).toBe("10/13");
     expect(game?.teamId).toBe("IND");
     expect(game?.opponentId).toBe("OKC");
     const games = parseGamelogGames(haliPayload(), "preseason", CURRENT_SEASON);
@@ -394,7 +396,7 @@ describe("last NBA game parsing", () => {
     expect(game?.opponentScore).toBe("130");
     expect(game?.result).toBe("L");
     expect(game?.resultLine).toBe("93-130 L VS NYK");
-    expect(game?.dateLabel).toBe("5/26");
+    expect(game?.dateLabel).toBe("5/25");
     expect(game?.stats.pts).toBe("12");
     expect(game?.stats.reb).toBe("4");
     expect(game?.stats.ast).toBe("2");
@@ -408,7 +410,7 @@ describe("last NBA game parsing", () => {
   it("lists recent box scores so a game can be picked, not only the latest", () => {
     const games = parseGamelogGames(payload(), "regular", PRIOR_SEASON);
     expect(games.map((game) => game.eventId)).toEqual(["401873344"]);
-    expect(games[0]?.dateLabel).toBe("5/26");
+    expect(games[0]?.dateLabel).toBe("5/25");
     const withPre = parseGamelogGames(
       {
         ...payload(),
@@ -427,7 +429,7 @@ describe("last NBA game parsing", () => {
       "401873344",
       "401812725",
     ]);
-    expect(withPre[1]?.dateLabel).toBe("10/8");
+    expect(withPre[1]?.dateLabel).toBe("10/7");
   });
 
   it("falls back to preseason when regular-season sample has no games", () => {
@@ -446,18 +448,19 @@ describe("last NBA game parsing", () => {
     expect(toEspnDateParam("2026-10-14")).toBe("20261014");
     expect(shiftIsoDate("2026-10-15", -1)).toBe("2026-10-14");
     expect(nbaTodayIso(new Date("2026-10-15T18:00:00-04:00"))).toBe("2026-10-15");
-    expect(formatDateLabel("2026-10-20T00:00:00Z")).toBe("10/20");
+    expect(formatDateLabel("2026-10-20T00:00:00Z")).toBe("10/19");
     expect(formatResultLine("88", "90", "L", "MIL")).toBe("88-90 L VS MIL");
     expect(emptyStats().fg).toBe("0-0");
     expect(parseLastGamePayload(null)).toBeNull();
     expect(parseLastGamePayload({ events: {}, seasonTypes: [] })).toBeNull();
     const games = parseGamelogGames(payload(), "regular", PRIOR_SEASON);
-    expect(gameOnDate(games, "2026-05-26")?.eventId).toBe("401873344");
+    expect(gameOnDate(games, "2026-05-25")?.eventId).toBe("401873344");
     expect(gameOnDate(games, "2026-10-14")).toBeNull();
     const pre = parseGamelogGames(haliPayload(), "preseason", CURRENT_SEASON);
     expect(gameOnDate(pre, "2026-10-15")).toBeNull();
     expect(gameOnOrBeforeDate(pre, "2026-10-15")?.eventId).toBe("401908621");
     expect(gameOnOrBeforeDate(pre, "2026-10-14")?.eventId).toBe("401908621");
+    expect(gameOnDate(pre, "2026-10-13")?.eventId).toBe("401908621");
     expect(gameOnOrBeforeDate(pre, "2026-10-01")).toBeNull();
     expect(gameOnOrBeforeDate(pre, "")?.eventId).toBe("401908621");
   });
@@ -616,5 +619,114 @@ describe("last NBA game parsing", () => {
     expect(later.game?.opponentId).toBe("PHX");
     expect(later.game?.playerScore).toBe("123");
     expect(later.record).toEqual({ wins: 2, losses: 0 });
+  });
+
+  it("maps ESPN midnight-UTC tip-offs onto the ET slate, not the leftover year", () => {
+    expect(nbaSlateDate("2026-10-17T00:00:00.000+00:00")).toBe("2026-10-16");
+    expect(nbaSlateDate("2026-10-16")).toBe("2026-10-16");
+    expect(nbaSlateDate("20261016")).toBe("2026-10-16");
+    expect(gameInSeasonWindow("2026-10-17T00:00:00.000+00:00", CURRENT_SEASON)).toBe(
+      true,
+    );
+    expect(gameInSeasonWindow("2025-04-19T19:30:00.000+00:00", CURRENT_SEASON)).toBe(
+      false,
+    );
+    const simmons: EspnGamelogPayload = {
+      labels: labels(),
+      events: {
+        leftover: {
+          id: "leftover",
+          gameDate: "2025-04-19T19:30:00.000+00:00",
+          homeTeamId: "23",
+          awayTeamId: "7",
+          homeTeamScore: "90",
+          awayTeamScore: "120",
+          gameResult: "L",
+          opponent: { abbreviation: "DEN", displayName: "Denver Nuggets" },
+          team: { id: "23", abbreviation: "SAC", displayName: "Sacramento Kings" },
+        },
+        "401898843": {
+          id: "401898843",
+          gameDate: "2026-10-17T00:00:00.000+00:00",
+          homeTeamId: "24",
+          awayTeamId: "23",
+          homeTeamScore: "114",
+          awayTeamScore: "109",
+          gameResult: "L",
+          opponent: { abbreviation: "SA", displayName: "San Antonio Spurs" },
+          team: { id: "23", abbreviation: "SAC", displayName: "Sacramento Kings" },
+        },
+      },
+      seasonTypes: [
+        {
+          displayName: "2024-25 Regular Season",
+          categories: [
+            {
+              events: [
+                {
+                  eventId: "leftover",
+                  stats: row(
+                    "32",
+                    "2-4",
+                    "50.0",
+                    "0-0",
+                    "0.0",
+                    "0-0",
+                    "0.0",
+                    "12",
+                    "10",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "4",
+                  ),
+                },
+              ],
+            },
+          ],
+        },
+        {
+          displayName: "2026-27 Preseason",
+          categories: [
+            {
+              events: [
+                {
+                  eventId: "401898843",
+                  stats: row(
+                    "26",
+                    "5-9",
+                    "55.6",
+                    "0-0",
+                    "0.0",
+                    "4-4",
+                    "100.0",
+                    "8",
+                    "7",
+                    "0",
+                    "1",
+                    "4",
+                    "5",
+                    "14",
+                  ),
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const games = parseGamelogGames(simmons, "preseason", CURRENT_SEASON);
+    expect(games.map((game) => game.eventId)).toEqual(["401898843"]);
+    expect(games[0]?.stats.pts).toBe("14");
+    expect(games[0]?.stats.reb).toBe("8");
+    expect(games[0]?.stats.ast).toBe("7");
+    expect(games[0]?.dateLabel).toBe("10/16");
+    expect(gameOnDate(games, "2026-10-16")?.eventId).toBe("401898843");
+    expect(gameOnDate(games, "2026-10-17")).toBeNull();
+    expect(gameOnOrBeforeDate(games, "2026-10-17")?.eventId).toBe("401898843");
+    expect(parseLastGamePayload(simmons, "preseason", CURRENT_SEASON)?.stats.pts).not.toBe(
+      "4",
+    );
   });
 });

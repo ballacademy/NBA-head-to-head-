@@ -442,6 +442,23 @@ describe("stat card composer", () => {
       "BLK",
       "MIN",
     ]);
+    const simmons = notableStatCardLines(
+      box({ pts: "4", reb: "11", ast: "10", stl: "1", blk: "0", min: "32", fg: "2-4" }),
+    );
+    expect(simmons.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "4 PTS",
+      "11 REB",
+      "10 AST",
+    ]);
+    const noShot = fillStatCardFromStandout(
+      defaultStatCardDraft(),
+      gameFrom({ pts: "0", reb: "12", ast: "9", min: "28", fg: "0-0" }),
+    );
+    expect(noShot.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "12 REB",
+      "9 AST",
+      "28 MIN",
+    ]);
   });
 
   it("shows FG / 3PM as makes-attempts, with MIN last", () => {
