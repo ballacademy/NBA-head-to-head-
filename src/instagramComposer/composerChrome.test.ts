@@ -257,6 +257,7 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("totwProductionScore");
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
+    expect(totwPlusState).toContain("isTotwRegular");
     expect(totwPlusApp).toContain("ComposerDateRange");
     expect(totwPlusApp).toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");

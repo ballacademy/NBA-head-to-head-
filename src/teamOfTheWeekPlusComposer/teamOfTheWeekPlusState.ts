@@ -154,6 +154,19 @@ export const isPlusStar = (athleteId: string) => {
   return player.allStar || player.ppg >= 20 || usual.pts >= 20;
 };
 
+/** Rotation regulars — not camp / two-way surprise nights. */
+export const isTotwRegular = (athleteId: string) => {
+  if (isPlusStar(athleteId)) {
+    return true;
+  }
+  const player = getPlayer(athleteId);
+  if (!player || player.role === "coach") {
+    return false;
+  }
+  const usual = usualLineFor(athleteId);
+  return player.ppg >= 10 || usual.pts >= 10;
+};
+
 export const plusOverExpectation = (row: NightStandout) => {
   const extra = nightFlagsFor(row.game.stats);
   const usual = usualLineFor(row.athleteId);
@@ -192,7 +205,6 @@ export const orderPlusStarters = (rows: NightStandout[]) =>
 
 /** Best week, ideally 2 guards / 2 forwards / 1 center. Soft-fill if the slate isn’t clean. */
 export const selectPlusStarters = (rows: NightStandout[]) => {
-  const ranked = [...rows].sort(rankTotwBest);
   const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
   const picked: NightStandout[] = [];
   const used = new Set<string>();
@@ -211,12 +223,23 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
     used.add(row.athleteId);
     counts[group] += 1;
   };
-  for (const row of ranked) {
-    take(row, true);
-  }
-  for (const row of ranked) {
-    take(row, false);
-  }
+  const fillFrom = (pool: NightStandout[], honorQuota: boolean) => {
+    const ranked = [...pool].sort(rankTotwBest);
+    for (const row of ranked) {
+      take(row, honorQuota);
+    }
+  };
+  // Stars first, then rotation regulars, then anyone — never camp explosions over stars.
+  fillFrom(
+    rows.filter((row) => isPlusStar(row.athleteId)),
+    true,
+  );
+  fillFrom(
+    rows.filter((row) => isTotwRegular(row.athleteId)),
+    true,
+  );
+  fillFrom(rows, true);
+  fillFrom(rows, false);
   return orderPlusStarters(picked);
 };
 

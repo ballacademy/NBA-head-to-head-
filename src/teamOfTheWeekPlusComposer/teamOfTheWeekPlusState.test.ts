@@ -35,6 +35,7 @@ import {
   fillPlusFromStandouts,
   fillStartersFromStandouts,
   isPlusStar,
+  isTotwRegular,
   plusBoardEmpty,
   plusLineupGroup,
   totwProductionScore,
@@ -338,5 +339,32 @@ describe("team of the week plus", () => {
       game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
     ]);
     expect(totwStrips.map((slot) => slot.playerId)).toEqual(bestIds);
+
+    const campExplosion = game(bouyea, 999, {
+      pts: "40",
+      reb: "12",
+      ast: "8",
+      min: "32",
+    });
+    expect(totwProductionScore(campExplosion)).toBeGreaterThan(
+      totwProductionScore(quietStar),
+    );
+    expect(isPlusStar(bouyea)).toBe(false);
+    expect(isTotwRegular(luka)).toBe(true);
+    const starFirst = selectPlusStarters([
+      campExplosion,
+      quietStar,
+      game(sga, 11, { pts: "36", reb: "5", ast: "7" }),
+      game(lebron, 12, { pts: "31", reb: "8", ast: "9" }),
+      game(tatum, 13, { pts: "33", reb: "9", ast: "6" }),
+      game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
+    ]);
+    expect(starFirst.map((row) => row.athleteId)).not.toContain(bouyea);
+    expect(starFirst.map((row) => row.athleteId)).toContain(luka);
+    const leftover = selectPlusStandouts(
+      [campExplosion, ...rows],
+      new Set(starFirst.map((row) => row.athleteId)),
+    );
+    expect(leftover.map((row) => row.athleteId)).toContain(bouyea);
   });
 });
