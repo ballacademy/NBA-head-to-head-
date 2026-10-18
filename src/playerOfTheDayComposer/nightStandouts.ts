@@ -330,12 +330,17 @@ export const nightStandoutFromBox = (
   eventId: string,
   gameDate: string,
   stats: LastGameStats,
+  includeQuiet = false,
 ): NightStandout | null => {
   if (!athleteId || n(stats.min) <= 0) {
     return null;
   }
   const extra = nightFlagsFor(stats);
-  if (extra.pts < STANDOUT_MIN_PTS && !isFreakNonScoringNight(extra)) {
+  if (
+    !includeQuiet &&
+    extra.pts < STANDOUT_MIN_PTS &&
+    !isFreakNonScoringNight(extra)
+  ) {
     return null;
   }
   const usual = usualLineFor(athleteId);
@@ -379,10 +384,11 @@ export const nightStandoutFromBox = (
   };
 };
 
-export const parseSummaryStandouts = (
+const parseSummaryPlayers = (
   payload: EspnSummaryPayload | null | undefined,
   eventId: string,
   gameDate: string,
+  includeQuiet: boolean,
 ): NightStandout[] => {
   const rows: NightStandout[] = [];
   const headerComps = payload?.header?.competitions?.[0]?.competitors ?? [];
@@ -423,6 +429,7 @@ export const parseSummaryStandouts = (
         eventId,
         gameDate,
         stats,
+        includeQuiet,
       );
       if (row) {
         rows.push(row);
@@ -432,17 +439,25 @@ export const parseSummaryStandouts = (
   return rows;
 };
 
+export const parseSummaryStandouts = (
+  payload: EspnSummaryPayload | null | undefined,
+  eventId: string,
+  gameDate: string,
+): NightStandout[] => parseSummaryPlayers(payload, eventId, gameDate, false);
+
+/** Every minute-played box line — quiet 4-point nights stay in the sample. */
+export const parseSummaryBoxAppearances = (
+  payload: EspnSummaryPayload | null | undefined,
+  eventId: string,
+  gameDate: string,
+): NightStandout[] => parseSummaryPlayers(payload, eventId, gameDate, true);
+
+const boxCache = new Map<string, NightStandout[]>();
 const cache = new Map<string, NightStandout[]>();
 
-export const fetchNightStandouts = async (
-  iso: string,
-): Promise<NightStandout[]> => {
-  const date = isoDateOnly(iso);
-  if (!date) {
-    return [];
-  }
-  if (cache.has(date)) {
-    return cache.get(date) ?? [];
+const loadNightBoxAppearances = async (date: string): Promise<NightStandout[]> => {
+  if (boxCache.has(date)) {
+    return boxCache.get(date) ?? [];
   }
   try {
     const boardRes = await fetch(ESPN_SCOREBOARD_URL(date), {
@@ -470,21 +485,34 @@ export const fetchNightStandouts = async (
           return [] as NightStandout[];
         }
         const summary = (await response.json()) as EspnSummaryPayload;
-        return parseSummaryStandouts(
-          summary,
-          eventId,
-          date,
-        );
+        return parseSummaryBoxAppearances(summary, eventId, date);
       }),
     );
-    const ranked = rankNightStandouts(batches.flat());
-    if (ranked.length > 0) {
-      cache.set(date, ranked);
+    const rows = batches.flat();
+    if (rows.length > 0) {
+      boxCache.set(date, rows);
     }
-    return ranked;
+    return rows;
   } catch {
     return [];
   }
+};
+
+export const fetchNightStandouts = async (
+  iso: string,
+): Promise<NightStandout[]> => {
+  const date = isoDateOnly(iso);
+  if (!date) {
+    return [];
+  }
+  if (cache.has(date)) {
+    return cache.get(date) ?? [];
+  }
+  const ranked = rankNightStandouts(await loadNightBoxAppearances(date));
+  if (ranked.length > 0) {
+    cache.set(date, ranked);
+  }
+  return ranked;
 };
 
 /** Keep each athlete's best night, then rank the week. */
@@ -501,23 +529,110 @@ export const mergeWeekStandouts = (nights: NightStandout[][]) => {
   return [...best.values()].sort((a, b) => b.score - a.score);
 };
 
-export const fetchStandoutsInRange = async (
+const addBoxStats = (left: LastGameStats, right: LastGameStats): LastGameStats => ({
+  pts: String(n(left.pts) + n(right.pts)),
+  reb: String(n(left.reb) + n(right.reb)),
+  ast: String(n(left.ast) + n(right.ast)),
+  stl: String(n(left.stl) + n(right.stl)),
+  blk: String(n(left.blk) + n(right.blk)),
+  tov: String(n(left.tov) + n(right.tov)),
+  min: String(n(left.min) + n(right.min)),
+  fg: left.fg,
+  three: left.three,
+  ft: left.ft,
+});
+
+const averageBoxStats = (stats: LastGameStats, games: number): LastGameStats => {
+  const gp = Math.max(1, games);
+  const avg = (value: string) => String(n(value) / gp);
+  return {
+    pts: avg(stats.pts),
+    reb: avg(stats.reb),
+    ast: avg(stats.ast),
+    stl: avg(stats.stl),
+    blk: avg(stats.blk),
+    tov: avg(stats.tov),
+    min: avg(stats.min),
+    fg: stats.fg,
+    three: stats.three,
+    ft: stats.ft,
+  };
+};
+
+/** Per-game box line across every appearance — a 23-point night does not erase 0-point ones. */
+export const mergeRangeProduction = (nights: NightStandout[][]) => {
+  const totals = new Map<
+    string,
+    { row: NightStandout; stats: LastGameStats; games: number }
+  >();
+  for (const rows of nights) {
+    for (const row of rows) {
+      if (n(row.game.stats.min) <= 0) {
+        continue;
+      }
+      const previous = totals.get(row.athleteId);
+      if (!previous) {
+        totals.set(row.athleteId, {
+          row,
+          stats: { ...row.game.stats },
+          games: 1,
+        });
+        continue;
+      }
+      previous.stats = addBoxStats(previous.stats, row.game.stats);
+      previous.games += 1;
+      if (
+        nightFlagsFor(row.game.stats).score >
+        nightFlagsFor(previous.row.game.stats).score
+      ) {
+        previous.row = row;
+      }
+    }
+  }
+  return [...totals.values()]
+    .map(({ row, stats, games }) => {
+      const averaged = averageBoxStats(stats, games);
+      const extra = nightFlagsFor(averaged);
+      return {
+        ...row,
+        line: standoutLine(averaged, extra),
+        score: extra.score,
+        game: { ...row.game, stats: averaged },
+      };
+    })
+    .sort((left, right) => right.score - left.score);
+};
+
+const fetchNightsInRange = async (
   fromIso: string,
   toIso: string,
-): Promise<NightStandout[]> => {
+  loadNight: (iso: string) => Promise<NightStandout[]>,
+) => {
   const dates = datesInInclusiveRange(fromIso, toIso);
   if (!dates.length) {
-    return [];
+    return [] as NightStandout[][];
   }
   const batches: NightStandout[][] = [];
   for (let index = 0; index < dates.length; index += 2) {
     const slice = dates.slice(index, index + 2);
-    batches.push(
-      ...(await Promise.all(slice.map((date) => fetchNightStandouts(date)))),
-    );
+    batches.push(...(await Promise.all(slice.map((date) => loadNight(date)))));
   }
-  return mergeWeekStandouts(batches);
+  return batches;
 };
+
+export const fetchStandoutsInRange = async (
+  fromIso: string,
+  toIso: string,
+): Promise<NightStandout[]> =>
+  mergeWeekStandouts(await fetchNightsInRange(fromIso, toIso, fetchNightStandouts));
+
+export const fetchRangeProduction = async (
+  fromIso: string,
+  toIso: string,
+): Promise<NightStandout[]> =>
+  mergeRangeProduction(
+    await fetchNightsInRange(fromIso, toIso, loadNightBoxAppearances),
+  );
 
 export const fetchWeekStandouts = async (
   endIso: string,

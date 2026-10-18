@@ -26,7 +26,10 @@ import {
   plusBoardMetrics,
   plusCellRect,
 } from "./teamOfTheWeekPlusLayout";
-import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
+import {
+  mergeRangeProduction,
+  type NightStandout,
+} from "../playerOfTheDayComposer/nightStandouts";
 import { emptyStats } from "../playerOfTheDayComposer/lastGame";
 import { createEmptyStrips } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
@@ -35,9 +38,6 @@ import {
   fillPlusFromStandouts,
   fillStartersFromStandouts,
   isPlusStar,
-  isTotwFreakLine,
-  isTotwRegular,
-  isTotwStandoutLine,
   plusBoardEmpty,
   plusLineupGroup,
   totwProductionScore,
@@ -283,12 +283,8 @@ describe("team of the week plus", () => {
 
     const standouts = selectPlusStandouts(rows, new Set(starterIds));
     const standoutIds = standouts.map((row) => row.athleteId);
-    expect(standoutIds).toHaveLength(3);
-    expect(standoutIds).toContain(podz);
-    expect(standoutIds).toContain(tari);
-    expect(standoutIds).toContain(camara);
-    expect(standoutIds).not.toContain(bouyea);
-    expect(standoutIds).not.toContain(keon);
+    expect(standoutIds).toHaveLength(5);
+    expect(standoutIds).toContain(bouyea);
     expect(standoutIds.every((id) => !starterIds.includes(id))).toBe(true);
     expect(standoutIds.every((id) => !isPlusStar(id))).toBe(true);
     expect(standoutIds).not.toContain(extraStar);
@@ -296,19 +292,14 @@ describe("team of the week plus", () => {
 
     const filled = fillPlusFromStandouts(createEmptyPlusSlots(), rows);
     expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(starterIds);
-    expect(
-      standoutSlots(filled)
-        .map((slot) => slot.playerId)
-        .filter(Boolean),
-    ).toEqual(standoutIds);
-    expect(
-      new Set(filled.map((slot) => slot.playerId).filter(Boolean)).size,
-    ).toBe(8);
+    expect(standoutSlots(filled).map((slot) => slot.playerId)).toEqual(
+      standoutIds,
+    );
+    expect(new Set(filled.map((slot) => slot.playerId)).size).toBe(10);
     expect(filled[0]?.photoSrc).toBe(getPlayer(starterIds[0]!)?.headshotUrl);
 
     const onlyGuards = NBA_ACTIVE_PLAYERS.filter(
-      (player) =>
-        plusLineupGroup(player) === "G" && isTotwRegular(player.id),
+      (player) => plusLineupGroup(player) === "G" && !player.allStar,
     )
       .slice(0, 6)
       .map((player, index) => game(player.id, 50 - index, { pts: "18" }));
@@ -351,65 +342,31 @@ describe("team of the week plus", () => {
     ]);
     expect(totwStrips.map((slot) => slot.playerId)).toEqual(bestIds);
 
-    const campExplosion = game(bouyea, 999, {
-      pts: "40",
-      reb: "12",
-      ast: "8",
-      min: "32",
-    });
-    expect(totwProductionScore(campExplosion)).toBeGreaterThan(
-      totwProductionScore(quietStar),
-    );
-    expect(isPlusStar(bouyea)).toBe(false);
-    expect(isTotwRegular(luka)).toBe(true);
-    const starFirst = selectPlusStarters([
-      campExplosion,
-      quietStar,
-      game(sga, 11, { pts: "36", reb: "5", ast: "7" }),
-      game(lebron, 12, { pts: "31", reb: "8", ast: "9" }),
-      game(tatum, 13, { pts: "33", reb: "9", ast: "6" }),
-      game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
-    ]);
-    expect(starFirst.map((row) => row.athleteId)).not.toContain(bouyea);
-    expect(starFirst.map((row) => row.athleteId)).toContain(luka);
-    const leftover = selectPlusStandouts(
-      [campExplosion, ...rows],
-      new Set(starFirst.map((row) => row.athleteId)),
-    );
-    expect(leftover.map((row) => row.athleteId)).toContain(bouyea);
-
     const terry = "4433159";
     expect(getPlayer(terry)?.name).toMatch(/Terry/);
-    expect(isTotwRegular(terry)).toBe(false);
-    const terryBlowup = game(terry, 80, {
-      pts: "23",
-      reb: "8",
-      ast: "9",
-      stl: "4",
-      min: "43",
-    });
-    expect(isTotwFreakLine(terryBlowup)).toBe(false);
-    expect(isTotwStandoutLine(terryBlowup)).toBe(false);
-    const withTerry = selectPlusStarters([...rows, terryBlowup]);
-    expect(withTerry.map((row) => row.athleteId)).not.toContain(terry);
+    const terryNights = [
+      game(terry, 10, { pts: "5", reb: "5", ast: "2", min: "11" }),
+      game(terry, 8, { pts: "4", reb: "1", ast: "1", min: "8" }),
+      game(terry, 80, {
+        pts: "23",
+        reb: "8",
+        ast: "9",
+        stl: "4",
+        min: "43",
+      }),
+      game(terry, 2, { pts: "0", reb: "3", ast: "1", min: "4" }),
+      game(terry, 1, { pts: "0", reb: "0", ast: "1", min: "5" }),
+    ];
+    const terryWindow = mergeRangeProduction([terryNights]);
+    expect(terryWindow).toHaveLength(1);
+    expect(Number.parseFloat(terryWindow[0]!.game.stats.pts)).toBeLessThan(8);
+    const withTerry = mergeRangeProduction([[...rows, ...terryNights]]);
+    const terryStarters = selectPlusStarters(withTerry);
+    expect(terryStarters.map((row) => row.athleteId)).not.toContain(terry);
     const terryStandouts = selectPlusStandouts(
-      [...rows, terryBlowup],
-      new Set(withTerry.map((row) => row.athleteId)),
+      withTerry,
+      new Set(terryStarters.map((row) => row.athleteId)),
     );
     expect(terryStandouts.map((row) => row.athleteId)).not.toContain(terry);
-
-    const freakBoards = game(bouyea, 40, {
-      pts: "8",
-      reb: "14",
-      ast: "2",
-      min: "28",
-    });
-    expect(isTotwFreakLine(freakBoards)).toBe(true);
-    expect(
-      selectPlusStandouts(
-        [freakBoards],
-        new Set(withTerry.map((row) => row.athleteId)),
-      ).map((row) => row.athleteId),
-    ).toContain(bouyea);
   });
 });

@@ -257,11 +257,12 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("totwProductionScore");
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
-    expect(totwPlusState).toContain("isTotwRegular");
-    expect(totwPlusState).toContain("isTotwStandoutLine");
-    expect(totwPlusState).toContain("TOTW_USAGE_FLOOR");
+    expect(totwPlusState).toContain("isSurpriseNight");
+    expect(totwPlusState).not.toContain("TOTW_USAGE_FLOOR");
+    expect(totwPlusState).not.toContain("isTotwRegular");
     expect(totwPlusApp).toContain("ComposerDateRange");
-    expect(totwPlusApp).toContain("fetchStandoutsInRange");
+    expect(totwPlusApp).toContain("fetchRangeProduction");
+    expect(totwPlusApp).not.toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");
     expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
   });
@@ -627,6 +628,8 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
     expect(totwApp).toContain("ComposerDateRange");
     expect(totwApp).toContain("fillStartersFromStandouts");
+    expect(totwApp).toContain("fetchRangeProduction");
+    expect(totwApp).not.toContain("fetchStandoutsInRange");
     expect(totwApp).toContain("week’s best");
     expect(coverApp).toContain("ComposerDateRange");
     expect(statCardApp).toContain("ComposerDateRange");

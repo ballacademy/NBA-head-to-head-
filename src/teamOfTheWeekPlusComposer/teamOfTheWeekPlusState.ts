@@ -1,5 +1,6 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
 import {
+  isSurpriseNight,
   nightFlagsFor,
   surpriseBonus,
   usualLineFor,
@@ -154,61 +155,6 @@ export const isPlusStar = (athleteId: string) => {
   return player.allStar || player.ppg >= 20 || usual.pts >= 20;
 };
 
-/** Rotation regulars — not camp / two-way surprise nights. */
-export const TOTW_USAGE_FLOOR = 10;
-export const TOTW_MIN_MINUTES = 16;
-export const TOTW_MIN_PTS = 12;
-
-export const isTotwRegular = (athleteId: string) => {
-  if (isPlusStar(athleteId)) {
-    return true;
-  }
-  const player = getPlayer(athleteId);
-  if (!player || player.role === "coach") {
-    return false;
-  }
-  const usual = usualLineFor(athleteId);
-  return player.ppg >= TOTW_USAGE_FLOOR || usual.pts >= TOTW_USAGE_FLOOR;
-};
-
-const boxNumber = (value: string | undefined) => {
-  const parsed = Number.parseFloat(String(value ?? "").split("-")[0] ?? "");
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-/** 12+ boards or huge stocks — the only way a ~6 PPG camp night posts. */
-export const isTotwFreakLine = (row: NightStandout) => {
-  const extra = nightFlagsFor(row.game.stats);
-  return extra.reb >= 12 || extra.blk >= 5 || extra.stl >= 5 || extra.stocks >= 6;
-};
-
-export const isTotwStarterLine = (row: NightStandout) => {
-  if (!isTotwRegular(row.athleteId) && !isPlusStar(row.athleteId)) {
-    return false;
-  }
-  const extra = nightFlagsFor(row.game.stats);
-  const minutes = boxNumber(row.game.stats.min);
-  if (minutes < TOTW_MIN_MINUTES && !isTotwFreakLine(row)) {
-    return false;
-  }
-  return extra.pts >= TOTW_MIN_PTS || extra.pra >= 20 || isTotwFreakLine(row);
-};
-
-export const isTotwStandoutLine = (row: NightStandout) => {
-  const minutes = boxNumber(row.game.stats.min);
-  if (isTotwFreakLine(row) && minutes >= 12) {
-    return true;
-  }
-  if (!isTotwRegular(row.athleteId)) {
-    return false;
-  }
-  const extra = nightFlagsFor(row.game.stats);
-  if (minutes < TOTW_MIN_MINUTES) {
-    return false;
-  }
-  return extra.pts >= TOTW_MIN_PTS || extra.pra >= 20;
-};
-
 export const plusOverExpectation = (row: NightStandout) => {
   const extra = nightFlagsFor(row.game.stats);
   const usual = usualLineFor(row.athleteId);
@@ -283,18 +229,8 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
       take(row, honorQuota);
     }
   };
-  const eligible = rows.filter(isTotwStarterLine);
-  // Stars first, then rotation regulars. Never end-of-bench ~6 PPG nights.
-  fillFrom(
-    eligible.filter((row) => isPlusStar(row.athleteId)),
-    true,
-  );
-  fillFrom(
-    eligible.filter((row) => isTotwRegular(row.athleteId)),
-    true,
-  );
-  fillFrom(eligible, true);
-  fillFrom(eligible, false);
+  fillFrom(rows, true);
+  fillFrom(rows, false);
   return orderPlusStarters(picked);
 };
 
@@ -304,12 +240,13 @@ export const selectPlusStandouts = (
   starterIds: ReadonlySet<string>,
 ) =>
   [...rows]
-    .filter(
-      (row) =>
-        !starterIds.has(row.athleteId) &&
-        !isPlusStar(row.athleteId) &&
-        isTotwStandoutLine(row),
-    )
+    .filter((row) => {
+      if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
+        return false;
+      }
+      const extra = nightFlagsFor(row.game.stats);
+      return isSurpriseNight(extra, usualLineFor(row.athleteId));
+    })
     .sort(
       (left, right) =>
         plusOverExpectation(right) - plusOverExpectation(left) ||

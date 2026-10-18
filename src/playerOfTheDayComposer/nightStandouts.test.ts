@@ -5,6 +5,7 @@ import {
   isFreakNonScoringNight,
   isNotableNight,
   isSurpriseNight,
+  mergeRangeProduction,
   mergeWeekStandouts,
   nightFlagsFor,
   nightStandoutFromBox,
@@ -375,5 +376,30 @@ describe("night standouts", () => {
     const merged = mergeWeekStandouts([[quiet, gobert], [louder]]);
     expect(merged[0]?.athleteId).toBe("quiet");
     expect(merged.map((row) => row.athleteId)).toEqual(["quiet", "gobert"]);
+  });
+
+  it("averages every appearance in a range so one loud night does not become the week", () => {
+    const blowup = gameRow(
+      "4433159",
+      "Dalen Terry",
+      { pts: "23", reb: "8", ast: "9", stl: "4", min: "43" },
+      80,
+    );
+    const quiet = gameRow(
+      "4433159",
+      "Dalen Terry",
+      { pts: "4", reb: "1", ast: "1", min: "8" },
+      8,
+    );
+    const bench = gameRow(
+      "4433159",
+      "Dalen Terry",
+      { pts: "0", reb: "3", ast: "1", min: "4" },
+      2,
+    );
+    const merged = mergeRangeProduction([[blowup, quiet, bench]]);
+    expect(merged).toHaveLength(1);
+    expect(Number.parseFloat(merged[0]!.game.stats.pts)).toBeCloseTo(9, 0);
+    expect(merged[0]!.score).toBeLessThan(blowup.score);
   });
 });

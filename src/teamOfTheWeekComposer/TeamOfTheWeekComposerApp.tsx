@@ -37,7 +37,7 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import { fetchRangeProduction } from "../playerOfTheDayComposer/nightStandouts";
 import {
   fillStartersFromStandouts,
   plusLineupGroup,
@@ -124,7 +124,7 @@ export function TeamOfTheWeekComposerApp() {
   ) => {
     setStatus("Loading box scores for this range…");
     try {
-      const rows = await fetchStandoutsInRange(fromIso, toIso);
+      const rows = await fetchRangeProduction(fromIso, toIso);
       setWeek((current) =>
         isAutoWeekLine(current, fromIso, toIso)
           ? rangeWeekLine(fromIso, toIso)
