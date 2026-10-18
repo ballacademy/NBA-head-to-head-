@@ -45,6 +45,9 @@ describe("overflow abbreviation", () => {
     expect(abbreviateOverflowName("S. Gilgeous-Alexander", 14, measure)).toBe(
       "S. GILGEOUS-A.",
     );
+    expect(abbreviateOverflowName("S. Gilgeous-Alexander", 16, measure)).toBe(
+      "S. GILGEOUS-A.",
+    );
     expect(abbreviateOverflowName("V. Wembanyama", 12, measure)).toBe(
       "V. WEMBANYA.",
     );

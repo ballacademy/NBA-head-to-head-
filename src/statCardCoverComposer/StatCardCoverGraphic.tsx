@@ -84,7 +84,8 @@ export const StatCardCoverGraphic = forwardRef<
   const [unit, setUnit] = useState(0.4);
   const watermark = parseComposerWatermark(draft.watermark);
   const titleLines = splitCoverTitle(draft.title);
-  const names = coverNameMetrics();
+  const slotCount = draft.slots.length;
+  const names = coverNameMetrics(slotCount);
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -125,6 +126,7 @@ export const StatCardCoverGraphic = forwardRef<
         composerFlairClass(purpleFlair),
         composerGradeClass(photoGrade),
         draft.showGold !== false ? "is-gold" : "",
+        slotCount >= 4 ? "is-4up" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -139,13 +141,15 @@ export const StatCardCoverGraphic = forwardRef<
           ["--pill-h" as string]: String(SCC_PILL_H),
           ["--name-h" as string]: String(names.nameH),
           ["--name-logo" as string]: String(names.logo),
+          ["--name-family" as string]: String(names.family),
+          ["--name-given" as string]: String(names.given),
         } as React.CSSProperties
       }
       aria-label="Instagram stat card cover"
     >
-      {Array.from({ length: draft.slots.length }, (_, index) => {
+      {Array.from({ length: slotCount }, (_, index) => {
         const slot = draft.slots[index]!;
-        const cell = coverCellRect(index, draft.slots.length);
+        const cell = coverCellRect(index, slotCount);
         const empty = !slot.photoSrc;
         const named = Boolean(slot.playerId || coverSlotName(slot));
         const team = getTeam(slot.teamId);
@@ -213,7 +217,7 @@ export const StatCardCoverGraphic = forwardRef<
       })}
       <div className="scc-top-fade" aria-hidden="true" />
       <div className="scc-lockup-scrim" aria-hidden="true" />
-      {coverSeamXs().map((x) => (
+      {coverSeamXs(slotCount).map((x) => (
         <div
           key={`scc-seam-${x}`}
           className="scc-seam"

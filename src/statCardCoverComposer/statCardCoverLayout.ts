@@ -42,6 +42,10 @@ export const SCC_NAME_H = 168;
 export const SCC_NAME_LOGO = 44;
 export const SCC_FAMILY_SIZE = 28;
 export const SCC_GIVEN_SIZE = 20;
+/** 4-up cells are 300px — drop type so F. Last still reads `S. GILGEOUS-A.` */
+export const SCC_NAME_LOGO_4UP = 32;
+export const SCC_FAMILY_SIZE_4UP = 20;
+export const SCC_GIVEN_SIZE_4UP = 16;
 export const SCC_MARK = 140;
 /** Large enough to read at 2400×3000 — still pinned to the right edge. */
 export const SCC_SWIPE_SIZE = 88;
@@ -68,24 +72,36 @@ export const coverCellRect = (index: number, count = SCC_SLOT_COUNT) => {
   };
 };
 
-export const coverNameMetrics = (_index?: number) => ({
-  nameH: SCC_NAME_H,
-  logo: SCC_NAME_LOGO,
-  family: SCC_FAMILY_SIZE,
-  given: SCC_GIVEN_SIZE,
-});
+export const coverNameMetrics = (count = SCC_SLOT_COUNT) => {
+  const n = parseCoverSlotCount(count);
+  if (n >= 4) {
+    return {
+      nameH: SCC_NAME_H,
+      logo: SCC_NAME_LOGO_4UP,
+      family: SCC_FAMILY_SIZE_4UP,
+      given: SCC_GIVEN_SIZE_4UP,
+    };
+  }
+  return {
+    nameH: SCC_NAME_H,
+    logo: SCC_NAME_LOGO,
+    family: SCC_FAMILY_SIZE,
+    given: SCC_GIVEN_SIZE,
+  };
+};
 
 export const coverNameTextWidth = (count = SCC_SLOT_COUNT) => {
   const cell = coverCellRect(0, count);
+  const metrics = coverNameMetrics(count);
   const pad = count >= 4 ? 52 : 20;
-  return Math.max(24, cell.w - coverNameMetrics().logo - pad);
+  return Math.max(24, cell.w - metrics.logo - pad);
 };
 
 export const coverFittedLastName = (
   lastName: string,
   count = SCC_SLOT_COUNT,
 ) => {
-  const metrics = coverNameMetrics();
+  const metrics = coverNameMetrics(count);
   const maxEm = coverNameTextWidth(count) / metrics.family;
   return abbreviateOverflowName(lastName, maxEm, (value) =>
     measureTitleAdvance(value, 0.04),

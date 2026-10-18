@@ -166,7 +166,7 @@ const paintSeam = (
 const drawCellPhoto = async (
   context: CanvasRenderingContext2D,
   slot: CoverSlot,
-  index: number,
+  _index: number,
   x: number,
   y: number,
   w: number,
@@ -174,6 +174,7 @@ const drawCellPhoto = async (
   scale: number,
   photoGrade = false,
   watermarkOpacity = 0,
+  slotCount = SCC_SLOT_COUNT,
 ) => {
   context.save();
   context.beginPath();
@@ -248,7 +249,7 @@ const drawCellPhoto = async (
   }
 
   if (slot.playerId || coverSlotName(slot)) {
-    const metrics = coverNameMetrics(index);
+    const metrics = coverNameMetrics(slotCount);
     const barH = metrics.nameH * scale;
     const logo = team ? await loadImage(team.logoSrc) : null;
     drawPlayerNameFade(context, {
@@ -366,6 +367,7 @@ export const renderStatCardCoverCanvas = async (
       s,
       input.photoGrade === true,
       watermarkOpacity,
+      slotCount,
     );
   }
 

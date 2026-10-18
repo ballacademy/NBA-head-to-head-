@@ -20,6 +20,7 @@ import {
   SCC_SWIPE_SIZE,
   coverCellRect,
   coverFittedLastName,
+  coverNameMetrics,
   coverSeamXs,
 } from "./statCardCoverLayout";
 import {
@@ -114,11 +115,17 @@ describe("stat card cover", () => {
       h: GRAPHIC_HEIGHT,
     });
     expect(coverSeamXs(4)).toEqual([300, 600, 900]);
-    expect(coverFittedLastName("Wembanyama", 4)).toMatch(/\.$/);
-    expect(coverFittedLastName("Wembanyama", 4)).not.toMatch(/\s/);
-    expect(coverFittedLastName("Wembanyama", 4)).not.toBe("WEMBANYAMA");
+    expect(coverFittedLastName("Gilgeous-Alexander", 4)).toMatch(
+      /^(GILGEOUS-A\.|G\.-ALEXANDER)$/,
+    );
     expect(coverFittedLastName("Jokic", 4)).toBe("JOKIC");
-    expect(coverFittedLastName("N. Jokic", 4)).toMatch(/^N\./);
+    expect(coverFittedLastName("N. Jokic", 4)).toBe("N. JOKIC");
+    expect(coverFittedLastName("S. Gilgeous-Alexander", 4)).toBe(
+      "S. GILGEOUS-A.",
+    );
+    expect(coverFittedLastName("V. Wembanyama", 4)).toMatch(/^V\./);
+    expect(coverFittedLastName("L. Doncic", 4)).toBe("L. DONCIC");
+    expect(coverNameMetrics(4).family).toBeLessThan(coverNameMetrics(3).family);
     expect(SCC_GOLD.toLowerCase()).toBe("#facc15");
     expect(SCC_GOLD_DEEP.toLowerCase()).toBe("#d4af37");
   });

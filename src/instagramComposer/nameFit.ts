@@ -101,11 +101,22 @@ export const abbreviateOverflowName = (
   if (prefixMatch) {
     const prefix = prefixMatch[1]!;
     const rest = prefixMatch[2]!;
-    const restFit = abbreviateOverflowName(
-      rest,
-      Math.max(0, maxWidth - measure(prefix)),
-      measure,
-    );
+    const restBudget = Math.max(0, maxWidth - measure(prefix));
+    const hyphen = rest.lastIndexOf("-");
+    // Once the given initial is already in the prefix, keep the last-name
+    // stem (`S. GILGEOUS-A.`) instead of a second initial (`S. G.-ALEXANDER`).
+    let restFit = "";
+    if (hyphen > 0 && hyphen < rest.length - 1) {
+      const left = rest.slice(0, hyphen);
+      const right = rest.slice(hyphen + 1);
+      const shortRight = `${left}-${right[0]}.`;
+      if (measure(shortRight) <= restBudget) {
+        restFit = shortRight;
+      }
+    }
+    if (!restFit) {
+      restFit = abbreviateOverflowName(rest, restBudget, measure);
+    }
     const combined = `${prefix}${restFit}`.replace(/\s+/g, " ").trim();
     if (combined && measure(combined) <= maxWidth) {
       return combined;
