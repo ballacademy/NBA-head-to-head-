@@ -97,6 +97,21 @@ export const abbreviateOverflowName = (
     return value;
   }
 
+  const prefixMatch = value.match(/^([A-Z]\.\s+)(.+)$/);
+  if (prefixMatch) {
+    const prefix = prefixMatch[1]!;
+    const rest = prefixMatch[2]!;
+    const restFit = abbreviateOverflowName(
+      rest,
+      Math.max(0, maxWidth - measure(prefix)),
+      measure,
+    );
+    const combined = `${prefix}${restFit}`.replace(/\s+/g, " ").trim();
+    if (combined && measure(combined) <= maxWidth) {
+      return combined;
+    }
+  }
+
   const hyphen = value.lastIndexOf("-");
   if (hyphen > 0 && hyphen < value.length - 1) {
     const left = value.slice(0, hyphen);

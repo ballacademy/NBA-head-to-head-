@@ -41,6 +41,16 @@ describe("overflow abbreviation", () => {
     );
   });
 
+  it("keeps an F. Last prefix and abbreviates the last name", () => {
+    expect(abbreviateOverflowName("S. Gilgeous-Alexander", 14, measure)).toBe(
+      "S. GILGEOUS-A.",
+    );
+    expect(abbreviateOverflowName("V. Wembanyama", 12, measure)).toBe(
+      "V. WEMBANYA.",
+    );
+    expect(abbreviateOverflowName("N. Jokic", 10, measure)).toBe("N. JOKIC");
+  });
+
   it("truncates a long unhyphenated last name with a period", () => {
     expect(abbreviateOverflowName("Antetokounmpo", 8, measure)).toBe(
       "ANTETOK.",
