@@ -155,6 +155,10 @@ export const isPlusStar = (athleteId: string) => {
 };
 
 /** Rotation regulars — not camp / two-way surprise nights. */
+export const TOTW_USAGE_FLOOR = 10;
+export const TOTW_MIN_MINUTES = 16;
+export const TOTW_MIN_PTS = 12;
+
 export const isTotwRegular = (athleteId: string) => {
   if (isPlusStar(athleteId)) {
     return true;
@@ -164,7 +168,45 @@ export const isTotwRegular = (athleteId: string) => {
     return false;
   }
   const usual = usualLineFor(athleteId);
-  return player.ppg >= 10 || usual.pts >= 10;
+  return player.ppg >= TOTW_USAGE_FLOOR || usual.pts >= TOTW_USAGE_FLOOR;
+};
+
+const boxNumber = (value: string | undefined) => {
+  const parsed = Number.parseFloat(String(value ?? "").split("-")[0] ?? "");
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+/** 12+ boards or huge stocks — the only way a ~6 PPG camp night posts. */
+export const isTotwFreakLine = (row: NightStandout) => {
+  const extra = nightFlagsFor(row.game.stats);
+  return extra.reb >= 12 || extra.blk >= 5 || extra.stl >= 5 || extra.stocks >= 6;
+};
+
+export const isTotwStarterLine = (row: NightStandout) => {
+  if (!isTotwRegular(row.athleteId) && !isPlusStar(row.athleteId)) {
+    return false;
+  }
+  const extra = nightFlagsFor(row.game.stats);
+  const minutes = boxNumber(row.game.stats.min);
+  if (minutes < TOTW_MIN_MINUTES && !isTotwFreakLine(row)) {
+    return false;
+  }
+  return extra.pts >= TOTW_MIN_PTS || extra.pra >= 20 || isTotwFreakLine(row);
+};
+
+export const isTotwStandoutLine = (row: NightStandout) => {
+  const minutes = boxNumber(row.game.stats.min);
+  if (isTotwFreakLine(row) && minutes >= 12) {
+    return true;
+  }
+  if (!isTotwRegular(row.athleteId)) {
+    return false;
+  }
+  const extra = nightFlagsFor(row.game.stats);
+  if (minutes < TOTW_MIN_MINUTES) {
+    return false;
+  }
+  return extra.pts >= TOTW_MIN_PTS || extra.pra >= 20;
 };
 
 export const plusOverExpectation = (row: NightStandout) => {
@@ -241,17 +283,18 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
       take(row, honorQuota);
     }
   };
-  // Stars first, then rotation regulars, then anyone — never camp explosions over stars.
+  const eligible = rows.filter(isTotwStarterLine);
+  // Stars first, then rotation regulars. Never end-of-bench ~6 PPG nights.
   fillFrom(
-    rows.filter((row) => isPlusStar(row.athleteId)),
+    eligible.filter((row) => isPlusStar(row.athleteId)),
     true,
   );
   fillFrom(
-    rows.filter((row) => isTotwRegular(row.athleteId)),
+    eligible.filter((row) => isTotwRegular(row.athleteId)),
     true,
   );
-  fillFrom(rows, true);
-  fillFrom(rows, false);
+  fillFrom(eligible, true);
+  fillFrom(eligible, false);
   return orderPlusStarters(picked);
 };
 
@@ -262,7 +305,10 @@ export const selectPlusStandouts = (
 ) =>
   [...rows]
     .filter(
-      (row) => !starterIds.has(row.athleteId) && !isPlusStar(row.athleteId),
+      (row) =>
+        !starterIds.has(row.athleteId) &&
+        !isPlusStar(row.athleteId) &&
+        isTotwStandoutLine(row),
     )
     .sort(
       (left, right) =>

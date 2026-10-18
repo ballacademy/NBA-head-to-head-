@@ -35,7 +35,9 @@ import {
   fillPlusFromStandouts,
   fillStartersFromStandouts,
   isPlusStar,
+  isTotwFreakLine,
   isTotwRegular,
+  isTotwStandoutLine,
   plusBoardEmpty,
   plusLineupGroup,
   totwProductionScore,
@@ -281,8 +283,12 @@ describe("team of the week plus", () => {
 
     const standouts = selectPlusStandouts(rows, new Set(starterIds));
     const standoutIds = standouts.map((row) => row.athleteId);
-    expect(standoutIds).toHaveLength(5);
-    expect(standoutIds).toContain(bouyea);
+    expect(standoutIds).toHaveLength(3);
+    expect(standoutIds).toContain(podz);
+    expect(standoutIds).toContain(tari);
+    expect(standoutIds).toContain(camara);
+    expect(standoutIds).not.toContain(bouyea);
+    expect(standoutIds).not.toContain(keon);
     expect(standoutIds.every((id) => !starterIds.includes(id))).toBe(true);
     expect(standoutIds.every((id) => !isPlusStar(id))).toBe(true);
     expect(standoutIds).not.toContain(extraStar);
@@ -290,14 +296,19 @@ describe("team of the week plus", () => {
 
     const filled = fillPlusFromStandouts(createEmptyPlusSlots(), rows);
     expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(starterIds);
-    expect(standoutSlots(filled).map((slot) => slot.playerId)).toEqual(
-      standoutIds,
-    );
-    expect(new Set(filled.map((slot) => slot.playerId)).size).toBe(10);
+    expect(
+      standoutSlots(filled)
+        .map((slot) => slot.playerId)
+        .filter(Boolean),
+    ).toEqual(standoutIds);
+    expect(
+      new Set(filled.map((slot) => slot.playerId).filter(Boolean)).size,
+    ).toBe(8);
     expect(filled[0]?.photoSrc).toBe(getPlayer(starterIds[0]!)?.headshotUrl);
 
     const onlyGuards = NBA_ACTIVE_PLAYERS.filter(
-      (player) => plusLineupGroup(player) === "G" && !player.allStar,
+      (player) =>
+        plusLineupGroup(player) === "G" && isTotwRegular(player.id),
     )
       .slice(0, 6)
       .map((player, index) => game(player.id, 50 - index, { pts: "18" }));
@@ -366,5 +377,39 @@ describe("team of the week plus", () => {
       new Set(starFirst.map((row) => row.athleteId)),
     );
     expect(leftover.map((row) => row.athleteId)).toContain(bouyea);
+
+    const terry = "4433159";
+    expect(getPlayer(terry)?.name).toMatch(/Terry/);
+    expect(isTotwRegular(terry)).toBe(false);
+    const terryBlowup = game(terry, 80, {
+      pts: "23",
+      reb: "8",
+      ast: "9",
+      stl: "4",
+      min: "43",
+    });
+    expect(isTotwFreakLine(terryBlowup)).toBe(false);
+    expect(isTotwStandoutLine(terryBlowup)).toBe(false);
+    const withTerry = selectPlusStarters([...rows, terryBlowup]);
+    expect(withTerry.map((row) => row.athleteId)).not.toContain(terry);
+    const terryStandouts = selectPlusStandouts(
+      [...rows, terryBlowup],
+      new Set(withTerry.map((row) => row.athleteId)),
+    );
+    expect(terryStandouts.map((row) => row.athleteId)).not.toContain(terry);
+
+    const freakBoards = game(bouyea, 40, {
+      pts: "8",
+      reb: "14",
+      ast: "2",
+      min: "28",
+    });
+    expect(isTotwFreakLine(freakBoards)).toBe(true);
+    expect(
+      selectPlusStandouts(
+        [freakBoards],
+        new Set(withTerry.map((row) => row.athleteId)),
+      ).map((row) => row.athleteId),
+    ).toContain(bouyea);
   });
 });
