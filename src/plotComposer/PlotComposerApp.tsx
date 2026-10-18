@@ -248,15 +248,13 @@ export function PlotComposerApp() {
       setTitle((current) =>
         isAutoTitle(current) ? autoPlotTitle(xMetric, yMetric, subject) : current,
       );
-      if (announce) {
-        const pinNote =
-          subject === "players" && pinnedIds.length
-            ? ` (${pinnedIds.length} pinned)`
-            : "";
-        setStatus(
-          `Plotted ${next.length} ${subject}${pinNote} on ${labelX} vs ${labelY}.`,
-        );
-      }
+      const pinNote =
+        subject === "players" && pinnedIds.length
+          ? ` (${pinnedIds.length} pinned)`
+          : "";
+      setStatus(
+        `Plotted ${next.length} ${subject}${pinNote} on ${labelX} vs ${labelY}.`,
+      );
       return next;
     },
     [
