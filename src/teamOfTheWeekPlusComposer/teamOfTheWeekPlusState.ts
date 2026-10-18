@@ -190,10 +190,22 @@ const rankTotwBest = (left: NightStandout, right: NightStandout) => {
   return right.score - left.score;
 };
 
+const PLUS_GROUP_RANK: Record<PlayerPositionGroup, number> = {
+  G: 0,
+  F: 1,
+  C: 2,
+};
+
 export const orderPlusStarters = (rows: NightStandout[]) =>
   [...rows].sort((left, right) => {
     const a = getPlayer(left.athleteId);
     const b = getPlayer(right.athleteId);
+    const groupRank =
+      (PLUS_GROUP_RANK[plusLineupGroup(a) ?? "F"] ?? 9) -
+      (PLUS_GROUP_RANK[plusLineupGroup(b) ?? "F"] ?? 9);
+    if (groupRank) {
+      return groupRank;
+    }
     const rank =
       (PLUS_POSITION_RANK[a?.position ?? ""] ?? 9) -
       (PLUS_POSITION_RANK[b?.position ?? ""] ?? 9);
