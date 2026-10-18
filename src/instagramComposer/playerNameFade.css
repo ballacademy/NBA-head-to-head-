@@ -81,14 +81,14 @@
 
 .ig-name-fade__family {
   min-height: calc(18 * var(--u));
-  max-height: calc(34 * var(--u));
+  max-height: calc(22 * var(--u));
   font-size: calc(13 * var(--u));
   letter-spacing: 0.04em;
-  line-height: 0.95;
+  line-height: 1;
   resize: none;
   overflow: hidden;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
   field-sizing: content;
 }
 

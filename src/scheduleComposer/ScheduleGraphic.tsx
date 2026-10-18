@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -10,6 +16,7 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  scheduleFillLayout,
   scheduleGroups,
   splitScheduleTitle,
   type ScheduleDraft,
@@ -44,6 +51,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
     const [unit, setUnit] = useState(0.4);
     const titleLines = splitScheduleTitle(draft.title);
     const groups = scheduleGroups(draft.games);
+    const fill = scheduleFillLayout(groups);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -86,7 +94,15 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` }}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--sch-logo" as string]: String(fill.logo),
+            ["--sch-type" as string]: String(fill.type),
+            ["--sch-time" as string]: String(fill.time),
+            ["--sch-label" as string]: String(fill.labelH),
+          } as CSSProperties
+        }
         aria-label="Instagram schedule poster"
       >
         {draft.showBa ? (
@@ -127,11 +143,12 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
             onWeekLineChange(event.target.value.slice(0, 40))
           }
         />
-        <div className={groups.length > 2 ? "sch-list is-split" : "sch-list"}>
+        <div className="sch-list">
           {groups.length ? (
             groups.map((group) => (
               <section key={group.date} className="sch-day">
                 <h2 className="sch-day__label">{group.label}</h2>
+                <div className="sch-day__games">
                 {group.games.map((game) => {
                   const away = getTeam(game.awayId);
                   const home = getTeam(game.homeId);
@@ -158,6 +175,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
                     </div>
                   );
                 })}
+                </div>
               </section>
             ))
           ) : (

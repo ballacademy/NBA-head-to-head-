@@ -646,11 +646,25 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(injuryGraphic).toContain("inj-team__logo");
+    expect(injuryGraphic).toContain("injuryFillLayout");
     expect(scheduleGraphic).toContain("sch-game__logo");
-    expect(injuryCss).toContain("align-content: start");
+    expect(scheduleGraphic).toContain("sch-day__games");
+    expect(injuryCss).toContain("grid-template-rows: repeat(var(--inj-rows");
+    expect(injuryCss).toContain("align-content: stretch");
     expect(injuryCss).toMatch(/\.inj-team__logo \{[\s\S]*?position:\s*relative/);
-    expect(scheduleCss).toContain(".sch-list.is-split");
+    expect(scheduleCss).toContain(".sch-day__games");
     expect(scheduleCss).toMatch(/\.sch-game__logo \{[\s\S]*?position:\s*relative/);
+    const coverNameFade = readFileSync(
+      join(root, "instagramComposer/PlayerNameFade.tsx"),
+      "utf8",
+    );
+    const nameFadeCss = readFileSync(
+      join(root, "instagramComposer/playerNameFade.css"),
+      "utf8",
+    );
+    expect(coverNameFade).toContain("abbreviateOverflowName");
+    expect(nameFadeCss).toContain("white-space: nowrap");
+    expect(coverCss).toContain("white-space: nowrap");
     expect(etApp).toContain("Two players per team");
     expect(compareApp).toContain("last-5");
     expect(compareApp).toContain("this-week");

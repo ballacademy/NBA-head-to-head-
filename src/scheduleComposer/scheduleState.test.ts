@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { parseScoreboardGames, scheduleGroups } from "./scheduleState";
+import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
+import {
+  parseScoreboardGames,
+  scheduleFillLayout,
+  scheduleGroups,
+} from "./scheduleState";
 
 describe("schedule poster", () => {
   it("reads logos and tip times from an ESPN scoreboard night", () => {
@@ -56,5 +61,26 @@ describe("schedule poster", () => {
     expect(games[0]?.date).toBe("2026-10-20");
     expect(games[0]?.timeLabel).toBe("10:30 PM ET");
     expect(games[0]?.dateLabel).toContain("OCT 20");
+  });
+
+  it("fills the 4:5 by stretching each day so the week is not a short card", () => {
+    const groups = [
+      { games: [1, 2] },
+      { games: [3] },
+      { games: [4, 5, 6] },
+      { games: [7] },
+      { games: [8, 9] },
+      { games: [10] },
+      { games: [11, 12] },
+    ];
+    const fill = scheduleFillLayout(groups);
+    expect(fill.days).toBe(7);
+    expect(fill.listH / GRAPHIC_HEIGHT).toBeGreaterThan(0.72);
+    expect(fill.listTop + fill.listH + fill.listBottom).toBe(GRAPHIC_HEIGHT);
+    expect(fill.logo).toBeGreaterThanOrEqual(32);
+    expect(fill.type).toBeGreaterThanOrEqual(14);
+    expect(fill.dayH * fill.days + fill.dayGap * (fill.days - 1)).toBeCloseTo(
+      fill.listH,
+    );
   });
 });

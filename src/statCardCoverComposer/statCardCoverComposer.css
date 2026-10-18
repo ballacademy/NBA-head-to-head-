@@ -89,8 +89,10 @@
 
 .scc-cell .ig-name-fade__family {
   min-height: calc(30 * var(--u));
-  max-height: calc(62 * var(--u));
+  max-height: calc(34 * var(--u));
   font-size: calc(28 * var(--u));
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .scc-top-fade {

@@ -3,7 +3,10 @@ import {
   ESPN_ABBREV_TO_TEAM,
   isoDateOnly,
 } from "../playerOfTheDayComposer/lastGame";
-import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import {
+  DEFAULT_BRAND,
+  GRAPHIC_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
 
 export { DEFAULT_BRAND };
@@ -13,6 +16,32 @@ export const ESPN_INJURIES_URL =
 
 export const DEFAULT_INJURY_TITLE = "INJURY REPORT";
 export const INJURY_TITLE_TRACK = 0.02;
+export const INJURY_COLS = 2;
+export const INJURY_LIST_TOP = 268;
+export const INJURY_LIST_BOTTOM = 28;
+
+export const injuryFillLayout = (
+  teamCount: number,
+  boardH = GRAPHIC_HEIGHT,
+) => {
+  const rows = Math.max(1, Math.ceil(Math.max(teamCount, 1) / INJURY_COLS));
+  const listH = boardH - INJURY_LIST_TOP - INJURY_LIST_BOTTOM;
+  const gap = 8;
+  const rowH = (listH - gap * Math.max(0, rows - 1)) / rows;
+  return {
+    cols: INJURY_COLS,
+    rows,
+    listTop: INJURY_LIST_TOP,
+    listBottom: INJURY_LIST_BOTTOM,
+    listH,
+    rowH,
+    gap,
+    logo: Math.round(Math.min(96, Math.max(52, rowH * 0.5))),
+    name: Math.round(Math.min(26, Math.max(16, rowH * 0.18))),
+    pipH: Math.round(Math.min(28, Math.max(18, rowH * 0.2))),
+    pipSize: Math.round(Math.min(14, Math.max(11, rowH * 0.1))),
+  };
+};
 export const INJURY_KICKERS = [
   "OUT",
   "GTD",

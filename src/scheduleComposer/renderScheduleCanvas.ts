@@ -15,6 +15,7 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  scheduleFillLayout,
   scheduleGroups,
   splitScheduleTitle,
   type ScheduleDraft,
@@ -86,29 +87,29 @@ export const renderScheduleCanvas = async (
     }),
   );
 
-  const split = groups.length > 2;
-  const cols = split ? 2 : 1;
-  const gutter = 20 * s;
+  const fill = scheduleFillLayout(groups, boardH);
   const listLeft = 32 * s;
   const listRight = width - 32 * s;
-  const colW = (listRight - listLeft - (cols - 1) * gutter) / cols;
-  const rowH = 28 * s;
-  const colY = Array.from({ length: cols }, () => 240 * s);
-  groups.forEach((group, index) => {
-    const col = index % cols;
-    const x0 = listLeft + col * (colW + gutter);
-    let y = colY[col];
+  const gutter = 20 * s;
+  const colW = (listRight - listLeft - gutter) / 2;
+  const logo = fill.logo * s;
+  groups.forEach((group, dayIndex) => {
+    const dayTop = (fill.listTop + dayIndex * (fill.dayH + fill.dayGap)) * s;
     context.textAlign = "left";
     context.fillStyle = "#facc15";
-    context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-    context.fillText(group.label, x0, y);
-    y += 16 * s;
-    group.games.forEach((game) => {
+    context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+    context.fillText(group.label, listLeft, dayTop + 12 * s);
+    const rows = Math.max(1, Math.ceil(group.games.length / 2));
+    const rowH = (fill.gamesH * s) / rows;
+    group.games.forEach((game, gameIndex) => {
+      const col = gameIndex % 2;
+      const row = Math.floor(gameIndex / 2);
+      const x0 = listLeft + col * (colW + gutter);
+      const y = dayTop + fill.labelH * s + row * rowH + rowH / 2;
       const away = logos.get(game.awayId);
       const home = logos.get(game.homeId);
-      const logo = 24 * s;
       if (away) {
-        drawCenteredLogo(context, away, x0, y - 12 * s, logo, logo, {
+        drawCenteredLogo(context, away, x0, y - logo / 2, logo, logo, {
           cacheKey: `${game.awayId}-sch`,
           shadow: 0,
         });
@@ -117,8 +118,8 @@ export const renderScheduleCanvas = async (
         drawCenteredLogo(
           context,
           home,
-          x0 + colW * 0.46,
-          y - 12 * s,
+          x0 + colW * 0.44,
+          y - logo / 2,
           logo,
           logo,
           {
@@ -128,21 +129,19 @@ export const renderScheduleCanvas = async (
         );
       }
       context.fillStyle = "#fff";
-      context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+      context.font = `900 ${fill.type * s}px ${POSTER_FONT}`;
       context.textAlign = "left";
-      context.fillText(game.awayId, x0 + logo + 6 * s, y);
+      context.fillText(game.awayId, x0 + logo + 8 * s, y);
       context.textAlign = "center";
       context.fillStyle = "rgba(255,255,255,0.55)";
-      context.fillText("@", x0 + colW * 0.42, y);
+      context.fillText("@", x0 + colW * 0.4, y);
       context.textAlign = "left";
       context.fillStyle = "#fff";
-      context.fillText(game.homeId, x0 + colW * 0.46 + logo + 6 * s, y);
+      context.fillText(game.homeId, x0 + colW * 0.44 + logo + 8 * s, y);
       context.textAlign = "right";
-      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.font = `900 ${fill.time * s}px ${POSTER_FONT}`;
       context.fillText(game.timeLabel, x0 + colW, y);
-      y += rowH;
     });
-    colY[col] = y + 8 * s;
   });
 
   if (input.showBa) {

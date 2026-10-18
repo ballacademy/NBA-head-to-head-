@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   groupInjuriesByTeam,
+  injuryFillLayout,
   normalizeInjuryKicker,
   parseInjuryPayload,
 } from "./injuryState";
@@ -32,5 +34,17 @@ describe("injury report", () => {
     const grouped = groupInjuriesByTeam(players);
     expect(grouped[0]?.teamId).toBe("LAL");
     expect(grouped[0]?.players.map((row) => row.status)).toEqual(["OUT", "GTD"]);
+  });
+
+  it("fills the 4:5 with stretched two-column rows instead of a dead metal band", () => {
+    const fill = injuryFillLayout(14);
+    expect(fill.listH / GRAPHIC_HEIGHT).toBeGreaterThan(0.72);
+    expect(fill.listTop + fill.listH + fill.listBottom).toBe(GRAPHIC_HEIGHT);
+    expect(fill.rows).toBe(7);
+    expect(fill.logo).toBeGreaterThanOrEqual(52);
+    expect(fill.name).toBeGreaterThanOrEqual(16);
+    const sparse = injuryFillLayout(4);
+    expect(sparse.rowH).toBeGreaterThan(fill.rowH);
+    expect(sparse.logo).toBeGreaterThanOrEqual(fill.logo);
   });
 });

@@ -17,6 +17,7 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   INJURY_KICKER_FILL,
   INJURY_KICKER_INK,
+  injuryFillLayout,
   splitInjuryTitle,
   type InjuryDraft,
   type InjuryKicker,
@@ -90,40 +91,48 @@ export const renderInjuryCanvas = async (
     }),
   );
 
-  const cols = 2;
-  const listTop = 272 * s;
+  const fill = injuryFillLayout(input.teams.length, boardH);
+  const cols = fill.cols;
+  const listTop = fill.listTop * s;
   const colW = (width - 56 * s) / cols;
-  const colY = [listTop, listTop];
+  const logoSize = fill.logo * s;
+  const pipH = fill.pipH * s;
+  const nameSize = fill.name * s;
   input.teams.forEach((block, index) => {
     const col = index % cols;
+    const row = Math.floor(index / cols);
     const x = 28 * s + col * (colW + 12 * s);
-    const y = colY[col];
-    colY[col] += Math.max(56 * s, 22 * s + block.players.slice(0, 4).length * 16 * s);
+    const y = listTop + row * (fill.rowH + fill.gap) * s;
     const logo = logos[index];
     if (logo) {
-      drawCenteredLogo(context, logo, x, y, 44 * s, 44 * s, {
+      drawCenteredLogo(context, logo, x, y, logoSize, logoSize, {
         cacheKey: `${block.teamId}-inj`,
         shadow: 0,
       });
     }
     context.textAlign = "center";
     context.fillStyle = "#fff";
-    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
-    context.fillText(block.teamId, x + 22 * s, y + 52 * s);
+    context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+    context.fillText(block.teamId, x + logoSize / 2, y + logoSize + 14 * s);
     context.textAlign = "left";
+    const lineH = Math.max(pipH + 4 * s, nameSize + 4 * s);
     block.players.slice(0, 4).forEach((player, playerIndex) => {
-      const py = y + playerIndex * 16 * s;
+      const py = y + playerIndex * lineH + (logoSize - lineH * Math.min(block.players.length, 4)) / 2;
       const status = player.status as InjuryKicker;
       context.fillStyle = INJURY_KICKER_FILL[status] ?? "#fff";
-      context.fillRect(x + 56 * s, py, 52 * s, 14 * s);
+      context.fillRect(x + logoSize + 12 * s, py, 72 * s, pipH);
       context.fillStyle = INJURY_KICKER_INK[status] ?? "#111";
-      context.font = `italic 900 ${9 * s}px ${POSTER_FONT}`;
+      context.font = `italic 900 ${fill.pipSize * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
-      context.fillText(player.status, x + 82 * s, py + 7 * s);
+      context.fillText(player.status, x + logoSize + 48 * s, py + pipH / 2);
       context.textAlign = "left";
       context.fillStyle = "#fff";
-      context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-      context.fillText(player.shortName.toUpperCase(), x + 114 * s, py + 7 * s);
+      context.font = `900 ${nameSize}px ${POSTER_FONT}`;
+      context.fillText(
+        player.shortName.toUpperCase(),
+        x + logoSize + 90 * s,
+        py + pipH / 2,
+      );
     });
   });
 

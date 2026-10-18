@@ -11,10 +11,18 @@ import {
   nbaTodayIso,
   toEspnDateParam,
 } from "../playerOfTheDayComposer/lastGame";
-import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
+import {
+  DEFAULT_BRAND,
+  GRAPHIC_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 
 export { DEFAULT_BRAND, nextNDaysRange };
+
+export const SCHEDULE_LIST_TOP = 236;
+export const SCHEDULE_LIST_BOTTOM = 28;
+export const SCHEDULE_DAY_GAP = 10;
+export const SCHEDULE_LABEL_H = 22;
 
 export const ESPN_SCOREBOARD_URL = (iso: string) =>
   `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
@@ -262,6 +270,30 @@ export const scheduleGroups = (games: ScheduleGame[]) => {
     });
   });
   return groups;
+};
+
+export const scheduleFillLayout = (
+  groups: Array<{ games: unknown[] }>,
+  boardH = GRAPHIC_HEIGHT,
+) => {
+  const days = Math.max(1, groups.length);
+  const listH = boardH - SCHEDULE_LIST_TOP - SCHEDULE_LIST_BOTTOM;
+  const dayH =
+    (listH - SCHEDULE_DAY_GAP * Math.max(0, days - 1)) / days;
+  const gamesH = Math.max(36, dayH - SCHEDULE_LABEL_H);
+  return {
+    listTop: SCHEDULE_LIST_TOP,
+    listBottom: SCHEDULE_LIST_BOTTOM,
+    listH,
+    days,
+    dayH,
+    labelH: SCHEDULE_LABEL_H,
+    dayGap: SCHEDULE_DAY_GAP,
+    gamesH,
+    logo: Math.round(Math.min(52, Math.max(32, gamesH * 0.42))),
+    type: Math.round(Math.min(22, Math.max(14, gamesH * 0.16))),
+    time: Math.round(Math.min(16, Math.max(12, gamesH * 0.12))),
+  };
 };
 
 export const tonightIso = (now = new Date()) => nbaTodayIso(now);

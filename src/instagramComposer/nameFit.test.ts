@@ -48,6 +48,8 @@ describe("overflow abbreviation", () => {
     expect(abbreviateOverflowName("Antetokounmpo", 13, measure)).toBe(
       "ANTETOKOUNMPO",
     );
+    expect(abbreviateOverflowName("Wembanyama", 9, measure)).toBe("WEMBANYA.");
+    expect(abbreviateOverflowName("Wembanyama", 9, measure)).not.toMatch(/\s/);
   });
 
   it("fits cell captions without shrinking the type size", () => {

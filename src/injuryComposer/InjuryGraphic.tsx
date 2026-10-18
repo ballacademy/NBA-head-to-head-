@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -12,6 +18,7 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   INJURY_KICKER_FILL,
   INJURY_KICKER_INK,
+  injuryFillLayout,
   splitInjuryTitle,
   type InjuryDraft,
   type InjuryKicker,
@@ -47,6 +54,7 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const titleLines = splitInjuryTitle(draft.title);
+    const fill = injuryFillLayout(draft.teams.length);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -89,7 +97,16 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` }}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--inj-rows" as string]: String(fill.rows),
+            ["--inj-logo" as string]: String(fill.logo),
+            ["--inj-name" as string]: String(fill.name),
+            ["--inj-pip" as string]: String(fill.pipH),
+            ["--inj-pip-size" as string]: String(fill.pipSize),
+          } as CSSProperties
+        }
         aria-label="Instagram injury report graphic"
       >
         {draft.showBa ? (
@@ -165,7 +182,7 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
                                 INJURY_KICKER_FILL[player.status as InjuryKicker],
                               ["--pip-ink" as string]:
                                 INJURY_KICKER_INK[player.status as InjuryKicker],
-                            } as React.CSSProperties
+                            } as CSSProperties
                           }
                         >
                           {player.status}

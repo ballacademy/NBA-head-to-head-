@@ -19,6 +19,7 @@ import {
   SCC_SWIPE_LABEL,
   SCC_SWIPE_SIZE,
   coverCellRect,
+  coverFittedLastName,
   coverSeamXs,
 } from "./statCardCoverLayout";
 import {
@@ -113,6 +114,10 @@ describe("stat card cover", () => {
       h: GRAPHIC_HEIGHT,
     });
     expect(coverSeamXs(4)).toEqual([300, 600, 900]);
+    expect(coverFittedLastName("Wembanyama", 4)).toMatch(/\.$/);
+    expect(coverFittedLastName("Wembanyama", 4)).not.toMatch(/\s/);
+    expect(coverFittedLastName("Wembanyama", 4)).not.toBe("WEMBANYAMA");
+    expect(coverFittedLastName("Jokic", 4)).toBe("JOKIC");
     expect(SCC_GOLD.toLowerCase()).toBe("#facc15");
     expect(SCC_GOLD_DEEP.toLowerCase()).toBe("#d4af37");
   });

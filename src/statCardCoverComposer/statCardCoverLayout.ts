@@ -1,3 +1,5 @@
+import { abbreviateOverflowName } from "../instagramComposer/nameFit";
+import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
@@ -72,6 +74,23 @@ export const coverNameMetrics = (_index?: number) => ({
   family: SCC_FAMILY_SIZE,
   given: SCC_GIVEN_SIZE,
 });
+
+export const coverNameTextWidth = (count = SCC_SLOT_COUNT) => {
+  const cell = coverCellRect(0, count);
+  const pad = count >= 4 ? 52 : 20;
+  return Math.max(24, cell.w - coverNameMetrics().logo - pad);
+};
+
+export const coverFittedLastName = (
+  lastName: string,
+  count = SCC_SLOT_COUNT,
+) => {
+  const metrics = coverNameMetrics();
+  const maxEm = coverNameTextWidth(count) / metrics.family;
+  return abbreviateOverflowName(lastName, maxEm, (value) =>
+    measureTitleAdvance(value, 0.04),
+  );
+};
 
 export const coverSeamXs = (count = SCC_SLOT_COUNT) => {
   const n = parseCoverSlotCount(count);

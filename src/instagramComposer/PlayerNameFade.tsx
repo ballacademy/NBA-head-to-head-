@@ -1,6 +1,12 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
-import { NAME_FIRST_MAX, NAME_LAST_MAX } from "./nameFit";
+import {
+  NAME_FIRST_MAX,
+  NAME_LAST_MAX,
+  abbreviateOverflowName,
+} from "./nameFit";
+import { measureTitleAdvance } from "./titleLayout";
 import "./playerNameFade.css";
 
 interface PlayerNameFadeProps {
@@ -29,6 +35,37 @@ export function PlayerNameFade({
   onEmptyClick,
 }: PlayerNameFadeProps) {
   const team = getTeam(teamId);
+  const familyRef = useRef<HTMLTextAreaElement>(null);
+  const [familyFit, setFamilyFit] = useState(lastName);
+  const [familyFocus, setFamilyFocus] = useState(false);
+
+  useLayoutEffect(() => {
+    const node = familyRef.current;
+    if (!node) {
+      return;
+    }
+    const fit = () => {
+      const max = node.clientWidth;
+      const size = Number.parseFloat(getComputedStyle(node).fontSize) || 16;
+      if (max <= 0 || size <= 0) {
+        setFamilyFit(lastName);
+        return;
+      }
+      setFamilyFit(
+        abbreviateOverflowName(lastName, (max / size) * 0.85, (value) =>
+          measureTitleAdvance(value, 0.04),
+        ),
+      );
+    };
+    fit();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new ResizeObserver(fit);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [lastName]);
+
   return (
     <div
       className={["ig-name-fade", flushLeft ? "is-flush-left" : ""]
@@ -57,12 +94,15 @@ export function PlayerNameFade({
           }}
         />
         <textarea
+          ref={familyRef}
           className="ig-name-fade__family"
-          value={lastName}
+          value={familyFocus ? lastName : familyFit}
           maxLength={NAME_LAST_MAX}
-          rows={2}
+          rows={1}
           placeholder={empty ? "" : "LAST"}
           aria-label={familyAria}
+          onFocus={() => setFamilyFocus(true)}
+          onBlur={() => setFamilyFocus(false)}
           onChange={(event) =>
             onLastChange(event.target.value.slice(0, NAME_LAST_MAX))
           }
